@@ -1,7 +1,16 @@
 'use client';
-/* @uix registry item — ported from @itsmx/shared-ui/src/form.tsx */
+/* @uix registry item — ported from @itsmx/shared-ui/src/form.tsx
+ *
+ * Phase 4c — additional field kinds, all NATIVE elements (no portal /
+ * popover dependency): 'select', 'checkbox', 'radio-group', 'date'.
+ * The 'date' kind is deliberately NOT a datepicker — it renders the
+ * native <input type="date">, mirroring filter-popover's native-date
+ * stance. Out of scope (later phases): field arrays, combobox, file
+ * upload.
+ */
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronDown } from 'lucide-react';
 import type { ReactElement, ReactNode } from 'react';
 import {
   Controller,
@@ -29,10 +38,36 @@ export interface FormFieldDescriptor<TName extends string = string> {
   description?: string;
   /** Placeholder text inside the input. */
   placeholder?: string;
-  /** Override the input type. Default: 'text' for strings, 'number' for numbers. */
-  inputType?: 'text' | 'email' | 'password' | 'number' | 'url' | 'tel' | 'textarea';
+  /**
+   * Override the input type. Default: 'text' for strings, 'number' for numbers.
+   *
+   * Phase 4c kinds and their Zod pairings:
+   *   - 'select'       native <select>; pair with z.string().min(1) or z.enum([...])
+   *   - 'checkbox'     native checkbox; pair with z.boolean()
+   *   - 'radio-group'  fieldset of native radios; pair with z.enum([...])
+   *   - 'date'         native <input type="date"> holding a 'YYYY-MM-DD'
+   *                    string; pair with z.string().min(1)
+   */
+  inputType?:
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'url'
+    | 'tel'
+    | 'textarea'
+    | 'select'
+    | 'checkbox'
+    | 'radio-group'
+    | 'date';
   /** Mark the field as required visually (validity is enforced by the Zod schema). */
   required?: boolean;
+  /**
+   * Option list — REQUIRED for the 'select' and 'radio-group' kinds
+   * (ignored by every other kind). `disabled` options render but cannot
+   * be chosen.
+   */
+  options?: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
 }
 
 export interface FormProps<TSchema extends z.ZodObject<z.ZodRawShape>> {
@@ -186,24 +221,151 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
     fieldState.error ? 'border-uix-danger' : '',
   );
 
+  /*
+   * Per Docs/ux-design-system.md § Forms: "Required fields marked
+   * with an asterisk BEFORE the label, not after." Decorative
+   * marker (aria-hidden) — the `aria-required` on the input is
+   * what assistive tech consumes.
+   */
+  const requiredMark = descriptor.required ? (
+    <span aria-hidden="true" className="mr-1 text-uix-danger">
+      *
+    </span>
+  ) : null;
+
+  const descriptionEl = descriptor.description ? (
+    <p id={describedBy} className="text-xs text-uix-hushed">
+      {descriptor.description}
+    </p>
+  ) : null;
+
+  const errorEl = fieldState.error ? (
+    <p id={errorId} role="alert" className="text-xs text-uix-danger">
+      {fieldState.error.message ?? 'Invalid value.'}
+    </p>
+  ) : null;
+
+  // 4c: checkbox — row layout with the label AFTER the box (htmlFor
+  // preserved); description/error keep their place below the row. The
+  // required-asterisk rule is unchanged (before the label text).
+  if (inputType === 'checkbox') {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id={inputId}
+            name={field.name}
+            ref={field.ref}
+            checked={field.value === true}
+            onChange={(e) => field.onChange(e.target.checked)}
+            onBlur={field.onBlur}
+            aria-required={descriptor.required ? true : undefined}
+            aria-invalid={fieldState.error ? true : undefined}
+            aria-describedby={ariaDescribedBy}
+            className="mt-0.5 h-4 w-4"
+            style={{ accentColor: 'var(--uix-accent)' }}
+          />
+          <label htmlFor={inputId} className="text-sm font-medium">
+            {requiredMark}
+            {descriptor.label}
+          </label>
+        </div>
+        {descriptionEl}
+        {errorEl}
+      </div>
+    );
+  }
+
+  // 4c: radio-group — <fieldset> + <legend> carrying the label/asterisk
+  // (same visual style as the standalone label). aria-invalid +
+  // aria-describedby sit on the fieldset since the error describes the
+  // group, not one radio.
+  if (inputType === 'radio-group') {
+    return (
+      <fieldset
+        className="flex flex-col gap-1"
+        aria-required={descriptor.required ? true : undefined}
+        aria-invalid={fieldState.error ? true : undefined}
+        aria-describedby={ariaDescribedBy}
+      >
+        <legend className="text-sm font-medium">
+          {requiredMark}
+          {descriptor.label}
+        </legend>
+        {(descriptor.options ?? []).map((opt) => {
+          const optionId = `${inputId}-${opt.value}`;
+          return (
+            <div key={opt.value} className="flex items-center gap-2">
+              <input
+                type="radio"
+                id={optionId}
+                name={field.name}
+                value={opt.value}
+                checked={field.value === opt.value}
+                onChange={() => field.onChange(opt.value)}
+                onBlur={field.onBlur}
+                disabled={opt.disabled}
+                className="h-4 w-4"
+                style={{ accentColor: 'var(--uix-accent)' }}
+              />
+              <label
+                htmlFor={optionId}
+                className={cn('text-sm', opt.disabled ? 'text-uix-muted' : '')}
+              >
+                {opt.label}
+              </label>
+            </div>
+          );
+        })}
+        {descriptionEl}
+        {errorEl}
+      </fieldset>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={inputId} className="text-sm font-medium">
-        {/*
-         * Per Docs/ux-design-system.md § Forms: "Required fields marked
-         * with an asterisk BEFORE the label, not after." Decorative
-         * marker (aria-hidden) — the `aria-required` on the input is
-         * what assistive tech consumes.
-         */}
-        {descriptor.required ? (
-          <span aria-hidden="true" className="mr-1 text-uix-danger">
-            *
-          </span>
-        ) : null}
+        {requiredMark}
         {descriptor.label}
       </label>
 
-      {inputType === 'textarea' ? (
+      {inputType === 'select' ? (
+        // 4c: native <select> in the baseInputClass family. appearance-none
+        // suppresses the UA arrow; the lucide ChevronDown overlay replaces
+        // it (pointer-events-none so clicks fall through to the select).
+        // When a placeholder is set, a hidden disabled <option value="">
+        // renders first so an empty value displays the placeholder text.
+        <div className="relative">
+          <select
+            id={inputId}
+            {...field}
+            value={typeof field.value === 'string' ? field.value : ''}
+            aria-required={descriptor.required ? true : undefined}
+            aria-invalid={fieldState.error ? true : undefined}
+            aria-describedby={ariaDescribedBy}
+            className={cn(baseInputClass, 'h-9 w-full appearance-none pr-8')}
+          >
+            {descriptor.placeholder !== undefined ? (
+              <option value="" disabled hidden>
+                {descriptor.placeholder}
+              </option>
+            ) : null}
+            {(descriptor.options ?? []).map((opt) => (
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            strokeWidth={1.75}
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-uix-muted"
+          />
+        </div>
+      ) : inputType === 'textarea' ? (
         <textarea
           id={inputId}
           {...field}
@@ -215,6 +377,9 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
           className={cn(baseInputClass, 'min-h-24 resize-y')}
         />
       ) : (
+        // 4c: the 'date' kind flows through this branch unchanged — a
+        // native <input type="date"> whose value is the 'YYYY-MM-DD'
+        // string, sharing the same typeof guard as text.
         <input
           id={inputId}
           {...field}
@@ -236,17 +401,8 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
         />
       )}
 
-      {descriptor.description ? (
-        <p id={describedBy} className="text-xs text-uix-hushed">
-          {descriptor.description}
-        </p>
-      ) : null}
-
-      {fieldState.error ? (
-        <p id={errorId} role="alert" className="text-xs text-uix-danger">
-          {fieldState.error.message ?? 'Invalid value.'}
-        </p>
-      ) : null}
+      {descriptionEl}
+      {errorEl}
     </div>
   );
 }

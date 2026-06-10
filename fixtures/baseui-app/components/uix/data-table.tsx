@@ -3,9 +3,14 @@
 
 import {
   type ColumnDef,
+  type PaginationState,
+  type Row,
+  type RowSelectionState,
   type SortingState,
+  type Updater,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
@@ -103,6 +108,62 @@ export interface DataTableProps<TData, TValue = unknown> {
    * design-system.md § Tables can route through here.
    */
   onRowClick?: (row: TData) => void;
+
+  /**
+   * Phase 4c — opt-in client-side pagination. When set, TanStack's
+   * getPaginationRowModel is wired up (it is NOT included otherwise —
+   * the no-pagination path is behaviorally identical to pre-4c) and a
+   * footer bar renders below the table inside the bordered wrapper.
+   * TanStack's autoResetPageIndex default clamps the page index when
+   * the data set shrinks.
+   */
+  pagination?: {
+    /** Rows per page. Default 25. */
+    pageSize?: number;
+    /** When provided, a native <select> page-size picker renders in the footer. */
+    pageSizeOptions?: ReadonlyArray<number>;
+    /** Resolver-passed labels — defaults are English-only. */
+    labels?: {
+      previous?: string;
+      next?: string;
+      rowsPerPage?: string;
+      pageOf?: (page: number, pageCount: number) => string;
+    };
+  };
+
+  /**
+   * Phase 4c — opt-in row selection. `true` enables every row; a
+   * predicate enables per-row (receives the row's original data).
+   * When enabled, an internal checkbox column (id '__uix-select') is
+   * PREPENDED to the rendered column set.
+   */
+  enableRowSelection?: boolean | ((row: TData) => boolean);
+  /** Controlled selection state (TanStack RowSelectionState — ids → true). */
+  rowSelection?: RowSelectionState;
+  /**
+   * Fires on every selection change with the next state AND the
+   * resolved selected rows. Works in both controlled (`rowSelection`
+   * provided) and uncontrolled (internal state) modes.
+   */
+  onRowSelectionChange?: (state: RowSelectionState, selectedRows: TData[]) => void;
+  /** Passthrough to TanStack — stable row ids for selection across data changes. */
+  getRowId?: (row: TData, index: number) => string;
+  /** Resolver-passed labels for the selection checkboxes. */
+  selectionLabels?: {
+    selectAll?: string;
+    selectRow?: (row: TData) => string;
+  };
+
+  /**
+   * Phase 4c — sticky header row. Only does something inside a
+   * height-constrained scroll container (combine with `maxHeight`, or
+   * constrain the wrapper from outside). Adds an OPAQUE surface
+   * background to each th — sticky cells over scrolled rows need a
+   * non-transparent background.
+   */
+  stickyHeader?: boolean;
+  /** Inline max-height (any CSS length) for the vertical scroll wrapper around the table. */
+  maxHeight?: string;
 }
 
 /**
@@ -135,6 +196,17 @@ const isDev = (): boolean => {
  *   - columnConfig overrides from CUS-03 (label / visible / order)
  *   - empty/loading/error states wired to design tokens
  *   - row-click → onRowClick handler (keyboard Enter routes here)
+ *
+ * Phase 4c additions (all opt-in; omitting every new prop renders
+ * identically to pre-4c):
+ *   - client-side pagination (`pagination`) — getPaginationRowModel is
+ *     only wired when requested; footer with prev/next, "Page X of Y",
+ *     optional page-size select
+ *   - row selection (`enableRowSelection`, controlled or uncontrolled)
+ *     via a prepended internal checkbox column (id '__uix-select')
+ *   - sticky header (`stickyHeader`) + vertical scroll cap (`maxHeight`)
+ *     — sticky only does something inside a height-constrained scroll
+ *     container
  *
  * Out of scope here (lands with CUS-07):
  *   - toolbar (saved-view dropdown, filter chips, search, density
@@ -207,13 +279,111 @@ export function DataTable<TData, TValue = unknown>(
   // per Docs/design-system.md § Tables — Sorting.
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  // 4c: pagination state — internal, seeded from props (default 25).
+  // Only handed to TanStack when `pagination` is requested.
+  const paginationProp = props.pagination;
+  const [paginationState, setPaginationState] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: paginationProp?.pageSize ?? 25,
+  });
+
+  // 4c: row selection — controlled (props.rowSelection) or uncontrolled
+  // (internal state). Either way, onRowSelectionChange reports the next
+  // state plus the resolved selected rows.
+  const enableRowSelectionProp = props.enableRowSelection;
+  const selectionEnabled =
+    enableRowSelectionProp !== undefined && enableRowSelectionProp !== false;
+  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
+  const rowSelectionState = props.rowSelection ?? internalRowSelection;
+  const getRowIdProp = props.getRowId;
+  const onRowSelectionChangeProp = props.onRowSelectionChange;
+  const handleRowSelectionChange = (updater: Updater<RowSelectionState>): void => {
+    const next = typeof updater === 'function' ? updater(rowSelectionState) : updater;
+    if (props.rowSelection === undefined) setInternalRowSelection(next);
+    if (onRowSelectionChangeProp) {
+      // Resolve ids the same way TanStack does: getRowId when provided,
+      // else the stringified top-level index (no subRows here).
+      const idFor = getRowIdProp ?? ((_row: TData, index: number) => String(index));
+      const selectedRows = props.data.filter((row, index) => next[idFor(row, index)] === true);
+      onRowSelectionChangeProp(next, selectedRows);
+    }
+  };
+
+  // 4c: internal selection checkbox column, PREPENDED when enabled.
+  // Header checkbox covers the current page; indeterminate is set via a
+  // ref callback (no React attribute exists for it). stopPropagation on
+  // the cell checkbox keeps onRowClick rows from firing on toggle.
+  const selectionLabels = props.selectionLabels;
+  const selectionColumn: ColumnDef<TData, TValue> = {
+    id: '__uix-select',
+    enableSorting: false,
+    header: ({ table }) => {
+      const all = table.getIsAllPageRowsSelected();
+      return (
+        <input
+          type="checkbox"
+          checked={all}
+          ref={(el) => {
+            if (el) el.indeterminate = table.getIsSomePageRowsSelected() && !all;
+          }}
+          onChange={table.getToggleAllPageRowsSelectedHandler()}
+          aria-label={selectionLabels?.selectAll ?? 'Select all rows'}
+          className="h-4 w-4 align-middle"
+          style={{ accentColor: 'var(--uix-accent)' }}
+        />
+      );
+    },
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onChange={row.getToggleSelectedHandler()}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={
+          selectionLabels?.selectRow ? selectionLabels.selectRow(row.original) : 'Select row'
+        }
+        className="h-4 w-4 align-middle"
+        style={{ accentColor: 'var(--uix-accent)' }}
+      />
+    ),
+  };
+  const tableColumns: ColumnDef<TData, TValue>[] = selectionEnabled
+    ? [selectionColumn, ...effectiveColumns]
+    : effectiveColumns;
+
   const table = useReactTable<TData>({
     data: props.data,
-    columns: effectiveColumns,
-    state: { sorting },
+    columns: tableColumns,
+    state: {
+      sorting,
+      ...(paginationProp ? { pagination: paginationState } : {}),
+      ...(selectionEnabled ? { rowSelection: rowSelectionState } : {}),
+    },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel<TData>(),
     getSortedRowModel: getSortedRowModel<TData>(),
+    // 4c: the pagination row model is included ONLY when pagination is
+    // requested — the no-props path keeps the exact pre-4c model chain.
+    ...(paginationProp
+      ? {
+          getPaginationRowModel: getPaginationRowModel<TData>(),
+          onPaginationChange: setPaginationState,
+        }
+      : {}),
+    ...(selectionEnabled
+      ? {
+          // selectionEnabled guarantees the prop is `true` or a predicate
+          // here; the predicate adapts TanStack's Row to the consumer's
+          // plain-data signature.
+          enableRowSelection:
+            typeof enableRowSelectionProp === 'function'
+              ? (row: Row<TData>) => enableRowSelectionProp(row.original)
+              : true,
+          onRowSelectionChange: handleRowSelectionChange,
+        }
+      : {}),
+    ...(getRowIdProp ? { getRowId: getRowIdProp } : {}),
     enableMultiSort: true,
     // TanStack's default isMultiSortEvent is (e) => e.shiftKey — exactly
     // the behavior design-system.md § Tables — Sorting specifies, so we
@@ -226,13 +396,22 @@ export function DataTable<TData, TValue = unknown>(
   const rowPad = ROW_PADDING_BY_DENSITY[density];
   const cellPad = CELL_PADDING_BY_DENSITY[density];
 
-  return (
-    <div
-      className={cn('overflow-x-auto rounded', 'border border-uix-line', props.className)}
-      data-surface={props.surface_key}
-      data-density={density}
-    >
-      <table className="w-full border-collapse text-sm">
+  // 4c: pagination footer derivations. table.getState().pagination is
+  // always present (TanStack default state), so reading it is safe even
+  // when pagination isn't requested.
+  const pageCount = Math.max(table.getPageCount(), 1);
+  const currentPage = table.getState().pagination.pageIndex + 1;
+  const pageOf =
+    paginationProp?.labels?.pageOf ??
+    ((page: number, count: number) => `Page ${page} of ${count}`);
+  const pagerBtnClass = cn(
+    'inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs',
+    'border-uix-line-strong bg-uix-surface text-uix-text',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+  );
+
+  const tableEl = (
+    <table className="w-full border-collapse text-sm">
         {props.caption ? (
           <caption
             className="px-4 py-2 text-left text-xs uppercase tracking-wider"
@@ -257,8 +436,16 @@ export function DataTable<TData, TValue = unknown>(
                       cellPad,
                       'text-left text-xs uppercase tracking-wider font-medium',
                       canSort ? 'cursor-pointer select-none' : '',
+                      props.stickyHeader ? 'sticky top-0 z-10' : '',
                     )}
-                    style={{ color: 'var(--uix-text-hushed)' }}
+                    style={
+                      // 4c: sticky th needs an OPAQUE background — the
+                      // default th is transparent and scrolled rows would
+                      // show through it.
+                      props.stickyHeader
+                        ? { color: 'var(--uix-text-hushed)', background: 'var(--uix-surface)' }
+                        : { color: 'var(--uix-text-hushed)' }
+                    }
                     onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     onKeyDown={
                       canSort
@@ -316,7 +503,7 @@ export function DataTable<TData, TValue = unknown>(
           {props.error ? (
             <tr>
               <td
-                colSpan={effectiveColumns.length}
+                colSpan={tableColumns.length}
                 role="alert"
                 className={cn(cellPad, 'text-center text-sm')}
                 style={{ color: 'var(--uix-danger)' }}
@@ -329,7 +516,7 @@ export function DataTable<TData, TValue = unknown>(
             Array.from({ length: props.loadingRowCount ?? 3 }, (_, i) => `loading-row-${i}`).map(
               (rowKey) => (
                 <tr key={rowKey} aria-busy="true" className="border-b border-uix-line">
-                  {effectiveColumns.map((col, j) => (
+                  {tableColumns.map((col, j) => (
                     <td
                       key={`${rowKey}-${(col.id as string | undefined) ?? `col-${j}`}`}
                       className={cn(cellPad)}
@@ -346,7 +533,7 @@ export function DataTable<TData, TValue = unknown>(
           ) : rows.length === 0 ? (
             <tr>
               <td
-                colSpan={effectiveColumns.length}
+                colSpan={tableColumns.length}
                 className={cn(cellPad, 'text-center text-sm')}
                 style={{ color: 'var(--uix-text-hushed)' }}
               >
@@ -390,6 +577,66 @@ export function DataTable<TData, TValue = unknown>(
           )}
         </tbody>
       </table>
+  );
+
+  return (
+    <div
+      className={cn('overflow-x-auto rounded', 'border border-uix-line', props.className)}
+      data-surface={props.surface_key}
+      data-density={density}
+    >
+      {props.maxHeight !== undefined ? (
+        // 4c: vertical scroll wrapper — the height constraint stickyHeader
+        // sticks inside. Inline styles by design (maxHeight is a runtime
+        // value; no dynamic class names per the emission gate).
+        <div style={{ maxHeight: props.maxHeight, overflowY: 'auto' }}>{tableEl}</div>
+      ) : (
+        tableEl
+      )}
+
+      {paginationProp ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-uix-line px-3 py-2">
+          {paginationProp.pageSizeOptions ? (
+            <label className="flex items-center gap-2 text-xs text-uix-hushed">
+              {paginationProp.labels?.rowsPerPage ?? 'Rows per page'}
+              <select
+                value={table.getState().pagination.pageSize}
+                onChange={(e) => table.setPageSize(Number(e.target.value))}
+                className="h-8 rounded-md border border-uix-line-strong bg-uix-surface px-2 text-xs tabular-nums text-uix-text"
+              >
+                {paginationProp.pageSizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-2">
+            <span className="text-xs tabular-nums text-uix-hushed">
+              {pageOf(currentPage, pageCount)}
+            </span>
+            <button
+              type="button"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className={pagerBtnClass}
+            >
+              {paginationProp.labels?.previous ?? 'Previous'}
+            </button>
+            <button
+              type="button"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className={pagerBtnClass}
+            >
+              {paginationProp.labels?.next ?? 'Next'}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

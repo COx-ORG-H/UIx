@@ -211,6 +211,60 @@ const FORM_FIELDS = [
   },
 ] as const;
 
+// 4c field kinds: select (placeholder + options), checkbox, radio-group,
+// native date — exercises every new branch in form.tsx's DefaultField.
+const FIELD_KINDS_SCHEMA = z.object({
+  name: z.string().min(1, "Name is required"),
+  role: z.string().min(1, "Pick a role"),
+  notify: z.boolean(),
+  plan: z.enum(["free", "pro"]),
+  startDate: z.string().min(1, "Pick a start date"),
+});
+
+const FIELD_KINDS_FIELDS = [
+  {
+    name: "name",
+    label: "Full name",
+    placeholder: "Grace Hopper",
+    required: true,
+  },
+  {
+    name: "role",
+    label: "Role",
+    inputType: "select",
+    placeholder: "Select a role…",
+    required: true,
+    options: [
+      { value: "engineer", label: "Site engineer" },
+      { value: "operator", label: "Operator" },
+      { value: "auditor", label: "Auditor (read-only)", disabled: true },
+    ],
+  },
+  {
+    name: "notify",
+    label: "Notify me on critical readings",
+    inputType: "checkbox",
+    description: "One digest per incident, never per reading.",
+  },
+  {
+    name: "plan",
+    label: "Plan",
+    inputType: "radio-group",
+    required: true,
+    options: [
+      { value: "free", label: "Free — 1 gateway" },
+      { value: "pro", label: "Pro — unlimited gateways" },
+    ],
+  },
+  {
+    name: "startDate",
+    label: "Start date",
+    inputType: "date",
+    required: true,
+    description: "Native date input — deliberately not a datepicker.",
+  },
+] as const;
+
 const SAMPLE_USER: UserChipPerson = {
   id: "usr-001",
   display_name: "Ada Lovelace",
@@ -296,6 +350,17 @@ const APP_SHELL_NAV: AppShellNavSection[] = [
 // output is byte-stable across server, client, and CI prerender.
 const PREVIEW_NOW = Date.UTC(2026, 5, 10, 12, 0, 0);
 
+// 12 deterministic rows for the 4c data-table demo (pagination pageSize 5
+// → "Page 1 of 3"). Same PREVIEW_NOW anchoring as the rows above — no
+// Date.now() anywhere, so the prerender stays byte-stable.
+const SELECTION_STATUSES = ["Nominal", "Degraded", "Offline"] as const;
+const SELECTION_ROWS: PreviewRow[] = Array.from({ length: 12 }, (_, i) => ({
+  id: `SEN-1${String(i + 1).padStart(2, "0")}`,
+  name: `Berth sensor ${i + 1}`,
+  status: SELECTION_STATUSES[i % 3] ?? "Nominal",
+  updated: new Date(PREVIEW_NOW - (i + 1) * 45 * 60_000).toISOString(),
+}));
+
 // -- layout helpers ------------------------------------------------------
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -319,6 +384,12 @@ export function PreviewGallery() {
   const [density, setDensity] = useState<DataTableDensity>("standard");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
+  // 4c selection demo: count fed by DataTable's onRowSelectionChange.
+  const [selectedCount, setSelectedCount] = useState(0);
+
+  const submitFieldKinds = (): void => {
+    toast({ title: "Submitted", variant: "success" });
+  };
 
   // Undo demo: useUndoableAction (confirm-action) composed with toast() —
   // the two ship uncoupled; this is the documented wiring recipe.
@@ -406,6 +477,28 @@ export function PreviewGallery() {
               caption="Facility sensors — preview data"
               onRowClick={noop}
             />
+          </Section>
+
+          <Section title="data-table — pagination + selection + sticky header">
+            {/* 4c demo. The plain data-table section above stays untouched
+              * as the back-compat proof (no new props, pre-4c rendering).
+              * No surface_key here — exercises the documented local-only
+              * fallback path. */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-uix-hushed">{selectedCount} selected</p>
+              <DataTable<PreviewRow>
+                columns={columns}
+                data={SELECTION_ROWS}
+                caption="Berth sensors — 4c demo: pagination, row selection, sticky header"
+                pagination={{ pageSize: 5, pageSizeOptions: [5, 10, 25] }}
+                enableRowSelection
+                onRowSelectionChange={(_state, selectedRows) =>
+                  setSelectedCount(selectedRows.length)
+                }
+                stickyHeader
+                maxHeight="260px"
+              />
+            </div>
           </Section>
 
           <Section title="data-table-toolbar">
@@ -690,6 +783,27 @@ export function PreviewGallery() {
                 defaultValues={{ name: "", email: "", notes: "" }}
                 submitLabel="Save"
                 error="Example server-side problem — the error-display path."
+              />
+            </div>
+          </Section>
+
+          <Section title="form — field kinds">
+            {/* 4c demo: select / checkbox / radio-group / date. The plain
+              * form section above stays untouched as the back-compat proof
+              * (text/email/textarea only, no new descriptor props). */}
+            <div className="max-w-md">
+              <Form
+                schema={FIELD_KINDS_SCHEMA}
+                fields={FIELD_KINDS_FIELDS}
+                onSubmit={submitFieldKinds}
+                defaultValues={{
+                  name: "",
+                  role: "",
+                  notify: false,
+                  plan: "free",
+                  startDate: "",
+                }}
+                submitLabel="Submit"
               />
             </div>
           </Section>
