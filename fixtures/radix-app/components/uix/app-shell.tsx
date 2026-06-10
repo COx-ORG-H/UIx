@@ -20,8 +20,11 @@ import { cn } from './utils';
  * Token consumption — every sidebar surface reads the 8 shadcn-bridge sidebar
  * slots (`--sidebar`, `--sidebar-foreground`, `--sidebar-border`,
  * `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-primary`,
- * `--sidebar-primary-foreground`, `--sidebar-ring`), NOT --uix-* directly, so
- * re-pointing the `--sidebar*` names inside the consumer's @uix-overrides
+ * `--sidebar-primary-foreground`, `--sidebar-ring`), NOT --uix-* directly.
+ * The primary pair carries the solid emphasis fills (shadcn sidebar
+ * convention): the active item's 2px indicator and its badge chip
+ * (background `--sidebar-primary`, text `--sidebar-primary-foreground`).
+ * Re-pointing the `--sidebar*` names inside the consumer's @uix-overrides
  * fence re-skins the whole rail (e.g. an inverted/dark-brand sidebar) without
  * touching this file. Width comes from the contract token `--uix-sidebar-w`
  * (248px) via the `w-[var(--uix-sidebar-w)]` utilities. Topbar and content
@@ -59,6 +62,11 @@ export interface AppShellNavItem {
   href: string;
   icon?: ReactNode;
   active?: boolean;
+  /**
+   * Trailing badge. On the ACTIVE item it is wrapped in a solid chip on the
+   * primary slot pair (`--sidebar-primary` / `--sidebar-primary-foreground`);
+   * inactive items render it as-is (style it yourself, e.g. a StatusPill).
+   */
   badge?: ReactNode;
 }
 
@@ -184,7 +192,23 @@ function NavSections({
                   ) : null}
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
                   {item.badge != null ? (
-                    <span className="ml-auto shrink-0">{item.badge}</span>
+                    item.active ? (
+                      // Active badge — solid emphasis chip on the primary pair
+                      // (--sidebar-primary / --sidebar-primary-foreground), the
+                      // shadcn sidebar convention for solid fills. Inactive
+                      // badges render unwrapped (consumer-styled ReactNode).
+                      <span
+                        className="ml-auto shrink-0 rounded px-1.5 py-px text-[11px] leading-4"
+                        style={{
+                          background: 'var(--sidebar-primary)',
+                          color: 'var(--sidebar-primary-foreground)',
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    ) : (
+                      <span className="ml-auto shrink-0">{item.badge}</span>
+                    )
                   ) : null}
                 </a>
               );
@@ -284,10 +308,13 @@ export function AppShell({
   };
 
   // Mobile drawer — open focuses the drawer's close button; close returns
-  // focus to the hamburger; Escape and backdrop click both close.
+  // focus to the hamburger; Escape and backdrop click both close. While open,
+  // Tab is trapped inside the drawer (aria-modal must be true in behavior,
+  // not just markup) and the page behind is scroll-locked.
   const [mobileOpen, setMobileOpen] = useState(false);
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
   const drawerCloseRef = useRef<HTMLButtonElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
 
   const closeMobile = useCallback((): void => {
     setMobileOpen(false);
@@ -300,6 +327,28 @@ export function AppShell({
       if (e.key === 'Escape') {
         e.preventDefault();
         closeMobile();
+        return;
+      }
+      // Minimal focus trap: wrap Tab/Shift+Tab at the drawer's boundary.
+      if (e.key !== 'Tab') return;
+      const drawer = drawerRef.current;
+      if (!drawer) return;
+      const focusables = drawer.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
+      const active = document.activeElement;
+      const inside = active instanceof Node && drawer.contains(active);
+      if (e.shiftKey) {
+        if (!inside || active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (!inside || active === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener('keydown', handler);
@@ -308,6 +357,30 @@ export function AppShell({
 
   useEffect(() => {
     if (mobileOpen) drawerCloseRef.current?.focus();
+  }, [mobileOpen]);
+
+  // Body scroll lock while the drawer is open; restore the prior inline value.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => {
+      root.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
+  // Crossing into the desktop breakpoint closes the drawer (its trigger and
+  // surface are md:hidden). setMobileOpen directly — NOT closeMobile — so we
+  // don't try to restore focus to the now-hidden hamburger.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const mql = window.matchMedia('(min-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setMobileOpen(false);
+    };
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, [mobileOpen]);
 
   const sidebarSurface = {
@@ -367,6 +440,7 @@ export function AppShell({
             onClick={closeMobile}
           />
           <div
+            ref={drawerRef}
             id="uix-mobile-nav"
             role="dialog"
             aria-modal="true"

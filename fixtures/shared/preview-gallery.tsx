@@ -243,8 +243,10 @@ const PILL_LABELS: Record<StatusPillTone, string> = {
 
 const noop = (): void => {};
 
-// App-shell demo nav: one item active, one carrying a danger badge. The
-// gallery mounts the shell CONTAINED (fixed-height, overflow-hidden box) —
+// App-shell demo nav: one item active WITH a badge (exercises the solid
+// --sidebar-primary/--sidebar-primary-foreground chip the shell applies to
+// active badges), one inactive item carrying a consumer-styled danger badge.
+// The gallery mounts the shell CONTAINED (fixed-height, overflow-hidden box) —
 // className="h-full min-h-0!" overrides the shell's min-h-svh so the demo
 // doesn't hijack the preview page. The important marker is required: Tailwind
 // resolves same-property conflicts by stylesheet order (min-h-svh is emitted
@@ -262,6 +264,7 @@ const APP_SHELL_NAV: AppShellNavSection[] = [
         href: "#",
         active: true,
         icon: <LayoutDashboard size={16} strokeWidth={1.75} />,
+        badge: 7,
       },
       {
         id: "sensors",
