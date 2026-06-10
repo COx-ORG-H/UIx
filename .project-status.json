@@ -1,1 +1,1 @@
-{ "status": "active", "purpose": "Cross-project design system: @uix/tokens npm package + @uix shadcn composite registry (designed 2026-06-10, Phase 0 pending)", "lastTouched": "2026-06-10", "owner": "haris" }
+{ "status": "active", "purpose": "Cross-project design system: @uix/tokens npm package + @uix shadcn composite registry (built + audited + hardened 2026-06-10; 67-token contract, 20-item registry; npm publish pending scope claim)", "lastTouched": "2026-06-10", "owner": "haris" }

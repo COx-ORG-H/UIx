@@ -1,7 +1,7 @@
 {
   "name": "@uix/tokens",
   "version": "1.0.0",
-  "description": "House design-system token contract: pure CSS custom properties (light+dark), shadcn bridge, optional Tailwind bindings, and the uix-lint-tokens gate. NOTE: @uix scope is a placeholder until the npm scope is claimed (see ADR-0004). Tailwind CSS v4+ only.",
+  "description": "House design-system token contract: pure CSS custom properties (light+dark), shadcn bridge, Tailwind bindings (required for @uix composites, optional for tokens-only consumers), and the uix-lint-tokens gate. NOTE: @uix scope is a placeholder until the npm scope is claimed (see ADR-0004). Tailwind CSS v4+ only.",
   "license": "UNLICENSED",
   "type": "module",
   "engines": { "node": ">=22" },

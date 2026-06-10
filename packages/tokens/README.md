@@ -1,6 +1,6 @@
 # @uix/tokens
 
-House design-system token contract: pure CSS custom properties (light + dark), a shadcn bridge, optional Tailwind bindings, shipped theme overlays, and the `uix-lint-tokens` gate. Generated from `tokens.json` by `scripts/build.mjs` — never hand-edit the emitted files.
+House design-system token contract: pure CSS custom properties (light + dark), a shadcn bridge, Tailwind utility bindings, shipped theme overlays, and the `uix-lint-tokens` gate. Generated from `tokens.json` by `scripts/build.mjs` — never hand-edit the emitted files.
 
 ## Support floor
 
@@ -18,9 +18,11 @@ House design-system token contract: pure CSS custom properties (light + dark), a
 @import "tailwindcss";
 @import "@uix/tokens/tokens.css";
 @import "@uix/tokens/shadcn-bridge.css";
-@import "@uix/tokens/tailwind.css";          /* optional utility bindings */
+@import "@uix/tokens/tailwind.css";          /* utility bindings — see note below */
 @import "@uix/tokens/themes/<product>.css";  /* optional brand overlay — must come last */
 ```
+
+`tailwind.css` is **required when installing `@uix` composites** (they style themselves with the `*-uix-*` utilities); optional for tokens-only consumers.
 
 Source order is the override mechanism: everything is specificity (0,1,0), so whatever comes later wins. The linter enforces that theme overlays are imported after `tokens.css` and `shadcn-bridge.css`.
 

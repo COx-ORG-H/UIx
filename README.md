@@ -79,7 +79,7 @@ Mechanics:
 
 | Gate | Where it runs | What it stops |
 |---|---|---|
-| `uix-lint-tokens` | every consumer CI | missing contract tokens (the "invalid var fails to transparent" class), cold-gray palette (slate/zinc/gray banned), invented `--uix-*` names, overrides outside the `@uix-overrides` marker block; its `--src` scan also bans `rgb(var(--…))`/`hsl(var(--…))` triplets anywhere, unknown `var(--…)` reads in vendored `components/uix/` source, and any read of a write-only slot (`--uix-brand*`) |
+| `uix-lint-tokens` | every consumer CI | missing contract tokens (the "invalid var fails to transparent" class), cold-gray palette (slate/zinc/gray banned), invented `--uix-*` names, overrides outside the `@uix-overrides` marker block; its `--src` scan also bans `rgb(var(--…))`/`hsl(var(--…))` triplets anywhere, unknown `var(--…)` reads in vendored `components/uix/` source, and any component-source read of a write-only slot (`--uix-brand*`) |
 | `lint:registry` + `lint:themes` | UIx registry CI | the same linter pointed at `registry/uix` (`--strict-vars`) and at the shipped theme overlays (`--overlay`) — registry source or overlays that drift off the contract can't merge |
 | token semver check | UIx publish job | renames/removals shipping without a major bump + ADR |
 | primitives-purity + import bans | UIx registry CI | composites coupling to a primitive base or a Next version |
@@ -96,7 +96,12 @@ pnpm create next-app@latest . --typescript --app --tailwind --eslint
 npx shadcn@latest init -d --base base-ui        # or --base radix — your choice, freely
 
 pnpm add @uix/tokens
-npx shadcn add @uix/base        # wires the CSS imports, bridge, and @uix registry entry
+# Wire it up by hand — two edits (a future @uix/base bootstrap item may automate this):
+#   1. app/globals.css → add the three @uix/tokens @imports + the @uix-overrides fence
+#      (the globals.css block below shows the finished result)
+#   2. components.json → "registries": { "@uix": "http://127.0.0.1:8377/{name}.json" }
+#      (local serve-registry URL; swap in the HTTPS host once the static deploy exists —
+#       until then, local-file adds `shadcn add ..\UIx\dist\r\<item>.json` also work)
 npx shadcn add @uix/data-table @uix/confirm-action @uix/states   # composites on demand
 
 # Land the gate with the adoption:
@@ -136,7 +141,7 @@ Plain CSS cascade — write value overrides after the imports, inside the marker
 /* @uix-overrides-end */
 ```
 
-Components never read the slots directly (the linter rejects any `var(--uix-brand*)` read), so a slot stays a pure input; non-brand values (radius, fonts, individual color tokens) override the same way. A productized brand can instead ship inside the package as a theme overlay — copy `themes/_template.css` to `themes/<product>.css` and `@import "@uix/tokens/themes/<product>.css"` **after** the three base imports (the linter enforces the order).
+Components never read the slots directly (the linter rejects any component-source `var(--uix-brand*)` read), so a slot stays a pure input; non-brand values (radius, fonts, individual color tokens) override the same way. A productized brand can instead ship inside the package as a theme overlay — copy `themes/_template.css` to `themes/<product>.css` and `@import "@uix/tokens/themes/<product>.css"` **after** the three base imports (the linter enforces the order).
 
 Rules: override **values** freely; never define a `--uix-*` name that isn't in `theme-contract.json` (lint rejects it); re-pointing a bridge name (`--background: var(--uix-bg-subtle)`) is also legal. A project using the house defaults has an empty block — **defaults encode the house style; projects pay only for their divergence.**
 
