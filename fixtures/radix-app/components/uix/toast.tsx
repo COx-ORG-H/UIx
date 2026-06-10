@@ -18,8 +18,13 @@ import { cn } from './utils';
  * store via `useSyncExternalStore`. Vendoring flat-copies exactly one
  * toast.tsx into the consumer app, so there is exactly one module instance —
  * `toast()` calls anywhere reach the mounted `<Toaster/>` with no provider.
+ * Mount `<Toaster/>` once, at the app root (it is position:fixed — avoid
+ * transform/filter ancestors, which would re-anchor it).
  * SSR-safe: the server snapshot is a stable empty-array constant, so the
- * Toaster prerenders as an empty live region without store access.
+ * Toaster prerenders as an empty region landmark (role=region) without store
+ * access; live semantics are per-card via role=status/alert. Note that
+ * role=status insertion is not reliably announced by every screen reader —
+ * the alert variants (warning/danger) are the dependable announcements.
  *
  * Undo wiring (the `action` slot): `useUndoableAction` from
  * ./confirm-action defaults `delayMs` to 5000, and `durationMs` here
@@ -40,6 +45,11 @@ import { cn } from './utils';
  * Timers PAUSE while the pointer or keyboard focus is anywhere inside the
  * stack and resume (with remaining time preserved) on leave. Re-toasting
  * with the same `id` updates the card in place and resets its clock.
+ *
+ * FIFO eviction caveat: when the stack exceeds `max`, the oldest toast is
+ * dismissed — an evicted undo toast loses its visible Undo affordance while
+ * useUndoableAction's timer still commits, so keep undo flows below `max`
+ * concurrent toasts (or raise `max`).
  */
 
 export type ToastVariant = 'default' | 'success' | 'info' | 'warning' | 'danger';
@@ -60,7 +70,7 @@ export interface ToastOptions {
   durationMs?: number | null;
   /** Action button slot (the Undo slot). Clicking it also dismisses the toast. */
   action?: ToastAction;
-  /** Fires when the toast leaves the stack (timer, X, action click, or programmatic). */
+  /** Fires when the toast leaves the stack (timer, X, action click, FIFO eviction past `max`, or programmatic). */
   onDismiss?: () => void;
 }
 
@@ -91,10 +101,18 @@ const subscribe = (cb: () => void): (() => void) => {
 const getSnapshot = (): readonly ToastRecord[] => toasts;
 const getServerSnapshot = (): readonly ToastRecord[] => EMPTY;
 
-function dismissById(id?: string): void {
-  const removed = id === undefined ? toasts : toasts.filter((t) => t.id === id);
+function dismiss(id: string): void {
+  const removed = toasts.filter((t) => t.id === id);
   if (removed.length === 0) return;
-  toasts = id === undefined ? EMPTY : toasts.filter((t) => t.id !== id);
+  toasts = toasts.filter((t) => t.id !== id);
+  emit();
+  for (const t of removed) t.onDismiss?.();
+}
+
+function dismissAll(): void {
+  const removed = toasts;
+  if (removed.length === 0) return;
+  toasts = EMPTY;
   emit();
   for (const t of removed) t.onDismiss?.();
 }
@@ -118,7 +136,7 @@ export function toast(opts: ToastOptions): string {
 }
 
 /** Dismiss one toast by id, or all toasts when called without one. */
-toast.dismiss = (id?: string): void => dismissById(id);
+toast.dismiss = (id?: string): void => (id === undefined ? dismissAll() : dismiss(id));
 
 // -- Toaster ---------------------------------------------------------------
 
@@ -176,7 +194,7 @@ export function Toaster({
   // so an over-limit frame never flashes a fourth card.
   useEffect(() => {
     if (items.length <= max) return;
-    for (const t of items.slice(0, items.length - max)) dismissById(t.id);
+    for (const t of items.slice(0, items.length - max)) dismiss(t.id);
   }, [items, max]);
 
   return (
@@ -218,15 +236,15 @@ function ToastItem({
   }, []);
 
   // pausable auto-dismiss timer; remaining time survives pause/resume cycles.
-  const ownerRef = useRef<ToastRecord>(record);
+  const prevRecordRef = useRef<ToastRecord>(record);
   const remainingRef = useRef<number | null>(record.durationMs);
   const startedAtRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (ownerRef.current !== record) {
+    if (prevRecordRef.current !== record) {
       // update-in-place (same id re-toasted): restart from the new duration.
-      ownerRef.current = record;
+      prevRecordRef.current = record;
       remainingRef.current = record.durationMs;
     }
     if (record.durationMs === null || paused) return undefined;
@@ -235,7 +253,7 @@ function ToastItem({
       () => {
         timerRef.current = null;
         startedAtRef.current = null;
-        dismissById(record.id);
+        dismiss(record.id);
       },
       Math.max(0, remainingRef.current ?? 0),
     );
@@ -288,7 +306,7 @@ function ToastItem({
             style={{ color: 'var(--uix-link)' }}
             onClick={() => {
               record.action?.onClick();
-              dismissById(record.id);
+              dismiss(record.id);
             }}
           >
             {record.action.label}
@@ -300,7 +318,7 @@ function ToastItem({
         aria-label={dismissLabel}
         className="-m-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md"
         style={{ color: 'var(--uix-text-hushed)' }}
-        onClick={() => dismissById(record.id)}
+        onClick={() => dismiss(record.id)}
       >
         <X size={14} strokeWidth={1.75} aria-hidden="true" />
       </button>

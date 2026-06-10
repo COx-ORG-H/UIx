@@ -162,6 +162,15 @@
       "description": "Eyebrow-over-data-hero stat tile with hint, trend pill, optional icon, and optional link variant with hover lift.",
       "registryDependencies": ["@uix/utils", "@uix/status-pill"],
       "files": [{ "path": "registry/uix/stat-tile/stat-tile.tsx", "type": "registry:component", "target": "components/uix/stat-tile.tsx" }]
+    },
+    {
+      "name": "app-shell",
+      "type": "registry:component",
+      "title": "App Shell",
+      "description": "Sidebar + topbar + content layout consuming the sidebar token slots and --uix-sidebar-w; responsive off-canvas collapse, skip link, breadcrumbs; framework-agnostic links via render prop.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uix/utils"],
+      "files": [{ "path": "registry/uix/app-shell/app-shell.tsx", "type": "registry:component", "target": "components/uix/app-shell.tsx" }]
     }
   ]
 }

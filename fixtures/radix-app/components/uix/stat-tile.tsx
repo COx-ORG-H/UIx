@@ -87,6 +87,10 @@ export function StatTile({ label, value, hint, trend, href, icon, className }: S
             {hint}
           </span>
         ) : (
+          // Load-bearing spacer: with no hint, this empty first child keeps
+          // justify-between pushing the trend pill to the RIGHT edge of the
+          // bottom row (otherwise the pill becomes the first child and
+          // left-aligns).
           <span />
         )}
         {trend ? <StatusPill tone={trend.tone}>{trend.label}</StatusPill> : null}

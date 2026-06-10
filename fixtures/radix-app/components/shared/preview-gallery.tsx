@@ -10,11 +10,12 @@
  * var() reads. The broadened lint:fixtures scan covers this file. */
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Activity } from "lucide-react";
+import { Activity, LayoutDashboard, Settings } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AppShell, type AppShellNavSection } from "@/components/uix/app-shell";
 import { AsyncOperationStatus } from "@/components/uix/async-operation-status";
 import {
   CheatSheet,
@@ -241,6 +242,49 @@ const PILL_LABELS: Record<StatusPillTone, string> = {
 };
 
 const noop = (): void => {};
+
+// App-shell demo nav: one item active, one carrying a danger badge. The
+// gallery mounts the shell CONTAINED (fixed-height, overflow-hidden box) —
+// className="h-full min-h-0!" overrides the shell's min-h-svh so the demo
+// doesn't hijack the preview page. The important marker is required: Tailwind
+// resolves same-property conflicts by stylesheet order (min-h-svh is emitted
+// AFTER min-h-0), not by className order, so a plain min-h-0 would lose.
+// The mobile drawer stays closed at the desktop CI viewport (its trigger is
+// md:hidden), which is fine for the prerender pass.
+const APP_SHELL_NAV: AppShellNavSection[] = [
+  {
+    id: "operations",
+    label: "Operations",
+    items: [
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        href: "#",
+        active: true,
+        icon: <LayoutDashboard size={16} strokeWidth={1.75} />,
+      },
+      {
+        id: "sensors",
+        label: "Sensors",
+        href: "#",
+        icon: <Activity size={16} strokeWidth={1.75} />,
+        badge: <StatusPill tone="danger">3</StatusPill>,
+      },
+    ],
+  },
+  {
+    id: "admin",
+    label: "Admin",
+    items: [
+      {
+        id: "settings",
+        label: "Settings",
+        href: "#",
+        icon: <Settings size={16} strokeWidth={1.75} />,
+      },
+    ],
+  },
+];
 
 // Pinned "now" anchor for every RelativeTime sample below. A render-scope
 // Date.now() differs between SSR and client hydration (RelativeTime renders
@@ -716,6 +760,36 @@ export function PreviewGallery() {
                 icon={<Activity size={16} strokeWidth={1.75} aria-hidden="true" />}
                 trend={{ tone: "success", label: "+3" }}
               />
+            </div>
+          </Section>
+
+          <Section title="app-shell">
+            {/* Contained mount — see the APP_SHELL_NAV comment above. */}
+            <div className="h-[420px] overflow-hidden rounded-lg border border-uix-line">
+              <AppShell
+                className="h-full min-h-0!"
+                nav={APP_SHELL_NAV}
+                logo={<span className="text-sm font-medium">UIx Ops</span>}
+                breadcrumbs={[
+                  { id: "home", label: "Home", href: "#" },
+                  { id: "preview", label: "Preview" },
+                ]}
+                topbar={
+                  <button type="button" className={triggerBtnCls}>
+                    Invite
+                  </button>
+                }
+                sidebarFooter={<UserChip user={SAMPLE_USER} variant="compact" />}
+              >
+                <div className="p-6">
+                  <p className="max-w-prose text-sm text-uix-hushed">
+                    Shell body content. The sidebar reads the eight
+                    --sidebar* bridge slots and --uix-sidebar-w; the topbar
+                    holds the skip link target, breadcrumbs, and the desktop
+                    collapse toggle.
+                  </p>
+                </div>
+              </AppShell>
             </div>
           </Section>
         </div>
