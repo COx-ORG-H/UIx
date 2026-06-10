@@ -10,6 +10,7 @@
  * var() reads. The broadened lint:fixtures scan covers this file. */
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { Activity } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
@@ -29,7 +30,7 @@ import {
   type NavigationEntry,
   type ShortcutDescriptor as PaletteShortcut,
 } from "@/components/uix/command-palette";
-import { ConfirmAction } from "@/components/uix/confirm-action";
+import { ConfirmAction, useUndoableAction } from "@/components/uix/confirm-action";
 import { DataTable } from "@/components/uix/data-table";
 import {
   DataTableToolbar,
@@ -41,12 +42,15 @@ import { Form } from "@/components/uix/form";
 import { registerListSurface } from "@/components/uix/list-surfaces";
 import { Markdown } from "@/components/uix/markdown";
 import { RelativeTime } from "@/components/uix/relative-time";
+import { StatTile } from "@/components/uix/stat-tile";
+import { StatusPill, type StatusPillTone } from "@/components/uix/status-pill";
 import {
   EmptyState,
   ErrorState,
   ForbiddenState,
   LoadingState,
 } from "@/components/uix/states";
+import { Toaster, toast } from "@/components/uix/toast";
 import type { DataTableDensity } from "@/components/uix/types";
 import {
   UserAvatar,
@@ -216,6 +220,26 @@ const SAMPLE_USER: UserChipPerson = {
 
 const PRESENCE_VALUES: UserPresence[] = ["online", "busy", "away", "offline"];
 
+const PILL_TONES: StatusPillTone[] = [
+  "neutral",
+  "info",
+  "success",
+  "warning",
+  "danger",
+  "critical",
+  "muted",
+];
+
+const PILL_LABELS: Record<StatusPillTone, string> = {
+  neutral: "Standard",
+  info: "In review",
+  success: "Nominal",
+  warning: "Degraded",
+  danger: "Breached",
+  critical: "SEV-1",
+  muted: "Archived",
+};
+
 const noop = (): void => {};
 
 // Pinned "now" anchor for every RelativeTime sample below. A render-scope
@@ -248,6 +272,21 @@ export function PreviewGallery() {
   const [density, setDensity] = useState<DataTableDensity>("standard");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
+
+  // Undo demo: useUndoableAction (confirm-action) composed with toast() —
+  // the two ship uncoupled; this is the documented wiring recipe.
+  const undoable = useUndoableAction({
+    onCommit: () => toast({ title: "Committed", variant: "success" }),
+  });
+  const fireUndoableDemo = (): void => {
+    undoable.fire();
+    toast({
+      id: "preview-undo",
+      title: "Filter removed",
+      description: "Commits in 5s unless undone.",
+      action: { label: "Undo", onClick: () => undoable.undo() },
+    });
+  };
 
   // Derived from the module-scope PREVIEW_NOW anchor (not Date.now()) so the
   // samples are deterministic and hydration-safe; see comment on PREVIEW_NOW.
@@ -602,6 +641,80 @@ export function PreviewGallery() {
                 defaultValues={{ name: "", email: "", notes: "" }}
                 submitLabel="Save"
                 error="Example server-side problem — the error-display path."
+              />
+            </div>
+          </Section>
+
+          <Section title="toast">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                className={triggerBtnCls}
+                onClick={() => toast({ title: "Saved", variant: "success" })}
+              >
+                Success toast
+              </button>
+              <button
+                type="button"
+                className={triggerBtnCls}
+                onClick={() =>
+                  toast({
+                    title: "Build failed",
+                    description: "The fixture build exited with code 1.",
+                    variant: "danger",
+                    durationMs: null,
+                  })
+                }
+              >
+                Sticky alert
+              </button>
+              <button
+                type="button"
+                className={triggerBtnCls}
+                disabled={undoable.pending}
+                onClick={fireUndoableDemo}
+              >
+                {undoable.pending ? "Removing…" : "Remove with undo"}
+              </button>
+            </div>
+            <Toaster position="bottom-right" />
+          </Section>
+
+          <Section title="status-pill">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {PILL_TONES.map((tone) => (
+                  <StatusPill key={tone} tone={tone}>
+                    {PILL_LABELS[tone]}
+                  </StatusPill>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {PILL_TONES.map((tone) => (
+                  <StatusPill key={tone} tone={tone} treatment="outline">
+                    {PILL_LABELS[tone]}
+                  </StatusPill>
+                ))}
+              </div>
+            </div>
+          </Section>
+
+          <Section title="stat-tile">
+            <div className="grid gap-4 md:grid-cols-3">
+              <StatTile label="Open orders" value="42" hint="Updated 5m ago" />
+              <StatTile
+                label="Error rate"
+                value="3.2%"
+                hint="Last 24h"
+                trend={{ tone: "danger", label: "+12%" }}
+              />
+              <StatTile
+                label="Active sensors"
+                value="128"
+                hint="Across 4 sites"
+                href="#"
+                icon={<Activity size={16} strokeWidth={1.75} aria-hidden="true" />}
+                trend={{ tone: "success", label: "+3" }}
               />
             </div>
           </Section>

@@ -18,6 +18,9 @@ import * as RelativeTime from "@/components/uix/relative-time";
 import * as States from "@/components/uix/states";
 import * as UserChip from "@/components/uix/user-chip";
 import * as Form from "@/components/uix/form";
+import * as Toast from "@/components/uix/toast";
+import * as StatusPill from "@/components/uix/status-pill";
+import * as StatTile from "@/components/uix/stat-tile";
 
 const modules: Record<string, object> = {
   utils: Utils,
@@ -37,6 +40,9 @@ const modules: Record<string, object> = {
   states: States,
   "user-chip": UserChip,
   form: Form,
+  toast: Toast,
+  "status-pill": StatusPill,
+  "stat-tile": StatTile,
 };
 
 export default function AllModulesPage() {
