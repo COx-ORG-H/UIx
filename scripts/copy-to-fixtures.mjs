@@ -63,10 +63,12 @@ for (const fixture of FIXTURES) {
 // convention. Same overwrite semantics as the registry copies above.
 const sharedDir = join(root, 'fixtures', 'shared');
 const sharedSources = existsSync(sharedDir)
-  ? readdirSync(sharedDir).filter((f) => f.endsWith('.tsx')).map((f) => join(sharedDir, f))
+  ? readdirSync(sharedDir)
+      .filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'))
+      .map((f) => join(sharedDir, f))
   : [];
 if (!sharedSources.length) {
-  console.error('copy-to-fixtures: no .tsx sources found under fixtures/shared/ (preview gallery missing).');
+  console.error('copy-to-fixtures: no .ts/.tsx sources found under fixtures/shared/ (preview gallery missing).');
   process.exit(1);
 }
 for (const fixture of FIXTURES) {

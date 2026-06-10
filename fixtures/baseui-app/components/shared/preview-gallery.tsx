@@ -262,7 +262,10 @@ export function PreviewGallery() {
       id: "SEN-0043",
       name: "Coolant loop monitor",
       status: "Offline",
-      updated: new Date(nowMs - 26 * 3_600_000).toISOString(),
+      // 20h stays in RelativeTime's relative "hours_ago" bucket ("20h ago").
+      // Offsets >= 24h render ABSOLUTE text ("Tue 14:32"), which differs
+      // between build-time prerender and client recompute -> hydration error.
+      updated: new Date(nowMs - 20 * 3_600_000).toISOString(),
     },
   ];
 
@@ -305,13 +308,16 @@ export function PreviewGallery() {
               columns={columns}
               data={rows}
               surface_key="preview.list"
-              density="standard"
+              density={density}
               caption="Facility sensors — preview data"
               onRowClick={noop}
             />
           </Section>
 
           <Section title="data-table-toolbar">
+            {/* The search box is intentionally cosmetic — it drives the
+              * controlled input but does not filter the sample rows. The
+              * density toggle, however, is wired to the DataTable above. */}
             <DataTableToolbar
               surface_key="preview.list"
               search={search}

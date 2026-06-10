@@ -71,7 +71,7 @@ Mechanics:
 
 - Built with `npx shadcn build` → static JSON in `dist/r/`. Consumed via the `@uix` namespace in each project's `components.json` (HTTPS static hosting on Cloudflare; local-file adds — `shadcn add ./dist/r/<item>.json` — work before any hosting exists).
 - **Vendored**: `shadcn add @uix/data-table` copies source into your app tree. Tailwind scans it natively (L47-immune). Builds never contact the registry — if uix vanished tomorrow, every app still builds.
-- **Purity rule** (CI-enforced): composite source imports only allowlisted npm packages (`react`, `lucide-react`, `clsx`, `@tanstack/react-table`, `react-hook-form`, `zod`, `@hookform/resolvers`) plus relative `./`/`../` paths — never `@radix-ui/*`, `@base-ui/*`, `next/*`, or app-alias imports like `@/components/ui/*` (banned). That's the property that lets one composite source install into both a Radix and a Base UI project.
+- **Purity rule** (CI-enforced): composite source imports only allowlisted npm packages (`react`, `react-dom`, `lucide-react`, `clsx`, `@tanstack/react-table`, `react-hook-form`, `zod`, `@hookform/resolvers`) plus relative `./`/`../` paths — never `@radix-ui/*`, `@base-ui/*`, `next/*`, or app-alias imports like `@/components/ui/*` (banned). That's the property that lets one composite source install into both a Radix and a Base UI project.
 - **Dual-fixture CI**: every item is installed into a Radix/Next-15 fixture *and* a Base UI/Next-16 fixture, type-checked, built, and smoke-rendered in both dark conventions before publish, with an emission gate proving every static class actually lands in the built CSS.
 
 ### The gates (an unenforced rule is a suggestion)
