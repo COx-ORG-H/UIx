@@ -26,13 +26,13 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const distFlag = args.indexOf('--dist');
-const distDir = join(root, distFlag !== -1 && args[distFlag + 1] ? args[distFlag + 1] : 'dist/r');
+const distDir = resolve(root, distFlag !== -1 && args[distFlag + 1] ? args[distFlag + 1] : 'dist/r');
 const requireCommitted = args.includes('--require-committed') || process.env.CI === 'true';
 
 if (!existsSync(distDir)) {
@@ -47,7 +47,7 @@ function lastCommit(path) {
   if (gitCache.has(path)) return gitCache.get(path);
   let out = '';
   try {
-    out = execFileSync('git', ['log', '-1', '--follow', '--format=%h%x09%cI', '--', path], {
+    out = execFileSync('git', ['log', '-1', '--follow', '--abbrev=12', '--format=%h%x09%cI', '--', path], {
       cwd: root,
       encoding: 'utf8',
     }).trim();
@@ -67,7 +67,13 @@ let uncommitted = 0;
 for (const f of readdirSync(distDir).sort()) {
   if (!f.endsWith('.json')) continue;
   const fp = join(distDir, f);
-  const item = JSON.parse(readFileSync(fp, 'utf8'));
+  let item;
+  try {
+    item = JSON.parse(readFileSync(fp, 'utf8'));
+  } catch (e) {
+    console.error(`stamp-registry: failed to parse ${f}: ${e.message}`);
+    process.exit(1);
+  }
   let changed = false;
 
   for (const entry of item.files ?? []) {
@@ -92,6 +98,10 @@ for (const f of readdirSync(distDir).sort()) {
   }
 }
 
+if (stamped === 0) {
+  console.error(`stamp-registry: stamped 0 files in ${distDir} — not a built registry output? (expected *.json with files[].content; check --dist / run \`shadcn build\` first).`);
+  process.exit(1);
+}
 if (uncommitted && requireCommitted) {
   console.error(`stamp-registry: ${uncommitted} file(s) without committed history (--require-committed/CI) — commit sources before building the registry.`);
   process.exit(1);

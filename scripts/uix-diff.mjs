@@ -37,20 +37,46 @@ const posix = (p) => p.split(sep).join('/');
 const args = process.argv.slice(2);
 const cmd = args[0];
 
-function flagValue(name, dflt) {
-  const i = args.indexOf(name);
-  return i !== -1 && args[i + 1] !== undefined ? args[i + 1] : dflt;
-}
-
-const dirArg = flagValue('--dir', 'components/uix');
-const lockArg = flagValue('--lock', '.uix-lock.json');
-const registryArg = flagValue('--registry', null);
-const maxAgeArg = flagValue('--max-age-days', null);
-const dirAbs = resolve(process.cwd(), dirArg);
-const lockAbs = resolve(process.cwd(), lockArg);
-
 const USAGE =
   'usage: uix-diff <record|check> [--dir components/uix] [--lock .uix-lock.json] [--registry <dist/r>] [--max-age-days <N>, requires --registry]';
+
+if (cmd !== 'record' && cmd !== 'check') {
+  console.error(USAGE);
+  process.exit(1);
+}
+
+// Strict flag parsing: an unrecognized flag or a known flag with a missing
+// value is a hard error (exit 2) — a typo like `--max-age-day 90` must not
+// silently disable the gate it was meant to enable.
+const KNOWN_FLAGS = new Set(['--dir', '--lock', '--registry', '--max-age-days']);
+const flags = {};
+for (let i = 1; i < args.length; i++) {
+  const a = args[i];
+  if (!KNOWN_FLAGS.has(a)) {
+    console.error(
+      a.startsWith('--')
+        ? `uix-diff: unrecognized flag "${a}"`
+        : `uix-diff: unexpected argument "${a}"`
+    );
+    console.error(USAGE);
+    process.exit(2);
+  }
+  const value = args[i + 1];
+  if (value === undefined || value.startsWith('--')) {
+    console.error(`uix-diff: ${a} requires a value`);
+    console.error(USAGE);
+    process.exit(2);
+  }
+  flags[a] = value;
+  i++;
+}
+
+const dirArg = flags['--dir'] ?? 'components/uix';
+const lockArg = flags['--lock'] ?? '.uix-lock.json';
+const registryArg = flags['--registry'] ?? null;
+const maxAgeArg = flags['--max-age-days'] ?? null;
+const dirAbs = resolve(process.cwd(), dirArg);
+const lockAbs = resolve(process.cwd(), lockArg);
 
 let maxAgeDays = null;
 if (maxAgeArg !== null) {
@@ -239,8 +265,4 @@ function check() {
 /* ------------------------------------------------------------------ main */
 
 if (cmd === 'record') record();
-else if (cmd === 'check') check();
-else {
-  console.error(USAGE);
-  process.exit(1);
-}
+else check(); // cmd validated up top

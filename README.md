@@ -140,7 +140,7 @@ Rules: override **values** freely; never define a `--uix-*` name that isn't in `
 ```powershell
 pnpm up @uix/tokens                          # token values everywhere, instantly
 npx shadcn add @uix/data-table --overwrite   # refresh a vendored composite
-node ..\uix\scripts\uix-diff.mjs           # report: clean-current / outdated / forked
+node ..\UIx\scripts\uix-diff.mjs check     # report: clean-current / outdated / forked
 ```
 
 Run composite updates **on a branch and review the diff** — `registryDependencies` resolution can write default-registry primitives next to hand-maintained ones (shadcn skips existing files, but an alias mismatch writes new ones).
@@ -148,7 +148,7 @@ Run composite updates **on a branch and review the diff** — `registryDependenc
 Every distributed file carries a **registry stamp** on line 1, written by `stamp-registry.mjs` during `pnpm build:registry` (commit-based, so registry builds are byte-deterministic):
 
 ```tsx
-// @uix-registry data-table 26ca6a9 2026-06-10T18:21:33+02:00
+// @uix-registry data-table 26ca6a9deece 2026-06-10T18:21:33+02:00
 'use client';
 ```
 
