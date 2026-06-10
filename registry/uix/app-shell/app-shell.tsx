@@ -45,7 +45,8 @@ import { cn } from './utils';
  *
  * (spreading `a.props` keeps the default styling + aria-current; `next/*`
  * stays out of the vendored code). `<Breadcrumbs/>` takes the same shape via
- * its own `renderLink` prop.
+ * its own `renderLink` prop. The mobile drawer closes itself on any nav link
+ * click (delegated, so router-wrapped links are covered too) — no extra wiring.
  *
  * Mount ONCE, at the app root (the layout): the shell owns min-h-svh, the
  * skip link, and the mobile drawer's fixed positioning — avoid
@@ -66,6 +67,10 @@ export interface AppShellNavItem {
    * Trailing badge. On the ACTIVE item it is wrapped in a solid chip on the
    * primary slot pair (`--sidebar-primary` / `--sidebar-primary-foreground`);
    * inactive items render it as-is (style it yourself, e.g. a StatusPill).
+   * Because of that wrapping, items that can become active should carry plain
+   * text/number badges — a styled element (e.g. StatusPill) inside the solid
+   * chip looks broken. Reserve styled-element badges for items that never
+   * activate.
    */
   badge?: ReactNode;
 }
@@ -248,6 +253,10 @@ export function Breadcrumbs({ items, label, renderLink, className }: Breadcrumbs
                 href={item.href}
                 aria-current={ariaCurrent}
                 className="truncate text-uix-hushed transition-colors hover:text-uix-text"
+                style={{
+                  transitionDuration: 'var(--uix-dur)',
+                  transitionTimingFunction: 'var(--uix-ease-out)',
+                }}
               >
                 {item.label}
               </a>
@@ -280,6 +289,11 @@ export function Breadcrumbs({ items, label, renderLink, className }: Breadcrumbs
 
 const topbarBtnCls =
   'h-8 w-8 shrink-0 items-center justify-center rounded-md text-uix-hushed transition-colors hover:bg-uix-hover hover:text-uix-text';
+
+// Shared height for the three shell header rows (desktop sidebar logo row,
+// drawer header, topbar). They MUST match — the topbar's border-b forms a
+// continuous seam with the sidebar/drawer header borders.
+const headerRowCls = 'h-14';
 
 export function AppShell({
   nav,
@@ -333,8 +347,10 @@ export function AppShell({
       if (e.key !== 'Tab') return;
       const drawer = drawerRef.current;
       if (!drawer) return;
+      // Form fields included: logo/sidebarFooter are free-form slots and a
+      // footer search input is common.
       const focusables = drawer.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
@@ -360,6 +376,9 @@ export function AppShell({
   }, [mobileOpen]);
 
   // Body scroll lock while the drawer is open; restore the prior inline value.
+  // Deliberately minimal: overflow:hidden alone doesn't fully suppress touch
+  // scrolling on older iOS Safari — accepted trade-off; a full position:fixed
+  // body lock is out of scope.
   useEffect(() => {
     if (!mobileOpen) return;
     const root = document.documentElement;
@@ -372,7 +391,8 @@ export function AppShell({
 
   // Crossing into the desktop breakpoint closes the drawer (its trigger and
   // surface are md:hidden). setMobileOpen directly — NOT closeMobile — so we
-  // don't try to restore focus to the now-hidden hamburger.
+  // don't try to restore focus to the now-hidden hamburger. The 768px query
+  // must track Tailwind's `md:` breakpoint (the md:hidden utilities above).
   useEffect(() => {
     if (!mobileOpen) return;
     const mql = window.matchMedia('(min-width: 768px)');
@@ -408,7 +428,7 @@ export function AppShell({
         >
           {logo ? (
             <div
-              className="flex h-14 shrink-0 items-center border-b px-4"
+              className={cn(headerRowCls, 'flex shrink-0 items-center border-b px-4')}
               style={{ borderColor: 'var(--sidebar-border)' }}
             >
               {logo}
@@ -449,7 +469,10 @@ export function AppShell({
             style={sidebarSurface}
           >
             <div
-              className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4"
+              className={cn(
+                headerRowCls,
+                'flex shrink-0 items-center justify-between gap-2 border-b px-4',
+              )}
               style={{ borderColor: 'var(--sidebar-border)' }}
             >
               <div className="min-w-0 truncate">{logo}</div>
@@ -464,7 +487,18 @@ export function AppShell({
                 <X size={16} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
-            <nav aria-label={navLabel} className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+            {/* Delegated close-on-navigate: any link click inside the drawer's
+              * nav closes it — including router-wrapped renderNavLink links
+              * (the click bubbles) — and keeps closeMobile's focus restore. */}
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: pure click delegation — the links themselves are the interactive elements. */}
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: same — delegation from child links, not an interaction surface of its own. */}
+            <nav
+              aria-label={navLabel}
+              className="min-h-0 flex-1 overflow-y-auto px-3 py-3"
+              onClick={(e) => {
+                if ((e.target as Element).closest('a[href]')) closeMobile();
+              }}
+            >
               <NavSections nav={nav} renderNavLink={renderNavLink} />
             </nav>
             {sidebarFooter ? (
@@ -481,12 +515,16 @@ export function AppShell({
 
       {/* Main column: topbar + content. */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-uix-line bg-uix-app px-4">
+        <header
+          className={cn(
+            headerRowCls,
+            'sticky top-0 z-20 flex shrink-0 items-center gap-3 border-b border-uix-line bg-uix-app px-4',
+          )}
+        >
           <button
             ref={hamburgerRef}
             type="button"
             aria-expanded={mobileOpen}
-            aria-controls="uix-mobile-nav"
             aria-label={labels.openNav ?? 'Open navigation'}
             onClick={() => setMobileOpen(true)}
             className={cn('inline-flex md:hidden', topbarBtnCls)}
@@ -496,7 +534,6 @@ export function AppShell({
           <button
             type="button"
             aria-expanded={!isCollapsed}
-            aria-controls="uix-desktop-nav"
             aria-label={
               isCollapsed
                 ? (labels.expandNav ?? 'Expand navigation')

@@ -382,7 +382,9 @@ export function PreviewGallery() {
   ];
 
   return (
-    <main className="min-h-screen bg-uix-app text-uix-text">
+    // div, not <main>: the contained AppShell demo below renders its own
+    // <main id="uix-main">, and nested mains are invalid HTML.
+    <div className="min-h-screen bg-uix-app text-uix-text">
       <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <header className="mb-10 flex items-center justify-between gap-4">
           <div>
@@ -797,6 +799,6 @@ export function PreviewGallery() {
           </Section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
