@@ -2,7 +2,7 @@
 
 One source of truth for how every project in this portfolio looks: a **token contract** (colors, typography, spacing, motion, light/dark) plus a **library of proven composite components**, installable into any project with two commands.
 
-> **Status: Phase 0 built and verified** (2026-06-10). The architecture was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges), then built: 61-token contract, 16 registry items / 18 component files (15 items ported from `@itsmx/shared-ui`, plus the shared `@uix/types` item), dual fixtures (Radix/Next 15 + Base UI/Next 16) building green, all gates passing (`pnpm check`), and a real `shadcn add @uix/data-table` proven end-to-end against the HTTP registry. **Pending your action:** npm login + scope claim (then publish `@uix/tokens@1.0.0` — rename the `@uix` placeholder first if the scope differs), and optionally a GitHub remote. See [Build-out phases](#build-out-phases).
+> **Status: built, audited, and hardened** (2026-06-10). The architecture was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges), then built and — same day — audited (`AUDIT.md`) and hardened: 67-token contract (v1.0.0, with a brand slot tier), 20 registry items / 22 component files (15 ported from `@itsmx/shared-ui` and re-wired to the contract, plus `@uix/types`, `toast`, `status-pill`, `stat-tile`, `app-shell`), dual fixtures (Radix/Next 15 + Base UI/Next 16) building green with a `/preview` gallery mounting every composite, all gates passing (`pnpm check`), and a real `shadcn add @uix/data-table` proven end-to-end against the HTTP registry. **Pending your action:** npm login + scope claim (then publish `@uix/tokens@1.0.0` — rename the `@uix` placeholder first if the scope differs), and optionally a GitHub remote. See [Build-out phases](#build-out-phases).
 
 ---
 
@@ -21,7 +21,7 @@ Three real-world constraints shaped the architecture — they are why this is *n
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ Layer 2 — COMPOSITES        custom shadcn registry (@uix/…)      │
-│ data-table, command-palette, detail-layout, confirm-action, …   │
+│ data-table, app-shell, command-palette, toast, form, …           │
 │ → vendored into each project via `npx shadcn add @uix/<item>`    │
 │ → you own the code; forks legal but marked (// uix-fork:)        │
 ├─────────────────────────────────────────────────────────────────┤
@@ -53,6 +53,7 @@ A tiny npm package of pure CSS — no classes, no JS, nothing for Tailwind to sc
 | `shadcn-bridge.css` | Maps shadcn's semantic names (`--background`, `--primary`, `--ring`, …) onto `--uix-*` vars. Needs **no dark block** — the uix vars flip underneath it. This is what makes raw shadcn components on-brand with zero per-component work, on either primitive base. |
 | `tailwind.css` | `@theme inline` bindings so `bg-uix-subtle`, `text-uix-hushed`, `ease-out-strong` utilities exist without boilerplate. **Required when installing composites** — they style themselves with `*-uix-*` utilities. Safe from node_modules because `@theme` entries are definitions, not class usages. |
 | `theme-contract.json` | The required-token name list `{name, type, requiredModes}` — what the linter enforces. |
+| `themes/_template.css` | Theme-overlay starting point (all comments, zero effect when imported). Copy to `themes/<product>.css` for a brand that ships inside the package. |
 | `bin/uix-lint-tokens.mjs` | The gate, shipped *inside* the package so every consumer gets the current linter with the dependency (gates can't drift behind the rules). |
 
 **Versioning law** (mechanized, publish-blocking): adding a token = minor; renaming/removing = **major + ADR**. CI diffs the contract snapshot against the last published version and fails the publish on a wrong bump type.
@@ -63,9 +64,9 @@ Each project runs `shadcn init --base radix` or `--base base-ui` and owns its `c
 
 ### Layer 2 — the `@uix` composite registry
 
-Components earn a place here only when they encode a **cross-project product convention**, not a styling preference. The seed inventory is the proven `@itsmx/shared-ui` set:
+Components earn a place here only when they encode a **cross-project product convention**, not a styling preference. The seed inventory came from the proven `@itsmx/shared-ui` set; the 2026-06-10 build-out added the app-frame tier. Current inventory (20 items, 22 component files):
 
-`data-table` (+ toolbar, column visibility, saved views) · `command-palette` · `detail-layout` · `filter-popover` · `confirm-action` · `markdown` · `relative-time` · `states` (empty/loading/error) · `status-pill` (planned) · `stat-tile` (planned) · `user-chip` · `cheat-sheet`
+`data-table` (+ toolbar, column visibility, saved views, pagination, row selection, sticky header) · `app-shell` (+ breadcrumbs) · `command-palette` · `detail-layout` · `form` (text/textarea/select/checkbox/radio-group/date) · `toast` · `filter-popover` · `confirm-action` · `markdown` · `relative-time` · `states` (empty/loading/error) · `status-pill` · `stat-tile` · `user-chip` · `cheat-sheet` · `async-operation-status` — plus the shared infrastructure items most of them depend on: `utils`, `types`, `use-platform`, `list-surfaces`
 
 Mechanics:
 
@@ -78,7 +79,8 @@ Mechanics:
 
 | Gate | Where it runs | What it stops |
 |---|---|---|
-| `uix-lint-tokens` | every consumer CI | missing contract tokens (the "invalid var fails to transparent" class), cold-gray palette (slate/zinc/gray banned), invented `--uix-*` names, overrides outside the `@uix-overrides` marker block |
+| `uix-lint-tokens` | every consumer CI | missing contract tokens (the "invalid var fails to transparent" class), cold-gray palette (slate/zinc/gray banned), invented `--uix-*` names, overrides outside the `@uix-overrides` marker block; its `--src` scan also bans `rgb(var(--…))`/`hsl(var(--…))` triplets anywhere, unknown `var(--…)` reads in vendored `components/uix/` source, and any read of a write-only slot (`--uix-brand*`) |
+| `lint:registry` + `lint:themes` | UIx registry CI | the same linter pointed at `registry/uix` (`--strict-vars`) and at the shipped theme overlays (`--overlay`) — registry source or overlays that drift off the contract can't merge |
 | token semver check | UIx publish job | renames/removals shipping without a major bump + ADR |
 | primitives-purity + import bans | UIx registry CI | composites coupling to a primitive base or a Next version |
 | dual-fixture build + emission gate | UIx registry CI | base-specific API breakage; silently-unemitted classes |
@@ -98,7 +100,7 @@ npx shadcn add @uix/base        # wires the CSS imports, bridge, and @uix regist
 npx shadcn add @uix/data-table @uix/confirm-action @uix/states   # composites on demand
 
 # Land the gate with the adoption:
-#   package.json → "lint:tokens": "uix-lint-tokens app/globals.css"   (wire into CI)
+#   package.json → "lint:tokens": "uix-lint-tokens app/globals.css --src ."   (wire into CI)
 ```
 
 Your `globals.css` ends up as:
@@ -118,20 +120,23 @@ Your `globals.css` ends up as:
 
 ### Override the theme (brand a project)
 
-Plain CSS cascade — write value overrides after the imports, inside the marker block. Same selectors as the package (`:root` / `:root:where(...)`), later-in-source wins. Example, a blue-accent project:
+Plain CSS cascade — write value overrides after the imports, inside the marker block. Same selectors as the package (`:root` / `:root:where(...)`), later-in-source wins. The fast path is the **3-line brand recipe**: `--uix-brand` / `--uix-brand-fg` are write-only slots (unset by default); `--uix-accent`, `--uix-accent-fg`, `--uix-link`, and `--uix-ring` carry the house values as `var()` fallbacks and chain to the slots the moment they're declared. Example, a blue-brand project:
 
 ```css
 /* @uix-overrides */
 :root {
-  --uix-accent: #0088FF;  --uix-accent-fg: #FFFFFF;  --uix-ring: #0088FF;
+  --uix-brand: #0088FF;       /* lines 1+2: accent, accent-fg, link, and ring */
+  --uix-brand-fg: #FFFFFF;    /* all re-chain to the brand slots             */
   --uix-radius-md: 10px;                       /* softer corners, everything chains */
   --uix-font-sans: var(--font-geist-sans), system-ui, sans-serif;  /* next/font */
 }
 :root:where(.dark, [data-theme="dark"]) {
-  --uix-accent: #0091FF;
+  --uix-brand: #0091FF;       /* line 3: the dark-mode brand shade */
 }
 /* @uix-overrides-end */
 ```
+
+Components never read the slots directly (the linter rejects any `var(--uix-brand*)` read), so a slot stays a pure input; non-brand values (radius, fonts, individual color tokens) override the same way. A productized brand can instead ship inside the package as a theme overlay — copy `themes/_template.css` to `themes/<product>.css` and `@import "@uix/tokens/themes/<product>.css"` **after** the three base imports (the linter enforces the order).
 
 Rules: override **values** freely; never define a `--uix-*` name that isn't in `theme-contract.json` (lint rejects it); re-pointing a bridge name (`--background: var(--uix-bg-subtle)`) is also legal. A project using the house defaults has an empty block — **defaults encode the house style; projects pay only for their divergence.**
 
@@ -175,6 +180,8 @@ Forked files show up in `uix-diff` as forked-and-X forever, so divergence is alw
 
 **Rule of two:** a component moves from a project into `registry/` only when a *second* project actually needs it. Then: copy the source in, strip project couplings until it passes primitives-purity, add the item manifest, let dual-fixture CI prove it on both bases, publish, and re-`add` it back into the donor project.
 
+**Prop-naming convention:** status semantics on components use `tone` (`status-pill`, the `stat-tile` trend pill); structural/severity axes on notifications use `variant` (`toast`, `states`). Don't mix the two on one component.
+
 ## Repo layout
 
 ```
@@ -182,15 +189,17 @@ UIx\
 ├── packages\tokens\          → npm @uix/tokens (public scope — no auth anywhere, ever)
 │   ├── tokens.json           single source; scripts\build.mjs emits the rest
 │   ├── tokens.css shadcn-bridge.css tailwind.css theme-contract.json   (generated)
+│   ├── themes\_template.css  theme-overlay starting point (per-product brands)
 │   └── bin\uix-lint-tokens.mjs
 ├── registry\
-│   ├── registry.json         shadcn build manifest (16 items, 18 component files)
+│   ├── registry.json         shadcn build manifest (20 items, 22 component files)
 │   └── uix\{utils, data-table, command-palette, detail-layout, …}\
 ├── fixtures\
 │   ├── radix-app\            Next 15 + [data-theme] dark, house-default theme (mirrors ITSMx)
 │   └── baseui-app\           Next 16 + .dark, DASHx-brand override block      (mirrors DASHx)
 ├── scripts\                  check-token-semver, check-purity, check-emission,
-│                             copy-to-fixtures, uix-diff, serve-registry
+│                             copy-to-fixtures, uix-diff, serve-registry,
+│                             stamp-registry, lint-themes, test-lint-tokens
 ├── contract-snapshot.json    contract as of last published version (semver gate)
 ├── .github\workflows\ci.yml  runs `pnpm check` (the full gate chain)
 └── dist\r\                   built registry JSON (gitignored; rebuild via pnpm build:registry)
@@ -201,12 +210,13 @@ Registry hosting: `node scripts/serve-registry.mjs` serves `dist/r` on `http://1
 ## Build-out phases
 
 1. **Phase 0 — build this repo. ✅ DONE 2026-06-10** (npm publish pending scope claim). Token values lifted from `design-system.md`; 15 registry items seeded from `packages/shared/ui` (zero skips; command-palette/cheat-sheet decoupled from `@itsmx/shared-keyboard` via props; the 16th item, `@uix/types`, landed in Phase 2a); fixtures + full gate chain green (`pnpm check`); the L47-critical `@import` from pnpm-symlinked `node_modules` on Windows **verified**, and the HTTP-namespace `shadcn add` consumption path **verified** end-to-end.
-2. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
-3. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--uix-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
-4. **ITSMx composite flip — only after the autonomous build completes.** Until then, UIx treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.
+2. **Phase 0.5 + build-out — audit fixes and hardening. ✅ DONE 2026-06-10** (same-day audit → fix; see `AUDIT.md`). All 17 ported composites re-wired from the legacy ITSMx token dialect onto the contract, with the gate hole closed (`lint:registry` / broadened `lint:fixtures`: triplet ban, unknown-var, write-only-slot checks). Token layer v1.0.0: brand slot tier + status `*-fg` tokens + theme overlays → 67 tokens. Drift hardening: commit-based registry stamps + `uix-diff --max-age-days`, exact dependency pins. Five new items (`toast`, `status-pill`, `stat-tile`, `app-shell`, `types`) plus form field kinds and data-table pagination/row-selection/sticky header → 20 items.
+3. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
+4. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--uix-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
+5. **ITSMx composite flip — only after the autonomous build completes.** Until then, UIx treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.
 
 ## References
 
 - [`ITSMx/Docs/design-system.md`](../ITSMx/Docs/design-system.md) — the value donor; becomes prose rationale pointing at the token contract once Phase 0 lands.
-- `D:\Development\adr\` — the ADR (to be written at Phase 0) freezing the one-way doors: `--uix-*` contract names, the `@uix` scope/namespace, the semver law.
+- `D:\Development\Docs\adr\0004-hx-design-system.md` — the ADR freezing the one-way doors: `--uix-*` contract names, the `@uix` scope/namespace, the semver law.
 - `D:\Development\ai-engineering-lessons.md` — Law 1 (gates) and the multi-client token-rename law this design mechanizes; L47 is in ITSMx `Docs/lessons-learned.md`.
