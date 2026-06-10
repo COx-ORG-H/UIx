@@ -23,3 +23,9 @@ jobs:
 
       - run: pnpm check
 
+      # inspection aid: the stamped registry exactly as this commit would serve it
+      - uses: actions/upload-artifact@v4
+        with:
+          name: registry-dist
+          path: dist/r
+

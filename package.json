@@ -6,7 +6,7 @@
   "description": "House design system: @uix/tokens npm package + @uix shadcn composite registry. See README.md.",
   "scripts": {
     "build:tokens": "node packages/tokens/scripts/build.mjs",
-    "build:registry": "shadcn build registry/registry.json --output dist/r",
+    "build:registry": "shadcn build registry/registry.json --output dist/r && node scripts/stamp-registry.mjs",
     "check:semver": "node scripts/check-token-semver.mjs",
     "check:purity": "node scripts/check-purity.mjs",
     "lint:fixtures": "node packages/tokens/bin/uix-lint-tokens.mjs fixtures/radix-app/app/globals.css --src fixtures/radix-app && node packages/tokens/bin/uix-lint-tokens.mjs fixtures/baseui-app/app/globals.css --src fixtures/baseui-app",
@@ -20,6 +20,6 @@
     "pnpm": ">=10"
   },
   "devDependencies": {
-    "shadcn": "^4.10.0"
+    "shadcn": "4.11.0"
   }
 }

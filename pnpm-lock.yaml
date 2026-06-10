@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       shadcn:
-        specifier: ^4.10.0
+        specifier: 4.11.0
         version: 4.11.0(typescript@5.9.3)
 
   fixtures/baseui-app:
@@ -27,7 +27,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: ^1.17.0
+        specifier: 1.17.0
         version: 1.17.0(react@19.2.4)
       next:
         specifier: 16.2.7
@@ -82,7 +82,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: ^1.17.0
+        specifier: 1.17.0
         version: 1.17.0(react@19.0.0)
       next:
         specifier: 15.1.6

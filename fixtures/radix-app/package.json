@@ -6,12 +6,15 @@
     "dev": "next dev",
     "build": "next build"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@uix/tokens": "workspace:*",
     "@tanstack/react-table": "^8.20.5",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.17.0",
+    "lucide-react": "1.17.0",
     "next": "15.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",

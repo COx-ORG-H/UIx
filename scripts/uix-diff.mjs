@@ -9,12 +9,22 @@
  *       { version, dir, files: { "<file>": { addedAt: <mtime ISO>, hash } } }
  *
  *   node uix-diff.mjs check [--dir ...] [--lock ...] [--registry <path to built dist/r>]
+ *                           [--max-age-days <N>]
  *       re-hash and classify every file:
  *         clean-current       hash matches lock (and matches the registry copy, if given)
  *         clean-but-outdated  hash matches lock, but the registry has a newer version
  *         forked              hash differs from lock — REQUIRES a `// uix-fork: <reason>`
  *                             marker in the first 5 lines, otherwise exit 1
  *         untracked           file on disk but not in the lock
+ *
+ *       --max-age-days N (requires --registry, else exit 2): any
+ *       clean-but-outdated file older than N days fails the check (exit 1).
+ *       Age comes from the vendored file's line-1 registry stamp
+ *       `// @uix-registry <item> <sha> <ISO-date>` (written by
+ *       stamp-registry.mjs at build, copied in by `shadcn add`); files
+ *       without a parseable stamp fall back to the lock entry's addedAt —
+ *       note that's record-time, not registry-commit time. Staleness "now"
+ *       is Date.now() at check time (a CLI check, not build output).
  *
  * Registry JSON shape: dist/r/<name>.json with { files: [{ path?, target?, content }] };
  * vendored files are matched to registry files by basename.
@@ -35,8 +45,27 @@ function flagValue(name, dflt) {
 const dirArg = flagValue('--dir', 'components/uix');
 const lockArg = flagValue('--lock', '.uix-lock.json');
 const registryArg = flagValue('--registry', null);
+const maxAgeArg = flagValue('--max-age-days', null);
 const dirAbs = resolve(process.cwd(), dirArg);
 const lockAbs = resolve(process.cwd(), lockArg);
+
+const USAGE =
+  'usage: uix-diff <record|check> [--dir components/uix] [--lock .uix-lock.json] [--registry <dist/r>] [--max-age-days <N>, requires --registry]';
+
+let maxAgeDays = null;
+if (maxAgeArg !== null) {
+  maxAgeDays = Number(maxAgeArg);
+  if (!Number.isFinite(maxAgeDays) || maxAgeDays < 0) {
+    console.error(`uix-diff: --max-age-days expects a non-negative number, got "${maxAgeArg}"`);
+    console.error(USAGE);
+    process.exit(2);
+  }
+  if (!registryArg) {
+    console.error('uix-diff: --max-age-days requires --registry — "outdated" only exists relative to a registry.');
+    console.error(USAGE);
+    process.exit(2);
+  }
+}
 
 function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -104,6 +133,10 @@ function loadRegistry(registryDir) {
 }
 
 const FORK_MARKER = /\/\/ uix-fork: .+/;
+// Registry stamp written by stamp-registry.mjs at build time; `shadcn add`
+// vendors it as line 1, so the capture is "how old is the copy I'm running".
+const STAMP_RE = /^\/\/ @uix-registry \S+ \S+ (\S+)/;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function check() {
   if (!existsSync(lockAbs)) {
@@ -116,6 +149,7 @@ function check() {
   const buckets = { 'clean-current': [], 'clean-but-outdated': [], forked: [] };
   const untracked = [];
   const forkViolations = [];
+  const staleViolations = [];
   const seen = new Set();
 
   for (const f of listFiles()) {
@@ -130,6 +164,21 @@ function check() {
       const regContent = registry?.get(basename(rel));
       if (regContent !== undefined && normalize(readFileSync(f, 'utf8')) !== regContent) {
         buckets['clean-but-outdated'].push(rel);
+        if (maxAgeDays !== null) {
+          // Age source: line-1 registry stamp date; fallback addedAt (record-time).
+          const stamp = STAMP_RE.exec(readFileSync(f, 'utf8').split('\n', 1)[0]);
+          let date = stamp ? Date.parse(stamp[1]) : NaN;
+          if (Number.isNaN(date)) {
+            if (stamp) console.error(`uix-diff: WARNING unparseable stamp date in ${rel} ("${stamp[1]}") — falling back to lock addedAt`);
+            date = Date.parse(entry.addedAt);
+          }
+          if (Number.isNaN(date)) {
+            console.error(`uix-diff: WARNING no usable date for ${rel} (no stamp, bad addedAt) — cannot age-check`);
+          } else {
+            const ageDays = Math.floor((Date.now() - date) / DAY_MS);
+            if (ageDays > maxAgeDays) staleViolations.push({ rel, ageDays });
+          }
+        }
       } else {
         buckets['clean-current'].push(rel);
       }
@@ -156,18 +205,34 @@ function check() {
     for (const rel of missing) console.log(`    ! ${rel}`);
   }
 
+  let failed = false;
+
   if (forkViolations.length) {
+    failed = true;
     console.error('');
     console.error(`uix-diff: ${forkViolations.length} file(s) diverged from the recorded hash WITHOUT a fork marker:`);
     for (const rel of forkViolations) console.error(`  ✗ ${rel}`);
     console.error('');
     console.error('  A vendored uix file was edited locally with no `// uix-fork: <reason>` line in its');
-    console.error('  first 5 lines. Unmarked forks silently stop receiving registry updates. Either:');
+    console.error('  first 5 lines (the `// @uix-registry ...` stamp is expected at line 1, so a');
+    console.error('  stamped+forked file carries the marker on lines 2-5). Unmarked forks silently');
+    console.error('  stop receiving registry updates. Either:');
     console.error('    - revert the file to the vendored version (then re-pull from the registry), or');
     console.error('    - re-run `uix-diff record` if this was an intentional registry update, or');
     console.error('    - add `// uix-fork: <why this consumer diverges>` near the top to own the fork.');
-    process.exit(1);
   }
+
+  if (staleViolations.length) {
+    failed = true;
+    console.error('');
+    console.error(`uix-diff: ${staleViolations.length} outdated file(s) exceed --max-age-days ${maxAgeDays}:`);
+    for (const { rel, ageDays } of staleViolations) console.error(`  ✗ ${rel}  (outdated ${ageDays}d > max ${maxAgeDays}d)`);
+    console.error('');
+    console.error('  Re-pull from the registry (`shadcn add @uix/<item> --overwrite`, then `uix-diff record`)');
+    console.error('  or raise the budget if the lag is intentional.');
+  }
+
+  if (failed) process.exit(1);
 }
 
 /* ------------------------------------------------------------------ main */
@@ -175,6 +240,6 @@ function check() {
 if (cmd === 'record') record();
 else if (cmd === 'check') check();
 else {
-  console.error('usage: uix-diff <record|check> [--dir components/uix] [--lock .uix-lock.json] [--registry <dist/r>]');
+  console.error(USAGE);
   process.exit(1);
 }

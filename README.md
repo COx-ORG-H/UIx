@@ -145,6 +145,22 @@ node ..\uix\scripts\uix-diff.mjs           # report: clean-current / outdated / 
 
 Run composite updates **on a branch and review the diff** — `registryDependencies` resolution can write default-registry primitives next to hand-maintained ones (shadcn skips existing files, but an alias mismatch writes new ones).
 
+Every distributed file carries a **registry stamp** on line 1, written by `stamp-registry.mjs` during `pnpm build:registry` (commit-based, so registry builds are byte-deterministic):
+
+```tsx
+// @uix-registry data-table 26ca6a9 2026-06-10T18:21:33+02:00
+'use client';
+```
+
+That's "which item, which commit, how old is the copy I'm running" — `--overwrite` refreshes it on every re-add. To make staleness *fail* instead of just being visible, give `uix-diff check` an age budget (applies to clean-but-outdated files; age read from the stamp, falling back to the lock's `addedAt`):
+
+```powershell
+pnpm -C ..\UIx build:registry     # stamped dist/r
+node ..\UIx\scripts\uix-diff.mjs check --registry ..\UIx\dist\r --max-age-days 90
+```
+
+`dist\r` stays gitignored — built on demand; committing it invites hand-edit drift — and the Cloudflare static deploy remains deferred (CI uploads `dist/r` as an artifact for inspection).
+
 ### Fork a composite (the 11pm hotfix)
 
 Vendoring means forking is legal — that's the point. The only rule: mark it, or the drift lint fails.
