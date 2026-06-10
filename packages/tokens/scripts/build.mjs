@@ -18,7 +18,13 @@ const header = (what) =>
 const light = [];
 const dark = [];
 for (const [name, t] of Object.entries(src.tokens)) {
-  if (t.slot) continue; // slots are contract names that are deliberately never emitted
+  if (t.slot) {
+    // slots are contract names that are deliberately never emitted
+    if (t.light !== undefined || t.dark !== undefined) {
+      throw new Error(`tokens.json: slot token "${name}" declares light/dark values — slot tokens must not declare values`);
+    }
+    continue;
+  }
   light.push(`  --${p}-${name}: ${t.light};`);
   if (t.dark !== undefined) dark.push(`  --${p}-${name}: ${t.dark};`);
 }

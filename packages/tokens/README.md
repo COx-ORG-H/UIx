@@ -8,7 +8,7 @@ House design-system token contract: pure CSS custom properties (light + dark), a
 
 - `tailwind.css` uses `@theme inline` to bind utilities to `--uix-*` variables.
 - Dark mode is wired for `@custom-variant` consumers (`.dark` class or `[data-theme="dark"]`, both answered by one `:root:where(.dark, [data-theme="dark"])` block).
-- Alpha is the v4 `color-mix()` idiom on full color values — the v3 `rgb(var(--x) / a)` channel-triplet pattern is rejected by the linter.
+- Alpha is the v4 `color-mix()` idiom on full color values — the v3 channel-triplet pattern (`rgb()`/`rgba()`/`hsl()`/`hsla()` over a `var()`) is rejected by the linter.
 
 **Node ≥ 22** for the `uix-lint-tokens` CLI.
 
@@ -76,24 +76,24 @@ Either a CSS file, `--src`, or both must be given (src-only invocation is legal)
 
 | Flag | Meaning |
 | --- | --- |
-| `--src <dir>` | walk `<dir>` (`.ts/.tsx/.js/.jsx/.css`, skipping `node_modules` and dotdirs) and run the source checks |
+| `--src <dir>` | walk `<dir>` (`.ts/.tsx/.js/.jsx/.css`, skipping `node_modules` and dotdirs) and run the source checks; a nonexistent `<dir>` is a usage error (exit 2) |
 | `--contract <path>` | use an explicit `theme-contract.json` (default: the one shipped next to the binary) |
 | `--overlay` | lint a theme overlay: skips the required-@imports and theme-import-order checks |
 | `--strict-vars` | apply the unknown-var check to all walked JS/TS files, not just `components/uix/` ones |
 | `--allow-vars <p,p>` | extra var-name prefixes the unknown-var check accepts (`--tw-` is always allowed) |
 
-CSS-file checks:
+CSS-file checks (run against comment-stripped CSS, so commented-out code never satisfies or trips a check; errors carry the source line number):
 
 1. imports `@uix/tokens/tokens.css` and `shadcn-bridge.css` (skipped under `--overlay`);
 2. every `--uix-*` defined is a contract name — override values, never invent names (slot tokens may be *defined*);
-3. definitions only inside the `@uix-overrides` fence (bridge re-points included);
-4. no `rgb(var(--…))` triplets;
+3. definitions only inside the `@uix-overrides` fence (bridge re-points included) — defining a `--uix-*` token or re-pointing a bridge name with no fence present is an error;
+4. no `rgb()`/`rgba()`/`hsl()`/`hsla()` over `var(--…)` triplets;
 5. theme overlays imported after both base imports (skipped under `--overlay`).
 
 `--src` scan checks:
 
 6. no cold-gray Tailwind classes (`slate`/`zinc`/`gray` banned);
-7. no `rgb(var(--…))` triplets in any walked file;
-8. unknown-var check (JS/TS under a `components/uix/` path segment, or all JS/TS with `--strict-vars`): every fallback-less `var(--name)` read must be a contract token, a bridge name, or match an allowed prefix; `var(--x, fallback)` is always allowed; reading a write-only slot (`var(--uix-brand)`) is always an error.
+7. no `rgb()`/`rgba()`/`hsl()`/`hsla()` over `var(--…)` triplets in any walked file;
+8. unknown-var check (JS/TS under a `components/uix/` path segment, or all JS/TS with `--strict-vars`): every fallback-less `var(--name)` read must be a contract token, a bridge name, or match an allowed prefix; `var(--x, fallback)` is allowed for non-slot names; reading a write-only slot (`var(--uix-brand)`) is always an error, even with a fallback.
 
-Exit codes: `0` clean, `1` problems found, `2` usage error.
+Exit codes: `0` clean, `1` problems found, `2` usage error (including a nonexistent `--src` directory).
