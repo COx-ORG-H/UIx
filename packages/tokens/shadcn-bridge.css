@@ -1,0 +1,39 @@
+/* @hx/tokens v1.0.0 — shadcn semantic names -> --hx-* tokens
+ * GENERATED from tokens.json by scripts/build.mjs — do not hand-edit.
+ * Values: ITSMx Docs/design-system.md (Ramp-calibrated). */
+
+/* No dark block needed: the --hx-* values flip underneath the mapping. */
+:root {
+  --background: var(--hx-bg-app);
+  --foreground: var(--hx-text);
+  --card: var(--hx-surface);
+  --card-foreground: var(--hx-text);
+  --popover: var(--hx-surface-2);
+  --popover-foreground: var(--hx-text);
+  --primary: var(--hx-accent);
+  --primary-foreground: var(--hx-accent-fg);
+  --secondary: var(--hx-bg-subtle);
+  --secondary-foreground: var(--hx-text);
+  --muted: var(--hx-bg-subtle);
+  --muted-foreground: var(--hx-text-muted);
+  --accent: var(--hx-bg-hover);
+  --accent-foreground: var(--hx-text);
+  --destructive: var(--hx-danger);
+  --destructive-foreground: var(--hx-text-reverse);
+  --border: var(--hx-border);
+  --input: var(--hx-border);
+  --ring: var(--hx-ring);
+  --radius: var(--hx-radius-md);
+  --success: var(--hx-success);
+  --warning: var(--hx-warning);
+  --info: var(--hx-info);
+  --danger: var(--hx-danger);
+  --sidebar: var(--hx-bg-subtle);
+  --sidebar-foreground: var(--hx-text);
+  --sidebar-primary: var(--hx-accent);
+  --sidebar-primary-foreground: var(--hx-accent-fg);
+  --sidebar-accent: var(--hx-bg-hover);
+  --sidebar-accent-foreground: var(--hx-text);
+  --sidebar-border: var(--hx-border);
+  --sidebar-ring: var(--hx-ring);
+}

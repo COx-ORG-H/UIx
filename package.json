@@ -1,0 +1,18 @@
+{
+  "name": "hx-ui",
+  "private": true,
+  "type": "module",
+  "description": "House design system: @hx/tokens npm package + @hx shadcn composite registry. See README.md.",
+  "scripts": {
+    "build:tokens": "node packages/tokens/scripts/build.mjs",
+    "build:registry": "shadcn build registry/registry.json --output dist/r",
+    "check:semver": "node scripts/check-token-semver.mjs",
+    "check:purity": "node scripts/check-purity.mjs",
+    "lint:fixtures": "node packages/tokens/bin/hx-lint-tokens.mjs fixtures/radix-app/app/globals.css --src fixtures/radix-app/app && node packages/tokens/bin/hx-lint-tokens.mjs fixtures/baseui-app/app/globals.css --src fixtures/baseui-app/app",
+    "test:lint-self": "node scripts/test-lint-tokens.mjs",
+    "ci": "pnpm build:tokens && pnpm check:semver && pnpm test:lint-self && pnpm check:purity && pnpm build:registry && pnpm -r --filter \"./fixtures/*\" build && pnpm lint:fixtures && node scripts/check-emission.mjs"
+  },
+  "devDependencies": {
+    "shadcn": "^4.10.0"
+  }
+}
