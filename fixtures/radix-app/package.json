@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@hx/tokens": "workspace:*",
+    "@uix/tokens": "workspace:*",
     "@tanstack/react-table": "^8.20.5",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",

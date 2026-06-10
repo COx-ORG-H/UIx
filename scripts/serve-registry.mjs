@@ -19,4 +19,4 @@ createServer(async (req, res) => {
     res.writeHead(404);
     res.end('not found');
   }
-}).listen(port, () => console.log(`@hx registry: serving ${root} on http://127.0.0.1:${port}`));
+}).listen(port, () => console.log(`@uix registry: serving ${root} on http://127.0.0.1:${port}`));

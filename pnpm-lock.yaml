@@ -17,12 +17,12 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.78.0(react@19.2.4))
-      '@hx/tokens':
-        specifier: workspace:*
-        version: link:../../packages/tokens
       '@tanstack/react-table':
         specifier: ^8.20.5
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@uix/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -72,12 +72,12 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.78.0(react@19.0.0))
-      '@hx/tokens':
-        specifier: workspace:*
-        version: link:../../packages/tokens
       '@tanstack/react-table':
         specifier: ^8.20.5
         version: 8.21.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@uix/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

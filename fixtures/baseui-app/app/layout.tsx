@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "baseui-app fixture",
   description:
-    "hx-ui CI fixture (DASHx conventions): @hx/tokens CSS resolution + composite compilation.",
+    "uix CI fixture (DASHx conventions): @uix/tokens CSS resolution + composite compilation.",
 };
 
 export default function RootLayout({

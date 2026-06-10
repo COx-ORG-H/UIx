@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Registry purity gate (CI-blocking).
- * Scans every .ts/.tsx under registry/hx/ and fails on:
+ * Scans every .ts/.tsx under registry/uix/ and fails on:
  *
  *   1. banned imports:    @itsmx/*, @radix-ui/*, radix-ui, @base-ui/*, next/*, @/components/*
  *   2. unknown imports:   anything not in the allowlist (react, react-dom, lucide-react,
@@ -17,11 +17,11 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const registryDir = join(root, 'registry', 'hx');
+const registryDir = join(root, 'registry', 'uix');
 const posix = (p) => p.split(sep).join('/');
 
 if (!existsSync(registryDir)) {
-  console.error('check-purity: registry/hx/ not found — nothing to scan (refusing to silently pass).');
+  console.error('check-purity: registry/uix/ not found — nothing to scan (refusing to silently pass).');
   process.exit(1);
 }
 
@@ -112,7 +112,7 @@ for (const file of files) {
 }
 
 if (violations.length) {
-  console.error(`check-purity: ${violations.length} violation(s) in registry/hx/`);
+  console.error(`check-purity: ${violations.length} violation(s) in registry/uix/`);
   for (const v of violations) console.error(`  ✗ ${v}`);
   process.exit(1);
 }

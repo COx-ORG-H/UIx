@@ -1,38 +1,38 @@
-/* @hx/tokens v1.0.0 — optional @theme inline utility bindings
+/* @uix/tokens v1.0.0 — optional @theme inline utility bindings
  * GENERATED from tokens.json by scripts/build.mjs — do not hand-edit.
  * Values: ITSMx Docs/design-system.md (Ramp-calibrated). */
 
 /* Safe to import from node_modules: @theme entries are definitions, not
  * class usages, so Tailwind v4's source scanning is not involved (L47). */
 @theme inline {
-  --color-hx-app: var(--hx-bg-app);
-  --color-hx-subtle: var(--hx-bg-subtle);
-  --color-hx-hover: var(--hx-bg-hover);
-  --color-hx-active: var(--hx-bg-active);
-  --color-hx-surface: var(--hx-surface);
-  --color-hx-surface-2: var(--hx-surface-2);
-  --color-hx-surface-3: var(--hx-surface-3);
-  --color-hx-line: var(--hx-border);
-  --color-hx-line-strong: var(--hx-border-strong);
-  --color-hx-text: var(--hx-text);
-  --color-hx-hushed: var(--hx-text-hushed);
-  --color-hx-muted: var(--hx-text-muted);
-  --color-hx-accent: var(--hx-accent);
-  --color-hx-accent-fg: var(--hx-accent-fg);
-  --color-hx-link: var(--hx-link);
-  --color-hx-success: var(--hx-success);
-  --color-hx-success-bg: var(--hx-success-bg);
-  --color-hx-warning: var(--hx-warning);
-  --color-hx-warning-bg: var(--hx-warning-bg);
-  --color-hx-info: var(--hx-info);
-  --color-hx-info-bg: var(--hx-info-bg);
-  --color-hx-danger: var(--hx-danger);
-  --color-hx-danger-bg: var(--hx-danger-bg);
-  --font-sans: var(--hx-font-sans);
-  --font-mono: var(--hx-font-mono);
-  --ease-out-strong: var(--hx-ease-out-strong);
-  --ease-out: var(--hx-ease-out);
-  --shadow-hx-sm: var(--hx-shadow-sm);
-  --shadow-hx-popover: var(--hx-shadow-popover);
-  --shadow-hx-overlay: var(--hx-shadow-overlay);
+  --color-uix-app: var(--uix-bg-app);
+  --color-uix-subtle: var(--uix-bg-subtle);
+  --color-uix-hover: var(--uix-bg-hover);
+  --color-uix-active: var(--uix-bg-active);
+  --color-uix-surface: var(--uix-surface);
+  --color-uix-surface-2: var(--uix-surface-2);
+  --color-uix-surface-3: var(--uix-surface-3);
+  --color-uix-line: var(--uix-border);
+  --color-uix-line-strong: var(--uix-border-strong);
+  --color-uix-text: var(--uix-text);
+  --color-uix-hushed: var(--uix-text-hushed);
+  --color-uix-muted: var(--uix-text-muted);
+  --color-uix-accent: var(--uix-accent);
+  --color-uix-accent-fg: var(--uix-accent-fg);
+  --color-uix-link: var(--uix-link);
+  --color-uix-success: var(--uix-success);
+  --color-uix-success-bg: var(--uix-success-bg);
+  --color-uix-warning: var(--uix-warning);
+  --color-uix-warning-bg: var(--uix-warning-bg);
+  --color-uix-info: var(--uix-info);
+  --color-uix-info-bg: var(--uix-info-bg);
+  --color-uix-danger: var(--uix-danger);
+  --color-uix-danger-bg: var(--uix-danger-bg);
+  --font-sans: var(--uix-font-sans);
+  --font-mono: var(--uix-font-mono);
+  --ease-out-strong: var(--uix-ease-out-strong);
+  --ease-out: var(--uix-ease-out);
+  --shadow-uix-sm: var(--uix-shadow-sm);
+  --shadow-uix-popover: var(--uix-shadow-popover);
+  --shadow-uix-overlay: var(--uix-shadow-overlay);
 }

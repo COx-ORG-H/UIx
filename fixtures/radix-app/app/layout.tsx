@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "radix-app fixture",
   description:
-    "hx-ui CI fixture (ITSMx conventions): proves @hx/tokens CSS resolution and composite compilation.",
+    "uix CI fixture (ITSMx conventions): proves @uix/tokens CSS resolution and composite compilation.",
 };
 
 // Dark convention for this fixture: data-theme="dark" on <html>.

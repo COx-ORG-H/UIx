@@ -2,7 +2,7 @@
 /**
  * Emission gate (CI-blocking) — the anti-"L47" check.
  *
- * Every Tailwind class referenced by registry/hx sources must actually be
+ * Every Tailwind class referenced by registry/uix sources must actually be
  * emitted by at least one built fixture (fixtures/<fixture>/.next/static/css/<hash>.css).
  * A class that no fixture build emits means a consumer vendoring that
  * component gets a SILENTLY UNSTYLED element — no build error, no runtime
@@ -19,13 +19,13 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const registryDir = join(root, 'registry', 'hx');
+const registryDir = join(root, 'registry', 'uix');
 const fixturesDir = join(root, 'fixtures');
 const allowPath = join(root, 'scripts', 'emission-allow.txt');
 const posix = (p) => p.split(sep).join('/');
 
 if (!existsSync(registryDir)) {
-  console.error('check-emission: registry/hx/ not found — nothing to check (refusing to silently pass).');
+  console.error('check-emission: registry/uix/ not found — nothing to check (refusing to silently pass).');
   process.exit(1);
 }
 
@@ -210,7 +210,7 @@ if (failures.length) {
   console.error('    - make sure scripts/copy-to-fixtures.mjs ran and the fixtures were rebuilt');
   console.error('      (pnpm -r --filter "./fixtures/*" build) so their Tailwind scan sees the source;');
   console.error('    - replace the class with one Tailwind can statically detect (no dynamic names);');
-  console.error('    - or, if it is intentionally non-Tailwind (e.g. a hook target like "hx-slot"),');
+  console.error('    - or, if it is intentionally non-Tailwind (e.g. a hook target like "uix-slot"),');
   console.error('      add it to scripts/emission-allow.txt with a comment explaining why.');
   process.exit(1);
 }

@@ -1,23 +1,23 @@
 "use client";
-/* GENERATED smoke page: imports every @hx registry module so the SSR
+/* GENERATED smoke page: imports every @uix registry module so the SSR
  * prerender pass evaluates them, and Tailwind scans their classes. */
-import * as Utils from "@/components/hx/utils";
-import * as UsePlatform from "@/components/hx/use-platform";
-import * as ListSurfaces from "@/components/hx/list-surfaces";
-import * as DataTable from "@/components/hx/data-table";
-import * as DataTableToolbar from "@/components/hx/data-table-toolbar";
-import * as ColumnVisibilityMenu from "@/components/hx/column-visibility-menu";
-import * as CommandPalette from "@/components/hx/command-palette";
-import * as CheatSheet from "@/components/hx/cheat-sheet";
-import * as DetailLayout from "@/components/hx/detail-layout";
-import * as FilterPopover from "@/components/hx/filter-popover";
-import * as ConfirmAction from "@/components/hx/confirm-action";
-import * as AsyncOperationStatus from "@/components/hx/async-operation-status";
-import * as Markdown from "@/components/hx/markdown";
-import * as RelativeTime from "@/components/hx/relative-time";
-import * as States from "@/components/hx/states";
-import * as UserChip from "@/components/hx/user-chip";
-import * as Form from "@/components/hx/form";
+import * as Utils from "@/components/uix/utils";
+import * as UsePlatform from "@/components/uix/use-platform";
+import * as ListSurfaces from "@/components/uix/list-surfaces";
+import * as DataTable from "@/components/uix/data-table";
+import * as DataTableToolbar from "@/components/uix/data-table-toolbar";
+import * as ColumnVisibilityMenu from "@/components/uix/column-visibility-menu";
+import * as CommandPalette from "@/components/uix/command-palette";
+import * as CheatSheet from "@/components/uix/cheat-sheet";
+import * as DetailLayout from "@/components/uix/detail-layout";
+import * as FilterPopover from "@/components/uix/filter-popover";
+import * as ConfirmAction from "@/components/uix/confirm-action";
+import * as AsyncOperationStatus from "@/components/uix/async-operation-status";
+import * as Markdown from "@/components/uix/markdown";
+import * as RelativeTime from "@/components/uix/relative-time";
+import * as States from "@/components/uix/states";
+import * as UserChip from "@/components/uix/user-chip";
+import * as Form from "@/components/uix/form";
 
 const modules: Record<string, object> = {
   utils: Utils,
@@ -41,11 +41,11 @@ const modules: Record<string, object> = {
 
 export default function AllModulesPage() {
   return (
-    <main className="bg-hx-app text-hx-text min-h-screen p-8">
-      <h1 className="text-2xl">@hx registry modules</h1>
+    <main className="bg-uix-app text-uix-text min-h-screen p-8">
+      <h1 className="text-2xl">@uix registry modules</h1>
       <ul className="mt-4 space-y-1">
         {Object.entries(modules).map(([name, mod]) => (
-          <li key={name} className="text-hx-hushed text-sm">
+          <li key={name} className="text-uix-hushed text-sm">
             {name}: {Object.keys(mod).join(", ") || "(no exports)"}
           </li>
         ))}

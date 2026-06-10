@@ -1,11 +1,11 @@
 @import "tailwindcss";
-@import "@hx/tokens/tokens.css";
-@import "@hx/tokens/shadcn-bridge.css";
-@import "@hx/tokens/tailwind.css";
+@import "@uix/tokens/tokens.css";
+@import "@uix/tokens/shadcn-bridge.css";
+@import "@uix/tokens/tailwind.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* @hx-overrides */
+/* @uix-overrides */
 :root {
 }
-/* @hx-overrides-end */
+/* @uix-overrides-end */

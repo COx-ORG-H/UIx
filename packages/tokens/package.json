@@ -1,7 +1,7 @@
 {
-  "name": "@hx/tokens",
+  "name": "@uix/tokens",
   "version": "1.0.0",
-  "description": "House design-system token contract: pure CSS custom properties (light+dark), shadcn bridge, optional Tailwind bindings, and the hx-lint-tokens gate. NOTE: @hx scope is a placeholder until the npm scope is claimed (see ADR-0004).",
+  "description": "House design-system token contract: pure CSS custom properties (light+dark), shadcn bridge, optional Tailwind bindings, and the uix-lint-tokens gate. NOTE: @uix scope is a placeholder until the npm scope is claimed (see ADR-0004).",
   "license": "UNLICENSED",
   "type": "module",
   "files": ["tokens.css", "shadcn-bridge.css", "tailwind.css", "theme-contract.json", "bin"],
@@ -12,7 +12,7 @@
     "./theme-contract.json": "./theme-contract.json"
   },
   "bin": {
-    "hx-lint-tokens": "bin/hx-lint-tokens.mjs"
+    "uix-lint-tokens": "bin/uix-lint-tokens.mjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs",

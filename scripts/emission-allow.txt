@@ -5,4 +5,4 @@
 # hook / slot marker consumers target themselves), and say why in a comment.
 #
 # Example:
-#   hx-table-row   # JS hook target, styled by consumers, never by Tailwind
+#   uix-table-row   # JS hook target, styled by consumers, never by Tailwind

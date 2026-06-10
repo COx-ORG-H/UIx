@@ -1,19 +1,19 @@
 @import "tailwindcss";
-@import "@hx/tokens/tokens.css";
-@import "@hx/tokens/shadcn-bridge.css";
-@import "@hx/tokens/tailwind.css";
+@import "@uix/tokens/tokens.css";
+@import "@uix/tokens/shadcn-bridge.css";
+@import "@uix/tokens/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* @hx-overrides */
+/* @uix-overrides */
 :root {
-  --hx-accent: #0088FF;
-  --hx-accent-fg: #FFFFFF;
-  --hx-ring: #0088FF;
-  --hx-link: #0088FF;
+  --uix-accent: #0088FF;
+  --uix-accent-fg: #FFFFFF;
+  --uix-ring: #0088FF;
+  --uix-link: #0088FF;
 }
 :root:where(.dark, [data-theme="dark"]) {
-  --hx-accent: #0091FF;
-  --hx-ring: #0091FF;
+  --uix-accent: #0091FF;
+  --uix-ring: #0091FF;
 }
-/* @hx-overrides-end */
+/* @uix-overrides-end */

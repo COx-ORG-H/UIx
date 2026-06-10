@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Copies every registry item source (registry/hx/<item>/*.ts|tsx) FLAT into
- * each fixture's components/hx/ directory, mirroring what `shadcn add` does
+ * Copies every registry item source (registry/uix/<item>/*.ts|tsx) FLAT into
+ * each fixture's components/uix/ directory, mirroring what `shadcn add` does
  * on the consumer side. Run before building fixtures so their Tailwind scan
  * sees exactly the code consumers will vendor (feeds check-emission.mjs).
  *
@@ -12,12 +12,12 @@ import { basename, dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const registryDir = join(root, 'registry', 'hx');
+const registryDir = join(root, 'registry', 'uix');
 const FIXTURES = ['radix-app', 'baseui-app'];
 const posix = (p) => p.split(sep).join('/');
 
 if (!existsSync(registryDir)) {
-  console.error('copy-to-fixtures: registry/hx/ not found — nothing to copy.');
+  console.error('copy-to-fixtures: registry/uix/ not found — nothing to copy.');
   process.exit(1);
 }
 
@@ -42,17 +42,17 @@ for (const item of readdirSync(registryDir, { withFileTypes: true })) {
 }
 
 if (!sources.length) {
-  console.error('copy-to-fixtures: no .ts/.tsx sources found under registry/hx/<item>/.');
+  console.error('copy-to-fixtures: no .ts/.tsx sources found under registry/uix/<item>/.');
   process.exit(1);
 }
 
 for (const fixture of FIXTURES) {
-  const destDir = join(root, 'fixtures', fixture, 'components', 'hx');
+  const destDir = join(root, 'fixtures', fixture, 'components', 'uix');
   mkdirSync(destDir, { recursive: true });
   let count = 0;
   for (const src of sources) {
     copyFileSync(src, join(destDir, basename(src))); // copyFileSync overwrites by default
     count++;
   }
-  console.log(`copy-to-fixtures: ${count} file(s) -> fixtures/${fixture}/components/hx`);
+  console.log(`copy-to-fixtures: ${count} file(s) -> fixtures/${fixture}/components/uix`);
 }
