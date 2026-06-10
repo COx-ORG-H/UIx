@@ -115,6 +115,9 @@ const fixturesMissingCss = [];
 if (existsSync(fixturesDir)) {
   for (const fixture of readdirSync(fixturesDir, { withFileTypes: true })) {
     if (!fixture.isDirectory()) continue;
+    // fixtures/shared/ holds copy-to-fixtures source (the preview gallery),
+    // not a buildable app — only dirs with a package.json are app fixtures.
+    if (!existsSync(join(fixturesDir, fixture.name, 'package.json'))) continue;
     // Next 15 emits .next/static/css/<hash>.css; Next 16 emits .next/static/chunks/<hash>.css
     let found = 0;
     for (const sub of ['css', 'chunks']) {

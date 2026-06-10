@@ -2,7 +2,7 @@
 
 One source of truth for how every project in this portfolio looks: a **token contract** (colors, typography, spacing, motion, light/dark) plus a **library of proven composite components**, installable into any project with two commands.
 
-> **Status: Phase 0 built and verified** (2026-06-10). The architecture was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges), then built: 61-token contract, 15 registry items ported from `@itsmx/shared-ui`, dual fixtures (Radix/Next 15 + Base UI/Next 16) building green, all gates passing (`pnpm check`), and a real `shadcn add @uix/data-table` proven end-to-end against the HTTP registry. **Pending your action:** npm login + scope claim (then publish `@uix/tokens@1.0.0` — rename the `@uix` placeholder first if the scope differs), and optionally a GitHub remote. See [Build-out phases](#build-out-phases).
+> **Status: Phase 0 built and verified** (2026-06-10). The architecture was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges), then built: 61-token contract, 16 registry items / 18 component files (15 items ported from `@itsmx/shared-ui`, plus the shared `@uix/types` item), dual fixtures (Radix/Next 15 + Base UI/Next 16) building green, all gates passing (`pnpm check`), and a real `shadcn add @uix/data-table` proven end-to-end against the HTTP registry. **Pending your action:** npm login + scope claim (then publish `@uix/tokens@1.0.0` — rename the `@uix` placeholder first if the scope differs), and optionally a GitHub remote. See [Build-out phases](#build-out-phases).
 
 ---
 
@@ -51,7 +51,7 @@ A tiny npm package of pure CSS — no classes, no JS, nothing for Tailwind to sc
 | `tokens.json` | Single machine-readable source. The build emits everything below from it — contract and CSS can never diverge by hand-edit. |
 | `tokens.css` | The values, light + dark. Dark is declared once under `:root:where(.dark, [data-theme="dark"])` — serving **both** dark-mode conventions at specificity (0,1,0), so project overrides written after the import always win by source order. |
 | `shadcn-bridge.css` | Maps shadcn's semantic names (`--background`, `--primary`, `--ring`, …) onto `--uix-*` vars. Needs **no dark block** — the uix vars flip underneath it. This is what makes raw shadcn components on-brand with zero per-component work, on either primitive base. |
-| `tailwind.css` | Optional `@theme inline` bindings so `bg-uix-subtle`, `text-uix-hushed`, `ease-out-strong` utilities exist without boilerplate. Safe from node_modules because `@theme` entries are definitions, not class usages. |
+| `tailwind.css` | `@theme inline` bindings so `bg-uix-subtle`, `text-uix-hushed`, `ease-out-strong` utilities exist without boilerplate. **Required when installing composites** — they style themselves with `*-uix-*` utilities. Safe from node_modules because `@theme` entries are definitions, not class usages. |
 | `theme-contract.json` | The required-token name list `{name, type, requiredModes}` — what the linter enforces. |
 | `bin/uix-lint-tokens.mjs` | The gate, shipped *inside* the package so every consumer gets the current linter with the dependency (gates can't drift behind the rules). |
 
@@ -65,13 +65,13 @@ Each project runs `shadcn init --base radix` or `--base base-ui` and owns its `c
 
 Components earn a place here only when they encode a **cross-project product convention**, not a styling preference. The seed inventory is the proven `@itsmx/shared-ui` set:
 
-`data-table` (+ toolbar, column visibility, saved views) · `command-palette` · `detail-layout` · `filter-popover` · `confirm-action` · `markdown` · `relative-time` · `states` (empty/loading/error) · `status-pill` · `stat-tile` · `user-chip` · `cheat-sheet`
+`data-table` (+ toolbar, column visibility, saved views) · `command-palette` · `detail-layout` · `filter-popover` · `confirm-action` · `markdown` · `relative-time` · `states` (empty/loading/error) · `status-pill` (planned) · `stat-tile` (planned) · `user-chip` · `cheat-sheet`
 
 Mechanics:
 
 - Built with `npx shadcn build` → static JSON in `dist/r/`. Consumed via the `@uix` namespace in each project's `components.json` (HTTPS static hosting on Cloudflare; local-file adds — `shadcn add ./dist/r/<item>.json` — work before any hosting exists).
 - **Vendored**: `shadcn add @uix/data-table` copies source into your app tree. Tailwind scans it natively (L47-immune). Builds never contact the registry — if uix vanished tomorrow, every app still builds.
-- **Purity rule** (CI-enforced): composite source imports only `@/components/ui/*`, `lucide-react`, and `cn` — never `@radix-ui/*`, `@base-ui/*`, or `next/*`. That's the property that lets one composite source install into both a Radix and a Base UI project: `registryDependencies` resolve against *that project's* primitives.
+- **Purity rule** (CI-enforced): composite source imports only allowlisted npm packages (`react`, `lucide-react`, `clsx`, `@tanstack/react-table`, `react-hook-form`, `zod`, `@hookform/resolvers`) plus relative `./`/`../` paths — never `@radix-ui/*`, `@base-ui/*`, `next/*`, or app-alias imports like `@/components/ui/*` (banned). That's the property that lets one composite source install into both a Radix and a Base UI project.
 - **Dual-fixture CI**: every item is installed into a Radix/Next-15 fixture *and* a Base UI/Next-16 fixture, type-checked, built, and smoke-rendered in both dark conventions before publish, with an emission gate proving every static class actually lands in the built CSS.
 
 ### The gates (an unenforced rule is a suggestion)
@@ -168,7 +168,7 @@ UIx\
 │   ├── tokens.css shadcn-bridge.css tailwind.css theme-contract.json   (generated)
 │   └── bin\uix-lint-tokens.mjs
 ├── registry\
-│   ├── registry.json         shadcn build manifest (15 items)
+│   ├── registry.json         shadcn build manifest (16 items, 18 component files)
 │   └── uix\{utils, data-table, command-palette, detail-layout, …}\
 ├── fixtures\
 │   ├── radix-app\            Next 15 + [data-theme] dark, house-default theme (mirrors ITSMx)
@@ -184,7 +184,7 @@ Registry hosting: `node scripts/serve-registry.mjs` serves `dist/r` on `http://1
 
 ## Build-out phases
 
-1. **Phase 0 — build this repo. ✅ DONE 2026-06-10** (npm publish pending scope claim). Token values lifted from `design-system.md`; 15 registry items seeded from `packages/shared/ui` (zero skips; command-palette/cheat-sheet decoupled from `@itsmx/shared-keyboard` via props); fixtures + full gate chain green (`pnpm check`); the L47-critical `@import` from pnpm-symlinked `node_modules` on Windows **verified**, and the HTTP-namespace `shadcn add` consumption path **verified** end-to-end.
+1. **Phase 0 — build this repo. ✅ DONE 2026-06-10** (npm publish pending scope claim). Token values lifted from `design-system.md`; 15 registry items seeded from `packages/shared/ui` (zero skips; command-palette/cheat-sheet decoupled from `@itsmx/shared-keyboard` via props; the 16th item, `@uix/types`, landed in Phase 2a); fixtures + full gate chain green (`pnpm check`); the L47-critical `@import` from pnpm-symlinked `node_modules` on Windows **verified**, and the HTTP-namespace `shadcn add` consumption path **verified** end-to-end.
 2. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
 3. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--uix-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
 4. **ITSMx composite flip — only after the autonomous build completes.** Until then, UIx treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.

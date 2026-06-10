@@ -157,7 +157,7 @@ export function UserAvatar({
             background: PRESENCE_BG[presence],
             // The ring matches the surrounding background so the dot
             // reads as a notch out of the avatar regardless of parent.
-            // `--surface` is the canonical default; consumers on
+            // `--uix-surface` is the canonical default; consumers on
             // hovered rows can re-tint with a wrapping class.
             ['--tw-ring-color' as never]: 'var(--uix-surface)',
           }}

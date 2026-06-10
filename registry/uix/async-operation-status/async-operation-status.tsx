@@ -36,7 +36,7 @@ interface BaseAsyncOperationProps {
    * Resolver-passed overrides for the per-state badge text. Falls back
    * to the neutral defaults (Queued / Running / Complete / Failed).
    */
-  readonly stateLabels?: Partial<Record<AsyncOperationState, string>>;
+  stateLabels?: Partial<Record<AsyncOperationState, string>>;
   className?: string;
 }
 

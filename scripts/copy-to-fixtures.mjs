@@ -56,3 +56,26 @@ for (const fixture of FIXTURES) {
   }
   console.log(`copy-to-fixtures: ${count} file(s) -> fixtures/${fixture}/components/uix`);
 }
+
+// Shared fixture-side helpers (preview gallery): fixtures/shared/*.tsx is
+// copied into each fixture's components/shared/ so both mount the SAME
+// gallery source against their own @/ alias, theme toggle, and dark
+// convention. Same overwrite semantics as the registry copies above.
+const sharedDir = join(root, 'fixtures', 'shared');
+const sharedSources = existsSync(sharedDir)
+  ? readdirSync(sharedDir).filter((f) => f.endsWith('.tsx')).map((f) => join(sharedDir, f))
+  : [];
+if (!sharedSources.length) {
+  console.error('copy-to-fixtures: no .tsx sources found under fixtures/shared/ (preview gallery missing).');
+  process.exit(1);
+}
+for (const fixture of FIXTURES) {
+  const destDir = join(root, 'fixtures', fixture, 'components', 'shared');
+  mkdirSync(destDir, { recursive: true });
+  let count = 0;
+  for (const src of sharedSources) {
+    copyFileSync(src, join(destDir, basename(src)));
+    count++;
+  }
+  console.log(`copy-to-fixtures: ${count} shared file(s) -> fixtures/${fixture}/components/shared`);
+}
