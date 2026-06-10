@@ -89,7 +89,13 @@ export interface SystemReporterChipProps {
 // -- shared helpers ----------------------------------------------------
 
 const initialsOf = (name: string): string => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  // Drop parenthetical / non-letter-leading tokens (e.g. "(dev)") so a
+  // name like "Ada Lovelace (dev)" yields "AL", not "A(".
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((p) => /^[\p{L}\p{N}]/u.test(p));
   if (parts.length === 0) return '?';
   if (parts.length === 1) return (parts[0] ?? '?').slice(0, 2).toUpperCase();
   const first = parts[0]?.charAt(0) ?? '';

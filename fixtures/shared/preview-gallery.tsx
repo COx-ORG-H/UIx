@@ -178,10 +178,11 @@ const MARKDOWN_SAMPLE = [
   "```",
 ].join("\n");
 
-const DETAIL_DESCRIPTION = [
-  "Edge sensor reporting **dock-side berth occupancy**. Readings stream",
-  "every 30s; see the [calibration notes](#) for drift thresholds.",
-].join("\n");
+// Plain-text subtitle: detail-layout renders a string `description` as
+// plain text by default. Markdown body rendering is opt-in via
+// `descriptionAsMarkdown` and is already exercised by the Markdown section.
+const DETAIL_DESCRIPTION =
+  "Edge sensor reporting dock-side berth occupancy. Readings stream every 30s.";
 
 const FORM_SCHEMA = z.object({
   name: z.string().min(1, "Name is required"),
@@ -618,7 +619,8 @@ export function PreviewGallery() {
               >
                 <p className="text-sm text-uix-hushed">
                   Body content renders inside the active tab. The description
-                  above exercises the string-to-Markdown path.
+                  above is a plain-text subtitle (markdown rendering is opt-in
+                  via descriptionAsMarkdown).
                 </p>
               </DetailLayout>
             </div>

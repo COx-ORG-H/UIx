@@ -21,8 +21,8 @@
   --uix-accent-dark: #CBD91F;
   --uix-accent-light: #F5FF78;
   --uix-accent-fg: var(--uix-brand-fg, #0C0A08);
-  --uix-link: var(--uix-brand, #5683D2);
-  --uix-ring: var(--uix-brand, #5683D2);
+  --uix-link: var(--uix-brand, #4A6FC0);
+  --uix-ring: var(--uix-brand, #4A6FC0);
   --uix-brand-muted: color-mix(in srgb, var(--uix-accent) 12%, transparent);
   --uix-success: #17332D;
   --uix-success-fg: #FFFFFF;
@@ -30,7 +30,7 @@
   --uix-warning: #E96516;
   --uix-warning-fg: #FFFFFF;
   --uix-warning-bg: #FBE9DD;
-  --uix-info: #5683D2;
+  --uix-info: #4A6FC0;
   --uix-info-fg: #FFFFFF;
   --uix-info-bg: #E4EBF6;
   --uix-danger: #C53030;

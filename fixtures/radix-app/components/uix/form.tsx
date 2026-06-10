@@ -68,6 +68,11 @@ export interface FormFieldDescriptor<TName extends string = string> {
    * be chosen.
    */
   options?: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
+  /**
+   * Initial visible rows for the 'textarea' kind; ignored otherwise. The
+   * field also has a min-height floor and is vertically resizable.
+   */
+  rows?: number;
 }
 
 export interface FormProps<TSchema extends z.ZodObject<z.ZodRawShape>> {
@@ -378,6 +383,7 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
           {...field}
           value={typeof field.value === 'string' ? field.value : ''}
           placeholder={descriptor.placeholder}
+          rows={descriptor.rows}
           aria-required={descriptor.required ? true : undefined}
           aria-invalid={fieldState.error ? true : undefined}
           aria-describedby={ariaDescribedBy}

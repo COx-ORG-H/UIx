@@ -55,6 +55,13 @@ export interface DetailLayoutProps {
   title: ReactNode;
   /** Optional description / subtitle. */
   description?: ReactNode;
+  /**
+   * When `description` is a string, render it through `<Markdown>` (body
+   * content) instead of as a plain-text subtitle. Default false (plain
+   * subtitle). Ignored for non-string `description` ReactNodes, which
+   * always pass through untouched.
+   */
+  descriptionAsMarkdown?: boolean;
   /** Optional header CTA slot (right-aligned). */
   actions?: ReactNode;
   /** Optional tab nav. Render is suppressed when omitted. */
@@ -74,6 +81,7 @@ export function DetailLayout({
   eyebrow,
   title,
   description,
+  descriptionAsMarkdown = false,
   actions,
   tabs,
   metrics,
@@ -110,17 +118,26 @@ export function DetailLayout({
           </h1>
           {description ? (
             // `div`, not `p`: `description` is a ReactNode and callers may
-            // pass block content (e.g. <Markdown/> renders <p>/<ul>/<pre>),
-            // which is invalid nested inside a <p>. Renders identically for
-            // the plain-string subtitle case.
+            // pass block content (a non-string subtitle element, or
+            // <Markdown/> which renders <p>/<ul>/<pre>), which is invalid
+            // nested inside a <p>.
             //
-            // Incident UX quick wins: a STRING description is the
-            // ticket/request body — render it through the safe <Markdown/>
-            // renderer (incident + service-request detail both pass their
-            // `description` column here). Non-string ReactNodes (a custom
-            // subtitle element) pass through untouched.
+            // String description rendering is opt-in:
+            //   - default (descriptionAsMarkdown false) → plain text, a
+            //     short subtitle. This is the common case.
+            //   - descriptionAsMarkdown true → render through <Markdown/>
+            //     for body-style content.
+            // Non-string ReactNodes always pass through untouched.
             <div className="mt-1 max-w-2xl text-sm" style={{ color: 'var(--uix-text-hushed)' }}>
-              {typeof description === 'string' ? <Markdown>{description}</Markdown> : description}
+              {typeof description === 'string' ? (
+                descriptionAsMarkdown ? (
+                  <Markdown>{description}</Markdown>
+                ) : (
+                  description
+                )
+              ) : (
+                description
+              )}
             </div>
           ) : null}
         </div>
