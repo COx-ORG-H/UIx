@@ -218,6 +218,13 @@ const PRESENCE_VALUES: UserPresence[] = ["online", "busy", "away", "offline"];
 
 const noop = (): void => {};
 
+// Pinned "now" anchor for every RelativeTime sample below. A render-scope
+// Date.now() differs between SSR and client hydration (RelativeTime renders
+// the full ISO timestamp in its title attribute), so each instance receives
+// now={PREVIEW_NOW} — determinism replaces truthfulness, and the prerendered
+// output is byte-stable across server, client, and CI prerender.
+const PREVIEW_NOW = Date.UTC(2026, 5, 10, 12, 0, 0);
+
 // -- layout helpers ------------------------------------------------------
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -242,15 +249,15 @@ export function PreviewGallery() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
 
-  // Computed per render so the relative buckets stay truthful.
-  const nowMs = Date.now();
-  const threeHoursAgo = new Date(nowMs - 3 * 3_600_000).toISOString();
+  // Derived from the module-scope PREVIEW_NOW anchor (not Date.now()) so the
+  // samples are deterministic and hydration-safe; see comment on PREVIEW_NOW.
+  const threeHoursAgo = new Date(PREVIEW_NOW - 3 * 3_600_000).toISOString();
   const rows: PreviewRow[] = [
     {
       id: "SEN-0041",
       name: "North dock sensor",
       status: "Nominal",
-      updated: new Date(nowMs - 5 * 60_000).toISOString(),
+      updated: new Date(PREVIEW_NOW - 5 * 60_000).toISOString(),
     },
     {
       id: "SEN-0042",
@@ -262,10 +269,9 @@ export function PreviewGallery() {
       id: "SEN-0043",
       name: "Coolant loop monitor",
       status: "Offline",
-      // 20h stays in RelativeTime's relative "hours_ago" bucket ("20h ago").
-      // Offsets >= 24h render ABSOLUTE text ("Tue 14:32"), which differs
-      // between build-time prerender and client recompute -> hydration error.
-      updated: new Date(nowMs - 20 * 3_600_000).toISOString(),
+      // 20h stays in RelativeTime's relative "hours_ago" bucket ("20h ago"),
+      // demonstrating the largest relative bucket in the sample table.
+      updated: new Date(PREVIEW_NOW - 20 * 3_600_000).toISOString(),
     },
   ];
 
@@ -276,7 +282,7 @@ export function PreviewGallery() {
     {
       accessorKey: "updated",
       header: "Updated",
-      cell: ({ row }) => <RelativeTime ts={row.original.updated} />,
+      cell: ({ row }) => <RelativeTime ts={row.original.updated} now={PREVIEW_NOW} />,
     },
   ];
 
@@ -507,7 +513,7 @@ export function PreviewGallery() {
 
           <Section title="relative-time">
             <p className="text-sm">
-              Last reading: <RelativeTime ts={threeHoursAgo} />
+              Last reading: <RelativeTime ts={threeHoursAgo} now={PREVIEW_NOW} />
             </p>
           </Section>
 
