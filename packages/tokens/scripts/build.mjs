@@ -18,6 +18,7 @@ const header = (what) =>
 const light = [];
 const dark = [];
 for (const [name, t] of Object.entries(src.tokens)) {
+  if (t.slot) continue; // slots are contract names that are deliberately never emitted
   light.push(`  --${p}-${name}: ${t.light};`);
   if (t.dark !== undefined) dark.push(`  --${p}-${name}: ${t.dark};`);
 }
@@ -59,7 +60,8 @@ const contract = {
   tokens: Object.entries(src.tokens).map(([name, t]) => ({
     name: `--${p}-${name}`,
     type: t.type,
-    modes: { light: true, dark: t.dark !== undefined },
+    ...(t.slot ? { slot: true } : {}),
+    modes: { light: !t.slot, dark: !t.slot && t.dark !== undefined },
   })),
   bridge: Object.keys(src.bridge),
 };

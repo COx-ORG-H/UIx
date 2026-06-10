@@ -2,6 +2,8 @@
 @import "@uix/tokens/tokens.css";
 @import "@uix/tokens/shadcn-bridge.css";
 @import "@uix/tokens/tailwind.css";
+/* packaging smoke test: proves the themes/* export resolves; template is all-comments, zero visual effect */
+@import "@uix/tokens/themes/_template.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 

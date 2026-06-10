@@ -7,13 +7,10 @@
 
 /* @uix-overrides */
 :root {
-  --uix-accent: #0088FF;
-  --uix-accent-fg: #FFFFFF;
-  --uix-ring: #0088FF;
-  --uix-link: #0088FF;
+  --uix-brand: #0088FF;
+  --uix-brand-fg: #FFFFFF;
 }
 :root:where(.dark, [data-theme="dark"]) {
-  --uix-accent: #0091FF;
-  --uix-ring: #0091FF;
+  --uix-brand: #0091FF;
 }
 /* @uix-overrides-end */

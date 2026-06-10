@@ -10,8 +10,14 @@
     "check:semver": "node scripts/check-token-semver.mjs",
     "check:purity": "node scripts/check-purity.mjs",
     "lint:fixtures": "node packages/tokens/bin/uix-lint-tokens.mjs fixtures/radix-app/app/globals.css --src fixtures/radix-app/app && node packages/tokens/bin/uix-lint-tokens.mjs fixtures/baseui-app/app/globals.css --src fixtures/baseui-app/app",
+    "lint:themes": "node scripts/lint-themes.mjs",
+    "lint:registry": "node packages/tokens/bin/uix-lint-tokens.mjs --src registry/uix --strict-vars",
     "test:lint-self": "node scripts/test-lint-tokens.mjs",
-    "check": "pnpm build:tokens && pnpm check:semver && pnpm test:lint-self && pnpm check:purity && pnpm build:registry && node scripts/copy-to-fixtures.mjs && pnpm -r --filter \"./fixtures/*\" build && pnpm lint:fixtures && node scripts/check-emission.mjs"
+    "check": "pnpm build:tokens && pnpm check:semver && pnpm test:lint-self && pnpm lint:themes && pnpm check:purity && pnpm build:registry && node scripts/copy-to-fixtures.mjs && pnpm -r --filter \"./fixtures/*\" build && pnpm lint:fixtures && node scripts/check-emission.mjs"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
   },
   "devDependencies": {
     "shadcn": "^4.10.0"

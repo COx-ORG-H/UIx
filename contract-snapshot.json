@@ -163,6 +163,32 @@
       }
     },
     {
+      "name": "--uix-brand",
+      "type": "color",
+      "slot": true,
+      "modes": {
+        "light": false,
+        "dark": false
+      }
+    },
+    {
+      "name": "--uix-brand-fg",
+      "type": "color",
+      "slot": true,
+      "modes": {
+        "light": false,
+        "dark": false
+      }
+    },
+    {
+      "name": "--uix-brand-muted",
+      "type": "color",
+      "modes": {
+        "light": true,
+        "dark": true
+      }
+    },
+    {
       "name": "--uix-success",
       "type": "color",
       "modes": {
@@ -195,6 +221,14 @@
       }
     },
     {
+      "name": "--uix-warning-fg",
+      "type": "color",
+      "modes": {
+        "light": true,
+        "dark": true
+      }
+    },
+    {
       "name": "--uix-warning-bg",
       "type": "color",
       "modes": {
@@ -211,6 +245,14 @@
       }
     },
     {
+      "name": "--uix-info-fg",
+      "type": "color",
+      "modes": {
+        "light": true,
+        "dark": true
+      }
+    },
+    {
       "name": "--uix-info-bg",
       "type": "color",
       "modes": {
@@ -220,6 +262,14 @@
     },
     {
       "name": "--uix-danger",
+      "type": "color",
+      "modes": {
+        "light": true,
+        "dark": true
+      }
+    },
+    {
+      "name": "--uix-danger-fg",
       "type": "color",
       "modes": {
         "light": true,

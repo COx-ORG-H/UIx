@@ -1,0 +1,47 @@
+/* @uix/tokens — theme overlay TEMPLATE (all comments, zero active declarations;
+ * importing this file has zero visual effect).
+ *
+ * When a product brand is designed, copy this file to <product>.css in this
+ * directory, uncomment the declarations, and fill in the values. An overlay
+ * is a consumer override block that ships inside the package, so the same
+ * rules apply:
+ *   - override VALUES of contract tokens only — never invent names
+ *   - re-pointing shadcn bridge names (--primary, --ring, ...) is legal
+ *   - keep every declaration inside the @uix-overrides fence
+ *   - gate: `uix-lint-tokens themes/<product>.css --overlay`
+ *     (--overlay skips the required-@imports check; overlays have none)
+ *
+ * Consumer usage — import order matters. The overlay must come AFTER the
+ * base imports so it wins by source order (the linter enforces this):
+ *
+ *   @import "tailwindcss";
+ *   @import "@uix/tokens/tokens.css";
+ *   @import "@uix/tokens/shadcn-bridge.css";
+ *   @import "@uix/tokens/tailwind.css";
+ *   @import "@uix/tokens/themes/<product>.css";
+ *
+ * The 2+1-line brand recipe: --uix-brand and --uix-brand-fg are write-only
+ * slots — deliberately unset in tokens.css; accent/accent-fg/link/ring carry
+ * their house values as var() fallbacks and chain to the slot the moment it
+ * is declared. Components never read the slots directly (linter-enforced).
+ * Notes:
+ *   - declare the slots at :root (and the dark selector below) — the
+ *     fallback chain resolves per element, so a slot set on a subtree
+ *     rebrands only that subtree, which is rarely what you want
+ *   - --uix-accent-dark / --uix-accent-light do NOT chain to the slot;
+ *     override them separately if the brand needs pressed/washed shades
+ *   - escape hatch: if the brand hue fails AA as link text on the app
+ *     background, override --uix-link back out to an accessible hue
+ */
+
+/* @uix-overrides */
+:root {
+  /* --uix-brand: #0088FF; */
+  /* --uix-brand-fg: #FFFFFF; */
+  /* if the brand hue fails AA as link text: */
+  /* --uix-link: #0B66CC; */
+}
+:root:where(.dark, [data-theme="dark"]) {
+  /* --uix-brand: #0091FF; */
+}
+/* @uix-overrides-end */

@@ -19,7 +19,7 @@
   --accent: var(--uix-bg-hover);
   --accent-foreground: var(--uix-text);
   --destructive: var(--uix-danger);
-  --destructive-foreground: var(--uix-text-reverse);
+  --destructive-foreground: var(--uix-danger-fg);
   --border: var(--uix-border);
   --input: var(--uix-border);
   --ring: var(--uix-ring);
