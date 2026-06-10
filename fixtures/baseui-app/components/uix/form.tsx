@@ -224,8 +224,9 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
   /*
    * Per Docs/ux-design-system.md § Forms: "Required fields marked
    * with an asterisk BEFORE the label, not after." Decorative
-   * marker (aria-hidden) — the `aria-required` on the input is
-   * what assistive tech consumes.
+   * marker (aria-hidden) — assistive tech consumes the `aria-required`
+   * on the control (the input, or the radiogroup fieldset for
+   * 'radio-group').
    */
   const requiredMark = descriptor.required ? (
     <span aria-hidden="true" className="mr-1 text-uix-danger">
@@ -280,10 +281,13 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
   // 4c: radio-group — <fieldset> + <legend> carrying the label/asterisk
   // (same visual style as the standalone label). aria-invalid +
   // aria-describedby sit on the fieldset since the error describes the
-  // group, not one radio.
+  // group, not one radio. role="radiogroup" (rather than the fieldset's
+  // implicit role=group) because radiogroup validly supports both
+  // aria-required and aria-invalid; group supports neither.
   if (inputType === 'radio-group') {
     return (
       <fieldset
+        role="radiogroup"
         className="flex flex-col gap-1"
         aria-required={descriptor.required ? true : undefined}
         aria-invalid={fieldState.error ? true : undefined}
@@ -293,7 +297,7 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
           {requiredMark}
           {descriptor.label}
         </legend>
-        {(descriptor.options ?? []).map((opt) => {
+        {(descriptor.options ?? []).map((opt, index) => {
           const optionId = `${inputId}-${opt.value}`;
           return (
             <div key={opt.value} className="flex items-center gap-2">
@@ -301,6 +305,9 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
                 type="radio"
                 id={optionId}
                 name={field.name}
+                // RHF's focus-on-first-error needs field.ref on exactly one
+                // element of the group — the first radio, per convention.
+                ref={index === 0 ? field.ref : undefined}
                 value={opt.value}
                 checked={field.value === opt.value}
                 onChange={() => field.onChange(opt.value)}

@@ -118,7 +118,11 @@ export interface DataTableProps<TData, TValue = unknown> {
    * the data set shrinks.
    */
   pagination?: {
-    /** Rows per page. Default 25. */
+    /**
+     * Initial rows per page (uncontrolled; later prop changes are
+     * ignored — the footer's page-size select mutates internal state).
+     * Default 25.
+     */
     pageSize?: number;
     /** When provided, a native <select> page-size picker renders in the footer. */
     pageSizeOptions?: ReadonlyArray<number>;
@@ -340,6 +344,11 @@ export function DataTable<TData, TValue = unknown>(
         disabled={!row.getCanSelect()}
         onChange={row.getToggleSelectedHandler()}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          // The row's Enter binding routes to onRowClick — stop it here so
+          // keyboard toggling matches the click path's stopPropagation.
+          if (e.key === 'Enter') e.stopPropagation();
+        }}
         aria-label={
           selectionLabels?.selectRow ? selectionLabels.selectRow(row.original) : 'Select row'
         }
@@ -412,171 +421,171 @@ export function DataTable<TData, TValue = unknown>(
 
   const tableEl = (
     <table className="w-full border-collapse text-sm">
-        {props.caption ? (
-          <caption
-            className="px-4 py-2 text-left text-xs uppercase tracking-wider"
-            style={{ color: 'var(--uix-text-hushed)' }}
-          >
-            {props.caption}
-          </caption>
-        ) : null}
-        <thead>
-          {headerGroups.map((group) => (
-            <tr key={group.id} className="border-b border-uix-line">
-              {group.headers.map((header) => {
-                const canSort = header.column.getCanSort();
-                const sortDir = header.column.getIsSorted();
-                const sortIndex = header.column.getSortIndex();
-                const multi = sorting.length > 1 && sortIndex >= 0;
-                return (
-                  <th
-                    key={header.id}
-                    scope="col"
-                    className={cn(
-                      cellPad,
-                      'text-left text-xs uppercase tracking-wider font-medium',
-                      canSort ? 'cursor-pointer select-none' : '',
-                      props.stickyHeader ? 'sticky top-0 z-10' : '',
-                    )}
-                    style={
-                      // 4c: sticky th needs an OPAQUE background — the
-                      // default th is transparent and scrolled rows would
-                      // show through it.
-                      props.stickyHeader
-                        ? { color: 'var(--uix-text-hushed)', background: 'var(--uix-surface)' }
-                        : { color: 'var(--uix-text-hushed)' }
-                    }
-                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                    onKeyDown={
-                      canSort
-                        ? (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              // Shift+Enter adds a secondary sort, matching the
-                              // Shift+click behavior on the header.
-                              header.column.toggleSorting(undefined, e.shiftKey);
-                            }
-                          }
-                        : undefined
-                    }
-                    tabIndex={canSort ? 0 : undefined}
-                    aria-sort={
-                      sortDir === 'asc'
-                        ? 'ascending'
-                        : sortDir === 'desc'
-                          ? 'descending'
-                          : canSort
-                            ? 'none'
-                            : undefined
-                    }
-                    data-sort-index={multi ? sortIndex + 1 : undefined}
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                      {sortDir === 'asc' ? (
-                        <span aria-hidden="true">↑</span>
-                      ) : sortDir === 'desc' ? (
-                        <span aria-hidden="true">↓</span>
-                      ) : null}
-                      {multi ? (
-                        <span
-                          aria-label={`Sort priority ${sortIndex + 1}`}
-                          className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[0.6rem] tabular-nums"
-                          style={{
-                            background: 'var(--uix-bg-hover)',
-                            color: 'var(--uix-text-hushed)',
-                          }}
-                        >
-                          {sortIndex + 1}
-                        </span>
-                      ) : null}
-                    </span>
-                  </th>
-                );
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {props.error ? (
-            <tr>
-              <td
-                colSpan={tableColumns.length}
-                role="alert"
-                className={cn(cellPad, 'text-center text-sm')}
-                style={{ color: 'var(--uix-danger)' }}
-              >
-                {props.error}
-              </td>
-            </tr>
-          ) : props.loading ? (
-            // Loading skeleton: rows at the current density's pitch.
-            Array.from({ length: props.loadingRowCount ?? 3 }, (_, i) => `loading-row-${i}`).map(
-              (rowKey) => (
-                <tr key={rowKey} aria-busy="true" className="border-b border-uix-line">
-                  {tableColumns.map((col, j) => (
-                    <td
-                      key={`${rowKey}-${(col.id as string | undefined) ?? `col-${j}`}`}
-                      className={cn(cellPad)}
-                    >
-                      <span
-                        className="block h-3 w-3/4 animate-pulse rounded"
-                        style={{ background: 'var(--uix-border)' }}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ),
-            )
-          ) : rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={tableColumns.length}
-                className={cn(cellPad, 'text-center text-sm')}
-                style={{ color: 'var(--uix-text-hushed)' }}
-              >
-                {props.empty ?? 'No rows to show.'}
-              </td>
-            </tr>
-          ) : (
-            rows.map((row) => {
-              const original = row.original;
-              const userOnRowClick = props.onRowClick;
-              const onClick = userOnRowClick ? () => userOnRowClick(original) : undefined;
+      {props.caption ? (
+        <caption
+          className="px-4 py-2 text-left text-xs uppercase tracking-wider"
+          style={{ color: 'var(--uix-text-hushed)' }}
+        >
+          {props.caption}
+        </caption>
+      ) : null}
+      <thead>
+        {headerGroups.map((group) => (
+          <tr key={group.id} className="border-b border-uix-line">
+            {group.headers.map((header) => {
+              const canSort = header.column.getCanSort();
+              const sortDir = header.column.getIsSorted();
+              const sortIndex = header.column.getSortIndex();
+              const multi = sorting.length > 1 && sortIndex >= 0;
               return (
-                <tr
-                  key={row.id}
+                <th
+                  key={header.id}
+                  scope="col"
                   className={cn(
-                    'border-b border-uix-line',
-                    'hover:bg-uix-hover',
-                    onClick ? 'cursor-pointer' : '',
+                    cellPad,
+                    'text-left text-xs uppercase tracking-wider font-medium',
+                    canSort ? 'cursor-pointer select-none' : '',
+                    props.stickyHeader ? 'sticky top-0 z-10' : '',
                   )}
-                  onClick={onClick}
+                  style={
+                    // 4c: sticky th needs an OPAQUE background — the
+                    // default th is transparent and scrolled rows would
+                    // show through it.
+                    props.stickyHeader
+                      ? { color: 'var(--uix-text-hushed)', background: 'var(--uix-surface)' }
+                      : { color: 'var(--uix-text-hushed)' }
+                  }
+                  onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                   onKeyDown={
-                    onClick
+                    canSort
                       ? (e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            onClick();
+                            // Shift+Enter adds a secondary sort, matching the
+                            // Shift+click behavior on the header.
+                            header.column.toggleSorting(undefined, e.shiftKey);
                           }
                         }
                       : undefined
                   }
-                  tabIndex={onClick ? 0 : undefined}
+                  tabIndex={canSort ? 0 : undefined}
+                  aria-sort={
+                    sortDir === 'asc'
+                      ? 'ascending'
+                      : sortDir === 'desc'
+                        ? 'descending'
+                        : canSort
+                          ? 'none'
+                          : undefined
+                  }
+                  data-sort-index={multi ? sortIndex + 1 : undefined}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={cn(cellPad, rowPad, 'align-top')}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
+                  <span className="inline-flex items-center gap-1">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {sortDir === 'asc' ? (
+                      <span aria-hidden="true">↑</span>
+                    ) : sortDir === 'desc' ? (
+                      <span aria-hidden="true">↓</span>
+                    ) : null}
+                    {multi ? (
+                      <span
+                        aria-label={`Sort priority ${sortIndex + 1}`}
+                        className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[0.6rem] tabular-nums"
+                        style={{
+                          background: 'var(--uix-bg-hover)',
+                          color: 'var(--uix-text-hushed)',
+                        }}
+                      >
+                        {sortIndex + 1}
+                      </span>
+                    ) : null}
+                  </span>
+                </th>
               );
-            })
-          )}
-        </tbody>
-      </table>
+            })}
+          </tr>
+        ))}
+      </thead>
+      <tbody>
+        {props.error ? (
+          <tr>
+            <td
+              colSpan={tableColumns.length}
+              role="alert"
+              className={cn(cellPad, 'text-center text-sm')}
+              style={{ color: 'var(--uix-danger)' }}
+            >
+              {props.error}
+            </td>
+          </tr>
+        ) : props.loading ? (
+          // Loading skeleton: rows at the current density's pitch.
+          Array.from({ length: props.loadingRowCount ?? 3 }, (_, i) => `loading-row-${i}`).map(
+            (rowKey) => (
+              <tr key={rowKey} aria-busy="true" className="border-b border-uix-line">
+                {tableColumns.map((col, j) => (
+                  <td
+                    key={`${rowKey}-${(col.id as string | undefined) ?? `col-${j}`}`}
+                    className={cn(cellPad)}
+                  >
+                    <span
+                      className="block h-3 w-3/4 animate-pulse rounded"
+                      style={{ background: 'var(--uix-border)' }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ),
+          )
+        ) : rows.length === 0 ? (
+          <tr>
+            <td
+              colSpan={tableColumns.length}
+              className={cn(cellPad, 'text-center text-sm')}
+              style={{ color: 'var(--uix-text-hushed)' }}
+            >
+              {props.empty ?? 'No rows to show.'}
+            </td>
+          </tr>
+        ) : (
+          rows.map((row) => {
+            const original = row.original;
+            const userOnRowClick = props.onRowClick;
+            const onClick = userOnRowClick ? () => userOnRowClick(original) : undefined;
+            return (
+              <tr
+                key={row.id}
+                className={cn(
+                  'border-b border-uix-line',
+                  'hover:bg-uix-hover',
+                  onClick ? 'cursor-pointer' : '',
+                )}
+                onClick={onClick}
+                onKeyDown={
+                  onClick
+                    ? (e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          onClick();
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onClick ? 0 : undefined}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className={cn(cellPad, rowPad, 'align-top')}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
   );
 
   return (
@@ -612,6 +621,8 @@ export function DataTable<TData, TValue = unknown>(
               </select>
             </label>
           ) : (
+            // Empty flex placeholder — holds the justify-between slot so the
+            // pager stays right-aligned when no page-size picker renders.
             <span />
           )}
           <div className="flex items-center gap-2">

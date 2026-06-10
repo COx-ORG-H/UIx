@@ -134,7 +134,7 @@
       "type": "registry:component",
       "title": "Form",
       "description": "react-hook-form + zod form primitive rendering from declarative field definitions.",
-      "dependencies": ["react-hook-form", "zod", "@hookform/resolvers"],
+      "dependencies": ["react-hook-form", "zod", "@hookform/resolvers", "lucide-react"],
       "registryDependencies": ["@uix/utils"],
       "files": [{ "path": "registry/uix/form/form.tsx", "type": "registry:component", "target": "components/uix/form.tsx" }]
     },
