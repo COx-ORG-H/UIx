@@ -2,7 +2,7 @@
 
 One source of truth for how every project in this portfolio looks: a **token contract** (colors, typography, spacing, motion, light/dark) plus a **library of proven composite components**, installable into any project with two commands.
 
-> **Status: designed, not yet built** (2026-06-10). The architecture below was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges). Phase 0 (build this repo) has not started. See [Build-out phases](#build-out-phases).
+> **Status: Phase 0 built and verified** (2026-06-10). The architecture was validated by a multi-agent design review (3 competing proposals, fact-check against live shadcn registry docs, 2 adversarial judges), then built: 61-token contract, 15 registry items ported from `@itsmx/shared-ui`, dual fixtures (Radix/Next 15 + Base UI/Next 16) building green, all gates passing (`pnpm check`), and a real `shadcn add @hx/data-table` proven end-to-end against the HTTP registry. **Pending your action:** npm login + scope claim (then publish `@hx/tokens@1.0.0` — rename the `@hx` placeholder first if the scope differs), and optionally a GitHub remote. See [Build-out phases](#build-out-phases).
 
 ---
 
@@ -159,25 +159,28 @@ Forked files show up in `hx-diff` as forked-and-X forever, so divergence is alwa
 
 **Rule of two:** a component moves from a project into `registry/` only when a *second* project actually needs it. Then: copy the source in, strip project couplings until it passes primitives-purity, add the item manifest, let dual-fixture CI prove it on both bases, publish, and re-`add` it back into the donor project.
 
-## Repo layout (planned)
+## Repo layout
 
 ```
 hx-ui\
 ├── packages\tokens\          → npm @hx/tokens (public scope — no auth anywhere, ever)
-│   ├── tokens.json tokens.css shadcn-bridge.css tailwind.css
-│   ├── theme-contract.json
+│   ├── tokens.json           single source; scripts\build.mjs emits the rest
+│   ├── tokens.css shadcn-bridge.css tailwind.css theme-contract.json   (generated)
 │   └── bin\hx-lint-tokens.mjs
-├── registry\                 → @hx shadcn registry (seeded from @itsmx/shared-ui)
-│   ├── registry.json
-│   └── hx\{base, data-table, command-palette, detail-layout, …}\
+├── registry\
+│   ├── registry.json         shadcn build manifest (15 items)
+│   └── hx\{utils, data-table, command-palette, detail-layout, …}\
 ├── fixtures\
-│   ├── radix-app\            Next 15 + Radix + [data-theme]   (mirrors ITSMx)
-│   └── baseui-app\           Next 16 + Base UI + .dark        (mirrors DASHx)
-├── scripts\{build-registry, check-token-semver, hx-diff}.mjs
-└── dist\r\                   built static registry JSON
+│   ├── radix-app\            Next 15 + [data-theme] dark, house-default theme (mirrors ITSMx)
+│   └── baseui-app\           Next 16 + .dark, DASHx-brand override block      (mirrors DASHx)
+├── scripts\                  check-token-semver, check-purity, check-emission,
+│                             copy-to-fixtures, hx-diff, serve-registry
+├── contract-snapshot.json    contract as of last published version (semver gate)
+├── .github\workflows\ci.yml  runs `pnpm check` (the full gate chain)
+└── dist\r\                   built registry JSON (gitignored; rebuild via pnpm build:registry)
 ```
 
-`@hx` (npm scope, registry namespace, CSS prefix) is a **placeholder pending scope availability** — to be frozen in the ADR, because with ~10 consumers the contract names are effectively permanent.
+Registry hosting: `node scripts/serve-registry.mjs` serves `dist/r` on `http://127.0.0.1:8377` for local adds; the static Cloudflare deploy is deliberately deferred until a second machine needs it. `@hx` (npm scope, registry namespace) is a **placeholder pending scope claim** (ADR-0004) — rename before first publish if the final scope differs; the `--hx-` CSS prefix needs no registry and stays.
 
 ## Build-out phases
 

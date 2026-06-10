@@ -1,0 +1,8 @@
+# check-emission allowlist — one class per line, '#' starts a comment.
+#
+# Classes listed here are exempt from the emission gate (scripts/check-emission.mjs).
+# Only add a class when it is INTENTIONALLY not a Tailwind utility (e.g. a styling
+# hook / slot marker consumers target themselves), and say why in a comment.
+#
+# Example:
+#   hx-table-row   # JS hook target, styled by consumers, never by Tailwind

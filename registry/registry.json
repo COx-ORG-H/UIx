@@ -1,0 +1,135 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "hx",
+  "homepage": "https://github.com/harisdizdarevic/hx-ui",
+  "items": [
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "Utils",
+      "description": "Class-name composer cn() built on clsx (no tailwind-merge; last-wins Tailwind contract).",
+      "dependencies": ["clsx"],
+      "files": [{ "path": "registry/hx/utils/utils.ts", "type": "registry:lib", "target": "components/hx/utils.ts" }]
+    },
+    {
+      "name": "use-platform",
+      "type": "registry:hook",
+      "title": "Use Platform",
+      "description": "SSR-safe useIsMac() hook for OS-aware keyboard-shortcut glyph display.",
+      "files": [{ "path": "registry/hx/use-platform/use-platform.ts", "type": "registry:hook", "target": "components/hx/use-platform.ts" }]
+    },
+    {
+      "name": "list-surfaces",
+      "type": "registry:lib",
+      "title": "List Surfaces",
+      "description": "Universal DataTable surface registry: ListSurface types plus register/get/list helpers with contract validation.",
+      "files": [{ "path": "registry/hx/list-surfaces/list-surfaces.ts", "type": "registry:lib", "target": "components/hx/list-surfaces.ts" }]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:component",
+      "title": "Data Table",
+      "description": "Universal TanStack-based data table with density modes, multi-column sort, toolbar (search, filter chips, density toggle) and column visibility/reorder menu.",
+      "dependencies": ["lucide-react", "@tanstack/react-table"],
+      "registryDependencies": ["@hx/utils", "@hx/list-surfaces", "@hx/filter-popover"],
+      "files": [
+        { "path": "registry/hx/data-table/data-table.tsx", "type": "registry:component", "target": "components/hx/data-table.tsx" },
+        { "path": "registry/hx/data-table/data-table-toolbar.tsx", "type": "registry:component", "target": "components/hx/data-table-toolbar.tsx" },
+        { "path": "registry/hx/data-table/column-visibility-menu.tsx", "type": "registry:component", "target": "components/hx/column-visibility-menu.tsx" }
+      ]
+    },
+    {
+      "name": "command-palette",
+      "type": "registry:component",
+      "title": "Command Palette",
+      "description": "Cmd/Ctrl+K combobox palette unifying action shortcuts, navigation entries, and async entity-ID jumps; shortcut map injected via props.",
+      "registryDependencies": ["@hx/use-platform"],
+      "files": [{ "path": "registry/hx/command-palette/command-palette.tsx", "type": "registry:component", "target": "components/hx/command-palette.tsx" }]
+    },
+    {
+      "name": "cheat-sheet",
+      "type": "registry:component",
+      "title": "Keyboard Cheat Sheet",
+      "description": "Modal listing every active keyboard shortcut, grouped by category; shortcut map and category order injected via props.",
+      "registryDependencies": ["@hx/use-platform"],
+      "files": [{ "path": "registry/hx/cheat-sheet/cheat-sheet.tsx", "type": "registry:component", "target": "components/hx/cheat-sheet.tsx" }]
+    },
+    {
+      "name": "detail-layout",
+      "type": "registry:component",
+      "title": "Detail Layout",
+      "description": "Universal entity detail-page primitive: back link, eyebrow + h1, tab nav, optional metric row, content with optional right rail.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@hx/utils", "@hx/markdown"],
+      "files": [{ "path": "registry/hx/detail-layout/detail-layout.tsx", "type": "registry:component", "target": "components/hx/detail-layout.tsx" }]
+    },
+    {
+      "name": "filter-popover",
+      "type": "registry:component",
+      "title": "Filter Popover",
+      "description": "Typed filter model + chip rendering conventions shared across list views.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/filter-popover/filter-popover.tsx", "type": "registry:component", "target": "components/hx/filter-popover.tsx" }]
+    },
+    {
+      "name": "confirm-action",
+      "type": "registry:component",
+      "title": "Confirm Action",
+      "description": "Destructive-action confirmation with consistent UX, compensation messaging, and focus return.",
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/confirm-action/confirm-action.tsx", "type": "registry:component", "target": "components/hx/confirm-action.tsx" }]
+    },
+    {
+      "name": "async-operation-status",
+      "type": "registry:component",
+      "title": "Async Operation Status",
+      "description": "Long-running operation status pattern (pending / progress / done / failed).",
+      "registryDependencies": ["@hx/utils", "@hx/states"],
+      "files": [{ "path": "registry/hx/async-operation-status/async-operation-status.tsx", "type": "registry:component", "target": "components/hx/async-operation-status.tsx" }]
+    },
+    {
+      "name": "markdown",
+      "type": "registry:component",
+      "title": "Markdown",
+      "description": "Sanitized markdown rendering with token-mapped typography and code-block styling.",
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/markdown/markdown.tsx", "type": "registry:component", "target": "components/hx/markdown.tsx" }]
+    },
+    {
+      "name": "relative-time",
+      "type": "registry:component",
+      "title": "Relative Time",
+      "description": "Hydration-safe relative timestamps with tabular-nums and hover-for-absolute.",
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/relative-time/relative-time.tsx", "type": "registry:component", "target": "components/hx/relative-time.tsx" }]
+    },
+    {
+      "name": "states",
+      "type": "registry:component",
+      "title": "States",
+      "description": "Standardized empty / loading / error state triplet with retry affordances.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@hx/utils", "@hx/data-table"],
+      "files": [{ "path": "registry/hx/states/states.tsx", "type": "registry:component", "target": "components/hx/states.tsx" }]
+    },
+    {
+      "name": "user-chip",
+      "type": "registry:component",
+      "title": "User Chip",
+      "description": "User chip + avatar with fallback, presence, and overflow truncation conventions.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/user-chip/user-chip.tsx", "type": "registry:component", "target": "components/hx/user-chip.tsx" }]
+    },
+    {
+      "name": "form",
+      "type": "registry:component",
+      "title": "Form",
+      "description": "react-hook-form + zod form primitive rendering from declarative field definitions.",
+      "dependencies": ["react-hook-form", "zod", "@hookform/resolvers"],
+      "registryDependencies": ["@hx/utils"],
+      "files": [{ "path": "registry/hx/form/form.tsx", "type": "registry:component", "target": "components/hx/form.tsx" }]
+    }
+  ]
+}
