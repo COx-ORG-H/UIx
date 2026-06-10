@@ -11,7 +11,12 @@ import {
 } from '@tanstack/react-table';
 import { type ReactNode, useState } from 'react';
 import { getListSurface } from './list-surfaces';
+import type { DataTableDensity } from './types';
 import { cn } from './utils';
+
+// Back-compat: DataTableDensity used to be declared here; re-export so
+// existing `import { DataTableDensity } from './data-table'` keeps working.
+export type { DataTableDensity } from './types';
 
 /**
  * Per-column override passed in `DataTableProps.columnConfig`. Origin:
@@ -29,9 +34,6 @@ export interface DataTableColumnOverride {
   readonly visible?: boolean;
   readonly order?: number;
 }
-
-/** Density per Docs/design-system.md § Tables. Three modes; see ROW_PADDING/CELL_PADDING. */
-export type DataTableDensity = 'compact' | 'standard' | 'comfortable';
 
 /**
  * Per-density paddings — KEPT IN SYNC with apps/web/lib/hooks/use-density
@@ -226,7 +228,7 @@ export function DataTable<TData, TValue = unknown>(
 
   return (
     <div
-      className={cn('overflow-x-auto rounded', 'border border-[var(--border)]', props.className)}
+      className={cn('overflow-x-auto rounded', 'border border-uix-line', props.className)}
       data-surface={props.surface_key}
       data-density={density}
     >
@@ -234,14 +236,14 @@ export function DataTable<TData, TValue = unknown>(
         {props.caption ? (
           <caption
             className="px-4 py-2 text-left text-xs uppercase tracking-wider"
-            style={{ color: 'rgb(var(--text-hushed))' }}
+            style={{ color: 'var(--uix-text-hushed)' }}
           >
             {props.caption}
           </caption>
         ) : null}
         <thead>
           {headerGroups.map((group) => (
-            <tr key={group.id} className="border-b border-[var(--border)]">
+            <tr key={group.id} className="border-b border-uix-line">
               {group.headers.map((header) => {
                 const canSort = header.column.getCanSort();
                 const sortDir = header.column.getIsSorted();
@@ -256,7 +258,7 @@ export function DataTable<TData, TValue = unknown>(
                       'text-left text-xs uppercase tracking-wider font-medium',
                       canSort ? 'cursor-pointer select-none' : '',
                     )}
-                    style={{ color: 'rgb(var(--text-hushed))' }}
+                    style={{ color: 'var(--uix-text-hushed)' }}
                     onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     onKeyDown={
                       canSort
@@ -296,8 +298,8 @@ export function DataTable<TData, TValue = unknown>(
                           aria-label={`Sort priority ${sortIndex + 1}`}
                           className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[0.6rem] tabular-nums"
                           style={{
-                            background: 'rgb(var(--bg-hover))',
-                            color: 'rgb(var(--text-hushed))',
+                            background: 'var(--uix-bg-hover)',
+                            color: 'var(--uix-text-hushed)',
                           }}
                         >
                           {sortIndex + 1}
@@ -317,7 +319,7 @@ export function DataTable<TData, TValue = unknown>(
                 colSpan={effectiveColumns.length}
                 role="alert"
                 className={cn(cellPad, 'text-center text-sm')}
-                style={{ color: 'rgb(var(--danger-text))' }}
+                style={{ color: 'var(--uix-danger)' }}
               >
                 {props.error}
               </td>
@@ -326,7 +328,7 @@ export function DataTable<TData, TValue = unknown>(
             // Loading skeleton: rows at the current density's pitch.
             Array.from({ length: props.loadingRowCount ?? 3 }, (_, i) => `loading-row-${i}`).map(
               (rowKey) => (
-                <tr key={rowKey} aria-busy="true" className="border-b border-[var(--border)]">
+                <tr key={rowKey} aria-busy="true" className="border-b border-uix-line">
                   {effectiveColumns.map((col, j) => (
                     <td
                       key={`${rowKey}-${(col.id as string | undefined) ?? `col-${j}`}`}
@@ -334,7 +336,7 @@ export function DataTable<TData, TValue = unknown>(
                     >
                       <span
                         className="block h-3 w-3/4 animate-pulse rounded"
-                        style={{ background: 'var(--border)' }}
+                        style={{ background: 'var(--uix-border)' }}
                       />
                     </td>
                   ))}
@@ -346,7 +348,7 @@ export function DataTable<TData, TValue = unknown>(
               <td
                 colSpan={effectiveColumns.length}
                 className={cn(cellPad, 'text-center text-sm')}
-                style={{ color: 'rgb(var(--text-hushed))' }}
+                style={{ color: 'var(--uix-text-hushed)' }}
               >
                 {props.empty ?? 'No rows to show.'}
               </td>
@@ -360,8 +362,8 @@ export function DataTable<TData, TValue = unknown>(
                 <tr
                   key={row.id}
                   className={cn(
-                    'border-b border-[var(--border)]',
-                    'hover:bg-[rgb(var(--bg-hover))]',
+                    'border-b border-uix-line',
+                    'hover:bg-uix-hover',
                     onClick ? 'cursor-pointer' : '',
                   )}
                   onClick={onClick}

@@ -3,8 +3,8 @@
 
 import { Columns3, Plus, Rows2, Rows3, Rows4, Save, Search, X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
-import type { DataTableDensity } from './data-table';
 import type { FilterValue } from './filter-popover';
+import type { DataTableDensity } from './types';
 import { cn } from './utils';
 
 /**
@@ -151,8 +151,8 @@ export function DataTableToolbar({
     <div
       className={cn('flex flex-wrap items-center gap-2 rounded-md border p-2', className)}
       style={{
-        background: 'rgb(var(--surface))',
-        borderColor: 'var(--border)',
+        background: 'var(--uix-surface)',
+        borderColor: 'var(--uix-border)',
       }}
       data-surface={surface_key}
       role="toolbar"
@@ -172,24 +172,24 @@ export function DataTableToolbar({
           <span
             key={f.column_id}
             className="inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-            style={{ borderColor: 'var(--border-strong)' }}
+            style={{ borderColor: 'var(--uix-border-strong)' }}
             data-filter-column={f.column_id}
           >
             <button
               type="button"
               onClick={() => onEditFilter(f.column_id)}
               className="inline-flex items-center gap-1 truncate"
-              style={{ color: 'rgb(var(--text-primary))' }}
+              style={{ color: 'var(--uix-text)' }}
             >
               <span className="font-medium">{f.label}:</span>
-              <span style={{ color: 'rgb(var(--text-hushed))' }}>{f.displayValue}</span>
+              <span style={{ color: 'var(--uix-text-hushed)' }}>{f.displayValue}</span>
             </button>
             <button
               type="button"
               onClick={() => onRemoveFilter(f.column_id)}
               aria-label={`${labels.remove_filter} ${f.column_id}`}
               className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center"
-              style={{ color: 'rgb(var(--text-hushed))' }}
+              style={{ color: 'var(--uix-text-hushed)' }}
             >
               <X size={10} strokeWidth={2} />
             </button>
@@ -200,8 +200,8 @@ export function DataTableToolbar({
           onClick={onAddFilter}
           className="inline-flex h-6 items-center gap-1 rounded-full border px-2 text-xs"
           style={{
-            borderColor: 'var(--border)',
-            color: 'rgb(var(--text-hushed))',
+            borderColor: 'var(--uix-border)',
+            color: 'var(--uix-text-hushed)',
           }}
         >
           <Plus size={10} strokeWidth={2} aria-hidden="true" />
@@ -219,7 +219,7 @@ export function DataTableToolbar({
           strokeWidth={1.75}
           aria-hidden="true"
           className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
-          style={{ color: 'rgb(var(--text-hushed))' }}
+          style={{ color: 'var(--uix-text-hushed)' }}
         />
         <input
           ref={searchRef}
@@ -235,9 +235,9 @@ export function DataTableToolbar({
           }}
           className="block h-8 w-full rounded-md border pr-2 pl-7 text-sm"
           style={{
-            background: 'rgb(var(--surface))',
-            color: 'rgb(var(--text-primary))',
-            borderColor: 'var(--border-strong)',
+            background: 'var(--uix-surface)',
+            color: 'var(--uix-text)',
+            borderColor: 'var(--uix-border-strong)',
           }}
           aria-label={labels.search_placeholder}
         />
@@ -250,7 +250,7 @@ export function DataTableToolbar({
       <fieldset
         aria-label="Row density"
         className="inline-flex flex-shrink-0 items-center rounded-md border"
-        style={{ borderColor: 'var(--border-strong)' }}
+        style={{ borderColor: 'var(--uix-border-strong)' }}
         role="radiogroup"
       >
         <DensityButton
@@ -282,7 +282,7 @@ export function DataTableToolbar({
           type="button"
           onClick={onSaveChanges}
           className="inline-flex h-8 flex-shrink-0 items-center gap-1 rounded-md px-3 text-xs"
-          style={{ background: 'rgb(var(--accent))', color: 'rgb(var(--accent-fg))' }}
+          style={{ background: 'var(--uix-accent)', color: 'var(--uix-accent-fg)' }}
         >
           <Save size={12} strokeWidth={2} aria-hidden="true" />
           {labels.save_changes}
@@ -318,8 +318,8 @@ function DensityButton({
       onClick={onClick}
       className="inline-flex h-8 w-8 items-center justify-center"
       style={{
-        background: active ? 'rgb(var(--bg-hover))' : 'transparent',
-        color: active ? 'rgb(var(--text-primary))' : 'rgb(var(--text-hushed))',
+        background: active ? 'var(--uix-bg-hover)' : 'transparent',
+        color: active ? 'var(--uix-text)' : 'var(--uix-text-hushed)',
       }}
       data-density={density}
       title={typeof label === 'string' ? label : undefined}

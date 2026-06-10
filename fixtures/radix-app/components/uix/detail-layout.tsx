@@ -86,7 +86,7 @@ export function DetailLayout({
       <a
         href={backHref}
         className="inline-flex items-center gap-1 text-sm"
-        style={{ color: 'rgb(var(--text-hushed))' }}
+        style={{ color: 'var(--uix-text-hushed)' }}
       >
         <ChevronLeft size={14} strokeWidth={1.75} aria-hidden="true" />
         {backLabel}
@@ -97,14 +97,14 @@ export function DetailLayout({
           {eyebrow ? (
             <p
               className="text-xs uppercase tracking-widest"
-              style={{ color: 'rgb(var(--text-hushed))' }}
+              style={{ color: 'var(--uix-text-hushed)' }}
             >
               {eyebrow}
             </p>
           ) : null}
           <h1
             className="mt-1 text-2xl font-normal tracking-tight"
-            style={{ color: 'rgb(var(--text-primary))' }}
+            style={{ color: 'var(--uix-text)' }}
           >
             {title}
           </h1>
@@ -119,7 +119,7 @@ export function DetailLayout({
             // renderer (incident + service-request detail both pass their
             // `description` column here). Non-string ReactNodes (a custom
             // subtitle element) pass through untouched.
-            <div className="mt-1 max-w-2xl text-sm" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <div className="mt-1 max-w-2xl text-sm" style={{ color: 'var(--uix-text-hushed)' }}>
               {typeof description === 'string' ? <Markdown>{description}</Markdown> : description}
             </div>
           ) : null}
@@ -131,7 +131,7 @@ export function DetailLayout({
         <nav
           aria-label="Detail tabs"
           className="mt-5 flex gap-1 border-b"
-          style={{ borderColor: 'var(--border)' }}
+          style={{ borderColor: 'var(--uix-border)' }}
         >
           {tabs.map((tab) => (
             <a
@@ -144,8 +144,8 @@ export function DetailLayout({
                 tab.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
               )}
               style={{
-                borderColor: tab.active ? 'rgb(var(--text-primary))' : 'transparent',
-                color: tab.active ? 'rgb(var(--text-primary))' : 'rgb(var(--text-hushed))',
+                borderColor: tab.active ? 'var(--uix-text)' : 'transparent',
+                color: tab.active ? 'var(--uix-text)' : 'var(--uix-text-hushed)',
               }}
             >
               {tab.label}
@@ -153,8 +153,8 @@ export function DetailLayout({
                 <span
                   className="rounded-full px-1.5 py-0.5 text-[0.65rem] tabular-nums"
                   style={{
-                    background: 'rgb(var(--bg-hover))',
-                    color: 'rgb(var(--text-hushed))',
+                    background: 'var(--uix-bg-hover)',
+                    color: 'var(--uix-text-hushed)',
                   }}
                 >
                   {tab.badge}
@@ -177,24 +177,24 @@ export function DetailLayout({
               key={m.id}
               className="rounded-md border p-3"
               style={{
-                background: 'rgb(var(--surface))',
-                borderColor: 'var(--border)',
+                background: 'var(--uix-surface)',
+                borderColor: 'var(--uix-border)',
               }}
             >
               <p
                 className="text-xs uppercase tracking-wider"
-                style={{ color: 'rgb(var(--text-hushed))' }}
+                style={{ color: 'var(--uix-text-hushed)' }}
               >
                 {m.label}
               </p>
               <p
                 className="mt-1 text-2xl font-normal tabular-nums"
-                style={{ color: 'rgb(var(--text-primary))' }}
+                style={{ color: 'var(--uix-text)' }}
               >
                 {m.value}
               </p>
               {m.hint ? (
-                <p className="text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+                <p className="text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
                   {m.hint}
                 </p>
               ) : null}

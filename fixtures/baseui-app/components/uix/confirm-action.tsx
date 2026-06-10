@@ -124,22 +124,22 @@ function TypeToConfirm({
       aria-describedby="confirm-desc"
       className={cn('w-full max-w-md rounded-md border p-4', className)}
       style={{
-        background: 'rgb(var(--surface))',
-        borderColor: 'var(--border-strong)',
-        color: 'rgb(var(--text-primary))',
+        background: 'var(--uix-surface)',
+        borderColor: 'var(--uix-border-strong)',
+        color: 'var(--uix-text)',
       }}
       data-tier="type_to_confirm"
     >
       <h2 id="confirm-title" className="text-base font-medium">
         {title}
       </h2>
-      <p id="confirm-desc" className="mt-1 text-sm" style={{ color: 'rgb(var(--text-hushed))' }}>
+      <p id="confirm-desc" className="mt-1 text-sm" style={{ color: 'var(--uix-text-hushed)' }}>
         {description}
       </p>
       <label
         htmlFor={inputId}
         className="mt-4 block text-xs"
-        style={{ color: 'rgb(var(--text-hushed))' }}
+        style={{ color: 'var(--uix-text-hushed)' }}
       >
         {inputLabel}
       </label>
@@ -154,9 +154,9 @@ function TypeToConfirm({
         aria-invalid={value.length > 0 && !matches}
         className="mt-1 block h-9 w-full rounded-md border px-3 text-sm"
         style={{
-          background: 'rgb(var(--surface))',
-          color: 'rgb(var(--text-primary))',
-          borderColor: 'var(--border-strong)',
+          background: 'var(--uix-surface)',
+          color: 'var(--uix-text)',
+          borderColor: 'var(--uix-border-strong)',
         }}
       />
       <div className="mt-4 flex items-center justify-end gap-2">
@@ -165,9 +165,9 @@ function TypeToConfirm({
           onClick={onCancel}
           className="inline-flex h-9 items-center justify-center rounded-md border px-3.5 text-sm"
           style={{
-            background: 'rgb(var(--surface))',
-            color: 'rgb(var(--text-primary))',
-            borderColor: 'var(--border-strong)',
+            background: 'var(--uix-surface)',
+            color: 'var(--uix-text)',
+            borderColor: 'var(--uix-border-strong)',
           }}
         >
           {cancelLabel}
@@ -178,8 +178,8 @@ function TypeToConfirm({
           onClick={onConfirm}
           className={cn(dangerBtnCls, 'disabled:cursor-not-allowed disabled:opacity-50')}
           style={{
-            background: 'rgb(var(--danger))',
-            color: 'rgb(var(--danger-fg))',
+            background: 'var(--uix-danger)',
+            color: 'var(--uix-danger-fg)',
           }}
         >
           {pending ? '…' : confirmLabel}
@@ -201,7 +201,7 @@ function SingleClickConfirm({
       className={cn('inline-flex flex-col items-start gap-2', className)}
       data-tier="single_click"
     >
-      <p className="text-xs" style={{ color: 'rgb(var(--danger-text))' }}>
+      <p className="text-xs" style={{ color: 'var(--uix-danger)' }}>
         {warning}
       </p>
       <button
@@ -210,8 +210,8 @@ function SingleClickConfirm({
         onClick={onConfirm}
         className={cn(dangerBtnCls, 'disabled:cursor-not-allowed disabled:opacity-50')}
         style={{
-          background: 'rgb(var(--danger))',
-          color: 'rgb(var(--danger-fg))',
+          background: 'var(--uix-danger)',
+          color: 'var(--uix-danger-fg)',
         }}
       >
         {pending ? '…' : confirmLabel}
@@ -229,7 +229,7 @@ function InlineConfirm({ confirmLabel, onConfirm, className }: ConfirmActionInli
         'inline-flex items-center gap-1 text-sm underline decoration-dotted underline-offset-4',
         className,
       )}
-      style={{ color: 'rgb(var(--danger-text))' }}
+      style={{ color: 'var(--uix-danger)' }}
       data-tier="inline"
     >
       {confirmLabel}

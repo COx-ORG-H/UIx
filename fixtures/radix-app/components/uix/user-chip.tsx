@@ -98,10 +98,10 @@ const initialsOf = (name: string): string => {
 };
 
 const PRESENCE_BG: Record<UserPresence, string> = {
-  online: 'rgb(var(--success))',
-  busy: 'rgb(var(--danger))',
-  away: 'rgb(var(--amber))',
-  offline: 'rgb(var(--text-hushed))',
+  online: 'var(--uix-success)',
+  busy: 'var(--uix-danger)',
+  away: 'var(--uix-warning)',
+  offline: 'var(--uix-text-hushed)',
 };
 
 // -- UserAvatar --------------------------------------------------------
@@ -125,8 +125,8 @@ export function UserAvatar({
       style={{
         width: sizePx,
         height: sizePx,
-        background: 'rgb(var(--bg-hover))',
-        color: 'rgb(var(--text-primary))',
+        background: 'var(--uix-bg-hover)',
+        color: 'var(--uix-text)',
         fontSize: fontPx,
         lineHeight: 1,
         fontWeight: 400,
@@ -159,7 +159,7 @@ export function UserAvatar({
             // reads as a notch out of the avatar regardless of parent.
             // `--surface` is the canonical default; consumers on
             // hovered rows can re-tint with a wrapping class.
-            ['--tw-ring-color' as never]: 'rgb(var(--surface))',
+            ['--tw-ring-color' as never]: 'var(--uix-surface)',
           }}
         />
       ) : null}
@@ -197,7 +197,7 @@ export function UserChip({
         interactive ? 'cursor-pointer' : '',
         className,
       )}
-      style={{ color: 'rgb(var(--text-primary))' }}
+      style={{ color: 'var(--uix-text)' }}
       data-variant={variant}
       data-user-id={user.id}
       onClick={interactive ? () => onClick?.(user) : undefined}
@@ -220,7 +220,7 @@ export function UserChip({
         <span className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm">{user.display_name}</span>
           {showMeta ? (
-            <span className="truncate text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <span className="truncate text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
               {[user.role_label, user.group_label].filter(Boolean).join(' · ')}
             </span>
           ) : null}
@@ -256,14 +256,14 @@ export function SystemReporterChip({
   return (
     <span
       className={cn('inline-flex items-center gap-2 text-sm', className)}
-      style={{ color: 'rgb(var(--text-primary))' }}
+      style={{ color: 'var(--uix-text)' }}
       data-variant="system-reporter"
     >
       <span
         className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
         style={{
-          background: 'rgb(var(--bg-hover))',
-          color: 'rgb(var(--text-hushed))',
+          background: 'var(--uix-bg-hover)',
+          color: 'var(--uix-text-hushed)',
         }}
       >
         <IconComponent size={14} strokeWidth={1.75} aria-hidden="true" />
@@ -293,6 +293,8 @@ export interface UserPeekCardProps {
   ownedCis?: ReactNode;
   /** Optional href for the user's profile page. */
   profileHref?: string;
+  /** Resolver-passed label for the profile link. */
+  profileLabel?: ReactNode;
   className?: string;
 }
 
@@ -307,20 +309,21 @@ export interface UserPeekCardProps {
  */
 export function UserPeekCard({
   user,
-  recentTicketsLabel = 'Recent tickets',
-  ownedCisLabel = 'Owned CIs',
+  recentTicketsLabel = 'Recent items',
+  ownedCisLabel = 'Linked items',
   recentTickets,
   ownedCis,
   profileHref,
+  profileLabel = 'View profile',
   className,
 }: UserPeekCardProps) {
   return (
     <div
       className={cn('min-w-[260px] rounded-md border p-3 shadow-md', className)}
       style={{
-        background: 'rgb(var(--surface))',
-        borderColor: 'var(--border-strong)',
-        color: 'rgb(var(--text-primary))',
+        background: 'var(--uix-surface)',
+        borderColor: 'var(--uix-border-strong)',
+        color: 'var(--uix-text)',
       }}
       // biome-ignore lint/a11y/useSemanticElements: <dialog> carries modal-state semantics; a hover-card peek is not modal.
       role="dialog"
@@ -330,7 +333,7 @@ export function UserPeekCard({
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium">{user.display_name}</span>
           {user.role_label || user.group_label ? (
-            <span className="truncate text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <span className="truncate text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
               {[user.role_label, user.group_label].filter(Boolean).join(' · ')}
             </span>
           ) : null}
@@ -340,7 +343,7 @@ export function UserPeekCard({
         <div className="mt-3">
           <p
             className="mb-1 text-xs uppercase tracking-wider"
-            style={{ color: 'rgb(var(--text-hushed))' }}
+            style={{ color: 'var(--uix-text-hushed)' }}
           >
             {recentTicketsLabel}
           </p>
@@ -351,7 +354,7 @@ export function UserPeekCard({
         <div className="mt-3">
           <p
             className="mb-1 text-xs uppercase tracking-wider"
-            style={{ color: 'rgb(var(--text-hushed))' }}
+            style={{ color: 'var(--uix-text-hushed)' }}
           >
             {ownedCisLabel}
           </p>
@@ -363,7 +366,7 @@ export function UserPeekCard({
           href={profileHref}
           className="mt-3 inline-block text-xs underline decoration-dotted underline-offset-4"
         >
-          View profile
+          {profileLabel}
         </a>
       ) : null}
     </div>

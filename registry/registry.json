@@ -26,12 +26,19 @@
       "files": [{ "path": "registry/uix/list-surfaces/list-surfaces.ts", "type": "registry:lib", "target": "components/uix/list-surfaces.ts" }]
     },
     {
+      "name": "types",
+      "type": "registry:lib",
+      "title": "Shared Types",
+      "description": "Cross-component types (DataTableDensity, RFC7807Problem) so type-only consumers don't vendor the data-table chain.",
+      "files": [{ "path": "registry/uix/types/types.ts", "type": "registry:lib", "target": "components/uix/types.ts" }]
+    },
+    {
       "name": "data-table",
       "type": "registry:component",
       "title": "Data Table",
       "description": "Universal TanStack-based data table with density modes, multi-column sort, toolbar (search, filter chips, density toggle) and column visibility/reorder menu.",
       "dependencies": ["lucide-react", "@tanstack/react-table"],
-      "registryDependencies": ["@uix/utils", "@uix/list-surfaces", "@uix/filter-popover"],
+      "registryDependencies": ["@uix/utils", "@uix/list-surfaces", "@uix/filter-popover", "@uix/types"],
       "files": [
         { "path": "registry/uix/data-table/data-table.tsx", "type": "registry:component", "target": "components/uix/data-table.tsx" },
         { "path": "registry/uix/data-table/data-table-toolbar.tsx", "type": "registry:component", "target": "components/uix/data-table-toolbar.tsx" },
@@ -85,7 +92,7 @@
       "type": "registry:component",
       "title": "Async Operation Status",
       "description": "Long-running operation status pattern (pending / progress / done / failed).",
-      "registryDependencies": ["@uix/utils", "@uix/states"],
+      "registryDependencies": ["@uix/utils", "@uix/types"],
       "files": [{ "path": "registry/uix/async-operation-status/async-operation-status.tsx", "type": "registry:component", "target": "components/uix/async-operation-status.tsx" }]
     },
     {
@@ -110,7 +117,7 @@
       "title": "States",
       "description": "Standardized empty / loading / error state triplet with retry affordances.",
       "dependencies": ["lucide-react"],
-      "registryDependencies": ["@uix/utils", "@uix/data-table"],
+      "registryDependencies": ["@uix/utils", "@uix/types"],
       "files": [{ "path": "registry/uix/states/states.tsx", "type": "registry:component", "target": "components/uix/states.tsx" }]
     },
     {

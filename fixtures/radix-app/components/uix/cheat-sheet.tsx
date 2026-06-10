@@ -129,26 +129,23 @@ export function CheatSheet({
         if (e.target === e.currentTarget) onOpenChange(false);
       }}
     >
-      <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-[var(--border)] bg-[rgb(var(--surface))] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-          <h2
-            id="cheat-sheet-title"
-            className="text-sm font-medium text-[rgb(var(--text-primary))]"
-          >
+      <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-uix-line bg-uix-surface shadow-2xl">
+        <div className="flex items-center justify-between border-b border-uix-line px-4 py-3">
+          <h2 id="cheat-sheet-title" className="text-sm font-medium text-uix-text">
             Keyboard shortcuts
           </h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             aria-label="Close cheat sheet"
-            className="text-xs text-[rgb(var(--text-primary)/0.6)] hover:text-[rgb(var(--text-primary))]"
+            className="text-xs text-uix-hushed hover:text-uix-text"
           >
             Esc
           </button>
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-4 py-3">
           {orderedCategories.length === 0 ? (
-            <p className="py-6 text-center text-sm text-[rgb(var(--text-primary)/0.6)]">
+            <p className="py-6 text-center text-sm text-uix-hushed">
               No shortcuts available in the current context.
             </p>
           ) : (
@@ -156,19 +153,17 @@ export function CheatSheet({
               const list = groups.get(cat) ?? [];
               return (
                 <section key={cat} className="mb-4 last:mb-0">
-                  <h3 className="mb-2 text-[0.65rem] uppercase tracking-widest text-[rgb(var(--text-primary)/0.6)]">
+                  <h3 className="mb-2 text-[0.65rem] uppercase tracking-widest text-uix-hushed">
                     {cat}
                   </h3>
                   <ul className="space-y-1">
                     {list.map((s) => (
                       <li
                         key={s.id}
-                        className="flex items-center justify-between gap-3 rounded px-2 py-1 text-sm hover:bg-[rgb(var(--bg-hover))]/50"
+                        className="flex items-center justify-between gap-3 rounded px-2 py-1 text-sm hover:bg-uix-hover/50"
                       >
-                        <span className="text-[rgb(var(--text-primary))]">
-                          {resolveLabel(s.labelKey)}
-                        </span>
-                        <kbd className="rounded border border-[var(--border)] bg-[rgb(var(--bg-hover))] px-1.5 py-0.5 text-[0.65rem] font-mono text-[rgb(var(--text-primary)/0.6)]">
+                        <span className="text-uix-text">{resolveLabel(s.labelKey)}</span>
+                        <kbd className="rounded border border-uix-line bg-uix-hover px-1.5 py-0.5 text-[0.65rem] font-mono text-uix-hushed">
                           {formatTrigger(s, isMac, formatChord)}
                         </kbd>
                       </li>

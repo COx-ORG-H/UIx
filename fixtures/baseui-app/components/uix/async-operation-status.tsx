@@ -3,7 +3,7 @@
 /* @uix registry item — ported from @itsmx/shared-ui/src/async-operation-status.tsx */
 
 import type { ReactNode } from 'react';
-import type { RFC7807Problem } from './states';
+import type { RFC7807Problem } from './types';
 import { cn } from './utils';
 
 /**
@@ -32,6 +32,11 @@ interface BaseAsyncOperationProps {
   operationId: string;
   /** Resolver-passed operation kind label (e.g. "Generating DORA RoI"). */
   label: ReactNode;
+  /**
+   * Resolver-passed overrides for the per-state badge text. Falls back
+   * to the neutral defaults (Queued / Running / Complete / Failed).
+   */
+  readonly stateLabels?: Partial<Record<AsyncOperationState, string>>;
   className?: string;
 }
 
@@ -74,10 +79,10 @@ export type AsyncOperationStatusProps =
   | AsyncOperationFailedProps;
 
 const COLORS: Record<AsyncOperationState, { fg: string; bg: string }> = {
-  queued: { fg: 'rgb(var(--text-hushed))', bg: 'rgb(var(--bg-hover))' },
-  running: { fg: 'rgb(var(--text-primary))', bg: 'rgb(var(--bg-hover))' },
-  complete: { fg: 'rgb(var(--success))', bg: 'rgb(var(--bg-hover))' },
-  failed: { fg: 'rgb(var(--danger-text))', bg: 'rgb(var(--bg-hover))' },
+  queued: { fg: 'var(--uix-text-hushed)', bg: 'var(--uix-bg-hover)' },
+  running: { fg: 'var(--uix-text)', bg: 'var(--uix-bg-hover)' },
+  complete: { fg: 'var(--uix-success)', bg: 'var(--uix-bg-hover)' },
+  failed: { fg: 'var(--uix-danger)', bg: 'var(--uix-bg-hover)' },
 };
 
 const LABELS: Record<AsyncOperationState, string> = {
@@ -88,15 +93,15 @@ const LABELS: Record<AsyncOperationState, string> = {
 };
 
 export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
-  const { state, operationId, label, className } = props;
+  const { state, operationId, label, stateLabels, className } = props;
   const colors = COLORS[state];
 
   return (
     <div
       className={cn('rounded-md border p-4', className)}
       style={{
-        background: 'rgb(var(--surface))',
-        borderColor: 'var(--border)',
+        background: 'var(--uix-surface)',
+        borderColor: 'var(--uix-border)',
       }}
       // biome-ignore lint/a11y/useSemanticElements: AsyncOperationStatus is a wrapper-styled status container; <output> is for form-derived values, not arbitrary status text. Matches the <EmptyState/> rationale in states.tsx.
       role="status"
@@ -105,19 +110,19 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
       data-operation-id={operationId}
     >
       <header className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium" style={{ color: 'rgb(var(--text-primary))' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--uix-text)' }}>
           {label}
         </p>
         <span
           className="rounded-full px-2 py-0.5 text-[0.7rem] uppercase tracking-wider"
           style={{ color: colors.fg, background: colors.bg }}
         >
-          {LABELS[state]}
+          {stateLabels?.[state] ?? LABELS[state]}
         </span>
       </header>
 
       {state === 'queued' ? (
-        <p className="mt-2 text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+        <p className="mt-2 text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
           {props.queueHint ?? 'Waiting for an executor.'}
         </p>
       ) : null}
@@ -126,7 +131,7 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
         <div className="mt-2 space-y-1">
           <div
             className="h-1.5 w-full overflow-hidden rounded-full"
-            style={{ background: 'var(--border)' }}
+            style={{ background: 'var(--uix-border)' }}
             role="progressbar"
             tabIndex={0}
             aria-valuemin={0}
@@ -138,7 +143,7 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
             <div
               className={cn('h-full', props.progress === undefined ? 'w-1/3 animate-pulse' : '')}
               style={{
-                background: 'rgb(var(--accent))',
+                background: 'var(--uix-accent)',
                 width:
                   props.progress !== undefined
                     ? `${Math.round(Math.max(0, Math.min(1, props.progress)) * 100)}%`
@@ -147,7 +152,7 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
             />
           </div>
           {props.progressHint ? (
-            <p className="text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <p className="text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
               {props.progressHint}
             </p>
           ) : null}
@@ -157,7 +162,7 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
       {state === 'complete' ? (
         <div className="mt-2 space-y-2">
           {props.summary ? (
-            <p className="text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <p className="text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
               {props.summary}
             </p>
           ) : null}
@@ -167,11 +172,11 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
 
       {state === 'failed' ? (
         <div className="mt-2 space-y-2">
-          <p className="text-sm" style={{ color: 'rgb(var(--danger-text))' }}>
+          <p className="text-sm" style={{ color: 'var(--uix-danger)' }}>
             {props.problem.title}
           </p>
           {props.problem.detail ? (
-            <p className="text-xs" style={{ color: 'rgb(var(--text-hushed))' }}>
+            <p className="text-xs" style={{ color: 'var(--uix-text-hushed)' }}>
               {props.problem.detail}
             </p>
           ) : null}
@@ -181,9 +186,9 @@ export function AsyncOperationStatus(props: AsyncOperationStatusProps) {
               onClick={props.onRetry}
               className="inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs"
               style={{
-                background: 'rgb(var(--surface))',
-                color: 'rgb(var(--text-primary))',
-                borderColor: 'var(--border-strong)',
+                background: 'var(--uix-surface)',
+                color: 'var(--uix-text)',
+                borderColor: 'var(--uix-border-strong)',
               }}
             >
               {props.retryLabel ?? 'Retry'}

@@ -3,8 +3,12 @@
 
 import { AlertCircle, Lock } from 'lucide-react';
 import type { ComponentType, ReactNode, SVGProps } from 'react';
-import type { DataTableDensity } from './data-table';
+import type { DataTableDensity, RFC7807Problem } from './types';
 import { cn } from './utils';
+
+// Back-compat: RFC7807Problem used to be declared here; re-export so
+// existing `import { RFC7807Problem } from './states'` keeps working.
+export type { RFC7807Problem } from './types';
 
 /**
  * UI-PRIM-01 / addendum 5 — the universal three-state triplet plus
@@ -97,15 +101,15 @@ export function EmptyState({
         <Icon
           size={iconSize}
           strokeWidth={1.5}
-          style={{ color: 'rgb(var(--text-hushed))' }}
+          style={{ color: 'var(--uix-text-hushed)' }}
           aria-hidden="true"
         />
       ) : null}
-      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'rgb(var(--text-primary))' }}>
+      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'var(--uix-text)' }}>
         {title}
       </h3>
       {description ? (
-        <p className={DESCRIPTION_CLS} style={{ color: 'rgb(var(--text-hushed))' }}>
+        <p className={DESCRIPTION_CLS} style={{ color: 'var(--uix-text-hushed)' }}>
           {description}
         </p>
       ) : null}
@@ -115,7 +119,7 @@ export function EmptyState({
           type="button"
           onClick={onClearFilters}
           className="mt-2 text-sm underline decoration-dotted underline-offset-4"
-          style={{ color: 'rgb(var(--text-primary))' }}
+          style={{ color: 'var(--uix-text)' }}
         >
           {clearFiltersLabel}
         </button>
@@ -169,7 +173,7 @@ export function LoadingState({
           key={key}
           className={cn('block animate-pulse rounded', skeletonHeight)}
           style={{
-            background: 'var(--border)',
+            background: 'var(--uix-border)',
             // Vary width slightly so the skeleton doesn't look like a single block.
             width: `${[88, 72, 95, 60, 80][i % 5]}%`,
           }}
@@ -180,14 +184,6 @@ export function LoadingState({
 }
 
 // -- ErrorState --------------------------------------------------------
-
-export interface RFC7807Problem {
-  readonly title: string;
-  readonly detail?: string;
-  readonly type?: string;
-  readonly status?: number;
-  readonly [key: string]: unknown;
-}
 
 export interface ErrorStateProps {
   /**
@@ -221,14 +217,14 @@ export function ErrorState({
       <AlertCircle
         size={iconSize}
         strokeWidth={1.5}
-        style={{ color: 'rgb(var(--danger-text))' }}
+        style={{ color: 'var(--uix-danger)' }}
         aria-hidden="true"
       />
-      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'rgb(var(--text-primary))' }}>
+      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'var(--uix-text)' }}>
         {problem.title}
       </h3>
       {problem.detail ? (
-        <p className={DESCRIPTION_CLS} style={{ color: 'rgb(var(--text-hushed))' }}>
+        <p className={DESCRIPTION_CLS} style={{ color: 'var(--uix-text-hushed)' }}>
           {problem.detail}
         </p>
       ) : null}
@@ -238,9 +234,9 @@ export function ErrorState({
           onClick={onRetry}
           className="mt-3 inline-flex h-9 items-center justify-center rounded-md border px-3.5 text-sm"
           style={{
-            background: 'rgb(var(--surface))',
-            color: 'rgb(var(--text-primary))',
-            borderColor: 'var(--border-strong)',
+            background: 'var(--uix-surface)',
+            color: 'var(--uix-text)',
+            borderColor: 'var(--uix-border-strong)',
           }}
         >
           {retryLabel}
@@ -288,17 +284,17 @@ export function ForbiddenState({
       <Lock
         size={iconSize}
         strokeWidth={1.5}
-        style={{ color: 'rgb(var(--text-hushed))' }}
+        style={{ color: 'var(--uix-text-hushed)' }}
         aria-hidden="true"
       />
-      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'rgb(var(--text-primary))' }}>
+      <h3 className={HEADING_CLS_BY_VARIANT[variant]} style={{ color: 'var(--uix-text)' }}>
         {title}
       </h3>
-      <p className={DESCRIPTION_CLS} style={{ color: 'rgb(var(--text-hushed))' }}>
+      <p className={DESCRIPTION_CLS} style={{ color: 'var(--uix-text-hushed)' }}>
         {description}
       </p>
       {permission ? (
-        <p className="mt-1 text-xs tabular-nums" style={{ color: 'rgb(var(--text-hushed))' }}>
+        <p className="mt-1 text-xs tabular-nums" style={{ color: 'var(--uix-text-hushed)' }}>
           {permission}
         </p>
       ) : null}

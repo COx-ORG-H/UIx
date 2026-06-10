@@ -98,6 +98,8 @@ export interface CommandPaletteProps {
   readonly navigation: ReadonlyArray<NavigationEntry>;
   /** Optional entity-jump resolvers (e.g. INC-, CHG-, SRV-). */
   readonly entityResolvers?: ReadonlyArray<EntityJumpResolver>;
+  /** Resolver-passed placeholder for the search input. */
+  readonly searchPlaceholder?: string;
   /**
    * Invoked when the user selects an action shortcut. The host wires this
    * to the same handler the on-screen button calls (Hard Rule 19).
@@ -149,6 +151,7 @@ export function CommandPalette({
   formatChordForDisplay,
   navigation,
   entityResolvers,
+  searchPlaceholder,
   onAction,
   onNavigate,
 }: CommandPaletteProps): ReactNode {
@@ -303,8 +306,8 @@ export function CommandPalette({
         if (e.target === e.currentTarget) onOpenChange(false);
       }}
     >
-      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-[var(--border)] bg-[rgb(var(--surface))] shadow-2xl">
-        <div className="border-b border-[var(--border)] px-3 py-2">
+      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-uix-line bg-uix-surface shadow-2xl">
+        <div className="border-b border-uix-line px-3 py-2">
           <input
             ref={inputRef}
             role="combobox"
@@ -312,14 +315,14 @@ export function CommandPalette({
             aria-controls="command-palette-listbox"
             aria-activedescendant={items[activeIndex] ? `cp-item-${activeIndex}` : undefined}
             type="text"
-            placeholder="Search actions, pages, INC-…"
+            placeholder={searchPlaceholder ?? 'Search actions and pages…'}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setActiveIndex(0);
             }}
             onKeyDown={onKeyDown}
-            className="w-full bg-transparent text-sm text-[rgb(var(--text-primary))] placeholder:text-[rgb(var(--text-muted))] focus:outline-none"
+            className="w-full bg-transparent text-sm text-uix-text placeholder:text-uix-muted focus:outline-none"
           />
         </div>
         {/* biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA combobox-with-listbox pattern uses <ul role=listbox> by spec; focus stays on the combobox input and aria-activedescendant points at the current option. */}
@@ -327,7 +330,7 @@ export function CommandPalette({
         {/* biome-ignore lint/a11y/useFocusableInteractive: per the combobox pattern, the listbox itself is not focusable — focus stays on the input. */}
         <ul id="command-palette-listbox" role="listbox" className="max-h-80 overflow-y-auto py-1">
           {items.length === 0 ? (
-            <li className="px-3 py-4 text-center text-xs text-[rgb(var(--text-primary)/0.6)]">
+            <li className="px-3 py-4 text-center text-xs text-uix-hushed">
               No matches
             </li>
           ) : (
@@ -344,26 +347,26 @@ export function CommandPalette({
                 className={[
                   'flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-sm',
                   i === activeIndex
-                    ? 'bg-[rgb(var(--bg-hover))] text-[rgb(var(--text-primary))]'
-                    : 'text-[rgb(var(--text-primary)/0.6)] hover:bg-[rgb(var(--bg-hover))]/60',
+                    ? 'bg-uix-hover text-uix-text'
+                    : 'text-uix-hushed hover:bg-uix-hover/60',
                 ].join(' ')}
                 onMouseEnter={() => setActiveIndex(i)}
                 onClick={() => it.invoke()}
               >
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-[rgb(var(--text-primary))]">{it.label}</span>
+                  <span className="truncate text-uix-text">{it.label}</span>
                   {it.subtitle ? (
-                    <span className="truncate text-xs text-[rgb(var(--text-primary)/0.6)]">
+                    <span className="truncate text-xs text-uix-hushed">
                       {it.subtitle}
                     </span>
                   ) : null}
                 </span>
                 {it.hint ? (
-                  <kbd className="shrink-0 rounded border border-[var(--border)] bg-[rgb(var(--bg-hover))] px-1.5 py-0.5 text-[0.65rem] font-mono text-[rgb(var(--text-primary)/0.6)]">
+                  <kbd className="shrink-0 rounded border border-uix-line bg-uix-hover px-1.5 py-0.5 text-[0.65rem] font-mono text-uix-hushed">
                     {it.hint}
                   </kbd>
                 ) : (
-                  <span className="shrink-0 text-[0.6rem] uppercase tracking-wider text-[rgb(var(--text-primary)/0.6)]">
+                  <span className="shrink-0 text-[0.6rem] uppercase tracking-wider text-uix-hushed">
                     {it.kind}
                   </span>
                 )}

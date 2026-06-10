@@ -98,7 +98,7 @@ export function Form<TSchema extends z.ZodObject<z.ZodRawShape>>(
 
   if (props.fields.length === 0) {
     return (
-      <div className="rounded border border-dashed border-[var(--border)] p-6 text-sm text-[rgb(var(--text-primary)/0.6)]">
+      <div className="rounded border border-dashed border-uix-line p-6 text-sm text-uix-hushed">
         {props.empty ?? 'No fields configured.'}
       </div>
     );
@@ -151,7 +151,7 @@ export function Form<TSchema extends z.ZodObject<z.ZodRawShape>>(
       })}
 
       {props.error ? (
-        <p role="alert" className="text-sm text-[rgb(var(--danger-text))]">
+        <p role="alert" className="text-sm text-uix-danger">
           {props.error}
         </p>
       ) : null}
@@ -159,7 +159,7 @@ export function Form<TSchema extends z.ZodObject<z.ZodRawShape>>(
       <button
         type="submit"
         disabled={props.loading || form.formState.isSubmitting}
-        className="self-start rounded bg-[rgb(var(--text-primary))] px-4 py-2 text-sm font-medium text-[rgb(var(--bg-app))] disabled:opacity-50"
+        className="self-start rounded bg-uix-text px-4 py-2 text-sm font-medium text-uix-app disabled:opacity-50"
       >
         {props.submitLabel ?? 'Submit'}
       </button>
@@ -181,9 +181,9 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
   const inputType = descriptor.inputType ?? 'text';
 
   const baseInputClass = cn(
-    'rounded border border-[var(--border)] bg-transparent px-3 py-2 text-sm',
-    'focus:outline-none focus:ring-2 focus:ring-[rgb(var(--focus-ring))]',
-    fieldState.error ? 'border-[rgb(var(--danger))]' : '',
+    'rounded border border-uix-line bg-transparent px-3 py-2 text-sm',
+    'focus:outline-none focus:ring-2 focus:ring-uix-ring',
+    fieldState.error ? 'border-uix-danger' : '',
   );
 
   return (
@@ -196,7 +196,7 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
          * what assistive tech consumes.
          */}
         {descriptor.required ? (
-          <span aria-hidden="true" className="mr-1 text-[rgb(var(--danger))]">
+          <span aria-hidden="true" className="mr-1 text-uix-danger">
             *
           </span>
         ) : null}
@@ -237,13 +237,13 @@ function DefaultField({ field, fieldState, descriptor }: DefaultFieldProps): Rea
       )}
 
       {descriptor.description ? (
-        <p id={describedBy} className="text-xs text-[rgb(var(--text-primary)/0.6)]">
+        <p id={describedBy} className="text-xs text-uix-hushed">
           {descriptor.description}
         </p>
       ) : null}
 
       {fieldState.error ? (
-        <p id={errorId} role="alert" className="text-xs text-[rgb(var(--danger-text))]">
+        <p id={errorId} role="alert" className="text-xs text-uix-danger">
           {fieldState.error.message ?? 'Invalid value.'}
         </p>
       ) : null}

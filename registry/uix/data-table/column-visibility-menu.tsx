@@ -83,9 +83,9 @@ export function ColumnVisibilityMenu({
         aria-expanded={open}
         className="inline-flex h-8 w-8 items-center justify-center rounded-md border"
         style={{
-          background: 'rgb(var(--surface))',
-          color: 'rgb(var(--text-hushed))',
-          borderColor: 'var(--border-strong)',
+          background: 'var(--uix-surface)',
+          color: 'var(--uix-text-hushed)',
+          borderColor: 'var(--uix-border-strong)',
         }}
         title={labels.trigger}
       >
@@ -95,8 +95,8 @@ export function ColumnVisibilityMenu({
         <div
           className="absolute top-full right-0 z-10 mt-1 min-w-[240px] rounded-md border shadow-md"
           style={{
-            background: 'rgb(var(--surface))',
-            borderColor: 'var(--border-strong)',
+            background: 'var(--uix-surface)',
+            borderColor: 'var(--uix-border-strong)',
           }}
           role="menu"
         >
@@ -115,9 +115,9 @@ export function ColumnVisibilityMenu({
                   disabled={c.required}
                   onClick={() => onToggle(c.id)}
                   aria-label={c.visible ? labels.hide : labels.show}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-[rgb(var(--bg-hover))] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-uix-hover disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
-                    color: c.visible ? 'rgb(var(--text-primary))' : 'rgb(var(--text-hushed))',
+                    color: c.visible ? 'var(--uix-text)' : 'var(--uix-text-hushed)',
                   }}
                 >
                   {c.visible ? (
@@ -128,7 +128,7 @@ export function ColumnVisibilityMenu({
                 </button>
                 <span
                   className="flex-1 truncate text-sm"
-                  style={{ color: 'rgb(var(--text-primary))' }}
+                  style={{ color: 'var(--uix-text)' }}
                 >
                   {c.label}
                 </span>
@@ -138,8 +138,8 @@ export function ColumnVisibilityMenu({
                     onClick={() => onReorder(c.id, 'up')}
                     disabled={i === 0}
                     aria-label={labels.move_up}
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-[rgb(var(--bg-hover))] disabled:cursor-not-allowed disabled:opacity-30"
-                    style={{ color: 'rgb(var(--text-hushed))' }}
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-uix-hover disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ color: 'var(--uix-text-hushed)' }}
                     data-direction="up"
                   >
                     <ArrowUp size={12} strokeWidth={1.75} aria-hidden="true" />
@@ -149,8 +149,8 @@ export function ColumnVisibilityMenu({
                     onClick={() => onReorder(c.id, 'down')}
                     disabled={i === columns.length - 1}
                     aria-label={labels.move_down}
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-[rgb(var(--bg-hover))] disabled:cursor-not-allowed disabled:opacity-30"
-                    style={{ color: 'rgb(var(--text-hushed))' }}
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-uix-hover disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ color: 'var(--uix-text-hushed)' }}
                     data-direction="down"
                   >
                     <ArrowDown size={12} strokeWidth={1.75} aria-hidden="true" />
@@ -160,7 +160,7 @@ export function ColumnVisibilityMenu({
             ))}
           </ul>
           {onResetSort ? (
-            <div className="border-t px-2 py-2" style={{ borderColor: 'var(--border)' }}>
+            <div className="border-t px-2 py-2" style={{ borderColor: 'var(--uix-border)' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -168,7 +168,7 @@ export function ColumnVisibilityMenu({
                   setOpen(false);
                 }}
                 className="text-xs underline decoration-dotted underline-offset-4"
-                style={{ color: 'rgb(var(--text-hushed))' }}
+                style={{ color: 'var(--uix-text-hushed)' }}
               >
                 {labels.reset_sort}
               </button>

@@ -131,15 +131,15 @@ export type FilterPopoverProps =
 
 const panelCls = 'flex w-72 max-w-[90vw] flex-col gap-3 rounded-md border p-3 shadow-md';
 const panelStyle = {
-  background: 'rgb(var(--surface))',
-  borderColor: 'var(--border-strong)',
-  color: 'rgb(var(--text-primary))',
+  background: 'var(--uix-surface)',
+  borderColor: 'var(--uix-border-strong)',
+  color: 'var(--uix-text)',
 };
 const inputCls = 'block h-9 w-full rounded-md border px-3 text-sm tabular-nums';
 const inputStyle = {
-  background: 'rgb(var(--surface))',
-  color: 'rgb(var(--text-primary))',
-  borderColor: 'var(--border-strong)',
+  background: 'var(--uix-surface)',
+  color: 'var(--uix-text)',
+  borderColor: 'var(--uix-border-strong)',
 };
 const selectCls = inputCls;
 const primaryBtnCls =
@@ -195,7 +195,7 @@ function Footer({
           type="button"
           onClick={onClear}
           className="text-xs underline decoration-dotted underline-offset-4"
-          style={{ color: 'rgb(var(--text-hushed))' }}
+          style={{ color: 'var(--uix-text-hushed)' }}
         >
           {clearLabel}
         </button>
@@ -208,9 +208,9 @@ function Footer({
           onClick={onCancel}
           className={secondaryBtnCls}
           style={{
-            background: 'rgb(var(--surface))',
-            color: 'rgb(var(--text-primary))',
-            borderColor: 'var(--border-strong)',
+            background: 'var(--uix-surface)',
+            color: 'var(--uix-text)',
+            borderColor: 'var(--uix-border-strong)',
           }}
         >
           {cancelLabel}
@@ -220,7 +220,7 @@ function Footer({
           onClick={onApply}
           disabled={applyDisabled}
           className={primaryBtnCls}
-          style={{ background: 'rgb(var(--accent))', color: 'rgb(var(--accent-fg))' }}
+          style={{ background: 'var(--uix-accent)', color: 'var(--uix-accent-fg)' }}
         >
           {applyLabel}
         </button>
@@ -264,16 +264,16 @@ function EnumPopover(props: EnumFilterProps) {
                 role="option"
                 aria-selected={checked}
                 onClick={() => toggle(o.value)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-[rgb(var(--bg-hover))]"
-                style={{ color: 'rgb(var(--text-primary))' }}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-uix-hover"
+                style={{ color: 'var(--uix-text)' }}
               >
                 <span
                   aria-hidden="true"
                   className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border"
                   style={{
-                    borderColor: 'var(--border-strong)',
-                    background: checked ? 'rgb(var(--accent))' : 'transparent',
-                    color: 'rgb(var(--accent-fg))',
+                    borderColor: 'var(--uix-border-strong)',
+                    background: checked ? 'var(--uix-accent)' : 'transparent',
+                    color: 'var(--uix-accent-fg)',
                   }}
                 >
                   {checked ? <Check size={12} strokeWidth={2.5} /> : null}
@@ -567,7 +567,7 @@ function ReferencePopover(props: ReferenceFilterProps) {
             <li
               key={id}
               className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-              style={{ borderColor: 'var(--border)' }}
+              style={{ borderColor: 'var(--uix-border)' }}
             >
               <span className="truncate">{labelById[id] ?? id}</span>
               <button
@@ -575,7 +575,7 @@ function ReferencePopover(props: ReferenceFilterProps) {
                 onClick={() => toggle(id)}
                 aria-label="Remove"
                 className="inline-flex h-4 w-4 items-center justify-center"
-                style={{ color: 'rgb(var(--text-hushed))' }}
+                style={{ color: 'var(--uix-text-hushed)' }}
               >
                 <X size={10} strokeWidth={2} />
               </button>
@@ -599,15 +599,15 @@ function ReferencePopover(props: ReferenceFilterProps) {
                 role="option"
                 aria-selected={checked}
                 onClick={() => toggle(o.value)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-[rgb(var(--bg-hover))]"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-uix-hover"
               >
                 <span
                   aria-hidden="true"
                   className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border"
                   style={{
-                    borderColor: 'var(--border-strong)',
-                    background: checked ? 'rgb(var(--accent))' : 'transparent',
-                    color: 'rgb(var(--accent-fg))',
+                    borderColor: 'var(--uix-border-strong)',
+                    background: checked ? 'var(--uix-accent)' : 'transparent',
+                    color: 'var(--uix-accent-fg)',
                   }}
                 >
                   {checked ? <Check size={12} strokeWidth={2.5} /> : null}
@@ -658,7 +658,7 @@ function BooleanPopover(props: BooleanFilterProps) {
         ].map((opt) => (
           <label
             key={opt.v}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-[rgb(var(--bg-hover))]"
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-uix-hover"
           >
             <input
               type="radio"
@@ -704,7 +704,7 @@ function MultiValuePopover(props: MultiValueFilterProps) {
           <span
             key={t}
             className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-            style={{ borderColor: 'var(--border)' }}
+            style={{ borderColor: 'var(--uix-border)' }}
           >
             <span className="truncate">{t}</span>
             <button
@@ -712,7 +712,7 @@ function MultiValuePopover(props: MultiValueFilterProps) {
               onClick={() => setTags((cur) => cur.filter((x) => x !== t))}
               aria-label={`Remove ${t}`}
               className="inline-flex h-4 w-4 items-center justify-center"
-              style={{ color: 'rgb(var(--text-hushed))' }}
+              style={{ color: 'var(--uix-text-hushed)' }}
             >
               <X size={10} strokeWidth={2} />
             </button>
@@ -741,7 +741,7 @@ function MultiValuePopover(props: MultiValueFilterProps) {
           onClick={commit}
           aria-label="Add tag"
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border"
-          style={{ borderColor: 'var(--border-strong)' }}
+          style={{ borderColor: 'var(--uix-border-strong)' }}
         >
           <ChevronDown size={14} strokeWidth={1.75} />
         </button>

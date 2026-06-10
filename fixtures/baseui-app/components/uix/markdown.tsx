@@ -53,10 +53,16 @@ const isSafeUrl = (url: string): boolean => URL_OK_RE.test(url.trim());
 // Bare-URL autolink detector for inline text. Conservative: only http(s).
 const BARE_URL_RE = /(https?:\/\/[^\s<>()]+)/g;
 
-let keySeq = 0;
-const nextKey = (): string => {
-  keySeq += 1;
-  return `md-${keySeq}`;
+/**
+ * Per-render key generator. Each <Markdown/> invocation creates its own
+ * via makeKeyGen() and threads it through the helpers, so keys are
+ * deterministic per source string — no module-level mutable state that
+ * concurrent SSR renders could interleave.
+ */
+type KeyGen = () => string;
+const makeKeyGen = (): KeyGen => {
+  let seq = 0;
+  return () => `md-${++seq}`;
 };
 
 /**
@@ -64,7 +70,7 @@ const nextKey = (): string => {
  * React nodes. Operates on already-escaped text (React escapes on
  * render); we only choose which spans become <strong>/<em>/<code>/<a>.
  */
-function renderInline(text: string): ReactNode[] {
+function renderInline(text: string, nextKey: KeyGen): ReactNode[] {
   // Tokenize by the inline constructs in priority order. We do a single
   // left-to-right scan using a combined regex; each match is replaced by
   // the corresponding element, and the gaps stay as text (auto-linked).
@@ -76,7 +82,7 @@ function renderInline(text: string): ReactNode[] {
   let match = pattern.exec(text);
   while (match !== null) {
     if (match.index > lastIndex) {
-      pushTextWithAutolinks(nodes, text.slice(lastIndex, match.index));
+      pushTextWithAutolinks(nodes, text.slice(lastIndex, match.index), nextKey);
     }
     const token = match[0];
     if (token.startsWith('`')) {
@@ -84,7 +90,10 @@ function renderInline(text: string): ReactNode[] {
         <code
           key={nextKey()}
           className="rounded px-1 py-0.5 text-[0.85em]"
-          style={{ background: 'rgb(var(--bg-hover))', fontFamily: 'var(--font-mono, monospace)' }}
+          style={{
+            background: 'var(--uix-bg-hover)',
+            fontFamily: 'var(--uix-font-mono, monospace)',
+          }}
         >
           {token.slice(1, -1)}
         </code>,
@@ -104,7 +113,7 @@ function renderInline(text: string): ReactNode[] {
             href={rawUrl}
             {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             className="underline decoration-dotted underline-offset-2"
-            style={{ color: 'rgb(var(--accent))' }}
+            style={{ color: 'var(--uix-link)' }}
           >
             {label}
           </a>,
@@ -114,22 +123,22 @@ function renderInline(text: string): ReactNode[] {
         nodes.push(label);
       }
     } else if (token.startsWith('**')) {
-      nodes.push(<strong key={nextKey()}>{renderInline(token.slice(2, -2))}</strong>);
+      nodes.push(<strong key={nextKey()}>{renderInline(token.slice(2, -2), nextKey)}</strong>);
     } else {
       // *italic* or _italic_
-      nodes.push(<em key={nextKey()}>{renderInline(token.slice(1, -1))}</em>);
+      nodes.push(<em key={nextKey()}>{renderInline(token.slice(1, -1), nextKey)}</em>);
     }
     lastIndex = pattern.lastIndex;
     match = pattern.exec(text);
   }
   if (lastIndex < text.length) {
-    pushTextWithAutolinks(nodes, text.slice(lastIndex));
+    pushTextWithAutolinks(nodes, text.slice(lastIndex), nextKey);
   }
   return nodes;
 }
 
 /** Split a plain-text run into text + bare-URL autolinks. */
-function pushTextWithAutolinks(nodes: ReactNode[], text: string): void {
+function pushTextWithAutolinks(nodes: ReactNode[], text: string, nextKey: KeyGen): void {
   if (!text) return;
   let last = 0;
   BARE_URL_RE.lastIndex = 0;
@@ -144,7 +153,7 @@ function pushTextWithAutolinks(nodes: ReactNode[], text: string): void {
         target="_blank"
         rel="noopener noreferrer"
         className="underline decoration-dotted underline-offset-2"
-        style={{ color: 'rgb(var(--accent))' }}
+        style={{ color: 'var(--uix-link)' }}
       >
         {url}
       </a>,
@@ -161,13 +170,13 @@ interface ListBlock {
 }
 
 /** Render a paragraph's lines with single-newline → <br/>. */
-function renderParagraph(lines: string[], key: string): ReactNode {
+function renderParagraph(lines: string[], key: string, nextKey: KeyGen): ReactNode {
   const out: ReactNode[] = [];
   lines.forEach((line, i) => {
-    // Stable, render-unique <br/> key from the module key sequence — the
-    // array index is not used as a key (avoids reorder/state pitfalls).
+    // Stable, render-unique <br/> key from the per-render key sequence —
+    // the array index is not used as a key (avoids reorder/state pitfalls).
     if (i > 0) out.push(<br key={nextKey()} />);
-    out.push(...renderInline(line));
+    out.push(...renderInline(line, nextKey));
   });
   return (
     <p key={key} className="leading-relaxed">
@@ -180,6 +189,10 @@ export function Markdown({ children, className }: MarkdownProps) {
   const source = typeof children === 'string' ? children : '';
   if (source.trim().length === 0) return null;
 
+  // One key generator per render: keys are deterministic for a given
+  // source string, even under concurrent SSR (no shared module state).
+  const nextKey = makeKeyGen();
+
   // Normalise line endings, then walk line-by-line building blocks.
   const lines = source.replace(/\r\n?/g, '\n').split('\n');
   const blocks: ReactNode[] = [];
@@ -189,7 +202,7 @@ export function Markdown({ children, className }: MarkdownProps) {
 
   const flushParagraph = () => {
     if (paragraph.length > 0) {
-      blocks.push(renderParagraph(paragraph, nextKey()));
+      blocks.push(renderParagraph(paragraph, nextKey(), nextKey));
       paragraph = [];
     }
   };
@@ -219,7 +232,10 @@ export function Markdown({ children, className }: MarkdownProps) {
         <pre
           key={nextKey()}
           className="overflow-x-auto rounded-md p-3 text-[0.85em]"
-          style={{ background: 'rgb(var(--bg-hover))', fontFamily: 'var(--font-mono, monospace)' }}
+          style={{
+            background: 'var(--uix-bg-hover)',
+            fontFamily: 'var(--uix-font-mono, monospace)',
+          }}
         >
           <code>{codeLines.join('\n')}</code>
         </pre>,
@@ -237,7 +253,7 @@ export function Markdown({ children, className }: MarkdownProps) {
       const Tag = `h${Math.min(level + 2, 6)}` as 'h3' | 'h4' | 'h5' | 'h6';
       blocks.push(
         <Tag key={nextKey()} className={cn('mt-1 font-semibold', sizeCls)}>
-          {renderInline(content)}
+          {renderInline(content, nextKey)}
         </Tag>,
       );
       i += 1;
@@ -256,9 +272,9 @@ export function Markdown({ children, className }: MarkdownProps) {
         <blockquote
           key={nextKey()}
           className="border-l-2 pl-3 italic"
-          style={{ borderColor: 'var(--border-strong)', color: 'rgb(var(--text-hushed))' }}
+          style={{ borderColor: 'var(--uix-border-strong)', color: 'var(--uix-text-hushed)' }}
         >
-          {renderInline(quoteLines.join(' '))}
+          {renderInline(quoteLines.join(' '), nextKey)}
         </blockquote>,
       );
       continue;
@@ -283,7 +299,7 @@ export function Markdown({ children, className }: MarkdownProps) {
         }
         i += 1;
       }
-      const itemEls = block.items.map((it) => <li key={nextKey()}>{renderInline(it)}</li>);
+      const itemEls = block.items.map((it) => <li key={nextKey()}>{renderInline(it, nextKey)}</li>);
       blocks.push(
         block.kind === 'ul' ? (
           <ul key={nextKey()} className="list-disc space-y-0.5 pl-5">

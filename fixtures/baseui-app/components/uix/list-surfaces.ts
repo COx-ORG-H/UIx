@@ -57,7 +57,7 @@ export interface ListSurfaceColumn {
 
 /** Full registration metadata for a list surface. */
 export interface ListSurface {
-  /** Stable, dot-namespaced identifier. e.g. `incident.list`, `cmdb.ci.list`. */
+  /** Stable, dot-namespaced identifier. e.g. `orders.list`, `catalog.item.list`. */
   readonly key: string;
   /** Customization-resolved label for the surface itself (used by the breadcrumb / saved-view UI). */
   readonly label: string;
@@ -97,7 +97,7 @@ const REGISTRY = new Map<string, ListSurface>();
 export const registerListSurface = (surface: ListSurface): void => {
   if (!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,3}$/.test(surface.key)) {
     throw new Error(
-      `registerListSurface: surface key "${surface.key}" must be dot-namespaced (e.g., 'incident.list', 'cmdb.ci.list').`,
+      `registerListSurface: surface key "${surface.key}" must be dot-namespaced (e.g., 'orders.list', 'catalog.item.list').`,
     );
   }
   const columnIds = new Set<string>();
