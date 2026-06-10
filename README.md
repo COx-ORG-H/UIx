@@ -184,7 +184,7 @@ Registry hosting: `node scripts/serve-registry.mjs` serves `dist/r` on `http://1
 
 ## Build-out phases
 
-1. **Phase 0 — build this repo.** Lift token values from ITSMx `globals.css` + `design-system.md`; seed the registry from `packages/shared/ui`; stand up fixtures + CI; publish `@hx/tokens@1.0.0`. *First verification:* Tailwind v4 `@import` of `@hx/tokens/*.css` from pnpm-symlinked `node_modules` on Windows.
+1. **Phase 0 — build this repo. ✅ DONE 2026-06-10** (npm publish pending scope claim). Token values lifted from `design-system.md`; 15 registry items seeded from `packages/shared/ui` (zero skips; command-palette/cheat-sheet decoupled from `@itsmx/shared-keyboard` via props); fixtures + full gate chain green (`pnpm check`); the L47-critical `@import` from pnpm-symlinked `node_modules` on Windows **verified**, and the HTTP-namespace `shadcn add` consumption path **verified** end-to-end.
 2. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
 3. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--hx-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
 4. **ITSMx composite flip — only after the autonomous build completes.** Until then, hx-ui treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.
