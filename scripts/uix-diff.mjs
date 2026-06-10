@@ -170,6 +170,7 @@ function check() {
           let date = stamp ? Date.parse(stamp[1]) : NaN;
           if (Number.isNaN(date)) {
             if (stamp) console.error(`uix-diff: WARNING unparseable stamp date in ${rel} ("${stamp[1]}") — falling back to lock addedAt`);
+            else console.error(`uix-diff: WARNING ${rel}: no @uix-registry stamp on line 1 — age falls back to lock addedAt (record time)`);
             date = Date.parse(entry.addedAt);
           }
           if (Number.isNaN(date)) {

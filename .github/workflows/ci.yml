@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: stamp-registry.mjs uses `git log -1 --follow` per file;
+          # a shallow clone would stamp every file with the grafted HEAD commit.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
