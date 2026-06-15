@@ -3,3 +3,8 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+
+# build/ is generated but COMMITTED on purpose: the showcase opens build-free and index.html
+# imports build/css/tokens.css through styles/. Override the global gitignore that excludes build/.
+!build/
+!build/**

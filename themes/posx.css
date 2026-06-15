@@ -1,0 +1,4 @@
+/* GENERATED — do not edit. Brand override for "posx". Source: themes/posx.tokens.json; build: npm run build:themes.
+   Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @uix/tokens/css. */
+:root { --uix-brand: #16A34A; --uix-brand-fg: #FFFFFF; }
+:root:where(.dark,[data-theme="dark"]) { --uix-brand: #22C55E; }

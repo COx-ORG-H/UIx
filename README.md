@@ -21,12 +21,27 @@ No build step.
 
 ## Use it in a project
 
-1. Copy `styles/tokens.css` + `styles/base.css` (+ `styles/motion.css` for animations) and the
-   `styles/components/*.css` files you need.
-2. Link them in load order: `tokens.css` → `base.css` → `utilities.css` → `motion.css` → `components/*`.
-   (Cascade layers make order robust regardless.)
-3. Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
-   The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.
+Tokens now ship as the **`@uix/tokens`** package (one DTCG source → CSS variables, a Tailwind
+theme, and typed TS constants). Add it as a dependency and import what your stack needs:
+
+- **Tailwind / shadcn (e.g. ITSMx):**
+  ```css
+  @import "@uix/tokens/css";          /* declares the --uix-* contract (light + dark) */
+  @import "@uix/tokens/themes/itsmx";  /* this product's brand */
+  @import "@uix/tokens/tailwind";      /* @theme — utilities like bg-uix-accent, rounded-uix-md */
+  @import "tailwindcss";
+  ```
+  (Tailwind v3 projects use `presets: [require('@uix/tokens/tailwind/preset')]` instead.)
+- **Plain CSS:** link `@uix/tokens/build/css/tokens.css`, then your product theme css.
+- **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@uix/tokens/ts";`
+  — use `cssVar` in the browser (respects brand + dark), `light`/`dark`/`num` for non-DOM.
+
+Then add `styles/base.css` (+ `styles/motion.css`) and the `styles/components/*.css` files you need,
+in load order `base.css` → `utilities.css` → `motion.css` → `components/*` (cascade layers make order
+robust regardless). Copy-paste still works too — every file references the same `--uix-*` names.
+
+Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
+The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.
 
 ## Brand a project (override the theme)
 
@@ -44,10 +59,27 @@ Override **values** freely; reuse the `--uix-*` **names** (never invent new ones
 
 ## Tokens
 
-All design decisions live in `styles/tokens.css` as `--uix-*` custom properties (surfaces, text, accent,
-status, an 8-hue chart palette, type scale, radii, elevation, motion, layout dims, scrollbars, peek width),
-declared light on `:root` and dark on `:root:where(.dark,[data-theme="dark"])`. Values are derived from the
-"Square UI" template; names match UIx v1.
+The single source of truth is **`tokens/*.json`** (W3C DTCG format). [Style Dictionary](https://styledictionary.com)
+generates every output from it:
+
+```
+tokens/base/*.json   tokens/dark/*.json          # DTCG source — edit here
+        │  npm run build:tokens
+        ▼
+build/css/tokens.css        # the --uix-* contract: light on :root, dark on the dark selector
+build/tailwind/theme.css    # Tailwind v4 @theme (+ preset.cjs for v3)
+build/ts/tokens.{js,d.ts}   # typed constants: cssVar / light / dark / num
+```
+
+`styles/tokens.css` is now a thin re-export of the generated file (kept as a stable import path).
+The build is **byte-faithful** to the original contract — `npm run test:parity` fails if any generated
+`--uix-*` name or value drifts from the frozen baseline (`tests/tokens.baseline.css`). The runtime tokens
+(`--uix-accent` etc. via `var(--uix-brand,…)`, and `--uix-brand-muted` via `color-mix`) are emitted
+verbatim so live brand overrides keep working. Names match UIx v1; values derive from the "Square UI" template.
+
+Per-product brand lives in `themes/<product>.tokens.json` → generated `themes/<product>.css` via
+`npm run build:themes`. Products override only the write-only `--uix-brand` / `--uix-brand-fg` slots
+(allowlist enforced in `scripts/build-themes.mjs`); accent/link/ring/brand-muted re-chain automatically.
 
 ## Relationship to UIx v1 & versioning
 
@@ -55,10 +87,17 @@ This is a separate project (its own git repo) that shares the token contract —
 Per the workspace directory-governance, versions live in git, not folder suffixes; if v2 supersedes v1 in
 projects, v1 moves to `_Archive`.
 
-## Forward path (not built yet)
+## Build & publish
 
-A small [Style Dictionary](https://styledictionary.com) step can later emit the same tokens to
-JSON / SCSS / Tailwind `@theme` from one source — the bridge back to v1's Tailwind world and other stacks.
+```powershell
+npm install
+npm run build        # build:tokens + build:themes -> build/ and themes/*.css
+npm run test:parity  # assert the generated CSS still matches the contract baseline
+```
+
+Generated output under `build/` is committed (so the showcase stays build-free to open) and `package.json`
+`exports` maps `./css`, `./tailwind`, `./ts`, and `./themes/*` for consumers. The package is `private` by
+default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove `private` before publishing.
 
 ## Fonts & icons
 
