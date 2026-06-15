@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UIx Styleguide — UIx v2</title>
+  <!-- no-flash: apply stored/OS theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="guide/guide.css">
+</head>
+<body>
+  <div class="uix-guide">
+    <!-- nav rail -->
+    <nav class="uix-guide__nav" data-uix-nav aria-label="Sections">
+      <div class="uix-guide__brand">UIx <small>v2</small></div>
+      <a class="uix-guide__navlink" href="#foundations">Foundations</a>
+      <a class="uix-guide__navlink" href="#motion">Motion</a>
+      <a class="uix-guide__navlink" href="#form-controls">Form controls</a>
+      <a class="uix-guide__navlink" href="#navigation">Navigation &amp; shell</a>
+      <a class="uix-guide__navlink" href="#data-display">Data display</a>
+      <a class="uix-guide__navlink" href="#overlays">Feedback &amp; overlays</a>
+      <a class="uix-guide__navlink" href="#crm-itsm">CRM / ITSM</a>
+      <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
+    </nav>
+
+    <div class="uix-guide__main">
+      <header class="uix-guide__topbar">
+        <h1>UIx Styleguide</h1>
+        <button class="uix-guide__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
+      </header>
+
+      <!-- ===== Foundations ===== -->
+      <section id="foundations" class="uix-guide__section">
+        <h2>Foundations</h2>
+        <p class="lead">The token contract — colors, type, radii, elevation, motion. Values derive from Square UI; names match UIx v1. Toggle the theme (top right) and the swatches + contrast badges update live.</p>
+
+        <div class="uix-guide__subhead">Surfaces &amp; borders</div>
+        <div id="ref-surfaces" class="uix-swatch-grid"></div>
+
+        <div class="uix-guide__subhead">Text</div>
+        <div id="ref-text" class="uix-swatch-grid"></div>
+
+        <div class="uix-guide__subhead">Accent (blue)</div>
+        <div id="ref-accent" class="uix-swatch-grid"></div>
+
+        <div class="uix-guide__subhead">Status</div>
+        <div id="ref-status" class="uix-swatch-grid"></div>
+
+        <div class="uix-guide__subhead">Chart palette</div>
+        <div id="ref-chart" class="uix-swatch-grid"></div>
+
+        <div class="uix-guide__subhead">Contrast (WCAG AA check)</div>
+        <div id="ref-contrast" class="uix-contrast-grid"></div>
+
+        <div class="uix-guide__subhead">Typography</div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-display);line-height:var(--uix-leading-display);letter-spacing:var(--uix-tracking-tight);font-weight:600">Display <small>40 / 1.05</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-data-hero);line-height:var(--uix-leading-data-hero);font-weight:600;font-family:var(--uix-font-mono)">$94,100 <small>data-hero 34 / 1.1</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-h2);line-height:var(--uix-leading-h2);font-weight:600">Heading 2 <small>24 / 1.15</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-h3);line-height:var(--uix-leading-h3);font-weight:600">Heading 3 <small>15 / 1.3</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-body);line-height:var(--uix-leading-body)">Body text — the quick brown fox jumps over the lazy dog. <small>14 / 1.5</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-meta);line-height:var(--uix-leading-meta);color:var(--uix-text-muted)">Meta / caption text <small>12.5 / 1.4</small></div>
+        <div class="uix-type-sample" style="font-size:var(--uix-text-eyebrow);line-height:var(--uix-leading-eyebrow);letter-spacing:var(--uix-tracking-eyebrow);text-transform:uppercase;color:var(--uix-text-muted)">Eyebrow label <small>11 / 0.06em</small></div>
+
+        <div class="uix-guide__subhead">Radius</div>
+        <div class="uix-sample-row">
+          <div class="uix-sample-box" style="border-radius:var(--uix-radius-sm)">sm 8</div>
+          <div class="uix-sample-box" style="border-radius:var(--uix-radius-md)">md 12</div>
+          <div class="uix-sample-box" style="border-radius:var(--uix-radius-lg)">lg 16</div>
+          <div class="uix-sample-box" style="border-radius:var(--uix-radius-pill);width:140px">pill</div>
+        </div>
+
+        <div class="uix-guide__subhead">Elevation</div>
+        <div class="uix-sample-row">
+          <div class="uix-sample-box" style="box-shadow:var(--uix-shadow-sm);border-color:transparent">sm</div>
+          <div class="uix-sample-box" style="box-shadow:var(--uix-shadow-popover);border-color:transparent">popover</div>
+          <div class="uix-sample-box" style="box-shadow:var(--uix-shadow-overlay);border-color:transparent">overlay</div>
+        </div>
+      </section>
+
+      <!-- ===== Placeholders (filled in later phases) ===== -->
+      <section id="motion" class="uix-guide__section">
+        <h2>Motion</h2>
+        <p class="lead">Shared motion system (Phase 1). Easing + duration tokens are defined; live transitions appear within each component.</p>
+        <div class="uix-guide__placeholder">Motion mechanics — Phase 1</div>
+      </section>
+
+      <section id="form-controls" class="uix-guide__section">
+        <h2>Form controls</h2>
+        <p class="lead">Buttons, inputs, selects, toggles, pickers, form layout.</p>
+        <div class="uix-guide__placeholder">Form controls — Phase 2</div>
+      </section>
+
+      <section id="navigation" class="uix-guide__section">
+        <h2>Navigation &amp; shell</h2>
+        <p class="lead">App shell, sidebar (favorites, collapsible sub-items), tabs, breadcrumbs, command palette, menus.</p>
+        <div class="uix-guide__placeholder">Navigation &amp; shell — Phase 3</div>
+      </section>
+
+      <section id="data-display" class="uix-guide__section">
+        <h2>Data display</h2>
+        <p class="lead">Cards, KPI tiles, the data table (zebra, two-row filters, pinning), badges, charts.</p>
+        <div class="uix-guide__placeholder">Data display — Phase 4</div>
+      </section>
+
+      <section id="overlays" class="uix-guide__section">
+        <h2>Feedback &amp; overlays</h2>
+        <p class="lead">Alerts, toasts, modals, drawers, the side-peek drawer, popovers, confirms.</p>
+        <div class="uix-guide__placeholder">Feedback &amp; overlays — Phase 5</div>
+      </section>
+
+      <section id="crm-itsm" class="uix-guide__section">
+        <h2>CRM / ITSM patterns</h2>
+        <p class="lead">Ticket rows, detail layout, SLA indicators, comments, kanban, inbox, notification center.</p>
+        <div class="uix-guide__placeholder">CRM / ITSM composites — Phase 6</div>
+      </section>
+
+      <section id="utility" class="uix-guide__section" style="border-bottom:0">
+        <h2>Utility / typography</h2>
+        <p class="lead">Code/kbd, blockquote, lists, dividers, keyboard-shortcut chips, status dots.</p>
+        <div class="uix-guide__placeholder">Utility — Phase 7</div>
+      </section>
+    </div>
+  </div>
+
+  <script type="module" src="guide/app.js"></script>
+</body>
+</html>
