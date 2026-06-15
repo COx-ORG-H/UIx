@@ -395,10 +395,21 @@ if (typeof document !== 'undefined') {
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
 
+  // Open a native <dialog> as a modal. Flushing layout + style first establishes the closed-state
+  // baseline so the @starting-style entrance transition reliably fires on the FIRST open after load
+  // (Chromium otherwise batches the display:none→shown change and skips the entrance — the panel
+  // appears parked off-screen / at opacity:0 until a second open).
+  const openModal = (dlg) => {
+    if (!dlg?.showModal) return;
+    void dlg.offsetWidth;
+    void getComputedStyle(dlg).transform;
+    dlg.showModal();
+  };
+
   // ---- overlays: open/close (native <dialog>), backdrop click, Esc is native ----
   const setupOverlays = () => {
     document.querySelectorAll('[data-uix-open]').forEach((btn) =>
-      btn.addEventListener('click', () => document.querySelector(btn.getAttribute('data-uix-open'))?.showModal?.()));
+      btn.addEventListener('click', () => openModal(document.querySelector(btn.getAttribute('data-uix-open')))));
     document.addEventListener('click', (e) => {
       const close = e.target.closest('[data-uix-close]');
       if (close) { close.closest('dialog')?.close(); return; }
@@ -418,7 +429,7 @@ if (typeof document !== 'undefined') {
     const subEl = peek.querySelector('[data-peek-sub]');
     const show = () => { const r = records[i]; if (!r) return; if (titleEl) titleEl.textContent = r.id; if (subEl) subEl.textContent = r.subject; };
     document.querySelectorAll('[data-uix-open-peek]').forEach((btn) =>
-      btn.addEventListener('click', () => { i = 0; show(); peek.showModal(); }));
+      btn.addEventListener('click', () => { i = 0; show(); openModal(peek); }));
     peek.querySelector('[data-peek-prev]')?.addEventListener('click', () => { i = peekStep(i, -1, records.length); show(); });
     peek.querySelector('[data-peek-next]')?.addEventListener('click', () => { i = peekStep(i, +1, records.length); show(); });
     peek.addEventListener('keydown', (e) => {
@@ -432,7 +443,7 @@ if (typeof document !== 'undefined') {
     const dlg = document.querySelector('[data-uix-cmdk-dialog]');
     if (!dlg) return;
     document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.showModal(); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openModal(dlg); }
     });
   };
 
@@ -525,7 +536,7 @@ if (typeof document !== 'undefined') {
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-uix-lightbox]'); if (!t) return;
       img.src = t.dataset.src; img.alt = t.querySelector('img')?.alt || '';
-      dlg.showModal();
+      openModal(dlg);
     });
   };
 
