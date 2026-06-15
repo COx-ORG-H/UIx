@@ -1,0 +1,5 @@
+# caches / OS (the global gitignore also covers these)
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
