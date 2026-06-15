@@ -62,5 +62,5 @@ JSON / SCSS / Tailwind `@theme` from one source — the bridge back to v1's Tail
 
 ## Fonts & icons
 
-Self-hosted **Geist** + **Geist Mono** (OFL) in `assets/fonts/`. Icons are **lucide**, inline SVG,
-`currentColor`, sized via `--uix-icon-*`.
+Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts
+(`<link>` in `index.html`). Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.

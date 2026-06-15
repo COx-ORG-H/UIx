@@ -1,16 +1,6 @@
 /* uix base — reset, fonts, element defaults, focus, selection, themed scrollbars.
    Layer order: tokens < base < util < motion < components. */
-@font-face {
-  font-family: "Geist";
-  src: url("../assets/fonts/Geist-Variable.woff2") format("woff2");
-  font-weight: 100 900; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Geist Mono";
-  src: url("../assets/fonts/GeistMono-Variable.woff2") format("woff2");
-  font-weight: 100 900; font-style: normal; font-display: swap;
-}
-
+/* Fonts load via the Google Fonts <link> in index.html (Inter + IBM Plex Sans + IBM Plex Mono). */
 @layer uix.base {
   *, *::before, *::after { box-sizing: border-box; }
   * { margin: 0; }
@@ -31,7 +21,7 @@
     text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3 { letter-spacing: var(--uix-tracking-tight); font-weight: 600; }
+  h1, h2, h3 { font-family: var(--uix-font-heading); letter-spacing: var(--uix-tracking-tight); font-weight: 600; }
   h1 { font-size: var(--uix-text-display); line-height: var(--uix-leading-display); }
   h2 { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
   h3 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }

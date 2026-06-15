@@ -10,7 +10,7 @@
                 color var(--uix-dur-fast) var(--uix-ease-out),
                 transform var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-btn:active { transform: scale(.98); }
+  .uix-btn:active { transform: scale(.97); }
   .uix-btn:disabled, .uix-btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
   .uix-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }

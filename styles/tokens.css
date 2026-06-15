@@ -24,12 +24,16 @@
     --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6;
 
     /* chart (categorical) */
-    --uix-chart-1:#1447E6; --uix-chart-2:#009588; --uix-chart-3:#009767; --uix-chart-4:#F99C00;
-    --uix-chart-5:#F05100; --uix-chart-6:#E40014; --uix-chart-7:#7F22FE; --uix-chart-8:#E70044;
-    --uix-chart-neutral:#737373;
+    /* chart palette — harmonized, vibrant on white (Tailwind ~600 level), distinct hues */
+    --uix-chart-1:#2563EB; --uix-chart-2:#0891B2; --uix-chart-3:#16A34A; --uix-chart-4:#F59E0B;
+    --uix-chart-5:#EA580C; --uix-chart-6:#E11D48; --uix-chart-7:#7C3AED; --uix-chart-8:#DB2777;
+    --uix-chart-neutral:#64748B;
 
     /* type */
-    --uix-font-sans:"Geist",system-ui,sans-serif; --uix-font-mono:"Geist Mono",ui-monospace,monospace;
+    /* fonts — Inter (body) + IBM Plex Sans (headings) + IBM Plex Mono; loaded via Google Fonts in index.html */
+    --uix-font-sans:"Inter",system-ui,sans-serif;
+    --uix-font-heading:"IBM Plex Sans","Inter",system-ui,sans-serif;
+    --uix-font-mono:"IBM Plex Mono",ui-monospace,monospace;
     --uix-text-display:40px;  --uix-leading-display:1.05; --uix-text-data-hero:34px; --uix-leading-data-hero:1.1;
     --uix-text-h2:24px; --uix-leading-h2:1.15; --uix-text-h3:15px; --uix-leading-h3:1.3;
     --uix-text-body:14px; --uix-leading-body:1.5; --uix-text-meta:12.5px; --uix-leading-meta:1.4;
@@ -46,7 +50,7 @@
 
     /* motion */
     --uix-ease-out:cubic-bezier(.23,1,.32,1); --uix-ease-out-strong:cubic-bezier(.2,0,0,1);
-    --uix-ease-in:cubic-bezier(.4,0,1,1); --uix-ease-in-out:cubic-bezier(.4,0,.2,1);
+    --uix-ease-in:cubic-bezier(.4,0,1,1); --uix-ease-in-out:cubic-bezier(.77,0,.175,1);
     --uix-ease-spring:cubic-bezier(.34,1.56,.64,1);
     --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms; --uix-dur-slower:320ms; --uix-lift:4px;
 

@@ -27,7 +27,9 @@
   .uix-anim-pop  { animation: uix-pop-in var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-anim-up   { animation: uix-slide-in-up var(--uix-dur) var(--uix-ease-out); }
 
-  /* Hover-lift affordance for interactive cards/tiles. */
+  /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover. */
   .uix-lift-hover { transition: transform var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
+  }
 }
