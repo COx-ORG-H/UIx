@@ -32,7 +32,7 @@
       <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
     </nav>
 
-    <div class="uix-guide__main">
+    <main class="uix-guide__main">
       <header class="uix-guide__topbar">
         <h1>UIx Styleguide</h1>
         <button class="uix-guide__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
@@ -677,10 +677,21 @@
 
       <section id="utility" class="uix-guide__section" style="border-bottom:0">
         <h2>Utility / typography</h2>
-        <p class="lead">Code/kbd, blockquote, lists, dividers, keyboard-shortcut chips, status dots.</p>
-        <div class="uix-guide__placeholder">Utility — Phase 7</div>
+        <p class="lead">The small stuff: links, code, keyboard chips, blockquotes, dividers, status dots.</p>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
+          <p style="margin-bottom:14px">Body copy with a <a href="#">text link</a>, some <code class="uix-code">inline code</code>, and a shortcut: press <span class="uix-kbd">⌘</span><span class="uix-kbd">K</span> to search.</p>
+          <pre class="uix-pre" style="margin-bottom:14px">npx shadcn add @uix/data-table   <span style="color:var(--uix-text-muted)"># (v1) — or copy styles/ for v2</span></pre>
+          <blockquote class="uix-blockquote" style="margin-bottom:14px">Motion should explain a change, never just decorate it.</blockquote>
+          <div class="uix-divider--label" style="margin-bottom:14px">Today</div>
+          <div class="uix-cluster" style="--gap:16px">
+            <span><span class="uix-dot uix-dot--success"></span> Operational</span>
+            <span><span class="uix-dot uix-dot--warning"></span> Degraded</span>
+            <span><span class="uix-dot uix-dot--danger"></span> Down</span>
+            <span><span class="uix-dot uix-dot--info"></span> Maintenance</span>
+          </div>
+        </div>
       </section>
-    </div>
+    </main>
   </div>
 
   <script type="module" src="guide/app.js"></script>

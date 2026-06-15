@@ -1,0 +1,14 @@
+/* uix utility/typography bits — code, pre, blockquote, divider, status dots. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: 5px; padding: .1em .4em; color: var(--uix-text); }
+  .uix-pre { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); line-height: 1.5; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: 14px 16px; overflow-x: auto; color: var(--uix-text); }
+  .uix-blockquote { border-left: 3px solid var(--uix-accent); padding: 4px 0 4px 14px; color: var(--uix-text-hushed); font-style: italic; }
+  .uix-divider { height: 1px; background: var(--uix-border); border: 0; margin: 16px 0; }
+  .uix-divider--label { display: flex; align-items: center; gap: 12px; color: var(--uix-text-muted); font-size: var(--uix-text-meta); background: transparent; height: auto; }
+  .uix-divider--label::before, .uix-divider--label::after { content: ""; flex: 1; height: 1px; background: var(--uix-border); }
+  .uix-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-text-muted); }
+  .uix-dot--success { background: var(--uix-success); }
+  .uix-dot--warning { background: var(--uix-warning); }
+  .uix-dot--danger { background: var(--uix-danger); }
+  .uix-dot--info { background: var(--uix-info); }
+}
