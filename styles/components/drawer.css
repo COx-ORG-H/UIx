@@ -5,17 +5,12 @@
     border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
     transform: translateX(100%);
-    /* base = EXIT: faster */
-    transition: transform var(--uix-dur) var(--uix-ease-in),
-                overlay var(--uix-dur) allow-discrete, display var(--uix-dur) allow-discrete;
-    display: flex; flex-direction: column;
-  }
-  .uix-drawer[open] {
-    transform: none;
-    /* ENTER: slower, decelerate */
     transition: transform var(--uix-dur-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
+    display: none;
   }
+  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
   .uix-drawer::backdrop {
     background: rgba(0,0,0,.5); opacity: 0;
