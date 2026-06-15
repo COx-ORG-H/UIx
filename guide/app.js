@@ -47,6 +47,32 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
 /** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
 export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
 
+/** Density tiers, in cycle order (standard is the default). */
+export const DENSITIES = ['compact', 'standard', 'comfortable'];
+
+/** Default per-table view preferences. */
+export const defaultViewPrefs = () => ({ density: 'standard', zebra: true, freeze: true, hiddenCols: [] });
+
+/** Parse + normalize stored view prefs. `legacyColsRaw` migrates the old `uix-cols-<id>` array
+ *  (bare number[] of hidden column indices) when no new prefs exist yet. */
+export const readViewPrefs = (raw, legacyColsRaw) => {
+  const d = defaultViewPrefs();
+  let p = {};
+  try { p = raw ? JSON.parse(raw) : {}; } catch { p = {}; }
+  if (!raw && legacyColsRaw) {
+    try { const cols = JSON.parse(legacyColsRaw); if (Array.isArray(cols)) p.hiddenCols = cols; } catch { /* ignore */ }
+  }
+  return {
+    density: DENSITIES.includes(p.density) ? p.density : d.density,
+    zebra: typeof p.zebra === 'boolean' ? p.zebra : d.zebra,
+    freeze: typeof p.freeze === 'boolean' ? p.freeze : d.freeze,
+    hiddenCols: Array.isArray(p.hiddenCols) ? p.hiddenCols.filter(Number.isInteger) : d.hiddenCols,
+  };
+};
+
+/** Serialize view prefs for localStorage. */
+export const writeViewPrefs = (prefs) => JSON.stringify(prefs);
+
 /** Append a toast and cap the queue at `max` (oldest dropped). */
 export const enqueueToast = (list, toast, max = 3) => [...list, toast].slice(-max);
 /** Remove a toast by id. */
