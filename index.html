@@ -113,8 +113,139 @@
 
       <section id="form-controls" class="uix-guide__section">
         <h2>Form controls</h2>
-        <p class="lead">Buttons, inputs, selects, toggles, pickers, form layout.</p>
-        <div class="uix-guide__placeholder">Form controls — Phase 2</div>
+        <p class="lead">Buttons, inputs, selection, range, combobox, file upload, form layout. All themed, all keyboard-accessible.</p>
+
+        <div class="uix-guide__subhead">Buttons</div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <button class="uix-btn uix-btn--primary">Primary</button>
+            <button class="uix-btn uix-btn--secondary">Secondary</button>
+            <button class="uix-btn uix-btn--outline">Outline</button>
+            <button class="uix-btn uix-btn--ghost">Ghost</button>
+            <button class="uix-btn uix-btn--danger">Delete</button>
+            <button class="uix-btn uix-btn--link">Link</button>
+            <button class="uix-btn uix-btn--primary" data-loading>Saving</button>
+            <button class="uix-btn uix-btn--secondary" disabled>Disabled</button>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><button class="uix-btn uix-btn--primary">Primary</button>
+<button class="uix-btn uix-btn--secondary">Secondary</button>
+<button class="uix-btn uix-btn--danger">Delete</button></template>
+        </div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <button class="uix-btn uix-btn--primary uix-btn--sm">Small</button>
+            <button class="uix-btn uix-btn--primary">Medium</button>
+            <button class="uix-btn uix-btn--primary uix-btn--lg">Large</button>
+            <button class="uix-btn uix-btn--outline uix-btn--icon" aria-label="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+            <span class="uix-btn-group">
+              <button class="uix-btn uix-btn--secondary">Day</button>
+              <button class="uix-btn uix-btn--secondary">Week</button>
+              <button class="uix-btn uix-btn--secondary">Month</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Inputs &amp; fields</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:flex-start;gap:20px">
+            <div class="uix-field" style="width:220px">
+              <label class="uix-field__label" data-required>Email</label>
+              <input class="uix-input" type="email" placeholder="you@example.com">
+              <span class="uix-field__hint">We'll never share it.</span>
+            </div>
+            <div class="uix-field" style="width:220px">
+              <label class="uix-field__label">Search</label>
+              <span class="uix-input-group uix-input-group--has-leading">
+                <span class="uix-input-group__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <input class="uix-input" type="search" placeholder="Search incidents…">
+              </span>
+            </div>
+            <div class="uix-field" style="width:220px">
+              <label class="uix-field__label">Priority (error)</label>
+              <input class="uix-input" aria-invalid="true" value="Invalid value">
+              <span class="uix-field__error">Please choose a priority.</span>
+            </div>
+            <div class="uix-field" style="width:220px">
+              <label class="uix-field__label">Notes</label>
+              <textarea class="uix-textarea" placeholder="Add a comment…"></textarea>
+            </div>
+            <div class="uix-field" style="width:220px">
+              <label class="uix-field__label">Status</label>
+              <select class="uix-select"><option>Open</option><option>In progress</option><option>Resolved</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Selection</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="gap:24px">
+            <label class="uix-checkbox"><input type="checkbox" checked><span class="uix-checkbox__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Email me</label>
+            <label class="uix-checkbox"><input type="checkbox"><span class="uix-checkbox__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> SMS</label>
+            <div class="uix-radio-group" style="flex-direction:row">
+              <label class="uix-radio"><input type="radio" name="p" checked><span class="uix-radio__dot"></span> Low</label>
+              <label class="uix-radio"><input type="radio" name="p"><span class="uix-radio__dot"></span> High</label>
+            </div>
+            <label class="uix-switch"><input type="checkbox" checked><span class="uix-switch__track"></span> Notifications</label>
+            <span class="uix-segmented" role="group">
+              <button class="uix-segmented__option" aria-pressed="true">3m</button>
+              <button class="uix-segmented__option">6m</button>
+              <button class="uix-segmented__option">1y</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Range, stepper &amp; tags</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="gap:28px">
+            <input class="uix-slider" type="range" min="0" max="100" value="60" aria-label="Volume">
+            <span class="uix-stepper">
+              <button class="uix-stepper__btn" aria-label="Decrease"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></button>
+              <input class="uix-stepper__input" type="number" value="3" aria-label="Quantity">
+              <button class="uix-stepper__btn" aria-label="Increase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg></button>
+            </span>
+            <span class="uix-taginput" style="width:280px">
+              <span class="uix-tag">network <button class="uix-tag__remove" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span>
+              <span class="uix-tag">urgent <button class="uix-tag__remove" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span>
+              <input class="uix-taginput__field" placeholder="Add tag…">
+            </span>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Combobox &amp; file upload</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:flex-start;gap:24px">
+            <ul class="uix-listbox" style="width:240px">
+              <li class="uix-listbox__option" aria-selected="true">Incident</li>
+              <li class="uix-listbox__option">Service request</li>
+              <li class="uix-listbox__option" data-active>Problem</li>
+              <li class="uix-listbox__option">Change</li>
+            </ul>
+            <label class="uix-dropzone" style="width:280px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <strong style="color:var(--uix-text)">Drop files or browse</strong>
+              <span>PNG, PDF up to 10MB</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Form layout &amp; validation</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="display:block">
+            <div class="uix-validation-summary" style="margin-bottom:16px">
+              <strong>2 problems need attention</strong>
+              <ul><li><a href="#">Assignee is required</a></li><li><a href="#">Due date is in the past</a></li></ul>
+            </div>
+            <fieldset class="uix-fieldset">
+              <legend>Ticket details</legend>
+              <div class="uix-form-grid">
+                <div class="uix-field"><label class="uix-field__label">Subject</label><input class="uix-input" value="VPN disconnects"></div>
+                <div class="uix-field"><label class="uix-field__label">Category</label><select class="uix-select"><option>Network</option><option>Access</option></select></div>
+                <div class="uix-field"><label class="uix-field__label">Assignee</label><input class="uix-input" placeholder="Unassigned"></div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
       </section>
 
       <section id="navigation" class="uix-guide__section">

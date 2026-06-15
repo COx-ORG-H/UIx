@@ -1,0 +1,16 @@
+/* uix slider (native range, styled) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-slider { -webkit-appearance: none; appearance: none; width: 220px; height: 20px; background: transparent; cursor: pointer; }
+  .uix-slider::-webkit-slider-runnable-track { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); }
+  .uix-slider::-moz-range-track { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); }
+  .uix-slider::-moz-range-progress { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-accent); }
+  .uix-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; margin-top: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--uix-surface); border: 2px solid var(--uix-accent); box-shadow: var(--uix-shadow-sm);
+    transition: transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-slider::-moz-range-thumb { width: 18px; height: 18px; border: 2px solid var(--uix-accent); border-radius: 50%; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
+  .uix-slider:active::-webkit-slider-thumb { transform: scale(1.12); }
+  .uix-slider:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-slider:disabled { opacity: .5; cursor: not-allowed; }
+}

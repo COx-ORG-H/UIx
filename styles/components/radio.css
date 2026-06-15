@@ -1,0 +1,20 @@
+/* uix radio + radio-group — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-radio-group { display: flex; flex-direction: column; gap: 8px; }
+  .uix-radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-radio > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uix-radio__dot {
+    width: 18px; height: 18px; flex: none; border-radius: 50%;
+    border: 1px solid var(--uix-border-strong); background: var(--uix-surface);
+    display: grid; place-items: center;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-radio__dot::after {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-accent);
+    opacity: 0; transform: scale(.4); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+  }
+  .uix-radio > input:checked + .uix-radio__dot { border-color: var(--uix-accent); }
+  .uix-radio > input:checked + .uix-radio__dot::after { opacity: 1; transform: none; }
+  .uix-radio > input:focus-visible + .uix-radio__dot { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-radio > input:disabled ~ * { opacity: .5; }
+}

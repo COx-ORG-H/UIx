@@ -1,0 +1,49 @@
+/* uix button — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+    height: var(--uix-control-h); padding: 0 14px; border: 1px solid transparent;
+    border-radius: var(--uix-radius-md); font: inherit; font-size: var(--uix-text-body); font-weight: 500;
+    line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out),
+                border-color var(--uix-dur-fast) var(--uix-ease-out),
+                color var(--uix-dur-fast) var(--uix-ease-out),
+                transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-btn:active { transform: scale(.98); }
+  .uix-btn:disabled, .uix-btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .uix-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+
+  .uix-btn--primary   { background: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-btn--primary:hover   { background: var(--uix-accent-dark); }
+  .uix-btn--secondary { background: var(--uix-bg-subtle); color: var(--uix-text); border-color: var(--uix-border); }
+  .uix-btn--secondary:hover { background: var(--uix-bg-hover); }
+  .uix-btn--outline   { background: transparent; color: var(--uix-text); border-color: var(--uix-border-strong); }
+  .uix-btn--outline:hover   { background: var(--uix-bg-hover); }
+  .uix-btn--ghost     { background: transparent; color: var(--uix-text); }
+  .uix-btn--ghost:hover     { background: var(--uix-bg-hover); }
+  .uix-btn--danger    { background: var(--uix-danger); color: var(--uix-danger-fg); }
+  .uix-btn--danger:hover    { background: color-mix(in srgb, var(--uix-danger) 88%, black); }
+  .uix-btn--link      { background: transparent; color: var(--uix-link); height: auto; padding: 0; }
+  .uix-btn--link:hover      { text-decoration: underline; }
+
+  .uix-btn--sm { height: 28px; padding: 0 10px; font-size: var(--uix-text-meta); }
+  .uix-btn--lg { height: 44px; padding: 0 18px; }
+  .uix-btn--icon { width: var(--uix-control-h); padding: 0; }
+  .uix-btn--icon.uix-btn--sm { width: 28px; }
+  .uix-btn--icon.uix-btn--lg { width: 44px; }
+
+  .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
+  .uix-btn[data-loading]::after {
+    content: ""; position: absolute; width: 1em; height: 1em;
+    border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
+    color: var(--uix-accent-fg); animation: uix-spin .6s linear infinite;
+  }
+
+  /* attached group */
+  .uix-btn-group { display: inline-flex; }
+  .uix-btn-group .uix-btn { border-radius: 0; border-right-width: 0; }
+  .uix-btn-group .uix-btn:first-child { border-top-left-radius: var(--uix-radius-md); border-bottom-left-radius: var(--uix-radius-md); }
+  .uix-btn-group .uix-btn:last-child { border-radius: 0 var(--uix-radius-md) var(--uix-radius-md) 0; border-right-width: 1px; }
+}

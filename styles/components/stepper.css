@@ -1,0 +1,13 @@
+/* uix number stepper — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-stepper { display: inline-flex; align-items: center; height: var(--uix-control-h); overflow: hidden;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-stepper__btn { width: 32px; align-self: stretch; border: 0; background: transparent; color: var(--uix-text); cursor: pointer;
+    display: grid; place-items: center; transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-stepper__btn:hover { background: var(--uix-bg-hover); }
+  .uix-stepper__btn svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-stepper__input { width: 52px; text-align: center; border: 0; height: 100%; background: transparent; color: var(--uix-text);
+    font: inherit; border-inline: 1px solid var(--uix-border); -moz-appearance: textfield; }
+  .uix-stepper__input::-webkit-outer-spin-button, .uix-stepper__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .uix-stepper:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+}
