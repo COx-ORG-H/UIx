@@ -73,6 +73,19 @@ export const readViewPrefs = (raw, legacyColsRaw) => {
 /** Serialize view prefs for localStorage. */
 export const writeViewPrefs = (prefs) => JSON.stringify(prefs);
 
+/** Toggle the current user's reaction to `emoji`. State = [{emoji, count, mine}]. Immutable;
+ *  reactions whose count falls to 0 are dropped. */
+export const toggleReaction = (reactions, emoji) => {
+  const list = reactions.map((r) => ({ ...r }));
+  const found = list.find((r) => r.emoji === emoji);
+  if (found) {
+    found.count += found.mine ? -1 : 1;
+    found.mine = !found.mine;
+    return list.filter((r) => r.count > 0);
+  }
+  return [...list, { emoji, count: 1, mine: true }];
+};
+
 /** Append a toast and cap the queue at `max` (oldest dropped). */
 export const enqueueToast = (list, toast, max = 3) => [...list, toast].slice(-max);
 /** Remove a toast by id. */
@@ -501,6 +514,32 @@ if (typeof document !== 'undefined') {
     });
   };
 
+  // ---- emoji reactions: pills with counts + an add-reaction picker popover ----
+  const EMOJI_SET = ['✅', '👍', '👀', '🎉', '🚀', '🔥', '⚠️', '❓', '🚫', '📌'];
+  const setupReactions = () => {
+    document.querySelectorAll('[data-uix-reactions]').forEach((host, idx) => {
+      let state = [];
+      try { state = JSON.parse(host.dataset.reactions || '[]'); } catch { state = []; }
+      const pid = 'uix-rx-' + idx;
+      const render = () => {
+        host.innerHTML =
+          state.map((r) => `<button class="uix-reaction" type="button" data-emoji="${r.emoji}" ${r.mine ? 'data-mine' : ''} aria-pressed="${r.mine}">${r.emoji} <span class="uix-reaction__count">${r.count}</span></button>`).join('') +
+          `<button class="uix-reaction-add" type="button" popovertarget="${pid}" aria-label="Add reaction" style="anchor-name:--${pid}">${icon('smile-plus', 'sm')}</button>` +
+          `<div id="${pid}" popover class="uix-popover" style="position-anchor:--${pid}; top:anchor(bottom); left:anchor(left); margin-top:6px"><div class="uix-emoji-picker">${EMOJI_SET.map((e) => `<button class="uix-emoji-picker__btn" type="button" data-pick="${e}">${e}</button>`).join('')}</div></div>`;
+      };
+      host.addEventListener('click', (e) => {
+        const pill = e.target.closest('[data-emoji]');
+        const pick = e.target.closest('[data-pick]');
+        const emoji = pill?.dataset.emoji || pick?.dataset.pick;
+        if (!emoji) return;
+        state = toggleReaction(state, emoji);
+        if (pick) document.getElementById(pid)?.hidePopover();
+        render();
+      });
+      render();
+    });
+  };
+
   // ---- icon inventory (Icons section): sizes row + click-to-copy grid ----
   const buildIconInventory = () => {
     const sizes = document.querySelector('[data-uix-icon-sizes]');
@@ -525,6 +564,7 @@ if (typeof document !== 'undefined') {
     setupToasts();
     setupRichSelect();
     setupForms();
+    setupReactions();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

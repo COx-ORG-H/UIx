@@ -58,6 +58,7 @@
 @import "components/spinner.css";
 @import "components/detail-layout.css";
 @import "components/comments.css";
+@import "components/reactions.css";
 @import "components/kanban.css";
 @import "components/inbox.css";
 @import "components/notification-center.css";

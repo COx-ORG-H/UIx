@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
-import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs } from './app.js';
+import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs, toggleReaction } from './app.js';
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');
@@ -112,4 +112,28 @@ test('readViewPrefs: migrates legacy uix-cols array into hiddenCols when no new 
 
 test('readViewPrefs: garbage JSON → defaults', () => {
   assert.deepEqual(readViewPrefs('not json', null), defaultViewPrefs());
+});
+
+test('toggleReaction: adds a new reaction as mine, count 1', () => {
+  assert.deepEqual(toggleReaction([], '🎉'), [{ emoji: '🎉', count: 1, mine: true }]);
+});
+
+test('toggleReaction: joins an existing reaction (not mine → mine, count+1)', () => {
+  const r = toggleReaction([{ emoji: '👍', count: 2, mine: false }], '👍');
+  assert.deepEqual(r, [{ emoji: '👍', count: 3, mine: true }]);
+});
+
+test('toggleReaction: un-reacts (mine → removed when count hits 0)', () => {
+  assert.deepEqual(toggleReaction([{ emoji: '👍', count: 1, mine: true }], '👍'), []);
+});
+
+test('toggleReaction: un-reacts but keeps others (count stays > 0)', () => {
+  assert.deepEqual(toggleReaction([{ emoji: '👍', count: 3, mine: true }], '👍'),
+    [{ emoji: '👍', count: 2, mine: false }]);
+});
+
+test('toggleReaction: does not mutate input', () => {
+  const input = [{ emoji: '👍', count: 1, mine: false }];
+  toggleReaction(input, '👍');
+  assert.deepEqual(input, [{ emoji: '👍', count: 1, mine: false }]);
 });
