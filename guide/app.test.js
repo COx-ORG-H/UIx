@@ -1,7 +1,7 @@
 /* Unit tests for the pure helpers in app.js. Run: node --test guide/  (Node 22+, zero deps) */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned } from './app.js';
+import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');
@@ -66,4 +66,20 @@ test('mergePinned keeps pinned present even when filtered out', () => {
   const all = [{ id: 1 }, { id: 2 }, { id: 3 }];
   const visible = [{ id: 2 }];
   assert.deepEqual(mergePinned(all, visible, [1]).map((r) => r.id), [1, 2]);
+});
+
+test('peekStep clamps at both ends', () => {
+  assert.equal(peekStep(0, +1, 3), 1);
+  assert.equal(peekStep(2, +1, 3), 2);   // clamp at last
+  assert.equal(peekStep(0, -1, 3), 0);   // clamp at first
+});
+
+test('enqueueToast caps the queue, dequeueToast removes by id', () => {
+  let list = [];
+  list = enqueueToast(list, { id: 'a' });
+  list = enqueueToast(list, { id: 'b' });
+  list = enqueueToast(list, { id: 'c' });
+  list = enqueueToast(list, { id: 'd' });          // cap 3 → drops 'a'
+  assert.deepEqual(list.map((t) => t.id), ['b', 'c', 'd']);
+  assert.deepEqual(dequeueToast(list, 'c').map((t) => t.id), ['b', 'd']);
 });

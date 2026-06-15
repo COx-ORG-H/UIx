@@ -1,0 +1,23 @@
+/* uix drawer / side sheet — native <dialog> sliding from the right edge. */
+@layer uix.components {
+  .uix-drawer {
+    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(420px, 100vw); padding: 0; color: var(--uix-text);
+    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
+    transform: translateX(100%);
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    display: flex; flex-direction: column;
+  }
+  .uix-drawer[open] { transform: none; }
+  @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
+  .uix-drawer::backdrop {
+    background: rgba(0,0,0,.5); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-drawer[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
+  .uix-drawer__header { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--uix-border); }
+  .uix-drawer__body { padding: 18px; overflow-y: auto; flex: 1; }
+  .uix-drawer__footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--uix-border); }
+}

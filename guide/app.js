@@ -44,6 +44,14 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
   return [...pinnedRows, ...rest];
 };
 
+/** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
+export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
+
+/** Append a toast and cap the queue at `max` (oldest dropped). */
+export const enqueueToast = (list, toast, max = 3) => [...list, toast].slice(-max);
+/** Remove a toast by id. */
+export const dequeueToast = (list, id) => list.filter((t) => t.id !== id);
+
 /** Parse a CSS color (#rgb, #rrggbb, rgb()/rgba()) to [r,g,b] (0-255). Alpha ignored. */
 export const parseColor = (str) => {
   const s = String(str).trim();
@@ -287,6 +295,70 @@ if (typeof document !== 'undefined') {
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
 
+  // ---- overlays: open/close (native <dialog>), backdrop click, Esc is native ----
+  const setupOverlays = () => {
+    document.querySelectorAll('[data-uix-open]').forEach((btn) =>
+      btn.addEventListener('click', () => document.querySelector(btn.getAttribute('data-uix-open'))?.showModal?.()));
+    document.addEventListener('click', (e) => {
+      const close = e.target.closest('[data-uix-close]');
+      if (close) { close.closest('dialog')?.close(); return; }
+      if (e.target.tagName === 'DIALOG') e.target.close();   // click on the backdrop
+    });
+  };
+
+  // ---- side-peek drawer: ↑/↓ navigate records, title link "navigates" (no-op here) ----
+  const setupPeek = () => {
+    const peek = document.querySelector('[data-uix-peek-dialog]');
+    if (!peek) return;
+    const records = [...document.querySelectorAll('[data-uix-table] tbody tr')].map((tr) => ({
+      id: tr.dataset.id, subject: tr.children[1]?.textContent.trim() ?? '',
+    }));
+    let i = 0;
+    const titleEl = peek.querySelector('[data-peek-title]');
+    const subEl = peek.querySelector('[data-peek-sub]');
+    const show = () => { const r = records[i]; if (!r) return; if (titleEl) titleEl.textContent = r.id; if (subEl) subEl.textContent = r.subject; };
+    document.querySelectorAll('[data-uix-open-peek]').forEach((btn) =>
+      btn.addEventListener('click', () => { i = 0; show(); peek.showModal(); }));
+    peek.querySelector('[data-peek-prev]')?.addEventListener('click', () => { i = peekStep(i, -1, records.length); show(); });
+    peek.querySelector('[data-peek-next]')?.addEventListener('click', () => { i = peekStep(i, +1, records.length); show(); });
+    peek.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); i = peekStep(i, +1, records.length); show(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); i = peekStep(i, -1, records.length); show(); }
+    });
+  };
+
+  // ---- ⌘K command palette ----
+  const setupCmdk = () => {
+    const dlg = document.querySelector('[data-uix-cmdk-dialog]');
+    if (!dlg) return;
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.showModal(); }
+    });
+  };
+
+  // ---- toasts ----
+  const setupToasts = () => {
+    const ICONS = { success: icon('check'), danger: icon('x'), info: icon('search') };
+    const ensureToaster = () => {
+      let t = document.querySelector('.uix-toaster');
+      if (!t) { t = document.createElement('div'); t.className = 'uix-toaster'; document.body.appendChild(t); }
+      return t;
+    };
+    const push = ({ title = 'Saved', msg = '', tone = 'success' }) => {
+      const t = ensureToaster();
+      const el = document.createElement('div');
+      el.className = `uix-toast uix-toast--${tone}`;
+      el.innerHTML = `<span class="uix-toast__icon">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
+      t.appendChild(el);
+      while (t.children.length > 3) t.firstElementChild.remove();
+      const leave = () => { el.setAttribute('data-leaving', ''); setTimeout(() => el.remove(), 220); };
+      el.querySelector('.uix-toast__close').addEventListener('click', leave);
+      setTimeout(leave, 4000);
+    };
+    document.querySelectorAll('[data-uix-toast]').forEach((btn) =>
+      btn.addEventListener('click', () => push({ title: btn.dataset.toastTitle, msg: btn.dataset.toastMsg, tone: btn.dataset.toastTone })));
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
@@ -294,6 +366,10 @@ if (typeof document !== 'undefined') {
     setupScrollspy();
     setupSidebar();
     setupTables();
+    setupOverlays();
+    setupPeek();
+    setupCmdk();
+    setupToasts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

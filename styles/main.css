@@ -48,3 +48,10 @@
 @import "components/calendar.css";
 @import "components/states.css";
 @import "components/chart.css";
+@import "components/alert.css";
+@import "components/toast.css";
+@import "components/modal.css";
+@import "components/drawer.css";
+@import "components/peek.css";
+@import "components/popover.css";
+@import "components/spinner.css";

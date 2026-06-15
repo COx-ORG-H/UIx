@@ -492,8 +492,85 @@
 
       <section id="overlays" class="uix-guide__section">
         <h2>Feedback &amp; overlays</h2>
-        <p class="lead">Alerts, toasts, modals, drawers, the side-peek drawer, popovers, confirms.</p>
-        <div class="uix-guide__placeholder">Feedback &amp; overlays — Phase 5</div>
+        <p class="lead">Built on native <code>&lt;dialog&gt;</code> + the Popover API with <code>@starting-style</code> enter/exit — they animate in and out without JS, trap focus, and close on Esc. Try them.</p>
+
+        <div class="uix-guide__subhead">Alerts</div>
+        <div class="uix-stack" style="--gap:10px">
+          <div class="uix-alert uix-alert--info"><span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div><div class="uix-alert__title">Heads up</div><div class="uix-alert__body">A scheduled maintenance window starts at 22:00 UTC.</div></div></div>
+          <div class="uix-alert uix-alert--success"><span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span><div><div class="uix-alert__title">Resolved</div><div class="uix-alert__body">INC-2041 was closed and the reporter notified.</div></div></div>
+          <div class="uix-alert uix-alert--warning"><span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg></span><div><div class="uix-alert__title">SLA at risk</div><div class="uix-alert__body">3 tickets will breach their SLA within the hour.</div></div></div>
+          <div class="uix-alert uix-alert--danger"><span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></span><div><div class="uix-alert__title">Sync failed</div><div class="uix-alert__body">Could not reach the email gateway. Retrying…</div></div></div>
+        </div>
+
+        <div class="uix-guide__subhead">Triggers</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg)">
+          <button class="uix-btn uix-btn--primary" data-uix-toast data-toast-title="Incident reassigned" data-toast-msg="Maya was notified by email." data-toast-tone="success">Success toast</button>
+          <button class="uix-btn uix-btn--secondary" data-uix-toast data-toast-title="Failed to save" data-toast-msg="Check your connection and retry." data-toast-tone="danger">Error toast</button>
+          <button class="uix-btn uix-btn--secondary" data-uix-open="#demo-modal">Open modal</button>
+          <button class="uix-btn uix-btn--secondary" data-uix-open="#demo-drawer">Open drawer</button>
+          <button class="uix-btn uix-btn--primary" data-uix-open-peek>Peek a ticket</button>
+          <button class="uix-btn uix-btn--secondary" data-uix-open="#demo-cmdk">Search <span class="uix-kbd">⌘K</span></button>
+          <button class="uix-btn uix-btn--danger" data-uix-open="#demo-confirm">Delete…</button>
+          <button class="uix-btn uix-btn--secondary" popovertarget="demo-pop" style="anchor-name:--popbtn">Popover</button>
+          <div id="demo-pop" popover class="uix-popover" style="position-anchor:--popbtn; top:anchor(bottom); justify-self:anchor-center; margin-top:6px; width:200px">
+            <div class="uix-menu" style="border:0;box-shadow:none;background:transparent;padding:0">
+              <button class="uix-menu__item">Edit</button><button class="uix-menu__item">Duplicate</button><div class="uix-menu__sep"></div><button class="uix-menu__item uix-menu__item--danger">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Spinners &amp; progress overlay</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px">
+          <span class="uix-spinner"></span>
+          <span class="uix-spinner uix-spinner--accent"></span>
+          <span class="uix-spinner uix-spinner--lg uix-spinner--accent"></span>
+          <div style="position:relative;width:180px;height:96px;border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);background:var(--uix-surface)"><div class="uix-overlay-progress"><span class="uix-spinner uix-spinner--lg uix-spinner--accent"></span></div></div>
+        </div>
+
+        <!-- overlay instances -->
+        <dialog class="uix-dialog" id="demo-modal">
+          <div class="uix-dialog__header"><span class="uix-dialog__title">Reassign incident</span><button class="uix-dialog__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+          <div class="uix-dialog__body">Choose a new assignee for INC-2043. They'll be notified by email.</div>
+          <div class="uix-dialog__footer"><button class="uix-btn uix-btn--ghost" data-uix-close>Cancel</button><button class="uix-btn uix-btn--primary" data-uix-close>Reassign</button></div>
+        </dialog>
+        <dialog class="uix-dialog" id="demo-confirm" style="max-width:400px">
+          <div class="uix-dialog__header"><span class="uix-dialog__title">Delete incident?</span></div>
+          <div class="uix-dialog__body">This permanently deletes INC-2043 and its full history. This action can't be undone.</div>
+          <div class="uix-dialog__footer"><button class="uix-btn uix-btn--ghost" data-uix-close>Cancel</button><button class="uix-btn uix-btn--danger" data-uix-close>Delete</button></div>
+        </dialog>
+        <dialog class="uix-drawer" id="demo-drawer">
+          <div class="uix-drawer__header"><span class="uix-dialog__title">Filters</span><button class="uix-dialog__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+          <div class="uix-drawer__body uix-stack" style="--gap:16px">
+            <div class="uix-field"><label class="uix-field__label">Assignee</label><select class="uix-select"><option>Anyone</option><option>Maya K.</option></select></div>
+            <div class="uix-field"><label class="uix-field__label">Priority</label><div class="uix-radio-group"><label class="uix-radio"><input type="radio" name="dp" checked><span class="uix-radio__dot"></span> Any</label><label class="uix-radio"><input type="radio" name="dp"><span class="uix-radio__dot"></span> High</label></div></div>
+          </div>
+          <div class="uix-drawer__footer"><button class="uix-btn uix-btn--ghost" data-uix-close>Reset</button><button class="uix-btn uix-btn--primary" data-uix-close style="margin-left:auto">Apply</button></div>
+        </dialog>
+        <dialog class="uix-peek" id="demo-peek" data-uix-peek-dialog>
+          <div class="uix-peek__header">
+            <span class="uix-peek__nav"><button class="uix-peek__navbtn" data-peek-prev aria-label="Previous ticket">↑</button><button class="uix-peek__navbtn" data-peek-next aria-label="Next ticket">↓</button></span>
+            <span class="uix-peek__title"><a href="#" data-peek-title>INC-2043</a></span>
+            <button class="uix-peek__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <div class="uix-peek__body">
+            <p data-peek-sub style="font-weight:500;margin-bottom:14px">VPN disconnects randomly</p>
+            <dl class="uix-dl"><dt>Status</dt><dd><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></dd><dt>Assignee</dt><dd>Maya K.</dd><dt>Priority</dt><dd>High</dd><dt>Created</dt><dd>2h ago</dd></dl>
+            <p class="uix-peek__hint" style="margin-top:18px">Use <span class="uix-kbd">↑</span> <span class="uix-kbd">↓</span> to move between tickets · <span class="uix-kbd">Esc</span> to close. The title link opens the full record.</p>
+          </div>
+          <div class="uix-peek__footer"><button class="uix-btn uix-btn--secondary" data-uix-close>Close</button><button class="uix-btn uix-btn--primary" style="margin-left:auto">Open full record</button></div>
+        </dialog>
+        <dialog class="uix-dialog" id="demo-cmdk" data-uix-cmdk-dialog style="background:transparent;border:0;box-shadow:none;max-width:560px">
+          <div class="uix-cmdk">
+            <input class="uix-cmdk__input" placeholder="Type a command or search…" aria-label="Command">
+            <div class="uix-cmdk__list">
+              <div class="uix-cmdk__group">Navigation</div>
+              <div class="uix-cmdk__item" data-active><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg> Go to Incidents <span class="uix-kbd">G</span></div>
+              <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Search tickets</div>
+              <div class="uix-cmdk__group">Create</div>
+              <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg> New incident <span class="uix-kbd">N</span></div>
+            </div>
+          </div>
+        </dialog>
       </section>
 
       <section id="crm-itsm" class="uix-guide__section">

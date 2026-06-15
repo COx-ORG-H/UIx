@@ -1,0 +1,33 @@
+/* uix side-peek drawer (the §5.8 peek pattern, reused by table rows + sidebar items).
+   Native <dialog>, slides from the right; keyboard ↑/↓ navigates records (app.js). */
+@layer uix.components {
+  .uix-peek {
+    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: var(--uix-peek-w); padding: 0; color: var(--uix-text);
+    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
+    transform: translateX(100%);
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    display: flex; flex-direction: column;
+  }
+  .uix-peek[open] { transform: none; }
+  @starting-style { .uix-peek[open] { transform: translateX(100%); } }
+  .uix-peek::backdrop {
+    background: rgba(0,0,0,.4); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-peek[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-peek[open]::backdrop { opacity: 0; } }
+
+  .uix-peek__header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--uix-border); }
+  .uix-peek__nav { display: inline-flex; gap: 2px; }
+  .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
+  .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
+  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-peek__title a { color: var(--uix-link); }
+  .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-peek__body { padding: 18px; overflow-y: auto; flex: 1; }
+  .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-peek__footer { display: flex; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--uix-border); }
+}

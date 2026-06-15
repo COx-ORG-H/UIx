@@ -1,0 +1,10 @@
+/* uix spinner + progress overlay — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-spinner { width: 20px; height: 20px; border: 2px solid var(--uix-border-strong); border-right-color: transparent; border-radius: 50%; display: inline-block; animation: uix-spin .6s linear infinite; }
+  .uix-spinner--accent { border-color: var(--uix-accent); border-right-color: transparent; }
+  .uix-spinner--lg { width: 32px; height: 32px; border-width: 3px; }
+  .uix-overlay-progress {
+    position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit;
+    background: color-mix(in srgb, var(--uix-bg-app) 60%, transparent); backdrop-filter: blur(2px);
+  }
+}
