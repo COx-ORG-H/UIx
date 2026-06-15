@@ -1,0 +1,19 @@
+/* uix table toolbar + two-row filter bar (status / type). Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .uix-toolbar__spacer { flex: 1; }
+
+  .uix-filterbar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .uix-filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .uix-filterrow__label { font-size: var(--uix-text-meta); color: var(--uix-text-muted); width: 54px; flex: none; }
+
+  .uix-chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--uix-radius-pill);
+    border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-hushed);
+    font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-chip:hover { border-color: var(--uix-border-strong); color: var(--uix-text); }
+  .uix-chip[data-on] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); }
+  .uix-chip__count { font-variant-numeric: tabular-nums; opacity: .7; }
+}

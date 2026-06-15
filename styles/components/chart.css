@@ -1,0 +1,9 @@
+/* uix chart container + legend — palette + framing only; pair sample SVGs / a chart lib using --uix-chart-*. */
+@layer uix.components {
+  .uix-chart { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: 18px; }
+  .uix-chart__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-chart__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: 14px; }
+  .uix-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  .uix-legend__item { display: inline-flex; align-items: center; gap: 6px; font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-legend__swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+}

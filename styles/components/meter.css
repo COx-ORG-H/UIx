@@ -1,0 +1,7 @@
+/* uix meter / utilization bar (threshold tones) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-meter { height: 8px; background: var(--uix-bg-active); border-radius: var(--uix-radius-pill); overflow: hidden; }
+  .uix-meter__fill { height: 100%; border-radius: inherit; background: var(--uix-success); transition: width var(--uix-dur) var(--uix-ease-out); }
+  .uix-meter__fill[data-tone="warning"] { background: var(--uix-warning); }
+  .uix-meter__fill[data-tone="danger"] { background: var(--uix-danger); }
+}

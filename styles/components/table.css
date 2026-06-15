@@ -1,0 +1,32 @@
+/* uix data table — zebra, sticky header, sort, selection, density, pinned rows. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-table-wrap { overflow: auto; max-height: 460px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
+
+  .uix-table thead th {
+    position: sticky; top: 0; z-index: 1; background: var(--uix-surface); text-align: left;
+    font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
+    padding: 0 14px; height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap;
+  }
+  .uix-table th[data-sort] { cursor: pointer; user-select: none; }
+  .uix-table th[data-sort]:hover { color: var(--uix-text); }
+  .uix-table th[data-sort]::after { content: " ↕"; opacity: .35; }
+  .uix-table th[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; color: var(--uix-accent); }
+  .uix-table th[aria-sort="descending"]::after { content: " ↓"; opacity: 1; color: var(--uix-accent); }
+
+  .uix-table td { padding: 0 14px; height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
+  .uix-table tbody tr { background: var(--uix-row); }
+  .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
+  .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
+  .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
+  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-brand-muted); }
+  .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
+  .uix-table--compact td { height: var(--uix-row-h-compact); }
+
+  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: 4px; border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin[data-on] { opacity: 1; }
+  .uix-table__pin:hover { background: var(--uix-bg-active); color: var(--uix-text); }
+  .uix-table__pin[data-on] { color: var(--uix-accent); }
+  .uix-table__pin svg { width: 15px; height: 15px; }
+  .uix-table__pin[data-on] svg { fill: currentColor; }
+}

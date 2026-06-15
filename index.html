@@ -355,8 +355,139 @@
 
       <section id="data-display" class="uix-guide__section">
         <h2>Data display</h2>
-        <p class="lead">Cards, KPI tiles, the data table (zebra, two-row filters, pinning), badges, charts.</p>
-        <div class="uix-guide__placeholder">Data display — Phase 4</div>
+        <p class="lead">KPI tiles, the interactive data table (sort a column, filter by status/type, pin a row, toggle density/zebra), status pills, charts, and supporting pieces.</p>
+
+        <div class="uix-guide__subhead">KPI tiles</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <div class="uix-stat"><div class="uix-stat__label">Open tickets</div><div class="uix-stat__value">128</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--down">↓ 12%</span> vs last week</div></div>
+          <div class="uix-stat"><div class="uix-stat__label">Avg resolution</div><div class="uix-stat__value">4.2h</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--up">↓ 0.6h</span> faster</div></div>
+          <div class="uix-stat"><div class="uix-stat__label">SLA breaches</div><div class="uix-stat__value">3</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--down">↑ 1</span> this week</div></div>
+          <div class="uix-stat"><div class="uix-stat__label">CSAT</div><div class="uix-stat__value">94%</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--up">↑ 2%</span> vs last month</div></div>
+        </div>
+
+        <div class="uix-guide__subhead">Data table</div>
+        <div data-uix-table>
+          <div class="uix-toolbar">
+            <span class="uix-input-group uix-input-group--has-leading" style="width:240px">
+              <span class="uix-input-group__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+              <input class="uix-input uix-input--sm" type="search" placeholder="Search tickets…">
+            </span>
+            <span class="uix-toolbar__spacer"></span>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-density>Density</button>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-zebra>Zebra</button>
+          </div>
+          <div class="uix-filterbar">
+            <div class="uix-filterrow">
+              <span class="uix-filterrow__label">Status</span>
+              <button class="uix-chip" data-filter="status" data-value="open">Open <span class="uix-chip__count">3</span></button>
+              <button class="uix-chip" data-filter="status" data-value="in-progress">In progress <span class="uix-chip__count">2</span></button>
+              <button class="uix-chip" data-filter="status" data-value="resolved">Resolved <span class="uix-chip__count">1</span></button>
+            </div>
+            <div class="uix-filterrow">
+              <span class="uix-filterrow__label">Type</span>
+              <button class="uix-chip" data-filter="type" data-value="incident">Incident</button>
+              <button class="uix-chip" data-filter="type" data-value="request">Request</button>
+              <button class="uix-chip" data-filter="type" data-value="problem">Problem</button>
+              <button class="uix-chip" data-filter="type" data-value="change">Change</button>
+            </div>
+          </div>
+          <div class="uix-table-wrap">
+            <table class="uix-table">
+              <thead><tr>
+                <th data-sort>ID</th><th data-sort>Subject</th><th data-sort>Status</th><th data-sort>Type</th><th data-sort>Assignee</th><th>SLA</th><th aria-label="Pin"></th>
+              </tr></thead>
+              <tbody data-uix-rows>
+                <tr data-id="INC-2043" data-status="open" data-type="incident"><td>INC-2043</td><td>VPN disconnects randomly</td><td><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></td><td>Incident</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">MK</span> Maya K.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="danger" style="width:88%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="REQ-1188" data-status="in-progress" data-type="request"><td>REQ-1188</td><td>New laptop request</td><td><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>In progress</span></td><td>Request</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">LR</span> Leo R.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="warning" style="width:55%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="INC-2041" data-status="open" data-type="incident"><td>INC-2041</td><td>Email outage in EU region</td><td><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></td><td>Incident</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">SP</span> Sam P.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="danger" style="width:95%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="PRB-340" data-status="in-progress" data-type="problem"><td>PRB-340</td><td>Recurring 500s on checkout</td><td><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>In progress</span></td><td>Problem</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">AL</span> Ada L.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="success" style="width:30%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="REQ-1185" data-status="resolved" data-type="request"><td>REQ-1185</td><td>Access to billing repo</td><td><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span></td><td>Request</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">LR</span> Leo R.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="success" style="width:100%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="CHG-77" data-status="open" data-type="change"><td>CHG-77</td><td>Production DB migration</td><td><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></td><td>Change</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">MK</span> Maya K.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="warning" style="width:60%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Status pills</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg)">
+          <span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span>
+          <span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>In progress</span>
+          <span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span>
+          <span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Closed</span>
+          <span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>SLA breached</span>
+        </div>
+
+        <div class="uix-guide__subhead">Charts (palette + sample SVG)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div class="uix-chart">
+            <div class="uix-chart__title">By category</div>
+            <div class="uix-chart__subtitle">This month</div>
+            <div style="display:grid;place-items:center"><div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--uix-chart-1) 0 32%,var(--uix-chart-4) 32% 56%,var(--uix-chart-3) 56% 74%,var(--uix-chart-7) 74% 90%,var(--uix-chart-6) 90% 100%)"><div style="width:78px;height:78px;border-radius:50%;background:var(--uix-surface);position:relative;top:26px;left:26px;display:grid;place-items:center;font-weight:600">128</div></div></div>
+            <div class="uix-legend"><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-1)"></span>Network</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-4)"></span>Access</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-3)"></span>Email</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-7)"></span>Other</span></div>
+          </div>
+          <div class="uix-chart">
+            <div class="uix-chart__title">Tickets / day</div>
+            <div class="uix-chart__subtitle">Last 7 days</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
+              <div style="flex:1;height:40%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:65%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:50%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:80%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:70%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:90%;background:var(--uix-chart-1);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+              <div style="flex:1;height:60%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            </div>
+          </div>
+          <div class="uix-chart">
+            <div class="uix-chart__title">Resolution trend</div>
+            <div class="uix-chart__subtitle">Hours</div>
+            <svg viewBox="0 0 240 120" style="width:100%;height:130px" preserveAspectRatio="none">
+              <defs><linearGradient id="uix-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--uix-chart-1)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--uix-chart-1)" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42 L240,120 L0,120 Z" fill="url(#uix-area)"/>
+              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42" fill="none" stroke="var(--uix-chart-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Avatars, progress, meter, tooltip</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:28px">
+          <span class="uix-avatar-group"><span class="uix-avatar">MK</span><span class="uix-avatar">LR</span><span class="uix-avatar">SP</span><span class="uix-avatar" style="background:var(--uix-bg-subtle);color:var(--uix-text-muted)">+5</span></span>
+          <span class="uix-avatar uix-avatar--lg">AL<span class="uix-avatar__status"></span></span>
+          <div class="uix-progress" style="width:160px"><div class="uix-progress__bar" style="width:64%"></div></div>
+          <div class="uix-ring" style="--val:.72"><div class="uix-ring__inner">72%</div></div>
+          <button class="uix-btn uix-btn--secondary" data-uix-tip="Pinned to top of the table">Hover me</button>
+        </div>
+
+        <div class="uix-guide__subhead">Timeline, tree, empty &amp; skeleton</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+          <div class="uix-card"><div class="uix-card__body">
+            <div class="uix-timeline">
+              <div class="uix-timeline__item"><div class="uix-timeline__rail"><span class="uix-timeline__node"></span><span class="uix-timeline__line"></span></div><div class="uix-timeline__body">Ticket created<div class="uix-timeline__meta">Maya · 2h ago</div></div></div>
+              <div class="uix-timeline__item"><div class="uix-timeline__rail"><span class="uix-timeline__node" style="background:var(--uix-success);box-shadow:0 0 0 3px var(--uix-success-bg)"></span><span class="uix-timeline__line"></span></div><div class="uix-timeline__body">Assigned to Leo<div class="uix-timeline__meta">1h ago</div></div></div>
+              <div class="uix-timeline__item"><div class="uix-timeline__rail"><span class="uix-timeline__node"></span></div><div class="uix-timeline__body">Comment added<div class="uix-timeline__meta">12m ago</div></div></div>
+            </div>
+          </div></div>
+          <div class="uix-card"><div class="uix-card__body">
+            <ul class="uix-tree">
+              <li><button class="uix-tree__row" aria-expanded="true"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Infrastructure</button>
+                <ul><li><span class="uix-tree__row" style="padding-left:24px">Network</span></li><li><span class="uix-tree__row" style="padding-left:24px">Servers</span></li></ul>
+              </li>
+              <li><button class="uix-tree__row" aria-expanded="false"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Applications</button>
+                <ul><li><span class="uix-tree__row" style="padding-left:24px">Billing</span></li></ul>
+              </li>
+            </ul>
+          </div></div>
+          <div class="uix-card"><div class="uix-empty">
+            <span class="uix-empty__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+            <div class="uix-empty__title">No results</div>
+            <div>Try adjusting your filters.</div>
+          </div></div>
+          <div class="uix-card"><div class="uix-card__body" style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:10px;align-items:center"><div class="uix-skeleton uix-skeleton--circle" style="width:36px;height:36px"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div class="uix-skeleton uix-skeleton--text" style="width:60%"></div><div class="uix-skeleton uix-skeleton--text" style="width:40%"></div></div></div>
+            <div class="uix-skeleton uix-skeleton--text"></div>
+            <div class="uix-skeleton uix-skeleton--text" style="width:80%"></div>
+          </div></div>
+        </div>
       </section>
 
       <section id="overlays" class="uix-guide__section">

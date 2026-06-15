@@ -1,0 +1,6 @@
+/* uix description / key-value list — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-dl { display: grid; grid-template-columns: max-content 1fr; gap: 10px 24px; }
+  .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; }
+}

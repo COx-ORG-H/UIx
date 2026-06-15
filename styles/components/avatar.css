@@ -1,0 +1,18 @@
+/* uix avatar / avatar-group / user-chip — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-avatar {
+    width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--uix-bg-active); color: var(--uix-text);
+    display: inline-flex; align-items: center; justify-content: center; font-size: var(--uix-text-meta); font-weight: 600;
+    overflow: hidden; position: relative;
+  }
+  .uix-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .uix-avatar--sm { width: 24px; height: 24px; font-size: 11px; }
+  .uix-avatar--lg { width: 44px; height: 44px; }
+  .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
+  .uix-avatar-group { display: inline-flex; }
+  .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: -8px; }
+  .uix-avatar-group .uix-avatar:first-child { margin-left: 0; }
+  .uix-user-chip { display: inline-flex; align-items: center; gap: 8px; }
+  .uix-user-chip__name { font-size: var(--uix-text-body); font-weight: 500; }
+  .uix-user-chip__sub { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}

@@ -1,0 +1,11 @@
+/* uix tree view — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-tree, .uix-tree ul { list-style: none; margin: 0; padding: 0; }
+  .uix-tree ul { padding-left: 18px; }
+  .uix-tree__row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); border: 0; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+  .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-tree__toggle svg { width: 14px; height: 14px; }
+  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+}

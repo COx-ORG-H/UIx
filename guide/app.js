@@ -19,6 +19,31 @@ export const toggleSet = (set, id) => {
   return s;
 };
 
+/** Stable sort by key + direction; case-insensitive + numeric-aware for strings. */
+export const sortRows = (rows, key, dir = 'asc') => {
+  const sign = dir === 'desc' ? -1 : 1;
+  return [...rows].sort((a, b) => {
+    const av = a[key], bv = b[key];
+    if (av === bv) return 0;
+    const cmp = (typeof av === 'string' && typeof bv === 'string')
+      ? av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' })
+      : (av > bv ? 1 : -1);
+    return cmp * sign;
+  });
+};
+
+/** Filter rows by { field: Set<allowed> }. Absent/empty set = no filter on that field. */
+export const filterRows = (rows, filters = {}) =>
+  rows.filter((r) => Object.entries(filters).every(([k, set]) => !set || set.size === 0 || set.has(r[k])));
+
+/** Pinned rows (from the full set, always present) first, then the visible/filtered rest. */
+export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
+  const pinned = pinnedIds instanceof Set ? pinnedIds : new Set(pinnedIds);
+  const pinnedRows = [...pinned].map((id) => allRows.find((r) => r[idKey] === id)).filter(Boolean);
+  const rest = visibleRows.filter((r) => !pinned.has(r[idKey]));
+  return [...pinnedRows, ...rest];
+};
+
 /** Parse a CSS color (#rgb, #rrggbb, rgb()/rgba()) to [r,g,b] (0-255). Alpha ignored. */
 export const parseColor = (str) => {
   const s = String(str).trim();
@@ -205,12 +230,70 @@ if (typeof document !== 'undefined') {
     renderFavs();
   };
 
+  // ---- data table: sort, two-row filters, pinning, density/zebra toggles ----
+  const initTable = (root) => {
+    const table = root.querySelector('.uix-table');
+    const tbody = root.querySelector('tbody[data-uix-rows]');
+    if (!tbody) return;
+    const allRows = [...tbody.querySelectorAll('tr')].map((tr) => ({ el: tr, id: tr.dataset.id, status: tr.dataset.status, type: tr.dataset.type }));
+    let sortIdx = null, sortDir = 'asc';
+    const filters = { status: new Set(), type: new Set() };
+    let pinned = new Set();
+    const cellText = (tr, i) => tr.children[i]?.textContent.trim() ?? '';
+
+    const render = () => {
+      let visible = allRows.filter((r) =>
+        (!filters.status.size || filters.status.has(r.status)) &&
+        (!filters.type.size || filters.type.has(r.type)));
+      if (sortIdx != null) {
+        const s = sortDir === 'desc' ? -1 : 1;
+        visible = [...visible].sort((a, b) => cellText(a.el, sortIdx).localeCompare(cellText(b.el, sortIdx), undefined, { numeric: true, sensitivity: 'base' }) * s);
+      }
+      const pinnedRows = [...pinned].map((id) => allRows.find((r) => r.id === id)).filter(Boolean);
+      const rest = visible.filter((r) => !pinned.has(r.id));
+      tbody.replaceChildren(...[...pinnedRows, ...rest].map((r) => r.el));
+      allRows.forEach((r) => r.el.removeAttribute('data-pinned'));
+      pinnedRows.forEach((r) => r.el.setAttribute('data-pinned', ''));
+    };
+
+    root.querySelectorAll('th[data-sort]').forEach((th) => {
+      th.addEventListener('click', () => {
+        const idx = [...th.parentElement.children].indexOf(th);
+        if (sortIdx === idx) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        else { sortIdx = idx; sortDir = 'asc'; }
+        root.querySelectorAll('th[data-sort]').forEach((h) => h.removeAttribute('aria-sort'));
+        th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+        render();
+      });
+    });
+    root.querySelectorAll('[data-filter]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const f = chip.dataset.filter, v = chip.dataset.value;
+        filters[f] = toggleSet(filters[f], v);
+        chip.toggleAttribute('data-on', filters[f].has(v));
+        render();
+      });
+    });
+    tbody.addEventListener('click', (e) => {
+      const pin = e.target.closest('[data-uix-pin]');
+      if (!pin) return;
+      const id = pin.closest('tr').dataset.id;
+      pinned = toggleSet(pinned, id);
+      pin.toggleAttribute('data-on', pinned.has(id));
+      render();
+    });
+    root.querySelector('[data-uix-density]')?.addEventListener('click', () => table.classList.toggle('uix-table--compact'));
+    root.querySelector('[data-uix-zebra]')?.addEventListener('click', () => table.classList.toggle('uix-table--no-zebra'));
+  };
+  const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
     buildTokenReference();
     setupScrollspy();
     setupSidebar();
+    setupTables();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

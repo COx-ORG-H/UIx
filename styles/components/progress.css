@@ -1,0 +1,12 @@
+/* uix progress bar + ring — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-progress { height: 8px; background: var(--uix-bg-active); border-radius: var(--uix-radius-pill); overflow: hidden; }
+  .uix-progress__bar { height: 100%; background: var(--uix-accent); border-radius: inherit; transition: width var(--uix-dur) var(--uix-ease-out); }
+  .uix-progress--indeterminate { position: relative; }
+  .uix-progress--indeterminate .uix-progress__bar { width: 40%; animation: uix-progress-slide 1.2s var(--uix-ease-in-out) infinite; }
+  @keyframes uix-progress-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(280%); } }
+
+  .uix-ring { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: conic-gradient(var(--uix-accent) calc(var(--val, .66) * 360deg), var(--uix-bg-active) 0); }
+  .uix-ring__inner { width: 32px; height: 32px; border-radius: 50%; background: var(--uix-surface); display: grid; place-items: center; font-size: var(--uix-text-meta); font-weight: 600; }
+}
