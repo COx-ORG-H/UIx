@@ -1,0 +1,194 @@
+/* uix flow — workflow & pipeline diagrams: boxed nodes + connectors.
+   Depends only on --uix-* tokens. Edges are decorative inline SVG (aria-hidden);
+   straight runs use pure-CSS connectors. Node state follows the tone-API pattern
+   (see status-pill.css): state --modifiers set only --tone-* vars, the base reads them. */
+@layer uix.components {
+
+  /* ============================================================ node */
+  .uix-node {
+    position: relative;
+    display: inline-grid; grid-template-columns: auto 1fr; align-items: center;
+    gap: 10px; min-width: 132px; width: max-content; max-width: 220px; padding: 10px 12px;
+    background: var(--uix-surface);
+    border: 1px solid var(--tone-border, var(--uix-border-strong));
+    border-radius: var(--uix-radius-md);
+    box-shadow: var(--uix-shadow-sm);
+    color: var(--uix-text); font-size: var(--uix-text-body); text-align: left;
+  }
+  .uix-node__icon {
+    display: grid; place-items: center; width: 30px; height: 30px; flex: none;
+    border-radius: var(--uix-radius-sm);
+    background: var(--tone-bg, var(--uix-bg-subtle));
+    color: var(--tone-fg, var(--uix-text-muted));
+  }
+  .uix-node__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-node__body { min-width: 0; }
+  .uix-node__title { font-weight: 500; line-height: 1.25; }
+  .uix-node__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-node__status {
+    display: inline-flex; align-items: center; gap: 5px; margin-top: 2px;
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--tone-fg, var(--uix-text-muted));
+  }
+  .uix-node__status::before {
+    content: ""; width: 7px; height: 7px; flex: none; border-radius: 50%;
+    background: var(--tone-dot, var(--uix-text-muted));
+  }
+
+  /* connection handles — decorative connection-point affordance */
+  .uix-node__handle {
+    position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--uix-surface); border: 1.5px solid var(--uix-border-strong);
+    transform: translateY(-50%);
+  }
+  .uix-node__handle--in { left: -5px; }
+  .uix-node__handle--out { right: -5px; }
+
+  /* ---- state modifiers: set tone vars only ---- */
+  .uix-node--pending { --tone-bg: var(--uix-bg-subtle);  --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); --tone-border: var(--uix-border); }
+  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-accent);    --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
+  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);       --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
+  .uix-node--done    { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success);    --tone-dot: var(--uix-success);   --tone-border: var(--uix-success); }
+  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);     --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
+  /* active/running read as "current" via a soft halo in their own tone */
+  .uix-node--active, .uix-node--running { box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--tone-bg); }
+
+  /* running node spins its icon */
+  .uix-node--running .uix-node__icon svg { animation: uix-flow-spin 1s linear infinite; }
+
+  /* ---- decision / diamond ---- */
+  .uix-node--decision {
+    min-width: 0; width: 112px; height: 112px; padding: 0; overflow: visible;
+    display: grid; place-items: center; background: transparent; border: 0; box-shadow: none;
+  }
+  .uix-node--decision::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 78px; height: 78px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: var(--tone-bg, var(--uix-surface));
+    border: 1px solid var(--tone-border, var(--uix-border-strong));
+    border-radius: var(--uix-radius-sm); box-shadow: var(--uix-shadow-sm);
+  }
+  .uix-node--decision .uix-node__title {
+    position: relative; z-index: 1; max-width: 88px; text-align: center;
+    font-size: var(--uix-text-meta); color: var(--tone-fg, var(--uix-text));
+  }
+
+  /* ---- start / end terminals (pills) ---- */
+  .uix-node--start, .uix-node--end {
+    grid-template-columns: 1fr; min-width: 0; justify-items: center;
+    padding: 8px 18px; border-radius: var(--uix-radius-pill);
+    background: var(--uix-bg-active); color: var(--uix-text-hushed); font-weight: 500;
+  }
+
+  /* ============================================================ flow + edges */
+  .uix-flow {
+    position: relative; width: 100%;
+    color: var(--uix-border-strong);            /* edges inherit via currentColor */
+  }
+  .uix-flow__edges {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;    /* never block node hover/focus */
+  }
+  .uix-flow__edge { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+  .uix-flow__edge--branch-yes { stroke: var(--uix-success); }
+  .uix-flow__edge--branch-no  { stroke: var(--uix-danger); }
+  .uix-flow__edge--loop       { stroke: var(--uix-accent); stroke-dasharray: 5 4; }
+  .uix-flow__arrow { fill: currentColor; }
+  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: 11px; }
+  .uix-flow__edge-label--loop { fill: var(--uix-accent); }
+
+  /* hovering/focusing a diagram sets its edges "flowing" (marching dashes) to read direction */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-flow:hover .uix-flow__edge,
+    .uix-flow:focus-within .uix-flow__edge {
+      stroke-dasharray: 5 4; animation: uix-flow-march var(--uix-dur-slow) linear infinite;
+    }
+  }
+
+  /* ---- linear: flex row of nodes + pure-CSS connectors (no SVG) ---- */
+  .uix-flow--linear .uix-flow__row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+  .uix-flow__connector {
+    position: relative; flex: 1 1 30px; min-width: 30px; height: 0;
+    border-top: 1.5px solid var(--uix-border-strong); margin: 0 3px;
+  }
+  .uix-flow__connector::after {
+    content: ""; position: absolute; right: -1px; top: 50%; width: 6px; height: 6px;
+    border-top: 1.5px solid var(--uix-border-strong); border-right: 1.5px solid var(--uix-border-strong);
+    transform: translate(0, -50%) rotate(45deg);
+  }
+  .uix-flow__connector[data-done] { border-color: var(--uix-success); }
+  .uix-flow__connector[data-done]::after { border-color: var(--uix-success); }
+
+  /* ---- branch / loop / mindmap: absolutely-positioned nodes over an SVG edge layer.
+         Container aspect-ratio matches each SVG viewBox so % node positions and path
+         coordinates scale together (uniform), keeping edges glued to nodes at any width. */
+  .uix-flow--branch, .uix-flow--loop { aspect-ratio: 5 / 2; }
+  .uix-flow--mindmap { aspect-ratio: 2 / 1; }
+  .uix-flow--branch .uix-node,
+  .uix-flow--loop .uix-node,
+  .uix-flow--mindmap .uix-node,
+  .uix-flow--canvas .uix-node { position: absolute; transform: translate(-50%, -50%); }
+
+  /* mindmap leaves sit tighter than default nodes */
+  .uix-flow--mindmap .uix-node { min-width: 0; }
+  .uix-flow--mindmap .uix-node--hub { min-width: 120px; }
+
+  /* ============================================================ builder canvas */
+  .uix-flow--canvas {
+    display: grid; grid-template-columns: 188px 1fr;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    overflow: hidden; background: var(--uix-surface); width: 100%;
+  }
+  .uix-flow__palette {
+    display: flex; flex-direction: column; gap: 8px; padding: 14px;
+    border-right: 1px solid var(--uix-border); background: var(--uix-surface);
+  }
+  .uix-flow__palette-title {
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: 2px;
+  }
+  .uix-flow__chip {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text);
+    font-size: var(--uix-text-meta); cursor: grab; box-shadow: var(--uix-shadow-sm);
+    transition: box-shadow var(--uix-dur-fast) var(--uix-ease-out),
+                transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-flow__chip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted); flex: none; }
+  .uix-flow__chip:active { cursor: grabbing; }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-flow__chip:hover { box-shadow: var(--uix-shadow-popover); transform: translateY(calc(-1 * var(--uix-lift))); }
+  }
+  /* the canvas: a dotted grid, free-placed nodes, one SVG edge layer */
+  .uix-flow__canvas {
+    position: relative; aspect-ratio: 16 / 9; min-height: 280px;
+    background-color: var(--uix-bg-subtle);
+    background-image: radial-gradient(var(--uix-border-strong) 1px, transparent 1px);
+    background-size: 22px 22px; background-position: -1px -1px;
+  }
+  .uix-flow--canvas .uix-node { cursor: grab; }
+  .uix-flow--canvas .uix-node:active { cursor: grabbing; }
+
+  /* selected node ring — mirrors the focus-ring construction (double box-shadow on --uix-ring) */
+  .uix-flow .uix-node[data-selected] {
+    border-color: var(--uix-ring);
+    box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring);
+  }
+  /* keyboard/click selection on focusable canvas pieces — no JS needed */
+  .uix-flow__chip:focus-visible,
+  .uix-flow--canvas .uix-node:focus-visible {
+    outline: none; border-color: var(--uix-ring);
+    box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring);
+  }
+
+  /* ============================================================ motion */
+  @keyframes uix-flow-spin  { to { transform: rotate(360deg); } }
+  @keyframes uix-flow-march { to { stroke-dashoffset: -18; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uix-node--running .uix-node__icon svg,
+    .uix-flow:hover .uix-flow__edge,
+    .uix-flow:focus-within .uix-flow__edge { animation: none; }
+  }
+}

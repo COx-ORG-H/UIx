@@ -32,6 +32,7 @@
       <a class="uix-guide__navlink" href="#data-display">Data display</a>
       <a class="uix-guide__navlink" href="#overlays">Feedback &amp; overlays</a>
       <a class="uix-guide__navlink" href="#crm-itsm">CRM / ITSM</a>
+      <a class="uix-guide__navlink" href="#workflows-pipelines">Workflows &amp; pipelines</a>
       <a class="uix-guide__navlink" href="#icons">Icons</a>
       <a class="uix-guide__navlink" href="#emoji">Emoji</a>
       <a class="uix-guide__navlink" href="#images">Images</a>
@@ -731,6 +732,235 @@
               <div class="uix-audit__row"><span class="uix-audit__actor">System</span><span class="uix-audit__detail">assigned to Maya</span><span class="uix-audit__time">2h</span></div>
             </div>
           </div></div>
+        </div>
+      </section>
+
+      <!-- ===== Workflows & pipelines ===== -->
+      <section id="workflows-pipelines" class="uix-guide__section">
+        <h2>Workflows &amp; pipelines</h2>
+        <p class="lead">Diagram primitives for visualizing a process — a <code class="uix-code">.uix-node</code> is the boxed step; <code class="uix-code">.uix-flow</code> arranges nodes and draws the connecting edges. Compose them into linear flows, branches, loops, mind maps, or a builder canvas. Edges are <strong>decorative SVG</strong> (<code class="uix-code">aria-hidden</code>); state is carried by a text label, never colour alone. For lightweight cases prefer the primitives you already have — <code class="uix-code">.uix-steps</code>, <code class="uix-code">.uix-pipeline</code>, <code class="uix-code">.uix-timeline</code>, <code class="uix-code">.uix-kanban</code>.</p>
+
+        <div class="uix-guide__subhead">Node &amp; states</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="gap:14px">
+            <div class="uix-node uix-node--pending">
+              <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
+              <div class="uix-node__body"><div class="uix-node__title">Build</div><span class="uix-node__status">Pending</span></div>
+            </div>
+            <div class="uix-node uix-node--active">
+              <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
+              <div class="uix-node__body"><div class="uix-node__title">Approve</div><span class="uix-node__status">Active</span></div>
+            </div>
+            <div class="uix-node uix-node--running">
+              <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></span>
+              <div class="uix-node__body"><div class="uix-node__title">Run tests</div><span class="uix-node__status">Running</span></div>
+            </div>
+            <div class="uix-node uix-node--done">
+              <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+              <div class="uix-node__body"><div class="uix-node__title">Deploy</div><span class="uix-node__status">Done</span></div>
+            </div>
+            <div class="uix-node uix-node--error">
+              <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+              <div class="uix-node__body"><div class="uix-node__title">Notify</div><span class="uix-node__status">Error</span></div>
+            </div>
+            <div class="uix-node uix-node--decision uix-node--active"><div class="uix-node__title">Approved?</div></div>
+            <span class="uix-node uix-node--start">Start</span>
+            <span class="uix-node uix-node--end">End</span>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-node uix-node--running">
+  <span class="uix-node__icon"><!-- icon svg --></span>
+  <div class="uix-node__body">
+    <div class="uix-node__title">Run tests</div>
+    <span class="uix-node__status">Running</span>
+  </div>
+</div>
+<div class="uix-node uix-node--decision uix-node--active"><div class="uix-node__title">Approved?</div></div></template>
+        </div>
+
+        <div class="uix-guide__subhead">Linear flow</div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <div class="uix-flow uix-flow--linear" role="group" aria-label="Deploy pipeline: Build done, Test running, Deploy pending">
+              <div class="uix-flow__row">
+                <div class="uix-node uix-node--done">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Build</div><span class="uix-node__status">Done</span></div>
+                </div>
+                <span class="uix-flow__connector" data-done aria-hidden="true"></span>
+                <div class="uix-node uix-node--running">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Test</div><span class="uix-node__status">Running</span></div>
+                </div>
+                <span class="uix-flow__connector" aria-hidden="true"></span>
+                <div class="uix-node uix-node--pending">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Deploy</div><span class="uix-node__status">Pending</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-flow uix-flow--linear" role="group" aria-label="Deploy pipeline: Build done, Test running, Deploy pending">
+  <div class="uix-flow__row">
+    <div class="uix-node uix-node--done"><span class="uix-node__icon">…</span><div class="uix-node__body"><div class="uix-node__title">Build</div><span class="uix-node__status">Done</span></div></div>
+    <span class="uix-flow__connector" data-done aria-hidden="true"></span>
+    <div class="uix-node uix-node--running"><span class="uix-node__icon">…</span><div class="uix-node__body"><div class="uix-node__title">Test</div><span class="uix-node__status">Running</span></div></div>
+    <span class="uix-flow__connector" aria-hidden="true"></span>
+    <div class="uix-node uix-node--pending"><span class="uix-node__icon">…</span><div class="uix-node__body"><div class="uix-node__title">Deploy</div><span class="uix-node__status">Pending</span></div></div>
+  </div>
+</div></template>
+        </div>
+
+        <div class="uix-guide__subhead">Branching / decision</div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <div class="uix-flow uix-flow--branch" role="group" aria-label="Decision: if approved, deploy; otherwise notify the owner">
+              <svg class="uix-flow__edges" viewBox="0 0 500 200" aria-hidden="true">
+                <defs><marker id="uix-arrow-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="uix-flow__arrow" d="M0 0 10 5 0 10z"/></marker></defs>
+                <path class="uix-flow__edge uix-flow__edge--branch-yes" d="M164 100 C 250 100 250 56 305 56" marker-end="url(#uix-arrow-b)"/>
+                <path class="uix-flow__edge uix-flow__edge--branch-no" d="M164 100 C 250 100 250 144 305 144" marker-end="url(#uix-arrow-b)"/>
+                <text class="uix-flow__edge-label" x="238" y="50">Yes</text>
+                <text class="uix-flow__edge-label" x="240" y="162">No</text>
+              </svg>
+              <div class="uix-node uix-node--decision uix-node--active" style="left:22%;top:50%"><div class="uix-node__title">Approved?</div></div>
+              <div class="uix-node uix-node--done" style="left:76%;top:28%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Deploy</div></div>
+              </div>
+              <div class="uix-node uix-node--pending" style="left:76%;top:72%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Notify owner</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-flow uix-flow--branch" role="group" aria-label="Decision: if approved, deploy; otherwise notify the owner">
+  <svg class="uix-flow__edges" viewBox="0 0 500 200" aria-hidden="true">
+    <defs><marker id="uix-arrow-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="uix-flow__arrow" d="M0 0 10 5 0 10z"/></marker></defs>
+    <path class="uix-flow__edge uix-flow__edge--branch-yes" d="M164 100 C 250 100 250 56 305 56" marker-end="url(#uix-arrow-b)"/>
+    <path class="uix-flow__edge uix-flow__edge--branch-no" d="M164 100 C 250 100 250 144 305 144" marker-end="url(#uix-arrow-b)"/>
+    <text class="uix-flow__edge-label" x="238" y="50">Yes</text>
+    <text class="uix-flow__edge-label" x="240" y="162">No</text>
+  </svg>
+  <div class="uix-node uix-node--decision uix-node--active" style="left:22%;top:50%"><div class="uix-node__title">Approved?</div></div>
+  <div class="uix-node uix-node--done"    style="left:76%;top:28%">…Deploy…</div>
+  <div class="uix-node uix-node--pending" style="left:76%;top:72%">…Notify owner…</div>
+</div></template>
+        </div>
+
+        <div class="uix-guide__subhead">Loop / retry</div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <div class="uix-flow uix-flow--loop" role="group" aria-label="Retry loop: run, then check; on failure return to run, otherwise publish">
+              <svg class="uix-flow__edges" viewBox="0 0 500 200" aria-hidden="true">
+                <defs><marker id="uix-arrow-l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="uix-flow__arrow" d="M0 0 10 5 0 10z"/></marker></defs>
+                <path class="uix-flow__edge" d="M150 124 L 178 124" marker-end="url(#uix-arrow-l)"/>
+                <path class="uix-flow__edge" d="M322 124 L 350 124" marker-end="url(#uix-arrow-l)"/>
+                <path class="uix-flow__edge uix-flow__edge--loop" d="M425 100 C 425 32 75 32 75 100" marker-end="url(#uix-arrow-l)"/>
+                <text class="uix-flow__edge-label uix-flow__edge-label--loop" x="250" y="26" text-anchor="middle">retry on fail</text>
+              </svg>
+              <div class="uix-node uix-node--done" style="left:15%;top:62%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Run</div></div>
+              </div>
+              <div class="uix-node uix-node--error" style="left:50%;top:62%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Check</div></div>
+              </div>
+              <div class="uix-node uix-node--pending" style="left:85%;top:62%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Publish</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-flow uix-flow--loop" role="group" aria-label="Retry loop: run, then check; on failure return to run, otherwise publish">
+  <svg class="uix-flow__edges" viewBox="0 0 500 200" aria-hidden="true">
+    <defs><marker id="uix-arrow-l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="uix-flow__arrow" d="M0 0 10 5 0 10z"/></marker></defs>
+    <path class="uix-flow__edge" d="M150 124 L 178 124" marker-end="url(#uix-arrow-l)"/>
+    <path class="uix-flow__edge" d="M322 124 L 350 124" marker-end="url(#uix-arrow-l)"/>
+    <path class="uix-flow__edge uix-flow__edge--loop" d="M425 100 C 425 32 75 32 75 100" marker-end="url(#uix-arrow-l)"/>
+    <text class="uix-flow__edge-label uix-flow__edge-label--loop" x="250" y="26" text-anchor="middle">retry on fail</text>
+  </svg>
+  <div class="uix-node uix-node--done"    style="left:15%;top:62%">…Run…</div>
+  <div class="uix-node uix-node--error"   style="left:50%;top:62%">…Check…</div>
+  <div class="uix-node uix-node--pending" style="left:85%;top:62%">…Publish…</div>
+</div></template>
+        </div>
+
+        <div class="uix-guide__subhead">Mind map (radial)</div>
+        <div data-uix-example>
+          <div class="uix-example__preview">
+            <div class="uix-flow uix-flow--mindmap" role="group" aria-label="Incident categories: network, access, email, hardware">
+              <svg class="uix-flow__edges" viewBox="0 0 600 300" aria-hidden="true">
+                <path class="uix-flow__edge" d="M300 150 Q 200 120 150 88"/>
+                <path class="uix-flow__edge" d="M300 150 Q 400 118 452 80"/>
+                <path class="uix-flow__edge" d="M300 150 Q 190 200 142 224"/>
+                <path class="uix-flow__edge" d="M300 150 Q 410 198 458 222"/>
+              </svg>
+              <div class="uix-node uix-node--active uix-node--hub" style="left:50%;top:50%">
+                <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg></span>
+                <div class="uix-node__body"><div class="uix-node__title">Incidents</div></div>
+              </div>
+              <div class="uix-node" style="left:18%;top:24%"><div class="uix-node__body"><div class="uix-node__title">Network</div></div></div>
+              <div class="uix-node" style="left:82%;top:22%"><div class="uix-node__body"><div class="uix-node__title">Access</div></div></div>
+              <div class="uix-node" style="left:16%;top:80%"><div class="uix-node__body"><div class="uix-node__title">Email</div></div></div>
+              <div class="uix-node uix-node--running" style="left:84%;top:78%"><div class="uix-node__body"><div class="uix-node__title">Hardware</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Builder canvas</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="padding:0">
+            <div class="uix-flow uix-flow--canvas" role="group" aria-label="Workflow builder canvas (illustrative)">
+              <aside class="uix-flow__palette">
+                <div class="uix-flow__palette-title">Nodes — drag onto canvas</div>
+                <div class="uix-flow__chip" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> Trigger</div>
+                <div class="uix-flow__chip" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Condition</div>
+                <div class="uix-flow__chip" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg> Notify</div>
+              </aside>
+              <div class="uix-flow__canvas">
+                <svg class="uix-flow__edges" viewBox="0 0 640 360" preserveAspectRatio="none" aria-hidden="true">
+                  <defs><marker id="uix-arrow-c" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="uix-flow__arrow" d="M0 0 10 5 0 10z"/></marker></defs>
+                  <path class="uix-flow__edge" d="M150 96 C 250 96 250 210 300 210" marker-end="url(#uix-arrow-c)"/>
+                  <path class="uix-flow__edge" d="M430 200 C 478 200 478 120 486 118" marker-end="url(#uix-arrow-c)"/>
+                </svg>
+                <div class="uix-node uix-node--done" tabindex="0" style="left:17%;top:26%">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Ticket created</div></div>
+                  <span class="uix-node__handle uix-node__handle--out"></span>
+                </div>
+                <div class="uix-node uix-node--active" tabindex="0" data-selected style="left:53%;top:58%">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Priority = high?</div></div>
+                  <span class="uix-node__handle uix-node__handle--in"></span>
+                  <span class="uix-node__handle uix-node__handle--out"></span>
+                </div>
+                <div class="uix-node uix-node--pending" tabindex="0" style="left:76%;top:28%">
+                  <span class="uix-node__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></span>
+                  <div class="uix-node__body"><div class="uix-node__title">Page on-call</div></div>
+                  <span class="uix-node__handle uix-node__handle--in"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">When to use which</div>
+        <div class="uix-table-wrap" style="max-height:none">
+          <table class="uix-table uix-table--no-zebra">
+            <thead><tr><th>Pattern</th><th>Reach for it when…</th><th>Lightweight alternative</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Linear flow</strong></td><td>A fixed, ordered sequence; you want per-step state.</td><td><code class="uix-code">.uix-steps</code>, <code class="uix-code">.uix-pipeline</code></td></tr>
+              <tr><td><strong>Branch / decision</strong></td><td>One node yields 2–3 mutually exclusive outcomes.</td><td>—</td></tr>
+              <tr><td><strong>Loop / retry</strong></td><td>Control flow returns to an earlier node (retry, polling, rework).</td><td>—</td></tr>
+              <tr><td><strong>Mind map</strong></td><td>One central concept with peer children — relationships, not sequence.</td><td><code class="uix-code">.uix-tree</code> (true hierarchy)</td></tr>
+              <tr><td><strong>Builder canvas</strong></td><td>Evoking an editor: free node placement, a palette, selection.</td><td>—</td></tr>
+              <tr><td><strong>Status columns</strong></td><td>Items moving across stages of work.</td><td><code class="uix-code">.uix-kanban</code></td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 

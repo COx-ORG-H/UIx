@@ -68,6 +68,7 @@
 @import "components/labels.css";
 @import "components/attachment.css";
 @import "components/pipeline.css";
+@import "components/flow.css";
 @import "components/audit-log.css";
 @import "components/contact-card.css";
 @import "components/sla.css";
