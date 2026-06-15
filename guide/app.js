@@ -12,6 +12,13 @@ export const resolveTheme = (stored, osDark) => stored ?? (osDark ? 'dark' : 'li
 /** Toggle between the two themes. */
 export const nextTheme = (t) => (t === 'dark' ? 'light' : 'dark');
 
+/** Immutably toggle membership of `id` in a Set (favorites / expanded / pinned state). */
+export const toggleSet = (set, id) => {
+  const s = new Set(set);
+  s.has(id) ? s.delete(id) : s.add(id);
+  return s;
+};
+
 /** Parse a CSS color (#rgb, #rrggbb, rgb()/rgba()) to [r,g,b] (0-255). Alpha ignored. */
 export const parseColor = (str) => {
   const s = String(str).trim();
@@ -162,11 +169,48 @@ if (typeof document !== 'undefined') {
     }
   });
 
+  // ---- sidebar: favorites, collapsible groups, collapsed rail ----
+  const setupSidebar = () => {
+    const sidebar = document.querySelector('[data-uix-sidebar]');
+    if (!sidebar) return;
+    let favs = new Set();
+    const favList = sidebar.querySelector('[data-uix-fav-list]');
+    const renderFavs = () => {
+      if (!favList) return;
+      favList.innerHTML = favs.size
+        ? [...favs].map((id) => {
+            const src = sidebar.querySelector(`[data-uix-fav="${CSS.escape(id)}"]`)?.closest('.uix-navitem');
+            const label = src?.querySelector('.uix-navitem__label')?.textContent ?? id;
+            return `<div class="uix-navitem"><span class="uix-navitem__label">${esc(label)}</span></div>`;
+          }).join('')
+        : `<div class="uix-sidebar__eyebrow" style="text-transform:none;letter-spacing:0">No favorites yet</div>`;
+    };
+    sidebar.addEventListener('click', (e) => {
+      const star = e.target.closest('[data-uix-fav]');
+      if (star) {
+        e.preventDefault();
+        const id = star.getAttribute('data-uix-fav');
+        favs = toggleSet(favs, id);
+        star.toggleAttribute('data-on', favs.has(id));
+        renderFavs();
+        return;
+      }
+      const trig = e.target.closest('.uix-navgroup__trigger');
+      if (trig) { trig.setAttribute('aria-expanded', trig.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); return; }
+      if (e.target.closest('[data-uix-collapse]')) {
+        sidebar.toggleAttribute('data-collapsed');
+        sidebar.closest('.uix-shell')?.toggleAttribute('data-collapsed');
+      }
+    });
+    renderFavs();
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
     buildTokenReference();
     setupScrollspy();
+    setupSidebar();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

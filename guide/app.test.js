@@ -1,7 +1,7 @@
 /* Unit tests for the pure helpers in app.js. Run: node --test guide/  (Node 22+, zero deps) */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict } from './app.js';
+import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet } from './app.js';
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');
@@ -40,4 +40,12 @@ test('aaVerdict thresholds', () => {
   assert.equal(aaVerdict(4.5), 'AA');
   assert.equal(aaVerdict(3.2), 'AA-lg');
   assert.equal(aaVerdict(2), 'FAIL');
+});
+
+test('toggleSet adds then removes an id, immutably', () => {
+  const a = toggleSet(new Set(), 'inc-1');
+  assert.deepEqual([...a], ['inc-1']);
+  const b = toggleSet(a, 'inc-1');
+  assert.deepEqual([...b], []);
+  assert.deepEqual([...a], ['inc-1']); // original untouched
 });

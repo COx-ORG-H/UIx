@@ -1,0 +1,8 @@
+/* uix page header — title/subtitle/actions row. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-page-header { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--uix-border); }
+  .uix-page-header__titles { flex: 1; min-width: 220px; }
+  .uix-page-header__title { font-size: var(--uix-text-h2); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
+  .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: 2px; }
+  .uix-page-header__actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+}

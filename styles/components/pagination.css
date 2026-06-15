@@ -1,0 +1,14 @@
+/* uix pagination — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-pagination { display: inline-flex; align-items: center; gap: 4px; }
+  .uix-pagination__btn {
+    min-width: 32px; height: 32px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface);
+    color: var(--uix-text); font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-pagination__btn:hover { background: var(--uix-bg-hover); }
+  .uix-pagination__btn[aria-current="page"] { background: var(--uix-accent); border-color: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-pagination__btn:disabled { opacity: .45; pointer-events: none; }
+  .uix-pagination__ellipsis { padding: 0 4px; color: var(--uix-text-muted); }
+}

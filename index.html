@@ -250,8 +250,107 @@
 
       <section id="navigation" class="uix-guide__section">
         <h2>Navigation &amp; shell</h2>
-        <p class="lead">App shell, sidebar (favorites, collapsible sub-items), tabs, breadcrumbs, command palette, menus.</p>
-        <div class="uix-guide__placeholder">Navigation &amp; shell — Phase 3</div>
+        <p class="lead">A live app shell: hover a nav item and click its star to favorite it (appears up top), expand/collapse the Reports group, and collapse the whole rail.</p>
+
+        <div class="uix-guide__subhead">App shell &amp; sidebar</div>
+        <div class="uix-shell" style="height:420px">
+          <aside class="uix-sidebar" data-uix-sidebar style="width:auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px 8px">
+              <strong style="font-size:var(--uix-text-h3)">Helpdesk</strong>
+              <button class="uix-navitem__star" data-uix-collapse aria-label="Collapse sidebar" style="opacity:1;color:var(--uix-text-muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+            </div>
+            <div class="uix-sidebar__eyebrow">Favorites</div>
+            <div data-uix-fav-list></div>
+            <div class="uix-sidebar__eyebrow">Workspace</div>
+            <div class="uix-navitem" aria-current="page"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="uix-navitem__label">Incidents</span><span class="uix-navitem__badge">12</span><button class="uix-navitem__star" data-uix-fav="incidents" aria-label="Favorite Incidents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+            <div class="uix-navitem"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span class="uix-navitem__label">Requests</span><span class="uix-navitem__badge">4</span><button class="uix-navitem__star" data-uix-fav="requests" aria-label="Favorite Requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+            <button class="uix-navitem uix-navgroup__trigger" aria-expanded="true"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg><span class="uix-navitem__label">Reports</span><svg class="uix-navgroup__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="uix-navgroup__panel"><div>
+              <div class="uix-navitem uix-subitem"><span class="uix-navitem__label">SLA overview</span></div>
+              <div class="uix-navitem uix-subitem"><span class="uix-navitem__label">Backlog</span></div>
+            </div></div>
+          </aside>
+          <div class="uix-shell__topbar">
+            <nav class="uix-breadcrumbs"><a href="#">Workspace</a><span class="uix-breadcrumbs__sep">/</span><a href="#">Incidents</a><span class="uix-breadcrumbs__sep">/</span><span aria-current="page">INC-2043</span></nav>
+            <span style="flex:1"></span>
+            <span class="uix-kbd">⌘</span><span class="uix-kbd">K</span>
+          </div>
+          <div class="uix-shell__main">
+            <div class="uix-page-header">
+              <div class="uix-page-header__titles">
+                <div class="uix-page-header__title">Incidents</div>
+                <div class="uix-page-header__subtitle">All open tickets across teams</div>
+              </div>
+              <div class="uix-page-header__actions">
+                <span class="uix-segmented"><button class="uix-segmented__option" aria-pressed="true">3m</button><button class="uix-segmented__option">6m</button><button class="uix-segmented__option">1y</button></span>
+                <button class="uix-btn uix-btn--primary">New incident</button>
+              </div>
+            </div>
+            <p style="color:var(--uix-text-muted);margin-top:16px;font-size:var(--uix-text-meta)">Star a nav item, collapse the rail, expand/collapse Reports — all live.</p>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Tabs</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="display:block">
+            <div class="uix-tabs uix-tabs--line" role="tablist" style="margin-bottom:20px">
+              <button class="uix-tab" role="tab" aria-selected="true">Overview</button>
+              <button class="uix-tab" role="tab" aria-selected="false">Activity</button>
+              <button class="uix-tab" role="tab" aria-selected="false">Related</button>
+            </div>
+            <div class="uix-tabs uix-tabs--pill" role="tablist">
+              <button class="uix-tab" role="tab" aria-selected="true">All</button>
+              <button class="uix-tab" role="tab" aria-selected="false">Mine</button>
+              <button class="uix-tab" role="tab" aria-selected="false">Unassigned</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Pagination &amp; steps</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="display:block">
+            <nav class="uix-pagination" style="margin-bottom:24px">
+              <button class="uix-pagination__btn" disabled>Prev</button>
+              <button class="uix-pagination__btn" aria-current="page">1</button>
+              <button class="uix-pagination__btn">2</button>
+              <button class="uix-pagination__btn">3</button>
+              <span class="uix-pagination__ellipsis">…</span>
+              <button class="uix-pagination__btn">12</button>
+              <button class="uix-pagination__btn">Next</button>
+            </nav>
+            <div class="uix-steps">
+              <div class="uix-step" data-state="done"><span class="uix-step__marker">✓</span><span class="uix-step__label">Triage</span></div>
+              <span class="uix-step__connector" data-done></span>
+              <div class="uix-step" data-state="active"><span class="uix-step__marker">2</span><span class="uix-step__label">Investigate</span></div>
+              <span class="uix-step__connector"></span>
+              <div class="uix-step"><span class="uix-step__marker">3</span><span class="uix-step__label">Resolve</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Menu &amp; command palette</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:flex-start;gap:24px">
+            <ul class="uix-menu" style="width:220px">
+              <li class="uix-menu__label">Actions</li>
+              <li><button class="uix-menu__item">Assign to me <span class="uix-kbd">A</span></button></li>
+              <li><button class="uix-menu__item">Change status</button></li>
+              <li><button class="uix-menu__item">Add comment</button></li>
+              <li class="uix-menu__sep"></li>
+              <li><button class="uix-menu__item uix-menu__item--danger">Delete incident</button></li>
+            </ul>
+            <div class="uix-cmdk" style="box-shadow:var(--uix-shadow-popover)">
+              <input class="uix-cmdk__input" placeholder="Type a command or search…" value="">
+              <div class="uix-cmdk__list">
+                <div class="uix-cmdk__group">Navigation</div>
+                <div class="uix-cmdk__item" data-active><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg> Go to Incidents <span class="uix-kbd">G</span></div>
+                <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Search tickets</div>
+                <div class="uix-cmdk__group">Create</div>
+                <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg> New incident <span class="uix-kbd">N</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="data-display" class="uix-guide__section">

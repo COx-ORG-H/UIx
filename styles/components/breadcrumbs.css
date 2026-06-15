@@ -1,0 +1,8 @@
+/* uix breadcrumbs — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-breadcrumbs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-breadcrumbs a { color: var(--uix-text-muted); text-decoration: none; }
+  .uix-breadcrumbs a:hover { color: var(--uix-text); text-decoration: underline; }
+  .uix-breadcrumbs__sep { opacity: .55; }
+  .uix-breadcrumbs [aria-current="page"] { color: var(--uix-text); font-weight: 500; }
+}

@@ -1,0 +1,31 @@
+/* uix tabs — line / enclosed / pill. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-tabs { display: flex; gap: 2px; }
+  .uix-tab {
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
+    color: var(--uix-text-hushed); padding: 10px 12px; cursor: pointer; position: relative;
+    transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-tab:hover { color: var(--uix-text); }
+  .uix-tab[aria-selected="true"] { color: var(--uix-text); }
+  .uix-tab:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; border-radius: var(--uix-radius-sm); }
+
+  /* line */
+  .uix-tabs--line { border-bottom: 1px solid var(--uix-border); }
+  .uix-tabs--line .uix-tab::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px;
+    background: var(--uix-accent); border-radius: var(--uix-radius-pill);
+    transform: scaleX(0); transition: transform var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-tabs--line .uix-tab[aria-selected="true"]::after { transform: scaleX(1); }
+
+  /* enclosed */
+  .uix-tabs--enclosed { gap: 0; border-bottom: 1px solid var(--uix-border); }
+  .uix-tabs--enclosed .uix-tab { border: 1px solid transparent; border-top-left-radius: var(--uix-radius-md); border-top-right-radius: var(--uix-radius-md); margin-bottom: -1px; }
+  .uix-tabs--enclosed .uix-tab[aria-selected="true"] { border-color: var(--uix-border); border-bottom-color: var(--uix-bg-app); background: var(--uix-bg-app); }
+
+  /* pill */
+  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: 3px; border-radius: var(--uix-radius-md); }
+  .uix-tabs--pill .uix-tab { padding: 6px 14px; border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-tabs--pill .uix-tab[aria-selected="true"] { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
+}

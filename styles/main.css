@@ -22,3 +22,13 @@
 @import "components/combobox.css";
 @import "components/tag-input.css";
 @import "components/form.css";
+@import "components/app-shell.css";
+@import "components/sidebar.css";
+@import "components/breadcrumbs.css";
+@import "components/tabs.css";
+@import "components/pagination.css";
+@import "components/steps.css";
+@import "components/command-palette.css";
+@import "components/menu.css";
+@import "components/page-header.css";
+@import "components/kbd.css";
