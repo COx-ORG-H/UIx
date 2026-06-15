@@ -32,6 +32,7 @@
       <a class="uix-guide__navlink" href="#data-display">Data display</a>
       <a class="uix-guide__navlink" href="#overlays">Feedback &amp; overlays</a>
       <a class="uix-guide__navlink" href="#crm-itsm">CRM / ITSM</a>
+      <a class="uix-guide__navlink" href="#icons">Icons</a>
       <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
     </nav>
 
@@ -740,6 +741,19 @@
             </div>
           </div></div>
         </div>
+      </section>
+
+      <section id="icons" class="uix-guide__section">
+        <h2>Icons</h2>
+        <p class="lead">Icons are <strong>lucide</strong> glyphs, inline SVG, drawn in <code class="uix-code">currentColor</code> at <code class="uix-code">stroke-width:2</code> with round caps. Size them with <code class="uix-code">--uix-icon-sm</code> (16) / <code class="uix-code">--uix-icon-md</code> (20) / <code class="uix-code">--uix-icon-lg</code> (24) via the <code class="uix-code">icon(name, size)</code> helper in <code class="uix-code">assets/icons.js</code>.</p>
+        <div class="uix-alert uix-alert--info" style="margin-bottom:16px">
+          <span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <div><div class="uix-alert__title">Accessibility</div><div class="uix-alert__body">Decorative icons get <code class="uix-code">aria-hidden="true"</code> (the <code class="uix-code">icon()</code> helper adds it). An icon that is a control's only label needs an <code class="uix-code">aria-label</code> on the control (or a visible tooltip). Never rely on an icon alone to carry meaning.</div></div>
+        </div>
+        <div class="uix-guide__subhead">Sizes</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:center" data-uix-icon-sizes></div>
+        <div class="uix-guide__subhead">Inventory — click a name to copy</div>
+        <div class="uix-icon-grid" data-uix-icon-grid></div>
       </section>
 
       <section id="utility" class="uix-guide__section" style="border-bottom:0">

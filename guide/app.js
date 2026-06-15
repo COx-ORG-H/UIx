@@ -1,6 +1,6 @@
 /* uix-styleguide app.js — pure helpers (unit-tested) + DOM wiring for the showcase.
    The DOM block is guarded so this module imports cleanly under node:test. */
-import { icon } from '../assets/icons.js';
+import { icon, iconNames } from '../assets/icons.js';
 
 /* ----------------------------------------------------------------------------
  * Pure helpers (tested in app.test.js)
@@ -225,6 +225,12 @@ if (typeof document !== 'undefined') {
         copyBtn.dataset.copied = '1';
         setTimeout(() => delete copyBtn.dataset.copied, 1200);
       }
+    }
+    const iconCell = e.target.closest('[data-icon-copy]');
+    if (iconCell && navigator.clipboard) {
+      navigator.clipboard.writeText(iconCell.dataset.iconCopy);
+      iconCell.dataset.copied = '1';
+      setTimeout(() => delete iconCell.dataset.copied, 1200);
     }
   });
 
@@ -495,10 +501,21 @@ if (typeof document !== 'undefined') {
     });
   };
 
+  // ---- icon inventory (Icons section): sizes row + click-to-copy grid ----
+  const buildIconInventory = () => {
+    const sizes = document.querySelector('[data-uix-icon-sizes]');
+    if (sizes) sizes.innerHTML = ['sm', 'md', 'lg'].map((sz) =>
+      `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;color:var(--uix-text)">${icon('star', sz)}<code style="font-size:var(--uix-text-eyebrow);color:var(--uix-text-muted)">${sz}</code></span>`).join('');
+    const grid = document.querySelector('[data-uix-icon-grid]');
+    if (grid) grid.innerHTML = iconNames().map((n) =>
+      `<button class="uix-icon-cell" type="button" data-icon-copy="${esc(n)}">${icon(n)}<code>${esc(n)}</code></button>`).join('');
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
     buildTokenReference();
+    buildIconInventory();
     setupScrollspy();
     setupSidebar();
     setupTables();
