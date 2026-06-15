@@ -320,18 +320,39 @@ if (typeof document !== 'undefined') {
       pin.toggleAttribute('data-on', pinned.has(id));
       render();
     });
-    root.querySelector('[data-uix-density]')?.addEventListener('click', () => table.classList.toggle('uix-table--compact'));
-    root.querySelector('[data-uix-zebra]')?.addEventListener('click', () => table.classList.toggle('uix-table--no-zebra'));
-    root.querySelector('[data-uix-freeze]')?.addEventListener('click', (e) => {
-      e.currentTarget.setAttribute('aria-pressed', table.classList.toggle('uix-table--pinned-col'));
+    // ---- consolidated View menu: density / zebra / freeze / columns, persisted per table id ----
+    const key = 'uix-view-' + (root.id || 'tbl');
+    const prefs = readViewPrefs(localStorage.getItem(key), localStorage.getItem('uix-cols-' + (root.id || 'tbl')));
+    const save = () => localStorage.setItem(key, writeViewPrefs(prefs));
+
+    const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
+    if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
+
+    // density (segmented)
+    const applyDensity = () => {
+      if (prefs.density === 'standard') table.removeAttribute('data-density');
+      else table.setAttribute('data-density', prefs.density);
+      root.querySelectorAll('[data-uix-density] [data-density]').forEach((b) =>
+        b.setAttribute('aria-pressed', String(b.dataset.density === prefs.density)));
+    };
+    root.querySelector('[data-uix-density]')?.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-density]'); if (!b) return;
+      prefs.density = b.dataset.density; applyDensity(); save();
     });
 
-    // column visibility — checkboxes in a popover, persisted per table id
+    // zebra + freeze (switches)
+    const zebraEl = root.querySelector('[data-uix-zebra]');
+    const freezeEl = root.querySelector('[data-uix-freeze]');
+    const applyZebra = () => { table.classList.toggle('uix-table--no-zebra', !prefs.zebra); if (zebraEl) zebraEl.checked = prefs.zebra; };
+    const applyFreeze = () => { table.classList.toggle('uix-table--pinned-col', prefs.freeze); if (freezeEl) freezeEl.checked = prefs.freeze; };
+    zebraEl?.addEventListener('change', () => { prefs.zebra = zebraEl.checked; applyZebra(); save(); });
+    freezeEl?.addEventListener('change', () => { prefs.freeze = freezeEl.checked; applyFreeze(); save(); });
+
+    // columns (checklist inside the menu)
     const colMenu = root.querySelector('[data-uix-colmenu]');
     if (colMenu) {
       const headers = [...table.querySelectorAll('thead th')];
-      const key = 'uix-cols-' + (root.id || 'tbl');
-      const hidden = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+      const hidden = new Set(prefs.hiddenCols);
       const applyCols = () => headers.forEach((th, i) => {
         const off = hidden.has(i);
         table.querySelectorAll(`tr > *:nth-child(${i + 1})`).forEach((c) => { c.hidden = off; });
@@ -344,11 +365,12 @@ if (typeof document !== 'undefined') {
         const cb = e.target.closest('[data-col]'); if (!cb) return;
         const i = +cb.dataset.col;
         cb.checked ? hidden.delete(i) : hidden.add(i);
-        localStorage.setItem(key, JSON.stringify([...hidden]));
-        applyCols();
+        prefs.hiddenCols = [...hidden]; save(); applyCols();
       });
       applyCols();
     }
+
+    applyDensity(); applyZebra(); applyFreeze();
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
 

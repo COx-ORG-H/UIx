@@ -423,11 +423,25 @@
               <input class="uix-input uix-input--sm" type="search" placeholder="Search tickets…">
             </span>
             <span class="uix-toolbar__spacer"></span>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-freeze aria-pressed="true">Freeze 1st col</button>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="colmenu" style="anchor-name:--colbtn">Columns ▾</button>
-            <div id="colmenu" popover class="uix-popover" data-uix-colmenu style="position-anchor:--colbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px; min-width:180px"></div>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-density>Density</button>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-zebra>Zebra</button>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position-anchor:--viewbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px">
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Density</div>
+                <span class="uix-segmented" data-uix-density>
+                  <button class="uix-segmented__option" type="button" data-density="compact" aria-pressed="false">Compact</button>
+                  <button class="uix-segmented__option" type="button" data-density="standard" aria-pressed="true">Standard</button>
+                  <button class="uix-segmented__option" type="button" data-density="comfortable" aria-pressed="false">Comfortable</button>
+                </span>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__row"><span>Zebra striping</span><label class="uix-switch"><input type="checkbox" data-uix-zebra checked><span class="uix-switch__track"></span></label></div>
+                <div class="uix-view-menu__row"><span>Freeze first column</span><label class="uix-switch"><input type="checkbox" data-uix-freeze checked><span class="uix-switch__track"></span></label></div>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Columns</div>
+                <div class="uix-view-menu__cols" data-uix-colmenu></div>
+              </div>
+            </div>
           </div>
           <div class="uix-filterbar">
             <div class="uix-filterrow">
