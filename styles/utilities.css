@@ -1,0 +1,18 @@
+/* uix utilities — a few layout/a11y helpers. Keep this small; tokens + components do the heavy lifting. */
+@layer uix.util {
+  /* visually hidden but available to screen readers */
+  .uix-visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
+
+  /* vertical rhythm — set gap via --gap (defaults to 12px) */
+  .uix-stack { display: flex; flex-direction: column; gap: var(--gap, 12px); }
+  /* horizontal grouping that wraps */
+  .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, 8px); }
+
+  .uix-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
