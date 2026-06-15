@@ -265,14 +265,18 @@ if (typeof document !== 'undefined') {
     };
 
     root.querySelectorAll('th[data-sort]').forEach((th) => {
-      th.addEventListener('click', () => {
+      th.tabIndex = 0;                       // keyboard-reachable
+      th.setAttribute('role', 'button');
+      const doSort = () => {
         const idx = [...th.parentElement.children].indexOf(th);
         if (sortIdx === idx) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
         else { sortIdx = idx; sortDir = 'asc'; }
         root.querySelectorAll('th[data-sort]').forEach((h) => h.removeAttribute('aria-sort'));
         th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
         render();
-      });
+      };
+      th.addEventListener('click', doSort);
+      th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSort(); } });
     });
     root.querySelectorAll('[data-filter]').forEach((chip) => {
       chip.addEventListener('click', () => {
