@@ -514,6 +514,19 @@ if (typeof document !== 'undefined') {
     });
   };
 
+  // ---- image lightbox: click a [data-uix-lightbox] thumbnail → enlarge in a <dialog> ----
+  const setupLightbox = () => {
+    document.querySelectorAll('[data-uix-icon]').forEach((el) => { el.innerHTML = icon(el.dataset.uixIcon); });
+    const dlg = document.querySelector('[data-uix-lightbox-dialog]');
+    if (!dlg) return;
+    const img = dlg.querySelector('img');
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-uix-lightbox]'); if (!t) return;
+      img.src = t.dataset.src; img.alt = t.querySelector('img')?.alt || '';
+      dlg.showModal();
+    });
+  };
+
   // ---- emoji reactions: pills with counts + an add-reaction picker popover ----
   const EMOJI_SET = ['✅', '👍', '👀', '🎉', '🚀', '🔥', '⚠️', '❓', '🚫', '📌'];
   const setupReactions = () => {
@@ -565,6 +578,7 @@ if (typeof document !== 'undefined') {
     setupRichSelect();
     setupForms();
     setupReactions();
+    setupLightbox();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

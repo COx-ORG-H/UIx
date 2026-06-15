@@ -59,6 +59,8 @@
 @import "components/detail-layout.css";
 @import "components/comments.css";
 @import "components/reactions.css";
+@import "components/media.css";
+@import "components/lightbox.css";
 @import "components/kanban.css";
 @import "components/inbox.css";
 @import "components/notification-center.css";

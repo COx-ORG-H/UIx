@@ -34,6 +34,7 @@
       <a class="uix-guide__navlink" href="#crm-itsm">CRM / ITSM</a>
       <a class="uix-guide__navlink" href="#icons">Icons</a>
       <a class="uix-guide__navlink" href="#emoji">Emoji</a>
+      <a class="uix-guide__navlink" href="#images">Images</a>
       <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
     </nav>
 
@@ -774,6 +775,40 @@
             <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👍","count":2,"mine":false},{"emoji":"🎉","count":1,"mine":true}]'></div>
           </div></div>
         </div></div>
+      </section>
+
+      <section id="images" class="uix-guide__section">
+        <h2>Images</h2>
+        <p class="lead">Patterns for user and content imagery: an editable profile avatar (with empty/upload state), a device/asset card, and images inside comments with a click-to-zoom lightbox.</p>
+
+        <div class="uix-guide__subhead">Profile image — current, editable, empty</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:28px;align-items:center">
+          <span class="uix-avatar uix-avatar--lg"><img src="assets/img/avatar-maya.svg" alt="Maya K."></span>
+          <span class="uix-avatar uix-avatar--lg uix-avatar--editable" tabindex="0" role="button" aria-label="Change profile photo"><img src="assets/img/avatar-maya.svg" alt="Maya K."><span class="uix-avatar__edit" data-uix-icon="camera" aria-hidden="true"></span></span>
+          <span class="uix-avatar uix-avatar--lg uix-avatar--empty uix-avatar--editable" tabindex="0" role="button" aria-label="Upload profile photo" data-uix-icon="plus"></span>
+        </div>
+
+        <div class="uix-guide__subhead">Device / asset card</div>
+        <div class="uix-card" style="max-width:380px"><div class="uix-card__body">
+          <div class="uix-media">
+            <span class="uix-media__thumb"><img src="assets/img/device-macbook.svg" alt="MacBook Pro 14 inch"></span>
+            <div><div class="uix-media__name">MacBook Pro 14"</div><div class="uix-media__meta">Asset #A-1043 · assigned to Maya K.</div></div>
+          </div>
+        </div></div>
+
+        <div class="uix-guide__subhead">Image in a comment (click to zoom)</div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">SP</span><div class="uix-comment__body">
+            <div class="uix-comment__meta"><span class="uix-comment__author">Sam P.</span> · 8m ago</div>
+            Here's the dashboard right before it dropped:
+            <button class="uix-comment__image" data-uix-lightbox data-src="assets/img/shot-vpn.svg" aria-label="Open image"><img src="assets/img/shot-vpn.svg" alt="Monitoring dashboard screenshot"></button>
+          </div></div>
+        </div></div>
+
+        <dialog class="uix-lightbox" data-uix-lightbox-dialog>
+          <img alt="">
+          <button class="uix-peek__close" data-uix-close aria-label="Close" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </dialog>
       </section>
 
       <section id="utility" class="uix-guide__section" style="border-bottom:0">
