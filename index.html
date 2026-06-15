@@ -42,6 +42,7 @@
     <main class="uix-guide__main">
       <header class="uix-guide__topbar">
         <h1>UIx Styleguide</h1>
+        <a class="uix-btn uix-btn--secondary uix-btn--sm" href="dashboard.html" style="margin-left:auto">Example dashboard ↗</a>
         <button class="uix-guide__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
       </header>
 
@@ -488,35 +489,22 @@
           <span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>SLA breached</span>
         </div>
 
-        <div class="uix-guide__subhead">Charts (palette + sample SVG)</div>
+        <div class="uix-guide__subhead">Charts</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
           <div class="uix-chart">
             <div class="uix-chart__title">By category</div>
             <div class="uix-chart__subtitle">This month</div>
-            <div style="display:grid;place-items:center"><div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--uix-chart-1) 0 32%,var(--uix-chart-4) 32% 56%,var(--uix-chart-3) 56% 74%,var(--uix-chart-7) 74% 90%,var(--uix-chart-6) 90% 100%)"><div style="width:78px;height:78px;border-radius:50%;background:var(--uix-surface);position:relative;top:26px;left:26px;display:grid;place-items:center;font-weight:600">128</div></div></div>
-            <div class="uix-legend"><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-1)"></span>Network</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-4)"></span>Access</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-3)"></span>Email</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-7)"></span>Other</span></div>
+            <div data-uix-chart="donut" style="height:200px"></div>
           </div>
           <div class="uix-chart">
             <div class="uix-chart__title">Tickets / day</div>
             <div class="uix-chart__subtitle">Last 7 days</div>
-            <div style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
-              <div style="flex:1;height:40%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:65%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:50%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:80%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:70%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:90%;background:var(--uix-chart-1);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:60%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-            </div>
+            <div data-uix-chart="bar" style="height:180px"></div>
           </div>
           <div class="uix-chart">
             <div class="uix-chart__title">Resolution trend</div>
             <div class="uix-chart__subtitle">Hours</div>
-            <svg viewBox="0 0 240 120" style="width:100%;height:130px" preserveAspectRatio="none">
-              <defs><linearGradient id="uix-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--uix-chart-1)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--uix-chart-1)" stop-opacity="0"/></linearGradient></defs>
-              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42 L240,120 L0,120 Z" fill="url(#uix-area)"/>
-              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42" fill="none" stroke="var(--uix-chart-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <div data-uix-chart="area" style="height:180px"></div>
           </div>
         </div>
 
@@ -870,6 +858,7 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" crossorigin="anonymous"></script>
   <script type="module" src="guide/app.js"></script>
 </body>
 </html>

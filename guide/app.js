@@ -1,6 +1,7 @@
 /* uix-styleguide app.js — pure helpers (unit-tested) + DOM wiring for the showcase.
    The DOM block is guarded so this module imports cleanly under node:test. */
 import { icon, iconNames } from '../assets/icons.js';
+import { initCharts, refreshCharts } from './charts.js';
 
 /* ----------------------------------------------------------------------------
  * Pure helpers (tested in app.test.js)
@@ -228,6 +229,7 @@ if (typeof document !== 'undefined') {
       localStorage.setItem(KEY, next);
       paintToggle();
       buildTokenReference();
+      refreshCharts();
       return;
     }
     const copyBtn = e.target.closest('[data-uix-copy]');
@@ -579,6 +581,7 @@ if (typeof document !== 'undefined') {
     setupForms();
     setupReactions();
     setupLightbox();
+    initCharts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

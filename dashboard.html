@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workspace — UIx v2</title>
+  <!-- no-flash: apply stored/OS theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    body { margin: 0; height: 100vh; background: var(--uix-bg-app); color: var(--uix-text); font-family: var(--uix-font-sans, Inter, system-ui, sans-serif); }
+    .dash-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 16px; align-items: start; }
+    .dash-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 14px 0 18px; }
+    .dash-rail { display: flex; flex-direction: column; gap: 16px; }
+    .dash-lower { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="uix-shell" style="height:100vh;border:0;border-radius:0">
+    <!-- ===== sidebar ===== -->
+    <aside class="uix-shell__sidebar uix-sidebar" data-uix-sidebar style="width:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px 8px">
+        <strong style="font-size:var(--uix-text-h3)">Helpdesk</strong>
+        <button class="uix-navitem__star" data-uix-collapse aria-label="Collapse sidebar" style="opacity:1;color:var(--uix-text-muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+      </div>
+      <div class="uix-sidebar__eyebrow">Favorites</div>
+      <div data-uix-fav-list></div>
+      <div class="uix-sidebar__eyebrow">Workspace</div>
+      <div class="uix-navitem" aria-current="page"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="uix-navitem__label">Incidents</span><span class="uix-navitem__badge">12</span><button class="uix-navitem__star" data-uix-fav="incidents" aria-label="Favorite Incidents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+      <div class="uix-navitem"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span class="uix-navitem__label">Requests</span><span class="uix-navitem__badge">4</span><button class="uix-navitem__star" data-uix-fav="requests" aria-label="Favorite Requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+      <div class="uix-navitem"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/></svg><span class="uix-navitem__label">Accounts</span></div>
+      <button class="uix-navitem uix-navgroup__trigger" aria-expanded="true"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg><span class="uix-navitem__label">Reports</span><svg class="uix-navgroup__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="uix-navgroup__panel"><div>
+        <div class="uix-navitem uix-subitem"><span class="uix-navitem__label">SLA overview</span></div>
+        <div class="uix-navitem uix-subitem"><span class="uix-navitem__label">Backlog</span></div>
+      </div></div>
+    </aside>
+
+    <!-- ===== topbar ===== -->
+    <div class="uix-shell__topbar">
+      <nav class="uix-breadcrumbs"><a href="index.html">Style guide</a><span class="uix-breadcrumbs__sep">/</span><span aria-current="page">Workspace</span></nav>
+      <span style="flex:1"></span>
+      <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-open="#demo-cmdk">Search <span class="uix-kbd">⌘K</span></button>
+      <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-theme-toggle aria-label="Toggle theme"></button>
+    </div>
+
+    <!-- ===== main ===== -->
+    <div class="uix-shell__main">
+      <div class="uix-page-header">
+        <div class="uix-page-header__titles">
+          <div class="uix-page-header__title">Service &amp; account workspace</div>
+          <div class="uix-page-header__subtitle"><span class="uix-live"><span class="uix-heartbeat"><span class="uix-heartbeat__dot"></span><span class="uix-heartbeat__ping"></span></span> Live · synced just now</span></div>
+        </div>
+        <div class="uix-page-header__actions">
+          <span class="uix-segmented"><button class="uix-segmented__option" aria-pressed="true">Today</button><button class="uix-segmented__option">7d</button><button class="uix-segmented__option">30d</button></span>
+          <button class="uix-btn uix-btn--primary">New incident</button>
+        </div>
+      </div>
+
+      <!-- KPI row -->
+      <div class="dash-kpis">
+        <div class="uix-stat"><div class="uix-stat__label">Open tickets</div><div class="uix-stat__value">128</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--down">↓ 12%</span> vs last week</div></div>
+        <div class="uix-stat"><div class="uix-stat__label">SLA at-risk</div><div class="uix-stat__value">3</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--up">↑ 1</span> within the hour</div></div>
+        <div class="uix-stat"><div class="uix-stat__label">ARR</div><div class="uix-stat__value">$1.2M</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--up">↑ 4%</span> QoQ</div></div>
+        <div class="uix-stat"><div class="uix-stat__label">CSAT</div><div class="uix-stat__value">94%</div><div class="uix-stat__meta"><span class="uix-stat__trend uix-stat__trend--up">↑ 2%</span> vs last month</div></div>
+      </div>
+
+      <!-- body: queue + rail -->
+      <div class="dash-grid">
+        <!-- queue table -->
+        <div data-uix-table id="queue">
+          <div class="uix-toolbar">
+            <span class="uix-input-group uix-input-group--has-leading" style="width:220px">
+              <span class="uix-input-group__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+              <input class="uix-input uix-input--sm" type="search" placeholder="Search tickets…">
+            </span>
+            <span class="uix-toolbar__spacer"></span>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-open-peek>Peek</button>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position-anchor:--viewbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px">
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Density</div>
+                <span class="uix-segmented" data-uix-density>
+                  <button class="uix-segmented__option" type="button" data-density="compact" aria-pressed="false">Compact</button>
+                  <button class="uix-segmented__option" type="button" data-density="standard" aria-pressed="true">Standard</button>
+                  <button class="uix-segmented__option" type="button" data-density="comfortable" aria-pressed="false">Comfortable</button>
+                </span>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__row"><span>Zebra striping</span><label class="uix-switch"><input type="checkbox" data-uix-zebra checked><span class="uix-switch__track"></span></label></div>
+                <div class="uix-view-menu__row"><span>Freeze first column</span><label class="uix-switch"><input type="checkbox" data-uix-freeze checked><span class="uix-switch__track"></span></label></div>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Columns</div>
+                <div class="uix-view-menu__cols" data-uix-colmenu></div>
+              </div>
+            </div>
+          </div>
+          <div class="uix-filterbar">
+            <div class="uix-filterrow">
+              <span class="uix-filterrow__label">Status</span>
+              <button class="uix-chip" data-filter="status" data-value="open">Open <span class="uix-chip__count">3</span></button>
+              <button class="uix-chip" data-filter="status" data-value="in-progress">In progress <span class="uix-chip__count">2</span></button>
+              <button class="uix-chip" data-filter="status" data-value="resolved">Resolved <span class="uix-chip__count">1</span></button>
+            </div>
+            <div class="uix-filterrow">
+              <span class="uix-filterrow__label">Type</span>
+              <button class="uix-chip" data-filter="type" data-value="incident">Incident</button>
+              <button class="uix-chip" data-filter="type" data-value="request">Request</button>
+              <button class="uix-chip" data-filter="type" data-value="problem">Problem</button>
+            </div>
+          </div>
+          <div class="uix-table-wrap">
+            <table class="uix-table uix-table--pinned-col" style="min-width:760px">
+              <thead><tr>
+                <th data-sort>ID</th><th data-sort>Subject</th><th data-sort>Status</th><th data-sort>Type</th><th data-sort>Assignee</th><th>SLA</th><th aria-label="Pin"></th>
+              </tr></thead>
+              <tbody data-uix-rows>
+                <tr data-id="INC-2043" data-status="open" data-type="incident"><td>INC-2043</td><td>VPN disconnects randomly</td><td><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></td><td>Incident</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">MK</span> Maya K.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="danger" style="width:88%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="REQ-1188" data-status="in-progress" data-type="request"><td>REQ-1188</td><td>New laptop request</td><td><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>In progress</span></td><td>Request</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">LR</span> Leo R.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="warning" style="width:55%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="INC-2041" data-status="open" data-type="incident"><td>INC-2041</td><td>Email outage in EU region</td><td><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></td><td>Incident</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">SP</span> Sam P.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="danger" style="width:95%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="PRB-340" data-status="in-progress" data-type="problem"><td>PRB-340</td><td>Recurring 500s on checkout</td><td><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>In progress</span></td><td>Problem</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">AL</span> Ada L.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="success" style="width:30%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+                <tr data-id="REQ-1185" data-status="resolved" data-type="request"><td>REQ-1185</td><td>Access to billing repo</td><td><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span></td><td>Request</td><td><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">LR</span> Leo R.</span></td><td><div class="uix-meter" style="width:80px"><div class="uix-meter__fill" data-tone="success" style="width:100%"></div></div></td><td><button class="uix-table__pin" data-uix-pin aria-label="Pin row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- right rail -->
+        <div class="dash-rail">
+          <div class="uix-card"><div class="uix-contact">
+            <span class="uix-avatar uix-avatar--lg"><img src="assets/img/avatar-maya.svg" alt="Acme Corp"></span>
+            <div class="uix-contact__name">Acme Corp</div>
+            <div class="uix-contact__role">Enterprise · since 2021</div>
+            <div class="uix-contact__stats"><div class="uix-contact__stat"><b>42</b><span>tickets</span></div><div class="uix-contact__stat"><b>4.8</b><span>CSAT</span></div><div class="uix-contact__stat"><b>$120k</b><span>ARR</span></div></div>
+            <div class="uix-contact__actions"><button class="uix-btn uix-btn--primary uix-btn--sm">Message</button><button class="uix-btn uix-btn--secondary uix-btn--sm">View</button></div>
+          </div></div>
+          <div class="uix-card"><div class="uix-card__body">
+            <div class="uix-stat__label" style="margin-bottom:8px">Deal stage</div>
+            <div class="uix-pipeline"><div class="uix-pipeline__stage" data-state="done">Lead</div><div class="uix-pipeline__stage" data-state="done">Qualified</div><div class="uix-pipeline__stage" data-state="active">Proposal</div><div class="uix-pipeline__stage">Won</div></div>
+            <div style="margin-top:14px"><span class="uix-sla" data-state="breach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> SLA breaches in 14m</span></div>
+          </div></div>
+          <div class="uix-notifs">
+            <div class="uix-notifs__head">Notifications <button class="uix-btn uix-btn--link uix-btn--sm" style="margin-left:auto">Mark all read</button></div>
+            <div class="uix-notif" data-unread><span class="uix-notif__dot"></span><div><div>Maya mentioned you on <strong>INC-2043</strong></div><div class="uix-notif__meta">22m ago</div></div></div>
+            <div class="uix-notif" data-unread><span class="uix-notif__dot"></span><div><div>SLA at risk on <strong>INC-2041</strong></div><div class="uix-notif__meta">1h ago</div></div></div>
+            <div class="uix-notif"><span class="uix-notif__dot"></span><div><div>REQ-1185 was resolved</div><div class="uix-notif__meta">2d ago</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- lower band -->
+      <div class="dash-lower">
+        <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title">Activity</span></div><div class="uix-card__body">
+          <div class="uix-comments">
+            <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">MK</span><div class="uix-comment__body"><div class="uix-comment__meta"><span class="uix-comment__author">Maya K.</span> · 1h ago</div>Rolled back the gateway config. Watching for recurrence.
+              <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👍","count":3,"mine":false},{"emoji":"👀","count":1,"mine":true}]'></div>
+            </div></div>
+          </div>
+        </div></div>
+        <div class="uix-chart">
+          <div class="uix-chart__title">Tickets / day</div>
+          <div class="uix-chart__subtitle">Last 7 days</div>
+          <div style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
+            <div style="flex:1;height:40%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:65%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:50%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:80%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:70%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:90%;background:var(--uix-chart-1);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+            <div style="flex:1;height:60%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
+          </div>
+        </div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-prose">
+            <h4 style="margin-top:0">Release notes · v2.4</h4>
+            <ul><li>Consolidated table <strong>View menu</strong> (density, zebra, freeze, columns).</li><li>Emoji reactions on comments.</li><li>Editable profile images.</li></ul>
+          </div>
+        </div></div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-media">
+            <span class="uix-media__thumb"><img src="assets/img/device-macbook.svg" alt="MacBook Pro 14 inch"></span>
+            <div><div class="uix-media__name">MacBook Pro 14"</div><div class="uix-media__meta">Asset #A-1043 · Maya K.</div></div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== overlay instances (peek + command palette) ===== -->
+  <dialog class="uix-peek" id="demo-peek" data-uix-peek-dialog>
+    <div class="uix-peek__header">
+      <span class="uix-peek__nav"><button class="uix-peek__navbtn" data-peek-prev aria-label="Previous ticket">↑</button><button class="uix-peek__navbtn" data-peek-next aria-label="Next ticket">↓</button></span>
+      <span class="uix-peek__title"><a href="#" data-peek-title>INC-2043</a></span>
+      <button class="uix-peek__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="uix-peek__body">
+      <p data-peek-sub style="font-weight:500;margin-bottom:14px">VPN disconnects randomly</p>
+      <dl class="uix-dl"><dt>Status</dt><dd><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></dd><dt>Assignee</dt><dd>Maya K.</dd><dt>Priority</dt><dd>High</dd><dt>Created</dt><dd>2h ago</dd></dl>
+      <p class="uix-peek__hint" style="margin-top:18px">Use <span class="uix-kbd">↑</span> <span class="uix-kbd">↓</span> to move between tickets · <span class="uix-kbd">Esc</span> to close.</p>
+    </div>
+    <div class="uix-peek__footer"><button class="uix-btn uix-btn--secondary" data-uix-close>Close</button><button class="uix-btn uix-btn--primary" style="margin-left:auto">Open full record</button></div>
+  </dialog>
+  <dialog class="uix-dialog" id="demo-cmdk" data-uix-cmdk-dialog style="background:transparent;border:0;box-shadow:none;max-width:560px">
+    <div class="uix-cmdk">
+      <input class="uix-cmdk__input" placeholder="Type a command or search…" aria-label="Command">
+      <div class="uix-cmdk__list">
+        <div class="uix-cmdk__group">Navigation</div>
+        <div class="uix-cmdk__item" data-active><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg> Go to Incidents <span class="uix-kbd">G</span></div>
+        <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Search tickets</div>
+        <div class="uix-cmdk__group">Create</div>
+        <div class="uix-cmdk__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg> New incident <span class="uix-kbd">N</span></div>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="guide/app.js"></script>
+</body>
+</html>
