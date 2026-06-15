@@ -1,0 +1,13 @@
+/* uix kanban board / column — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-kanban { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+  .uix-kanban__col { flex: 0 0 260px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); display: flex; flex-direction: column; max-height: 460px; }
+  .uix-kanban__head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-weight: 600; font-size: var(--uix-text-meta); }
+  .uix-kanban__count { margin-left: auto; color: var(--uix-text-muted); font-weight: 500; }
+  .uix-kanban__body { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+  .uix-kanban__card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: 12px; box-shadow: var(--uix-shadow-sm); cursor: grab; transition: box-shadow var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-kanban__card:hover { box-shadow: var(--uix-shadow-popover); transform: translateY(calc(-1 * var(--uix-lift))); }
+  .uix-kanban__card:active { cursor: grabbing; }
+  .uix-kanban__card-title { font-weight: 500; font-size: var(--uix-text-body); margin-bottom: 8px; }
+  .uix-kanban__card-meta { display: flex; align-items: center; gap: 8px; }
+}

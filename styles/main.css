@@ -55,3 +55,14 @@
 @import "components/peek.css";
 @import "components/popover.css";
 @import "components/spinner.css";
+@import "components/detail-layout.css";
+@import "components/comments.css";
+@import "components/kanban.css";
+@import "components/inbox.css";
+@import "components/notification-center.css";
+@import "components/labels.css";
+@import "components/attachment.css";
+@import "components/pipeline.css";
+@import "components/audit-log.css";
+@import "components/contact-card.css";
+@import "components/sla.css";

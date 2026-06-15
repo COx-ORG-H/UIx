@@ -575,8 +575,104 @@
 
       <section id="crm-itsm" class="uix-guide__section">
         <h2>CRM / ITSM patterns</h2>
-        <p class="lead">Ticket rows, detail layout, SLA indicators, comments, kanban, inbox, notification center.</p>
-        <div class="uix-guide__placeholder">CRM / ITSM composites — Phase 6</div>
+        <p class="lead">Composites built from the primitives above — the patterns a real ticketing / CRM product needs.</p>
+
+        <div class="uix-guide__subhead">Ticket detail layout</div>
+        <div class="uix-detail">
+          <div class="uix-detail__main">
+            <div class="uix-card"><div class="uix-card__body">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+                <h3 style="font-size:var(--uix-text-h2)">VPN disconnects randomly</h3>
+                <span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span>
+                <span class="uix-sla" data-state="breach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> SLA breaches in 14m</span>
+              </div>
+              <p style="color:var(--uix-text-hushed)">Users on the EU VPN report random disconnects every 10–15 minutes since the 16:00 gateway update. Affects ~40 people.</p>
+            </div></div>
+            <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title">Activity</span></div><div class="uix-card__body">
+              <div class="uix-comments">
+                <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">MK</span><div class="uix-comment__body"><div class="uix-comment__meta"><span class="uix-comment__author">Maya K.</span> · 1h ago</div>Rolled back the gateway config. Watching for recurrence — <span class="uix-mention">@leo</span> can you confirm on your end?</div></div>
+                <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">LR</span><div class="uix-comment__body"><div class="uix-comment__meta"><span class="uix-comment__author">Leo R.</span> · 22m ago</div>Stable for the last 20 minutes here. 👍</div></div>
+              </div>
+              <div class="uix-composer" style="margin-top:16px">
+                <textarea placeholder="Add a comment… use @ to mention"></textarea>
+                <div class="uix-composer__bar"><button class="uix-btn uix-btn--ghost uix-btn--sm">Attach</button><button class="uix-btn uix-btn--primary uix-btn--sm">Comment</button></div>
+              </div>
+            </div></div>
+          </div>
+          <div class="uix-detail__side">
+            <div class="uix-card"><div class="uix-card__body">
+              <dl class="uix-dl">
+                <dt>Status</dt><dd><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></dd>
+                <dt>Assignee</dt><dd><span class="uix-user-chip"><span class="uix-avatar uix-avatar--sm">MK</span><span class="uix-user-chip__name">Maya K.</span></span></dd>
+                <dt>Priority</dt><dd><span class="uix-pill uix-pill--danger">High</span></dd>
+              </dl>
+              <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap">
+                <span class="uix-label" style="--label-color:var(--uix-chart-1)"><span class="uix-label__dot"></span>network</span>
+                <span class="uix-label" style="--label-color:var(--uix-chart-6)"><span class="uix-label__dot"></span>regression</span>
+                <span class="uix-label" style="--label-color:var(--uix-chart-3)"><span class="uix-label__dot"></span>eu-region</span>
+              </div>
+            </div></div>
+            <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title" style="font-size:var(--uix-text-body)">Attachments</span></div><div class="uix-card__body">
+              <div class="uix-attachments">
+                <div class="uix-attachment"><span class="uix-attachment__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg></span><span><div class="uix-attachment__name">gateway.log</div><div class="uix-attachment__size">2.4 MB</div></span></div>
+                <div class="uix-attachment"><span class="uix-attachment__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg></span><span><div class="uix-attachment__name">screenshot.png</div><div class="uix-attachment__size">540 KB</div></span></div>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Kanban board</div>
+        <div class="uix-kanban">
+          <div class="uix-kanban__col"><div class="uix-kanban__head">To do <span class="uix-kanban__count">3</span></div><div class="uix-kanban__body">
+            <div class="uix-kanban__card"><div class="uix-kanban__card-title">Patch email gateway</div><div class="uix-kanban__card-meta"><span class="uix-label" style="--label-color:var(--uix-chart-6)">urgent</span><span class="uix-avatar uix-avatar--sm" style="margin-left:auto">SP</span></div></div>
+            <div class="uix-kanban__card"><div class="uix-kanban__card-title">Review SLA policy</div><div class="uix-kanban__card-meta"><span class="uix-label" style="--label-color:var(--uix-chart-4)">policy</span><span class="uix-avatar uix-avatar--sm" style="margin-left:auto">AL</span></div></div>
+          </div></div>
+          <div class="uix-kanban__col"><div class="uix-kanban__head">In progress <span class="uix-kanban__count">2</span></div><div class="uix-kanban__body">
+            <div class="uix-kanban__card"><div class="uix-kanban__card-title">VPN disconnects</div><div class="uix-kanban__card-meta"><span class="uix-label" style="--label-color:var(--uix-chart-1)">network</span><span class="uix-avatar uix-avatar--sm" style="margin-left:auto">MK</span></div></div>
+          </div></div>
+          <div class="uix-kanban__col"><div class="uix-kanban__head">Done <span class="uix-kanban__count">5</span></div><div class="uix-kanban__body">
+            <div class="uix-kanban__card"><div class="uix-kanban__card-title">Access to billing repo</div><div class="uix-kanban__card-meta"><span class="uix-label" style="--label-color:var(--uix-chart-3)">access</span><span class="uix-avatar uix-avatar--sm" style="margin-left:auto">LR</span></div></div>
+          </div></div>
+        </div>
+
+        <div class="uix-guide__subhead">Inbox (master-detail)</div>
+        <div class="uix-inbox">
+          <div class="uix-inbox__list">
+            <div class="uix-inbox__item" aria-selected="true" data-unread><div class="uix-inbox__subject">VPN disconnects randomly</div><div class="uix-inbox__preview">Maya: Rolled back the gateway config…</div></div>
+            <div class="uix-inbox__item" data-unread><div class="uix-inbox__subject">New laptop request</div><div class="uix-inbox__preview">Leo: Approved by manager, awaiting stock</div></div>
+            <div class="uix-inbox__item"><div class="uix-inbox__subject">Access to billing repo</div><div class="uix-inbox__preview">Resolved · 2 days ago</div></div>
+          </div>
+          <div class="uix-inbox__detail">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><h3 style="font-size:var(--uix-text-h3)">VPN disconnects randomly</h3><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></div>
+            <p style="color:var(--uix-text-hushed)">Users on the EU VPN report random disconnects since the 16:00 gateway update.</p>
+            <div style="margin-top:16px;display:flex;gap:8px"><button class="uix-btn uix-btn--primary uix-btn--sm">Reply</button><button class="uix-btn uix-btn--secondary uix-btn--sm">Assign</button></div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Notification center, contact card &amp; pipeline</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start">
+          <div class="uix-notifs">
+            <div class="uix-notifs__head">Notifications <button class="uix-btn uix-btn--link uix-btn--sm" style="margin-left:auto">Mark all read</button></div>
+            <div class="uix-notif" data-unread><span class="uix-notif__dot"></span><div><div>Maya mentioned you on <strong>INC-2043</strong></div><div class="uix-notif__meta">22m ago</div></div></div>
+            <div class="uix-notif" data-unread><span class="uix-notif__dot"></span><div><div>SLA at risk on <strong>INC-2041</strong></div><div class="uix-notif__meta">1h ago</div></div></div>
+            <div class="uix-notif"><span class="uix-notif__dot"></span><div><div>REQ-1185 was resolved</div><div class="uix-notif__meta">2d ago</div></div></div>
+          </div>
+          <div class="uix-card"><div class="uix-contact">
+            <span class="uix-avatar uix-avatar--lg">AC</span>
+            <div class="uix-contact__name">Acme Corp</div>
+            <div class="uix-contact__role">Enterprise · since 2021</div>
+            <div class="uix-contact__stats"><div class="uix-contact__stat"><b>42</b><span>tickets</span></div><div class="uix-contact__stat"><b>4.8</b><span>CSAT</span></div><div class="uix-contact__stat"><b>$120k</b><span>ARR</span></div></div>
+            <div class="uix-contact__actions"><button class="uix-btn uix-btn--primary uix-btn--sm">Message</button><button class="uix-btn uix-btn--secondary uix-btn--sm">View</button></div>
+          </div></div>
+          <div class="uix-card"><div class="uix-card__body" style="display:flex;flex-direction:column;gap:16px">
+            <div><div class="uix-stat__label" style="margin-bottom:8px">Deal stage</div><div class="uix-pipeline"><div class="uix-pipeline__stage" data-state="done">Lead</div><div class="uix-pipeline__stage" data-state="done">Qualified</div><div class="uix-pipeline__stage" data-state="active">Proposal</div><div class="uix-pipeline__stage">Won</div></div></div>
+            <div class="uix-audit">
+              <div class="uix-audit__row"><span class="uix-audit__actor">Maya</span><span class="uix-audit__detail">changed status <del>Open</del> <ins>In progress</ins></span><span class="uix-audit__time">1h</span></div>
+              <div class="uix-audit__row"><span class="uix-audit__actor">Leo</span><span class="uix-audit__detail">set priority <ins>High</ins></span><span class="uix-audit__time">2h</span></div>
+              <div class="uix-audit__row"><span class="uix-audit__actor">System</span><span class="uix-audit__detail">assigned to Maya</span><span class="uix-audit__time">2h</span></div>
+            </div>
+          </div></div>
+        </div>
       </section>
 
       <section id="utility" class="uix-guide__section" style="border-bottom:0">

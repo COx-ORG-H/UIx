@@ -1,0 +1,11 @@
+/* uix audit-log entry — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-audit { display: flex; flex-direction: column; }
+  .uix-audit__row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--uix-border); font-size: var(--uix-text-meta); }
+  .uix-audit__row:last-child { border-bottom: 0; }
+  .uix-audit__actor { font-weight: 500; color: var(--uix-text); }
+  .uix-audit__detail { color: var(--uix-text-hushed); }
+  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 3px; border-radius: 3px; }
+  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 3px; border-radius: 3px; }
+  .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
+}

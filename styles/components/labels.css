@@ -1,0 +1,10 @@
+/* uix label / tag taxonomy — colored via --label-color (set to a --uix-chart-* token). */
+@layer uix.components {
+  .uix-label {
+    display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: var(--uix-radius-sm);
+    font-size: var(--uix-text-meta); font-weight: 500;
+    background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);
+    color: var(--label-color, var(--uix-accent));
+  }
+  .uix-label__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label-color, var(--uix-accent)); }
+}
