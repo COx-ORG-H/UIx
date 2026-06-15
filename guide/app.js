@@ -261,9 +261,19 @@ if (typeof document !== 'undefined') {
         ? [...favs].map((id) => {
             const src = sidebar.querySelector(`[data-uix-fav="${CSS.escape(id)}"]`)?.closest('.uix-navitem');
             const label = src?.querySelector('.uix-navitem__label')?.textContent ?? id;
-            return `<div class="uix-navitem"><span class="uix-navitem__label">${esc(label)}</span></div>`;
+            const icon = src?.querySelector('.uix-navitem__icon')?.outerHTML ?? '';
+            return `<div class="uix-navitem">${icon}<span class="uix-navitem__label">${esc(label)}</span></div>`;
           }).join('')
         : `<div class="uix-sidebar__eyebrow" style="text-transform:none;letter-spacing:0">No favorites yet</div>`;
+      if (sidebar.hasAttribute('data-collapsed')) setRailTitles(true);
+    };
+    // icon-only rail needs hover tooltips + keeps an accessible hint
+    const setRailTitles = (on) => {
+      sidebar.querySelectorAll('.uix-navitem').forEach((it) => {
+        const label = it.querySelector('.uix-navitem__label')?.textContent?.trim();
+        if (on && label) it.setAttribute('title', label);
+        else it.removeAttribute('title');
+      });
     };
     sidebar.addEventListener('click', (e) => {
       const star = e.target.closest('[data-uix-fav]');
@@ -277,9 +287,13 @@ if (typeof document !== 'undefined') {
       }
       const trig = e.target.closest('.uix-navgroup__trigger');
       if (trig) { trig.setAttribute('aria-expanded', trig.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); return; }
-      if (e.target.closest('[data-uix-collapse]')) {
-        sidebar.toggleAttribute('data-collapsed');
-        sidebar.closest('.uix-shell')?.toggleAttribute('data-collapsed');
+      const toggle = e.target.closest('[data-uix-collapse]');
+      if (toggle) {
+        const collapsed = sidebar.toggleAttribute('data-collapsed');
+        sidebar.closest('.uix-shell')?.toggleAttribute('data-collapsed', collapsed);
+        toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        setRailTitles(collapsed);
       }
     });
     renderFavs();
