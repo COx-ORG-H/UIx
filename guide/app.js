@@ -292,6 +292,33 @@ if (typeof document !== 'undefined') {
     });
     root.querySelector('[data-uix-density]')?.addEventListener('click', () => table.classList.toggle('uix-table--compact'));
     root.querySelector('[data-uix-zebra]')?.addEventListener('click', () => table.classList.toggle('uix-table--no-zebra'));
+    root.querySelector('[data-uix-freeze]')?.addEventListener('click', (e) => {
+      e.currentTarget.setAttribute('aria-pressed', table.classList.toggle('uix-table--pinned-col'));
+    });
+
+    // column visibility — checkboxes in a popover, persisted per table id
+    const colMenu = root.querySelector('[data-uix-colmenu]');
+    if (colMenu) {
+      const headers = [...table.querySelectorAll('thead th')];
+      const key = 'uix-cols-' + (root.id || 'tbl');
+      const hidden = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+      const applyCols = () => headers.forEach((th, i) => {
+        const off = hidden.has(i);
+        table.querySelectorAll(`tr > *:nth-child(${i + 1})`).forEach((c) => { c.hidden = off; });
+      });
+      // first column (frozen id) + empty headers (pin) are not toggleable
+      colMenu.innerHTML = headers.map((th, i) => (i > 0 && th.textContent.trim())
+        ? `<label class="uix-menu__item"><input type="checkbox" data-col="${i}" ${hidden.has(i) ? '' : 'checked'}> ${esc(th.textContent.trim())}</label>`
+        : '').join('');
+      colMenu.addEventListener('change', (e) => {
+        const cb = e.target.closest('[data-col]'); if (!cb) return;
+        const i = +cb.dataset.col;
+        cb.checked ? hidden.delete(i) : hidden.add(i);
+        localStorage.setItem(key, JSON.stringify([...hidden]));
+        applyCols();
+      });
+      applyCols();
+    }
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
 

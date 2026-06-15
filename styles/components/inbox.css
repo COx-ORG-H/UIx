@@ -2,9 +2,11 @@
 @layer uix.components {
   .uix-inbox { display: grid; grid-template-columns: 300px 1fr; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; height: 420px; }
   .uix-inbox__list { border-right: 1px solid var(--uix-border); overflow-y: auto; background: var(--uix-surface); }
-  .uix-inbox__item { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--uix-border); cursor: pointer; }
+  .uix-inbox__item { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--uix-border); cursor: pointer; }
   .uix-inbox__item:hover { background: var(--uix-bg-hover); }
-  .uix-inbox__item[aria-selected="true"] { background: var(--uix-brand-muted); box-shadow: inset 2px 0 0 var(--uix-accent); }
+  .uix-inbox__item[aria-selected="true"] { background: var(--uix-brand-muted); }
+  /* accent bar inset from top/bottom so it never collides with the container's rounded corners */
+  .uix-inbox__item[aria-selected="true"]::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; background: var(--uix-accent); }
   .uix-inbox__item[data-unread] .uix-inbox__subject { font-weight: 600; }
   .uix-inbox__subject { font-size: var(--uix-text-body); }
   .uix-inbox__preview { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -29,4 +29,14 @@
   .uix-table__pin[data-on] { color: var(--uix-accent); }
   .uix-table__pin svg { width: 15px; height: 15px; }
   .uix-table__pin[data-on] svg { fill: currentColor; }
+
+  /* frozen first column (opt-in via .uix-table--pinned-col) — keeps the identifier visible on horizontal scroll, preserving zebra/state bg */
+  .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--uix-border); }
+  .uix-table--pinned-col thead th:first-child { z-index: 3; background: var(--uix-surface); }
+  .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr:nth-child(even) td:first-child { background: var(--uix-row-alt); }
+  .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
+  .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
+  .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
 }
