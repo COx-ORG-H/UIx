@@ -12,4 +12,12 @@
   .uix-select:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-select:disabled { opacity: .55; cursor: not-allowed; background-color: var(--uix-bg-subtle); }
   .uix-select--sm { height: 28px; font-size: var(--uix-text-meta); }
+
+  /* command-palette-style rich select: a trigger that opens a .uix-cmdk popover (search + options) */
+  .uix-select-trigger { display: inline-flex; align-items: center; gap: 8px; height: var(--uix-control-h); padding: 0 12px; min-width: 220px;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); color: var(--uix-text);
+    font: inherit; font-size: var(--uix-text-body); cursor: pointer; transition: border-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-select-trigger:hover { border-color: var(--uix-border-strong); }
+  .uix-select-trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
 }

@@ -5,10 +5,16 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
     background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay);
     opacity: 0; transform: translateY(8px) scale(.98);
+    /* base = EXIT: faster + ease-in (accelerate away) */
+    transition: opacity var(--uix-dur) var(--uix-ease-in), transform var(--uix-dur) var(--uix-ease-in),
+                overlay var(--uix-dur) allow-discrete, display var(--uix-dur) allow-discrete;
+  }
+  .uix-dialog[open] {
+    opacity: 1; transform: none;
+    /* ENTER: slower + ease-out (decelerate in) */
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), transform var(--uix-dur-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
-  .uix-dialog[open] { opacity: 1; transform: none; }
   @starting-style { .uix-dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); } }
   .uix-dialog::backdrop {
     background: rgba(0,0,0,.5); opacity: 0;

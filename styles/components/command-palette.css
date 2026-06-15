@@ -9,4 +9,6 @@
   .uix-cmdk__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-cmdk__item:hover, .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
   .uix-cmdk__item .uix-kbd { margin-left: auto; }
+  /* ⌘K is keyboard-triggered and high-frequency → open instantly, no animation (Emil's rule) */
+  dialog[data-uix-cmdk-dialog], dialog[data-uix-cmdk-dialog]::backdrop { transition: none; }
 }

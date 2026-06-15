@@ -4,7 +4,9 @@
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger); }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: 5px; }
+  .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
+  .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: 5px; }
 
   .uix-input {
     height: var(--uix-control-h); width: 100%;
@@ -26,4 +28,9 @@
   .uix-input-group__icon { position: absolute; left: 10px; color: var(--uix-text-muted); display: inline-flex; pointer-events: none; }
   .uix-input-group__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-input-group--has-leading .uix-input { padding-left: 38px; }
+  /* validation microinteractions */
+  .uix-input[data-valid] { border-color: var(--uix-success); }
+  .uix-input[data-valid]:focus { box-shadow: 0 0 0 3px var(--uix-success-bg); }
+  .uix-input-group--has-trailing .uix-input { padding-right: 38px; }
+  .uix-input-group__icon--trailing { left: auto; right: 10px; }
 }

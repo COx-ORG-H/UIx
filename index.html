@@ -261,6 +261,41 @@
             </fieldset>
           </div>
         </div>
+
+        <div class="uix-guide__subhead">Form microinteractions</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);align-items:flex-start;gap:24px">
+          <div class="uix-field" style="width:auto">
+            <label class="uix-field__label">Type (command-style dropdown)</label>
+            <div class="uix-select-rich" data-uix-richselect>
+              <button class="uix-select-trigger" type="button" popovertarget="rs-type" style="anchor-name:--rstype">
+                <span data-rs-label>Incident</span>
+                <svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div id="rs-type" popover class="uix-cmdk" style="position-anchor:--rstype; top:anchor(bottom); left:anchor(left); margin-top:6px; width:240px">
+                <input class="uix-cmdk__input" style="height:42px;font-size:var(--uix-text-body)" placeholder="Filter types…">
+                <div class="uix-cmdk__list">
+                  <div class="uix-cmdk__item" data-rs-option aria-selected="true">Incident</div>
+                  <div class="uix-cmdk__item" data-rs-option>Service request</div>
+                  <div class="uix-cmdk__item" data-rs-option>Problem</div>
+                  <div class="uix-cmdk__item" data-rs-option>Change</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="uix-field" style="width:240px">
+            <label class="uix-field__label">Email (validates on blur)</label>
+            <span class="uix-input-group uix-input-group--has-trailing">
+              <input class="uix-input" type="email" data-uix-validate placeholder="you@example.com">
+              <span class="uix-input-group__icon uix-input-group__icon--trailing" data-field-check hidden style="color:var(--uix-success)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            </span>
+            <span class="uix-field__success" data-field-success hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Looks good</span>
+            <span class="uix-field__error" data-field-error hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Enter a valid email address</span>
+          </div>
+          <div class="uix-field" style="width:auto">
+            <label class="uix-field__label">Submit (morphs)</label>
+            <button class="uix-btn uix-btn--primary" data-uix-submit-demo style="min-width:150px">Submit</button>
+          </div>
+        </div>
       </section>
 
       <section id="navigation" class="uix-guide__section">

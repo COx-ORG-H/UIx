@@ -386,6 +386,63 @@ if (typeof document !== 'undefined') {
       btn.addEventListener('click', () => push({ title: btn.dataset.toastTitle, msg: btn.dataset.toastMsg, tone: btn.dataset.toastTone })));
   };
 
+  // ---- command-palette-style rich select (trigger + searchable popover) ----
+  const setupRichSelect = () => {
+    document.querySelectorAll('[data-uix-richselect]').forEach((rs) => {
+      const pop = rs.querySelector('[popover]');
+      const label = rs.querySelector('[data-rs-label]');
+      if (!pop) return;
+      const search = pop.querySelector('input');
+      const options = [...pop.querySelectorAll('[data-rs-option]')];
+      search?.addEventListener('input', () => {
+        const q = search.value.toLowerCase();
+        options.forEach((o) => { o.hidden = !o.textContent.toLowerCase().includes(q); });
+      });
+      pop.addEventListener('click', (e) => {
+        const opt = e.target.closest('[data-rs-option]'); if (!opt) return;
+        options.forEach((o) => o.removeAttribute('aria-selected'));
+        opt.setAttribute('aria-selected', 'true');
+        if (label) label.textContent = opt.textContent.trim();
+        pop.hidePopover();
+      });
+      pop.addEventListener('toggle', (e) => {
+        if (e.newState === 'open' && search) { search.value = ''; options.forEach((o) => { o.hidden = false; }); setTimeout(() => search.focus(), 0); }
+      });
+    });
+  };
+
+  // ---- form microinteractions: inline validation (on blur) + submit-button morph ----
+  const setupForms = () => {
+    document.querySelectorAll('[data-uix-validate]').forEach((input) => {
+      const field = input.closest('.uix-field');
+      const ok = field?.querySelector('[data-field-success]');
+      const err = field?.querySelector('[data-field-error]');
+      const check = field?.querySelector('[data-field-check]');
+      input.addEventListener('blur', () => {
+        const val = input.value.trim();
+        if (!val) { input.removeAttribute('data-valid'); input.setAttribute('aria-invalid', 'false'); [ok, err, check].forEach((e) => e && (e.hidden = true)); return; }
+        const valid = input.type === 'email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val) : val.length > 1;
+        input.toggleAttribute('data-valid', valid);
+        input.setAttribute('aria-invalid', valid ? 'false' : 'true');
+        if (ok) ok.hidden = !valid;
+        if (check) check.hidden = !valid;
+        if (err) err.hidden = valid;
+      });
+    });
+    document.querySelectorAll('[data-uix-submit-demo]').forEach((btn) => {
+      const original = btn.innerHTML;
+      btn.addEventListener('click', () => {
+        if (btn.dataset.busy) return;
+        btn.dataset.busy = '1';
+        btn.innerHTML = '<span class="uix-spinner" style="width:14px;height:14px;border-color:currentColor;border-right-color:transparent"></span> Submitting…';
+        setTimeout(() => {
+          btn.innerHTML = '✓ Submitted';
+          setTimeout(() => { btn.innerHTML = original; delete btn.dataset.busy; }, 1500);
+        }, 1100);
+      });
+    });
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
@@ -397,6 +454,8 @@ if (typeof document !== 'undefined') {
     setupPeek();
     setupCmdk();
     setupToasts();
+    setupRichSelect();
+    setupForms();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
