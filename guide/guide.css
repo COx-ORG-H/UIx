@@ -110,6 +110,11 @@
   font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-family: var(--uix-font-mono);
 }
 
+/* ---- motion token reference ---- */
+.uix-motion-tokens { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.uix-motion-tokens > div { padding: 8px 12px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+.uix-motion-tokens code { color: var(--uix-text); }
+
 /* ---- example blocks (used from Phase 2 on) ---- */
 [data-uix-example] {
   border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);

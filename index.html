@@ -89,8 +89,26 @@
       <!-- ===== Placeholders (filled in later phases) ===== -->
       <section id="motion" class="uix-guide__section">
         <h2>Motion</h2>
-        <p class="lead">Shared motion system (Phase 1). Easing + duration tokens are defined; live transitions appear within each component.</p>
-        <div class="uix-guide__placeholder">Motion mechanics — Phase 1</div>
+        <p class="lead">Purposeful, subtle, fast. Entrances decelerate; exits are quicker and accelerate. Everything honors <code>prefers-reduced-motion</code> — flip that OS setting and the demos below go still.</p>
+
+        <div class="uix-guide__subhead">Easing &amp; duration tokens</div>
+        <div class="uix-motion-tokens">
+          <div><code>--uix-ease-out</code> entrances (default)</div>
+          <div><code>--uix-ease-in</code> exits</div>
+          <div><code>--uix-ease-in-out</code> moves</div>
+          <div><code>--uix-ease-spring</code> rare overshoot</div>
+          <div><code>--uix-dur-fast</code> 120ms · micro</div>
+          <div><code>--uix-dur</code> 160ms · standard</div>
+          <div><code>--uix-dur-slow</code> 240ms · overlays</div>
+          <div><code>--uix-dur-slower</code> 320ms · large surfaces</div>
+        </div>
+
+        <div class="uix-guide__subhead">Live</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px">
+          <div class="uix-lift-hover" style="width:160px;height:90px;background:var(--uix-surface);border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:grid;place-items:center;color:var(--uix-text-muted)">Hover to lift</div>
+          <div style="flex:1;min-width:200px"><div style="height:14px;border-radius:var(--uix-radius-pill);background:linear-gradient(90deg,var(--uix-bg-subtle) 25%,var(--uix-bg-hover) 50%,var(--uix-bg-subtle) 75%);background-size:200% 100%;animation:uix-shimmer 1.4s linear infinite;margin-bottom:8px"></div><div style="height:14px;width:70%;border-radius:var(--uix-radius-pill);background:linear-gradient(90deg,var(--uix-bg-subtle) 25%,var(--uix-bg-hover) 50%,var(--uix-bg-subtle) 75%);background-size:200% 100%;animation:uix-shimmer 1.4s linear infinite"></div></div>
+          <div class="uix-anim-pop" style="width:120px;height:90px;background:var(--uix-brand-muted);color:var(--uix-accent);border-radius:var(--uix-radius-lg);display:grid;place-items:center;font-weight:600">pop-in</div>
+        </div>
       </section>
 
       <section id="form-controls" class="uix-guide__section">

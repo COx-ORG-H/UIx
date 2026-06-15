@@ -5,5 +5,5 @@
 @import "tokens.css";
 @import "base.css";
 @import "utilities.css";
-/* @import "motion.css";            ← Phase 1 */
-/* @import "components/button.css"; ← Phase 2+ (one per component) */
+@import "motion.css";
+/* components (Phase 2+) */
