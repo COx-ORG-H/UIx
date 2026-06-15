@@ -260,7 +260,7 @@
               <legend>Ticket details</legend>
               <div class="uix-form-grid">
                 <div class="uix-field"><label class="uix-field__label">Subject</label><input class="uix-input" value="VPN disconnects"></div>
-                <div class="uix-field"><label class="uix-field__label">Category</label><select class="uix-select"><option>Network</option><option>Access</option></select></div>
+                <div class="uix-field"><label class="uix-field__label">Category</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="cat-sel" style="anchor-name:--catsel;width:100%"><span data-rs-label>Network</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="cat-sel" popover class="uix-popover uix-listbox" style="position-anchor:--catsel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Network</li><li class="uix-listbox__option" data-rs-option>Access</li></ul></div></div>
                 <div class="uix-field"><label class="uix-field__label">Assignee</label><input class="uix-input" placeholder="Unassigned"></div>
               </div>
             </fieldset>
@@ -429,7 +429,7 @@
             </span>
             <span class="uix-toolbar__spacer"></span>
             <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
-            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position-anchor:--viewbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px">
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position:fixed">
               <div class="uix-view-menu__group">
                 <div class="uix-view-menu__label">Density</div>
                 <span class="uix-segmented" data-uix-density>

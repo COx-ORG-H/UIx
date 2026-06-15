@@ -362,6 +362,21 @@ if (typeof document !== 'undefined') {
 
     const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
     if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
+    const viewPop = root.querySelector('[data-uix-viewmenu]');
+    if (viewBtn && viewPop) {
+      viewPop.addEventListener('beforetoggle', (e) => {
+        if (e.newState !== 'open') return;
+        const r = viewBtn.getBoundingClientRect();
+        viewPop.style.top = (r.bottom + 6) + 'px';
+        viewPop.style.right = (window.innerWidth - r.right) + 'px';
+        viewPop.style.left = 'auto';
+        viewPop.style.bottom = 'auto';
+      });
+      viewPop.addEventListener('toggle', (e) => {
+        if (e.newState !== 'open') return;
+        document.addEventListener('scroll', () => viewPop.hidePopover(), { once: true, passive: true, capture: true });
+      });
+    }
 
     // density (segmented)
     const applyDensity = () => {
