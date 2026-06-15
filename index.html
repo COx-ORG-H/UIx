@@ -35,6 +35,7 @@
       <a class="uix-guide__navlink" href="#icons">Icons</a>
       <a class="uix-guide__navlink" href="#emoji">Emoji</a>
       <a class="uix-guide__navlink" href="#images">Images</a>
+      <a class="uix-guide__navlink" href="#prose">Prose &amp; text</a>
       <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
     </nav>
 
@@ -809,6 +810,38 @@
           <img alt="">
           <button class="uix-peek__close" data-uix-close aria-label="Close" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </dialog>
+      </section>
+
+      <section id="prose" class="uix-guide__section">
+        <h2>Prose &amp; text</h2>
+        <p class="lead">A content card for longer text — knowledge-base articles, ticket descriptions, release notes — plus note callouts and examples of components nested inside cards.</p>
+
+        <div class="uix-guide__subhead">Prose card</div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-prose">
+            <h3>Resolving VPN disconnects</h3>
+            <p>When users on the EU gateway report random disconnects, the cause is almost always a stale session table after a config push. Follow these steps before escalating.</p>
+            <h4>Steps</h4>
+            <ol><li>Roll back the most recent gateway config.</li><li>Flush the session table with <code>vpnctl flush --region eu</code>.</li><li>Watch reconnect rates for 15 minutes.</li></ol>
+            <blockquote>If disconnects persist after a flush, the issue is upstream — open a problem ticket and link this article.</blockquote>
+            <p>See the <a href="#">runbook</a> for the full escalation path.</p>
+          </div>
+        </div></div>
+
+        <div class="uix-guide__subhead">Note callouts</div>
+        <div class="uix-stack" style="--gap:10px">
+          <div class="uix-note uix-note--info"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="uix-note__body"><strong>Note.</strong> Config pushes take up to 60 seconds to propagate across all regions.</div></div>
+          <div class="uix-note uix-note--success"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span><div class="uix-note__body"><strong>Resolved.</strong> Reconnect rate is back to baseline.</div></div>
+          <div class="uix-note uix-note--warning"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="uix-note__body"><strong>Heads up.</strong> Flushing sessions will sign out active users.</div></div>
+          <div class="uix-note uix-note--danger"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></span><div class="uix-note__body"><strong>Do not</strong> restart the gateway during business hours.</div></div>
+        </div>
+
+        <div class="uix-guide__subhead">Nested composition — a card containing other components</div>
+        <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title">Open incidents</span></div><div class="uix-card__body" style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px"><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Open</div><div class="uix-stat__value">128</div></div><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Breaching</div><div class="uix-stat__value">3</div></div></div>
+          <ul class="uix-tree"><li><span class="uix-tree__row">INC-2043 · VPN disconnects</span></li><li><span class="uix-tree__row">INC-2041 · Email outage</span></li></ul>
+          <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👀","count":1,"mine":false}]'></div>
+        </div></div>
       </section>
 
       <section id="utility" class="uix-guide__section" style="border-bottom:0">
