@@ -4,7 +4,7 @@
   .uix-pagination__btn {
     min-width: 32px; height: 32px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface);
-    color: var(--uix-text); font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
+    color: var(--uix-text); font: inherit; font-size: var(--uix-text-meta); line-height: 1; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-pagination__btn:hover { background: var(--uix-bg-hover); }
