@@ -1,0 +1,6 @@
+/* uix image lightbox — native <dialog>, click a thumbnail to enlarge. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-lightbox { border: 0; background: transparent; padding: 0; max-width: 92vw; max-height: 92vh; box-shadow: var(--uix-shadow-overlay); overflow: visible; }
+  .uix-lightbox img { display: block; max-width: 92vw; max-height: 92vh; border-radius: var(--uix-radius-md); }
+  .uix-lightbox::backdrop { background: rgba(0,0,0,.7); }
+}

@@ -1,6 +1,7 @@
 /* uix-styleguide app.js — pure helpers (unit-tested) + DOM wiring for the showcase.
    The DOM block is guarded so this module imports cleanly under node:test. */
-import { icon } from '../assets/icons.js';
+import { icon, iconNames } from '../assets/icons.js';
+import { initCharts, refreshCharts } from './charts.js';
 
 /* ----------------------------------------------------------------------------
  * Pure helpers (tested in app.test.js)
@@ -46,6 +47,45 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
 
 /** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
 export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
+
+/** Density tiers, in cycle order (standard is the default). */
+export const DENSITIES = ['compact', 'standard', 'comfortable'];
+
+/** Default per-table view preferences. */
+export const defaultViewPrefs = () => ({ density: 'standard', zebra: true, freeze: true, hiddenCols: [] });
+
+/** Parse + normalize stored view prefs. `legacyColsRaw` migrates the old `uix-cols-<id>` array
+ *  (bare number[] of hidden column indices) when no new prefs exist yet. */
+export const readViewPrefs = (raw, legacyColsRaw) => {
+  const d = defaultViewPrefs();
+  let p = {};
+  try { p = raw ? JSON.parse(raw) : {}; } catch { p = {}; }
+  if (!raw && legacyColsRaw) {
+    try { const cols = JSON.parse(legacyColsRaw); if (Array.isArray(cols)) p.hiddenCols = cols; } catch { /* ignore */ }
+  }
+  return {
+    density: DENSITIES.includes(p.density) ? p.density : d.density,
+    zebra: typeof p.zebra === 'boolean' ? p.zebra : d.zebra,
+    freeze: typeof p.freeze === 'boolean' ? p.freeze : d.freeze,
+    hiddenCols: Array.isArray(p.hiddenCols) ? p.hiddenCols.filter(Number.isInteger) : d.hiddenCols,
+  };
+};
+
+/** Serialize view prefs for localStorage. */
+export const writeViewPrefs = (prefs) => JSON.stringify(prefs);
+
+/** Toggle the current user's reaction to `emoji`. State = [{emoji, count, mine}]. Immutable;
+ *  reactions whose count falls to 0 are dropped. */
+export const toggleReaction = (reactions, emoji) => {
+  const list = reactions.map((r) => ({ ...r }));
+  const found = list.find((r) => r.emoji === emoji);
+  if (found) {
+    found.count += found.mine ? -1 : 1;
+    found.mine = !found.mine;
+    return list.filter((r) => r.count > 0);
+  }
+  return [...list, { emoji, count: 1, mine: true }];
+};
 
 /** Append a toast and cap the queue at `max` (oldest dropped). */
 export const enqueueToast = (list, toast, max = 3) => [...list, toast].slice(-max);
@@ -189,6 +229,7 @@ if (typeof document !== 'undefined') {
       localStorage.setItem(KEY, next);
       paintToggle();
       buildTokenReference();
+      refreshCharts();
       return;
     }
     const copyBtn = e.target.closest('[data-uix-copy]');
@@ -199,6 +240,12 @@ if (typeof document !== 'undefined') {
         copyBtn.dataset.copied = '1';
         setTimeout(() => delete copyBtn.dataset.copied, 1200);
       }
+    }
+    const iconCell = e.target.closest('[data-icon-copy]');
+    if (iconCell && navigator.clipboard) {
+      navigator.clipboard.writeText(iconCell.dataset.iconCopy);
+      iconCell.dataset.copied = '1';
+      setTimeout(() => delete iconCell.dataset.copied, 1200);
     }
   });
 
@@ -294,18 +341,39 @@ if (typeof document !== 'undefined') {
       pin.toggleAttribute('data-on', pinned.has(id));
       render();
     });
-    root.querySelector('[data-uix-density]')?.addEventListener('click', () => table.classList.toggle('uix-table--compact'));
-    root.querySelector('[data-uix-zebra]')?.addEventListener('click', () => table.classList.toggle('uix-table--no-zebra'));
-    root.querySelector('[data-uix-freeze]')?.addEventListener('click', (e) => {
-      e.currentTarget.setAttribute('aria-pressed', table.classList.toggle('uix-table--pinned-col'));
+    // ---- consolidated View menu: density / zebra / freeze / columns, persisted per table id ----
+    const key = 'uix-view-' + (root.id || 'tbl');
+    const prefs = readViewPrefs(localStorage.getItem(key), localStorage.getItem('uix-cols-' + (root.id || 'tbl')));
+    const save = () => localStorage.setItem(key, writeViewPrefs(prefs));
+
+    const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
+    if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
+
+    // density (segmented)
+    const applyDensity = () => {
+      if (prefs.density === 'standard') table.removeAttribute('data-density');
+      else table.setAttribute('data-density', prefs.density);
+      root.querySelectorAll('[data-uix-density] [data-density]').forEach((b) =>
+        b.setAttribute('aria-pressed', String(b.dataset.density === prefs.density)));
+    };
+    root.querySelector('[data-uix-density]')?.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-density]'); if (!b) return;
+      prefs.density = b.dataset.density; applyDensity(); save();
     });
 
-    // column visibility — checkboxes in a popover, persisted per table id
+    // zebra + freeze (switches)
+    const zebraEl = root.querySelector('[data-uix-zebra]');
+    const freezeEl = root.querySelector('[data-uix-freeze]');
+    const applyZebra = () => { table.classList.toggle('uix-table--no-zebra', !prefs.zebra); if (zebraEl) zebraEl.checked = prefs.zebra; };
+    const applyFreeze = () => { table.classList.toggle('uix-table--pinned-col', prefs.freeze); if (freezeEl) freezeEl.checked = prefs.freeze; };
+    zebraEl?.addEventListener('change', () => { prefs.zebra = zebraEl.checked; applyZebra(); save(); });
+    freezeEl?.addEventListener('change', () => { prefs.freeze = freezeEl.checked; applyFreeze(); save(); });
+
+    // columns (checklist inside the menu)
     const colMenu = root.querySelector('[data-uix-colmenu]');
     if (colMenu) {
       const headers = [...table.querySelectorAll('thead th')];
-      const key = 'uix-cols-' + (root.id || 'tbl');
-      const hidden = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+      const hidden = new Set(prefs.hiddenCols);
       const applyCols = () => headers.forEach((th, i) => {
         const off = hidden.has(i);
         table.querySelectorAll(`tr > *:nth-child(${i + 1})`).forEach((c) => { c.hidden = off; });
@@ -318,11 +386,12 @@ if (typeof document !== 'undefined') {
         const cb = e.target.closest('[data-col]'); if (!cb) return;
         const i = +cb.dataset.col;
         cb.checked ? hidden.delete(i) : hidden.add(i);
-        localStorage.setItem(key, JSON.stringify([...hidden]));
-        applyCols();
+        prefs.hiddenCols = [...hidden]; save(); applyCols();
       });
       applyCols();
     }
+
+    applyDensity(); applyZebra(); applyFreeze();
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
 
@@ -447,10 +516,60 @@ if (typeof document !== 'undefined') {
     });
   };
 
+  // ---- image lightbox: click a [data-uix-lightbox] thumbnail → enlarge in a <dialog> ----
+  const setupLightbox = () => {
+    document.querySelectorAll('[data-uix-icon]').forEach((el) => { el.innerHTML = icon(el.dataset.uixIcon); });
+    const dlg = document.querySelector('[data-uix-lightbox-dialog]');
+    if (!dlg) return;
+    const img = dlg.querySelector('img');
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-uix-lightbox]'); if (!t) return;
+      img.src = t.dataset.src; img.alt = t.querySelector('img')?.alt || '';
+      dlg.showModal();
+    });
+  };
+
+  // ---- emoji reactions: pills with counts + an add-reaction picker popover ----
+  const EMOJI_SET = ['✅', '👍', '👀', '🎉', '🚀', '🔥', '⚠️', '❓', '🚫', '📌'];
+  const setupReactions = () => {
+    document.querySelectorAll('[data-uix-reactions]').forEach((host, idx) => {
+      let state = [];
+      try { state = JSON.parse(host.dataset.reactions || '[]'); } catch { state = []; }
+      const pid = 'uix-rx-' + idx;
+      const render = () => {
+        host.innerHTML =
+          state.map((r) => `<button class="uix-reaction" type="button" data-emoji="${r.emoji}" ${r.mine ? 'data-mine' : ''} aria-pressed="${r.mine}">${r.emoji} <span class="uix-reaction__count">${r.count}</span></button>`).join('') +
+          `<button class="uix-reaction-add" type="button" popovertarget="${pid}" aria-label="Add reaction" style="anchor-name:--${pid}">${icon('smile-plus', 'sm')}</button>` +
+          `<div id="${pid}" popover class="uix-popover" style="position-anchor:--${pid}; top:anchor(bottom); left:anchor(left); margin-top:6px"><div class="uix-emoji-picker">${EMOJI_SET.map((e) => `<button class="uix-emoji-picker__btn" type="button" data-pick="${e}">${e}</button>`).join('')}</div></div>`;
+      };
+      host.addEventListener('click', (e) => {
+        const pill = e.target.closest('[data-emoji]');
+        const pick = e.target.closest('[data-pick]');
+        const emoji = pill?.dataset.emoji || pick?.dataset.pick;
+        if (!emoji) return;
+        state = toggleReaction(state, emoji);
+        if (pick) document.getElementById(pid)?.hidePopover();
+        render();
+      });
+      render();
+    });
+  };
+
+  // ---- icon inventory (Icons section): sizes row + click-to-copy grid ----
+  const buildIconInventory = () => {
+    const sizes = document.querySelector('[data-uix-icon-sizes]');
+    if (sizes) sizes.innerHTML = ['sm', 'md', 'lg'].map((sz) =>
+      `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;color:var(--uix-text)">${icon('star', sz)}<code style="font-size:var(--uix-text-eyebrow);color:var(--uix-text-muted)">${sz}</code></span>`).join('');
+    const grid = document.querySelector('[data-uix-icon-grid]');
+    if (grid) grid.innerHTML = iconNames().map((n) =>
+      `<button class="uix-icon-cell" type="button" data-icon-copy="${esc(n)}">${icon(n)}<code>${esc(n)}</code></button>`).join('');
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
     buildTokenReference();
+    buildIconInventory();
     setupScrollspy();
     setupSidebar();
     setupTables();
@@ -460,6 +579,9 @@ if (typeof document !== 'undefined') {
     setupToasts();
     setupRichSelect();
     setupForms();
+    setupReactions();
+    setupLightbox();
+    initCharts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

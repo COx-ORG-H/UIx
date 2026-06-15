@@ -6,17 +6,15 @@
     border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
     transform: translateX(100%);
-    /* base = EXIT: faster */
-    transition: transform var(--uix-dur) var(--uix-ease-in),
-                overlay var(--uix-dur) allow-discrete, display var(--uix-dur) allow-discrete;
-    display: flex; flex-direction: column;
-  }
-  .uix-peek[open] {
-    transform: none;
-    /* ENTER: slower, decelerate */
     transition: transform var(--uix-dur-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for BOTH states are required for the slide-in to animate: the
+       allow-discrete `display` transition only engages with author values, and that gating also
+       lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
+       parked at translateX(100%). Closed = none; open = flex. */
+    display: none;
   }
+  .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-peek[open] { transform: translateX(100%); } }
   .uix-peek::backdrop {
     background: rgba(0,0,0,.4); opacity: 0;

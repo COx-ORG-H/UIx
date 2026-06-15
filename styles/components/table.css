@@ -21,7 +21,10 @@
   .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
   .uix-table tbody tr[aria-selected="true"] { background: var(--uix-brand-muted); }
   .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
-  .uix-table--compact td { height: var(--uix-row-h-compact); }
+  /* density tiers — standard is the default td height above; data-density overrides it.
+     .uix-table--compact kept as a back-compat alias. */
+  .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
+  .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
   .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: 4px; border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin[data-on] { opacity: 1; }

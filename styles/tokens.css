@@ -55,7 +55,7 @@
     --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms; --uix-dur-slower:320ms; --uix-lift:4px;
 
     /* layout */
-    --uix-row-h:56px; --uix-row-h-compact:44px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-topbar-h:56px;
+    --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-topbar-h:56px;
 
     /* rows / scrollbars / icons / peek */
     --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF;

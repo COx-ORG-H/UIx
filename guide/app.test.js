@@ -1,7 +1,8 @@
-/* Unit tests for the pure helpers in app.js. Run: node --test guide/  (Node 22+, zero deps) */
+/* Unit tests for the pure helpers in app.js. Run: node --test guide/app.test.js  (zero deps) */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
+import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs, toggleReaction } from './app.js';
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');
@@ -82,4 +83,57 @@ test('enqueueToast caps the queue, dequeueToast removes by id', () => {
   list = enqueueToast(list, { id: 'd' });          // cap 3 → drops 'a'
   assert.deepEqual(list.map((t) => t.id), ['b', 'c', 'd']);
   assert.deepEqual(dequeueToast(list, 'c').map((t) => t.id), ['b', 'd']);
+});
+
+test('defaultViewPrefs: standard/zebra/freeze/no-hidden', () => {
+  assert.deepEqual(defaultViewPrefs(), { density: 'standard', zebra: true, freeze: true, hiddenCols: [] });
+});
+
+test('DENSITIES order', () => {
+  assert.deepEqual(DENSITIES, ['compact', 'standard', 'comfortable']);
+});
+
+test('readViewPrefs: empty → defaults', () => {
+  assert.deepEqual(readViewPrefs(null, null), defaultViewPrefs());
+});
+
+test('readViewPrefs: round-trips a written value', () => {
+  const p = { density: 'comfortable', zebra: false, freeze: true, hiddenCols: [2, 4] };
+  assert.deepEqual(readViewPrefs(writeViewPrefs(p), null), p);
+});
+
+test('readViewPrefs: invalid density falls back to standard', () => {
+  assert.equal(readViewPrefs('{"density":"huge"}', null).density, 'standard');
+});
+
+test('readViewPrefs: migrates legacy uix-cols array into hiddenCols when no new prefs', () => {
+  assert.deepEqual(readViewPrefs(null, '[1,3]').hiddenCols, [1, 3]);
+});
+
+test('readViewPrefs: garbage JSON → defaults', () => {
+  assert.deepEqual(readViewPrefs('not json', null), defaultViewPrefs());
+});
+
+test('toggleReaction: adds a new reaction as mine, count 1', () => {
+  assert.deepEqual(toggleReaction([], '🎉'), [{ emoji: '🎉', count: 1, mine: true }]);
+});
+
+test('toggleReaction: joins an existing reaction (not mine → mine, count+1)', () => {
+  const r = toggleReaction([{ emoji: '👍', count: 2, mine: false }], '👍');
+  assert.deepEqual(r, [{ emoji: '👍', count: 3, mine: true }]);
+});
+
+test('toggleReaction: un-reacts (mine → removed when count hits 0)', () => {
+  assert.deepEqual(toggleReaction([{ emoji: '👍', count: 1, mine: true }], '👍'), []);
+});
+
+test('toggleReaction: un-reacts but keeps others (count stays > 0)', () => {
+  assert.deepEqual(toggleReaction([{ emoji: '👍', count: 3, mine: true }], '👍'),
+    [{ emoji: '👍', count: 2, mine: false }]);
+});
+
+test('toggleReaction: does not mutate input', () => {
+  const input = [{ emoji: '👍', count: 1, mine: false }];
+  toggleReaction(input, '👍');
+  assert.deepEqual(input, [{ emoji: '👍', count: 1, mine: false }]);
 });

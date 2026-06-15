@@ -1,0 +1,9 @@
+/* uix media / device-asset card — image (or icon placeholder) + name + meta. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-media { display: flex; gap: 12px; align-items: center; }
+  .uix-media__thumb { width: 64px; height: 64px; flex: none; border-radius: var(--uix-radius-md); overflow: hidden; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); display: grid; place-items: center; }
+  .uix-media__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .uix-media__thumb svg { width: 28px; height: 28px; color: var(--uix-text-muted); }
+  .uix-media__name { font-weight: 600; }
+  .uix-media__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}

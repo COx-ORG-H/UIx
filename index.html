@@ -32,12 +32,17 @@
       <a class="uix-guide__navlink" href="#data-display">Data display</a>
       <a class="uix-guide__navlink" href="#overlays">Feedback &amp; overlays</a>
       <a class="uix-guide__navlink" href="#crm-itsm">CRM / ITSM</a>
+      <a class="uix-guide__navlink" href="#icons">Icons</a>
+      <a class="uix-guide__navlink" href="#emoji">Emoji</a>
+      <a class="uix-guide__navlink" href="#images">Images</a>
+      <a class="uix-guide__navlink" href="#prose">Prose &amp; text</a>
       <a class="uix-guide__navlink" href="#utility">Utility / typography</a>
     </nav>
 
     <main class="uix-guide__main">
       <header class="uix-guide__topbar">
         <h1>UIx Styleguide</h1>
+        <a class="uix-btn uix-btn--secondary uix-btn--sm" href="dashboard.html" style="margin-left:auto">Example dashboard ↗</a>
         <button class="uix-guide__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
       </header>
 
@@ -423,11 +428,25 @@
               <input class="uix-input uix-input--sm" type="search" placeholder="Search tickets…">
             </span>
             <span class="uix-toolbar__spacer"></span>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-freeze aria-pressed="true">Freeze 1st col</button>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="colmenu" style="anchor-name:--colbtn">Columns ▾</button>
-            <div id="colmenu" popover class="uix-popover" data-uix-colmenu style="position-anchor:--colbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px; min-width:180px"></div>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-density>Density</button>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-zebra>Zebra</button>
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position-anchor:--viewbtn; top:anchor(bottom); justify-self:anchor-end; margin-top:6px">
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Density</div>
+                <span class="uix-segmented" data-uix-density>
+                  <button class="uix-segmented__option" type="button" data-density="compact" aria-pressed="false">Compact</button>
+                  <button class="uix-segmented__option" type="button" data-density="standard" aria-pressed="true">Standard</button>
+                  <button class="uix-segmented__option" type="button" data-density="comfortable" aria-pressed="false">Comfortable</button>
+                </span>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__row"><span>Zebra striping</span><label class="uix-switch"><input type="checkbox" data-uix-zebra checked><span class="uix-switch__track"></span></label></div>
+                <div class="uix-view-menu__row"><span>Freeze first column</span><label class="uix-switch"><input type="checkbox" data-uix-freeze checked><span class="uix-switch__track"></span></label></div>
+              </div>
+              <div class="uix-view-menu__group">
+                <div class="uix-view-menu__label">Columns</div>
+                <div class="uix-view-menu__cols" data-uix-colmenu></div>
+              </div>
+            </div>
           </div>
           <div class="uix-filterbar">
             <div class="uix-filterrow">
@@ -470,35 +489,22 @@
           <span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>SLA breached</span>
         </div>
 
-        <div class="uix-guide__subhead">Charts (palette + sample SVG)</div>
+        <div class="uix-guide__subhead">Charts</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
           <div class="uix-chart">
             <div class="uix-chart__title">By category</div>
             <div class="uix-chart__subtitle">This month</div>
-            <div style="display:grid;place-items:center"><div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--uix-chart-1) 0 32%,var(--uix-chart-4) 32% 56%,var(--uix-chart-3) 56% 74%,var(--uix-chart-7) 74% 90%,var(--uix-chart-6) 90% 100%)"><div style="width:78px;height:78px;border-radius:50%;background:var(--uix-surface);position:relative;top:26px;left:26px;display:grid;place-items:center;font-weight:600">128</div></div></div>
-            <div class="uix-legend"><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-1)"></span>Network</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-4)"></span>Access</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-3)"></span>Email</span><span class="uix-legend__item"><span class="uix-legend__swatch" style="background:var(--uix-chart-7)"></span>Other</span></div>
+            <div data-uix-chart="donut" style="height:200px"></div>
           </div>
           <div class="uix-chart">
             <div class="uix-chart__title">Tickets / day</div>
             <div class="uix-chart__subtitle">Last 7 days</div>
-            <div style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
-              <div style="flex:1;height:40%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:65%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:50%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:80%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:70%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:90%;background:var(--uix-chart-1);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-              <div style="flex:1;height:60%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
-            </div>
+            <div data-uix-chart="bar" style="height:180px"></div>
           </div>
           <div class="uix-chart">
             <div class="uix-chart__title">Resolution trend</div>
             <div class="uix-chart__subtitle">Hours</div>
-            <svg viewBox="0 0 240 120" style="width:100%;height:130px" preserveAspectRatio="none">
-              <defs><linearGradient id="uix-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--uix-chart-1)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--uix-chart-1)" stop-opacity="0"/></linearGradient></defs>
-              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42 L240,120 L0,120 Z" fill="url(#uix-area)"/>
-              <path d="M0,90 L40,70 L80,80 L120,50 L160,58 L200,34 L240,42" fill="none" stroke="var(--uix-chart-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <div data-uix-chart="area" style="height:180px"></div>
           </div>
         </div>
 
@@ -728,6 +734,104 @@
         </div>
       </section>
 
+      <section id="icons" class="uix-guide__section">
+        <h2>Icons</h2>
+        <p class="lead">Icons are <strong>lucide</strong> glyphs, inline SVG, drawn in <code class="uix-code">currentColor</code> at <code class="uix-code">stroke-width:2</code> with round caps. Size them with <code class="uix-code">--uix-icon-sm</code> (16) / <code class="uix-code">--uix-icon-md</code> (20) / <code class="uix-code">--uix-icon-lg</code> (24) via the <code class="uix-code">icon(name, size)</code> helper in <code class="uix-code">assets/icons.js</code>.</p>
+        <div class="uix-alert uix-alert--info" style="margin-bottom:16px">
+          <span class="uix-alert__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <div><div class="uix-alert__title">Accessibility</div><div class="uix-alert__body">Decorative icons get <code class="uix-code">aria-hidden="true"</code> (the <code class="uix-code">icon()</code> helper adds it). An icon that is a control's only label needs an <code class="uix-code">aria-label</code> on the control (or a visible tooltip). Never rely on an icon alone to carry meaning.</div></div>
+        </div>
+        <div class="uix-guide__subhead">Sizes</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:center" data-uix-icon-sizes></div>
+        <div class="uix-guide__subhead">Inventory — click a name to copy</div>
+        <div class="uix-icon-grid" data-uix-icon-grid></div>
+      </section>
+
+      <section id="emoji" class="uix-guide__section">
+        <h2>Emoji</h2>
+        <p class="lead">A small, work-appropriate set for light signaling and reactions. Use them to add warmth or a quick acknowledgement — never as the only carrier of meaning, and never in formal status or destructive confirmations.</p>
+        <div class="uix-guide__subhead">Curated set</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;justify-items:start">
+          <span>✅ done / approved</span><span>👍 acknowledged</span><span>👀 reviewing</span>
+          <span>🎉 win / shipped</span><span>🚀 deployed</span><span>🔥 urgent</span>
+          <span>⚠️ caution</span><span>❓ question</span><span>🚫 blocked</span><span>📌 pinned</span>
+        </div>
+        <div class="uix-guide__subhead">Reactions (select &amp; use)</div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">LR</span><div class="uix-comment__body">
+            <div class="uix-comment__meta"><span class="uix-comment__author">Leo R.</span> · 22m ago</div>
+            Stable for the last 20 minutes here.
+            <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👍","count":2,"mine":false},{"emoji":"🎉","count":1,"mine":true}]'></div>
+          </div></div>
+        </div></div>
+      </section>
+
+      <section id="images" class="uix-guide__section">
+        <h2>Images</h2>
+        <p class="lead">Patterns for user and content imagery: an editable profile avatar (with empty/upload state), a device/asset card, and images inside comments with a click-to-zoom lightbox.</p>
+
+        <div class="uix-guide__subhead">Profile image — current, editable, empty</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:28px;align-items:center">
+          <span class="uix-avatar uix-avatar--lg"><img src="assets/img/avatar-maya.svg" alt="Maya K."></span>
+          <span class="uix-avatar uix-avatar--lg uix-avatar--editable" tabindex="0" role="button" aria-label="Change profile photo"><img src="assets/img/avatar-maya.svg" alt="Maya K."><span class="uix-avatar__edit" data-uix-icon="camera" aria-hidden="true"></span></span>
+          <span class="uix-avatar uix-avatar--lg uix-avatar--empty uix-avatar--editable" tabindex="0" role="button" aria-label="Upload profile photo" data-uix-icon="plus"></span>
+        </div>
+
+        <div class="uix-guide__subhead">Device / asset card</div>
+        <div class="uix-card" style="max-width:380px"><div class="uix-card__body">
+          <div class="uix-media">
+            <span class="uix-media__thumb"><img src="assets/img/device-macbook.svg" alt="MacBook Pro 14 inch"></span>
+            <div><div class="uix-media__name">MacBook Pro 14"</div><div class="uix-media__meta">Asset #A-1043 · assigned to Maya K.</div></div>
+          </div>
+        </div></div>
+
+        <div class="uix-guide__subhead">Image in a comment (click to zoom)</div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-comment"><span class="uix-avatar uix-avatar--sm">SP</span><div class="uix-comment__body">
+            <div class="uix-comment__meta"><span class="uix-comment__author">Sam P.</span> · 8m ago</div>
+            Here's the dashboard right before it dropped:
+            <button class="uix-comment__image" data-uix-lightbox data-src="assets/img/shot-vpn.svg" aria-label="Open image"><img src="assets/img/shot-vpn.svg" alt="Monitoring dashboard screenshot"></button>
+          </div></div>
+        </div></div>
+
+        <dialog class="uix-lightbox" data-uix-lightbox-dialog>
+          <img alt="">
+          <button class="uix-peek__close" data-uix-close aria-label="Close" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </dialog>
+      </section>
+
+      <section id="prose" class="uix-guide__section">
+        <h2>Prose &amp; text</h2>
+        <p class="lead">A content card for longer text — knowledge-base articles, ticket descriptions, release notes — plus note callouts and examples of components nested inside cards.</p>
+
+        <div class="uix-guide__subhead">Prose card</div>
+        <div class="uix-card"><div class="uix-card__body">
+          <div class="uix-prose">
+            <h3>Resolving VPN disconnects</h3>
+            <p>When users on the EU gateway report random disconnects, the cause is almost always a stale session table after a config push. Follow these steps before escalating.</p>
+            <h4>Steps</h4>
+            <ol><li>Roll back the most recent gateway config.</li><li>Flush the session table with <code>vpnctl flush --region eu</code>.</li><li>Watch reconnect rates for 15 minutes.</li></ol>
+            <blockquote>If disconnects persist after a flush, the issue is upstream — open a problem ticket and link this article.</blockquote>
+            <p>See the <a href="#">runbook</a> for the full escalation path.</p>
+          </div>
+        </div></div>
+
+        <div class="uix-guide__subhead">Note callouts</div>
+        <div class="uix-stack" style="--gap:10px">
+          <div class="uix-note uix-note--info"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="uix-note__body"><strong>Note.</strong> Config pushes take up to 60 seconds to propagate across all regions.</div></div>
+          <div class="uix-note uix-note--success"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span><div class="uix-note__body"><strong>Resolved.</strong> Reconnect rate is back to baseline.</div></div>
+          <div class="uix-note uix-note--warning"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="uix-note__body"><strong>Heads up.</strong> Flushing sessions will sign out active users.</div></div>
+          <div class="uix-note uix-note--danger"><span class="uix-note__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></span><div class="uix-note__body"><strong>Do not</strong> restart the gateway during business hours.</div></div>
+        </div>
+
+        <div class="uix-guide__subhead">Nested composition — a card containing other components</div>
+        <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title">Open incidents</span></div><div class="uix-card__body" style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px"><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Open</div><div class="uix-stat__value">128</div></div><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Breaching</div><div class="uix-stat__value">3</div></div></div>
+          <ul class="uix-tree"><li><span class="uix-tree__row">INC-2043 · VPN disconnects</span></li><li><span class="uix-tree__row">INC-2041 · Email outage</span></li></ul>
+          <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👀","count":1,"mine":false}]'></div>
+        </div></div>
+      </section>
+
       <section id="utility" class="uix-guide__section" style="border-bottom:0">
         <h2>Utility / typography</h2>
         <p class="lead">The small stuff: links, code, keyboard chips, blockquotes, dividers, status dots.</p>
@@ -754,6 +858,7 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" crossorigin="anonymous"></script>
   <script type="module" src="guide/app.js"></script>
 </body>
 </html>
