@@ -56,13 +56,14 @@ Component CSS today (`styles/components/*.css` + `styles/*.css`):
 - [ ] Claim the **`@uix` org/scope on npmjs.com** (the placeholder ADR-0004 reserved); enable public access.
 - [ ] Create an **npm automation token**; add as `NPM_TOKEN` secret on `COx-ORG-H/UIx` (or org-level).
 - [ ] Add the **portfolio PAT** secret (bot pushes that retrigger downstream CI — ADR-0006 / fleet lesson) for Renovate automerge.
+- [ ] **Bootstrap the VR goldens (S5):** run the `update-visual-goldens` workflow → download the `visual-goldens-linux` artifact → commit the `tests/visual/__screenshots__/*-linux.png`. The `visual` CI gate is red until these land (expected). Re-run after any intended rendering change to re-baseline.
 - [ ] First publish: tag `v2.0.0`; confirm the release workflow gates pass, then `@uix/tokens@2.0.0` + `@uix/react@2.0.0` resolve on npm.
 - [ ] (Phase 3) Point TENSOR at the npm packages; hard-fail `uix-sync.mjs`.
 
 ## Status — end of kickoff session (2026-06-23)
 
 **Done + verified + committed** (branch `feat/uix-v2-phase2-release-gates`, on top of Phase 1):
-- **S0** plan · **S1** packages/* monorepo + linked Changesets · **S2** governance (CODEOWNERS + contract-change process) · **S3** api-extractor public-API lock (both entry points, LF, CI-verify green) · **S4** per-consumer smoke build (ESM/CJS/resolve/types) · **S7** full-strict tokenization (`ENFORCE_RAW=true`, 0 unjustified) · **S8** completeness gate (A structural + B theme-tier + **C raw-value scan now blocking**) · **S9** CI + publish-on-tag (inert-safe) + Renovate.
+- **S0** plan · **S1** packages/* monorepo + linked Changesets · **S2** governance (CODEOWNERS + contract-change process) · **S3** api-extractor public-API lock (both entry points, LF, CI-verify green) · **S4** per-consumer smoke build (ESM/CJS/resolve/types) · **S5** Playwright VR harness (pinned container; Linux goldens bootstrap pending) · **S7** full-strict tokenization (`ENFORCE_RAW=true`, 0 unjustified) · **S8** completeness gate (A structural + B theme-tier + **C raw-value scan now blocking**) · **S9** CI + publish-on-tag (inert-safe) + Renovate.
 - Full CI gate sequence verified green from a clean install: `build:all → parity → contract → api → smoke`.
 
 **S7 decisions (full-strict tokenization — done 2026-06-23):**
@@ -71,12 +72,16 @@ Component CSS today (`styles/components/*.css` + `styles/*.css`):
 - *Justified (kept raw):* 11 component-intrinsic geometry values in `tests/raw-value-allowlist.json` (concentric inner radii `calc(--uix-radius-md - 3px)`, hairline `1px` pads, `38px` icon clearance, `-6px` thumb centering, `-1px` border overlap, `18px` emoji glyph). The gate loads it, routes matches to a justified log, fails on anything unlisted, and warns on stale entries. `'z'` added to `REQUIRED_CATEGORIES`.
 - *Verified:* parity + contract + api + smoke green from a clean install; light+dark computed-value spot-checks (switch knob white in dark, warning pill `#92400E`/`#FCBB00`, modal backdrop `rgba(0,0,0,.5)`, radii 4px, tooltip z 30); a negative test confirms the gate exits 1 on an injected raw value.
 
+**S5 decisions (Playwright VR — done 2026-06-23):**
+- *Harness:* `playwright.config.mjs` + `tests/visual/styleguide.spec.mjs` — full-page snapshots of index/tables/dashboard × {light,dark}. Theme is seeded via `localStorage['uix-theme']` in an `addInitScript` (all three pages share that no-flash bootstrap), asserted on `[data-theme]`, `document.fonts.ready` awaited, animations disabled. Showcase JS is deterministic (no `Math.random`/`Date`/timers), so full-page captures are stable. `serve.json` (`cleanUrls:false`) stops `serve` from stripping `/index.html` → re-rooting the page's relative CSS (a 404 that silently unstyles the page — this also fixed a preview-time gotcha).
+- *Goldens are Linux-only, bootstrap pending:* no local Docker, and Windows/macOS renders differ from the CI runner. The `visual` CI job + the `update-visual-goldens` workflow_dispatch both run the **pinned** `mcr.microsoft.com/playwright:v1.61.0-jammy` container so goldens render identically wherever generated. Snapshots are OS-suffixed; `*-win32`/`*-darwin` are gitignored. **Handoff:** run `update-visual-goldens` once → download the `visual-goldens-linux` artifact → commit the `*-linux.png` → the `visual` gate goes green (added to the checklist below).
+- *Verified:* on Windows the generate→compare loop passes green (6/6) — proves server + theming + fonts + capture + pixel-diff all work; only the goldens' OS suffix differs from CI.
+
 **Remaining** (best resumed with fresh context — `/clear` first):
-- **S5 — Playwright visual regression**: config + specs over the static styleguide (light/dark) + a static server. **Goldens must be generated on Linux (CI runner or the Playwright docker image)** — Windows goldens won't match. Wire `test:visual` into ci.yml (uncomment the TODO). *(Doing S7 first was deliberate: the VR goldens now capture the final tokenized rendering, so they need generating only once.)*
 - **S6 — axe a11y** over the same pages; wire `test:a11y`.
 - **S10 — human actions** (the checklist above): npm scope claim + `NPM_TOKEN` + portfolio PAT, then first tag.
 
-**Local tooling note (footgun):** this is an npm workspace whose root is private and members are publishable. Incremental `npm install -D <x>` at root can re-hoist and silently prune existing root devDeps (hit twice: dropped `@changesets/cli`, then `style-dictionary`). **The committed `package-lock.json` is correct** — CI's `npm ci` is unaffected. Locally, after any incremental install, run a clean `rm -rf node_modules package-lock.json && npm install` and re-verify `build:all` before trusting it.
+**Local tooling note (footgun):** this is an npm workspace whose root is private and members are publishable. Incremental `npm install -D <x>` at root can re-hoist and silently prune existing root devDeps (hit twice: dropped `@changesets/cli`, then `style-dictionary`; also found `node_modules` pre-pruned at the start of the S7 session). **The committed `package-lock.json` is correct** — CI's `npm ci` is unaffected. **Best recovery: just run `npm ci`** — it restores the full tree from the (already-correct) committed lockfile *without* regenerating it, so it un-prunes deterministically and is preferred over `rm -rf node_modules package-lock.json && npm install` (which needlessly re-resolves the lockfile). After an incremental `npm install -D`, the lockfile is already updated correctly; a follow-up `npm ci` un-prunes any collateral. Re-verify `build:all` either way.
 
 ## Definition of Done (Phase 2)
 
