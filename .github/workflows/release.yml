@@ -1,0 +1,52 @@
+name: Release
+
+# Publish-on-tag (ADR-0016 Decision 6): tagging v* runs build:all + ALL trust
+# gates as a HARD precondition, then `changeset publish` pushes any package whose
+# version isn't yet on npm. Inert-safe: without the NPM_TOKEN secret it runs the
+# gates and skips publish cleanly (so the workflow can land before the scope is
+# claimed — see Docs/plans phase2 human-action checklist).
+#
+# Release flow:
+#   1. `npm run version`  -> consumes changesets, bumps @uix/tokens + @uix/react
+#      (linked), regenerates CHANGELOGs. Commit.
+#   2. tag `vX.Y.Z` + push -> this workflow.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+      - run: npm run build:all
+
+      # Hard publish preconditions — must mirror ci.yml.
+      - run: npm run test:parity
+      - run: npm run test:contract
+      - run: npm run test:api
+      - run: npm run test:smoke
+
+      - name: Publish (inert without NPM_TOKEN)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::notice::NPM_TOKEN not set — gates passed, skipping publish. Set the secret to enable real publishing."
+            exit 0
+          fi
+          npx changeset publish

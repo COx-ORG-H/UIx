@@ -1,0 +1,52 @@
+name: CI
+
+# Trust gates for every PR + main push (ADR-0016 Decision 6). The same gates are
+# a hard precondition for publishing (see release.yml). Keep this list and the
+# release preconditions in sync.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    # Public OSS repo -> free GitHub-hosted runner. Swap for the COx self-hosted
+    # label (ADR-0006/0008) if the org pool is preferred.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build all (tokens + themes + styles + react)
+        run: npm run build:all
+
+      - name: Token value parity
+        run: npm run test:parity
+
+      - name: Contract completeness
+        run: npm run test:contract
+
+      - name: Public API lock (@uix/react)
+        run: npm run test:api
+
+      - name: Per-consumer smoke build
+        run: npm run test:smoke
+
+      # TODO(S5): Playwright visual regression — npm run test:visual
+      #           (goldens are Linux/CI-generated; see Docs/plans phase2 S5)
+      # TODO(S6): axe accessibility — npm run test:a11y
