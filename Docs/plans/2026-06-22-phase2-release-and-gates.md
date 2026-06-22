@@ -59,6 +59,25 @@ Component CSS today (`styles/components/*.css` + `styles/*.css`):
 - [ ] First publish: tag `v2.0.0`; confirm the release workflow gates pass, then `@uix/tokens@2.0.0` + `@uix/react@2.0.0` resolve on npm.
 - [ ] (Phase 3) Point TENSOR at the npm packages; hard-fail `uix-sync.mjs`.
 
+## Status — end of kickoff session (2026-06-23)
+
+**Done + verified + committed** (branch `feat/uix-v2-phase2-release-gates`, on top of Phase 1):
+- **S0** plan · **S1** packages/* monorepo + linked Changesets · **S2** governance (CODEOWNERS + contract-change process) · **S3** api-extractor public-API lock (both entry points, LF, CI-verify green) · **S4** per-consumer smoke build (ESM/CJS/resolve/types) · **S8** completeness gate (A structural + B theme-tier **blocking & green**; C raw-value scan **report-only**) · **S9** CI + publish-on-tag (inert-safe) + Renovate.
+- Full CI gate sequence verified green from a clean install: `build:all → parity → contract → api → smoke`.
+
+**Remaining** (best resumed with fresh context — `/clear` first):
+- **S7 — full-strict tokenization** (flip `ENFORCE_RAW=true`). Exact debt from `npm run test:contract` (43 contract-class values; 340 px are justified geometry):
+  - *Colors (7):* scrims `rgba(0,0,0,.4/.45/.5/.7)` in avatar/drawer/lightbox/modal/peek → add a `--uix-scrim` token (decide: one standardized opacity vs a small set); `#fff` knob (switch) + `#fff` icon-on-scrim (avatar) → map to `--uix-surface`/`--uix-text-reverse`; `#92400E` (status-pill) → existing `--uix-warning-fg`.
+  - *z-index (7):* flow/heartbeat/table(×3)/toast(100)/tooltip(20) → add a semantic `--uix-z-*` scale (e.g. raised/sticky/dropdown/overlay/toast) in `tokens/base/effect.json`.
+  - *px → existing token (clean maps):* `font-size:11px` → `--uix-text-eyebrow` (avatar/calendar/flow/kbd); `margin-left:-8px` → `calc(-1*var(--uix-space-2))` (avatar).
+  - *px needing justification (no clean token):* small radii `3/4/5px` (audit-log/chart/checkbox/comments/kbd/peek/sidebar/table/tag-input/toast/utility-bits) — decide add `--uix-radius-xs` vs allowlist; `font-size:18px` (reactions); `calc(var(--uix-radius-md) - 3px)` nested-radius (segmented/tabs); hairline `padding:1px` (labels/prose/reactions); `38px` icon padding (input); negative `-1px/-6px` (tabs/slider/toast) → add a `tests/raw-value-allowlist` mechanism to `check-contract.mjs` + populate with rationale.
+  - New tokens ripple: update `tests/tokens.baseline.css` (parity) + regenerate; confirm Tailwind/TS outputs.
+- **S5 — Playwright visual regression**: config + specs over the static styleguide (light/dark) + a static server. **Goldens must be generated on Linux (CI runner or the Playwright docker image)** — Windows goldens won't match. Wire `test:visual` into ci.yml (uncomment the TODO).
+- **S6 — axe a11y** over the same pages; wire `test:a11y`.
+- **S10 — human actions** (the checklist above): npm scope claim + `NPM_TOKEN` + portfolio PAT, then first tag.
+
+**Local tooling note (footgun):** this is an npm workspace whose root is private and members are publishable. Incremental `npm install -D <x>` at root can re-hoist and silently prune existing root devDeps (hit twice: dropped `@changesets/cli`, then `style-dictionary`). **The committed `package-lock.json` is correct** — CI's `npm ci` is unaffected. Locally, after any incremental install, run a clean `rm -rf node_modules package-lock.json && npm install` and re-verify `build:all` before trusting it.
+
 ## Definition of Done (Phase 2)
 
 Every gate in S1–S9 is wired and green on a PR; the publish workflow is authored and proven inert-safe (skips cleanly without `NPM_TOKEN`); governance files are in place; the only remaining steps are the human-gated npm scope claim + secrets + first tag. Partials named explicitly, never the spec softened to match what shipped.
