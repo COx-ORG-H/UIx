@@ -15,6 +15,7 @@
     "test:parity": "npm run test:parity -w @uix/tokens",
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
+    "test:smoke": "node tests/smoke-consumer/run.mjs",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
