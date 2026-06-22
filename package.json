@@ -1,44 +1,23 @@
 {
-  "name": "@uix/tokens",
-  "version": "2.0.0",
-  "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
+  "name": "uix-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "UIx v2 — private workspace root. Publishable packages live in packages/* (@uix/tokens, @uix/react). Source of the --uix-* contract (ADR-0016).",
   "type": "module",
   "license": "UNLICENSED",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "build",
-    "themes/*.css",
-    "tokens"
+  "workspaces": [
+    "packages/*"
   ],
-  "exports": {
-    "./css": "./build/css/tokens.css",
-    "./styles": "./build/css/components.css",
-    "./tailwind": "./build/tailwind/theme.css",
-    "./tailwind/preset": "./build/tailwind/preset.cjs",
-    "./ts": {
-      "types": "./build/ts/tokens.d.ts",
-      "default": "./build/ts/tokens.js"
-    },
-    "./themes/tensor": "./themes/tensor.css",
-    "./themes/posx": "./themes/posx.css",
-    "./themes/shopx": "./themes/shopx.css",
-    "./themes/mission-control": "./themes/mission-control.css"
-  },
   "scripts": {
-    "build:tokens": "node style-dictionary.config.mjs",
-    "build:themes": "node scripts/build-themes.mjs",
-    "build:styles": "node scripts/build-styles.mjs",
-    "build:react": "cd react && npm ci && npm run build",
-    "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
+    "build": "npm run build -w @uix/tokens",
+    "build:react": "cd packages/react && npm ci && npm run build",
     "build:all": "npm run build && npm run build:react",
-    "test:parity": "node scripts/check-parity.mjs",
-    "prepublishOnly": "npm run build && npm run test:parity"
+    "test:parity": "npm run test:parity -w @uix/tokens",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
-    "postcss": "^8.4.0",
-    "postcss-import": "^16.1.1",
-    "style-dictionary": "^4.0.0"
+    "@changesets/cli": "^2.31.0"
   }
 }
