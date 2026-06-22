@@ -1,0 +1,25 @@
+# CODEOWNERS — UIx contract surface (ADR-0016 Decision 7)
+#
+# The `--uix-*` contract is a set of one-way doors: add a token = minor, but
+# rename/remove a token, change a per-token var() fallback chain, or emit a new
+# brand slot = MAJOR + an ADR (ADR-0016 Decision 2, carried from ADR-0004).
+#
+# With a bus-factor-1 maintainer there is no second human reviewer. CODEOWNERS is
+# the automated stand-in: it forces the maintainer onto every PR that touches the
+# contract so those changes are reviewed consciously, never rubber-stamped in a
+# large diff. The review process for these paths is Docs/contract-change-process.md.
+
+# Token source of truth + generated contract baseline
+/packages/tokens/tokens/                       @harisxdizdarevic
+/packages/tokens/tests/tokens.baseline.css     @harisxdizdarevic
+/packages/tokens/style-dictionary.config.mjs   @harisxdizdarevic
+
+# Per-product brand themes (write-only brand slots)
+/packages/tokens/themes/                       @harisxdizdarevic
+
+# Contract gates (parity + completeness) and the brand-slot allowlist
+/packages/tokens/scripts/                      @harisxdizdarevic
+
+# Release wiring (version/publish path) and this governance file
+/.changeset/                                   @harisxdizdarevic
+/.github/                                       @harisxdizdarevic
