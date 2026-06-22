@@ -13,6 +13,7 @@
     "build:react": "cd packages/react && npm ci && npm run build",
     "build:all": "npm run build && npm run build:react",
     "test:parity": "npm run test:parity -w @uix/tokens",
+    "test:contract": "npm run test:contract -w @uix/tokens",
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",

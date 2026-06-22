@@ -32,7 +32,8 @@
     "build:styles": "node scripts/build-styles.mjs",
     "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
     "test:parity": "node scripts/check-parity.mjs",
-    "prepublishOnly": "npm run build && npm run test:parity"
+    "test:contract": "node scripts/check-contract.mjs",
+    "prepublishOnly": "npm run build && npm run test:parity && npm run test:contract"
   },
   "devDependencies": {
     "postcss": "^8.4.0",
