@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';

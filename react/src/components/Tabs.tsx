@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';

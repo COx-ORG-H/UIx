@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useEffect, useId } from 'react';
 import type { ReactNode, CSSProperties } from 'react';
 import * as echarts from 'echarts';

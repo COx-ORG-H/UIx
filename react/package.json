@@ -1,9 +1,16 @@
 {
   "name": "@uix/react",
   "version": "2.0.0",
-  "private": true,
   "description": "Thin React wrappers over the UIx v2 CSS component library.",
+  "license": "UNLICENSED",
   "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

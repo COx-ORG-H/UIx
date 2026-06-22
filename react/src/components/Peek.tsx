@@ -1,3 +1,5 @@
+"use client";
+
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';

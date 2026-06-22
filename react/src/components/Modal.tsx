@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode, CSSProperties } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';

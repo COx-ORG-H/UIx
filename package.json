@@ -3,8 +3,10 @@
   "version": "2.0.0",
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",
-  "private": true,
   "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "build",
     "themes/*.css",
@@ -28,7 +30,7 @@
     "build:tokens": "node style-dictionary.config.mjs",
     "build:themes": "node scripts/build-themes.mjs",
     "build:styles": "node scripts/build-styles.mjs",
-    "build:react": "cd react && npm install && npm run build",
+    "build:react": "cd react && npm ci && npm run build",
     "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
     "build:all": "npm run build && npm run build:react",
     "test:parity": "node scripts/check-parity.mjs",
