@@ -13,11 +13,14 @@
     "build:react": "cd packages/react && npm ci && npm run build",
     "build:all": "npm run build && npm run build:react",
     "test:parity": "npm run test:parity -w @uix/tokens",
+    "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
+    "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0"
+    "@changesets/cli": "^2.31.0",
+    "@microsoft/api-extractor": "^7.58.9"
   }
 }
