@@ -1,11 +1,11 @@
 /* uix timeline / activity feed — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-timeline { display: flex; flex-direction: column; }
-  .uix-timeline__item { display: grid; grid-template-columns: 24px 1fr; gap: 12px; }
+  .uix-timeline__item { display: grid; grid-template-columns: 24px 1fr; gap: var(--uix-space-3); }
   .uix-timeline__rail { display: flex; flex-direction: column; align-items: center; }
-  .uix-timeline__node { width: 12px; height: 12px; border-radius: 50%; background: var(--uix-accent); margin-top: 3px; flex: none; box-shadow: 0 0 0 3px var(--uix-brand-muted); }
-  .uix-timeline__line { width: 1px; flex: 1; background: var(--uix-border); margin: 4px 0; }
+  .uix-timeline__node { width: 12px; height: 12px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-1); flex: none; box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-timeline__line { width: 1px; flex: 1; background: var(--uix-border); margin: var(--uix-space-1) 0; }
   .uix-timeline__item:last-child .uix-timeline__line { display: none; }
-  .uix-timeline__body { padding-bottom: 18px; }
+  .uix-timeline__body { padding-bottom: var(--uix-space-5); }
   .uix-timeline__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
 }

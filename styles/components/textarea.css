@@ -1,7 +1,7 @@
 /* uix textarea — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-textarea {
-    width: 100%; min-height: 84px; padding: 10px 12px; resize: vertical;
+    width: 100%; min-height: 84px; padding: var(--uix-space-3) var(--uix-space-3); resize: vertical;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
     line-height: var(--uix-leading-body);

@@ -1,0 +1,42 @@
+{
+  "__comment": "Mission Control product skin. Warm-beige neutrals, Geist type, 8px radius, iOS-calibrated status (legible TEXT role + vivid SOLID role). Source of the dashboard's look — edit here, run `npm run build:themes`, and every consumer of @uix/tokens/themes/mission-control updates. Values lifted from the dashboard's pre-migration tokens.css + globals.css override fence.",
+
+  "brand":    { "light": "#0088ff", "dark": "#0091ff" },
+  "brand-fg": { "light": "#ffffff" },
+
+  "bg-app":    { "light": "#f4f2f0", "dark": "#0E0D0C" },
+  "bg-subtle": { "light": "#F4F2F0", "dark": "#1A1817" },
+  "bg-hover":  { "light": "#ECEAE6", "dark": "#252220" },
+  "bg-active": { "light": "#E7E4DF", "dark": "#322E2B" },
+  "surface":   { "light": "#FFFFFF", "dark": "#1A1817" },
+  "surface-2": { "light": "#FFFFFF", "dark": "#252220" },
+  "surface-3": { "light": "#FFFFFF", "dark": "#322E2B" },
+  "border":        { "light": "#D2CECB", "dark": "rgba(255,255,255,0.08)" },
+  "border-strong": { "light": "#C4BFBB", "dark": "rgba(255,255,255,0.14)" },
+
+  "text":        { "light": "#0C0A08", "dark": "#E3E0DB" },
+  "text-hushed": { "light": "rgba(12,10,8,0.60)", "dark": "rgba(227,224,219,0.60)" },
+  "text-muted":  { "light": "#6E6A68", "dark": "rgba(227,224,219,0.60)" },
+
+  "font-sans": { "light": "\"Geist\", system-ui, sans-serif" },
+  "font-mono": { "light": "\"Geist Mono\", ui-monospace, monospace" },
+  "radius-sm": { "light": "6px" },
+  "radius-md": { "light": "8px" },
+
+  "success":       { "light": "#1b6b33", "dark": "#30d158" },
+  "success-fg":    { "light": "#FFFFFF", "dark": "#0C0A08" },
+  "success-bg":    { "light": "#E7F0EC", "dark": "rgba(94,192,138,0.14)" },
+  "success-solid": { "light": "#34c759", "dark": "#30d158" },
+  "warning":       { "light": "#9a4d06", "dark": "#ff9230" },
+  "warning-fg":    { "light": "#FFFFFF", "dark": "#0C0A08" },
+  "warning-bg":    { "light": "#FBE9DD", "dark": "rgba(240,138,74,0.16)" },
+  "warning-solid": { "light": "#ff8d28", "dark": "#ff9230" },
+  "info":          { "light": "#0b5cab", "dark": "#0091ff" },
+  "info-fg":       { "light": "#FFFFFF", "dark": "#0C0A08" },
+  "info-bg":       { "light": "#E4EBF6", "dark": "rgba(86,131,210,0.16)" },
+  "info-solid":    { "light": "#0088ff", "dark": "#0091ff" },
+  "danger":        { "light": "#be1f25", "dark": "#ff4245" },
+  "danger-fg":     { "light": "#FFFFFF", "dark": "#0C0A08" },
+  "danger-bg":     { "light": "#FBE4E4", "dark": "rgba(242,109,109,0.16)" },
+  "danger-solid":  { "light": "#ff383c", "dark": "#ff4245" }
+}

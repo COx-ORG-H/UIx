@@ -1,13 +1,13 @@
 /* uix sidebar nav — items, favorites, collapsible sub-items, collapsed rail. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-sidebar { width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: 2px; padding: 8px; overflow-x: hidden; overflow-y: auto; }
+  .uix-sidebar { width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-2); overflow-x: hidden; overflow-y: auto; }
   .uix-sidebar__eyebrow {
     font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
-    color: var(--uix-text-muted); padding: 12px 10px 4px;
+    color: var(--uix-text-muted); padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-1);
   }
 
   /* brand header */
-  .uix-sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px 8px; }
+  .uix-sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2) var(--uix-space-2); }
   .uix-sidebar__brand { min-width: 0; font-size: var(--uix-text-h3); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-sidebar__toggle {
     display: grid; place-items: center; width: 28px; height: 28px; flex: none;
@@ -18,7 +18,7 @@
   .uix-sidebar__toggle svg { width: 18px; height: 18px; }
 
   .uix-navitem {
-    display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px;
+    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
     border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
@@ -42,8 +42,8 @@
   .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
   .uix-navgroup__panel > div { overflow: hidden; }
-  .uix-subitem { padding-left: 18px; }
-  .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: 10px; vertical-align: middle; }
+  .uix-subitem { padding-left: var(--uix-space-5); }
+  .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
   /* collapsed rail */
   .uix-sidebar[data-collapsed] { width: 56px; }

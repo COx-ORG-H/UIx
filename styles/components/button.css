@@ -2,7 +2,7 @@
 @layer uix.components {
   .uix-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: .5em;
-    height: var(--uix-control-h); padding: 0 14px; border: 1px solid transparent;
+    height: var(--uix-control-h); padding: 0 var(--uix-space-4); border: 1px solid transparent;
     border-radius: var(--uix-radius-md); font: inherit; font-size: var(--uix-text-body); font-weight: 500;
     line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out),
@@ -16,7 +16,7 @@
   .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
 
   .uix-btn--primary   { background: var(--uix-accent); color: var(--uix-accent-fg); }
-  .uix-btn--primary:hover   { background: var(--uix-accent-dark); }
+  .uix-btn--primary:hover   { background: var(--uix-accent-hover); }
   .uix-btn--secondary { background: var(--uix-bg-subtle); color: var(--uix-text); border-color: var(--uix-border); }
   .uix-btn--secondary:hover { background: var(--uix-bg-hover); }
   .uix-btn--outline   { background: transparent; color: var(--uix-text); border-color: var(--uix-border-strong); }
@@ -28,8 +28,8 @@
   .uix-btn--link      { background: transparent; color: var(--uix-link); height: auto; padding: 0; }
   .uix-btn--link:hover      { text-decoration: underline; }
 
-  .uix-btn--sm { height: 28px; padding: 0 10px; font-size: var(--uix-text-meta); }
-  .uix-btn--lg { height: 44px; padding: 0 18px; }
+  .uix-btn--sm { height: 28px; padding: 0 var(--uix-space-3); font-size: var(--uix-text-meta); }
+  .uix-btn--lg { height: 44px; padding: 0 var(--uix-space-5); }
   .uix-btn--icon { width: var(--uix-control-h); padding: 0; }
   .uix-btn--icon.uix-btn--sm { width: 28px; }
   .uix-btn--icon.uix-btn--lg { width: 44px; }

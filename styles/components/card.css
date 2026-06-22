@@ -1,9 +1,9 @@
 /* uix card — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); box-shadow: var(--uix-shadow-sm); }
-  .uix-card__header { padding: 16px 18px; border-bottom: 1px solid var(--uix-border); display: flex; align-items: center; gap: 10px; }
+  .uix-card__header { padding: var(--uix-space-5) var(--uix-space-6); border-bottom: 1px solid var(--uix-border); display: flex; align-items: center; gap: var(--uix-space-3); }
   .uix-card__title { font-size: var(--uix-text-h3); font-weight: 600; }
-  .uix-card__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: 2px; }
-  .uix-card__body { padding: 18px; }
-  .uix-card__footer { padding: 14px 18px; border-top: 1px solid var(--uix-border); display: flex; gap: 8px; justify-content: flex-end; }
+  .uix-card__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
+  .uix-card__body { padding: var(--uix-space-6); }
+  .uix-card__footer { padding: var(--uix-space-4) var(--uix-space-6); border-top: 1px solid var(--uix-border); display: flex; gap: var(--uix-space-2); justify-content: flex-end; }
 }

@@ -1,11 +1,11 @@
 /* uix KPI / stat tile — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-stat { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: 18px; }
-  .uix-stat__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .uix-stat { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
+  .uix-stat__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); }
   .uix-stat__label svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: 10px; }
-  .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: 6px; display: flex; align-items: center; gap: 8px; }
-  .uix-stat__trend { display: inline-flex; align-items: center; gap: 3px; font-size: var(--uix-text-meta); font-weight: 600; padding: 2px 7px; border-radius: var(--uix-radius-pill); }
+  .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); }
+  .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
   .uix-stat__trend--down { color: var(--uix-danger); background: var(--uix-danger-bg); }
 }

@@ -8,5 +8,5 @@
   .uix-heartbeat--danger  .uix-heartbeat__dot, .uix-heartbeat--danger  .uix-heartbeat__ping { background: var(--uix-danger); }
   .uix-heartbeat--idle .uix-heartbeat__dot { background: var(--uix-text-muted); }
   .uix-heartbeat--idle .uix-heartbeat__ping { display: none; }
-  .uix-live { display: inline-flex; align-items: center; gap: 8px; font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
+  .uix-live { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
 }

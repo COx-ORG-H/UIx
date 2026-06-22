@@ -24,10 +24,10 @@ No build step.
 Tokens now ship as the **`@uix/tokens`** package (one DTCG source → CSS variables, a Tailwind
 theme, and typed TS constants). Add it as a dependency and import what your stack needs:
 
-- **Tailwind / shadcn (e.g. ITSMx):**
+- **Tailwind / shadcn (e.g. Tensor):**
   ```css
   @import "@uix/tokens/css";          /* declares the --uix-* contract (light + dark) */
-  @import "@uix/tokens/themes/itsmx";  /* this product's brand */
+  @import "@uix/tokens/themes/tensor";  /* this product's brand */
   @import "@uix/tokens/tailwind";      /* @theme — utilities like bg-uix-accent, rounded-uix-md */
   @import "tailwindcss";
   ```

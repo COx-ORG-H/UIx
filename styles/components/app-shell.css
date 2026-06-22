@@ -9,7 +9,7 @@
     transition: grid-template-columns var(--uix-dur) var(--uix-ease-out);
   }
   .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; }
-  .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
-  .uix-shell__main { grid-column: 2; overflow: auto; padding: 20px; background: var(--uix-bg-app); }
+  .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: var(--uix-space-3); padding: 0 var(--uix-space-6); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
+  .uix-shell__main { grid-column: 2; overflow: auto; padding: var(--uix-space-7); background: var(--uix-bg-app); }
   .uix-shell[data-collapsed] { grid-template-columns: 56px 1fr; }
 }

@@ -18,7 +18,7 @@
   }
   .uix-drawer[open]::backdrop { opacity: 1; }
   @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
-  .uix-drawer__header { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--uix-border); }
-  .uix-drawer__body { padding: 18px; overflow-y: auto; flex: 1; }
-  .uix-drawer__footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--uix-border); }
+  .uix-drawer__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-drawer__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
+  .uix-drawer__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
 }

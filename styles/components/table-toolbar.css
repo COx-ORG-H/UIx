@@ -1,15 +1,15 @@
 /* uix table toolbar + two-row filter bar (status / type). Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .uix-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); margin-bottom: var(--uix-space-3); }
   .uix-toolbar__spacer { flex: 1; }
 
   /* responsive: the status + type groups sit on ONE line when they fit, wrap to two only when cramped */
-  .uix-filterbar { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 12px; }
-  .uix-filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .uix-filterbar { display: flex; flex-wrap: wrap; gap: var(--uix-space-2) var(--uix-space-5); margin-bottom: var(--uix-space-3); }
+  .uix-filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
   .uix-filterrow__label { font-size: var(--uix-text-meta); color: var(--uix-text-muted); width: 54px; flex: none; }
 
   .uix-chip {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--uix-radius-pill);
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);
     border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-hushed);
     font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);

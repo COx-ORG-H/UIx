@@ -1,0 +1,1381 @@
+
+@layer uix.tokens, uix.base, uix.util, uix.motion, uix.components;
+/* uix-styleguide — COMPONENT-ONLY aggregate (the .uix-* component classes, util + motion helpers).
+   Deliberately EXCLUDES tokens.css and base.css so a consumer can pull the components without
+   re-injecting the neutral token block (which would fight a product theme) or UIx's global reset
+   (which would fight the consumer's own base layer). Tokens come from @uix/tokens/css (+ a product
+   theme) imported separately. Built to build/css/components.css by scripts/build-styles.mjs and
+   exported as `@uix/tokens/styles`. Keep this list in sync with the component @imports in main.css. */
+/* uix utilities — a few layout/a11y helpers. Keep this small; tokens + components do the heavy lifting. */
+@layer uix.util {
+  /* visually hidden but available to screen readers */
+  .uix-visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
+
+  /* vertical rhythm — set gap via --gap (defaults to --uix-space-4 / 16px) */
+  .uix-stack { display: flex; flex-direction: column; gap: var(--gap, var(--uix-space-4)); }
+  /* horizontal grouping that wraps */
+  .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, var(--uix-space-2)); }
+
+  .uix-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+/* uix motion — shared keyframes, enter/exit helpers, and the reduced-motion guard.
+   Components reference these tokens/keyframes; overlays pair the helpers with @starting-style. */
+/* Reduced-motion guard — UNLAYERED so its !important beats every component transition. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Keyframes (cascade-neutral). */
+@keyframes uix-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes uix-pop-in {
+  from { opacity: 0; transform: scale(.96) translateY(var(--uix-lift)); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes uix-slide-in-right { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+@keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
+@keyframes uix-spin { to { transform: rotate(1turn); } }
+@keyframes uix-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@layer uix.motion {
+  .uix-anim-fade { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out); }
+  .uix-anim-pop  { animation: uix-pop-in var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-anim-up   { animation: uix-slide-in-up var(--uix-dur) var(--uix-ease-out); }
+
+  /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover. */
+  .uix-lift-hover { transition: transform var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
+  }
+}
+/* components */
+/* uix button — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+    height: var(--uix-control-h); padding: 0 var(--uix-space-4); border: 1px solid transparent;
+    border-radius: var(--uix-radius-md); font: inherit; font-size: var(--uix-text-body); font-weight: 500;
+    line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out),
+                border-color var(--uix-dur-fast) var(--uix-ease-out),
+                color var(--uix-dur-fast) var(--uix-ease-out),
+                transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-btn:active { transform: scale(.97); }
+  .uix-btn:disabled, .uix-btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .uix-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+
+  .uix-btn--primary   { background: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-btn--primary:hover   { background: var(--uix-accent-hover); }
+  .uix-btn--secondary { background: var(--uix-bg-subtle); color: var(--uix-text); border-color: var(--uix-border); }
+  .uix-btn--secondary:hover { background: var(--uix-bg-hover); }
+  .uix-btn--outline   { background: transparent; color: var(--uix-text); border-color: var(--uix-border-strong); }
+  .uix-btn--outline:hover   { background: var(--uix-bg-hover); }
+  .uix-btn--ghost     { background: transparent; color: var(--uix-text); }
+  .uix-btn--ghost:hover     { background: var(--uix-bg-hover); }
+  .uix-btn--danger    { background: var(--uix-danger); color: var(--uix-danger-fg); }
+  .uix-btn--danger:hover    { background: color-mix(in srgb, var(--uix-danger) 88%, black); }
+  .uix-btn--link      { background: transparent; color: var(--uix-link); height: auto; padding: 0; }
+  .uix-btn--link:hover      { text-decoration: underline; }
+
+  .uix-btn--sm { height: 28px; padding: 0 var(--uix-space-3); font-size: var(--uix-text-meta); }
+  .uix-btn--lg { height: 44px; padding: 0 var(--uix-space-5); }
+  .uix-btn--icon { width: var(--uix-control-h); padding: 0; }
+  .uix-btn--icon.uix-btn--sm { width: 28px; }
+  .uix-btn--icon.uix-btn--lg { width: 44px; }
+
+  .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
+  .uix-btn[data-loading]::after {
+    content: ""; position: absolute; width: 1em; height: 1em;
+    border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
+    color: var(--uix-accent-fg); animation: uix-spin .6s linear infinite;
+  }
+
+  /* attached group */
+  .uix-btn-group { display: inline-flex; }
+  .uix-btn-group .uix-btn { border-radius: 0; border-right-width: 0; }
+  .uix-btn-group .uix-btn:first-child { border-top-left-radius: var(--uix-radius-md); border-bottom-left-radius: var(--uix-radius-md); }
+  .uix-btn-group .uix-btn:last-child { border-radius: 0 var(--uix-radius-md) var(--uix-radius-md) 0; border-right-width: 1px; }
+}
+/* uix input + field wrapper — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
+  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger); }
+  .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
+  .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+
+  .uix-input {
+    height: var(--uix-control-h); width: 100%;
+    padding: 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-input::placeholder { color: var(--uix-text-muted); }
+  .uix-input:hover { border-color: var(--uix-border-strong); }
+  .uix-input:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-input:disabled { opacity: .55; cursor: not-allowed; background: var(--uix-bg-subtle); }
+  .uix-input[readonly] { background: var(--uix-bg-subtle); }
+  .uix-input[aria-invalid="true"] { border-color: var(--uix-danger); }
+  .uix-input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
+  .uix-input--sm { height: 28px; font-size: var(--uix-text-meta); }
+
+  /* leading/trailing adornments */
+  .uix-input-group { position: relative; display: flex; align-items: center; }
+  .uix-input-group__icon { position: absolute; left: 10px; color: var(--uix-text-muted); display: inline-flex; pointer-events: none; }
+  .uix-input-group__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-input-group--has-leading .uix-input { padding-left: 38px; }
+  /* validation microinteractions */
+  .uix-input[data-valid] { border-color: var(--uix-success); }
+  .uix-input[data-valid]:focus { box-shadow: 0 0 0 3px var(--uix-success-bg); }
+  .uix-input-group--has-trailing .uix-input { padding-right: 38px; }
+  .uix-input-group__icon--trailing { left: auto; right: 10px; }
+}
+/* uix textarea — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-textarea {
+    width: 100%; min-height: 84px; padding: var(--uix-space-3) var(--uix-space-3); resize: vertical;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
+    line-height: var(--uix-leading-body);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-textarea::placeholder { color: var(--uix-text-muted); }
+  .uix-textarea:hover { border-color: var(--uix-border-strong); }
+  .uix-textarea:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-textarea:disabled { opacity: .55; background: var(--uix-bg-subtle); }
+  .uix-textarea[aria-invalid="true"] { border-color: var(--uix-danger); }
+}
+/* uix select (native, styled) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-select {
+    height: var(--uix-control-h); width: 100%; padding: 0 var(--uix-space-8) 0 var(--uix-space-3); appearance: none;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background-color: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
+    background-repeat: no-repeat; background-position: right 12px center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-select:hover { border-color: var(--uix-border-strong); }
+  .uix-select:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-select:disabled { opacity: .55; cursor: not-allowed; background-color: var(--uix-bg-subtle); }
+  .uix-select--sm { height: 28px; font-size: var(--uix-text-meta); }
+
+  /* command-palette-style rich select: a trigger that opens a .uix-cmdk popover (search + options) */
+  .uix-select-trigger { display: inline-flex; align-items: center; gap: var(--uix-space-2); height: var(--uix-control-h); padding: 0 var(--uix-space-3); min-width: 220px;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); color: var(--uix-text);
+    font: inherit; font-size: var(--uix-text-body); cursor: pointer; transition: border-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-select-trigger:hover { border-color: var(--uix-border-strong); }
+  .uix-select-trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+}
+/* uix checkbox — depends only on --uix-* tokens. Markup:
+   <label class="uix-checkbox"><input type="checkbox"><span class="uix-checkbox__box">{check svg}</span> Label</label> */
+@layer uix.components {
+  .uix-checkbox { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uix-checkbox__box {
+    width: 18px; height: 18px; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--uix-border-strong); border-radius: 5px; background: var(--uix-surface);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-checkbox__box svg {
+    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0; transform: scale(.5);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+  }
+  .uix-checkbox > input:checked + .uix-checkbox__box,
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
+  .uix-checkbox > input:checked + .uix-checkbox__box svg { opacity: 1; transform: none; }
+  .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-checkbox > input:disabled ~ * { opacity: .5; }
+}
+/* uix radio + radio-group — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-radio-group { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-radio { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-radio > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uix-radio__dot {
+    width: 18px; height: 18px; flex: none; border-radius: 50%;
+    border: 1px solid var(--uix-border-strong); background: var(--uix-surface);
+    display: grid; place-items: center;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-radio__dot::after {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-accent);
+    opacity: 0; transform: scale(.4); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+  }
+  .uix-radio > input:checked + .uix-radio__dot { border-color: var(--uix-accent); }
+  .uix-radio > input:checked + .uix-radio__dot::after { opacity: 1; transform: none; }
+  .uix-radio > input:focus-visible + .uix-radio__dot { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-radio > input:disabled ~ * { opacity: .5; }
+}
+/* uix switch — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-switch { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); }
+  .uix-switch > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uix-switch__track {
+    width: 36px; height: 20px; flex: none; border-radius: var(--uix-radius-pill);
+    background: var(--uix-bg-active); position: relative;
+    transition: background-color var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-switch__track::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: var(--uix-shadow-sm);
+    transition: transform var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-switch > input:checked + .uix-switch__track { background: var(--uix-accent); }
+  .uix-switch > input:checked + .uix-switch__track::after { transform: translateX(16px); }
+  .uix-switch > input:focus-visible + .uix-switch__track { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-switch > input:disabled + .uix-switch__track { opacity: .5; }
+}
+/* uix segmented control — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-segmented { display: inline-flex; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
+  .uix-segmented__option {
+    border: 0; background: transparent; color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); font-weight: 500;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: calc(var(--uix-radius-md) - 3px); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-segmented__option:hover { color: var(--uix-text); }
+  .uix-segmented__option[aria-selected="true"], .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
+  .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+}
+/* uix slider (native range, styled) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-slider { -webkit-appearance: none; appearance: none; width: 220px; height: 20px; background: transparent; cursor: pointer; }
+  .uix-slider::-webkit-slider-runnable-track { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); }
+  .uix-slider::-moz-range-track { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); }
+  .uix-slider::-moz-range-progress { height: 6px; border-radius: var(--uix-radius-pill); background: var(--uix-accent); }
+  .uix-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; margin-top: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--uix-surface); border: 2px solid var(--uix-accent); box-shadow: var(--uix-shadow-sm);
+    transition: transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-slider::-moz-range-thumb { width: 18px; height: 18px; border: 2px solid var(--uix-accent); border-radius: 50%; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
+  .uix-slider:active::-webkit-slider-thumb { transform: scale(1.12); }
+  .uix-slider:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-slider:disabled { opacity: .5; cursor: not-allowed; }
+}
+/* uix number stepper — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-stepper { display: inline-flex; align-items: center; height: var(--uix-control-h); overflow: hidden;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-stepper__btn { width: 32px; align-self: stretch; border: 0; background: transparent; color: var(--uix-text); cursor: pointer;
+    display: grid; place-items: center; transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-stepper__btn:hover { background: var(--uix-bg-hover); }
+  .uix-stepper__btn svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-stepper__input { width: 52px; text-align: center; border: 0; height: 100%; background: transparent; color: var(--uix-text);
+    font: inherit; border-inline: 1px solid var(--uix-border); -moz-appearance: textfield; }
+  .uix-stepper__input::-webkit-outer-spin-button, .uix-stepper__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .uix-stepper:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+}
+/* uix file upload / dropzone — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-dropzone {
+    display: flex; flex-direction: column; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-7); text-align: center;
+    border: 1.5px dashed var(--uix-border-strong); border-radius: var(--uix-radius-lg);
+    background: var(--uix-bg-subtle); color: var(--uix-text-muted); cursor: pointer;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-dropzone:hover, .uix-dropzone[data-dragover] { border-color: var(--uix-accent); background: var(--uix-brand-muted); color: var(--uix-text); }
+  .uix-dropzone svg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
+  .uix-filelist { display: flex; flex-direction: column; gap: var(--uix-space-2); margin-top: var(--uix-space-3); }
+  .uix-filelist__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text); }
+  .uix-filelist__size { margin-left: auto; color: var(--uix-text-muted); }
+}
+/* uix combobox / listbox surface — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-combobox { position: relative; }
+  .uix-listbox {
+    list-style: none; margin: 0; padding: var(--uix-space-1); min-width: 200px;
+    background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    box-shadow: var(--uix-shadow-popover);
+  }
+  .uix-listbox__option {
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); font-size: var(--uix-text-body); color: var(--uix-text);
+    cursor: pointer; display: flex; align-items: center; gap: var(--uix-space-2);
+  }
+  .uix-listbox__option:hover, .uix-listbox__option[aria-selected="true"], .uix-listbox__option[data-active] { background: var(--uix-bg-hover); }
+  .uix-listbox__option[aria-selected="true"] { color: var(--uix-accent); }
+  .uix-listbox__empty { padding: var(--uix-space-3); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+}
+/* uix tag input / multi-select chips — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-taginput {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-height: var(--uix-control-h); padding: var(--uix-space-1) var(--uix-space-2);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+  }
+  .uix-taginput:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-taginput__field { flex: 1; min-width: 80px; border: 0; outline: none; background: transparent; color: var(--uix-text); font: inherit; }
+  .uix-tag {
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
+    background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
+  }
+  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 4px; }
+  .uix-tag__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-tag__remove svg { width: 12px; height: 12px; }
+}
+/* uix form layout — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--uix-space-5); }
+  .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
+  .uix-fieldset > legend { padding: 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
+  .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
+  .uix-validation-summary {
+    border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
+    border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
+  }
+  .uix-validation-summary strong { color: var(--uix-danger); }
+  .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
+  .uix-validation-summary a { color: var(--uix-danger); }
+}
+/* uix app shell — sidebar + topbar + content grid. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-shell {
+    display: grid;
+    grid-template-columns: var(--uix-sidebar-w) 1fr;
+    grid-template-rows: var(--uix-topbar-h) 1fr;
+    height: 100%; min-height: 360px;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden;
+    transition: grid-template-columns var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; }
+  .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: var(--uix-space-3); padding: 0 var(--uix-space-6); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
+  .uix-shell__main { grid-column: 2; overflow: auto; padding: var(--uix-space-7); background: var(--uix-bg-app); }
+  .uix-shell[data-collapsed] { grid-template-columns: 56px 1fr; }
+}
+/* uix sidebar nav — items, favorites, collapsible sub-items, collapsed rail. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-sidebar { width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-2); overflow-x: hidden; overflow-y: auto; }
+  .uix-sidebar__eyebrow {
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+    color: var(--uix-text-muted); padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-1);
+  }
+
+  /* brand header */
+  .uix-sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2) var(--uix-space-2); }
+  .uix-sidebar__brand { min-width: 0; font-size: var(--uix-text-h3); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-sidebar__toggle {
+    display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+    border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-sm);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-sidebar__toggle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-sidebar__toggle svg { width: 18px; height: 18px; }
+
+  .uix-navitem {
+    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
+    border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
+  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 500; }
+  .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
+  .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navitem__star svg { width: 15px; height: 15px; }
+  .uix-navitem:hover .uix-navitem__star { opacity: 1; }
+  .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
+  .uix-navitem__star[data-on] svg { fill: currentColor; }
+
+  /* collapsible group */
+  .uix-navgroup { }
+  .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
+  .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
+  .uix-navgroup__panel > div { overflow: hidden; }
+  .uix-subitem { padding-left: var(--uix-space-5); }
+  .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
+
+  /* collapsed rail */
+  .uix-sidebar[data-collapsed] { width: 56px; }
+  .uix-sidebar[data-collapsed] .uix-navitem__label,
+  .uix-sidebar[data-collapsed] .uix-navitem__badge,
+  .uix-sidebar[data-collapsed] .uix-navitem__star,
+  .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
+  .uix-sidebar[data-collapsed] .uix-sidebar__brand,
+  .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
+  .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  /* center the icon-only rail; head keeps just the toggle, centered */
+  .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
+}
+/* uix breadcrumbs — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-breadcrumbs { display: flex; align-items: center; gap: var(--uix-space-2); flex-wrap: wrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-breadcrumbs a { color: var(--uix-text-muted); text-decoration: none; }
+  .uix-breadcrumbs a:hover { color: var(--uix-text); text-decoration: underline; }
+  .uix-breadcrumbs__sep { opacity: .55; }
+  .uix-breadcrumbs [aria-current="page"] { color: var(--uix-text); font-weight: 500; }
+}
+/* uix tabs — line / enclosed / pill. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-tabs { display: flex; gap: var(--uix-space-1); }
+  .uix-tab {
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
+    color: var(--uix-text-hushed); padding: var(--uix-space-3) var(--uix-space-3); cursor: pointer; position: relative;
+    transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-tab:hover { color: var(--uix-text); }
+  .uix-tab[aria-selected="true"] { color: var(--uix-text); }
+  .uix-tab:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; border-radius: var(--uix-radius-sm); }
+
+  /* line */
+  .uix-tabs--line { border-bottom: 1px solid var(--uix-border); }
+  .uix-tabs--line .uix-tab::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px;
+    background: var(--uix-accent); border-radius: var(--uix-radius-pill);
+    transform: scaleX(0); transition: transform var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-tabs--line .uix-tab[aria-selected="true"]::after { transform: scaleX(1); }
+
+  /* enclosed */
+  .uix-tabs--enclosed { gap: 0; border-bottom: 1px solid var(--uix-border); }
+  .uix-tabs--enclosed .uix-tab { border: 1px solid transparent; border-top-left-radius: var(--uix-radius-md); border-top-right-radius: var(--uix-radius-md); margin-bottom: -1px; }
+  .uix-tabs--enclosed .uix-tab[aria-selected="true"] { border-color: var(--uix-border); border-bottom-color: var(--uix-bg-app); background: var(--uix-bg-app); }
+
+  /* pill */
+  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: var(--uix-space-1); border-radius: var(--uix-radius-md); }
+  .uix-tabs--pill .uix-tab { padding: var(--uix-space-2) var(--uix-space-4); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-tabs--pill .uix-tab[aria-selected="true"] { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
+}
+/* uix pagination — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-pagination { display: inline-flex; align-items: center; gap: var(--uix-space-1); }
+  .uix-pagination__btn {
+    min-width: 32px; height: 32px; padding: 0 var(--uix-space-2); display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface);
+    color: var(--uix-text); font: inherit; font-size: var(--uix-text-meta); line-height: 1; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-pagination__btn:hover { background: var(--uix-bg-hover); }
+  .uix-pagination__btn[aria-current="page"] { background: var(--uix-accent); border-color: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-pagination__btn:disabled { opacity: .45; pointer-events: none; }
+  .uix-pagination__ellipsis { padding: 0 var(--uix-space-1); color: var(--uix-text-muted); }
+}
+/* uix steps / wizard — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-steps { display: flex; align-items: center; gap: 0; }
+  .uix-step { display: flex; align-items: center; gap: var(--uix-space-3); color: var(--uix-text-muted); }
+  .uix-step__marker {
+    width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid var(--uix-border-strong); background: var(--uix-surface); font-size: var(--uix-text-meta); font-weight: 600;
+    line-height: 1;  /* hug the glyph so place-items:center truly centers single digits/symbols */
+  }
+  .uix-step__label { font-size: var(--uix-text-meta); font-weight: 500; }
+  .uix-step__connector { flex: 1; height: 1px; min-width: 28px; background: var(--uix-border); margin: 0 var(--uix-space-3); }
+  .uix-step[data-state="active"] { color: var(--uix-text); }
+  .uix-step[data-state="active"] .uix-step__marker { border-color: var(--uix-accent); color: var(--uix-accent); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-step[data-state="done"] { color: var(--uix-text); }
+  .uix-step[data-state="done"] .uix-step__marker { background: var(--uix-accent); border-color: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-step[data-state="done"] + .uix-step__connector,
+  .uix-step__connector[data-done] { background: var(--uix-accent); }
+}
+/* uix command palette (⌘K) — inner surface; mounts in a dialog/popover (overlay mechanics in motion + overlays). */
+@layer uix.components {
+  .uix-cmdk { width: min(560px, 92vw); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
+  .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 var(--uix-space-4); }
+  .uix-cmdk__input:focus { outline: none; }
+  .uix-cmdk__list { max-height: 320px; overflow-y: auto; padding: var(--uix-space-2); }
+  .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
+  .uix-cmdk__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-3); border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
+  .uix-cmdk__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
+  .uix-cmdk__item:hover, .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
+  .uix-cmdk__item .uix-kbd { margin-left: auto; }
+  /* ⌘K is keyboard-triggered and high-frequency → open instantly, no animation (Emil's rule) */
+  dialog[data-uix-cmdk-dialog], dialog[data-uix-cmdk-dialog]::backdrop { transition: none; }
+}
+/* uix menu / dropdown / context menu — popover-anchored surface. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-menu { min-width: 200px; margin: 0; padding: var(--uix-space-1); list-style: none; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); }
+  .uix-menu__item {
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; text-align: left; padding: var(--uix-space-2) var(--uix-space-3);
+    border: 0; background: transparent; border-radius: var(--uix-radius-sm); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
+  }
+  .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
+  .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }
+  .uix-menu__item--danger { color: var(--uix-danger); }
+  .uix-menu__item--danger svg { color: var(--uix-danger); }
+  .uix-menu__item .uix-kbd { margin-left: auto; }
+  .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
+  .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
+}
+/* uix page header — title/subtitle/actions row. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-page-header { display: flex; align-items: flex-start; gap: var(--uix-space-5); flex-wrap: wrap; padding-bottom: var(--uix-space-6); margin-bottom: var(--uix-space-7); border-bottom: 1px solid var(--uix-border); }
+  .uix-page-header__titles { flex: 1; min-width: 220px; }
+  .uix-page-header__eyebrow { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
+  .uix-page-header__title { font-size: var(--uix-text-h2); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
+  .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: var(--uix-space-2); max-width: 70ch; }
+  .uix-page-header__actions { display: flex; gap: var(--uix-space-2); align-items: center; flex-wrap: wrap; }
+}
+/* uix keyboard-shortcut chip — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-kbd {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 var(--uix-space-2);
+    font-family: var(--uix-font-mono); font-size: 11px; color: var(--uix-text-muted);
+    background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-bottom-width: 2px; border-radius: 5px;
+  }
+}
+/* uix card — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); box-shadow: var(--uix-shadow-sm); }
+  .uix-card__header { padding: var(--uix-space-5) var(--uix-space-6); border-bottom: 1px solid var(--uix-border); display: flex; align-items: center; gap: var(--uix-space-3); }
+  .uix-card__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-card__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
+  .uix-card__body { padding: var(--uix-space-6); }
+  .uix-card__footer { padding: var(--uix-space-4) var(--uix-space-6); border-top: 1px solid var(--uix-border); display: flex; gap: var(--uix-space-2); justify-content: flex-end; }
+}
+/* uix KPI / stat tile — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-stat { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
+  .uix-stat__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); }
+  .uix-stat__label svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); }
+  .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
+  .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
+  .uix-stat__trend--down { color: var(--uix-danger); background: var(--uix-danger-bg); }
+}
+/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-pill {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);
+    font-size: var(--uix-text-meta); font-weight: 500; line-height: 1.4;
+    background: var(--tone-bg, var(--uix-bg-active)); color: var(--tone-fg, var(--uix-text-hushed));
+  }
+  .uix-pill__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone-dot, currentColor); flex: none; }
+  .uix-pill--neutral { --tone-bg: var(--uix-bg-active); --tone-fg: var(--uix-text-hushed); --tone-dot: var(--uix-text-muted); }
+  .uix-pill--success { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success); --tone-dot: var(--uix-success); }
+  .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);    --tone-dot: var(--uix-info); }
+  .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: #92400E;            --tone-dot: var(--uix-warning); }
+  .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);  --tone-dot: var(--uix-danger); }
+  /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
+  .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
+  .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
+  /* amber needs a light text on the dark faint bg in dark mode */
+  :root:where(.dark,[data-theme="dark"]) .uix-pill--warning { --tone-fg: var(--uix-warning); }
+
+  /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
+     the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */
+  .uix-pill--outline { background: transparent; border: 1px solid var(--tone-line, color-mix(in srgb, var(--tone-fg) 40%, transparent)); }
+  .uix-pill--outline.uix-pill--neutral  { --tone-line: var(--uix-border-strong); }
+  .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
+  .uix-pill--outline.uix-pill--critical { color: var(--uix-danger); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
+}
+/* uix data table — zebra, sticky header, sort, selection, density, pinned rows. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-table-wrap { overflow: auto; max-height: 460px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
+
+  .uix-table thead th {
+    position: sticky; top: 0; z-index: 1; background: var(--uix-surface); text-align: left;
+    font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
+    padding: 0 var(--uix-space-4); height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap;
+  }
+  .uix-table th[data-sort] { cursor: pointer; user-select: none; }
+  .uix-table th[data-sort]:hover { color: var(--uix-text); }
+  .uix-table th[data-sort]::after { content: " ↕"; opacity: .35; }
+  .uix-table th[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; color: var(--uix-accent); }
+  .uix-table th[aria-sort="descending"]::after { content: " ↓"; opacity: 1; color: var(--uix-accent); }
+
+  .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
+  .uix-table tbody tr { background: var(--uix-row); }
+  .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
+  .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
+  .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
+  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-brand-muted); }
+  .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
+  /* density tiers — standard is the default td height above; data-density overrides it.
+     .uix-table--compact kept as a back-compat alias. */
+  .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
+  .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
+
+  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin[data-on] { opacity: 1; }
+  .uix-table__pin:hover { background: var(--uix-bg-active); color: var(--uix-text); }
+  .uix-table__pin[data-on] { color: var(--uix-accent); }
+  .uix-table__pin svg { width: 15px; height: 15px; }
+  .uix-table__pin[data-on] svg { fill: currentColor; }
+
+  /* frozen first column (opt-in via .uix-table--pinned-col) — keeps the identifier visible on horizontal scroll, preserving zebra/state bg */
+  .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--uix-border); }
+  .uix-table--pinned-col thead th:first-child { z-index: 3; background: var(--uix-surface); }
+  .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr:nth-child(even) td:first-child { background: var(--uix-row-alt); }
+  .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
+  .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
+  .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
+}
+/* uix table toolbar + two-row filter bar (status / type). Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); margin-bottom: var(--uix-space-3); }
+  .uix-toolbar__spacer { flex: 1; }
+
+  /* responsive: the status + type groups sit on ONE line when they fit, wrap to two only when cramped */
+  .uix-filterbar { display: flex; flex-wrap: wrap; gap: var(--uix-space-2) var(--uix-space-5); margin-bottom: var(--uix-space-3); }
+  .uix-filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
+  .uix-filterrow__label { font-size: var(--uix-text-meta); color: var(--uix-text-muted); width: 54px; flex: none; }
+
+  .uix-chip {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);
+    border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-hushed);
+    font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-chip:hover { border-color: var(--uix-border-strong); color: var(--uix-text); }
+  .uix-chip[data-on] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); }
+  .uix-chip__count { font-variant-numeric: tabular-nums; opacity: .7; }
+}
+/* uix table View menu — consolidates density / zebra / freeze / columns into one popover.
+   Reuses .uix-popover (surface + animation), .uix-segmented, .uix-switch. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-view-menu { min-width: 248px; padding: var(--uix-space-2); }
+  .uix-view-menu__group { padding: var(--uix-space-2) var(--uix-space-2); }
+  .uix-view-menu__group + .uix-view-menu__group { border-top: 1px solid var(--uix-border); }
+  .uix-view-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
+  .uix-view-menu__row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); font-size: var(--uix-text-body); color: var(--uix-text); cursor: pointer; }
+  .uix-view-menu__row + .uix-view-menu__row { margin-top: var(--uix-space-3); }
+  .uix-view-menu .uix-segmented { display: flex; width: 100%; }
+  .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
+  .uix-view-menu__cols { display: flex; flex-direction: column; gap: var(--uix-space-1); max-height: 180px; overflow: auto; }
+  .uix-view-menu__cols .uix-menu__item { font-size: var(--uix-text-meta); }
+}
+/* uix list + list-item — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-list { display: flex; flex-direction: column; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; background: var(--uix-surface); }
+  .uix-list__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-list__item:last-child { border-bottom: 0; }
+  .uix-list__item:hover { background: var(--uix-bg-hover); }
+  .uix-list__title { font-weight: 500; }
+  .uix-list__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-list__trail { margin-left: auto; display: flex; align-items: center; gap: var(--uix-space-2); }
+}
+/* uix description / key-value list — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--uix-space-3) var(--uix-space-6); }
+  .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; }
+}
+/* uix avatar / avatar-group / user-chip — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-avatar {
+    width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--uix-bg-active); color: var(--uix-text);
+    display: inline-flex; align-items: center; justify-content: center; font-size: var(--uix-text-meta); font-weight: 600;
+    line-height: 1; overflow: hidden; position: relative;
+  }
+  .uix-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .uix-avatar--sm { width: 24px; height: 24px; font-size: 11px; }
+  .uix-avatar--lg { width: 44px; height: 44px; }
+  .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
+  .uix-avatar-group { display: inline-flex; }
+  .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: -8px; }
+  .uix-avatar-group .uix-avatar:first-child { margin-left: 0; }
+  .uix-user-chip { display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-user-chip__name { font-size: var(--uix-text-body); font-weight: 500; }
+  .uix-user-chip__sub { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+
+  /* editable avatar — hover/focus overlay for "change photo"; empty = upload placeholder */
+  .uix-avatar--editable { cursor: pointer; }
+  .uix-avatar__edit { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.45); color: #fff; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-avatar__edit svg { width: 45%; height: 45%; }
+  .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
+  .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
+}
+/* uix tooltip — CSS hover/focus tooltip via [data-uix-tip]. Depends only on --uix-* tokens. */
+@layer uix.components {
+  [data-uix-tip] { position: relative; }
+  [data-uix-tip]::after {
+    content: attr(data-uix-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%) translateY(var(--uix-lift));
+    background: var(--uix-text); color: var(--uix-bg-app); font-size: var(--uix-text-meta); font-weight: 500;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); white-space: nowrap; box-shadow: var(--uix-shadow-popover);
+    opacity: 0; pointer-events: none; z-index: 20;
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  [data-uix-tip]:hover::after, [data-uix-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* uix progress bar + ring — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-progress { height: 8px; background: var(--uix-bg-active); border-radius: var(--uix-radius-pill); overflow: hidden; }
+  .uix-progress__bar { height: 100%; background: var(--uix-accent); border-radius: inherit; transition: width var(--uix-dur) var(--uix-ease-out); }
+  .uix-progress--indeterminate { position: relative; }
+  .uix-progress--indeterminate .uix-progress__bar { width: 40%; animation: uix-progress-slide 1.2s var(--uix-ease-in-out) infinite; }
+  @keyframes uix-progress-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(280%); } }
+
+  .uix-ring { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: conic-gradient(var(--uix-accent) calc(var(--val, .66) * 360deg), var(--uix-bg-active) 0); }
+  .uix-ring__inner { width: 32px; height: 32px; border-radius: 50%; background: var(--uix-surface); display: grid; place-items: center; font-size: var(--uix-text-meta); font-weight: 600; }
+}
+/* uix meter / utilization bar (threshold tones) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-meter { height: 8px; background: var(--uix-bg-active); border-radius: var(--uix-radius-pill); overflow: hidden; }
+  .uix-meter__fill { height: 100%; border-radius: inherit; background: var(--uix-success); transition: width var(--uix-dur) var(--uix-ease-out); }
+  .uix-meter__fill[data-tone="warning"] { background: var(--uix-warning); }
+  .uix-meter__fill[data-tone="danger"] { background: var(--uix-danger); }
+}
+/* uix timeline / activity feed — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-timeline { display: flex; flex-direction: column; }
+  .uix-timeline__item { display: grid; grid-template-columns: 24px 1fr; gap: var(--uix-space-3); }
+  .uix-timeline__rail { display: flex; flex-direction: column; align-items: center; }
+  .uix-timeline__node { width: 12px; height: 12px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-1); flex: none; box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-timeline__line { width: 1px; flex: 1; background: var(--uix-border); margin: var(--uix-space-1) 0; }
+  .uix-timeline__item:last-child .uix-timeline__line { display: none; }
+  .uix-timeline__body { padding-bottom: var(--uix-space-5); }
+  .uix-timeline__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}
+/* uix tree view — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-tree, .uix-tree ul { list-style: none; margin: 0; padding: 0; }
+  .uix-tree ul { padding-left: var(--uix-space-5); }
+  .uix-tree__row { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-2); border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); border: 0; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+  .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-tree__toggle svg { width: 14px; height: 14px; }
+  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+}
+/* uix calendar (shared by date pickers) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-calendar { width: 280px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); padding: var(--uix-space-3); }
+  .uix-calendar__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--uix-space-2); font-weight: 600; font-size: var(--uix-text-body); }
+  .uix-calendar__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--uix-space-1); }
+  .uix-calendar__dow { text-align: center; font-size: 11px; color: var(--uix-text-muted); padding: var(--uix-space-1) 0; }
+  .uix-calendar__day { aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); color: var(--uix-text); cursor: pointer; border: 0; background: transparent; }
+  .uix-calendar__day:hover { background: var(--uix-bg-hover); }
+  .uix-calendar__day[data-muted] { color: var(--uix-text-muted); opacity: .45; }
+  .uix-calendar__day[data-today] { box-shadow: inset 0 0 0 1px var(--uix-border-strong); }
+  .uix-calendar__day[data-range] { background: var(--uix-brand-muted); border-radius: 0; }
+  .uix-calendar__day[aria-selected="true"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
+}
+/* uix states — empty + skeleton loaders. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-empty { display: flex; flex-direction: column; align-items: center; gap: var(--uix-space-3); text-align: center; padding: var(--uix-space-8); color: var(--uix-text-muted); }
+  .uix-empty__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--uix-bg-subtle); color: var(--uix-text-muted); }
+  .uix-empty__icon svg { width: 22px; height: 22px; }
+  .uix-empty__title { font-size: var(--uix-text-h3); font-weight: 600; color: var(--uix-text); }
+  /* error tone — ErrorState reuses .uix-empty with a danger-toned icon */
+  .uix-empty__icon--danger { background: var(--uix-danger-bg); color: var(--uix-danger); }
+
+  .uix-skeleton { background: linear-gradient(90deg, var(--uix-bg-subtle) 25%, var(--uix-bg-hover) 50%, var(--uix-bg-subtle) 75%); background-size: 200% 100%; animation: uix-shimmer 1.4s linear infinite; border-radius: var(--uix-radius-sm); }
+  .uix-skeleton--text { height: 12px; border-radius: var(--uix-radius-pill); }
+  .uix-skeleton--circle { border-radius: 50%; }
+}
+/* uix chart container + legend — palette + framing only; pair sample SVGs / a chart lib using --uix-chart-*. */
+@layer uix.components {
+  .uix-chart { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-5); }
+  .uix-chart__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-chart__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-4); }
+  .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-3); margin-top: var(--uix-space-3); }
+  .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-legend__swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+}
+/* uix alert / inline banner — tone API. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-alert {
+    display: flex; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md);
+    border: 1px solid var(--tone-border, var(--uix-border)); background: var(--tone-bg, var(--uix-bg-subtle));
+    color: var(--uix-text); font-size: var(--uix-text-body);
+  }
+  .uix-alert__icon { color: var(--tone-fg, var(--uix-text)); flex: none; }
+  .uix-alert__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-alert__title { font-weight: 600; margin-bottom: var(--uix-space-1); }
+  .uix-alert__body { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info); }
+  .uix-alert--success { --tone-bg: var(--uix-success-bg); --tone-border: color-mix(in srgb, var(--uix-success) 30%, transparent); --tone-fg: var(--uix-success); }
+  .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 40%, transparent); --tone-fg: var(--uix-warning); }
+  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger); }
+}
+/* uix toast / notification — depends only on --uix-* tokens. JS appends to .uix-toaster. */
+@layer uix.components {
+  .uix-toaster { position: fixed; bottom: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: var(--uix-space-2); width: 340px; max-width: calc(100vw - 32px); }
+  .uix-toast {
+    display: flex; gap: var(--uix-space-3); align-items: flex-start; padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface-2); border: 1px solid var(--uix-border); box-shadow: var(--uix-shadow-popover);
+    animation: uix-slide-in-right var(--uix-dur-slow) var(--uix-ease-out);
+  }
+  .uix-toast[data-leaving] { animation: uix-toast-out var(--uix-dur) var(--uix-ease-in) forwards; }
+  @keyframes uix-toast-out { to { opacity: 0; transform: translateX(16px); } }
+  .uix-toast__icon { flex: none; margin-top: 1px; }
+  .uix-toast__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-toast__body { flex: 1; }
+  .uix-toast__title { font-weight: 600; font-size: var(--uix-text-body); }
+  .uix-toast__msg { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
+  .uix-toast__close { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1) var(--uix-space-2); border-radius: 5px; }
+  .uix-toast__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-toast--success .uix-toast__icon { color: var(--uix-success); }
+  .uix-toast--danger  .uix-toast__icon { color: var(--uix-danger); }
+  .uix-toast--info    .uix-toast__icon { color: var(--uix-info); }
+}
+/* uix modal / dialog — native <dialog>, animated enter/exit via @starting-style + allow-discrete. */
+@layer uix.components {
+  .uix-dialog {
+    margin: auto; width: 100%; max-width: min(520px, 92vw); padding: 0; color: var(--uix-text);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay);
+    opacity: 0; transform: translateY(8px) scale(.98);
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for both states required for the fade-in to animate: the allow-discrete
+       `display` transition only engages with author values, which also lets @starting-style fire.
+       With only the UA dialog display, the modal stays at opacity:0. Closed = none; open = block. */
+    display: none;
+  }
+  .uix-dialog[open] { opacity: 1; transform: none; display: block; }
+  @starting-style { .uix-dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); } }
+  .uix-dialog::backdrop {
+    background: rgba(0,0,0,.5); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-dialog[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-dialog[open]::backdrop { opacity: 0; } }
+
+  .uix-dialog__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-dialog__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-dialog__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-dialog__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-dialog__close svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-dialog__body { padding: var(--uix-space-5); color: var(--uix-text-hushed); }
+  .uix-dialog__footer { display: flex; gap: var(--uix-space-2); justify-content: flex-end; padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
+}
+/* uix drawer / side sheet — native <dialog> sliding from the right edge. */
+@layer uix.components {
+  .uix-drawer {
+    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(420px, 100vw); padding: 0; color: var(--uix-text);
+    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
+    transform: translateX(100%);
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
+    display: none;
+  }
+  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
+  @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
+  .uix-drawer::backdrop {
+    background: rgba(0,0,0,.5); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-drawer[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
+  .uix-drawer__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-drawer__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
+  .uix-drawer__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
+}
+/* uix side-peek drawer (the §5.8 peek pattern, reused by table rows + sidebar items).
+   Native <dialog>, slides from the right; keyboard ↑/↓ navigates records (app.js). */
+@layer uix.components {
+  .uix-peek {
+    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: var(--uix-peek-w); padding: 0; color: var(--uix-text);
+    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
+    transform: translateX(100%);
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for BOTH states are required for the slide-in to animate: the
+       allow-discrete `display` transition only engages with author values, and that gating also
+       lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
+       parked at translateX(100%). Closed = none; open = flex. */
+    display: none;
+  }
+  .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
+  @starting-style { .uix-peek[open] { transform: translateX(100%); } }
+  .uix-peek::backdrop {
+    background: rgba(0,0,0,.4); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-peek[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-peek[open]::backdrop { opacity: 0; } }
+
+  .uix-peek__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+  .uix-peek__nav { display: inline-flex; gap: var(--uix-space-1); }
+  .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
+  .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
+  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-peek__title a { color: var(--uix-link); }
+  .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
+  .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
+
+  /* a table wired to open the peek (app.js sets data-uix-rowpeek): its rows read as clickable,
+     since clicking a ticket row is the queue's primary way to open the side-peek. */
+  [data-uix-rowpeek] tbody tr { cursor: pointer; }
+  [data-uix-rowpeek] tbody tr:hover td { background: var(--uix-bg-hover); }
+
+  /* Pattern B table layout: columns keep natural width, no squeezing or wrapping.
+     Subject is the only column that may truncate (it can be long). */
+  [data-uix-table-v2] .uix-table td { white-space: nowrap; }
+  [data-uix-table-v2] .uix-table td:nth-child(2) { max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ID cell in pattern B table: ID text + ↗ arrow, single button, quiet/on-brand at rest.
+     Monospace so IDs align vertically. Arrow fades in on row hover. */
+  .uix-id-cell__btn {
+    border: 0; background: transparent; cursor: pointer; padding: 0;
+    color: var(--uix-text); font: inherit;
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
+  }
+  .uix-id-cell__btn:hover { color: var(--uix-accent); }
+  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: 3px; }
+  .uix-id-cell__arrow {
+    width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
+    opacity: 0;
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  [data-uix-rowpeek] tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .uix-id-cell__arrow { transition: none; } }
+}
+/* uix popover — generic anchored surface via the native Popover API; animated with @starting-style. */
+@layer uix.components {
+  .uix-popover { margin: 0; padding: var(--uix-space-2); background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); color: var(--uix-text); }
+  [popover].uix-popover {
+    opacity: 0; transform: translateY(calc(-1 * var(--uix-lift)));
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out),
+                overlay var(--uix-dur-fast) allow-discrete, display var(--uix-dur-fast) allow-discrete;
+  }
+  [popover].uix-popover:popover-open { opacity: 1; transform: none; }
+  @starting-style { [popover].uix-popover:popover-open { opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))); } }
+}
+/* uix spinner + progress overlay — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-spinner { width: 20px; height: 20px; border: 2px solid var(--uix-border-strong); border-right-color: transparent; border-radius: 50%; display: inline-block; animation: uix-spin .6s linear infinite; }
+  .uix-spinner--accent { border-color: var(--uix-accent); border-right-color: transparent; }
+  .uix-spinner--lg { width: 32px; height: 32px; border-width: 3px; }
+  .uix-overlay-progress {
+    position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit;
+    background: color-mix(in srgb, var(--uix-bg-app) 60%, transparent); backdrop-filter: blur(2px);
+  }
+}
+/* uix detail layout — two-column record (main + side meta). Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-detail { display: grid; grid-template-columns: 1fr 280px; gap: var(--uix-space-5); align-items: start; }
+  .uix-detail__main { min-width: 0; display: flex; flex-direction: column; gap: var(--uix-space-4); }
+  .uix-detail__side { display: flex; flex-direction: column; gap: var(--uix-space-4); }
+  @media (max-width: 820px) { .uix-detail { grid-template-columns: 1fr; } }
+}
+/* uix comments thread + composer (@mention) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-comments { display: flex; flex-direction: column; gap: var(--uix-space-4); }
+  .uix-comment { display: grid; grid-template-columns: 32px 1fr; gap: var(--uix-space-3); }
+  .uix-comment__body { background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-3); }
+  .uix-comment__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-1); }
+  .uix-comment__author { font-weight: 600; color: var(--uix-text); }
+  .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: 4px; font-weight: 500; }
+  .uix-composer { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-composer:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-composer textarea { width: 100%; border: 0; background: transparent; resize: vertical; padding: var(--uix-space-3) var(--uix-space-3); color: var(--uix-text); font: inherit; min-height: 60px; }
+  .uix-composer textarea:focus { outline: none; }
+  .uix-composer__bar { display: flex; justify-content: flex-end; gap: var(--uix-space-2); padding: var(--uix-space-2); border-top: 1px solid var(--uix-border); }
+  /* Block so the thumbnail drops onto its own line below the comment text (not inline with it). */
+  .uix-comment__image { display: block; margin-top: var(--uix-space-2); padding: 0; border-radius: var(--uix-radius-sm); overflow: hidden; border: 1px solid var(--uix-border); background: none; cursor: zoom-in; max-width: 200px; }
+  .uix-comment__image img { display: block; width: 100%; height: auto; }
+}
+/* uix emoji reactions — pills with counts + an add-reaction picker popover. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-reactions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); margin-top: var(--uix-space-2); }
+  .uix-reaction {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); line-height: 1.7;
+    border-radius: var(--uix-radius-pill); border: 1px solid var(--uix-border); background: var(--uix-surface);
+    color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
+  }
+  .uix-reaction:hover { border-color: var(--uix-border-strong); }
+  .uix-reaction[data-mine] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); }
+  .uix-reaction__count { font-variant-numeric: tabular-nums; }
+  .uix-reaction-add {
+    display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 24px;
+    border-radius: var(--uix-radius-pill); border: 1px dashed var(--uix-border-strong); background: transparent;
+    color: var(--uix-text-muted); cursor: pointer;
+  }
+  .uix-reaction-add:hover { color: var(--uix-text); border-color: var(--uix-text-muted); }
+  .uix-reaction-add svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-emoji-picker { display: flex; flex-wrap: wrap; gap: var(--uix-space-1); width: 196px; }
+  .uix-emoji-picker__btn { font-size: 18px; line-height: 1; padding: var(--uix-space-2); border: 0; background: transparent; border-radius: var(--uix-radius-sm); cursor: pointer; }
+  .uix-emoji-picker__btn:hover { background: var(--uix-bg-hover); }
+}
+/* uix media / device-asset card — image (or icon placeholder) + name + meta. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-media { display: flex; gap: var(--uix-space-3); align-items: center; }
+  .uix-media__thumb { width: 64px; height: 64px; flex: none; border-radius: var(--uix-radius-md); overflow: hidden; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); display: grid; place-items: center; }
+  .uix-media__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .uix-media__thumb svg { width: 28px; height: 28px; color: var(--uix-text-muted); }
+  .uix-media__name { font-weight: 600; }
+  .uix-media__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}
+/* uix image lightbox — native <dialog>, click a thumbnail to enlarge. Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* margin:auto centers the modal <dialog> in the viewport — required because base.css
+     resets `* { margin: 0 }`, which zeroes the UA dialog's own margin:auto (it would otherwise
+     pin to the top-left). Matches .uix-dialog. */
+  .uix-lightbox { margin: auto; border: 0; background: transparent; padding: 0; max-width: 92vw; max-height: 92vh; box-shadow: var(--uix-shadow-overlay); overflow: visible; }
+  /* A definite width is required: an SVG with a viewBox but no intrinsic width/height collapses to
+     0×0 under width:auto, which then shrink-wraps the fit-content <dialog> to nothing (nothing shows
+     on open). min() keeps it within the viewport; height:auto preserves the aspect ratio. */
+  .uix-lightbox img { display: block; width: min(720px, 92vw); height: auto; max-height: 92vh; border-radius: var(--uix-radius-md); }
+  .uix-lightbox::backdrop { background: rgba(0,0,0,.7); }
+}
+/* uix prose content card + note callouts — for KB articles, descriptions, release notes. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-prose { max-width: 66ch; color: var(--uix-text); }
+  .uix-prose > * + * { margin-top: var(--uix-space-3); }
+  .uix-prose h3 { font-size: var(--uix-text-h2); font-weight: 600; }
+  .uix-prose h4 { font-size: var(--uix-text-h3); font-weight: 600; margin-top: var(--uix-space-5); }
+  .uix-prose p { line-height: var(--uix-leading-body); color: var(--uix-text-hushed); }
+  .uix-prose a { color: var(--uix-link); }
+  .uix-prose ul, .uix-prose ol { padding-left: var(--uix-space-5); }
+  .uix-prose li + li { margin-top: var(--uix-space-1); }
+  .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: 4px; }
+  .uix-prose blockquote { border-left: 3px solid var(--uix-border-strong); padding-left: var(--uix-space-3); color: var(--uix-text-muted); }
+
+  .uix-note { display: flex; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md); border: 1px solid var(--uix-border); background: var(--uix-surface); }
+  .uix-note__icon { flex: none; }
+  .uix-note__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-note__body { font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-note__body > * + * { margin-top: var(--uix-space-2); }
+  .uix-note--info { background: var(--uix-info-bg); border-color: color-mix(in srgb, var(--uix-info) 30%, transparent); }
+  .uix-note--info .uix-note__icon { color: var(--uix-info); }
+  .uix-note--success { background: var(--uix-success-bg); border-color: color-mix(in srgb, var(--uix-success) 30%, transparent); }
+  .uix-note--success .uix-note__icon { color: var(--uix-success); }
+  .uix-note--warning { background: var(--uix-warning-bg); border-color: color-mix(in srgb, var(--uix-warning) 30%, transparent); }
+  .uix-note--warning .uix-note__icon { color: var(--uix-warning); }
+  .uix-note--danger { background: var(--uix-danger-bg); border-color: color-mix(in srgb, var(--uix-danger) 30%, transparent); }
+  .uix-note--danger .uix-note__icon { color: var(--uix-danger); }
+}
+/* uix kanban board / column — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-kanban { display: flex; gap: var(--uix-space-4); overflow-x: auto; padding-bottom: var(--uix-space-2); }
+  .uix-kanban__col { flex: 0 0 260px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); display: flex; flex-direction: column; max-height: 460px; }
+  .uix-kanban__head { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-3) var(--uix-space-4); font-weight: 600; font-size: var(--uix-text-meta); }
+  .uix-kanban__count { margin-left: auto; color: var(--uix-text-muted); font-weight: 500; }
+  .uix-kanban__body { padding: 0 var(--uix-space-3) var(--uix-space-3); display: flex; flex-direction: column; gap: var(--uix-space-2); overflow-y: auto; }
+  .uix-kanban__card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3); box-shadow: var(--uix-shadow-sm); cursor: grab; transition: box-shadow var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-kanban__card:hover { box-shadow: var(--uix-shadow-popover); }
+  @media (hover: hover) and (pointer: fine) { .uix-kanban__card:hover { transform: translateY(calc(-1 * var(--uix-lift))); } }
+  .uix-kanban__card:active { cursor: grabbing; }
+  .uix-kanban__card-title { font-weight: 500; font-size: var(--uix-text-body); margin-bottom: var(--uix-space-2); }
+  .uix-kanban__card-meta { display: flex; align-items: center; gap: var(--uix-space-2); }
+}
+/* uix inbox master-detail — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-inbox { display: grid; grid-template-columns: 300px 1fr; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; height: 420px; }
+  .uix-inbox__list { border-right: 1px solid var(--uix-border); overflow-y: auto; background: var(--uix-surface); }
+  .uix-inbox__item { position: relative; display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); cursor: pointer; }
+  .uix-inbox__item:hover { background: var(--uix-bg-hover); }
+  .uix-inbox__item[aria-selected="true"] { background: linear-gradient(to right, var(--uix-accent) 3px, var(--uix-brand-muted) 3px); }
+  .uix-inbox__item[data-unread] .uix-inbox__subject { font-weight: 600; }
+  .uix-inbox__subject { font-size: var(--uix-text-body); }
+  .uix-inbox__preview { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-inbox__detail { overflow-y: auto; padding: var(--uix-space-5); background: var(--uix-bg-app); }
+  @media (max-width: 700px) { .uix-inbox { grid-template-columns: 1fr; } .uix-inbox__detail { display: none; } }
+}
+/* uix notification center — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-notifs { background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; }
+  .uix-notifs__head { display: flex; align-items: center; padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); font-weight: 600; }
+  .uix-notif { display: grid; grid-template-columns: auto 1fr; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+  .uix-notif:last-child { border-bottom: 0; }
+  .uix-notif[data-unread] { background: var(--uix-brand-muted); }
+  .uix-notif__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-2); }
+  .uix-notif[data-unread] .uix-notif__dot { background: var(--uix-accent); }
+  .uix-notif:not([data-unread]) .uix-notif__dot { background: transparent; }
+  .uix-notif__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}
+/* uix label / tag taxonomy — colored via --label-color (set to a --uix-chart-* token). */
+@layer uix.components {
+  .uix-label {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-sm);
+    font-size: var(--uix-text-meta); font-weight: 500;
+    background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);
+    color: var(--label-color, var(--uix-accent));
+  }
+  .uix-label__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label-color, var(--uix-accent)); }
+}
+/* uix attachment list — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-attachments { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-attachment { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-attachment__icon { width: 32px; height: 32px; flex: none; border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); display: grid; place-items: center; color: var(--uix-text-muted); }
+  .uix-attachment__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-attachment__name { font-size: var(--uix-text-body); }
+  .uix-attachment__size { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-attachment__actions { margin-left: auto; }
+}
+/* uix deal / pipeline stage bar — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-pipeline { display: flex; gap: var(--uix-space-1); }
+  .uix-pipeline__stage { flex: 1; text-align: center; padding: var(--uix-space-2) var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); background: var(--uix-bg-subtle); }
+  .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
+  .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }
+  .uix-pipeline__stage[data-state="done"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 600; }
+}
+/* uix flow — workflow & pipeline diagrams: boxed nodes + connectors.
+   Depends only on --uix-* tokens. Edges are decorative inline SVG (aria-hidden);
+   straight runs use pure-CSS connectors. Node state follows the tone-API pattern
+   (see status-pill.css): state --modifiers set only --tone-* vars, the base reads them. */
+@layer uix.components {
+
+  /* ============================================================ node */
+  .uix-node {
+    position: relative;
+    display: inline-grid; grid-template-columns: auto 1fr; align-items: center;
+    gap: var(--uix-space-3); min-width: 132px; width: max-content; max-width: 220px; padding: var(--uix-space-3) var(--uix-space-3);
+    background: var(--uix-surface);
+    border: 1px solid var(--tone-border, var(--uix-border-strong));
+    border-radius: var(--uix-radius-md);
+    box-shadow: var(--uix-shadow-sm);
+    color: var(--uix-text); font-size: var(--uix-text-body); text-align: left;
+  }
+  .uix-node__icon {
+    display: grid; place-items: center; width: 30px; height: 30px; flex: none;
+    border-radius: var(--uix-radius-sm);
+    background: var(--tone-bg, var(--uix-bg-subtle));
+    color: var(--tone-fg, var(--uix-text-muted));
+  }
+  .uix-node__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-node__body { min-width: 0; }
+  .uix-node__title { font-weight: 500; line-height: 1.25; }
+  .uix-node__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-node__status {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); margin-top: var(--uix-space-1);
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--tone-fg, var(--uix-text-muted));
+  }
+  .uix-node__status::before {
+    content: ""; width: 7px; height: 7px; flex: none; border-radius: 50%;
+    background: var(--tone-dot, var(--uix-text-muted));
+  }
+
+  /* connection handles — decorative connection-point affordance */
+  .uix-node__handle {
+    position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--uix-surface); border: 1.5px solid var(--uix-border-strong);
+    transform: translateY(-50%);
+  }
+  .uix-node__handle--in { left: -5px; }
+  .uix-node__handle--out { right: -5px; }
+
+  /* ---- state modifiers: set tone vars only ---- */
+  .uix-node--pending { --tone-bg: var(--uix-bg-subtle);  --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); --tone-border: var(--uix-border); }
+  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-accent);    --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
+  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);       --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
+  .uix-node--done    { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success);    --tone-dot: var(--uix-success);   --tone-border: var(--uix-success); }
+  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);     --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
+  /* active/running read as "current" via a soft halo in their own tone */
+  .uix-node--active, .uix-node--running { box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--tone-bg); }
+
+  /* running node spins its icon */
+  .uix-node--running .uix-node__icon svg { animation: uix-flow-spin 1s linear infinite; }
+
+  /* ---- decision / diamond ---- */
+  .uix-node--decision {
+    min-width: 0; width: 112px; height: 112px; padding: 0; overflow: visible;
+    /* reset the base node's `auto 1fr` columns to one full-width track, else the lone title is
+       trapped in the left `auto` column and place-items:center can't center it over the diamond. */
+    display: grid; grid-template-columns: 1fr; place-items: center; background: transparent; border: 0; box-shadow: none;
+  }
+  .uix-node--decision::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 78px; height: 78px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: var(--tone-bg, var(--uix-surface));
+    border: 1px solid var(--tone-border, var(--uix-border-strong));
+    border-radius: var(--uix-radius-sm); box-shadow: var(--uix-shadow-sm);
+  }
+  .uix-node--decision .uix-node__title {
+    position: relative; z-index: 1; max-width: 88px; text-align: center;
+    font-size: var(--uix-text-meta); color: var(--tone-fg, var(--uix-text));
+  }
+
+  /* ---- start / end terminals (pills) ---- */
+  .uix-node--start, .uix-node--end {
+    grid-template-columns: 1fr; min-width: 0; justify-items: center;
+    padding: var(--uix-space-2) var(--uix-space-5); border-radius: var(--uix-radius-pill);
+    background: var(--uix-bg-active); color: var(--uix-text-hushed); font-weight: 500;
+  }
+
+  /* ============================================================ flow + edges */
+  .uix-flow {
+    position: relative; width: 100%;
+    color: var(--uix-border-strong);            /* edges inherit via currentColor */
+  }
+  .uix-flow__edges {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;    /* never block node hover/focus */
+  }
+  .uix-flow__edge { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+  .uix-flow__edge--branch-yes { stroke: var(--uix-success); }
+  .uix-flow__edge--branch-no  { stroke: var(--uix-danger); }
+  .uix-flow__edge--loop       { stroke: var(--uix-accent); stroke-dasharray: 5 4; }
+  .uix-flow__arrow { fill: currentColor; }
+  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: 11px; }
+  .uix-flow__edge-label--loop { fill: var(--uix-accent); }
+
+  /* hovering/focusing a diagram sets its edges "flowing" (marching dashes) to read direction */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-flow:hover .uix-flow__edge,
+    .uix-flow:focus-within .uix-flow__edge {
+      stroke-dasharray: 5 4; animation: uix-flow-march var(--uix-dur-slow) linear infinite;
+    }
+  }
+
+  /* ---- linear: flex row of nodes + pure-CSS connectors (no SVG) ---- */
+  .uix-flow--linear .uix-flow__row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-1); }
+  .uix-flow__connector {
+    position: relative; flex: 1 1 30px; min-width: 30px; height: 0;
+    border-top: 1.5px solid var(--uix-border-strong); margin: 0 var(--uix-space-1);
+  }
+  .uix-flow__connector::after {
+    content: ""; position: absolute; right: -1px; top: 50%; width: 6px; height: 6px;
+    border-top: 1.5px solid var(--uix-border-strong); border-right: 1.5px solid var(--uix-border-strong);
+    transform: translate(0, -50%) rotate(45deg);
+  }
+  .uix-flow__connector[data-done] { border-color: var(--uix-success); }
+  .uix-flow__connector[data-done]::after { border-color: var(--uix-success); }
+
+  /* ---- branch / loop / mindmap: absolutely-positioned nodes over an SVG edge layer.
+         Container aspect-ratio matches each SVG viewBox so % node positions and path
+         coordinates scale together (uniform), keeping edges glued to nodes at any width. */
+  .uix-flow--branch, .uix-flow--loop { aspect-ratio: 5 / 2; }
+  .uix-flow--mindmap { aspect-ratio: 2 / 1; }
+  .uix-flow--branch .uix-node,
+  .uix-flow--loop .uix-node,
+  .uix-flow--mindmap .uix-node,
+  .uix-flow--canvas .uix-node { position: absolute; transform: translate(-50%, -50%); }
+
+  /* mindmap leaves sit tighter than default nodes */
+  .uix-flow--mindmap .uix-node { min-width: 0; }
+  .uix-flow--mindmap .uix-node--hub { min-width: 120px; }
+
+  /* ============================================================ builder canvas */
+  .uix-flow--canvas {
+    display: grid; grid-template-columns: 188px 1fr;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    overflow: hidden; background: var(--uix-surface); width: 100%;
+  }
+  .uix-flow__palette {
+    display: flex; flex-direction: column; gap: var(--uix-space-2); padding: var(--uix-space-4);
+    border-right: 1px solid var(--uix-border); background: var(--uix-surface);
+  }
+  .uix-flow__palette-title {
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: var(--uix-space-1);
+  }
+  .uix-flow__chip {
+    display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-3);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text);
+    font-size: var(--uix-text-meta); cursor: grab; box-shadow: var(--uix-shadow-sm);
+    transition: box-shadow var(--uix-dur-fast) var(--uix-ease-out),
+                transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-flow__chip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted); flex: none; }
+  .uix-flow__chip:active { cursor: grabbing; }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-flow__chip:hover { box-shadow: var(--uix-shadow-popover); transform: translateY(calc(-1 * var(--uix-lift))); }
+  }
+  /* the canvas: a dotted grid, free-placed nodes, one SVG edge layer */
+  .uix-flow__canvas {
+    position: relative; aspect-ratio: 16 / 9; min-height: 280px;
+    background-color: var(--uix-bg-subtle);
+    background-image: radial-gradient(var(--uix-border-strong) 1px, transparent 1px);
+    background-size: 22px 22px; background-position: -1px -1px;
+  }
+  .uix-flow--canvas .uix-node { cursor: grab; }
+  .uix-flow--canvas .uix-node:active { cursor: grabbing; }
+
+  /* selected node ring — mirrors the focus-ring construction (double box-shadow on --uix-ring) */
+  .uix-flow .uix-node[data-selected] {
+    border-color: var(--uix-ring);
+    box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring);
+  }
+  /* keyboard/click selection on focusable canvas pieces — no JS needed */
+  .uix-flow__chip:focus-visible,
+  .uix-flow--canvas .uix-node:focus-visible {
+    outline: none; border-color: var(--uix-ring);
+    box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring);
+  }
+
+  /* ============================================================ motion */
+  @keyframes uix-flow-spin  { to { transform: rotate(360deg); } }
+  @keyframes uix-flow-march { to { stroke-dashoffset: -18; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uix-node--running .uix-node__icon svg,
+    .uix-flow:hover .uix-flow__edge,
+    .uix-flow:focus-within .uix-flow__edge { animation: none; }
+  }
+}
+/* uix audit-log entry — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-audit { display: flex; flex-direction: column; }
+  .uix-audit__row { display: grid; grid-template-columns: auto 1fr auto; gap: var(--uix-space-3); align-items: center; padding: var(--uix-space-3) 0; border-bottom: 1px solid var(--uix-border); font-size: var(--uix-text-meta); }
+  .uix-audit__row:last-child { border-bottom: 0; }
+  .uix-audit__actor { font-weight: 500; color: var(--uix-text); }
+  .uix-audit__detail { color: var(--uix-text-hushed); }
+  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: 3px; }
+  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: 3px; }
+  .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
+}
+/* uix contact / customer card (CRM) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-contact { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--uix-space-1); padding: var(--uix-space-5); }
+  .uix-contact__name { font-size: var(--uix-text-h3); font-weight: 600; margin-top: var(--uix-space-2); }
+  .uix-contact__role { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-contact__actions { display: flex; gap: var(--uix-space-2); margin-top: var(--uix-space-3); align-self: stretch; }
+  .uix-contact__actions > .uix-btn { flex: 1; }
+  .uix-contact__stats { display: flex; gap: var(--uix-space-5); margin-top: var(--uix-space-4); }
+  .uix-contact__stat { text-align: center; }
+  .uix-contact__stat b { display: block; font-size: var(--uix-text-h3); }
+  .uix-contact__stat span { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+}
+/* uix SLA indicator / timer (breach states) — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-sla { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
+  .uix-sla svg { width: 14px; height: 14px; }
+  .uix-sla[data-state="ok"] { color: var(--uix-success); }
+  .uix-sla[data-state="at-risk"] { color: var(--uix-warning); }
+  .uix-sla[data-state="breach"] { color: var(--uix-danger); }
+}
+/* uix utility/typography bits — code, pre, blockquote, divider, status dots. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: 5px; padding: .1em .4em; color: var(--uix-text); }
+  .uix-pre { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); line-height: 1.5; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-4) var(--uix-space-4); overflow-x: auto; color: var(--uix-text); }
+  .uix-blockquote { border-left: 3px solid var(--uix-accent); padding: var(--uix-space-1) 0 var(--uix-space-1) var(--uix-space-4); color: var(--uix-text-hushed); font-style: italic; }
+  .uix-divider { height: 1px; background: var(--uix-border); border: 0; margin: var(--uix-space-4) 0; }
+  .uix-divider--label { display: flex; align-items: center; gap: var(--uix-space-3); color: var(--uix-text-muted); font-size: var(--uix-text-meta); background: transparent; height: auto; }
+  .uix-divider--label::before, .uix-divider--label::after { content: ""; flex: 1; height: 1px; background: var(--uix-border); }
+  .uix-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-text-muted); }
+  .uix-dot--success { background: var(--uix-success); }
+  .uix-dot--warning { background: var(--uix-warning); }
+  .uix-dot--danger { background: var(--uix-danger); }
+  .uix-dot--info { background: var(--uix-info); }
+}
+/* uix heartbeat / live status indicator — a pulsing ping. Respects reduced-motion (guard stops the ping). */
+@layer uix.components {
+  .uix-heartbeat { position: relative; display: inline-grid; place-items: center; width: 8px; height: 8px; flex: none; }
+  .uix-heartbeat__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-success); z-index: 1; }
+  .uix-heartbeat__ping { position: absolute; inset: 0; border-radius: 50%; background: var(--uix-success); animation: uix-ping 1.6s var(--uix-ease-out) infinite; }
+  @keyframes uix-ping { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.8); opacity: 0; } }
+  .uix-heartbeat--warning .uix-heartbeat__dot, .uix-heartbeat--warning .uix-heartbeat__ping { background: var(--uix-warning); }
+  .uix-heartbeat--danger  .uix-heartbeat__dot, .uix-heartbeat--danger  .uix-heartbeat__ping { background: var(--uix-danger); }
+  .uix-heartbeat--idle .uix-heartbeat__dot { background: var(--uix-text-muted); }
+  .uix-heartbeat--idle .uix-heartbeat__ping { display: none; }
+  .uix-live { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
+}

@@ -1,6 +1,6 @@
 /* uix popover — generic anchored surface via the native Popover API; animated with @starting-style. */
 @layer uix.components {
-  .uix-popover { margin: 0; padding: 8px; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); color: var(--uix-text); }
+  .uix-popover { margin: 0; padding: var(--uix-space-2); background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); color: var(--uix-text); }
   [popover].uix-popover {
     opacity: 0; transform: translateY(calc(-1 * var(--uix-lift)));
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out),

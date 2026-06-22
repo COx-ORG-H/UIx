@@ -1,9 +1,11 @@
 /* uix states — empty + skeleton loaders. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 40px; color: var(--uix-text-muted); }
+  .uix-empty { display: flex; flex-direction: column; align-items: center; gap: var(--uix-space-3); text-align: center; padding: var(--uix-space-8); color: var(--uix-text-muted); }
   .uix-empty__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--uix-bg-subtle); color: var(--uix-text-muted); }
   .uix-empty__icon svg { width: 22px; height: 22px; }
   .uix-empty__title { font-size: var(--uix-text-h3); font-weight: 600; color: var(--uix-text); }
+  /* error tone — ErrorState reuses .uix-empty with a danger-toned icon */
+  .uix-empty__icon--danger { background: var(--uix-danger-bg); color: var(--uix-danger); }
 
   .uix-skeleton { background: linear-gradient(90deg, var(--uix-bg-subtle) 25%, var(--uix-bg-hover) 50%, var(--uix-bg-subtle) 75%); background-size: 200% 100%; animation: uix-shimmer 1.4s linear infinite; border-radius: var(--uix-radius-sm); }
   .uix-skeleton--text { height: 12px; border-radius: var(--uix-radius-pill); }

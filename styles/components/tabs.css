@@ -1,9 +1,9 @@
 /* uix tabs — line / enclosed / pill. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-tabs { display: flex; gap: 2px; }
+  .uix-tabs { display: flex; gap: var(--uix-space-1); }
   .uix-tab {
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
-    color: var(--uix-text-hushed); padding: 10px 12px; cursor: pointer; position: relative;
+    color: var(--uix-text-hushed); padding: var(--uix-space-3) var(--uix-space-3); cursor: pointer; position: relative;
     transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-tab:hover { color: var(--uix-text); }
@@ -25,7 +25,7 @@
   .uix-tabs--enclosed .uix-tab[aria-selected="true"] { border-color: var(--uix-border); border-bottom-color: var(--uix-bg-app); background: var(--uix-bg-app); }
 
   /* pill */
-  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: 3px; border-radius: var(--uix-radius-md); }
-  .uix-tabs--pill .uix-tab { padding: 6px 14px; border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: var(--uix-space-1); border-radius: var(--uix-radius-md); }
+  .uix-tabs--pill .uix-tab { padding: var(--uix-space-2) var(--uix-space-4); border-radius: calc(var(--uix-radius-md) - 3px); }
   .uix-tabs--pill .uix-tab[aria-selected="true"] { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
 }

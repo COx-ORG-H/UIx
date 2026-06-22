@@ -1,11 +1,11 @@
 /* uix command palette (⌘K) — inner surface; mounts in a dialog/popover (overlay mechanics in motion + overlays). */
 @layer uix.components {
   .uix-cmdk { width: min(560px, 92vw); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
-  .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 16px; }
+  .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 var(--uix-space-4); }
   .uix-cmdk__input:focus { outline: none; }
-  .uix-cmdk__list { max-height: 320px; overflow-y: auto; padding: 6px; }
-  .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: 8px 10px 4px; }
-  .uix-cmdk__item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
+  .uix-cmdk__list { max-height: 320px; overflow-y: auto; padding: var(--uix-space-2); }
+  .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
+  .uix-cmdk__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-3); border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
   .uix-cmdk__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-cmdk__item:hover, .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
   .uix-cmdk__item .uix-kbd { margin-left: auto; }

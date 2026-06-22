@@ -1,14 +1,14 @@
 /* uix steps / wizard — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-steps { display: flex; align-items: center; gap: 0; }
-  .uix-step { display: flex; align-items: center; gap: 10px; color: var(--uix-text-muted); }
+  .uix-step { display: flex; align-items: center; gap: var(--uix-space-3); color: var(--uix-text-muted); }
   .uix-step__marker {
     width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center;
     border: 1px solid var(--uix-border-strong); background: var(--uix-surface); font-size: var(--uix-text-meta); font-weight: 600;
     line-height: 1;  /* hug the glyph so place-items:center truly centers single digits/symbols */
   }
   .uix-step__label { font-size: var(--uix-text-meta); font-weight: 500; }
-  .uix-step__connector { flex: 1; height: 1px; min-width: 28px; background: var(--uix-border); margin: 0 12px; }
+  .uix-step__connector { flex: 1; height: 1px; min-width: 28px; background: var(--uix-border); margin: 0 var(--uix-space-3); }
   .uix-step[data-state="active"] { color: var(--uix-text); }
   .uix-step[data-state="active"] .uix-step__marker { border-color: var(--uix-accent); color: var(--uix-accent); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-step[data-state="done"] { color: var(--uix-text); }

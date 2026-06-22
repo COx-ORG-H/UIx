@@ -1,7 +1,7 @@
 /* uix select (native, styled) — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-select {
-    height: var(--uix-control-h); width: 100%; padding: 0 36px 0 12px; appearance: none;
+    height: var(--uix-control-h); width: 100%; padding: 0 var(--uix-space-8) 0 var(--uix-space-3); appearance: none;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background-color: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
     background-repeat: no-repeat; background-position: right 12px center;
@@ -14,7 +14,7 @@
   .uix-select--sm { height: 28px; font-size: var(--uix-text-meta); }
 
   /* command-palette-style rich select: a trigger that opens a .uix-cmdk popover (search + options) */
-  .uix-select-trigger { display: inline-flex; align-items: center; gap: 8px; height: var(--uix-control-h); padding: 0 12px; min-width: 220px;
+  .uix-select-trigger { display: inline-flex; align-items: center; gap: var(--uix-space-2); height: var(--uix-control-h); padding: 0 var(--uix-space-3); min-width: 220px;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); color: var(--uix-text);
     font: inherit; font-size: var(--uix-text-body); cursor: pointer; transition: border-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-select-trigger:hover { border-color: var(--uix-border-strong); }

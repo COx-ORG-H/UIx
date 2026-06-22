@@ -11,7 +11,25 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const DIR = join(ROOT, '..', 'themes');
-const ALLOWED = new Set(['brand', 'brand-fg']);
+// Brand-only is the floor (most products override just the accent). A product with a distinct
+// surface identity (e.g. Mission Control's warm-beige + Geist) overrides this richer, reviewed
+// "skin" set too — still a curated allowlist (no arbitrary token), so the "one contract" guarantee
+// holds: products override VALUES of known names, never invent names. Widen deliberately.
+const ALLOWED = new Set([
+  'brand', 'brand-fg',
+  // surfaces
+  'bg-app', 'bg-subtle', 'bg-hover', 'bg-active', 'surface', 'surface-2', 'surface-3',
+  'border', 'border-strong',
+  // text
+  'text', 'text-hushed', 'text-muted',
+  // type + radius
+  'font-sans', 'font-mono', 'radius-sm', 'radius-md',
+  // status — both roles (TEXT: legible on the *-bg wash; SOLID: vivid fill/dot) + the washes
+  'success', 'success-fg', 'success-bg', 'success-solid',
+  'warning', 'warning-fg', 'warning-bg', 'warning-solid',
+  'info', 'info-fg', 'info-bg', 'info-solid',
+  'danger', 'danger-fg', 'danger-bg', 'danger-solid',
+]);
 
 const files = (await readdir(DIR)).filter((f) => f.endsWith('.tokens.json'));
 for (const f of files) {
@@ -20,6 +38,7 @@ for (const f of files) {
   const light = [];
   const dark = [];
   for (const [token, modes] of Object.entries(spec)) {
+    if (token.startsWith('__')) continue; // __comment etc. — doc keys, not tokens
     if (!ALLOWED.has(token)) {
       throw new Error(`themes/${f}: "${token}" is not an allowed override (allowed: ${[...ALLOWED].join(', ')}).`);
     }

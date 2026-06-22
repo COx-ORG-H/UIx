@@ -1,14 +1,14 @@
 /* uix form layout — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: 16px; }
-  .uix-fieldset > legend { padding: 0 6px; font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
-  .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+  .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--uix-space-5); }
+  .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
+  .uix-fieldset > legend { padding: 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
+  .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
   .uix-validation-summary {
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
-    border-radius: var(--uix-radius-md); padding: 12px 14px; font-size: var(--uix-text-meta);
+    border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
   }
   .uix-validation-summary strong { color: var(--uix-danger); }
-  .uix-validation-summary ul { margin: 6px 0 0; padding-left: 18px; }
+  .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
   .uix-validation-summary a { color: var(--uix-danger); }
 }

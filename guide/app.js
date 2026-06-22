@@ -422,7 +422,7 @@ if (typeof document !== 'undefined') {
 
     applyDensity(); applyZebra(); applyFreeze();
   };
-  const setupTables = () => document.querySelectorAll('[data-uix-table]').forEach(initTable);
+  const setupTables = () => document.querySelectorAll('[data-uix-table], [data-uix-table-v2]').forEach(initTable);
 
   // Open a native <dialog> as a modal. Flushing layout + style first establishes the closed-state
   // baseline so the @starting-style entrance transition reliably fires on the FIRST open after load
@@ -457,8 +457,23 @@ if (typeof document !== 'undefined') {
     const titleEl = peek.querySelector('[data-peek-title]');
     const subEl = peek.querySelector('[data-peek-sub]');
     const show = () => { const r = records[i]; if (!r) return; if (titleEl) titleEl.textContent = r.id; if (subEl) subEl.textContent = r.subject; };
+    const openAt = (idx) => { i = Math.max(0, idx); show(); openModal(peek); };
     document.querySelectorAll('[data-uix-open-peek]').forEach((btn) =>
-      btn.addEventListener('click', () => { i = 0; show(); openModal(peek); }));
+      btn.addEventListener('click', () => openAt(0)));
+    // Clicking a ticket row opens the peek at that record — the queue's primary affordance.
+    // Delegated per table; ignore clicks on in-row controls (pin button, links, inputs) and match
+    // the row to its record by data-id so it survives sort/filter/pin re-ordering.
+    document.querySelectorAll('[data-uix-table]').forEach((tableRoot) => {
+      const body = tableRoot.querySelector('tbody');
+      if (!body) return;
+      tableRoot.setAttribute('data-uix-rowpeek', '');
+      body.addEventListener('click', (e) => {
+        if (e.target.closest('button, a, input, label, select, textarea')) return;
+        const tr = e.target.closest('tr[data-id]'); if (!tr) return;
+        const idx = records.findIndex((r) => r.id === tr.dataset.id);
+        if (idx >= 0) openAt(idx);
+      });
+    });
     peek.querySelector('[data-peek-prev]')?.addEventListener('click', () => { i = peekStep(i, -1, records.length); show(); });
     peek.querySelector('[data-peek-next]')?.addEventListener('click', () => { i = peekStep(i, +1, records.length); show(); });
     peek.addEventListener('keydown', (e) => {
@@ -495,6 +510,7 @@ if (typeof document !== 'undefined') {
       el.querySelector('.uix-toast__close').addEventListener('click', leave);
       setTimeout(leave, 4000);
     };
+    document.addEventListener('uix:toast', (e) => push(e.detail));
     document.querySelectorAll('[data-uix-toast]').forEach((btn) =>
       btn.addEventListener('click', () => push({ title: btn.dataset.toastTitle, msg: btn.dataset.toastMsg, tone: btn.dataset.toastTone })));
   };
@@ -605,6 +621,46 @@ if (typeof document !== 'undefined') {
       `<button class="uix-icon-cell" type="button" data-icon-copy="${esc(n)}">${icon(n)}<code>${esc(n)}</code></button>`).join('');
   };
 
+  const setupPeekV2 = () => {
+    const peek = document.querySelector('[data-uix-peek-dialog-v2]');
+    if (!peek) return;
+    const records = [...document.querySelectorAll('[data-uix-table-v2] tbody tr[data-id]')].map((tr) => ({
+      id: tr.dataset.id, subject: tr.children[1]?.textContent.trim() ?? '',
+    }));
+    if (!records.length) return;
+    let i = 0;
+    const titleEl = peek.querySelector('[data-peek-title-v2]');
+    const subEl = peek.querySelector('[data-peek-sub-v2]');
+    const show = () => { const r = records[i]; if (!r) return; if (titleEl) titleEl.textContent = r.id; if (subEl) subEl.textContent = r.subject; };
+    const openAt = (idx) => { i = Math.max(0, idx); show(); openModal(peek); };
+    const toast = (title) => document.dispatchEvent(new CustomEvent('uix:toast', { detail: { title, tone: 'info' } }));
+    document.querySelectorAll('[data-uix-table-v2]').forEach((tableRoot) => {
+      const body = tableRoot.querySelector('tbody');
+      if (!body) return;
+      tableRoot.setAttribute('data-uix-rowpeek', '');
+      body.addEventListener('click', (e) => {
+        if (e.target.closest('[data-uix-goto]')) return;
+        if (e.target.closest('button, a, input, label, select, textarea')) return;
+        const tr = e.target.closest('tr[data-id]'); if (!tr) return;
+        const idx = records.findIndex((r) => r.id === tr.dataset.id);
+        if (idx >= 0) openAt(idx);
+      });
+      body.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-uix-goto]'); if (!btn) return;
+        toast(`Opening ${btn.dataset.uixGoto}…`);
+      });
+    });
+    peek.querySelector('[data-peek-prev-v2]')?.addEventListener('click', () => { i = peekStep(i, -1, records.length); show(); });
+    peek.querySelector('[data-peek-next-v2]')?.addEventListener('click', () => { i = peekStep(i, +1, records.length); show(); });
+    peek.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); i = peekStep(i, +1, records.length); show(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); i = peekStep(i, -1, records.length); show(); }
+    });
+    peek.querySelector('[data-peek-open-full-v2]')?.addEventListener('click', () => {
+      const r = records[i]; if (r) toast(`Opening ${r.id}…`);
+    });
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
@@ -615,6 +671,7 @@ if (typeof document !== 'undefined') {
     setupTables();
     setupOverlays();
     setupPeek();
+    setupPeekV2();
     setupCmdk();
     setupToasts();
     setupRichSelect();

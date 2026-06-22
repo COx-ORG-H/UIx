@@ -1,7 +1,7 @@
 /* uix radio + radio-group — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-radio-group { display: flex; flex-direction: column; gap: 8px; }
-  .uix-radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-radio-group { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-radio { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
   .uix-radio > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-radio__dot {
     width: 18px; height: 18px; flex: none; border-radius: 50%;

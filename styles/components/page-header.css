@@ -1,8 +1,9 @@
 /* uix page header — title/subtitle/actions row. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-page-header { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--uix-border); }
+  .uix-page-header { display: flex; align-items: flex-start; gap: var(--uix-space-5); flex-wrap: wrap; padding-bottom: var(--uix-space-6); margin-bottom: var(--uix-space-7); border-bottom: 1px solid var(--uix-border); }
   .uix-page-header__titles { flex: 1; min-width: 220px; }
+  .uix-page-header__eyebrow { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
   .uix-page-header__title { font-size: var(--uix-text-h2); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
-  .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: 2px; }
-  .uix-page-header__actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: var(--uix-space-2); max-width: 70ch; }
+  .uix-page-header__actions { display: flex; gap: var(--uix-space-2); align-items: center; flex-wrap: wrap; }
 }

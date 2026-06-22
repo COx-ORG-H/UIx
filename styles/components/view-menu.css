@@ -1,14 +1,14 @@
 /* uix table View menu — consolidates density / zebra / freeze / columns into one popover.
    Reuses .uix-popover (surface + animation), .uix-segmented, .uix-switch. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-view-menu { min-width: 248px; padding: 6px; }
-  .uix-view-menu__group { padding: 8px 6px; }
+  .uix-view-menu { min-width: 248px; padding: var(--uix-space-2); }
+  .uix-view-menu__group { padding: var(--uix-space-2) var(--uix-space-2); }
   .uix-view-menu__group + .uix-view-menu__group { border-top: 1px solid var(--uix-border); }
-  .uix-view-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: 8px; }
-  .uix-view-menu__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: var(--uix-text-body); color: var(--uix-text); cursor: pointer; }
-  .uix-view-menu__row + .uix-view-menu__row { margin-top: 10px; }
+  .uix-view-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
+  .uix-view-menu__row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); font-size: var(--uix-text-body); color: var(--uix-text); cursor: pointer; }
+  .uix-view-menu__row + .uix-view-menu__row { margin-top: var(--uix-space-3); }
   .uix-view-menu .uix-segmented { display: flex; width: 100%; }
   .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
-  .uix-view-menu__cols { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow: auto; }
+  .uix-view-menu__cols { display: flex; flex-direction: column; gap: var(--uix-space-1); max-height: 180px; overflow: auto; }
   .uix-view-menu__cols .uix-menu__item { font-size: var(--uix-text-meta); }
 }

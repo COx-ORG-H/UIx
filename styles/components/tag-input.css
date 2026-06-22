@@ -1,13 +1,13 @@
 /* uix tag input / multi-select chips — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-taginput {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: var(--uix-control-h); padding: 4px 8px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-height: var(--uix-control-h); padding: var(--uix-space-1) var(--uix-space-2);
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
   }
   .uix-taginput:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-taginput__field { flex: 1; min-width: 80px; border: 0; outline: none; background: transparent; color: var(--uix-text); font: inherit; }
   .uix-tag {
-    display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border-radius: var(--uix-radius-sm);
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
   .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 4px; }

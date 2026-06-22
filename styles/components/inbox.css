@@ -2,12 +2,12 @@
 @layer uix.components {
   .uix-inbox { display: grid; grid-template-columns: 300px 1fr; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; height: 420px; }
   .uix-inbox__list { border-right: 1px solid var(--uix-border); overflow-y: auto; background: var(--uix-surface); }
-  .uix-inbox__item { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--uix-border); cursor: pointer; }
+  .uix-inbox__item { position: relative; display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); cursor: pointer; }
   .uix-inbox__item:hover { background: var(--uix-bg-hover); }
   .uix-inbox__item[aria-selected="true"] { background: linear-gradient(to right, var(--uix-accent) 3px, var(--uix-brand-muted) 3px); }
   .uix-inbox__item[data-unread] .uix-inbox__subject { font-weight: 600; }
   .uix-inbox__subject { font-size: var(--uix-text-body); }
   .uix-inbox__preview { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .uix-inbox__detail { overflow-y: auto; padding: 20px; background: var(--uix-bg-app); }
+  .uix-inbox__detail { overflow-y: auto; padding: var(--uix-space-5); background: var(--uix-bg-app); }
   @media (max-width: 700px) { .uix-inbox { grid-template-columns: 1fr; } .uix-inbox__detail { display: none; } }
 }

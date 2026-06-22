@@ -1,7 +1,7 @@
 /* uix label / tag taxonomy — colored via --label-color (set to a --uix-chart-* token). */
 @layer uix.components {
   .uix-label {
-    display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: var(--uix-radius-sm);
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-sm);
     font-size: var(--uix-text-meta); font-weight: 500;
     background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);
     color: var(--label-color, var(--uix-accent));

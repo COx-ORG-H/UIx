@@ -21,11 +21,11 @@
   .uix-dialog[open]::backdrop { opacity: 1; }
   @starting-style { .uix-dialog[open]::backdrop { opacity: 0; } }
 
-  .uix-dialog__header { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--uix-border); }
+  .uix-dialog__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
   .uix-dialog__title { font-size: var(--uix-text-h3); font-weight: 600; }
   .uix-dialog__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-dialog__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-dialog__close svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-dialog__body { padding: 18px; color: var(--uix-text-hushed); }
-  .uix-dialog__footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--uix-border); }
+  .uix-dialog__body { padding: var(--uix-space-5); color: var(--uix-text-hushed); }
+  .uix-dialog__footer { display: flex; gap: var(--uix-space-2); justify-content: flex-end; padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
 }

@@ -1,4 +1,4 @@
-/* GENERATED — do not edit. Brand override for "itsmx". Source: themes/itsmx.tokens.json; build: npm run build:themes.
+/* GENERATED — do not edit. Brand override for "tensor". Source: themes/tensor.tokens.json; build: npm run build:themes.
    Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @uix/tokens/css. */
 :root { --uix-brand: #4F46E5; --uix-brand-fg: #FFFFFF; }
 :root:where(.dark,[data-theme="dark"]) { --uix-brand: #6366F1; }

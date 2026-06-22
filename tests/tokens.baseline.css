@@ -13,6 +13,7 @@
 
     /* accent (blue) — brand slots unset; accent/link/ring chain through them */
     --uix-accent:var(--uix-brand,#1447E6); --uix-accent-dark:#0E3AC0; --uix-accent-light:#4D77F0;
+    --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 88%, #000000);
     --uix-accent-fg:var(--uix-brand-fg,#FFFFFF);
     --uix-link:var(--uix-brand,#1447E6); --uix-ring:var(--uix-brand,#1447E6);
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 12%, transparent);
@@ -22,6 +23,7 @@
     --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6;
     --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;
     --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6;
+    --uix-success-solid:#10B981; --uix-warning-solid:#F59E0B; --uix-info-solid:#2563EB; --uix-danger-solid:#EF4444;
 
     /* chart (categorical) */
     /* chart palette — harmonized, vibrant on white (Tailwind ~600 level), distinct hues */
@@ -54,6 +56,9 @@
     --uix-ease-spring:cubic-bezier(.34,1.56,.64,1);
     --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms; --uix-dur-slower:320ms; --uix-lift:4px;
 
+    /* spacing scale (4px base) — the shared whitespace rhythm; components consume --uix-space-* */
+    --uix-space-0:0; --uix-space-1:4px; --uix-space-2:8px; --uix-space-3:12px; --uix-space-4:16px; --uix-space-5:20px; --uix-space-6:24px; --uix-space-7:32px; --uix-space-8:40px; --uix-space-9:48px; --uix-space-10:64px; --uix-space-11:80px; --uix-space-12:96px;
+
     /* layout */
     --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-topbar-h:56px;
 
@@ -70,13 +75,14 @@
 
     --uix-text:#FAFAFA; --uix-text-hushed:rgba(250,250,250,.64); --uix-text-muted:#A1A1A1;
 
-    --uix-accent:var(--uix-brand,#2563EB); --uix-link:var(--uix-brand,#5B8DEF); --uix-ring:var(--uix-brand,#3080FF);
+    --uix-accent:var(--uix-brand,#2563EB); --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF); --uix-link:color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF); --uix-ring:var(--uix-brand,#3080FF);
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 16%, transparent);
 
     --uix-success:#00D294; --uix-success-fg:#002C22; --uix-success-bg:rgba(0,210,148,.15);
     --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16);
     --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16);
     --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20);
+    --uix-success-solid:#34D399; --uix-warning-solid:#FBBF24; --uix-info-solid:#3B82F6; --uix-danger-solid:#F87171;
 
     --uix-chart-1:#3080FF; --uix-chart-2:#00C2B0; --uix-chart-3:#00D294; --uix-chart-4:#FCBB00;
     --uix-chart-5:#FF8B1A; --uix-chart-6:#FF6568; --uix-chart-7:#A685FF; --uix-chart-8:#FF667F;

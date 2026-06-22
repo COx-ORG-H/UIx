@@ -18,6 +18,7 @@
   "accent":       { "$type": "color", "$value": "var(--uix-brand,#1447E6)", "$description": "Runtime: chains through the write-only --uix-brand slot. Must stay var() to keep live brand override." },
   "accent-dark":  { "$type": "color", "$value": "#0E3AC0" },
   "accent-light": { "$type": "color", "$value": "#4D77F0" },
+  "accent-hover": { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 88%, #000000)", "$description": "Primary-button hover. Theme-aware: derived from the live accent so it tracks the brand override (light darkens, dark lightens — see tokens/dark)." },
   "accent-fg":    { "$type": "color", "$value": "var(--uix-brand-fg,#FFFFFF)", "$description": "Runtime: chains through --uix-brand-fg." },
   "link":         { "$type": "color", "$value": "var(--uix-brand,#1447E6)", "$description": "Runtime: chains through --uix-brand." },
   "ring":         { "$type": "color", "$value": "var(--uix-brand,#1447E6)", "$description": "Runtime: chains through --uix-brand." },
@@ -35,6 +36,11 @@
   "danger":     { "$type": "color", "$value": "#E40014" },
   "danger-fg":  { "$type": "color", "$value": "#FFFFFF" },
   "danger-bg":  { "$type": "color", "$value": "#FFE4E6" },
+
+  "success-solid": { "$type": "color", "$value": "#10B981", "$description": "SOLID status role — the vivid fill/dot/pulse color, distinct from the legible TEXT role (--uix-success). Products override per brand." },
+  "warning-solid": { "$type": "color", "$value": "#F59E0B", "$description": "SOLID status role (see success-solid)." },
+  "info-solid":    { "$type": "color", "$value": "#2563EB", "$description": "SOLID status role (see success-solid)." },
+  "danger-solid":  { "$type": "color", "$value": "#EF4444", "$description": "SOLID status role (see success-solid)." },
 
   "chart-1": { "$type": "color", "$value": "#2563EB" },
   "chart-2": { "$type": "color", "$value": "#0891B2" },

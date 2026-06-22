@@ -1,9 +1,9 @@
 /* uix segmented control — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-segmented { display: inline-flex; padding: 3px; gap: 2px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
+  .uix-segmented { display: inline-flex; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
   .uix-segmented__option {
     border: 0; background: transparent; color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); font-weight: 500;
-    padding: 5px 12px; border-radius: calc(var(--uix-radius-md) - 3px); cursor: pointer;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: calc(var(--uix-radius-md) - 3px); cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-segmented__option:hover { color: var(--uix-text); }

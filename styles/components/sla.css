@@ -1,6 +1,6 @@
 /* uix SLA indicator / timer (breach states) — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-sla { display: inline-flex; align-items: center; gap: 6px; font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
+  .uix-sla { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
   .uix-sla svg { width: 14px; height: 14px; }
   .uix-sla[data-state="ok"] { color: var(--uix-success); }
   .uix-sla[data-state="at-risk"] { color: var(--uix-warning); }

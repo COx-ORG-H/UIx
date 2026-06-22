@@ -1,7 +1,7 @@
 /* uix attachment list — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-attachments { display: flex; flex-direction: column; gap: 6px; }
-  .uix-attachment { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-attachments { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-attachment { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-attachment__icon { width: 32px; height: 32px; flex: none; border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); display: grid; place-items: center; color: var(--uix-text-muted); }
   .uix-attachment__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-attachment__name { font-size: var(--uix-text-body); }

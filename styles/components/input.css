@@ -1,16 +1,16 @@
 /* uix input + field wrapper — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-field { display: flex; flex-direction: column; gap: 6px; }
+  .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger); }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: 5px; }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
-  .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: 5px; }
+  .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
 
   .uix-input {
     height: var(--uix-control-h); width: 100%;
-    padding: 0 12px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    padding: 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
     transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
   }

@@ -1,6 +1,6 @@
 /* uix switch — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); }
+  .uix-switch { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); }
   .uix-switch > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-switch__track {
     width: 36px; height: 20px; flex: none; border-radius: var(--uix-radius-pill);

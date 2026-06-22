@@ -18,6 +18,7 @@
   --color-uix-accent: var(--uix-accent);
   --color-uix-accent-dark: var(--uix-accent-dark);
   --color-uix-accent-light: var(--uix-accent-light);
+  --color-uix-accent-hover: var(--uix-accent-hover);
   --color-uix-accent-fg: var(--uix-accent-fg);
   --color-uix-link: var(--uix-link);
   --color-uix-ring: var(--uix-ring);
@@ -34,6 +35,10 @@
   --color-uix-danger: var(--uix-danger);
   --color-uix-danger-fg: var(--uix-danger-fg);
   --color-uix-danger-bg: var(--uix-danger-bg);
+  --color-uix-success-solid: var(--uix-success-solid);
+  --color-uix-warning-solid: var(--uix-warning-solid);
+  --color-uix-info-solid: var(--uix-info-solid);
+  --color-uix-danger-solid: var(--uix-danger-solid);
   --color-uix-chart-1: var(--uix-chart-1);
   --color-uix-chart-2: var(--uix-chart-2);
   --color-uix-chart-3: var(--uix-chart-3);

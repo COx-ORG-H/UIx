@@ -1,0 +1,78 @@
+/* uix-styleguide — COMPONENT-ONLY aggregate (the .uix-* component classes, util + motion helpers).
+   Deliberately EXCLUDES tokens.css and base.css so a consumer can pull the components without
+   re-injecting the neutral token block (which would fight a product theme) or UIx's global reset
+   (which would fight the consumer's own base layer). Tokens come from @uix/tokens/css (+ a product
+   theme) imported separately. Built to build/css/components.css by scripts/build-styles.mjs and
+   exported as `@uix/tokens/styles`. Keep this list in sync with the component @imports in main.css. */
+@layer uix.tokens, uix.base, uix.util, uix.motion, uix.components;
+
+@import "utilities.css";
+@import "motion.css";
+
+/* components */
+@import "components/button.css";
+@import "components/input.css";
+@import "components/textarea.css";
+@import "components/select.css";
+@import "components/checkbox.css";
+@import "components/radio.css";
+@import "components/switch.css";
+@import "components/segmented.css";
+@import "components/slider.css";
+@import "components/stepper.css";
+@import "components/file-upload.css";
+@import "components/combobox.css";
+@import "components/tag-input.css";
+@import "components/form.css";
+@import "components/app-shell.css";
+@import "components/sidebar.css";
+@import "components/breadcrumbs.css";
+@import "components/tabs.css";
+@import "components/pagination.css";
+@import "components/steps.css";
+@import "components/command-palette.css";
+@import "components/menu.css";
+@import "components/page-header.css";
+@import "components/kbd.css";
+@import "components/card.css";
+@import "components/stat-tile.css";
+@import "components/status-pill.css";
+@import "components/table.css";
+@import "components/table-toolbar.css";
+@import "components/view-menu.css";
+@import "components/list.css";
+@import "components/description-list.css";
+@import "components/avatar.css";
+@import "components/tooltip.css";
+@import "components/progress.css";
+@import "components/meter.css";
+@import "components/timeline.css";
+@import "components/tree.css";
+@import "components/calendar.css";
+@import "components/states.css";
+@import "components/chart.css";
+@import "components/alert.css";
+@import "components/toast.css";
+@import "components/modal.css";
+@import "components/drawer.css";
+@import "components/peek.css";
+@import "components/popover.css";
+@import "components/spinner.css";
+@import "components/detail-layout.css";
+@import "components/comments.css";
+@import "components/reactions.css";
+@import "components/media.css";
+@import "components/lightbox.css";
+@import "components/prose.css";
+@import "components/kanban.css";
+@import "components/inbox.css";
+@import "components/notification-center.css";
+@import "components/labels.css";
+@import "components/attachment.css";
+@import "components/pipeline.css";
+@import "components/flow.css";
+@import "components/audit-log.css";
+@import "components/contact-card.css";
+@import "components/sla.css";
+@import "components/utility-bits.css";
+@import "components/heartbeat.css";

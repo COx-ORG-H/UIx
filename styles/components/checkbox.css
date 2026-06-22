@@ -1,7 +1,7 @@
 /* uix checkbox — depends only on --uix-* tokens. Markup:
    <label class="uix-checkbox"><input type="checkbox"><span class="uix-checkbox__box">{check svg}</span> Label</label> */
 @layer uix.components {
-  .uix-checkbox { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-checkbox { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
   .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-checkbox__box {
     width: 18px; height: 18px; flex: none; display: grid; place-items: center;
