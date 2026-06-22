@@ -187,7 +187,7 @@
   .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-checkbox__box {
     width: 18px; height: 18px; flex: none; display: grid; place-items: center;
-    border: 1px solid var(--uix-border-strong); border-radius: 5px; background: var(--uix-surface);
+    border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-checkbox__box svg {
@@ -231,7 +231,7 @@
   }
   .uix-switch__track::after {
     content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
-    background: #fff; box-shadow: var(--uix-shadow-sm);
+    background: var(--uix-text-reverse); box-shadow: var(--uix-shadow-sm);
     transition: transform var(--uix-dur) var(--uix-ease-out);
   }
   .uix-switch > input:checked + .uix-switch__track { background: var(--uix-accent); }
@@ -322,7 +322,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
-  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 4px; }
+  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); }
   .uix-tag__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-tag__remove svg { width: 12px; height: 12px; }
 }
@@ -385,7 +385,7 @@
   .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
   .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navitem__star svg { width: 15px; height: 15px; }
   .uix-navitem:hover .uix-navitem__star { opacity: 1; }
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
@@ -528,8 +528,8 @@
 @layer uix.components {
   .uix-kbd {
     display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 var(--uix-space-2);
-    font-family: var(--uix-font-mono); font-size: 11px; color: var(--uix-text-muted);
-    background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-bottom-width: 2px; border-radius: 5px;
+    font-family: var(--uix-font-mono); font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted);
+    background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-bottom-width: 2px; border-radius: var(--uix-radius-xs);
   }
 }
 /* uix card — depends only on --uix-* tokens. */
@@ -563,13 +563,11 @@
   .uix-pill--neutral { --tone-bg: var(--uix-bg-active); --tone-fg: var(--uix-text-hushed); --tone-dot: var(--uix-text-muted); }
   .uix-pill--success { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success); --tone-dot: var(--uix-success); }
   .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);    --tone-dot: var(--uix-info); }
-  .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: #92400E;            --tone-dot: var(--uix-warning); }
+  .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
   .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);  --tone-dot: var(--uix-danger); }
   /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
   .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
   .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
-  /* amber needs a light text on the dark faint bg in dark mode */
-  :root:where(.dark,[data-theme="dark"]) .uix-pill--warning { --tone-fg: var(--uix-warning); }
 
   /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
      the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */
@@ -584,7 +582,7 @@
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
 
   .uix-table thead th {
-    position: sticky; top: 0; z-index: 1; background: var(--uix-surface); text-align: left;
+    position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-surface); text-align: left;
     font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
     padding: 0 var(--uix-space-4); height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap;
   }
@@ -606,7 +604,7 @@
   .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
   .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
-  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: 5px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin[data-on] { opacity: 1; }
   .uix-table__pin:hover { background: var(--uix-bg-active); color: var(--uix-text); }
   .uix-table__pin[data-on] { color: var(--uix-accent); }
@@ -614,8 +612,8 @@
   .uix-table__pin[data-on] svg { fill: currentColor; }
 
   /* frozen first column (opt-in via .uix-table--pinned-col) — keeps the identifier visible on horizontal scroll, preserving zebra/state bg */
-  .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--uix-border); }
-  .uix-table--pinned-col thead th:first-child { z-index: 3; background: var(--uix-surface); }
+  .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
+  .uix-table--pinned-col thead th:first-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
   .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); }
   .uix-table--pinned-col tbody tr:nth-child(even) td:first-child { background: var(--uix-row-alt); }
   .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
@@ -681,11 +679,11 @@
     line-height: 1; overflow: hidden; position: relative;
   }
   .uix-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .uix-avatar--sm { width: 24px; height: 24px; font-size: 11px; }
+  .uix-avatar--sm { width: 24px; height: 24px; font-size: var(--uix-text-eyebrow); }
   .uix-avatar--lg { width: 44px; height: 44px; }
   .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
   .uix-avatar-group { display: inline-flex; }
-  .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: -8px; }
+  .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: calc(-1 * var(--uix-space-2)); }
   .uix-avatar-group .uix-avatar:first-child { margin-left: 0; }
   .uix-user-chip { display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-user-chip__name { font-size: var(--uix-text-body); font-weight: 500; }
@@ -693,7 +691,7 @@
 
   /* editable avatar — hover/focus overlay for "change photo"; empty = upload placeholder */
   .uix-avatar--editable { cursor: pointer; }
-  .uix-avatar__edit { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.45); color: #fff; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-avatar__edit { position: absolute; inset: 0; display: grid; place-items: center; background: var(--uix-scrim); color: var(--uix-text-reverse); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-avatar__edit svg { width: 45%; height: 45%; }
   .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
   .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
@@ -706,7 +704,7 @@
     transform: translateX(-50%) translateY(var(--uix-lift));
     background: var(--uix-text); color: var(--uix-bg-app); font-size: var(--uix-text-meta); font-weight: 500;
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); white-space: nowrap; box-shadow: var(--uix-shadow-popover);
-    opacity: 0; pointer-events: none; z-index: 20;
+    opacity: 0; pointer-events: none; z-index: var(--uix-z-tooltip);
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   [data-uix-tip]:hover::after, [data-uix-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -757,7 +755,7 @@
   .uix-calendar { width: 280px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); padding: var(--uix-space-3); }
   .uix-calendar__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--uix-space-2); font-weight: 600; font-size: var(--uix-text-body); }
   .uix-calendar__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--uix-space-1); }
-  .uix-calendar__dow { text-align: center; font-size: 11px; color: var(--uix-text-muted); padding: var(--uix-space-1) 0; }
+  .uix-calendar__dow { text-align: center; font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted); padding: var(--uix-space-1) 0; }
   .uix-calendar__day { aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); color: var(--uix-text); cursor: pointer; border: 0; background: transparent; }
   .uix-calendar__day:hover { background: var(--uix-bg-hover); }
   .uix-calendar__day[data-muted] { color: var(--uix-text-muted); opacity: .45; }
@@ -785,7 +783,7 @@
   .uix-chart__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-4); }
   .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-3); margin-top: var(--uix-space-3); }
   .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-legend__swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .uix-legend__swatch { width: 10px; height: 10px; border-radius: var(--uix-radius-xs); flex: none; }
 }
 /* uix alert / inline banner — tone API. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -805,7 +803,7 @@
 }
 /* uix toast / notification — depends only on --uix-* tokens. JS appends to .uix-toaster. */
 @layer uix.components {
-  .uix-toaster { position: fixed; bottom: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: var(--uix-space-2); width: 340px; max-width: calc(100vw - 32px); }
+  .uix-toaster { position: fixed; bottom: 16px; right: 16px; z-index: var(--uix-z-toast); display: flex; flex-direction: column; gap: var(--uix-space-2); width: 340px; max-width: calc(100vw - 32px); }
   .uix-toast {
     display: flex; gap: var(--uix-space-3); align-items: flex-start; padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md);
     background: var(--uix-surface-2); border: 1px solid var(--uix-border); box-shadow: var(--uix-shadow-popover);
@@ -818,7 +816,7 @@
   .uix-toast__body { flex: 1; }
   .uix-toast__title { font-weight: 600; font-size: var(--uix-text-body); }
   .uix-toast__msg { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
-  .uix-toast__close { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1) var(--uix-space-2); border-radius: 5px; }
+  .uix-toast__close { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-xs); }
   .uix-toast__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-toast--success .uix-toast__icon { color: var(--uix-success); }
   .uix-toast--danger  .uix-toast__icon { color: var(--uix-danger); }
@@ -841,7 +839,7 @@
   .uix-dialog[open] { opacity: 1; transform: none; display: block; }
   @starting-style { .uix-dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); } }
   .uix-dialog::backdrop {
-    background: rgba(0,0,0,.5); opacity: 0;
+    background: var(--uix-scrim); opacity: 0;
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
   .uix-dialog[open]::backdrop { opacity: 1; }
@@ -870,7 +868,7 @@
   .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
   .uix-drawer::backdrop {
-    background: rgba(0,0,0,.5); opacity: 0;
+    background: var(--uix-scrim); opacity: 0;
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
   .uix-drawer[open]::backdrop { opacity: 1; }
@@ -898,7 +896,7 @@
   .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-peek[open] { transform: translateX(100%); } }
   .uix-peek::backdrop {
-    background: rgba(0,0,0,.4); opacity: 0;
+    background: var(--uix-scrim); opacity: 0;
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
   .uix-peek[open]::backdrop { opacity: 1; }
@@ -934,7 +932,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
   }
   .uix-id-cell__btn:hover { color: var(--uix-accent); }
-  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: 3px; }
+  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
   .uix-id-cell__arrow {
     width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
     opacity: 0;
@@ -978,7 +976,7 @@
   .uix-comment__body { background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-3); }
   .uix-comment__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-1); }
   .uix-comment__author { font-weight: 600; color: var(--uix-text); }
-  .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: 4px; font-weight: 500; }
+  .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); font-weight: 500; }
   .uix-composer { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-composer:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-composer textarea { width: 100%; border: 0; background: transparent; resize: vertical; padding: var(--uix-space-3) var(--uix-space-3); color: var(--uix-text); font: inherit; min-height: 60px; }
@@ -1029,7 +1027,7 @@
      0×0 under width:auto, which then shrink-wraps the fit-content <dialog> to nothing (nothing shows
      on open). min() keeps it within the viewport; height:auto preserves the aspect ratio. */
   .uix-lightbox img { display: block; width: min(720px, 92vw); height: auto; max-height: 92vh; border-radius: var(--uix-radius-md); }
-  .uix-lightbox::backdrop { background: rgba(0,0,0,.7); }
+  .uix-lightbox::backdrop { background: var(--uix-scrim-strong); }
 }
 /* uix prose content card + note callouts — for KB articles, descriptions, release notes. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -1041,7 +1039,7 @@
   .uix-prose a { color: var(--uix-link); }
   .uix-prose ul, .uix-prose ol { padding-left: var(--uix-space-5); }
   .uix-prose li + li { margin-top: var(--uix-space-1); }
-  .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: 4px; }
+  .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-xs); }
   .uix-prose blockquote { border-left: 3px solid var(--uix-border-strong); padding-left: var(--uix-space-3); color: var(--uix-text-muted); }
 
   .uix-note { display: flex; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md); border: 1px solid var(--uix-border); background: var(--uix-surface); }
@@ -1199,7 +1197,7 @@
     border-radius: var(--uix-radius-sm); box-shadow: var(--uix-shadow-sm);
   }
   .uix-node--decision .uix-node__title {
-    position: relative; z-index: 1; max-width: 88px; text-align: center;
+    position: relative; z-index: var(--uix-z-raised); max-width: 88px; text-align: center;
     font-size: var(--uix-text-meta); color: var(--tone-fg, var(--uix-text));
   }
 
@@ -1224,7 +1222,7 @@
   .uix-flow__edge--branch-no  { stroke: var(--uix-danger); }
   .uix-flow__edge--loop       { stroke: var(--uix-accent); stroke-dasharray: 5 4; }
   .uix-flow__arrow { fill: currentColor; }
-  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: 11px; }
+  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: var(--uix-text-eyebrow); }
   .uix-flow__edge-label--loop { fill: var(--uix-accent); }
 
   /* hovering/focusing a diagram sets its edges "flowing" (marching dashes) to read direction */
@@ -1329,8 +1327,8 @@
   .uix-audit__row:last-child { border-bottom: 0; }
   .uix-audit__actor { font-weight: 500; color: var(--uix-text); }
   .uix-audit__detail { color: var(--uix-text-hushed); }
-  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: 3px; }
-  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: 3px; }
+  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
+  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
   .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
 }
 /* uix contact / customer card (CRM) — depends only on --uix-* tokens. */
@@ -1355,7 +1353,7 @@
 }
 /* uix utility/typography bits — code, pre, blockquote, divider, status dots. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: 5px; padding: .1em .4em; color: var(--uix-text); }
+  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-xs); padding: .1em .4em; color: var(--uix-text); }
   .uix-pre { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); line-height: 1.5; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-4) var(--uix-space-4); overflow-x: auto; color: var(--uix-text); }
   .uix-blockquote { border-left: 3px solid var(--uix-accent); padding: var(--uix-space-1) 0 var(--uix-space-1) var(--uix-space-4); color: var(--uix-text-hushed); font-style: italic; }
   .uix-divider { height: 1px; background: var(--uix-border); border: 0; margin: var(--uix-space-4) 0; }
@@ -1370,7 +1368,7 @@
 /* uix heartbeat / live status indicator — a pulsing ping. Respects reduced-motion (guard stops the ping). */
 @layer uix.components {
   .uix-heartbeat { position: relative; display: inline-grid; place-items: center; width: 8px; height: 8px; flex: none; }
-  .uix-heartbeat__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-success); z-index: 1; }
+  .uix-heartbeat__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-success); z-index: var(--uix-z-raised); }
   .uix-heartbeat__ping { position: absolute; inset: 0; border-radius: 50%; background: var(--uix-success); animation: uix-ping 1.6s var(--uix-ease-out) infinite; }
   @keyframes uix-ping { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.8); opacity: 0; } }
   .uix-heartbeat--warning .uix-heartbeat__dot, .uix-heartbeat--warning .uix-heartbeat__ping { background: var(--uix-warning); }

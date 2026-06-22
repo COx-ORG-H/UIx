@@ -5,7 +5,7 @@
   .uix-comment__body { background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-3); }
   .uix-comment__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-1); }
   .uix-comment__author { font-weight: 600; color: var(--uix-text); }
-  .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: 4px; font-weight: 500; }
+  .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); font-weight: 500; }
   .uix-composer { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-composer:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-composer textarea { width: 100%; border: 0; background: transparent; resize: vertical; padding: var(--uix-space-3) var(--uix-space-3); color: var(--uix-text); font: inherit; min-height: 60px; }

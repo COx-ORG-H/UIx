@@ -17,7 +17,7 @@
   .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-peek[open] { transform: translateX(100%); } }
   .uix-peek::backdrop {
-    background: rgba(0,0,0,.4); opacity: 0;
+    background: var(--uix-scrim); opacity: 0;
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
   .uix-peek[open]::backdrop { opacity: 1; }
@@ -53,7 +53,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
   }
   .uix-id-cell__btn:hover { color: var(--uix-accent); }
-  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: 3px; }
+  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
   .uix-id-cell__arrow {
     width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
     opacity: 0;

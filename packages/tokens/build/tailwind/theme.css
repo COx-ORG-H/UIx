@@ -29,6 +29,7 @@
   --color-uix-warning: var(--uix-warning);
   --color-uix-warning-fg: var(--uix-warning-fg);
   --color-uix-warning-bg: var(--uix-warning-bg);
+  --color-uix-warning-text: var(--uix-warning-text);
   --color-uix-info: var(--uix-info);
   --color-uix-info-fg: var(--uix-info-fg);
   --color-uix-info-bg: var(--uix-info-bg);
@@ -54,7 +55,10 @@
   --color-uix-scrollbar-thumb: var(--uix-scrollbar-thumb);
   --color-uix-scrollbar-thumb-hover: var(--uix-scrollbar-thumb-hover);
   --color-uix-scrollbar-track: var(--uix-scrollbar-track);
+  --color-uix-scrim: var(--uix-scrim);
+  --color-uix-scrim-strong: var(--uix-scrim-strong);
 
+  --radius-uix-xs: var(--uix-radius-xs);
   --radius-uix-sm: var(--uix-radius-sm);
   --radius-uix-md: var(--uix-radius-md);
   --radius-uix-lg: var(--uix-radius-lg);

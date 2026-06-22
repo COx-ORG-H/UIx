@@ -8,5 +8,5 @@
      0×0 under width:auto, which then shrink-wraps the fit-content <dialog> to nothing (nothing shows
      on open). min() keeps it within the viewport; height:auto preserves the aspect ratio. */
   .uix-lightbox img { display: block; width: min(720px, 92vw); height: auto; max-height: 92vh; border-radius: var(--uix-radius-md); }
-  .uix-lightbox::backdrop { background: rgba(0,0,0,.7); }
+  .uix-lightbox::backdrop { background: var(--uix-scrim-strong); }
 }

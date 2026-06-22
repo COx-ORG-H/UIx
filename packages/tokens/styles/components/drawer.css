@@ -13,7 +13,7 @@
   .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
   @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
   .uix-drawer::backdrop {
-    background: rgba(0,0,0,.5); opacity: 0;
+    background: var(--uix-scrim); opacity: 0;
     transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
   }
   .uix-drawer[open]::backdrop { opacity: 1; }

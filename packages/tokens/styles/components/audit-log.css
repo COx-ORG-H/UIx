@@ -5,7 +5,7 @@
   .uix-audit__row:last-child { border-bottom: 0; }
   .uix-audit__actor { font-weight: 500; color: var(--uix-text); }
   .uix-audit__detail { color: var(--uix-text-hushed); }
-  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: 3px; }
-  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: 3px; }
+  .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
+  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
   .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
 }

@@ -71,7 +71,7 @@
     border-radius: var(--uix-radius-sm); box-shadow: var(--uix-shadow-sm);
   }
   .uix-node--decision .uix-node__title {
-    position: relative; z-index: 1; max-width: 88px; text-align: center;
+    position: relative; z-index: var(--uix-z-raised); max-width: 88px; text-align: center;
     font-size: var(--uix-text-meta); color: var(--tone-fg, var(--uix-text));
   }
 
@@ -96,7 +96,7 @@
   .uix-flow__edge--branch-no  { stroke: var(--uix-danger); }
   .uix-flow__edge--loop       { stroke: var(--uix-accent); stroke-dasharray: 5 4; }
   .uix-flow__arrow { fill: currentColor; }
-  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: 11px; }
+  .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: var(--uix-text-eyebrow); }
   .uix-flow__edge-label--loop { fill: var(--uix-accent); }
 
   /* hovering/focusing a diagram sets its edges "flowing" (marching dashes) to read direction */

@@ -6,7 +6,7 @@
     transform: translateX(-50%) translateY(var(--uix-lift));
     background: var(--uix-text); color: var(--uix-bg-app); font-size: var(--uix-text-meta); font-weight: 500;
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); white-space: nowrap; box-shadow: var(--uix-shadow-popover);
-    opacity: 0; pointer-events: none; z-index: 20;
+    opacity: 0; pointer-events: none; z-index: var(--uix-z-tooltip);
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   [data-uix-tip]:hover::after, [data-uix-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }

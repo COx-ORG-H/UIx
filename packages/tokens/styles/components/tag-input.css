@@ -10,7 +10,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
-  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: 4px; }
+  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); }
   .uix-tag__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-tag__remove svg { width: 12px; height: 12px; }
 }

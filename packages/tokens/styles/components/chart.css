@@ -5,5 +5,5 @@
   .uix-chart__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-4); }
   .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-3); margin-top: var(--uix-space-3); }
   .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-legend__swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .uix-legend__swatch { width: 10px; height: 10px; border-radius: var(--uix-radius-xs); flex: none; }
 }

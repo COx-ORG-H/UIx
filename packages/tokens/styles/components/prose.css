@@ -8,7 +8,7 @@
   .uix-prose a { color: var(--uix-link); }
   .uix-prose ul, .uix-prose ol { padding-left: var(--uix-space-5); }
   .uix-prose li + li { margin-top: var(--uix-space-1); }
-  .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: 4px; }
+  .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-xs); }
   .uix-prose blockquote { border-left: 3px solid var(--uix-border-strong); padding-left: var(--uix-space-3); color: var(--uix-text-muted); }
 
   .uix-note { display: flex; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md); border: 1px solid var(--uix-border); background: var(--uix-surface); }

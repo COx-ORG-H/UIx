@@ -5,7 +5,7 @@
   .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-checkbox__box {
     width: 18px; height: 18px; flex: none; display: grid; place-items: center;
-    border: 1px solid var(--uix-border-strong); border-radius: 5px; background: var(--uix-surface);
+    border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-checkbox__box svg {

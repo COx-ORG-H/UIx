@@ -25,9 +25,10 @@ import { fileURLToPath } from 'node:url';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..'); // packages/tokens
 
-// Flip to true once the S7 tokenization codemod drives contract-class raw values
-// to zero. Until then check C is report-only so the gate can land green.
-const ENFORCE_RAW = false;
+// S7 (full-strict) is complete: every contract-class raw value in component CSS is now
+// TOKENIZED or JUSTIFIED in the reviewed allowlist (tests/raw-value-allowlist.json), so
+// check C is enforced (an unlisted raw value fails CI — Law 1).
+const ENFORCE_RAW = true;
 
 const problems = [];
 const reportC = [];
@@ -37,7 +38,7 @@ const contract = await readFile(join(PKG, 'build', 'css', 'tokens.css'), 'utf8')
 const REQUIRED_CATEGORIES = [
   'bg', 'surface', 'border', 'text', 'accent', 'brand', 'link', 'ring',
   'success', 'warning', 'info', 'danger', 'chart',
-  'space', 'radius', 'leading', 'font', 'shadow', 'ease', 'dur', 'icon', 'row',
+  'space', 'radius', 'leading', 'font', 'shadow', 'ease', 'dur', 'icon', 'row', 'z',
 ];
 for (const cat of REQUIRED_CATEGORIES) {
   if (!new RegExp(`--uix-${cat}(?:-[a-z0-9]|\\s*:)`).test(contract)) {
@@ -88,6 +89,25 @@ const COLOR_FN = /\b(?:rgb|rgba|hsl|hsla)\(\s*[\d.]/; // literal channels (var()
 const PX = /-?\d*\.?\d+px/g;
 const Z_NUM = /^-?\d+$/;
 
+// Justified raw values — a reviewed allowlist (tests/raw-value-allowlist.json). Each entry
+// exempts ONE (file, prop, value) WITH a written reason: component-intrinsic geometry that is
+// NOT a --uix-* scale value (minting a token for it would pollute the namespace). An unlisted
+// raw value still fails; a stale entry (target tokenized away) prints a cleanup warning.
+const allowEntries = JSON.parse(
+  await readFile(join(PKG, 'tests', 'raw-value-allowlist.json'), 'utf8'),
+).entries;
+const norm = (s) => s.replace(/\s+/g, ' ').trim();
+const allowKey = (file, prop, val) => `${file}|${norm(prop)}|${norm(val)}`;
+const allowed = new Map(allowEntries.map((e) => [allowKey(e.file, e.prop, e.value), e]));
+const allowHit = new Set();
+const justified = [];
+// route a raw-value finding: to justified[] if allowlisted (record the hit), else to reportC[]
+const flag = (file, prop, val, msg) => {
+  const k = allowKey(file, prop, val);
+  if (allowed.has(k)) { allowHit.add(k); justified.push(`${file}: ${prop}: ${val} — ${allowed.get(k).why}`); }
+  else reportC.push(msg);
+};
+
 let geometryPxCount = 0;
 const compDir = join(PKG, 'styles', 'components');
 for (const file of (await readdir(compDir)).filter((n) => n.endsWith('.css'))) {
@@ -95,15 +115,19 @@ for (const file of (await readdir(compDir)).filter((n) => n.endsWith('.css'))) {
   postcss.parse(css).walkDecls((d) => {
     const prop = d.prop.toLowerCase();
     const val = d.value;
-    if (HEX.test(val) || COLOR_FN.test(val)) reportC.push(`${file}: raw color in '${prop}: ${val}'`);
-    if (prop === 'z-index' && Z_NUM.test(val.trim())) reportC.push(`${file}: raw z-index '${val}' (needs a --uix-z-* token)`);
-    if (PX.test(val)) {
-      if (TOKENIZE_PX_PROPS.has(prop)) reportC.push(`${file}: raw px in '${prop}: ${val}' (tokenize -> --uix-space/radius/text)`);
-      else if (!GEOMETRY_PROPS.has(prop)) reportC.push(`${file}: raw px in un-classified property '${prop}: ${val}'`);
-      else geometryPxCount += (val.match(PX) || []).length;
+    if (HEX.test(val) || COLOR_FN.test(val)) flag(file, prop, val, `${file}: raw color in '${prop}: ${val}'`);
+    if (prop === 'z-index' && Z_NUM.test(val.trim())) flag(file, prop, val, `${file}: raw z-index '${val}' (needs a --uix-z-* token)`);
+    // NB: compute matches once with .match() — never .test() on a /g regex (its lastIndex is
+    // stateful across calls, which silently skips later decls). match() resets lastIndex itself.
+    const pxMatches = val.match(PX);
+    if (pxMatches) {
+      if (TOKENIZE_PX_PROPS.has(prop)) flag(file, prop, val, `${file}: raw px in '${prop}: ${val}' (tokenize -> --uix-space/radius/text)`);
+      else if (!GEOMETRY_PROPS.has(prop)) flag(file, prop, val, `${file}: raw px in un-classified property '${prop}: ${val}'`);
+      else geometryPxCount += pxMatches.length;
     }
   });
 }
+const staleAllow = allowEntries.filter((e) => !allowHit.has(allowKey(e.file, e.prop, e.value)));
 
 // ── Report ──────────────────────────────────────────────────────────────────────
 if (problems.length) {
@@ -112,11 +136,18 @@ if (problems.length) {
 }
 const label = ENFORCE_RAW ? 'FAILED' : 'report-only (pre-S7 codemod)';
 if (reportC.length) {
-  console[ENFORCE_RAW ? 'error' : 'warn'](`\n${ENFORCE_RAW ? '✗' : 'ℹ'} C raw-value scan — ${reportC.length} contract-class value(s) [${label}]:`);
+  console[ENFORCE_RAW ? 'error' : 'warn'](`\n${ENFORCE_RAW ? '✗' : 'ℹ'} C raw-value scan — ${reportC.length} unjustified contract-class value(s) [${label}]:`);
   for (const p of reportC) console[ENFORCE_RAW ? 'error' : 'warn'](`  • ${p}`);
+}
+if (justified.length) {
+  console.log(`\nℹ C raw values justified by allowlist — ${justified.length}:`);
+  for (const j of justified) console.log(`  • ${j}`);
+}
+for (const e of staleAllow) {
+  console.warn(`⚠ stale allowlist entry (no longer in the CSS — remove it): ${e.file} { ${e.prop}: ${e.value} }`);
 }
 console.log(`\nℹ C geometry px (justified by property class): ${geometryPxCount} occurrence(s).`);
 
 const failed = problems.length > 0 || (ENFORCE_RAW && reportC.length > 0);
 if (failed) process.exit(1);
-console.log(`✓ contract OK — ${REQUIRED_CATEGORIES.length} categories present, all themes cover their tier${ENFORCE_RAW ? ', no raw contract-class values' : ''}.`);
+console.log(`✓ contract OK — ${REQUIRED_CATEGORIES.length} categories present, all themes cover their tier${ENFORCE_RAW ? `, no unjustified raw values (${justified.length} justified by allowlist)` : ''}.`);

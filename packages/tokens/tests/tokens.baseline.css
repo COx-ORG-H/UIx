@@ -20,7 +20,7 @@
 
     /* status */
     --uix-success:#047857; --uix-success-fg:#FFFFFF; --uix-success-bg:#D0FAE5;
-    --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6;
+    --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6; --uix-warning-text:#92400E;
     --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;
     --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6;
     --uix-success-solid:#10B981; --uix-warning-solid:#F59E0B; --uix-info-solid:#2563EB; --uix-danger-solid:#EF4444;
@@ -42,13 +42,17 @@
     --uix-text-eyebrow:11px; --uix-leading-eyebrow:1.2; --uix-tracking-tight:-0.02em; --uix-tracking-eyebrow:0.06em;
 
     /* radius */
-    --uix-radius-sm:8px; --uix-radius-md:12px; --uix-radius-lg:16px; --uix-radius-pill:999px;
+    --uix-radius-xs:4px; --uix-radius-sm:8px; --uix-radius-md:12px; --uix-radius-lg:16px; --uix-radius-pill:999px;
 
     /* elevation */
     --uix-shadow-sm:0 1px 2px rgba(0,0,0,.06);
     --uix-shadow-popover:0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05);
     --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.18);
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,0);
+    --uix-scrim:rgba(0,0,0,.5); --uix-scrim-strong:rgba(0,0,0,.7);
+
+    /* stacking — semantic z-index ladder */
+    --uix-z-raised:1; --uix-z-sticky:3; --uix-z-dropdown:10; --uix-z-overlay:20; --uix-z-tooltip:30; --uix-z-toast:100;
 
     /* motion */
     --uix-ease-out:cubic-bezier(.23,1,.32,1); --uix-ease-out-strong:cubic-bezier(.2,0,0,1);
@@ -79,7 +83,7 @@
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 16%, transparent);
 
     --uix-success:#00D294; --uix-success-fg:#002C22; --uix-success-bg:rgba(0,210,148,.15);
-    --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16);
+    --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16); --uix-warning-text:var(--uix-warning,#FCBB00);
     --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16);
     --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20);
     --uix-success-solid:#34D399; --uix-warning-solid:#FBBF24; --uix-info-solid:#3B82F6; --uix-danger-solid:#F87171;

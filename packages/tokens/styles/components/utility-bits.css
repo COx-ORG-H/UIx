@@ -1,6 +1,6 @@
 /* uix utility/typography bits — code, pre, blockquote, divider, status dots. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: 5px; padding: .1em .4em; color: var(--uix-text); }
+  .uix-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-xs); padding: .1em .4em; color: var(--uix-text); }
   .uix-pre { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); line-height: 1.5; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-4) var(--uix-space-4); overflow-x: auto; color: var(--uix-text); }
   .uix-blockquote { border-left: 3px solid var(--uix-accent); padding: var(--uix-space-1) 0 var(--uix-space-1) var(--uix-space-4); color: var(--uix-text-hushed); font-style: italic; }
   .uix-divider { height: 1px; background: var(--uix-border); border: 0; margin: var(--uix-space-4) 0; }

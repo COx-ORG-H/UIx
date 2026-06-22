@@ -1,4 +1,5 @@
 {
+  "radius-xs":   { "$type": "dimension", "$value": "4px", "$description": "Smallest corner radius — tiny inset elements (checkbox box, kbd key, table/sidebar hover buttons, legend swatch, inline code, audit-log diff chips, small tags). The bottom rung below radius-sm." },
   "radius-sm":   { "$type": "dimension", "$value": "8px" },
   "radius-md":   { "$type": "dimension", "$value": "12px" },
   "radius-lg":   { "$type": "dimension", "$value": "16px" },
