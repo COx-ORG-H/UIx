@@ -1,0 +1,41 @@
+name: Update visual goldens
+
+# Bootstrap / refresh the Linux VR goldens (ADR-0016 S5). The styleguide pages can't be
+# golden-rendered on a dev's Windows/macOS box (those produce *-win32 / *-darwin images that
+# never match the CI runner), so generate them here — in the SAME pinned Playwright container
+# the `visual` CI job uses — and download the artifact to commit the *-linux.png files.
+#
+# Manual trigger only. Run it once to seed the goldens, then again whenever an intended
+# rendering change (e.g. a token update) should be re-baselined. (Auto-committing the goldens
+# from CI is deferred to the portfolio PAT — see the Phase 2 human-action checklist.)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build all (tokens + themes + styles + react)
+        run: npm run build:all
+
+      - name: (Re)generate Linux goldens
+        run: npm run test:visual:update
+
+      - name: Upload goldens (download + commit the *-linux.png files)
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-goldens-linux
+          path: tests/visual/__screenshots__/*-linux.png
+          retention-days: 14
+          if-no-files-found: error

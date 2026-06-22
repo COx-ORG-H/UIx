@@ -47,6 +47,32 @@ jobs:
       - name: Per-consumer smoke build
         run: npm run test:smoke
 
-      # TODO(S5): Playwright visual regression — npm run test:visual
-      #           (goldens are Linux/CI-generated; see Docs/plans phase2 S5)
       # TODO(S6): axe accessibility — npm run test:a11y
+
+  visual:
+    # Visual regression over the static styleguide (ADR-0016 Decision 6 — S5). Runs in the
+    # PINNED Playwright container so the goldens render identically wherever they are
+    # (re)generated — this job, the update-visual-goldens workflow, or `docker run` locally.
+    # Committed goldens are the *-linux.png files; bootstrap them once via update-visual-goldens.
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build all (tokens + themes + styles + react)
+        run: npm run build:all
+
+      - name: Visual regression (Playwright)
+        run: npm run test:visual
+
+      - name: Upload VR report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

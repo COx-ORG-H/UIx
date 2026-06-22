@@ -17,12 +17,17 @@
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
+    "serve:styleguide": "serve -l 4178 .",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
-    "@microsoft/api-extractor": "^7.58.9"
+    "@microsoft/api-extractor": "^7.58.9",
+    "@playwright/test": "^1.61.0",
+    "serve": "^14.2.6"
   }
 }

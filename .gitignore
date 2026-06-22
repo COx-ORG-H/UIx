@@ -8,3 +8,12 @@ Thumbs.db
 # imports build/css/tokens.css through styles/. Override the global gitignore that excludes build/.
 !build/
 !build/**
+
+# Playwright VR (S5): run outputs are transient; only the Linux goldens are tracked.
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+# local Windows/macOS runs produce these — they never match the Linux CI runner, so never commit them
+tests/visual/__screenshots__/*-win32.png
+tests/visual/__screenshots__/*-darwin.png
