@@ -1,13 +1,13 @@
 name: CI
 
-# Trust gates for every PR + main push (ADR-0016 Decision 6). The same gates are
-# a hard precondition for publishing (see release.yml). Keep this list and the
-# release preconditions in sync.
+# Trust gates for every PR + default-branch push (ADR-0016 Decision 6). The same
+# gates are a hard precondition for publishing (see release.yml). Keep this list and
+# the release preconditions in sync.
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [master]
 
 permissions:
   contents: read
