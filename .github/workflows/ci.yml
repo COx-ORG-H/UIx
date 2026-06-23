@@ -61,8 +61,11 @@ jobs:
       - name: Install (workspace)
         run: npm ci
 
-      - name: Build all (tokens + themes + styles + react)
-        run: npm run build:all
+      # tokens build only (regenerates build/css for the static styleguide). NOT build:all:
+      # its inner `cd packages/react && npm ci` reconciles the workspace and prunes the root
+      # devDeps (playwright, serve) that the next step needs.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
 
       - name: Visual regression (Playwright)
         run: npm run test:visual
@@ -93,8 +96,10 @@ jobs:
       - name: Install (workspace)
         run: npm ci
 
-      - name: Build all (tokens + themes + styles + react)
-        run: npm run build:all
+      # tokens build only (static styleguide CSS). NOT build:all — its inner react `npm ci`
+      # prunes the root devDeps (playwright, serve) the a11y run needs.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
 
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium

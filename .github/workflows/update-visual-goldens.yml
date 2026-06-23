@@ -26,8 +26,10 @@ jobs:
       - name: Install (workspace)
         run: npm ci
 
-      - name: Build all (tokens + themes + styles + react)
-        run: npm run build:all
+      # tokens build only (static styleguide CSS). NOT build:all — its inner react `npm ci`
+      # prunes the root devDeps (playwright, serve) this job needs.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
 
       - name: (Re)generate Linux goldens
         run: npm run test:visual:update
