@@ -1,0 +1,59 @@
+/* uix base — reset, fonts, element defaults, focus, selection, themed scrollbars.
+   Layer order: tokens < base < util < motion < components. */
+/* Fonts load via the Google Fonts <link> in index.html (Inter + IBM Plex Sans + IBM Plex Mono). */
+@layer uix.base {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+  /* default theme follows the OS until JS sets data-theme */
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]):not(.dark) { color-scheme: dark; } }
+  :root[data-theme="dark"], :root.dark { color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+
+  body {
+    font-family: var(--uix-font-sans);
+    font-size: var(--uix-text-body);
+    line-height: var(--uix-leading-body);
+    color: var(--uix-text);
+    background: var(--uix-bg-app);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 { font-family: var(--uix-font-heading); letter-spacing: var(--uix-tracking-tight); font-weight: 600; }
+  h1 { font-size: var(--uix-text-display); line-height: var(--uix-leading-display); }
+  h2 { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
+  h3 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
+
+  img, svg, video, canvas { display: block; max-width: 100%; }
+  input, button, textarea, select { font: inherit; color: inherit; }
+  code, kbd, pre, samp { font-family: var(--uix-font-mono); }
+
+  a { color: var(--uix-link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  /* Content links carry a persistent underline so they aren't distinguished from body text by
+     colour alone (WCAG 1.4.1 / link-in-text-block). Chrome links — nav, buttons, tabs, breadcrumbs,
+     pills — are all class-bearing, so :not([class]) scopes this to in-text content links only. */
+  a[href]:not([class]) { text-decoration: underline; }
+
+  :focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  :focus:not(:focus-visible) { outline: none; }
+  ::selection { background: var(--uix-brand-muted); }
+
+  /* themed scrollbars — Firefox */
+  * { scrollbar-width: thin; scrollbar-color: var(--uix-scrollbar-thumb) var(--uix-scrollbar-track); }
+  /* themed scrollbars — WebKit/Blink */
+  ::-webkit-scrollbar { width: var(--uix-scrollbar-size); height: var(--uix-scrollbar-size); }
+  ::-webkit-scrollbar-track { background: var(--uix-scrollbar-track); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--uix-scrollbar-thumb);
+    border-radius: var(--uix-radius-pill);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--uix-scrollbar-thumb-hover);
+    background-clip: content-box;
+  }
+}

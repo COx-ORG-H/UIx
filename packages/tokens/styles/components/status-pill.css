@@ -1,0 +1,24 @@
+/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-pill {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);
+    font-size: var(--uix-text-meta); font-weight: 500; line-height: 1.4;
+    background: var(--tone-bg, var(--uix-bg-active)); color: var(--tone-fg, var(--uix-text-hushed));
+  }
+  .uix-pill__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone-dot, currentColor); flex: none; }
+  .uix-pill--neutral { --tone-bg: var(--uix-bg-active); --tone-fg: var(--uix-text-hushed); --tone-dot: var(--uix-text-muted); }
+  .uix-pill--success { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success); --tone-dot: var(--uix-success); }
+  .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
+  .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
+  .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger); }
+  /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
+  .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
+  .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
+
+  /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
+     the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */
+  .uix-pill--outline { background: transparent; border: 1px solid var(--tone-line, color-mix(in srgb, var(--tone-fg) 40%, transparent)); }
+  .uix-pill--outline.uix-pill--neutral  { --tone-line: var(--uix-border-strong); }
+  .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
+  .uix-pill--outline.uix-pill--critical { color: var(--uix-danger-text); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
+}

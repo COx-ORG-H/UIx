@@ -1,0 +1,36 @@
+/* uix input + field wrapper — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
+  .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
+  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
+  .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+
+  .uix-input {
+    height: var(--uix-control-h); width: 100%;
+    padding: 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-input::placeholder { color: var(--uix-text-muted); }
+  .uix-input:hover { border-color: var(--uix-border-strong); }
+  .uix-input:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-input:disabled { opacity: .55; cursor: not-allowed; background: var(--uix-bg-subtle); }
+  .uix-input[readonly] { background: var(--uix-bg-subtle); }
+  .uix-input[aria-invalid="true"] { border-color: var(--uix-danger); }
+  .uix-input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
+  .uix-input--sm { height: 28px; font-size: var(--uix-text-meta); }
+
+  /* leading/trailing adornments */
+  .uix-input-group { position: relative; display: flex; align-items: center; }
+  .uix-input-group__icon { position: absolute; left: 10px; color: var(--uix-text-muted); display: inline-flex; pointer-events: none; }
+  .uix-input-group__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-input-group--has-leading .uix-input { padding-left: 38px; }
+  /* validation microinteractions */
+  .uix-input[data-valid] { border-color: var(--uix-success); }
+  .uix-input[data-valid]:focus { box-shadow: 0 0 0 3px var(--uix-success-bg); }
+  .uix-input-group--has-trailing .uix-input { padding-right: 38px; }
+  .uix-input-group__icon--trailing { left: auto; right: 10px; }
+}

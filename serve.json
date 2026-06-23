@@ -1,0 +1,7 @@
+{
+  "cleanUrls": false,
+  "directoryListing": false,
+  "headers": [
+    { "source": "**/*.css", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
+}

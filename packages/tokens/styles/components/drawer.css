@@ -1,0 +1,24 @@
+/* uix drawer / side sheet — native <dialog> sliding from the right edge. */
+@layer uix.components {
+  .uix-drawer {
+    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(420px, 100vw); padding: 0; color: var(--uix-text);
+    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
+    transform: translateX(100%);
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
+    display: none;
+  }
+  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
+  @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
+  .uix-drawer::backdrop {
+    background: var(--uix-scrim); opacity: 0;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
+  .uix-drawer[open]::backdrop { opacity: 1; }
+  @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
+  .uix-drawer__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-drawer__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
+  .uix-drawer__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
+}

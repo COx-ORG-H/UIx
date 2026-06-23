@@ -1,0 +1,14 @@
+/* uix notification center — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-notifs { background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; }
+  .uix-notifs__head { display: flex; align-items: center; padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); font-weight: 600; }
+  .uix-notif { display: grid; grid-template-columns: auto 1fr; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+  .uix-notif:last-child { border-bottom: 0; }
+  .uix-notif[data-unread] { background: var(--uix-brand-muted); }
+  .uix-notif__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-2); }
+  .uix-notif[data-unread] .uix-notif__dot { background: var(--uix-accent); }
+  .uix-notif:not([data-unread]) .uix-notif__dot { background: transparent; }
+  .uix-notif__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the unread brand-muted tint, muted meta dips below AA — hushed composites darker on the tint */
+  .uix-notif[data-unread] .uix-notif__meta { color: var(--uix-text-hushed); }
+}

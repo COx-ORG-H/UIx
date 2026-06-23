@@ -1,0 +1,72 @@
+/* GENERATED — do not edit. Tailwind v4 `@theme`. Import AFTER @uix/tokens/css so the
+   --uix-* vars exist; values stay var() so brand + dark cascade through (e.g. `bg-uix-accent`). */
+@theme {
+  --color-uix-bg-app: var(--uix-bg-app);
+  --color-uix-bg-subtle: var(--uix-bg-subtle);
+  --color-uix-bg-hover: var(--uix-bg-hover);
+  --color-uix-bg-active: var(--uix-bg-active);
+  --color-uix-surface: var(--uix-surface);
+  --color-uix-surface-2: var(--uix-surface-2);
+  --color-uix-surface-3: var(--uix-surface-3);
+  --color-uix-border: var(--uix-border);
+  --color-uix-border-strong: var(--uix-border-strong);
+  --color-uix-text: var(--uix-text);
+  --color-uix-text-hushed: var(--uix-text-hushed);
+  --color-uix-text-muted: var(--uix-text-muted);
+  --color-uix-text-reverse: var(--uix-text-reverse);
+  --color-uix-text-hushed-reverse: var(--uix-text-hushed-reverse);
+  --color-uix-accent: var(--uix-accent);
+  --color-uix-accent-dark: var(--uix-accent-dark);
+  --color-uix-accent-light: var(--uix-accent-light);
+  --color-uix-accent-hover: var(--uix-accent-hover);
+  --color-uix-accent-fg: var(--uix-accent-fg);
+  --color-uix-link: var(--uix-link);
+  --color-uix-ring: var(--uix-ring);
+  --color-uix-brand-muted: var(--uix-brand-muted);
+  --color-uix-success: var(--uix-success);
+  --color-uix-success-fg: var(--uix-success-fg);
+  --color-uix-success-bg: var(--uix-success-bg);
+  --color-uix-warning: var(--uix-warning);
+  --color-uix-warning-fg: var(--uix-warning-fg);
+  --color-uix-warning-bg: var(--uix-warning-bg);
+  --color-uix-warning-text: var(--uix-warning-text);
+  --color-uix-info: var(--uix-info);
+  --color-uix-info-fg: var(--uix-info-fg);
+  --color-uix-info-bg: var(--uix-info-bg);
+  --color-uix-info-text: var(--uix-info-text);
+  --color-uix-danger: var(--uix-danger);
+  --color-uix-danger-fg: var(--uix-danger-fg);
+  --color-uix-danger-bg: var(--uix-danger-bg);
+  --color-uix-danger-text: var(--uix-danger-text);
+  --color-uix-success-solid: var(--uix-success-solid);
+  --color-uix-warning-solid: var(--uix-warning-solid);
+  --color-uix-info-solid: var(--uix-info-solid);
+  --color-uix-danger-solid: var(--uix-danger-solid);
+  --color-uix-chart-1: var(--uix-chart-1);
+  --color-uix-chart-2: var(--uix-chart-2);
+  --color-uix-chart-3: var(--uix-chart-3);
+  --color-uix-chart-4: var(--uix-chart-4);
+  --color-uix-chart-5: var(--uix-chart-5);
+  --color-uix-chart-6: var(--uix-chart-6);
+  --color-uix-chart-7: var(--uix-chart-7);
+  --color-uix-chart-8: var(--uix-chart-8);
+  --color-uix-chart-neutral: var(--uix-chart-neutral);
+  --color-uix-row: var(--uix-row);
+  --color-uix-row-alt: var(--uix-row-alt);
+  --color-uix-row-pinned-bg: var(--uix-row-pinned-bg);
+  --color-uix-scrollbar-thumb: var(--uix-scrollbar-thumb);
+  --color-uix-scrollbar-thumb-hover: var(--uix-scrollbar-thumb-hover);
+  --color-uix-scrollbar-track: var(--uix-scrollbar-track);
+  --color-uix-scrim: var(--uix-scrim);
+  --color-uix-scrim-strong: var(--uix-scrim-strong);
+
+  --radius-uix-xs: var(--uix-radius-xs);
+  --radius-uix-sm: var(--uix-radius-sm);
+  --radius-uix-md: var(--uix-radius-md);
+  --radius-uix-lg: var(--uix-radius-lg);
+  --radius-uix-pill: var(--uix-radius-pill);
+
+  --font-uix-sans: var(--uix-font-sans);
+  --font-uix-heading: var(--uix-font-heading);
+  --font-uix-mono: var(--uix-font-mono);
+}

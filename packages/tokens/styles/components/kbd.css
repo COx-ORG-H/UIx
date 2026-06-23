@@ -1,0 +1,8 @@
+/* uix keyboard-shortcut chip — depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-kbd {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 var(--uix-space-2);
+    font-family: var(--uix-font-mono); font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted);
+    background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-bottom-width: 2px; border-radius: var(--uix-radius-xs);
+  }
+}

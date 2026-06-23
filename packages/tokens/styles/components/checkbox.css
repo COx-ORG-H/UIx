@@ -1,0 +1,20 @@
+/* uix checkbox — depends only on --uix-* tokens. Markup:
+   <label class="uix-checkbox"><input type="checkbox"><span class="uix-checkbox__box">{check svg}</span> Label</label> */
+@layer uix.components {
+  .uix-checkbox { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: pointer; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uix-checkbox__box {
+    width: 18px; height: 18px; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-checkbox__box svg {
+    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0; transform: scale(.5);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+  }
+  .uix-checkbox > input:checked + .uix-checkbox__box,
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
+  .uix-checkbox > input:checked + .uix-checkbox__box svg { opacity: 1; transform: none; }
+  .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-checkbox > input:disabled ~ * { opacity: .5; }
+}

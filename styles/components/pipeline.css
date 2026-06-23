@@ -1,9 +1,0 @@
-/* uix deal / pipeline stage bar — depends only on --uix-* tokens. */
-@layer uix.components {
-  .uix-pipeline { display: flex; gap: var(--uix-space-1); }
-  .uix-pipeline__stage { flex: 1; text-align: center; padding: var(--uix-space-2) var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); background: var(--uix-bg-subtle); }
-  .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
-  .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }
-  .uix-pipeline__stage[data-state="done"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
-  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 600; }
-}

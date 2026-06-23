@@ -1,0 +1,116 @@
+name: CI
+
+# Trust gates for every PR + main push (ADR-0016 Decision 6). The same gates are
+# a hard precondition for publishing (see release.yml). Keep this list and the
+# release preconditions in sync.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    # Public OSS repo -> free GitHub-hosted runner. Swap for the COx self-hosted
+    # label (ADR-0006/0008) if the org pool is preferred.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build all (tokens + themes + styles + react)
+        run: npm run build:all
+
+      - name: Token value parity
+        run: npm run test:parity
+
+      - name: Contract completeness
+        run: npm run test:contract
+
+      - name: Public API lock (@uix/react)
+        run: npm run test:api
+
+      - name: Per-consumer smoke build
+        run: npm run test:smoke
+
+  visual:
+    # Visual regression over the static styleguide (ADR-0016 Decision 6 — S5). Runs in the
+    # PINNED Playwright container so the goldens render identically wherever they are
+    # (re)generated — this job, the update-visual-goldens workflow, or `docker run` locally.
+    # Committed goldens are the *-linux.png files; bootstrap them once via update-visual-goldens.
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # tokens build only (regenerates build/css for the static styleguide). NOT build:all:
+      # its inner `cd packages/react && npm ci` reconciles the workspace and prunes the root
+      # devDeps (playwright, serve) that the next step needs.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      - name: Visual regression (Playwright)
+        run: npm run test:visual
+
+      - name: Upload VR report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  a11y:
+    # Accessibility gate (ADR-0016 Decision 6 — S6). axe-core over the static styleguide in
+    # light + dark. Fails on serious/critical WCAG 2.1 A/AA violations; the two design-level
+    # rules (color-contrast, link-in-text-block) are calibrated in the spec with a follow-up.
+    # DOM-rule based, so OS-independent — plain ubuntu-latest + a chromium install (no pinned
+    # container needed, unlike VR).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # tokens build only (static styleguide CSS). NOT build:all — its inner react `npm ci`
+      # prunes the root devDeps (playwright, serve) the a11y run needs.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Accessibility (axe)
+        run: npm run test:a11y
+
+      - name: Upload a11y report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report
+          path: playwright-report/
+          retention-days: 7

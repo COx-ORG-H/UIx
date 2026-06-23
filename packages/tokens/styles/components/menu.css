@@ -1,0 +1,15 @@
+/* uix menu / dropdown / context menu — popover-anchored surface. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-menu { min-width: 200px; margin: 0; padding: var(--uix-space-1); list-style: none; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); }
+  .uix-menu__item {
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; text-align: left; padding: var(--uix-space-2) var(--uix-space-3);
+    border: 0; background: transparent; border-radius: var(--uix-radius-sm); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
+  }
+  .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
+  .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }
+  .uix-menu__item--danger { color: var(--uix-danger-text); }
+  .uix-menu__item--danger svg { color: var(--uix-danger-text); }
+  .uix-menu__item .uix-kbd { margin-left: auto; }
+  .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
+  .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
+}

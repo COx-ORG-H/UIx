@@ -1,0 +1,26 @@
+{
+  "shadow-sm":      { "$type": "shadow", "$value": "0 1px 2px rgba(0,0,0,.06)" },
+  "shadow-popover": { "$type": "shadow", "$value": "0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05)" },
+  "shadow-overlay": { "$type": "shadow", "$value": "0 16px 48px rgba(0,0,0,.18)" },
+  "highlight-top":  { "$type": "shadow", "$value": "inset 0 1px 0 rgba(255,255,255,0)" },
+
+  "ease-out":        { "$type": "cubicBezier", "$value": "cubic-bezier(.23,1,.32,1)" },
+  "ease-out-strong": { "$type": "cubicBezier", "$value": "cubic-bezier(.2,0,0,1)" },
+  "ease-in":         { "$type": "cubicBezier", "$value": "cubic-bezier(.4,0,1,1)" },
+  "ease-in-out":     { "$type": "cubicBezier", "$value": "cubic-bezier(.77,0,.175,1)" },
+  "ease-spring":     { "$type": "cubicBezier", "$value": "cubic-bezier(.34,1.56,.64,1)" },
+
+  "dur-fast":   { "$type": "duration", "$value": "120ms" },
+  "dur":        { "$type": "duration", "$value": "160ms" },
+  "dur-slow":   { "$type": "duration", "$value": "240ms" },
+  "dur-slower": { "$type": "duration", "$value": "320ms" },
+
+  "lift": { "$type": "dimension", "$value": "4px" },
+
+  "z-raised":   { "$type": "number", "$value": "1",   "$description": "z-index ladder (semantic stacking order). raised = locally lifted within a component: a sticky table header & first column, a flow node title over its diamond, a heartbeat dot over its ping." },
+  "z-sticky":   { "$type": "number", "$value": "3",   "$description": "A sticky plane that must outrank raised siblings — the pinned-column header corner, which sits above both the sticky row and the sticky column." },
+  "z-dropdown": { "$type": "number", "$value": "10",  "$description": "Detached layers anchored to a trigger: menus, selects, comboboxes, popovers." },
+  "z-overlay":  { "$type": "number", "$value": "20",  "$description": "Full-viewport overlays and their backdrops: modal, drawer, side-peek, lightbox." },
+  "z-tooltip":  { "$type": "number", "$value": "30",  "$description": "Tooltips — above overlays so a tip raised from inside a dialog stays visible." },
+  "z-toast":    { "$type": "number", "$value": "100", "$description": "Toasts / transient notifications — top of the stack." }
+}

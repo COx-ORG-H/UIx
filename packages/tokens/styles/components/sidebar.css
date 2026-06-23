@@ -1,0 +1,64 @@
+/* uix sidebar nav — items, favorites, collapsible sub-items, collapsed rail. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-sidebar { width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-2); overflow-x: hidden; overflow-y: auto; }
+  .uix-sidebar__eyebrow {
+    font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+    color: var(--uix-text-muted); padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-1);
+  }
+
+  /* brand header */
+  .uix-sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2) var(--uix-space-2); }
+  .uix-sidebar__brand { min-width: 0; font-size: var(--uix-text-h3); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-sidebar__toggle {
+    display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+    border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-sm);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-sidebar__toggle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-sidebar__toggle svg { width: 18px; height: 18px; }
+
+  .uix-navitem {
+    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
+    border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
+  /* active uses --uix-link (the brightened-on-dark accent) not raw --uix-accent: the deep accent
+     fails AA as text on the brand-muted tint in dark; link reads legibly in both themes. */
+  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
+  .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
+  .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
+  .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
+  .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navitem__star svg { width: 15px; height: 15px; }
+  .uix-navitem:hover .uix-navitem__star { opacity: 1; }
+  .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
+  .uix-navitem__star[data-on] svg { fill: currentColor; }
+
+  /* collapsible group */
+  .uix-navgroup { }
+  .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
+  .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
+  .uix-navgroup__panel > div { overflow: hidden; }
+  .uix-subitem { padding-left: var(--uix-space-5); }
+  .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
+
+  /* collapsed rail */
+  .uix-sidebar[data-collapsed] { width: 56px; }
+  .uix-sidebar[data-collapsed] .uix-navitem__label,
+  .uix-sidebar[data-collapsed] .uix-navitem__badge,
+  .uix-sidebar[data-collapsed] .uix-navitem__star,
+  .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
+  .uix-sidebar[data-collapsed] .uix-sidebar__brand,
+  .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
+  .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  /* center the icon-only rail; head keeps just the toggle, centered */
+  .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
+}

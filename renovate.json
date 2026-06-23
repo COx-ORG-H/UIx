@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true },
+  "packageRules": [
+    {
+      "description": "Automerge non-major dev/tooling updates — but only after the CI trust gates pass (ADR-0016 Decision 6). Renovate waits for the required status checks from ci.yml; make those checks required in branch protection for this to be a real gate. Bot pushes should use the portfolio PAT (not GITHUB_TOKEN) so downstream CI retriggers (ADR-0006).",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Never automerge majors — contract/behaviour risk needs a human.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "React stays on the peer-supported range; group its updates.",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "groupName": "react"
+    }
+  ]
+}

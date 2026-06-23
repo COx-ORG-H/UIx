@@ -15,7 +15,7 @@ building a bespoke local component.
 | Tokens (`--uix-*`) | `tokens/` (DTCG) | `build/css/tokens.css`, Tailwind theme, typed TS | `@uix/tokens/*` |
 | Per-product brand | `themes/*.tokens.json` | `themes/*.css` | `@uix/tokens/themes/<product>` |
 | CSS components (`.uix-*`) | `styles/components/*.css` | `build/css/styles.css` | drop-in classes |
-| React wrappers | `react/src/components/*.tsx` | `react/dist/*` | `@uix/react` |
+| React wrappers | `packages/react/src/components/*.tsx` | `packages/react/dist/*` | `@uix/react` |
 
 Consumers vendor these (e.g. Tensor `pnpm uix:sync` → `packages/vendor/uix`). After any change here, run
 `npm run build:all` then re-sync downstream.
@@ -63,5 +63,5 @@ Prioritize by product demand.
 - **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
   menu, form (FormGrid/Fieldset)
 
-When you build one: add `react/src/components/<Name>.tsx`, export from `react/src/index.ts`, and if it needs a
-demo, add it to `index.html`.
+When you build one: add `packages/react/src/components/<Name>.tsx`, export from `packages/react/src/index.ts`,
+and if it needs a demo, add it to `packages/tokens/index.html`.
