@@ -38,6 +38,8 @@
   --color-uix-danger-fg: var(--uix-danger-fg);
   --color-uix-danger-bg: var(--uix-danger-bg);
   --color-uix-danger-text: var(--uix-danger-text);
+  --color-uix-amber: var(--uix-amber);
+  --color-uix-amber-text: var(--uix-amber-text);
   --color-uix-success-solid: var(--uix-success-solid);
   --color-uix-warning-solid: var(--uix-warning-solid);
   --color-uix-info-solid: var(--uix-info-solid);

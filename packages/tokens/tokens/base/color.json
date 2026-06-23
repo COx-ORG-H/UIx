@@ -39,6 +39,8 @@
   "danger-fg":  { "$type": "color", "$value": "#FFFFFF" },
   "danger-bg":  { "$type": "color", "$value": "#FFE4E6" },
   "danger-text": { "$type": "color", "$value": "#C20012", "$description": "Danger-toned TEXT, legible on --uix-danger-bg (the bright --uix-danger #E40014 is only 4.05:1 on #FFE4E6). A hand-darkened red for text; --uix-danger stays the SOLID role (danger button bg, critical pill, dots). Dark mode brightens it. Used by pill/alert/stat-trend/field-error/menu/sla/node/audit --danger." },
+  "amber":      { "$type": "color", "$value": "#C98A1E", "$description": "SEV-3 / medium-severity tone — the third tier of the severity ramp (danger = SEV-1, warning = SEV-2, amber = SEV-3). A muted ochre, deliberately distinct from the brighter --uix-warning so the three tiers read apart." },
+  "amber-text": { "$type": "color", "$value": "#795006", "$description": "Amber-toned TEXT, legible on a faint amber tint and on dark surfaces (the SEV-3 ochre is too light as text on pale fills). Dark mode brightens it to track --uix-amber. Used by severity-3 badges." },
 
   "success-solid": { "$type": "color", "$value": "#10B981", "$description": "SOLID status role — the vivid fill/dot/pulse color, distinct from the legible TEXT role (--uix-success). Products override per brand." },
   "warning-solid": { "$type": "color", "$value": "#F59E0B", "$description": "SOLID status role (see success-solid)." },

@@ -34,6 +34,8 @@
   "danger-fg":  { "$type": "color", "$value": "#FFFFFF" },
   "danger-bg":  { "$type": "color", "$value": "rgba(220,38,38,.20)" },
   "danger-text": { "$type": "color", "$value": "#F87171", "$description": "On dark, the deep --uix-danger #DC2626 fails as text on the faint danger tint and on plain surfaces — brightened so pill/field-error/stat-trend/menu/node/audit text reads AA. --uix-danger stays the solid critical-pill / button bg (with white --uix-danger-fg)." },
+  "amber":      { "$type": "color", "$value": "#E6B25C", "$description": "SEV-3 tone lightened for dark surfaces (the light-mode ochre #C98A1E is too dark on dark)." },
+  "amber-text": { "$type": "color", "$value": "#E6B25C", "$description": "On dark the lightened amber reads as text directly — tracks --uix-amber." },
 
   "success-solid": { "$type": "color", "$value": "#34D399" },
   "warning-solid": { "$type": "color", "$value": "#FBBF24" },

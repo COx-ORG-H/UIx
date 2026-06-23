@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.3.0
+
+### Minor Changes
+
+- Add `--uix-amber` / `--uix-amber-text` — the SEV-3 (medium) severity tone that completes the ramp (danger = SEV-1, warning = SEV-2, amber = SEV-3). Light `#C98A1E` / `#795006`, dark `#E6B25C`. A muted ochre kept distinct from the brighter `--uix-warning` so the three severity tiers read apart.
+
 ## 2.2.0
 
 ### Minor Changes

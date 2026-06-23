@@ -40,6 +40,8 @@
     --uix-danger-fg: #FFFFFF;
     --uix-danger-bg: #FFE4E6;
     --uix-danger-text: #C20012;
+    --uix-amber: #C98A1E;
+    --uix-amber-text: #795006;
     --uix-success-solid: #10B981;
     --uix-warning-solid: #F59E0B;
     --uix-info-solid: #2563EB;
@@ -164,6 +166,8 @@
     --uix-danger-fg: #FFFFFF;
     --uix-danger-bg: rgba(220,38,38,.20);
     --uix-danger-text: #F87171;
+    --uix-amber: #E6B25C;
+    --uix-amber-text: #E6B25C;
     --uix-success-solid: #34D399;
     --uix-warning-solid: #FBBF24;
     --uix-info-solid: #3B82F6;

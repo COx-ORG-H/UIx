@@ -41,6 +41,8 @@ module.exports = {
       "uix-danger-fg": "var(--uix-danger-fg)",
       "uix-danger-bg": "var(--uix-danger-bg)",
       "uix-danger-text": "var(--uix-danger-text)",
+      "uix-amber": "var(--uix-amber)",
+      "uix-amber-text": "var(--uix-amber-text)",
       "uix-success-solid": "var(--uix-success-solid)",
       "uix-warning-solid": "var(--uix-warning-solid)",
       "uix-info-solid": "var(--uix-info-solid)",
