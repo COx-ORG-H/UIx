@@ -8,7 +8,7 @@
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
     border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
   }
-  .uix-validation-summary strong { color: var(--uix-danger); }
+  .uix-validation-summary strong { color: var(--uix-danger-text); }
   .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
-  .uix-validation-summary a { color: var(--uix-danger); }
+  .uix-validation-summary a { color: var(--uix-danger-text); text-decoration: underline; }
 }

@@ -46,10 +46,10 @@
 
   /* ---- state modifiers: set tone vars only ---- */
   .uix-node--pending { --tone-bg: var(--uix-bg-subtle);  --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); --tone-border: var(--uix-border); }
-  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-accent);    --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
-  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);       --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
+  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-link);       --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
+  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);  --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
   .uix-node--done    { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success);    --tone-dot: var(--uix-success);   --tone-border: var(--uix-success); }
-  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);     --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
+  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text); --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
   /* active/running read as "current" via a soft halo in their own tone */
   .uix-node--active, .uix-node--running { box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--tone-bg); }
 

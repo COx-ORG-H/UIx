@@ -19,15 +19,16 @@ const PAGES = [
 
 const GATED = new Set(['serious', 'critical']);
 
-// Justified rule exceptions (the plan's "calibrated baseline"). Each { id, why } is a serious/
-// critical rule we accept FOR NOW with a written reason and a follow-up. Structural a11y bugs
-// (roles, names, labels, focusability) are FIXED, not listed here — only design-level rules that
-// need a deliberate visual pass (which changes the palette and wants the VR goldens as a net,
-// not yet bootstrapped) are deferred. Burn these down: see the S6 follow-up task.
-const A11Y_ALLOW = [
-  { id: 'color-contrast', why: 'Pre-existing design-token contrast debt (~236 nodes: hushed/muted meta text, tinted labels/pills/eyebrows, trend deltas). Fixing it properly is a token-contrast pass that shifts the palette system-wide — a deliberate visual change that needs the VR goldens as a net. Tracked as a follow-up; re-gate once remediated.' },
-  { id: 'link-in-text-block', why: 'In-text links are distinguished by color alone (no underline) — a visual-design choice. Adding underlines changes the aesthetic everywhere; deferred to the same visual-a11y pass as color-contrast.' },
-];
+// Justified rule exceptions. Each { id, why } is a serious/critical rule we accept with a written
+// reason and the smallest possible scope — never a blanket disable. Structural a11y bugs (roles,
+// names, labels, focusability) are FIXED, not listed here.
+//
+// EMPTY as of the 2026-06-23 visual-a11y pass: the two design-level rules that were calibrated in
+// S6 — `color-contrast` (~238 nodes) and `link-in-text-block` (10 nodes) — were remediated and are
+// now ENFORCED. The fix was a token-contrast pass (new --uix-danger-text/--uix-info-text legible
+// text roles mirroring --uix-warning-text; darkened --uix-text-muted; label text mixed toward
+// --uix-text; in-text links underlined) — see Docs/plans/2026-06-22-phase2-release-and-gates.md (S6).
+const A11Y_ALLOW = [];
 const ALLOWED_IDS = new Set(A11Y_ALLOW.map((e) => e.id));
 
 for (const pg of PAGES) {

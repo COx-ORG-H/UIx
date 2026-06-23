@@ -29,9 +29,11 @@
   "info":       { "$type": "color", "$value": "#2563EB" },
   "info-fg":    { "$type": "color", "$value": "#FFFFFF" },
   "info-bg":    { "$type": "color", "$value": "rgba(48,128,255,.16)" },
+  "info-text":  { "$type": "color", "$value": "#60A5FA", "$description": "On dark, the deep --uix-info #2563EB fails as text on the faint info tint — brightened so info pill/alert/node text reads AA." },
   "danger":     { "$type": "color", "$value": "#DC2626" },
   "danger-fg":  { "$type": "color", "$value": "#FFFFFF" },
   "danger-bg":  { "$type": "color", "$value": "rgba(220,38,38,.20)" },
+  "danger-text": { "$type": "color", "$value": "#F87171", "$description": "On dark, the deep --uix-danger #DC2626 fails as text on the faint danger tint and on plain surfaces — brightened so pill/field-error/stat-trend/menu/node/audit text reads AA. --uix-danger stays the solid critical-pill / button bg (with white --uix-danger-fg)." },
 
   "success-solid": { "$type": "color", "$value": "#34D399" },
   "warning-solid": { "$type": "color", "$value": "#FBBF24" },

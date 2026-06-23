@@ -110,9 +110,9 @@
 @layer uix.components {
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
-  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger); }
+  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
   .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
 
@@ -307,7 +307,7 @@
     cursor: pointer; display: flex; align-items: center; gap: var(--uix-space-2);
   }
   .uix-listbox__option:hover, .uix-listbox__option[aria-selected="true"], .uix-listbox__option[data-active] { background: var(--uix-bg-hover); }
-  .uix-listbox__option[aria-selected="true"] { color: var(--uix-accent); }
+  .uix-listbox__option[aria-selected="true"] { color: var(--uix-link); }
   .uix-listbox__empty { padding: var(--uix-space-3); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
 }
 /* uix tag input / multi-select chips — depends only on --uix-* tokens. */
@@ -336,9 +336,9 @@
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
     border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
   }
-  .uix-validation-summary strong { color: var(--uix-danger); }
+  .uix-validation-summary strong { color: var(--uix-danger-text); }
   .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
-  .uix-validation-summary a { color: var(--uix-danger); }
+  .uix-validation-summary a { color: var(--uix-danger-text); text-decoration: underline; }
 }
 /* uix app shell — sidebar + topbar + content grid. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -381,10 +381,14 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
-  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 500; }
+  /* active uses --uix-link (the brightened-on-dark accent) not raw --uix-accent: the deep accent
+     fails AA as text on the brand-muted tint in dark; link reads legibly in both themes. */
+  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
   .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
   .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
+  .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
   .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navitem__star svg { width: 15px; height: 15px; }
   .uix-navitem:hover .uix-navitem__star { opacity: 1; }
@@ -509,8 +513,8 @@
   }
   .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }
-  .uix-menu__item--danger { color: var(--uix-danger); }
-  .uix-menu__item--danger svg { color: var(--uix-danger); }
+  .uix-menu__item--danger { color: var(--uix-danger-text); }
+  .uix-menu__item--danger svg { color: var(--uix-danger-text); }
   .uix-menu__item .uix-kbd { margin-left: auto; }
   .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
   .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
@@ -550,7 +554,7 @@
   .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
   .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
-  .uix-stat__trend--down { color: var(--uix-danger); background: var(--uix-danger-bg); }
+  .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
 }
 /* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -562,9 +566,9 @@
   .uix-pill__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone-dot, currentColor); flex: none; }
   .uix-pill--neutral { --tone-bg: var(--uix-bg-active); --tone-fg: var(--uix-text-hushed); --tone-dot: var(--uix-text-muted); }
   .uix-pill--success { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success); --tone-dot: var(--uix-success); }
-  .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);    --tone-dot: var(--uix-info); }
+  .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
   .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
-  .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);  --tone-dot: var(--uix-danger); }
+  .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger); }
   /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
   .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
   .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
@@ -574,7 +578,7 @@
   .uix-pill--outline { background: transparent; border: 1px solid var(--tone-line, color-mix(in srgb, var(--tone-fg) 40%, transparent)); }
   .uix-pill--outline.uix-pill--neutral  { --tone-line: var(--uix-border-strong); }
   .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
-  .uix-pill--outline.uix-pill--critical { color: var(--uix-danger); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
+  .uix-pill--outline.uix-pill--critical { color: var(--uix-danger-text); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
 }
 /* uix data table — zebra, sticky header, sort, selection, density, pinned rows. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -796,10 +800,10 @@
   .uix-alert__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-alert__title { font-weight: 600; margin-bottom: var(--uix-space-1); }
   .uix-alert__body { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info); }
+  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info-text); }
   .uix-alert--success { --tone-bg: var(--uix-success-bg); --tone-border: color-mix(in srgb, var(--uix-success) 30%, transparent); --tone-fg: var(--uix-success); }
   .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 40%, transparent); --tone-fg: var(--uix-warning); }
-  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger); }
+  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger-text); }
 }
 /* uix toast / notification — depends only on --uix-* tokens. JS appends to .uix-toaster. */
 @layer uix.components {
@@ -1094,6 +1098,8 @@
   .uix-notif[data-unread] .uix-notif__dot { background: var(--uix-accent); }
   .uix-notif:not([data-unread]) .uix-notif__dot { background: transparent; }
   .uix-notif__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the unread brand-muted tint, muted meta dips below AA — hushed composites darker on the tint */
+  .uix-notif[data-unread] .uix-notif__meta { color: var(--uix-text-hushed); }
 }
 /* uix label / tag taxonomy — colored via --label-color (set to a --uix-chart-* token). */
 @layer uix.components {
@@ -1101,7 +1107,10 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-sm);
     font-size: var(--uix-text-meta); font-weight: 500;
     background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);
-    color: var(--label-color, var(--uix-accent));
+    /* Pull the hue toward the theme foreground so the text clears WCAG AA on its own 16% tint.
+       Raw chart hues (esp. amber #F59E0B at 1.9:1) are tuned for fills, not text-on-tint; the dot
+       keeps the full hue. --uix-text flips per theme, so this darkens on light and lightens on dark. */
+    color: color-mix(in srgb, var(--label-color, var(--uix-accent)) 55%, var(--uix-text));
   }
   .uix-label__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label-color, var(--uix-accent)); }
 }
@@ -1122,7 +1131,7 @@
   .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
   .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }
   .uix-pipeline__stage[data-state="done"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
-  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 600; }
+  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 600; }
 }
 /* uix flow — workflow & pipeline diagrams: boxed nodes + connectors.
    Depends only on --uix-* tokens. Edges are decorative inline SVG (aria-hidden);
@@ -1172,10 +1181,10 @@
 
   /* ---- state modifiers: set tone vars only ---- */
   .uix-node--pending { --tone-bg: var(--uix-bg-subtle);  --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); --tone-border: var(--uix-border); }
-  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-accent);    --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
-  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info);       --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
+  .uix-node--active  { --tone-bg: var(--uix-brand-muted); --tone-fg: var(--uix-link);       --tone-dot: var(--uix-accent);    --tone-border: var(--uix-accent); }
+  .uix-node--running { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);  --tone-dot: var(--uix-info);      --tone-border: var(--uix-info); }
   .uix-node--done    { --tone-bg: var(--uix-success-bg); --tone-fg: var(--uix-success);    --tone-dot: var(--uix-success);   --tone-border: var(--uix-success); }
-  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger);     --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
+  .uix-node--error   { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text); --tone-dot: var(--uix-danger);    --tone-border: var(--uix-danger); }
   /* active/running read as "current" via a soft halo in their own tone */
   .uix-node--active, .uix-node--running { box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--tone-bg); }
 
@@ -1328,7 +1337,7 @@
   .uix-audit__actor { font-weight: 500; color: var(--uix-text); }
   .uix-audit__detail { color: var(--uix-text-hushed); }
   .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
-  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
+  .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger-text); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
   .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
 }
 /* uix contact / customer card (CRM) — depends only on --uix-* tokens. */
@@ -1348,8 +1357,8 @@
   .uix-sla { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
   .uix-sla svg { width: 14px; height: 14px; }
   .uix-sla[data-state="ok"] { color: var(--uix-success); }
-  .uix-sla[data-state="at-risk"] { color: var(--uix-warning); }
-  .uix-sla[data-state="breach"] { color: var(--uix-danger); }
+  .uix-sla[data-state="at-risk"] { color: var(--uix-warning-text); }
+  .uix-sla[data-state="breach"] { color: var(--uix-danger-text); }
 }
 /* uix utility/typography bits — code, pre, blockquote, divider, status dots. Depends only on --uix-* tokens. */
 @layer uix.components {

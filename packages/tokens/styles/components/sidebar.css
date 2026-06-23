@@ -24,10 +24,14 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
-  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 500; }
+  /* active uses --uix-link (the brightened-on-dark accent) not raw --uix-accent: the deep accent
+     fails AA as text on the brand-muted tint in dark; link reads legibly in both themes. */
+  .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
   .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
   .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
+  .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
   .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navitem__star svg { width: 15px; height: 15px; }
   .uix-navitem:hover .uix-navitem__star { opacity: 1; }

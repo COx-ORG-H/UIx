@@ -11,7 +11,7 @@
 
   "text":                { "$type": "color", "$value": "#0A0A0A" },
   "text-hushed":         { "$type": "color", "$value": "rgba(10,10,10,.62)" },
-  "text-muted":          { "$type": "color", "$value": "#737373" },
+  "text-muted":          { "$type": "color", "$value": "#6B6B6B", "$description": "Muted meta text. Darkened from #737373 so it clears WCAG AA 4.5:1 on the off-white surfaces it sits on (--uix-bg-subtle #F5F5F5, --uix-bg-app #FAFAFA); the old value was 4.34:1 on #F5F5F5." },
   "text-reverse":        { "$type": "color", "$value": "#FFFFFF" },
   "text-hushed-reverse": { "$type": "color", "$value": "rgba(255,255,255,.62)" },
 
@@ -34,9 +34,11 @@
   "info":       { "$type": "color", "$value": "#1447E6" },
   "info-fg":    { "$type": "color", "$value": "#FFFFFF" },
   "info-bg":    { "$type": "color", "$value": "#E3EBFF" },
+  "info-text":  { "$type": "color", "$value": "#1447E6", "$description": "Info-toned TEXT, legible on --uix-info-bg and dark surfaces. Light = --uix-info (already AA on the pale tint); dark brightens it (the deep --uix-info #2563EB fails as text on the dark tint). Used by status-pill/alert/node --info. See --uix-warning-text for the same TEXT-vs-SOLID split." },
   "danger":     { "$type": "color", "$value": "#E40014" },
   "danger-fg":  { "$type": "color", "$value": "#FFFFFF" },
   "danger-bg":  { "$type": "color", "$value": "#FFE4E6" },
+  "danger-text": { "$type": "color", "$value": "#C20012", "$description": "Danger-toned TEXT, legible on --uix-danger-bg (the bright --uix-danger #E40014 is only 4.05:1 on #FFE4E6). A hand-darkened red for text; --uix-danger stays the SOLID role (danger button bg, critical pill, dots). Dark mode brightens it. Used by pill/alert/stat-trend/field-error/menu/sla/node/audit --danger." },
 
   "success-solid": { "$type": "color", "$value": "#10B981", "$description": "SOLID status role — the vivid fill/dot/pulse color, distinct from the legible TEXT role (--uix-success). Products override per brand." },
   "warning-solid": { "$type": "color", "$value": "#F59E0B", "$description": "SOLID status role (see success-solid)." },

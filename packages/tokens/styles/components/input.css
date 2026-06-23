@@ -2,9 +2,9 @@
 @layer uix.components {
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
-  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger); }
+  .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
   .uix-field__success { font-size: var(--uix-text-meta); color: var(--uix-success); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
 

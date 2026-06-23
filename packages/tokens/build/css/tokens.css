@@ -14,7 +14,7 @@
     --uix-border-strong: #D4D4D4;
     --uix-text: #0A0A0A;
     --uix-text-hushed: rgba(10,10,10,.62);
-    --uix-text-muted: #737373;
+    --uix-text-muted: #6B6B6B;
     --uix-text-reverse: #FFFFFF;
     --uix-text-hushed-reverse: rgba(255,255,255,.62);
     --uix-accent: var(--uix-brand,#1447E6);
@@ -35,9 +35,11 @@
     --uix-info: #1447E6;
     --uix-info-fg: #FFFFFF;
     --uix-info-bg: #E3EBFF;
+    --uix-info-text: #1447E6;
     --uix-danger: #E40014;
     --uix-danger-fg: #FFFFFF;
     --uix-danger-bg: #FFE4E6;
+    --uix-danger-text: #C20012;
     --uix-success-solid: #10B981;
     --uix-warning-solid: #F59E0B;
     --uix-info-solid: #2563EB;
@@ -157,9 +159,11 @@
     --uix-info: #2563EB;
     --uix-info-fg: #FFFFFF;
     --uix-info-bg: rgba(48,128,255,.16);
+    --uix-info-text: #60A5FA;
     --uix-danger: #DC2626;
     --uix-danger-fg: #FFFFFF;
     --uix-danger-bg: rgba(220,38,38,.20);
+    --uix-danger-text: #F87171;
     --uix-success-solid: #34D399;
     --uix-warning-solid: #FBBF24;
     --uix-info-solid: #3B82F6;

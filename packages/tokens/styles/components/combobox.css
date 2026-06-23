@@ -11,6 +11,6 @@
     cursor: pointer; display: flex; align-items: center; gap: var(--uix-space-2);
   }
   .uix-listbox__option:hover, .uix-listbox__option[aria-selected="true"], .uix-listbox__option[data-active] { background: var(--uix-bg-hover); }
-  .uix-listbox__option[aria-selected="true"] { color: var(--uix-accent); }
+  .uix-listbox__option[aria-selected="true"] { color: var(--uix-link); }
   .uix-listbox__empty { padding: var(--uix-space-3); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
 }

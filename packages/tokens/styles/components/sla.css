@@ -3,6 +3,6 @@
   .uix-sla { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
   .uix-sla svg { width: 14px; height: 14px; }
   .uix-sla[data-state="ok"] { color: var(--uix-success); }
-  .uix-sla[data-state="at-risk"] { color: var(--uix-warning); }
-  .uix-sla[data-state="breach"] { color: var(--uix-danger); }
+  .uix-sla[data-state="at-risk"] { color: var(--uix-warning-text); }
+  .uix-sla[data-state="breach"] { color: var(--uix-danger-text); }
 }

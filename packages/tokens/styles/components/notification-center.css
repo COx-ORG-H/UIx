@@ -9,4 +9,6 @@
   .uix-notif[data-unread] .uix-notif__dot { background: var(--uix-accent); }
   .uix-notif:not([data-unread]) .uix-notif__dot { background: transparent; }
   .uix-notif__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* on the unread brand-muted tint, muted meta dips below AA — hushed composites darker on the tint */
+  .uix-notif[data-unread] .uix-notif__meta { color: var(--uix-text-hushed); }
 }

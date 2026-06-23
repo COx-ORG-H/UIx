@@ -8,7 +8,7 @@
     --uix-border:#E5E5E5; --uix-border-strong:#D4D4D4;
 
     /* text */
-    --uix-text:#0A0A0A; --uix-text-hushed:rgba(10,10,10,.62); --uix-text-muted:#737373;
+    --uix-text:#0A0A0A; --uix-text-hushed:rgba(10,10,10,.62); --uix-text-muted:#6B6B6B;
     --uix-text-reverse:#FFFFFF; --uix-text-hushed-reverse:rgba(255,255,255,.62);
 
     /* accent (blue) — brand slots unset; accent/link/ring chain through them */
@@ -21,8 +21,8 @@
     /* status */
     --uix-success:#047857; --uix-success-fg:#FFFFFF; --uix-success-bg:#D0FAE5;
     --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6; --uix-warning-text:#92400E;
-    --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;
-    --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6;
+    --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;  --uix-info-text:#1447E6;
+    --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6; --uix-danger-text:#C20012;
     --uix-success-solid:#10B981; --uix-warning-solid:#F59E0B; --uix-info-solid:#2563EB; --uix-danger-solid:#EF4444;
 
     /* chart (categorical) */
@@ -84,8 +84,8 @@
 
     --uix-success:#00D294; --uix-success-fg:#002C22; --uix-success-bg:rgba(0,210,148,.15);
     --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16); --uix-warning-text:var(--uix-warning,#FCBB00);
-    --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16);
-    --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20);
+    --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16); --uix-info-text:#60A5FA;
+    --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20); --uix-danger-text:#F87171;
     --uix-success-solid:#34D399; --uix-warning-solid:#FBBF24; --uix-info-solid:#3B82F6; --uix-danger-solid:#F87171;
 
     --uix-chart-1:#3080FF; --uix-chart-2:#00C2B0; --uix-chart-3:#00D294; --uix-chart-4:#FCBB00;

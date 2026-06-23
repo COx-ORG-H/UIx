@@ -32,7 +32,7 @@
   transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
 }
 .uix-guide__navlink:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
-.uix-guide__navlink[aria-current="true"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 500; }
+.uix-guide__navlink[aria-current="true"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
 
 /* ---- main + topbar ---- */
 .uix-guide__main { min-width: 0; }

@@ -5,5 +5,5 @@
   .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
   .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }
   .uix-pipeline__stage[data-state="done"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
-  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-accent); font-weight: 600; }
+  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 600; }
 }

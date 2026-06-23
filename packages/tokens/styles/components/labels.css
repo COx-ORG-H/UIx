@@ -4,7 +4,10 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-sm);
     font-size: var(--uix-text-meta); font-weight: 500;
     background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);
-    color: var(--label-color, var(--uix-accent));
+    /* Pull the hue toward the theme foreground so the text clears WCAG AA on its own 16% tint.
+       Raw chart hues (esp. amber #F59E0B at 1.9:1) are tuned for fills, not text-on-tint; the dot
+       keeps the full hue. --uix-text flips per theme, so this darkens on light and lightens on dark. */
+    color: color-mix(in srgb, var(--label-color, var(--uix-accent)) 55%, var(--uix-text));
   }
   .uix-label__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label-color, var(--uix-accent)); }
 }

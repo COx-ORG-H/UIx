@@ -9,8 +9,8 @@
   .uix-alert__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-alert__title { font-weight: 600; margin-bottom: var(--uix-space-1); }
   .uix-alert__body { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info); }
+  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info-text); }
   .uix-alert--success { --tone-bg: var(--uix-success-bg); --tone-border: color-mix(in srgb, var(--uix-success) 30%, transparent); --tone-fg: var(--uix-success); }
   .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 40%, transparent); --tone-fg: var(--uix-warning); }
-  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger); }
+  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger-text); }
 }
