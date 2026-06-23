@@ -76,6 +76,9 @@ jobs:
 
       - run: npm ci
       - run: npm run build:all
+      # build:all's inner react `npm ci` prunes root devDeps (incl. @changesets/cli) —
+      # restore them so `npx changeset publish` can resolve the executable.
+      - run: npm ci
 
       - name: Publish (inert without NPM_TOKEN)
         env:

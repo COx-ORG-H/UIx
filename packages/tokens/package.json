@@ -4,6 +4,11 @@
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/COx-ORG-H/UIx.git",
+    "directory": "packages/tokens"
+  },
   "publishConfig": {
     "access": "public"
   },

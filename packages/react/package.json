@@ -5,6 +5,11 @@
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/COx-ORG-H/UIx.git",
+    "directory": "packages/react"
+  },
   "files": [
     "dist"
   ],
