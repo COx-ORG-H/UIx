@@ -183,8 +183,8 @@
               </span>
             </div>
             <div class="uix-field" style="width:220px">
-              <label class="uix-field__label">Priority (error)</label>
-              <input class="uix-input" aria-invalid="true" value="Invalid value">
+              <label class="uix-field__label" for="f-prio-err">Priority (error)</label>
+              <input class="uix-input" id="f-prio-err" aria-invalid="true" value="Invalid value">
               <span class="uix-field__error">Please choose a priority.</span>
             </div>
             <div class="uix-field" style="width:220px">
@@ -193,7 +193,14 @@
             </div>
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label">Status</label>
-              <select class="uix-select"><option>Open</option><option>In progress</option><option>Resolved</option></select>
+              <div class="uix-select-rich" data-uix-richselect>
+                <button class="uix-select-trigger" type="button" popovertarget="status-sel" style="anchor-name:--statussel;width:100%"><span data-rs-label>Resolved</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+                <ul id="status-sel" popover class="uix-popover uix-listbox" style="position-anchor:--statussel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px">
+                  <li class="uix-listbox__option" data-rs-option>Open</li>
+                  <li class="uix-listbox__option" data-rs-option>In progress</li>
+                  <li class="uix-listbox__option" aria-selected="true" data-rs-option>Resolved</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -236,11 +243,11 @@
         <div class="uix-guide__subhead">Combobox &amp; file upload</div>
         <div data-uix-example>
           <div class="uix-example__preview" style="align-items:flex-start;gap:24px">
-            <ul class="uix-listbox" style="width:240px">
-              <li class="uix-listbox__option" aria-selected="true">Incident</li>
-              <li class="uix-listbox__option">Service request</li>
-              <li class="uix-listbox__option" data-active>Problem</li>
-              <li class="uix-listbox__option">Change</li>
+            <ul class="uix-listbox" role="listbox" aria-label="Ticket type" style="width:240px">
+              <li class="uix-listbox__option" role="option" aria-selected="true">Incident</li>
+              <li class="uix-listbox__option" role="option">Service request</li>
+              <li class="uix-listbox__option" role="option" data-active>Problem</li>
+              <li class="uix-listbox__option" role="option">Change</li>
             </ul>
             <label class="uix-dropzone" style="width:280px">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -260,7 +267,7 @@
             <fieldset class="uix-fieldset">
               <legend>Ticket details</legend>
               <div class="uix-form-grid">
-                <div class="uix-field"><label class="uix-field__label">Subject</label><input class="uix-input" value="VPN disconnects"></div>
+                <div class="uix-field"><label class="uix-field__label" for="f-subject">Subject</label><input class="uix-input" id="f-subject" value="VPN disconnects"></div>
                 <div class="uix-field"><label class="uix-field__label">Category</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="cat-sel" style="anchor-name:--catsel;width:100%"><span data-rs-label>Network</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="cat-sel" popover class="uix-popover uix-listbox" style="position-anchor:--catsel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Network</li><li class="uix-listbox__option" data-rs-option>Access</li></ul></div></div>
                 <div class="uix-field"><label class="uix-field__label">Assignee</label><input class="uix-input" placeholder="Unassigned"></div>
               </div>
@@ -582,7 +589,7 @@
           <button class="uix-btn uix-btn--secondary" data-uix-open="#demo-cmdk">Search <span class="uix-kbd">⌘K</span></button>
           <button class="uix-btn uix-btn--danger" data-uix-open="#demo-confirm">Delete…</button>
           <button class="uix-btn uix-btn--secondary" popovertarget="demo-pop" style="anchor-name:--popbtn">Popover</button>
-          <div id="demo-pop" popover class="uix-popover" style="position-anchor:--popbtn; top:anchor(bottom); justify-self:anchor-center; margin-top:6px; width:200px">
+          <div id="demo-pop" popover class="uix-popover" style="position-anchor:--popbtn; top:anchor(bottom); justify-self:anchor-center; margin-top:6px; min-width:200px">
             <div class="uix-menu" style="border:0;box-shadow:none;background:transparent;padding:0">
               <button class="uix-menu__item">Edit</button><button class="uix-menu__item">Duplicate</button><div class="uix-menu__sep"></div><button class="uix-menu__item uix-menu__item--danger">Delete</button>
             </div>
@@ -611,7 +618,7 @@
         <dialog class="uix-drawer" id="demo-drawer">
           <div class="uix-drawer__header"><span class="uix-dialog__title">Filters</span><button class="uix-dialog__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
           <div class="uix-drawer__body uix-stack" style="--gap:16px">
-            <div class="uix-field"><label class="uix-field__label">Assignee</label><select class="uix-select"><option>Anyone</option><option>Maya K.</option></select></div>
+            <div class="uix-field"><label class="uix-field__label">Assignee</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="assignee-sel" style="anchor-name:--assigneesel;width:100%"><span data-rs-label>Anyone</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="assignee-sel" popover class="uix-popover uix-listbox" style="position-anchor:--assigneesel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Anyone</li><li class="uix-listbox__option" data-rs-option>Maya K.</li></ul></div></div>
             <div class="uix-field"><label class="uix-field__label">Priority</label><div class="uix-radio-group"><label class="uix-radio"><input type="radio" name="dp" checked><span class="uix-radio__dot"></span> Any</label><label class="uix-radio"><input type="radio" name="dp"><span class="uix-radio__dot"></span> High</label></div></div>
           </div>
           <div class="uix-drawer__footer"><button class="uix-btn uix-btn--ghost" data-uix-close>Reset</button><button class="uix-btn uix-btn--primary" data-uix-close style="margin-left:auto">Apply</button></div>
@@ -720,10 +727,10 @@
 
         <div class="uix-guide__subhead">Inbox (master-detail)</div>
         <div class="uix-inbox">
-          <div class="uix-inbox__list">
-            <div class="uix-inbox__item" aria-selected="true" data-unread><div class="uix-inbox__subject">VPN disconnects randomly</div><div class="uix-inbox__preview">Maya: Rolled back the gateway config…</div></div>
-            <div class="uix-inbox__item" data-unread><div class="uix-inbox__subject">New laptop request</div><div class="uix-inbox__preview">Leo: Approved by manager, awaiting stock</div></div>
-            <div class="uix-inbox__item"><div class="uix-inbox__subject">Access to billing repo</div><div class="uix-inbox__preview">Resolved · 2 days ago</div></div>
+          <div class="uix-inbox__list" role="listbox" aria-label="Conversations">
+            <div class="uix-inbox__item" role="option" aria-selected="true" data-unread><div class="uix-inbox__subject">VPN disconnects randomly</div><div class="uix-inbox__preview">Maya: Rolled back the gateway config…</div></div>
+            <div class="uix-inbox__item" role="option" data-unread><div class="uix-inbox__subject">New laptop request</div><div class="uix-inbox__preview">Leo: Approved by manager, awaiting stock</div></div>
+            <div class="uix-inbox__item" role="option"><div class="uix-inbox__subject">Access to billing repo</div><div class="uix-inbox__preview">Resolved · 2 days ago</div></div>
           </div>
           <div class="uix-inbox__detail">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><h3 style="font-size:var(--uix-text-h3)">VPN disconnects randomly</h3><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span></div>

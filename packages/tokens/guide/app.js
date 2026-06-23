@@ -515,27 +515,62 @@ if (typeof document !== 'undefined') {
       btn.addEventListener('click', () => push({ title: btn.dataset.toastTitle, msg: btn.dataset.toastMsg, tone: btn.dataset.toastTone })));
   };
 
-  // ---- command-palette-style rich select (trigger + searchable popover) ----
+  // ---- command-palette-style rich select (trigger + popover; optional search) ----
+  // Mouse: click an option. Keyboard: the popovertarget button opens it, then
+  // Arrow/Home/End move a [data-active] highlight and Enter selects (Esc closes
+  // via the Popover API). Drives both .uix-listbox and .uix-cmdk option lists.
   const setupRichSelect = () => {
     document.querySelectorAll('[data-uix-richselect]').forEach((rs) => {
       const pop = rs.querySelector('[popover]');
+      const trigger = rs.querySelector('.uix-select-trigger');
       const label = rs.querySelector('[data-rs-label]');
       if (!pop) return;
       const search = pop.querySelector('input');
       const options = [...pop.querySelectorAll('[data-rs-option]')];
-      search?.addEventListener('input', () => {
-        const q = search.value.toLowerCase();
-        options.forEach((o) => { o.hidden = !o.textContent.toLowerCase().includes(q); });
-      });
-      pop.addEventListener('click', (e) => {
-        const opt = e.target.closest('[data-rs-option]'); if (!opt) return;
+      // a11y: the options style off [aria-selected], which is only a valid ARIA attribute on
+      // role=option inside a role=listbox — tag them so the popover is a real listbox.
+      pop.setAttribute('role', 'listbox');
+      options.forEach((o) => o.setAttribute('role', 'option'));
+      const visible = () => options.filter((o) => !o.hidden);
+      const setActive = (opt) => {
+        options.forEach((o) => o.removeAttribute('data-active'));
+        if (opt) { opt.setAttribute('data-active', ''); opt.scrollIntoView({ block: 'nearest' }); }
+      };
+      const choose = (opt) => {
+        if (!opt) return;
         options.forEach((o) => o.removeAttribute('aria-selected'));
         opt.setAttribute('aria-selected', 'true');
         if (label) label.textContent = opt.textContent.trim();
         pop.hidePopover();
+        trigger?.focus();
+      };
+      search?.addEventListener('input', () => {
+        const q = search.value.toLowerCase();
+        options.forEach((o) => { o.hidden = !o.textContent.toLowerCase().includes(q); });
+        setActive(visible()[0]);
+      });
+      pop.addEventListener('click', (e) => {
+        const opt = e.target.closest('[data-rs-option]');
+        if (opt) choose(opt);
+      });
+      rs.addEventListener('keydown', (e) => {
+        if (!pop.matches(':popover-open')) return;
+        const vis = visible(); if (!vis.length) return;
+        const idx = vis.findIndex((o) => o.hasAttribute('data-active'));
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(vis[Math.min(idx + 1, vis.length - 1)] || vis[0]); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(vis[Math.max(idx - 1, 0)]); }
+        else if (e.key === 'Home') { e.preventDefault(); setActive(vis[0]); }
+        else if (e.key === 'End') { e.preventDefault(); setActive(vis[vis.length - 1]); }
+        else if (e.key === 'Enter') { e.preventDefault(); choose(vis[idx] || vis[0]); }
       });
       pop.addEventListener('toggle', (e) => {
-        if (e.newState === 'open' && search) { search.value = ''; options.forEach((o) => { o.hidden = false; }); setTimeout(() => search.focus(), 0); }
+        if (e.newState === 'open') {
+          if (search) { search.value = ''; options.forEach((o) => { o.hidden = false; }); }
+          setActive(options.find((o) => o.getAttribute('aria-selected') === 'true') || visible()[0]);
+          if (search) setTimeout(() => search.focus(), 0);
+        } else {
+          setActive(null);
+        }
       });
     });
   };

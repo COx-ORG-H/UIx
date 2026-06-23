@@ -321,7 +321,7 @@
 
         <div class="uix-guide__subhead">The cell vocabulary</div>
         <p class="tbx-note">A fixed set of cell renderers keeps tables consistent. Each maps to a token-driven component you already have: <strong>pill</strong>, <strong>label</strong>, <strong>avatar/user-chip</strong>, <strong>meter</strong>.</p>
-        <div class="uix-table-wrap" style="max-height:none">
+        <div class="uix-table-wrap" tabindex="0" style="max-height:none">
           <table class="uix-table uix-table--no-zebra">
             <thead>
               <tr>
@@ -744,7 +744,7 @@
           <div style="flex:1 1 300px">
             <div class="uix-guide__subhead" style="margin-top:0">Append-only audit log</div>
             <p class="tbx-note" style="margin-bottom:10px">Audit tables are a read-only table variant: no row actions, no inline edit, hash-chained and verifiable. Each row shows its link in the chain.</p>
-            <div class="uix-table-wrap" style="max-height:220px">
+            <div class="uix-table-wrap" tabindex="0" style="max-height:220px">
               <table class="uix-table uix-table--no-zebra tbx-mini">
                 <thead><tr><th>When</th><th>Actor</th><th>Event</th><th>Chain</th></tr></thead>
                 <tbody id="tbx-audit"></tbody>
@@ -1268,7 +1268,7 @@
           state.page = 1; render();
         });
         wrap.append(sel);
-        const save = el(`<button class="uix-btn uix-btn--ghost uix-btn--sm" type="button" data-uix-tip="Save current view">${I.plus}</button>`);
+        const save = el(`<button class="uix-btn uix-btn--ghost uix-btn--sm" type="button" aria-label="Save current view" data-uix-tip="Save current view">${I.plus}</button>`);
         save.addEventListener('click', () => toast('View saved'));
         wrap.append(save);
         return wrap;

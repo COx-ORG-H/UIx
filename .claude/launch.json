@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "styleguide",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["-y", "serve", "-l", "4178", "."],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "serve:styleguide"],
       "port": 4178
     }
   ]

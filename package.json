@@ -18,13 +18,15 @@
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
     "serve:styleguide": "serve -l 4178 .",
-    "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots",
+    "test:visual": "playwright test tests/visual",
+    "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:a11y": "playwright test tests/a11y",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@changesets/cli": "^2.31.0",
     "@microsoft/api-extractor": "^7.58.9",
     "@playwright/test": "^1.61.0",

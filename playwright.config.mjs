@@ -14,7 +14,9 @@ const PORT = 4178;
 const BASE = `http://localhost:${PORT}/packages/tokens/`;
 
 export default defineConfig({
-  testDir: './tests/visual',
+  // covers tests/visual (VR) + tests/a11y (axe); the scripts filter by subdir. The
+  // smoke-consumer fixtures aren't *.spec.* so they're never picked up.
+  testDir: './tests',
   // flat, project- and platform-suffixed so light/dark/OS goldens never collide
   snapshotPathTemplate: 'tests/visual/__screenshots__/{projectName}-{arg}-{platform}{ext}',
   fullyParallel: true,
