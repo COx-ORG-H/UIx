@@ -1,0 +1,45 @@
+/* uix typography utilities — class-based application of the --uix-text-* scale.
+   A `<span class="uix-text-h3">` reads identically to an `<h3>`; consumers reach
+   for these instead of re-deriving the scale inline. (House products migrating
+   off bespoke `type-*` classes map 1:1 onto these — same sizes/leading/weights.)
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-text-display {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h1 {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h2 {
+    font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2);
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+  }
+  .uix-text-h3 {
+    font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3);
+    font-weight: 700; color: var(--uix-text);
+  }
+  .uix-text-body {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text);
+  }
+  .uix-text-body-hushed {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-meta {
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-eyebrow {
+    font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow);
+    font-weight: 700; letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--uix-text-hushed);
+  }
+  .uix-text-data-hero {
+    font-size: var(--uix-text-data-hero); line-height: 1.1;
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+    font-variant-numeric: tabular-nums;
+  }
+}

@@ -193,6 +193,37 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
 // @public
+export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface DescriptionItemProps {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    term: ReactNode;
+}
+
+// @public (undocumented)
+export function DescriptionList(input: DescriptionListProps): react.JSX.Element;
+
+// @public
+export interface DescriptionListItem {
+    // (undocumented)
+    description: ReactNode;
+    id?: string;
+    // (undocumented)
+    term: ReactNode;
+}
+
+// @public (undocumented)
+export interface DescriptionListProps extends HTMLAttributes<HTMLDListElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    items?: DescriptionListItem[];
+}
+
+// @public
 export function DetailLayout(input: DetailLayoutProps): react.JSX.Element;
 
 // @public (undocumented)

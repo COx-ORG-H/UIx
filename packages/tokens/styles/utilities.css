@@ -15,4 +15,12 @@
   .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, var(--uix-space-2)); }
 
   .uix-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* elevation — apply the surface shadow tokens as a utility (cards/panels,
+     floating popovers/menus/dialogs, pressed/active pills). In dark mode
+     --uix-shadow-sm resolves to the inset top highlight, so elevated surfaces
+     keep their lift cue without a heavy drop shadow. */
+  .uix-elevated         { box-shadow: var(--uix-shadow-sm); }
+  .uix-elevated-popover { box-shadow: var(--uix-shadow-popover); }
+  .uix-elevated-pill    { box-shadow: var(--uix-shadow-sm); }
 }

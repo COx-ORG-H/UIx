@@ -1,8 +1,9 @@
 /* uix image lightbox — native <dialog>, click a thumbnail to enlarge. Depends only on --uix-* tokens. */
 @layer uix.components {
-  /* margin:auto centers the modal <dialog> in the viewport — required because base.css
-     resets `* { margin: 0 }`, which zeroes the UA dialog's own margin:auto (it would otherwise
-     pin to the top-left). Matches .uix-dialog. */
+  /* margin:auto centers the modal <dialog> in the viewport. Set explicitly (not
+     left to the UA default) so centering is robust regardless of any consumer
+     reset — base.css scopes its margin reset to typographic/form elements and
+     deliberately leaves <dialog> alone. Matches .uix-dialog. */
   .uix-lightbox { margin: auto; border: 0; background: transparent; padding: 0; max-width: 92vw; max-height: 92vh; box-shadow: var(--uix-shadow-overlay); overflow: visible; }
   /* A definite width is required: an SVG with a viewBox but no intrinsic width/height collapses to
      0×0 under width:auto, which then shrink-wraps the fit-content <dialog> to nothing (nothing shows

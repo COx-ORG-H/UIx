@@ -201,7 +201,17 @@
 /* Fonts load via the Google Fonts <link> in index.html (Inter + IBM Plex Sans + IBM Plex Mono). */
 @layer uix.base {
   *, *::before, *::after { box-sizing: border-box; }
-  * { margin: 0; }
+  /* Zero default UA margins on the elements that actually carry them — NOT a
+     bare `* { margin: 0 }`. The universal form lives in the `uix.base` layer,
+     which a Tailwind consumer orders ABOVE its own `utilities`, so a bare `*`
+     reset silently beat every margin utility (`mb-2`, `mt-4`, `space-y-*`) on
+     arbitrary layout elements (divs/sections) — the "no spacing between
+     components" bug. Scoping to typographic/default-margin elements (the same
+     set Tailwind's own preflight resets) keeps the standalone styleguide's
+     vertical rhythm while leaving layout elements free for consumer margins. */
+  body, h1, h2, h3, h4, h5, h6, p, blockquote, figure, figcaption,
+  dl, dd, ol, ul, menu, fieldset, hr, pre,
+  button, input, optgroup, select, textarea { margin: 0; }
 
   html { -webkit-text-size-adjust: 100%; }
   /* default theme follows the OS until JS sets data-theme */
@@ -272,6 +282,14 @@
   .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, var(--uix-space-2)); }
 
   .uix-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* elevation — apply the surface shadow tokens as a utility (cards/panels,
+     floating popovers/menus/dialogs, pressed/active pills). In dark mode
+     --uix-shadow-sm resolves to the inset top highlight, so elevated surfaces
+     keep their lift cue without a heavy drop shadow. */
+  .uix-elevated         { box-shadow: var(--uix-shadow-sm); }
+  .uix-elevated-popover { box-shadow: var(--uix-shadow-popover); }
+  .uix-elevated-pill    { box-shadow: var(--uix-shadow-sm); }
 }
 /* uix motion — shared keyframes, enter/exit helpers, and the reduced-motion guard.
    Components reference these tokens/keyframes; overlays pair the helpers with @starting-style. */
@@ -924,6 +942,51 @@
   .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; }
 }
+/* uix typography utilities — class-based application of the --uix-text-* scale.
+   A `<span class="uix-text-h3">` reads identically to an `<h3>`; consumers reach
+   for these instead of re-deriving the scale inline. (House products migrating
+   off bespoke `type-*` classes map 1:1 onto these — same sizes/leading/weights.)
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-text-display {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h1 {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h2 {
+    font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2);
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+  }
+  .uix-text-h3 {
+    font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3);
+    font-weight: 700; color: var(--uix-text);
+  }
+  .uix-text-body {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text);
+  }
+  .uix-text-body-hushed {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-meta {
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-eyebrow {
+    font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow);
+    font-weight: 700; letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--uix-text-hushed);
+  }
+  .uix-text-data-hero {
+    font-size: var(--uix-text-data-hero); line-height: 1.1;
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+    font-variant-numeric: tabular-nums;
+  }
+}
 /* uix avatar / avatar-group / user-chip — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-avatar {
@@ -1272,9 +1335,10 @@
 }
 /* uix image lightbox — native <dialog>, click a thumbnail to enlarge. Depends only on --uix-* tokens. */
 @layer uix.components {
-  /* margin:auto centers the modal <dialog> in the viewport — required because base.css
-     resets `* { margin: 0 }`, which zeroes the UA dialog's own margin:auto (it would otherwise
-     pin to the top-left). Matches .uix-dialog. */
+  /* margin:auto centers the modal <dialog> in the viewport. Set explicitly (not
+     left to the UA default) so centering is robust regardless of any consumer
+     reset — base.css scopes its margin reset to typographic/form elements and
+     deliberately leaves <dialog> alone. Matches .uix-dialog. */
   .uix-lightbox { margin: auto; border: 0; background: transparent; padding: 0; max-width: 92vw; max-height: 92vh; box-shadow: var(--uix-shadow-overlay); overflow: visible; }
   /* A definite width is required: an SVG with a viewBox but no intrinsic width/height collapses to
      0×0 under width:auto, which then shrink-wraps the fit-content <dialog> to nothing (nothing shows

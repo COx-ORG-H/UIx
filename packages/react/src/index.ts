@@ -52,6 +52,9 @@ export type { DetailLayoutProps } from './components/DetailLayout.js';
 export { List, ListItem } from './components/List.js';
 export type { ListProps, ListItemProps } from './components/List.js';
 
+export { DescriptionList, DescriptionItem } from './components/DescriptionList.js';
+export type { DescriptionListProps, DescriptionListItem, DescriptionItemProps } from './components/DescriptionList.js';
+
 export { Tabs, Tab } from './components/Tabs.js';
 export type { TabsProps, TabProps } from './components/Tabs.js';
 
