@@ -1,6 +1,6 @@
 {
   "name": "@tensor_1/tokens",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",
   "license": "UNLICENSED",
@@ -20,6 +20,7 @@
   "exports": {
     "./css": "./build/css/tokens.css",
     "./styles": "./build/css/components.css",
+    "./bundle": "./build/css/styles.css",
     "./tailwind": "./build/tailwind/theme.css",
     "./tailwind/preset": "./build/tailwind/preset.cjs",
     "./ts": {

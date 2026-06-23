@@ -98,7 +98,7 @@ try {
   step('3. CJS require + 4. export resolution');
   execFileSync(process.execPath, ['-e',
     "const u=require('@tensor_1/react'); if(!u.Button||!u.Card) process.exit(4);" +
-    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart']" +
+    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart']" +
     ".forEach(s=>require.resolve(s));"],
     { cwd: tmp, stdio: 'inherit' });
 
