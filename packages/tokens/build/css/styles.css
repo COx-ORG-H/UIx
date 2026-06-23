@@ -449,7 +449,48 @@
     font: inherit; font-size: var(--uix-text-body); cursor: pointer; transition: border-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-select-trigger:hover { border-color: var(--uix-border-strong); }
   .uix-select-trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-select-trigger[aria-expanded="true"] .uix-select-trigger__chevron { transform: rotate(180deg); }
+}
+/* uix mini-select — a compact, content-width collapsible dropdown for tight spots
+   (e.g. a header language switcher on mobile). Where .uix-select-trigger (select.css) is a
+   full-width field control, this is a pill sized to its label. It reuses the Popover API +
+   .uix-listbox surface + the shared rich-select JS ([data-uix-richselect]); a [data-rs-short]
+   on each option lets the collapsed trigger show a short code ("EN") while the menu spells it out.
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-mini-select { display: inline-flex; }
+
+  .uix-mini-select__trigger {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2);
+    min-height: var(--uix-control-h); padding: 0 var(--uix-space-2) 0 var(--uix-space-3);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface); color: var(--uix-text);
+    font: inherit; font-size: var(--uix-text-meta); font-weight: 600; line-height: 1; cursor: pointer; white-space: nowrap;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), background var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-mini-select__trigger:hover { border-color: var(--uix-border-strong); background: var(--uix-bg-hover); }
+  .uix-mini-select__trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+
+  /* leading glyph (e.g. a globe) + trailing chevron — both muted, sized off the icon scale */
+  .uix-mini-select__icon { width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted); flex: none; }
+  .uix-mini-select__chevron {
+    width: var(--uix-icon-sm); height: var(--uix-icon-sm); margin-left: var(--uix-space-1); color: var(--uix-text-muted); flex: none;
+    transition: transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-mini-select__trigger[aria-expanded="true"] .uix-mini-select__chevron { transform: rotate(180deg); }
+
+  /* icon-only collapsed variant: drop the label, keep a comfortable square tap target */
+  .uix-mini-select__trigger--icon { padding: 0; width: var(--uix-control-h); justify-content: center; }
+  .uix-mini-select__trigger--icon .uix-mini-select__chevron { margin-left: 0; }
+
+  /* the menu is the shared listbox, but narrow and snug to the chip rather than the 200px field width.
+     Double-class selector (.uix-listbox.uix-mini-select__menu) outweighs .uix-listbox's own min-width,
+     which is imported later and would otherwise win the specificity tie. */
+  .uix-listbox.uix-mini-select__menu { min-width: max(var(--uix-mini-select-w, 160px), anchor-size(width)); padding: var(--uix-space-1); }
+  /* a check on the selected row — visibility (not display) keeps every row the same width */
+  .uix-mini-select__check { width: var(--uix-icon-sm); height: var(--uix-icon-sm); margin-left: var(--uix-space-3); color: var(--uix-link); flex: none; visibility: hidden; }
+  .uix-mini-select__menu .uix-listbox__option[aria-selected="true"] .uix-mini-select__check { visibility: visible; }
 }
 /* uix checkbox — depends only on --uix-* tokens. Markup:
    <label class="uix-checkbox"><input type="checkbox"><span class="uix-checkbox__box">{check svg}</span> Label</label> */

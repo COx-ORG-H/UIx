@@ -223,6 +223,57 @@
           </div>
         </div>
 
+        <div class="uix-guide__subhead">Compact dropdown</div>
+        <p style="font-size:var(--uix-text-meta);color:var(--uix-text-muted);margin-bottom:12px">A content-width collapsible dropdown for tight spots — e.g. a language switcher in a mobile header. The trigger collapses to a short code (<code>EN</code>); the menu spells each option out and checks the active one. Reuses the rich-select popover + keyboard model (arrows, Home/End, Enter, Esc).</p>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:center;gap:24px">
+            <!-- mock mobile header to show the intended context -->
+            <div style="display:flex;align-items:center;gap:12px;width:280px;padding:8px 12px;border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);background:var(--uix-surface)">
+              <strong style="font-size:var(--uix-text-body)">Acme</strong>
+              <div class="uix-mini-select" data-uix-richselect style="margin-left:auto">
+                <button class="uix-mini-select__trigger" type="button" popovertarget="lang-mini" aria-label="Change language" style="anchor-name:--langmini">
+                  <svg class="uix-mini-select__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span data-rs-label>EN</span>
+                  <svg class="uix-mini-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <ul id="lang-mini" popover class="uix-popover uix-listbox uix-mini-select__menu" style="position-anchor:--langmini;top:anchor(bottom);right:anchor(right);margin-top:6px">
+                  <li class="uix-listbox__option" aria-selected="true" data-rs-option data-rs-short="EN">English<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                  <li class="uix-listbox__option" data-rs-option data-rs-short="ES">Español<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                  <li class="uix-listbox__option" data-rs-option data-rs-short="DE">Deutsch<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                  <li class="uix-listbox__option" data-rs-option data-rs-short="FR">Français<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                  <li class="uix-listbox__option" data-rs-option data-rs-short="日本語">日本語<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- icon-only variant for ultra-tight bars -->
+            <div class="uix-mini-select" data-uix-richselect>
+              <button class="uix-mini-select__trigger uix-mini-select__trigger--icon" type="button" popovertarget="lang-mini-icon" aria-label="Change language" style="anchor-name:--langminiicon">
+                <svg class="uix-mini-select__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span data-rs-label hidden></span>
+              </button>
+              <ul id="lang-mini-icon" popover class="uix-popover uix-listbox uix-mini-select__menu" style="position-anchor:--langminiicon;top:anchor(bottom);left:anchor(left);margin-top:6px">
+                <li class="uix-listbox__option" aria-selected="true" data-rs-option>English<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                <li class="uix-listbox__option" data-rs-option>Español<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+                <li class="uix-listbox__option" data-rs-option>Deutsch<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+              </ul>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-mini-select" data-uix-richselect>
+  <button class="uix-mini-select__trigger" type="button" popovertarget="lang-mini" aria-label="Change language" style="anchor-name:--langmini">
+    <svg class="uix-mini-select__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    <span data-rs-label>EN</span>
+    <svg class="uix-mini-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <ul id="lang-mini" popover class="uix-popover uix-listbox uix-mini-select__menu" style="position-anchor:--langmini;top:anchor(bottom);right:anchor(right);margin-top:6px">
+    <li class="uix-listbox__option" aria-selected="true" data-rs-option data-rs-short="EN">English<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+    <li class="uix-listbox__option" data-rs-option data-rs-short="ES">Español<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+    <li class="uix-listbox__option" data-rs-option data-rs-short="DE">Deutsch<svg class="uix-mini-select__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+  </ul>
+</div></template>
+        </div>
+
         <div class="uix-guide__subhead">Range, stepper &amp; tags</div>
         <div data-uix-example>
           <div class="uix-example__preview" style="gap:28px">
@@ -353,6 +404,36 @@
           </div>
         </div>
 
+        <div class="uix-guide__subhead">Favourites zone (React: <code>NavFavourites</code> + <code>StarButton</code>)</div>
+        <p class="lead">Controlled primitives: the Favourites disclosure (header + per-row overflow menu: Move up / Move down / Remove, plus Alt+↑/↓ keyboard reorder) and the pin/unpin star. UIx owns the look + the APG contract; the consumer owns the favourites list + its persistence.</p>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="display:block">
+            <div style="max-width:260px;background:var(--uix-bg-subtle);border:1px solid var(--uix-border);border-radius:var(--uix-radius-md);padding:var(--uix-space-2)">
+              <!-- NavFavourites — populated -->
+              <div style="margin-bottom:var(--uix-space-1)">
+                <button type="button" class="uix-text-eyebrow" aria-expanded="true" style="display:flex;width:100%;align-items:center;gap:6px;padding:8px 4px 4px;border:0;background:transparent;cursor:pointer;color:inherit">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="m6 9 6 6 6-6"/></svg>
+                  Favourites
+                </button>
+                <ul style="display:flex;flex-direction:column;gap:1px;list-style:none;margin:0;padding:0">
+                  <li style="position:relative;display:flex;align-items:center">
+                    <div style="min-width:0;flex:1"><a class="uix-navitem" href="#" onclick="return false"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="uix-navitem__label">Incidents</span></a></div>
+                    <button type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Incidents favourite options" style="margin-left:auto;display:inline-flex;height:20px;width:20px;flex-shrink:0;align-items:center;justify-content:center;border:0;border-radius:2px;background:transparent;cursor:pointer;color:color-mix(in srgb,var(--uix-text) 50%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                  </li>
+                  <li style="position:relative;display:flex;align-items:center">
+                    <div style="min-width:0;flex:1"><a class="uix-navitem" href="#" onclick="return false"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span class="uix-navitem__label">Requests</span></a></div>
+                    <button type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Requests favourite options" style="margin-left:auto;display:inline-flex;height:20px;width:20px;flex-shrink:0;align-items:center;justify-content:center;border:0;border-radius:2px;background:transparent;cursor:pointer;color:color-mix(in srgb,var(--uix-text) 50%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                  </li>
+                </ul>
+              </div>
+              <!-- StarButton — pinned (data-on) + unpinned, revealed on row hover inside .uix-navitem -->
+              <div class="uix-sidebar__eyebrow">Workspace</div>
+              <div class="uix-navitem"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg><span class="uix-navitem__label">Changes</span><button type="button" class="uix-navitem__star" data-on aria-pressed="true" aria-label="Add Changes to favourites"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+              <div class="uix-navitem"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/></svg><span class="uix-navitem__label">Assets</span><button type="button" class="uix-navitem__star" aria-pressed="false" aria-label="Add Assets to favourites"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.7a.6.6 0 0 1 1 0l2.4 5 5.4.8a.6.6 0 0 1 .3 1l-3.9 3.8.9 5.4a.6.6 0 0 1-.8.6L12 17l-4.8 2.5a.6.6 0 0 1-.8-.6l.9-5.4L3.4 9.5a.6.6 0 0 1 .3-1l5.4-.8z"/></svg></button></div>
+            </div>
+          </div>
+        </div>
+
         <div class="uix-guide__subhead">Tabs</div>
         <div data-uix-example>
           <div class="uix-example__preview" style="display:block">
@@ -438,7 +519,7 @@
             </span>
             <span class="uix-toolbar__spacer"></span>
             <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
-            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position:fixed">
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position:fixed; position-anchor:--viewbtn; top:anchor(bottom); right:anchor(right); margin-top:6px">
               <div class="uix-view-menu__group">
                 <div class="uix-view-menu__label">Density</div>
                 <span class="uix-segmented" data-uix-density>

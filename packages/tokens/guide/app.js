@@ -364,14 +364,21 @@ if (typeof document !== 'undefined') {
     if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
     const viewPop = root.querySelector('[data-uix-viewmenu]');
     if (viewBtn && viewPop) {
-      viewPop.addEventListener('beforetoggle', (e) => {
-        if (e.newState !== 'open') return;
-        const r = viewBtn.getBoundingClientRect();
-        viewPop.style.top = (r.bottom + 6) + 'px';
-        viewPop.style.right = (window.innerWidth - r.right) + 'px';
-        viewPop.style.left = 'auto';
-        viewPop.style.bottom = 'auto';
-      });
+      // Placement is declarative via CSS anchor positioning: the button carries
+      // anchor-name:--viewbtn, the popover position-anchor:--viewbtn. Only fall back
+      // to manual placement where anchor positioning is unsupported, otherwise the
+      // popover lands at the viewport's top-left corner (UA inset:0 + margin:0).
+      const hasAnchor = CSS.supports('position-anchor: --a') && CSS.supports('top: anchor(bottom)');
+      if (!hasAnchor) {
+        viewPop.addEventListener('beforetoggle', (e) => {
+          if (e.newState !== 'open') return;
+          const r = viewBtn.getBoundingClientRect();
+          viewPop.style.top = r.bottom + 'px';           // 6px gap comes from margin-top
+          viewPop.style.right = (window.innerWidth - r.right) + 'px';
+          viewPop.style.left = 'auto';
+          viewPop.style.bottom = 'auto';
+        });
+      }
       viewPop.addEventListener('toggle', (e) => {
         if (e.newState !== 'open') return;
         document.addEventListener('scroll', () => viewPop.hidePopover(), { once: true, passive: true, capture: true });
@@ -522,7 +529,7 @@ if (typeof document !== 'undefined') {
   const setupRichSelect = () => {
     document.querySelectorAll('[data-uix-richselect]').forEach((rs) => {
       const pop = rs.querySelector('[popover]');
-      const trigger = rs.querySelector('.uix-select-trigger');
+      const trigger = rs.querySelector('[popovertarget]');
       const label = rs.querySelector('[data-rs-label]');
       if (!pop) return;
       const search = pop.querySelector('input');
@@ -540,7 +547,8 @@ if (typeof document !== 'undefined') {
         if (!opt) return;
         options.forEach((o) => o.removeAttribute('aria-selected'));
         opt.setAttribute('aria-selected', 'true');
-        if (label) label.textContent = opt.textContent.trim();
+        // a compact trigger can show a short code (data-rs-short="EN") while the menu spells it out
+        if (label) label.textContent = opt.dataset.rsShort || opt.textContent.trim();
         pop.hidePopover();
         trigger?.focus();
       };
@@ -564,6 +572,7 @@ if (typeof document !== 'undefined') {
         else if (e.key === 'Enter') { e.preventDefault(); choose(vis[idx] || vis[0]); }
       });
       pop.addEventListener('toggle', (e) => {
+        trigger?.setAttribute('aria-expanded', e.newState === 'open' ? 'true' : 'false');
         if (e.newState === 'open') {
           if (search) { search.value = ''; options.forEach((o) => { o.hidden = false; }); }
           setActive(options.find((o) => o.getAttribute('aria-selected') === 'true') || visible()[0]);

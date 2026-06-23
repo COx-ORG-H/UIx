@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.5.0
+
+### Minor Changes
+
+- Add the `mini-select` — a compact, content-width collapsible dropdown for tight spots like a language switcher in a mobile header. The pill trigger collapses to a short code (`EN`) via `data-rs-short` while the menu spells each option out and checks the active one; an `--icon` variant drops the label for icon-only bars. Reuses the existing rich-select popover + listbox + keyboard model (arrows, Home/End, Enter, Esc), which now also expose `aria-expanded` on the trigger so both the mini-select and form rich-select chevrons rotate on open.
+
 ## 2.3.0
 
 ### Minor Changes
