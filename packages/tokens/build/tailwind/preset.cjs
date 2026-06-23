@@ -1,5 +1,5 @@
 /* GENERATED — do not edit. Tailwind v3 preset:
-   module.exports = { presets: [require('@uix/tokens/build/tailwind/preset.cjs')] } */
+   module.exports = { presets: [require('@tensor_1/tokens/build/tailwind/preset.cjs')] } */
 module.exports = {
   theme: {
     extend: {

@@ -41,7 +41,7 @@ jobs:
       - name: Contract completeness
         run: npm run test:contract
 
-      - name: Public API lock (@uix/react)
+      - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
       - name: Per-consumer smoke build

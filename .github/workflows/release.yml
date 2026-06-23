@@ -7,7 +7,7 @@ name: Release
 # land before the scope is claimed — see Docs/plans phase2 human-action checklist).
 #
 # Release flow:
-#   1. `npm run version`  -> consumes changesets, bumps @uix/tokens + @uix/react
+#   1. `npm run version`  -> consumes changesets, bumps @tensor_1/tokens + @tensor_1/react
 #      (linked), regenerates CHANGELOGs. Commit.
 #   2. tag `vX.Y.Z` + push -> this workflow. `publish` only runs if every gate job passes.
 

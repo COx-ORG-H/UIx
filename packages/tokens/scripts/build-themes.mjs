@@ -3,7 +3,7 @@
  * Run: npm run build:themes
  *
  * Each product sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via
- * @uix/tokens/css. The allowlist keeps the "one contract" guarantee: products override brand,
+ * @tensor_1/tokens/css. The allowlist keeps the "one contract" guarantee: products override brand,
  * not arbitrary tokens. Widen ALLOWED deliberately if a product genuinely needs more. */
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, basename } from 'node:path';
@@ -46,7 +46,7 @@ for (const f of files) {
     if (modes.dark != null) dark.push(`--uix-${token}: ${modes.dark};`);
   }
   let css = `/* GENERATED — do not edit. Brand override for "${name}". Source: themes/${f}; build: npm run build:themes.
-   Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @uix/tokens/css. */
+   Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @tensor_1/tokens/css. */
 :root { ${light.join(' ')} }
 `;
   if (dark.length) css += `:root:where(.dark,[data-theme="dark"]) { ${dark.join(' ')} }\n`;

@@ -12,10 +12,10 @@ building a bespoke local component.
 
 | Layer | Source | Build output | Consume as |
 |---|---|---|---|
-| Tokens (`--uix-*`) | `tokens/` (DTCG) | `build/css/tokens.css`, Tailwind theme, typed TS | `@uix/tokens/*` |
-| Per-product brand | `themes/*.tokens.json` | `themes/*.css` | `@uix/tokens/themes/<product>` |
+| Tokens (`--uix-*`) | `tokens/` (DTCG) | `build/css/tokens.css`, Tailwind theme, typed TS | `@tensor_1/tokens/*` |
+| Per-product brand | `themes/*.tokens.json` | `themes/*.css` | `@tensor_1/tokens/themes/<product>` |
 | CSS components (`.uix-*`) | `styles/components/*.css` | `build/css/styles.css` | drop-in classes |
-| React wrappers | `packages/react/src/components/*.tsx` | `packages/react/dist/*` | `@uix/react` |
+| React wrappers | `packages/react/src/components/*.tsx` | `packages/react/dist/*` | `@tensor_1/react` |
 
 Consumers vendor these (e.g. Tensor `pnpm uix:sync` → `packages/vendor/uix`). After any change here, run
 `npm run build:all` then re-sync downstream.
@@ -25,7 +25,7 @@ All component spacing flows from the scale `--uix-space-0 … --uix-space-12` (4
 `.uix-stack` / `.uix-cluster` utilities) for layout rhythm — never hardcode px or Tailwind spacing in product
 markup. This is the dial that keeps whitespace consistent across products.
 
-## React component catalog (`@uix/react`)
+## React component catalog (`@tensor_1/react`)
 
 Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pure presentation, zero app deps —
 this is what keeps UIx stack-neutral). Current set:
@@ -54,7 +54,7 @@ that *uses* UIx — not a UIx component.
 
 ## Coverage backlog — CSS components still needing a React wrapper
 
-These have CSS in `styles/components/` but no `@uix/react` wrapper yet. Completing them finishes the React layer.
+These have CSS in `styles/components/` but no `@tensor_1/react` wrapper yet. Completing them finishes the React layer.
 Prioritize by product demand.
 
 - **Presentational (easy wrap):** breadcrumbs, kbd, meter, progress, segmented, steps, stepper, reactions,

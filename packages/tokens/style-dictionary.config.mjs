@@ -84,7 +84,7 @@ const twColors = base.filter(isColor).map((t) => twLine('color', t.name, /^uix-/
 const twRadius = base.filter((t) => t.name.startsWith('uix-radius-')).map((t) => twLine('radius', t.name, /^uix-radius-/));
 const twFonts = base.filter((t) => t.name.startsWith('uix-font-')).map((t) => twLine('font', t.name, /^uix-font-/));
 
-const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Import AFTER @uix/tokens/css so the
+const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Import AFTER @tensor_1/tokens/css so the
    --uix-* vars exist; values stay var() so brand + dark cascade through (e.g. \`bg-uix-accent\`). */
 @theme {
 ${[...twColors, '', ...twRadius, '', ...twFonts].join('\n')}
@@ -95,7 +95,7 @@ ${[...twColors, '', ...twRadius, '', ...twFonts].join('\n')}
 const cjsMap = (toks, strip) =>
   toks.map((t) => `      "${t.name.replace(strip, 'uix-')}": "var(--${t.name})",`).join('\n');
 const tailwindPreset = `/* GENERATED — do not edit. Tailwind v3 preset:
-   module.exports = { presets: [require('@uix/tokens/build/tailwind/preset.cjs')] } */
+   module.exports = { presets: [require('@tensor_1/tokens/build/tailwind/preset.cjs')] } */
 module.exports = {
   theme: {
     extend: {

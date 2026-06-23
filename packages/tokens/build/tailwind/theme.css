@@ -1,4 +1,4 @@
-/* GENERATED — do not edit. Tailwind v4 `@theme`. Import AFTER @uix/tokens/css so the
+/* GENERATED — do not edit. Tailwind v4 `@theme`. Import AFTER @tensor_1/tokens/css so the
    --uix-* vars exist; values stay var() so brand + dark cascade through (e.g. `bg-uix-accent`). */
 @theme {
   --color-uix-bg-app: var(--uix-bg-app);

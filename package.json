@@ -2,18 +2,18 @@
   "name": "uix-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "UIx v2 — private workspace root. Publishable packages live in packages/* (@uix/tokens, @uix/react). Source of the --uix-* contract (ADR-0016).",
+  "description": "UIx v2 — private workspace root. Publishable packages live in packages/* (@tensor_1/tokens, @tensor_1/react). Source of the --uix-* contract (ADR-0016).",
   "type": "module",
   "license": "UNLICENSED",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @uix/tokens",
+    "build": "npm run build -w @tensor_1/tokens",
     "build:react": "cd packages/react && npm ci && npm run build",
     "build:all": "npm run build && npm run build:react",
-    "test:parity": "npm run test:parity -w @uix/tokens",
-    "test:contract": "npm run test:contract -w @uix/tokens",
+    "test:parity": "npm run test:parity -w @tensor_1/tokens",
+    "test:contract": "npm run test:contract -w @tensor_1/tokens",
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",

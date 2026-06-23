@@ -1,5 +1,5 @@
 {
-  "name": "@uix/tokens",
+  "name": "@tensor_1/tokens",
   "version": "2.0.0",
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",

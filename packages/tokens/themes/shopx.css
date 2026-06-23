@@ -1,4 +1,4 @@
 /* GENERATED — do not edit. Brand override for "shopx". Source: themes/shopx.tokens.json; build: npm run build:themes.
-   Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @uix/tokens/css. */
+   Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @tensor_1/tokens/css. */
 :root { --uix-brand: #7C3AED; --uix-brand-fg: #FFFFFF; }
 :root:where(.dark,[data-theme="dark"]) { --uix-brand: #8B5CF6; }

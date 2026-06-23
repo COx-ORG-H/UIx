@@ -8,13 +8,13 @@
 ## Where we are (verified 2026-06-22)
 
 - **Phase 0 (identity) — done.** `origin → github.com/COx-ORG-H/UIx` (repo migrated under the COx org per Decision 4). npm scope `@uix` named in both `package.json`s.
-- **Phase 1 (publishable) — done.** Self-sufficient build: per-file `"use client"` (tsup `bundle:false` ESM + bundled CJS), pinned inner React install (`react/` has its own lockfile + `npm ci`), `@uix/react` clean export surface (commit `b13cb4a`).
+- **Phase 1 (publishable) — done.** Self-sufficient build: per-file `"use client"` (tsup `bundle:false` ESM + bundled CJS), pinned inner React install (`react/` has its own lockfile + `npm ci`), `@tensor_1/react` clean export surface (commit `b13cb4a`).
 - **Phase 2 (release + gates) — greenfield.** No `.github/`, no changesets, no VR/a11y/api-lock/smoke gates, no CODEOWNERS, no contract-change doc. `check-parity.mjs` guards token **values** only.
-- **Human-gated remainder confirmed pending:** `@uix/tokens` is unpublished (npm 404); not logged into npm locally. Scope claim + `NPM_TOKEN` + portfolio-PAT secrets are human actions (ADR §7.6 / directory-governance §4).
+- **Human-gated remainder confirmed pending:** `@tensor_1/tokens` is unpublished (npm 404); not logged into npm locally. Scope claim + `NPM_TOKEN` + portfolio-PAT secrets are human actions (ADR §7.6 / directory-governance §4).
 
 ## Layout note (post-S1)
 
-As of S1 the repo is a **`packages/*` monorepo**: `@uix/tokens` → `packages/tokens/` (DTCG source, build, themes, scripts, tests, **and** the build-free styleguide showcase), `@uix/react` → `packages/react/`, root is a private workspace. Paths in the slice table below that read `tokens/`, `styles/`, `scripts/`, `tests/` are now under `packages/tokens/`. Root `index.html` is a redirect into the showcase.
+As of S1 the repo is a **`packages/*` monorepo**: `@tensor_1/tokens` → `packages/tokens/` (DTCG source, build, themes, scripts, tests, **and** the build-free styleguide showcase), `@tensor_1/react` → `packages/react/`, root is a private workspace. Paths in the slice table below that read `tokens/`, `styles/`, `scripts/`, `tests/` are now under `packages/tokens/`. Root `index.html` is a redirect into the showcase.
 
 ## Directives for this push (2026-06-22)
 
@@ -39,10 +39,10 @@ Component CSS today (`styles/components/*.css` + `styles/*.css`):
 | # | Slice | Output | Gate / acceptance | Dep |
 |---|---|---|---|---|
 | S0 | **This plan + scope** | this doc | — | — |
-| S1 | **Changesets** | `.changeset/config.json` (linked `@uix/tokens`+`@uix/react`), CHANGELOG generation, root workspace glob for package discovery (build keeps Phase-1 separate inner install) | `npx changeset status` resolves both packages | — |
+| S1 | **Changesets** | `.changeset/config.json` (linked `@tensor_1/tokens`+`@tensor_1/react`), CHANGELOG generation, root workspace glob for package discovery (build keeps Phase-1 separate inner install) | `npx changeset status` resolves both packages | — |
 | S2 | **Governance** (Decision 7) | `CODEOWNERS` over `tokens/`+`themes/`; `Docs/contract-change-process.md` | files present; CODEOWNERS paths valid | — |
 | S3 | **API lock** | `react/api-extractor.json` + `etc/uix-react.api.md` baseline; `test:api` | api-extractor passes against committed report | Phase 1 build |
-| S4 | **Smoke build** | `tests/smoke-consumer/` — minimal app importing `@uix/tokens` + `@uix/react`, builds via `npm pack` tarballs | `test:smoke` builds clean | Phase 1 build |
+| S4 | **Smoke build** | `tests/smoke-consumer/` — minimal app importing `@tensor_1/tokens` + `@tensor_1/react`, builds via `npm pack` tarballs | `test:smoke` builds clean | Phase 1 build |
 | S5 | **Visual regression** | Playwright config + specs over the static styleguide (`index.html`, `tables.html`, `dashboard.html`) in light+dark; golden snapshots of **current** rendering (the safety net) | `test:visual` green vs committed goldens | — |
 | S6 | **a11y** | axe over the same static pages; `test:a11y` | no serious/critical violations (calibrated baseline) | S5 harness |
 | S7 | **Tokenize migration** (full-strict) | new `--uix-z-*` scale in `tokens/base/effect.json` (+ baseline update); component CSS colors + scale-dupe px → `var(--uix-*)`; `tests/raw-value-allowlist.*` for justified geometry/borders | VR (S5) stays green through migration; `test:parity` green | S5, S8a |
@@ -57,7 +57,7 @@ Component CSS today (`styles/components/*.css` + `styles/*.css`):
 - [ ] Create an **npm automation token**; add as `NPM_TOKEN` secret on `COx-ORG-H/UIx` (or org-level).
 - [ ] Add the **portfolio PAT** secret (bot pushes that retrigger downstream CI — ADR-0006 / fleet lesson) for Renovate automerge.
 - [x] **Bootstrap the VR goldens (S5) — DONE 2026-06-23:** the styleguide branch merged to `master` (the GitHub default; PR #1), the `update-visual-goldens` workflow ran in the pinned container, and the 6 `*-linux.png` goldens (index/tables/dashboard × light/dark) were committed to `master`. The `visual` gate now passes — **full CI green on `master`: `gates` · `visual` · `a11y`**. (Re-run the workflow after any intended rendering change to re-baseline.)
-- [ ] First publish: tag `v2.0.0`; confirm the release workflow gates pass, then `@uix/tokens@2.0.0` + `@uix/react@2.0.0` resolve on npm.
+- [ ] First publish: tag `v2.0.0`; confirm the release workflow gates pass, then `@tensor_1/tokens@2.0.0` + `@tensor_1/react@2.0.0` resolve on npm.
 - [ ] (Phase 3) Point TENSOR at the npm packages; hard-fail `uix-sync.mjs`.
 
 ## Status — end of kickoff session (2026-06-23)

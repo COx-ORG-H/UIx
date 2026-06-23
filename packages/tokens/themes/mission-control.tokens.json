@@ -1,5 +1,5 @@
 {
-  "__comment": "Mission Control product skin. Warm-beige neutrals, Geist type, 8px radius, iOS-calibrated status (legible TEXT role + vivid SOLID role). Source of the dashboard's look — edit here, run `npm run build:themes`, and every consumer of @uix/tokens/themes/mission-control updates. Values lifted from the dashboard's pre-migration tokens.css + globals.css override fence.",
+  "__comment": "Mission Control product skin. Warm-beige neutrals, Geist type, 8px radius, iOS-calibrated status (legible TEXT role + vivid SOLID role). Source of the dashboard's look — edit here, run `npm run build:themes`, and every consumer of @tensor_1/tokens/themes/mission-control updates. Values lifted from the dashboard's pre-migration tokens.css + globals.css override fence.",
 
   "brand":    { "light": "#0088ff", "dark": "#0091ff" },
   "brand-fg": { "light": "#ffffff" },

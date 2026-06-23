@@ -3,7 +3,7 @@
  *   styles/main.css       -> build/css/styles.css      (full: tokens + base + util + motion + components)
  *   styles/components.css -> build/css/components.css   (component-only: util + motion + components,
  *                                                        NO token block / NO global reset — for consumers
- *                                                        that get tokens from @uix/tokens/css + a theme)
+ *                                                        that get tokens from @tensor_1/tokens/css + a theme)
  *
  * Run: node scripts/build-styles.mjs
  */

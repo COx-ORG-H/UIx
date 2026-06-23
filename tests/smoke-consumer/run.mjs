@@ -1,12 +1,12 @@
 /* Per-consumer smoke build (ADR-0016 Decision 6).
  *
- * Proves the PUBLISHED artifacts actually work for a consumer: packs @uix/tokens
- * and @uix/react to tarballs, installs them into a throwaway project OUTSIDE the
+ * Proves the PUBLISHED artifacts actually work for a consumer: packs @tensor_1/tokens
+ * and @tensor_1/react to tarballs, installs them into a throwaway project OUTSIDE the
  * workspace (so npm can't symlink and hide packaging bugs), then checks every
  * consumption mode:
- *   1. ESM bundle      — esbuild bundles app.tsx importing @uix/react + @uix/tokens/ts
+ *   1. ESM bundle      — esbuild bundles app.tsx importing @tensor_1/react + @tensor_1/tokens/ts
  *   2. ESM import      — node imports the same at runtime
- *   3. CJS require     — node require()s @uix/react (it ships a CJS build)
+ *   3. CJS require     — node require()s @tensor_1/react (it ships a CJS build)
  *   4. export presence — require.resolve the CSS + theme + ./chart subpaths (files/exports)
  *   5. types           — tsc --noEmit type-checks app.tsx against the packed .d.ts
  *
@@ -51,7 +51,7 @@ try {
     const json = JSON.parse(out.slice(out.indexOf('[')));
     return join(tmp, json[0].filename);
   };
-  step('pack @uix/tokens + @uix/react');
+  step('pack @tensor_1/tokens + @tensor_1/react');
   const tokensTgz = pack(TOKENS);
   const reactTgz = pack(REACT);
 
@@ -61,8 +61,8 @@ try {
     private: true,
     version: '0.0.0',
     dependencies: {
-      '@uix/tokens': `file:${fwd(tokensTgz)}`,
-      '@uix/react': `file:${fwd(reactTgz)}`,
+      '@tensor_1/tokens': `file:${fwd(tokensTgz)}`,
+      '@tensor_1/react': `file:${fwd(reactTgz)}`,
       'react': '^18.3.1',
       'react-dom': '^18.3.1',
       '@types/react': '^18.3.0',
@@ -92,13 +92,13 @@ try {
 
   step('2. ESM import (runtime)');
   execFileSync(process.execPath, ['--input-type=module', '-e',
-    "import { Button } from '@uix/react'; import { cssVar } from '@uix/tokens/ts'; if(!Button||!cssVar?.accent) process.exit(3);"],
+    "import { Button } from '@tensor_1/react'; import { cssVar } from '@tensor_1/tokens/ts'; if(!Button||!cssVar?.accent) process.exit(3);"],
     { cwd: tmp, stdio: 'inherit' });
 
   step('3. CJS require + 4. export resolution');
   execFileSync(process.execPath, ['-e',
-    "const u=require('@uix/react'); if(!u.Button||!u.Card) process.exit(4);" +
-    "['@uix/tokens/css','@uix/tokens/styles','@uix/tokens/tailwind','@uix/tokens/themes/tensor','@uix/react/chart']" +
+    "const u=require('@tensor_1/react'); if(!u.Button||!u.Card) process.exit(4);" +
+    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart']" +
     ".forEach(s=>require.resolve(s));"],
     { cwd: tmp, stdio: 'inherit' });
 
@@ -111,6 +111,6 @@ try {
   try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best effort */ }
 }
 
-console.log(ok ? '\n✓ smoke OK — packed @uix/tokens + @uix/react install, import (ESM+CJS), resolve, and type-check in an isolated consumer.'
+console.log(ok ? '\n✓ smoke OK — packed @tensor_1/tokens + @tensor_1/react install, import (ESM+CJS), resolve, and type-check in an isolated consumer.'
               : '\n✗ smoke FAILED');
 process.exit(ok ? 0 : 1);

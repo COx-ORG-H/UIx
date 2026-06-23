@@ -25,19 +25,19 @@ No build step.
 
 ## Use it in a project
 
-Tokens now ship as the **`@uix/tokens`** package (one DTCG source → CSS variables, a Tailwind
+Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind
 theme, and typed TS constants). Add it as a dependency and import what your stack needs:
 
 - **Tailwind / shadcn (e.g. Tensor):**
   ```css
-  @import "@uix/tokens/css";          /* declares the --uix-* contract (light + dark) */
-  @import "@uix/tokens/themes/tensor";  /* this product's brand */
-  @import "@uix/tokens/tailwind";      /* @theme — utilities like bg-uix-accent, rounded-uix-md */
+  @import "@tensor_1/tokens/css";          /* declares the --uix-* contract (light + dark) */
+  @import "@tensor_1/tokens/themes/tensor";  /* this product's brand */
+  @import "@tensor_1/tokens/tailwind";      /* @theme — utilities like bg-uix-accent, rounded-uix-md */
   @import "tailwindcss";
   ```
-  (Tailwind v3 projects use `presets: [require('@uix/tokens/tailwind/preset')]` instead.)
-- **Plain CSS:** link `@uix/tokens/build/css/tokens.css`, then your product theme css.
-- **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@uix/tokens/ts";`
+  (Tailwind v3 projects use `presets: [require('@tensor_1/tokens/tailwind/preset')]` instead.)
+- **Plain CSS:** link `@tensor_1/tokens/build/css/tokens.css`, then your product theme css.
+- **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@tensor_1/tokens/ts";`
   — use `cssVar` in the browser (respects brand + dark), `light`/`dark`/`num` for non-DOM.
 
 Then add `styles/base.css` (+ `styles/motion.css`) and the `styles/components/*.css` files you need,

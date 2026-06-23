@@ -1,9 +1,9 @@
 /* uix-styleguide — COMPONENT-ONLY aggregate (the .uix-* component classes, util + motion helpers).
    Deliberately EXCLUDES tokens.css and base.css so a consumer can pull the components without
    re-injecting the neutral token block (which would fight a product theme) or UIx's global reset
-   (which would fight the consumer's own base layer). Tokens come from @uix/tokens/css (+ a product
+   (which would fight the consumer's own base layer). Tokens come from @tensor_1/tokens/css (+ a product
    theme) imported separately. Built to build/css/components.css by scripts/build-styles.mjs and
-   exported as `@uix/tokens/styles`. Keep this list in sync with the component @imports in main.css. */
+   exported as `@tensor_1/tokens/styles`. Keep this list in sync with the component @imports in main.css. */
 @layer uix.tokens, uix.base, uix.util, uix.motion, uix.components;
 
 @import "utilities.css";
