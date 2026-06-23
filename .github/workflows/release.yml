@@ -1,15 +1,15 @@
 name: Release
 
-# Publish-on-tag (ADR-0016 Decision 6): tagging v* runs build:all + ALL trust
-# gates as a HARD precondition, then `changeset publish` pushes any package whose
-# version isn't yet on npm. Inert-safe: without the NPM_TOKEN secret it runs the
-# gates and skips publish cleanly (so the workflow can land before the scope is
-# claimed — see Docs/plans phase2 human-action checklist).
+# Publish-on-tag (ADR-0016 Decision 6): tagging v* runs ALL trust gates as a HARD
+# precondition (this file MIRRORS ci.yml — gates + visual + a11y), then `changeset
+# publish` pushes any package whose version isn't yet on npm. Inert-safe: without the
+# NPM_TOKEN secret the gates still run and publish skips cleanly (so the workflow can
+# land before the scope is claimed — see Docs/plans phase2 human-action checklist).
 #
 # Release flow:
 #   1. `npm run version`  -> consumes changesets, bumps @uix/tokens + @uix/react
 #      (linked), regenerates CHANGELOGs. Commit.
-#   2. tag `vX.Y.Z` + push -> this workflow.
+#   2. tag `vX.Y.Z` + push -> this workflow. `publish` only runs if every gate job passes.
 
 on:
   push:
@@ -20,7 +20,50 @@ permissions:
   id-token: write # npm provenance
 
 jobs:
+  # ── hard publish preconditions — keep in lockstep with ci.yml ──────────────────
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:all
+      - run: npm run test:parity
+      - run: npm run test:contract
+      - run: npm run test:api
+      - run: npm run test:smoke
+
+  visual:
+    # pinned Playwright container so the goldens match (same as ci.yml's visual job)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      # tokens build only — build:all's inner react `npm ci` prunes playwright/serve
+      - run: npm run build
+      - run: npm run test:visual
+
+  a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build # tokens only (see visual)
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:a11y
+
+  # ── publish only after every gate is green ─────────────────────────────────────
   publish:
+    needs: [gates, visual, a11y]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,12 +76,6 @@ jobs:
 
       - run: npm ci
       - run: npm run build:all
-
-      # Hard publish preconditions — must mirror ci.yml.
-      - run: npm run test:parity
-      - run: npm run test:contract
-      - run: npm run test:api
-      - run: npm run test:smoke
 
       - name: Publish (inert without NPM_TOKEN)
         env:
