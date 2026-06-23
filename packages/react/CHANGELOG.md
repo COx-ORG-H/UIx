@@ -1,5 +1,15 @@
 # @tensor_1/react
 
+## 2.4.0
+
+### Minor Changes
+
+- Add `StarButton` and `NavFavourites` — controlled sidebar favourites primitives.
+
+  `StarButton` is the pin/unpin control over the existing `.uix-navitem__star` CSS contract: a STATIC accessible name (`Add {label} to favourites`) plus `aria-pressed` for the pinned state, warning-toned filled glyph when pinned, reveal-on-hover inside a `.uix-navitem`.
+
+  `NavFavourites` is the Favourites disclosure: a header + region (`aria-expanded` / `aria-controls`, focus pulled to the header before collapse) over a controlled, already-resolved item list, each row carrying a consumer-rendered link plus an APG menu-button overflow menu (Move up / Move down / Remove) and Alt+ArrowUp/Down keyboard reorder. UIx owns the look + the controlled contract; consumers keep the favourites list and its persistence.
+
 ## 2.3.0
 
 ### Minor Changes

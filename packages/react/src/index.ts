@@ -64,6 +64,12 @@ export type { AppShellProps } from './components/AppShell.js';
 export { Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem } from './components/Sidebar.js';
 export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
 
+export { StarButton } from './components/StarButton.js';
+export type { StarButtonProps } from './components/StarButton.js';
+
+export { NavFavourites } from './components/NavFavourites.js';
+export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';
+
 // Feedback
 export { Alert } from './components/Alert.js';
 export type { AlertProps, AlertTone } from './components/Alert.js';

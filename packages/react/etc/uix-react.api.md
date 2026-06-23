@@ -429,6 +429,44 @@ export interface ModalProps {
 }
 
 // @public (undocumented)
+export interface NavFavouriteItem {
+    readonly id: string;
+    readonly label: string;
+    readonly link: ReactNode;
+}
+
+// @public
+export function NavFavourites(input: NavFavouritesProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NavFavouritesLabels {
+    readonly empty: string;
+    readonly heading: string;
+    // (undocumented)
+    readonly moveDown: string;
+    // (undocumented)
+    readonly moveUp: string;
+    readonly options?: string;
+    readonly remove: string;
+}
+
+// @public (undocumented)
+export interface NavFavouritesProps {
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    collapsed?: boolean;
+    emptyReason?: string;
+    items: ReadonlyArray<NavFavouriteItem>;
+    // (undocumented)
+    labels: NavFavouritesLabels;
+    onRemove: (id: string) => void;
+    onReorder: (orderedIds: string[]) => void;
+    // (undocumented)
+    onToggleCollapsed?: () => void;
+}
+
+// @public (undocumented)
 export function NavGroup(input: NavGroupProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -644,6 +682,18 @@ export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
     accent?: boolean;
     // (undocumented)
     size?: 'md' | 'lg';
+}
+
+// @public
+export function StarButton(input: StarButtonProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StarButtonProps {
+    addLabel?: string;
+    className?: string;
+    label: string;
+    onToggle: (next: boolean) => void;
+    pinned: boolean;
 }
 
 // @public
