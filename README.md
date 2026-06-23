@@ -8,6 +8,10 @@ It's "UIx v2": the next generation of the house design system. Where **UIx v1** 
 React/Next/shadcn token + composite registry locked to that stack, v2 is **stack-neutral** and **standalone**,
 while deliberately **reusing v1's `--uix-*` token contract** so the two stay swappable.
 
+> ⚠️ **Branches:** this project (v2) lives on **`master`** — the default branch. A *different, unrelated* project
+> (the v1 registry) sits on the **`main`** branch with no shared history. **Never merge between them.** See
+> [Docs/repository-branches.md](Docs/repository-branches.md).
+
 ## View it
 
 Open `index.html` directly, or serve the folder:
