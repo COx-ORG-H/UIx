@@ -41,6 +41,24 @@
   "danger-text": { "$type": "color", "$value": "#C20012", "$description": "Danger-toned TEXT, legible on --uix-danger-bg (the bright --uix-danger #E40014 is only 4.05:1 on #FFE4E6). A hand-darkened red for text; --uix-danger stays the SOLID role (danger button bg, critical pill, dots). Dark mode brightens it. Used by pill/alert/stat-trend/field-error/menu/sla/node/audit --danger." },
   "amber":      { "$type": "color", "$value": "#C98A1E", "$description": "SEV-3 / medium-severity tone — the third tier of the severity ramp (danger = SEV-1, warning = SEV-2, amber = SEV-3). A muted ochre, deliberately distinct from the brighter --uix-warning so the three tiers read apart." },
   "amber-text": { "$type": "color", "$value": "#795006", "$description": "Amber-toned TEXT, legible on a faint amber tint and on dark surfaces (the SEV-3 ochre is too light as text on pale fills). Dark mode brightens it to track --uix-amber. Used by severity-3 badges." },
+  "amber-bg":   { "$type": "color", "$value": "#FEFCE8", "$description": "Amber-toned wash for SEV-3 pill backgrounds. Completes the amber ramp (amber / amber-text / amber-bg) to match the depth of the warning/danger/info ramps." },
+
+  "attention":       { "$type": "color", "$value": "#EA580C", "$description": "Time-pressure semantic — 'approaching deadline / SLA at risk'. Distinct from --uix-warning (validation-warning, golden #F99C00) and --uix-danger (error/severity). Covers SLA, renewal-due, EoL/EoS countdown, patch-overdue across modules." },
+  "attention-bg":    { "$type": "color", "$value": "#FFEDD5" },
+  "attention-text":  { "$type": "color", "$value": "#9A3412", "$description": "Attention-toned TEXT legible on --uix-attention-bg (#FFEDD5). Dark mode brightens to track --uix-attention." },
+  "attention-solid": { "$type": "color", "$value": "#EA580C", "$description": "SOLID role for attention fills/dots/pulses (see success-solid)." },
+
+  "overdue":       { "$type": "color", "$value": "#DC2626", "$description": "Time-pressure semantic — 'breached / past due'. Same hue family as danger but a SEPARATE role so products retheme breach independently of validation error. Covers SLA breach and hard-deadline misses." },
+  "overdue-bg":    { "$type": "color", "$value": "#FEE2E2" },
+  "overdue-text":  { "$type": "color", "$value": "#991B1B", "$description": "Overdue-toned TEXT legible on --uix-overdue-bg (#FEE2E2). Dark mode brightens." },
+  "overdue-solid": { "$type": "color", "$value": "#EF4444", "$description": "SOLID role for overdue fills/dots (see success-solid)." },
+
+  "sev-4":      { "$type": "color", "$value": "var(--uix-info)",       "$description": "SEV-4 alias → info tone. Full severity ramp: SEV-1=danger, SEV-2=warning, SEV-3=amber, SEV-4=info, SEV-5=neutral. var() reference — no dark override needed." },
+  "sev-4-bg":   { "$type": "color", "$value": "var(--uix-info-bg)" },
+  "sev-4-text": { "$type": "color", "$value": "var(--uix-info-text)" },
+  "sev-5":      { "$type": "color", "$value": "var(--uix-text-muted)", "$description": "SEV-5 alias → neutral/muted tone. Lowest priority, minimal visual weight. var() reference — no dark override needed." },
+  "sev-5-bg":   { "$type": "color", "$value": "var(--uix-bg-active)" },
+  "sev-5-text": { "$type": "color", "$value": "var(--uix-text-hushed)" },
 
   "success-solid": { "$type": "color", "$value": "#10B981", "$description": "SOLID status role — the vivid fill/dot/pulse color, distinct from the legible TEXT role (--uix-success). Products override per brand." },
   "warning-solid": { "$type": "color", "$value": "#F59E0B", "$description": "SOLID status role (see success-solid)." },
@@ -59,7 +77,8 @@
 
   "row":           { "$type": "color", "$value": "#FFFFFF" },
   "row-alt":       { "$type": "color", "$value": "#FAFAFA" },
-  "row-pinned-bg": { "$type": "color", "$value": "#F4F7FF" },
+  "row-pinned-bg":    { "$type": "color", "$value": "#F4F7FF" },
+  "row-selected-bg":  { "$type": "color", "$value": "#DBEAFE", "$description": "Dedicated row-selection background (table tr[aria-selected]). Distinct from --uix-row-pinned-bg (#F4F7FF, very pale blue) and --uix-brand-muted (dynamic accent tint). Enables bulk-selected rows to read apart from pinned rows and inbox unread tints in the same table." },
 
   "scrollbar-thumb":       { "$type": "color", "$value": "rgba(10,10,10,.20)" },
   "scrollbar-thumb-hover": { "$type": "color", "$value": "rgba(10,10,10,.34)" },

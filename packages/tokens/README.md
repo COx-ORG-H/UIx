@@ -48,3 +48,17 @@ Override the write-only brand slots; `accent` / `link` / `ring` / `brand-muted` 
 | `./themes/{tensor,posx,shopx,mission-control}` | per-product brand |
 
 Source of truth: `tokens/*.json` (DTCG) → [Style Dictionary](https://styledictionary.com). Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
+
+## Primitives — consume, don't fork
+
+The following CSS primitives (and their `@tensor_1/react` wrappers) are the intended consumption point for the tokens below. If your codebase reimplements any of these, replace it with the primitive so theme/brand overrides, dark mode, and WCAG contrast all apply automatically.
+
+| Primitive | CSS file | Key `--uix-*` tokens |
+|---|---|---|
+| Row selection | `table.css` `tr[aria-selected]` | `--uix-row-selected-bg` |
+| Utilization / threshold bar | `meter.css` · `<Meter>` | `--uix-attention`, `--uix-overdue`, `--uix-warning`, `--uix-danger` |
+| Triage inbox | `inbox.css` · `<Inbox>` / `<InboxItem>` | `--uix-brand-muted`, `--uix-accent` (accent stripe) |
+| Status + SLA + priority pill | `status-pill.css` · `<StatusPill>` | `--uix-sla-ok/at-risk/breached`, `--uix-p1`…`--uix-p5`, `--uix-attention`, `--uix-overdue` |
+| Entity detail related-panels | `<DetailLayout>` (`@tensor_1/react`) | `--uix-surface`, `--uix-border` |
+
+If you reach for `var(--uix-danger)` or `var(--uix-warning)` to render SLA urgency or severity, use `<StatusPill tone="sla-breached">` or `<StatusPill tone="p1">` instead — the component handles WCAG contrast, dark mode, and brand overrides; a raw literal does not.

@@ -23,7 +23,11 @@
     --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6; --uix-warning-text:#92400E;
     --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;  --uix-info-text:#1447E6;
     --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6; --uix-danger-text:#C20012;
-    --uix-amber:#C98A1E; --uix-amber-text:#795006;
+    --uix-amber:#C98A1E; --uix-amber-text:#795006; --uix-amber-bg:#FEFCE8;
+    --uix-attention:#EA580C; --uix-attention-bg:#FFEDD5; --uix-attention-text:#9A3412; --uix-attention-solid:#EA580C;
+    --uix-overdue:#DC2626; --uix-overdue-bg:#FEE2E2; --uix-overdue-text:#991B1B; --uix-overdue-solid:#EF4444;
+    --uix-sev-4:var(--uix-info); --uix-sev-4-bg:var(--uix-info-bg); --uix-sev-4-text:var(--uix-info-text);
+    --uix-sev-5:var(--uix-text-muted); --uix-sev-5-bg:var(--uix-bg-active); --uix-sev-5-text:var(--uix-text-hushed);
     --uix-success-solid:#10B981; --uix-warning-solid:#F59E0B; --uix-info-solid:#2563EB; --uix-danger-solid:#EF4444;
 
     /* chart (categorical) */
@@ -68,7 +72,7 @@
     --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-topbar-h:56px;
 
     /* rows / scrollbars / icons / peek */
-    --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF;
+    --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF; --uix-row-selected-bg:#DBEAFE;
     --uix-scrollbar-size:10px; --uix-scrollbar-thumb:rgba(10,10,10,.20); --uix-scrollbar-thumb-hover:rgba(10,10,10,.34); --uix-scrollbar-track:transparent;
     --uix-icon-sm:16px; --uix-icon-md:20px; --uix-icon-lg:24px; --uix-peek-w:420px;
   }
@@ -87,7 +91,9 @@
     --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16); --uix-warning-text:var(--uix-warning,#FCBB00);
     --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16); --uix-info-text:#60A5FA;
     --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20); --uix-danger-text:#F87171;
-    --uix-amber:#E6B25C; --uix-amber-text:#E6B25C;
+    --uix-amber:#E6B25C; --uix-amber-text:#E6B25C; --uix-amber-bg:rgba(201,138,30,.14);
+    --uix-attention:#FB923C; --uix-attention-bg:rgba(234,88,12,.16); --uix-attention-text:#FDBA74; --uix-attention-solid:#F97316;
+    --uix-overdue:#F87171; --uix-overdue-bg:rgba(220,38,38,.18); --uix-overdue-text:#FCA5A5; --uix-overdue-solid:#F87171;
     --uix-success-solid:#34D399; --uix-warning-solid:#FBBF24; --uix-info-solid:#3B82F6; --uix-danger-solid:#F87171;
 
     --uix-chart-1:#3080FF; --uix-chart-2:#00C2B0; --uix-chart-3:#00D294; --uix-chart-4:#FCBB00;
@@ -96,7 +102,7 @@
 
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,.04);
 
-    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08);
+    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
     --uix-scrollbar-thumb:rgba(255,255,255,.18); --uix-scrollbar-thumb-hover:rgba(255,255,255,.30);
   }
 }

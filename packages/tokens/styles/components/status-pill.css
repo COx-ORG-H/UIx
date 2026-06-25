@@ -14,6 +14,19 @@
   /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
   .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
   .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
+  /* time-pressure tones (U1 tokens — distinct from severity and validation-error) */
+  .uix-pill--attention { --tone-bg: var(--uix-attention-bg); --tone-fg: var(--uix-attention-text); --tone-dot: var(--uix-attention); }
+  .uix-pill--overdue   { --tone-bg: var(--uix-overdue-bg);   --tone-fg: var(--uix-overdue-text);   --tone-dot: var(--uix-overdue); }
+  /* SLA tones — ok=success, at-risk=attention, breached=overdue */
+  .uix-pill--sla-ok       { --tone-bg: var(--uix-success-bg);   --tone-fg: var(--uix-success);        --tone-dot: var(--uix-success); }
+  .uix-pill--sla-at-risk  { --tone-bg: var(--uix-attention-bg); --tone-fg: var(--uix-attention-text); --tone-dot: var(--uix-attention); }
+  .uix-pill--sla-breached { --tone-bg: var(--uix-overdue-bg);   --tone-fg: var(--uix-overdue-text);   --tone-dot: var(--uix-overdue); }
+  /* Priority/severity tones — P1=danger, P2=warning, P3=amber, P4=info, P5=neutral (complete 5-tier ramp) */
+  .uix-pill--p1 { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger); }
+  .uix-pill--p2 { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
+  .uix-pill--p3 { --tone-bg: var(--uix-amber-bg);   --tone-fg: var(--uix-amber-text);   --tone-dot: var(--uix-amber); }
+  .uix-pill--p4 { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
+  .uix-pill--p5 { --tone-bg: var(--uix-bg-active);  --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-text-muted); }
 
   /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
      the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */

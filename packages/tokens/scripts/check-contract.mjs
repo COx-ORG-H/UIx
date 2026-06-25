@@ -129,6 +129,31 @@ for (const file of (await readdir(compDir)).filter((n) => n.endsWith('.css'))) {
 }
 const staleAllow = allowEntries.filter((e) => !allowHit.has(allowKey(e.file, e.prop, e.value)));
 
+// ── D. Tone-API completeness (U5 governance) ────────────────────────────────────
+// Any component whose first comment advertises "tone API (X / Y / Z)" must have
+// a CSS rule for every listed sub-tone. Catches U4-class drift where the contract
+// claim and the implementation diverge silently.
+const TONE_RULES = {
+  status:   ['uix-pill--neutral', 'uix-pill--success', 'uix-pill--info', 'uix-pill--warning', 'uix-pill--danger'],
+  priority: ['uix-pill--p1', 'uix-pill--p2', 'uix-pill--p3', 'uix-pill--p4', 'uix-pill--p5'],
+  SLA:      ['uix-pill--sla-ok', 'uix-pill--sla-at-risk', 'uix-pill--sla-breached'],
+};
+for (const file of (await readdir(compDir)).filter((n) => n.endsWith('.css'))) {
+  const css = await readFile(join(compDir, file), 'utf8');
+  const toneApiMatch = css.match(/tone API \(([^)]+)\)/);
+  if (!toneApiMatch) continue;
+  const claimed = toneApiMatch[1].split(/\s*\/\s*/).map((s) => s.trim());
+  for (const category of claimed) {
+    const rules = TONE_RULES[category];
+    if (!rules) continue; // unknown category — no guard yet; add it to TONE_RULES to enforce
+    for (const rule of rules) {
+      if (!css.includes(rule)) {
+        problems.push(`D tone-API: ${file} claims "${category}" tone but is missing rule for .${rule}`);
+      }
+    }
+  }
+}
+
 // ── Report ──────────────────────────────────────────────────────────────────────
 if (problems.length) {
   console.error(`✗ contract FAILED — ${problems.length} structural/theme problem(s):`);

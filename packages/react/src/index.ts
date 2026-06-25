@@ -93,6 +93,9 @@ export type { StatusPillProps, PillTone, PillTreatment } from './components/Stat
 export { Progress } from './components/Progress.js';
 export type { ProgressProps } from './components/Progress.js';
 
+export { Meter } from './components/Meter.js';
+export type { MeterProps, MeterTone } from './components/Meter.js';
+
 export { Stat } from './components/Stat.js';
 export type { StatProps, StatTrend } from './components/Stat.js';
 
@@ -134,6 +137,9 @@ export type {
 } from './components/CommandPalette.js';
 
 // ITSM capability
+export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';
+export type { InboxProps, InboxListProps, InboxItemProps, InboxDetailProps } from './components/Inbox.js';
+
 export { Kanban, KanbanColumn, KanbanCard } from './components/Kanban.js';
 export type { KanbanProps, KanbanColumnProps, KanbanCardProps } from './components/Kanban.js';
 
