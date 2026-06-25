@@ -29,6 +29,11 @@ const ALLOWED = new Set([
   'warning', 'warning-fg', 'warning-bg', 'warning-solid',
   'info', 'info-fg', 'info-bg', 'info-solid',
   'danger', 'danger-fg', 'danger-bg', 'danger-solid',
+  // U1/U3 additive roles — overridable per-brand (amber-bg completes the SEV-3 ramp)
+  'amber-bg',
+  'attention', 'attention-bg', 'attention-text', 'attention-solid',
+  'overdue', 'overdue-bg', 'overdue-text', 'overdue-solid',
+  'row-selected-bg',
 ]);
 
 const files = (await readdir(DIR)).filter((f) => f.endsWith('.tokens.json'));

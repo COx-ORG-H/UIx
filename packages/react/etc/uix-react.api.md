@@ -300,6 +300,47 @@ export interface FieldProps {
     success?: string;
 }
 
+// @public
+export function Inbox(input: InboxProps): react.JSX.Element;
+
+// @public
+export function InboxDetail(input: InboxDetailProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface InboxDetailProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function InboxItem(input: InboxItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface InboxItemProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    leading?: ReactNode;
+    preview?: ReactNode;
+    selected?: boolean;
+    subject?: ReactNode;
+    unread?: boolean;
+}
+
+// @public
+export function InboxList(input: InboxListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface InboxListProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface InboxProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
 // @public (undocumented)
 export const Input: react.ForwardRefExoticComponent<InputProps & react.RefAttributes<HTMLInputElement>>;
 
@@ -406,6 +447,18 @@ export function LoadingState(input: LoadingStateProps): react.JSX.Element;
 export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
     rows?: number;
 }
+
+// @public
+export function Meter(input: MeterProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
+    tone?: MeterTone;
+    value?: number;
+}
+
+// @public
+export type MeterTone = 'success' | 'warning' | 'danger' | 'attention' | 'overdue';
 
 // @public (undocumented)
 export function Modal(input: ModalProps): react.JSX.Element;
@@ -566,7 +619,7 @@ export interface PeekProps {
 }
 
 // @public (undocumented)
-export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted';
+export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
 
 // @public (undocumented)
 export type PillTreatment = 'filled' | 'outline';

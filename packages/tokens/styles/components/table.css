@@ -19,7 +19,7 @@
   .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
   .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
   .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
-  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-brand-muted); }
+  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-row-selected-bg); }
   .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
   /* density tiers — standard is the default td height above; data-density overrides it.
      .uix-table--compact kept as a back-compat alias. */

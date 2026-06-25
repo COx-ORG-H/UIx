@@ -1,7 +1,14 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
-export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted';
+export type PillTone =
+  | 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted'
+  // time-pressure tones (U1)
+  | 'attention' | 'overdue'
+  // SLA tones — ok / at-risk / breached (U4)
+  | 'sla-ok' | 'sla-at-risk' | 'sla-breached'
+  // priority / severity ramp P1 (critical) → P5 (neutral) (U4)
+  | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
 export type PillTreatment = 'filled' | 'outline';
 
 export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {

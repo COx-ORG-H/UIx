@@ -36,6 +36,17 @@
   "danger-text": { "$type": "color", "$value": "#F87171", "$description": "On dark, the deep --uix-danger #DC2626 fails as text on the faint danger tint and on plain surfaces — brightened so pill/field-error/stat-trend/menu/node/audit text reads AA. --uix-danger stays the solid critical-pill / button bg (with white --uix-danger-fg)." },
   "amber":      { "$type": "color", "$value": "#E6B25C", "$description": "SEV-3 tone lightened for dark surfaces (the light-mode ochre #C98A1E is too dark on dark)." },
   "amber-text": { "$type": "color", "$value": "#E6B25C", "$description": "On dark the lightened amber reads as text directly — tracks --uix-amber." },
+  "amber-bg":   { "$type": "color", "$value": "rgba(201,138,30,.14)" },
+
+  "attention":       { "$type": "color", "$value": "#FB923C", "$description": "Orange-400 — brightened for dark surfaces (the light-mode #EA580C is too dark on dark)." },
+  "attention-bg":    { "$type": "color", "$value": "rgba(234,88,12,.16)" },
+  "attention-text":  { "$type": "color", "$value": "#FDBA74", "$description": "On dark, orange text tracks --uix-attention (brightened); reads AA on the faint attention-bg." },
+  "attention-solid": { "$type": "color", "$value": "#F97316" },
+
+  "overdue":       { "$type": "color", "$value": "#F87171", "$description": "Red-400 — brightened overdue for dark surfaces (the light-mode #DC2626 fails on dark)." },
+  "overdue-bg":    { "$type": "color", "$value": "rgba(220,38,38,.18)" },
+  "overdue-text":  { "$type": "color", "$value": "#FCA5A5", "$description": "On dark, brightened red text reads AA on the faint overdue-bg." },
+  "overdue-solid": { "$type": "color", "$value": "#F87171" },
 
   "success-solid": { "$type": "color", "$value": "#34D399" },
   "warning-solid": { "$type": "color", "$value": "#FBBF24" },
@@ -54,7 +65,8 @@
 
   "row":           { "$type": "color", "$value": "#111111" },
   "row-alt":       { "$type": "color", "$value": "#161616" },
-  "row-pinned-bg": { "$type": "color", "$value": "rgba(48,128,255,.08)" },
+  "row-pinned-bg":   { "$type": "color", "$value": "rgba(48,128,255,.08)" },
+  "row-selected-bg": { "$type": "color", "$value": "rgba(48,128,255,.16)", "$description": "Dark-mode selection wash — stronger than row-pinned-bg (rgba(48,128,255,.08)) so selected rows read apart from pinned." },
 
   "scrollbar-thumb":       { "$type": "color", "$value": "rgba(255,255,255,.18)" },
   "scrollbar-thumb-hover": { "$type": "color", "$value": "rgba(255,255,255,.30)" }
