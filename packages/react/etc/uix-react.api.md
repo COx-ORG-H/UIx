@@ -225,6 +225,24 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 }
 
+// @public
+export function Composer(input: ComposerProps): react.JSX.Element;
+
+// @public
+export function ComposerBar(input: ComposerBarProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ComposerBarProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -800,6 +818,28 @@ export interface Segment {
     text: string;
 }
 
+// @public
+export function Segmented(input: SegmentedProps): react.JSX.Element;
+
+// @public
+export function SegmentedOption(input: SegmentedOptionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SegmentedOptionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'onChange'> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    value: string;
+}
+
+// @public (undocumented)
+export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    // (undocumented)
+    children?: ReactNode;
+    onChange?: (value: string) => void;
+    value?: string;
+}
+
 // @public (undocumented)
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
@@ -1063,6 +1103,7 @@ export interface TimelineItemProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
+    node?: ReactNode;
 }
 
 // @public (undocumented)

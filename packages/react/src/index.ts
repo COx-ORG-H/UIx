@@ -131,6 +131,12 @@ export type { AvatarProps, AvatarGroupProps, UserChipProps } from './components/
 export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
 
+export { Composer, ComposerBar } from './components/Composer.js';
+export type { ComposerProps, ComposerBarProps } from './components/Composer.js';
+
+export { Segmented, SegmentedOption } from './components/Segmented.js';
+export type { SegmentedProps, SegmentedOptionProps } from './components/Segmented.js';
+
 export { Timeline, TimelineItem } from './components/Timeline.js';
 export type { TimelineProps, TimelineItemProps } from './components/Timeline.js';
 

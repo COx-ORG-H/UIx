@@ -15,16 +15,22 @@ export function Timeline({ children, className, ...props }: TimelineProps) {
 }
 
 export interface TimelineItemProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Custom rail node — an icon puck, an avatar, a tinted dot. Defaults to the
+   * accent `.uix-timeline__node` dot. Supply this to make a heterogeneous feed
+   * (comments + audit events) read on one rail with per-row node semantics.
+   */
+  node?: ReactNode;
   meta?: ReactNode;
   children?: ReactNode;
 }
 
 /** A timeline entry over `.uix-timeline__item` (node + connecting line + body). */
-export function TimelineItem({ meta, children, className, ...props }: TimelineItemProps) {
+export function TimelineItem({ node, meta, children, className, ...props }: TimelineItemProps) {
   return (
     <div className={cx('uix-timeline__item', className)} {...props}>
       <div className="uix-timeline__rail">
-        <span className="uix-timeline__node" />
+        {node ?? <span className="uix-timeline__node" />}
         <span className="uix-timeline__line" />
       </div>
       <div className="uix-timeline__body">
