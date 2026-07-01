@@ -53,6 +53,21 @@
     --uix-danger-text: #C20012;
     --uix-amber: #C98A1E;
     --uix-amber-text: #795006;
+    --uix-amber-bg: #FEFCE8;
+    --uix-attention: #EA580C;
+    --uix-attention-bg: #FFEDD5;
+    --uix-attention-text: #9A3412;
+    --uix-attention-solid: #EA580C;
+    --uix-overdue: #DC2626;
+    --uix-overdue-bg: #FEE2E2;
+    --uix-overdue-text: #991B1B;
+    --uix-overdue-solid: #EF4444;
+    --uix-sev-4: var(--uix-info);
+    --uix-sev-4-bg: var(--uix-info-bg);
+    --uix-sev-4-text: var(--uix-info-text);
+    --uix-sev-5: var(--uix-text-muted);
+    --uix-sev-5-bg: var(--uix-bg-active);
+    --uix-sev-5-text: var(--uix-text-hushed);
     --uix-success-solid: #10B981;
     --uix-warning-solid: #F59E0B;
     --uix-info-solid: #2563EB;
@@ -69,6 +84,7 @@
     --uix-row: #FFFFFF;
     --uix-row-alt: #FAFAFA;
     --uix-row-pinned-bg: #F4F7FF;
+    --uix-row-selected-bg: #DBEAFE;
     --uix-scrollbar-thumb: rgba(10,10,10,.20);
     --uix-scrollbar-thumb-hover: rgba(10,10,10,.34);
     --uix-scrollbar-track: transparent;
@@ -104,12 +120,19 @@
     --uix-row-h-comfortable: 68px;
     --uix-control-h: 36px;
     --uix-sidebar-w: 248px;
+    --uix-sidebar-w-rail: 56px;
     --uix-topbar-h: 56px;
     --uix-scrollbar-size: 10px;
     --uix-icon-sm: 16px;
     --uix-icon-md: 20px;
     --uix-icon-lg: 24px;
     --uix-peek-w: 420px;
+    --uix-col-w-xs: 92px;
+    --uix-col-w-sm: 112px;
+    --uix-col-w-md: 132px;
+    --uix-col-w-lg: 176px;
+    --uix-col-w-xl: 240px;
+    --uix-col-title-min: 340px;
     --uix-space-0: 0;
     --uix-space-1: 4px;
     --uix-space-2: 8px;
@@ -179,6 +202,15 @@
     --uix-danger-text: #F87171;
     --uix-amber: #E6B25C;
     --uix-amber-text: #E6B25C;
+    --uix-amber-bg: rgba(201,138,30,.14);
+    --uix-attention: #FB923C;
+    --uix-attention-bg: rgba(234,88,12,.16);
+    --uix-attention-text: #FDBA74;
+    --uix-attention-solid: #F97316;
+    --uix-overdue: #F87171;
+    --uix-overdue-bg: rgba(220,38,38,.18);
+    --uix-overdue-text: #FCA5A5;
+    --uix-overdue-solid: #F87171;
     --uix-success-solid: #34D399;
     --uix-warning-solid: #FBBF24;
     --uix-info-solid: #3B82F6;
@@ -195,6 +227,7 @@
     --uix-row: #111111;
     --uix-row-alt: #161616;
     --uix-row-pinned-bg: rgba(48,128,255,.08);
+    --uix-row-selected-bg: rgba(48,128,255,.16);
     --uix-scrollbar-thumb: rgba(255,255,255,.18);
     --uix-scrollbar-thumb-hover: rgba(255,255,255,.30);
     --uix-highlight-top: inset 0 1px 0 rgba(255,255,255,.04);
@@ -614,17 +647,39 @@
 /* uix app shell — sidebar + topbar + content grid. Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-shell {
+    position: relative;
     display: grid;
     grid-template-columns: var(--uix-sidebar-w) 1fr;
     grid-template-rows: var(--uix-topbar-h) 1fr;
     height: 100%; min-height: 360px;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden;
-    transition: grid-template-columns var(--uix-dur) var(--uix-ease-out);
+    transition: grid-template-columns var(--uix-dur) var(--uix-ease-out), grid-template-rows var(--uix-dur) var(--uix-ease-out);
   }
-  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; }
+  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; overflow-x: hidden; }
   .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: var(--uix-space-3); padding: 0 var(--uix-space-6); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
   .uix-shell__main { grid-column: 2; overflow: auto; padding: var(--uix-space-7); background: var(--uix-bg-app); }
-  .uix-shell[data-collapsed] { grid-template-columns: 56px 1fr; }
+
+  /* ── nav width tiers ──────────────────────────────────────────────────────────
+     Progressive reveal for wide, many-column tables: full (default) → rail (icon
+     only) → hidden (0). data-collapsed stays a back-compat alias for the rail. */
+  .uix-shell[data-nav="rail"], .uix-shell[data-collapsed] { grid-template-columns: var(--uix-sidebar-w-rail) 1fr; }
+  .uix-shell[data-nav="hidden"] { grid-template-columns: 0 1fr; }
+
+  /* ── focus / immersive mode ───────────────────────────────────────────────────
+     A table-scoped escape hatch: hide the sidebar AND the topbar so a dense grid
+     uses the whole frame. The app toggles [data-focus] (from a toolbar maximize
+     control) and restores the previous nav state + focus on Esc. */
+  .uix-shell[data-focus] { grid-template-columns: 0 1fr; grid-template-rows: 0 1fr; }
+  .uix-shell[data-focus] .uix-shell__topbar { display: none; }
+
+  /* a floating host for the "exit focus" affordance (Esc also exits) */
+  .uix-shell__focus-exit { position: absolute; top: var(--uix-space-3); right: var(--uix-space-3); z-index: var(--uix-z-overlay); }
+
+  /* ── full-bleed main ──────────────────────────────────────────────────────────
+     Opt-in per surface: a genuinely wide grid drops the content gutter and runs
+     edge to edge, reclaiming 2 x --uix-space-7. Not the default — most pages want
+     the gutter. Pair with a frozen identifier column for horizontal scroll. */
+  .uix-shell__main--bleed { padding: 0; }
 }
 /* uix sidebar nav — items, favorites, collapsible sub-items, collapsed rail. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -678,7 +733,7 @@
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
   /* collapsed rail */
-  .uix-sidebar[data-collapsed] { width: 56px; }
+  .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
   .uix-sidebar[data-collapsed] .uix-navitem__label,
   .uix-sidebar[data-collapsed] .uix-navitem__badge,
   .uix-sidebar[data-collapsed] .uix-navitem__star,
@@ -843,6 +898,19 @@
   /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
   .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
   .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
+  /* time-pressure tones (U1 tokens — distinct from severity and validation-error) */
+  .uix-pill--attention { --tone-bg: var(--uix-attention-bg); --tone-fg: var(--uix-attention-text); --tone-dot: var(--uix-attention); }
+  .uix-pill--overdue   { --tone-bg: var(--uix-overdue-bg);   --tone-fg: var(--uix-overdue-text);   --tone-dot: var(--uix-overdue); }
+  /* SLA tones — ok=success, at-risk=attention, breached=overdue */
+  .uix-pill--sla-ok       { --tone-bg: var(--uix-success-bg);   --tone-fg: var(--uix-success);        --tone-dot: var(--uix-success); }
+  .uix-pill--sla-at-risk  { --tone-bg: var(--uix-attention-bg); --tone-fg: var(--uix-attention-text); --tone-dot: var(--uix-attention); }
+  .uix-pill--sla-breached { --tone-bg: var(--uix-overdue-bg);   --tone-fg: var(--uix-overdue-text);   --tone-dot: var(--uix-overdue); }
+  /* Priority/severity tones — P1=danger, P2=warning, P3=amber, P4=info, P5=neutral (complete 5-tier ramp) */
+  .uix-pill--p1 { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger); }
+  .uix-pill--p2 { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
+  .uix-pill--p3 { --tone-bg: var(--uix-amber-bg);   --tone-fg: var(--uix-amber-text);   --tone-dot: var(--uix-amber); }
+  .uix-pill--p4 { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
+  .uix-pill--p5 { --tone-bg: var(--uix-bg-active);  --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-text-muted); }
 
   /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
      the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */
@@ -851,7 +919,9 @@
   .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
   .uix-pill--outline.uix-pill--critical { color: var(--uix-danger-text); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
 }
-/* uix data table — zebra, sticky header, sort, selection, density, pinned rows. Depends only on --uix-* tokens. */
+/* uix data table — zebra, sticky header, sort, selection, density, pinned rows,
+   column sizing, bulk actions, row actions, expandable rows, inline edit, resize,
+   search highlight, responsive ladder + compare. Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-table-wrap { overflow: auto; max-height: 460px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
@@ -866,16 +936,16 @@
   .uix-table th[data-sort]::after { content: " ↕"; opacity: .35; }
   .uix-table th[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; color: var(--uix-accent); }
   .uix-table th[aria-sort="descending"]::after { content: " ↓"; opacity: 1; color: var(--uix-accent); }
+  /* multi-column sort ordinal (⇧+click adds a secondary key) */
+  .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent); }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
   .uix-table tbody tr { background: var(--uix-row); }
   .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
   .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
   .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
-  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-brand-muted); }
+  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-row-selected-bg); }
   .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
-  /* density tiers — standard is the default td height above; data-density overrides it.
-     .uix-table--compact kept as a back-compat alias. */
   .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
   .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
@@ -886,7 +956,7 @@
   .uix-table__pin svg { width: 15px; height: 15px; }
   .uix-table__pin[data-on] svg { fill: currentColor; }
 
-  /* frozen first column (opt-in via .uix-table--pinned-col) — keeps the identifier visible on horizontal scroll, preserving zebra/state bg */
+  /* frozen first column (opt-in via .uix-table--pinned-col) */
   .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
   .uix-table--pinned-col thead th:first-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
   .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); }
@@ -894,7 +964,120 @@
   .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
   .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
   .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
+  .uix-table--pinned-col tbody tr[aria-selected="true"] td:first-child { background: var(--uix-row-selected-bg); }
   .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
+
+  /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
+  .uix-table--fixed { table-layout: fixed; width: 100%; }
+  .uix-col--w-xs { width: var(--uix-col-w-xs); }
+  .uix-col--w-sm { width: var(--uix-col-w-sm); }
+  .uix-col--w-md { width: var(--uix-col-w-md); }
+  .uix-col--w-lg { width: var(--uix-col-w-lg); }
+  .uix-col--w-xl { width: var(--uix-col-w-xl); }
+  .uix-col--flex,
+  .uix-col--primary { width: auto; min-width: var(--uix-col-title-min); }
+  .uix-col--truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .uix-col--wrap { white-space: normal; overflow-wrap: anywhere; }
+  .uix-col--num { font-variant-numeric: tabular-nums; }
+  .uix-table th.uix-col--num, .uix-table td.uix-col--num { text-align: right; }
+
+  /* ── cell content vocabulary — a fixed set of renderers keeps tables consistent ── */
+  .uix-cell-strong { font-weight: 600; }
+  .uix-cell-sub { display: block; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-cell-mono { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); }
+
+  /* ── id cell — the canonical row click-through (row → peek, ↗ → full record) ───── */
+  .uix-id-cell__btn {
+    border: 0; background: transparent; cursor: pointer; padding: 0;
+    color: var(--uix-text); font: inherit;
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
+  }
+  .uix-id-cell__btn:hover { color: var(--uix-accent); }
+  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
+  .uix-id-cell__arrow {
+    width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
+    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-table tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
+
+  /* ── selection column + select-all ────────────────────────────────────────────── */
+  .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: 44px; padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
+
+  /* contextual bulk-action bar — appears when >=1 row is selected */
+  .uix-bulkbar {
+    display: flex; align-items: center; gap: var(--uix-space-3);
+    padding: var(--uix-space-2) var(--uix-space-3); margin-bottom: var(--uix-space-3);
+    border: 1px solid var(--uix-accent); border-radius: var(--uix-radius-md);
+    background: var(--uix-brand-muted); color: var(--uix-text);
+    animation: uix-bulkbar-in var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-bulkbar[hidden] { display: none; }
+  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent); font-variant-numeric: tabular-nums; }
+  .uix-bulkbar__spacer { flex: 1; }
+  @keyframes uix-bulkbar-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .uix-bulkbar { animation: none; } }
+
+  /* ── row hover actions + kebab ─────────────────────────────────────────────────── */
+  .uix-table__actions { width: 84px; text-align: right; white-space: nowrap; }
+  .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-rowact svg { width: 16px; height: 16px; display: block; }
+  .uix-table tbody tr:hover .uix-rowact, .uix-rowact:focus-visible, .uix-rowact[aria-expanded="true"] { opacity: 1; }
+  .uix-rowact:hover { background: var(--uix-bg-active); color: var(--uix-text); }
+
+  /* ── expandable inline row ─────────────────────────────────────────────────────── */
+  .uix-table__expand { border: 0; background: transparent; cursor: pointer; color: var(--uix-text-muted); padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); display: inline-grid; place-items: center; }
+  .uix-table__expand svg { width: 16px; height: 16px; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table__expand[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .uix-table__expand:hover { background: var(--uix-bg-active); color: var(--uix-text); }
+  tr.uix-table__detail > td { background: var(--uix-bg-subtle); padding: 0 var(--uix-space-4); }
+  .uix-table__detail-inner { padding: var(--uix-space-4) var(--uix-space-1) var(--uix-space-5); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--uix-space-4) var(--uix-space-7); }
+  .uix-kv { font-size: var(--uix-text-meta); }
+  .uix-kv__k { color: var(--uix-text-muted); margin-bottom: var(--uix-space-1); }
+  .uix-kv__v { color: var(--uix-text); }
+  @media (prefers-reduced-motion: reduce) { .uix-table__expand svg { transition: none; } }
+
+  /* ── inline cell edit ──────────────────────────────────────────────────────────── */
+  .uix-cell-edit { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: text; border-radius: var(--uix-radius-sm); padding: var(--uix-space-1) var(--uix-space-2); margin: calc(-1 * var(--uix-space-1)) calc(-1 * var(--uix-space-2)); transition: background-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-cell-edit:hover { background: var(--uix-bg-active); }
+  .uix-cell-edit__pencil { width: 13px; height: 13px; color: var(--uix-text-muted); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table tbody tr:hover .uix-cell-edit__pencil { opacity: 1; }
+  .uix-cell-edit[data-editing] { background: var(--uix-surface); box-shadow: 0 0 0 2px var(--uix-ring); cursor: default; }
+  .uix-cell-edit__ok { color: var(--uix-success); width: 14px; height: 14px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-cell-edit[data-saved] .uix-cell-edit__ok { opacity: 1; }
+  .uix-cell-edit input, .uix-cell-edit select { border: 0; background: transparent; font: inherit; color: inherit; outline: none; }
+
+  /* ── column resize grip (drag the header's right edge) ─────────────────────────── */
+  .uix-table__resize { position: absolute; top: 0; right: -3px; width: 8px; height: 100%; cursor: col-resize; z-index: var(--uix-z-raised); user-select: none; touch-action: none; }
+  .uix-table__resize::after { content: ""; position: absolute; top: 25%; right: 3px; width: 2px; height: 50%; background: transparent; border-radius: var(--uix-radius-pill); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table thead th:hover .uix-table__resize::after, .uix-table__resize[data-drag]::after { background: var(--uix-accent); }
+
+  /* ── search match highlight ────────────────────────────────────────────────────── */
+  .uix-mark { background: var(--uix-warning-bg); color: var(--uix-text); border-radius: var(--uix-radius-xs); padding: 0 0.15em; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--uix-warning) 60%, transparent); }
+
+  /* ── responsive ladder — priority-column drop, then card transform ─────────────── */
+  .uix-table--priority th[data-priority="low"], .uix-table--priority td[data-priority="low"] { display: none; }
+  .uix-table--priority-mid th[data-priority="low"], .uix-table--priority-mid td[data-priority="low"],
+  .uix-table--priority-mid th[data-priority="mid"], .uix-table--priority-mid td[data-priority="mid"] { display: none; }
+
+  .uix-table--cards { display: block; }
+  .uix-table--cards thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .uix-table--cards tbody, .uix-table--cards tr, .uix-table--cards td { display: block; width: auto; }
+  .uix-table--cards tbody tr { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); margin: 0 0 var(--uix-space-3); padding: var(--uix-space-1) var(--uix-space-4); box-shadow: var(--uix-shadow-sm); }
+  .uix-table--cards tbody tr[aria-selected="true"] { box-shadow: 0 0 0 2px var(--uix-accent); }
+  .uix-table--cards td { height: auto; display: flex; justify-content: space-between; align-items: center; gap: var(--uix-space-5); padding: var(--uix-space-2) 0; border-bottom: 1px solid var(--uix-border); text-align: right; white-space: normal; }
+  .uix-table--cards td:last-child { border-bottom: 0; }
+  .uix-table--cards td::before { content: attr(data-label); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 500; text-align: left; flex: none; }
+  .uix-table--cards td[data-col="id"] { font-size: var(--uix-text-h3); font-weight: 600; border-bottom: 1px solid var(--uix-border); padding-bottom: var(--uix-space-3); }
+  .uix-table--cards td[data-col="id"]::before { display: none; }
+  .uix-table--cards td[data-col="select"], .uix-table--cards td[data-col="actions"], .uix-table--cards td[data-col="expand"] { display: none; }
+
+  /* ── compare view — two records field-by-field on a narrow screen ──────────────── */
+  .uix-compare { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden; font-size: var(--uix-text-meta); }
+  .uix-compare__head, .uix-compare__row { display: grid; grid-template-columns: 1fr 1fr; }
+  .uix-compare__head > div, .uix-compare__cell { padding: var(--uix-space-3); background: var(--uix-surface); border-top: 1px solid var(--uix-border); }
+  .uix-compare__head > div { font-weight: 600; border-top: 0; }
+  .uix-compare__head > div + div, .uix-compare__cell + .uix-compare__cell { border-left: 1px solid var(--uix-border); }
+  .uix-compare__attr { grid-column: 1 / -1; background: var(--uix-bg-subtle); padding: var(--uix-space-1) var(--uix-space-3); border-top: 1px solid var(--uix-border); font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); }
 }
 /* uix table toolbar + two-row filter bar (status / type). Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -1045,8 +1228,10 @@
 @layer uix.components {
   .uix-meter { height: 8px; background: var(--uix-bg-active); border-radius: var(--uix-radius-pill); overflow: hidden; }
   .uix-meter__fill { height: 100%; border-radius: inherit; background: var(--uix-success); transition: width var(--uix-dur) var(--uix-ease-out); }
-  .uix-meter__fill[data-tone="warning"] { background: var(--uix-warning); }
-  .uix-meter__fill[data-tone="danger"] { background: var(--uix-danger); }
+  .uix-meter__fill[data-tone="warning"]   { background: var(--uix-warning); }
+  .uix-meter__fill[data-tone="danger"]    { background: var(--uix-danger); }
+  .uix-meter__fill[data-tone="attention"] { background: var(--uix-attention); }
+  .uix-meter__fill[data-tone="overdue"]   { background: var(--uix-overdue); }
 }
 /* uix timeline / activity feed — depends only on --uix-* tokens. */
 @layer uix.components {
@@ -1207,10 +1392,6 @@
     transform: translateX(100%);
     transition: transform var(--uix-dur-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
-    /* Author display values for BOTH states are required for the slide-in to animate: the
-       allow-discrete `display` transition only engages with author values, and that gating also
-       lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
-       parked at translateX(100%). Closed = none; open = flex. */
     display: none;
   }
   .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
@@ -1234,32 +1415,8 @@
   .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
 
-  /* a table wired to open the peek (app.js sets data-uix-rowpeek): its rows read as clickable,
-     since clicking a ticket row is the queue's primary way to open the side-peek. */
   [data-uix-rowpeek] tbody tr { cursor: pointer; }
   [data-uix-rowpeek] tbody tr:hover td { background: var(--uix-bg-hover); }
-
-  /* Pattern B table layout: columns keep natural width, no squeezing or wrapping.
-     Subject is the only column that may truncate (it can be long). */
-  [data-uix-table-v2] .uix-table td { white-space: nowrap; }
-  [data-uix-table-v2] .uix-table td:nth-child(2) { max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
-
-  /* ID cell in pattern B table: ID text + ↗ arrow, single button, quiet/on-brand at rest.
-     Monospace so IDs align vertically. Arrow fades in on row hover. */
-  .uix-id-cell__btn {
-    border: 0; background: transparent; cursor: pointer; padding: 0;
-    color: var(--uix-text); font: inherit;
-    display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
-  }
-  .uix-id-cell__btn:hover { color: var(--uix-accent); }
-  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
-  .uix-id-cell__arrow {
-    width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
-    opacity: 0;
-    transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
-  }
-  [data-uix-rowpeek] tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { .uix-id-cell__arrow { transition: none; } }
 }
 /* uix popover — generic anchored surface via the native Popover API; animated with @starting-style. */
 @layer uix.components {

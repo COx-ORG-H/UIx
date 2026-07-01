@@ -25,43 +25,38 @@ All component spacing flows from the scale `--uix-space-0 … --uix-space-12` (4
 `.uix-stack` / `.uix-cluster` utilities) for layout rhythm — never hardcode px or Tailwind spacing in product
 markup. This is the dial that keeps whitespace consistent across products.
 
-## React component catalog (`@tensor_1/react`)
+### Table columns — sizing & cell behaviour
+Consuming products size and truncate table columns by attaching a **UIx class to a column** — keyed to a
+column id/class in the product's own markup — never by hand-coding pixel widths per app or targeting
+`:nth-child`. The vocabulary lives in `styles/components/table.css` and is driven by a `--uix-col-*` width
+scale (in `tokens/base/size.json`). This is the reusable replacement for the old per-app widths and the
+`[data-uix-table-v2] … td:nth-child(2)` title cap.
 
-Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pure presentation, zero app deps —
-this is what keeps UIx stack-neutral). Current set:
+**Width scale** (`--uix-col-*`):
 
-- **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
-- **Layout:** Card, **PageHeader**, **DetailLayout**, **List/ListItem**, AppShell, Sidebar (+Nav*), Tabs/Tab
-- **Overlays:** Modal, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
-- **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
-- **Data display:** Table (+Th/Td/Tr/Wrap), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**
-- **Capability:** Kanban (+Column/Card), Tree, Chart
+| Token | px | Class | Typical column |
+|---|---|---|---|
+| `--uix-col-w-xs` | 92 | `.uix-col--w-xs` | priority, flag, pin |
+| `--uix-col-w-sm` | 112 | `.uix-col--w-sm` | type, date, short status |
+| `--uix-col-w-md` | 132 | `.uix-col--w-md` | id, status, category, team |
+| `--uix-col-w-lg` | 176 | `.uix-col--w-lg` | assignee / person |
+| `--uix-col-w-xl` | 240 | `.uix-col--w-xl` | long label |
+| `--uix-col-title-min` | 340 | (floor for `.uix-col--flex`) | subject / title |
 
-**Bold = added in the UIx-adoption pass** (the components Tensor had rebuilt bespoke now live here).
+**Classes:**
 
-## Domain boundary (what does NOT move into UIx)
+| Class | Applies to | Behaviour |
+|---|---|---|
+| `.uix-table--fixed` | `<table>` | `table-layout: fixed; width: 100%` — column widths become authoritative and cell content no longer widens a column, so truncation is reliable. Use this (or emit a `<colgroup>`) whenever you set column widths. |
+| `.uix-col--w-xs … --w-xl` | `<col>` / `<th>` / `<td>` | Sets the column to a width tier. |
+| `.uix-col--flex` (alias `.uix-col--primary`) | header cell (`<th>`) | `width: auto` (fills remaining space) **plus** a `min-width: var(--uix-col-title-min)` floor so the title never collapses; the table scrolls horizontally instead. |
+| `.uix-col--truncate` | `<th>` / `<td>` | One line + ellipsis. Needs a width source (a tier, the flex floor, or fixed layout). The primary/title column defaults to this. |
+| `.uix-col--wrap` | `<th>` / `<td>` | Allows the cell to break to multiple lines. |
+| `.uix-col--num` | `<th>` / `<td>` | Tabular figures + right alignment for numeric columns. |
+| `.uix-id-cell__btn` / `.uix-id-cell__arrow` | cell content | The canonical row **click-through**: ID text + ↗ arrow as one button — a row click opens the side-peek, the arrow (revealed on row hover) opens the full record directly. |
 
-UIx is **presentational and stack-neutral**. Business logic, data-fetching, and domain concepts stay in the
-**consumer**, composed from UIx primitives:
+> A `<col>` element can only carry `width` / `background` / `border`, so **width** classes work on `<col>`
+> **and** cells, while **truncate / wrap / num** are cell-only (they set text properties). The primary
+> column's `min-width` floor is likewise a cell property — put `.uix-col--flex` on its `<th>`, not the `<col>`.
 
-- Data-coupled widgets (tRPC/query-driven dashboards) → build in the product, render with UIx `Card`/`Stat`/`Chart`.
-- Workflow/compliance components (e.g. an approval `ConfirmAction` carrying audit/RBAC metadata) → product owns
-  the logic; the **shell** uses UIx `Button`/`Modal`/`Alert`.
-- Domain badges/icons (regulatory status, entity-type icons) → product owns the meaning; styling via UIx `Label`/`StatusPill`.
-
-The test: if it needs to know about ITSM/POS/Shop concepts, tRPC, or audit trails, it's a **consumer** component
-that *uses* UIx — not a UIx component.
-
-## Coverage backlog — CSS components still needing a React wrapper
-
-These have CSS in `styles/components/` but no `@tensor_1/react` wrapper yet. Completing them finishes the React layer.
-Prioritize by product demand.
-
-- **Presentational (easy wrap):** breadcrumbs, kbd, meter, progress, segmented, steps, stepper, reactions,
-  attachment, audit-log, notification-center, inbox, pipeline, flow, sla, heartbeat, media, lightbox,
-  description-list, contact-card, utility-bits, view-menu, table-toolbar, labels(✓ as Label)
-- **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
-  menu, form (FormGrid/Fieldset)
-
-When you build one: add `packages/react/src/components/<Name>.tsx`, export from `packages/react/src/index.ts`,
-and if it needs a demo, add it to `packages/tokens/index.html`.
+**How a consumer maps

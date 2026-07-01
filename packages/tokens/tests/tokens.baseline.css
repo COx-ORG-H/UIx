@@ -69,12 +69,15 @@
     --uix-space-0:0; --uix-space-1:4px; --uix-space-2:8px; --uix-space-3:12px; --uix-space-4:16px; --uix-space-5:20px; --uix-space-6:24px; --uix-space-7:32px; --uix-space-8:40px; --uix-space-9:48px; --uix-space-10:64px; --uix-space-11:80px; --uix-space-12:96px;
 
     /* layout */
-    --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-topbar-h:56px;
+    --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-sidebar-w-rail:56px; --uix-topbar-h:56px;
 
     /* rows / scrollbars / icons / peek */
     --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF; --uix-row-selected-bg:#DBEAFE;
     --uix-scrollbar-size:10px; --uix-scrollbar-thumb:rgba(10,10,10,.20); --uix-scrollbar-thumb-hover:rgba(10,10,10,.34); --uix-scrollbar-track:transparent;
     --uix-icon-sm:16px; --uix-icon-md:20px; --uix-icon-lg:24px; --uix-peek-w:420px;
+
+    /* table column-width scale — consumed by .uix-col--w-* / .uix-col--flex */
+    --uix-col-w-xs:92px; --uix-col-w-sm:112px; --uix-col-w-md:132px; --uix-col-w-lg:176px; --uix-col-w-xl:240px; --uix-col-title-min:340px;
   }
 
   :root:where(.dark,[data-theme="dark"]) {

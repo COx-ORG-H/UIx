@@ -10,11 +10,19 @@
   "row-h-comfortable": { "$type": "dimension", "$value": "68px" },
   "control-h":         { "$type": "dimension", "$value": "36px" },
   "sidebar-w":         { "$type": "dimension", "$value": "248px" },
+  "sidebar-w-rail":    { "$type": "dimension", "$value": "56px", "$description": "Collapsed icon-rail width for the app-shell sidebar (data-nav=rail / data-collapsed). Contractual so the rail width stops being hand-coded as 56px in app-shell.css and products can retheme it. Full = --uix-sidebar-w, rail = this, hidden = 0." },
   "topbar-h":          { "$type": "dimension", "$value": "56px" },
 
   "scrollbar-size": { "$type": "dimension", "$value": "10px" },
   "icon-sm": { "$type": "dimension", "$value": "16px" },
   "icon-md": { "$type": "dimension", "$value": "20px" },
   "icon-lg": { "$type": "dimension", "$value": "24px" },
-  "peek-w":  { "$type": "dimension", "$value": "420px" }
+  "peek-w":  { "$type": "dimension", "$value": "420px" },
+
+  "col-w-xs":      { "$type": "dimension", "$value": "92px",  "$description": "Table column-width scale — the shared tier set consumers attach to a column via .uix-col--w-* (on <col>/<th>/<td>) instead of hand-coding per-app pixel widths. Reconciles the widths house products use for compact data columns: xs≈priority/flag, sm≈type/date, md≈id/status/team, lg≈assignee/person, xl≈long labels. Snap each column to the nearest tier." },
+  "col-w-sm":      { "$type": "dimension", "$value": "112px" },
+  "col-w-md":      { "$type": "dimension", "$value": "132px" },
+  "col-w-lg":      { "$type": "dimension", "$value": "176px" },
+  "col-w-xl":      { "$type": "dimension", "$value": "240px" },
+  "col-title-min": { "$type": "dimension", "$value": "340px", "$description": "Min-width floor for the primary/flex column (.uix-col--flex) — the subject/title never collapses below this; the table scrolls horizontally (pinned first column intact) instead of squeezing the title. Generalises the old 280px title cap." }
 }

@@ -40,25 +40,7 @@
   [data-uix-rowpeek] tbody tr { cursor: pointer; }
   [data-uix-rowpeek] tbody tr:hover td { background: var(--uix-bg-hover); }
 
-  /* Pattern B table layout: columns keep natural width, no squeezing or wrapping.
-     Subject is the only column that may truncate (it can be long). */
-  [data-uix-table-v2] .uix-table td { white-space: nowrap; }
-  [data-uix-table-v2] .uix-table td:nth-child(2) { max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
-
-  /* ID cell in pattern B table: ID text + ↗ arrow, single button, quiet/on-brand at rest.
-     Monospace so IDs align vertically. Arrow fades in on row hover. */
-  .uix-id-cell__btn {
-    border: 0; background: transparent; cursor: pointer; padding: 0;
-    color: var(--uix-text); font: inherit;
-    display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
-  }
-  .uix-id-cell__btn:hover { color: var(--uix-accent); }
-  .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
-  .uix-id-cell__arrow {
-    width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
-    opacity: 0;
-    transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
-  }
-  [data-uix-rowpeek] tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { .uix-id-cell__arrow { transition: none; } }
+  /* Column sizing + the id-cell click-through pattern now live in table.css (one story for
+     "table cells"). Size columns with .uix-col--w-* / .uix-col--flex + .uix-col--truncate
+     instead of the old [data-uix-table-v2] :nth-child(2) title cap. */
 }
