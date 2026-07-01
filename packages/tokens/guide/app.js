@@ -48,6 +48,90 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
 /** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
 export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
 
+/* ── engine-aligned table helpers ──────────────────────────────────────────────
+ * Ports of @tensor_1/react's table-engine (multiSort / toggleSort / searchRows /
+ * highlightSegments / selection / clampWidth) so the vanilla styleguide sorts,
+ * searches, and selects identically to the React layer. Directions use the
+ * vanilla 'asc'/'desc' convention; the DOM maps them to aria-sort names. */
+
+/** Stable multi-column sort. `keys` = [{field, dir}], first is primary; numeric-aware,
+ *  case-insensitive, nulls first. `getField(row, field)` reads the sort value (so the
+ *  same fn drives object rows and live <tr>s). New array; input is not mutated. */
+export const multiSort = (rows, keys, getField = (r, f) => r[f]) => {
+  if (!keys.length) return rows.slice();
+  const cmp = (a, b) => {
+    if (a == null && b == null) return 0;
+    if (a == null) return -1;
+    if (b == null) return 1;
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
+    return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+  };
+  return rows
+    .map((row, i) => ({ row, i }))
+    .sort((x, y) => {
+      for (const k of keys) {
+        const c = cmp(getField(x.row, k.field), getField(y.row, k.field));
+        if (c) return k.dir === 'desc' ? -c : c;
+      }
+      return x.i - y.i; // stable
+    })
+    .map((w) => w.row);
+};
+
+/** Toggle a field in a multi-sort key list. Non-additive replaces the list with this
+ *  field (cycling asc → desc → off); additive adds/updates it as a secondary key,
+ *  dropping it when it cycles off. Mirrors the engine's toggleSort. */
+export const toggleSortKeys = (keys, field, additive = false) => {
+  const cur = keys.find((k) => k.field === field)?.dir;
+  const next = cur === 'asc' ? 'desc' : cur === 'desc' ? 'off' : 'asc';
+  if (!additive) return next === 'off' ? [] : [{ field, dir: next }];
+  const rest = keys.filter((k) => k.field !== field);
+  return next === 'off' ? rest : [...rest, { field, dir: next }];
+};
+
+/** Rows where any of `fields` (default: every value) contains `query` (case-insensitive). */
+export const searchRows = (rows, query, fields = null) => {
+  const q = String(query).trim().toLowerCase();
+  if (!q) return rows.slice();
+  return rows.filter((r) =>
+    (fields ? fields.map((f) => r[f]) : Object.values(r)).some((v) => v != null && String(v).toLowerCase().includes(q)));
+};
+
+/** Split `text` into { text, match } segments for <mark> rendering (case-insensitive). */
+export const highlightSegments = (text, query) => {
+  const q = String(query).trim();
+  if (!q) return [{ text, match: false }];
+  const out = [];
+  const lower = text.toLowerCase();
+  const ql = q.toLowerCase();
+  let i = 0;
+  for (;;) {
+    const hit = lower.indexOf(ql, i);
+    if (hit === -1) { if (i < text.length) out.push({ text: text.slice(i), match: false }); break; }
+    if (hit > i) out.push({ text: text.slice(i, hit), match: false });
+    out.push({ text: text.slice(hit, hit + q.length), match: true });
+    i = hit + q.length;
+  }
+  return out;
+};
+
+/** Header select-all tri-state ('none' | 'some' | 'all') against the page's ids. */
+export const selectAllState = (selected, pageIds) => {
+  const on = pageIds.filter((id) => selected.has(id)).length;
+  return on === 0 ? 'none' : on === pageIds.length ? 'all' : 'some';
+};
+
+/** Toggle every id on the current page on/off from the header checkbox. New Set. */
+export const togglePage = (selected, pageIds) => {
+  const next = new Set(selected);
+  const all = pageIds.every((id) => next.has(id));
+  for (const id of pageIds) all ? next.delete(id) : next.add(id);
+  return next;
+};
+
+/** Clamp a dragged column width to a sane min (and optional max), rounded. */
+export const clampWidth = (width, min = 64, max = Infinity) => Math.max(min, Math.min(max, Math.round(width)));
+
 /** Density tiers, in cycle order (standard is the default). */
 export const DENSITIES = ['compact', 'standard', 'comfortable'];
 
@@ -305,40 +389,98 @@ if (typeof document !== 'undefined') {
     const tbody = root.querySelector('tbody[data-uix-rows]');
     if (!tbody) return;
     const allRows = [...tbody.querySelectorAll('tr')].map((tr) => ({ el: tr, id: tr.dataset.id, status: tr.dataset.status, type: tr.dataset.type }));
-    let sortIdx = null, sortDir = 'asc';
+    let sortKeys = [];   // [{ field: colIndex, dir: 'asc'|'desc' }] — multi-sort; ⇧+click adds a secondary key
+    let query = '';
     const filters = { status: new Set(), type: new Set() };
     let pinned = new Set();
     const cellText = (tr, i) => tr.children[i]?.textContent.trim() ?? '';
+    const headers = [...table.querySelectorAll('thead th')];
+    // primary (flex) column: where search matches get highlighted (plain-text subject). Cache the
+    // original text per row so the highlight can be rebuilt/cleared without losing the source string.
+    const primaryIdx = headers.findIndex((h) => h.classList.contains('uix-col--flex'));
+    allRows.forEach((r) => {
+      r.primaryCell = primaryIdx >= 0 ? r.el.children[primaryIdx] : null;
+      r.primaryText = r.primaryCell ? r.primaryCell.textContent : '';
+    });
+
+    const applyHighlight = () => {
+      if (primaryIdx < 0) return;
+      allRows.forEach((r) => {
+        if (!r.primaryCell) return;
+        r.primaryCell.innerHTML = query.trim()
+          ? highlightSegments(r.primaryText, query).map((seg) =>
+              seg.match ? `<mark class="uix-mark">${esc(seg.text)}</mark>` : esc(seg.text)).join('')
+          : esc(r.primaryText);
+      });
+    };
 
     const render = () => {
+      // filter chips + free-text search (searchRows semantics over the row's rendered text)
+      const q = query.trim().toLowerCase();
       let visible = allRows.filter((r) =>
         (!filters.status.size || filters.status.has(r.status)) &&
-        (!filters.type.size || filters.type.has(r.type)));
-      if (sortIdx != null) {
-        const s = sortDir === 'desc' ? -1 : 1;
-        visible = [...visible].sort((a, b) => cellText(a.el, sortIdx).localeCompare(cellText(b.el, sortIdx), undefined, { numeric: true, sensitivity: 'base' }) * s);
-      }
+        (!filters.type.size || filters.type.has(r.type)) &&
+        (!q || r.el.textContent.toLowerCase().includes(q)));
+      // stable multi-column sort, reading each key's cell text at its column index
+      if (sortKeys.length) visible = multiSort(visible, sortKeys, (r, idx) => cellText(r.el, idx));
       const pinnedRows = [...pinned].map((id) => allRows.find((r) => r.id === id)).filter(Boolean);
       const rest = visible.filter((r) => !pinned.has(r.id));
       tbody.replaceChildren(...[...pinnedRows, ...rest].map((r) => r.el));
       allRows.forEach((r) => r.el.removeAttribute('data-pinned'));
       pinnedRows.forEach((r) => r.el.setAttribute('data-pinned', ''));
+      applyHighlight();
     };
 
+    // paint aria-sort + the multi-sort ordinal badge (.uix-table th[data-sort-order]) from the keys
+    const paintSort = () => {
+      root.querySelectorAll('th[data-sort]').forEach((h) => {
+        const idx = [...h.parentElement.children].indexOf(h);
+        const pos = sortKeys.findIndex((k) => k.field === idx);
+        if (pos < 0) { h.removeAttribute('aria-sort'); h.removeAttribute('data-sort-order'); return; }
+        h.setAttribute('aria-sort', sortKeys[pos].dir === 'desc' ? 'descending' : 'ascending');
+        if (sortKeys.length > 1) h.setAttribute('data-sort-order', String(pos + 1)); // ordinal only for a real multi-sort
+        else h.removeAttribute('data-sort-order');
+      });
+    };
     root.querySelectorAll('th[data-sort]').forEach((th) => {
       th.tabIndex = 0;                       // keyboard-reachable
       th.setAttribute('role', 'button');
-      const doSort = () => {
+      const doSort = (additive) => {
         const idx = [...th.parentElement.children].indexOf(th);
-        if (sortIdx === idx) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-        else { sortIdx = idx; sortDir = 'asc'; }
-        root.querySelectorAll('th[data-sort]').forEach((h) => h.removeAttribute('aria-sort'));
-        th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+        sortKeys = toggleSortKeys(sortKeys, idx, additive); // ⇧ adds/keeps this as a secondary key
+        paintSort();
         render();
       };
-      th.addEventListener('click', doSort);
-      th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSort(); } });
+      th.addEventListener('click', (e) => doSort(e.shiftKey));
+      th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSort(e.shiftKey); } });
     });
+
+    // free-text search box (filters rows + highlights matches in the primary cell)
+    const searchInput = root.querySelector('input[type="search"]');
+    searchInput?.addEventListener('input', () => { query = searchInput.value; render(); });
+
+    // column resize: drag a header's right edge. table-layout:fixed honours the explicit width;
+    // clampWidth keeps it sane. Skip the frozen identifier column (index 0).
+    if (table.classList.contains('uix-table--fixed')) {
+      headers.forEach((th, idx) => {
+        if (idx === 0) return;
+        const grip = document.createElement('span');
+        grip.className = 'uix-table__resize';
+        grip.setAttribute('aria-hidden', 'true');
+        th.appendChild(grip);            // header is already position:sticky, so the grip anchors to it
+        grip.addEventListener('click', (e) => e.stopPropagation()); // a drag near the edge must not sort
+        grip.addEventListener('pointerdown', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const startX = e.clientX, startW = th.getBoundingClientRect().width;
+          grip.setAttribute('data-drag', '');
+          grip.setPointerCapture(e.pointerId);
+          const onMove = (ev) => { th.style.width = clampWidth(startW + (ev.clientX - startX)) + 'px'; };
+          const onUp = () => { grip.removeAttribute('data-drag'); grip.removeEventListener('pointermove', onMove); grip.removeEventListener('pointerup', onUp); };
+          grip.addEventListener('pointermove', onMove);
+          grip.addEventListener('pointerup', onUp);
+        });
+      });
+    }
     root.querySelectorAll('[data-filter]').forEach((chip) => {
       chip.addEventListener('click', () => {
         const f = chip.dataset.filter, v = chip.dataset.value;
@@ -398,10 +540,9 @@ if (typeof document !== 'undefined') {
     zebraEl?.addEventListener('change', () => { prefs.zebra = zebraEl.checked; applyZebra(); save(); });
     freezeEl?.addEventListener('change', () => { prefs.freeze = freezeEl.checked; applyFreeze(); save(); });
 
-    // columns (checklist inside the menu)
+    // columns (checklist inside the menu) — reuses the `headers` list captured above
     const colMenu = root.querySelector('[data-uix-colmenu]');
     if (colMenu) {
-      const headers = [...table.querySelectorAll('thead th')];
       const hidden = new Set(prefs.hiddenCols);
       const applyCols = () => headers.forEach((th, i) => {
         const off = hidden.has(i);
@@ -696,6 +837,50 @@ if (typeof document !== 'undefined') {
     });
   };
 
+  // ---- app-shell width tiers + focus mode + full-bleed (mirrors the React AppShell props) ----
+  // data-nav (full|rail|hidden) and full-bleed persist; focus mode is transient (Esc / exit control
+  // leaves it) so a reload never strands you in an immersive view.
+  const setupShell = () => {
+    const shell = document.querySelector('[data-uix-shell]');
+    if (!shell) return;
+    const KEY = 'uix-shell-demo';
+    const navBtns = [...document.querySelectorAll('[data-uix-shell-nav] [data-nav]')];
+    const railSidebar = shell.querySelector('[data-uix-shell-sidebar]');
+    const main = shell.querySelector('[data-uix-shell-main]');
+    const bleedInput = document.querySelector('[data-uix-shell-bleed]');
+    const exitHost = shell.querySelector('[data-uix-shell-exit]');
+    const focusBtns = [...document.querySelectorAll('[data-uix-shell-focus]')];
+
+    let prefs = { nav: 'full', bleed: false };
+    try { prefs = { ...prefs, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { /* ignore */ }
+    const save = () => localStorage.setItem(KEY, JSON.stringify(prefs));
+
+    const applyNav = () => {
+      // match the React contract: omit data-nav for the default 'full' tier, set it for rail/hidden
+      if (prefs.nav === 'full') shell.removeAttribute('data-nav');
+      else shell.setAttribute('data-nav', prefs.nav);
+      // keep the inner sidebar's collapsed rail in step so labels hide at the rail width
+      railSidebar?.toggleAttribute('data-collapsed', prefs.nav === 'rail');
+      navBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.nav === prefs.nav)));
+    };
+    const applyBleed = () => {
+      main?.classList.toggle('uix-shell__main--bleed', prefs.bleed);
+      if (bleedInput) bleedInput.checked = prefs.bleed;
+    };
+    const setFocus = (on) => {
+      shell.toggleAttribute('data-focus', on);
+      if (exitHost) exitHost.hidden = !on;
+      focusBtns.forEach((b) => b.setAttribute('aria-pressed', String(on)));
+    };
+
+    navBtns.forEach((b) => b.addEventListener('click', () => { prefs.nav = b.dataset.nav; applyNav(); save(); }));
+    bleedInput?.addEventListener('change', () => { prefs.bleed = bleedInput.checked; applyBleed(); save(); });
+    focusBtns.forEach((b) => b.addEventListener('click', () => setFocus(!shell.hasAttribute('data-focus'))));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && shell.hasAttribute('data-focus')) setFocus(false); });
+
+    applyNav(); applyBleed();
+  };
+
   const init = () => {
     document.body.appendChild(probe);
     paintToggle();
@@ -703,6 +888,7 @@ if (typeof document !== 'undefined') {
     buildIconInventory();
     setupScrollspy();
     setupSidebar();
+    setupShell();
     setupTables();
     setupOverlays();
     setupPeek();

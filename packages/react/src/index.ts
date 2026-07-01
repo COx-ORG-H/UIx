@@ -3,6 +3,8 @@ export { cx } from './cx.js';
 
 // Hooks
 export { useDialog } from './hooks/useDialog.js';
+export { useTable } from './hooks/useTable.js';
+export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
 
 // Form primitives
 export { Button, ButtonGroup } from './components/Button.js';
@@ -59,7 +61,7 @@ export { Tabs, Tab } from './components/Tabs.js';
 export type { TabsProps, TabProps } from './components/Tabs.js';
 
 export { AppShell } from './components/AppShell.js';
-export type { AppShellProps } from './components/AppShell.js';
+export type { AppShellProps, ShellNav } from './components/AppShell.js';
 
 export { Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem } from './components/Sidebar.js';
 export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
@@ -81,8 +83,17 @@ export { Toast, Toaster } from './components/Toast.js';
 export type { ToastProps, ToasterProps, ToastTone } from './components/Toast.js';
 
 // Data display
-export { TableWrap, Table, Th, Td, Tr } from './components/Table.js';
-export type { TableWrapProps, TableProps, ThProps, TdProps, TrProps, TableDensity, SortDirection } from './components/Table.js';
+export {
+  TableWrap, Table, Th, Td, Tr,
+  BulkBar, RowActions, RowAction, ExpandToggle, CellStrong, CellSub, Mark, Highlighted,
+} from './components/Table.js';
+export type {
+  TableWrapProps, TableProps, ThProps, TdProps, TrProps, TableDensity, SortDirection,
+  BulkBarProps, RowActionsProps, RowActionProps, ExpandToggleProps, MarkProps, HighlightedProps,
+} from './components/Table.js';
+
+// Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection
+export * from './table-engine.js';
 
 export { Pagination } from './components/Pagination.js';
 export type { PaginationProps } from './components/Pagination.js';

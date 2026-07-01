@@ -50,7 +50,7 @@
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
   /* collapsed rail */
-  .uix-sidebar[data-collapsed] { width: 56px; }
+  .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
   .uix-sidebar[data-collapsed] .uix-navitem__label,
   .uix-sidebar[data-collapsed] .uix-navitem__badge,
   .uix-sidebar[data-collapsed] .uix-navitem__star,

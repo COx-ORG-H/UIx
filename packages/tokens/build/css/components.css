@@ -1051,6 +1051,10 @@
     transform: translateX(100%);
     transition: transform var(--uix-dur-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* Author display values for BOTH states are required for the slide-in to animate: the
+       allow-discrete `display` transition only engages with author values, and that gating also
+       lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
+       parked at translateX(100%). Closed = none; open = flex. */
     display: none;
   }
   .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
@@ -1074,8 +1078,14 @@
   .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
 
+  /* a table wired to open the peek (app.js sets data-uix-rowpeek): its rows read as clickable,
+     since clicking a ticket row is the queue's primary way to open the side-peek. */
   [data-uix-rowpeek] tbody tr { cursor: pointer; }
   [data-uix-rowpeek] tbody tr:hover td { background: var(--uix-bg-hover); }
+
+  /* Column sizing + the id-cell click-through pattern now live in table.css (one story for
+     "table cells"). Size columns with .uix-col--w-* / .uix-col--flex + .uix-col--truncate
+     instead of the old [data-uix-table-v2] :nth-child(2) title cap. */
 }
 /* uix popover — generic anchored surface via the native Popover API; animated with @starting-style. */
 @layer uix.components {

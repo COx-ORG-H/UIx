@@ -35,6 +35,9 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 // @public (undocumented)
 export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
+// @public
+export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
+
 // @public (undocumented)
 export function AppShell(input: AppShellProps): react.JSX.Element;
 
@@ -42,8 +45,11 @@ export function AppShell(input: AppShellProps): react.JSX.Element;
 export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
     collapsed?: boolean;
+    focus?: boolean;
+    mainBleed?: boolean;
+    nav?: ShellNav;
+    onExitFocus?: () => void;
     // (undocumented)
     sidebar?: ReactNode;
     // (undocumented)
@@ -72,6 +78,16 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     src?: string;
     status?: boolean;
+}
+
+// @public
+export function BulkBar(input: BulkBarProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BulkBarProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    count?: number;
 }
 
 // @public (undocumented)
@@ -119,6 +135,12 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
     title?: ReactNode;
 }
 
+// @public
+export function CellStrong(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
+
+// @public
+export function CellSub(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
+
 // @public (undocumented)
 export const Checkbox: react.ForwardRefExoticComponent<CheckboxProps & react.RefAttributes<HTMLInputElement>>;
 
@@ -128,6 +150,20 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
     indeterminate?: boolean;
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export function clampWidth(width: number, min?: number, max?: number): number;
+
+// @public (undocumented)
+export interface ColumnFilter {
+    // (undocumented)
+    field: string;
+    // (undocumented)
+    kind: FilterKind;
+    // (undocumented)
+    op: FilterOp;
+    value: Primitive | Primitive[];
 }
 
 // @public
@@ -277,6 +313,15 @@ export interface ErrorStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     title?: ReactNode;
 }
 
+// @public
+export function ExpandToggle(input: ExpandToggleProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    expanded?: boolean;
+}
+
 // @public (undocumented)
 export function Field(input: FieldProps): react.JSX.Element;
 
@@ -299,6 +344,26 @@ export interface FieldProps {
     // (undocumented)
     success?: string;
 }
+
+// @public (undocumented)
+export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
+
+// @public (undocumented)
+export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
+
+// @public
+export function Highlighted(input: HighlightedProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface HighlightedProps {
+    // (undocumented)
+    query: string;
+    // (undocumented)
+    text: string;
+}
+
+// @public
+export function highlightSegments(text: string, query: string): Segment[];
 
 // @public
 export function Inbox(input: InboxProps): react.JSX.Element;
@@ -449,6 +514,21 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Mark(input: MarkProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MarkProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export function matchFilter(row: Row, f: ColumnFilter): boolean;
+
+// @public
+export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
+
+// @public
 export function Meter(input: MeterProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -480,6 +560,9 @@ export interface ModalProps {
     // (undocumented)
     title?: ReactNode;
 }
+
+// @public
+export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[]): T[];
 
 // @public (undocumented)
 export interface NavFavouriteItem {
@@ -552,6 +635,9 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 // @public
+export function nextSortDir(current: SortDir | 'none' | undefined): SortDir | 'none';
+
+// @public
 export function Note(input: NoteProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -592,6 +678,9 @@ export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
     // (undocumented)
     pageCount: number;
 }
+
+// @public
+export function parseView(qs: string): ViewState;
 
 // @public (undocumented)
 export function Peek(input: PeekProps): react.JSX.Element;
@@ -635,6 +724,9 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public (undocumented)
+export type Primitive = string | number | boolean | null | undefined;
+
+// @public (undocumented)
 export function Progress(input: ProgressProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -673,14 +765,64 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     label?: ReactNode;
 }
 
+// @public
+export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
+
+// @public (undocumented)
+export type Row = Record<string, unknown>;
+
+// @public
+export function RowAction(input: RowActionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface RowActionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function RowActions(input: RowActionsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface RowActionsProps extends TdHTMLAttributes<HTMLTableCellElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
+
+// @public (undocumented)
+export interface Segment {
+    // (undocumented)
+    match: boolean;
+    // (undocumented)
+    text: string;
+}
+
 // @public (undocumented)
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
+
+// @public (undocumented)
+export type SelectAllState = 'none' | 'some' | 'all';
+
+// @public (undocumented)
+export function selectAllState(selected: ReadonlySet<string>, pageIds: readonly string[]): SelectAllState;
 
 // @public (undocumented)
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
     // (undocumented)
     size?: 'sm' | 'md';
 }
+
+// @public
+export function serializeView(v: ViewState): string;
+
+// @public (undocumented)
+export type ShellNav = 'full' | 'rail' | 'hidden';
+
+// @public (undocumented)
+export function shouldVirtualize(count: number, threshold?: number): boolean;
 
 // @public (undocumented)
 export function Sidebar(input: SidebarProps): react.JSX.Element;
@@ -723,8 +865,18 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
     width?: number | string;
 }
 
+// @public
+export type SortDir = 'ascending' | 'descending';
+
 // @public (undocumented)
 export type SortDirection = 'ascending' | 'descending' | 'none';
+
+// @public (undocumented)
+export interface SortKey {
+    // (undocumented)
+    dir: SortDir;
+    field: string;
+}
 
 // @public (undocumented)
 export function Spinner(input: SpinnerProps): react.JSX.Element;
@@ -820,6 +972,7 @@ export type TableDensity = 'compact' | 'standard' | 'comfortable';
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
     // (undocumented)
     density?: TableDensity;
+    fixed?: boolean;
     // (undocumented)
     pinnedCol?: boolean;
     // (undocumented)
@@ -895,6 +1048,7 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     sortable?: boolean;
     // (undocumented)
     sortDirection?: SortDirection;
+    sortOrder?: number;
 }
 
 // @public
@@ -947,6 +1101,15 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 
 // @public (undocumented)
 export type ToastTone = 'success' | 'danger' | 'info';
+
+// @public (undocumented)
+export function toggleId(set: ReadonlySet<string>, id: string): Set<string>;
+
+// @public
+export function togglePage(selected: ReadonlySet<string>, pageIds: readonly string[]): Set<string>;
+
+// @public
+export function toggleSort(keys: readonly SortKey[], field: string, additive?: boolean): SortKey[];
 
 // @public
 export function Tooltip(input: TooltipProps): react.JSX.Element;
@@ -1029,6 +1192,89 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
     name?: ReactNode;
     sub?: ReactNode;
 }
+
+// @public
+export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;
+
+// @public (undocumented)
+export interface UseTableOptions {
+    idField?: string;
+    // (undocumented)
+    initialFilters?: ColumnFilter[];
+    initialPinned?: Iterable<string>;
+    // (undocumented)
+    initialQuery?: string;
+    // (undocumented)
+    initialSort?: SortKey[];
+    searchFields?: readonly string[];
+}
+
+// @public (undocumented)
+export interface UseTableResult<T> {
+    applyView: (queryString: string) => void;
+    // (undocumented)
+    clearSelection: () => void;
+    // (undocumented)
+    filters: ColumnFilter[];
+    // (undocumented)
+    isSelected: (id: string) => boolean;
+    // (undocumented)
+    pinned: ReadonlySet<string>;
+    // (undocumented)
+    query: string;
+    rows: T[];
+    selectAll: SelectAllState;
+    // (undocumented)
+    selected: ReadonlySet<string>;
+    // (undocumented)
+    setFilters: (filters: ColumnFilter[]) => void;
+    // (undocumented)
+    setQuery: (query: string) => void;
+    // (undocumented)
+    setSort: (keys: SortKey[]) => void;
+    // (undocumented)
+    sort: SortKey[];
+    toggleAllRows: () => void;
+    // (undocumented)
+    togglePin: (id: string) => void;
+    // (undocumented)
+    toggleRow: (id: string) => void;
+    toggleSort: (field: string, additive?: boolean) => void;
+    view: ViewState;
+    // (undocumented)
+    viewQueryString: string;
+}
+
+// @public (undocumented)
+export interface ViewState {
+    // (undocumented)
+    columns?: string[];
+    // (undocumented)
+    density?: 'compact' | 'standard' | 'comfortable';
+    // (undocumented)
+    filters?: ColumnFilter[];
+    // (undocumented)
+    q?: string;
+    // (undocumented)
+    sort?: SortKey[];
+}
+
+// @public (undocumented)
+export interface VirtualWindow {
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    padBottom: number;
+    // (undocumented)
+    padTop: number;
+    // (undocumented)
+    start: number;
+    // (undocumented)
+    total: number;
+}
+
+// @public
+export function virtualWindow(scrollTop: number, viewportH: number, rowH: number, count: number, overscan?: number): VirtualWindow;
 
 // (No @packageDocumentation comment for this package)
 

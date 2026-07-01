@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
 import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs, toggleReaction } from './app.js';
+import { multiSort, toggleSortKeys, searchRows, highlightSegments, selectAllState, togglePage, clampWidth } from './app.js';
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');
@@ -136,4 +137,74 @@ test('toggleReaction: does not mutate input', () => {
   const input = [{ emoji: '👍', count: 1, mine: false }];
   toggleReaction(input, '👍');
   assert.deepEqual(input, [{ emoji: '👍', count: 1, mine: false }]);
+});
+
+/* ── engine-aligned table helpers (must match @tensor_1/react table-engine) ── */
+
+test('multiSort: secondary key breaks ties; stable; does not mutate', () => {
+  const rows = [
+    { team: 'b', name: 'Zoe' }, { team: 'a', name: 'Yan' },
+    { team: 'a', name: 'Ada' }, { team: 'b', name: 'Ann' },
+  ];
+  const before = rows.slice();
+  const out = multiSort(rows, [{ field: 'team', dir: 'asc' }, { field: 'name', dir: 'asc' }]);
+  assert.deepEqual(out.map((r) => `${r.team}:${r.name}`), ['a:Ada', 'a:Yan', 'b:Ann', 'b:Zoe']);
+  assert.deepEqual(rows, before); // input untouched
+});
+
+test('multiSort: numeric-aware, nulls first, custom getField', () => {
+  assert.deepEqual(multiSort([{ v: 'x10' }, { v: 'x2' }], [{ field: 'v', dir: 'asc' }]).map((r) => r.v), ['x2', 'x10']);
+  assert.deepEqual(multiSort([{ v: 2 }, { v: null }, { v: 1 }], [{ field: 'v', dir: 'desc' }]).map((r) => r.v), [2, 1, null]);
+  // getField lets the same sort drive rows keyed differently (mirrors the live-<tr> use in app.js)
+  const rows = [{ c: ['b'] }, { c: ['a'] }];
+  assert.deepEqual(multiSort(rows, [{ field: 0, dir: 'asc' }], (r, i) => r.c[i]).map((r) => r.c[0]), ['a', 'b']);
+});
+
+test('toggleSortKeys: non-additive replaces + cycles asc→desc→off', () => {
+  assert.deepEqual(toggleSortKeys([], 'a'), [{ field: 'a', dir: 'asc' }]);
+  assert.deepEqual(toggleSortKeys([{ field: 'a', dir: 'asc' }], 'a'), [{ field: 'a', dir: 'desc' }]);
+  assert.deepEqual(toggleSortKeys([{ field: 'a', dir: 'desc' }], 'a'), []);
+  assert.deepEqual(toggleSortKeys([{ field: 'a', dir: 'asc' }], 'b'), [{ field: 'b', dir: 'asc' }]);
+});
+
+test('toggleSortKeys: additive appends/updates a secondary key, drops on cycle-off', () => {
+  const one = toggleSortKeys([{ field: 'a', dir: 'asc' }], 'b', true);
+  assert.deepEqual(one, [{ field: 'a', dir: 'asc' }, { field: 'b', dir: 'asc' }]);
+  const two = toggleSortKeys(one, 'b', true);
+  assert.deepEqual(two, [{ field: 'a', dir: 'asc' }, { field: 'b', dir: 'desc' }]);
+  assert.deepEqual(toggleSortKeys(two, 'b', true), [{ field: 'a', dir: 'asc' }]);
+});
+
+test('searchRows: any field / restricted fields / blank returns a copy', () => {
+  const rows = [{ a: 'Alpha', b: 1 }, { a: 'Beta', b: 22 }];
+  assert.deepEqual(searchRows(rows, 'et').map((r) => r.a), ['Beta']);
+  assert.deepEqual(searchRows(rows, '22').map((r) => r.a), ['Beta']);
+  assert.deepEqual(searchRows([{ name: 'Ada', city: 'Paris' }, { name: 'Paris', city: 'Rome' }], 'paris', ['city']).map((r) => r.name), ['Ada']);
+  const copy = searchRows(rows, '  ');
+  assert.deepEqual(copy, rows);
+  assert.notEqual(copy, rows);
+});
+
+test('highlightSegments: case-insensitive runs; reassembles to the input', () => {
+  assert.deepEqual(highlightSegments('Hello World', 'o w'), [
+    { text: 'Hell', match: false }, { text: 'o W', match: true }, { text: 'orld', match: false },
+  ]);
+  assert.deepEqual(highlightSegments('Hi', ''), [{ text: 'Hi', match: false }]);
+  assert.equal(highlightSegments('The Quick Brown', 'quick').map((s) => s.text).join(''), 'The Quick Brown');
+});
+
+test('selectAllState / togglePage: page-scoped selection', () => {
+  const page = ['1', '2', '3'];
+  assert.equal(selectAllState(new Set(), page), 'none');
+  assert.equal(selectAllState(new Set(['2']), page), 'some');
+  assert.equal(selectAllState(new Set(page), page), 'all');
+  assert.deepEqual([...togglePage(new Set(), page)].sort(), ['1', '2', '3']);
+  assert.deepEqual([...togglePage(new Set(page), page)], []);
+  assert.deepEqual([...togglePage(new Set(['2']), page)].sort(), ['1', '2', '3']); // partial fills to full
+});
+
+test('clampWidth: floors to min, ceils to max, rounds', () => {
+  assert.equal(clampWidth(40), 64);
+  assert.equal(clampWidth(120.4), 120);
+  assert.equal(clampWidth(1000, 64, 500), 500);
 });
