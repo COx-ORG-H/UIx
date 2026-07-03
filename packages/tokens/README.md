@@ -77,3 +77,14 @@ The following CSS primitives (and their `@tensor_1/react` wrappers) are the inte
 If you reach for `var(--uix-danger)` or `var(--uix-warning)` to render SLA urgency or severity, use `<StatusPill tone="sla-breached">` or `<StatusPill tone="p1">` instead — the component handles WCAG contrast, dark mode, and brand overrides; a raw literal does not.
 
 Likewise, don't fork the data grid: a product-local `data-table.tsx` (bespoke sort/filter/selection/resize + hand-coded column widths) should be replaced by `<Table>` + the subcomponents above, composed over the framework-agnostic `table-engine` (or the `useTable` hook). Sorting, filtering, search highlighting, saved views, and virtualization then match the vanilla styleguide exactly, and every visual affordance re-themes with the tokens listed here.
+
+## Documentation site
+
+A **build-free** component explorer lives in [`docs/`](./docs/) — a no-bundler HTML shell (`docs/explorer.html`) with a left component nav and a per-component page whose regions (`overview`, `live-example`, `props-table`, `do-dont`, `a11y-notes`) are keyed by `data-region` and filled in incrementally. It reuses the styleguide's theming verbatim (the no-flash `data-theme` script + `[data-uix-theme-toggle]`) and links the same `--uix-*` contract via `../styles/main.css`, so light/dark behaves identically to `index.html`. `docs/docs.js` exposes pure, unit-tested helpers (`slugify`, `componentNav`, `renderPropsTable`) behind a `typeof document` DOM guard; run `node --test docs/docs.test.js`.
+
+Serve it from the repo root (the styleguide's static root) so relative asset paths resolve:
+
+```sh
+npm run docs:serve
+# → http://localhost:4178/packages/tokens/docs/explorer.html
+```

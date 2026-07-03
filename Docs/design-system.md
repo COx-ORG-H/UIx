@@ -129,14 +129,20 @@ that *uses* UIx — not a UIx component.
 
 ## Coverage backlog — CSS components still needing a React wrapper
 
-These have CSS in `styles/components/` but no `@tensor_1/react` wrapper yet. Completing them finishes the React layer.
-Prioritize by product demand.
+> **Canonical coverage map: [`Docs/component-roadmap.md`](./component-roadmap.md).** That table is the single
+> source of truth (one row per CSS file, verified against `packages/react/src/index.ts`). The short list below is
+> a convenience pointer only — do not re-maintain coverage in two places; update the roadmap.
 
-- **Presentational (easy wrap):** breadcrumbs, kbd, meter, progress, segmented, steps, stepper, reactions,
-  attachment, audit-log, notification-center, inbox, pipeline, flow, sla, heartbeat, media, lightbox,
-  description-list, contact-card, utility-bits, view-menu, table-toolbar, labels(✓ as Label)
+These have CSS in `styles/components/` but no `@tensor_1/react` wrapper yet. Completing them finishes the React layer.
+Prioritize by product demand. (Meter, Progress, Segmented, Inbox, DescriptionList, Composer, Comments, Timeline,
+Kanban, and CommandPalette are **already wrapped** — they are not in this list.)
+
+- **Presentational (easy wrap):** breadcrumbs, kbd, steps, stepper, reactions,
+  attachment, audit-log, notification-center, pipeline, flow, sla, heartbeat, media, lightbox,
+  contact-card, view-menu
 - **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
-  menu, form (FormGrid/Fieldset)
+  menu, chart, form (FormGrid/Fieldset)
+- **CSS-only (no wrapper by design):** table-toolbar, utility-bits, typography
 
 When you build one: add `packages/react/src/components/<Name>.tsx`, export from `packages/react/src/index.ts`,
 and if it needs a demo, add it to `packages/tokens/index.html`.

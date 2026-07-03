@@ -8,6 +8,7 @@
 # the automated stand-in: it forces the maintainer onto every PR that touches the
 # contract so those changes are reviewed consciously, never rubber-stamped in a
 # large diff. The review process for these paths is Docs/contract-change-process.md.
+# Reviewer & rotation policy (second-reviewer + branch protection): Docs/reviewer-policy.md
 
 # Token source of truth + generated contract baseline
 /packages/tokens/tokens/                       @harisxdizdarevic

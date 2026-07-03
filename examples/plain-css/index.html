@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UIx v2 — plain-css example</title>
+
+  <!-- no-flash: apply stored/OS theme before first paint (verbatim from the styleguide;
+       shares the same `uix-theme` localStorage key + [data-theme] contract). -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- No bundler. These are the SHIPPED package files, referenced by their installed
+       node_modules path (browsers can't resolve bare `@tensor_1/tokens/...` specifiers).
+       Run `npm install` first (see README), then open or serve this file.
+
+       Load order matters:
+         1. /css     — the --uix-* token contract (light on :root, dark on [data-theme="dark"])
+         2. themes   — the Tensor brand override (re-chains accent/link off the tokens above)
+         3. /styles  — the .uix-* component CSS (.uix-btn, .uix-card, …) -->
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/build/css/tokens.css">
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/themes/tensor.css">
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/build/css/components.css">
+
+  <style>
+    /* Page chrome only — everything below uses the shipped tokens, no hand-picked colors. */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--uix-bg-app);
+      color: var(--uix-text);
+      font-family: var(--uix-font-sans, system-ui, sans-serif);
+      font-size: var(--uix-text-body);
+      line-height: var(--uix-leading-body);
+    }
+    .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+    header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+    h1 { font-size: var(--uix-text-h2); margin: 0; }
+    .sub { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin: 4px 0 0; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>UIx v2 — plain CSS</h1>
+        <p class="sub">No bundler. Just the shipped <code>@tensor_1/tokens</code> CSS + Tensor theme.</p>
+      </div>
+      <!-- Light/dark toggle: flips [data-theme] on <html>, persisted under `uix-theme`. -->
+      <button class="uix-btn uix-btn--secondary uix-btn--sm" type="button"
+              data-uix-theme-toggle aria-label="Toggle theme" style="margin-left:auto">
+        Toggle theme
+      </button>
+    </header>
+
+    <!-- Buttons — .uix-btn variants straight from the component CSS. -->
+    <div class="row">
+      <button class="uix-btn uix-btn--primary">Primary</button>
+      <button class="uix-btn uix-btn--secondary">Secondary</button>
+      <button class="uix-btn uix-btn--outline">Outline</button>
+      <button class="uix-btn uix-btn--ghost">Ghost</button>
+      <button class="uix-btn uix-btn--danger">Delete</button>
+    </div>
+
+    <!-- Cards — .uix-card + .uix-card__* subparts. -->
+    <div class="stack">
+      <div class="uix-card">
+        <div class="uix-card__header">
+          <span class="uix-card__title">Ship the token contract</span>
+        </div>
+        <div class="uix-card__body">
+          This page links the published <code>/css</code>, <code>themes/tensor</code>, and
+          <code>/styles</code> files with plain <code>&lt;link&gt;</code> tags — no build step,
+          no framework. Toggle the theme above and every surface re-derives from the
+          <code>--uix-*</code> variables.
+        </div>
+      </div>
+
+      <div class="uix-card">
+        <div class="uix-card__body">
+          <strong>Also a smoke check.</strong> Run <code>node verify.mjs</code> to prove these
+          same subpaths resolve from a real, isolated install of the packed tarball.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme toggle wiring (same mechanism the styleguide ships). -->
+  <script>
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-uix-theme-toggle]')) return;
+      var root = document.documentElement;
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('uix-theme', next); } catch (err) {}
+    });
+  </script>
+</body>
+</html>

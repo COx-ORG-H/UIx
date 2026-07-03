@@ -8,6 +8,10 @@ on:
   pull_request:
   push:
     branches: [master]
+  # Callable as a reusable workflow so release.yml runs THESE exact gate jobs as
+  # its publish precondition (GOV-6 / corrections C3) — instead of a hand-kept copy
+  # that silently drifts. Any gate step added here automatically gates publishing.
+  workflow_call:
 
 permissions:
   contents: read

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UIx Component Docs — UIx v2</title>
+  <!-- no-flash: apply stored/OS theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- one level deeper than index.html → ../ to reach styles/main.css -->
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <div class="uix-docs">
+    <!-- left: component nav -->
+    <nav class="uix-docs__nav" aria-label="Components">
+      <div class="uix-docs__brand">UIx <small>docs</small></div>
+      <div data-uix-docs-nav></div>
+    </nav>
+
+    <!-- right: per-component page template — EMPTY regions keyed by data-region -->
+    <main class="uix-docs__main">
+      <header class="uix-docs__topbar">
+        <h1 data-uix-docs-title>Component</h1>
+        <span style="flex:1"></span>
+        <button class="uix-docs__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
+      </header>
+
+      <article class="uix-docs__page">
+        <section class="uix-docs__region" data-region="overview" aria-label="Overview"></section>
+        <section class="uix-docs__region" data-region="live-example" aria-label="Live example"></section>
+        <section class="uix-docs__region" data-region="props-table" aria-label="Props"></section>
+        <section class="uix-docs__region" data-region="do-dont" aria-label="Do and don't"></section>
+        <section class="uix-docs__region" data-region="a11y-notes" aria-label="Accessibility notes"></section>
+      </article>
+    </main>
+  </div>
+
+  <script type="module" src="docs.js"></script>
+</body>
+</html>

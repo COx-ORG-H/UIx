@@ -1,0 +1,80 @@
+/* docs.css — chrome for the component explorer ONLY (nav + per-component page shell).
+   Not shipped to consuming projects. Uses the --uix-* tokens from styles/main.css so it themes
+   itself in light/dark; it does NOT declare or redefine any token. Left unlayered (like guide.css)
+   so it reliably styles the page shell. */
+
+.uix-docs {
+  display: grid;
+  grid-template-columns: var(--uix-sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+/* ---- left component nav ---- */
+.uix-docs__nav {
+  position: sticky; top: 0; align-self: start;
+  height: 100vh; overflow-y: auto;
+  background: var(--uix-bg-subtle);
+  border-right: 1px solid var(--uix-border);
+  padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.uix-docs__brand {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: var(--uix-text-h3);
+  letter-spacing: var(--uix-tracking-tight);
+  padding: 6px 10px 14px;
+}
+.uix-docs__brand small { color: var(--uix-text-muted); font-weight: 400; }
+.uix-docs__navgroup {
+  font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow);
+  text-transform: uppercase; color: var(--uix-text-muted);
+  padding: 14px 10px 6px;
+}
+.uix-docs__navlink {
+  display: block; padding: 7px 10px;
+  border-radius: var(--uix-radius-sm);
+  color: var(--uix-text-hushed); text-decoration: none;
+  font-size: var(--uix-text-body);
+  transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+}
+.uix-docs__navlink:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
+.uix-docs__navlink[aria-current] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
+
+/* ---- right: main + topbar ---- */
+.uix-docs__main { min-width: 0; }
+.uix-docs__topbar {
+  position: sticky; top: 0; z-index: 5;
+  height: var(--uix-topbar-h);
+  display: flex; align-items: center;
+  gap: 12px; padding: 0 28px;
+  background: color-mix(in srgb, var(--uix-bg-app) 86%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--uix-border);
+}
+.uix-docs__topbar h1 { font-size: var(--uix-text-h3); font-weight: 600; letter-spacing: 0; }
+.uix-docs__icon-btn {
+  width: var(--uix-control-h); height: var(--uix-control-h);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+  background: var(--uix-surface); color: var(--uix-text); cursor: pointer;
+  transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+}
+.uix-docs__icon-btn:hover { background: var(--uix-bg-hover); }
+
+/* ---- per-component page + regions ---- */
+.uix-docs__page { padding: 40px 28px; max-width: 900px; }
+.uix-docs__region {
+  scroll-margin-top: var(--uix-topbar-h);
+}
+/* empty regions are invisible until a later slice fills them; a filled region gets breathing room */
+.uix-docs__region:not(:empty) {
+  padding-bottom: 32px; margin-bottom: 32px;
+  border-bottom: 1px solid var(--uix-border);
+}
+.uix-docs__region:not(:empty):last-child { border-bottom: 0; }
+
+/* ---- props-table extras (used by renderPropsTable output) ---- */
+.uix-docs__empty {
+  color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+}
+.uix-docs__req { color: var(--uix-danger); font-weight: 700; }
