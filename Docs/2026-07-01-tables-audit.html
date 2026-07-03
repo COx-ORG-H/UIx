@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tables &amp; table views — audit, gaps &amp; the width problem · UIx v2</title>
+  <script>
+    // no-flash: apply stored/OS theme before first paint (shares the styleguide's uix-theme key)
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+  /* =====================================================================
+     Tables audit showcase — self-contained. Reproduces the real --uix-*
+     token contract (values copied byte-faithful from build/css/tokens.css)
+     so every demo renders exactly like the UIx v2 design system.
+     Showcase-only chrome is namespaced .aud-* ; the width mock is .demo-* ;
+     faithful component demos reuse the real .uix-* class names.
+     ===================================================================== */
+
+  /* ---- token contract (light) ---- */
+  :root {
+    --uix-bg-app:#FAFAFA; --uix-bg-subtle:#F5F5F5; --uix-bg-hover:#EFEFEF; --uix-bg-active:#E5E5E5;
+    --uix-surface:#FFFFFF; --uix-surface-2:#FFFFFF; --uix-surface-3:#FAFAFA;
+    --uix-border:#E5E5E5; --uix-border-strong:#D4D4D4;
+    --uix-text:#0A0A0A; --uix-text-hushed:rgba(10,10,10,.62); --uix-text-muted:#6B6B6B;
+    --uix-accent:var(--uix-brand,#1447E6); --uix-accent-fg:var(--uix-brand-fg,#FFFFFF);
+    --uix-link:var(--uix-brand,#1447E6); --uix-ring:var(--uix-brand,#1447E6);
+    --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 12%, transparent);
+    --uix-success:#047857; --uix-success-bg:#D0FAE5;
+    --uix-warning:#F99C00; --uix-warning-bg:#FEF3D6; --uix-warning-text:#92400E;
+    --uix-info:#1447E6; --uix-info-bg:#E3EBFF; --uix-info-text:#1447E6;
+    --uix-danger:#E40014; --uix-danger-bg:#FFE4E6; --uix-danger-text:#C20012;
+    --uix-amber:#C98A1E; --uix-amber-text:#795006;
+    --uix-chart-1:#2563EB; --uix-chart-3:#16A34A; --uix-chart-5:#EA580C; --uix-chart-7:#7C3AED;
+    --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF; --uix-row-selected-bg:#E3EBFF;
+    --uix-shadow-sm:0 1px 2px rgba(0,0,0,.06);
+    --uix-shadow-popover:0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05);
+    --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.18);
+    --uix-scrim:rgba(0,0,0,.5);
+    --uix-ease-out:cubic-bezier(.23,1,.32,1); --uix-ease-out-strong:cubic-bezier(.2,0,0,1);
+    --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms;
+    --uix-z-raised:1; --uix-z-sticky:3;
+    --uix-radius-xs:4px; --uix-radius-sm:8px; --uix-radius-md:12px; --uix-radius-lg:16px; --uix-radius-pill:999px;
+    --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-comfortable:68px; --uix-control-h:36px;
+    --uix-sidebar-w:248px; --uix-sidebar-w-rail:56px; --uix-topbar-h:56px;
+    --uix-icon-sm:16px; --uix-icon-md:20px;
+    --uix-space-1:4px; --uix-space-2:8px; --uix-space-3:12px; --uix-space-4:16px; --uix-space-5:20px;
+    --uix-space-6:24px; --uix-space-7:32px; --uix-space-8:40px;
+    --uix-font-sans:"Inter",system-ui,sans-serif; --uix-font-heading:"IBM Plex Sans","Inter",system-ui,sans-serif;
+    --uix-font-mono:"IBM Plex Mono",ui-monospace,monospace;
+    --uix-text-h2:24px; --uix-text-h3:15px; --uix-text-body:14px; --uix-text-meta:12.5px; --uix-text-eyebrow:11px;
+    --uix-tracking-eyebrow:0.06em;
+  }
+  :root:where([data-theme="dark"]) {
+    --uix-bg-app:#0A0A0A; --uix-bg-subtle:#171717; --uix-bg-hover:#1F1F1F; --uix-bg-active:#262626;
+    --uix-surface:#111111; --uix-surface-2:#171717; --uix-surface-3:#262626;
+    --uix-border:rgba(255,255,255,.08); --uix-border-strong:rgba(255,255,255,.14);
+    --uix-text:#FAFAFA; --uix-text-hushed:rgba(250,250,250,.64); --uix-text-muted:#A1A1A1;
+    --uix-accent:var(--uix-brand,#2563EB); --uix-link:color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF);
+    --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 16%, transparent);
+    --uix-success:#00D294; --uix-success-bg:rgba(0,210,148,.15);
+    --uix-warning:#FCBB00; --uix-warning-bg:rgba(249,156,0,.16); --uix-warning-text:#FCBB00;
+    --uix-info:#2563EB; --uix-info-bg:rgba(48,128,255,.16); --uix-info-text:#60A5FA;
+    --uix-danger:#DC2626; --uix-danger-bg:rgba(220,38,38,.20); --uix-danger-text:#F87171;
+    --uix-amber:#E6B25C; --uix-amber-text:#E6B25C;
+    --uix-chart-1:#3080FF; --uix-chart-3:#00D294; --uix-chart-5:#FF8B1A; --uix-chart-7:#A685FF;
+    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: var(--uix-font-sans); font-size: var(--uix-text-body); line-height: 1.5;
+    color: var(--uix-text); background: var(--uix-bg-app);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .aud-brand { font-family: var(--uix-font-heading); }
+  a { color: var(--uix-link); }
+  code, .aud-code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); padding: 0 5px; border-radius: 5px; color: var(--uix-text); }
+
+  /* ---- layout: nav rail + main ---- */
+  .aud { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+  .aud__nav {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    border-right: 1px solid var(--uix-border); background: var(--uix-bg-subtle);
+    padding: var(--uix-space-5) var(--uix-space-4); display: flex; flex-direction: column; gap: 2px;
+  }
+  .aud-brand { font-size: var(--uix-text-h3); font-weight: 700; margin-bottom: var(--uix-space-4); }
+  .aud-brand small { display: block; font-weight: 500; color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: 2px; }
+  .aud__navlink { display: block; padding: 7px 10px; border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); text-decoration: none; font-size: var(--uix-text-meta); }
+  .aud__navlink:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .aud__navlink.is-active { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
+
+  .aud__main { min-width: 0; }
+  .aud__topbar {
+    position: sticky; top: 0; z-index: 20; height: var(--uix-topbar-h); display: flex; align-items: center; gap: var(--uix-space-3);
+    padding: 0 var(--uix-space-7); background: color-mix(in srgb, var(--uix-bg-app) 88%, transparent); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--uix-border);
+  }
+  .aud__topbar h1 { font-size: var(--uix-text-h3); margin: 0; font-weight: 600; }
+  .aud__topbar .aud__spacer { flex: 1; }
+  .aud__section { padding: var(--uix-space-8) var(--uix-space-7); max-width: 1180px; border-bottom: 1px solid var(--uix-border); scroll-margin-top: var(--uix-topbar-h); }
+  .aud__section > h2 { font-size: var(--uix-text-h2); margin: 0 0 6px; }
+  .aud__eyebrow { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-accent); font-weight: 600; margin-bottom: 10px; }
+  .aud__lead { color: var(--uix-text-hushed); max-width: 78ch; margin: 0 0 18px; }
+  .aud__subhead { font-family: var(--uix-font-heading); font-weight: 600; font-size: var(--uix-text-h3); margin: 26px 0 10px; }
+  p { max-width: 80ch; }
+
+  /* ---- buttons / segmented / switch (faithful-ish) ---- */
+  .uix-btn { display: inline-flex; align-items: center; gap: 6px; height: var(--uix-control-h); padding: 0 14px; border-radius: var(--uix-radius-sm); border: 1px solid var(--uix-border-strong); background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-meta); cursor: pointer; transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast); }
+  .uix-btn:hover { background: var(--uix-bg-hover); }
+  .uix-btn--primary { background: var(--uix-accent); border-color: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-btn--primary:hover { background: color-mix(in srgb, var(--uix-accent) 88%, #000); }
+  .uix-btn--sm { height: 28px; padding: 0 10px; }
+  .uix-icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--uix-radius-sm); border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-muted); cursor: pointer; }
+  .uix-icon-btn:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-icon-btn svg { width: 16px; height: 16px; }
+
+  .uix-segmented { display: inline-flex; padding: 3px; gap: 2px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); }
+  .uix-segmented__option { border: 0; background: transparent; color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); padding: 5px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); font-weight: 500; }
+
+  .uix-switch { display: inline-flex; align-items: center; gap: 8px; font-size: var(--uix-text-meta); color: var(--uix-text-hushed); cursor: pointer; user-select: none; }
+  .uix-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .uix-switch__track { width: 34px; height: 20px; border-radius: 999px; background: var(--uix-bg-active); position: relative; transition: background-color var(--uix-dur) var(--uix-ease-out); flex: none; }
+  .uix-switch__track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: var(--uix-shadow-sm); transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-switch input:checked + .uix-switch__track { background: var(--uix-accent); }
+  .uix-switch input:checked + .uix-switch__track::after { transform: translateX(14px); }
+
+  /* ---- pills ---- */
+  .uix-pill { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: var(--uix-radius-pill); font-size: var(--uix-text-meta); font-weight: 500; background: var(--uix-bg-subtle); color: var(--uix-text-hushed); border: 1px solid var(--uix-border); white-space: nowrap; }
+  .uix-pill__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .uix-pill--danger { background: var(--uix-danger-bg); color: var(--uix-danger-text); border-color: transparent; }
+  .uix-pill--warning { background: var(--uix-warning-bg); color: var(--uix-warning-text); border-color: transparent; }
+  .uix-pill--success { background: var(--uix-success-bg); color: var(--uix-success); border-color: transparent; }
+  .uix-pill--info { background: var(--uix-info-bg); color: var(--uix-info-text); border-color: transparent; }
+  .uix-pill--neutral { background: var(--uix-bg-subtle); color: var(--uix-text-muted); }
+
+  /* ---- status badges for the audit (shipped / prototype / missing / adoption) ---- */
+  .aud-badge { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: var(--uix-radius-pill); font-size: var(--uix-text-meta); font-weight: 600; white-space: nowrap; border: 1px solid transparent; }
+  .aud-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .aud-badge--shipped { background: var(--uix-success-bg); color: var(--uix-success); }
+  .aud-badge--proto   { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
+  .aud-badge--missing { background: var(--uix-bg-active); color: var(--uix-text-muted); }
+  .aud-badge--adopt   { background: var(--uix-danger-bg); color: var(--uix-danger-text); }
+
+  .aud-sev { display:inline-flex; align-items:center; height: 20px; padding: 0 8px; border-radius: var(--uix-radius-xs); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .aud-sev--high { background: var(--uix-danger-bg); color: var(--uix-danger-text); }
+  .aud-sev--med  { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
+  .aud-sev--low  { background: var(--uix-info-bg); color: var(--uix-info-text); }
+
+  /* ---- callouts ---- */
+  .aud-callout { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--uix-radius-md); border: 1px solid var(--uix-border); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); margin: 16px 0; max-width: 82ch; }
+  .aud-callout svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+  .aud-callout strong { color: var(--uix-text); }
+  .aud-callout--rule { border-color: color-mix(in srgb, var(--uix-accent) 40%, var(--uix-border)); background: var(--uix-brand-muted); }
+  .aud-callout--rule svg { color: var(--uix-accent); }
+  .aud-callout--warn { border-color: color-mix(in srgb, var(--uix-warning) 45%, var(--uix-border)); background: var(--uix-warning-bg); }
+  .aud-callout--warn svg { color: var(--uix-warning); }
+  .aud-callout--warn, .aud-callout--warn strong { color: var(--uix-text); }
+
+  /* ---- legend ---- */
+  .aud-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 14px 16px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); margin: 16px 0; }
+  .aud-legend__item { display: flex; gap: 8px; align-items: center; font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .aud-legend__item b { color: var(--uix-text); }
+
+  /* ---- controls strip ---- */
+  .aud-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 10px 14px; margin-bottom: 14px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-bg-subtle); }
+  .aud-controls__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); }
+  .aud-controls__spacer { flex: 1 1 auto; }
+  .aud-status { font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
+
+  /* ---- filter chips ---- */
+  .aud-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--uix-radius-pill); border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); cursor: pointer; }
+  .aud-chip[aria-pressed="true"] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); font-weight: 500; }
+  .aud-chip__count { font-variant-numeric: tabular-nums; opacity: .7; }
+
+  /* ---- tables (faithful to table.css) ---- */
+  .uix-table-wrap { overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
+  .uix-table thead th { position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-surface); text-align: left; font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed); padding: 0 var(--uix-space-4); height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap; }
+  .uix-table th[data-sort] { cursor: pointer; user-select: none; }
+  .uix-table th[data-sort]:hover { color: var(--uix-text); }
+  .uix-table th[data-sort]::after { content: " ↕"; opacity: .35; }
+  .uix-table th[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; color: var(--uix-accent); }
+  .uix-table th[aria-sort="descending"]::after { content: " ↓"; opacity: 1; color: var(--uix-accent); }
+  .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
+  .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
+  .uix-table--no-zebra tbody tr { background: var(--uix-row); }
+  .uix-table td.uix-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .uix-table td.uix-mono { font-family: var(--uix-font-mono); font-size: 13px; }
+  .uix-cell-sub { display: block; font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: 1px; }
+  .uix-cell-strong { font-weight: 600; }
+  /* frozen first column */
+  .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); background: var(--uix-surface); }
+  .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
+
+  .aud-matrix td, .aud-matrix th { white-space: normal; }
+  .aud-matrix td:first-child { font-weight: 500; }
+  .aud-matrix .aud-where { font-family: var(--uix-font-mono); font-size: 12px; color: var(--uix-text-muted); }
+  .aud-matrix tr[hidden] { display: none; }
+
+  /* ---- recommendation cards ---- */
+  .aud-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin: 8px 0; }
+  .aud-reccard { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .aud-reccard__top { display: flex; align-items: center; gap: 8px; }
+  .aud-reccard__prio { font-family: var(--uix-font-mono); font-weight: 600; font-size: 12px; padding: 2px 7px; border-radius: var(--uix-radius-xs); }
+  .aud-reccard__prio.p0 { background: var(--uix-danger-bg); color: var(--uix-danger-text); }
+  .aud-reccard__prio.p1 { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
+  .aud-reccard__prio.p2 { background: var(--uix-info-bg); color: var(--uix-info-text); }
+  .aud-reccard__title { font-weight: 600; font-size: var(--uix-text-h3); }
+  .aud-reccard__body { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); flex: 1; }
+  .aud-reccard__meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .aud-tag { font-size: 11px; padding: 2px 8px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); color: var(--uix-text-muted); }
+  .aud-reccard[hidden] { display: none; }
+
+  /* ---- do / don't ---- */
+  .aud-dodont { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  @media (max-width: 760px) { .aud-dodont { grid-template-columns: 1fr; } }
+  .aud-dd { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); overflow: hidden; background: var(--uix-surface); }
+  .aud-dd__tag { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--uix-border); }
+  .aud-dd--do .aud-dd__tag { color: var(--uix-success); }
+  .aud-dd--dont .aud-dd__tag { color: var(--uix-danger-text); }
+  .aud-dd__body { padding: 12px; font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+
+  /* ---- code block ---- */
+  pre.aud-pre { background: var(--uix-surface-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: 14px 16px; overflow: auto; font-family: var(--uix-font-mono); font-size: 12.5px; line-height: 1.6; color: var(--uix-text); max-width: 82ch; }
+  pre.aud-pre .c { color: var(--uix-text-muted); }
+  pre.aud-pre .k { color: var(--uix-accent); }
+
+  /* =====================================================================
+     WIDTH DEMO — a live app-shell mock. .demo-shell mirrors .uix-shell.
+     ===================================================================== */
+  .demo-frame { border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-lg); overflow: hidden; background: var(--uix-bg-app); position: relative; box-shadow: var(--uix-shadow-sm); }
+  .demo-shell {
+    display: grid;
+    grid-template-columns: var(--uix-sidebar-w) 1fr;
+    grid-template-rows: var(--uix-topbar-h) 1fr;
+    height: 460px;
+    transition: grid-template-columns var(--uix-dur-slow) var(--uix-ease-out-strong), grid-template-rows var(--uix-dur-slow) var(--uix-ease-out-strong);
+  }
+  .demo-shell[data-nav="rail"]   { grid-template-columns: var(--uix-sidebar-w-rail) 1fr; }
+  .demo-shell[data-nav="hidden"] { grid-template-columns: 0 1fr; }
+  .demo-shell[data-focus] { grid-template-columns: 0 1fr; grid-template-rows: 0 1fr; }
+
+  .demo-sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow: hidden; padding: var(--uix-space-2); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .demo-shell[data-nav="hidden"] .demo-sidebar, .demo-shell[data-focus] .demo-sidebar { border-right: 0; padding-left: 0; padding-right: 0; }
+  .demo-navhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 10px; }
+  .demo-navbrand { font-family: var(--uix-font-heading); font-weight: 700; font-size: var(--uix-text-h3); white-space: nowrap; overflow: hidden; }
+  .demo-navitem { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); white-space: nowrap; overflow: hidden; }
+  .demo-navitem .ic { width: 18px; height: 18px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); }
+  .demo-navitem.is-active { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }
+  .demo-navitem.is-active .ic { color: var(--uix-link); }
+  .demo-shell[data-nav="rail"] .demo-navlabel, .demo-shell[data-nav="rail"] .demo-navbrand { display: none; }
+  .demo-shell[data-nav="rail"] .demo-navitem { justify-content: center; padding: 0; gap: 0; }
+  .demo-shell[data-nav="rail"] .demo-navhead { justify-content: center; padding-inline: 0; }
+
+  .demo-topbar { grid-column: 2; display: flex; align-items: center; gap: 10px; padding: 0 var(--uix-space-5); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); overflow: hidden; }
+  .demo-topbar h4 { margin: 0; font-size: var(--uix-text-h3); font-weight: 600; white-space: nowrap; }
+  .demo-topbar .demo-topbar__spacer { flex: 1; }
+  .demo-main { grid-column: 2; overflow: auto; background: var(--uix-bg-app); padding: var(--uix-space-6); min-width: 0; }
+  .demo-main[data-bleed] { padding: 0; }
+  .demo-main[data-bleed] .uix-table-wrap { border-radius: 0; border-left: 0; border-right: 0; }
+  /* force the demo grid to be genuinely wide so horizontal scroll + freeze-ID are meaningful */
+  #demoTable { min-width: 940px; }
+  #demoTable td, #demoTable th { white-space: nowrap; }
+  .demo-shell[data-focus] .demo-topbar { border-bottom: 0; }
+
+  /* focus-mode floating exit */
+  .demo-exit { position: absolute; top: 12px; right: 12px; z-index: 40; display: none; }
+  .demo-shell[data-focus] ~ .demo-exit { display: inline-flex; }
+  .demo-maximize { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: var(--uix-radius-sm); border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text-muted); cursor: pointer; }
+  .demo-maximize:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .demo-maximize svg { width: 15px; height: 15px; }
+
+  .demo-readout { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-top: 12px; font-size: var(--uix-text-meta); }
+  .demo-readout b { font-variant-numeric: tabular-nums; color: var(--uix-text); }
+  .demo-readout .up { color: var(--uix-success); font-weight: 600; }
+  .demo-metric { padding: 6px 12px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface); }
+
+  .demo-note { position: absolute; bottom: 10px; left: 12px; font-size: 11px; color: var(--uix-text-muted); background: color-mix(in srgb, var(--uix-surface) 80%, transparent); padding: 3px 8px; border-radius: var(--uix-radius-pill); border: 1px solid var(--uix-border); }
+
+  .aud-foot { padding: var(--uix-space-8) var(--uix-space-7); color: var(--uix-text-muted); font-size: var(--uix-text-meta); max-width: 1180px; }
+
+  @media (max-width: 900px) {
+    .aud { grid-template-columns: 1fr; }
+    .aud__nav { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+<div class="aud">
+  <!-- nav -->
+  <nav class="aud__nav" aria-label="Sections">
+    <div class="aud-brand">UIx v2 <small>Tables audit · 2026-07-01</small></div>
+    <a class="aud__navlink" href="#summary">Executive summary</a>
+    <a class="aud__navlink" href="#how">How to read this</a>
+    <a class="aud__navlink" href="#matrix">1 · Capability matrix</a>
+    <a class="aud__navlink" href="#gaps">1 · Gap analysis</a>
+    <a class="aud__navlink" href="#recs">2 · Recommendations</a>
+    <a class="aud__navlink" href="#width">3 · The width problem</a>
+    <a class="aud__navlink" href="#width-fix">3 · Recommended outcome</a>
+    <a class="aud__navlink" href="#sequence">Sequencing</a>
+  </nav>
+
+  <main class="aud__main">
+    <header class="aud__topbar">
+      <h1>Tables &amp; table views</h1>
+      <div class="aud__spacer"></div>
+      <span class="aud-status">Audit + design · no source changes</span>
+      <button class="uix-icon-btn" type="button" id="themeToggle" aria-label="Toggle theme" title="Toggle light / dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </header>
+
+    <!-- ===================== EXECUTIVE SUMMARY ===================== -->
+    <section id="summary" class="aud__section">
+      <div class="aud__eyebrow">Executive summary</div>
+      <h2>The table is close to complete; the leverage is shipping the prototype and stopping the fork</h2>
+      <p class="aud__lead">UIx already contains a well-considered table system. A production-grade primitive ships today (density, sticky header, sort affordance, row pinning, selection state, frozen identifier column), and the full v2 vision is specified by demonstration in <span class="aud-code">packages/tokens/tables.html</span>. The gap is not vision — it is <strong>distance between the demonstrated spec and the shipped contract</strong>, plus a downstream adoption problem where Tensor re-implements the table locally.</p>
+
+      <div class="aud-legend" style="max-width:82ch">
+        <div class="aud-legend__item"><span class="aud-badge aud-badge--shipped">Shipped</span> <span>in <b>table.css</b> / <b>@tensor_1/react</b></span></div>
+        <div class="aud-legend__item"><span class="aud-badge aud-badge--proto">Prototype</span> <span>demoed in the styleguide, <b>not</b> in the shipped contract</span></div>
+        <div class="aud-legend__item"><span class="aud-badge aud-badge--missing">Not built</span> <span>specified only in prose</span></div>
+        <div class="aud-legend__item"><span class="aud-badge aud-badge--adopt">Adoption</span> <span>exists in UIx but downstream forks it</span></div>
+      </div>
+
+      <div class="aud-callout aud-callout--rule">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div><strong>Three headline findings.</strong> (1) Roughly ten table capabilities are fully designed in <span class="aud-code">tables.html</span> but never shipped into <span class="aud-code">table.css</span> or a React wrapper — selection column, bulk bar, row actions, expandable rows, inline edit, column resize/reorder, search+highlight, typed filters, saved views, and the responsive ladder. (2) Per your own <span class="aud-code">Docs/2026-06-25-analyst-dx-token-proposal.md</span>, Tensor forks <span class="aud-code">Table</span> in <span class="aud-code">data-table.tsx</span> instead of consuming UIx — so shipped investment goes unused. (3) The width problem in part 3 is real and only half-solved: the shell collapses the sidebar to a 56px rail, but there is no fully-hidden nav, no full-bleed table, and no table-scoped focus mode.</div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW TO READ ===================== -->
+    <section id="how" class="aud__section">
+      <div class="aud__eyebrow">Method</div>
+      <h2>How to read this</h2>
+      <p class="aud__lead">Every claim below is grounded in the source: <span class="aud-code">packages/tokens/styles/components/*.css</span>, <span class="aud-code">packages/react/src/components/*.tsx</span>, the two showcases (<span class="aud-code">index.html</span>, <span class="aud-code">tables.html</span>) and their JS harness (<span class="aud-code">guide/app.js</span>), and the design docs. Tensor itself is a sibling repo and is not present in this workspace — statements about Tensor are sourced from the UIx docs, not from reading Tensor code.</p>
+      <p>The audit separates three questions that are easy to conflate: <strong>does the pattern exist as a shipped primitive</strong> (a class in <span class="aud-code">table.css</span> and/or a prop in <span class="aud-code">Table.tsx</span>), <strong>does it exist only as a styleguide prototype</strong> (rendered by demo JS, not distributed), and <strong>does it exist but go unconsumed</strong>. Those lead to different fixes: ship it, productize it, or enforce adoption.</p>
+    </section>
+
+    <!-- ===================== CAPABILITY MATRIX ===================== -->
+    <section id="matrix" class="aud__section">
+      <div class="aud__eyebrow">Part 1 · Audit</div>
+      <h2>Capability matrix</h2>
+      <p class="aud__lead">The whole table feature surface, and where each capability actually lives today. Filter by status; click <em>Capability</em> or <em>Status</em> to sort. This grid is itself a UIx table — the shipped primitive dogfooded.</p>
+
+      <div class="aud-controls">
+        <span class="aud-controls__label">Filter</span>
+        <button class="aud-chip" data-filter="all" aria-pressed="true">All <span class="aud-chip__count" data-count="all"></span></button>
+        <button class="aud-chip" data-filter="shipped" aria-pressed="false">Shipped <span class="aud-chip__count" data-count="shipped"></span></button>
+        <button class="aud-chip" data-filter="proto" aria-pressed="false">Prototype <span class="aud-chip__count" data-count="proto"></span></button>
+        <button class="aud-chip" data-filter="missing" aria-pressed="false">Not built <span class="aud-chip__count" data-count="missing"></span></button>
+        <div class="aud-controls__spacer"></div>
+        <span class="aud-status" id="matrixStatus"></span>
+      </div>
+
+      <div class="uix-table-wrap">
+        <table class="uix-table uix-table--no-zebra aud-matrix" id="matrixTable">
+          <thead>
+            <tr>
+              <th data-sort data-key="cap">Capability</th>
+              <th data-sort data-key="group">Area</th>
+              <th data-sort data-key="status">Status</th>
+              <th>Where it lives / evidence</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"><!-- rows injected --></tbody>
+        </table>
+      </div>
+      <p class="aud-status" style="margin-top:10px">Status reflects the <em>shipped contract</em> (<span class="aud-code">styles/components</span> + <span class="aud-code">@tensor_1/react</span>), not the styleguide demos. A capability shown working in <span class="aud-code">tables.html</span> but rendered by <span class="aud-code">guide/app.js</span> is <b>Prototype</b>, because downstream products can't import demo JS.</p>
+    </section>
+
+    <!-- ===================== GAP ANALYSIS ===================== -->
+    <section id="gaps" class="aud__section">
+      <div class="aud__eyebrow">Part 1 · Gap analysis</div>
+      <h2>Gaps, by severity</h2>
+      <p class="aud__lead">Grouped into three kinds: <strong>feature gaps</strong> (designed but unshipped), <strong>adoption gaps</strong> (shipped but forked downstream), and <strong>contract gaps</strong> (tokens/APIs that promise more than they deliver). Filter by severity.</p>
+
+      <div class="aud-controls">
+        <span class="aud-controls__label">Severity</span>
+        <button class="aud-chip" data-sev="all" aria-pressed="true">All</button>
+        <button class="aud-chip" data-sev="high" aria-pressed="false">High</button>
+        <button class="aud-chip" data-sev="med" aria-pressed="false">Medium</button>
+        <button class="aud-chip" data-sev="low" aria-pressed="false">Low</button>
+      </div>
+
+      <div class="uix-table-wrap">
+        <table class="uix-table uix-table--no-zebra aud-matrix" id="gapTable">
+          <thead>
+            <tr><th>Gap</th><th>Kind</th><th>Severity</th><th>Impact &amp; evidence</th></tr>
+          </thead>
+          <tbody id="gapBody"><!-- rows injected --></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== RECOMMENDATIONS ===================== -->
+    <section id="recs" class="aud__section">
+      <div class="aud__eyebrow">Part 2 · Recommendations</div>
+      <h2>What to build, in priority order</h2>
+      <p class="aud__lead">Prioritised by leverage: how many surfaces benefit × how much effort, weighted toward converting existing prototype work into shipped contract. P0 unblocks the most and is cheapest because the design already exists.</p>
+
+      <div class="aud-controls">
+        <span class="aud-controls__label">Show</span>
+        <button class="aud-chip" data-prio="all" aria-pressed="true">All</button>
+        <button class="aud-chip" data-prio="p0" aria-pressed="false">P0</button>
+        <button class="aud-chip" data-prio="p1" aria-pressed="false">P1</button>
+        <button class="aud-chip" data-prio="p2" aria-pressed="false">P2</button>
+      </div>
+      <div class="aud-cards" id="recCards"><!-- cards injected --></div>
+    </section>
+
+    <!-- ===================== THE WIDTH PROBLEM ===================== -->
+    <section id="width" class="aud__section">
+      <div class="aud__eyebrow">Part 3 · The width problem</div>
+      <h2>Wide, many-column tables and the sidebar</h2>
+      <p class="aud__lead">The complaint from Tensor: complex table views have too many columns to read comfortably because the 248px sidebar and the content gutter eat horizontal space. Today the shell can collapse the sidebar to a 56px rail — a partial answer. Below is a live mock of the shell; drive the controls to see every lever, including the proposed ones, and watch the reclaimed width update in real time.</p>
+
+      <div class="aud-controls">
+        <span class="aud-controls__label">Sidebar</span>
+        <div class="uix-segmented" role="group" aria-label="Sidebar width" id="navSeg">
+          <button class="uix-segmented__option" data-nav="full" aria-pressed="true">Full · 248</button>
+          <button class="uix-segmented__option" data-nav="rail" aria-pressed="false">Rail · 56</button>
+          <button class="uix-segmented__option" data-nav="hidden" aria-pressed="false">Hidden · 0</button>
+        </div>
+        <label class="uix-switch"><input type="checkbox" id="bleedToggle"><span class="uix-switch__track"></span>Full-bleed</label>
+        <label class="uix-switch"><input type="checkbox" id="freezeToggle" checked><span class="uix-switch__track"></span>Freeze ID</label>
+        <div class="aud-controls__spacer"></div>
+        <button class="uix-btn uix-btn--primary uix-btn--sm" id="focusBtn">⤢ Focus mode</button>
+      </div>
+
+      <div class="demo-frame">
+        <div class="demo-shell" id="demoShell" data-nav="full">
+          <aside class="demo-sidebar">
+            <div class="demo-navhead">
+              <span class="demo-navbrand">Tensor</span>
+            </div>
+            <div class="demo-navitem is-active"><span class="ic">▤</span><span class="demo-navlabel">Incidents</span></div>
+            <div class="demo-navitem"><span class="ic">◇</span><span class="demo-navlabel">Changes</span></div>
+            <div class="demo-navitem"><span class="ic">▦</span><span class="demo-navlabel">CMDB</span></div>
+            <div class="demo-navitem"><span class="ic">◷</span><span class="demo-navlabel">SLAs</span></div>
+            <div class="demo-navitem"><span class="ic">☷</span><span class="demo-navlabel">Reports</span></div>
+          </aside>
+          <header class="demo-topbar">
+            <h4>Incident queue</h4>
+            <div class="demo-topbar__spacer"></div>
+            <span class="uix-pill uix-pill--neutral">418 rows · 12 cols</span>
+            <button class="demo-maximize" id="focusBtnInline" title="Focus mode (immersive)" aria-label="Enter focus mode">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            </button>
+          </header>
+          <div class="demo-main" id="demoMain">
+            <div class="uix-table-wrap" id="demoWrap">
+              <table class="uix-table uix-table--no-zebra uix-table--pinned-col" id="demoTable">
+                <thead><tr id="demoHead"></tr></thead>
+                <tbody id="demoRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="demo-exit">
+          <button class="uix-btn uix-btn--sm" id="exitFocus">Esc · Exit focus</button>
+        </div>
+        <div class="demo-note" id="demoNote">Tip: “Focus mode” hides the nav <em>and</em> the topbar — press Esc to exit.</div>
+      </div>
+
+      <div class="demo-readout">
+        <span class="demo-metric">Table viewport width: <b id="mWidth">—</b></span>
+        <span class="demo-metric">Reclaimed vs full sidebar: <b id="mGain" class="up">—</b></span>
+        <span class="demo-metric">State: <b id="mState">Full sidebar</b></span>
+      </div>
+
+      <div class="aud__subhead">What ships today vs. what's proposed</div>
+      <table class="uix-table uix-table--no-zebra aud-matrix" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);overflow:hidden">
+        <thead><tr><th>Lever</th><th>Status</th><th>Mechanism</th></tr></thead>
+        <tbody>
+          <tr><td>Collapse to icon rail (248 → 56)</td><td><span class="aud-badge aud-badge--shipped">Shipped</span></td><td class="aud-where">.uix-shell[data-collapsed] · AppShell collapsed prop</td></tr>
+          <tr><td>Fully hidden nav (→ 0)</td><td><span class="aud-badge aud-badge--missing">Proposed</span></td><td class="aud-where">add data-nav="hidden"</td></tr>
+          <tr><td>Full-bleed table (cancel main gutter)</td><td><span class="aud-badge aud-badge--missing">Proposed</span></td><td class="aud-where">.uix-shell__main--bleed</td></tr>
+          <tr><td>Table-scoped focus / immersive mode</td><td><span class="aud-badge aud-badge--missing">Proposed</span></td><td class="aud-where">.uix-shell[data-focus] + Esc</td></tr>
+          <tr><td>Freeze identifier + horizontal scroll</td><td><span class="aud-badge aud-badge--shipped">Shipped</span></td><td class="aud-where">.uix-table--pinned-col</td></tr>
+          <tr><td>Persist choice per user / surface</td><td><span class="aud-badge aud-badge--proto">Partial</span></td><td class="aud-where">view-prefs pattern exists in guide/app.js; not on the shell</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===================== RECOMMENDED OUTCOME (WIDTH) ===================== -->
+    <section id="width-fix" class="aud__section">
+      <div class="aud__eyebrow">Part 3 · Recommended outcome</div>
+      <h2>A three-tier nav ladder + a table-scoped focus mode</h2>
+      <p class="aud__lead">The cleanest answer is progressive reveal, not one big toggle. Give the operator three resting nav widths and one immersive escape hatch, all persisted, all keyboard-reachable. This directly satisfies “collapse the sidebar and expand the table” while keeping the everyday layout intact.</p>
+
+      <div class="aud__subhead">The recommendation, in four parts</div>
+      <ol style="max-width:82ch;color:var(--uix-text-hushed);font-size:var(--uix-text-body);line-height:1.7">
+        <li><strong>Promote the binary collapse to a three-state nav.</strong> Replace the boolean <span class="aud-code">data-collapsed</span> with <span class="aud-code">data-nav="full | rail | hidden"</span>. <em>Full</em> (248) and <em>rail</em> (56) already exist; add <em>hidden</em> (0) for the many-column case where even the rail is in the way.</li>
+        <li><strong>Add a table-scoped Focus mode.</strong> A maximize control in the table toolbar sets <span class="aud-code">data-focus</span> on the shell, hiding the sidebar <em>and</em> the topbar so the grid uses the full viewport. <span class="aud-code">Esc</span> exits and restores the previous nav state and focus. This is the “immersion across many columns” row already named in the <span class="aud-code">tables.html</span> detail ladder.</li>
+        <li><strong>Make the table full-bleed on demand.</strong> The shell’s main region has a <span class="aud-code">--uix-space-7</span> (32px) gutter on all sides. For a wide grid, opt into <span class="aud-code">.uix-shell__main--bleed</span> so the table runs edge-to-edge and reclaims 64px. Pair with the shipped frozen identifier column so the leftmost column stays legible during horizontal scroll.</li>
+        <li><strong>Persist and shortcut it.</strong> Store the nav state per user (and optionally per surface) with the same <span class="aud-code">readViewPrefs / writeViewPrefs</span> localStorage pattern the table view menu already uses. Bind <span class="aud-code">[</span> to cycle nav width and give Focus mode a shortcut; manage focus and <span class="aud-code">aria-expanded</span> on toggle.</li>
+      </ol>
+
+      <div class="aud__subhead">Design sketch — CSS (design only; not applied to source)</div>
+      <pre class="aud-pre"><span class="c">/* app-shell.css — today */</span>
+.uix-shell { grid-template-columns: <span class="k">var(--uix-sidebar-w)</span> 1fr; transition: grid-template-columns var(--uix-dur) var(--uix-ease-out); }
+.uix-shell[data-collapsed] { grid-template-columns: 56px 1fr; }
+
+<span class="c">/* proposed — one attribute, three tiers + focus + bleed */</span>
+.uix-shell[data-nav="full"]   { grid-template-columns: <span class="k">var(--uix-sidebar-w)</span> 1fr; }
+.uix-shell[data-nav="rail"]   { grid-template-columns: <span class="k">var(--uix-sidebar-w-rail, 56px)</span> 1fr; }
+.uix-shell[data-nav="hidden"] { grid-template-columns: 0 1fr; }
+
+.uix-shell[data-focus] { grid-template-columns: 0 1fr; grid-template-rows: 0 1fr; }
+.uix-shell[data-focus] .uix-shell__topbar { display: none; }
+
+.uix-shell__main--bleed { padding: 0; }            <span class="c">/* reclaim the 32px gutter */</span></pre>
+
+      <div class="aud__subhead">Design sketch — token + React contract</div>
+      <pre class="aud-pre"><span class="c">/* tokens/base/size.json — make the rail width contractual (it's hardcoded 56 today) */</span>
+"sidebar-w-rail": { "$value": "56px" }
+
+<span class="c">/* AppShell.tsx — widen the API, keep `collapsed` as a back-compat alias */</span>
+interface AppShellProps {
+  nav?: <span class="k">'full' | 'rail' | 'hidden'</span>;   <span class="c">// collapsed=true → nav='rail'</span>
+  focus?: boolean;                    <span class="c">// immersive; hides sidebar + topbar</span>
+  onExitFocus?: () =&gt; void;           <span class="c">// wire Esc + restore focus</span>
+}</pre>
+
+      <div class="aud-dodont">
+        <div class="aud-dd aud-dd--do"><div class="aud-dd__tag">Do</div><div class="aud-dd__body">Keep three <em>resting</em> widths so the choice is reversible and legible. Persist per user. Restore focus and prior nav state on exiting Focus mode. Freeze the identifier column so horizontal scroll never orphans a row.</div></div>
+        <div class="aud-dd aud-dd--dont"><div class="aud-dd__tag">Don't</div><div class="aud-dd__body">Don't make Focus mode the only answer — most days the rail is enough. Don't hide the nav with no visible way back. Don't ship edge-to-edge as the default; full-bleed is an opt-in for genuinely wide grids, not every table.</div></div>
+      </div>
+
+      <div class="aud-callout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        <div><strong>Why this belongs in UIx, not Tensor.</strong> The shell, the collapse, and the frozen column already live in the contract. Adding the hidden tier, focus mode, and full-bleed here means every product — Tensor, POSx, SHOPx — gets the wide-table answer for free, and it can’t drift. Solving it locally in Tensor is exactly the fork pattern this audit flags.</div>
+      </div>
+    </section>
+
+    <!-- ===================== SEQUENCING ===================== -->
+    <section id="sequence" class="aud__section">
+      <div class="aud__eyebrow">Putting it in motion</div>
+      <h2>Suggested sequence</h2>
+      <p class="aud__lead">This slots into the existing Track U / ADX workstream rather than competing with it. Order is by unblock-value and cost.</p>
+      <ol style="max-width:82ch;color:var(--uix-text-hushed);line-height:1.8">
+        <li><strong>Ship the width ladder (part 3).</strong> Cheap, self-contained, high daily impact for analysts; no dependency on the token work. Deliver hidden tier + focus mode + full-bleed + persistence.</li>
+        <li><strong>Productize the cell vocabulary &amp; selection system.</strong> Move the <span class="aud-code">.uix-num / .uix-mono / .uix-cell-sub</span> utilities and the selection column + bulk bar out of <span class="aud-code">tables.html</span> into <span class="aud-code">table.css</span> + a <span class="aud-code">Table</span> wrapper. Pairs with token U3 (<span class="aud-code">--uix-row-selected-bg</span>).</li>
+        <li><strong>Ship column management as real components.</strong> Wrap <span class="aud-code">table-toolbar</span> and <span class="aud-code">view-menu</span> in React; make resize and reorder work, not just render.</li>
+        <li><strong>Land the responsive ladder</strong> (priority columns → card transform) in <span class="aud-code">table.css</span> so it isn’t styleguide-only.</li>
+        <li><strong>Close the loop with the parity guard (U5).</strong> The consumer-parity check is what stops all of the above from being re-forked in Tensor.</li>
+      </ol>
+      <div class="aud-callout aud-callout--warn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.3 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div><strong>The multiplier is governance, not features.</strong> Every prototype you promote is wasted if the downstream keeps forking. The single highest-leverage item across this whole audit is U5 — the consumer-parity guard — because it converts one-time shipping work into durable adoption.</div>
+      </div>
+    </section>
+
+    <div class="aud-foot">
+      Sources · <span class="aud-code">packages/tokens/styles/components/{table,table-toolbar,view-menu,app-shell,sidebar,detail-layout}.css</span> ·
+      <span class="aud-code">packages/react/src/components/{Table,AppShell,Sidebar,DetailLayout}.tsx</span> ·
+      <span class="aud-code">packages/react/etc/uix-react.api.md</span> ·
+      <span class="aud-code">packages/tokens/{index,tables}.html</span> · <span class="aud-code">packages/tokens/guide/app.js</span> ·
+      <span class="aud-code">Docs/{design-system, 2026-06-25-analyst-dx-token-proposal}.md</span>. Token values reproduced from <span class="aud-code">build/css/tokens.css</span>.
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------- theme toggle ---------- */
+  $('#themeToggle').addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('uix-theme', next); } catch (e) {}
+    measure();
+  });
+
+  /* ---------- scrollspy ---------- */
+  var links = $$('.aud__navlink');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var spy = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (l) { l.classList.remove('is-active'); });
+        if (map[en.target.id]) map[en.target.id].classList.add('is-active');
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  $$('.aud__section').forEach(function (s) { spy.observe(s); });
+
+  /* ================= CAPABILITY MATRIX ================= */
+  // status: shipped | proto | missing
+  var CAPS = [
+    ['Zebra striping', 'Style', 'shipped', 'table.css · Table zebra'],
+    ['Sticky header', 'Style', 'shipped', 'table.css thead th sticky'],
+    ['Sort affordance (aria-sort, click cycle)', 'Interaction', 'shipped', 'table.css + Th sortable (presentation; sort logic is the consumer’s)'],
+    ['Density — compact / standard / comfortable', 'Style', 'shipped', 'table.css data-density · Table density (44/56/68px)'],
+    ['Row pin + pinned-row background', 'Interaction', 'shipped', 'table.css .uix-table__pin · Tr pinned'],
+    ['Row selection state (background)', 'Interaction', 'shipped', 'table.css tr[aria-selected] · Tr selected (state only)'],
+    ['Frozen first / identifier column', 'Layout', 'shipped', 'table.css .uix-table--pinned-col · Table pinnedCol'],
+    ['Scroll container', 'Layout', 'shipped', 'TableWrap (overflow auto, max-height 460)'],
+    ['Numbered pagination', 'Data', 'shipped', '@tensor_1/react Pagination'],
+    ['Empty / Error / Loading / Skeleton states', 'State', 'shipped', 'React EmptyState/ErrorState/LoadingState/Skeleton'],
+    ['Side peek (drawer + ↑/↓ nav)', 'Detail', 'shipped', 'React Peek + [data-uix-rowpeek] hook'],
+    ['Selection column + select-all (indeterminate)', 'Interaction', 'proto', 'tables.html PROPOSED (.uix-table__selcol); no shipped CSS/React'],
+    ['Contextual bulk-action bar', 'Interaction', 'proto', 'tables.html PROPOSED (.uix-bulkbar)'],
+    ['Row hover actions + kebab menu', 'Interaction', 'proto', 'tables.html PROPOSED (.uix-rowact)'],
+    ['Expandable inline row / detail', 'Detail', 'proto', 'tables.html PROPOSED (.uix-table__expand)'],
+    ['Inline cell edit', 'Editing', 'proto', 'tables.html PROPOSED (.uix-cell-edit)'],
+    ['Column resize', 'Columns', 'proto', 'tables.html PROPOSED grip (.uix-table__resize) — visual affordance'],
+    ['Column show / hide', 'Columns', 'proto', 'view-menu.css + guide/app.js checklist (persisted, demo only)'],
+    ['Column reorder', 'Columns', 'missing', 'named in the spec; no implementation (no drag JS found)'],
+    ['Full-text search + match highlight', 'Filter', 'proto', 'tables.html PROPOSED (.uix-mark)'],
+    ['Typed filter chips (enum/text/date/num/ref/bool)', 'Filter', 'proto', 'table-toolbar.css chips + spec; only status/type demoed'],
+    ['Saved views + URL-serialized state', 'Filter', 'missing', 'tables.html spec prose only'],
+    ['Load-more / infinite scroll', 'Data', 'missing', 'spec prose only'],
+    ['Virtualization (≥100 rows)', 'Data', 'missing', 'spec claims auto-virtualize; no code'],
+    ['Responsive ladder (priority cols → cards)', 'Responsive', 'proto', 'tables.html CSS only (.uix-table--priority / --cards)'],
+    ['Compare layout (two records, narrow screens)', 'Responsive', 'proto', 'tables.html PROPOSED (.uix-compare)'],
+    ['Cell vocabulary utils (num/mono/sub/strong/truncate)', 'Style', 'proto', 'tables.html PROPOSED block; not in shipped table.css'],
+    ['Nav collapse to rail for wide tables', 'Layout', 'shipped', 'app-shell.css [data-collapsed] 248→56'],
+    ['Hidden nav / focus mode / full-bleed table', 'Layout', 'missing', 'see part 3 — no such state today']
+  ];
+  var STLABEL = { shipped: ['Shipped', 'shipped'], proto: ['Prototype', 'proto'], missing: ['Not built', 'missing'] };
+  var STORDER = { shipped: 0, proto: 1, missing: 2 };
+  var matrixBody = $('#matrixBody');
+  var curFilter = 'all', sortKey = null, sortDir = 1;
+
+  function renderMatrix() {
+    var rows = CAPS.slice();
+    if (sortKey) {
+      rows.sort(function (a, b) {
+        var av, bv;
+        if (sortKey === 'cap') { av = a[0].toLowerCase(); bv = b[0].toLowerCase(); }
+        else if (sortKey === 'group') { av = a[1].toLowerCase(); bv = b[1].toLowerCase(); }
+        else { av = STORDER[a[2]]; bv = STORDER[b[2]]; }
+        return (av < bv ? -1 : av > bv ? 1 : 0) * sortDir;
+      });
+    }
+    matrixBody.innerHTML = rows.map(function (r) {
+      var st = STLABEL[r[2]];
+      var hide = (curFilter !== 'all' && r[2] !== curFilter) ? ' hidden' : '';
+      return '<tr' + hide + '>' +
+        '<td>' + esc(r[0]) + '</td>' +
+        '<td><span class="uix-pill uix-pill--neutral">' + esc(r[1]) + '</span></td>' +
+        '<td><span class="aud-badge aud-badge--' + st[1] + '">' + st[0] + '</span></td>' +
+        '<td class="aud-where">' + esc(r[3]) + '</td>' +
+      '</tr>';
+    }).join('');
+    var shown = rows.filter(function (r) { return curFilter === 'all' || r[2] === curFilter; }).length;
+    $('#matrixStatus').textContent = shown + ' of ' + CAPS.length + ' shown';
+  }
+  function counts() {
+    var c = { all: CAPS.length, shipped: 0, proto: 0, missing: 0 };
+    CAPS.forEach(function (r) { c[r[2]]++; });
+    $$('#matrix .aud-chip').forEach(function (chip) {
+      var el = chip.querySelector('[data-count]');
+      if (el) el.textContent = c[chip.getAttribute('data-filter')];
+    });
+  }
+  $$('#matrix .aud-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      $$('#matrix .aud-chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      chip.setAttribute('aria-pressed', 'true');
+      curFilter = chip.getAttribute('data-filter');
+      renderMatrix();
+    });
+  });
+  $$('#matrixTable thead th[data-sort]').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var k = th.getAttribute('data-key');
+      if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+      $$('#matrixTable thead th').forEach(function (t) { t.removeAttribute('aria-sort'); });
+      th.setAttribute('aria-sort', sortDir === 1 ? 'ascending' : 'descending');
+      renderMatrix();
+    });
+  });
+  counts(); renderMatrix();
+
+  /* ================= GAP ANALYSIS ================= */
+  // kind: feature | adoption | contract
+  var GAPS = [
+    ['Selection system unshipped', 'feature', 'high', 'Select column, select-all, "select all N matching", and the bulk-action bar are designed in tables.html but absent from table.css / React — so every product that needs bulk ops rebuilds them. (Blocks Tensor ADX-T1.)'],
+    ['Tensor forks the Table primitive', 'adoption', 'high', 'Per Docs/2026-06-25-analyst-dx-token-proposal.md, Tensor re-implements Table, the status badge, and SLA rendering in data-table.tsx — shipped UIx investment goes unused and surfaces drift.'],
+    ['No table-scoped focus / full-width mode', 'feature', 'high', 'Part 3. Nav collapses to a 56px rail only; no hidden tier, no full-bleed, no immersive mode for many-column grids. The daily pain point for analysts.'],
+    ['Column resize & reorder are visual-only', 'feature', 'med', 'The resize grip and reorder are shown in the spec but have no working interaction. Power users can’t tailor wide grids.'],
+    ['Selection color collides with other states', 'contract', 'med', 'table.css paints aria-selected with --uix-brand-muted, which is also the unread tint and inbox fill. Needs a dedicated --uix-row-selected-bg (token U3).'],
+    ['status-pill advertises tones it doesn’t ship', 'contract', 'med', 'status-pill.css header claims status/priority/SLA tones, but only 5 generic tones exist — so SLA/priority fall back to raw danger/warning literals downstream (token U4).'],
+    ['Severity ramp stops at SEV-3', 'contract', 'med', 'color.json models danger/warning/amber (SEV-1..3); SEV-4/5 and low priorities have no token, forcing ad-hoc fallbacks (token U2).'],
+    ['Toolbar / view-menu have no React wrapper', 'feature', 'med', 'table-toolbar.css and view-menu.css exist as classes only; the coverage backlog in design-system.md lists both as needing wrappers. Consumers hand-wire them.'],
+    ['Virtualization is aspirational', 'feature', 'med', 'tables.html claims UIx auto-virtualizes past ~100 rows, but there is no implementation. Large client-held lists have no perf story.'],
+    ['Responsive ladder is styleguide-only', 'feature', 'med', 'Priority-column drop, card transform, and compare view live in tables.html CSS, not table.css — products can’t adopt them.'],
+    ['Inline edit & expandable rows unshipped', 'feature', 'low', 'Both are designed in the spec; useful for action-oriented queues but not blocking.'],
+    ['Saved views / URL state unbuilt', 'feature', 'low', '"Views are URLs" is a strong idea in the spec with no implementation yet; high value once the filter system ships.']
+  ];
+  var KIND = { feature: 'Feature gap', adoption: 'Adoption gap', contract: 'Contract gap' };
+  var SEV = { high: ['High', 'high'], med: ['Medium', 'med'], low: ['Low', 'low'] };
+  var SEVORDER = { high: 0, med: 1, low: 2 };
+  var gapBody = $('#gapBody');
+  var curSev = 'all';
+  function renderGaps() {
+    var rows = GAPS.slice().sort(function (a, b) { return SEVORDER[a[2]] - SEVORDER[b[2]]; });
+    gapBody.innerHTML = rows.map(function (g) {
+      var hide = (curSev !== 'all' && g[2] !== curSev) ? ' hidden' : '';
+      var sev = SEV[g[2]];
+      return '<tr' + hide + '>' +
+        '<td style="font-weight:500">' + esc(g[0]) + '</td>' +
+        '<td><span class="uix-pill uix-pill--neutral">' + KIND[g[1]] + '</span></td>' +
+        '<td><span class="aud-sev aud-sev--' + sev[1] + '">' + sev[0] + '</span></td>' +
+        '<td class="aud-where" style="font-family:var(--uix-font-sans);color:var(--uix-text-hushed);font-size:var(--uix-text-meta)">' + esc(g[3]) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+  $$('#gaps .aud-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      $$('#gaps .aud-chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      chip.setAttribute('aria-pressed', 'true');
+      curSev = chip.getAttribute('data-sev');
+      renderGaps();
+    });
+  });
+  renderGaps();
+
+  /* ================= RECOMMENDATIONS ================= */
+  var RECS = [
+    ['p0', 'Ship the width ladder + focus mode', 'Deliver part 3: three-tier nav (full/rail/hidden), table-scoped focus mode, full-bleed opt-in, persisted. Self-contained, no token dependency, high daily impact.', ['Impact: high', 'Effort: low', 'app-shell.css · AppShell']],
+    ['p0', 'Promote the cell vocabulary', 'Move .uix-num / .uix-mono / .uix-cell-sub / .uix-cell-strong / .uix-cell-truncate from tables.html into table.css. Pure CSS, zero risk, every table benefits immediately.', ['Impact: high', 'Effort: low', 'table.css']],
+    ['p0', 'Ship the selection system', 'Selection column, select-all (indeterminate), "select all N matching", and the bulk-action bar as real CSS + a Table wrapper. Unblocks Tensor ADX-T1.', ['Impact: high', 'Effort: med', 'token U3 · table.css']],
+    ['p1', 'Wrap toolbar & view-menu in React', 'Turn table-toolbar.css and view-menu.css into @tensor_1/react components; make column show/hide/resize/reorder actually work, not just render.', ['Impact: high', 'Effort: med', 'coverage backlog']],
+    ['p1', 'Land the responsive ladder in the contract', 'Move priority-column drop + card transform + compare view into table.css so products inherit graceful narrow-screen behavior.', ['Impact: med', 'Effort: med', 'table.css']],
+    ['p1', 'Complete the SLA / severity token story', 'Ship U2 (SEV-4/5), U3 (row-selected), U4 (SLA/priority pill tones), U1 (time-pressure). Makes the status-pill contract honest.', ['Impact: med', 'Effort: med', 'tokens U1–U4']],
+    ['p2', 'Virtualization strategy', 'Decide build-vs-adopt for row virtualization keyed to the density row-height; today the "auto-virtualize" claim is unbacked.', ['Impact: med', 'Effort: high', 'Table / TableWrap']],
+    ['p2', 'Inline edit + expandable rows', 'Productize the editing ladder and inline detail for action-oriented queues.', ['Impact: med', 'Effort: med', 'table.css · React']],
+    ['p2', 'Saved views as URLs', 'Serialize filter/sort/columns/density to the query string; named, shareable, team-scoped views. High value once filters ship.', ['Impact: high', 'Effort: high', 'depends on filters']],
+    ['p0', 'Consumer-parity guard (U5)', 'Governance, not a feature: extend check-contract.mjs so a component’s advertised tones must have rules, and publish a "consume, don’t fork" list. This is what stops re-forking.', ['Impact: high', 'Effort: low', 'governance']]
+  ];
+  var PRIO = { p0: 'P0', p1: 'P1', p2: 'P2' };
+  var recWrap = $('#recCards');
+  function renderRecs(filter) {
+    var order = { p0: 0, p1: 1, p2: 2 };
+    var rows = RECS.slice().sort(function (a, b) { return order[a[0]] - order[b[0]]; });
+    recWrap.innerHTML = rows.map(function (r) {
+      var hide = (filter && filter !== 'all' && r[0] !== filter) ? ' hidden' : '';
+      return '<div class="aud-reccard"' + hide + '>' +
+        '<div class="aud-reccard__top"><span class="aud-reccard__prio ' + r[0] + '">' + PRIO[r[0]] + '</span>' +
+        '<span class="aud-reccard__title">' + esc(r[1]) + '</span></div>' +
+        '<div class="aud-reccard__body">' + esc(r[2]) + '</div>' +
+        '<div class="aud-reccard__meta">' + r[3].map(function (t) { return '<span class="aud-tag">' + esc(t) + '</span>'; }).join('') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  $$('#recs .aud-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      $$('#recs .aud-chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      chip.setAttribute('aria-pressed', 'true');
+      renderRecs(chip.getAttribute('data-prio'));
+    });
+  });
+  renderRecs('all');
+
+  /* ================= WIDTH DEMO ================= */
+  var COLS = ['ID', 'Subject', 'Status', 'Priority', 'Assignee', 'Category', 'SLA', 'Opened', 'Updated', 'Source', 'Region', 'Cost'];
+  var ROWDATA = [
+    ['INC-2041', 'Mail relay rejecting TLS', 'danger:Open', 'danger:P1', 'M. Kraus', 'Messaging', 'warning:2h left', '14 Jun', '2m ago', 'Monitor', 'EU-West', '1,240.00'],
+    ['INC-2042', 'VPN latency spikes', 'info:In progress', 'warning:P2', 'A. Toso', 'Network', 'success:On track', '11 Jun', '18m ago', 'Portal', 'Munich', '980.50'],
+    ['INC-2043', 'Badge reader offline — Bldg C', 'neutral:On hold', 'neutral:P3', 'Unassigned', 'Facilities', 'neutral:Paused', '3 Feb', '1d ago', 'Phone', 'Berlin', '75.00'],
+    ['INC-2044', 'DB failover loop', 'danger:Open', 'danger:P1', 'R. Vella', 'Database', 'danger:Breached', '15 Jun', '5m ago', 'Monitor', 'US-East', '3,410.00'],
+    ['INC-2045', 'SSO token drift', 'info:In progress', 'warning:P2', 'K. Osei', 'Identity', 'warning:1h left', '13 Jun', '42m ago', 'Portal', 'EU-West', '520.00'],
+    ['INC-2046', 'Printer queue stuck — HR', 'neutral:On hold', 'neutral:P4', 'Unassigned', 'Endpoint', 'success:On track', '9 Jun', '3h ago', 'Email', 'Berlin', '40.00'],
+    ['INC-2047', 'API rate-limit false positives', 'info:In progress', 'warning:P2', 'S. Nair', 'Platform', 'warning:3h left', '12 Jun', '11m ago', 'Monitor', 'US-West', '1,120.00'],
+    ['INC-2048', 'Certificate expiry — edge', 'danger:Open', 'danger:P1', 'M. Kraus', 'Security', 'danger:Breached', '15 Jun', '1m ago', 'Monitor', 'EU-West', '2,050.00']
+  ];
+  function pill(v) {
+    var parts = v.split(':'); var tone = parts[0]; var label = parts[1];
+    return '<span class="uix-pill uix-pill--' + tone + '"><span class="uix-pill__dot"></span>' + esc(label) + '</span>';
+  }
+  (function buildDemoTable() {
+    $('#demoHead').innerHTML = COLS.map(function (c, i) {
+      var cls = (c === 'Cost') ? ' class="uix-num"' : '';
+      return '<th' + cls + '>' + esc(c) + '</th>';
+    }).join('');
+    $('#demoRows').innerHTML = ROWDATA.map(function (r) {
+      return '<tr>' + r.map(function (cell, i) {
+        if (i === 0) return '<td class="uix-mono">' + esc(cell) + '</td>';
+        if (i === 2 || i === 3 || i === 6) return '<td>' + pill(cell) + '</td>';
+        if (i === 11) return '<td class="uix-num">' + esc(cell) + '</td>';
+        return '<td>' + esc(cell) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+  })();
+
+  var shell = $('#demoShell'), main = $('#demoMain'), wrap = $('#demoWrap');
+  var prevNav = 'full';
+  var STATE_LABEL = { full: 'Full sidebar', rail: 'Icon rail', hidden: 'Nav hidden' };
+
+  function setNav(nav) {
+    shell.setAttribute('data-nav', nav);
+    $$('#navSeg .uix-segmented__option').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-nav') === nav));
+    });
+    if (!shell.hasAttribute('data-focus')) prevNav = nav;
+    measure();
+  }
+  $$('#navSeg .uix-segmented__option').forEach(function (b) {
+    b.addEventListener('click', function () { setNav(b.getAttribute('data-nav')); });
+  });
+  $('#bleedToggle').addEventListener('change', function () {
+    if (this.checked) main.setAttribute('data-bleed', ''); else main.removeAttribute('data-bleed');
+    measure();
+  });
+  $('#freezeToggle').addEventListener('change', function () {
+    $('#demoTable').classList.toggle('uix-table--pinned-col', this.checked);
+  });
+
+  function enterFocus() {
+    shell.setAttribute('data-focus', '');
+    measure();
+  }
+  function exitFocus() {
+    shell.removeAttribute('data-focus');
+    setNav(prevNav);
+  }
+  $('#focusBtn').addEventListener('click', enterFocus);
+  $('#focusBtnInline').addEventListener('click', enterFocus);
+  $('#exitFocus').addEventListener('click', exitFocus);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && shell.hasAttribute('data-focus')) exitFocus();
+  });
+
+  function measure() {
+    // width of the actual table viewport (the scroll container)
+    var w = wrap ? Math.round(wrap.getBoundingClientRect().width) : 0;
+    // baseline = full sidebar, padded, measured once
+    if (!measure.base || shell.getAttribute('data-nav') === 'full' && !shell.hasAttribute('data-focus') && !main.hasAttribute('data-bleed')) {
+      if (!measure.base) measure.base = w;
+    }
+    $('#mWidth').textContent = w + ' px';
+    var gain = w - (measure.base || w);
+    $('#mGain').textContent = (gain > 0 ? '+' : '') + gain + ' px';
+    $('#mGain').className = gain > 0 ? 'up' : '';
+    var state = shell.hasAttribute('data-focus') ? 'Focus mode (immersive)' : STATE_LABEL[shell.getAttribute('data-nav')];
+    if (main.hasAttribute('data-bleed') && !shell.hasAttribute('data-focus')) state += ' · full-bleed';
+    $('#mState').textContent = state;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // establish baseline at full width, then measure on resize
+  window.addEventListener('resize', measure);
+  // let layout settle, capture baseline, then reflect current controls
+  requestAnimationFrame(function () {
+    measure.base = Math.round(wrap.getBoundingClientRect().width);
+    measure();
+  });
+})();
+</script>
+</body>
+</html>
