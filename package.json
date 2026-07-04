@@ -4,16 +4,25 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "description": "House design system: @uix/tokens npm package + @uix shadcn composite registry. See README.md.",
+  "license": "MIT",
   "scripts": {
     "build:tokens": "node packages/tokens/scripts/build.mjs",
     "build:registry": "shadcn build registry/registry.json --output dist/r && node scripts/stamp-registry.mjs",
     "check:semver": "node scripts/check-token-semver.mjs",
+    "check:migrations": "node scripts/check-migrations.mjs",
     "check:purity": "node scripts/check-purity.mjs",
+    "check:isolation": "node scripts/check-isolation.mjs",
+    "check:supply-chain": "node scripts/check-supply-chain.mjs",
+    "check:manifest": "node scripts/check-manifest.mjs",
+    "check:cost": "node scripts/check-cost.mjs",
+    "check:compliance": "node scripts/check-doc-claims.mjs",
+    "check:journey": "node scripts/uix-doctor.mjs --dir fixtures/radix-app && node scripts/uix-doctor.mjs --dir fixtures/baseui-app",
+    "check:gates": "node scripts/check-gate-consistency.mjs",
     "lint:fixtures": "node packages/tokens/bin/uix-lint-tokens.mjs fixtures/radix-app/app/globals.css --src fixtures/radix-app && node packages/tokens/bin/uix-lint-tokens.mjs fixtures/baseui-app/app/globals.css --src fixtures/baseui-app",
     "lint:themes": "node scripts/lint-themes.mjs",
     "lint:registry": "node packages/tokens/bin/uix-lint-tokens.mjs --src registry/uix --strict-vars",
     "test:lint-self": "node scripts/test-lint-tokens.mjs",
-    "check": "pnpm build:tokens && pnpm check:semver && pnpm test:lint-self && pnpm lint:themes && pnpm check:purity && pnpm lint:registry && pnpm build:registry && node scripts/copy-to-fixtures.mjs && pnpm -r --filter \"./fixtures/*\" build && pnpm lint:fixtures && node scripts/check-emission.mjs"
+    "check": "pnpm build:tokens && pnpm check:semver && pnpm check:migrations && pnpm test:lint-self && pnpm lint:themes && pnpm check:purity && pnpm lint:registry && pnpm check:isolation && pnpm check:supply-chain && pnpm check:manifest && pnpm check:cost && pnpm check:compliance && pnpm check:journey && pnpm check:gates && pnpm build:registry && node scripts/copy-to-fixtures.mjs && pnpm -r --filter \"./fixtures/*\" build && pnpm lint:fixtures && node scripts/check-emission.mjs"
   },
   "engines": {
     "node": ">=22",

@@ -85,6 +85,16 @@ Mechanics:
 | primitives-purity + import bans | UIx registry CI | composites coupling to a primitive base or a Next version |
 | dual-fixture build + emission gate | UIx registry CI | base-specific API breakage; silently-unemitted classes |
 | drift lint | every consumer CI | silent forks — vendored `components/uix/*` must hash-match the add-time record **or** carry a `// uix-fork: <reason>` header |
+| `check:manifest` | UIx registry CI | manifest drift — a `registry.json` path with no file, an orphan component file, a dangling `@uix/*` dep, or a prose count (items/files/tokens) that no longer matches reality |
+| `check:isolation` | UIx registry CI | host / cross-consumer bleed — a composite that *defines* a `--uix-*` token, writes a host global, keeps SSR module-state, or ships a global CSS selector |
+| `check:supply-chain` | UIx registry CI | dangerous sinks in vendored code (`dangerouslySetInnerHTML`, `eval`, node builtins, network I/O), `eval`/`new Function` in tooling, secret-shaped literals (Dependabot keeps deps current) |
+| `check:migrations` | UIx registry CI | a breaking (major) token bump shipping without a `MIGRATIONS.md` entry + recovery runbook |
+| `check:compliance` | UIx registry CI | a missing/`UNLICENSED` license, missing `THIRD_PARTY.md`, or a doc naming a gate artifact that doesn't exist (an enforcement claim with no gate) |
+| `check:cost` | UIx registry CI | a registry item whose transitive consumer footprint (files / npm-deps / LOC) exceeds `cost-budget.json` |
+| `check:journey` | UIx registry CI | the documented consumer wiring silently rotting — `uix-doctor` validates both fixtures' `globals.css` imports/order/fence + `@uix/tokens` dep |
+| `check:gates` | UIx registry CI | a decorative/orphan gate (a `check-*`/`lint-*` script not wired into `pnpm check`) or CI running a subset instead of `pnpm check` |
+
+> The bottom eight rows are the **production-readiness** gates (the `RDY-*` owner-slices) — one per cross-cutting layer, each wired into `pnpm check`. The full layer coverage map, deferred layers, and the cut-over gate live in **[`READINESS.md`](READINESS.md)**.
 
 ## How to use it
 
@@ -195,6 +205,7 @@ UIx\
 │   ├── tokens.json           single source; scripts\build.mjs emits the rest
 │   ├── tokens.css shadcn-bridge.css tailwind.css theme-contract.json   (generated)
 │   ├── themes\_template.css  theme-overlay starting point (per-product brands)
+│   ├── LICENSE               MIT (ships with the published package)
 │   └── bin\uix-lint-tokens.mjs
 ├── registry\
 │   ├── registry.json         shadcn build manifest (20 items, 22 component files)
@@ -202,11 +213,17 @@ UIx\
 ├── fixtures\
 │   ├── radix-app\            Next 15 + [data-theme] dark, house-default theme (mirrors ITSMx)
 │   └── baseui-app\           Next 16 + .dark, DASHx-brand override block      (mirrors DASHx)
-├── scripts\                  check-token-semver, check-purity, check-emission,
-│                             copy-to-fixtures, uix-diff, serve-registry,
-│                             stamp-registry, lint-themes, test-lint-tokens
+├── scripts\                  check-token-semver, check-purity, check-emission, copy-to-fixtures,
+│                             uix-diff, serve-registry, stamp-registry, lint-themes, test-lint-tokens,
+│                             + readiness gates: check-manifest, check-isolation, check-supply-chain,
+│                             check-migrations, check-doc-claims, check-cost, check-gate-consistency, uix-doctor
+├── READINESS.md              production-readiness layer map + the RDY-* owner-slices (lesson 21)
+├── MIGRATIONS.md             token-migration log + consumer recovery runbook
+├── THIRD_PARTY.md  LICENSE   attribution/provenance + MIT license
+├── cost-budget.json          per-item consumer-footprint budget (check:cost)
 ├── contract-snapshot.json    contract as of last published version (semver gate)
 ├── .github\workflows\ci.yml  runs `pnpm check` (the full gate chain)
+├── .github\dependabot.yml    weekly npm + actions dependency updates
 └── dist\r\                   built registry JSON (gitignored; rebuild via pnpm build:registry)
 ```
 
@@ -216,12 +233,15 @@ Registry hosting: `node scripts/serve-registry.mjs` serves `dist/r` on `http://1
 
 1. **Phase 0 — build this repo. ✅ DONE 2026-06-10** (npm publish pending scope claim). Token values lifted from `design-system.md`; 15 registry items seeded from `packages/shared/ui` (zero skips; command-palette/cheat-sheet decoupled from `@itsmx/shared-keyboard` via props; the 16th item, `@uix/types`, landed in Phase 2a); fixtures + full gate chain green (`pnpm check`); the L47-critical `@import` from pnpm-symlinked `node_modules` on Windows **verified**, and the HTTP-namespace `shadcn add` consumption path **verified** end-to-end.
 2. **Phase 0.5 + build-out — audit fixes and hardening. ✅ DONE 2026-06-10** (same-day audit → fix; see `AUDIT.md`). All 17 ported composites re-wired from the legacy ITSMx token dialect onto the contract, with the gate hole closed (`lint:registry` / broadened `lint:fixtures`: triplet ban, unknown-var, write-only-slot checks). Token layer v1.0.0: brand slot tier + status `*-fg` tokens + theme overlays → 67 tokens. Drift hardening: commit-based registry stamps + `uix-diff --max-age-days`, exact dependency pins. Five new items (`toast`, `status-pill`, `stat-tile`, `app-shell`, `types`) plus form field kinds and data-table pagination/row-selection/sticky header → 20 items.
-3. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
-4. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--uix-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
-5. **ITSMx composite flip — only after the autonomous build completes.** Until then, UIx treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.
+3. **Production-readiness pass — `RDY-*` owner-slices. ✅ DONE 2026-07-04.** Retrofitted the lesson-21 readiness block ([`READINESS.md`](READINESS.md)) onto UIx: eight new pure-node gates wired into `pnpm check`, one per cross-cutting layer — `check:manifest` (hygiene/anti-drift), `check:isolation` (host/cross-consumer bleed), `check:supply-chain` (dangerous sinks + secrets, + Dependabot), `check:migrations` (+ `MIGRATIONS.md` recovery runbook), `check:compliance` (+ MIT `LICENSE` + `THIRD_PARTY.md`), `check:cost` (+ `cost-budget.json`), `check:gates` (no decorative/orphan gate), `check:journey` (`uix-doctor` validating both fixtures). Deferred layers (identity, availability, AI-safety) carry explicit `deferred-until` triggers; cut-over stays blocked on the aggregate `pnpm check`.
+4. **DASHx — one PR.** Replace its hand-copied token blocks with the imports + a brand layer (blue accent, Apple-ish status colors as explicit overrides). Keeps Base UI, `.dark`, next-themes. Visual diff ≈ zero.
+5. **ITSMx — globals-only PR, safe mid-autonomous-build.** Import tokens, alias local names (`--bg-app: var(--uix-bg-app)`), convert RGB-triplet legacy. Zero component files touched; one normal 6-gate merge.
+6. **ITSMx composite flip — only after the autonomous build completes.** Until then, UIx treats `@itsmx/shared-ui` as upstream donor (composite fixes are copied to both places during the bounded interim). Afterwards `packages/shared/ui` and its `@source` line retire.
 
 ## References
 
+- [`READINESS.md`](READINESS.md) · [`MIGRATIONS.md`](MIGRATIONS.md) · [`THIRD_PARTY.md`](THIRD_PARTY.md) — the production-readiness layer map, the token-migration/recovery runbook, and third-party attribution.
 - [`ITSMx/Docs/design-system.md`](../ITSMx/Docs/design-system.md) — the value donor; becomes prose rationale pointing at the token contract once Phase 0 lands.
 - `D:\Development\Docs\adr\0004-hx-design-system.md` — the ADR freezing the one-way doors: `--uix-*` contract names, the `@uix` scope/namespace, the semver law.
-- `D:\Development\ai-engineering-lessons.md` — Law 1 (gates) and the multi-client token-rename law this design mechanizes; L47 is in ITSMx `Docs/lessons-learned.md`.
+- `D:\Development\Docs\adr\0005-production-readiness-layer-model.md` + `Docs\lessons\21-production-readiness-layers.md` — the readiness-layer model the `RDY-*` slices retrofit.
+- `D:\Development\Docs\ai-engineering-lessons.md` — Law 1 (gates) and the multi-client token-rename law this design mechanizes; L47 is in ITSMx `Docs/lessons-learned.md`.

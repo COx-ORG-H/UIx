@@ -1,0 +1,41 @@
+# RDY-HARDEN-01 — dependency-update automation.
+# Drift is UIx's disqualifying failure mode (README §"Solo maintenance"): a
+# publish/CI toolchain that breaks hard when ignored for months is out. Keeping
+# npm + Actions deps current, in small reviewable PRs, is the counter-measure.
+version: 2
+updates:
+  # Root workspace (the shadcn build CLI + any dev tooling).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns: ["*"]
+
+  # Token package (published to npm — its deps reach consumers).
+  - package-ecosystem: npm
+    directory: /packages/tokens
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Both CI fixtures — they pin the exact React/Next/Tailwind matrix the
+  # dual-fixture build proves against; keep them from silently aging out.
+  - package-ecosystem: npm
+    directory: /fixtures/radix-app
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+  - package-ecosystem: npm
+    directory: /fixtures/baseui-app
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  # GitHub Actions used by ci.yml (checkout, setup-node, pnpm, upload-artifact).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

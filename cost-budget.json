@@ -1,0 +1,7 @@
+{
+  "_comment": "RDY-COST-01 — per-item consumer install-footprint budget (readiness layer 11). Baselines from `node scripts/check-cost.mjs --report`, with headroom to catch a significant balloon (AUDIT §5.7: one small item pulling in a whole chain) without tripping on routine growth. Overrides MERGE over default. Raise a number only DELIBERATELY, when a chain legitimately grew — the diff is the alarm.",
+  "default": { "maxFiles": 5, "maxNpmDeps": 6, "maxLoc": 1200 },
+  "overrides": {
+    "data-table": { "maxFiles": 9, "maxLoc": 2600 }
+  }
+}
