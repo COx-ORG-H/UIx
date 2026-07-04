@@ -24,6 +24,18 @@
       "manualSR": null
     }
   },
+  "breadcrumb-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "breadcrumbs": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "bulk-bar": {
     "status": "draft",
     "a11y": {
@@ -150,6 +162,12 @@
       "manualSR": null
     }
   },
+  "heartbeat": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "highlighted": {
     "status": "draft",
     "a11y": {
@@ -205,6 +223,12 @@
     }
   },
   "kanban-column": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "kbd": {
     "status": "draft",
     "a11y": {
       "manualSR": null
@@ -372,6 +396,12 @@
       "manualSR": null
     }
   },
+  "sla": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "spinner": {
     "status": "draft",
     "a11y": {
@@ -391,6 +421,18 @@
     }
   },
   "status-pill": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "step": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "steps": {
     "status": "draft",
     "a11y": {
       "manualSR": null

@@ -1165,6 +1165,53 @@
           </div>
         </div>
       </section>
+
+      <!-- BREADTH-2 · wrapper batch A: breadcrumbs · kbd · steps · sla · heartbeat -->
+      <section id="breadth-batch-a" class="uix-guide__section" style="border-bottom:0">
+        <h2>Wrapper batch A</h2>
+        <p class="lead">Presentational components newly wrapped in <code class="uix-code">@tensor_1/react</code> (BREADTH-2): a breadcrumb trail, keyboard chips, a step track, an SLA indicator, and a live heartbeat — each a thin wrapper over the classes below.</p>
+
+        <div class="uix-guide__subhead">Breadcrumbs</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
+          <nav class="uix-breadcrumbs" aria-label="Breadcrumb">
+            <a href="#breadth-batch-a">Home</a>
+            <span class="uix-breadcrumbs__sep" aria-hidden="true">/</span>
+            <a href="#breadth-batch-a">Tickets</a>
+            <span class="uix-breadcrumbs__sep" aria-hidden="true">/</span>
+            <span aria-current="page">INC-2043</span>
+          </nav>
+        </div>
+
+        <div class="uix-guide__subhead">Keyboard chips</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);align-items:center">
+          <span>Press <span class="uix-kbd">⌘</span><span class="uix-kbd">K</span> to search, <span class="uix-kbd">Esc</span> to close.</span>
+        </div>
+
+        <div class="uix-guide__subhead">Steps</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
+          <div class="uix-steps">
+            <div class="uix-step" data-state="done"><span class="uix-step__marker">✓</span><span class="uix-step__label">Triage</span></div>
+            <span class="uix-step__connector" aria-hidden="true"></span>
+            <div class="uix-step" data-state="active"><span class="uix-step__marker">2</span><span class="uix-step__label">Investigate</span></div>
+            <span class="uix-step__connector" aria-hidden="true"></span>
+            <div class="uix-step"><span class="uix-step__marker">3</span><span class="uix-step__label">Resolve</span></div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">SLA indicator</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:22px;align-items:center">
+          <span class="uix-sla" data-state="ok"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>4h left</span>
+          <span class="uix-sla" data-state="at-risk"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>30m left</span>
+          <span class="uix-sla" data-state="breach"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Breached</span>
+        </div>
+
+        <div class="uix-guide__subhead">Heartbeat</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:22px;align-items:center">
+          <span class="uix-live"><span class="uix-heartbeat"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Operational</span>
+          <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--warning"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Degraded</span>
+          <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--danger"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Down</span>
+        </div>
+      </section>
     </main>
   </div>
 

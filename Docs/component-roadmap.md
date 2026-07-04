@@ -33,7 +33,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Attachment | attachment.css | absent | Planned | no | Planned wrapper (presentational). |
 | AuditLog | audit-log.css | absent | Planned | no | Planned wrapper (presentational). |
 | Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. |
-| Breadcrumbs | breadcrumbs.css | absent | Planned | no | Planned wrapper (presentational). |
+| Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Alpha | no | Also `BreadcrumbItem`. Wrapper batch A (BREADTH-2). |
 | Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Card | card.css | ✓ `Card` | Stable | no | Layout container. |
@@ -49,11 +49,11 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | absent | Planned | no | Planned wrapper (presentational). |
 | Form | form.css | ✓ `Field` | Stable | no | `Field` wraps the form-row CSS; `FormGrid`/`Fieldset` still planned. |
-| Heartbeat | heartbeat.css | absent | Planned | no | Planned wrapper (presentational). |
+| Heartbeat | heartbeat.css | ✓ `Heartbeat` | Alpha | no | `HeartbeatTone`. Wrapper batch A (BREADTH-2). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
-| Kbd | kbd.css | absent | Planned | no | Planned wrapper (presentational). |
+| Kbd | kbd.css | ✓ `Kbd` | Alpha | no | Keyboard-shortcut chip. Wrapper batch A (BREADTH-2). |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
 | Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
@@ -74,14 +74,14 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. Recently landed. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
 | Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also `SidebarSection`, `NavItem`, `NavGroup`, `SubNavItem`. |
-| Sla | sla.css | absent | Planned | no | Planned wrapper (presentational). |
+| Sla | sla.css | ✓ `Sla` | Alpha | no | `SlaState` (ok/at-risk/breach). Wrapper batch A (BREADTH-2). |
 | Slider | slider.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Spinner | spinner.css | ✓ `Spinner` | Stable | no | Feedback. |
 | Stat | stat-tile.css | ✓ `Stat` | Stable | no | Exported as `Stat` (`StatTrend`). |
 | States | states.css | ✓ `EmptyState` | Stable | no | Also `ErrorState`, `Skeleton`, `LoadingState`. |
 | StatusPill | status-pill.css | ✓ `StatusPill` | Stable | no | `PillTone`, `PillTreatment`. |
 | Stepper | stepper.css | absent | Planned | no | Planned wrapper (presentational). |
-| Steps | steps.css | absent | Planned | no | Planned wrapper (presentational). |
+| Steps | steps.css | ✓ `Steps` | Alpha | no | Also `Step`, `StepState`. Wrapper batch A (BREADTH-2). |
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |
 | Table | table.css | ✓ `Table` | Stable | no | Family: `TableWrap`, `Th`, `Td`, `Tr`, `BulkBar`, `RowActions`, etc.; `useTable` + `table-engine`. |
 | TableToolbar | table-toolbar.css | n/a | Stable | no | CSS-only support surface (toolbar chrome consumed by Table); no standalone wrapper by design. |
@@ -101,7 +101,8 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 - **Composer** (`Composer`/`ComposerBar`) and the `Field`, `StarButton`, `NavFavourites` React exports have no
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
-- The **16 currently-planned wrappers** (React=absent, Maturity=Planned, presentational unless noted): breadcrumbs,
-  kbd, steps, stepper, reactions, attachment, audit-log, notification-center, pipeline, flow, sla, heartbeat, media,
-  lightbox, contact-card, view-menu. In addition, the interactive-but-unwrapped surfaces (combobox, calendar,
-  file-upload, slider, tag-input, menu) and chart are also Planned; those need real behaviour, not just a class wrapper.
+- **Presentational wrapper batches (BREADTH-2/3/4).** Batch A — now **Alpha** (`✓` above): breadcrumbs, kbd, steps,
+  sla, heartbeat. Still **Planned** (presentational, wrapped in batches B/C): stepper, reactions, attachment,
+  audit-log, notification-center, pipeline, flow, media, lightbox, contact-card, view-menu. In addition, the
+  interactive-but-unwrapped surfaces (combobox, calendar, file-upload, slider, tag-input, menu) and chart are also
+  Planned; those need real behaviour, not just a class wrapper.

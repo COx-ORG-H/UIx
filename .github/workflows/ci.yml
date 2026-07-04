@@ -56,6 +56,55 @@ jobs:
       - name: Per-consumer smoke build
         run: npm run test:smoke
 
+  size:
+    # PERF-1: published-bundle budgets. A SEPARATE job (not gates) because it needs the react
+    # workspace devDeps (size-limit) that build:all's inner `npm ci` prunes. Owns ALL size CI
+    # wiring — React budgets (test:size) AND per-CSS-file budgets (test:size:css, PERF-2).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # tokens build → build/css (test:size:css baseline); react build → dist (test:size).
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      # tsup directly (NOT build:react) so the root-hoisted size-limit isn't pruned by an inner npm ci.
+      - name: Build react (dist)
+        run: npm run build -w @tensor_1/react
+
+      - name: React bundle budgets (size-limit + no-echarts)
+        run: npm run test:size
+
+      - name: Per-CSS-file size budgets
+        run: npm run test:size:css
+
+  react-a11y:
+    # A11Y-3: jest-axe over RENDERED React components (jsdom). SEPARATE job — needs the react
+    # workspace test devDeps (vitest, @testing-library, jest-axe, react 18) that build:all's inner
+    # npm ci prunes. Vitest transforms the TSX source directly, so no build step is required.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: A11y (jest-axe) over React components
+        run: npm run test:a11y-react
+
   visual:
     # Visual regression over the static styleguide (ADR-0016 Decision 6 — S5). Runs in the
     # PINNED Playwright container so the goldens render identically wherever they are

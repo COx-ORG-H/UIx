@@ -81,6 +81,27 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 // @public
+export function BreadcrumbItem(input: BreadcrumbItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BreadcrumbItemProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+    current?: boolean;
+    href?: string;
+}
+
+// @public
+export function Breadcrumbs(input: BreadcrumbsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BreadcrumbsProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+    separator?: ReactNode;
+}
+
+// @public
 export function BulkBar(input: BulkBarProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -370,6 +391,17 @@ export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
 export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
 
 // @public
+export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface HeartbeatProps extends HTMLAttributes<HTMLSpanElement> {
+    tone?: HeartbeatTone;
+}
+
+// @public (undocumented)
+export type HeartbeatTone = 'warning' | 'danger' | 'idle';
+
+// @public
 export function Highlighted(input: HighlightedProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -483,6 +515,15 @@ export interface KanbanColumnProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 
 // @public (undocumented)
 export interface KanbanProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function Kbd(input: KbdProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface KbdProps extends HTMLAttributes<HTMLElement> {
     // (undocumented)
     children?: ReactNode;
 }
@@ -906,6 +947,20 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Sla(input: SlaProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SlaProps extends HTMLAttributes<HTMLSpanElement> {
+    // (undocumented)
+    children?: ReactNode;
+    icon?: ReactNode;
+    state?: SlaState;
+}
+
+// @public (undocumented)
+export type SlaState = 'ok' | 'at-risk' | 'breach';
+
+// @public
 export type SortDir = 'ascending' | 'descending';
 
 // @public (undocumented)
@@ -976,6 +1031,29 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     tone?: PillTone;
     treatment?: PillTreatment;
 }
+
+// @public
+export function Step(input: StepProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StepProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    marker?: ReactNode;
+    state?: StepState;
+}
+
+// @public
+export function Steps(input: StepsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StepsProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export type StepState = 'active' | 'done';
 
 // @public (undocumented)
 export function SubNavItem(input: SubNavItemProps): react.JSX.Element;

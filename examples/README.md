@@ -12,14 +12,14 @@ They all share the same isolated-tarball harness, copied verbatim from
 
 ## Examples
 
-| Example                        | Slice | Consumption mode                                   | Smoke check                        |
-| ------------------------------ | ----- | -------------------------------------------------- | ---------------------------------- |
+| Example                        | Slice | Consumption mode                                   | Smoke check                          |
+| ------------------------------ | ----- | -------------------------------------------------- | ------------------------------------ |
 | [`plain-css/`](./plain-css/)   | FR-2  | Static HTML, no bundler — `<link>` the shipped CSS | `node examples/plain-css/verify.mjs` |
+| [`tailwind/`](./tailwind/)     | FR-3  | Tailwind v4 — `--uix-*` tokens as utilities        | `node examples/tailwind/verify.mjs`  |
+| [`ts/`](./ts/)                 | FR-4  | TypeScript — typed `cssVar`/`num` from `./ts`      | `node examples/ts/verify.mjs`        |
 
 ## Coming as sibling dirs
 
-Later slices add more consumers alongside `plain-css/`, reusing this same harness:
+Later slices add more consumers alongside these, reusing this same harness:
 
-- **FR-3 — Tailwind** (`tailwind/`): consume the `@tensor_1/tokens/tailwind` theme + `tailwind/preset`.
-- **FR-4 — TypeScript** (`typescript/`): import typed constants from `@tensor_1/tokens/ts` and components from `@tensor_1/react`.
-- **FR-1 — web components** (`web-components/`): the framework-agnostic custom-elements consumer.
+- **FR-1 — web-components spike** (`wc-spike/`): a throwaway custom-element feasibility probe (Batch 6).

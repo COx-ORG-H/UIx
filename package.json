@@ -18,6 +18,8 @@
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
     "test:a11y-status": "node packages/react/scripts/check-status.mjs",
+    "test:a11y-react": "npm run test:a11y -w @tensor_1/react",
+    "test:size": "npm run size -w @tensor_1/react",
     "test:size:css": "npm run size:css -w @tensor_1/tokens",
     "serve:styleguide": "serve -l 4178 .",
     "test:visual": "playwright test tests/visual",
@@ -32,6 +34,13 @@
     "@changesets/cli": "^2.31.0",
     "@microsoft/api-extractor": "^7.58.9",
     "@playwright/test": "^1.61.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "serve": "^14.2.6"
+  },
+  "//react": "React 18.3.1 is a ROOT devDep (not used by the root itself) so the A11Y-3 jest-axe harness resolves a SINGLE React across the workspace. It satisfies @testing-library/react's ^18||^19 peer, so npm does not also pull React 19 — avoiding the two-copies 'element from an older React' render error. `overrides` alone did not hold under this npm's workspace peer auto-install.",
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

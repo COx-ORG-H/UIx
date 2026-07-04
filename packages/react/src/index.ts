@@ -162,3 +162,15 @@ export type { KanbanProps, KanbanColumnProps, KanbanCardProps } from './componen
 
 export { Tree } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.js';
+
+// --- breadth batch A ---
+export { Breadcrumbs, BreadcrumbItem } from './components/Breadcrumbs.js';
+export type { BreadcrumbsProps, BreadcrumbItemProps } from './components/Breadcrumbs.js';
+export { Kbd } from './components/Kbd.js';
+export type { KbdProps } from './components/Kbd.js';
+export { Steps, Step } from './components/Steps.js';
+export type { StepsProps, StepProps, StepState } from './components/Steps.js';
+export { Sla } from './components/Sla.js';
+export type { SlaProps, SlaState } from './components/Sla.js';
+export { Heartbeat } from './components/Heartbeat.js';
+export type { HeartbeatProps, HeartbeatTone } from './components/Heartbeat.js';

@@ -32,17 +32,35 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test",
+    "test:a11y": "vitest run",
+    "size": "node scripts/check-no-echarts.mjs && size-limit"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
+  "//overrides": "Pin the a11y test toolchain to a single React (18.3.1). Without this, @testing-library/react auto-installs its peer React 19 while our devDep is 18 → two copies → 'element from an older React' render error. Applies when packages/react is installed standalone (build:react / the react-a11y CI job).",
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "12.1.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "@types/jest-axe": "3.5.9",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "echarts": "^5.6.0",
+    "jest-axe": "10.0.0",
+    "jsdom": "29.1.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "size-limit": "12.1.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "4.1.9"
   }
 }

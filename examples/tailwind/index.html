@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UIx × Tailwind — FR-3</title>
+  <!-- built by `npm run build` (tailwindcss -i src/input.css -o dist/output.css) -->
+  <link rel="stylesheet" href="dist/output.css">
+</head>
+<body class="bg-uix-bg-app text-uix-text">
+  <main style="max-width:640px;margin:40px auto;padding:24px">
+    <h1 class="text-uix-accent">UIx tokens as Tailwind utilities</h1>
+    <p class="text-uix-text-muted">
+      These utilities exist only because <code>@tensor_1/tokens/tailwind</code> registered the
+      <code>--uix-*</code> tokens in Tailwind's <code>@theme</code>.
+    </p>
+    <div class="bg-uix-accent rounded-uix-md" style="padding:16px;color:var(--uix-accent-fg);margin:16px 0">
+      <code>bg-uix-accent</code> · <code>rounded-uix-md</code>
+    </div>
+    <button class="uix-btn uix-btn--primary">A .uix-* component class still works too</button>
+  </main>
+</body>
+</html>
