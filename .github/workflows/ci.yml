@@ -48,6 +48,11 @@ jobs:
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
+      # A11Y-2: every exported React component carries a maturity status (draft|beta|stable);
+      # "stable" requires a committed manual-SR result. Mirrored to publishing via release.yml (GOV-6).
+      - name: Component maturity status
+        run: npm run test:a11y-status
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 

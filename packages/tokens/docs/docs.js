@@ -67,6 +67,35 @@ export const renderPropsTable = (props = []) => {
   return `<table class="uix-table">${head}<tbody>${rows}</tbody></table>`;
 };
 
+/** Escape, then promote `inline code` spans to <code>. Safe: esc runs first, and backticks
+ *  are not among the escaped characters, so the span regex only ever sees first-party text. */
+export const inlineCode = (s) =>
+  esc(s).replace(/`([^`]+)`/g, '<code class="uix-code">$1</code>');
+
+/** Map api.md props ({ name, type, optional }) into renderPropsTable's shape (required = !optional). */
+export const apiToTableProps = (props = []) =>
+  (Array.isArray(props) ? props : []).map((p) => ({
+    name: p.name,
+    type: p.type,
+    required: !p.optional,
+  }));
+
+/** Render a bulleted list from string items (inline code honoured). Empty list → ''. */
+export const renderList = (items = [], className = 'uix-docs__list') =>
+  Array.isArray(items) && items.length
+    ? `<ul class="${esc(className)}">${items.map((i) => `<li>${inlineCode(i)}</li>`).join('')}</ul>`
+    : '';
+
+/** The srcdoc for an isolated live-example frame in a forced theme. Loads the REAL main.css
+ *  (relative to the explorer page) so the frame themes from the same --uix-* contract — no
+ *  token values are duplicated here. `theme` scopes the :root dark selector inside the frame. */
+export const frameDoc = (html, theme) =>
+  '<!doctype html><html lang="en" data-theme="' + esc(theme) + '"><head><meta charset="utf-8">' +
+  '<link rel="stylesheet" href="../styles/main.css">' +
+  '<style>html,body{margin:0}body{padding:20px;background:var(--uix-bg-app);color:var(--uix-text);' +
+  'font-family:var(--uix-font-sans,system-ui,sans-serif)}</style></head><body>' +
+  String(html == null ? '' : html) + '</body></html>';
+
 /* ----------------------------------------------------------------------------
  * DOM wiring (browser only) — guarded exactly like guide/app.js
  * --------------------------------------------------------------------------*/
@@ -131,22 +160,127 @@ if (typeof document !== 'undefined') {
       .join('');
   };
 
-  // ---- title the current page from the hash (regions themselves stay empty) ----
-  const paintTitle = () => {
+  // ---- data: the api-extractor-derived props index (fetched once, then cached) ----
+  let componentsIndex = null; // { <slug>: component }
+  const loadIndex = async () => {
+    if (componentsIndex) return componentsIndex;
+    componentsIndex = {};
+    try {
+      const res = await fetch('data/components.json', { cache: 'no-cache' });
+      if (res.ok) {
+        const data = await res.json();
+        for (const c of data.components || []) componentsIndex[c.slug] = c;
+      }
+    } catch (_) { /* degrade to props-less pages */ }
+    return componentsIndex;
+  };
+  const loadContent = async (slug) => {
+    try {
+      const res = await fetch(`content/${slug}.json`, { cache: 'no-cache' });
+      return res.ok ? await res.json() : null;
+    } catch (_) { return null; }
+  };
+
+  const fillRegion = (name, html) => {
+    const el = document.querySelector(`[data-region="${name}"]`);
+    if (el) el.innerHTML = html || '';
+  };
+
+  // Two isolated frames (light + dark) rendering the same example markup. srcdoc is set as a
+  // property (not an attribute) so the markup needs no double-escaping; each frame auto-sizes on load.
+  const renderLiveExample = (slug, html) => {
+    if (!html) { fillRegion('live-example', ''); return; }
+    fillRegion(
+      'live-example',
+      '<h2 class="uix-docs__h2">Live example</h2>' +
+        '<div class="uix-docs__previews">' +
+        ['light', 'dark']
+          .map(
+            (theme) =>
+              `<figure class="uix-docs__preview"><figcaption class="uix-docs__preview-cap">${esc(theme)}</figcaption>` +
+              `<iframe class="uix-docs__frame" data-theme-frame="${esc(theme)}" title="${esc(slug)} example — ${esc(theme)} theme" loading="lazy"></iframe></figure>`
+          )
+          .join('') +
+        '</div>'
+    );
+    document.querySelectorAll('[data-region="live-example"] .uix-docs__frame').forEach((frame) => {
+      const theme = frame.getAttribute('data-theme-frame');
+      frame.addEventListener('load', () => {
+        try {
+          const h = frame.contentDocument.body.scrollHeight;
+          if (h) frame.style.height = h + 'px';
+        } catch (_) { /* cross-origin guard — never trips for srcdoc */ }
+      });
+      frame.srcdoc = frameDoc(html, theme);
+    });
+  };
+
+  const renderPropsRegion = (comp) => {
+    if (!comp) { fillRegion('props-table', ''); return; }
+    const extendsNote = comp.extends
+      ? `<p class="uix-docs__note">Also accepts every attribute of <code class="uix-code">${esc(comp.extends)}</code>.</p>`
+      : '';
+    fillRegion(
+      'props-table',
+      '<h2 class="uix-docs__h2">Props</h2>' + renderPropsTable(apiToTableProps(comp.props)) + extendsNote
+    );
+  };
+
+  const renderDoDont = (content) => {
+    if (!content || (!content.do?.length && !content.dont?.length)) { fillRegion('do-dont', ''); return; }
+    fillRegion(
+      'do-dont',
+      '<h2 class="uix-docs__h2">Do &amp; don’t</h2><div class="uix-docs__dodont">' +
+        `<div class="uix-docs__do"><h3 class="uix-docs__h3">Do</h3>${renderList(content.do)}</div>` +
+        `<div class="uix-docs__dont"><h3 class="uix-docs__h3">Don’t</h3>${renderList(content.dont)}</div>` +
+        '</div>'
+    );
+  };
+
+  const renderOverview = (name, content) => {
+    let html = '';
+    if (content?.overview) html += `<p class="uix-docs__lede">${inlineCode(content.overview)}</p>`;
+    if (content?.whenToUse?.length) {
+      html += '<h2 class="uix-docs__h2">When to use</h2>' + renderList(content.whenToUse);
+    }
+    if (!html) html = `<p class="uix-docs__empty">Documentation for ${esc(name)} is coming soon.</p>`;
+    fillRegion('overview', html);
+  };
+
+  const renderA11y = (content) => {
+    if (!content?.a11yNotes?.length) { fillRegion('a11y-notes', ''); return; }
+    fillRegion('a11y-notes', '<h2 class="uix-docs__h2">Accessibility</h2>' + renderList(content.a11yNotes));
+  };
+
+  // ---- render the current page from the hash: title + all five regions ----
+  const renderPage = async () => {
     const items = componentNav(COMPONENTS);
     const slug = location.hash.replace(/^#/, '') || items[0]?.slug;
     const match = items.find((it) => it.slug === slug) || items[0];
+    const name = match ? match.name : 'Component';
     const titleEl = document.querySelector('[data-uix-docs-title]');
-    if (titleEl && match) titleEl.textContent = match.name;
+    if (titleEl) titleEl.textContent = name;
     document.querySelectorAll('[data-uix-docs-nav] .uix-docs__navlink').forEach((a) =>
       a.toggleAttribute('aria-current', a.dataset.slug === (match && match.slug)));
+
+    const index = await loadIndex();
+    const comp = index[slug] || null;
+    const content = await loadContent(slug);
+    // guard against a race where the hash changed while awaiting
+    if ((location.hash.replace(/^#/, '') || items[0]?.slug) !== slug) return;
+    renderOverview(name, content);
+    renderLiveExample(slug, content?.liveExampleHtml);
+    renderPropsRegion(comp);
+    renderDoDont(content);
+    renderA11y(content);
+    document.querySelector('.uix-docs__region[data-region="overview"]')?.scrollIntoView?.({ block: 'nearest' });
   };
 
   const init = () => {
     paintToggle();
     buildNav();
-    paintTitle();
-    window.addEventListener('hashchange', paintTitle);
+    renderPage();
+    window.addEventListener('hashchange', renderPage);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

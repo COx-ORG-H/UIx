@@ -17,6 +17,7 @@
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
+    "test:a11y-status": "node packages/react/scripts/check-status.mjs",
     "test:size:css": "npm run size:css -w @tensor_1/tokens",
     "serve:styleguide": "serve -l 4178 .",
     "test:visual": "playwright test tests/visual",

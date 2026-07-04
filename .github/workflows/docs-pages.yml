@@ -1,0 +1,69 @@
+name: Docs (GitHub Pages)
+
+# DOCS-5 — publish the build-free component explorer to GitHub Pages. STANDALONE workflow
+# (not wired into ci.yml / release.yml): docs are a static, no-token surface, so a failed
+# deploy never blocks a PR merge or a package publish.
+#
+# The artifact root is packages/tokens/, so:
+#   - the site root serves the styleguide (packages/tokens/index.html)
+#   - /docs/explorer.html serves the component docs (the DOCS landing page)
+# explorer.html uses only RELATIVE asset paths (../styles/main.css, docs.css, data/…, content/…),
+# which are GitHub-Pages-base-safe under the /<repo>/ path prefix — no absolute URLs to rewrite.
+#
+# MANUAL PREREQUISITE (an agent cannot flip this): Settings → Pages → Build and deployment →
+# Source = "GitHub Actions". Until that is enabled, the deploy step is a no-op/failure but the
+# build step still proves the site assembles.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Least-privilege, scoped to this workflow only (does not touch ci.yml's contents:read default).
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deployment; don't cancel a running publish for a newer commit.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # Regenerate the styleguide CSS the explorer + index.html render against.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      # Regenerate docs/data/components.json from the committed api-extractor report.
+      - name: Build docs index
+        run: npm run docs:build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/tokens
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

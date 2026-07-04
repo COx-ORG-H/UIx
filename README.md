@@ -23,6 +23,22 @@ npx serve .
 
 No build step.
 
+## Documentation site
+
+A build-free **component explorer** (per-component pages: overview, live example in light + dark,
+props table derived from the shipped types, do/don't, and accessibility notes) is published to
+GitHub Pages:
+
+**<https://harisxdizdarevic.github.io/UIx/docs/explorer.html>**
+
+It is deployed by [`.github/workflows/docs-pages.yml`](.github/workflows/docs-pages.yml) on every push
+to `master`. Locally, serve the repo and open `packages/tokens/docs/explorer.html`. The props tables
+are generated from `packages/react/etc/uix-react.api.md` via `npm run docs:build -w @tensor_1/tokens`,
+so they stay in lockstep with the public API.
+
+> First-time setup (one-off, repo admin): **Settings → Pages → Source = "GitHub Actions"** to enable
+> the deployment.
+
 ## Use it in a project
 
 Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind

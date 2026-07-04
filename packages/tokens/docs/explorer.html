@@ -26,6 +26,14 @@
     <!-- left: component nav -->
     <nav class="uix-docs__nav" aria-label="Components">
       <div class="uix-docs__brand">UIx <small>docs</small></div>
+      <!-- DOCS-3: client-side component search (dedicated region; wired by search.js) -->
+      <header class="uix-docs__search" data-uix-docs-search>
+        <label class="uix-docs__search-label" for="uix-docs-search-input">Search components</label>
+        <input id="uix-docs-search-input" class="uix-docs__search-input" type="search"
+               placeholder="Search…  (press /)" autocomplete="off" spellcheck="false"
+               aria-describedby="uix-docs-search-hint">
+        <p id="uix-docs-search-hint" class="uix-docs__search-hint">Enter opens the top match · Esc clears</p>
+      </header>
       <div data-uix-docs-nav></div>
     </nav>
 
@@ -48,5 +56,6 @@
   </div>
 
   <script type="module" src="docs.js"></script>
+  <script type="module" src="search.js"></script>
 </body>
 </html>

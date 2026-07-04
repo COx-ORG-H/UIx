@@ -1,0 +1,28 @@
+{
+  "overview": "The table presents dense, scannable rows of structured records. It layers class-driven column sizing (--fixed layout with width tiers and a flexing/truncating column) and optional treatments — zebra striping, a pinned first column, and row peeking — on top of a semantic <table>. Wrap it in .uix-table-wrap to get the scroll container and sticky header.",
+  "whenToUse": [
+    "Use a table when users compare records field-by-field across many rows.",
+    "Use `fixed` layout with the width-tier classes so columns stay aligned as content changes.",
+    "Use `zebra` striping for wide tables where the eye needs help tracking a row across columns.",
+    "Use a pinned first column when the identifier must stay visible during horizontal scroll."
+  ],
+  "do": [
+    "Give every column a <th scope=\"col\"> so screen readers announce the header with each cell.",
+    "Let one content column flex-and-truncate; snap the rest to width tiers rather than hand-coding px.",
+    "Keep numeric columns right-aligned and consistent in precision for easy scanning.",
+    "Wrap the table in .uix-table-wrap so the header stays sticky and horizontal scroll is contained."
+  ],
+  "dont": [
+    "Don't use a table purely for visual layout — it changes the semantics for assistive tech.",
+    "Don't omit column headers or use presentational <div>s where <th>/<td> belong.",
+    "Don't pack interactive controls into cells without a discernible accessible name.",
+    "Don't set fixed pixel widths inline when a width-tier class expresses the same intent."
+  ],
+  "a11yNotes": [
+    "Built on a real <table> with <thead>/<tbody> and scoped <th>, so row/column relationships are exposed natively.",
+    "The sticky header keeps column context in view while scrolling long tables.",
+    "Interactive cell affordances (row actions, pin) carry aria-labels since their glyphs have no text.",
+    "Truncated cells keep their full value in the accessible name; visual clipping is not data loss."
+  ],
+  "liveExampleHtml": "<div class=\"uix-table-wrap\" style=\"max-height:none\"><table class=\"uix-table uix-table--fixed\"><thead><tr><th scope=\"col\" class=\"uix-col--w-sm\">ID</th><th scope=\"col\" class=\"uix-col--flex\">Subject</th><th scope=\"col\" class=\"uix-col--w-md\">Status</th><th scope=\"col\" class=\"uix-col--w-md\">Priority</th></tr></thead><tbody><tr><td>INC-2043</td><td class=\"uix-col--truncate\">VPN disconnects randomly for remote staff</td><td><span class=\"uix-pill uix-pill--info\"><span class=\"uix-pill__dot\"></span>Open</span></td><td><span class=\"uix-pill uix-pill--danger\">Critical</span></td></tr><tr><td>REQ-1188</td><td class=\"uix-col--truncate\">New laptop request for onboarding hire</td><td><span class=\"uix-pill uix-pill--warning\"><span class=\"uix-pill__dot\"></span>In progress</span></td><td><span class=\"uix-pill uix-pill--neutral\">Medium</span></td></tr><tr><td>INC-2050</td><td class=\"uix-col--truncate\">Printer offline on the third floor</td><td><span class=\"uix-pill uix-pill--success\"><span class=\"uix-pill__dot\"></span>Resolved</span></td><td><span class=\"uix-pill uix-pill--neutral\">Low</span></td></tr></tbody></table></div>"
+}
