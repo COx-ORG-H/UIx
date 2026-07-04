@@ -66,6 +66,11 @@ jobs:
       - name: Docs coverage
         run: npm run test:docs
 
+      # FR-5: each consumer example (plain-css, tailwind, ts) packs the package to a tarball and
+      # installs it into an isolated consumer — proving the published exports actually resolve.
+      - name: Consumer examples
+        run: npm run test:examples
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 

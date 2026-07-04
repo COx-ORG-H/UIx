@@ -19,6 +19,8 @@
     "test:smoke": "node tests/smoke-consumer/run.mjs",
     "test:registry": "node packages/tokens/scripts/check-registry.mjs",
     "test:docs": "npm run test:docs -w @tensor_1/tokens",
+    "test:examples": "node examples/verify-all.mjs",
+    "test:registry:consumer": "node tests/registry-consumer/run.mjs",
     "test:a11y-status": "node packages/react/scripts/check-status.mjs",
     "test:a11y-react": "npm run test:a11y -w @tensor_1/react",
     "test:size": "npm run size -w @tensor_1/react",

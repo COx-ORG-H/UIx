@@ -1,0 +1,23 @@
+{
+  "$comment": "Scaffolded by scripts/gen-docs-content.mjs from the CSS header + api.md + design-system policy (DOCS-6). Refine freely; the docs-coverage gate requires overview + do + dont + a11yNotes.",
+  "overview": "The Reaction component — a thin, typed React wrapper over the UIx `.uix-*` CSS, themed entirely by the --uix-* contract. Its props (children, count, emoji, mine) are typed against the shipped API.",
+  "whenToUse": [
+    "Reach for Reaction when you need this pattern styled from the shared token contract.",
+    "Prefer it over ad-hoc markup so brand + dark theming and accessibility stay consistent."
+  ],
+  "do": [
+    "Give Reaction a clear, action-first label (\"Save changes\", not \"OK\").",
+    "Use the maturity/variant that matches emphasis; keep one primary action per decision point.",
+    "Render a real <button> for actions so keyboard and screen-reader support come for free."
+  ],
+  "dont": [
+    "Don't rely on colour alone to signal intent; the label must also say what happens.",
+    "Don't stack competing primary actions — that reads as no emphasis.",
+    "Don't ship an icon-only control without an aria-label."
+  ],
+  "a11yNotes": [
+    "Reaction is a native <button>: Space/Enter activation, focus order, and disabled state are native.",
+    "Icon-only usages must carry an aria-label; a bare glyph has no accessible name.",
+    "The focus-visible ring is token-driven and clears the 3:1 non-text contrast minimum."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$comment": "Scaffolded by scripts/gen-docs-content.mjs from the CSS header + api.md + design-system policy (DOCS-6). Refine freely; the docs-coverage gate requires overview + do + dont + a11yNotes.",
+  "overview": "The popover — a thin, typed React wrapper over the UIx `.uix-*` CSS, themed entirely by the --uix-* contract. Its props (children, popover) are typed against the shipped API.",
+  "whenToUse": [
+    "Reach for Popover when you need popover styled from the shared token contract.",
+    "Prefer it over ad-hoc markup so brand + dark theming and accessibility stay consistent."
+  ],
+  "do": [
+    "Give Popover an accessible name (a title or aria-label) so its purpose is announced on open.",
+    "Return focus to the trigger on close, and keep focus within the surface while open.",
+    "Honour reduced-motion for the enter/exit transition (the tokens already do)."
+  ],
+  "dont": [
+    "Don't trap the user without an obvious, keyboard-reachable close (Esc + a close control).",
+    "Don't convey the only copy of critical state inside a transient surface.",
+    "Don't stack multiple overlays where one would do."
+  ],
+  "a11yNotes": [
+    "Popover should expose the correct role (dialog/tooltip/etc.) and an accessible name.",
+    "Focus is moved in on open and restored to the trigger on close.",
+    "Async or live content should be announced via an aria-live region."
+  ]
+}

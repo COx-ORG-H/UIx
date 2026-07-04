@@ -65,8 +65,11 @@ robust regardless).
 React is the canonical wrapper channel, but the `--uix-*` contract and `.uix-*` component CSS work
 in **any** stack. Two documented, gated paths (ADR-0017):
 
-- **npm import** the component CSS: `@import "@tensor_1/tokens/styles"` (or the everything-in-one
-  `@import "@tensor_1/tokens/bundle"`), after the contract + a theme.
+- **npm import** the component CSS. Two entries:
+  - `@tensor_1/tokens/bundle` — a **single file** (tokens + base + utilities + motion + components),
+    just add a theme. Simplest for a no-framework page.
+  - `@tensor_1/tokens/styles` — **components only**; pair it with `@tensor_1/tokens/css` + a theme.
+    Load order is `base → utilities → motion → components` (cascade layers make it order-robust).
 - **Copy-in a single component** via the generated, drift-gated manifest
   [`registry/registry.json`](packages/tokens/registry/registry.json) — it lists each component's CSS
   file and exact `--uix-*` dependencies. The `uix add` CLI copies one in for you:
