@@ -62,6 +62,10 @@ jobs:
       - name: Registry manifest up-to-date
         run: npm run test:registry
 
+      # DOCS-4: every exported component has a docs page or is on the shrinking allowlist (DOCS-6).
+      - name: Docs coverage
+        run: npm run test:docs
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 

@@ -32,7 +32,7 @@
     },
     {
       "name": "AppShell",
-      "slug": "appshell",
+      "slug": "app-shell",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -111,7 +111,7 @@
     },
     {
       "name": "AttachmentList",
-      "slug": "attachmentlist",
+      "slug": "attachment-list",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -123,7 +123,7 @@
     },
     {
       "name": "AuditLog",
-      "slug": "auditlog",
+      "slug": "audit-log",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -135,7 +135,7 @@
     },
     {
       "name": "AuditLogItem",
-      "slug": "auditlogitem",
+      "slug": "audit-log-item",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -194,7 +194,7 @@
     },
     {
       "name": "AvatarGroup",
-      "slug": "avatargroup",
+      "slug": "avatar-group",
       "extends": "HTMLAttributes<HTMLSpanElement>",
       "props": [
         {
@@ -206,7 +206,7 @@
     },
     {
       "name": "BreadcrumbItem",
-      "slug": "breadcrumbitem",
+      "slug": "breadcrumb-item",
       "extends": "HTMLAttributes<HTMLElement>",
       "props": [
         {
@@ -245,7 +245,7 @@
     },
     {
       "name": "BulkBar",
-      "slug": "bulkbar",
+      "slug": "bulk-bar",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -294,7 +294,7 @@
     },
     {
       "name": "ButtonGroup",
-      "slug": "buttongroup",
+      "slug": "button-group",
       "extends": null,
       "props": [
         {
@@ -343,13 +343,13 @@
     },
     {
       "name": "CellStrong",
-      "slug": "cellstrong",
+      "slug": "cell-strong",
       "extends": null,
       "props": []
     },
     {
       "name": "CellSub",
-      "slug": "cellsub",
+      "slug": "cell-sub",
       "extends": null,
       "props": []
     },
@@ -372,7 +372,7 @@
     },
     {
       "name": "CommandGroup",
-      "slug": "commandgroup",
+      "slug": "command-group",
       "extends": null,
       "props": [
         {
@@ -389,7 +389,7 @@
     },
     {
       "name": "CommandItem",
-      "slug": "commanditem",
+      "slug": "command-item",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -416,7 +416,7 @@
     },
     {
       "name": "CommandPalette",
-      "slug": "commandpalette",
+      "slug": "command-palette",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -457,7 +457,7 @@
     },
     {
       "name": "ComposerBar",
-      "slug": "composerbar",
+      "slug": "composer-bar",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -469,7 +469,7 @@
     },
     {
       "name": "ContactCard",
-      "slug": "contactcard",
+      "slug": "contact-card",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'role'>",
       "props": [
         {
@@ -506,7 +506,7 @@
     },
     {
       "name": "ContactCardStat",
-      "slug": "contactcardstat",
+      "slug": "contact-card-stat",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -528,7 +528,7 @@
     },
     {
       "name": "DescriptionItem",
-      "slug": "descriptionitem",
+      "slug": "description-item",
       "extends": null,
       "props": [
         {
@@ -545,7 +545,7 @@
     },
     {
       "name": "DescriptionList",
-      "slug": "descriptionlist",
+      "slug": "description-list",
       "extends": "HTMLAttributes<HTMLDListElement>",
       "props": [
         {
@@ -562,7 +562,7 @@
     },
     {
       "name": "DetailLayout",
-      "slug": "detaillayout",
+      "slug": "detail-layout",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -616,7 +616,7 @@
     },
     {
       "name": "EmptyState",
-      "slug": "emptystate",
+      "slug": "empty-state",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
       "props": [
         {
@@ -643,7 +643,7 @@
     },
     {
       "name": "ErrorState",
-      "slug": "errorstate",
+      "slug": "error-state",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
       "props": [
         {
@@ -670,7 +670,7 @@
     },
     {
       "name": "ExpandToggle",
-      "slug": "expandtoggle",
+      "slug": "expand-toggle",
       "extends": "ButtonHTMLAttributes<HTMLButtonElement>",
       "props": [
         {
@@ -746,7 +746,7 @@
     },
     {
       "name": "FlowChip",
-      "slug": "flowchip",
+      "slug": "flow-chip",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -799,7 +799,7 @@
     },
     {
       "name": "InboxDetail",
-      "slug": "inboxdetail",
+      "slug": "inbox-detail",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -811,7 +811,7 @@
     },
     {
       "name": "InboxItem",
-      "slug": "inboxitem",
+      "slug": "inbox-item",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -848,7 +848,7 @@
     },
     {
       "name": "InboxList",
-      "slug": "inboxlist",
+      "slug": "inbox-list",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -882,7 +882,7 @@
     },
     {
       "name": "InputGroup",
-      "slug": "inputgroup",
+      "slug": "input-group",
       "extends": null,
       "props": [
         {
@@ -921,7 +921,7 @@
     },
     {
       "name": "KanbanCard",
-      "slug": "kanbancard",
+      "slug": "kanban-card",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
       "props": [
         {
@@ -943,7 +943,7 @@
     },
     {
       "name": "KanbanColumn",
-      "slug": "kanbancolumn",
+      "slug": "kanban-column",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
       "props": [
         {
@@ -1053,7 +1053,7 @@
     },
     {
       "name": "ListItem",
-      "slug": "listitem",
+      "slug": "list-item",
       "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
       "props": [
         {
@@ -1085,7 +1085,7 @@
     },
     {
       "name": "LoadingState",
-      "slug": "loadingstate",
+      "slug": "loading-state",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -1195,7 +1195,7 @@
     },
     {
       "name": "NavFavourites",
-      "slug": "navfavourites",
+      "slug": "nav-favourites",
       "extends": null,
       "props": [
         {
@@ -1242,7 +1242,7 @@
     },
     {
       "name": "NavGroup",
-      "slug": "navgroup",
+      "slug": "nav-group",
       "extends": null,
       "props": [
         {
@@ -1269,7 +1269,7 @@
     },
     {
       "name": "NavItem",
-      "slug": "navitem",
+      "slug": "nav-item",
       "extends": "AnchorHTMLAttributes<HTMLAnchorElement>",
       "props": [
         {
@@ -1323,7 +1323,7 @@
     },
     {
       "name": "NotificationCenter",
-      "slug": "notificationcenter",
+      "slug": "notification-center",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -1340,7 +1340,7 @@
     },
     {
       "name": "NotificationItem",
-      "slug": "notificationitem",
+      "slug": "notification-item",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -1362,7 +1362,7 @@
     },
     {
       "name": "PageHeader",
-      "slug": "pageheader",
+      "slug": "page-header",
       "extends": "Omit<HTMLAttributes<HTMLElement>, 'title'>",
       "props": [
         {
@@ -1475,7 +1475,7 @@
     },
     {
       "name": "PipelineStage",
-      "slug": "pipelinestage",
+      "slug": "pipeline-stage",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -1555,7 +1555,7 @@
     },
     {
       "name": "RadioGroup",
-      "slug": "radiogroup",
+      "slug": "radio-group",
       "extends": null,
       "props": [
         {
@@ -1611,7 +1611,7 @@
     },
     {
       "name": "RowAction",
-      "slug": "rowaction",
+      "slug": "row-action",
       "extends": "ButtonHTMLAttributes<HTMLButtonElement>",
       "props": [
         {
@@ -1623,7 +1623,7 @@
     },
     {
       "name": "RowActions",
-      "slug": "rowactions",
+      "slug": "row-actions",
       "extends": "TdHTMLAttributes<HTMLTableCellElement>",
       "props": [
         {
@@ -1657,7 +1657,7 @@
     },
     {
       "name": "SegmentedOption",
-      "slug": "segmentedoption",
+      "slug": "segmented-option",
       "extends": "Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'onChange'>",
       "props": [
         {
@@ -1718,7 +1718,7 @@
     },
     {
       "name": "SidebarSection",
-      "slug": "sidebarsection",
+      "slug": "sidebar-section",
       "extends": null,
       "props": [
         {
@@ -1796,7 +1796,7 @@
     },
     {
       "name": "StarButton",
-      "slug": "starbutton",
+      "slug": "star-button",
       "extends": null,
       "props": [
         {
@@ -1860,7 +1860,7 @@
     },
     {
       "name": "StatusPill",
-      "slug": "statuspill",
+      "slug": "status-pill",
       "extends": "HTMLAttributes<HTMLSpanElement>",
       "props": [
         {
@@ -1921,7 +1921,7 @@
     },
     {
       "name": "SubNavItem",
-      "slug": "subnavitem",
+      "slug": "sub-nav-item",
       "extends": "AnchorHTMLAttributes<HTMLAnchorElement>",
       "props": [
         {
@@ -2014,7 +2014,7 @@
     },
     {
       "name": "TableWrap",
-      "slug": "tablewrap",
+      "slug": "table-wrap",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -2121,7 +2121,7 @@
     },
     {
       "name": "TimelineItem",
-      "slug": "timelineitem",
+      "slug": "timeline-item",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -2263,7 +2263,7 @@
     },
     {
       "name": "UserChip",
-      "slug": "userchip",
+      "slug": "user-chip",
       "extends": "HTMLAttributes<HTMLSpanElement>",
       "props": [
         {
@@ -2285,7 +2285,7 @@
     },
     {
       "name": "ViewMenu",
-      "slug": "viewmenu",
+      "slug": "view-menu",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -2297,7 +2297,7 @@
     },
     {
       "name": "ViewMenuGroup",
-      "slug": "viewmenugroup",
+      "slug": "view-menu-group",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {
@@ -2314,7 +2314,7 @@
     },
     {
       "name": "ViewMenuRow",
-      "slug": "viewmenurow",
+      "slug": "view-menu-row",
       "extends": "HTMLAttributes<HTMLDivElement>",
       "props": [
         {

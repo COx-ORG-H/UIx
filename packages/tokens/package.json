@@ -16,7 +16,9 @@
     "build",
     "themes/*.css",
     "tokens",
-    "registry"
+    "registry",
+    "components.json",
+    "docs/consume-css-only.md"
   ],
   "exports": {
     "./css": "./build/css/tokens.css",
@@ -44,6 +46,7 @@
     "test:dtcg": "node scripts/check-dtcg.mjs",
     "docs:serve": "serve -l 4178 ../..",
     "docs:build": "node scripts/build-docs-index.mjs",
+    "test:docs": "node scripts/check-docs-coverage.mjs",
     "size:css": "node scripts/size-report.mjs --check",
     "size:css:update": "node scripts/size-report.mjs --update",
     "prepublishOnly": "npm run build && npm run test:parity && npm run test:contract"

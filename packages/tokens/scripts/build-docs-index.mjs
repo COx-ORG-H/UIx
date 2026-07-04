@@ -25,9 +25,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_MD = resolve(__dirname, '../../react/etc/uix-react.api.md');
 const OUT = resolve(__dirname, '../docs/data/components.json');
 
-/** URL-safe slug, identical rule to docs.js slugify (kept in sync intentionally). */
+/** URL-safe slug. Splits camelCase/PascalCase export names at word boundaries FIRST (so
+ *  `StatusPill` → `status-pill`, `AppShell` → `app-shell`), then applies the docs.js slugify rule.
+ *  This unifies the docs slug with the nav display-name slug, the maturity ids (check-status toId),
+ *  and the CSS-file basenames — one component vocabulary across the whole system. */
 export const slugify = (name) =>
   String(name)
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

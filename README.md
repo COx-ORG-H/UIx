@@ -58,7 +58,24 @@ theme, and typed TS constants). Add it as a dependency and import what your stac
 
 Then add `styles/base.css` (+ `styles/motion.css`) and the `styles/components/*.css` files you need,
 in load order `base.css` → `utilities.css` → `motion.css` → `components/*` (cascade layers make order
-robust regardless). Copy-paste still works too — every file references the same `--uix-*` names.
+robust regardless).
+
+### CSS-only / non-React consumers
+
+React is the canonical wrapper channel, but the `--uix-*` contract and `.uix-*` component CSS work
+in **any** stack. Two documented, gated paths (ADR-0017):
+
+- **npm import** the component CSS: `@import "@tensor_1/tokens/styles"` (or the everything-in-one
+  `@import "@tensor_1/tokens/bundle"`), after the contract + a theme.
+- **Copy-in a single component** via the generated, drift-gated manifest
+  [`registry/registry.json`](packages/tokens/registry/registry.json) — it lists each component's CSS
+  file and exact `--uix-*` dependencies. The `uix add` CLI copies one in for you:
+  `npx uix add button --dest ./styles`.
+
+Full walkthrough (with a worked button example):
+[**`packages/tokens/docs/consume-css-only.md`**](packages/tokens/docs/consume-css-only.md). The
+authoritative component inventory and maturity is
+[`Docs/component-roadmap.md`](Docs/component-roadmap.md).
 
 Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
 The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.

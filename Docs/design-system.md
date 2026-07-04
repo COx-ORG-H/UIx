@@ -18,7 +18,10 @@ building a bespoke local component.
 | React wrappers | `packages/react/src/components/*.tsx` | `packages/react/dist/*` | `@tensor_1/react` |
 
 Consumers vendor these (e.g. Tensor `pnpm uix:sync` → `packages/vendor/uix`). After any change here, run
-`npm run build:all` then re-sync downstream.
+`npm run build:all` then re-sync downstream. For **per-component** copy-in (rather than a whole-tree
+sync), the canonical inventory is the generated, drift-gated manifest
+[`packages/tokens/registry/registry.json`](../packages/tokens/registry/registry.json) — each entry lists
+a component's CSS file and its exact `--uix-*` dependencies (ADR-0017; used by the `uix add` CLI).
 
 ### The spacing contract
 All component spacing flows from the scale `--uix-space-0 … --uix-space-12` (4px base). Use these (or the

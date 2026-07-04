@@ -18,6 +18,7 @@
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
     "test:registry": "node packages/tokens/scripts/check-registry.mjs",
+    "test:docs": "npm run test:docs -w @tensor_1/tokens",
     "test:a11y-status": "node packages/react/scripts/check-status.mjs",
     "test:a11y-react": "npm run test:a11y -w @tensor_1/react",
     "test:size": "npm run size -w @tensor_1/react",
