@@ -139,6 +139,9 @@ Generated output under `build/` is committed (so the showcase stays build-free t
 `exports` maps `./css`, `./tailwind`, `./ts`, and `./themes/*` for consumers. The package is `private` by
 default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove `private` before publishing.
 
+Shipped bundle sizes are budgeted and gated in CI (and, via the reusable workflow, at publish):
+see [`Docs/performance-budgets.md`](Docs/performance-budgets.md).
+
 ## Fonts & icons
 
 Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts

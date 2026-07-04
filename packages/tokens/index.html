@@ -1171,7 +1171,7 @@
         <h2>Wrapper batch A</h2>
         <p class="lead">Presentational components newly wrapped in <code class="uix-code">@tensor_1/react</code> (BREADTH-2): a breadcrumb trail, keyboard chips, a step track, an SLA indicator, and a live heartbeat — each a thin wrapper over the classes below.</p>
 
-        <div class="uix-guide__subhead">Breadcrumbs</div>
+        <div class="uix-guide__subhead" data-uix-status="breadcrumbs">Breadcrumbs</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
           <nav class="uix-breadcrumbs" aria-label="Breadcrumb">
             <a href="#breadth-batch-a">Home</a>
@@ -1182,12 +1182,12 @@
           </nav>
         </div>
 
-        <div class="uix-guide__subhead">Keyboard chips</div>
+        <div class="uix-guide__subhead" data-uix-status="kbd">Keyboard chips</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);align-items:center">
           <span>Press <span class="uix-kbd">⌘</span><span class="uix-kbd">K</span> to search, <span class="uix-kbd">Esc</span> to close.</span>
         </div>
 
-        <div class="uix-guide__subhead">Steps</div>
+        <div class="uix-guide__subhead" data-uix-status="steps">Steps</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
           <div class="uix-steps">
             <div class="uix-step" data-state="done"><span class="uix-step__marker">✓</span><span class="uix-step__label">Triage</span></div>
@@ -1198,14 +1198,14 @@
           </div>
         </div>
 
-        <div class="uix-guide__subhead">SLA indicator</div>
+        <div class="uix-guide__subhead" data-uix-status="sla">SLA indicator</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:22px;align-items:center">
           <span class="uix-sla" data-state="ok"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>4h left</span>
           <span class="uix-sla" data-state="at-risk"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>30m left</span>
           <span class="uix-sla" data-state="breach"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Breached</span>
         </div>
 
-        <div class="uix-guide__subhead">Heartbeat</div>
+        <div class="uix-guide__subhead" data-uix-status="heartbeat">Heartbeat</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:22px;align-items:center">
           <span class="uix-live"><span class="uix-heartbeat"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Operational</span>
           <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--warning"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Degraded</span>
@@ -1218,7 +1218,7 @@
         <h2>Wrapper batch B</h2>
         <p class="lead">More presentational wrappers newly in <code class="uix-code">@tensor_1/react</code> (BREADTH-3): an audit trail, a notification list, emoji reactions, file attachments, and a view/display menu.</p>
 
-        <div class="uix-guide__subhead">Audit log &amp; notifications</div>
+        <div class="uix-guide__subhead" data-uix-status="audit-log">Audit log &amp; notifications</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:flex-start;flex-wrap:wrap">
           <div class="uix-audit" style="min-width:260px">
             <div class="uix-audit__row"><span class="uix-audit__actor">Maya</span><span class="uix-audit__detail">changed status <del>Open</del> <ins>In progress</ins></span><span class="uix-audit__time">1h</span></div>
@@ -1232,7 +1232,7 @@
           </div>
         </div>
 
-        <div class="uix-guide__subhead">Reactions</div>
+        <div class="uix-guide__subhead" data-uix-status="reactions">Reactions</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);align-items:center">
           <div class="uix-reactions" style="margin-top:0">
             <button class="uix-reaction" data-mine type="button"><span>👍</span><span class="uix-reaction__count">3</span></button>
@@ -1241,7 +1241,7 @@
           </div>
         </div>
 
-        <div class="uix-guide__subhead">Attachments &amp; view menu</div>
+        <div class="uix-guide__subhead" data-uix-status="attachment">Attachments &amp; view menu</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:flex-start;flex-wrap:wrap">
           <div class="uix-attachments" style="min-width:240px">
             <div class="uix-attachment"><span class="uix-attachment__icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg></span><span><div class="uix-attachment__name">gateway.log</div><div class="uix-attachment__size">2.4 MB</div></span></div>
@@ -1267,7 +1267,7 @@
         <h2>Wrapper batch C</h2>
         <p class="lead">The last presentational wrappers in <code class="uix-code">@tensor_1/react</code> (BREADTH-4): a contact card (which composes <code class="uix-code">Button</code>), a stage pipeline, a flow diagram, a media row, and a stateless lightbox dialog.</p>
 
-        <div class="uix-guide__subhead">Contact card</div>
+        <div class="uix-guide__subhead" data-uix-status="contact-card">Contact card</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg)">
           <div class="uix-contact" style="max-width:320px">
             <span class="uix-avatar uix-avatar--lg">AC</span>
@@ -1278,7 +1278,7 @@
           </div>
         </div>
 
-        <div class="uix-guide__subhead">Pipeline &amp; flow</div>
+        <div class="uix-guide__subhead" data-uix-status="pipeline">Pipeline &amp; flow</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);flex-direction:column;align-items:stretch;gap:20px;display:flex">
           <div class="uix-pipeline">
             <div class="uix-pipeline__stage" data-state="done">Triage</div>
@@ -1295,7 +1295,7 @@
           </div>
         </div>
 
-        <div class="uix-guide__subhead">Media row</div>
+        <div class="uix-guide__subhead" data-uix-status="media">Media row</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg)">
           <div class="uix-media" style="max-width:340px">
             <span class="uix-media__thumb"><img src="assets/img/device-macbook.svg" alt="MacBook Pro 14 inch"></span>
@@ -1308,5 +1308,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" crossorigin="anonymous"></script>
   <script type="module" src="guide/app.js"></script>
+  <script type="module" src="guide/status.js"></script>
 </body>
 </html>

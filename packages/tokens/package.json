@@ -46,7 +46,8 @@
     "build:themes": "node scripts/build-themes.mjs",
     "build:styles": "node scripts/build-styles.mjs",
     "build:registry": "node scripts/build-registry.mjs",
-    "build": "npm run build:tokens && npm run build:themes && npm run build:styles && npm run build:registry",
+    "build:guide-status": "node scripts/build-guide-status.mjs",
+    "build": "npm run build:tokens && npm run build:themes && npm run build:styles && npm run build:registry && npm run build:guide-status",
     "test:parity": "node scripts/check-parity.mjs",
     "test:contract": "node scripts/check-contract.mjs",
     "test:dtcg": "node scripts/check-dtcg.mjs",
@@ -61,6 +62,6 @@
   "devDependencies": {
     "postcss": "^8.4.0",
     "postcss-import": "^16.1.1",
-    "style-dictionary": "^4.0.0"
+    "style-dictionary": "^5.5.0"
   }
 }

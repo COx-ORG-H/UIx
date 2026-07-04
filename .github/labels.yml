@@ -1,0 +1,13 @@
+# Repository labels (GOV-5). This file makes the `contract-change` label — which the GOV-3
+# contract-guard gate REQUIRES a PR to carry when it edits the --uix-* contract surface — an
+# actual, reproducible object rather than an assumption.
+#
+# Apply either way:
+#   • a label-sync action (e.g. micnncim/action-label-syncer, crazy-max/ghaction-github-labeler)
+#     that reads this file, or
+#   • per label:  gh label create contract-change --color B60205 \
+#                   --description "Edits the --uix-* contract surface — see Docs/contract-change-process.md" \
+#                   --force
+- name: contract-change
+  color: "B60205"
+  description: "Edits the --uix-* contract surface (tokens/themes/baseline/style-dictionary/build+check scripts). Requires the contract-change process — Docs/contract-change-process.md."

@@ -71,6 +71,10 @@ jobs:
       - name: Consumer examples
         run: npm run test:examples
 
+      # BREADTH-5: the component roadmap covers every CSS component exactly once (no gaps/phantoms).
+      - name: Roadmap coverage
+        run: npm run test:roadmap
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 
