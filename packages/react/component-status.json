@@ -138,6 +138,18 @@
       "manualSR": null
     }
   },
+  "contact-card": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "contact-card-stat": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "description-item": {
     "status": "draft",
     "a11y": {
@@ -181,6 +193,18 @@
     }
   },
   "field": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "flow": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "flow-chip": {
     "status": "draft",
     "a11y": {
       "manualSR": null
@@ -264,6 +288,12 @@
       "manualSR": null
     }
   },
+  "lightbox": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "list": {
     "status": "draft",
     "a11y": {
@@ -283,6 +313,12 @@
     }
   },
   "mark": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "media": {
     "status": "draft",
     "a11y": {
       "manualSR": null
@@ -349,6 +385,18 @@
     }
   },
   "peek": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "pipeline": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "pipeline-stage": {
     "status": "draft",
     "a11y": {
       "manualSR": null

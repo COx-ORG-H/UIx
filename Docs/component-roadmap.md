@@ -42,12 +42,12 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Combobox | combobox.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. Recently landed. |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
-| ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
+| ContactCard | contact-card.css | ✓ `ContactCard` | Alpha | no | Also `ContactCardStat`; composes `Button` for actions. Wrapper batch C (BREADTH-4). |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. Recently landed. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold. |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
-| Flow | flow.css | absent | Planned | no | Planned wrapper (presentational). |
+| Flow | flow.css | ✓ `Flow` | Alpha | no | Also `FlowChip`, `FlowVariant`; container + node (edges are consumer SVG). Wrapper batch C (BREADTH-4). |
 | Form | form.css | ✓ `Field` | Stable | no | `Field` wraps the form-row CSS; `FormGrid`/`Fieldset` still planned. |
 | Heartbeat | heartbeat.css | ✓ `Heartbeat` | Alpha | no | `HeartbeatTone`. Wrapper batch A (BREADTH-2). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
@@ -55,9 +55,9 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
 | Kbd | kbd.css | ✓ `Kbd` | Alpha | no | Keyboard-shortcut chip. Wrapper batch A (BREADTH-2). |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
-| Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
+| Lightbox | lightbox.css | ✓ `Lightbox` | Alpha | no | Stateless `<dialog>` (open is consumer state). Wrapper batch C (BREADTH-4). |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
-| Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
+| Media | media.css | ✓ `Media` | Alpha | no | Thumbnail + name/meta row. Wrapper batch C (BREADTH-4). |
 | Menu | menu.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook. |
@@ -65,7 +65,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
 | Pagination | pagination.css | ✓ `Pagination` | Stable | no | Data-display control. |
 | Peek | peek.css | ✓ `Peek` | Stable | no | Side-peek overlay. |
-| Pipeline | pipeline.css | absent | Planned | no | Planned wrapper (presentational). |
+| Pipeline | pipeline.css | ✓ `Pipeline` | Alpha | no | Also `PipelineStage` (`data-state`). Wrapper batch C (BREADTH-4). |
 | Popover | popover.css | ✓ `Popover` | Beta | no | Overlay; recently landed. |
 | Progress | progress.css | ✓ `Progress` | Beta | no | Recently landed. |
 | Prose | prose.css | ✓ `Prose` | Stable | no | Also `Note` (`NoteTone`). |
@@ -101,8 +101,9 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 - **Composer** (`Composer`/`ComposerBar`) and the `Field`, `StarButton`, `NavFavourites` React exports have no
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
-- **Presentational wrapper batches (BREADTH-2/3/4).** Batch A + B — now **Alpha** (`✓` above): breadcrumbs, kbd,
-  steps, sla, heartbeat (A); audit-log, notification-center, reactions, attachment, view-menu (B). Still **Planned**
-  (presentational, wrapped in batch C): stepper, pipeline, flow, media, lightbox, contact-card. In addition, the
-  interactive-but-unwrapped surfaces (combobox, calendar, file-upload, slider, tag-input, menu) and chart are also
-  Planned; those need real behaviour, not just a class wrapper.
+- **Presentational wrapper batches (BREADTH-2/3/4) — complete.** All now **Alpha** (`✓` above): breadcrumbs, kbd,
+  steps, sla, heartbeat (A); audit-log, notification-center, reactions, attachment, view-menu (B); contact-card,
+  pipeline, flow, media, lightbox (C). The only remaining **Planned** presentational file is `stepper` (a number
+  stepper — interactive, needs real +/- logic, so it is grouped with the behavioural set below). The
+  interactive-but-unwrapped surfaces (stepper, combobox, calendar, file-upload, slider, tag-input, menu) and chart
+  stay Planned; those need real behaviour, not just a class wrapper.

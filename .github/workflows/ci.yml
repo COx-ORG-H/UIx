@@ -58,6 +58,10 @@ jobs:
       - name: Component maturity status
         run: npm run test:a11y-status
 
+      # DIST-2: the copy-in registry manifest is regenerated-and-diffed against the shipped CSS.
+      - name: Registry manifest up-to-date
+        run: npm run test:registry
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 

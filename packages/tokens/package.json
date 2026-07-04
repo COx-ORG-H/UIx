@@ -15,7 +15,8 @@
   "files": [
     "build",
     "themes/*.css",
-    "tokens"
+    "tokens",
+    "registry"
   ],
   "exports": {
     "./css": "./build/css/tokens.css",
@@ -36,7 +37,8 @@
     "build:tokens": "node style-dictionary.config.mjs",
     "build:themes": "node scripts/build-themes.mjs",
     "build:styles": "node scripts/build-styles.mjs",
-    "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
+    "build:registry": "node scripts/build-registry.mjs",
+    "build": "npm run build:tokens && npm run build:themes && npm run build:styles && npm run build:registry",
     "test:parity": "node scripts/check-parity.mjs",
     "test:contract": "node scripts/check-contract.mjs",
     "test:dtcg": "node scripts/check-dtcg.mjs",

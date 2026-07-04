@@ -1,0 +1,97 @@
+name: Size report
+
+# PERF-3 — post a brotli before/after size diff on each PR (the two React entries as a per-file sum
+# + the CSS bundle totals). STANDALONE workflow; `pull-requests: write` is scoped to THIS file only
+# so the hard size GATE (the `size` job in ci.yml) stays contents-read. On fork PRs the comment may
+# be denied — it degrades to a job-summary + an uploaded artifact, so the job still succeeds.
+#
+# NOTE (hardening follow-up): this workflow has write scope; before enabling on a public fork-PR
+# surface, pin the `actions/*` uses below to full commit SHAs (the repo currently pins by major tag
+# throughout, e.g. ci.yml — keep the two consistent when that migration happens).
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Measure head
+        run: |
+          npm ci
+          npm run build
+          npm run build -w @tensor_1/react
+          node scripts/measure-sizes.mjs > "$RUNNER_TEMP/head.json"
+          cp scripts/measure-sizes.mjs "$RUNNER_TEMP/measure.mjs"
+
+      - name: Measure base
+        run: |
+          git checkout --force "${{ github.event.pull_request.base.sha }}"
+          npm ci
+          npm run build
+          npm run build -w @tensor_1/react
+          node "$RUNNER_TEMP/measure.mjs" > "$RUNNER_TEMP/base.json"
+
+      - name: Upload size JSON (artifact — always, and the fork fallback)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: size-report
+          path: |
+            ${{ runner.temp }}/base.json
+            ${{ runner.temp }}/head.json
+          retention-days: 7
+
+      - name: Comment size diff
+        if: ${{ !cancelled() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const base = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/base.json', 'utf8'));
+            const head = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/head.json', 'utf8'));
+            const kb = (n) => n == null ? '—' : (n / 1024).toFixed(2) + ' KB';
+            const keys = [...new Set([...Object.keys(base), ...Object.keys(head)])];
+            let anyChange = false;
+            const rows = keys.map((k) => {
+              const b = base[k], h = head[k];
+              const d = (b != null && h != null) ? h - b : null;
+              if (d) anyChange = true;
+              const delta = d == null ? '—' : (d === 0 ? '±0 B' : (d > 0 ? '+' : '') + d + ' B');
+              return `| \`${k}\` | ${kb(b)} | ${kb(h)} | ${delta} |`;
+            });
+            const body = [
+              '### 📦 Size report (brotli)',
+              '',
+              '| Surface | base | head | Δ |',
+              '|---|--:|--:|--:|',
+              ...rows,
+              '',
+              anyChange ? '' : '_No shipped-size change._',
+            ].join('\n');
+            await core.summary.addRaw(body).write();
+            try {
+              const { owner, repo } = context.repo;
+              const issue_number = context.payload.pull_request.number;
+              const marker = '<!-- uix-size-report -->';
+              const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+              const existing = comments.find((c) => c.body && c.body.includes(marker));
+              const withMarker = marker + '\n' + body;
+              if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: withMarker });
+              else await github.rest.issues.createComment({ owner, repo, issue_number, body: withMarker });
+            } catch (e) {
+              core.warning('Could not post PR comment (likely a fork PR without write perms); the diff is in the job summary + artifact. ' + e.message);
+            }

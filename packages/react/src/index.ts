@@ -186,3 +186,15 @@ export { Attachment, AttachmentList } from './components/Attachment.js';
 export type { AttachmentProps, AttachmentListProps } from './components/Attachment.js';
 export { ViewMenu, ViewMenuGroup, ViewMenuRow } from './components/ViewMenu.js';
 export type { ViewMenuProps, ViewMenuGroupProps, ViewMenuRowProps } from './components/ViewMenu.js';
+
+// --- breadth batch C ---
+export { ContactCard, ContactCardStat } from './components/ContactCard.js';
+export type { ContactCardProps, ContactCardStatProps, ContactAction } from './components/ContactCard.js';
+export { Pipeline, PipelineStage } from './components/Pipeline.js';
+export type { PipelineProps, PipelineStageProps, PipelineStageState } from './components/Pipeline.js';
+export { Flow, FlowChip } from './components/Flow.js';
+export type { FlowProps, FlowChipProps, FlowVariant } from './components/Flow.js';
+export { Media } from './components/Media.js';
+export type { MediaProps } from './components/Media.js';
+export { Lightbox } from './components/Lightbox.js';
+export type { LightboxProps } from './components/Lightbox.js';

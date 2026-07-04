@@ -307,6 +307,42 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 }
 
+// @public
+export interface ContactAction {
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    onClick?: () => void;
+    // (undocumented)
+    variant?: ButtonProps['variant'];
+}
+
+// @public
+export function ContactCard(input: ContactCardProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'> {
+    actions?: ReactNode | ContactAction[];
+    avatar?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    name?: ReactNode;
+    role?: ReactNode;
+    stats?: ReactNode;
+}
+
+// @public
+export function ContactCardStat(input: ContactCardStatProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ContactCardStatProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: ReactNode;
+    value?: ReactNode;
+}
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -432,6 +468,28 @@ export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
 
 // @public (undocumented)
 export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
+
+// @public
+export function Flow(input: FlowProps): react.JSX.Element;
+
+// @public
+export function FlowChip(input: FlowChipProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FlowChipProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface FlowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    variant?: FlowVariant;
+}
+
+// @public (undocumented)
+export type FlowVariant = 'linear' | 'branch' | 'loop' | 'mindmap' | 'canvas';
 
 // @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
@@ -584,6 +642,25 @@ export interface LabelProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 // @public
+export function Lightbox(input: LightboxProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LightboxProps {
+    // (undocumented)
+    alt?: string;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    onClose?: () => void;
+    open: boolean;
+    src?: string;
+    // (undocumented)
+    style?: CSSProperties;
+}
+
+// @public
 export function List(input: ListProps): react.JSX.Element;
 
 // @public
@@ -626,6 +703,18 @@ export interface MarkProps extends HTMLAttributes<HTMLElement> {
 
 // @public (undocumented)
 export function matchFilter(row: Row, f: ColumnFilter): boolean;
+
+// @public
+export function Media(input: MediaProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MediaProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    meta?: ReactNode;
+    name?: ReactNode;
+    thumb?: ReactNode;
+}
 
 // @public
 export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
@@ -835,6 +924,28 @@ export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | '
 
 // @public (undocumented)
 export type PillTreatment = 'filled' | 'outline';
+
+// @public
+export function Pipeline(input: PipelineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function PipelineStage(input: PipelineStageProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineStageProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    state?: PipelineStageState;
+}
+
+// @public (undocumented)
+export type PipelineStageState = 'done' | 'active' | 'ok' | 'breach';
 
 // @public
 export function Popover(input: PopoverProps): react.JSX.Element;
