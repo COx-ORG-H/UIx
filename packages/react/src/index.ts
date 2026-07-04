@@ -174,3 +174,15 @@ export { Sla } from './components/Sla.js';
 export type { SlaProps, SlaState } from './components/Sla.js';
 export { Heartbeat } from './components/Heartbeat.js';
 export type { HeartbeatProps, HeartbeatTone } from './components/Heartbeat.js';
+
+// --- breadth batch B ---
+export { AuditLog, AuditLogItem } from './components/AuditLog.js';
+export type { AuditLogProps, AuditLogItemProps } from './components/AuditLog.js';
+export { NotificationCenter, NotificationItem } from './components/NotificationCenter.js';
+export type { NotificationCenterProps, NotificationItemProps } from './components/NotificationCenter.js';
+export { Reactions, Reaction } from './components/Reactions.js';
+export type { ReactionsProps, ReactionProps } from './components/Reactions.js';
+export { Attachment, AttachmentList } from './components/Attachment.js';
+export type { AttachmentProps, AttachmentListProps } from './components/Attachment.js';
+export { ViewMenu, ViewMenuGroup, ViewMenuRow } from './components/ViewMenu.js';
+export type { ViewMenuProps, ViewMenuGroupProps, ViewMenuRowProps } from './components/ViewMenu.js';

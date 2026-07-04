@@ -12,6 +12,30 @@
       "manualSR": null
     }
   },
+  "attachment": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "attachment-list": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "audit-log": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "audit-log-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "avatar": {
     "status": "draft",
     "a11y": {
@@ -300,6 +324,18 @@
       "manualSR": null
     }
   },
+  "notification-center": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "notification-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
   "page-header": {
     "status": "draft",
     "a11y": {
@@ -343,6 +379,18 @@
     }
   },
   "radio-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "reaction": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "reactions": {
     "status": "draft",
     "a11y": {
       "manualSR": null
@@ -535,6 +583,24 @@
     }
   },
   "user-chip": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu-row": {
     "status": "draft",
     "a11y": {
       "manualSR": null

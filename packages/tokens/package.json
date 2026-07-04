@@ -39,6 +39,7 @@
     "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
     "test:parity": "node scripts/check-parity.mjs",
     "test:contract": "node scripts/check-contract.mjs",
+    "test:dtcg": "node scripts/check-dtcg.mjs",
     "docs:serve": "serve -l 4178 ../..",
     "docs:build": "node scripts/build-docs-index.mjs",
     "size:css": "node scripts/size-report.mjs --check",

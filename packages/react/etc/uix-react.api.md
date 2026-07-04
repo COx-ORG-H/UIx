@@ -57,6 +57,49 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Attachment(input: AttachmentProps): react.JSX.Element;
+
+// @public
+export function AttachmentList(input: AttachmentListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AttachmentListProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface AttachmentProps extends HTMLAttributes<HTMLDivElement> {
+    actions?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    icon?: ReactNode;
+    name?: ReactNode;
+    size?: ReactNode;
+}
+
+// @public
+export function AuditLog(input: AuditLogProps): react.JSX.Element;
+
+// @public
+export function AuditLogItem(input: AuditLogItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AuditLogItemProps extends HTMLAttributes<HTMLDivElement> {
+    actor?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    detail?: ReactNode;
+    time?: ReactNode;
+}
+
+// @public (undocumented)
+export interface AuditLogProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
 export function Avatar(input: AvatarProps): react.JSX.Element;
 
 // @public
@@ -713,6 +756,27 @@ export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
 export type NoteTone = 'info' | 'success' | 'warning' | 'danger';
 
 // @public
+export function NotificationCenter(input: NotificationCenterProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NotificationCenterProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    heading?: ReactNode;
+}
+
+// @public
+export function NotificationItem(input: NotificationItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NotificationItemProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    meta?: ReactNode;
+    unread?: boolean;
+}
+
+// @public
 export function PageHeader(input: PageHeaderProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -822,6 +886,27 @@ export interface RadioGroupProps {
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export function Reaction(input: ReactionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ReactionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    children?: ReactNode;
+    count?: ReactNode;
+    emoji?: ReactNode;
+    mine?: boolean;
+}
+
+// @public
+export function Reactions(input: ReactionsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ReactionsProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
 }
 
 // @public
@@ -1362,6 +1447,34 @@ export interface UseTableResult<T> {
     view: ViewState;
     // (undocumented)
     viewQueryString: string;
+}
+
+// @public
+export function ViewMenu(input: ViewMenuProps): react.JSX.Element;
+
+// @public
+export function ViewMenuGroup(input: ViewMenuGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ViewMenuGroupProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: ReactNode;
+}
+
+// @public (undocumented)
+export interface ViewMenuProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function ViewMenuRow(input: ViewMenuRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ViewMenuRowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
 }
 
 // @public (undocumented)

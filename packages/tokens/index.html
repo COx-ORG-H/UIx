@@ -1212,6 +1212,55 @@
           <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--danger"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Down</span>
         </div>
       </section>
+
+      <!-- BREADTH-3 · wrapper batch B: audit-log · notification-center · reactions · attachment · view-menu -->
+      <section id="breadth-batch-b" class="uix-guide__section" style="border-bottom:0">
+        <h2>Wrapper batch B</h2>
+        <p class="lead">More presentational wrappers newly in <code class="uix-code">@tensor_1/react</code> (BREADTH-3): an audit trail, a notification list, emoji reactions, file attachments, and a view/display menu.</p>
+
+        <div class="uix-guide__subhead">Audit log &amp; notifications</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:flex-start;flex-wrap:wrap">
+          <div class="uix-audit" style="min-width:260px">
+            <div class="uix-audit__row"><span class="uix-audit__actor">Maya</span><span class="uix-audit__detail">changed status <del>Open</del> <ins>In progress</ins></span><span class="uix-audit__time">1h</span></div>
+            <div class="uix-audit__row"><span class="uix-audit__actor">Leo</span><span class="uix-audit__detail">set priority <ins>High</ins></span><span class="uix-audit__time">2h</span></div>
+            <div class="uix-audit__row"><span class="uix-audit__actor">System</span><span class="uix-audit__detail">assigned to Maya</span><span class="uix-audit__time">2h</span></div>
+          </div>
+          <div class="uix-notifs" style="min-width:260px">
+            <div class="uix-notifs__head">Notifications <button class="uix-btn uix-btn--link uix-btn--sm" style="margin-left:auto">Mark all read</button></div>
+            <div class="uix-notif" data-unread><span class="uix-notif__dot" aria-hidden="true"></span><div><div>Maya mentioned you on <strong>INC-2043</strong></div><div class="uix-notif__meta">22m ago</div></div></div>
+            <div class="uix-notif"><span class="uix-notif__dot" aria-hidden="true"></span><div><div>REQ-1185 was resolved</div><div class="uix-notif__meta">2d ago</div></div></div>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Reactions</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);align-items:center">
+          <div class="uix-reactions" style="margin-top:0">
+            <button class="uix-reaction" data-mine type="button"><span>👍</span><span class="uix-reaction__count">3</span></button>
+            <button class="uix-reaction" type="button"><span>🎉</span><span class="uix-reaction__count">1</span></button>
+            <button class="uix-reaction" type="button"><span>👀</span><span class="uix-reaction__count">2</span></button>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Attachments &amp; view menu</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);gap:24px;align-items:flex-start;flex-wrap:wrap">
+          <div class="uix-attachments" style="min-width:240px">
+            <div class="uix-attachment"><span class="uix-attachment__icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg></span><span><div class="uix-attachment__name">gateway.log</div><div class="uix-attachment__size">2.4 MB</div></span></div>
+            <div class="uix-attachment"><span class="uix-attachment__icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg></span><span><div class="uix-attachment__name">screenshot.png</div><div class="uix-attachment__size">540 KB</div></span></div>
+          </div>
+          <div class="uix-view-menu" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-md)">
+            <div class="uix-view-menu__group">
+              <div class="uix-view-menu__label">Density</div>
+              <div class="uix-view-menu__row"><span>Comfortable</span></div>
+              <div class="uix-view-menu__row"><span>Compact</span></div>
+            </div>
+            <div class="uix-view-menu__group">
+              <div class="uix-view-menu__label">Columns</div>
+              <div class="uix-view-menu__row"><span>Status</span></div>
+              <div class="uix-view-menu__row"><span>Assignee</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 

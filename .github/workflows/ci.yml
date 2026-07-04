@@ -39,6 +39,11 @@ jobs:
       - name: Build all (tokens + themes + styles + react)
         run: npm run build:all
 
+      # DTCG-2: token SOURCE is structurally valid vs the ADR-0019 ratified $type set. Reads JSON
+      # only (never rebuilds), so it is parity-neutral. Mirrored to publishing via release.yml (GOV-6).
+      - name: DTCG validity
+        run: npm run test:dtcg -w @tensor_1/tokens
+
       - name: Token value parity
         run: npm run test:parity
 
