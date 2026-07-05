@@ -1,5 +1,19 @@
 # @tensor_1/react
 
+## 2.7.0
+
+### Minor Changes
+
+- 73f45dd: Add breadth batch A React wrappers over existing UIx CSS components: `Breadcrumbs` +
+  `BreadcrumbItem`, `Kbd`, `Steps` + `Step`, `Sla`, and `Heartbeat`. Each is a thin, typed wrapper
+  over the corresponding `.uix-*` classes (breadcrumbs, kbd, steps, sla, heartbeat).
+- 9f4fb6d: Add breadth batch B React wrappers over existing UIx CSS components: `AuditLog` +
+  `AuditLogItem`, `NotificationCenter` + `NotificationItem`, `Reactions` + `Reaction`,
+  `Attachment` + `AttachmentList`, and `ViewMenu` + `ViewMenuGroup` + `ViewMenuRow`.
+- de9ea78: Add breadth batch C React wrappers (completing presentational coverage): `ContactCard` +
+  `ContactCardStat` (composes `Button`), `Pipeline` + `PipelineStage`, `Flow` + `FlowChip`,
+  `Media`, and a stateless `Lightbox`.
+
 ## 2.6.0
 
 ### Minor Changes
