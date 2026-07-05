@@ -42,11 +42,11 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npm run build:all
       # build:all's inner react `npm ci` prunes root devDeps (incl. @changesets/cli) —
       # restore them so `npx changeset publish` can resolve the executable.
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
 
       - name: Publish (inert without NPM_TOKEN)
         env:

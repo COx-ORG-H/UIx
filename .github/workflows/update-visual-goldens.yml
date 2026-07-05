@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install (workspace)
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       # tokens build only (static styleguide CSS). NOT build:all — its inner react `npm ci`
       # prunes the root devDeps (playwright, serve) this job needs.

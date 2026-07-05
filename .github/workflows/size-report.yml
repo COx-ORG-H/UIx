@@ -31,7 +31,7 @@ jobs:
 
       - name: Measure head
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
           npm run build -w @tensor_1/react
           node scripts/measure-sizes.mjs > "$RUNNER_TEMP/head.json"
@@ -40,7 +40,7 @@ jobs:
       - name: Measure base
         run: |
           git checkout --force "${{ github.event.pull_request.base.sha }}"
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
           npm run build -w @tensor_1/react
           node "$RUNNER_TEMP/measure.mjs" > "$RUNNER_TEMP/base.json"

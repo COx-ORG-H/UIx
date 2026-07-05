@@ -42,7 +42,7 @@ jobs:
           cache: npm
 
       - name: Install (workspace)
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       # Regenerate the styleguide CSS the explorer + index.html render against.
       - name: Build styleguide CSS (tokens)
