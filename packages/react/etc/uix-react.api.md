@@ -57,6 +57,49 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Attachment(input: AttachmentProps): react.JSX.Element;
+
+// @public
+export function AttachmentList(input: AttachmentListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AttachmentListProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface AttachmentProps extends HTMLAttributes<HTMLDivElement> {
+    actions?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    icon?: ReactNode;
+    name?: ReactNode;
+    size?: ReactNode;
+}
+
+// @public
+export function AuditLog(input: AuditLogProps): react.JSX.Element;
+
+// @public
+export function AuditLogItem(input: AuditLogItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AuditLogItemProps extends HTMLAttributes<HTMLDivElement> {
+    actor?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    detail?: ReactNode;
+    time?: ReactNode;
+}
+
+// @public (undocumented)
+export interface AuditLogProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
 export function Avatar(input: AvatarProps): react.JSX.Element;
 
 // @public
@@ -78,6 +121,27 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     src?: string;
     status?: boolean;
+}
+
+// @public
+export function BreadcrumbItem(input: BreadcrumbItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BreadcrumbItemProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+    current?: boolean;
+    href?: string;
+}
+
+// @public
+export function Breadcrumbs(input: BreadcrumbsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BreadcrumbsProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+    separator?: ReactNode;
 }
 
 // @public
@@ -243,6 +307,42 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 }
 
+// @public
+export interface ContactAction {
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    onClick?: () => void;
+    // (undocumented)
+    variant?: ButtonProps['variant'];
+}
+
+// @public
+export function ContactCard(input: ContactCardProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'> {
+    actions?: ReactNode | ContactAction[];
+    avatar?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    name?: ReactNode;
+    role?: ReactNode;
+    stats?: ReactNode;
+}
+
+// @public
+export function ContactCardStat(input: ContactCardStatProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ContactCardStatProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: ReactNode;
+    value?: ReactNode;
+}
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -370,6 +470,39 @@ export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
 export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
 
 // @public
+export function Flow(input: FlowProps): react.JSX.Element;
+
+// @public
+export function FlowChip(input: FlowChipProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FlowChipProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface FlowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    variant?: FlowVariant;
+}
+
+// @public (undocumented)
+export type FlowVariant = 'linear' | 'branch' | 'loop' | 'mindmap' | 'canvas';
+
+// @public
+export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface HeartbeatProps extends HTMLAttributes<HTMLSpanElement> {
+    tone?: HeartbeatTone;
+}
+
+// @public (undocumented)
+export type HeartbeatTone = 'warning' | 'danger' | 'idle';
+
+// @public
 export function Highlighted(input: HighlightedProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -488,6 +621,15 @@ export interface KanbanProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Kbd(input: KbdProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface KbdProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
 export function Label(input: LabelProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -497,6 +639,25 @@ export interface LabelProps extends HTMLAttributes<HTMLSpanElement> {
     color?: string;
     // (undocumented)
     dot?: boolean;
+}
+
+// @public
+export function Lightbox(input: LightboxProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LightboxProps {
+    // (undocumented)
+    alt?: string;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    onClose?: () => void;
+    open: boolean;
+    src?: string;
+    // (undocumented)
+    style?: CSSProperties;
 }
 
 // @public
@@ -542,6 +703,18 @@ export interface MarkProps extends HTMLAttributes<HTMLElement> {
 
 // @public (undocumented)
 export function matchFilter(row: Row, f: ColumnFilter): boolean;
+
+// @public
+export function Media(input: MediaProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MediaProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    meta?: ReactNode;
+    name?: ReactNode;
+    thumb?: ReactNode;
+}
 
 // @public
 export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
@@ -672,6 +845,27 @@ export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
 export type NoteTone = 'info' | 'success' | 'warning' | 'danger';
 
 // @public
+export function NotificationCenter(input: NotificationCenterProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NotificationCenterProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    heading?: ReactNode;
+}
+
+// @public
+export function NotificationItem(input: NotificationItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NotificationItemProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    meta?: ReactNode;
+    unread?: boolean;
+}
+
+// @public
 export function PageHeader(input: PageHeaderProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -732,6 +926,28 @@ export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | '
 export type PillTreatment = 'filled' | 'outline';
 
 // @public
+export function Pipeline(input: PipelineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function PipelineStage(input: PipelineStageProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineStageProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    state?: PipelineStageState;
+}
+
+// @public (undocumented)
+export type PipelineStageState = 'done' | 'active' | 'ok' | 'breach';
+
+// @public
 export function Popover(input: PopoverProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -781,6 +997,27 @@ export interface RadioGroupProps {
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export function Reaction(input: ReactionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ReactionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    children?: ReactNode;
+    count?: ReactNode;
+    emoji?: ReactNode;
+    mine?: boolean;
+}
+
+// @public
+export function Reactions(input: ReactionsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ReactionsProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
 }
 
 // @public
@@ -906,6 +1143,20 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Sla(input: SlaProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SlaProps extends HTMLAttributes<HTMLSpanElement> {
+    // (undocumented)
+    children?: ReactNode;
+    icon?: ReactNode;
+    state?: SlaState;
+}
+
+// @public (undocumented)
+export type SlaState = 'ok' | 'at-risk' | 'breach';
+
+// @public
 export type SortDir = 'ascending' | 'descending';
 
 // @public (undocumented)
@@ -976,6 +1227,29 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     tone?: PillTone;
     treatment?: PillTreatment;
 }
+
+// @public
+export function Step(input: StepProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StepProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    marker?: ReactNode;
+    state?: StepState;
+}
+
+// @public
+export function Steps(input: StepsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StepsProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export type StepState = 'active' | 'done';
 
 // @public (undocumented)
 export function SubNavItem(input: SubNavItemProps): react.JSX.Element;
@@ -1284,6 +1558,34 @@ export interface UseTableResult<T> {
     view: ViewState;
     // (undocumented)
     viewQueryString: string;
+}
+
+// @public
+export function ViewMenu(input: ViewMenuProps): react.JSX.Element;
+
+// @public
+export function ViewMenuGroup(input: ViewMenuGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ViewMenuGroupProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: ReactNode;
+}
+
+// @public (undocumented)
+export interface ViewMenuProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function ViewMenuRow(input: ViewMenuRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ViewMenuRowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
 }
 
 // @public (undocumented)

@@ -1,6 +1,6 @@
 {
   "name": "@tensor_1/tokens",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",
   "license": "UNLICENSED",
@@ -15,8 +15,17 @@
   "files": [
     "build",
     "themes/*.css",
-    "tokens"
+    "tokens",
+    "registry",
+    "components.json",
+    "docs/consume-css-only.md",
+    "styles/components/*.css",
+    "scripts/lib",
+    "bin"
   ],
+  "bin": {
+    "uix": "bin/uix.mjs"
+  },
   "exports": {
     "./css": "./build/css/tokens.css",
     "./styles": "./build/css/components.css",
@@ -36,17 +45,23 @@
     "build:tokens": "node style-dictionary.config.mjs",
     "build:themes": "node scripts/build-themes.mjs",
     "build:styles": "node scripts/build-styles.mjs",
-    "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
+    "build:registry": "node scripts/build-registry.mjs",
+    "build:guide-status": "node scripts/build-guide-status.mjs",
+    "build": "npm run build:tokens && npm run build:themes && npm run build:styles && npm run build:registry && npm run build:guide-status",
     "test:parity": "node scripts/check-parity.mjs",
     "test:contract": "node scripts/check-contract.mjs",
+    "test:dtcg": "node scripts/check-dtcg.mjs",
     "docs:serve": "serve -l 4178 ../..",
+    "docs:build": "node scripts/build-docs-index.mjs",
+    "test:docs": "node scripts/check-docs-coverage.mjs",
     "size:css": "node scripts/size-report.mjs --check",
     "size:css:update": "node scripts/size-report.mjs --update",
+    "test:registry:consumer": "node ../../tests/registry-consumer/run.mjs",
     "prepublishOnly": "npm run build && npm run test:parity && npm run test:contract"
   },
   "devDependencies": {
     "postcss": "^8.4.0",
     "postcss-import": "^16.1.1",
-    "style-dictionary": "^4.0.0"
+    "style-dictionary": "^5.5.0"
   }
 }

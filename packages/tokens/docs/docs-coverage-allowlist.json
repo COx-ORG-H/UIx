@@ -1,0 +1,4 @@
+{
+  "_note": "DOCS-4 docs-coverage allowlist. Each id is an exported component that does NOT yet have a docs/content/<id>.json page. This list is the DOCS-6 burn-down: remove an id as its page lands. Goal = empty (test:docs green with [] means every component is documented). Matches the raw-value-allowlist.json convention.",
+  "allow": []
+}

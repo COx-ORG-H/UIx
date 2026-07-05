@@ -1,0 +1,23 @@
+{
+  "$comment": "Scaffolded by scripts/gen-docs-content.mjs from the CSS header + api.md + design-system policy (DOCS-6). Refine freely; the docs-coverage gate requires overview + do + dont + a11yNotes.",
+  "overview": "The select (native, styled) — a thin, typed React wrapper over the UIx `.uix-*` CSS, themed entirely by the --uix-* contract. Its props (size) are typed against the shipped API.",
+  "whenToUse": [
+    "Reach for Select when you need select (native, styled) styled from the shared token contract.",
+    "Prefer it over ad-hoc markup so brand + dark theming and accessibility stay consistent."
+  ],
+  "do": [
+    "Always pair Select with a visible <label> (or the Field wrapper) — associate them by id.",
+    "Surface validation errors in text, not colour alone, and link them via aria-describedby.",
+    "Keep the control keyboard-operable end to end; it renders a native form element for that reason."
+  ],
+  "dont": [
+    "Don't use the placeholder as the label — it disappears on input and fails for screen readers.",
+    "Don't remove the focus-visible ring; it is the only affordance for keyboard users.",
+    "Don't hardcode spacing/colour — compose from the --uix-* contract so it themes and re-brands."
+  ],
+  "a11yNotes": [
+    "Select renders a native form control, so focus, activation, and disabled semantics come from the platform.",
+    "It needs an accessible name from an associated <label> or aria-label.",
+    "The focus-visible ring is a --uix-* token and meets the 3:1 non-text contrast minimum in both themes."
+  ]
+}

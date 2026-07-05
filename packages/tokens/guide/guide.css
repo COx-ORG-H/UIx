@@ -142,3 +142,18 @@
 .uix-icon-cell code { font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted); }
 .uix-icon-cell[data-copied] code { color: var(--uix-success); }
 .uix-icon-cell[data-copied] code::after { content: " ✓"; }
+
+/* ---- maturity badges (A11Y-5): text-based (not colour-only), themed from --uix-* tokens ---- */
+.uix-badge {
+  display: inline-flex; align-items: center;
+  margin-left: var(--uix-space-2);
+  padding: 0 var(--uix-space-2);
+  border-radius: var(--uix-radius-pill);
+  border: 1px solid var(--uix-border);
+  font-size: var(--uix-text-eyebrow); font-weight: 600;
+  letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+  line-height: 1.6; vertical-align: middle;
+}
+.uix-badge--draft, .uix-badge--unknown { color: var(--uix-text-muted); background: var(--uix-bg-subtle); }
+.uix-badge--beta { color: var(--uix-info-text); background: var(--uix-info-bg); border-color: transparent; }
+.uix-badge--stable { color: var(--uix-success); background: var(--uix-success-bg); border-color: transparent; }

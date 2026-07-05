@@ -162,3 +162,39 @@ export type { KanbanProps, KanbanColumnProps, KanbanCardProps } from './componen
 
 export { Tree } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.js';
+
+// --- breadth batch A ---
+export { Breadcrumbs, BreadcrumbItem } from './components/Breadcrumbs.js';
+export type { BreadcrumbsProps, BreadcrumbItemProps } from './components/Breadcrumbs.js';
+export { Kbd } from './components/Kbd.js';
+export type { KbdProps } from './components/Kbd.js';
+export { Steps, Step } from './components/Steps.js';
+export type { StepsProps, StepProps, StepState } from './components/Steps.js';
+export { Sla } from './components/Sla.js';
+export type { SlaProps, SlaState } from './components/Sla.js';
+export { Heartbeat } from './components/Heartbeat.js';
+export type { HeartbeatProps, HeartbeatTone } from './components/Heartbeat.js';
+
+// --- breadth batch B ---
+export { AuditLog, AuditLogItem } from './components/AuditLog.js';
+export type { AuditLogProps, AuditLogItemProps } from './components/AuditLog.js';
+export { NotificationCenter, NotificationItem } from './components/NotificationCenter.js';
+export type { NotificationCenterProps, NotificationItemProps } from './components/NotificationCenter.js';
+export { Reactions, Reaction } from './components/Reactions.js';
+export type { ReactionsProps, ReactionProps } from './components/Reactions.js';
+export { Attachment, AttachmentList } from './components/Attachment.js';
+export type { AttachmentProps, AttachmentListProps } from './components/Attachment.js';
+export { ViewMenu, ViewMenuGroup, ViewMenuRow } from './components/ViewMenu.js';
+export type { ViewMenuProps, ViewMenuGroupProps, ViewMenuRowProps } from './components/ViewMenu.js';
+
+// --- breadth batch C ---
+export { ContactCard, ContactCardStat } from './components/ContactCard.js';
+export type { ContactCardProps, ContactCardStatProps, ContactAction } from './components/ContactCard.js';
+export { Pipeline, PipelineStage } from './components/Pipeline.js';
+export type { PipelineProps, PipelineStageProps, PipelineStageState } from './components/Pipeline.js';
+export { Flow, FlowChip } from './components/Flow.js';
+export type { FlowProps, FlowChipProps, FlowVariant } from './components/Flow.js';
+export { Media } from './components/Media.js';
+export type { MediaProps } from './components/Media.js';
+export { Lightbox } from './components/Lightbox.js';
+export type { LightboxProps } from './components/Lightbox.js';

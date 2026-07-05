@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "@tensor_1/tokens/css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": "uix-"
+  },
+  "aliases": {
+    "components": "@tensor_1/react",
+    "ui": "@tensor_1/react",
+    "utils": "@tensor_1/react"
+  },
+  "uix": {
+    "description": "UIx v2 descriptor for CSS-only / non-React consumers. React stays npm-canonical (@tensor_1/react); this points non-React consumers at the token contract, the brand themes, and the copy-in registry (ADR-0017).",
+    "css": "@tensor_1/tokens/css",
+    "components": "@tensor_1/tokens/styles",
+    "bundle": "@tensor_1/tokens/bundle",
+    "themes": [
+      "@tensor_1/tokens/themes/tensor",
+      "@tensor_1/tokens/themes/posx",
+      "@tensor_1/tokens/themes/shopx",
+      "@tensor_1/tokens/themes/mission-control"
+    ],
+    "registry": "@tensor_1/tokens/registry/registry.json",
+    "docs": "@tensor_1/tokens/docs/consume-css-only.md"
+  }
+}

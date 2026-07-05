@@ -10,13 +10,21 @@
   ],
   "scripts": {
     "build": "npm run build -w @tensor_1/tokens",
-    "build:react": "cd packages/react && npm ci && npm run build",
+    "build:react": "npm run build -w @tensor_1/react",
     "build:all": "npm run build && npm run build:react",
     "test:parity": "npm run test:parity -w @tensor_1/tokens",
     "test:contract": "npm run test:contract -w @tensor_1/tokens",
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",
+    "test:registry": "node packages/tokens/scripts/check-registry.mjs",
+    "test:roadmap": "node packages/tokens/scripts/check-roadmap-coverage.mjs",
+    "test:docs": "npm run test:docs -w @tensor_1/tokens",
+    "test:examples": "node examples/verify-all.mjs",
+    "test:registry:consumer": "node tests/registry-consumer/run.mjs",
+    "test:a11y-status": "node packages/react/scripts/check-status.mjs",
+    "test:a11y-react": "npm run test:a11y -w @tensor_1/react",
+    "test:size": "npm run size -w @tensor_1/react",
     "test:size:css": "npm run size:css -w @tensor_1/tokens",
     "serve:styleguide": "serve -l 4178 .",
     "test:visual": "playwright test tests/visual",
@@ -31,6 +39,10 @@
     "@changesets/cli": "^2.31.0",
     "@microsoft/api-extractor": "^7.58.9",
     "@playwright/test": "^1.61.0",
-    "serve": "^14.2.6"
-  }
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "serve": "^14.2.6",
+    "vitest": "4.1.9"
+  },
+  "//react": "React 18.3.1 is a ROOT devDep (not used by the root itself) so the A11Y-3 jest-axe harness resolves a SINGLE React across the workspace: it satisfies @testing-library/react's ^18||^19 peer, so npm does not also pull React 19. NOTE: an `overrides` block was removed here — it made npm-install's lockfile fail npm-ci's own sync check (EUSAGE); the direct devDep alone pins React 18."
 }

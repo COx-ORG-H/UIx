@@ -1,0 +1,23 @@
+{
+  "$comment": "Scaffolded by scripts/gen-docs-content.mjs from the CSS header + api.md + design-system policy (DOCS-6). Refine freely; the docs-coverage gate requires overview + do + dont + a11yNotes.",
+  "overview": "The sidebar nav — a thin, typed React wrapper over the UIx `.uix-*` CSS, themed entirely by the --uix-* contract. Its props (brand, children, collapsed, onToggle, toggleIcon) are typed against the shipped API.",
+  "whenToUse": [
+    "Reach for Sidebar when you need sidebar nav styled from the shared token contract.",
+    "Prefer it over ad-hoc markup so brand + dark theming and accessibility stay consistent."
+  ],
+  "do": [
+    "Wrap Sidebar in a landmark (<nav>) with an aria-label when there is more than one on a page.",
+    "Mark the current location with aria-current so it is announced, not just styled.",
+    "Keep the tab/reading order matching the visual order."
+  ],
+  "dont": [
+    "Don't signal the active item with colour alone — pair it with aria-current or a text cue.",
+    "Don't build navigation from non-interactive <div>s; use links/buttons.",
+    "Don't hide the focus-visible ring on the interactive items."
+  ],
+  "a11yNotes": [
+    "Sidebar uses real links/buttons, so keyboard traversal and activation are native.",
+    "The current item carries aria-current; the region is labelled when ambiguous.",
+    "Focus order follows visual order."
+  ]
+}

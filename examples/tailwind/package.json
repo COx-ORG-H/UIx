@@ -1,0 +1,15 @@
+{
+  "name": "uix-tailwind-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "FR-3 — UIx --uix-* tokens consumed as Tailwind v4 utilities.",
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o dist/output.css"
+  },
+  "dependencies": {
+    "@tensor_1/tokens": "*"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.2"
+  }
+}

@@ -40,3 +40,26 @@ The promise consumers (Tensor, POSx, SHOPx, mission-control) depend on, frozen s
 ## Why this exists
 
 ADR-0004 set "staleness — never auth/build breakage — as the worst acceptable failure mode," and ADR-0016 made the silent-freeze class structurally impossible on the *distribution* side (versioned, integrity-hashed npm). This process closes the *authoring* side: the contract cannot drift silently because the gate fails, and it cannot change deliberately without a recorded, reviewed decision.
+
+## Canonical contract paths (GOV-5)
+
+The `--uix-*` contract surface — the **narrowed** list (correction C5) that the automation guards.
+This is the single source of truth; **CODEOWNERS**, `.github/workflows/contract-guard.yml` (GOV-3),
+`scripts/check-contract-diff.mjs`, and `Docs/reviewer-policy.md` all mirror it, and the list MUST
+byte-match `scripts/check-contract-diff.mjs`'s `CONTRACT_PATHS`:
+
+- `packages/tokens/tokens/`
+- `packages/tokens/themes/`
+- `packages/tokens/tests/tokens.baseline.css`
+- `packages/tokens/style-dictionary.config.mjs`
+- `packages/tokens/scripts/build-styles.mjs`
+- `packages/tokens/scripts/build-themes.mjs`
+- `packages/tokens/scripts/check-parity.mjs`
+- `packages/tokens/scripts/check-contract.mjs`
+
+It is deliberately **NOT** the whole `packages/tokens/scripts/` directory — new non-contract scripts
+(docs, registry, size, dtcg, roadmap tooling) must not trip the guard.
+
+A PR that touches any of these must carry the **`contract-change`** label (defined in
+`.github/labels.yml`) or check the "Contract change" box in the PR body; the contract-guard gate
+enforces it.

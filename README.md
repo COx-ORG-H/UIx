@@ -23,6 +23,22 @@ npx serve .
 
 No build step.
 
+## Documentation site
+
+A build-free **component explorer** (per-component pages: overview, live example in light + dark,
+props table derived from the shipped types, do/don't, and accessibility notes) is published to
+GitHub Pages:
+
+**<https://harisxdizdarevic.github.io/UIx/docs/explorer.html>**
+
+It is deployed by [`.github/workflows/docs-pages.yml`](.github/workflows/docs-pages.yml) on every push
+to `master`. Locally, serve the repo and open `packages/tokens/docs/explorer.html`. The props tables
+are generated from `packages/react/etc/uix-react.api.md` via `npm run docs:build -w @tensor_1/tokens`,
+so they stay in lockstep with the public API.
+
+> First-time setup (one-off, repo admin): **Settings → Pages → Source = "GitHub Actions"** to enable
+> the deployment.
+
 ## Use it in a project
 
 Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind
@@ -42,7 +58,27 @@ theme, and typed TS constants). Add it as a dependency and import what your stac
 
 Then add `styles/base.css` (+ `styles/motion.css`) and the `styles/components/*.css` files you need,
 in load order `base.css` → `utilities.css` → `motion.css` → `components/*` (cascade layers make order
-robust regardless). Copy-paste still works too — every file references the same `--uix-*` names.
+robust regardless).
+
+### CSS-only / non-React consumers
+
+React is the canonical wrapper channel, but the `--uix-*` contract and `.uix-*` component CSS work
+in **any** stack. Two documented, gated paths (ADR-0017):
+
+- **npm import** the component CSS. Two entries:
+  - `@tensor_1/tokens/bundle` — a **single file** (tokens + base + utilities + motion + components),
+    just add a theme. Simplest for a no-framework page.
+  - `@tensor_1/tokens/styles` — **components only**; pair it with `@tensor_1/tokens/css` + a theme.
+    Load order is `base → utilities → motion → components` (cascade layers make it order-robust).
+- **Copy-in a single component** via the generated, drift-gated manifest
+  [`registry/registry.json`](packages/tokens/registry/registry.json) — it lists each component's CSS
+  file and exact `--uix-*` dependencies. The `uix add` CLI copies one in for you:
+  `npx uix add button --dest ./styles`.
+
+Full walkthrough (with a worked button example):
+[**`packages/tokens/docs/consume-css-only.md`**](packages/tokens/docs/consume-css-only.md). The
+authoritative component inventory and maturity is
+[`Docs/component-roadmap.md`](Docs/component-roadmap.md).
 
 Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
 The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.
@@ -102,6 +138,9 @@ npm run test:parity  # assert the generated CSS still matches the contract basel
 Generated output under `build/` is committed (so the showcase stays build-free to open) and `package.json`
 `exports` maps `./css`, `./tailwind`, `./ts`, and `./themes/*` for consumers. The package is `private` by
 default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove `private` before publishing.
+
+Shipped bundle sizes are budgeted and gated in CI (and, via the reusable workflow, at publish):
+see [`Docs/performance-budgets.md`](Docs/performance-budgets.md).
 
 ## Fonts & icons
 

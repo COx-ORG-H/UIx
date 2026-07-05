@@ -2,6 +2,10 @@
  *
  * Run: npm run build:tokens   (or  node style-dictionary.config.mjs)
  *
+ * Style Dictionary v4 AND v5 compatible (DTCG-3): the async API used here
+ * (registerTransform / new StyleDictionary / hasInitialized / getPlatformTokens /
+ * token.original.$value) behaves identically under v5.5.0 — the bump is byte-neutral for --uix-*.
+ *
  * Design notes (load-bearing — read before changing):
  *  - We DO NOT use a built-in transformGroup. Two explicit transforms run:
  *      uix/name  — name = "uix-" + token path joined by "-".  NOT name/kebab, because

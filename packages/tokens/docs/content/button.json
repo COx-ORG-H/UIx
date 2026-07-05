@@ -1,0 +1,28 @@
+{
+  "overview": "The button triggers an action or a change of state. It ships six visual variants and three sizes, all built from --uix-* tokens so it re-themes automatically in light and dark. Prefer a real <button> element for actions and an anchor styled as a button only when the target is a navigable URL.",
+  "whenToUse": [
+    "Use `primary` for the single most important action in a view; keep it to one per context.",
+    "Use `secondary` or `outline` for supporting actions that sit beside the primary one.",
+    "Use `ghost` or `link` for low-emphasis or inline actions where a filled button would be too heavy.",
+    "Use `danger` only for destructive actions (delete, remove) and pair it with a confirmation."
+  ],
+  "do": [
+    "Give every button a clear, action-first label (\"Save changes\", not \"OK\").",
+    "Keep exactly one `primary` button per decision point so the eye lands on it.",
+    "Use the `loading` state (data-loading) for async actions instead of disabling silently.",
+    "Render an actual <button> for actions so it is keyboard- and screen-reader-operable for free."
+  ],
+  "dont": [
+    "Don't stack multiple `primary` buttons — competing emphasis reads as no emphasis.",
+    "Don't rely on colour alone to signal `danger`; the label must also say what will happen.",
+    "Don't use a `link` variant for a real navigation link — use an anchor so it opens in-context.",
+    "Don't remove the focus-visible ring; it is the only affordance for keyboard users."
+  ],
+  "a11yNotes": [
+    "Renders a native <button>, so Space and Enter activation, focus order, and disabled semantics come from the platform.",
+    "The focus-visible ring is a --uix-* token and meets the 3:1 non-text contrast minimum in both themes.",
+    "`loading` should be paired with an accessible status (aria-busy or an aria-live region) so the wait is announced.",
+    "Icon-only buttons must carry an aria-label; a bare glyph has no accessible name."
+  ],
+  "liveExampleHtml": "<div style=\"display:flex;flex-wrap:wrap;gap:10px;align-items:center\"><button class=\"uix-btn uix-btn--primary\">Primary</button><button class=\"uix-btn uix-btn--secondary\">Secondary</button><button class=\"uix-btn uix-btn--outline\">Outline</button><button class=\"uix-btn uix-btn--ghost\">Ghost</button><button class=\"uix-btn uix-btn--danger\">Delete</button><button class=\"uix-btn uix-btn--link\">Link</button><button class=\"uix-btn uix-btn--primary\" data-loading>Saving</button></div>"
+}

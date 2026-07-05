@@ -1,0 +1,33 @@
+name: Contract guard
+
+# GOV-3 — fail any PR that edits the --uix-* contract surface without acknowledging it (the
+# `contract-change` label OR the opt-in box in the PR body). STANDALONE workflow: it always runs to
+# completion (green or red) on every pull_request, so it is safe to mark as a REQUIRED status check.
+# The canonical path list lives in scripts/check-contract-diff.mjs and mirrors
+# Docs/contract-change-process.md (the single source of truth; correction C5 narrowed it).
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history so `git diff origin/<base>...HEAD` can resolve the base branch
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check contract-surface diff
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/check-contract-diff.mjs

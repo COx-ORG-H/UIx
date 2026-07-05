@@ -3,6 +3,13 @@ name: CI
 # Trust gates for every PR + default-branch push (ADR-0016 Decision 6). The same
 # gates are a hard precondition for publishing (see release.yml). Keep this list and
 # the release preconditions in sync.
+#
+# Install note: jobs use `npm install` (not `npm ci`). Under npm 10 this workspace hits two npm
+# optional-dependency/lockfile bugs — `npm ci` skips rollup's native binary (@rollup/rollup-linux-
+# x64-gnu; npm/cli#4828, breaking tsup/vitest) AND rejects a freshly `npm install`-generated lockfile
+# as out-of-sync (EUSAGE). `npm install` resolves optional deps correctly and honours the committed
+# lockfile. (`build:react` builds via the workspace-hoisted deps, so there is no inner per-package
+# `npm ci` anymore — the "prune" notes below are historical.)
 
 on:
   pull_request:
@@ -34,10 +41,15 @@ jobs:
           cache: npm
 
       - name: Install (workspace)
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build all (tokens + themes + styles + react)
         run: npm run build:all
+
+      # DTCG-2: token SOURCE is structurally valid vs the ADR-0019 ratified $type set. Reads JSON
+      # only (never rebuilds), so it is parity-neutral. Mirrored to publishing via release.yml (GOV-6).
+      - name: DTCG validity
+        run: npm run test:dtcg -w @tensor_1/tokens
 
       - name: Token value parity
         run: npm run test:parity
@@ -48,8 +60,79 @@ jobs:
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
+      # A11Y-2: every exported React component carries a maturity status (draft|beta|stable);
+      # "stable" requires a committed manual-SR result. Mirrored to publishing via release.yml (GOV-6).
+      - name: Component maturity status
+        run: npm run test:a11y-status
+
+      # DIST-2: the copy-in registry manifest is regenerated-and-diffed against the shipped CSS.
+      - name: Registry manifest up-to-date
+        run: npm run test:registry
+
+      # DOCS-4: every exported component has a docs page or is on the shrinking allowlist (DOCS-6).
+      - name: Docs coverage
+        run: npm run test:docs
+
+      # FR-5: each consumer example (plain-css, tailwind, ts) packs the package to a tarball and
+      # installs it into an isolated consumer — proving the published exports actually resolve.
+      - name: Consumer examples
+        run: npm run test:examples
+
+      # BREADTH-5: the component roadmap covers every CSS component exactly once (no gaps/phantoms).
+      - name: Roadmap coverage
+        run: npm run test:roadmap
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
+
+  size:
+    # PERF-1: published-bundle budgets. A SEPARATE job (not gates) because it needs the react
+    # workspace devDeps (size-limit) that build:all's inner `npm ci` prunes. Owns ALL size CI
+    # wiring — React budgets (test:size) AND per-CSS-file budgets (test:size:css, PERF-2).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm install --no-audit --no-fund
+
+      # tokens build → build/css (test:size:css baseline); react build → dist (test:size).
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      # tsup directly (NOT build:react) so the root-hoisted size-limit isn't pruned by an inner npm ci.
+      - name: Build react (dist)
+        run: npm run build -w @tensor_1/react
+
+      - name: React bundle budgets (size-limit + no-echarts)
+        run: npm run test:size
+
+      - name: Per-CSS-file size budgets
+        run: npm run test:size:css
+
+  react-a11y:
+    # A11Y-3: jest-axe over RENDERED React components (jsdom). SEPARATE job — needs the react
+    # workspace test devDeps (vitest, @testing-library, jest-axe, react 18) that build:all's inner
+    # npm ci prunes. Vitest transforms the TSX source directly, so no build step is required.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm install --no-audit --no-fund
+
+      - name: A11y (jest-axe) over React components
+        run: npm run test:a11y-react
 
   visual:
     # Visual regression over the static styleguide (ADR-0016 Decision 6 — S5). Runs in the
@@ -63,7 +146,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install (workspace)
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       # tokens build only (regenerates build/css for the static styleguide). NOT build:all:
       # its inner `cd packages/react && npm ci` reconciles the workspace and prunes the root
@@ -98,7 +181,7 @@ jobs:
           cache: npm
 
       - name: Install (workspace)
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       # tokens build only (static styleguide CSS). NOT build:all — its inner react `npm ci`
       # prunes the root devDeps (playwright, serve) the a11y run needs.

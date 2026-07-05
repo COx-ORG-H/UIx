@@ -1,0 +1,15 @@
+/* FR-3 — Tailwind v4 consumer entry.
+ *
+ * Import order matters (see the README "Use it in a project" recipe):
+ *   1. the --uix-* contract (light on :root, dark on [data-theme="dark"])
+ *   2. the product brand overlay
+ *   3. the @theme that turns --uix-* tokens INTO Tailwind utilities (bg-uix-accent, …)
+ *   4. Tailwind itself
+ * The @theme values stay `var(--uix-*)`, so brand + dark still cascade through the utilities. */
+@import "@tensor_1/tokens/css";
+@import "@tensor_1/tokens/themes/tensor";
+@import "@tensor_1/tokens/tailwind";
+@import "tailwindcss";
+
+/* Scan the demo markup so the utilities it uses are generated into the output. */
+@source "../index.html";

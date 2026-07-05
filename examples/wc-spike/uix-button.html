@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UIx × Web Components — FR-1 spike</title>
+  <!-- the --uix-* contract + a brand theme + the component CSS (for the light-DOM variant) -->
+  <link rel="stylesheet" href="../../packages/tokens/build/css/tokens.css">
+  <link rel="stylesheet" href="../../packages/tokens/themes/tensor.css">
+  <link rel="stylesheet" href="../../packages/tokens/build/css/components.css">
+  <style>
+    body { font-family: system-ui, sans-serif; background: var(--uix-bg-app); color: var(--uix-text); padding: 32px; }
+    .row { display: flex; gap: 16px; align-items: center; margin: 12px 0; }
+    .label { width: 220px; color: var(--uix-text-muted); font-size: 13px; }
+    button.toggle { margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Web-components spike</h1>
+  <p>Each row puts a plain <code>.uix-btn</code> next to <code>&lt;uix-button&gt;</code> (light DOM)
+     and <code>&lt;uix-button shadow&gt;</code> (shadow DOM). They should look identical. Toggle the
+     theme to confirm <code>--uix-*</code> tokens (incl. the brand) resolve through the shadow boundary.</p>
+
+  <button class="uix-btn uix-btn--secondary toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">Toggle theme</button>
+
+  <div class="row">
+    <span class="label">plain <code>.uix-btn</code></span>
+    <button class="uix-btn uix-btn--primary">Save changes</button>
+  </div>
+  <div class="row">
+    <span class="label">&lt;uix-button&gt; (light DOM)</span>
+    <uix-button variant="primary">Save changes</uix-button>
+  </div>
+  <div class="row">
+    <span class="label">&lt;uix-button shadow&gt; (shadow DOM)</span>
+    <uix-button variant="primary" shadow>Save changes</uix-button>
+  </div>
+
+  <script type="module" src="uix-button.mjs"></script>
+</body>
+</html>

@@ -1,5 +1,27 @@
 # @tensor_1/tokens
 
+## 2.7.0
+
+### Minor Changes
+
+- d78b9f1: Add a `components.json` descriptor (shadcn-recognizable shape) and a `docs/consume-css-only.md`
+  guide for CSS-only / non-React consumers (DIST-4). Both ship in the package and point at the token
+  contract, the brand themes, and the copy-in `registry/registry.json` (ADR-0017).
+- de9ea78: Add the copy-in `registry/registry.json` manifest (DIST-2, per ADR-0017): a generated inventory
+  of every CSS component — its file, cascade layer, and exact `--uix-*` token dependencies — shipped
+  in the package for non-npm / copy-in consumers. Drift-gated in CI (`test:registry`).
+- 4b86a36: Add the `uix` copy-in CLI (DIST-3, ADR-0017 option C): `uix add <name> --dest <dir>` copies a
+  component's CSS out of the package and prints the `--uix-*` imports it needs; `uix list` enumerates
+  the registry. The package now ships a `uix` bin plus the component source CSS (`styles/components/`)
+  so the copy-in path works from an npm install.
+
+### Patch Changes
+
+- 01375c8: Tooling-only: bump `style-dictionary` `^4` → `^5` (5.5.0). Verified byte-identical `--uix-*`
+  output (git diff of `build/` empty; SHA-256 of tokens.css / tailwind / ts unchanged; parity +
+  contract + dtcg green). No `--uix-*` contract change — see
+  `Docs/2026-07-03-style-dictionary-v5-migration.md` (DTCG-3).
+
 ## 2.6.0
 
 ### Minor Changes

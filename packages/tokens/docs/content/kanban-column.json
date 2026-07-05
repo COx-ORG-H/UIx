@@ -1,0 +1,23 @@
+{
+  "$comment": "Scaffolded by scripts/gen-docs-content.mjs from the CSS header + api.md + design-system policy (DOCS-6). Refine freely; the docs-coverage gate requires overview + do + dont + a11yNotes.",
+  "overview": "The kanban board / column — a thin, typed React wrapper over the UIx `.uix-*` CSS, themed entirely by the --uix-* contract. It composes within the kanban component. Its props (children, count, title) are typed against the shipped API.",
+  "whenToUse": [
+    "Reach for KanbanColumn when you need kanban board / column styled from the shared token contract.",
+    "Prefer it over ad-hoc markup so brand + dark theming and accessibility stay consistent."
+  ],
+  "do": [
+    "Use KanbanColumn to present information clearly; keep its content honest to the data.",
+    "Compose spacing and colour from the --uix-* contract so it themes and re-brands cleanly.",
+    "Give any interactive affordance inside it a discernible accessible name."
+  ],
+  "dont": [
+    "Don't use it purely for visual layout where a semantic element belongs.",
+    "Don't encode meaning in colour alone; pair tone with text or an icon + label.",
+    "Don't hardcode px/hex — the component is built to inherit the token scale."
+  ],
+  "a11yNotes": [
+    "KanbanColumn is presentational; keep its DOM semantic (headings, lists, and text where they belong).",
+    "Decorative glyphs get aria-hidden; meaningful ones get a text alternative.",
+    "Colour tones meet contrast in both themes via the --uix-* tokens."
+  ]
+}

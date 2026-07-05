@@ -16,7 +16,15 @@ const external = ['react', 'react/jsx-runtime', 'react-dom', 'echarts', 'echarts
 // per-file directive split is irrelevant for this format.
 export default defineConfig([
   {
-    entry: ['src/**/*.ts', 'src/**/*.tsx'],
+    // All source modules, per-file (see directive note above), EXCEPT test files and the
+    // jsdom a11y harness (src/a11y/**) — those are dev-only and must not ship in dist.
+    entry: [
+      'src/**/*.ts',
+      'src/**/*.tsx',
+      '!src/**/*.test.ts',
+      '!src/**/*.test.tsx',
+      '!src/a11y/**',
+    ],
     format: ['esm'],
     dts: true,
     bundle: false,

@@ -1,0 +1,657 @@
+{
+  "$comment": "Component maturity registry (A11Y-2). Key = kebab-case export name. status: draft | beta | stable. \"stable\" REQUIRES a manual screen-reader result at <workspace>/Docs/a11y/results/<id>.md (see Docs/a11y/maturity-model.md). Validated by scripts/check-status.mjs against etc/uix-react.api.md — regenerate/verify with npm run test:a11y-status.",
+  "alert": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "app-shell": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "attachment": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "attachment-list": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "audit-log": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "audit-log-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "avatar": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "avatar-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "breadcrumb-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "breadcrumbs": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "bulk-bar": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "button": {
+    "status": "beta",
+    "a11y": {
+      "manualSR": "Docs/a11y/results/button.md"
+    }
+  },
+  "button-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "card": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "cell-strong": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "cell-sub": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "checkbox": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "command-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "command-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "command-palette": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "comments": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "composer": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "composer-bar": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "contact-card": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "contact-card-stat": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "description-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "description-list": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "detail-layout": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "drawer": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "empty-state": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "error-state": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "expand-toggle": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "field": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "flow": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "flow-chip": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "heartbeat": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "highlighted": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "inbox": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "inbox-detail": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "inbox-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "inbox-list": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "input": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "input-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "kanban": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "kanban-card": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "kanban-column": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "kbd": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "label": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "lightbox": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "list": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "list-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "loading-state": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "mark": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "media": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "meter": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "modal": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "nav-favourites": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "nav-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "nav-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "note": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "notification-center": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "notification-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "page-header": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "pagination": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "peek": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "pipeline": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "pipeline-stage": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "popover": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "progress": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "prose": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "radio": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "radio-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "reaction": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "reactions": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "row-action": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "row-actions": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "segmented": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "segmented-option": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "select": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "sidebar": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "sidebar-section": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "skeleton": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "sla": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "spinner": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "star-button": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "stat": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "status-pill": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "step": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "steps": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "sub-nav-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "switch": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "tab": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "table": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "table-wrap": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "tabs": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "td": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "textarea": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "th": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "timeline": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "timeline-item": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "toast": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "toaster": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "tooltip": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "tr": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "tree": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "user-chip": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu-group": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  },
+  "view-menu-row": {
+    "status": "draft",
+    "a11y": {
+      "manualSR": null
+    }
+  }
+}
