@@ -86,6 +86,14 @@ function asNum(v: unknown): number {
   return typeof v === 'number' ? v : Number(v);
 }
 
+/** Epoch-ms for a date cell/value: a Date, an epoch number, or an ISO/parseable string.
+ *  Returns NaN for anything unparseable (so a date filter simply doesn't match — never throws). */
+function asDate(v: unknown): number {
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'number') return v;
+  return Date.parse(String(v));
+}
+
 export function matchFilter(row: Row, f: ColumnFilter): boolean {
   const cell = row[f.field];
   switch (f.op) {
@@ -94,12 +102,17 @@ export function matchFilter(row: Row, f: ColumnFilter): boolean {
     case 'contains': return String(cell ?? '').toLowerCase().includes(String(f.value ?? '').toLowerCase());
     case 'equals':   return String(cell ?? '') === String(f.value ?? '');
     case 'startsWith': return String(cell ?? '').toLowerCase().startsWith(String(f.value ?? '').toLowerCase());
-    case 'eq':  return asNum(cell) === asNum(f.value);
-    case 'lt':  return asNum(cell) < asNum(f.value);
-    case 'gt':  return asNum(cell) > asNum(f.value);
-    case 'between': {
-      const [lo, hi] = (f.value as Primitive[]).map(asNum);
-      return asNum(cell) >= lo && asNum(cell) <= hi;
+    case 'eq': case 'lt': case 'gt': case 'between': {
+      // number and date share these ops; kind:'date' compares by parsed timestamp
+      // (asNum on an ISO string is NaN, which would silently match zero rows).
+      const num = f.kind === 'date' ? asDate : asNum;
+      const c = num(cell);
+      if (f.op === 'between') {
+        const [lo, hi] = (f.value as Primitive[]).map(num);
+        return c >= lo && c <= hi;
+      }
+      const v = num(f.value);
+      return f.op === 'eq' ? c === v : f.op === 'lt' ? c < v : c > v;
     }
     case 'is':  return Boolean(cell) === Boolean(f.value);
     default:    return true;
@@ -160,8 +173,37 @@ export function serializeView(v: ViewState): string {
   if (v.columns?.length) p.set('cols', v.columns.join(','));
   if (v.density && v.density !== 'standard') p.set('density', v.density);
   if (v.q) p.set('q', v.q);
-  if (v.filters?.length) p.set('filter', v.filters.map((f) => `${f.field}~${f.op}~${(Array.isArray(f.value) ? f.value.join('|') : f.value ?? '')}`).join(','));
+  if (v.filters?.length) p.set('filter', v.filters.map((f) => `${f.field}~${f.kind}~${f.op}~${Array.isArray(f.value) ? f.value.join('|') : f.value ?? ''}`).join(','));
   return p.toString();
+}
+
+// Ops whose value is a list — enum membership and numeric/date ranges; everything else
+// is scalar. Array-ness is derived from the op, NOT from whether the encoded value
+// happens to contain a '|', so a single-element enum like ['open'] survives the trip.
+const MULTI_VALUE_OPS = new Set<FilterOp>(['isAnyOf', 'isNoneOf', 'between']);
+const FILTER_KINDS = new Set<FilterKind>(['enum', 'text', 'number', 'date', 'boolean']);
+
+/** Reconstruct a scalar filter value in its original type from its string encoding. */
+function decodeFilterValue(kind: FilterKind, raw: string): Primitive {
+  if (kind === 'number') return Number(raw);
+  if (kind === 'boolean') return raw === 'true';
+  return raw; // enum / text / date stay strings (asDate parses date strings at match time)
+}
+
+/** Parse one serialized filter token back into a typed ColumnFilter.
+ *  New format: `field~kind~op~value`. Legacy (pre-kind) `field~op~value` tokens still
+ *  parse — as text filters — so previously saved/linked view URLs keep working. */
+function parseFilterToken(tok: string): ColumnFilter {
+  const parts = tok.split('~');
+  const hasKind = FILTER_KINDS.has(parts[1] as FilterKind); // kind names never collide with op names
+  const field = parts[0];
+  const kind = (hasKind ? parts[1] : 'text') as FilterKind;
+  const op = (hasKind ? parts[2] : parts[1]) as FilterOp;
+  const raw = parts.slice(hasKind ? 3 : 2).join('~'); // a value may itself contain '~'
+  const value: Primitive | Primitive[] = MULTI_VALUE_OPS.has(op)
+    ? (raw === '' ? [] : raw.split('|').map((s) => decodeFilterValue(kind, s)))
+    : decodeFilterValue(kind, raw);
+  return { field, kind, op, value };
 }
 
 /** Parse a query string (with or without leading '?') back into a ViewState. */
@@ -180,11 +222,7 @@ export function parseView(qs: string): ViewState {
   const q = p.get('q');
   if (q) v.q = q;
   const filter = p.get('filter');
-  if (filter) v.filters = filter.split(',').filter(Boolean).map((tok) => {
-    const [field, op, raw] = tok.split('~');
-    const value: Primitive | Primitive[] = raw?.includes('|') ? raw.split('|') : raw;
-    return { field, kind: 'text', op: op as FilterOp, value } as ColumnFilter;
-  });
+  if (filter) v.filters = filter.split(',').filter(Boolean).map(parseFilterToken);
   return v;
 }
 

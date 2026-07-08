@@ -121,6 +121,20 @@ test('matchFilter: boolean is', () => {
   assert.equal(matchFilter({ b: true }, { field: 'b', kind: 'boolean', op: 'is', value: false }), false);
 });
 
+test('matchFilter: date eq / lt / gt / between (kind:date compares as dates, not asNum→NaN)', () => {
+  const d = { field: 'due', kind: 'date' };
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'eq', value: '2026-07-08' }), true);
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'eq', value: '2026-07-09' }), false);
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'lt', value: '2026-12-31' }), true);
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'gt', value: '2026-01-01' }), true);
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'between', value: ['2026-01-01', '2026-12-31'] }), true); // inclusive
+  assert.equal(matchFilter({ due: '2026-07-08' }, { ...d, op: 'between', value: ['2026-08-01', '2026-12-31'] }), false);
+  // epoch-ms values compare identically to their ISO form
+  assert.equal(matchFilter({ due: Date.parse('2026-07-08') }, { ...d, op: 'gt', value: Date.parse('2026-01-01') }), true);
+  // an unparseable date never matches (rather than throwing or matching everything)
+  assert.equal(matchFilter({ due: 'not-a-date' }, { ...d, op: 'lt', value: '2026-12-31' }), false);
+});
+
 test('applyFilters: ANDs across columns; empty list returns a copy', () => {
   const rows = [
     { s: 'open', n: 3 }, { s: 'open', n: 9 }, { s: 'done', n: 3 },
@@ -179,7 +193,7 @@ test('serializeView / parseView: full round-trip', () => {
     columns: ['name', 'age', 'city'],
     density: 'compact',
     q: 'foo',
-    filters: [{ field: 'status', kind: 'text', op: 'isAnyOf', value: ['open', 'wip'] }],
+    filters: [{ field: 'status', kind: 'enum', op: 'isAnyOf', value: ['open', 'wip'] }],
   };
   assert.deepEqual(parseView(serializeView(view)), view);
 });
@@ -191,10 +205,59 @@ test('serializeView: omits standard density and empty sections; tolerates a lead
   assert.deepEqual(parseView('?' + qs), { q: 'x', density: 'comfortable' });
 });
 
-test('parseView: single-value filter comes back as a scalar; sort dir short codes decode', () => {
+test('parseView: legacy (pre-kind) filter format still parses; scalar op stays scalar; sort short codes decode', () => {
+  // Views serialized before `kind` was persisted used `field~op~value` (3 parts).
+  // They must keep parsing — as text filters — so old saved/linked URLs don't break.
   const v = parseView('sort=a:d&filter=owner~equals~ada');
   assert.deepEqual(v.sort, [{ field: 'a', dir: 'descending' }]);
   assert.deepEqual(v.filters, [{ field: 'owner', kind: 'text', op: 'equals', value: 'ada' }]);
+});
+
+/* Every FilterKind × FilterOp must survive serializeView → parseView → matchFilter:
+ * kind, op, and the *typed* value are reconstructed, and the same rows match before
+ * and after. Guards F17/F21/F48/F49 (UIX-FIX-01) — the old parser hardcoded kind:'text',
+ * collapsed single-element arrays to scalars, and had no date branch (asNum → NaN). */
+test('serialize→parse→matchFilter: every FilterKind × FilterOp round-trips losslessly', () => {
+  const rows = [
+    { id: '1', status: 'open', title: 'Alpha', n: 3,  flag: true,  due: '2026-01-15' },
+    { id: '2', status: 'wip',  title: 'Beta',  n: 9,  flag: false, due: '2026-06-30' },
+    { id: '3', status: 'done', title: 'Gamma', n: 3,  flag: true,  due: '2026-12-31' },
+    { id: '4', status: 'open', title: 'Delta', n: 15, flag: false, due: '2026-03-01' },
+  ];
+  const cases = [
+    // enum — incl. the single-element array the old parser collapsed to a scalar
+    { name: 'enum isAnyOf',        f: { field: 'status', kind: 'enum', op: 'isAnyOf',  value: ['open', 'wip'] }, ids: ['1', '2', '4'] },
+    { name: 'enum isAnyOf single', f: { field: 'status', kind: 'enum', op: 'isAnyOf',  value: ['done'] },        ids: ['3'] },
+    { name: 'enum isNoneOf',       f: { field: 'status', kind: 'enum', op: 'isNoneOf', value: ['open'] },        ids: ['2', '3'] },
+    // text
+    { name: 'text contains',   f: { field: 'title', kind: 'text', op: 'contains',   value: 'ta' },    ids: ['2', '4'] },
+    { name: 'text equals',     f: { field: 'title', kind: 'text', op: 'equals',     value: 'Alpha' }, ids: ['1'] },
+    { name: 'text startsWith', f: { field: 'title', kind: 'text', op: 'startsWith', value: 'D' },     ids: ['4'] },
+    // number — values must come back as numbers, not strings
+    { name: 'number eq',      f: { field: 'n', kind: 'number', op: 'eq',      value: 3 },      ids: ['1', '3'] },
+    { name: 'number lt',      f: { field: 'n', kind: 'number', op: 'lt',      value: 9 },      ids: ['1', '3'] },
+    { name: 'number gt',      f: { field: 'n', kind: 'number', op: 'gt',      value: 9 },      ids: ['4'] },
+    { name: 'number between', f: { field: 'n', kind: 'number', op: 'between', value: [3, 9] }, ids: ['1', '2', '3'] },
+    // date — the branch that used to route through asNum → NaN → zero matches
+    { name: 'date eq',      f: { field: 'due', kind: 'date', op: 'eq',      value: '2026-01-15' },                 ids: ['1'] },
+    { name: 'date lt',      f: { field: 'due', kind: 'date', op: 'lt',      value: '2026-04-01' },                 ids: ['1', '4'] },
+    { name: 'date gt',      f: { field: 'due', kind: 'date', op: 'gt',      value: '2026-06-01' },                 ids: ['2', '3'] },
+    { name: 'date between', f: { field: 'due', kind: 'date', op: 'between', value: ['2026-03-01', '2026-12-31'] }, ids: ['2', '3', '4'] },
+    // boolean
+    { name: 'boolean is true',  f: { field: 'flag', kind: 'boolean', op: 'is', value: true },  ids: ['1', '3'] },
+    { name: 'boolean is false', f: { field: 'flag', kind: 'boolean', op: 'is', value: false }, ids: ['2', '4'] },
+  ];
+  for (const c of cases) {
+    // baseline: the filter selects the expected rows before any serialization
+    assert.deepEqual(applyFilters(rows, [c.f]).map((r) => r.id), c.ids, `${c.name}: pre-serialize match`);
+
+    const parsed = parseView(serializeView({ filters: [c.f] }));
+    assert.equal(parsed.filters?.length, 1, `${c.name}: filter survives round-trip`);
+    // lossless: field, kind, op, and the typed value are all reconstructed
+    assert.deepEqual(parsed.filters[0], c.f, `${c.name}: reconstructed losslessly`);
+    // row-set equality: the same rows match after the URL round-trip
+    assert.deepEqual(applyFilters(rows, parsed.filters).map((r) => r.id), c.ids, `${c.name}: post-serialize match`);
+  }
 });
 
 /* ── virtualization ──────────────────────────────────────────────────────────── */

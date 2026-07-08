@@ -1,5 +1,19 @@
 # @tensor_1/react
 
+## 2.6.1
+
+### Patch Changes
+
+- Table engine: make saved-view URLs round-trip losslessly for every filter kind.
+
+  `parseView` previously reconstructed **every** deserialized filter as `kind:'text'`, collapsed single-element enum arrays to scalars, and `matchFilter` had no `date` branch (dates routed through `asNum` → `NaN`). Net effect: after a saved-view URL round-trip, numeric / enum / boolean / date filters silently matched **zero** rows.
+
+  - `serializeView` now encodes the filter `kind` (`field~kind~op~value`); `parseView` restores it and reconstructs the **typed** value (numbers as numbers, booleans as booleans). Legacy pre-kind `field~op~value` URLs still parse — as text filters — so previously saved/linked views keep working.
+  - Array-vs-scalar is derived from the op (`isAnyOf`/`isNoneOf`/`between` are lists), so a single-select enum such as `isAnyOf: ['open']` survives instead of collapsing to a scalar and matching nothing.
+  - `matchFilter` gains a `date` branch: `eq`/`lt`/`gt`/`between` compare parsed timestamps (ISO strings or epoch ms).
+
+  No public API change — `matchFilter`/`serializeView`/`parseView` signatures and the `ColumnFilter`/`FilterKind`/`FilterOp` types are unchanged. Fixes TENSOR audit findings F17/F21/F48/F49 (UIX-FIX-01).
+
 ## 2.6.0
 
 ### Minor Changes
