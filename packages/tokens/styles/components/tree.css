@@ -6,6 +6,9 @@
   .uix-tree__row:hover { background: var(--uix-bg-hover); }
   .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-tree__toggle svg { width: 14px; height: 14px; }
-  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
-  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+  /* Chevron rotation, collapse, and selection key off the treeitem (the <li>): the aria
+     state moved off the button because aria-selected is invalid on a button (UIX-FIX-04). */
+  .uix-tree [role="treeitem"][aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree [role="treeitem"][aria-expanded="false"] > [role="group"] { display: none; }
+  .uix-tree [role="treeitem"][aria-selected="true"] > .uix-tree__row { background: var(--uix-brand-muted); color: var(--uix-text); }
 }

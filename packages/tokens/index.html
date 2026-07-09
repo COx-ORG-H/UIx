@@ -184,8 +184,8 @@
             </div>
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label" for="f-prio-err">Priority (error)</label>
-              <input class="uix-input" id="f-prio-err" aria-invalid="true" value="Invalid value">
-              <span class="uix-field__error">Please choose a priority.</span>
+              <input class="uix-input" id="f-prio-err" aria-invalid="true" aria-describedby="f-prio-err-msg" value="Invalid value">
+              <div class="uix-field__message" id="f-prio-err-msg" role="alert"><span class="uix-field__error">Please choose a priority.</span></div>
             </div>
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label">Notes</label>
@@ -595,12 +595,19 @@
             </div>
           </div></div>
           <div class="uix-card"><div class="uix-card__body">
-            <ul class="uix-tree">
-              <li><button class="uix-tree__row" aria-expanded="true"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Infrastructure</button>
-                <ul><li><span class="uix-tree__row" style="padding-left:24px">Network</span></li><li><span class="uix-tree__row" style="padding-left:24px">Servers</span></li></ul>
+            <ul class="uix-tree" role="tree" aria-label="Categories">
+              <li role="treeitem" aria-level="1" aria-expanded="true" aria-selected="false" aria-labelledby="tr-infra">
+                <button id="tr-infra" type="button" class="uix-tree__row"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Infrastructure</button>
+                <ul role="group">
+                  <li role="treeitem" aria-level="2" aria-selected="true" aria-labelledby="tr-net"><span id="tr-net" class="uix-tree__row" style="padding-left:24px">Network</span></li>
+                  <li role="treeitem" aria-level="2" aria-selected="false" aria-labelledby="tr-srv"><span id="tr-srv" class="uix-tree__row" style="padding-left:24px">Servers</span></li>
+                </ul>
               </li>
-              <li><button class="uix-tree__row" aria-expanded="false"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Applications</button>
-                <ul><li><span class="uix-tree__row" style="padding-left:24px">Billing</span></li></ul>
+              <li role="treeitem" aria-level="1" aria-expanded="false" aria-selected="false" aria-labelledby="tr-apps">
+                <button id="tr-apps" type="button" class="uix-tree__row"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Applications</button>
+                <ul role="group">
+                  <li role="treeitem" aria-level="2" aria-selected="false" aria-labelledby="tr-bill"><span id="tr-bill" class="uix-tree__row" style="padding-left:24px">Billing</span></li>
+                </ul>
               </li>
             </ul>
           </div></div>

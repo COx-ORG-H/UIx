@@ -340,7 +340,7 @@ export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElemen
     expanded?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export function Field(input: FieldProps): react.JSX.Element;
 
 // @public (undocumented)

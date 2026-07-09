@@ -13,12 +13,16 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 }
 
 export function Toast({ title, message, tone, icon, onClose, leaving, className, ...props }: ToastProps) {
+  // Destructive/error toasts interrupt (assertive); everything else is polite. Each toast
+  // is its own single live region — the Toaster is NOT a live region, so they don't nest.
+  const assertive = tone === 'danger';
   return (
     <div
       className={cx('uix-toast', tone && `uix-toast--${tone}`, className)}
       data-leaving={leaving || undefined}
-      role="status"
-      aria-live="polite"
+      role={assertive ? 'alert' : 'status'}
+      aria-live={assertive ? 'assertive' : 'polite'}
+      aria-atomic="true"
       {...props}
     >
       {icon && <div className="uix-toast__icon">{icon}</div>}
@@ -40,8 +44,10 @@ export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function Toaster({ children, className, ...props }: ToasterProps) {
+  // Just the positioning container — NOT a live region. Each Toast is its own live
+  // region (see Toast), so announcements aren't nested/double-spoken.
   return (
-    <div className={cx('uix-toaster', className)} aria-live="polite" aria-atomic="false" {...props}>
+    <div className={cx('uix-toaster', className)} {...props}>
       {children}
     </div>
   );

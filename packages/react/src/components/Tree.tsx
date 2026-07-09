@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -29,13 +29,23 @@ export interface TreeNodeProps {
 function TreeNode({ node, expanded, selected, onToggle, onSelect, level = 0 }: TreeNodeProps) {
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const isExpanded = expanded.has(node.id);
+  const rowId = useId();
 
+  // The tree semantics live on the treeitem (the <li>), not the button — `aria-selected`
+  // is invalid on a button, and `role="tree"` requires `treeitem` children in `group`s.
+  // `aria-labelledby` scopes the item's name to its row so it doesn't swallow the subtree.
   return (
-    <li>
+    <li
+      role="treeitem"
+      aria-level={level + 1}
+      aria-selected={selected === node.id}
+      aria-expanded={hasChildren ? isExpanded : undefined}
+      aria-labelledby={rowId}
+    >
       <button
+        id={rowId}
+        type="button"
         className="uix-tree__row"
-        aria-expanded={hasChildren ? isExpanded : undefined}
-        aria-selected={selected === node.id}
         onClick={() => {
           if (hasChildren) onToggle(node.id);
           onSelect?.(node.id);
@@ -48,7 +58,7 @@ function TreeNode({ node, expanded, selected, onToggle, onSelect, level = 0 }: T
         {node.label}
       </button>
       {hasChildren && isExpanded && (
-        <ul>
+        <ul role="group">
           {node.children!.map((child) => (
             <TreeNode
               key={child.id}

@@ -1,5 +1,19 @@
 # @tensor_1/react
 
+## 2.6.1
+
+### Patch Changes
+
+- Accessibility: wire Field validation errors, give Tree valid ARIA, make error Toasts assertive.
+
+  - `Field`: the validation `error` (or `success`/`hint`) is wired to the control via `aria-describedby`; an `error` sets `aria-invalid` and is announced (`role="alert"`); the message line reserves its height so an error appearing causes **no layout shift**.
+  - `Tree`: proper `role="tree"`/`treeitem`/`group` with `aria-level` and `aria-expanded`; selection state moved off the `<button>` (where `aria-selected` was invalid) onto the treeitem, which is named via `aria-labelledby`.
+  - `Toast`: destructive/error toasts announce **assertively** (`role="alert"` / `aria-live="assertive"`); the `Toaster` is no longer a live region, so each toast is a single, non-nested live region.
+
+  No prop/API changes. axe-core clean on a form with a validation error, a tree, and a toast. Fixes TENSOR audit findings F44/F46/F66 (UIX-FIX-04).
+
+  Note: `Field` now always renders the message line (reserved height), so a field with no hint/error gains one reserved line — override `.uix-field__message { min-height: 0 }` to opt out.
+
 ## 2.6.0
 
 ### Minor Changes

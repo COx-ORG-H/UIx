@@ -644,6 +644,12 @@ if (typeof document !== 'undefined') {
       const t = ensureToaster();
       const el = document.createElement('div');
       el.className = `uix-toast uix-toast--${tone}`;
+      // destructive/error toasts interrupt (assertive); each toast is its own single live
+      // region — the .uix-toaster container is NOT a live region, so they don't nest.
+      const assertive = tone === 'danger';
+      el.setAttribute('role', assertive ? 'alert' : 'status');
+      el.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+      el.setAttribute('aria-atomic', 'true');
       el.innerHTML = `<span class="uix-toast__icon">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
       t.appendChild(el);
       while (t.children.length > 3) t.firstElementChild.remove();

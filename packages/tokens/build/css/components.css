@@ -119,6 +119,8 @@
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  /* Always present so an error/success/hint appearing reserves its line up-front (no layout shift). */
+  .uix-field__message { font-size: var(--uix-text-meta); min-height: 1lh; }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
@@ -911,8 +913,11 @@
   .uix-tree__row:hover { background: var(--uix-bg-hover); }
   .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-tree__toggle svg { width: 14px; height: 14px; }
-  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
-  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+  /* Chevron rotation, collapse, and selection key off the treeitem (the <li>): the aria
+     state moved off the button because aria-selected is invalid on a button (UIX-FIX-04). */
+  .uix-tree [role="treeitem"][aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree [role="treeitem"][aria-expanded="false"] > [role="group"] { display: none; }
+  .uix-tree [role="treeitem"][aria-selected="true"] > .uix-tree__row { background: var(--uix-brand-muted); color: var(--uix-text); }
 }
 /* uix calendar (shared by date pickers) — depends only on --uix-* tokens. */
 @layer uix.components {
