@@ -119,6 +119,9 @@
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  /* message slot for hint / error / success — reserves one line so an appearing error never
+     shifts the layout (UIX-FIX-04); the React <Field> always renders it. */
+  .uix-field__msg { font-size: var(--uix-text-meta); line-height: 1.45; min-height: 1.45em; }
   .uix-field__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-field__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); display: inline-flex; align-items: center; gap: var(--uix-space-2); }
   .uix-field__error svg, .uix-field__success svg { width: 14px; height: 14px; flex: none; }
@@ -858,8 +861,28 @@
   .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
   .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
 }
-/* uix tooltip — CSS hover/focus tooltip via [data-uix-tip]. Depends only on --uix-* tokens. */
+/* uix tooltip. Two flavours, both depend only on --uix-* tokens:
+   • .uix-tooltip__bubble — the React <Tooltip>: renders in the top layer via the
+     Popover API, so it escapes any overflow:hidden/scroll ancestor (UIX-FIX-02).
+     JS sets position/left/top; CSS owns appearance + the fade.
+   • [data-uix-tip] — the legacy CSS-only tooltip, kept for back-compat. It is
+     position:absolute and so is clipped by an overflow ancestor; prefer <Tooltip>. */
 @layer uix.components {
+  .uix-tooltip { display: inline-flex; }
+
+  .uix-tooltip__bubble {
+    position: fixed; margin: 0; inset: auto; border: 0;
+    width: max-content; max-width: 16rem;
+    background: var(--uix-text); color: var(--uix-bg-app);
+    font-size: var(--uix-text-meta); font-weight: 500; line-height: 1.4;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm);
+    box-shadow: var(--uix-shadow-popover); white-space: normal; pointer-events: none;
+    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-tooltip__bubble:popover-open { opacity: 1; }
+  @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; } }
+
+  /* legacy CSS-only tooltip — clipped by overflow ancestors; superseded by .uix-tooltip__bubble */
   [data-uix-tip] { position: relative; }
   [data-uix-tip]::after {
     content: attr(data-uix-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
@@ -870,6 +893,8 @@
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   [data-uix-tip]:hover::after, [data-uix-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* when JS upgrades [data-uix-tip] to a top-layer bubble, drop the clipped CSS-only one */
+  .uix-has-js-tip [data-uix-tip]::after { content: none; }
 }
 /* uix progress bar + ring — depends only on --uix-* tokens. */
 @layer uix.components {
@@ -903,16 +928,22 @@
   .uix-timeline__body { padding-bottom: var(--uix-space-5); }
   .uix-timeline__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
 }
-/* uix tree view — depends only on --uix-* tokens. */
+/* uix tree view — WAI-ARIA tree (role=tree/treeitem/group). Depends only on --uix-* tokens.
+   ARIA (aria-expanded / aria-selected / aria-level) lives on the treeitem <li>, so the chevron,
+   selection, and collapse styling all key off the item, not the row (UIX-FIX-04). */
 @layer uix.components {
   .uix-tree, .uix-tree ul { list-style: none; margin: 0; padding: 0; }
-  .uix-tree ul { padding-left: var(--uix-space-5); }
-  .uix-tree__row { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-2); border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); border: 0; background: transparent; width: 100%; text-align: left; font-family: inherit; }
-  .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__group { padding-left: var(--uix-space-5); }
+  .uix-tree__item { outline: none; } /* the focus ring is drawn on the row, below */
+  .uix-tree__row { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-2); border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); }
+  .uix-tree__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-tree__item > .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__item[aria-selected="true"] > .uix-tree__row { background: var(--uix-bg-active); }
+  .uix-tree__item:focus-visible > .uix-tree__row { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
   .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-tree__toggle svg { width: 14px; height: 14px; }
-  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
-  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+  .uix-tree__item[aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree__item[aria-expanded="false"] > .uix-tree__group { display: none; }
 }
 /* uix calendar (shared by date pickers) — depends only on --uix-* tokens. */
 @layer uix.components {

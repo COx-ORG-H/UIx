@@ -86,8 +86,45 @@ function asNum(v: unknown): number {
   return typeof v === 'number' ? v : Number(v);
 }
 
+/**
+ * Coerce a Date | epoch-ms | ISO/date string to epoch milliseconds (NaN if
+ * unparseable). Lets date filters compare by instant regardless of how the cell
+ * or the filter value is represented — a plain `Number(isoString)` would be NaN.
+ */
+function asTime(v: unknown): number {
+  if (v == null) return NaN;
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'number') return v;
+  const s = String(v).trim();
+  if (s === '') return NaN;
+  const parsed = Date.parse(s);
+  return Number.isNaN(parsed) ? Number(s) : parsed; // fall back to a bare epoch-ms string
+}
+
+/**
+ * Date comparisons, kept separate from `number` because date cells (Date | ISO
+ * string | epoch) must be read through `asTime`, not `asNum` (which yields NaN
+ * for ISO strings and so matches zero rows). `eq` compares by exact instant —
+ * for a whole-day match, use `between` across the day's bounds.
+ */
+function matchDate(cell: unknown, f: ColumnFilter): boolean {
+  const c = asTime(cell);
+  if (Number.isNaN(c)) return false;
+  switch (f.op) {
+    case 'eq': return c === asTime(f.value);
+    case 'lt': return c < asTime(f.value);
+    case 'gt': return c > asTime(f.value);
+    case 'between': {
+      const [lo, hi] = (f.value as Primitive[]).map(asTime);
+      return c >= lo && c <= hi;
+    }
+    default: return true;
+  }
+}
+
 export function matchFilter(row: Row, f: ColumnFilter): boolean {
   const cell = row[f.field];
+  if (f.kind === 'date') return matchDate(cell, f); // date ops need instant comparison, not asNum
   switch (f.op) {
     case 'isAnyOf':  return Array.isArray(f.value) && f.value.includes(cell as Primitive);
     case 'isNoneOf': return Array.isArray(f.value) && !f.value.includes(cell as Primitive);
@@ -153,6 +190,63 @@ export interface ViewState {
   q?: string;           // search query
 }
 
+/**
+ * Filter serialization. Each filter is a `field~kind~op~value` token; tokens are
+ * joined by ',' and array values by '|'. `kind` is carried explicitly (so it is
+ * restored, not guessed) and each field/value is escaped so a literal ~ | , inside
+ * it survives the round-trip. Array-vs-scalar is a property of the op, not of the
+ * serialized text — so a single-value enum (`['open']`) no longer collapses to a
+ * scalar the way a `join('|')`-with-no-separator round-trip did.
+ */
+const ARRAY_OPS: ReadonlySet<FilterOp> = new Set(['isAnyOf', 'isNoneOf', 'between']);
+
+// encodeURIComponent escapes , and | but leaves ~ (our token delimiter) alone, so encode it by hand.
+const escapePart = (s: string): string => encodeURIComponent(s).replace(/~/g, '%7E');
+const unescapePart = (s: string): string => decodeURIComponent(s);
+const scalarToStr = (v: Primitive): string => (v == null ? '' : String(v));
+
+/** Restore a serialized scalar to its typed value, guided by the filter's kind. */
+function parseScalar(s: string, kind: FilterKind): Primitive {
+  switch (kind) {
+    case 'number':  return Number(s);
+    case 'boolean': return s === 'true';
+    case 'date':    return /^-?\d+$/.test(s) ? Number(s) : s; // epoch-ms number, else the ISO/date string
+    default:        return s;                                 // text, enum stay strings
+  }
+}
+
+/** Infer a kind from a legacy (kind-less) token's op, so older saved-view links still restore. */
+function kindFromOp(op: FilterOp): FilterKind {
+  if (op === 'isAnyOf' || op === 'isNoneOf') return 'enum';
+  if (op === 'is') return 'boolean';
+  if (op === 'contains' || op === 'equals' || op === 'startsWith') return 'text';
+  return 'number'; // eq / lt / gt / between — legacy date filters were already broken, treat as number
+}
+
+function serializeFilter(f: ColumnFilter): string {
+  const value = Array.isArray(f.value)
+    ? f.value.map((x) => escapePart(scalarToStr(x))).join('|')
+    : escapePart(scalarToStr(f.value));
+  return `${escapePart(f.field)}~${f.kind}~${f.op}~${value}`;
+}
+
+function parseFilter(tok: string): ColumnFilter | null {
+  const parts = tok.split('~');
+  let field: string, kind: FilterKind, op: FilterOp, raw: string;
+  if (parts.length >= 4) {
+    [field, kind, op, raw] = [unescapePart(parts[0]), parts[1] as FilterKind, parts[2] as FilterOp, parts[3] ?? ''];
+  } else {
+    // legacy `field~op~value` (no kind) — infer the kind so restored value types stay correct
+    [field, op, raw] = [unescapePart(parts[0]), parts[1] as FilterOp, parts[2] ?? ''];
+    kind = kindFromOp(op);
+  }
+  if (!field || !op) return null;
+  const value: Primitive | Primitive[] = ARRAY_OPS.has(op)
+    ? raw.split('|').filter((s) => s !== '').map((s) => parseScalar(unescapePart(s), kind))
+    : parseScalar(unescapePart(raw), kind);
+  return { field, kind, op, value };
+}
+
 /** Serialize a view to a compact, linkable query string (no leading '?'). */
 export function serializeView(v: ViewState): string {
   const p = new URLSearchParams();
@@ -160,7 +254,7 @@ export function serializeView(v: ViewState): string {
   if (v.columns?.length) p.set('cols', v.columns.join(','));
   if (v.density && v.density !== 'standard') p.set('density', v.density);
   if (v.q) p.set('q', v.q);
-  if (v.filters?.length) p.set('filter', v.filters.map((f) => `${f.field}~${f.op}~${(Array.isArray(f.value) ? f.value.join('|') : f.value ?? '')}`).join(','));
+  if (v.filters?.length) p.set('filter', v.filters.map(serializeFilter).join(','));
   return p.toString();
 }
 
@@ -180,11 +274,11 @@ export function parseView(qs: string): ViewState {
   const q = p.get('q');
   if (q) v.q = q;
   const filter = p.get('filter');
-  if (filter) v.filters = filter.split(',').filter(Boolean).map((tok) => {
-    const [field, op, raw] = tok.split('~');
-    const value: Primitive | Primitive[] = raw?.includes('|') ? raw.split('|') : raw;
-    return { field, kind: 'text', op: op as FilterOp, value } as ColumnFilter;
-  });
+  if (filter) {
+    v.filters = filter.split(',').filter(Boolean)
+      .map(parseFilter)
+      .filter((f): f is ColumnFilter => f !== null);
+  }
   return v;
 }
 

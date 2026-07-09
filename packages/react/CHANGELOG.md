@@ -1,5 +1,73 @@
 # @tensor_1/react
 
+## 2.7.0
+
+### Minor Changes
+
+- a76bdd1: **UIX-FIX-02 — anchored overlays get viewport-collision handling and render in the top layer.**
+
+  Popover, the rich Select/menu, and Tooltip positioned themselves with CSS anchor positioning (`anchor()` / `position-anchor` / `anchor-size()`), which is Chromium-only: off-Chromium the overlay fell back to the UA-centered position and detached from its trigger, and even in Chromium there was no flip/shift so overlays clipped at the viewport edge. The CSS-only Tooltip (`[data-uix-tip]`) was also clipped by any `overflow: hidden/scroll` ancestor.
+
+  New, framework-agnostic positioning:
+
+  - **`computePosition(anchor, floating, viewport, options)`** (exported) — pure, dependency-free flip (opposite side when the preferred one won't fit) + shift (slide along the cross axis to stay on-screen). Unit-tested across every side/align, both flip directions, both shift edges, and oversized/degenerate inputs.
+  - **`useAnchoredPosition(anchor, floatingRef, { open, placement, offset, padding })`** (exported hook) — measures both elements with `getBoundingClientRect`, applies `position: fixed` + left/top, and keeps the overlay glued to its anchor on scroll/resize.
+
+  Component changes:
+
+  - **`Popover`** gains optional `anchor`, `placement`, and `offset` props. With `anchor` set it is placed with cross-browser JS positioning while the native Popover API still provides the top layer (escapes `overflow` clipping) and light-dismiss. Without `anchor` it behaves exactly as before.
+  - **`Tooltip`** now renders its bubble in the top layer via the Popover API, so it is never clipped by an `overflow` ancestor. Positioned with flip/shift, shown on hover and keyboard focus, dismissed on blur/Escape, and wired with `role="tooltip"` + `aria-describedby`. Its public props (`label`, children) are unchanged; a `placement` prop was added.
+
+  Tokens/CSS: adds `.uix-tooltip` / `.uix-tooltip__bubble` (top-layer bubble); the legacy `[data-uix-tip]` CSS tooltip is retained for back-compat but is superseded. The styleguide (`guide/app.js`) now positions all `.uix-popover` overlays and upgrades `[data-uix-tip]` tooltips through the same engine, so the vanilla and React layers behave identically.
+
+  Migration: `Popover`/`Tooltip` props are additive. If you targeted the old React `Tooltip`'s `[data-uix-tip]` output in your own CSS, switch to the `label` prop (the bubble is now `.uix-tooltip__bubble`).
+
+- aee4265: **UIX-FIX-04 — accessibility wiring for Field, Tree, and Toast.**
+
+  - **Field** — the error/hint/success message is now wired to the control with `aria-describedby` (so assistive tech announces it) and `aria-invalid` on error; the error carries `role="alert"` so it's announced the moment it appears. A `.uix-field__msg` slot with a reserved single-line `min-height` means an appearing error no longer shifts the layout. The React `Field` clones a single child control to attach the wiring, preserving any existing `aria-describedby`.
+  - **Tree** — rebuilt on the WAI-ARIA tree pattern. `role="tree"` / `role="treeitem"` / `role="group"`, `aria-level`, and `aria-expanded` / `aria-selected` now live on the treeitem `<li>` — `aria-selected` was previously (invalidly) on a `<button>`. The treeitem is the focusable element with a **roving tabindex** and full keyboard support (Up/Down, Left/Right to collapse/expand or move to parent/child, Home/End, Enter/Space to select). `.uix-tree__row` is now a presentational span.
+  - **Toast** — error/destructive toasts announce **assertively** (`role="alert"`, `aria-live="assertive"`); everything else stays polite (`role="status"`). The `Toaster` container is no longer a live region, so toasts are announced once instead of twice (it previously nested a live region inside a live region).
+
+  Verified with the repo's axe-core gate (`tests/a11y`, both themes, no serious/critical violations) plus keyboard-interaction checks.
+
+  Migration: component APIs are unchanged. Two DOM/CSS-contract notes for consumers who hand-author markup rather than using the components — (1) the `Tree`'s expand/select ARIA moved from the row to the treeitem `<li>`, and the child list is now `.uix-tree__group[role="group"]`; (2) the `Field` message now lives in a `.uix-field__msg` wrapper. Consumers using `<Tree>` / `<Field>` need no changes.
+
+- a841ac0: **UIX-FIX-05 — virtualize the Tree for large hierarchies.**
+
+  `Tree` can now render only the rows in view, so a tree with thousands of visible nodes stays fast. It reuses the table engine's `virtualWindow` / `shouldVirtualize` and preserves the WAI-ARIA semantics from UIX-FIX-04.
+
+  - New pure, framework-agnostic model (exported): `flattenTree(nodes, expanded)` → the visible rows with `level` / `setsize` / `posinset` / `hasChildren` / `isExpanded`, and `treeNav(flat, currentId, key)` → the keyboard-navigation decision. Both are unit-tested and drive the plain and virtualized render paths, so keyboard nav works even for rows scrolled out of the window (it scrolls the target into view before moving focus).
+  - New `Tree` props: `virtualize` (defaults to auto, on past `shouldVirtualize`'s threshold of visible rows), `rowHeight` (default 32), `maxHeight` (default 384).
+  - When virtualized, the nested `role="group"` structure is replaced by a flat list where each treeitem carries `aria-level` / `aria-setsize` / `aria-posinset` — a valid tree representation — keeping roving tabindex, arrow-key navigation, expand/collapse, and selection intact.
+
+  The default (non-virtualized) `Tree` is unchanged. Verified with `flattenTree` / `treeNav` unit tests plus a server-render of the built artifact (a 203-row tree renders ~24 windowed treeitems with correct `aria-level` / `aria-setsize` / `aria-posinset` and scroll spacers).
+
+### Patch Changes
+
+- c083013: **UIX-FIX-01 — table engine: saved views no longer silently match zero rows.**
+
+  `parseView` was lossy: it hard-coded every restored filter to `kind: 'text'`, stringified all values, and inferred array-vs-scalar from whether the serialized text contained a `|` — which collapsed single-value enum arrays (`['open']` → `'open'`). `matchFilter` had no `date` branch, so date ops fell through to the numeric path where `asNum(isoString)` is `NaN` and matched nothing. After a saved-view URL round-trip, every numeric / enum / boolean / date filter silently matched zero rows (booleans were worse — `is: false` restored to the truthy string `'false'` and matched the wrong rows).
+
+  Fixes:
+
+  - `serializeView` now carries each filter's `kind` in the token (`field~kind~op~value`) and escapes field/value so a literal `~`, `|`, or `,` inside a value survives the round-trip.
+  - `parseView` restores the `kind` verbatim and re-types values from it (number, boolean, date), deciding array-vs-scalar from the **op** (`isAnyOf` / `isNoneOf` / `between` are arrays) rather than from the text — so single-value enums stay arrays.
+  - `matchFilter` gains a `date` branch that compares by instant via a new `asTime` coercion (`Date` | epoch-ms | ISO/date string).
+  - Legacy kind-less URLs (`field~op~value`) still parse — the kind is inferred from the op — so existing saved-view links keep working.
+
+  Public component/prop APIs are unchanged. The serialized URL format gained a `kind` segment; the parser reads both the new and the old format.
+
+- 4c1dc72: **UIX-FIX-03 — Modal / Drawer / Peek now lock background scroll.**
+
+  A native `<dialog>` opened with `showModal()` makes the background inert but still lets it scroll behind the overlay. `useDialog` now locks page scroll while any dialog is open:
+
+  - Locks the scrolling root (`document.scrollingElement`, i.e. `<html>` in standards mode — so `body { overflow: hidden }` alone would not stop it) with `overflow: hidden`.
+  - Compensates the vanishing scrollbar's width with `padding-right` so the page doesn't shift.
+  - Sets `overscroll-behavior: contain` so the scroll doesn't chain to the page.
+  - Reference-counted across stacked dialogs, and restored on close (via the effect cleanup, which runs synchronously on the `open` prop flip — independent of the dialog's exit animation).
+
+  No API changes. Applies to `Modal`, `Drawer`, and `Peek` (all built on `useDialog`).
+
 ## 2.6.0
 
 ### Minor Changes

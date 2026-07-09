@@ -48,6 +48,47 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
 /** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
 export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
 
+/* ── overlay positioning (port of @tensor_1/react's overlay-position engine) ────
+ * Flip (opposite side when the preferred one won't fit) + shift (slide along the
+ * cross axis to stay on-screen). Feeds off getBoundingClientRect() values so
+ * popovers/menus/rich-selects land correctly in every browser, instead of relying
+ * on Chromium-only CSS anchor() positioning (UIX-FIX-02). Mirrors overlay-position.ts. */
+const OVERLAY_OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
+export const computeOverlayPosition = (anchor, floating, viewport, options = {}) => {
+  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true } = options;
+  const [preferred, alignRaw] = placement.split('-');
+  const align = alignRaw || 'center';
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const spaceOn = (side) =>
+    side === 'top' ? anchor.y - offset
+    : side === 'bottom' ? viewport.height - (anchor.y + anchor.height) - offset
+    : side === 'left' ? anchor.x - offset
+    : viewport.width - (anchor.x + anchor.width) - offset;
+  const fitsOn = (side) => spaceOn(side) >= (side === 'top' || side === 'bottom' ? floating.height : floating.width) + padding;
+
+  let side = preferred;
+  if (flip && !fitsOn(side)) {
+    const opp = OVERLAY_OPPOSITE[side];
+    if (fitsOn(opp) || spaceOn(opp) > spaceOn(side)) side = opp;
+  }
+  let x, y;
+  const horizontal = side === 'top' || side === 'bottom';
+  if (side === 'top') y = anchor.y - floating.height - offset;
+  else if (side === 'bottom') y = anchor.y + anchor.height + offset;
+  else if (side === 'left') x = anchor.x - floating.width - offset;
+  else x = anchor.x + anchor.width + offset;
+  if (horizontal) {
+    const start = anchor.x, end = anchor.x + anchor.width - floating.width, center = anchor.x + (anchor.width - floating.width) / 2;
+    x = align === 'start' ? start : align === 'end' ? end : center;
+    if (shift) x = clamp(x, padding, Math.max(padding, viewport.width - floating.width - padding));
+  } else {
+    const start = anchor.y, end = anchor.y + anchor.height - floating.height, center = anchor.y + (anchor.height - floating.height) / 2;
+    y = align === 'start' ? start : align === 'end' ? end : center;
+    if (shift) y = clamp(y, padding, Math.max(padding, viewport.height - floating.height - padding));
+  }
+  return { x, y, placement: align === 'center' ? side : `${side}-${align}`, side, align };
+};
+
 /* ── engine-aligned table helpers ──────────────────────────────────────────────
  * Ports of @tensor_1/react's table-engine (multiSort / toggleSort / searchRows /
  * highlightSegments / selection / clampWidth) so the vanilla styleguide sorts,
@@ -504,21 +545,8 @@ if (typeof document !== 'undefined') {
 
     const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
     if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
-    const viewPop = root.querySelector('[data-uix-viewmenu]');
-    if (viewBtn && viewPop) {
-      viewPop.addEventListener('beforetoggle', (e) => {
-        if (e.newState !== 'open') return;
-        const r = viewBtn.getBoundingClientRect();
-        viewPop.style.top = (r.bottom + 6) + 'px';
-        viewPop.style.right = (window.innerWidth - r.right) + 'px';
-        viewPop.style.left = 'auto';
-        viewPop.style.bottom = 'auto';
-      });
-      viewPop.addEventListener('toggle', (e) => {
-        if (e.newState !== 'open') return;
-        document.addEventListener('scroll', () => viewPop.hidePopover(), { once: true, passive: true, capture: true });
-      });
-    }
+    // View-menu placement (flip/shift, cross-browser) is handled generically by
+    // enhanceAnchoredPopovers — it right-aligns via the .uix-view-menu → bottom-end default.
 
     // density (segmented)
     const applyDensity = () => {
@@ -565,6 +593,30 @@ if (typeof document !== 'undefined') {
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table], [data-uix-table-v2]').forEach(initTable);
 
+  // Page scroll lock shared across dialogs (mirror of the React useDialog hook, UIX-FIX-03):
+  // showModal() makes the background inert but still lets it scroll. Lock the scrolling root
+  // (document.scrollingElement = <html> in standards mode, so body:hidden alone wouldn't stop it),
+  // compensate the scrollbar width so the page doesn't shift, contain overscroll; ref-counted for stacking.
+  let scrollLockCount = 0, scrollLockSaved = null;
+  const lockBodyScroll = () => {
+    if (++scrollLockCount > 1) return;
+    const el = document.scrollingElement || document.documentElement;
+    const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+    scrollLockSaved = { el, overflow: el.style.overflow, paddingRight: el.style.paddingRight, overscroll: el.style.overscrollBehavior };
+    el.style.overflow = 'hidden';
+    if (scrollbarW > 0) el.style.paddingRight = ((parseFloat(getComputedStyle(el).paddingRight) || 0) + scrollbarW) + 'px';
+    el.style.overscrollBehavior = 'contain';
+  };
+  const unlockBodyScroll = () => {
+    if (scrollLockCount === 0 || --scrollLockCount > 0) return;
+    if (scrollLockSaved) {
+      scrollLockSaved.el.style.overflow = scrollLockSaved.overflow;
+      scrollLockSaved.el.style.paddingRight = scrollLockSaved.paddingRight;
+      scrollLockSaved.el.style.overscrollBehavior = scrollLockSaved.overscroll;
+      scrollLockSaved = null;
+    }
+  };
+
   // Open a native <dialog> as a modal. Flushing layout + style first establishes the closed-state
   // baseline so the @starting-style entrance transition reliably fires on the FIRST open after load
   // (Chromium otherwise batches the display:none→shown change and skips the entrance — the panel
@@ -573,6 +625,12 @@ if (typeof document !== 'undefined') {
     if (!dlg?.showModal) return;
     void dlg.offsetWidth;
     void getComputedStyle(dlg).transform;
+    lockBodyScroll();
+    // Unlock the moment the `open` attribute is removed — reliable across Esc / backdrop / button /
+    // .close(), including animated (allow-discrete) exits where the 'close' event is deferred until
+    // after the transition. Observe → disconnect gives exactly one unlock per open.
+    const obs = new MutationObserver(() => { if (!dlg.open) { obs.disconnect(); unlockBodyScroll(); } });
+    obs.observe(dlg, { attributes: true, attributeFilter: ['open'] });
     dlg.showModal();
   };
 
@@ -584,6 +642,127 @@ if (typeof document !== 'undefined') {
       const close = e.target.closest('[data-uix-close]');
       if (close) { close.closest('dialog')?.close(); return; }
       if (e.target.tagName === 'DIALOG') e.target.close();   // click on the backdrop
+    });
+  };
+
+  // ---- anchored overlays: cross-browser flip/shift placement (UIX-FIX-02) ----
+  // Positions any .uix-popover (rich-select / menu / picker) against its popovertarget
+  // trigger with the shared overlay engine, so it stays glued to the trigger and never
+  // clips at a viewport edge — off-Chromium, where CSS anchor() does nothing. The native
+  // Popover API still gives us the top layer (escapes overflow) and light-dismiss.
+  const enhanceAnchoredPopovers = (root = document) => {
+    root.querySelectorAll('[popovertarget]').forEach((trigger) => {
+      const pop = document.getElementById(trigger.getAttribute('popovertarget'));
+      if (!pop || !pop.classList.contains('uix-popover') || pop.dataset.uixAnchored) return;
+      pop.dataset.uixAnchored = '1';
+      const preferred = pop.dataset.placement || (pop.classList.contains('uix-view-menu') ? 'bottom-end' : 'bottom-start');
+      const matchWidth = pop.classList.contains('uix-listbox'); // rich-select matches trigger width
+      const position = () => {
+        const a = trigger.getBoundingClientRect();
+        // reset to natural sizing BEFORE measuring (the popover UA default inset:0;margin:auto stretches it)
+        pop.style.position = 'fixed'; pop.style.inset = 'auto'; pop.style.margin = '0';
+        if (matchWidth) pop.style.width = a.width + 'px';
+        const pos = computeOverlayPosition(
+          { x: a.x, y: a.y, width: a.width, height: a.height },
+          { width: pop.offsetWidth, height: pop.offsetHeight },
+          { width: window.innerWidth, height: window.innerHeight },
+          { placement: preferred, offset: 6 },
+        );
+        pop.style.left = Math.round(pos.x) + 'px'; pop.style.top = Math.round(pos.y) + 'px';
+        pop.dataset.resolvedPlacement = pos.placement;
+      };
+      let onMove = null;
+      pop.addEventListener('toggle', (e) => {
+        if (e.newState === 'open') {
+          position(); // the CSS opacity fade-in hides this first-frame placement
+          onMove = position;
+          window.addEventListener('scroll', onMove, { passive: true, capture: true });
+          window.addEventListener('resize', onMove);
+        } else if (onMove) {
+          window.removeEventListener('scroll', onMove, true);
+          window.removeEventListener('resize', onMove);
+          onMove = null;
+        }
+      });
+    });
+  };
+
+  // ---- tooltips: promote the CSS-only [data-uix-tip] to a top-layer bubble (UIX-FIX-02) ----
+  // The ::after tooltip is clipped by any overflow:hidden/scroll ancestor; a single shared
+  // popover bubble in the top layer never is. Shown on hover + focus, positioned with flip/shift.
+  const enhanceTooltips = () => {
+    const tips = [...document.querySelectorAll('[data-uix-tip]')];
+    if (!tips.length) return;
+    const bubble = document.createElement('span');
+    bubble.className = 'uix-tooltip__bubble';
+    bubble.setAttribute('popover', 'manual');
+    bubble.setAttribute('role', 'tooltip');
+    document.body.appendChild(bubble);
+    document.documentElement.classList.add('uix-has-js-tip'); // suppresses the CSS-only ::after
+    let current = null;
+    const show = (el) => {
+      current = el;
+      bubble.textContent = el.getAttribute('data-uix-tip');
+      if (!bubble.matches(':popover-open')) { try { bubble.showPopover(); } catch { /* noop */ } }
+      bubble.style.position = 'fixed'; bubble.style.inset = 'auto'; bubble.style.margin = '0';
+      const a = el.getBoundingClientRect();
+      const pos = computeOverlayPosition(
+        { x: a.x, y: a.y, width: a.width, height: a.height },
+        { width: bubble.offsetWidth, height: bubble.offsetHeight },
+        { width: window.innerWidth, height: window.innerHeight },
+        { placement: 'top', offset: 6 },
+      );
+      bubble.style.left = Math.round(pos.x) + 'px'; bubble.style.top = Math.round(pos.y) + 'px';
+    };
+    const hide = () => { current = null; if (bubble.matches(':popover-open')) { try { bubble.hidePopover(); } catch { /* noop */ } } };
+    tips.forEach((el) => {
+      el.addEventListener('mouseenter', () => show(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => show(el));
+      el.addEventListener('blur', hide);
+    });
+    window.addEventListener('scroll', () => { if (current) show(current); }, { passive: true, capture: true });
+  };
+
+  // ---- tree: WAI-ARIA keyboard nav + roving tabindex (mirror of the React <Tree>, UIX-FIX-04) ----
+  const setupTree = () => {
+    document.querySelectorAll('.uix-tree[role="tree"]').forEach((tree) => {
+      const all = () => [...tree.querySelectorAll('[role="treeitem"]')];
+      const visible = () => all().filter((el) => el.offsetParent !== null); // excludes items in collapsed groups
+      const setTabbable = (target) => all().forEach((el) => el.setAttribute('tabindex', el === target ? '0' : '-1'));
+      const focusItem = (el) => { if (el) { setTabbable(el); el.focus(); } };
+      const toggle = (li) => { const e = li.getAttribute('aria-expanded'); if (e !== null) li.setAttribute('aria-expanded', e === 'true' ? 'false' : 'true'); };
+      const select = (li) => {
+        if (!li.hasAttribute('aria-selected')) return;
+        tree.querySelectorAll('[role="treeitem"][aria-selected]').forEach((el) => el.setAttribute('aria-selected', 'false'));
+        li.setAttribute('aria-selected', 'true');
+      };
+      tree.addEventListener('click', (e) => {
+        const li = e.target.closest('[role="treeitem"]');
+        if (!li || !tree.contains(li)) return;
+        toggle(li); select(li); focusItem(li);
+      });
+      tree.addEventListener('keydown', (e) => {
+        const cur = e.target.closest('[role="treeitem"]');
+        if (!cur || !tree.contains(cur)) return;
+        const list = visible(); const idx = list.indexOf(cur); const exp = cur.getAttribute('aria-expanded');
+        switch (e.key) {
+          case 'ArrowDown': e.preventDefault(); focusItem(list[Math.min(idx + 1, list.length - 1)]); break;
+          case 'ArrowUp': e.preventDefault(); focusItem(list[Math.max(idx - 1, 0)]); break;
+          case 'Home': e.preventDefault(); focusItem(list[0]); break;
+          case 'End': e.preventDefault(); focusItem(list[list.length - 1]); break;
+          case 'ArrowRight': e.preventDefault();
+            if (exp === 'false') toggle(cur);
+            else if (exp === 'true') focusItem(cur.querySelector(':scope > [role="group"] > [role="treeitem"]'));
+            break;
+          case 'ArrowLeft': e.preventDefault();
+            if (exp === 'true') toggle(cur);
+            else focusItem(cur.parentElement?.closest('[role="treeitem"]'));
+            break;
+          case 'Enter': case ' ': e.preventDefault(); toggle(cur); select(cur); focusItem(cur); break;
+          default: break;
+        }
+      });
     });
   };
 
@@ -644,7 +823,11 @@ if (typeof document !== 'undefined') {
       const t = ensureToaster();
       const el = document.createElement('div');
       el.className = `uix-toast uix-toast--${tone}`;
-      el.innerHTML = `<span class="uix-toast__icon">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
+      // errors interrupt (assertive); everything else is polite. Each toast is its own live region;
+      // the .uix-toaster container is NOT, so we announce once, not twice (UIX-FIX-04).
+      el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
+      el.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
+      el.innerHTML = `<span class="uix-toast__icon" aria-hidden="true">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
       t.appendChild(el);
       while (t.children.length > 3) t.firstElementChild.remove();
       const leave = () => { el.setAttribute('data-leaving', ''); setTimeout(() => el.remove(), 220); };
@@ -725,13 +908,15 @@ if (typeof document !== 'undefined') {
       const check = field?.querySelector('[data-field-check]');
       input.addEventListener('blur', () => {
         const val = input.value.trim();
-        if (!val) { input.removeAttribute('data-valid'); input.setAttribute('aria-invalid', 'false'); [ok, err, check].forEach((e) => e && (e.hidden = true)); return; }
+        if (!val) { input.removeAttribute('data-valid'); input.setAttribute('aria-invalid', 'false'); input.removeAttribute('aria-describedby'); [ok, err, check].forEach((e) => e && (e.hidden = true)); return; }
         const valid = input.type === 'email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val) : val.length > 1;
         input.toggleAttribute('data-valid', valid);
         input.setAttribute('aria-invalid', valid ? 'false' : 'true');
         if (ok) ok.hidden = !valid;
         if (check) check.hidden = !valid;
         if (err) err.hidden = valid;
+        // point the control at the error message while it's shown, clear it when valid (UIX-FIX-04)
+        if (err?.id) { if (valid) input.removeAttribute('aria-describedby'); else input.setAttribute('aria-describedby', err.id); }
       });
     });
     document.querySelectorAll('[data-uix-submit-demo]').forEach((btn) => {
@@ -899,6 +1084,9 @@ if (typeof document !== 'undefined') {
     setupForms();
     setupReactions();
     setupLightbox();
+    setupTree();
+    enhanceAnchoredPopovers(); // after all setups so dynamically-rendered pickers are covered too
+    enhanceTooltips();
     initCharts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

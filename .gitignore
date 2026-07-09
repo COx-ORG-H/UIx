@@ -20,3 +20,6 @@ playwright/.cache/
 # local Windows/macOS runs produce these — they never match the Linux CI runner, so never commit them
 tests/visual/__screenshots__/*-win32.png
 tests/visual/__screenshots__/*-darwin.png
+
+# Playwright MCP verification artifacts (screenshots/snapshots/console logs)
+.playwright-mcp/

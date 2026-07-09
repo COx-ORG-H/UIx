@@ -171,17 +171,76 @@ test('highlightSegments: splits into matched / unmatched runs (case-insensitive)
   assert.equal(segs.map((s) => s.text).join(''), 'The Quick Brown');
 });
 
-/* ── saved views: serialize <-> parse round-trip ─────────────────────────────── */
+/* ── saved views: serialize → parse → matchFilter round-trip ─────────────────────
+ * The bug this guards (UIX-FIX-01): parseView hard-coded kind:'text', stringified
+ * values, and collapsed single-value enum arrays, while matchFilter had no date
+ * branch. After a URL round-trip every numeric / enum / boolean / date filter
+ * matched ZERO rows. The old test masked it by only ever exercising kind:'text',
+ * so a round-trip that *silently changed behaviour* still deep-equalled. These
+ * tests assert ROW-SET equality across every FilterKind × FilterOp — behaviour,
+ * not just shape. */
 
-test('serializeView / parseView: full round-trip', () => {
+const roundTripFilter = (f) => parseView(serializeView({ filters: [f] })).filters[0];
+const rowsMatching = (rows, f) => rows.filter((r) => matchFilter(r, f));
+
+test('saved view: every FilterKind × FilterOp survives the round-trip and matches the same rows', () => {
+  const rows = [
+    { status: 'open', prio: 'p1', title: 'Alpha', count: 1,  active: true,  due: '2026-01-01' },
+    { status: 'wip',  prio: 'p2', title: 'Beta',  count: 5,  active: false, due: '2026-06-15' },
+    { status: 'done', prio: 'p3', title: 'Gamma', count: 9,  active: true,  due: '2026-12-31' },
+    { status: 'open', prio: 'p1', title: 'Delta', count: 12, active: false, due: '2027-03-10' },
+  ];
+  const cases = [
+    // enum
+    { field: 'status', kind: 'enum',    op: 'isAnyOf',    value: ['open', 'wip'] },
+    { field: 'status', kind: 'enum',    op: 'isNoneOf',   value: ['done'] },
+    { field: 'prio',   kind: 'enum',    op: 'isAnyOf',    value: ['p1'] },        // single-value array must NOT collapse
+    // text
+    { field: 'title',  kind: 'text',    op: 'contains',   value: 'et' },
+    { field: 'title',  kind: 'text',    op: 'equals',     value: 'Beta' },
+    { field: 'title',  kind: 'text',    op: 'startsWith', value: 'Ga' },
+    // number
+    { field: 'count',  kind: 'number',  op: 'eq',         value: 5 },
+    { field: 'count',  kind: 'number',  op: 'lt',         value: 9 },
+    { field: 'count',  kind: 'number',  op: 'gt',         value: 5 },
+    { field: 'count',  kind: 'number',  op: 'between',    value: [5, 12] },
+    // boolean (the `false` case regressed pre-fix: 'false' is a truthy string)
+    { field: 'active', kind: 'boolean', op: 'is',         value: true },
+    { field: 'active', kind: 'boolean', op: 'is',         value: false },
+    // date (pre-fix: asNum(ISO) → NaN → matched nothing)
+    { field: 'due',    kind: 'date',    op: 'eq',         value: '2026-06-15' },
+    { field: 'due',    kind: 'date',    op: 'lt',         value: '2026-06-15' },
+    { field: 'due',    kind: 'date',    op: 'gt',         value: '2026-06-15' },
+    { field: 'due',    kind: 'date',    op: 'between',    value: ['2026-01-01', '2026-12-31'] },
+  ];
+
+  for (const f of cases) {
+    const label = `${f.kind}/${f.op}(${JSON.stringify(f.value)})`;
+    const expected = rowsMatching(rows, f);
+    // the filter must actually split the rows — otherwise a broken parse could "pass" by matching all / none
+    assert.ok(expected.length > 0 && expected.length < rows.length, `${label}: precondition — filter should split the rows`);
+    const parsed = roundTripFilter(f);
+    assert.equal(parsed.kind, f.kind, `${label}: kind preserved`);
+    assert.equal(parsed.op, f.op, `${label}: op preserved`);
+    assert.equal(Array.isArray(parsed.value), Array.isArray(f.value), `${label}: array-vs-scalar preserved`);
+    assert.deepEqual(rowsMatching(rows, parsed), expected, `${label}: same row set after round-trip`);
+  }
+});
+
+test('serializeView / parseView: full ViewState round-trips (sort, cols, density, q, typed filters)', () => {
   const view = {
     sort: [{ field: 'name', dir: 'ascending' }, { field: 'age', dir: 'descending' }],
     columns: ['name', 'age', 'city'],
     density: 'compact',
     q: 'foo',
-    filters: [{ field: 'status', kind: 'text', op: 'isAnyOf', value: ['open', 'wip'] }],
+    filters: [
+      { field: 'status', kind: 'enum',    op: 'isAnyOf',  value: ['open', 'wip'] },
+      { field: 'age',    kind: 'number',  op: 'between',   value: [18, 65] },
+      { field: 'active', kind: 'boolean', op: 'is',        value: false },
+      { field: 'name',   kind: 'text',    op: 'contains',  value: 'ad' },
+    ],
   };
-  assert.deepEqual(parseView(serializeView(view)), view);
+  assert.deepEqual(parseView(serializeView(view)), view); // typed values restore verbatim
 });
 
 test('serializeView: omits standard density and empty sections; tolerates a leading "?"', () => {
@@ -191,10 +250,34 @@ test('serializeView: omits standard density and empty sections; tolerates a lead
   assert.deepEqual(parseView('?' + qs), { q: 'x', density: 'comfortable' });
 });
 
-test('parseView: single-value filter comes back as a scalar; sort dir short codes decode', () => {
+test('parseView: sort dir short codes decode; legacy kind-less tokens still parse (back-compat)', () => {
+  // old links were `field~op~value` with no kind — they must keep working, with the kind inferred from the op
   const v = parseView('sort=a:d&filter=owner~equals~ada');
   assert.deepEqual(v.sort, [{ field: 'a', dir: 'descending' }]);
   assert.deepEqual(v.filters, [{ field: 'owner', kind: 'text', op: 'equals', value: 'ada' }]);
+  // a legacy multi-value enum token restores as an array (kind inferred as 'enum')
+  assert.deepEqual(parseView('filter=status~isAnyOf~open|wip').filters, [
+    { field: 'status', kind: 'enum', op: 'isAnyOf', value: ['open', 'wip'] },
+  ]);
+});
+
+test('serializeView / parseView: values containing the ~ | , delimiters survive intact', () => {
+  const view = {
+    filters: [
+      { field: 'label', kind: 'enum', op: 'isAnyOf',  value: ['a,b', 'c|d', 'e~f'] },
+      { field: 'note',  kind: 'text', op: 'contains', value: 'x, y | z ~ w' },
+    ],
+  };
+  assert.deepEqual(parseView(serializeView(view)).filters, view.filters);
+});
+
+test('parseView: number epoch-ms date value round-trips as a number and matches by instant', () => {
+  const ms = Date.UTC(2026, 5, 15); // 2026-06-15
+  const f = { field: 'due', kind: 'date', op: 'gt', value: ms };
+  const parsed = roundTripFilter(f);
+  assert.equal(parsed.value, ms);                 // epoch-ms stays numeric
+  assert.equal(matchFilter({ due: '2026-12-31' }, parsed), true);
+  assert.equal(matchFilter({ due: '2026-01-01' }, parsed), false);
 });
 
 /* ── virtualization ──────────────────────────────────────────────────────────── */
