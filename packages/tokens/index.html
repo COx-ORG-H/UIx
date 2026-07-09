@@ -194,8 +194,8 @@
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label">Status</label>
               <div class="uix-select-rich" data-uix-richselect>
-                <button class="uix-select-trigger" type="button" popovertarget="status-sel" style="anchor-name:--statussel;width:100%"><span data-rs-label>Resolved</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-                <ul id="status-sel" popover class="uix-popover uix-listbox" style="position-anchor:--statussel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px">
+                <button class="uix-select-trigger" type="button" popovertarget="status-sel" style="width:100%"><span data-rs-label>Resolved</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+                <ul id="status-sel" popover class="uix-popover uix-listbox" style="min-width:200px;padding:4px">
                   <li class="uix-listbox__option" data-rs-option>Open</li>
                   <li class="uix-listbox__option" data-rs-option>In progress</li>
                   <li class="uix-listbox__option" aria-selected="true" data-rs-option>Resolved</li>
@@ -268,7 +268,7 @@
               <legend>Ticket details</legend>
               <div class="uix-form-grid">
                 <div class="uix-field"><label class="uix-field__label" for="f-subject">Subject</label><input class="uix-input" id="f-subject" value="VPN disconnects"></div>
-                <div class="uix-field"><label class="uix-field__label">Category</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="cat-sel" style="anchor-name:--catsel;width:100%"><span data-rs-label>Network</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="cat-sel" popover class="uix-popover uix-listbox" style="position-anchor:--catsel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Network</li><li class="uix-listbox__option" data-rs-option>Access</li></ul></div></div>
+                <div class="uix-field"><label class="uix-field__label">Category</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="cat-sel" style="width:100%"><span data-rs-label>Network</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="cat-sel" popover class="uix-popover uix-listbox" style="min-width:200px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Network</li><li class="uix-listbox__option" data-rs-option>Access</li></ul></div></div>
                 <div class="uix-field"><label class="uix-field__label">Assignee</label><input class="uix-input" placeholder="Unassigned"></div>
               </div>
             </fieldset>
@@ -280,11 +280,11 @@
           <div class="uix-field" style="width:auto">
             <label class="uix-field__label">Type (command-style dropdown)</label>
             <div class="uix-select-rich" data-uix-richselect>
-              <button class="uix-select-trigger" type="button" popovertarget="rs-type" style="anchor-name:--rstype">
+              <button class="uix-select-trigger" type="button" popovertarget="rs-type">
                 <span data-rs-label>Incident</span>
                 <svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
               </button>
-              <div id="rs-type" popover class="uix-cmdk" style="position-anchor:--rstype; top:anchor(bottom); left:anchor(left); margin-top:6px; width:240px">
+              <div id="rs-type" popover class="uix-cmdk" style="width:240px">
                 <input class="uix-cmdk__input" style="height:42px;font-size:var(--uix-text-body)" placeholder="Filter types…">
                 <div class="uix-cmdk__list">
                   <div class="uix-cmdk__item" data-rs-option aria-selected="true">Incident</div>
@@ -487,8 +487,8 @@
               <input class="uix-input uix-input--sm" type="search" placeholder="Search tickets…">
             </span>
             <span class="uix-toolbar__spacer"></span>
-            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu" style="anchor-name:--viewbtn">View ▾</button>
-            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu style="position:fixed">
+            <button class="uix-btn uix-btn--secondary uix-btn--sm" popovertarget="viewmenu">View ▾</button>
+            <div id="viewmenu" popover class="uix-popover uix-view-menu" data-uix-viewmenu data-uix-align="end" style="position:fixed">
               <div class="uix-view-menu__group">
                 <div class="uix-view-menu__label">Density</div>
                 <span class="uix-segmented" data-uix-density>
@@ -638,8 +638,8 @@
           <button class="uix-btn uix-btn--primary" data-uix-open-peek>Peek a ticket</button>
           <button class="uix-btn uix-btn--secondary" data-uix-open="#demo-cmdk">Search <span class="uix-kbd">⌘K</span></button>
           <button class="uix-btn uix-btn--danger" data-uix-open="#demo-confirm">Delete…</button>
-          <button class="uix-btn uix-btn--secondary" popovertarget="demo-pop" style="anchor-name:--popbtn">Popover</button>
-          <div id="demo-pop" popover class="uix-popover" style="position-anchor:--popbtn; top:anchor(bottom); justify-self:anchor-center; margin-top:6px; min-width:200px">
+          <button class="uix-btn uix-btn--secondary" popovertarget="demo-pop">Popover</button>
+          <div id="demo-pop" popover class="uix-popover" data-uix-align="center" style="min-width:200px">
             <div class="uix-menu" style="border:0;box-shadow:none;background:transparent;padding:0">
               <button class="uix-menu__item">Edit</button><button class="uix-menu__item">Duplicate</button><div class="uix-menu__sep"></div><button class="uix-menu__item uix-menu__item--danger">Delete</button>
             </div>
@@ -668,7 +668,7 @@
         <dialog class="uix-drawer" id="demo-drawer">
           <div class="uix-drawer__header"><span class="uix-dialog__title">Filters</span><button class="uix-dialog__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
           <div class="uix-drawer__body uix-stack" style="--gap:16px">
-            <div class="uix-field"><label class="uix-field__label">Assignee</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="assignee-sel" style="anchor-name:--assigneesel;width:100%"><span data-rs-label>Anyone</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="assignee-sel" popover class="uix-popover uix-listbox" style="position-anchor:--assigneesel;top:anchor(bottom);left:anchor(left);width:anchor-size(width);margin-top:4px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Anyone</li><li class="uix-listbox__option" data-rs-option>Maya K.</li></ul></div></div>
+            <div class="uix-field"><label class="uix-field__label">Assignee</label><div class="uix-select-rich" data-uix-richselect><button class="uix-select-trigger" type="button" popovertarget="assignee-sel" style="width:100%"><span data-rs-label>Anyone</span><svg class="uix-select-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><ul id="assignee-sel" popover class="uix-popover uix-listbox" style="min-width:200px;padding:4px"><li class="uix-listbox__option" aria-selected="true" data-rs-option>Anyone</li><li class="uix-listbox__option" data-rs-option>Maya K.</li></ul></div></div>
             <div class="uix-field"><label class="uix-field__label">Priority</label><div class="uix-radio-group"><label class="uix-radio"><input type="radio" name="dp" checked><span class="uix-radio__dot"></span> Any</label><label class="uix-radio"><input type="radio" name="dp"><span class="uix-radio__dot"></span> High</label></div></div>
           </div>
           <div class="uix-drawer__footer"><button class="uix-btn uix-btn--ghost" data-uix-close>Reset</button><button class="uix-btn uix-btn--primary" data-uix-close style="margin-left:auto">Apply</button></div>

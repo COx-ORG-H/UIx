@@ -1199,8 +1199,24 @@
   .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
   .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
 }
-/* uix tooltip — CSS hover/focus tooltip via [data-uix-tip]. Depends only on --uix-* tokens. */
+/* uix tooltip — depends only on --uix-* tokens (UIX-FIX-02 / F45).
+ *  `.uix-tooltip`: top-layer bubble (Popover API) placed by the JS positioner — no
+ *  overflow ancestor can clip it. `[data-uix-tip]::after`: in-flow pure-CSS fallback
+ *  for no-JS consumers; the JS layer suppresses it (`[data-uix-overlays]`) to avoid a
+ *  double tip. */
 @layer uix.components {
+  .uix-tooltip {
+    position: fixed; margin: 0; width: max-content; max-width: 260px;
+    background: var(--uix-text); color: var(--uix-bg-app); font-size: var(--uix-text-meta); font-weight: 500;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); box-shadow: var(--uix-shadow-popover);
+    z-index: var(--uix-z-tooltip);
+  }
+  [popover].uix-tooltip {
+    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), overlay var(--uix-dur-fast) allow-discrete, display var(--uix-dur-fast) allow-discrete;
+  }
+  [popover].uix-tooltip:popover-open { opacity: 1; }
+  @starting-style { [popover].uix-tooltip:popover-open { opacity: 0; } }
+
   [data-uix-tip] { position: relative; }
   [data-uix-tip]::after {
     content: attr(data-uix-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
@@ -1211,6 +1227,8 @@
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   [data-uix-tip]:hover::after, [data-uix-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* When the JS overlay layer is active, the top-layer bubble replaces the fallback. */
+  [data-uix-overlays] [data-uix-tip]::after { content: none; }
 }
 /* uix progress bar + ring — depends only on --uix-* tokens. */
 @layer uix.components {

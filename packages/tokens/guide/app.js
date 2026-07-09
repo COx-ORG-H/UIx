@@ -208,6 +208,58 @@ export const getContrast = (a, b) => {
 /** AA verdict from a ratio: 'AA' (>=4.5), 'AA-lg' (>=3), else 'FAIL'. */
 export const aaVerdict = (ratio) => (ratio >= 4.5 ? 'AA' : ratio >= 3 ? 'AA-lg' : 'FAIL');
 
+/* ── overlay positioning ─────────────────────────────────────────────────────────
+ * Port of @tensor_1/react's overlay-position.ts (computePosition): flip on the main
+ * axis + shift/clamp on the cross axis so an anchored overlay stays in-viewport and
+ * attached to its trigger — no CSS anchor positioning (Chromium-only). Same math as
+ * the React hook, so both layers place overlays identically (UIX-FIX-02). */
+const _clampPos = (v, min, max) => Math.max(min, Math.min(max, v));
+const _isVert = (s) => s === 'top' || s === 'bottom';
+const _alignStart = (align, anchorStart, anchorSize, overlaySize) =>
+  align === 'center' ? anchorStart + anchorSize / 2 - overlaySize / 2
+    : align === 'end' ? anchorStart + anchorSize - overlaySize
+      : anchorStart;
+
+/** Compute an in-viewport, anchor-attached { x, y, side } for an overlay (viewport coords). */
+export const computeOverlayPosition = (anchor, overlay, viewport, opts = {}) => {
+  const side0 = opts.side || 'bottom';
+  const align = opts.align || 'start';
+  const gap = opts.gap ?? 6;
+  const padding = opts.padding ?? 8;
+  const doFlip = opts.flip ?? true;
+  const doShift = opts.shift ?? true;
+
+  let side = side0;
+  if (doFlip) {
+    if (_isVert(side0)) {
+      const below = viewport.height - (anchor.y + anchor.height) - gap - padding;
+      const above = anchor.y - gap - padding;
+      if (side0 === 'bottom' && overlay.height > below && above > below) side = 'top';
+      else if (side0 === 'top' && overlay.height > above && below > above) side = 'bottom';
+    } else {
+      const right = viewport.width - (anchor.x + anchor.width) - gap - padding;
+      const left = anchor.x - gap - padding;
+      if (side0 === 'right' && overlay.width > right && left > right) side = 'left';
+      else if (side0 === 'left' && overlay.width > left && right > left) side = 'right';
+    }
+  }
+
+  let x = 0, y = 0;
+  if (side === 'bottom') y = anchor.y + anchor.height + gap;
+  else if (side === 'top') y = anchor.y - gap - overlay.height;
+  else if (side === 'right') x = anchor.x + anchor.width + gap;
+  else x = anchor.x - gap - overlay.width;
+
+  if (_isVert(side)) x = _alignStart(align, anchor.x, anchor.width, overlay.width);
+  else y = _alignStart(align, anchor.y, anchor.height, overlay.height);
+
+  if (doShift) {
+    x = _clampPos(x, padding, viewport.width - overlay.width - padding);
+    y = _clampPos(y, padding, viewport.height - overlay.height - padding);
+  }
+  return { x: Math.round(x), y: Math.round(y), side, align };
+};
+
 /* ----------------------------------------------------------------------------
  * DOM wiring (browser only)
  * --------------------------------------------------------------------------*/
@@ -225,6 +277,57 @@ if (typeof document !== 'undefined') {
     probe.style.color = expr;
     return getComputedStyle(probe).color; // e.g. "rgb(20, 71, 230)"
   };
+
+  // ---- overlay positioning: flip/shift anchored popovers + a top-layer tooltip ----
+  // Delegated so it also covers popovers/tooltips added after init. `beforetoggle`
+  // does not bubble, so we listen in the capture phase. Positions are applied as
+  // `position:fixed` on top-layer elements, so no `overflow` ancestor can clip them.
+  root.dataset.uixOverlays = ''; // signal the CSS to drop the clipping ::after fallback
+
+  const rectOf = (el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; };
+  const placeOverlay = (trigger, pop) => {
+    const { x, y } = computeOverlayPosition(
+      rectOf(trigger),
+      { width: pop.offsetWidth, height: pop.offsetHeight },
+      { width: window.innerWidth, height: window.innerHeight },
+      { side: pop.dataset.uixSide, align: pop.dataset.uixAlign },
+    );
+    pop.style.position = 'fixed'; pop.style.margin = '0'; pop.style.inset = 'auto';
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  };
+
+  const openOverlays = new Map(); // pop -> reposition fn (kept pinned on scroll/resize)
+  document.addEventListener('beforetoggle', (e) => {
+    const pop = e.target;
+    if (!(pop instanceof HTMLElement) || !pop.hasAttribute('popover') || pop.dataset.uixNoauto != null || !pop.id) return;
+    const trigger = document.querySelector(`[popovertarget="${pop.id}"]`);
+    if (!trigger) return;
+    if (e.newState === 'open') { const fn = () => placeOverlay(trigger, pop); fn(); openOverlays.set(pop, fn); }
+    else openOverlays.delete(pop);
+  }, true);
+  const repositionOpen = () => openOverlays.forEach((fn) => fn());
+  window.addEventListener('scroll', repositionOpen, { capture: true, passive: true });
+  window.addEventListener('resize', repositionOpen);
+
+  // one shared top-layer tooltip bubble, revealed on hover / keyboard focus
+  const tipEl = document.createElement('div');
+  tipEl.className = 'uix-tooltip'; tipEl.setAttribute('role', 'tooltip'); tipEl.setAttribute('popover', 'manual');
+  document.body.appendChild(tipEl);
+  let tipFor = null;
+  const showTip = (el) => {
+    const text = el.getAttribute('data-uix-tip'); if (!text) return;
+    tipFor = el; tipEl.textContent = text; tipEl.showPopover?.();
+    const { x, y } = computeOverlayPosition(
+      rectOf(el), { width: tipEl.offsetWidth, height: tipEl.offsetHeight },
+      { width: window.innerWidth, height: window.innerHeight }, { side: 'top', align: 'center' },
+    );
+    tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+  };
+  const hideTip = () => { if (tipFor) { tipEl.hidePopover?.(); tipFor = null; } };
+  document.addEventListener('pointerover', (e) => { const el = e.target.closest?.('[data-uix-tip]'); if (el && el !== tipFor) showTip(el); });
+  document.addEventListener('pointerout', (e) => { const el = e.target.closest?.('[data-uix-tip]'); if (el && el === tipFor) hideTip(); });
+  document.addEventListener('focusin', (e) => { const el = e.target.closest?.('[data-uix-tip]'); if (el) showTip(el); else hideTip(); });
+  document.addEventListener('focusout', () => hideTip());
 
   // ---- theme toggle ----
   const toggleBtn = document.querySelector('[data-uix-theme-toggle]');
@@ -504,21 +607,8 @@ if (typeof document !== 'undefined') {
 
     const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
     if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
-    const viewPop = root.querySelector('[data-uix-viewmenu]');
-    if (viewBtn && viewPop) {
-      viewPop.addEventListener('beforetoggle', (e) => {
-        if (e.newState !== 'open') return;
-        const r = viewBtn.getBoundingClientRect();
-        viewPop.style.top = (r.bottom + 6) + 'px';
-        viewPop.style.right = (window.innerWidth - r.right) + 'px';
-        viewPop.style.left = 'auto';
-        viewPop.style.bottom = 'auto';
-      });
-      viewPop.addEventListener('toggle', (e) => {
-        if (e.newState !== 'open') return;
-        document.addEventListener('scroll', () => viewPop.hidePopover(), { once: true, passive: true, capture: true });
-      });
-    }
+    // #viewmenu is placed by the delegated overlay controller (flip/shift, follows
+    // scroll/resize); it carries data-uix-align="end" so it right-aligns to the trigger.
 
     // density (segmented)
     const applyDensity = () => {
@@ -771,8 +861,8 @@ if (typeof document !== 'undefined') {
       const render = () => {
         host.innerHTML =
           state.map((r) => `<button class="uix-reaction" type="button" data-emoji="${r.emoji}" ${r.mine ? 'data-mine' : ''} aria-pressed="${r.mine}">${r.emoji} <span class="uix-reaction__count">${r.count}</span></button>`).join('') +
-          `<button class="uix-reaction-add" type="button" popovertarget="${pid}" aria-label="Add reaction" style="anchor-name:--${pid}">${icon('smile-plus', 'sm')}</button>` +
-          `<div id="${pid}" popover class="uix-popover" style="position-anchor:--${pid}; top:anchor(bottom); left:anchor(left); margin-top:6px"><div class="uix-emoji-picker">${EMOJI_SET.map((e) => `<button class="uix-emoji-picker__btn" type="button" data-pick="${e}">${e}</button>`).join('')}</div></div>`;
+          `<button class="uix-reaction-add" type="button" popovertarget="${pid}" aria-label="Add reaction">${icon('smile-plus', 'sm')}</button>` +
+          `<div id="${pid}" popover class="uix-popover"><div class="uix-emoji-picker">${EMOJI_SET.map((e) => `<button class="uix-emoji-picker__btn" type="button" data-pick="${e}">${e}</button>`).join('')}</div></div>`;
       };
       host.addEventListener('click', (e) => {
         const pill = e.target.closest('[data-emoji]');

@@ -5,6 +5,8 @@ export { cx } from './cx.js';
 export { useDialog } from './hooks/useDialog.js';
 export { useTable } from './hooks/useTable.js';
 export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
+export { useOverlayPosition } from './hooks/useOverlayPosition.js';
+export type { UseOverlayPositionOptions } from './hooks/useOverlayPosition.js';
 
 // Form primitives
 export { Button, ButtonGroup } from './components/Button.js';
@@ -94,6 +96,9 @@ export type {
 
 // Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection
 export * from './table-engine.js';
+
+// Overlay positioner — framework-agnostic flip/shift collision math for anchored overlays
+export * from './overlay-position.js';
 
 export { Pagination } from './components/Pagination.js';
 export type { PaginationProps } from './components/Pagination.js';

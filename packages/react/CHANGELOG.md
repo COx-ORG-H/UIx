@@ -1,5 +1,18 @@
 # @tensor_1/react
 
+## 2.6.1
+
+### Patch Changes
+
+- Overlays: cross-browser viewport-collision handling for anchored overlays and tooltips.
+
+  Anchored overlays (Popover / Select / menu) were positioned with CSS anchor positioning, which is Chromium-only and has no collision fallback — on Firefox/Safari they detached from the trigger, and at a viewport edge they clipped. The CSS-`::after` tooltip was clipped by any `overflow: hidden/scroll` ancestor.
+
+  - New framework-agnostic `computePosition(anchor, overlay, viewport, opts)` — flip on the main axis + shift/clamp on the cross axis — exported for any consumer, and a `useOverlayPosition(triggerRef, overlayRef, opts)` React hook that pins a native-popover overlay to its trigger (via `position: fixed` in the top layer) and follows scroll/resize. Cross-browser: no CSS anchor positioning.
+  - `Tooltip` now renders in the top layer (native Popover API) and is placed by the same collision math, so it is never clipped by an `overflow` ancestor. Adds an optional `side` prop; `label`/`children` are unchanged.
+
+  Additive API only — no breaking changes. Fixes TENSOR audit findings F18/F45 (UIX-FIX-02).
+
 ## 2.6.0
 
 ### Minor Changes

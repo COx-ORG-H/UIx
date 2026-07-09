@@ -4,6 +4,30 @@ import assert from 'node:assert/strict';
 import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
 import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs, toggleReaction } from './app.js';
 import { multiSort, toggleSortKeys, searchRows, highlightSegments, selectAllState, togglePage, clampWidth } from './app.js';
+import { computeOverlayPosition } from './app.js';
+
+/* overlay positioner — parity with @tensor_1/react's overlay-position.ts (UIX-FIX-02).
+ * Mirrors key cases from packages/react/src/overlay-position.test.mjs so the vanilla
+ * styleguide and the React hook place anchored overlays identically. */
+const VP = { width: 1000, height: 800 };
+test('computeOverlayPosition: below-start when it fits; flips near the bottom edge', () => {
+  assert.deepEqual(
+    computeOverlayPosition({ x: 100, y: 100, width: 80, height: 30 }, { width: 200, height: 150 }, VP),
+    { x: 100, y: 136, side: 'bottom', align: 'start' });
+  const flipped = computeOverlayPosition({ x: 100, y: 720, width: 80, height: 30 }, { width: 200, height: 150 }, VP);
+  assert.equal(flipped.side, 'top');
+  assert.equal(flipped.y, 720 - 6 - 150);
+});
+test('computeOverlayPosition: shifts back into the viewport at the right edge', () => {
+  const r = computeOverlayPosition({ x: 900, y: 100, width: 80, height: 30 }, { width: 200, height: 100 }, VP);
+  assert.equal(r.x, 792); // 1000 - 200 - 8
+});
+test('computeOverlayPosition: align center and side:right (flips to left near the edge)', () => {
+  assert.equal(computeOverlayPosition({ x: 400, y: 100, width: 100, height: 30 }, { width: 60, height: 40 }, VP, { align: 'center' }).x, 420);
+  const left = computeOverlayPosition({ x: 860, y: 100, width: 80, height: 30 }, { width: 120, height: 60 }, VP, { side: 'right' });
+  assert.equal(left.side, 'left');
+  assert.equal(left.x, 860 - 6 - 120);
+});
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');

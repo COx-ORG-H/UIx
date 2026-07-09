@@ -11,6 +11,7 @@ import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import * as react from 'react';
 import { ReactNode } from 'react';
+import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -34,6 +35,9 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 
 // @public (undocumented)
 export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+
+// @public (undocumented)
+export type Align = 'start' | 'center' | 'end';
 
 // @public
 export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
@@ -242,6 +246,9 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public
+export function computePosition(anchor: Rect, overlay: Size, viewport: Size, opts?: PositionOptions_2): PositionResult;
 
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
@@ -742,6 +749,28 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public (undocumented)
+interface PositionOptions_2 {
+    align?: Align;
+    flip?: boolean;
+    gap?: number;
+    padding?: number;
+    shift?: boolean;
+    side?: Side;
+}
+export { PositionOptions_2 as PositionOptions }
+
+// @public (undocumented)
+export interface PositionResult {
+    // (undocumented)
+    align: Align;
+    side: Side;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public (undocumented)
 export type Primitive = string | number | boolean | null | undefined;
 
 // @public (undocumented)
@@ -781,6 +810,18 @@ export interface RadioGroupProps {
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export interface Rect {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
 }
 
 // @public
@@ -864,6 +905,9 @@ export type ShellNav = 'full' | 'rail' | 'hidden';
 // @public (undocumented)
 export function shouldVirtualize(count: number, threshold?: number): boolean;
 
+// @public
+export type Side = 'top' | 'bottom' | 'left' | 'right';
+
 // @public (undocumented)
 export function Sidebar(input: SidebarProps): react.JSX.Element;
 
@@ -890,6 +934,14 @@ export interface SidebarSectionProps {
     children?: ReactNode;
     // (undocumented)
     label?: string;
+}
+
+// @public (undocumented)
+export interface Size {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
 }
 
 // @public
@@ -1160,6 +1212,7 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     children?: ReactNode;
     label: string;
+    side?: Side;
 }
 
 // @public (undocumented)
@@ -1222,6 +1275,14 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 
 // @public (undocumented)
 export function useDialog(open: boolean): React.RefObject<HTMLDialogElement>;
+
+// @public
+export function useOverlayPosition(triggerRef: RefObject<HTMLElement | null>, overlayRef: RefObject<HTMLElement | null>, options?: UseOverlayPositionOptions): void;
+
+// @public (undocumented)
+export interface UseOverlayPositionOptions extends PositionOptions_2 {
+    enabled?: boolean;
+}
 
 // @public
 export function UserChip(input: UserChipProps): react.JSX.Element;
