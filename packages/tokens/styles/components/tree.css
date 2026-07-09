@@ -1,11 +1,17 @@
-/* uix tree view — depends only on --uix-* tokens. */
+/* uix tree view — WAI-ARIA tree (role=tree/treeitem/group). Depends only on --uix-* tokens.
+   ARIA (aria-expanded / aria-selected / aria-level) lives on the treeitem <li>, so the chevron,
+   selection, and collapse styling all key off the item, not the row (UIX-FIX-04). */
 @layer uix.components {
   .uix-tree, .uix-tree ul { list-style: none; margin: 0; padding: 0; }
-  .uix-tree ul { padding-left: var(--uix-space-5); }
-  .uix-tree__row { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-2); border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); border: 0; background: transparent; width: 100%; text-align: left; font-family: inherit; }
-  .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__group { padding-left: var(--uix-space-5); }
+  .uix-tree__item { outline: none; } /* the focus ring is drawn on the row, below */
+  .uix-tree__row { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-2); border-radius: var(--uix-radius-sm); cursor: pointer; color: var(--uix-text); font-size: var(--uix-text-body); }
+  .uix-tree__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-tree__item > .uix-tree__row:hover { background: var(--uix-bg-hover); }
+  .uix-tree__item[aria-selected="true"] > .uix-tree__row { background: var(--uix-bg-active); }
+  .uix-tree__item:focus-visible > .uix-tree__row { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
   .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-tree__toggle svg { width: 14px; height: 14px; }
-  .uix-tree__row[aria-expanded="false"] .uix-tree__toggle { transform: rotate(-90deg); }
-  .uix-tree__row[aria-expanded="false"] + ul { display: none; }
+  .uix-tree__item[aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
+  .uix-tree__item[aria-expanded="false"] > .uix-tree__group { display: none; }
 }

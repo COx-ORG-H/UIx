@@ -724,6 +724,48 @@ if (typeof document !== 'undefined') {
     window.addEventListener('scroll', () => { if (current) show(current); }, { passive: true, capture: true });
   };
 
+  // ---- tree: WAI-ARIA keyboard nav + roving tabindex (mirror of the React <Tree>, UIX-FIX-04) ----
+  const setupTree = () => {
+    document.querySelectorAll('.uix-tree[role="tree"]').forEach((tree) => {
+      const all = () => [...tree.querySelectorAll('[role="treeitem"]')];
+      const visible = () => all().filter((el) => el.offsetParent !== null); // excludes items in collapsed groups
+      const setTabbable = (target) => all().forEach((el) => el.setAttribute('tabindex', el === target ? '0' : '-1'));
+      const focusItem = (el) => { if (el) { setTabbable(el); el.focus(); } };
+      const toggle = (li) => { const e = li.getAttribute('aria-expanded'); if (e !== null) li.setAttribute('aria-expanded', e === 'true' ? 'false' : 'true'); };
+      const select = (li) => {
+        if (!li.hasAttribute('aria-selected')) return;
+        tree.querySelectorAll('[role="treeitem"][aria-selected]').forEach((el) => el.setAttribute('aria-selected', 'false'));
+        li.setAttribute('aria-selected', 'true');
+      };
+      tree.addEventListener('click', (e) => {
+        const li = e.target.closest('[role="treeitem"]');
+        if (!li || !tree.contains(li)) return;
+        toggle(li); select(li); focusItem(li);
+      });
+      tree.addEventListener('keydown', (e) => {
+        const cur = e.target.closest('[role="treeitem"]');
+        if (!cur || !tree.contains(cur)) return;
+        const list = visible(); const idx = list.indexOf(cur); const exp = cur.getAttribute('aria-expanded');
+        switch (e.key) {
+          case 'ArrowDown': e.preventDefault(); focusItem(list[Math.min(idx + 1, list.length - 1)]); break;
+          case 'ArrowUp': e.preventDefault(); focusItem(list[Math.max(idx - 1, 0)]); break;
+          case 'Home': e.preventDefault(); focusItem(list[0]); break;
+          case 'End': e.preventDefault(); focusItem(list[list.length - 1]); break;
+          case 'ArrowRight': e.preventDefault();
+            if (exp === 'false') toggle(cur);
+            else if (exp === 'true') focusItem(cur.querySelector(':scope > [role="group"] > [role="treeitem"]'));
+            break;
+          case 'ArrowLeft': e.preventDefault();
+            if (exp === 'true') toggle(cur);
+            else focusItem(cur.parentElement?.closest('[role="treeitem"]'));
+            break;
+          case 'Enter': case ' ': e.preventDefault(); toggle(cur); select(cur); focusItem(cur); break;
+          default: break;
+        }
+      });
+    });
+  };
+
   // ---- side-peek drawer: ↑/↓ navigate records, title link "navigates" (no-op here) ----
   const setupPeek = () => {
     const peek = document.querySelector('[data-uix-peek-dialog]');
@@ -781,7 +823,11 @@ if (typeof document !== 'undefined') {
       const t = ensureToaster();
       const el = document.createElement('div');
       el.className = `uix-toast uix-toast--${tone}`;
-      el.innerHTML = `<span class="uix-toast__icon">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
+      // errors interrupt (assertive); everything else is polite. Each toast is its own live region;
+      // the .uix-toaster container is NOT, so we announce once, not twice (UIX-FIX-04).
+      el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
+      el.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
+      el.innerHTML = `<span class="uix-toast__icon" aria-hidden="true">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
       t.appendChild(el);
       while (t.children.length > 3) t.firstElementChild.remove();
       const leave = () => { el.setAttribute('data-leaving', ''); setTimeout(() => el.remove(), 220); };
@@ -862,13 +908,15 @@ if (typeof document !== 'undefined') {
       const check = field?.querySelector('[data-field-check]');
       input.addEventListener('blur', () => {
         const val = input.value.trim();
-        if (!val) { input.removeAttribute('data-valid'); input.setAttribute('aria-invalid', 'false'); [ok, err, check].forEach((e) => e && (e.hidden = true)); return; }
+        if (!val) { input.removeAttribute('data-valid'); input.setAttribute('aria-invalid', 'false'); input.removeAttribute('aria-describedby'); [ok, err, check].forEach((e) => e && (e.hidden = true)); return; }
         const valid = input.type === 'email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val) : val.length > 1;
         input.toggleAttribute('data-valid', valid);
         input.setAttribute('aria-invalid', valid ? 'false' : 'true');
         if (ok) ok.hidden = !valid;
         if (check) check.hidden = !valid;
         if (err) err.hidden = valid;
+        // point the control at the error message while it's shown, clear it when valid (UIX-FIX-04)
+        if (err?.id) { if (valid) input.removeAttribute('aria-describedby'); else input.setAttribute('aria-describedby', err.id); }
       });
     });
     document.querySelectorAll('[data-uix-submit-demo]').forEach((btn) => {
@@ -1036,6 +1084,7 @@ if (typeof document !== 'undefined') {
     setupForms();
     setupReactions();
     setupLightbox();
+    setupTree();
     enhanceAnchoredPopovers(); // after all setups so dynamically-rendered pickers are covered too
     enhanceTooltips();
     initCharts();

@@ -184,8 +184,8 @@
             </div>
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label" for="f-prio-err">Priority (error)</label>
-              <input class="uix-input" id="f-prio-err" aria-invalid="true" value="Invalid value">
-              <span class="uix-field__error">Please choose a priority.</span>
+              <input class="uix-input" id="f-prio-err" aria-invalid="true" aria-describedby="f-prio-err-msg" value="Invalid value">
+              <div class="uix-field__msg"><span class="uix-field__error" id="f-prio-err-msg" role="alert">Please choose a priority.</span></div>
             </div>
             <div class="uix-field" style="width:220px">
               <label class="uix-field__label">Notes</label>
@@ -302,7 +302,7 @@
               <span class="uix-input-group__icon uix-input-group__icon--trailing" data-field-check hidden style="color:var(--uix-success)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
             </span>
             <span class="uix-field__success" data-field-success hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Looks good</span>
-            <span class="uix-field__error" data-field-error hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Enter a valid email address</span>
+            <span class="uix-field__error" data-field-error id="f-email-err" role="alert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Enter a valid email address</span>
           </div>
           <div class="uix-field" style="width:auto">
             <label class="uix-field__label">Submit (morphs)</label>
@@ -595,12 +595,19 @@
             </div>
           </div></div>
           <div class="uix-card"><div class="uix-card__body">
-            <ul class="uix-tree">
-              <li><button class="uix-tree__row" aria-expanded="true"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Infrastructure</button>
-                <ul><li><span class="uix-tree__row" style="padding-left:24px">Network</span></li><li><span class="uix-tree__row" style="padding-left:24px">Servers</span></li></ul>
+            <ul class="uix-tree" role="tree" aria-label="Configuration items">
+              <li class="uix-tree__item" role="treeitem" aria-level="1" aria-expanded="true" aria-selected="false" tabindex="0" data-id="infra">
+                <span class="uix-tree__row"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span><span class="uix-tree__label">Infrastructure</span></span>
+                <ul class="uix-tree__group" role="group">
+                  <li class="uix-tree__item" role="treeitem" aria-level="2" aria-selected="false" tabindex="-1" data-id="net"><span class="uix-tree__row"><span class="uix-tree__toggle"></span><span class="uix-tree__label">Network</span></span></li>
+                  <li class="uix-tree__item" role="treeitem" aria-level="2" aria-selected="false" tabindex="-1" data-id="srv"><span class="uix-tree__row"><span class="uix-tree__toggle"></span><span class="uix-tree__label">Servers</span></span></li>
+                </ul>
               </li>
-              <li><button class="uix-tree__row" aria-expanded="false"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span> Applications</button>
-                <ul><li><span class="uix-tree__row" style="padding-left:24px">Billing</span></li></ul>
+              <li class="uix-tree__item" role="treeitem" aria-level="1" aria-expanded="false" aria-selected="false" tabindex="-1" data-id="apps">
+                <span class="uix-tree__row"><span class="uix-tree__toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span><span class="uix-tree__label">Applications</span></span>
+                <ul class="uix-tree__group" role="group">
+                  <li class="uix-tree__item" role="treeitem" aria-level="2" aria-selected="false" tabindex="-1" data-id="bill"><span class="uix-tree__row"><span class="uix-tree__toggle"></span><span class="uix-tree__label">Billing</span></span></li>
+                </ul>
               </li>
             </ul>
           </div></div>
@@ -1137,7 +1144,7 @@
         <div class="uix-guide__subhead">Nested composition — a card containing other components</div>
         <div class="uix-card"><div class="uix-card__header"><span class="uix-card__title">Open incidents</span></div><div class="uix-card__body" style="display:flex;flex-direction:column;gap:14px">
           <div style="display:flex;gap:12px"><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Open</div><div class="uix-stat__value">128</div></div><div class="uix-stat" style="flex:1"><div class="uix-stat__label">Breaching</div><div class="uix-stat__value">3</div></div></div>
-          <ul class="uix-tree"><li><span class="uix-tree__row">INC-2043 · VPN disconnects</span></li><li><span class="uix-tree__row">INC-2041 · Email outage</span></li></ul>
+          <ul class="uix-tree" role="tree" aria-label="Related incidents"><li class="uix-tree__item" role="treeitem" aria-level="1" tabindex="0" data-id="inc-2043"><span class="uix-tree__row"><span class="uix-tree__label">INC-2043 · VPN disconnects</span></span></li><li class="uix-tree__item" role="treeitem" aria-level="1" tabindex="-1" data-id="inc-2041"><span class="uix-tree__row"><span class="uix-tree__label">INC-2041 · Email outage</span></span></li></ul>
           <div class="uix-reactions" data-uix-reactions data-reactions='[{"emoji":"👀","count":1,"mine":false}]'></div>
         </div></div>
       </section>
