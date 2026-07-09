@@ -585,6 +585,33 @@ if (typeof document !== 'undefined') {
       if (close) { close.closest('dialog')?.close(); return; }
       if (e.target.tagName === 'DIALOG') e.target.close();   // click on the backdrop
     });
+
+    // Background scroll lock: while any <dialog> is open, lock the page behind (no scroll /
+    // no scroll-chain), compensating the scrollbar width so open/close causes no layout shift.
+    // A counter keeps it correct when dialogs stack. Mirrors @tensor_1/react's useDialog (F43).
+    let dlgLocks = 0, savedOverflow = '', savedPadRight = '';
+    const lockBodyScroll = () => {
+      if (dlgLocks++ > 0) return;
+      const sbw = window.innerWidth - document.documentElement.clientWidth;
+      savedOverflow = document.body.style.overflow;
+      savedPadRight = document.body.style.paddingRight;
+      document.body.style.overflow = 'hidden';
+      if (sbw > 0) document.body.style.paddingRight = `${(parseFloat(getComputedStyle(document.body).paddingRight) || 0) + sbw}px`;
+    };
+    const unlockBodyScroll = () => {
+      if (dlgLocks === 0 || --dlgLocks > 0) return;
+      document.body.style.overflow = savedOverflow;
+      document.body.style.paddingRight = savedPadRight;
+    };
+    document.querySelectorAll('dialog').forEach((dlg) => {
+      let wasOpen = dlg.open;
+      new MutationObserver(() => {
+        if (dlg.open === wasOpen) return;
+        wasOpen = dlg.open;
+        wasOpen ? lockBodyScroll() : unlockBodyScroll();
+      }).observe(dlg, { attributes: true, attributeFilter: ['open'] });
+      if (dlg.open) lockBodyScroll();
+    });
   };
 
   // ---- side-peek drawer: ↑/↓ navigate records, title link "navigates" (no-op here) ----

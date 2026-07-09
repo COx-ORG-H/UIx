@@ -31,7 +31,7 @@
   .uix-peek__title a { color: var(--uix-link); }
   .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
-  .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
+  .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; overscroll-behavior: contain; flex: 1; }
   .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
 

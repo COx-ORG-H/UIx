@@ -1,5 +1,18 @@
 # @tensor_1/react
 
+## 2.6.1
+
+### Patch Changes
+
+- Dialogs: lock background scroll while a Modal/Drawer/Peek is open.
+
+  `useDialog` opened the native `<dialog>` but never locked the page behind, so the background scrolled and scroll-chained on overscroll.
+
+  - On open, `useDialog` now locks body scroll and **compensates the scrollbar width with padding** so there is no layout shift; it restores the previous values on close. A shared counter keeps the lock correct when dialogs stack.
+  - `overscroll-behavior: contain` on the Modal/Drawer/Peek scroll bodies stops scroll-chaining to the page. The Modal body is now a proper scroll area (`max-height: min(85dvh, 720px)`, `overflow-y: auto`) so tall modals scroll internally while the header/footer stay put.
+
+  No API change (`useDialog` signature is unchanged). Fixes TENSOR audit finding F43 (UIX-FIX-03).
+
 ## 2.6.0
 
 ### Minor Changes
