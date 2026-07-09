@@ -5,6 +5,14 @@ export { cx } from './cx.js';
 export { useDialog } from './hooks/useDialog.js';
 export { useTable } from './hooks/useTable.js';
 export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
+export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
+export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
+
+// Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
+export { computePosition } from './overlay-position.js';
+export type {
+  Placement, Side, Align, Rect, Size, PositionOptions, PositionResult,
+} from './overlay-position.js';
 
 // Form primitives
 export { Button, ButtonGroup } from './components/Button.js';

@@ -48,6 +48,47 @@ export const mergePinned = (allRows, visibleRows, pinnedIds, idKey = 'id') => {
 /** Clamp a peek index when stepping by `d` across `n` records (no wrap). */
 export const peekStep = (i, d, n) => Math.min(n - 1, Math.max(0, i + d));
 
+/* ── overlay positioning (port of @tensor_1/react's overlay-position engine) ────
+ * Flip (opposite side when the preferred one won't fit) + shift (slide along the
+ * cross axis to stay on-screen). Feeds off getBoundingClientRect() values so
+ * popovers/menus/rich-selects land correctly in every browser, instead of relying
+ * on Chromium-only CSS anchor() positioning (UIX-FIX-02). Mirrors overlay-position.ts. */
+const OVERLAY_OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
+export const computeOverlayPosition = (anchor, floating, viewport, options = {}) => {
+  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true } = options;
+  const [preferred, alignRaw] = placement.split('-');
+  const align = alignRaw || 'center';
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const spaceOn = (side) =>
+    side === 'top' ? anchor.y - offset
+    : side === 'bottom' ? viewport.height - (anchor.y + anchor.height) - offset
+    : side === 'left' ? anchor.x - offset
+    : viewport.width - (anchor.x + anchor.width) - offset;
+  const fitsOn = (side) => spaceOn(side) >= (side === 'top' || side === 'bottom' ? floating.height : floating.width) + padding;
+
+  let side = preferred;
+  if (flip && !fitsOn(side)) {
+    const opp = OVERLAY_OPPOSITE[side];
+    if (fitsOn(opp) || spaceOn(opp) > spaceOn(side)) side = opp;
+  }
+  let x, y;
+  const horizontal = side === 'top' || side === 'bottom';
+  if (side === 'top') y = anchor.y - floating.height - offset;
+  else if (side === 'bottom') y = anchor.y + anchor.height + offset;
+  else if (side === 'left') x = anchor.x - floating.width - offset;
+  else x = anchor.x + anchor.width + offset;
+  if (horizontal) {
+    const start = anchor.x, end = anchor.x + anchor.width - floating.width, center = anchor.x + (anchor.width - floating.width) / 2;
+    x = align === 'start' ? start : align === 'end' ? end : center;
+    if (shift) x = clamp(x, padding, Math.max(padding, viewport.width - floating.width - padding));
+  } else {
+    const start = anchor.y, end = anchor.y + anchor.height - floating.height, center = anchor.y + (anchor.height - floating.height) / 2;
+    y = align === 'start' ? start : align === 'end' ? end : center;
+    if (shift) y = clamp(y, padding, Math.max(padding, viewport.height - floating.height - padding));
+  }
+  return { x, y, placement: align === 'center' ? side : `${side}-${align}`, side, align };
+};
+
 /* ── engine-aligned table helpers ──────────────────────────────────────────────
  * Ports of @tensor_1/react's table-engine (multiSort / toggleSort / searchRows /
  * highlightSegments / selection / clampWidth) so the vanilla styleguide sorts,
@@ -504,21 +545,8 @@ if (typeof document !== 'undefined') {
 
     const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
     if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
-    const viewPop = root.querySelector('[data-uix-viewmenu]');
-    if (viewBtn && viewPop) {
-      viewPop.addEventListener('beforetoggle', (e) => {
-        if (e.newState !== 'open') return;
-        const r = viewBtn.getBoundingClientRect();
-        viewPop.style.top = (r.bottom + 6) + 'px';
-        viewPop.style.right = (window.innerWidth - r.right) + 'px';
-        viewPop.style.left = 'auto';
-        viewPop.style.bottom = 'auto';
-      });
-      viewPop.addEventListener('toggle', (e) => {
-        if (e.newState !== 'open') return;
-        document.addEventListener('scroll', () => viewPop.hidePopover(), { once: true, passive: true, capture: true });
-      });
-    }
+    // View-menu placement (flip/shift, cross-browser) is handled generically by
+    // enhanceAnchoredPopovers — it right-aligns via the .uix-view-menu → bottom-end default.
 
     // density (segmented)
     const applyDensity = () => {
@@ -585,6 +613,85 @@ if (typeof document !== 'undefined') {
       if (close) { close.closest('dialog')?.close(); return; }
       if (e.target.tagName === 'DIALOG') e.target.close();   // click on the backdrop
     });
+  };
+
+  // ---- anchored overlays: cross-browser flip/shift placement (UIX-FIX-02) ----
+  // Positions any .uix-popover (rich-select / menu / picker) against its popovertarget
+  // trigger with the shared overlay engine, so it stays glued to the trigger and never
+  // clips at a viewport edge — off-Chromium, where CSS anchor() does nothing. The native
+  // Popover API still gives us the top layer (escapes overflow) and light-dismiss.
+  const enhanceAnchoredPopovers = (root = document) => {
+    root.querySelectorAll('[popovertarget]').forEach((trigger) => {
+      const pop = document.getElementById(trigger.getAttribute('popovertarget'));
+      if (!pop || !pop.classList.contains('uix-popover') || pop.dataset.uixAnchored) return;
+      pop.dataset.uixAnchored = '1';
+      const preferred = pop.dataset.placement || (pop.classList.contains('uix-view-menu') ? 'bottom-end' : 'bottom-start');
+      const matchWidth = pop.classList.contains('uix-listbox'); // rich-select matches trigger width
+      const position = () => {
+        const a = trigger.getBoundingClientRect();
+        // reset to natural sizing BEFORE measuring (the popover UA default inset:0;margin:auto stretches it)
+        pop.style.position = 'fixed'; pop.style.inset = 'auto'; pop.style.margin = '0';
+        if (matchWidth) pop.style.width = a.width + 'px';
+        const pos = computeOverlayPosition(
+          { x: a.x, y: a.y, width: a.width, height: a.height },
+          { width: pop.offsetWidth, height: pop.offsetHeight },
+          { width: window.innerWidth, height: window.innerHeight },
+          { placement: preferred, offset: 6 },
+        );
+        pop.style.left = Math.round(pos.x) + 'px'; pop.style.top = Math.round(pos.y) + 'px';
+        pop.dataset.resolvedPlacement = pos.placement;
+      };
+      let onMove = null;
+      pop.addEventListener('toggle', (e) => {
+        if (e.newState === 'open') {
+          position(); // the CSS opacity fade-in hides this first-frame placement
+          onMove = position;
+          window.addEventListener('scroll', onMove, { passive: true, capture: true });
+          window.addEventListener('resize', onMove);
+        } else if (onMove) {
+          window.removeEventListener('scroll', onMove, true);
+          window.removeEventListener('resize', onMove);
+          onMove = null;
+        }
+      });
+    });
+  };
+
+  // ---- tooltips: promote the CSS-only [data-uix-tip] to a top-layer bubble (UIX-FIX-02) ----
+  // The ::after tooltip is clipped by any overflow:hidden/scroll ancestor; a single shared
+  // popover bubble in the top layer never is. Shown on hover + focus, positioned with flip/shift.
+  const enhanceTooltips = () => {
+    const tips = [...document.querySelectorAll('[data-uix-tip]')];
+    if (!tips.length) return;
+    const bubble = document.createElement('span');
+    bubble.className = 'uix-tooltip__bubble';
+    bubble.setAttribute('popover', 'manual');
+    bubble.setAttribute('role', 'tooltip');
+    document.body.appendChild(bubble);
+    document.documentElement.classList.add('uix-has-js-tip'); // suppresses the CSS-only ::after
+    let current = null;
+    const show = (el) => {
+      current = el;
+      bubble.textContent = el.getAttribute('data-uix-tip');
+      if (!bubble.matches(':popover-open')) { try { bubble.showPopover(); } catch { /* noop */ } }
+      bubble.style.position = 'fixed'; bubble.style.inset = 'auto'; bubble.style.margin = '0';
+      const a = el.getBoundingClientRect();
+      const pos = computeOverlayPosition(
+        { x: a.x, y: a.y, width: a.width, height: a.height },
+        { width: bubble.offsetWidth, height: bubble.offsetHeight },
+        { width: window.innerWidth, height: window.innerHeight },
+        { placement: 'top', offset: 6 },
+      );
+      bubble.style.left = Math.round(pos.x) + 'px'; bubble.style.top = Math.round(pos.y) + 'px';
+    };
+    const hide = () => { current = null; if (bubble.matches(':popover-open')) { try { bubble.hidePopover(); } catch { /* noop */ } } };
+    tips.forEach((el) => {
+      el.addEventListener('mouseenter', () => show(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => show(el));
+      el.addEventListener('blur', hide);
+    });
+    window.addEventListener('scroll', () => { if (current) show(current); }, { passive: true, capture: true });
   };
 
   // ---- side-peek drawer: ↑/↓ navigate records, title link "navigates" (no-op here) ----
@@ -899,6 +1006,8 @@ if (typeof document !== 'undefined') {
     setupForms();
     setupReactions();
     setupLightbox();
+    enhanceAnchoredPopovers(); // after all setups so dynamically-rendered pickers are covered too
+    enhanceTooltips();
     initCharts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
