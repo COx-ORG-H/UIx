@@ -11,6 +11,7 @@ import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import * as react from 'react';
 import { ReactNode } from 'react';
+import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -34,6 +35,9 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 
 // @public (undocumented)
 export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+
+// @public (undocumented)
+export type Align = 'start' | 'center' | 'end';
 
 // @public
 export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
@@ -243,6 +247,9 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 }
 
+// @public
+export function computePosition(anchor: Rect, floating: Size, viewport: Size, options?: PositionOptions_2): PositionResult;
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -368,6 +375,22 @@ export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
 
 // @public (undocumented)
 export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
+
+// @public (undocumented)
+export interface FlatNode<T> {
+    // (undocumented)
+    hasChildren: boolean;
+    // (undocumented)
+    isExpanded: boolean;
+    level: number;
+    // (undocumented)
+    node: T;
+    posinset: number;
+    setsize: number;
+}
+
+// @public
+export function flattenTree<T extends TreeLike<T>>(nodes: readonly T[], expanded: ReadonlySet<string>, level?: number): FlatNode<T>[];
 
 // @public
 export function Highlighted(input: HighlightedProps): react.JSX.Element;
@@ -731,14 +754,41 @@ export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | '
 // @public (undocumented)
 export type PillTreatment = 'filled' | 'outline';
 
+// @public (undocumented)
+export type Placement = Side | `${Side}-${Align}`;
+
 // @public
 export function Popover(input: PopoverProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
+    anchor?: RefObject<HTMLElement | null> | HTMLElement | null;
     // (undocumented)
     children?: ReactNode;
+    offset?: number;
+    placement?: Placement;
     popover?: 'auto' | 'manual';
+}
+
+// @public (undocumented)
+interface PositionOptions_2 {
+    flip?: boolean;
+    offset?: number;
+    padding?: number;
+    placement?: Placement;
+    shift?: boolean;
+}
+export { PositionOptions_2 as PositionOptions }
+
+// @public (undocumented)
+export interface PositionResult {
+    // (undocumented)
+    align: Align;
+    placement: Placement;
+    // (undocumented)
+    side: Side;
+    x: number;
+    y: number;
 }
 
 // @public (undocumented)
@@ -781,6 +831,18 @@ export interface RadioGroupProps {
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export interface Rect {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
 }
 
 // @public
@@ -864,6 +926,9 @@ export type ShellNav = 'full' | 'rail' | 'hidden';
 // @public (undocumented)
 export function shouldVirtualize(count: number, threshold?: number): boolean;
 
+// @public
+export type Side = 'top' | 'bottom' | 'left' | 'right';
+
 // @public (undocumented)
 export function Sidebar(input: SidebarProps): react.JSX.Element;
 
@@ -890,6 +955,14 @@ export interface SidebarSectionProps {
     children?: ReactNode;
     // (undocumented)
     label?: string;
+}
+
+// @public (undocumented)
+export interface Size {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
 }
 
 // @public
@@ -1160,6 +1233,7 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     children?: ReactNode;
     label: string;
+    placement?: Placement;
 }
 
 // @public (undocumented)
@@ -1167,6 +1241,24 @@ export function Tr(input: TrProps): react.JSX.Element;
 
 // @public (undocumented)
 export function Tree(input: TreeProps): react.JSX.Element;
+
+// @public
+export interface TreeLike<T> {
+    // (undocumented)
+    children?: T[];
+    // (undocumented)
+    id: string;
+}
+
+// @public
+export function treeNav<T extends TreeLike<T>>(flat: readonly FlatNode<T>[], currentId: string | undefined, key: string): TreeNavAction;
+
+// @public
+export interface TreeNavAction {
+    focusId?: string;
+    selectId?: string;
+    toggleId?: string;
+}
 
 // @public (undocumented)
 export interface TreeNodeData {
@@ -1189,11 +1281,17 @@ export interface TreeNodeProps {
     // (undocumented)
     node: TreeNodeData;
     // (undocumented)
+    onFocusNode: (id: string) => void;
+    // (undocumented)
     onSelect?: (id: string) => void;
     // (undocumented)
     onToggle: (id: string) => void;
     // (undocumented)
+    selectable: boolean;
+    // (undocumented)
     selected?: string;
+    // (undocumented)
+    tabbableId?: string;
 }
 
 // @public (undocumented)
@@ -1202,14 +1300,17 @@ export interface TreeProps extends Omit<HTMLAttributes<HTMLUListElement>, 'onSel
     defaultExpanded?: Set<string>;
     // (undocumented)
     expanded?: Set<string>;
+    maxHeight?: number;
     // (undocumented)
     nodes: TreeNodeData[];
     // (undocumented)
     onSelect?: (id: string) => void;
     // (undocumented)
     onToggle?: (id: string) => void;
+    rowHeight?: number;
     // (undocumented)
     selected?: string;
+    virtualize?: boolean;
 }
 
 // @public (undocumented)
@@ -1218,6 +1319,20 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
     pinned?: boolean;
     // (undocumented)
     selected?: boolean;
+}
+
+// @public
+export function useAnchoredPosition(anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined, floatingRef: RefObject<HTMLElement | null>, input: UseAnchoredPositionOptions): () => void;
+
+// @public (undocumented)
+export interface UseAnchoredPositionOptions {
+    // (undocumented)
+    offset?: number;
+    open: boolean;
+    // (undocumented)
+    padding?: number;
+    // (undocumented)
+    placement?: Placement;
 }
 
 // @public (undocumented)

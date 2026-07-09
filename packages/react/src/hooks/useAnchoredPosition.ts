@@ -31,7 +31,7 @@ const resolve = (a: AnchorArg): HTMLElement | null =>
  * that want to nudge it manually (e.g. right when a native popover's `toggle` fires).
  */
 export function useAnchoredPosition(
-  anchor: AnchorArg,
+  anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined,
   floatingRef: RefObject<HTMLElement | null>,
   { open, placement = 'bottom-start', offset = 6, padding = 8 }: UseAnchoredPositionOptions,
 ): () => void {
