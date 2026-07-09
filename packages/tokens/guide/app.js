@@ -593,6 +593,30 @@ if (typeof document !== 'undefined') {
   };
   const setupTables = () => document.querySelectorAll('[data-uix-table], [data-uix-table-v2]').forEach(initTable);
 
+  // Page scroll lock shared across dialogs (mirror of the React useDialog hook, UIX-FIX-03):
+  // showModal() makes the background inert but still lets it scroll. Lock the scrolling root
+  // (document.scrollingElement = <html> in standards mode, so body:hidden alone wouldn't stop it),
+  // compensate the scrollbar width so the page doesn't shift, contain overscroll; ref-counted for stacking.
+  let scrollLockCount = 0, scrollLockSaved = null;
+  const lockBodyScroll = () => {
+    if (++scrollLockCount > 1) return;
+    const el = document.scrollingElement || document.documentElement;
+    const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+    scrollLockSaved = { el, overflow: el.style.overflow, paddingRight: el.style.paddingRight, overscroll: el.style.overscrollBehavior };
+    el.style.overflow = 'hidden';
+    if (scrollbarW > 0) el.style.paddingRight = ((parseFloat(getComputedStyle(el).paddingRight) || 0) + scrollbarW) + 'px';
+    el.style.overscrollBehavior = 'contain';
+  };
+  const unlockBodyScroll = () => {
+    if (scrollLockCount === 0 || --scrollLockCount > 0) return;
+    if (scrollLockSaved) {
+      scrollLockSaved.el.style.overflow = scrollLockSaved.overflow;
+      scrollLockSaved.el.style.paddingRight = scrollLockSaved.paddingRight;
+      scrollLockSaved.el.style.overscrollBehavior = scrollLockSaved.overscroll;
+      scrollLockSaved = null;
+    }
+  };
+
   // Open a native <dialog> as a modal. Flushing layout + style first establishes the closed-state
   // baseline so the @starting-style entrance transition reliably fires on the FIRST open after load
   // (Chromium otherwise batches the display:none→shown change and skips the entrance — the panel
@@ -601,6 +625,12 @@ if (typeof document !== 'undefined') {
     if (!dlg?.showModal) return;
     void dlg.offsetWidth;
     void getComputedStyle(dlg).transform;
+    lockBodyScroll();
+    // Unlock the moment the `open` attribute is removed — reliable across Esc / backdrop / button /
+    // .close(), including animated (allow-discrete) exits where the 'close' event is deferred until
+    // after the transition. Observe → disconnect gives exactly one unlock per open.
+    const obs = new MutationObserver(() => { if (!dlg.open) { obs.disconnect(); unlockBodyScroll(); } });
+    obs.observe(dlg, { attributes: true, attributeFilter: ['open'] });
     dlg.showModal();
   };
 
