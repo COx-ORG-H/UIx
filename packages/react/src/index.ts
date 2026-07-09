@@ -170,3 +170,7 @@ export type { KanbanProps, KanbanColumnProps, KanbanCardProps } from './componen
 
 export { Tree } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.js';
+
+// Tree model — framework-agnostic flatten + keyboard-nav helpers (drive plain + virtualized Tree)
+export { flattenTree, treeNav } from './tree-model.js';
+export type { FlatNode, TreeLike, TreeNavAction } from './tree-model.js';
