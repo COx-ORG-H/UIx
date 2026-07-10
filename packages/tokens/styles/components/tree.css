@@ -11,4 +11,7 @@
   .uix-tree [role="treeitem"][aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
   .uix-tree [role="treeitem"][aria-expanded="false"] > [role="group"] { display: none; }
   .uix-tree [role="treeitem"][aria-selected="true"] > .uix-tree__row { background: var(--uix-brand-muted); color: var(--uix-text); }
+  /* virtualized mode (UIX-FIX-05): fixed-height rows fill their windowed <li> so the
+     scroll math is pixel-accurate; indentation comes from an inline padding-inline-start. */
+  .uix-tree[data-virtual] > [role="treeitem"] > .uix-tree__row { height: 100%; padding-block: 0; }
 }

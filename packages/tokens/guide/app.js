@@ -132,6 +132,40 @@ export const togglePage = (selected, pageIds) => {
 /** Clamp a dragged column width to a sane min (and optional max), rounded. */
 export const clampWidth = (width, min = 64, max = Infinity) => Math.max(min, Math.min(max, Math.round(width)));
 
+/* ── tree virtualization ─────────────────────────────────────────────────────────
+ * Ports of @tensor_1/react's tree-engine (flattenVisibleTree) + table-engine
+ * (virtualWindow / shouldVirtualize), so the vanilla styleguide windows a large tree
+ * identically to <Tree virtualize> in React (UIX-FIX-05). */
+
+/** Flatten a tree to the depth-first list of visible nodes, with aria level/setsize/posinset. */
+export const flattenVisibleTree = (nodes, expanded) => {
+  const out = [];
+  const walk = (siblings, level, parentId) => {
+    const setSize = siblings.length;
+    siblings.forEach((node, i) => {
+      const kids = node.children;
+      const hasChildren = Array.isArray(kids) && kids.length > 0;
+      const isExpanded = expanded.has(node.id);
+      out.push({ node, level, setSize, posInSet: i + 1, hasChildren, expanded: isExpanded, parentId });
+      if (hasChildren && isExpanded) walk(kids, level + 1, node.id);
+    });
+  };
+  walk(nodes, 1, null);
+  return out;
+};
+
+/** Visible row window for fixed-height virtualization. Mirrors the engine's virtualWindow. */
+export const virtualWindow = (scrollTop, viewportH, rowH, count, overscan = 6) => {
+  if (rowH <= 0 || count <= 0) return { start: 0, end: count, padTop: 0, padBottom: 0, total: 0 };
+  const first = Math.max(0, Math.floor(scrollTop / rowH) - overscan);
+  const visible = Math.ceil(viewportH / rowH) + overscan * 2;
+  const end = Math.min(count, first + visible);
+  return { start: first, end, padTop: first * rowH, padBottom: (count - end) * rowH, total: count * rowH };
+};
+
+/** Virtualize only past the threshold. */
+export const shouldVirtualize = (count, threshold = 100) => count > threshold;
+
 /** Density tiers, in cycle order (standard is the default). */
 export const DENSITIES = ['compact', 'standard', 'comfortable'];
 
@@ -258,6 +292,57 @@ if (typeof document !== 'undefined') {
   // escape interpolated text (defense-in-depth; all inputs here are first-party constants)
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---- virtualized tree (UIX-FIX-05): ~5,000 nodes, only the visible window in the DOM ----
+  const setupVirtualTree = () => {
+    const host = document.querySelector('[data-uix-vtree]');
+    if (!host) return;
+    // 100 groups x 50 leaves = 5,100 nodes
+    const nodes = Array.from({ length: 100 }, (_, g) => ({
+      id: `g${g}`, label: `Group ${g + 1}`,
+      children: Array.from({ length: 50 }, (_, c) => ({ id: `g${g}-c${c}`, label: `Item ${g + 1}.${c + 1}` })),
+    }));
+    const expanded = new Set(nodes.map((n) => n.id)); // all groups open
+    const ROW = 32, VH = 320, OVER = 8;
+    const CHEVRON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
+    const viewport = document.createElement('div');
+    viewport.className = 'uix-tree-viewport';
+    viewport.style.height = VH + 'px';
+    viewport.style.overflowY = 'auto';
+    const tree = document.createElement('ul');
+    tree.className = 'uix-tree';
+    tree.setAttribute('role', 'tree');
+    tree.setAttribute('data-virtual', '');
+    tree.setAttribute('aria-label', 'CMDB (virtualized)');
+    viewport.appendChild(tree);
+    host.appendChild(viewport);
+
+    const render = () => {
+      const flat = flattenVisibleTree(nodes, expanded);
+      const w = virtualWindow(viewport.scrollTop, VH, ROW, flat.length, OVER);
+      tree.style.paddingTop = w.padTop + 'px';
+      tree.style.paddingBottom = w.padBottom + 'px';
+      tree.innerHTML = flat.slice(w.start, w.end).map((f) => {
+        const rid = `vt-${f.node.id}`;
+        const indent = `calc(var(--uix-space-2) + ${f.level - 1} * var(--uix-space-5))`;
+        const exp = f.hasChildren ? ` aria-expanded="${f.expanded}"` : '';
+        return `<li role="treeitem" aria-level="${f.level}" aria-setsize="${f.setSize}" aria-posinset="${f.posInSet}" aria-selected="false"${exp} aria-labelledby="${rid}" style="height:${ROW}px">`
+          + `<button id="${rid}" type="button" class="uix-tree__row" data-vt-id="${f.node.id}" data-vt-group="${f.hasChildren}" style="padding-inline-start:${indent}">`
+          + `<span class="uix-tree__toggle">${f.hasChildren ? CHEVRON : ''}</span>${esc(String(f.node.label))}</button></li>`;
+      }).join('');
+    };
+
+    viewport.addEventListener('scroll', render, { passive: true });
+    tree.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-vt-id]');
+      if (!btn || btn.dataset.vtGroup !== 'true') return;
+      const id = btn.dataset.vtId;
+      expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+      render();
+    });
+    render();
+  };
 
   const buildTokenReference = () => {
     const surfaces = ['--uix-bg-app', '--uix-bg-subtle', '--uix-bg-hover', '--uix-bg-active',
@@ -905,6 +990,7 @@ if (typeof document !== 'undefined') {
     setupForms();
     setupReactions();
     setupLightbox();
+    setupVirtualTree();
     initCharts();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

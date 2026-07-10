@@ -95,6 +95,9 @@ export type {
 // Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection
 export * from './table-engine.js';
 
+// Tree engine — framework-agnostic flatten-visible-tree for windowed/virtualized rendering
+export * from './tree-engine.js';
+
 export { Pagination } from './components/Pagination.js';
 export type { PaginationProps } from './components/Pagination.js';
 

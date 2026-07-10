@@ -4,6 +4,23 @@ import assert from 'node:assert/strict';
 import { resolveTheme, nextTheme, parseColor, getContrast, aaVerdict, toggleSet, sortRows, filterRows, mergePinned, peekStep, enqueueToast, dequeueToast } from './app.js';
 import { DENSITIES, defaultViewPrefs, readViewPrefs, writeViewPrefs, toggleReaction } from './app.js';
 import { multiSort, toggleSortKeys, searchRows, highlightSegments, selectAllState, togglePage, clampWidth } from './app.js';
+import { flattenVisibleTree, virtualWindow, shouldVirtualize } from './app.js';
+
+/* tree virtualization — parity with @tensor_1/react's tree-engine + table-engine (UIX-FIX-05) */
+test('flattenVisibleTree: visible nodes with level / setsize / posinset', () => {
+  const nodes = [{ id: 'a', children: [{ id: 'a1' }, { id: 'a2' }] }, { id: 'b' }];
+  assert.deepEqual(flattenVisibleTree(nodes, new Set()).map((f) => f.node.id), ['a', 'b']);
+  const open = flattenVisibleTree(nodes, new Set(['a']));
+  assert.deepEqual(open.map((f) => f.node.id), ['a', 'a1', 'a2', 'b']);
+  assert.deepEqual({ level: open[1].level, set: open[1].setSize, pos: open[1].posInSet }, { level: 2, set: 2, pos: 1 });
+});
+test('virtualWindow + shouldVirtualize: window a large flat list, not all of it', () => {
+  assert.equal(shouldVirtualize(5000), true);
+  const w = virtualWindow(3200, 400, 32, 5000, 8);
+  assert.equal(w.start, Math.max(0, Math.floor(3200 / 32) - 8)); // 92
+  assert.ok(w.end - w.start < 40); // a small window, not 5000 rows
+  assert.equal(w.total, 5000 * 32);
+});
 
 test('resolveTheme: stored value wins over OS', () => {
   assert.equal(resolveTheme('dark', false), 'dark');

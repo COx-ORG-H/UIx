@@ -370,6 +370,27 @@ export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
 export type FilterOp = 'isAnyOf' | 'isNoneOf' | 'contains' | 'equals' | 'startsWith' | 'eq' | 'lt' | 'gt' | 'between' | 'is';
 
 // @public
+export function flattenVisibleTree<T extends TreeNodeLike>(nodes: readonly T[], expanded: ReadonlySet<string>): FlatTreeNode<T>[];
+
+// @public
+export interface FlatTreeNode<T> {
+    // (undocumented)
+    expanded: boolean;
+    // (undocumented)
+    hasChildren: boolean;
+    // (undocumented)
+    level: number;
+    // (undocumented)
+    node: T;
+    // (undocumented)
+    parentId: string | null;
+    // (undocumented)
+    posInSet: number;
+    // (undocumented)
+    setSize: number;
+}
+
+// @public
 export function Highlighted(input: HighlightedProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1165,7 +1186,7 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
 // @public (undocumented)
 export function Tr(input: TrProps): react.JSX.Element;
 
-// @public (undocumented)
+// @public
 export function Tree(input: TreeProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1178,6 +1199,14 @@ export interface TreeNodeData {
     id: string;
     // (undocumented)
     label: ReactNode;
+}
+
+// @public
+export interface TreeNodeLike {
+    // (undocumented)
+    children?: TreeNodeLike[];
+    // (undocumented)
+    id: string;
 }
 
 // @public (undocumented)
@@ -1202,14 +1231,18 @@ export interface TreeProps extends Omit<HTMLAttributes<HTMLUListElement>, 'onSel
     defaultExpanded?: Set<string>;
     // (undocumented)
     expanded?: Set<string>;
+    height?: number;
     // (undocumented)
     nodes: TreeNodeData[];
     // (undocumented)
     onSelect?: (id: string) => void;
     // (undocumented)
     onToggle?: (id: string) => void;
+    overscan?: number;
+    rowHeight?: number;
     // (undocumented)
     selected?: string;
+    virtualize?: boolean | number;
 }
 
 // @public (undocumented)

@@ -1,5 +1,17 @@
 # @tensor_1/react
 
+## 2.6.2
+
+### Minor Changes
+
+- `Tree` virtualization for large trees (opt-in).
+
+  - New framework-agnostic `flattenVisibleTree(nodes, expanded)` (exported): the depth-first list of *visible* nodes carrying `aria-level` / `aria-setsize` / `aria-posinset`. Collapsed subtrees are omitted, so they cost nothing.
+  - `Tree` gains `virtualize` (`true` | threshold number | `false`, default `false`), `rowHeight`, `height`, and `overscan`. Past the threshold it renders only a windowed slice of flat `treeitem`s inside a fixed-height scroll viewport, reusing the table engine's `virtualWindow`/`shouldVirtualize` — a 5k-node CMDB/org tree then keeps only the visible window (~26 rows) in the DOM. Below the threshold (and by default) it renders the nested `role=group` tree exactly as before — no visual or API change for existing consumers.
+  - The FIX-04 a11y semantics (roles, `aria-level`, selection off the button, `aria-labelledby`) are preserved in both modes; the virtualized rows add `aria-setsize`/`aria-posinset` so a screen reader knows the full sibling counts.
+
+  Additive API only. axe-core clean on the virtualized tree. Fixes TENSOR audit finding F46 (second half, UIX-FIX-05).
+
 ## 2.6.1
 
 ### Patch Changes
