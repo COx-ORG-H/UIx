@@ -34,7 +34,7 @@ The promise consumers (Tensor, POSx, SHOPx, mission-control) depend on, frozen s
 3. **Update `tests/tokens.baseline.css` in the same commit** if (and only if) the change is intentional. `npm run test:parity` is the gate: a value/name drift with no baseline update fails CI; a baseline update with no token change is a red flag in review.
 4. **Run `npm run test:contract`** — structural categories present, every theme covers its tier, no un-justified raw values.
 5. **Add a changeset** (`npm run changeset`) classifying the bump per the table above. Linked: tokens + react move together.
-6. **For any major:** open or link an ADR (`D:\Development\Docs\adr\`) before merging. No major lands without the recorded decision.
+6. **For any major:** open or link an ADR (`E:\Development\Docs\adr\`) before merging. No major lands without the recorded decision.
 7. **CODEOWNERS** will request the maintainer's review automatically. Self-merge only after the gates are green and the checklist above is satisfied in the PR description.
 
 ## Why this exists
