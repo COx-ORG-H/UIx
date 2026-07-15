@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.8.0
+
+### Minor Changes
+
+- Add `.uix-choice-grid` (aligned 1→2-column layout for radio/checkbox option sets) and `.uix-field--prominent` (body-size question labels). Opt-in component CSS; no contract or default changes.
+
 ## 2.7.0
 
 ### Minor Changes

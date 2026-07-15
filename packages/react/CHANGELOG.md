@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.8.0
+
+### Patch Changes
+
+- Version alignment with `@tensor_1/tokens` 2.8.0 (linked releases); no code changes.
+
 ## 2.7.0
 
 ### Minor Changes
