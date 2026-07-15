@@ -415,6 +415,8 @@
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  /* Question-style forms (the label IS the question): lift it above its answer options. Opt-in via <Field className>. */
+  .uix-field--prominent .uix-field__label { font-size: var(--uix-text-body); font-weight: 600; }
   /* message slot for hint / error / success — reserves one line so an appearing error never
      shifts the layout (UIX-FIX-04); the React <Field> always renders it. */
   .uix-field__msg { font-size: var(--uix-text-meta); line-height: 1.45; min-height: 1.45em; }
@@ -636,6 +638,12 @@
 /* uix form layout — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--uix-space-5); }
+  /* Choice layout — for radio/checkbox OPTION SETS, not field grids: one column for
+     scannability, two aligned columns from 720px. Opt in via className on the group. */
+  .uix-choice-grid { display: grid; grid-template-columns: 1fr; gap: var(--uix-space-3) var(--uix-space-7); align-items: start; }
+  .uix-choice-grid .uix-radio, .uix-choice-grid .uix-checkbox { align-items: flex-start; }
+  .uix-choice-grid .uix-radio__dot, .uix-choice-grid .uix-checkbox__box { margin-top: 1px; }
+  @media (min-width: 720px) { .uix-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
   .uix-fieldset > legend { padding: 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
   .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }

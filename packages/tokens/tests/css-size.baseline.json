@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 121969,
-      "gzip": 21039,
-      "brotli": 17598
+      "raw": 122781,
+      "gzip": 21289,
+      "brotli": 17800
     },
     "build/css/styles.css": {
-      "raw": 135240,
-      "gzip": 24591,
-      "brotli": 20442
+      "raw": 136052,
+      "gzip": 24838,
+      "brotli": 20615
     },
     "build/css/tokens.css": {
       "raw": 7673,
@@ -117,9 +117,9 @@
       "brotli": 2433
     },
     "styles/components/form.css": {
-      "raw": 1078,
-      "gzip": 435,
-      "brotli": 346
+      "raw": 1671,
+      "gzip": 639,
+      "brotli": 523
     },
     "styles/components/heartbeat.css": {
       "raw": 1234,
@@ -132,9 +132,9 @@
       "brotli": 431
     },
     "styles/components/input.css": {
-      "raw": 2866,
-      "gzip": 961,
-      "brotli": 770
+      "raw": 3085,
+      "gzip": 1049,
+      "brotli": 830
     },
     "styles/components/kanban.css": {
       "raw": 1617,

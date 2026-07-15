@@ -11,6 +11,7 @@
     { "file": "tabs.css", "prop": "border-radius", "value": "calc(var(--uix-radius-md) - 3px)", "why": "Concentric inner radius for a pill tab (same construction as segmented): container --uix-radius-md minus the padding inset. Geometric relationship to the parent, not a scale value." },
     { "file": "tabs.css", "prop": "margin-bottom", "value": "-1px", "why": "Pulls the enclosed tab down to overlap the container's 1px bottom border so the selected tab's border merges with it (the classic enclosed-tab border-collapse). Tied to the 1px border width." },
     { "file": "slider.css", "prop": "margin-top", "value": "-6px", "why": "Centers the 18px thumb on the 6px track: -(18 - 6) / 2 = -6px. Intrinsic to the thumb/track geometry; changing either dimension changes this." },
-    { "file": "toast.css", "prop": "margin-top", "value": "1px", "why": "1px optical nudge aligning the status icon with the title's cap height. Sub-scale hairline, below the 4px space scale." }
+    { "file": "toast.css", "prop": "margin-top", "value": "1px", "why": "1px optical nudge aligning the status icon with the title's cap height. Sub-scale hairline, below the 4px space scale." },
+    { "file": "form.css", "prop": "margin-top", "value": "1px", "why": "1px optical nudge in .uix-choice-grid aligning the 18px radio dot / checkbox box with the first text line of a wrapping label (flex-start alignment). Sub-scale hairline, below the 4px space scale." }
   ]
 }

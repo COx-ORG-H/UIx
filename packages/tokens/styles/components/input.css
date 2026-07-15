@@ -3,6 +3,8 @@
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  /* Question-style forms (the label IS the question): lift it above its answer options. Opt-in via <Field className>. */
+  .uix-field--prominent .uix-field__label { font-size: var(--uix-text-body); font-weight: 600; }
   /* message slot for hint / error / success — reserves one line so an appearing error never
      shifts the layout (UIX-FIX-04); the React <Field> always renders it. */
   .uix-field__msg { font-size: var(--uix-text-meta); line-height: 1.45; min-height: 1.45em; }
