@@ -1055,7 +1055,7 @@
       <!-- ===== Editorial home ===== -->
       <section id="editorial-home" class="uix-guide__section">
         <h2>Editorial home</h2>
-        <p class="lead">The intranet "editorial" landing kit (INTRA-04), ported from the approved TENSOR prototype: page intro + search well, shortcut grid, notice queue, featured stage + rundown, section heads, content/rail grids, news lead, content list, resource grid, stat line, event and status rows. React: <code class="uix-code">PageIntro</code>, <code class="uix-code">SectionHead</code>, <code class="uix-code">NoticeQueue</code>, <code class="uix-code">FeaturedStage</code>, <code class="uix-code">FeaturedRundown(Item)</code>, <code class="uix-code">NewsLead</code>, <code class="uix-code">ContentList(Item)</code>, <code class="uix-code">ResourceGrid</code>, <code class="uix-code">StatLine</code>, <code class="uix-code">EventRow</code>, <code class="uix-code">StatusRow</code>. Collapses to one column at 920px; stage, search bar, stat line and grids restack again at 620px.</p>
+        <p class="lead">The intranet "editorial" landing kit (INTRA-04), ported from the approved TENSOR prototype: page intro + search well, shortcut grid, notice queue, featured stage + rundown, section heads, content/rail grids, news lead, content list, resource grid, stat line, event and status rows. React: <code class="uix-code">PageIntro</code>, <code class="uix-code">SectionHead</code>, <code class="uix-code">NoticeQueue</code>, <code class="uix-code">FeaturedStage</code>, <code class="uix-code">FeaturedRundown(Item)</code>, <code class="uix-code">NewsLead</code>, <code class="uix-code">ContentList(Item)</code>, <code class="uix-code">ResourceGrid</code>, <code class="uix-code">StatLine</code>, <code class="uix-code">EventRow</code>, <code class="uix-code">StatusRow</code>. Collapses to one column at 920px; stage, search bar, stat line and grids restack again at 620px. Anchors passed into the kit's title slots (content list, news lead, rundown, event rows) are <strong>quiet links</strong> by default — they inherit the text colour and underline on hover/focus, because the row already communicates interactivity (see <a href="#utility">Utility / typography</a> for the pattern).</p>
 
         <div class="uix-guide__subhead">Notice queue — rotating "important updates" banner</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
@@ -1160,20 +1160,20 @@
                 </div>
                 <article class="uix-news-lead">
                   <p class="uix-news-lead__meta"><span class="uix-pill uix-pill--info">Company</span> · Today</p>
-                  <h4 class="uix-news-lead__title">Customer week: five ideas we are taking forward</h4>
+                  <h4 class="uix-news-lead__title"><a href="#editorial-home">Customer week: five ideas we are taking forward</a></h4>
                   <p class="uix-news-lead__summary">What we learned from 42 customer conversations, and the teams turning those insights into action.</p>
                 </article>
                 <ul class="uix-content-list">
                   <li class="uix-content-list__item">
-                    <div><p class="uix-content-list__title">New learning budget launches in August</p><p class="uix-content-list__meta">People · 2 hours ago</p></div>
+                    <div><p class="uix-content-list__title"><a href="#editorial-home">New learning budget launches in August</a></p><p class="uix-content-list__meta">People · 2 hours ago</p></div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </li>
                   <li class="uix-content-list__item">
-                    <div><p class="uix-content-list__title">Berlin office: summer community day</p><p class="uix-content-list__meta">Berlin · Yesterday</p></div>
+                    <div><p class="uix-content-list__title"><a href="#editorial-home">Berlin office: summer community day</a></p><p class="uix-content-list__meta">Berlin · Yesterday</p></div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </li>
                   <li class="uix-content-list__item">
-                    <div><p class="uix-content-list__title">Security essentials: July update</p><p class="uix-content-list__meta">IT · Monday</p></div>
+                    <div><p class="uix-content-list__title"><a href="#editorial-home">Security essentials: July update</a></p><p class="uix-content-list__meta">IT · Monday</p></div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </li>
                 </ul>
@@ -1360,6 +1360,28 @@
             <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--warning"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Degraded performance</span>
             <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--idle"><span class="uix-heartbeat__dot"></span></span> Offline</span>
           </div>
+        </div>
+
+        <div class="uix-guide__subhead">Links — in-text vs quiet</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
+          <p style="margin-bottom:14px">In running prose a link keeps the brand colour and a persistent underline — inside a block of same-coloured text it must not be signalled by colour alone (WCAG 1.4.1, link-in-text-block). So body copy like this keeps its <a href="#utility">in-text link</a> exactly as the base layer styles it.</p>
+          <p style="margin-bottom:14px">Where the <strong>container</strong> already communicates interactivity — the kit's title slots, table cells, whole-card links — that treatment reads as noise at list density. Those anchors are <strong>quiet</strong>: they inherit the surrounding text colour and show their underline on hover/focus. Editorial-home title slots (content list, news lead, rundown, event rows) and classless <code class="uix-code">.uix-table td</code> anchors are quiet by default; opt in anywhere else with <code class="uix-code">.uix-link--quiet</code>. Never quiet a link inside prose.</p>
+          <ul class="uix-content-list" style="margin-bottom:14px;max-width:560px">
+            <li class="uix-content-list__item">
+              <div><p class="uix-content-list__title"><a href="#utility">Quiet by default: a content-list title link</a></p><p class="uix-content-list__meta">Hover or focus it — the underline returns</p></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </li>
+          </ul>
+          <div class="uix-table-wrap" style="max-height:none;margin-bottom:14px;max-width:560px">
+            <table class="uix-table uix-table--no-zebra">
+              <thead><tr><th>Document</th><th>Owner</th></tr></thead>
+              <tbody>
+                <tr><td><a href="#utility">Security essentials — July update</a></td><td>IT</td></tr>
+                <tr><td><a href="#utility">Travel policy 2026</a></td><td>People</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <a class="uix-link--quiet" href="#utility" style="font-weight:600">.uix-link--quiet — the opt-in for hand-composed block links</a>
         </div>
       </section>
     </main>

@@ -25,6 +25,21 @@ All component spacing flows from the scale `--uix-space-0 … --uix-space-12` (4
 `.uix-stack` / `.uix-cluster` utilities) for layout rhythm — never hardcode px or Tailwind spacing in product
 markup. This is the dial that keeps whitespace consistent across products.
 
+### Links — in-text vs quiet
+The base layer styles anchors as **in-text content links**: `--uix-link` colour, and classless `[href]`
+anchors carry a persistent underline (WCAG 1.4.1 / link-in-text-block — a link inside a run of
+same-coloured prose must not be signalled by colour alone). That is the right default for prose and the
+wrong one for composition slots where the container is the affordance: framework `<Link>`s passed into
+kit title slots and table cells rendered brand-blue + bold + underlined — unreadable at list density
+(TENSOR INTRA-04, operator-rejected).
+
+`styles/components/link.css` therefore ships the **quiet link**: `color: inherit`, no underline at rest,
+underline on hover/focus. Quiet **by default** in the editorial-home title slots
+(`.uix-content-list__title a`, `.uix-news-lead__title a`, `.uix-rundown__item-title a`,
+`.uix-event-row__title a`) and in classless `.uix-table td` anchors; **opt in** anywhere else with
+`.uix-link--quiet` (whole-card links, hand-composed rows). Never quiet a link inside prose — in-text
+links keep blue + underline. Demo + rationale: styleguide → Utility / typography.
+
 ### Table columns — sizing & cell behaviour
 Consuming products size and truncate table columns by attaching a **UIx class to a column** — keyed to a
 column id/class in the product's own markup — never by hand-coding pixel widths per app or targeting

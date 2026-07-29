@@ -2085,3 +2085,47 @@
     .uix-stat-line__item { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--uix-border); }
   }
 }
+/* uix link patterns — the quiet link, for anchors whose CONTAINER is the affordance.
+ *
+ * The base layer styles anchors as in-text content links: --uix-link colour, and
+ * classless [href] anchors carry a persistent underline (WCAG 1.4.1 / link-in-text-block —
+ * a link sitting inside a run of same-coloured prose must not be distinguished by colour
+ * alone). That contract is right for prose and wrong for composition slots where the
+ * surrounding row/card already communicates interactivity: framework <Link>s passed into
+ * kit title slots and table cells rendered brand-blue + bold + underlined — unreadable
+ * noise at list density (TENSOR INTRA-04, operator-rejected).
+ *
+ * A quiet link inherits the surrounding text colour and shows its underline on
+ * hover/focus. 1.4.1 is not in play: the link is the whole text of its block (a title,
+ * a cell), not a link inside body copy. NEVER quiet a link inside prose — in-text links
+ * keep the base blue + underline.
+ *
+ * Two forms:
+ *   • `.uix-link--quiet` — the opt-in utility, for block links outside the scoped slots
+ *     (whole-card links, event rows composed by hand, app-specific list patterns).
+ *   • quiet BY DEFAULT below — the editorial-home title slots and table data cells,
+ *     where every anchor is a block-level navigation target. `.uix-table td` keeps
+ *     `:not([class])` so class-bearing anchors in cells (`.uix-btn--link`, pills)
+ *     stay styled.
+ * Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-link--quiet,
+  .uix-content-list__title a,
+  .uix-news-lead__title a,
+  .uix-rundown__item-title a,
+  .uix-event-row__title a,
+  .uix-table td a:not([class]) { color: inherit; text-decoration: none; }
+
+  .uix-link--quiet:hover,
+  .uix-link--quiet:focus-visible,
+  .uix-content-list__title a:hover,
+  .uix-content-list__title a:focus-visible,
+  .uix-news-lead__title a:hover,
+  .uix-news-lead__title a:focus-visible,
+  .uix-rundown__item-title a:hover,
+  .uix-rundown__item-title a:focus-visible,
+  .uix-event-row__title a:hover,
+  .uix-event-row__title a:focus-visible,
+  .uix-table td a:not([class]):hover,
+  .uix-table td a:not([class]):focus-visible { text-decoration: underline; }
+}
