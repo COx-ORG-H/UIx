@@ -1,7 +1,7 @@
 # UIx component roadmap — canonical coverage map
 
 This is the **canonical** source of truth for UIx component coverage: one row per CSS component file
-in `packages/tokens/styles/components/*.css` (67 files at HEAD), mapped to its `@tensor_1/react`
+in `packages/tokens/styles/components/*.css` (68 files at HEAD), mapped to its `@tensor_1/react`
 export (if any), maturity, and a11y-review status. When you add or promote a component, update this
 table — do not re-maintain a parallel "backlog" list elsewhere.
 
@@ -45,6 +45,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. Recently landed. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold. |
+| EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | absent | Planned | no | Planned wrapper (presentational). |

@@ -174,3 +174,17 @@ export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.j
 // Tree model — framework-agnostic flatten + keyboard-nav helpers (drive plain + virtualized Tree)
 export { flattenTree, treeNav } from './tree-model.js';
 export type { FlatNode, TreeLike, TreeNavAction } from './tree-model.js';
+
+// Editorial-home kit (intranet landing patterns — INTRA-04)
+export {
+  PageIntro, SectionHead, NoticeQueue,
+  FeaturedStage, FeaturedRundown, FeaturedRundownItem,
+  NewsLead, ContentList, ContentListItem, ResourceGrid,
+  StatLine, EventRow, StatusRow,
+} from './components/EditorialHome.js';
+export type {
+  PageIntroProps, SectionHeadProps, NoticeQueueProps,
+  FeaturedStageProps, FeaturedRundownProps, FeaturedRundownItemProps,
+  NewsLeadProps, ContentListProps, ContentListItemProps, ResourceGridProps,
+  StatLineProps, StatLineItem, EventRowProps, StatusRowProps,
+} from './components/EditorialHome.js';

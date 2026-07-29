@@ -250,6 +250,26 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
 // @public
 export function computePosition(anchor: Rect, floating: Size, viewport: Size, options?: PositionOptions_2): PositionResult;
 
+// @public
+export function ContentList(input: ContentListProps): react.JSX.Element;
+
+// @public
+export function ContentListItem(input: ContentListItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    // (undocumented)
+    meta?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+    trailing?: ReactNode;
+}
+
+// @public (undocumented)
+export interface ContentListProps extends HTMLAttributes<HTMLUListElement> {
+    children?: ReactNode;
+}
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -339,12 +359,68 @@ export interface ErrorStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
 }
 
 // @public
+export function EventRow(input: EventRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface EventRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    day: ReactNode;
+    // (undocumented)
+    meta?: ReactNode;
+    month: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+}
+
+// @public
 export function ExpandToggle(input: ExpandToggleProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     // (undocumented)
     expanded?: boolean;
+}
+
+// @public
+export function FeaturedRundown(input: FeaturedRundownProps): react.JSX.Element;
+
+// @public
+export function FeaturedRundownItem(input: FeaturedRundownItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FeaturedRundownItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
+    number?: ReactNode;
+    selected?: boolean;
+    title: ReactNode;
+    topic?: ReactNode;
+}
+
+// @public (undocumented)
+export interface FeaturedRundownProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    children?: ReactNode;
+    eyebrow?: ReactNode;
+    meta?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+    titleId?: string;
+}
+
+// @public
+export function FeaturedStage(input: FeaturedStageProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    action?: ReactNode;
+    // (undocumented)
+    description?: ReactNode;
+    // (undocumented)
+    eyebrow?: ReactNode;
+    // (undocumented)
+    meta?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+    titleId?: string;
+    visual?: ReactNode;
+    visualLabel?: string;
 }
 
 // @public (undocumented)
@@ -676,6 +752,18 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 // @public
+export function NewsLead(input: NewsLeadProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NewsLeadProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    meta?: ReactNode;
+    // (undocumented)
+    summary?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+}
+
+// @public
 export function nextSortDir(current: SortDir | 'none' | undefined): SortDir | 'none';
 
 // @public
@@ -695,6 +783,19 @@ export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
 export type NoteTone = 'info' | 'success' | 'warning' | 'danger';
 
 // @public
+export function NoticeQueue(input: NoticeQueueProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NoticeQueueProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    actions?: ReactNode;
+    icon?: ReactNode;
+    meta?: ReactNode;
+    position?: ReactNode;
+    summary?: ReactNode;
+    title?: ReactNode;
+}
+
+// @public
 export function PageHeader(input: PageHeaderProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -703,6 +804,21 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     // (undocumented)
     eyebrow?: ReactNode;
     subtitle?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+}
+
+// @public
+export function PageIntro(input: PageIntroProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PageIntroProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    kicker?: ReactNode;
+    lede?: ReactNode;
+    search?: ReactNode;
+    searchLabel?: ReactNode;
+    shortcuts?: ReactNode;
+    shortcutsLabel?: string;
     // (undocumented)
     title: ReactNode;
 }
@@ -848,6 +964,14 @@ export interface Rect {
 // @public
 export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 
+// @public
+export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ResourceGridProps extends HTMLAttributes<HTMLDivElement> {
+    children?: ReactNode;
+}
+
 // @public (undocumented)
 export type Row = Record<string, unknown>;
 
@@ -871,6 +995,17 @@ export interface RowActionsProps extends TdHTMLAttributes<HTMLTableCellElement> 
 
 // @public
 export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
+
+// @public
+export function SectionHead(input: SectionHeadProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    action?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+    titleId?: string;
+}
 
 // @public (undocumented)
 export interface Segment {
@@ -1017,6 +1152,26 @@ export interface StarButtonProps {
 // @public
 export function Stat(input: StatProps): react.JSX.Element;
 
+// @public
+export function StatLine(input: StatLineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatLineItem {
+    id?: string;
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    value: ReactNode;
+}
+
+// @public (undocumented)
+export interface StatLineProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    items?: StatLineItem[];
+}
+
 // @public (undocumented)
 export interface StatProps extends HTMLAttributes<HTMLDivElement> {
     icon?: ReactNode;
@@ -1048,6 +1203,16 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     tone?: PillTone;
     treatment?: PillTreatment;
+}
+
+// @public
+export function StatusRow(input: StatusRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatusRowProps extends HTMLAttributes<HTMLDivElement> {
+    indicator?: ReactNode;
+    meta?: ReactNode;
+    name: ReactNode;
 }
 
 // @public (undocumented)
