@@ -184,6 +184,18 @@ test('StatusRow: indicator + flexible name + trailing meta', () => {
   assert.match(html, /<span class="uix-list-meta">Healthy<\/span>/);
 });
 
+test('quiet-link contract: title-slot anchors render inside the title-classed element', () => {
+  // link.css quiets anchors in these slots by default (.uix-content-list__title a etc.) —
+  // this locks the nesting that scoping depends on. FeaturedRundownItem is exempt: it
+  // renders a <button>, and an anchor may not nest inside one.
+  const list = render(h(ContentListItem, { title: h('a', { href: '/news/1' }, 'New learning budget') }));
+  assert.match(list, /<p class="uix-content-list__title"><a href="\/news\/1">New learning budget<\/a><\/p>/);
+  const lead = render(h(NewsLead, { title: h('a', { href: '/news/2' }, 'Customer week') }));
+  assert.match(lead, /<h3 class="uix-news-lead__title"><a href="\/news\/2">Customer week<\/a><\/h3>/);
+  const event = render(h(EventRow, { month: 'Jul', day: '30', title: h('a', { href: '/events/4' }, 'Summer all-hands') }));
+  assert.match(event, /<p class="uix-event-row__title"><a href="\/events\/4">Summer all-hands<\/a><\/p>/);
+});
+
 test('all wrappers merge className and forward DOM props', () => {
   const html = render(h(SectionHead, { title: 'T', className: 'extra', 'data-x': '1' }));
   assert.match(html, /class="uix-section-head extra"/);
