@@ -128,6 +128,14 @@ export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 't
   visual?: ReactNode;
   /** Accessible description of the visual; when set the visual gets `role="img"`. */
   visualLabel?: string;
+  /**
+   * Ordinal of the story on stage (e.g. "01"), rendered as the filled
+   * `.uix-featured__now` chip in the eyebrow. Pair it with the matching
+   * `FeaturedRundownItem`'s `number` — the selected item's number renders as
+   * the same chip, and that pairing is what links rundown to stage on every
+   * breakpoint (the divider caret only exists while the zones sit side by side).
+   */
+  ordinal?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   /** id for the `<h2>` title, for `aria-labelledby` wiring. */
@@ -139,13 +147,15 @@ export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 't
 }
 
 /**
- * Featured stage — the hero story panel of the featured briefing
- * (`.uix-featured__stage`). Pair it with `FeaturedRundown` inside a
- * `.uix-featured` grid. Content is `aria-live="polite"` so swapping the
- * featured story (from the rundown) is announced.
+ * Featured stage — the hero story zone of the featured briefing
+ * (`.uix-featured__stage`). The briefing is ONE `.uix-featured` card: put this
+ * and `FeaturedRundown` directly inside it and the internal hairline, the
+ * selected item's caret, and the ordinal chips connect the two zones. Content
+ * is `aria-live="polite"` so swapping the featured story (from the rundown)
+ * is announced.
  */
 export function FeaturedStage({
-  visual, visualLabel, eyebrow, title, titleId, description, meta, action, className, ...props
+  visual, visualLabel, ordinal, eyebrow, title, titleId, description, meta, action, className, ...props
 }: FeaturedStageProps) {
   return (
     <article className={cx('uix-featured__stage', className)} {...props}>
@@ -158,7 +168,12 @@ export function FeaturedStage({
         {visual}
       </div>
       <div className="uix-featured__content" aria-live="polite">
-        {eyebrow != null && <p className="uix-featured__eyebrow">{eyebrow}</p>}
+        {(eyebrow != null || ordinal != null) && (
+          <p className="uix-featured__eyebrow">
+            {ordinal != null && <span className="uix-featured__now">{ordinal}</span>}
+            {eyebrow}
+          </p>
+        )}
         <h2 className="uix-featured__title" id={titleId}>{title}</h2>
         {description != null && <p className="uix-featured__description">{description}</p>}
         {meta != null && <p className="uix-featured__meta">{meta}</p>}
@@ -182,7 +197,11 @@ export interface FeaturedRundownProps extends Omit<HTMLAttributes<HTMLElement>, 
   children?: ReactNode;
 }
 
-/** Featured rundown — the story list beside the stage (`.uix-rundown`). */
+/**
+ * Featured rundown — the story-list zone of the featured briefing
+ * (`.uix-rundown`), sitting inside the single `.uix-featured` card beside (or,
+ * stacked, below) the `FeaturedStage`.
+ */
 export function FeaturedRundown({ eyebrow, title, titleId, meta, children, className, ...props }: FeaturedRundownProps) {
   return (
     <aside className={cx('uix-rundown', className)} {...props}>

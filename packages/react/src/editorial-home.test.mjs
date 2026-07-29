@@ -94,6 +94,15 @@ test('FeaturedStage: eyebrow/title/description/meta + live content region', () =
   assert.match(html, /<p class="uix-featured__meta">5 min read<\/p>/);
 });
 
+test('FeaturedStage: ordinal renders as the __now chip before the eyebrow text', () => {
+  const html = render(h(FeaturedStage, { title: 'T', ordinal: '01', eyebrow: 'Featured · Company' }));
+  assert.match(html, /<p class="uix-featured__eyebrow"><span class="uix-featured__now">01<\/span>Featured · Company<\/p>/);
+  const chipOnly = render(h(FeaturedStage, { title: 'T', ordinal: '02' }));
+  assert.match(chipOnly, /<span class="uix-featured__now">02<\/span>/);
+  const neither = render(h(FeaturedStage, { title: 'T' }));
+  assert.doesNotMatch(neither, /uix-featured__eyebrow/);
+});
+
 test('FeaturedRundown: head (eyebrow/title/meta) + items well', () => {
   const html = render(h(FeaturedRundown, {
     eyebrow: 'Editorial briefing',

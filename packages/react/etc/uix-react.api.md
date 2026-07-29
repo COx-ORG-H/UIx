@@ -416,6 +416,7 @@ export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 't
     eyebrow?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
+    ordinal?: ReactNode;
     // (undocumented)
     title: ReactNode;
     titleId?: string;
