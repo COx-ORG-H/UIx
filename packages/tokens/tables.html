@@ -157,9 +157,16 @@
   .tbx-mini .uix-table-wrap { max-height: none; }
   .tbx-mini .uix-table td { height: 40px; }
   .tbx-mini .uix-table thead th { height: 36px; }
+
+  /* ---- guide-only a11y helpers (UIX-A11Y-5) — duplicate-safe with the packages CSS ---- */
+  .uix-skiplink { position: fixed; top: 12px; left: 12px; z-index: 100; padding: 8px 14px; background: var(--uix-accent); color: var(--uix-accent-fg); border-radius: var(--uix-radius-pill); font-size: var(--uix-text-meta); font-weight: 600; text-decoration: none; box-shadow: var(--uix-shadow-overlay); clip-path: inset(100%); }
+  .uix-skiplink:focus-visible { clip-path: none; }
+  /* real button inside a sortable th — inherits the header look 1:1 */
+  .uix-th__sortbtn { font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
   </style>
 </head>
 <body>
+  <a class="uix-skiplink" href="#main">Skip to content</a>
   <div class="uix-guide">
     <!-- nav rail -->
     <nav class="uix-guide__nav" aria-label="Sections">
@@ -181,7 +188,7 @@
       <a class="uix-guide__navlink" href="#itsm">ITSM / CRM appendix</a>
     </nav>
 
-    <main class="uix-guide__main">
+    <main id="main" tabindex="-1" class="uix-guide__main">
       <header class="uix-guide__topbar">
         <h1>Tables &amp; data grids</h1>
         <div class="tbx-top-actions">
@@ -202,7 +209,7 @@
 
         <div class="uix-guide__subhead">Decide before you build</div>
         <p class="tbx-note">Five questions settle most table decisions up front. Answer them per surface — the answers drive density, default columns, sort, and which interactions you turn on.</p>
-        <table class="tbx-spec">
+        <table class="tbx-spec" aria-label="Table design questions to decide before you build">
           <thead><tr><th>Question</th><th>Why it changes the design</th></tr></thead>
           <tbody>
             <tr><td><b>What's in the cells?</b></td><td>Short codes &amp; numbers tolerate high density; free text and relations need truncation, subtext, or a peek.</td></tr>
@@ -253,7 +260,7 @@
         <div class="uix-guide__subhead">The cell vocabulary</div>
         <p class="tbx-note">A fixed set of cell renderers keeps tables consistent. Each maps to a token-driven component you already have: <strong>pill</strong>, <strong>label</strong>, <strong>avatar/user-chip</strong>, <strong>meter</strong>.</p>
         <div class="uix-table-wrap" tabindex="0" style="max-height:none">
-          <table class="uix-table uix-table--no-zebra">
+          <table class="uix-table uix-table--no-zebra" aria-label="Incidents — cell type examples">
             <thead>
               <tr>
                 <th>ID</th><th>Primary + subtext</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Tags</th><th class="uix-num">Open (d)</th><th class="uix-num">Cost (€)</th><th>SLA</th><th>Opened</th>
@@ -328,7 +335,7 @@
 
         <div data-grid id="grid-density" data-chrome="" data-features="sort" data-rows="8"></div>
 
-        <table class="tbx-spec">
+        <table class="tbx-spec" aria-label="Density tiers">
           <thead><tr><th>Tier</th><th>Row height (token)</th><th>Use when</th></tr></thead>
           <tbody>
             <tr><td>Compact</td><td><code>--uix-row-h-compact</code> · 44px</td><td>Power users comparing many rows; secondary monitors; phone scanning.</td></tr>
@@ -345,21 +352,21 @@
 
         <div class="tbx-divider-demos">
           <figure class="tbx-mini">
-            <div class="uix-table-wrap"><table class="uix-table">
+            <div class="uix-table-wrap"><table class="uix-table" aria-label="Zebra row style example">
               <thead><tr><th>ID</th><th>Subject</th></tr></thead>
               <tbody><tr><td class="uix-mono">INC-01</td><td>Disk pressure</td></tr><tr><td class="uix-mono">INC-02</td><td>DNS flap</td></tr><tr><td class="uix-mono">INC-03</td><td>Cert expiry</td></tr></tbody>
             </table></div>
             <figcaption><b style="color:var(--uix-text)">Zebra</b> — fast row tracking, but conflicts with state colours.</figcaption>
           </figure>
           <figure class="tbx-mini">
-            <div class="uix-table-wrap"><table class="uix-table uix-table--no-zebra">
+            <div class="uix-table-wrap"><table class="uix-table uix-table--no-zebra" aria-label="Line divider row style example">
               <thead><tr><th>ID</th><th>Subject</th></tr></thead>
               <tbody><tr><td class="uix-mono">INC-01</td><td>Disk pressure</td></tr><tr><td class="uix-mono">INC-02</td><td>DNS flap</td></tr><tr><td class="uix-mono">INC-03</td><td>Cert expiry</td></tr></tbody>
             </table></div>
             <figcaption><b style="color:var(--uix-text)">Line dividers</b> — recommended default. Hairline melts into the surface.</figcaption>
           </figure>
           <figure class="tbx-mini">
-            <div class="uix-table-wrap" style="border:0;background:var(--uix-bg-app)"><table class="uix-table uix-table--no-zebra" style="border-spacing:0 6px;border-collapse:separate">
+            <div class="uix-table-wrap" style="border:0;background:var(--uix-bg-app)"><table class="uix-table uix-table--no-zebra" aria-label="Card row style example" style="border-spacing:0 6px;border-collapse:separate">
               <thead><tr><th>ID</th><th>Subject</th></tr></thead>
               <tbody>
                 <tr style="background:var(--uix-surface)"><td class="uix-mono" style="border:1px solid var(--uix-border);border-right:0;border-radius:8px 0 0 8px">INC-01</td><td style="border:1px solid var(--uix-border);border-left:0;border-radius:0 8px 8px 0">Disk pressure</td></tr>
@@ -369,7 +376,7 @@
             <figcaption><b style="color:var(--uix-text)">Cards</b> — good when the app has a tinted background.</figcaption>
           </figure>
           <figure class="tbx-mini">
-            <div class="uix-table-wrap" style="border:0"><table class="uix-table uix-table--no-zebra" style="--uix-border:transparent">
+            <div class="uix-table-wrap" style="border:0"><table class="uix-table uix-table--no-zebra" aria-label="Free-form row style example" style="--uix-border:transparent">
               <thead><tr><th style="border-bottom:1px solid var(--uix-border-strong)">ID</th><th style="border-bottom:1px solid var(--uix-border-strong)">Subject</th></tr></thead>
               <tbody><tr><td class="uix-mono">INC-01</td><td>Disk pressure</td></tr><tr><td class="uix-mono">INC-02</td><td>DNS flap</td></tr><tr><td class="uix-mono">INC-03</td><td>Cert expiry</td></tr></tbody>
             </table></div>
@@ -443,7 +450,7 @@
 
         <div class="uix-guide__subhead">Typed filters</div>
         <p class="tbx-note">Each column declares a <strong>filter kind</strong>; the chip's editor and operators follow from the type. One mental model, many data shapes.</p>
-        <table class="tbx-spec">
+        <table class="tbx-spec" aria-label="Typed filter kinds">
           <thead><tr><th>Kind</th><th>Editor</th><th>Operators</th><th>Example column</th></tr></thead>
           <tbody>
             <tr><td><code>enum</code></td><td>Multi-select checklist</td><td>is any of / is none of</td><td>Status, Priority</td></tr>
@@ -479,7 +486,7 @@
           </div>
         </div>
 
-        <table class="tbx-spec" style="margin-top:22px">
+        <table class="tbx-spec" aria-label="Pagination strategies" style="margin-top:22px">
           <thead><tr><th>Strategy</th><th>Best for</th><th>Watch out for</th></tr></thead>
           <tbody>
             <tr><td><b>Pagination</b></td><td>Reference data, audit, anything you cite by position; server-side data.</td><td>Interrupts flow; extra clicks to scan.</td></tr>
@@ -509,7 +516,7 @@
         <div class="tbx-row" style="margin-top:8px">
           <div style="flex:1 1 340px">
             <div class="uix-guide__subhead" style="margin-top:0">Showing more detail — the ladder</div>
-            <table class="tbx-spec">
+            <table class="tbx-spec" aria-label="Detail patterns — the ladder">
               <tbody>
                 <tr><td><b>Tooltip</b></td><td>A peek at one hidden value; keeps full table context.</td></tr>
                 <tr><td><b>Expandable row</b></td><td>Inline detail without leaving the list; good for a handful of extra fields.</td></tr>
@@ -521,7 +528,7 @@
           </div>
           <div style="flex:1 1 340px">
             <div class="uix-guide__subhead" style="margin-top:0">Editing — match friction to stakes</div>
-            <table class="tbx-spec">
+            <table class="tbx-spec" aria-label="Editing patterns — matching friction to stakes">
               <tbody>
                 <tr><td><b>Inline cell</b></td><td>Lowest friction, most context. For low-stakes, frequent edits (assignee, priority, tags).</td></tr>
                 <tr><td><b>Expandable / peek form</b></td><td>Moderate friction; room for validation. For multi-field edits.</td></tr>
@@ -573,7 +580,7 @@
         </div>
 
         <div class="uix-guide__subhead">The responsive ladder</div>
-        <table class="tbx-spec">
+        <table class="tbx-spec" aria-label="Responsive ladder">
           <thead><tr><th>Width</th><th>Pattern</th><th>What happens</th></tr></thead>
           <tbody>
             <tr><td>Desktop (≥ ~880px)</td><td>Full table</td><td>All columns; sticky header; hover actions.</td></tr>
@@ -618,12 +625,12 @@
         </div>
 
         <div class="uix-guide__subhead">ARIA &amp; semantics contract</div>
-        <table class="tbx-spec">
+        <table class="tbx-spec" aria-label="ARIA and semantics contract">
           <thead><tr><th>Concern</th><th>Implementation</th></tr></thead>
           <tbody>
             <tr><td>Structure</td><td>Real <code>&lt;table&gt;&lt;thead&gt;&lt;tbody&gt;</code>. Use <code>role="grid"</code> only when cells are focusable/editable (a true data grid), with roving <code>tabindex</code>.</td></tr>
             <tr><td>Sort</td><td><code>aria-sort="ascending|descending"</code> on the active <code>th</code>; the arrow is decorative (<code>aria-hidden</code>).</td></tr>
-            <tr><td>Selection</td><td><code>aria-selected="true"</code> on the <code>tr</code>; header checkbox exposes <code>indeterminate</code>.</td></tr>
+            <tr><td>Selection</td><td><code>data-selected</code> on the <code>tr</code> (row state is conveyed by the labelled checkbox); header checkbox exposes <code>indeterminate</code>.</td></tr>
             <tr><td>Row actions</td><td>Icon buttons carry <code>aria-label</code>; the kebab is a labelled menu button with a real menu.</td></tr>
             <tr><td>Live updates</td><td>Result counts &amp; async loads announce via a polite <code>aria-live</code> region.</td></tr>
             <tr><td>Focus</td><td>Visible <code>:focus-visible</code> ring (<code>--uix-ring</code>); focus is trapped in peek/modal and restored on close.</td></tr>
@@ -664,7 +671,7 @@
           <div style="flex:1 1 300px">
             <div class="uix-guide__subhead" style="margin-top:0">PII masking happens in the data layer</div>
             <p class="tbx-note" style="margin-bottom:10px">Masking is enforced before data leaves the repository, never by hiding it in CSS. The table just renders what the viewer's context returns:</p>
-            <table class="tbx-spec">
+            <table class="tbx-spec" aria-label="PII view contexts">
               <tbody>
                 <tr><td><b>Standard</b></td><td>Full values for authorised roles.</td></tr>
                 <tr><td><b>Pseudonymised</b></td><td>Identifying fields → deterministic pseudonyms (BetrVG Works-Council view); behavioural fields suppressed.</td></tr>
@@ -676,7 +683,7 @@
             <div class="uix-guide__subhead" style="margin-top:0">Append-only audit log</div>
             <p class="tbx-note" style="margin-bottom:10px">Audit tables are a read-only table variant: no row actions, no inline edit, hash-chained and verifiable. Each row shows its link in the chain.</p>
             <div class="uix-table-wrap" tabindex="0" style="max-height:220px">
-              <table class="uix-table uix-table--no-zebra tbx-mini">
+              <table class="uix-table uix-table--no-zebra tbx-mini" aria-label="Audit log example">
                 <thead><tr><th>When</th><th>Actor</th><th>Event</th><th>Chain</th></tr></thead>
                 <tbody id="tbx-audit"></tbody>
               </table>
@@ -831,6 +838,22 @@
 
     const GRIDS = {};
 
+    // accessible names for the generated demo tables, keyed by mount id (UIX-A11Y-5)
+    const GRID_LABELS = {
+      'grid-anatomy': 'Incidents — anatomy demo',
+      'grid-density': 'Incidents — density demo',
+      'grid-sort': 'Incidents — sorting demo',
+      'grid-select': 'Incidents — selection and bulk actions demo',
+      'grid-columns': 'Incidents — column management demo',
+      'grid-filter': 'Incidents — search, filter and saved views demo',
+      'grid-page': 'Incidents — numbered pagination demo',
+      'grid-more': 'Incidents — load more demo',
+      'grid-detail': 'Incidents — row detail and editing demo',
+      'grid-states': 'Incidents — states demo',
+      'grid-responsive': 'Incidents — responsive demo',
+      'grid-itsm': 'Incidents — ITSM and CRM appendix demo'
+    };
+
     /* ============================================================
        createGrid — one factory, every interactive demo
        ============================================================ */
@@ -847,6 +870,7 @@
 
       const state = {
         density: 'standard', zebra: true, freeze: false,
+        widths: {},                    // keyboard-resized column widths, survive re-renders (UIX-A11Y-5)
         hidden: new Set(isItsm ? ['nis2'] : []),
         order: baseOrder.slice(),
         sorts: feat.has('sort') ? defaultSorts(baseOrder) : [],
@@ -871,6 +895,7 @@
       if (feat.has('select')) { bulk = el('<div class="uix-bulkbar" hidden></div>'); root.append(bulk); }
       const wrap = el('<div class="uix-table-wrap"></div>');
       const table = el('<table class="uix-table"></table>');
+      table.setAttribute('aria-label', GRID_LABELS[id] || 'Incidents demo'); // (UIX-A11Y-5)
       wrap.append(table); root.append(wrap);
       const foot = el('<div class="tbx-tablefoot"></div>');
       root.append(foot); root.append(live);
@@ -972,14 +997,26 @@
           const def = COLS[c];
           const th = el(`<th data-col="${c}" data-priority="${def.pr}"></th>`);
           if (def.align === 'right') th.classList.add('uix-num');
-          th.append(document.createTextNode(L(c)));
           if (feat.has('sort') && def.sortable) {
             th.setAttribute('data-sort', '');
+            // real <button> carries the label so sorting is focusable and announced as a button;
+            // aria-sort stays on the th. Clicks bubble to the delegated th[data-sort] handler (UIX-A11Y-5).
+            const sbtn = el('<button class="uix-th__sortbtn" type="button"></button>');
+            sbtn.append(document.createTextNode(L(c)));
             const cur = state.sorts.find(s => s.key === c);
             if (cur) th.setAttribute('aria-sort', cur.dir === 'asc' ? 'ascending' : 'descending');
-            if (cur && state.sorts.length > 1) { const ord = el(`<sup style="color:var(--uix-text-muted);font-size:9px;margin-left:2px">${state.sorts.indexOf(cur) + 1}</sup>`); th.append(ord); }
+            if (cur && state.sorts.length > 1) { const ord = el(`<sup style="color:var(--uix-text-muted);font-size:9px;margin-left:2px">${state.sorts.indexOf(cur) + 1}</sup>`); sbtn.append(ord); }
+            th.append(sbtn);
+          } else {
+            th.append(document.createTextNode(L(c)));
           }
-          if (feat.has('resize')) th.append(el('<span class="uix-table__resize" data-resize></span>'));
+          if (feat.has('resize')) {
+            // focusable separator: ←/→ nudge the width, Home resets (handled in the delegated keydown) (UIX-A11Y-5)
+            // a focusable separator is a widget separator: aria-valuenow/min/max are REQUIRED
+            const gripW = state.widths[c] || 160;
+            th.append(el(`<span class="uix-table__resize" data-resize tabindex="0" role="separator" aria-orientation="vertical" aria-label="Resize ${esc(L(c))} column" aria-valuemin="64" aria-valuemax="1000" aria-valuenow="${gripW}"></span>`));
+            if (state.widths[c]) th.style.width = state.widths[c] + 'px';
+          }
           tr.append(th);
         });
         if (feat.has('actions')) tr.append(el('<th class="uix-table__actions" data-col="actions" aria-label="Actions"></th>'));
@@ -997,7 +1034,7 @@
         rows.forEach(r => {
           const tr = el(`<tr data-row="${r.id}"></tr>`);
           if (feat.has('peek')) tr.tabIndex = 0; // focusable so the whole row opens on Enter
-          if (state.selected.has(r.id)) tr.setAttribute('aria-selected', 'true');
+          if (state.selected.has(r.id)) tr.toggleAttribute('data-selected', true);
           if (state.pinned.has(r.id)) tr.setAttribute('data-pinned', '');
           if (feat.has('expand')) {
             const td = el('<td class="uix-table__selcell" data-col="expand"></td>');
@@ -1094,13 +1131,14 @@
         const nav = el('<div class="uix-pagination" role="navigation" aria-label="Pagination"></div>');
         const mk = (label, p, opts = {}) => {
           const b = el(`<button class="uix-pagination__btn" type="button">${label}</button>`);
+          if (opts.aria) b.setAttribute('aria-label', opts.aria); // names the bare ‹/› glyphs (UIX-A11Y-5)
           if (opts.disabled) b.disabled = true;
           if (opts.current) b.setAttribute('aria-current', 'page');
           if (!opts.disabled && !opts.current) b.addEventListener('click', () => { state.page = p; render(); });
           else if (opts.current) b.addEventListener('click', () => {});
           return b;
         };
-        nav.append(mk('‹', state.page - 1, { disabled: state.page === 1 }));
+        nav.append(mk('‹', state.page - 1, { disabled: state.page === 1, aria: 'Previous page' }));
         const set = new Set([1, pages, state.page, state.page - 1, state.page + 1]);
         let last = 0;
         for (let p = 1; p <= pages; p++) {
@@ -1108,7 +1146,7 @@
           if (p - last > 1) nav.append(el('<span class="uix-pagination__ellipsis">…</span>'));
           nav.append(mk(String(p), p, { current: p === state.page })); last = p;
         }
-        nav.append(mk('›', state.page + 1, { disabled: state.page === pages }));
+        nav.append(mk('›', state.page + 1, { disabled: state.page === pages, aria: 'Next page' }));
         return nav;
       }
 
@@ -1137,6 +1175,7 @@
       }
 
       function announce(msg) { live.textContent = msg; }
+      function resultMsg() { const n = processed().length; return n + (n === 1 ? ' result' : ' results'); } // (UIX-A11Y-5)
 
       function render() {
         table.dataset.density = state.density;
@@ -1154,8 +1193,8 @@
           const g = el('<div class="uix-input-group uix-input-group--has-leading" style="flex:1;max-width:260px"></div>');
           g.append(el(`<span class="uix-input-group__icon">${I.search}</span>`));
           const inp = el('<input class="uix-input uix-input--sm" type="search" placeholder="Search…" aria-label="Search" data-search>');
-          inp.addEventListener('input', () => { state.query = inp.value; state.page = 1; if (state.status === 'data' || true) render(); });
-          inp.addEventListener('keydown', e => { if (e.key === 'Escape') { inp.value = ''; state.query = ''; render(); } });
+          inp.addEventListener('input', () => { state.query = inp.value; state.page = 1; if (state.status === 'data' || true) render(); announce(resultMsg()); }); // (UIX-A11Y-5)
+          inp.addEventListener('keydown', e => { if (e.key === 'Escape') { inp.value = ''; state.query = ''; render(); announce(resultMsg()); } });
           g.append(inp); tb.append(g);
         }
         if (chrome.includes('filter')) {
@@ -1180,7 +1219,7 @@
           Object.keys(dict).forEach(k => {
             const lab = dict[k].en || k;
             const row = el(`<label class="uix-checkbox" style="display:flex;padding:6px 6px"><input type="checkbox" ${state.filters[field].has(k) ? 'checked' : ''}><span class="uix-checkbox__box">${I.check}</span>${esc(lab)}</label>`);
-            row.querySelector('input').addEventListener('change', e => { e.target.checked ? state.filters[field].add(k) : state.filters[field].delete(k); state.page = 1; refresh(); render(); });
+            row.querySelector('input').addEventListener('change', e => { e.target.checked ? state.filters[field].add(k) : state.filters[field].delete(k); state.page = 1; refresh(); render(); announce(resultMsg()); }); // (UIX-A11Y-5)
             panel.append(row);
           });
           floatPanel(chip, panel);
@@ -1197,6 +1236,7 @@
           if (sel.value === 'dora') { state.flagged = true; state.query = ''; data.forEach(()=>{}); state.filters.status = new Set(['open','inprogress','onhold']); }
           if (sel.value === 'breached') state.filters.status = new Set(['open', 'inprogress']);
           state.page = 1; render();
+          announce(resultMsg()); // (UIX-A11Y-5)
         });
         wrap.append(sel);
         const save = el(`<button class="uix-btn uix-btn--ghost uix-btn--sm" type="button" aria-label="Save current view" data-uix-tip="Save current view">${I.plus}</button>`);
@@ -1267,7 +1307,7 @@
         const exp = e.target.closest('[data-expand]'); if (exp) { const rid = exp.dataset.expand; state.expanded.has(rid) ? state.expanded.delete(rid) : state.expanded.add(rid); render(); return; }
         const pin = e.target.closest('[data-pin]'); if (pin) { const rid = pin.dataset.pin; state.pinned.has(rid) ? state.pinned.delete(rid) : state.pinned.add(rid); render(); return; }
         const menu = e.target.closest('[data-menu]'); if (menu) { openRowMenu(menu, menu.dataset.menu); return; }
-        const clear = e.target.closest('[data-clear-sel]'); if (clear) { state.selected.clear(); render(); return; }
+        const clear = e.target.closest('[data-clear-sel]'); if (clear) { state.selected.clear(); render(); announce('0 selected'); return; }
         const cta = e.target.closest('[data-state-cta]'); if (cta) { if (state.status === 'noresults') { state.query = ''; state.filters.status.clear(); state.filters.priority.clear(); } state.status = 'data'; render(); syncStatusControl(id, 'data'); return; }
         // whole-row → peek. Interactive cells (checkbox, buttons, links, inline-edit) are click-stoppers.
         if (feat.has('peek')) {
@@ -1277,12 +1317,29 @@
       });
       root.addEventListener('change', (e) => {
         const sel = e.target.closest('[data-sel]');
-        if (sel) { const rid = sel.dataset.sel; sel.checked ? state.selected.add(rid) : state.selected.delete(rid); const tr = sel.closest('tr'); tr && tr.toggleAttribute('aria-selected', sel.checked); renderBulk(); syncSelectAll(); return; }
+        if (sel) { const rid = sel.dataset.sel; sel.checked ? state.selected.add(rid) : state.selected.delete(rid); const tr = sel.closest('tr'); tr && tr.toggleAttribute('data-selected', sel.checked); renderBulk(); syncSelectAll(); announce(state.selected.size + ' selected'); return; } // (UIX-A11Y-5)
         const head = e.target.closest('thead input[type=checkbox]');
-        if (head) { const ids = pageRows(processed()).map(r => r.id); ids.forEach(i => head.checked ? state.selected.add(i) : state.selected.delete(i)); render(); }
+        if (head) { const ids = pageRows(processed()).map(r => r.id); ids.forEach(i => head.checked ? state.selected.add(i) : state.selected.delete(i)); render(); announce(state.selected.size + ' selected'); }
       });
       root.addEventListener('dblclick', (e) => { const cell = e.target.closest('[data-edit]'); if (cell) startEdit(cell); });
+      // the render-time aria-valuenow is a placeholder until layout — sync it to the real
+      // column width when the grip receives focus, so the first arrow press reads correctly
+      root.addEventListener('focusin', (e) => {
+        const g = e.target.closest('[data-resize]');
+        if (g) { const t = g.closest('th'); if (t) g.setAttribute('aria-valuenow', String(Math.round(t.getBoundingClientRect().width))); }
+      });
       root.addEventListener('keydown', (e) => {
+        // keyboard column resize on the header grip: ←/→ nudge by 16px, Home resets (UIX-A11Y-5)
+        const grip = e.target.closest('[data-resize]');
+        if (grip) {
+          const gth = grip.closest('th'); const gcol = gth && gth.dataset.col;
+          if (gth && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+            e.preventDefault();
+            const w = Math.max(64, Math.round(gth.getBoundingClientRect().width + (e.key === 'ArrowRight' ? 16 : -16)));
+            state.widths[gcol] = w; gth.style.width = w + 'px'; grip.setAttribute('aria-valuenow', String(w));
+          } else if (gth && e.key === 'Home') { e.preventDefault(); delete state.widths[gcol]; gth.style.width = ''; grip.setAttribute('aria-valuenow', String(Math.round(gth.getBoundingClientRect().width))); }
+          return;
+        }
         const cell = e.target.closest('[data-edit]');
         if (cell && (e.key === 'Enter' || e.key === ' ') && !cell.dataset.editing) { e.preventDefault(); startEdit(cell); return; }
         if (feat.has('peek') && e.target.matches && e.target.matches('tr[data-row]')) {
@@ -1310,6 +1367,8 @@
         }
         if (!state.sorts.length && !additive) state.sorts = defaultSorts(state.order);
         render();
+        const cur = state.sorts.find(s => s.key === col);
+        announce(cur ? `Sorted by ${L(col)}, ${cur.dir === 'desc' ? 'descending' : 'ascending'}` : 'Sort cleared'); // (UIX-A11Y-5)
       }
 
       function startEdit(cell) {

@@ -1,6 +1,6 @@
 /* uix-styleguide — aggregate stylesheet. Declares the cascade-layer order, then imports each layer.
    Component @imports are appended here as phases land (each component file declares @layer uix.components). */
-@layer uix.tokens, uix.base, uix.util, uix.motion, uix.components;
+@layer uix.tokens, uix.base, uix.util, uix.motion, uix.components, uix.forced-colors;
 
 @import "tokens.css";
 @import "base.css";
@@ -77,3 +77,6 @@
 @import "components/heartbeat.css";
 @import "components/editorial-home.css";
 @import "components/link.css";
+
+/* forced-colors (WHCM) repairs — last layer so its system-color fixes win over component rules (UIX-A11Y-4) */
+@import "forced-colors.css";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   multiSort, toggleSort, applyFilters, searchRows,
   serializeView, parseView, mergePinned,
@@ -32,6 +32,11 @@ export interface UseTableResult<T> {
   pinned: ReadonlySet<string>;
   /** header select-all tri-state over the current derived rows. */
   selectAll: SelectAllState;
+  /**
+   * Screen-reader status text reflecting the latest change — "Sorted by {field}, {dir}",
+   * "{n} results" (filter/search), "{n} selected". Pass to `<TableWrap announcement>` (UIX-A11Y-2).
+   */
+  announcement: string;
 
   /** cycle a column's sort; pass additive (⇧-click) to keep it as a secondary key. */
   toggleSort: (field: string, additive?: boolean) => void;
@@ -86,6 +91,26 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   const clearSelection = useCallback(() => setSelected(new Set()), []);
   const togglePin = useCallback((id: string) => setPinned((s) => toggleId(s, id)), []);
 
+  // UIX-A11Y-2: derive the polite-region text from whichever facet changed last, skipping
+  // the mount pass so nothing is announced on first render. `rows` is read from the same
+  // render's memo, so the count is already the post-change value.
+  const [announcement, setAnnouncement] = useState('');
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) return;
+    const key = sort[0];
+    setAnnouncement(key ? `Sorted by ${key.field}, ${key.dir}` : 'Sort cleared');
+  }, [sort]);
+  useEffect(() => {
+    if (!mounted.current) return;
+    setAnnouncement(`${rows.length} result${rows.length === 1 ? '' : 's'}`);
+  }, [filters, query]);
+  useEffect(() => {
+    if (!mounted.current) return;
+    setAnnouncement(`${selected.size} selected`);
+  }, [selected]);
+  useEffect(() => { mounted.current = true; }, []); // declared last → runs after the announcers
+
   const view: ViewState = useMemo(() => ({ sort, filters, q: query }), [sort, filters, query]);
   const viewQueryString = useMemo(() => serializeView(view), [view]);
   const applyView = useCallback((queryString: string) => {
@@ -96,7 +121,7 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   }, []);
 
   return {
-    rows, sort, filters, query, selected, pinned, selectAll,
+    rows, sort, filters, query, selected, pinned, selectAll, announcement,
     toggleSort: doToggleSort, setSort, setFilters, setQuery,
     isSelected: (id) => selected.has(id), toggleRow, toggleAllRows, clearSelection, togglePin,
     view, viewQueryString, applyView,

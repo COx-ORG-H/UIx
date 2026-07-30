@@ -5,12 +5,20 @@ import { cx } from '../cx.js';
 import { highlightSegments } from '../table-engine.js';
 
 export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Polite live-region text for table state changes — "Sorted by …", "N results",
+   * "N selected". Pass `useTable().announcement` straight through (UIX-A11Y-2).
+   */
+  announcement?: string;
   children?: ReactNode;
 }
 
-export function TableWrap({ children, className, ...props }: TableWrapProps) {
+export function TableWrap({ announcement, children, className, ...props }: TableWrapProps) {
   return (
     <div className={cx('uix-table-wrap', className)} {...props}>
+      {announcement != null && (
+        <div role="status" className="uix-visually-hidden">{announcement}</div>
+      )}
       {children}
     </div>
   );
@@ -74,10 +82,17 @@ export function Th({ sortable, sortDirection, sortOrder, onSort, className, chil
       data-sort={sortable || undefined}
       data-sort-order={sortOrder != null && sortOrder > 0 ? sortOrder : undefined}
       aria-sort={sortDirection && sortDirection !== 'none' ? sortDirection : undefined}
-      onClick={sortable ? onSort ?? onClick : onClick}
+      // Sort clicks go through the real <button> below so keyboard users can reach them
+      // (UIX-A11Y-2); generic onClick keeps its old non-sort semantics — it is dropped
+      // when a sort handler owns the header, exactly as before.
+      onClick={sortable && onSort ? undefined : onClick}
       {...props}
     >
-      {children}
+      {sortable ? (
+        <button type="button" className="uix-th__sortbtn" onClick={onSort}>{children}</button>
+      ) : (
+        children
+      )}
     </th>
   );
 }
@@ -103,7 +118,9 @@ export function Tr({ selected, pinned, className, children, ...props }: TrProps)
   return (
     <tr
       className={className}
-      aria-selected={selected || undefined}
+      // aria-selected is invalid on a native table row (role=row only supports it in a
+      // grid) — selection is a styling state here, so a data attribute carries it (UIX-A11Y-2).
+      data-selected={selected || undefined}
       data-pinned={pinned || undefined}
       {...props}
     >
@@ -163,15 +180,18 @@ export function RowAction({ children, className, type = 'button', ...props }: Ro
 
 export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   expanded?: boolean;
+  /** id of the detail row this toggle controls → `aria-controls` (UIX-A11Y-2). */
+  controls?: string;
 }
 
 /** Chevron button that expands/collapses an inline detail row. */
-export function ExpandToggle({ expanded, className, type = 'button', ...props }: ExpandToggleProps) {
+export function ExpandToggle({ expanded, controls, className, type = 'button', ...props }: ExpandToggleProps) {
   return (
     <button
       type={type}
       className={cx('uix-table__expand', className)}
       aria-expanded={expanded}
+      aria-controls={controls}
       aria-label={expanded ? 'Collapse row' : 'Expand row'}
       {...props}
     >

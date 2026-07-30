@@ -25,12 +25,18 @@
     .dash-rail { display: flex; flex-direction: column; gap: 16px; }
     .dash-lower { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
     @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+    /* guide-only a11y helpers (UIX-A11Y-5) — duplicate-safe with the packages CSS */
+    .uix-skiplink { position: fixed; top: 12px; left: 12px; z-index: 100; padding: 8px 14px; background: var(--uix-accent); color: var(--uix-accent-fg); border-radius: var(--uix-radius-pill); font-size: var(--uix-text-meta); font-weight: 600; text-decoration: none; box-shadow: var(--uix-shadow-overlay); clip-path: inset(100%); }
+    .uix-skiplink:focus-visible { clip-path: none; }
+    /* real button inside a sortable th — inherits the header look 1:1 */
+    .uix-th__sortbtn { font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
   </style>
 </head>
 <body>
+  <a class="uix-skiplink" href="#main">Skip to content</a>
   <div class="uix-shell" style="height:100vh;border:0;border-radius:0">
     <!-- ===== sidebar ===== -->
-    <aside class="uix-shell__sidebar uix-sidebar" data-uix-sidebar style="width:auto">
+    <aside class="uix-shell__sidebar uix-sidebar" data-uix-sidebar aria-label="Helpdesk navigation" style="width:auto">
       <div class="uix-sidebar__head">
         <strong class="uix-sidebar__brand">Helpdesk</strong>
         <button class="uix-sidebar__toggle" data-uix-collapse aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
@@ -50,17 +56,18 @@
 
     <!-- ===== topbar ===== -->
     <div class="uix-shell__topbar">
-      <nav class="uix-breadcrumbs"><a href="index.html">Style guide</a><span class="uix-breadcrumbs__sep">/</span><span aria-current="page">Workspace</span></nav>
+      <nav class="uix-breadcrumbs" aria-label="Breadcrumb"><a href="index.html">Style guide</a><span class="uix-breadcrumbs__sep">/</span><span aria-current="page">Workspace</span></nav>
       <span style="flex:1"></span>
       <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-open="#demo-cmdk">Search <span class="uix-kbd">⌘K</span></button>
       <button class="uix-btn uix-btn--secondary uix-btn--sm" data-uix-theme-toggle aria-label="Toggle theme"></button>
     </div>
 
     <!-- ===== main ===== -->
-    <div class="uix-shell__main">
+    <div class="uix-shell__main" id="main" tabindex="-1">
       <div class="uix-page-header">
         <div class="uix-page-header__titles">
-          <div class="uix-page-header__title">Service &amp; account workspace</div>
+          <!-- page h1 — same class + zeroed UA margin keep the rendering identical (UIX-A11Y-5) -->
+          <h1 class="uix-page-header__title" style="margin:0">Service &amp; account workspace</h1>
           <div class="uix-page-header__subtitle"><span class="uix-live"><span class="uix-heartbeat"><span class="uix-heartbeat__dot"></span><span class="uix-heartbeat__ping"></span></span> Live · synced just now</span></div>
         </div>
         <div class="uix-page-header__actions">
@@ -123,7 +130,7 @@
             </div>
           </div>
           <div class="uix-table-wrap">
-            <table class="uix-table uix-table--pinned-col" style="min-width:760px">
+            <table class="uix-table uix-table--pinned-col" aria-label="Ticket queue" style="min-width:760px">
               <thead><tr>
                 <th data-sort>ID</th><th data-sort>Subject</th><th data-sort>Status</th><th data-sort>Type</th><th data-sort>Assignee</th><th>SLA</th><th aria-label="Pin"></th>
               </tr></thead>
@@ -173,7 +180,9 @@
         <div class="uix-chart">
           <div class="uix-chart__title">Tickets / day</div>
           <div class="uix-chart__subtitle">Last 7 days</div>
-          <div style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
+          <!-- SR summary of the decorative CSS bars below (UIX-A11Y-5) -->
+          <span class="uix-visually-hidden">Relative ticket volume per day, oldest first: 40%, 65%, 50%, 80%, 70%, 90% (peak), 60%.</span>
+          <div aria-hidden="true" style="display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:10px">
             <div style="flex:1;height:40%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
             <div style="flex:1;height:65%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
             <div style="flex:1;height:50%;background:var(--uix-chart-3);border-radius:var(--uix-radius-sm) var(--uix-radius-sm) 0 0"></div>
@@ -200,10 +209,10 @@
   </div>
 
   <!-- ===== overlay instances (peek + command palette) ===== -->
-  <dialog class="uix-peek" id="demo-peek" data-uix-peek-dialog>
+  <dialog class="uix-peek" id="demo-peek" data-uix-peek-dialog aria-labelledby="demo-peek-title">
     <div class="uix-peek__header">
       <span class="uix-peek__nav"><button class="uix-peek__navbtn" data-peek-prev aria-label="Previous ticket">↑</button><button class="uix-peek__navbtn" data-peek-next aria-label="Next ticket">↓</button></span>
-      <span class="uix-peek__title"><a href="#" data-peek-title>INC-2043</a></span>
+      <span class="uix-peek__title" id="demo-peek-title"><a href="#" data-peek-title>INC-2043</a></span>
       <button class="uix-peek__close" data-uix-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="uix-peek__body">
@@ -213,7 +222,7 @@
     </div>
     <div class="uix-peek__footer"><button class="uix-btn uix-btn--secondary" data-uix-close>Close</button><button class="uix-btn uix-btn--primary" style="margin-left:auto">Open full record</button></div>
   </dialog>
-  <dialog class="uix-dialog" id="demo-cmdk" data-uix-cmdk-dialog style="background:transparent;border:0;box-shadow:none;max-width:560px">
+  <dialog class="uix-dialog" id="demo-cmdk" data-uix-cmdk-dialog aria-label="Command palette" style="background:transparent;border:0;box-shadow:none;max-width:560px">
     <div class="uix-cmdk">
       <input class="uix-cmdk__input" placeholder="Type a command or search…" aria-label="Command">
       <div class="uix-cmdk__list">

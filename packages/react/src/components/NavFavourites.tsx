@@ -128,6 +128,9 @@ export function NavFavourites({
   const regionId = useId();
   const headerRef = useRef<HTMLButtonElement>(null);
   const regionRef = useRef<HTMLUListElement>(null);
+  // UIX-A11Y-2: focus stays on the moved row after a reorder, so without a polite
+  // announcement SR users get no feedback that the move happened.
+  const [announcement, setAnnouncement] = useState('');
   // After a remove/reorder, focus this id's menu trigger on next render.
   const focusAfterRef = useRef<string | null>(null);
   const triggerRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
@@ -163,6 +166,8 @@ export function NavFavourites({
     if (it === undefined) return;
     reordered.splice(next, 0, it);
     focusAfterRef.current = id; // keep focus on the moved row's control
+    const moved = items.find((i) => i.id === id);
+    if (moved) setAnnouncement(`${moved.label} moved to position ${next + 1} of ${order.length}`);
     onReorder(reordered);
   };
 
@@ -176,6 +181,7 @@ export function NavFavourites({
 
   return (
     <div className={cx('uix-favourites', className)} style={{ marginBottom: 'var(--uix-space-1)' }}>
+      <div role="status" className="uix-visually-hidden">{announcement}</div>
       <button
         ref={headerRef}
         type="button"
@@ -294,6 +300,12 @@ function FavouriteRow({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       menuItems[(currentIdx - 1 + menuItems.length) % menuItems.length]?.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      menuItems[0]?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      menuItems[menuItems.length - 1]?.focus();
     } else if (e.key === 'Escape') {
       e.preventDefault();
       closeAndReturnFocus();
@@ -371,6 +383,7 @@ function FavouriteRow({
           <ul
             id={menuId}
             role="menu"
+            aria-label={optionsTemplate.replace('{label}', item.label)}
             onKeyDown={onMenuKeyDown}
             style={{
               position: 'absolute',

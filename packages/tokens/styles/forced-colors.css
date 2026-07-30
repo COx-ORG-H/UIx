@@ -1,0 +1,33 @@
+/* uix forced-colors — Windows High Contrast / forced-colors repairs (UIX-A11Y-4).
+   Forced-colors mode strips author backgrounds and box-shadows, so controls whose state or
+   focus cue rides on those go invisible. Repairs below redraw ONLY those affordances with
+   CSS system colors; everything else stays honest to the user's forced palette. Loaded as
+   the last layer (see main.css) so these rules win over component declarations. */
+@layer uix.forced-colors {
+  @media (forced-colors: active) {
+    /* switch — track + thumb are background-only; redraw with system colors */
+    .uix-switch__track { border: 1px solid ButtonText; background: Canvas; forced-color-adjust: none; }
+    .uix-switch__track::after { background: ButtonText; box-shadow: none; }
+    .uix-switch > input:checked + .uix-switch__track { background: SelectedItem; border-color: SelectedItem; }
+    .uix-switch > input:checked + .uix-switch__track::after { background: SelectedItemText; }
+
+    /* radio — the checked ::after dot is a token background, forced away otherwise */
+    .uix-radio > input:checked + .uix-radio__dot::after { background: SelectedItem; forced-color-adjust: none; }
+
+    /* checkbox — checked/indeterminate box fill + check glyph */
+    .uix-checkbox > input:checked + .uix-checkbox__box,
+    .uix-checkbox > input:indeterminate + .uix-checkbox__box {
+      background: SelectedItem; border-color: SelectedItem; forced-color-adjust: none;
+    }
+    .uix-checkbox > input:checked + .uix-checkbox__box svg { color: SelectedItemText; }
+
+    /* progress + meter — track and fill are both plain backgrounds */
+    .uix-progress, .uix-meter { border: 1px solid ButtonText; }
+    .uix-progress__bar, .uix-meter__fill { background: SelectedItem; forced-color-adjust: none; }
+
+    /* text fields — components replace the focus outline with a box-shadow ring, which WHCM strips */
+    .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {
+      outline: 2px solid Highlight; outline-offset: 1px;
+    }
+  }
+}

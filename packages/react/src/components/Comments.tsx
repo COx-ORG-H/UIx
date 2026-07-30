@@ -5,10 +5,14 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }
 
-/** Comment thread container over `.uix-comments`. */
+/**
+ * Comment thread container over `.uix-comments`. role="log" is an implicit polite
+ * live region: comments appended after initial render are announced, the initial
+ * list is not (UIX-A11Y-3). Pass `role` to override.
+ */
 export function Comments({ children, className, ...props }: CommentsProps) {
   return (
-    <div className={cx('uix-comments', className)} {...props}>
+    <div role="log" className={cx('uix-comments', className)} {...props}>
       {children}
     </div>
   );

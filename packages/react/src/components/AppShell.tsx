@@ -21,6 +21,8 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   onExitFocus?: () => void;
   /** Drop the content gutter so a genuinely wide table runs edge-to-edge. */
   mainBleed?: boolean;
+  /** id given to `<main>` and targeted by the skip link. Override on collision (UIX-A11Y-2). */
+  mainId?: string;
   sidebar?: ReactNode;
   topbar?: ReactNode;
   children?: ReactNode;
@@ -32,6 +34,7 @@ export function AppShell({
   focus,
   onExitFocus,
   mainBleed,
+  mainId = 'uix-main',
   sidebar,
   topbar,
   children,
@@ -57,9 +60,11 @@ export function AppShell({
       data-focus={focus || undefined}
       {...props}
     >
+      {/* First tab stop in the shell; tabIndex -1 on main makes the anchor jump move focus cross-browser (UIX-A11Y-2). */}
+      <a className="uix-skiplink" href={`#${mainId}`}>Skip to content</a>
       {sidebar && <div className="uix-shell__sidebar">{sidebar}</div>}
       {topbar && <div className="uix-shell__topbar">{topbar}</div>}
-      <main className={cx('uix-shell__main', mainBleed && 'uix-shell__main--bleed')}>{children}</main>
+      <main id={mainId} tabIndex={-1} className={cx('uix-shell__main', mainBleed && 'uix-shell__main--bleed')}>{children}</main>
       {focus && onExitFocus && (
         <div className="uix-shell__focus-exit">
           <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={onExitFocus}>

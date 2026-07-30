@@ -16,6 +16,8 @@ const ChevronIcon = () => (
 export interface TreeNodeData {
   id: string;
   label: ReactNode;
+  /** Plain-text label for keyboard typeahead when `label` is not a string (UIX-A11Y-2). */
+  typeaheadLabel?: string;
   icon?: ReactNode;
   children?: TreeNodeData[];
 }
@@ -180,6 +182,14 @@ export function Tree({
         setFocusedId(id);
         break;
       default:
+        // Single printable char, no modifiers → typeahead over the visible rows (UIX-A11Y-2).
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          const act = treeNav(flat, id, e.key);
+          if (act.focusId !== undefined) {
+            e.preventDefault();
+            focusItem(rootRef.current?.querySelector<HTMLElement>(`[role="treeitem"][data-id="${CSS.escape(act.focusId)}"]`));
+          }
+        }
         break;
     }
   };
@@ -231,8 +241,14 @@ function VirtualTreeView({
   const scrollRef = useRef<HTMLUListElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const pendingFocus = useRef(false);
+  const hadFocus = useRef(false);
   const win = virtualWindow(scrollTop, maxHeight, rowHeight, flat.length);
   const rows = flat.slice(win.start, win.end);
+
+  // UIX-A11Y-2: if the tabbable row is scrolled outside the window, no rendered treeitem
+  // has tabIndex 0 and the tree drops out of the tab order — promote the first rendered
+  // row (its onFocus then adopts it as the roving-tabbable row).
+  const windowHasTabbable = tabbableId != null && rows.some((f) => f.node.id === tabbableId);
 
   // Focus the target once it's rendered into the window (after a keyboard move + any scroll).
   useEffect(() => {
@@ -240,6 +256,16 @@ function VirtualTreeView({
     const el = scrollRef.current?.querySelector<HTMLElement>(`[role="treeitem"][data-id="${CSS.escape(focusedId)}"]`);
     if (el) { el.focus(); pendingFocus.current = false; }
   }, [focusedId, win.start, win.end]);
+
+  // UIX-A11Y-2: when the focused row is scroll-evicted it unmounts silently (no blur event
+  // fires on removal) and focus drops to <body>. `hadFocus` stays true in that case — a real
+  // blur to elsewhere clears it below — so park focus on the scroll container; the keydown
+  // handler falls back to `focusedId`, so the next arrow key resumes at the last active row.
+  useEffect(() => {
+    if (!hadFocus.current || pendingFocus.current) return;
+    const active = document.activeElement;
+    if (active === document.body || active == null) scrollRef.current?.focus({ preventScroll: true });
+  });
 
   const moveTo = (id: string) => {
     const i = flat.findIndex((f) => f.node.id === id);
@@ -254,6 +280,7 @@ function VirtualTreeView({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
+    if (e.key.length === 1 && (e.ctrlKey || e.metaKey || e.altKey)) return; // not typeahead
     const curId = (e.target as HTMLElement).closest<HTMLElement>('[role="treeitem"]')?.dataset.id ?? focusedId;
     const act = treeNav(flat, curId, e.key);
     if (act.focusId === undefined && act.toggleId === undefined && act.selectId === undefined) return;
@@ -268,13 +295,16 @@ function VirtualTreeView({
       ref={scrollRef}
       className={cx('uix-tree', 'uix-tree--virtual', className)}
       role="tree"
+      tabIndex={-1}
       style={{ maxHeight, overflow: 'auto' }}
       onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
       onKeyDown={onKeyDown}
+      onFocus={() => { hadFocus.current = true; }}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hadFocus.current = false; }}
       {...props}
     >
-      {win.padTop > 0 && <li aria-hidden="true" style={{ height: win.padTop }} />}
-      {rows.map((f) => {
+      {win.padTop > 0 && <li role="presentation" aria-hidden="true" style={{ height: win.padTop }} />}
+      {rows.map((f, i) => {
         const rowStyle: CSSProperties = { height: rowHeight, paddingLeft: `calc(${f.level - 1} * var(--uix-space-5))` };
         return (
           <li
@@ -286,7 +316,7 @@ function VirtualTreeView({
             aria-expanded={f.hasChildren ? f.isExpanded : undefined}
             aria-selected={selectable ? selected === f.node.id : undefined}
             data-id={f.node.id}
-            tabIndex={tabbableId === f.node.id ? 0 : -1}
+            tabIndex={tabbableId === f.node.id || (!windowHasTabbable && i === 0) ? 0 : -1}
             className="uix-tree__item"
             onFocus={(e: FocusEvent<HTMLLIElement>) => { if (e.target === e.currentTarget) setFocusedId(f.node.id); }}
             onClick={(e: MouseEvent<HTMLLIElement>) => {
@@ -304,7 +334,7 @@ function VirtualTreeView({
           </li>
         );
       })}
-      {win.padBottom > 0 && <li aria-hidden="true" style={{ height: win.padBottom }} />}
+      {win.padBottom > 0 && <li role="presentation" aria-hidden="true" style={{ height: win.padBottom }} />}
     </ul>
   );
 }

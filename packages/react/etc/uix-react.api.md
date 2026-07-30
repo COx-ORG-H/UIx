@@ -5,8 +5,8 @@
 ```ts
 
 import { AnchorHTMLAttributes } from 'react';
+import { AriaAttributes } from 'react';
 import { ButtonHTMLAttributes } from 'react';
-import { CSSProperties } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import * as react from 'react';
@@ -52,6 +52,7 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     collapsed?: boolean;
     focus?: boolean;
     mainBleed?: boolean;
+    mainId?: string;
     nav?: ShellNav;
     onExitFocus?: () => void;
     // (undocumented)
@@ -137,6 +138,7 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
     subtitle?: ReactNode;
     // (undocumented)
     title?: ReactNode;
+    titleAs?: 'h2' | 'h3' | 'h4' | 'div';
 }
 
 // @public
@@ -245,6 +247,7 @@ export interface ComposerBarProps extends HTMLAttributes<HTMLDivElement> {
 export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    label?: string;
 }
 
 // @public
@@ -317,11 +320,9 @@ export interface DetailLayoutProps extends HTMLAttributes<HTMLDivElement> {
 export function Drawer(input: DrawerProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface DrawerProps {
+export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     footer?: ReactNode;
     // (undocumented)
@@ -376,6 +377,7 @@ export function ExpandToggle(input: ExpandToggleProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    controls?: string;
     // (undocumented)
     expanded?: boolean;
 }
@@ -522,20 +524,28 @@ export interface InboxListProps extends HTMLAttributes<HTMLDivElement> {
 export interface InboxProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    view?: 'list' | 'detail';
 }
 
 // @public (undocumented)
 export const Input: react.ForwardRefExoticComponent<InputProps & react.RefAttributes<HTMLInputElement>>;
 
-// @public (undocumented)
+// @public
 export function InputGroup(input: InputGroupProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface InputGroupProps {
     // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
     children: ReactNode;
     // (undocumented)
     className?: string;
+    id?: string;
     // (undocumented)
     leadingIcon?: ReactNode;
     // (undocumented)
@@ -564,6 +574,7 @@ export interface KanbanCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     children?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
+    onMove?: (dir: KanbanMoveDirection) => void;
     // (undocumented)
     title?: ReactNode;
 }
@@ -582,7 +593,11 @@ export interface KanbanColumnProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 }
 
 // @public (undocumented)
+export type KanbanMoveDirection = 'up' | 'down' | 'left' | 'right';
+
+// @public (undocumented)
 export interface KanbanProps extends HTMLAttributes<HTMLDivElement> {
+    announcement?: string;
     // (undocumented)
     children?: ReactNode;
 }
@@ -628,6 +643,7 @@ export function LoadingState(input: LoadingStateProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
+    label?: string;
     rows?: number;
 }
 
@@ -651,6 +667,7 @@ export function Meter(input: MeterProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
+    label?: string;
     tone?: MeterTone;
     value?: number;
 }
@@ -662,19 +679,15 @@ export type MeterTone = 'success' | 'warning' | 'danger' | 'attention' | 'overdu
 export function Modal(input: ModalProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface ModalProps {
+export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     footer?: ReactNode;
     // (undocumented)
     onClose?: () => void;
     // (undocumented)
     open: boolean;
-    // (undocumented)
-    style?: CSSProperties;
     // (undocumented)
     title?: ReactNode;
 }
@@ -802,6 +815,7 @@ export function PageHeader(input: PageHeaderProps): react.JSX.Element;
 // @public (undocumented)
 export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
     actions?: ReactNode;
+    as?: 'h1' | 'h2';
     // (undocumented)
     eyebrow?: ReactNode;
     subtitle?: ReactNode;
@@ -844,11 +858,9 @@ export function parseView(qs: string): ViewState;
 export function Peek(input: PeekProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface PeekProps {
+export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     footer?: ReactNode;
     // (undocumented)
@@ -917,6 +929,7 @@ export function Progress(input: ProgressProps): react.JSX.Element;
 // @public (undocumented)
 export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
     indeterminate?: boolean;
+    label?: string;
     max?: number;
     value?: number;
 }
@@ -942,6 +955,7 @@ export interface RadioGroupProps {
     children: ReactNode;
     // (undocumented)
     className?: string;
+    label?: ReactNode;
 }
 
 // @public (undocumented)
@@ -1134,6 +1148,7 @@ export function Spinner(input: SpinnerProps): react.JSX.Element;
 export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     accent?: boolean;
+    label?: string;
     // (undocumented)
     size?: 'md' | 'lg';
 }
@@ -1267,8 +1282,19 @@ export function TableWrap(input: TableWrapProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
+    announcement?: string;
     // (undocumented)
     children?: ReactNode;
+}
+
+// @public
+export function TabPanel(input: TabPanelProps): react.JSX.Element | null;
+
+// @public (undocumented)
+export interface TabPanelProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    value: string;
 }
 
 // @public (undocumented)
@@ -1337,7 +1363,7 @@ export function Timeline(input: TimelineProps): react.JSX.Element;
 export function TimelineItem(input: TimelineItemProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface TimelineItemProps extends HTMLAttributes<HTMLDivElement> {
+export interface TimelineItemProps extends HTMLAttributes<HTMLLIElement> {
     // (undocumented)
     children?: ReactNode;
     // (undocumented)
@@ -1346,7 +1372,7 @@ export interface TimelineItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public (undocumented)
-export interface TimelineProps extends HTMLAttributes<HTMLDivElement> {
+export interface TimelineProps extends HTMLAttributes<HTMLOListElement> {
     // (undocumented)
     children?: ReactNode;
 }
@@ -1414,6 +1440,8 @@ export interface TreeLike<T> {
     children?: T[];
     // (undocumented)
     id: string;
+    label?: unknown;
+    typeaheadLabel?: string;
 }
 
 // @public
@@ -1436,6 +1464,7 @@ export interface TreeNodeData {
     id: string;
     // (undocumented)
     label: ReactNode;
+    typeaheadLabel?: string;
 }
 
 // @public (undocumented)
@@ -1502,7 +1531,7 @@ export interface UseAnchoredPositionOptions {
 }
 
 // @public (undocumented)
-export function useDialog(open: boolean): React.RefObject<HTMLDialogElement>;
+export function useDialog(open: boolean, onClose?: () => void): React.RefObject<HTMLDialogElement>;
 
 // @public
 export function UserChip(input: UserChipProps): react.JSX.Element;
@@ -1533,6 +1562,7 @@ export interface UseTableOptions {
 
 // @public (undocumented)
 export interface UseTableResult<T> {
+    announcement: string;
     applyView: (queryString: string) => void;
     // (undocumented)
     clearSelection: () => void;

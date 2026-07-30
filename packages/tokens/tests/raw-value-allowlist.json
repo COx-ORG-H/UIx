@@ -17,6 +17,7 @@
     { "file": "editorial-home.css", "prop": "font-size", "value": "48px", "why": "Story-signal hero numeral — an editorial display size above --uix-text-display (40px); the 620px breakpoint steps it down onto the scale (var(--uix-text-display))." },
     { "file": "editorial-home.css", "prop": "font-size", "value": "18px", "why": "Editorial card-heading size (rundown/rail-card titles, event-date day) — the fixed type scale jumps 15px (h3) → 24px (h2); heading-family at regular weight needs the intermediate step for hierarchy. Ported 1:1 from the approved TENSOR prototype." },
     { "file": "editorial-home.css", "prop": "font-size", "value": "20px", "why": "Stat-line numeral — data callout between --uix-text-h3 (15px) and --uix-text-h2 (24px); tabular-nums display figure, not a text-scale step. Ported 1:1 from the approved TENSOR prototype." },
-    { "file": "editorial-home.css", "prop": "padding-left", "value": "42px", "why": "Clearance for the absolutely-positioned search icon in .uix-searchbar (icon at left:14px + 17px glyph + gap) — same construction as the input.css leading-icon clearance. Component-intrinsic layout dimension." }
+    { "file": "editorial-home.css", "prop": "padding-left", "value": "42px", "why": "Clearance for the absolutely-positioned search icon in .uix-searchbar (icon at left:14px + 17px glyph + gap) — same construction as the input.css leading-icon clearance. Component-intrinsic layout dimension." },
+    { "file": "sidebar.css", "prop": "margin", "value": "-1px", "why": "Part of the standard visually-hidden clip pattern (rail-mode nav labels, UIX-A11Y-2) — the -1px margin offsets the 1px box so nothing paints; intrinsic to the technique, same values as .uix-visually-hidden in utilities.css." }
   ]
 }
