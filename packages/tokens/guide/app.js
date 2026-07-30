@@ -484,16 +484,21 @@ if (typeof document !== 'undefined') {
       });
     };
     root.querySelectorAll('th[data-sort]').forEach((th) => {
-      th.tabIndex = 0;                       // keyboard-reachable
-      th.setAttribute('role', 'button');
+      // real <button> inside the th instead of role=button/tabindex on the cell — native focus,
+      // Enter/Space and SR button semantics for free; aria-sort stays on the th (UIX-A11Y-5)
+      const sortBtn = document.createElement('button');
+      sortBtn.type = 'button';
+      sortBtn.className = 'uix-th__sortbtn';
+      while (th.firstChild) sortBtn.appendChild(th.firstChild);
+      th.appendChild(sortBtn);
       const doSort = (additive) => {
         const idx = [...th.parentElement.children].indexOf(th);
         sortKeys = toggleSortKeys(sortKeys, idx, additive); // ⇧ adds/keeps this as a secondary key
         paintSort();
         render();
       };
+      // listener stays on the th so the full cell remains clickable; button clicks bubble here
       th.addEventListener('click', (e) => doSort(e.shiftKey));
-      th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSort(e.shiftKey); } });
     });
 
     // free-text search box (filters rows + highlights matches in the primary cell)
@@ -507,16 +512,36 @@ if (typeof document !== 'undefined') {
         if (idx === 0) return;
         const grip = document.createElement('span');
         grip.className = 'uix-table__resize';
-        grip.setAttribute('aria-hidden', 'true');
+        // keyboard-operable: a focusable separator — ←/→ nudge the width, Home resets (UIX-A11Y-5).
+        // The base.css :focus-visible ring applies once it's focusable, so no bespoke ring needed.
+        grip.tabIndex = 0;
+        grip.setAttribute('role', 'separator');
+        grip.setAttribute('aria-orientation', 'vertical');
+        grip.setAttribute('aria-label', `Resize ${th.textContent.trim()} column`);
+        // a focusable separator is a widget separator: aria-valuenow/min/max are REQUIRED
+        const syncValue = () => {
+          grip.setAttribute('aria-valuemin', '64');
+          grip.setAttribute('aria-valuemax', '1000');
+          grip.setAttribute('aria-valuenow', String(clampWidth(th.getBoundingClientRect().width, 64, 1000)));
+        };
+        syncValue();
         th.appendChild(grip);            // header is already position:sticky, so the grip anchors to it
         grip.addEventListener('click', (e) => e.stopPropagation()); // a drag near the edge must not sort
+        grip.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const w = th.getBoundingClientRect().width + (e.key === 'ArrowRight' ? 16 : -16);
+            th.style.width = clampWidth(w) + 'px';        // same clamp as the drag path
+            syncValue();
+          } else if (e.key === 'Home') { e.preventDefault(); th.style.width = ''; syncValue(); } // back to auto
+        });
         grip.addEventListener('pointerdown', (e) => {
           e.preventDefault(); e.stopPropagation();
           const startX = e.clientX, startW = th.getBoundingClientRect().width;
           grip.setAttribute('data-drag', '');
           grip.setPointerCapture(e.pointerId);
           const onMove = (ev) => { th.style.width = clampWidth(startW + (ev.clientX - startX)) + 'px'; };
-          const onUp = () => { grip.removeAttribute('data-drag'); grip.removeEventListener('pointermove', onMove); grip.removeEventListener('pointerup', onUp); };
+          const onUp = () => { grip.removeAttribute('data-drag'); grip.removeEventListener('pointermove', onMove); grip.removeEventListener('pointerup', onUp); syncValue(); };
           grip.addEventListener('pointermove', onMove);
           grip.addEventListener('pointerup', onUp);
         });
@@ -695,12 +720,30 @@ if (typeof document !== 'undefined') {
     if (!tips.length) return;
     const bubble = document.createElement('span');
     bubble.className = 'uix-tooltip__bubble';
+    bubble.id = 'uix-tooltip-bubble';        // fixed id so triggers can point aria-describedby at it (UIX-A11Y-5)
     bubble.setAttribute('popover', 'manual');
     bubble.setAttribute('role', 'tooltip');
     document.body.appendChild(bubble);
     document.documentElement.classList.add('uix-has-js-tip'); // suppresses the CSS-only ::after
     let current = null;
+    let hideTimer = null;
+    let prevDescribedby = null;              // the trigger's own describedby, restored on hide (mirrors the validation wiring)
+    const onEsc = (e) => { if (e.key === 'Escape') hide(); };   // Esc dismisses while shown (UIX-A11Y-5)
+    const restoreDescribedby = () => {
+      if (!current) return;
+      if (prevDescribedby) current.setAttribute('aria-describedby', prevDescribedby);
+      else current.removeAttribute('aria-describedby');
+      prevDescribedby = null;
+    };
     const show = (el) => {
+      clearTimeout(hideTimer); hideTimer = null;
+      if (current !== el) {
+        restoreDescribedby();
+        // link trigger → bubble, merging with any describedby the trigger already carries
+        prevDescribedby = el.getAttribute('aria-describedby');
+        el.setAttribute('aria-describedby', prevDescribedby ? prevDescribedby + ' ' + bubble.id : bubble.id);
+        if (!current) document.addEventListener('keydown', onEsc);
+      }
       current = el;
       bubble.textContent = el.getAttribute('data-uix-tip');
       if (!bubble.matches(':popover-open')) { try { bubble.showPopover(); } catch { /* noop */ } }
@@ -714,13 +757,24 @@ if (typeof document !== 'undefined') {
       );
       bubble.style.left = Math.round(pos.x) + 'px'; bubble.style.top = Math.round(pos.y) + 'px';
     };
-    const hide = () => { current = null; if (bubble.matches(':popover-open')) { try { bubble.hidePopover(); } catch { /* noop */ } } };
+    const hide = () => {
+      clearTimeout(hideTimer); hideTimer = null;
+      restoreDescribedby();
+      document.removeEventListener('keydown', onEsc);
+      current = null;
+      if (bubble.matches(':popover-open')) { try { bubble.hidePopover(); } catch { /* noop */ } }
+    };
+    // small close delay so the pointer can travel into the bubble; harmless no-op while
+    // tooltip.css keeps the bubble pointer-events:none (the delay simply elapses) (UIX-A11Y-5)
+    const scheduleHide = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 100); };
     tips.forEach((el) => {
       el.addEventListener('mouseenter', () => show(el));
-      el.addEventListener('mouseleave', hide);
+      el.addEventListener('mouseleave', scheduleHide);
       el.addEventListener('focus', () => show(el));
       el.addEventListener('blur', hide);
     });
+    bubble.addEventListener('mouseenter', () => { clearTimeout(hideTimer); hideTimer = null; });
+    bubble.addEventListener('mouseleave', scheduleHide);
     window.addEventListener('scroll', () => { if (current) show(current); }, { passive: true, capture: true });
   };
 
@@ -852,13 +906,45 @@ if (typeof document !== 'undefined') {
       const search = pop.querySelector('input');
       const options = [...pop.querySelectorAll('[data-rs-option]')];
       // a11y: the options style off [aria-selected], which is only a valid ARIA attribute on
-      // role=option inside a role=listbox — tag them so the popover is a real listbox.
-      pop.setAttribute('role', 'listbox');
-      options.forEach((o) => o.setAttribute('role', 'option'));
+      // role=option inside a role=listbox — tag them. role=listbox goes on the element that holds
+      // ONLY options: the popover itself for the plain variant, .uix-cmdk__list for the cmdk
+      // variant (the outer container also holds the search input, where listbox is invalid) (UIX-A11Y-5).
+      const list = pop.querySelector('.uix-cmdk__list') || pop;
+      list.setAttribute('role', 'listbox');
+      if (!list.id) list.id = pop.id + '-list';
+      options.forEach((o, i) => { o.setAttribute('role', 'option'); if (!o.id) o.id = `${pop.id}-opt-${i}`; });
+      // combobox wiring: the trigger owns the popup; with a search input the INPUT is the
+      // combobox (aria-autocomplete=list), otherwise the trigger button itself is (UIX-A11Y-5).
+      trigger?.setAttribute('aria-haspopup', 'listbox');
+      trigger?.setAttribute('aria-expanded', 'false');
+      trigger?.setAttribute('aria-controls', pop.id);
+      if (search) {
+        search.setAttribute('role', 'combobox');
+        search.setAttribute('aria-autocomplete', 'list');
+        search.setAttribute('aria-expanded', 'false');
+        search.setAttribute('aria-controls', list.id);
+      } else {
+        trigger?.setAttribute('role', 'combobox');
+      }
+      const focusEl = () => search || trigger;   // carries aria-activedescendant while open
+      // filtered-result count announcement for the searchable variant (UIX-A11Y-5)
+      let countLive = null;
+      if (search) {
+        countLive = document.createElement('span');
+        countLive.className = 'uix-visually-hidden';
+        countLive.setAttribute('aria-live', 'polite');
+        rs.appendChild(countLive);
+      }
       const visible = () => options.filter((o) => !o.hidden);
       const setActive = (opt) => {
         options.forEach((o) => o.removeAttribute('data-active'));
-        if (opt) { opt.setAttribute('data-active', ''); opt.scrollIntoView({ block: 'nearest' }); }
+        if (opt) {
+          opt.setAttribute('data-active', '');
+          opt.scrollIntoView({ block: 'nearest' });
+          focusEl()?.setAttribute('aria-activedescendant', opt.id);
+        } else {
+          focusEl()?.removeAttribute('aria-activedescendant');
+        }
       };
       const choose = (opt) => {
         if (!opt) return;
@@ -872,6 +958,8 @@ if (typeof document !== 'undefined') {
         const q = search.value.toLowerCase();
         options.forEach((o) => { o.hidden = !o.textContent.toLowerCase().includes(q); });
         setActive(visible()[0]);
+        const n = visible().length;
+        if (countLive) countLive.textContent = n + (n === 1 ? ' option' : ' options');
       });
       pop.addEventListener('click', (e) => {
         const opt = e.target.closest('[data-rs-option]');
@@ -888,12 +976,16 @@ if (typeof document !== 'undefined') {
         else if (e.key === 'Enter') { e.preventDefault(); choose(vis[idx] || vis[0]); }
       });
       pop.addEventListener('toggle', (e) => {
-        if (e.newState === 'open') {
+        const open = e.newState === 'open';
+        trigger?.setAttribute('aria-expanded', String(open));   // (UIX-A11Y-5)
+        search?.setAttribute('aria-expanded', String(open));
+        if (open) {
           if (search) { search.value = ''; options.forEach((o) => { o.hidden = false; }); }
+          if (countLive) countLive.textContent = '';            // stale count must not re-announce
           setActive(options.find((o) => o.getAttribute('aria-selected') === 'true') || visible()[0]);
           if (search) setTimeout(() => search.focus(), 0);
         } else {
-          setActive(null);
+          setActive(null);                                      // clears aria-activedescendant
         }
       });
     });
@@ -921,12 +1013,19 @@ if (typeof document !== 'undefined') {
     });
     document.querySelectorAll('[data-uix-submit-demo]').forEach((btn) => {
       const original = btn.innerHTML;
+      // the innerHTML morph is silent to SRs — announce the phases politely (UIX-A11Y-5)
+      const live = document.createElement('span');
+      live.className = 'uix-visually-hidden';
+      live.setAttribute('aria-live', 'polite');
+      btn.insertAdjacentElement('afterend', live);
       btn.addEventListener('click', () => {
         if (btn.dataset.busy) return;
         btn.dataset.busy = '1';
-        btn.innerHTML = '<span class="uix-spinner" style="width:14px;height:14px;border-color:currentColor;border-right-color:transparent"></span> Submitting…';
+        btn.innerHTML = '<span class="uix-spinner" aria-hidden="true" style="width:14px;height:14px;border-color:currentColor;border-right-color:transparent"></span> Submitting…';
+        live.textContent = 'Submitting';
         setTimeout(() => {
           btn.innerHTML = '✓ Submitted';
+          live.textContent = 'Submitted';
           setTimeout(() => { btn.innerHTML = original; delete btn.dataset.busy; }, 1500);
         }, 1100);
       });

@@ -73,3 +73,42 @@ test('treeNav: unknown key or unknown current id yields an empty action', () => 
   assert.deepEqual(treeNav(flat, 'a', 'Tab'), {});
   assert.deepEqual(treeNav(flat, 'does-not-exist', 'ArrowDown'), {});
 });
+
+/* Typeahead (UIX-A11Y-2): a single printable char moves to the next visible node whose
+ * label starts with it — case-insensitive, wrapping, starting after the current node.
+ * Only string labels (or an explicit typeaheadLabel) participate. */
+const LABELLED = [
+  { id: 'ants', label: 'Ants' },
+  { id: 'bees', label: 'Bees', children: [{ id: 'bees-honey', label: 'Honey bees' }] },
+  { id: 'aphids', label: 'aphids' },
+  { id: 'rich', label: { node: 'not-a-string' }, typeaheadLabel: 'Beetles' },
+  { id: 'unmatchable', label: undefined },
+];
+
+test('treeNav: typeahead moves to the next label match, case-insensitively', () => {
+  const flat = flattenTree(LABELLED, new Set());
+  assert.deepEqual(treeNav(flat, 'ants', 'a'), { focusId: 'aphids' });   // skips non-matching rows
+  assert.deepEqual(treeNav(flat, 'ants', 'A'), { focusId: 'aphids' });   // case-insensitive
+  assert.deepEqual(treeNav(flat, 'ants', 'b'), { focusId: 'bees' });
+});
+
+test('treeNav: typeahead wraps past the end and starts after the current node', () => {
+  const flat = flattenTree(LABELLED, new Set());
+  assert.deepEqual(treeNav(flat, 'aphids', 'a'), { focusId: 'ants' });   // wraps to the start
+  assert.deepEqual(treeNav(flat, 'bees', 'b'), { focusId: 'rich' });     // next b-match, not itself first
+  assert.deepEqual(treeNav(flat, 'rich', 'b'), { focusId: 'bees' });     // wraps back around
+});
+
+test('treeNav: typeahead only sees visible rows and honours typeaheadLabel', () => {
+  const collapsed = flattenTree(LABELLED, new Set());
+  assert.deepEqual(treeNav(collapsed, 'bees', 'h'), {});                 // Honey bees hidden while collapsed
+  const expanded = flattenTree(LABELLED, new Set(['bees']));
+  assert.deepEqual(treeNav(expanded, 'bees', 'h'), { focusId: 'bees-honey' });
+  assert.deepEqual(treeNav(expanded, 'aphids', 'b'), { focusId: 'rich' }); // matched via typeaheadLabel
+});
+
+test('treeNav: typeahead with no match (or non-string labels only) yields an empty action', () => {
+  const flat = flattenTree(LABELLED, new Set());
+  assert.deepEqual(treeNav(flat, 'ants', 'z'), {});
+  assert.deepEqual(treeNav(flat, 'ants', 'n'), {}); // rich's object label never matches "not-a-string"
+});

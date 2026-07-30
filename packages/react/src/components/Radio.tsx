@@ -20,8 +20,18 @@ Radio.displayName = 'Radio';
 export interface RadioGroupProps {
   children: ReactNode;
   className?: string;
+  /** Group name; when set the group renders as fieldset/legend so it's announced with each radio. */
+  label?: ReactNode;
 }
 
-export function RadioGroup({ children, className }: RadioGroupProps) {
-  return <div className={cx('uix-radio-group', className)}>{children}</div>;
+export function RadioGroup({ children, className, label }: RadioGroupProps) {
+  // fieldset/legend gives the radios a programmatic group name (UIX-A11Y-3); without a
+  // label the plain div stays, so existing callers see no DOM change.
+  if (label == null) return <div className={cx('uix-radio-group', className)}>{children}</div>;
+  return (
+    <fieldset className={cx('uix-radio-group', className)}>
+      <legend className="uix-radio-group__legend">{label}</legend>
+      {children}
+    </fieldset>
+  );
 }

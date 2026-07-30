@@ -75,12 +75,16 @@ export function Skeleton({ variant = 'block', width, height, className, style, .
 export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
   /** Number of skeleton rows to render. */
   rows?: number;
+  /** Announced loading text (default "Loading"). */
+  label?: string;
 }
 
 /** A stack of skeleton rows for list/section loading. `role="status"`. */
-export function LoadingState({ rows = 3, className, ...props }: LoadingStateProps) {
+export function LoadingState({ rows = 3, label, className, ...props }: LoadingStateProps) {
   return (
-    <div className={cx('uix-stack', className)} role="status" aria-busy="true" {...props}>
+    // no aria-busy: busy=true tells AT the region isn't ready and suppresses the announcement (UIX-A11Y-4)
+    <div className={cx('uix-stack', className)} role="status" {...props}>
+      <span className="uix-visually-hidden">{label ?? 'Loading'}</span>
       {Array.from({ length: rows }, (_, i) => (
         <Skeleton key={i} variant="text" width={`${92 - (i % 3) * 14}%`} />
       ))}

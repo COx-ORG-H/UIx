@@ -65,8 +65,8 @@ export type { ListProps, ListItemProps } from './components/List.js';
 export { DescriptionList, DescriptionItem } from './components/DescriptionList.js';
 export type { DescriptionListProps, DescriptionListItem, DescriptionItemProps } from './components/DescriptionList.js';
 
-export { Tabs, Tab } from './components/Tabs.js';
-export type { TabsProps, TabProps } from './components/Tabs.js';
+export { Tabs, Tab, TabPanel } from './components/Tabs.js';
+export type { TabsProps, TabProps, TabPanelProps } from './components/Tabs.js';
 
 export { AppShell } from './components/AppShell.js';
 export type { AppShellProps, ShellNav } from './components/AppShell.js';
@@ -166,7 +166,7 @@ export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js'
 export type { InboxProps, InboxListProps, InboxItemProps, InboxDetailProps } from './components/Inbox.js';
 
 export { Kanban, KanbanColumn, KanbanCard } from './components/Kanban.js';
-export type { KanbanProps, KanbanColumnProps, KanbanCardProps } from './components/Kanban.js';
+export type { KanbanProps, KanbanColumnProps, KanbanCardProps, KanbanMoveDirection } from './components/Kanban.js';
 
 export { Tree } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.js';

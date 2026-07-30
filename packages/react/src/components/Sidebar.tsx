@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -102,19 +102,21 @@ export interface NavGroupProps {
 
 export function NavGroup({ icon, label, children, defaultExpanded = true }: NavGroupProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const panelId = useId(); // trigger ↔ panel wiring (UIX-A11Y-2)
 
   return (
     <div className="uix-navgroup">
       <button
         className="uix-navitem uix-navgroup__trigger"
         aria-expanded={expanded}
+        aria-controls={panelId}
         onClick={() => setExpanded((v) => !v)}
       >
         {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
         <span className="uix-navitem__label">{label}</span>
         <ChevronIcon />
       </button>
-      <div className="uix-navgroup__panel">
+      <div className="uix-navgroup__panel" id={panelId}>
         <div>{children}</div>
       </div>
     </div>

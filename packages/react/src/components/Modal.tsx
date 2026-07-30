@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode, CSSProperties } from 'react';
+import { useId } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
 
@@ -10,24 +11,24 @@ const CloseIcon = () => (
   </svg>
 );
 
-export interface ModalProps {
+export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
   open: boolean;
   onClose?: () => void;
   title?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
 }
 
-export function Modal({ open, onClose, title, children, footer, className, style }: ModalProps) {
-  const ref = useDialog(open);
+export function Modal({ open, onClose, title, children, footer, className, ...rest }: ModalProps) {
+  const ref = useDialog(open, onClose);
+  // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
+  const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-dialog', className)} style={style} onClose={onClose}>
+    <dialog ref={ref} className={cx('uix-dialog', className)} aria-labelledby={title ? titleId : undefined} {...rest}>
       {(title != null || onClose) && (
         <div className="uix-dialog__header">
-          {title && <div className="uix-dialog__title">{title}</div>}
+          {title && <h2 className="uix-dialog__title" id={titleId}>{title}</h2>}
           {onClose && (
             <button className="uix-dialog__close" onClick={onClose} aria-label="Close dialog">
               <CloseIcon />

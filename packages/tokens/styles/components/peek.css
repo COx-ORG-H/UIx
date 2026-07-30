@@ -27,7 +27,13 @@
   .uix-peek__nav { display: inline-flex; gap: var(--uix-space-1); }
   .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
-  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  /* boundary nav uses aria-disabled (still focusable, so focus isn't stranded — UIX-A11Y-1);
+     mute it and suppress the hover cue like a disabled control */
+  .uix-peek__navbtn[aria-disabled="true"] { color: var(--uix-text-muted); cursor: default; }
+  .uix-peek__navbtn[aria-disabled="true"]:hover { background: var(--uix-surface); }
+  /* title is an <h2> for SR navigation (UIX-A11Y-1); inherits neutralize the base h2
+     heading font/tracking/leading so it renders exactly like the old <div> */
+  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
   .uix-peek__title a { color: var(--uix-link); }
   .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }

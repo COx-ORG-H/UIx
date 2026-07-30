@@ -207,7 +207,8 @@
   }
   .uix-checkbox > input:checked + .uix-checkbox__box,
   .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
-  .uix-checkbox > input:checked + .uix-checkbox__box svg { opacity: 1; transform: none; }
+  .uix-checkbox > input:checked + .uix-checkbox__box svg,
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transform: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
   .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-checkbox > input:disabled ~ * { opacity: .5; }
 }
@@ -259,7 +260,7 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-segmented__option:hover { color: var(--uix-text); }
-  .uix-segmented__option[aria-selected="true"], .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
+  .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 }
 /* uix slider (native range, styled) — depends only on --uix-* tokens. */
@@ -333,7 +334,9 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
-  .uix-tag__remove { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); }
+  .uix-tag__remove { position: relative; display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); }
+  /* Invisible overlay grows the 16px visual to a 24px hit target (UIX-A11Y-3). */
+  .uix-tag__remove::before { content: ""; position: absolute; inset: -4px; }
   .uix-tag__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-tag__remove svg { width: 12px; height: 12px; }
 }
@@ -342,6 +345,11 @@
   .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--uix-space-5); }
   .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
   .uix-fieldset > legend { padding: 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
+  /* Labeled RadioGroup renders as a fieldset (UIX-A11Y-3): strip the UA chrome so it
+     looks identical to the plain-div group; the legend spaces itself (fieldset gap
+     doesn't reach a legend). */
+  fieldset.uix-radio-group { border: 0; margin: 0; padding: 0; min-inline-size: auto; }
+  .uix-radio-group__legend { padding: 0; margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
   .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
   .uix-validation-summary {
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
@@ -362,7 +370,7 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden;
     transition: grid-template-columns var(--uix-dur) var(--uix-ease-out), grid-template-rows var(--uix-dur) var(--uix-ease-out);
   }
-  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; overflow-x: hidden; }
+  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; overflow-x: hidden; visibility: visible; transition: visibility var(--uix-dur) var(--uix-ease-out); }
   .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: var(--uix-space-3); padding: 0 var(--uix-space-6); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
   .uix-shell__main { grid-column: 2; overflow: auto; padding: var(--uix-space-7); background: var(--uix-bg-app); }
 
@@ -371,16 +379,38 @@
      only) → hidden (0). data-collapsed stays a back-compat alias for the rail. */
   .uix-shell[data-nav="rail"], .uix-shell[data-collapsed] { grid-template-columns: var(--uix-sidebar-w-rail) 1fr; }
   .uix-shell[data-nav="hidden"] { grid-template-columns: 0 1fr; }
+  /* the 0-width column still renders its links — visibility removes them from the tab
+     order / accessibility tree while keeping the width transition (UIX-A11Y-2) */
+  .uix-shell[data-nav="hidden"] .uix-shell__sidebar { visibility: hidden; }
 
   /* ── focus / immersive mode ───────────────────────────────────────────────────
      A table-scoped escape hatch: hide the sidebar AND the topbar so a dense grid
      uses the whole frame. The app toggles [data-focus] (from a toolbar maximize
      control) and restores the previous nav state + focus on Esc. */
   .uix-shell[data-focus] { grid-template-columns: 0 1fr; grid-template-rows: 0 1fr; }
+  .uix-shell[data-focus] .uix-shell__sidebar { visibility: hidden; } /* see [data-nav="hidden"] above (UIX-A11Y-2) */
   .uix-shell[data-focus] .uix-shell__topbar { display: none; }
 
   /* a floating host for the "exit focus" affordance (Esc also exits) */
   .uix-shell__focus-exit { position: absolute; top: var(--uix-space-3); right: var(--uix-space-3); z-index: var(--uix-z-overlay); }
+
+  /* ── skip link ────────────────────────────────────────────────────────────────
+     First tab stop in the shell (UIX-A11Y-2): visually hidden until keyboard focus,
+     then a small pill floating over the shell's top-left corner. */
+  .uix-skiplink {
+    position: absolute; top: var(--uix-space-3); left: var(--uix-space-3); z-index: var(--uix-z-overlay);
+    width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+  }
+  .uix-skiplink:focus-visible {
+    width: auto; height: auto; clip: auto;
+    display: inline-flex; align-items: center;
+    padding: var(--uix-space-2) var(--uix-space-4);
+    background: var(--uix-surface); color: var(--uix-text);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    box-shadow: var(--uix-shadow-popover);
+    outline: 2px solid var(--uix-ring); outline-offset: 2px;
+    font-size: var(--uix-text-meta); font-weight: 500; text-decoration: none;
+  }
 
   /* ── full-bleed main ──────────────────────────────────────────────────────────
      Opt-in per surface: a genuinely wide grid drops the content gutter and runs
@@ -422,9 +452,14 @@
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
   .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
-  .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navitem__star { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  /* invisible halo → 24px effective target with zero visual change (UIX-A11Y-2) */
+  .uix-navitem__star::before { content: ""; position: absolute; inset: -1px; }
   .uix-navitem__star svg { width: 15px; height: 15px; }
-  .uix-navitem:hover .uix-navitem__star { opacity: 1; }
+  /* keyboard reveal mirrors the hover reveal (UIX-A11Y-2) */
+  .uix-navitem:hover .uix-navitem__star,
+  .uix-navitem__star:focus-visible,
+  .uix-navitem:focus-within .uix-navitem__star { opacity: 1; }
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
@@ -435,19 +470,32 @@
   .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
-  .uix-navgroup__panel > div { overflow: hidden; }
+  /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree
+     (UIX-A11Y-2); the transition delays hiding until the row collapse finishes, and
+     visibility snaps back to visible instantly on expand, so nothing visibly glitches. */
+  .uix-navgroup__panel > div { overflow: hidden; visibility: visible; transition: visibility var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; }
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
-  .uix-sidebar[data-collapsed] .uix-navitem__label,
   .uix-sidebar[data-collapsed] .uix-navitem__badge,
   .uix-sidebar[data-collapsed] .uix-navitem__star,
   .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
   .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
   .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  /* rail labels stay in the accessibility tree — clip pattern (mirrors .uix-visually-hidden),
+     not display:none, so icon-only nav items keep their names (UIX-A11Y-2). position:absolute
+     removes the label from the flex row, so the centered rail layout is unaffected. */
+  .uix-sidebar[data-collapsed] .uix-navitem__label {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
   /* center the icon-only rail; head keeps just the toggle, centered */
   .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
   .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
@@ -528,6 +576,9 @@
   .uix-cmdk { width: min(560px, 92vw); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
   .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 var(--uix-space-4); }
   .uix-cmdk__input:focus { outline: none; }
+  /* visible focus replacement for the suppressed outline (UIX-A11Y-1): the divider under the
+     input thickens to a 2px ring-colored line */
+  .uix-cmdk__input:focus-visible { border-bottom-color: var(--uix-ring); box-shadow: 0 1px 0 0 var(--uix-ring); }
   .uix-cmdk__list { max-height: 320px; overflow-y: auto; padding: var(--uix-space-2); }
   .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
   .uix-cmdk__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-3); border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
@@ -586,6 +637,8 @@
   .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); }
   .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
   .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
+  /* direction glyph inside the chip (UIX-A11Y-4) — sized to sit on the text baseline row */
+  .uix-stat__trend svg { width: 10px; height: 10px; flex: none; }
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
   .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
 }
@@ -646,18 +699,28 @@
   /* multi-column sort ordinal (⇧+click adds a secondary key) */
   .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent); }
 
+  /* sortable header's real <button> (UIX-A11Y-2): visually indistinguishable from the old
+     plain-text th — inherited font/colour, no chrome — with an inset overlay so the whole
+     cell stays the click target (the sticky th is its containing block). The sort arrow and
+     ordinal stay as th pseudo-content so they never pollute the button's accessible name. */
+  .uix-th__sortbtn { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
+  .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
+
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
   .uix-table tbody tr { background: var(--uix-row); }
   .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
   .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
   .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
-  .uix-table tbody tr[aria-selected="true"] { background: var(--uix-row-selected-bg); }
+  /* [data-selected] carries row-selection styling; aria-selected is invalid on a native
+     table row — AT state comes from the row checkbox (UIX-A11Y-2). */
+  .uix-table tbody tr[data-selected] { background: var(--uix-row-selected-bg); }
   .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
   .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
   .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
   .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin[data-on] { opacity: 1; }
+  /* :focus-visible reveal mirrors .uix-rowact so keyboard users can find the pin (UIX-A11Y-2) */
+  .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin:focus-visible, .uix-table__pin[data-on] { opacity: 1; }
   .uix-table__pin:hover { background: var(--uix-bg-active); color: var(--uix-text); }
   .uix-table__pin[data-on] { color: var(--uix-accent); }
   .uix-table__pin svg { width: 15px; height: 15px; }
@@ -671,7 +734,7 @@
   .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
   .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
   .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
-  .uix-table--pinned-col tbody tr[aria-selected="true"] td:first-child { background: var(--uix-row-selected-bg); }
+  .uix-table--pinned-col tbody tr[data-selected] td:first-child { background: var(--uix-row-selected-bg); }
   .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
@@ -770,7 +833,7 @@
   .uix-table--cards thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .uix-table--cards tbody, .uix-table--cards tr, .uix-table--cards td { display: block; width: auto; }
   .uix-table--cards tbody tr { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); margin: 0 0 var(--uix-space-3); padding: var(--uix-space-1) var(--uix-space-4); box-shadow: var(--uix-shadow-sm); }
-  .uix-table--cards tbody tr[aria-selected="true"] { box-shadow: 0 0 0 2px var(--uix-accent); }
+  .uix-table--cards tbody tr[data-selected] { box-shadow: 0 0 0 2px var(--uix-accent); }
   .uix-table--cards td { height: auto; display: flex; justify-content: space-between; align-items: center; gap: var(--uix-space-5); padding: var(--uix-space-2) 0; border-bottom: 1px solid var(--uix-border); text-align: right; white-space: normal; }
   .uix-table--cards td:last-child { border-bottom: 0; }
   .uix-table--cards td::before { content: attr(data-label); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 500; text-align: left; flex: none; }
@@ -876,7 +939,8 @@
     background: var(--uix-text); color: var(--uix-bg-app);
     font-size: var(--uix-text-meta); font-weight: 500; line-height: 1.4;
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm);
-    box-shadow: var(--uix-shadow-popover); white-space: normal; pointer-events: none;
+    /* no pointer-events:none — the bubble must be hoverable (WCAG 1.4.13, UIX-A11Y-1) */
+    box-shadow: var(--uix-shadow-popover); white-space: normal;
     opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-tooltip__bubble:popover-open { opacity: 1; }
@@ -919,7 +983,8 @@
 }
 /* uix timeline / activity feed — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-timeline { display: flex; flex-direction: column; }
+  /* list reset — the React Timeline renders <ol>/<li> for semantics; keep visuals pixel-identical (UIX-A11Y-4) */
+  .uix-timeline { display: flex; flex-direction: column; list-style: none; margin: 0; padding: 0; }
   .uix-timeline__item { display: grid; grid-template-columns: 24px 1fr; gap: var(--uix-space-3); }
   .uix-timeline__rail { display: flex; flex-direction: column; align-items: center; }
   .uix-timeline__node { width: 12px; height: 12px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-1); flex: none; box-shadow: 0 0 0 3px var(--uix-brand-muted); }
@@ -1041,7 +1106,9 @@
   @starting-style { .uix-dialog[open]::backdrop { opacity: 0; } }
 
   .uix-dialog__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
-  .uix-dialog__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  /* title is an <h2> for SR navigation (UIX-A11Y-1); inherits neutralize the base h2
+     heading font/tracking/leading so it renders exactly like the old <div> */
+  .uix-dialog__title { font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
   .uix-dialog__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-dialog__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-dialog__close svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
@@ -1101,7 +1168,13 @@
   .uix-peek__nav { display: inline-flex; gap: var(--uix-space-1); }
   .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
-  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  /* boundary nav uses aria-disabled (still focusable, so focus isn't stranded — UIX-A11Y-1);
+     mute it and suppress the hover cue like a disabled control */
+  .uix-peek__navbtn[aria-disabled="true"] { color: var(--uix-text-muted); cursor: default; }
+  .uix-peek__navbtn[aria-disabled="true"]:hover { background: var(--uix-surface); }
+  /* title is an <h2> for SR navigation (UIX-A11Y-1); inherits neutralize the base h2
+     heading font/tracking/leading so it renders exactly like the old <div> */
+  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
   .uix-peek__title a { color: var(--uix-link); }
   .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
@@ -1254,12 +1327,21 @@
   .uix-inbox__list { border-right: 1px solid var(--uix-border); overflow-y: auto; background: var(--uix-surface); }
   .uix-inbox__item { position: relative; display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); cursor: pointer; }
   .uix-inbox__item:hover { background: var(--uix-bg-hover); }
+  /* keyboard active option (aria-activedescendant) mirrors the hover style (UIX-A11Y-2) */
+  .uix-inbox__item[data-active] { background: var(--uix-bg-hover); }
   .uix-inbox__item[aria-selected="true"] { background: linear-gradient(to right, var(--uix-accent) 3px, var(--uix-brand-muted) 3px); }
   .uix-inbox__item[data-unread] .uix-inbox__subject { font-weight: 600; }
   .uix-inbox__subject { font-size: var(--uix-text-body); }
   .uix-inbox__preview { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-inbox__detail { overflow-y: auto; padding: var(--uix-space-5); background: var(--uix-bg-app); }
-  @media (max-width: 700px) { .uix-inbox { grid-template-columns: 1fr; } .uix-inbox__detail { display: none; } }
+  /* narrow viewports stack to one pane: list by default, detail when the app sets
+     view="detail" — with a consumer-rendered Back control in the detail pane (UIX-A11Y-2) */
+  @media (max-width: 700px) {
+    .uix-inbox { grid-template-columns: 1fr; }
+    .uix-inbox__detail { display: none; }
+    .uix-inbox[data-view="detail"] .uix-inbox__list { display: none; }
+    .uix-inbox[data-view="detail"] .uix-inbox__detail { display: block; }
+  }
 }
 /* uix notification center — depends only on --uix-* tokens. */
 @layer uix.components {

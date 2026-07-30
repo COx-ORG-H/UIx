@@ -1,6 +1,7 @@
 /* uix timeline / activity feed — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-timeline { display: flex; flex-direction: column; }
+  /* list reset — the React Timeline renders <ol>/<li> for semantics; keep visuals pixel-identical (UIX-A11Y-4) */
+  .uix-timeline { display: flex; flex-direction: column; list-style: none; margin: 0; padding: 0; }
   .uix-timeline__item { display: grid; grid-template-columns: 24px 1fr; gap: var(--uix-space-3); }
   .uix-timeline__rail { display: flex; flex-direction: column; align-items: center; }
   .uix-timeline__node { width: 12px; height: 12px; border-radius: 50%; background: var(--uix-accent); margin-top: var(--uix-space-1); flex: none; box-shadow: 0 0 0 3px var(--uix-brand-muted); }

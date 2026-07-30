@@ -7,6 +7,6 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-segmented__option:hover { color: var(--uix-text); }
-  .uix-segmented__option[aria-selected="true"], .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
+  .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 }

@@ -15,6 +15,15 @@ export function uixChartPalette(): string[] {
   return [1, 2, 3, 4, 5, 6, 7, 8].map((i) => readToken(`--uix-chart-${i}`));
 }
 
+/** Merge `animation: false` when the user prefers reduced motion. Only called from effects (client-side),
+    but guard matchMedia anyway for SSR safety (UIX-A11Y-4). */
+function motionSafe(option: EChartsOption): EChartsOption {
+  if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return { ...option, animation: false };
+  }
+  return option;
+}
+
 export interface ChartTableRow {
   [key: string]: string | number;
 }
@@ -56,8 +65,13 @@ export function Chart({
 
     const chart = echarts.init(el, null, { renderer: 'svg' });
     chartRef.current = chart;
-    chart.setOption(option);
+    chart.setOption(motionSafe(option));
     onReady?.(chart);
+
+    // once per mount: the role="img" fallback name ("Chart") tells AT users nothing (UIX-A11Y-4)
+    if (!ariaLabel && !title && !(tableData && tableData.length > 0)) {
+      console.warn('[uix] Chart has no text alternative — provide ariaLabel, title, or tableData.');
+    }
 
     const ro = new ResizeObserver(() => chart.resize());
     ro.observe(el);
@@ -72,7 +86,7 @@ export function Chart({
   }, []);
 
   useEffect(() => {
-    chartRef.current?.setOption(option, { notMerge: false });
+    chartRef.current?.setOption(motionSafe(option), { notMerge: false });
   }, [option]);
 
   const heightVal = typeof height === 'number' ? `${height}px` : height;
@@ -98,7 +112,7 @@ export function Chart({
       {hasTable && (
         <table
           id={tableId}
-          className="sr-only"
+          className="uix-visually-hidden"
           aria-label={`${effectiveAriaLabel} — data table`}
         >
           <thead>

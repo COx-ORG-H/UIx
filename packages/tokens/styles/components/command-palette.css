@@ -3,6 +3,9 @@
   .uix-cmdk { width: min(560px, 92vw); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
   .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 var(--uix-space-4); }
   .uix-cmdk__input:focus { outline: none; }
+  /* visible focus replacement for the suppressed outline (UIX-A11Y-1): the divider under the
+     input thickens to a 2px ring-colored line */
+  .uix-cmdk__input:focus-visible { border-bottom-color: var(--uix-ring); box-shadow: 0 1px 0 0 var(--uix-ring); }
   .uix-cmdk__list { max-height: 320px; overflow-y: auto; padding: var(--uix-space-2); }
   .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
   .uix-cmdk__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-3); border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
