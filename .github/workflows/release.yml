@@ -57,4 +57,16 @@ jobs:
             echo "::notice::NPM_TOKEN not set — gates passed, skipping publish. Set the secret to enable real publishing."
             exit 0
           fi
-          npx changeset publish
+          # `changeset publish` exits 0 when it publishes NOTHING — it only warns that a
+          # version is already on npm. v2.10.0 shipped exactly that way: a green Release
+          # run that published nothing, because the a11y branch had already claimed the
+          # version number. A release that releases nothing is a failed release, so fail
+          # closed on the warning rather than trusting the exit code.
+          set -o pipefail
+          npx changeset publish 2>&1 | tee publish.log
+          if grep -q "No unpublished projects to publish" publish.log; then
+            echo "::error::changeset published NOTHING — every package version is already on npm. \
+          The tag almost certainly reuses a version number that another branch already released. \
+          Cut a new version instead of re-tagging."
+            exit 1
+          fi

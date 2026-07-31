@@ -1,6 +1,25 @@
 # @tensor_1/react
 
+## 2.11.0
+
+### Minor Changes
+
+- Republish of the platform-wide quiet-link registry, which never reached npm under 2.10.0.
+
+  **No source change from what master already carried.** This release exists because `2.10.0` was claimed twice. The a11y remediation branch (`fix/a11y-remediation-2026-07`, gitHead `6dbc192`) published `2.10.0` to npm on 2026-07-30; the quiet-link work landed on master the next day and its release commit stamped `2.10.0` a second time. Tagging `v2.10.0` then ran the Release workflow, which reported success while publishing nothing — `changeset publish` skips a package whose version already exists on the registry:
+
+  ```
+  🦋  warn @tensor_1/tokens is not being published because version 2.10.0 is already published on npm
+  🦋  warn No unpublished projects to publish
+  ```
+
+  So npm's `2.10.0` is the accessibility release, and every consumer that bumped to it got the a11y remediation with the narrow 2.9.0-era link registry. The platform-wide registry — the title/name slots, `.uix-dl dd` data cells, and the container anchors — ships here, in `2.11.0`. Read the `2.10.0` CHANGELOG entry below for the full registry; it describes this code, just under a version number that never carried it.
+
+  Consumers on `2.10.0` need only bump; there is nothing to migrate.
+
 ## 2.10.0
+
+> **Never published under this version.** npm's `2.10.0` is the accessibility remediation release, published from `fix/a11y-remediation-2026-07` before this work landed on master. The changes described below shipped in `2.11.0`.
 
 ### Minor Changes
 
