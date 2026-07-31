@@ -456,7 +456,9 @@
 @layer uix.components {
   .uix-breadcrumbs { display: flex; align-items: center; gap: var(--uix-space-2); flex-wrap: wrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-breadcrumbs a { color: var(--uix-text-muted); text-decoration: none; }
-  .uix-breadcrumbs a:hover { color: var(--uix-text); text-decoration: underline; }
+  /* already a quiet link by its own design — hover/focus parity with the quiet-link
+     contract in link.css, so the keyboard state matches the pointer state. */
+  .uix-breadcrumbs a:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
   .uix-breadcrumbs__sep { opacity: .55; }
   .uix-breadcrumbs [aria-current="page"] { color: var(--uix-text); font-weight: 500; }
 }
@@ -1651,7 +1653,8 @@
   .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-4); }
   .uix-section-title { margin: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); font-weight: 400; letter-spacing: var(--uix-tracking-tight); }
   .uix-section-link { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); text-decoration: none; }
-  .uix-section-link:hover { color: var(--uix-text); }
+  /* already a quiet link by its own design — hover/focus parity with link.css */
+  .uix-section-link:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
 
   /* ── content grid + rail ───────────────────────────────────────────────────── */
   .uix-content-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.75fr); gap: var(--uix-space-7); align-items: start; }
@@ -1755,36 +1758,86 @@
  * noise at list density (TENSOR INTRA-04, operator-rejected).
  *
  * A quiet link inherits the surrounding text colour and shows its underline on
- * hover/focus. 1.4.1 is not in play: the link is the whole text of its block (a title,
- * a cell), not a link inside body copy. NEVER quiet a link inside prose — in-text links
- * keep the base blue + underline.
+ * hover/focus. The global :focus-visible ring (base.css) still fires, so the keyboard
+ * affordance never rests on the underline alone. WCAG 1.4.1 is not in play for anything
+ * below: the link is the WHOLE text of its block — a title, a name, a data cell — or it
+ * is the block itself. It is never a phrase inside a sentence.
  *
- * Two forms:
- *   • `.uix-link--quiet` — the opt-in utility, for block links outside the scoped slots
- *     (whole-card links, event rows composed by hand, app-specific list patterns).
- *   • quiet BY DEFAULT below — the editorial-home title slots and table data cells,
- *     where every anchor is a block-level navigation target. `.uix-table td` keeps
- *     `:not([class])` so class-bearing anchors in cells (`.uix-btn--link`, pills)
- *     stay styled.
+ * A slot earns quiet-BY-DEFAULT only when BOTH hold:
+ *   (i)  the anchor fills a named title/name slot or a data cell — the link text IS the
+ *        block, not a phrase inside running copy; and
+ *   (ii) the surrounding row/card/tile already reads as interactive (hover state, cursor,
+ *        bordered unit), or the slot is that record's primary label.
+ *
+ * Deliberate exclusions, so the next person doesn't "finish the job":
+ *   • Prose and message bodies — .uix-prose, .uix-note, .uix-notice__copy,
+ *     .uix-timeline__body, .uix-audit__detail, .uix-notif copy. Links there sit inside
+ *     sentences: 1.4.1 applies and the base treatment is correct.
+ *   • .uix-alert, .uix-toast, .uix-peek__title — nothing else in those containers signals
+ *     that the link navigates, so the colour IS the affordance. peek.css sets --uix-link
+ *     on its title anchor on purpose; do not quiet it.
+ *   • .uix-navitem, .uix-breadcrumbs a, .uix-section-link are already quiet by their own
+ *     design and need no class here.
+ *
+ * Four forms:
+ *   1 · `.uix-link--quiet` — the opt-in utility, for block links outside the registry.
+ *   2 · TITLE / NAME SLOTS — quiet by default. `:not(.uix-btn)` so an anchor deliberately
+ *       styled as a button inside a title slot keeps its button treatment.
+ *   3 · DATA CELLS — table cells and description-list values. `:not([class])` so
+ *       class-bearing anchors (`.uix-btn--link`, pills, tags) stay styled.
+ *   4 · CONTAINER ANCHORS — the anchor IS the kit block (`<a class="uix-card">`). Without
+ *       this the base `a { color }` tints every word in the block brand-blue.
  * Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-link--quiet,
-  .uix-content-list__title a,
-  .uix-news-lead__title a,
-  .uix-rundown__item-title a,
-  .uix-event-row__title a,
-  .uix-table td a:not([class]) { color: inherit; text-decoration: none; }
 
-  .uix-link--quiet:hover,
-  .uix-link--quiet:focus-visible,
-  .uix-content-list__title a:hover,
-  .uix-content-list__title a:focus-visible,
-  .uix-news-lead__title a:hover,
-  .uix-news-lead__title a:focus-visible,
-  .uix-rundown__item-title a:hover,
-  .uix-rundown__item-title a:focus-visible,
-  .uix-event-row__title a:hover,
-  .uix-event-row__title a:focus-visible,
-  .uix-table td a:not([class]):hover,
-  .uix-table td a:not([class]):focus-visible { text-decoration: underline; }
+  /* 2 · title / name slots */
+  :is(
+    /* editorial-home */
+    .uix-featured__title, .uix-rail-card__title, .uix-news-lead__title,
+    .uix-content-list__title, .uix-rundown__item-title, .uix-event-row__title,
+    .uix-status-row__name,
+    /* records, rows, cards */
+    .uix-card__title, .uix-list__title, .uix-inbox__subject, .uix-kanban__card-title,
+    .uix-media__name, .uix-attachment__name, .uix-contact__name, .uix-user-chip__name,
+    .uix-comment__author, .uix-audit__actor
+  ) a:not(.uix-btn),
+
+  /* 3 · data cells */
+  :is(.uix-table td, .uix-dl dd) a:not([class]),
+
+  /* 4 · container anchors */
+  a:is(
+    .uix-card, .uix-stat, .uix-list__item, .uix-inbox__item, .uix-kanban__card,
+    .uix-notif, .uix-media, .uix-attachment, .uix-contact, .uix-cmdk__item,
+    .uix-content-list__item, .uix-event-row, .uix-status-row
+  ) { color: inherit; text-decoration: none; }
+
+  .uix-link--quiet:is(:hover, :focus-visible),
+
+  :is(
+    .uix-featured__title, .uix-rail-card__title, .uix-news-lead__title,
+    .uix-content-list__title, .uix-rundown__item-title, .uix-event-row__title,
+    .uix-status-row__name,
+    .uix-card__title, .uix-list__title, .uix-inbox__subject, .uix-kanban__card-title,
+    .uix-media__name, .uix-attachment__name, .uix-contact__name, .uix-user-chip__name,
+    .uix-comment__author, .uix-audit__actor
+  ) a:not(.uix-btn):is(:hover, :focus-visible),
+
+  :is(.uix-table td, .uix-dl dd) a:not([class]):is(:hover, :focus-visible) { text-decoration: underline; }
+
+  /* Container anchors never underline: the anchor wraps the whole block, so an underline
+     would strike through every word in it. They take the kit's standard row-hover tint
+     instead — the same --uix-bg-hover that .uix-list__item / .uix-inbox__item / .uix-cmdk__item
+     already use, so containers with a hover of their own just restate it. */
+  a:is(
+    .uix-card, .uix-stat, .uix-list__item, .uix-inbox__item, .uix-kanban__card,
+    .uix-notif, .uix-media, .uix-attachment, .uix-contact, .uix-cmdk__item,
+    .uix-content-list__item, .uix-event-row, .uix-status-row
+  ):is(:hover, :focus-visible) { background: var(--uix-bg-hover); }
+
+  /* Container anchors that declare no display of their own would render inline as an <a>.
+     The rest of form 4 (flex/grid rows) set theirs already and must NOT be overridden —
+     link.css is imported last, so a blanket display here would flatten them. */
+  a:is(.uix-card, .uix-stat, .uix-kanban__card) { display: block; }
 }

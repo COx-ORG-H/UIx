@@ -1365,7 +1365,18 @@
         <div class="uix-guide__subhead">Links — in-text vs quiet</div>
         <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
           <p style="margin-bottom:14px">In running prose a link keeps the brand colour and a persistent underline — inside a block of same-coloured text it must not be signalled by colour alone (WCAG 1.4.1, link-in-text-block). So body copy like this keeps its <a href="#utility">in-text link</a> exactly as the base layer styles it.</p>
-          <p style="margin-bottom:14px">Where the <strong>container</strong> already communicates interactivity — the kit's title slots, table cells, whole-card links — that treatment reads as noise at list density. Those anchors are <strong>quiet</strong>: they inherit the surrounding text colour and show their underline on hover/focus. Editorial-home title slots (content list, news lead, rundown, event rows) and classless <code class="uix-code">.uix-table td</code> anchors are quiet by default; opt in anywhere else with <code class="uix-code">.uix-link--quiet</code>. Never quiet a link inside prose.</p>
+          <p style="margin-bottom:14px">Where the <strong>container</strong> already communicates interactivity — the kit's title slots, data cells, whole-card links — that treatment reads as noise at list density. Those anchors are <strong>quiet</strong>: they inherit the surrounding text colour and show their underline on hover/focus (the focus ring still fires, so the keyboard affordance never rests on the underline alone).</p>
+          <p style="margin-bottom:14px">A slot is quiet by default only when the anchor <strong>is the whole block</strong> — a title, a name, a cell — <em>and</em> the surrounding row/card already reads as interactive. Four forms:</p>
+          <table class="uix-table uix-table--no-zebra" style="margin-bottom:14px">
+            <thead><tr><th>Form</th><th>Scope</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Title / name slots</strong><br><span class="uix-list-meta">quiet by default</span></td><td><code class="uix-code">.uix-featured__title</code>, <code class="uix-code">.uix-rail-card__title</code>, <code class="uix-code">.uix-news-lead__title</code>, <code class="uix-code">.uix-content-list__title</code>, <code class="uix-code">.uix-rundown__item-title</code>, <code class="uix-code">.uix-event-row__title</code>, <code class="uix-code">.uix-status-row__name</code>, <code class="uix-code">.uix-card__title</code>, <code class="uix-code">.uix-list__title</code>, <code class="uix-code">.uix-inbox__subject</code>, <code class="uix-code">.uix-kanban__card-title</code>, <code class="uix-code">.uix-media__name</code>, <code class="uix-code">.uix-attachment__name</code>, <code class="uix-code">.uix-contact__name</code>, <code class="uix-code">.uix-user-chip__name</code>, <code class="uix-code">.uix-comment__author</code>, <code class="uix-code">.uix-audit__actor</code></td></tr>
+              <tr><td><strong>Data cells</strong><br><span class="uix-list-meta">quiet by default</span></td><td>Classless anchors in <code class="uix-code">.uix-table td</code> and <code class="uix-code">.uix-dl dd</code>. <code class="uix-code">:not([class])</code> keeps <code class="uix-code">.uix-btn--link</code>, pills and tags styled.</td></tr>
+              <tr><td><strong>Container anchors</strong><br><span class="uix-list-meta">quiet by default</span></td><td>When the anchor <em>is</em> the block — <code class="uix-code">&lt;a class="uix-card"&gt;</code>, <code class="uix-code">.uix-stat</code>, <code class="uix-code">.uix-list__item</code>, <code class="uix-code">.uix-inbox__item</code>, <code class="uix-code">.uix-kanban__card</code>, <code class="uix-code">.uix-notif</code>, <code class="uix-code">.uix-media</code>, <code class="uix-code">.uix-attachment</code>, <code class="uix-code">.uix-contact</code>, <code class="uix-code">.uix-cmdk__item</code>, <code class="uix-code">.uix-content-list__item</code>, <code class="uix-code">.uix-event-row</code>, <code class="uix-code">.uix-status-row</code>. Without it the base <code class="uix-code">a { color }</code> tints every word in the block blue. These take the row-hover tint on hover/focus, never an underline — it would strike through the whole block.</td></tr>
+              <tr><td><strong><code class="uix-code">.uix-link--quiet</code></strong><br><span class="uix-list-meta">opt in</span></td><td>Anything outside the registry — hand-composed block links in product markup.</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-bottom:14px"><strong>Deliberately left loud.</strong> Prose and message bodies (<code class="uix-code">.uix-prose</code>, <code class="uix-code">.uix-note</code>, notice copy, timeline and audit detail, notification copy) — links there sit inside sentences, so 1.4.1 applies. And <code class="uix-code">.uix-alert</code>, <code class="uix-code">.uix-toast</code>, <code class="uix-code">.uix-peek__title</code> — nothing else in those containers signals that the link navigates, so the colour <em>is</em> the affordance. Sidebar nav items, breadcrumbs and section links were already quiet by their own design.</p>
           <ul class="uix-content-list" style="margin-bottom:14px;max-width:560px">
             <li class="uix-content-list__item">
               <div><p class="uix-content-list__title"><a href="#utility">Quiet by default: a content-list title link</a></p><p class="uix-content-list__meta">Hover or focus it — the underline returns</p></div>
@@ -1380,6 +1391,24 @@
                 <tr><td><a href="#utility">Travel policy 2026</a></td><td>People</td></tr>
               </tbody>
             </table>
+          </div>
+          <div class="uix-cluster" style="--gap:14px;align-items:stretch;margin-bottom:14px">
+            <div class="uix-card" style="max-width:272px">
+              <div class="uix-card__header">
+                <div style="flex:1">
+                  <div class="uix-card__title"><a href="#utility">A card title link</a></div>
+                  <div class="uix-card__subtitle">Quiet: the card is the affordance</div>
+                </div>
+              </div>
+            </div>
+            <a class="uix-card" href="#utility" style="max-width:272px">
+              <div class="uix-card__header">
+                <div style="flex:1">
+                  <div class="uix-card__title">The whole card is the link</div>
+                  <div class="uix-card__subtitle">&lt;a class="uix-card"&gt; — quiet, or every word turns blue</div>
+                </div>
+              </div>
+            </a>
           </div>
           <a class="uix-link--quiet" href="#utility" style="font-weight:600">.uix-link--quiet — the opt-in for hand-composed block links</a>
         </div>

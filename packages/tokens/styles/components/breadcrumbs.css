@@ -2,7 +2,9 @@
 @layer uix.components {
   .uix-breadcrumbs { display: flex; align-items: center; gap: var(--uix-space-2); flex-wrap: wrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-breadcrumbs a { color: var(--uix-text-muted); text-decoration: none; }
-  .uix-breadcrumbs a:hover { color: var(--uix-text); text-decoration: underline; }
+  /* already a quiet link by its own design — hover/focus parity with the quiet-link
+     contract in link.css, so the keyboard state matches the pointer state. */
+  .uix-breadcrumbs a:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
   .uix-breadcrumbs__sep { opacity: .55; }
   .uix-breadcrumbs [aria-current="page"] { color: var(--uix-text); font-weight: 500; }
 }

@@ -34,11 +34,28 @@ kit title slots and table cells rendered brand-blue + bold + underlined — unre
 (TENSOR INTRA-04, operator-rejected).
 
 `styles/components/link.css` therefore ships the **quiet link**: `color: inherit`, no underline at rest,
-underline on hover/focus. Quiet **by default** in the editorial-home title slots
-(`.uix-content-list__title a`, `.uix-news-lead__title a`, `.uix-rundown__item-title a`,
-`.uix-event-row__title a`) and in classless `.uix-table td` anchors; **opt in** anywhere else with
-`.uix-link--quiet` (whole-card links, hand-composed rows). Never quiet a link inside prose — in-text
-links keep blue + underline. Demo + rationale: styleguide → Utility / typography.
+underline on hover/focus. The global `:focus-visible` ring still fires, so the keyboard affordance never
+rests on the underline alone.
+
+A slot is quiet **by default** only when the anchor *is the whole block* — a title, a name, a data cell —
+**and** the surrounding row/card already reads as interactive. Four forms:
+
+| Form | Scope |
+|---|---|
+| **Title / name slots** | `.uix-featured__title`, `.uix-rail-card__title`, `.uix-news-lead__title`, `.uix-content-list__title`, `.uix-rundown__item-title`, `.uix-event-row__title`, `.uix-status-row__name`, `.uix-card__title`, `.uix-list__title`, `.uix-inbox__subject`, `.uix-kanban__card-title`, `.uix-media__name`, `.uix-attachment__name`, `.uix-contact__name`, `.uix-user-chip__name`, `.uix-comment__author`, `.uix-audit__actor` — scoped `a:not(.uix-btn)` |
+| **Data cells** | classless anchors in `.uix-table td` and `.uix-dl dd` (`:not([class])` keeps `.uix-btn--link`, pills and tags styled) |
+| **Container anchors** | the anchor *is* the block: `a.uix-card`, `.uix-stat`, `.uix-list__item`, `.uix-inbox__item`, `.uix-kanban__card`, `.uix-notif`, `.uix-media`, `.uix-attachment`, `.uix-contact`, `.uix-cmdk__item`, `.uix-content-list__item`, `.uix-event-row`, `.uix-status-row`. Without this the base `a { color }` tints every word in the block brand-blue. These take the standard `--uix-bg-hover` row tint on hover/focus, **never** an underline — it would strike through the whole block. |
+| **`.uix-link--quiet`** | the opt-in utility for anything outside the registry (hand-composed block links in product markup) |
+
+**Deliberately left loud** — do not "finish the job": prose and message bodies (`.uix-prose`, `.uix-note`,
+notice copy, `.uix-timeline__body`, `.uix-audit__detail`, notification copy), where links sit inside
+sentences and 1.4.1 applies; and `.uix-alert` / `.uix-toast` / `.uix-peek__title`, where nothing else in
+the container signals that the link navigates, so the colour *is* the affordance. Sidebar nav items,
+breadcrumbs and section links are already quiet by their own design and need no class.
+
+The registry is locked from both ends by `packages/react/src/quiet-link.test.mjs`: the wrappers must nest
+the anchor inside the slot-classed element, and every asserted slot must still appear in `link.css`.
+Demo + rationale: styleguide → Utility / typography.
 
 ### Table columns — sizing & cell behaviour
 Consuming products size and truncate table columns by attaching a **UIx class to a column** — keyed to a
