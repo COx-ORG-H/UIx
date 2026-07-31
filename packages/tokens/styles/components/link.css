@@ -27,6 +27,10 @@
  *   • .uix-alert, .uix-toast, .uix-peek__title — nothing else in those containers signals
  *     that the link navigates, so the colour IS the affordance. peek.css sets --uix-link
  *     on its title anchor on purpose; do not quiet it.
+ *   • .uix-comment__author — a byline renders "Author · 22m ago", so the name is a phrase
+ *     inside a text run, not the whole block, and .uix-comment__meta is not interactive.
+ *     It fails test (i) above. Products wanting the GitHub-style quiet byline opt in with
+ *     .uix-link--quiet; that is what the utility is for.
  *   • .uix-navitem, .uix-breadcrumbs a, .uix-section-link are already quiet by their own
  *     design and need no class here.
  *
@@ -51,7 +55,7 @@
     /* records, rows, cards */
     .uix-card__title, .uix-list__title, .uix-inbox__subject, .uix-kanban__card-title,
     .uix-media__name, .uix-attachment__name, .uix-contact__name, .uix-user-chip__name,
-    .uix-comment__author, .uix-audit__actor
+    .uix-audit__actor
   ) a:not(.uix-btn),
 
   /* 3 · data cells */
@@ -72,7 +76,7 @@
     .uix-status-row__name,
     .uix-card__title, .uix-list__title, .uix-inbox__subject, .uix-kanban__card-title,
     .uix-media__name, .uix-attachment__name, .uix-contact__name, .uix-user-chip__name,
-    .uix-comment__author, .uix-audit__actor
+    .uix-audit__actor
   ) a:not(.uix-btn):is(:hover, :focus-visible),
 
   :is(.uix-table td, .uix-dl dd) a:not([class]):is(:hover, :focus-visible) { text-decoration: underline; }

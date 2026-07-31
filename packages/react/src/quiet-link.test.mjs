@@ -41,7 +41,6 @@ const SLOTS = [
   ['uix-inbox__subject', 'div', () => render(h(InboxItem, { subject: link('Re: onboarding') }))],
   ['uix-kanban__card-title', 'div', () => render(h(KanbanCard, { title: link('Ship the kit') }))],
   ['uix-user-chip__name', 'span', () => render(h(UserChip, { name: link('Ada Lovelace') }))],
-  ['uix-comment__author', 'span', () => render(h(Comment, { author: link('Ada Lovelace') }))],
   ['uix-status-row__name', 'span', () => render(h(StatusRow, { name: link('Mail relay') }))],
 ];
 
@@ -67,14 +66,23 @@ test('quiet-link slot: description-list values render the anchor inside <dd>', (
   assert.ok(LINK_CSS.includes('.uix-dl dd'), '.uix-dl dd is missing from link.css');
 });
 
-test('quiet-link exclusions stay loud: prose and the peek title are not in the registry', () => {
-  // Links inside running copy must keep colour + underline (WCAG 1.4.1), and the peek
-  // header has no other affordance signalling that its title navigates. Guards against a
-  // future "finish the job" pass quietly folding them in.
+test('quiet-link exclusions stay loud: prose, the peek title and bylines are not in the registry', () => {
+  // Links inside running copy must keep colour + underline (WCAG 1.4.1); the peek header
+  // has no other affordance signalling that its title navigates; and a comment byline
+  // renders "Author · 22m ago", so the author is a phrase inside a text run rather than
+  // the whole block. Guards against a future "finish the job" pass folding them in.
   for (const excluded of ['.uix-prose a', '.uix-note', '.uix-peek__title a', '.uix-timeline__body', '.uix-audit__detail']) {
     assert.ok(
       !new RegExp(`^\\s*${excluded.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[,{]`, 'm').test(LINK_CSS),
       `${excluded} must never be a quiet-link selector`,
     );
   }
+  // the byline slot exists in the kit, so assert on the class itself (it must appear only
+  // in the exclusions comment, never as a selector)
+  const authorSelectors = LINK_CSS.split('\n')
+    .filter((l) => l.includes('.uix-comment__author') && !l.trimStart().startsWith('*'));
+  assert.deepEqual(authorSelectors, [], '.uix-comment__author must stay loud — opt in with .uix-link--quiet');
+
+  // Comment still renders the byline slot the exclusion is written against.
+  assert.match(render(h(Comment, { author: link('Ada Lovelace') })), /<span class="uix-comment__author"><a href="\/r\/1">/);
 });
