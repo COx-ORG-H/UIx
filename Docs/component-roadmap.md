@@ -57,7 +57,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Kbd | kbd.css | absent | Planned | no | Planned wrapper (presentational). |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
 | Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
-| Link | link.css | n/a | Beta | no | Quiet-link pattern: `.uix-link--quiet` + quiet-by-default anchors in editorial-home title slots and `.uix-table td`; in-text prose links keep the base blue + underline (WCAG 1.4.1). CSS-only by design; landed 2.9.0. |
+| Link | link.css | n/a | Beta | no | Quiet-link pattern in four forms: `.uix-link--quiet` opt-in, plus quiet-by-default title/name slots, data cells (`.uix-table td`, `.uix-dl dd`) and container anchors (`a.uix-card` etc.). In-text prose links keep the base blue + underline (WCAG 1.4.1); prose, alerts/toasts and `.uix-peek__title` are documented exclusions. CSS-only by design; landed 2.9.0, extended kit-wide in 2.10.0. |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
 | Menu | menu.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |

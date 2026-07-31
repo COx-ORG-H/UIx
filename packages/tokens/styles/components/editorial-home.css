@@ -89,7 +89,8 @@
   .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-4); }
   .uix-section-title { margin: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); font-weight: 400; letter-spacing: var(--uix-tracking-tight); }
   .uix-section-link { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); text-decoration: none; }
-  .uix-section-link:hover { color: var(--uix-text); }
+  /* already a quiet link by its own design — hover/focus parity with link.css */
+  .uix-section-link:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
 
   /* ── content grid + rail ───────────────────────────────────────────────────── */
   .uix-content-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.75fr); gap: var(--uix-space-7); align-items: start; }
