@@ -433,8 +433,11 @@
   .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
   .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
-  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
-  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
+  /* visibility rides the same transition: 0fr+overflow only clips, so without it the
+     collapsed items stay keyboard-focusable (Tab lands on invisible links). visibility's
+     interpolation keeps the panel visible for the whole collapse, then hides at the end. */
+  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out), visibility var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; visibility: hidden; }
   .uix-navgroup__panel > div { overflow: hidden; }
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
