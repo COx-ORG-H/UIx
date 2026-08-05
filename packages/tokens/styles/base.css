@@ -37,6 +37,15 @@
   h3 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
 
   img, svg, video, canvas { display: block; max-width: 100%; }
+  /* DELIBERATE TRAP — read before "fixing". `color: inherit` here plus the kit's
+     component rules (uix.components layer, ordered after a Tailwind consumer's
+     utilities) means Tailwind text-color utilities (`text-white`, `text-red-500`)
+     are DEAD on button/a/input/select/textarea whenever a .uix-* class also sets
+     color — the kit wins by design (the contract owns component color so themes,
+     dark mode, and WCAG contrast hold). To color text on these elements use a
+     component contract (`.uix-chip[data-on]`, a pill tone, `--tone-fg`) or an
+     inline style — never a Tailwind text-* utility. Docs: README "Cascade layers
+     vs Tailwind"; enforced in consumers by `npx uix-classlint`. */
   input, button, textarea, select { font: inherit; color: inherit; }
   code, kbd, pre, samp { font-family: var(--uix-font-mono); }
 

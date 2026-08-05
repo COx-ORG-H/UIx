@@ -48,8 +48,12 @@ try {
   const pack = (dir) => {
     // execFile + arg array (no shell string interpolation); shell:true so npm.cmd resolves on Windows.
     const out = npm(['pack', fwd(dir), '--pack-destination', fwd(tmp), '--json'], { cwd: ROOT, encoding: 'utf8' });
-    const json = JSON.parse(out.slice(out.indexOf('[')));
-    return join(tmp, json[0].filename);
+    // npm ≤10 emits a JSON array; npm 11 emits an object keyed by package name when the
+    // target is a workspace dir. Parse from the first bracket of either shape.
+    const start = Math.min(...['[', '{'].map((c) => out.indexOf(c)).filter((i) => i >= 0));
+    const json = JSON.parse(out.slice(start));
+    const entry = Array.isArray(json) ? json[0] : Object.values(json)[0];
+    return join(tmp, entry.filename);
   };
   step('pack @tensor_1/tokens + @tensor_1/react');
   const tokensTgz = pack(TOKENS);
@@ -105,6 +109,18 @@ try {
   step('5. types (tsc --noEmit)');
   execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.json')],
     { cwd: tmp, stdio: 'inherit' });
+
+  step('6. bin — uix-classlint installs and lints');
+  // The consumer-side lint must arrive with the tokens tarball, be runnable, flag a
+  // known-bad fixture (exit 1), and pass a clean one (exit 0).
+  const binScript = join(tmp, 'node_modules', '@tensor_1', 'tokens', 'lint', 'uix-classlint.mjs');
+  writeFileSync(join(tmp, 'bad.tsx'), '<button className="uix-btn text-white">x</button>\n');
+  let lintExit = 0;
+  try { execFileSync(process.execPath, [binScript, join(tmp, 'bad.tsx')], { cwd: tmp, stdio: 'pipe' }); }
+  catch (e) { lintExit = e.status; }
+  if (lintExit !== 1) throw new Error(`uix-classlint should exit 1 on the bad fixture (got ${lintExit})`);
+  writeFileSync(join(tmp, 'bad.tsx'), '<button className="uix-btn">x</button>\n');
+  execFileSync(process.execPath, [binScript, join(tmp, 'bad.tsx')], { cwd: tmp, stdio: 'pipe' });
 
   ok = true;
 } finally {

@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 144286,
-      "gzip": 25793,
-      "brotli": 21471
+      "raw": 154024,
+      "gzip": 28407,
+      "brotli": 23457
     },
     "build/css/styles.css": {
-      "raw": 157557,
-      "gzip": 29372,
-      "brotli": 24252
+      "raw": 166049,
+      "gzip": 31917,
+      "brotli": 26292
     },
     "build/css/tokens.css": {
       "raw": 7673,
@@ -37,9 +37,9 @@
       "brotli": 328
     },
     "styles/components/avatar.css": {
-      "raw": 1982,
-      "gzip": 739,
-      "brotli": 585
+      "raw": 2185,
+      "gzip": 813,
+      "brotli": 646
     },
     "styles/components/breadcrumbs.css": {
       "raw": 725,
@@ -177,9 +177,9 @@
       "brotli": 294
     },
     "styles/components/menu.css": {
-      "raw": 1403,
-      "gzip": 548,
-      "brotli": 423
+      "raw": 1775,
+      "gzip": 684,
+      "brotli": 550
     },
     "styles/components/meter.css": {
       "raw": 695,
@@ -252,9 +252,9 @@
       "brotli": 664
     },
     "styles/components/sidebar.css": {
-      "raw": 5041,
-      "gzip": 1362,
-      "brotli": 1151
+      "raw": 10178,
+      "gzip": 2626,
+      "brotli": 2195
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -282,9 +282,9 @@
       "brotli": 416
     },
     "styles/components/status-pill.css": {
-      "raw": 3794,
-      "gzip": 1029,
-      "brotli": 856
+      "raw": 4262,
+      "gzip": 1264,
+      "brotli": 1058
     },
     "styles/components/stepper.css": {
       "raw": 1169,
@@ -347,9 +347,9 @@
       "brotli": 549
     },
     "styles/components/typography.css": {
-      "raw": 1969,
-      "gzip": 535,
-      "brotli": 459
+      "raw": 3203,
+      "gzip": 1030,
+      "brotli": 866
     },
     "styles/components/utility-bits.css": {
       "raw": 1599,

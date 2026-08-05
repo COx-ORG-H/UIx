@@ -753,6 +753,17 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 // @public
+export function NavSection(input: NavSectionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface NavSectionProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    icon?: ReactNode;
+}
+
+// @public
 export function NewsLead(input: NewsLeadProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1068,6 +1079,48 @@ export type Side = 'top' | 'bottom' | 'left' | 'right';
 // @public (undocumented)
 export function Sidebar(input: SidebarProps): react.JSX.Element;
 
+// @public
+export function SidebarFooter(input: SidebarFooterProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SidebarFooterProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
+export function SidebarFooterSpacer(): react.JSX.Element;
+
+// @public
+export function SidebarIdentity(input: SidebarIdentityProps): react.JSX.Element;
+
+// @public
+export function SidebarIdentityItem(input: SidebarIdentityItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SidebarIdentityItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    danger?: boolean;
+    // (undocumented)
+    icon?: ReactNode;
+}
+
+// @public (undocumented)
+export interface SidebarIdentityProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    children?: ReactNode;
+    devSection?: ReactNode;
+    menuLabel?: ReactNode;
+    orgAvatar?: ReactNode;
+    orgName: string;
+    userAvatar?: ReactNode;
+    userName?: ReactNode;
+}
+
+// @public
+export function SidebarIdentitySep(): react.JSX.Element;
+
 // @public (undocumented)
 export interface SidebarProps extends HTMLAttributes<HTMLElement> {
     // (undocumented)
@@ -1091,6 +1144,16 @@ export interface SidebarSectionProps {
     children?: ReactNode;
     // (undocumented)
     label?: string;
+}
+
+// @public
+export function SidebarUtil(input: SidebarUtilProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SidebarUtilProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label: string;
 }
 
 // @public (undocumented)

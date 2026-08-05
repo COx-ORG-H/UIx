@@ -75,7 +75,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Reactions | reactions.css | absent | Planned | no | Planned wrapper (presentational). |
 | Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. Recently landed. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
-| Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also `SidebarSection`, `NavItem`, `NavGroup`, `SubNavItem`. |
+| Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also `SidebarSection`, `NavItem`, `NavGroup`, `SubNavItem`. 2026-08 additions (Beta until soaked): `NavSection` (static section header — the non-interactive contract; `.uix-navitem` is for focusable elements only), `SidebarIdentity`/`SidebarIdentityItem`/`SidebarIdentitySep` (org+user disclosure over a native-popover account menu, dev-only slot), `SidebarFooter`/`SidebarUtil`/`SidebarFooterSpacer` (quiet utility strip). All rail-aware; gated by `tests/a11y/nav-contract.spec.mjs`. |
 | Sla | sla.css | absent | Planned | no | Planned wrapper (presentational). |
 | Slider | slider.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Spinner | spinner.css | ✓ `Spinner` | Stable | no | Feedback. |
@@ -94,7 +94,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |
 | Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. |
 | Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. |
-| Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. |
+| Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. The `.uix-text-*` set is CLOSED (incl. `uix-text-label`); enforced in consumers by `npx uix-classlint`, parity-tested by `lint/uix-classlint.test.mjs`. |
 | UtilityBits | utility-bits.css | n/a | Stable | no | CSS-only utilities (`.uix-stack`/`.uix-cluster` etc.); no standalone wrapper by design. |
 | ViewMenu | view-menu.css | absent | Planned | no | Planned wrapper (presentational). |
 

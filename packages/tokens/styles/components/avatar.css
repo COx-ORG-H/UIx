@@ -8,6 +8,8 @@
   .uix-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .uix-avatar--sm { width: 24px; height: 24px; font-size: var(--uix-text-eyebrow); }
   .uix-avatar--lg { width: 44px; height: 44px; }
+  /* org/tenant mark — rounded square distinguishes a workspace from a person */
+  .uix-avatar--org { border-radius: var(--uix-radius-sm); background: var(--uix-brand-muted); color: var(--uix-link); }
   .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
   .uix-avatar-group { display: inline-flex; }
   .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: calc(-1 * var(--uix-space-2)); }

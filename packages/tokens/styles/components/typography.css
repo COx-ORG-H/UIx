@@ -1,8 +1,20 @@
 /* uix typography utilities — class-based application of the --uix-text-* scale.
    A `<span class="uix-text-h3">` reads identically to an `<h3>`; consumers reach
-   for these instead of re-deriving the scale inline. (House products migrating
-   off bespoke `type-*` classes map 1:1 onto these — same sizes/leading/weights.)
-   Depends only on --uix-* tokens. */
+   for these instead of re-deriving the scale inline. Depends only on --uix-* tokens.
+
+   THIS SET IS CLOSED. The canonical type utilities are exactly:
+     uix-text-display · uix-text-h1 · uix-text-h2 · uix-text-h3 · uix-text-body ·
+     uix-text-body-hushed · uix-text-meta · uix-text-eyebrow · uix-text-data-hero ·
+     uix-text-label
+   Products must NOT invent `type-*` (or new `uix-text-*`) classes — a class that
+   isn't in this file renders unstyled and fails silently. The 2026-08 TENSOR audit
+   found 6 invented type-* classes across 36 usages, all rendering as plain text.
+   Migration map (bespoke → canon): type-display-sm → uix-text-display ·
+   type-heading-sm/type-title-sm → uix-text-h3 · type-body-sm → uix-text-meta ·
+   type-caption → uix-text-meta · type-label → uix-text-label (standalone) or
+   .uix-field__label (inside a .uix-field). The shipped lint (`npx uix-classlint`,
+   from @tensor_1/tokens) fails CI on any class outside this set; the closed set is
+   parity-tested against this file. */
 @layer uix.components {
   .uix-text-display {
     font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
@@ -41,5 +53,12 @@
     font-size: var(--uix-text-data-hero); line-height: 1.1;
     font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
     font-variant-numeric: tabular-nums;
+  }
+  /* standalone label — same voice as .uix-field__label, for labels OUTSIDE a
+     .uix-field (settings rows, dl-style readouts, toolbar captions). Inside a
+     field keep using .uix-field__label (it carries the data-required marker). */
+  .uix-text-label {
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+    font-weight: 500; color: var(--uix-text);
   }
 }

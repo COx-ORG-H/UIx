@@ -29,6 +29,32 @@ import { cssVar, light, dark, num } from "@tensor_1/tokens/ts";
 ```
 `cssVar` in the browser (respects brand + dark); `light` / `dark` / `num` for non-DOM (SSR, RN, server-rendered charts).
 
+## Cascade layers vs Tailwind — the text-color trap
+
+UIx declares `@layer uix.tokens, uix.base, uix.util, uix.motion, uix.components` and expects to be
+imported **after** Tailwind's layers. That ordering is deliberate and load-bearing: **the kit beats
+utilities**, so a `.uix-*` component always renders with contract colors (themes, dark mode, and WCAG
+contrast hold no matter what utilities land on the element). Do not reorder the layers.
+
+The consequence you must know: **Tailwind text-color utilities are silently dead on `button`, `a`,
+`input`, `select`, and `textarea`.** `uix.base` sets `color: inherit` on form elements, and any
+`.uix-*` class that sets `color` sits in `uix.components` — later than your `utilities` layer — so
+`text-white` / `text-red-500` on a button or link does nothing, with no error. (The same mechanics
+once ate margin utilities; see the comment in `styles/base.css`.)
+
+The two sanctioned ways to color text on these elements:
+
+1. **A component contract** — state/tone carried by the kit: `.uix-chip[data-on]`,
+   `.uix-pill--danger`, `.uix-btn--primary`, a `--tone-fg` custom property. If the kit lacks the
+   state you need, add it *here* (this is a UIx gap, per the design-system policy).
+2. **An inline style** — `style="color: var(--uix-danger-text)"` wins over every layer. Use a
+   `--uix-*` token, never a hex literal.
+
+This is enforced mechanically: `npx uix-classlint "src/**/*.{jsx,tsx}"` (ships with this package)
+fails CI on Tailwind text-color utilities applied to `button`/`a` JSX and on nonexistent `type-*` /
+unknown `uix-text-*` classes. Add it to your CI — it is the canonical version of the check
+(product-local copies should be replaced by it).
+
 ## Brand a project
 
 Override the write-only brand slots; `accent` / `link` / `ring` / `brand-muted` re-chain automatically:

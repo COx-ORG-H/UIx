@@ -25,6 +25,30 @@ All component spacing flows from the scale `--uix-space-0 … --uix-space-12` (4
 `.uix-stack` / `.uix-cluster` utilities) for layout rhythm — never hardcode px or Tailwind spacing in product
 markup. This is the dial that keeps whitespace consistent across products.
 
+### Cascade layers vs Tailwind — the text-color trap
+
+UIx's layers (`uix.tokens < uix.base < uix.util < uix.motion < uix.components`) are declared **after**
+a Tailwind consumer's layers, so **the kit beats utilities** — deliberate and load-bearing (contract
+colors, themes, dark mode, and WCAG contrast hold regardless of what utilities land on an element).
+Consequence: `uix.base` sets `color: inherit` on `input/button/textarea/select`, and `.uix-*` rules own
+component color, so **Tailwind text-color utilities are silently dead on button/a in every consumer**
+(TENSOR F4: invisible selected chips, 7 sites). The two sanctioned patterns for text color on those
+elements: **a component contract** (`.uix-chip[data-on]`, a pill tone, `--tone-fg` — add the state to
+UIx if it's missing) or **an inline style** using a `--uix-*` token. Never a `text-*` utility.
+
+### The type canon — a closed set
+
+The class-based type scale is exactly the `.uix-text-*` set in `styles/components/typography.css`
+(display, h1, h2, h3, body, body-hushed, meta, eyebrow, data-hero, label) plus `.uix-field__label`
+inside `.uix-field`. Products must not invent `type-*` (or new `uix-text-*`) classes — they render
+unstyled, silently (TENSOR F5: 6 invented classes, 36 dead usages). Migration map + demo: styleguide →
+Utility / typography.
+
+Both rules are enforced mechanically by **`npx uix-classlint`** (ships in `@tensor_1/tokens`, zero-dep):
+it fails CI on Tailwind text-color utilities on `<button>`/`<a>` JSX and on nonexistent type classes.
+It is the canonical version of the check — product-local copies (e.g. TENSOR's `slice/list-cons-01`
+gate) should be replaced by it. The canon list is parity-tested against `typography.css` in this repo.
+
 ### Links — in-text vs quiet
 The base layer styles anchors as **in-text content links**: `--uix-link` colour, and classless `[href]`
 anchors carry a persistent underline (WCAG 1.4.1 / link-in-text-block — a link inside a run of
@@ -139,7 +163,7 @@ Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pur
 this is what keeps UIx stack-neutral). Current set:
 
 - **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
-- **Layout:** Card, **PageHeader**, **DetailLayout**, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
+- **Layout:** Card, **PageHeader**, **DetailLayout**, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*, **NavSection** static header, **SidebarIdentity** org+user disclosure w/ account-menu slots, **SidebarFooter/SidebarUtil** quiet icon strip), Tabs/Tab
 - **Overlays:** Modal, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
 - **Data display:** Table (+Th/Td/Tr/Wrap; `fixed` layout, Th `sortOrder` for multi-sort; **BulkBar, RowActions/RowAction, ExpandToggle, CellStrong/CellSub, Mark/Highlighted**), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**

@@ -24,6 +24,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   expect: {
+    // the index page's full-page capture (14k+ px tall) can exceed the 5s default in the
+    // pinned container / CI runner — give the screenshot loop room before calling it flaky
+    timeout: 15_000,
     // tolerate sub-pixel AA noise even on the same OS; a real regression moves far more pixels
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled', caret: 'hide', scale: 'css' },
   },
