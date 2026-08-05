@@ -45,6 +45,9 @@ jobs:
       - name: Contract completeness
         run: npm run test:contract
 
+      - name: Consumer class lint (self-test + canon parity)
+        run: npm run test:classlint
+
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 

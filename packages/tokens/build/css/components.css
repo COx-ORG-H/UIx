@@ -19,6 +19,11 @@
 
   /* vertical rhythm — set gap via --gap (defaults to --uix-space-4 / 16px) */
   .uix-stack { display: flex; flex-direction: column; gap: var(--gap, var(--uix-space-4)); }
+  /* stack of intrinsic-width children (pills, tags, chips): children keep their
+     content width instead of stretching to the column. This is the REQUIRED
+     wrapper when stacking .uix-pill — a bare inline pill in a block wrapper
+     overflows its line box and eats the gap to the next sibling. */
+  .uix-stack--start { align-items: flex-start; }
   /* horizontal grouping that wraps */
   .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, var(--uix-space-2)); }
 
@@ -407,10 +412,19 @@
   .uix-sidebar__toggle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-sidebar__toggle svg { width: 18px; height: 18px; }
 
+  /* INTERACTIVE-ONLY contract: .uix-navitem is for focusable elements — <a href> or
+     <button>. It supplies cursor:pointer + a hover highlight, i.e. a click affordance;
+     putting it on a <span>/<div> ships a false affordance (looks clickable, does
+     nothing, invisible to keyboards). A header that only LABELS a group takes
+     .uix-navsection below; a header that collapses its group is a real
+     <button class="uix-navitem uix-navgroup__trigger">.
+     No width:100% here — as a flex/block-level box it already fills the sidebar
+     (align-items:stretch), while a forced 100% mis-sized flex-row contexts
+     (toolbars) that place a navitem next to siblings. */
   .uix-navitem {
     display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
     border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
-    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); text-align: left;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
@@ -428,6 +442,18 @@
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
+  /* non-interactive section header — the STATIC counterpart to .uix-navitem.
+     Same row geometry (an icon lines up with the navitems below it), but no
+     pointer, no hover tint, not focusable (use a <div>/<span>, never tabindex).
+     For a text-only group label prefer .uix-sidebar__eyebrow; .uix-navsection is
+     the labelled header row (icon + label) that heads a run of items. */
+  .uix-navsection {
+    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
+    color: var(--uix-text-muted); font-size: var(--uix-text-body); font-weight: 500; cursor: default;
+  }
+  .uix-navsection__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
+  .uix-navsection__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   /* collapsible group */
   .uix-navgroup { }
   .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
@@ -439,6 +465,51 @@
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
+  /* ── identity header ─────────────────────────────────────────────────────────
+     "Identity at the top" (Linear/Notion pattern): org/tenant + user as ONE
+     disclosure button that opens an account menu (compose a .uix-popover holding
+     a .uix-menu — native [popover] gives Esc-close, light dismiss, and focus
+     return to the trigger for free). Sits above the nav, replaces per-page
+     "Tenant:" strips. */
+  .uix-identity {
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; min-width: 0;
+    padding: var(--uix-space-2); border: 0; background: transparent; border-radius: var(--uix-radius-md);
+    color: var(--uix-text); font: inherit; text-align: left; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-identity:hover { background: var(--uix-bg-hover); }
+  .uix-identity[aria-expanded="true"] { background: var(--uix-bg-active); }
+  .uix-identity__lines { flex: 1; min-width: 0; }
+  .uix-identity__org {
+    display: block; font-size: var(--uix-text-body); font-weight: 600; color: var(--uix-text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .uix-identity__user {
+    display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0;
+    font-size: var(--uix-text-meta); color: var(--uix-text-hushed);
+  }
+  .uix-identity__user > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-identity__user .uix-avatar { width: 16px; height: 16px; font-size: 8px; }
+  .uix-identity__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex: none; color: var(--uix-text-muted); }
+
+  /* ── utility footer strip ────────────────────────────────────────────────────
+     A quiet icon row pinned to the sidebar bottom (help / theme / collapse /
+     settings slots). Buttons are ghost icon squares; each MUST carry an
+     aria-label (icon-only). margin-top:auto pins it in the sidebar's column flex. */
+  .uix-sidebar__footer {
+    margin-top: auto; display: flex; align-items: center; gap: var(--uix-space-1);
+    padding-top: var(--uix-space-2); border-top: 1px solid var(--uix-border);
+  }
+  .uix-sidebar__util {
+    display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+    border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-sm);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-sidebar__util:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-sidebar__util svg { width: 16px; height: 16px; }
+  /* push the slot after the spacer to the far end (e.g. settings gear right-aligned) */
+  .uix-sidebar__footer-spacer { flex: 1; }
+
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
   .uix-sidebar[data-collapsed] .uix-navitem__label,
@@ -447,10 +518,18 @@
   .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
   .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
-  .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  .uix-sidebar[data-collapsed] .uix-navgroup__panel,
+  .uix-sidebar[data-collapsed] .uix-navsection__label,
+  .uix-sidebar[data-collapsed] .uix-identity__lines,
+  .uix-sidebar[data-collapsed] .uix-identity__chevron { display: none; }
   /* center the icon-only rail; head keeps just the toggle, centered */
   .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-collapsed] .uix-navsection { justify-content: center; padding: 0; gap: 0; }
   .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
+  /* rail: identity shrinks to the org avatar (still the menu trigger); footer stacks */
+  .uix-sidebar[data-collapsed] .uix-identity { justify-content: center; padding: var(--uix-space-1); }
+  .uix-sidebar[data-collapsed] .uix-sidebar__footer { flex-direction: column; align-items: center; }
+  .uix-sidebar[data-collapsed] .uix-sidebar__footer-spacer { flex: none; }
 }
 /* uix breadcrumbs — depends only on --uix-* tokens. */
 @layer uix.components {
@@ -552,6 +631,10 @@
   .uix-menu__item--danger svg { color: var(--uix-danger-text); }
   .uix-menu__item .uix-kbd { margin-left: auto; }
   .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
+  /* dev-only section — visually fenced off (dashed rule + tint) so debug items
+     can't be mistaken for product actions; render the section only in dev builds */
+  .uix-menu__dev { border-top: 1px dashed var(--uix-border-strong); margin-top: var(--uix-space-1); padding-top: var(--uix-space-1); }
+  .uix-menu__dev .uix-menu__label { color: var(--uix-warning-text); }
   .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
 }
 /* uix page header — title/subtitle/actions row. Depends only on --uix-* tokens. */
@@ -591,7 +674,13 @@
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
   .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
 }
-/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens. */
+/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens.
+   FLOW CONTRACT: a pill is an inline chip (inline-flex). Left bare as an inline child
+   of a block wrapper it overflows its line box (padding doesn't grow the line) and
+   visually eats the gap to the next sibling. Lay pills out with the kit wrappers:
+   a row of pills → .uix-cluster; a pill stacked over text/pills → .uix-stack
+   .uix-stack--start (flex column; --start keeps the pill at content width).
+   Demo: styleguide → Data display → Status pills. */
 @layer uix.components {
   .uix-pill {
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);
@@ -838,6 +927,70 @@
   .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; }
 }
+/* uix typography utilities — class-based application of the --uix-text-* scale.
+   A `<span class="uix-text-h3">` reads identically to an `<h3>`; consumers reach
+   for these instead of re-deriving the scale inline. Depends only on --uix-* tokens.
+
+   THIS SET IS CLOSED. The canonical type utilities are exactly:
+     uix-text-display · uix-text-h1 · uix-text-h2 · uix-text-h3 · uix-text-body ·
+     uix-text-body-hushed · uix-text-meta · uix-text-eyebrow · uix-text-data-hero ·
+     uix-text-label
+   Products must NOT invent `type-*` (or new `uix-text-*`) classes — a class that
+   isn't in this file renders unstyled and fails silently. The 2026-08 TENSOR audit
+   found 6 invented type-* classes across 36 usages, all rendering as plain text.
+   Migration map (bespoke → canon): type-display-sm → uix-text-display ·
+   type-heading-sm/type-title-sm → uix-text-h3 · type-body-sm → uix-text-meta ·
+   type-caption → uix-text-meta · type-label → uix-text-label (standalone) or
+   .uix-field__label (inside a .uix-field). The shipped lint (`npx uix-classlint`,
+   from @tensor_1/tokens) fails CI on any class outside this set; the closed set is
+   parity-tested against this file. */
+@layer uix.components {
+  .uix-text-display {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h1 {
+    font-size: var(--uix-text-display); line-height: var(--uix-leading-display);
+    font-weight: 400; letter-spacing: var(--uix-tracking-tight); color: var(--uix-text);
+  }
+  .uix-text-h2 {
+    font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2);
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+  }
+  .uix-text-h3 {
+    font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3);
+    font-weight: 700; color: var(--uix-text);
+  }
+  .uix-text-body {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text);
+  }
+  .uix-text-body-hushed {
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-meta {
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+    font-weight: 400; color: var(--uix-text-hushed);
+  }
+  .uix-text-eyebrow {
+    font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow);
+    font-weight: 700; letter-spacing: var(--uix-tracking-eyebrow);
+    text-transform: uppercase; color: var(--uix-text-hushed);
+  }
+  .uix-text-data-hero {
+    font-size: var(--uix-text-data-hero); line-height: 1.1;
+    font-weight: 400; letter-spacing: -0.01em; color: var(--uix-text);
+    font-variant-numeric: tabular-nums;
+  }
+  /* standalone label — same voice as .uix-field__label, for labels OUTSIDE a
+     .uix-field (settings rows, dl-style readouts, toolbar captions). Inside a
+     field keep using .uix-field__label (it carries the data-required marker). */
+  .uix-text-label {
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+    font-weight: 500; color: var(--uix-text);
+  }
+}
 /* uix avatar / avatar-group / user-chip — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-avatar {
@@ -848,6 +1001,8 @@
   .uix-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .uix-avatar--sm { width: 24px; height: 24px; font-size: var(--uix-text-eyebrow); }
   .uix-avatar--lg { width: 44px; height: 44px; }
+  /* org/tenant mark — rounded square distinguishes a workspace from a person */
+  .uix-avatar--org { border-radius: var(--uix-radius-sm); background: var(--uix-brand-muted); color: var(--uix-link); }
   .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
   .uix-avatar-group { display: inline-flex; }
   .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: calc(-1 * var(--uix-space-2)); }

@@ -1,4 +1,10 @@
-/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens. */
+/* uix status pill — tone API (status / priority / SLA). Depends only on --uix-* tokens.
+   FLOW CONTRACT: a pill is an inline chip (inline-flex). Left bare as an inline child
+   of a block wrapper it overflows its line box (padding doesn't grow the line) and
+   visually eats the gap to the next sibling. Lay pills out with the kit wrappers:
+   a row of pills → .uix-cluster; a pill stacked over text/pills → .uix-stack
+   .uix-stack--start (flex column; --start keeps the pill at content width).
+   Demo: styleguide → Data display → Status pills. */
 @layer uix.components {
   .uix-pill {
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-3); border-radius: var(--uix-radius-pill);

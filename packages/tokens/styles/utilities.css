@@ -11,6 +11,11 @@
 
   /* vertical rhythm — set gap via --gap (defaults to --uix-space-4 / 16px) */
   .uix-stack { display: flex; flex-direction: column; gap: var(--gap, var(--uix-space-4)); }
+  /* stack of intrinsic-width children (pills, tags, chips): children keep their
+     content width instead of stretching to the column. This is the REQUIRED
+     wrapper when stacking .uix-pill — a bare inline pill in a block wrapper
+     overflows its line box and eats the gap to the next sibling. */
+  .uix-stack--start { align-items: flex-start; }
   /* horizontal grouping that wraps */
   .uix-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap, var(--uix-space-2)); }
 

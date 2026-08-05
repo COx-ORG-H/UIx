@@ -354,6 +354,81 @@
           </div>
         </div>
 
+        <div class="uix-guide__subhead">Sidebar identity &amp; utility footer</div>
+        <p class="lead" style="margin-bottom:12px">Identity at the top (the Linear/Notion pattern): org/tenant + user as <strong>one disclosure button</strong> that opens the account menu — the native popover closes on <span class="uix-kbd">Esc</span> and returns focus to the trigger. A quiet utility strip pins to the sidebar bottom (help / theme / collapse / settings slots). Collapse to the rail and the identity shrinks to the org mark while the footer stacks vertically.</p>
+        <div class="uix-shell" style="height:460px">
+          <aside class="uix-shell__sidebar uix-sidebar" data-uix-identity-demo style="width:auto">
+            <button class="uix-identity" type="button" popovertarget="acct-menu" style="anchor-name:--acct" aria-expanded="false">
+              <span class="uix-avatar uix-avatar--org" aria-hidden="true">TO</span>
+              <span class="uix-identity__lines">
+                <span class="uix-identity__org">Tensor Ops</span>
+                <span class="uix-identity__user"><span class="uix-avatar" aria-hidden="true">AL</span><span>Ada Lovelace</span></span>
+              </span>
+              <svg class="uix-identity__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </button>
+            <ul id="acct-menu" popover class="uix-popover uix-menu" style="position-anchor:--acct;top:anchor(bottom);left:anchor(left);margin-top:4px;width:224px">
+              <li class="uix-menu__label" style="text-transform:none;letter-spacing:0">ada@tensor-ops.example</li>
+              <li><button class="uix-menu__item">Profile</button></li>
+              <li><button class="uix-menu__item">Settings</button></li>
+              <li><button class="uix-menu__item">Theme <span class="uix-kbd">T</span></button></li>
+              <li class="uix-menu__sep"></li>
+              <li><button class="uix-menu__item">Sign out</button></li>
+              <li class="uix-menu__dev">
+                <div class="uix-menu__label">Dev only</div>
+                <button class="uix-menu__item">Switch persona</button>
+              </li>
+            </ul>
+            <div class="uix-sidebar__eyebrow">Workspace</div>
+            <a class="uix-navitem" aria-current="page" href="#navigation"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="uix-navitem__label">Dashboard</span></a>
+            <a class="uix-navitem" href="#navigation"><svg class="uix-navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="uix-navitem__label">Incidents</span><span class="uix-navitem__badge">12</span></a>
+            <div class="uix-navsection"><svg class="uix-navsection__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span class="uix-navsection__label">Administration</span></div>
+            <a class="uix-navitem uix-subitem" href="#navigation"><span class="uix-navitem__label">Compliance &amp; governance</span></a>
+            <a class="uix-navitem uix-subitem" href="#navigation"><span class="uix-navitem__label">Access &amp; identity</span></a>
+            <div class="uix-sidebar__footer">
+              <button class="uix-sidebar__util" type="button" aria-label="Help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+              <button class="uix-sidebar__util" type="button" aria-label="Toggle theme" data-uix-theme-toggle><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+              <button class="uix-sidebar__util" type="button" aria-label="Collapse sidebar" data-uix-collapse aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+              <span class="uix-sidebar__footer-spacer"></span>
+              <button class="uix-sidebar__util" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+          </aside>
+          <div class="uix-shell__topbar">
+            <nav class="uix-breadcrumbs"><a href="#">Workspace</a><span class="uix-breadcrumbs__sep">/</span><span aria-current="page">Dashboard</span></nav>
+            <span style="flex:1"></span>
+          </div>
+          <div class="uix-shell__main">
+            <div class="uix-page-header">
+              <div class="uix-page-header__titles">
+                <div class="uix-page-header__title">Identity at the top</div>
+                <div class="uix-page-header__subtitle">Open the account menu (Esc closes, focus returns), toggle the theme from the footer, collapse to the rail.</div>
+              </div>
+            </div>
+            <p style="color:var(--uix-text-muted);margin-top:16px;font-size:var(--uix-text-meta)">The "Administration" row is a <code class="uix-code">.uix-navsection</code> — a static header. It takes no pointer cursor, no hover tint, and no focus: only its child items are interactive.</p>
+          </div>
+        </div>
+
+        <div class="uix-guide__subhead">Nav section headers — static, not clickable</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:flex-start;gap:28px">
+            <div style="width:230px;background:var(--uix-bg-subtle);border-radius:var(--uix-radius-md);padding:8px">
+              <div class="uix-navsection"><svg class="uix-navsection__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span class="uix-navsection__label">Compliance</span></div>
+              <a class="uix-navitem uix-subitem" href="#navigation"><span class="uix-navitem__label">Policies</span></a>
+              <a class="uix-navitem uix-subitem" href="#navigation"><span class="uix-navitem__label">Audit log</span></a>
+            </div>
+            <div class="uix-text-meta" style="max-width:340px">
+              <p style="margin-bottom:10px"><strong><code class="uix-code">.uix-navitem</code> is for focusable elements only</strong> — an <code class="uix-code">&lt;a href&gt;</code> or a <code class="uix-code">&lt;button&gt;</code>. It ships a pointer cursor and a hover highlight; on a <code class="uix-code">&lt;span&gt;</code> that's a false affordance (looks clickable, does nothing, invisible to keyboards).</p>
+              <p style="margin-bottom:10px">A header that only <em>labels</em> a group is a <code class="uix-code">&lt;div class="uix-navsection"&gt;</code> — same row geometry, default cursor, no hover, not focusable.</p>
+              <p>A header that <em>collapses</em> its group is a real <code class="uix-code">&lt;button class="uix-navitem uix-navgroup__trigger"&gt;</code> (see the shell demo above). A header that <em>navigates</em> is a plain <code class="uix-code">.uix-navitem</code> link.</p>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-navsection">
+  <svg class="uix-navsection__icon" viewBox="0 0 24 24"><!-- icon --></svg>
+  <span class="uix-navsection__label">Compliance</span>
+</div>
+<a class="uix-navitem uix-subitem" href="/compliance/policies"><span class="uix-navitem__label">Policies</span></a></template>
+        </div>
+
         <div class="uix-guide__subhead">Shell width &amp; focus modes</div>
         <p class="lead" style="margin-bottom:12px">The shell scales its chrome for dense, many-column tables. Step the nav <code class="uix-code">full → rail → hidden</code>, drop into <strong>Focus</strong> mode to hide the sidebar and topbar (Esc exits), and run the grid <strong>full-bleed</strong> edge-to-edge — all through the shipped <code class="uix-code">.uix-shell[data-nav]</code> / <code class="uix-code">[data-focus]</code> / <code class="uix-code">.uix-shell__main--bleed</code> contract.</p>
         <div class="uix-cluster" style="--gap:14px;margin-bottom:14px">
@@ -556,6 +631,34 @@
           <span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span>
           <span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Closed</span>
           <span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>SLA breached</span>
+        </div>
+
+        <div class="uix-guide__subhead">Pills in flow — the wrapper contract</div>
+        <div data-uix-example>
+          <div class="uix-example__preview" style="align-items:flex-start;gap:28px">
+            <div style="max-width:230px">
+              <div class="uix-stack uix-stack--start" style="--gap:var(--uix-space-2)">
+                <span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Review required</span>
+                <span class="uix-text-meta">Stacked over text: <code class="uix-code">.uix-stack .uix-stack--start</code> — the pill keeps its content width and the <code class="uix-code">--gap</code> holds.</span>
+              </div>
+            </div>
+            <div style="max-width:230px">
+              <div class="uix-cluster">
+                <span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>Open</span>
+                <span class="uix-pill uix-pill--p2">P2</span>
+                <span class="uix-pill uix-pill--sla-at-risk"><span class="uix-pill__dot"></span>At risk</span>
+              </div>
+              <div class="uix-text-meta" style="margin-top:8px">A row of pills: <code class="uix-code">.uix-cluster</code>.</div>
+            </div>
+            <div style="max-width:230px">
+              <span class="uix-text-meta">A pill is an <strong>inline chip</strong> — never leave it as a bare inline child of a block wrapper: it overflows its line box and eats the gap to the next sibling.</span>
+            </div>
+          </div>
+          <div class="uix-example__bar"><button data-uix-copy>Copy</button></div>
+          <template><div class="uix-stack uix-stack--start" style="--gap:var(--uix-space-2)">
+  <span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Review required</span>
+  <span>Text below keeps its gap.</span>
+</div></template>
         </div>
 
         <div class="uix-guide__subhead">Charts</div>
@@ -1360,6 +1463,31 @@
             <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--warning"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span> Degraded performance</span>
             <span class="uix-live"><span class="uix-heartbeat uix-heartbeat--idle"><span class="uix-heartbeat__dot"></span></span> Offline</span>
           </div>
+        </div>
+
+        <div class="uix-guide__subhead">Type utilities — the closed <code class="uix-code">.uix-text-*</code> set</div>
+        <div class="uix-example__preview" style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-lg);display:block">
+          <p style="margin-bottom:14px">Class-based application of the type scale. <strong>This set is closed</strong> — a class outside it (any invented <code class="uix-code">type-*</code>, or a <code class="uix-code">uix-text-*</code> not listed here) does not exist in the kit and renders unstyled, silently. The shipped lint (<code class="uix-code">npx uix-classlint</code>) fails CI on such classes.</p>
+          <div class="uix-stack" style="--gap:var(--uix-space-2);margin-bottom:14px">
+            <span class="uix-text-display">Display — uix-text-display</span>
+            <span class="uix-text-h2">Heading 2 — uix-text-h2</span>
+            <span class="uix-text-h3">Heading 3 — uix-text-h3 (title-sm/heading-sm map here)</span>
+            <span class="uix-text-body">Body — uix-text-body</span>
+            <span class="uix-text-body-hushed">Body hushed — uix-text-body-hushed</span>
+            <span class="uix-text-meta">Meta — uix-text-meta (body-sm/caption map here)</span>
+            <span class="uix-text-label">Label — uix-text-label (standalone; in a field use .uix-field__label)</span>
+            <span class="uix-text-eyebrow">Eyebrow — uix-text-eyebrow</span>
+            <span class="uix-text-data-hero">$94,100</span>
+          </div>
+          <table class="uix-table uix-table--no-zebra" style="max-width:560px">
+            <thead><tr><th>Bespoke <code class="uix-code">type-*</code> (does not exist)</th><th>Canonical class</th></tr></thead>
+            <tbody>
+              <tr><td>type-display-sm</td><td><code class="uix-code">.uix-text-display</code></td></tr>
+              <tr><td>type-title-sm · type-heading-sm</td><td><code class="uix-code">.uix-text-h3</code></td></tr>
+              <tr><td>type-body-sm · type-caption</td><td><code class="uix-code">.uix-text-meta</code></td></tr>
+              <tr><td>type-label</td><td><code class="uix-code">.uix-text-label</code> — or <code class="uix-code">.uix-field__label</code> inside a <code class="uix-code">.uix-field</code></td></tr>
+            </tbody>
+          </table>
         </div>
 
         <div class="uix-guide__subhead">Links — in-text vs quiet</div>

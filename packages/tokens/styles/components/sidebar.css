@@ -17,10 +17,19 @@
   .uix-sidebar__toggle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-sidebar__toggle svg { width: 18px; height: 18px; }
 
+  /* INTERACTIVE-ONLY contract: .uix-navitem is for focusable elements — <a href> or
+     <button>. It supplies cursor:pointer + a hover highlight, i.e. a click affordance;
+     putting it on a <span>/<div> ships a false affordance (looks clickable, does
+     nothing, invisible to keyboards). A header that only LABELS a group takes
+     .uix-navsection below; a header that collapses its group is a real
+     <button class="uix-navitem uix-navgroup__trigger">.
+     No width:100% here — as a flex/block-level box it already fills the sidebar
+     (align-items:stretch), while a forced 100% mis-sized flex-row contexts
+     (toolbars) that place a navitem next to siblings. */
   .uix-navitem {
     display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
     border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
-    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); text-align: left;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
@@ -38,6 +47,18 @@
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
+  /* non-interactive section header — the STATIC counterpart to .uix-navitem.
+     Same row geometry (an icon lines up with the navitems below it), but no
+     pointer, no hover tint, not focusable (use a <div>/<span>, never tabindex).
+     For a text-only group label prefer .uix-sidebar__eyebrow; .uix-navsection is
+     the labelled header row (icon + label) that heads a run of items. */
+  .uix-navsection {
+    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
+    color: var(--uix-text-muted); font-size: var(--uix-text-body); font-weight: 500; cursor: default;
+  }
+  .uix-navsection__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
+  .uix-navsection__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   /* collapsible group */
   .uix-navgroup { }
   .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
@@ -49,6 +70,51 @@
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
+  /* ── identity header ─────────────────────────────────────────────────────────
+     "Identity at the top" (Linear/Notion pattern): org/tenant + user as ONE
+     disclosure button that opens an account menu (compose a .uix-popover holding
+     a .uix-menu — native [popover] gives Esc-close, light dismiss, and focus
+     return to the trigger for free). Sits above the nav, replaces per-page
+     "Tenant:" strips. */
+  .uix-identity {
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; min-width: 0;
+    padding: var(--uix-space-2); border: 0; background: transparent; border-radius: var(--uix-radius-md);
+    color: var(--uix-text); font: inherit; text-align: left; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-identity:hover { background: var(--uix-bg-hover); }
+  .uix-identity[aria-expanded="true"] { background: var(--uix-bg-active); }
+  .uix-identity__lines { flex: 1; min-width: 0; }
+  .uix-identity__org {
+    display: block; font-size: var(--uix-text-body); font-weight: 600; color: var(--uix-text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .uix-identity__user {
+    display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0;
+    font-size: var(--uix-text-meta); color: var(--uix-text-hushed);
+  }
+  .uix-identity__user > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-identity__user .uix-avatar { width: 16px; height: 16px; font-size: 8px; }
+  .uix-identity__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex: none; color: var(--uix-text-muted); }
+
+  /* ── utility footer strip ────────────────────────────────────────────────────
+     A quiet icon row pinned to the sidebar bottom (help / theme / collapse /
+     settings slots). Buttons are ghost icon squares; each MUST carry an
+     aria-label (icon-only). margin-top:auto pins it in the sidebar's column flex. */
+  .uix-sidebar__footer {
+    margin-top: auto; display: flex; align-items: center; gap: var(--uix-space-1);
+    padding-top: var(--uix-space-2); border-top: 1px solid var(--uix-border);
+  }
+  .uix-sidebar__util {
+    display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+    border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-sm);
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-sidebar__util:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-sidebar__util svg { width: 16px; height: 16px; }
+  /* push the slot after the spacer to the far end (e.g. settings gear right-aligned) */
+  .uix-sidebar__footer-spacer { flex: 1; }
+
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
   .uix-sidebar[data-collapsed] .uix-navitem__label,
@@ -57,8 +123,16 @@
   .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
   .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
-  .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  .uix-sidebar[data-collapsed] .uix-navgroup__panel,
+  .uix-sidebar[data-collapsed] .uix-navsection__label,
+  .uix-sidebar[data-collapsed] .uix-identity__lines,
+  .uix-sidebar[data-collapsed] .uix-identity__chevron { display: none; }
   /* center the icon-only rail; head keeps just the toggle, centered */
   .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-collapsed] .uix-navsection { justify-content: center; padding: 0; gap: 0; }
   .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
+  /* rail: identity shrinks to the org avatar (still the menu trigger); footer stacks */
+  .uix-sidebar[data-collapsed] .uix-identity { justify-content: center; padding: var(--uix-space-1); }
+  .uix-sidebar[data-collapsed] .uix-sidebar__footer { flex-direction: column; align-items: center; }
+  .uix-sidebar[data-collapsed] .uix-sidebar__footer-spacer { flex: none; }
 }

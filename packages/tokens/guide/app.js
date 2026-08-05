@@ -424,6 +424,28 @@ if (typeof document !== 'undefined') {
     renderFavs();
   };
 
+  // ---- sidebar identity demo: rail collapse + aria-expanded sync on the identity trigger ----
+  // (native [popover] already handles Esc-close, light dismiss, and focus return)
+  const setupIdentitySidebar = () => {
+    const sidebar = document.querySelector('[data-uix-identity-demo]');
+    if (!sidebar) return;
+    sidebar.addEventListener('click', (e) => {
+      const toggle = e.target.closest('[data-uix-collapse]');
+      if (!toggle) return;
+      const collapsed = sidebar.toggleAttribute('data-collapsed');
+      sidebar.closest('.uix-shell')?.toggleAttribute('data-collapsed', collapsed);
+      toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+    const trigger = sidebar.querySelector('.uix-identity[popovertarget]');
+    const menu = trigger && document.getElementById(trigger.getAttribute('popovertarget'));
+    if (trigger && menu) {
+      menu.addEventListener('toggle', () => {
+        trigger.setAttribute('aria-expanded', String(menu.matches(':popover-open')));
+      });
+    }
+  };
+
   // ---- data table: sort, two-row filters, pinning, density/zebra toggles ----
   const initTable = (root) => {
     const table = root.querySelector('.uix-table');
@@ -1073,6 +1095,7 @@ if (typeof document !== 'undefined') {
     buildIconInventory();
     setupScrollspy();
     setupSidebar();
+    setupIdentitySidebar();
     setupShell();
     setupTables();
     setupOverlays();

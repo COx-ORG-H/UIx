@@ -15,8 +15,12 @@
   "files": [
     "build",
     "themes/*.css",
-    "tokens"
+    "tokens",
+    "lint/uix-classlint.mjs"
   ],
+  "bin": {
+    "uix-classlint": "lint/uix-classlint.mjs"
+  },
   "exports": {
     "./css": "./build/css/tokens.css",
     "./styles": "./build/css/components.css",
@@ -39,6 +43,7 @@
     "build": "npm run build:tokens && npm run build:themes && npm run build:styles",
     "test:parity": "node scripts/check-parity.mjs",
     "test:contract": "node scripts/check-contract.mjs",
+    "test:classlint": "node --test lint/uix-classlint.test.mjs",
     "docs:serve": "serve -l 4178 ../..",
     "size:css": "node scripts/size-report.mjs --check",
     "size:css:update": "node scripts/size-report.mjs --update",

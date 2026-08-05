@@ -14,6 +14,7 @@
     "build:all": "npm run build && npm run build:react",
     "test:parity": "npm run test:parity -w @tensor_1/tokens",
     "test:contract": "npm run test:contract -w @tensor_1/tokens",
+    "test:classlint": "npm run test:classlint -w @tensor_1/tokens",
     "test:api": "api-extractor run --config packages/react/api-extractor.json && api-extractor run --config packages/react/api-extractor.chart.json",
     "test:api:update": "api-extractor run --local --config packages/react/api-extractor.json && api-extractor run --local --config packages/react/api-extractor.chart.json",
     "test:smoke": "node tests/smoke-consumer/run.mjs",

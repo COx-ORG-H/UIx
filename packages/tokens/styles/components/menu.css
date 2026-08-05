@@ -11,5 +11,9 @@
   .uix-menu__item--danger svg { color: var(--uix-danger-text); }
   .uix-menu__item .uix-kbd { margin-left: auto; }
   .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
+  /* dev-only section — visually fenced off (dashed rule + tint) so debug items
+     can't be mistaken for product actions; render the section only in dev builds */
+  .uix-menu__dev { border-top: 1px dashed var(--uix-border-strong); margin-top: var(--uix-space-1); padding-top: var(--uix-space-1); }
+  .uix-menu__dev .uix-menu__label { color: var(--uix-warning-text); }
   .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
 }

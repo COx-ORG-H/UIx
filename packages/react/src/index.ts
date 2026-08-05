@@ -71,8 +71,15 @@ export type { TabsProps, TabProps } from './components/Tabs.js';
 export { AppShell } from './components/AppShell.js';
 export type { AppShellProps, ShellNav } from './components/AppShell.js';
 
-export { Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem } from './components/Sidebar.js';
-export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
+export {
+  Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem, NavSection,
+  SidebarIdentity, SidebarIdentityItem, SidebarIdentitySep,
+  SidebarFooter, SidebarUtil, SidebarFooterSpacer,
+} from './components/Sidebar.js';
+export type {
+  SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps, NavSectionProps,
+  SidebarIdentityProps, SidebarIdentityItemProps, SidebarFooterProps, SidebarUtilProps,
+} from './components/Sidebar.js';
 
 export { StarButton } from './components/StarButton.js';
 export type { StarButtonProps } from './components/StarButton.js';
