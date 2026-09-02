@@ -1,6 +1,7 @@
 import type {
   ReactNode, TableHTMLAttributes, HTMLAttributes, ThHTMLAttributes, TdHTMLAttributes, ButtonHTMLAttributes,
 } from 'react';
+import { forwardRef } from 'react';
 import { cx } from '../cx.js';
 import { highlightSegments } from '../table-engine.js';
 
@@ -8,13 +9,16 @@ export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }
 
-export function TableWrap({ children, className, ...props }: TableWrapProps) {
+export const TableWrap = forwardRef<HTMLDivElement, TableWrapProps>(function TableWrap(
+  { children, className, ...props },
+  ref,
+) {
   return (
-    <div className={cx('uix-table-wrap', className)} {...props}>
+    <div ref={ref} className={cx('uix-table-wrap', className)} {...props}>
       {children}
     </div>
   );
-}
+});
 
 export type TableDensity = 'compact' | 'standard' | 'comfortable';
 export type SortDirection = 'ascending' | 'descending' | 'none';

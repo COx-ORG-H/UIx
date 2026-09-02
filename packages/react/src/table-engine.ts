@@ -20,12 +20,17 @@ export type Row = Record<string, unknown>;
 
 /* ── sorting ─────────────────────────────────────────────────────────────────── */
 
+// Constructing collation options inside String#localeCompare is disproportionately
+// expensive in a hot sort comparator. One collator preserves the existing numeric,
+// case-insensitive ordering while reusing its locale state across every table.
+const stringCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
 function compare(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
   if (a == null) return -1;
   if (b == null) return 1;
   if (typeof a === 'number' && typeof b === 'number') return a - b;
-  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+  return stringCollator.compare(String(a), String(b));
 }
 
 /**
@@ -34,16 +39,15 @@ function compare(a: unknown, b: unknown): number {
  */
 export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[]): T[] {
   if (!keys.length) return rows.slice();
-  return rows
-    .map((row, i) => ({ row, i }))
-    .sort((x, y) => {
+  // Array sorting is stable in the ES2020 target, so a single copied array avoids
+  // the former decorate/sort/unwrap arrays and one wrapper object per row.
+  return rows.slice().sort((a, b) => {
       for (const k of keys) {
-        const c = compare(x.row[k.field], y.row[k.field]);
+        const c = compare(a[k.field], b[k.field]);
         if (c !== 0) return k.dir === 'ascending' ? c : -c;
       }
-      return x.i - y.i; // stable
-    })
-    .map((w) => w.row);
+      return 0;
+    });
 }
 
 /** Cycle a header's sort state: none → ascending → descending → none. */
@@ -331,7 +335,8 @@ export function toggleId(set: ReadonlySet<string>, id: string): Set<string> {
 
 export type SelectAllState = 'none' | 'some' | 'all';
 export function selectAllState(selected: ReadonlySet<string>, pageIds: readonly string[]): SelectAllState {
-  const on = pageIds.filter((id) => selected.has(id)).length;
+  let on = 0;
+  for (const id of pageIds) if (selected.has(id)) on += 1;
   if (on === 0) return 'none';
   return on === pageIds.length ? 'all' : 'some';
 }

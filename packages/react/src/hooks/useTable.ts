@@ -68,12 +68,19 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [pinned, setPinned] = useState<ReadonlySet<string>>(() => new Set(options.initialPinned ?? []));
 
-  const rows = useMemo(() => {
-    const filtered = applyFilters(data, filters);
-    const searched = searchRows(filtered, query, searchFields);
-    const sorted = multiSort(searched, sort);
-    return mergePinned(data, sorted, pinned, idField);
-  }, [data, filters, query, searchFields, sort, pinned, idField]);
+  // Preserve the pure engine functions' copy contracts for direct callers, but
+  // avoid their no-op copies in the composed hot path. Pin changes no longer
+  // repeat filtering, search, or sorting.
+  const visibleRows = useMemo(() => {
+    const filtered = filters.length ? applyFilters(data, filters) : data;
+    const searched = query.trim() ? searchRows(filtered, query, searchFields) : filtered;
+    return sort.length ? multiSort(searched, sort) : searched;
+  }, [data, filters, query, searchFields, sort]);
+
+  const rows = useMemo(
+    () => pinned.size ? mergePinned(data, visibleRows, pinned, idField) : visibleRows.slice(),
+    [data, visibleRows, pinned, idField],
+  );
 
   const pageIds = useMemo(() => rows.map((r) => String(r[idField])), [rows, idField]);
   const selectAll = selectAllState(selected, pageIds);
@@ -82,6 +89,7 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
     setSort((keys) => toggleSort(keys, field, additive));
   }, []);
   const toggleRow = useCallback((id: string) => setSelected((s) => toggleId(s, id)), []);
+  const isSelected = useCallback((id: string) => selected.has(id), [selected]);
   const toggleAllRows = useCallback(() => setSelected((s) => togglePage(s, pageIds)), [pageIds]);
   const clearSelection = useCallback(() => setSelected(new Set()), []);
   const togglePin = useCallback((id: string) => setPinned((s) => toggleId(s, id)), []);
@@ -98,7 +106,7 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   return {
     rows, sort, filters, query, selected, pinned, selectAll,
     toggleSort: doToggleSort, setSort, setFilters, setQuery,
-    isSelected: (id) => selected.has(id), toggleRow, toggleAllRows, clearSelection, togglePin,
+    isSelected, toggleRow, toggleAllRows, clearSelection, togglePin,
     view, viewQueryString, applyView,
   };
 }

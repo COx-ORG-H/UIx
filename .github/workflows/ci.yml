@@ -39,6 +39,18 @@ jobs:
       - name: Build all (tokens + themes + styles + react)
         run: npm run build:all
 
+      - name: React behavior tests
+        run: npm test -w @tensor_1/react
+
+      - name: React typecheck
+        run: npm run typecheck -w @tensor_1/react
+
+      - name: Table runtime budget
+        run: npm run test:performance
+
+      - name: Chart preset bundle budget
+        run: npm run test:size
+
       - name: Token value parity
         run: npm run test:parity
 

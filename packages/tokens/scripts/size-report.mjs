@@ -167,12 +167,14 @@ function runCheck() {
       problems.push(`${file}: NEW file not in baseline (run --update to adopt it).`);
       continue;
     }
-    const tol = tolerance(base.raw);
-    const delta = cur.raw - base.raw;
-    if (delta > tol) {
-      problems.push(
-        `${file}: raw grew ${fmtBytes(base.raw)} → ${fmtBytes(cur.raw)} (+${delta} B) — over tolerance ${tol} B.`,
-      );
+    for (const metric of ['raw', 'gzip', 'brotli']) {
+      const tol = tolerance(base[metric]);
+      const delta = cur[metric] - base[metric];
+      if (delta > tol) {
+        problems.push(
+          `${file}: ${metric} grew ${fmtBytes(base[metric])} → ${fmtBytes(cur[metric])} (+${delta} B) — over tolerance ${tol} B.`,
+        );
+      }
     }
   }
 
@@ -183,7 +185,7 @@ function runCheck() {
     process.exit(1);
   }
   const n = Object.keys(current).length;
-  console.log(`✓ css-size OK — ${n} files within tolerance (max(${TOLERANCE_PCT * 100}%, ${TOLERANCE_MIN_BYTES}B) raw growth) vs baseline.`);
+  console.log(`✓ css-size OK — ${n} files within raw/gzip/brotli tolerance (max(${TOLERANCE_PCT * 100}%, ${TOLERANCE_MIN_BYTES}B)) vs baseline.`);
 }
 
 function runUpdate() {

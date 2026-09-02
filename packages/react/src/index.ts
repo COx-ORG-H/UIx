@@ -5,6 +5,8 @@ export { cx } from './cx.js';
 export { useDialog } from './hooks/useDialog.js';
 export { useTable } from './hooks/useTable.js';
 export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
+export { useVirtualRows } from './hooks/useVirtualRows.js';
+export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVirtualRows.js';
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
 

@@ -29,6 +29,16 @@ for (const pg of PAGES) {
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await page.evaluate(() => document.fonts.ready);
 
+    // Charts initialize near the viewport to keep their renderer out of the critical
+    // path. Exercise that real user path before the full-page capture so the lazy
+    // optimization does not turn the existing chart goldens into empty containers.
+    const firstChart = page.locator('[data-uix-chart]').first();
+    if (await firstChart.count()) {
+      await firstChart.scrollIntoViewIfNeeded();
+      await expect(firstChart.locator('svg')).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
     await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true });
   });
 }
