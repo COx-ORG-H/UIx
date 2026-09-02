@@ -5,6 +5,8 @@ export { cx } from './cx.js';
 export { useDialog } from './hooks/useDialog.js';
 export { useTable } from './hooks/useTable.js';
 export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
+export { useVirtualRows } from './hooks/useVirtualRows.js';
+export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVirtualRows.js';
 
 // Form primitives
 export { Button, ButtonGroup } from './components/Button.js';

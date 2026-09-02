@@ -91,7 +91,7 @@ export const renderList = (items = [], className = 'uix-docs__list') =>
  *  token values are duplicated here. `theme` scopes the :root dark selector inside the frame. */
 export const frameDoc = (html, theme) =>
   '<!doctype html><html lang="en" data-theme="' + esc(theme) + '"><head><meta charset="utf-8">' +
-  '<link rel="stylesheet" href="../styles/main.css">' +
+  '<link rel="stylesheet" href="../build/css/styles.css">' +
   '<style>html,body{margin:0}body{padding:20px;background:var(--uix-bg-app);color:var(--uix-text);' +
   'font-family:var(--uix-font-sans,system-ui,sans-serif)}</style></head><body>' +
   String(html == null ? '' : html) + '</body></html>';

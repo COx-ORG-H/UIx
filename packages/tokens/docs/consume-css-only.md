@@ -28,9 +28,20 @@ Set the theme on the root element; the default follows `prefers-color-scheme`:
 <html data-theme="dark"> … </html>
 ```
 
-## 3. Get the component CSS — two ways
+## 3. Get the module CSS — three ways
 
-### A. npm import (all components)
+### A. Selective npm imports (smallest managed payload)
+
+Import only the modules the page uses. Add utilities or motion when those shared classes/keyframes
+are needed:
+
+```css
+@import "@tensor_1/tokens/motion";
+@import "@tensor_1/tokens/components/button";
+@import "@tensor_1/tokens/components/card";
+```
+
+### B. npm import (all modules)
 
 Import the whole component layer (pairs with the contract above), or the single-file bundle:
 
@@ -40,7 +51,7 @@ Import the whole component layer (pairs with the contract above), or the single-
 @import "@tensor_1/tokens/bundle";
 ```
 
-### B. Copy-in a single component (the registry / `uix add`)
+### C. Copy-in a single module (the registry / `uix add`)
 
 When you only want a couple of components at source (to own/fork them, or avoid pulling the whole
 layer), use the copy-in manifest [`registry/registry.json`](../registry/registry.json). Each entry
@@ -62,7 +73,8 @@ You still need step 2 (the contract + theme) loaded, because the copied `button.
 <head>
   <link rel="stylesheet" href="node_modules/@tensor_1/tokens/build/css/tokens.css">
   <link rel="stylesheet" href="node_modules/@tensor_1/tokens/themes/tensor.css">
-  <link rel="stylesheet" href="node_modules/@tensor_1/tokens/build/css/components.css">
+  <link rel="stylesheet" href="node_modules/@tensor_1/tokens/styles/motion.css">
+  <link rel="stylesheet" href="node_modules/@tensor_1/tokens/styles/components/button.css">
 </head>
 <body>
   <button class="uix-btn uix-btn--primary">Save changes</button>
@@ -72,7 +84,7 @@ You still need step 2 (the contract + theme) loaded, because the copied `button.
 
 Using a bundler that understands the `exports` map (Vite, esbuild, webpack)? Import the subpaths
 instead of file paths: `@tensor_1/tokens/css`, `@tensor_1/tokens/themes/tensor`,
-`@tensor_1/tokens/styles`.
+`@tensor_1/tokens/motion`, and `@tensor_1/tokens/components/button`.
 
 The button's exact token dependencies (and every other component's) are enumerated in
 [`registry/registry.json`](../registry/registry.json) — the generated, drift-gated inventory.

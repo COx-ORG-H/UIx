@@ -46,6 +46,15 @@ jobs:
       - name: Build all (tokens + themes + styles + react)
         run: npm run build:all
 
+      - name: React behavior tests
+        run: npm test -w @tensor_1/react
+
+      - name: React typecheck
+        run: npm run typecheck -w @tensor_1/react
+
+      - name: Table runtime budget
+        run: npm run test:performance
+
       # DTCG-2: token SOURCE is structurally valid vs the ADR-0019 ratified $type set. Reads JSON
       # only (never rebuilds), so it is parity-neutral. Mirrored to publishing via release.yml (GOV-6).
       - name: DTCG validity

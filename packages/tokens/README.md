@@ -43,6 +43,8 @@ Override the write-only brand slots; `accent` / `link` / `ring` / `brand-muted` 
 |---|---|
 | `./css` | the `--uix-*` contract (`:root` light, dark selector) |
 | `./styles` | component CSS (use with the tokens + a theme) |
+| `./components/*` | one module stylesheet, for example `./components/button` |
+| `./utilities` · `./motion` | shared utility and motion CSS for selective builds |
 | `./tailwind` · `./tailwind/preset` | Tailwind v4 `@theme` / v3 preset |
 | `./ts` | typed `cssVar` / `light` / `dark` / `num` |
 | `./themes/{tensor,posx,shopx,mission-control}` | per-product brand |

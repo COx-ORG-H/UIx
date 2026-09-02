@@ -7,6 +7,8 @@
 // in run.mjs instead of a typed import (keeps the smoke lean).
 import { Button, Card, StatusPill, Modal } from '@tensor_1/react';
 import type { ButtonProps } from '@tensor_1/react';
+import { Chart } from '@tensor_1/react/chart';
+import { Chart as PresetChart } from '@tensor_1/react/chart/preset';
 import { cssVar, light, dark, num } from '@tensor_1/tokens/ts';
 
 // cssVar/light are Record<UixTokenName,string>; dark/num are Partial<Record<…>>.
@@ -18,4 +20,4 @@ const darkBg: string | undefined = dark['bg-app'];
 // Exercise an exported prop type.
 const renderButton = (props: ButtonProps) => props;
 
-export default { Button, Card, StatusPill, Modal, accent, body, space4, darkBg, renderButton };
+export default { Button, Card, StatusPill, Modal, Chart, PresetChart, accent, body, space4, darkBg, renderButton };

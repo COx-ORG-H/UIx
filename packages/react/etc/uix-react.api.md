@@ -11,6 +11,7 @@ import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import * as react from 'react';
 import { ReactNode } from 'react';
+import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -1298,7 +1299,7 @@ export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
 }
 
 // @public (undocumented)
-export function TableWrap(input: TableWrapProps): react.JSX.Element;
+export const TableWrap: react.ForwardRefExoticComponent<TableWrapProps & react.RefAttributes<HTMLDivElement>>;
 
 // @public (undocumented)
 export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
@@ -1558,6 +1559,33 @@ export interface UseTableResult<T> {
     view: ViewState;
     // (undocumented)
     viewQueryString: string;
+}
+
+// @public
+export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptions): UseVirtualRowsResult<T>;
+
+// @public (undocumented)
+export interface UseVirtualRowsOptions {
+    overscan?: number;
+    rowHeight: number;
+    threshold?: number;
+}
+
+// @public (undocumented)
+export interface UseVirtualRowsResult<T> {
+    containerRef: RefObject<HTMLDivElement>;
+    // (undocumented)
+    padBottom: number;
+    // (undocumented)
+    padTop: number;
+    // (undocumented)
+    rows: readonly T[];
+    // (undocumented)
+    startIndex: number;
+    // (undocumented)
+    totalHeight: number;
+    // (undocumented)
+    virtualized: boolean;
 }
 
 // @public

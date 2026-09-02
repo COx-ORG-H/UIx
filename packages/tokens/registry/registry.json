@@ -925,6 +925,7 @@
       "tokens": [
         "--uix-bg-hover",
         "--uix-bg-subtle",
+        "--uix-border",
         "--uix-brand-muted",
         "--uix-dur",
         "--uix-dur-fast",
@@ -934,12 +935,14 @@
         "--uix-link",
         "--uix-radius-sm",
         "--uix-radius-xs",
+        "--uix-shadow-popover",
         "--uix-sidebar-w",
         "--uix-sidebar-w-rail",
         "--uix-space-1",
         "--uix-space-2",
         "--uix-space-3",
         "--uix-space-5",
+        "--uix-surface",
         "--uix-text",
         "--uix-text-body",
         "--uix-text-eyebrow",
@@ -948,7 +951,8 @@
         "--uix-text-meta",
         "--uix-text-muted",
         "--uix-tracking-eyebrow",
-        "--uix-warning"
+        "--uix-warning",
+        "--uix-z-tooltip"
       ]
     },
     {

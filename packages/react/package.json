@@ -26,6 +26,11 @@
       "types": "./dist/chart.d.ts",
       "import": "./dist/chart.js",
       "require": "./dist/chart.cjs"
+    },
+    "./chart/preset": {
+      "types": "./dist/chart-preset.d.ts",
+      "import": "./dist/chart-preset.js",
+      "require": "./dist/chart-preset.cjs"
     }
   },
   "scripts": {
@@ -33,12 +38,19 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
+    "test:performance": "node scripts/table-performance.mjs",
     "test:a11y": "vitest run",
-    "size": "node scripts/check-no-echarts.mjs && size-limit"
+    "size": "node scripts/check-no-echarts.mjs && node scripts/check-chart-preset-size.mjs && size-limit"
   },
   "peerDependencies": {
+    "echarts": "^5.6.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "echarts": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "12.1.0",

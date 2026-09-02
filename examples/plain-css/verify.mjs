@@ -72,11 +72,14 @@ try {
   step('npm install (isolated; tarball, no symlinks)');
   npm(['install', '--no-audit', '--no-fund', '--prefer-offline', '--silent'], { cwd: tmp, stdio: 'inherit' });
 
-  step('resolve the four subpaths index.html links');
+  step('resolve aggregate and selective CSS subpaths');
   const subpaths = [
     '@tensor_1/tokens/css',
     '@tensor_1/tokens/styles',
     '@tensor_1/tokens/bundle',
+    '@tensor_1/tokens/motion',
+    '@tensor_1/tokens/components/button',
+    '@tensor_1/tokens/components/card',
     '@tensor_1/tokens/themes/tensor',
   ];
   // require.resolve from inside the isolated install and print each resolved path.
@@ -90,6 +93,6 @@ try {
   try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best effort */ }
 }
 
-console.log(ok ? '\n✓ verify OK — packed @tensor_1/tokens installs into an isolated consumer and resolves css, styles, bundle, and themes/tensor.'
+console.log(ok ? '\n✓ verify OK — packed @tensor_1/tokens resolves aggregate and selective CSS interfaces in an isolated consumer.'
               : '\n✗ verify FAILED');
 process.exit(ok ? 0 : 1);

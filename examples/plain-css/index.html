@@ -24,10 +24,13 @@
        Load order matters:
          1. /css     — the --uix-* token contract (light on :root, dark on [data-theme="dark"])
          2. themes   — the Tensor brand override (re-chains accent/link off the tokens above)
-         3. /styles  — the .uix-* component CSS (.uix-btn, .uix-card, …) -->
+         3. /motion  — shared keyframes/reduced-motion safeguards
+         4. selective Button + Card module CSS -->
   <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/build/css/tokens.css">
   <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/themes/tensor.css">
-  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/build/css/components.css">
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/styles/motion.css">
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/styles/components/button.css">
+  <link rel="stylesheet" href="./node_modules/@tensor_1/tokens/styles/components/card.css">
 
   <style>
     /* Page chrome only — everything below uses the shipped tokens, no hand-picked colors. */
@@ -78,8 +81,8 @@
           <span class="uix-card__title">Ship the token contract</span>
         </div>
         <div class="uix-card__body">
-          This page links the published <code>/css</code>, <code>themes/tensor</code>, and
-          <code>/styles</code> files with plain <code>&lt;link&gt;</code> tags — no build step,
+          This page links the published <code>/css</code>, <code>themes/tensor</code>,
+          <code>/motion</code>, and selective module files with plain <code>&lt;link&gt;</code> tags — no build step,
           no framework. Toggle the theme above and every surface re-derives from the
           <code>--uix-*</code> variables.
         </div>

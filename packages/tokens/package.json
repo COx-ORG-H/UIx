@@ -3,6 +3,9 @@
   "version": "2.7.0",
   "description": "UIx v2 design tokens — the --uix-* contract for house products (Tensor, POSx, SHOPx). One DTCG source -> CSS variables, Tailwind theme, and typed TS constants.",
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
@@ -20,6 +23,8 @@
     "components.json",
     "docs/consume-css-only.md",
     "styles/components/*.css",
+    "styles/utilities.css",
+    "styles/motion.css",
     "scripts/lib",
     "bin"
   ],
@@ -30,6 +35,9 @@
     "./css": "./build/css/tokens.css",
     "./styles": "./build/css/components.css",
     "./bundle": "./build/css/styles.css",
+    "./components/*": "./styles/components/*.css",
+    "./utilities": "./styles/utilities.css",
+    "./motion": "./styles/motion.css",
     "./tailwind": "./build/tailwind/theme.css",
     "./tailwind/preset": "./build/tailwind/preset.cjs",
     "./ts": {
@@ -60,6 +68,7 @@
     "prepublishOnly": "npm run build && npm run test:parity && npm run test:contract"
   },
   "devDependencies": {
+    "esbuild": "0.28.1",
     "postcss": "^8.4.0",
     "postcss-import": "^16.1.1",
     "style-dictionary": "^5.5.0"

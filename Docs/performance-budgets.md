@@ -14,6 +14,7 @@ shipped code.
 |---|--:|--:|--:|---|
 | main entry `dist/index.js` | ~10.7 KB | **12 KB** | ~11% | ~100 thin class-wrappers; grows slowly as wrappers land. Bump deliberately when a real feature lands, recording the new baseline here. |
 | chart entry `dist/chart.js` | ~1.0 KB | **2 KB** | ~48% | Only the ECharts-facing Chart wrapper; ECharts stays external (proven by `check-no-echarts.mjs`), so this entry never carries the library. |
+| lean chart preset `dist/chart-preset.js` | ~155 KB | **170 KB** | ~9% | Common line/bar/pie SVG ECharts modules included; measures the consumer-visible preset payload. |
 
 `check-no-echarts.mjs` additionally asserts, structurally, that ECharts is **not reachable** from
 the main entry (importing `@tensor_1/react` never drags in ECharts).
@@ -51,6 +52,5 @@ C3). Adding or tightening a budget in `ci.yml`/`.size-limit.cjs` is enough.
 
 ## Out of scope
 
-**Core Web Vitals** (LCP/INP/CLS) and runtime rendering performance are explicitly **future work** —
-these budgets cover shipped *bundle size* only. A CWV harness (e.g. Lighthouse CI over the styleguide)
-would be a separate slice.
+**Core Web Vitals** (LCP/INP/CLS) remain separate from library microbenchmarks. The release gate now
+runs a coarse table sort/search budget; a browser-level CWV harness would be a separate slice.
