@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.12.0
+
+### Minor Changes
+
+- 0450b44: Improve table and chart runtime performance, add opt-in row virtualization and a lean chart preset, ship minified CSS with selective component exports, and defer styleguide chart loading.
+
 ## 2.11.0
 
 ### Minor Changes
