@@ -26,7 +26,7 @@ export default defineConfig([
     clean: true,
   },
   {
-    entry: { index: 'src/index.ts', chart: 'src/chart.ts' },
+    entry: { index: 'src/index.ts', chart: 'src/chart.ts', 'chart-preset': 'src/chart-preset.tsx' },
     format: ['cjs'],
     dts: true,
     bundle: true,

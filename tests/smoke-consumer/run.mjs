@@ -66,7 +66,8 @@ try {
       'react': '^18.3.1',
       'react-dom': '^18.3.1',
       '@types/react': '^18.3.0',
-      '@types/react-dom': '^18.3.0'
+      '@types/react-dom': '^18.3.0',
+      'echarts': '^5.6.0'
     }
   }, null, 2));
   copyFileSync(join(HERE, 'app.tsx'), join(tmp, 'app.tsx'));
@@ -92,13 +93,13 @@ try {
 
   step('2. ESM import (runtime)');
   execFileSync(process.execPath, ['--input-type=module', '-e',
-    "import { Button } from '@tensor_1/react'; import { cssVar } from '@tensor_1/tokens/ts'; if(!Button||!cssVar?.accent) process.exit(3);"],
+    "import { Button } from '@tensor_1/react'; import { Chart } from '@tensor_1/react/chart'; import { Chart as PresetChart } from '@tensor_1/react/chart/preset'; import { cssVar } from '@tensor_1/tokens/ts'; if(!Button||!Chart||!PresetChart||!cssVar?.accent) process.exit(3);"],
     { cwd: tmp, stdio: 'inherit' });
 
   step('3. CJS require + 4. export resolution');
   execFileSync(process.execPath, ['-e',
     "const u=require('@tensor_1/react'); if(!u.Button||!u.Card) process.exit(4);" +
-    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart']" +
+    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/components/button','@tensor_1/tokens/utilities','@tensor_1/tokens/motion','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart','@tensor_1/react/chart/preset']" +
     ".forEach(s=>require.resolve(s));"],
     { cwd: tmp, stdio: 'inherit' });
 

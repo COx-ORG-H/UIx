@@ -7,7 +7,7 @@ Thin React wrappers over the UIx v2 CSS component library — every component is
 ```sh
 npm i @tensor_1/react @tensor_1/tokens
 ```
-Peer deps: `react` / `react-dom` (`^18` or `^19`).
+Peer deps: `react` / `react-dom` (`^18` or `^19`). Install `echarts` only when using a chart entry.
 
 ## Use
 
@@ -30,5 +30,14 @@ Charts (ECharts) live behind a separate entry so they stay out of the main bundl
 ```tsx
 import { Chart } from "@tensor_1/react/chart";
 ```
+
+For common line, bar, and pie charts, the tree-shaken preset avoids shipping the complete ECharts build:
+
+```tsx
+import { Chart } from "@tensor_1/react/chart/preset";
+```
+
+Large fixed-height tables can use `useVirtualRows(rows, { rowHeight })`; attach its `containerRef` to
+`TableWrap` and render the returned row window between spacer rows.
 
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.

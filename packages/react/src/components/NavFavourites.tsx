@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { memo, type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { cx } from '../cx.js';
 
 const ChevronDownIcon = () => (
@@ -14,7 +14,7 @@ const ChevronDownIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden="true"
-    style={{ flexShrink: 0 }}
+    className="uix-favourites__chevron"
   >
     <path d="m6 9 6 6 6-6" />
   </svg>
@@ -31,7 +31,7 @@ const ChevronRightIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden="true"
-    style={{ flexShrink: 0 }}
+    className="uix-favourites__chevron"
   >
     <path d="m9 18 6-6-6-6" />
   </svg>
@@ -54,8 +54,6 @@ const MoreIcon = () => (
     <circle cx="12" cy="19" r="1" />
   </svg>
 );
-
-const MUTED = 'color-mix(in srgb, var(--uix-text) 50%, transparent)';
 
 export interface NavFavouriteItem {
   /** Stable identity used for reorder + remove (consumers typically pass the href). */
@@ -132,7 +130,7 @@ export function NavFavourites({
   const focusAfterRef = useRef<string | null>(null);
   const triggerRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
 
-  const order = items.map((i) => i.id);
+  const order = useMemo(() => items.map((item) => item.id), [items]);
 
   // Focus-after-mutation by id; re-run on order change.
   useEffect(() => {
@@ -142,7 +140,7 @@ export function NavFavourites({
     const el = triggerRefs.current.get(id);
     if (el) el.focus();
     else headerRef.current?.focus();
-  }, [order.join('|')]);
+  }, [order]);
 
   const handleToggle = () => {
     if (!collapsed) {
@@ -154,7 +152,7 @@ export function NavFavourites({
     onToggleCollapsed?.();
   };
 
-  const move = (id: string, dir: -1 | 1) => {
+  const move = useCallback((id: string, dir: -1 | 1) => {
     const idx = order.indexOf(id);
     const next = idx + dir;
     if (idx < 0 || next < 0 || next >= order.length) return;
@@ -164,36 +162,30 @@ export function NavFavourites({
     reordered.splice(next, 0, it);
     focusAfterRef.current = id; // keep focus on the moved row's control
     onReorder(reordered);
-  };
+  }, [onReorder, order]);
 
-  const remove = (id: string) => {
+  const remove = useCallback((id: string) => {
     const idx = order.indexOf(id);
     // Focus the neighbour that will occupy this slot (next, else previous).
     const neighbour = order[idx + 1] ?? order[idx - 1] ?? null;
     focusAfterRef.current = neighbour;
     onRemove(id);
-  };
+  }, [onRemove, order]);
+
+  const registerTrigger = useCallback((id: string, element: HTMLButtonElement | null) => {
+    if (element) triggerRefs.current.set(id, element);
+    else triggerRefs.current.delete(id);
+  }, []);
 
   return (
-    <div className={cx('uix-favourites', className)} style={{ marginBottom: 'var(--uix-space-1)' }}>
+    <div className={cx('uix-favourites', className)}>
       <button
         ref={headerRef}
         type="button"
         aria-expanded={!collapsed}
         aria-controls={regionId}
         onClick={handleToggle}
-        className="uix-text-eyebrow"
-        style={{
-          display: 'flex',
-          width: '100%',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 4px 4px',
-          border: 0,
-          background: 'transparent',
-          cursor: 'pointer',
-          color: 'inherit',
-        }}
+        className="uix-favourites__heading uix-text-eyebrow"
       >
         {collapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
         {labels.heading}
@@ -202,20 +194,12 @@ export function NavFavourites({
         ref={regionRef}
         id={regionId}
         hidden={collapsed}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1px',
-          listStyle: 'none',
-          margin: 0,
-          padding: 0,
-        }}
+        className="uix-favourites__list"
       >
         {items.length === 0 ? (
           <li
-            className="uix-text-meta"
+            className="uix-favourites__empty uix-text-meta"
             data-empty-reason={emptyReason}
-            style={{ padding: '6px 8px', color: MUTED }}
           >
             {labels.empty}
           </li>
@@ -227,10 +211,9 @@ export function NavFavourites({
               isFirst={idx === 0}
               isLast={idx === items.length - 1}
               labels={labels}
-              onMoveUp={() => move(item.id, -1)}
-              onMoveDown={() => move(item.id, 1)}
-              onRemove={() => remove(item.id)}
-              registerTrigger={(el) => triggerRefs.current.set(item.id, el)}
+              onMove={move}
+              onRemove={remove}
+              registerTrigger={registerTrigger}
             />
           ))
         )}
@@ -239,13 +222,12 @@ export function NavFavourites({
   );
 }
 
-function FavouriteRow({
+const FavouriteRow = memo(function FavouriteRow({
   item,
   isFirst,
   isLast,
   labels,
-  onMoveUp,
-  onMoveDown,
+  onMove,
   onRemove,
   registerTrigger,
 }: {
@@ -253,13 +235,11 @@ function FavouriteRow({
   isFirst: boolean;
   isLast: boolean;
   labels: NavFavouritesLabels;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onRemove: () => void;
-  registerTrigger: (el: HTMLButtonElement | null) => void;
+  onMove: (id: string, direction: -1 | 1) => void;
+  onRemove: (id: string) => void;
+  registerTrigger: (id: string, element: HTMLButtonElement | null) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [revealed, setRevealed] = useState(false);
   const menuId = useId();
   // Mutable on purpose (assigned in the ref callback below) — under @types/react 18
   // `useRef<T>(null)` yields a read-only RefObject, so widen T to include null.
@@ -270,9 +250,9 @@ function FavouriteRow({
 
   // Build the enabled menu actions for this row (Move up/down conditional).
   const actions: Array<{ label: string; onSelect: () => void }> = [
-    ...(isFirst ? [] : [{ label: labels.moveUp, onSelect: onMoveUp }]),
-    ...(isLast ? [] : [{ label: labels.moveDown, onSelect: onMoveDown }]),
-    { label: labels.remove.replace('{label}', item.label), onSelect: onRemove },
+    ...(isFirst ? [] : [{ label: labels.moveUp, onSelect: () => onMove(item.id, -1) }]),
+    ...(isLast ? [] : [{ label: labels.moveDown, onSelect: () => onMove(item.id, 1) }]),
+    { label: labels.remove.replace('{label}', item.label), onSelect: () => onRemove(item.id) },
   ];
 
   // Focus the first menu item when the menu opens (APG menu-button).
@@ -307,32 +287,24 @@ function FavouriteRow({
     if (!e.altKey) return;
     if (e.key === 'ArrowUp' && !isFirst) {
       e.preventDefault();
-      onMoveUp();
+      onMove(item.id, -1);
     } else if (e.key === 'ArrowDown' && !isLast) {
       e.preventDefault();
-      onMoveDown();
+      onMove(item.id, 1);
     }
   };
-
-  const triggerVisible = revealed || open;
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: keyboard accelerators on the row; the focusable controls inside carry their own semantics.
     <li
-      style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+      className="uix-favourites__row"
       onKeyDown={onRowKeyDown}
-      onMouseEnter={() => setRevealed(true)}
-      onMouseLeave={() => setRevealed(false)}
-      onFocus={() => setRevealed(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setRevealed(false);
-      }}
     >
-      <div style={{ minWidth: 0, flex: 1 }}>{item.link}</div>
+      <div className="uix-favourites__link">{item.link}</div>
       <button
         ref={(el) => {
           triggerRef.current = el;
-          registerTrigger(el);
+          registerTrigger(item.id, el);
         }}
         type="button"
         aria-haspopup="menu"
@@ -340,22 +312,7 @@ function FavouriteRow({
         aria-controls={open ? menuId : undefined}
         aria-label={optionsTemplate.replace('{label}', item.label)}
         onClick={() => setOpen((v) => !v)}
-        style={{
-          marginLeft: 'auto',
-          display: 'inline-flex',
-          height: '20px',
-          width: '20px',
-          flexShrink: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: 0,
-          borderRadius: '2px',
-          background: 'transparent',
-          cursor: 'pointer',
-          color: MUTED,
-          opacity: triggerVisible ? 1 : 0,
-          transition: 'opacity var(--uix-dur-fast) var(--uix-ease-out)',
-        }}
+        className="uix-favourites__menu-trigger"
       >
         <MoreIcon />
       </button>
@@ -366,27 +323,13 @@ function FavouriteRow({
             aria-hidden="true"
             role="presentation"
             onClick={() => setOpen(false)}
-            style={{ position: 'fixed', inset: 0, cursor: 'default', background: 'transparent', zIndex: 40 }}
+            className="uix-favourites__backdrop"
           />
           <ul
             id={menuId}
             role="menu"
             onKeyDown={onMenuKeyDown}
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: 'calc(100% + 2px)',
-              zIndex: 50,
-              minWidth: '160px',
-              overflow: 'hidden',
-              margin: 0,
-              padding: '4px 0',
-              listStyle: 'none',
-              borderRadius: '6px',
-              border: '1px solid var(--uix-border)',
-              background: 'var(--uix-surface)',
-              boxShadow: 'var(--uix-shadow-popover)',
-            }}
+            className="uix-favourites__menu"
           >
             {actions.map((action, i) => (
               <li key={action.label} role="presentation">
@@ -401,25 +344,7 @@ function FavouriteRow({
                     setOpen(false);
                     action.onSelect();
                   }}
-                  style={{
-                    display: 'flex',
-                    width: '100%',
-                    alignItems: 'center',
-                    padding: '6px 12px',
-                    border: 0,
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontSize: '13px',
-                    color: 'color-mix(in srgb, var(--uix-text) 85%, transparent)',
-                    transition: 'background-color var(--uix-dur-fast) var(--uix-ease-out)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--uix-bg-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
+                  className="uix-favourites__menu-item"
                 >
                   {action.label}
                 </button>
@@ -430,4 +355,4 @@ function FavouriteRow({
       ) : null}
     </li>
   );
-}
+});

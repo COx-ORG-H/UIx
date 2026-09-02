@@ -1,7 +1,29 @@
 /* uix-styleguide app.js — pure helpers (unit-tested) + DOM wiring for the showcase.
    The DOM block is guarded so this module imports cleanly under node:test. */
 import { icon, iconNames } from '../assets/icons.js';
-import { initCharts, refreshCharts } from './charts.js';
+
+const ECHARTS_URL = 'https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js';
+const ECHARTS_INTEGRITY = 'sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss';
+let chartsPromise;
+
+const loadCharts = () => {
+  if (typeof document === 'undefined' || !document.querySelector('[data-uix-chart]')) return Promise.resolve(null);
+  if (chartsPromise) return chartsPromise;
+  const engine = window.echarts
+    ? Promise.resolve()
+    : new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = ECHARTS_URL;
+        script.integrity = ECHARTS_INTEGRITY;
+        script.crossOrigin = 'anonymous';
+        script.async = true;
+        script.addEventListener('load', resolve, { once: true });
+        script.addEventListener('error', () => reject(new Error('Failed to load ECharts')), { once: true });
+        document.head.appendChild(script);
+      });
+  chartsPromise = engine.then(() => import('./charts.js'));
+  return chartsPromise;
+};
 
 /* ----------------------------------------------------------------------------
  * Pure helpers (tested in app.test.js)
@@ -21,13 +43,14 @@ export const toggleSet = (set, id) => {
 };
 
 /** Stable sort by key + direction; case-insensitive + numeric-aware for strings. */
+const rowCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 export const sortRows = (rows, key, dir = 'asc') => {
   const sign = dir === 'desc' ? -1 : 1;
   return [...rows].sort((a, b) => {
     const av = a[key], bv = b[key];
     if (av === bv) return 0;
     const cmp = (typeof av === 'string' && typeof bv === 'string')
-      ? av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' })
+      ? rowCollator.compare(av, bv)
       : (av > bv ? 1 : -1);
     return cmp * sign;
   });
@@ -105,18 +128,15 @@ export const multiSort = (rows, keys, getField = (r, f) => r[f]) => {
     if (a == null) return -1;
     if (b == null) return 1;
     if (typeof a === 'number' && typeof b === 'number') return a - b;
-    return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+    return rowCollator.compare(String(a), String(b));
   };
-  return rows
-    .map((row, i) => ({ row, i }))
-    .sort((x, y) => {
+  return rows.slice().sort((x, y) => {
       for (const k of keys) {
-        const c = cmp(getField(x.row, k.field), getField(y.row, k.field));
+        const c = cmp(getField(x, k.field), getField(y, k.field));
         if (c) return k.dir === 'desc' ? -c : c;
       }
-      return x.i - y.i; // stable
-    })
-    .map((w) => w.row);
+      return 0;
+    });
 };
 
 /** Toggle a field in a multi-sort key list. Non-additive replaces the list with this
@@ -354,7 +374,7 @@ if (typeof document !== 'undefined') {
       localStorage.setItem(KEY, next);
       paintToggle();
       buildTokenReference();
-      refreshCharts();
+      void loadCharts().then((charts) => charts?.refreshCharts());
       return;
     }
     const copyBtn = e.target.closest('[data-uix-copy]');
@@ -436,22 +456,27 @@ if (typeof document !== 'undefined') {
     let pinned = new Set();
     const cellText = (tr, i) => tr.children[i]?.textContent.trim() ?? '';
     const headers = [...table.querySelectorAll('thead th')];
+    const rowsById = new Map(allRows.map((row) => [row.id, row]));
     // primary (flex) column: where search matches get highlighted (plain-text subject). Cache the
     // original text per row so the highlight can be rebuilt/cleared without losing the source string.
     const primaryIdx = headers.findIndex((h) => h.classList.contains('uix-col--flex'));
     allRows.forEach((r) => {
       r.primaryCell = primaryIdx >= 0 ? r.el.children[primaryIdx] : null;
       r.primaryText = r.primaryCell ? r.primaryCell.textContent : '';
+      r.searchText = r.el.textContent.toLowerCase();
+      r.cellText = headers.map((_, index) => cellText(r.el, index));
+      r.highlightQuery = null;
     });
 
-    const applyHighlight = () => {
+    const applyHighlight = (rows) => {
       if (primaryIdx < 0) return;
-      allRows.forEach((r) => {
-        if (!r.primaryCell) return;
+      rows.forEach((r) => {
+        if (!r.primaryCell || r.highlightQuery === query) return;
         r.primaryCell.innerHTML = query.trim()
           ? highlightSegments(r.primaryText, query).map((seg) =>
               seg.match ? `<mark class="uix-mark">${esc(seg.text)}</mark>` : esc(seg.text)).join('')
           : esc(r.primaryText);
+        r.highlightQuery = query;
       });
     };
 
@@ -461,15 +486,18 @@ if (typeof document !== 'undefined') {
       let visible = allRows.filter((r) =>
         (!filters.status.size || filters.status.has(r.status)) &&
         (!filters.type.size || filters.type.has(r.type)) &&
-        (!q || r.el.textContent.toLowerCase().includes(q)));
+        (!q || r.searchText.includes(q)));
       // stable multi-column sort, reading each key's cell text at its column index
-      if (sortKeys.length) visible = multiSort(visible, sortKeys, (r, idx) => cellText(r.el, idx));
-      const pinnedRows = [...pinned].map((id) => allRows.find((r) => r.id === id)).filter(Boolean);
+      if (sortKeys.length) visible = multiSort(visible, sortKeys, (r, idx) => r.cellText[idx]);
+      const pinnedRows = [...pinned].map((id) => rowsById.get(id)).filter(Boolean);
       const rest = visible.filter((r) => !pinned.has(r.id));
-      tbody.replaceChildren(...[...pinnedRows, ...rest].map((r) => r.el));
-      allRows.forEach((r) => r.el.removeAttribute('data-pinned'));
-      pinnedRows.forEach((r) => r.el.setAttribute('data-pinned', ''));
-      applyHighlight();
+      const ordered = [...pinnedRows, ...rest];
+      const current = tbody.children;
+      if (current.length !== ordered.length || ordered.some((row, index) => current[index] !== row.el)) {
+        tbody.replaceChildren(...ordered.map((row) => row.el));
+      }
+      allRows.forEach((row) => row.el.toggleAttribute('data-pinned', pinned.has(row.id)));
+      applyHighlight(ordered);
     };
 
     // paint aria-sort + the multi-sort ordinal badge (.uix-table th[data-sort-order]) from the keys
@@ -498,7 +526,12 @@ if (typeof document !== 'undefined') {
 
     // free-text search box (filters rows + highlights matches in the primary cell)
     const searchInput = root.querySelector('input[type="search"]');
-    searchInput?.addEventListener('input', () => { query = searchInput.value; render(); });
+    let searchFrame = 0;
+    searchInput?.addEventListener('input', () => {
+      query = searchInput.value;
+      if (searchFrame) return;
+      searchFrame = requestAnimationFrame(() => { searchFrame = 0; render(); });
+    });
 
     // column resize: drag a header's right edge. table-layout:fixed honours the explicit width;
     // clampWidth keeps it sane. Skip the frozen identifier column (index 0).
@@ -515,8 +548,21 @@ if (typeof document !== 'undefined') {
           const startX = e.clientX, startW = th.getBoundingClientRect().width;
           grip.setAttribute('data-drag', '');
           grip.setPointerCapture(e.pointerId);
-          const onMove = (ev) => { th.style.width = clampWidth(startW + (ev.clientX - startX)) + 'px'; };
-          const onUp = () => { grip.removeAttribute('data-drag'); grip.removeEventListener('pointermove', onMove); grip.removeEventListener('pointerup', onUp); };
+          let moveFrame = 0, latestX = startX;
+          const onMove = (ev) => {
+            latestX = ev.clientX;
+            if (moveFrame) return;
+            moveFrame = requestAnimationFrame(() => {
+              moveFrame = 0;
+              th.style.width = clampWidth(startW + (latestX - startX)) + 'px';
+            });
+          };
+          const onUp = () => {
+            if (moveFrame) cancelAnimationFrame(moveFrame);
+            grip.removeAttribute('data-drag');
+            grip.removeEventListener('pointermove', onMove);
+            grip.removeEventListener('pointerup', onUp);
+          };
           grip.addEventListener('pointermove', onMove);
           grip.addEventListener('pointerup', onUp);
         });
@@ -1087,7 +1133,19 @@ if (typeof document !== 'undefined') {
     setupTree();
     enhanceAnchoredPopovers(); // after all setups so dynamically-rendered pickers are covered too
     enhanceTooltips();
-    initCharts();
+    const firstChart = document.querySelector('[data-uix-chart]');
+    if (firstChart) {
+      const initialize = () => void loadCharts().then((charts) => charts?.initCharts());
+      if (typeof IntersectionObserver === 'undefined') initialize();
+      else {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          initialize();
+        }, { rootMargin: '600px 0px' });
+        observer.observe(firstChart);
+      }
+    }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

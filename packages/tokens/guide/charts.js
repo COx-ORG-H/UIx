@@ -1,7 +1,8 @@
 /* guide/charts.js — ECharts instances wired to --uix-chart-* CSS tokens.
-   Requires window.echarts (loaded via CDN <script> in index.html). */
+   Requires window.echarts (loaded on demand by guide/app.js). */
 
 const instances = new Map();
+const observers = new Map();
 
 const tok = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const palette = () => [1, 2, 3, 4, 5, 6, 7, 8].map((i) => tok(`--uix-chart-${i}`));
@@ -121,13 +122,29 @@ export const initCharts = () => {
   const ec = window.echarts;
   if (!ec) return;
   const p = palette();
-  const ro = new ResizeObserver(() => instances.forEach((c) => c.resize()));
   document.querySelectorAll('[data-uix-chart]').forEach((el) => {
+    if (instances.has(el)) return;
     const type = el.dataset.uixChart;
     if (!OPTIONS[type]) return;
     const chart = ec.init(el, null, { renderer: 'svg' });
     chart.setOption(OPTIONS[type](p));
     instances.set(el, chart);
+    let frame = 0;
+    let width = el.clientWidth;
+    let height = el.clientHeight;
+    const ro = new ResizeObserver(() => {
+      const nextWidth = el.clientWidth;
+      const nextHeight = el.clientHeight;
+      if (nextWidth === width && nextHeight === height) return;
+      width = nextWidth;
+      height = nextHeight;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        chart.resize();
+      });
+    });
+    observers.set(el, { ro, cancel: () => frame && cancelAnimationFrame(frame) });
     ro.observe(el);
   });
 };
@@ -135,6 +152,14 @@ export const initCharts = () => {
 export const refreshCharts = () => {
   const p = palette();
   instances.forEach((chart, el) => {
+    if (!el.isConnected) {
+      observers.get(el)?.ro.disconnect();
+      observers.get(el)?.cancel();
+      observers.delete(el);
+      chart.dispose();
+      instances.delete(el);
+      return;
+    }
     const type = el.dataset.uixChart;
     if (OPTIONS[type]) chart.setOption(OPTIONS[type](p));
   });

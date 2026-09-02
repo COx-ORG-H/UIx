@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -20,8 +20,9 @@ export interface TabsProps {
 }
 
 export function Tabs({ variant = 'line', value, onChange, children, className }: TabsProps) {
+  const contextValue = useMemo(() => ({ value, onChange }), [value, onChange]);
   return (
-    <TabsCtx.Provider value={{ value, onChange }}>
+    <TabsCtx.Provider value={contextValue}>
       <div role="tablist" className={cx('uix-tabs', `uix-tabs--${variant}`, className)}>
         {children}
       </div>

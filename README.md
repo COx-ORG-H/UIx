@@ -36,7 +36,8 @@ theme, and typed TS constants). Add it as a dependency and import what your stac
   @import "tailwindcss";
   ```
   (Tailwind v3 projects use `presets: [require('@tensor_1/tokens/tailwind/preset')]` instead.)
-- **Plain CSS:** link `@tensor_1/tokens/build/css/tokens.css`, then your product theme css.
+- **Plain CSS:** use `@tensor_1/tokens/bundle` for everything, or combine `css`, a theme,
+  `motion`, and only the required `components/*` exports for the smallest payload.
 - **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@tensor_1/tokens/ts";`
   — use `cssVar` in the browser (respects brand + dark), `light`/`dark`/`num` for non-DOM.
 
