@@ -36,6 +36,18 @@ theme, and typed TS constants). Add it as a dependency and import what your stac
   @import "tailwindcss";
   ```
   (Tailwind v3 projects use `presets: [require('@tensor_1/tokens/tailwind/preset')]` instead.)
+
+  **If you import `bundle` / `styles` (base + components) into a Tailwind app, declare the
+  layer order yourself as the FIRST line of the entry stylesheet:**
+  ```css
+  @layer theme, base, uix.tokens, uix.base, uix.util, uix.motion, uix.components, components, utilities;
+  ```
+  A layer's position is fixed by its first mention. Without this, `@import "tailwindcss"`
+  declares `theme, base, components, utilities` and the bundle's own `@layer uix.tokens, …`
+  statement appends the UIx layers AFTER `utilities` — so `uix.base`'s `h1…h6, p, ul … { margin: 0 }`
+  reset beats every `mb-*` / `space-y-*` on a heading or paragraph, and `h1 { font-weight: 600 }`
+  beats your own heading class. Layers beat specificity; no utility can win. Preflight (`base`)
+  goes before the UIx layers so UIx element defaults still beat preflight's `font-size: inherit`.
 - **Plain CSS:** use `@tensor_1/tokens/bundle` for everything, or combine `css`, a theme,
   `motion`, and only the required `components/*` exports for the smallest payload.
 - **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@tensor_1/tokens/ts";`

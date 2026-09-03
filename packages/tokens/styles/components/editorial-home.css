@@ -14,8 +14,12 @@
   .uix-page-lede { max-width: 680px; margin: var(--uix-space-3) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-h3); }
   .uix-intro-search__label { margin: 0 0 var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
 
-  .uix-searchbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--uix-space-2); }
+  /* The well is 44px tall; the button beside it is a standard 36px control. Centre the
+     two and lift the button to the well's height so their edges line up (TENSOR portal
+     services search: the button sat 8px short of the input, top-aligned). */
+  .uix-searchbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--uix-space-2); align-items: center; }
   .uix-searchbar .uix-input { min-height: 44px; padding-left: 42px; }
+  .uix-searchbar .uix-btn { min-height: 44px; }
   .uix-searchbar__wrap { position: relative; }
   .uix-searchbar__wrap > svg { position: absolute; top: 50%; left: 14px; z-index: var(--uix-z-raised); width: 17px; height: 17px; color: var(--uix-text-hushed); transform: translateY(-50%); pointer-events: none; }
 
@@ -168,7 +172,6 @@
     .uix-notice__position { flex: 1; }
 
     .uix-searchbar { grid-template-columns: 1fr; }
-    .uix-searchbar .uix-btn { min-height: 44px; }
 
     .uix-page-intro { margin-top: var(--uix-space-5); gap: var(--uix-space-5); }
     .uix-shortcut-grid { grid-template-columns: 1fr 1fr; }
