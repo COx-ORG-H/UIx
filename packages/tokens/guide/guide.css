@@ -81,6 +81,16 @@
   border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-lg);
   color: var(--uix-text-muted); background: var(--uix-bg-subtle);
 }
+.uix-guide__chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--uix-space-3); }
+.uix-guide__chart-grid > .uix-chart:first-child { grid-column: 1 / -1; }
+.uix-guide__run-card .uix-card__header { align-items: flex-start; }
+.uix-guide__run-summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2) var(--uix-space-4); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+.uix-guide__run-summary strong { color: var(--uix-text); font-family: var(--uix-font-mono); font-weight: 600; }
+.uix-guide__run-summary + .uix-pipeline { margin-top: var(--uix-space-5); }
+@media (max-width: 760px) {
+  .uix-guide__chart-grid { grid-template-columns: 1fr; }
+  .uix-guide__chart-grid > .uix-chart:first-child { grid-column: auto; }
+}
 
 /* ---- swatch grid ---- */
 .uix-swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }

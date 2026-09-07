@@ -150,6 +150,12 @@ export type { SegmentedProps, SegmentedOptionProps } from './components/Segmente
 export { Timeline, TimelineItem } from './components/Timeline.js';
 export type { TimelineProps, TimelineItemProps } from './components/Timeline.js';
 
+export { Pipeline, PipelineStage } from './components/Pipeline.js';
+export type { PipelineProps, PipelineStageProps, PipelineStageState } from './components/Pipeline.js';
+
+export { Flow, FlowNode } from './components/Flow.js';
+export type { FlowProps, FlowNodeProps, FlowNodeState, FlowVariant } from './components/Flow.js';
+
 export { Prose, Note } from './components/Prose.js';
 export type { ProseProps, NoteProps, NoteTone } from './components/Prose.js';
 

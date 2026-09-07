@@ -7,11 +7,49 @@
 import { CSSProperties } from 'react';
 import { ECharts } from 'echarts';
 import { EChartsOption } from 'echarts';
+import { HTMLAttributes } from 'react';
 import * as react from 'react';
 import { ReactNode } from 'react';
 
 // @public
 export function Chart(props: ChartProps): react.JSX.Element;
+
+// @public (undocumented)
+export function ChartLegend(input: ChartLegendProps): react.JSX.Element;
+
+// @public (undocumented)
+export function ChartLegendItem(input: ChartLegendItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ChartLegendItemProps extends HTMLAttributes<HTMLLIElement> {
+    // (undocumented)
+    color?: string;
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    swatch?: 'block' | 'line' | 'dash';
+}
+
+// @public (undocumented)
+export interface ChartLegendProps extends HTMLAttributes<HTMLUListElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export function ChartMetric(input: ChartMetricProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    delta?: ReactNode;
+    // (undocumented)
+    deltaTone?: 'neutral' | 'positive' | 'negative' | 'warning';
+    // (undocumented)
+    label?: ReactNode;
+    // (undocumented)
+    value: ReactNode;
+}
 
 // @public (undocumented)
 export interface ChartProps {
@@ -20,9 +58,17 @@ export interface ChartProps {
     // (undocumented)
     className?: string;
     // (undocumented)
+    empty?: ReactNode;
+    // (undocumented)
+    footer?: ReactNode;
+    // (undocumented)
     header?: ReactNode;
     // (undocumented)
+    headerAction?: ReactNode;
+    // (undocumented)
     height?: string | number;
+    // (undocumented)
+    loading?: boolean;
     // (undocumented)
     onReady?: (chart: ECharts) => void;
     // (undocumented)

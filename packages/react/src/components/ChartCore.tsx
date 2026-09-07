@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import type { ECharts, EChartsOption } from 'echarts';
 import { cx } from '../cx.js';
 
@@ -34,6 +34,10 @@ export interface ChartProps {
   tableHeaders?: string[];
   onReady?: (chart: ECharts) => void;
   header?: ReactNode;
+  headerAction?: ReactNode;
+  footer?: ReactNode;
+  loading?: boolean;
+  empty?: ReactNode;
 }
 
 interface ChartCoreProps extends ChartProps {
@@ -54,6 +58,10 @@ export function ChartCore({
   tableHeaders,
   onReady,
   header,
+  headerAction,
+  footer,
+  loading = false,
+  empty,
 }: ChartCoreProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ECharts | null>(null);
@@ -61,6 +69,7 @@ export function ChartCore({
   const latestOptionRef = useRef(option);
   const onReadyRef = useRef(onReady);
   const tableId = useId();
+  const hasEmpty = empty != null;
   latestOptionRef.current = option;
   onReadyRef.current = onReady;
 
@@ -98,7 +107,7 @@ export function ChartCore({
       chartRef.current = null;
       appliedOptionRef.current = null;
     };
-  }, [engine]);
+  }, [engine, hasEmpty]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -113,20 +122,29 @@ export function ChartCore({
 
   return (
     <div className={cx('uix-chart', className)} style={style}>
-      {(title != null || subtitle != null || header != null) ? (
-        <div>
-          {header}
-          {title ? <div className="uix-chart__title">{title}</div> : null}
-          {subtitle ? <div className="uix-chart__subtitle">{subtitle}</div> : null}
+      {(title != null || subtitle != null || header != null || headerAction != null) ? (
+        <div className="uix-chart__header">
+          <div className="uix-chart__heading">
+            {header}
+            {title ? <div className="uix-chart__title">{title}</div> : null}
+            {subtitle ? <div className="uix-chart__subtitle">{subtitle}</div> : null}
+          </div>
+          {headerAction}
         </div>
       ) : null}
-      <div
-        ref={containerRef}
-        style={{ height: heightValue }}
-        role="img"
-        aria-label={effectiveAriaLabel}
-        aria-describedby={hasTable ? tableId : undefined}
-      />
+      {hasEmpty ? (
+        <div className="uix-chart__plot" data-empty>{empty}</div>
+      ) : (
+        <div className="uix-chart__plot" data-loading={loading || undefined} aria-busy={loading || undefined}>
+          <div
+            ref={containerRef}
+            style={{ height: heightValue }}
+            role="img"
+            aria-label={effectiveAriaLabel}
+            aria-describedby={hasTable ? tableId : undefined}
+          />
+        </div>
+      )}
       {hasTable ? (
         <table id={tableId} className="sr-only" aria-label={`${effectiveAriaLabel} — data table`}>
           <thead><tr>{tableHeaders!.map((label) => <th key={label} scope="col">{label}</th>)}</tr></thead>
@@ -137,6 +155,48 @@ export function ChartCore({
           </tbody>
         </table>
       ) : null}
+      {footer != null && <div className="uix-chart__footer">{footer}</div>}
     </div>
+  );
+}
+
+export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
+  value: ReactNode;
+  label?: ReactNode;
+  delta?: ReactNode;
+  deltaTone?: 'neutral' | 'positive' | 'negative' | 'warning';
+}
+
+export function ChartMetric({ value, label, delta, deltaTone = 'neutral', className, ...props }: ChartMetricProps) {
+  return (
+    <div className={cx('uix-chart__metric', className)} {...props}>
+      <div className="uix-chart__metric-value">{value}</div>
+      {label != null && <div className="uix-chart__metric-label">{label}</div>}
+      {delta != null && <div className="uix-chart__delta" data-tone={deltaTone}>{delta}</div>}
+    </div>
+  );
+}
+
+export interface ChartLegendProps extends HTMLAttributes<HTMLUListElement> {
+  children?: ReactNode;
+}
+
+export function ChartLegend({ children, className, ...props }: ChartLegendProps) {
+  return <ul className={cx('uix-legend', className)} {...props}>{children}</ul>;
+}
+
+export interface ChartLegendItemProps extends HTMLAttributes<HTMLLIElement> {
+  label: ReactNode;
+  color?: string;
+  swatch?: 'block' | 'line' | 'dash';
+}
+
+export function ChartLegendItem({ label, color, swatch = 'block', className, style, ...props }: ChartLegendItemProps) {
+  const mergedStyle = color ? ({ '--legend-color': color, ...style } as CSSProperties) : style;
+  return (
+    <li className={cx('uix-legend__item', className)} style={mergedStyle} {...props}>
+      <span className={cx('uix-legend__swatch', swatch !== 'block' && `uix-legend__swatch--${swatch}`)} aria-hidden="true" />
+      {label}
+    </li>
   );
 }

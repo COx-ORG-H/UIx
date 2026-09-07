@@ -79,6 +79,8 @@ The following CSS primitives (and their `@tensor_1/react` wrappers) are the inte
 | Builder canvas | `builder-canvas.css` · `<BuilderCanvas>` | Existing surface, spacing, border, text, and focus tokens |
 | Scheduling + date range | `scheduling-calendar.css` / `date-range-picker.css` · React wrappers | Existing calendar, surface, semantic-state, and focus tokens |
 | Relationship graph | `relationship-graph.css` · `<RelationshipGraph>` | Existing chart, surface, border, semantic-state, and focus tokens |
+| Operational pipeline + flow | `pipeline.css`, `flow.css` · `<Pipeline>` / `<Flow>` families | Existing surface, border, spacing, semantic-state, focus, and motion tokens |
+| Analytical charts | `chart.css` · `<Chart>` through the optional React chart entry | Existing chart palette, surface, text, semantic-state, and focus tokens |
 | Review + configuration | `match-review.css`, `metric-input.css`, `license-position-bar.css`, `diff-viewer.css` · React wrappers | Existing form, table, meter, status, and semantic-state tokens |
 | Brand profiles + color | `brand-profiles.css`, `color-picker.css` · React wrappers | Write-only `--uix-brand` / `--uix-brand-fg` through the existing accent chain |
 

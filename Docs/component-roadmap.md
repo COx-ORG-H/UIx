@@ -39,7 +39,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Card | card.css | ✓ `Card` | Stable | no | Layout container. |
-| Chart | chart.css | absent | Planned | no | Planned wrapper; CSS only at HEAD (not yet in `index.ts`). |
+| Chart | chart.css | ✓ `Chart` (`@tensor_1/react/chart`) | Beta | no | Optional ECharts adapter with accessible data table, analytical card states, metric, and legend chrome; lean preset also available. |
 | Checkbox | checkbox.css | ✓ `Checkbox` | Stable | no | Form primitive. |
 | ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
 | Combobox | combobox.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
@@ -53,7 +53,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
-| Flow | flow.css | absent | Planned | no | Planned wrapper (presentational). |
+| Flow | flow.css | ✓ `Flow` | Beta | no | Also `FlowNode`; presentational graph shell with explicit state text and consumer-owned geometry. |
 | Form | form.css | ✓ `Field` | Stable | no | `Field` wraps the form-row CSS; `FormGrid`/`Fieldset` still planned. |
 | Heartbeat | heartbeat.css | absent | Planned | no | Planned wrapper (presentational). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
@@ -75,7 +75,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
 | Pagination | pagination.css | ✓ `Pagination` | Stable | no | Data-display control. |
 | Peek | peek.css | ✓ `Peek` | Stable | no | Side-peek overlay. |
-| Pipeline | pipeline.css | absent | Planned | no | Planned wrapper (presentational). |
+| Pipeline | pipeline.css | ✓ `Pipeline` | Beta | no | Also `PipelineStage`; compact bar and detailed scrollable operational rail. |
 | Popover | popover.css | ✓ `Popover` | Beta | no | Overlay; recently landed. |
 | Progress | progress.css | ✓ `Progress` | Beta | no | Recently landed. |
 | Prose | prose.css | ✓ `Prose` | Stable | no | Also `Note` (`NoteTone`). |
@@ -114,7 +114,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 - **Composer** (`Composer`/`ComposerBar`) and the `Field`, `StarButton`, `NavFavourites` React exports have no
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
-- The **16 currently-planned wrappers** (React=absent, Maturity=Planned, presentational unless noted): breadcrumbs,
-  kbd, steps, stepper, reactions, attachment, audit-log, notification-center, pipeline, flow, sla, heartbeat, media,
+- The **14 currently-planned wrappers** (React=absent, Maturity=Planned, presentational unless noted): breadcrumbs,
+  kbd, steps, stepper, reactions, attachment, audit-log, notification-center, sla, heartbeat, media,
   lightbox, contact-card, view-menu. In addition, the interactive-but-unwrapped surfaces (combobox, calendar,
-  file-upload, slider, tag-input, menu) and chart are also Planned; those need real behaviour, not just a class wrapper.
+  file-upload, slider, tag-input, and menu) are also Planned; those need real behaviour, not just a class wrapper.

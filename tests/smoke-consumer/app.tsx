@@ -13,10 +13,13 @@ import {
   ColorPicker,
   DateRangePicker,
   DiffViewer,
+  Flow,
   LicensePositionBar,
   MatchReview,
   MetricInput,
   Modal,
+  Pipeline,
+  PipelineStage,
   RelationshipGraph,
   RuleBuilder,
   SchedulingCalendar,
@@ -27,8 +30,8 @@ import {
   stepMetricValue,
 } from '@tensor_1/react';
 import type { BrandProfile, ButtonProps, RuleDefinition } from '@tensor_1/react';
-import { Chart } from '@tensor_1/react/chart';
-import { Chart as PresetChart } from '@tensor_1/react/chart/preset';
+import { Chart, ChartMetric } from '@tensor_1/react/chart';
+import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset';
 import { cssVar, light, dark, num } from '@tensor_1/tokens/ts';
 
 // cssVar/light are Record<UixTokenName,string>; dark/num are Partial<Record<…>>.
@@ -49,8 +52,8 @@ const brand: BrandProfile = {
 
 export default {
   BrandProfiles, BuilderCanvas, Button, Card, ColorPicker, DateRangePicker,
-  DiffViewer, LicensePositionBar, MatchReview, MetricInput, Modal,
+  DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,
-  PresetChart, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
+  PresetChart, ChartMetric, ChartLegend, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
   stepMetricValue, accent, body, space4, darkBg, renderButton, rule, brand,
 };
