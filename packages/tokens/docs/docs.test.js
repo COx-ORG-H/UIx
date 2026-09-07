@@ -3,6 +3,9 @@
    The module's DOM block is guarded by `typeof document`, so importing it here is DOM-free. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   slugify,
   componentNav,
@@ -11,7 +14,14 @@ import {
   normalizeHash,
   buildSearchIndex,
   matchDocs,
+  COMPONENT_GROUPS,
+  COMPONENT_ITEMS,
+  COMPOSITE_PATTERNS,
+  SHOWCASE_SECTION_MAP,
+  getPage,
 } from './docs.js';
+
+const docsDirectory = dirname(fileURLToPath(import.meta.url));
 
 test('slugify: lowercases, hyphenates, trims edges', () => {
   assert.equal(slugify('Button'), 'button');
@@ -114,4 +124,47 @@ test('matchDocs: all query terms must match and results respect the limit', () =
   assert.deepEqual(matchDocs(index, 'status semantic').map((item) => item.name), ['Status Pill', 'Alert']);
   assert.equal(matchDocs(index, '', 2).length, 2);
   assert.deepEqual(matchDocs(index, 'missing'), []);
+});
+
+test('component catalogue covers every independently importable CSS module exactly once', () => {
+  const componentDirectory = resolve(docsDirectory, '../styles/components');
+  const cssModules = readdirSync(componentDirectory)
+    .filter((name) => name.endsWith('.css'))
+    .map((name) => name.slice(0, -4))
+    .sort();
+  const documentedModules = COMPONENT_ITEMS
+    .filter((item) => !item.composite)
+    .map((item) => item.slug)
+    .sort();
+
+  assert.equal(new Set(COMPONENT_ITEMS.map((item) => item.slug)).size, COMPONENT_ITEMS.length);
+  assert.deepEqual(documentedModules, cssModules);
+});
+
+test('showcase-only compositions are explicit and never presented as CSS exports', () => {
+  assert.deepEqual(COMPOSITE_PATTERNS, ['Nav favourites', 'Composer']);
+  assert.deepEqual(
+    COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
+    COMPOSITE_PATTERNS,
+  );
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 82);
+});
+
+test('every canonical style-guide section has a documentation destination', () => {
+  const showcase = readFileSync(resolve(docsDirectory, '../index.html'), 'utf8');
+  const sectionIds = [...showcase.matchAll(/<section id="([^"]+)" class="uix-guide__section"/g)]
+    .map((match) => match[1])
+    .sort();
+
+  assert.deepEqual(Object.keys(SHOWCASE_SECTION_MAP).sort(), sectionIds);
+  for (const route of Object.values(SHOWCASE_SECTION_MAP)) {
+    assert.equal(getPage(route), route);
+  }
+});
+
+test('every catalogue entry resolves to its own reference route', () => {
+  for (const item of COMPONENT_ITEMS) {
+    assert.equal(getPage(item.slug), item.slug);
+  }
+  assert.equal(getPage('not-a-real-page'), 'introduction');
 });

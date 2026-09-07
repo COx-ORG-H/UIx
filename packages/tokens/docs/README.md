@@ -15,13 +15,19 @@ enterprise interaction patterns into a searchable reference without introducing 
 
 ## Content model
 
-`NAV_ITEMS` in `docs.js` is the canonical page order and search metadata. `PAGES` maps each slug to a content
-renderer. Add a page in both places, then use the shared `pageHeader`, `section`, `demo`, `codeBlock`, `callout`,
-and `compare` helpers so reference pages keep one rhythm.
+`NAV_ITEMS` in `docs.js` is the canonical page order and search metadata. `PAGES` maps hand-authored guide and
+component slugs to content renderers. Add a major guide page in both places, then use the shared `pageHeader`,
+`section`, `demo`, `codeBlock`, `callout`, and `compare` helpers so reference pages keep one rhythm.
 
-The complete CSS inventory lives in `COMPONENT_GROUPS`. A component with a detailed page links there directly;
-the remaining cards point readers to the canonical style guide. Search indexes both reference pages and all
-catalogue component names, so an undocumented primitive remains discoverable.
+The complete component inventory lives in `COMPONENT_GROUPS`. Every entry gets its own route: a hand-authored
+page when one exists, otherwise a generated reference with its verified import path and a link to the relevant
+state matrix in the canonical style guide. `COMPOSITE_PATTERNS` identifies showcase compositions that do not have
+standalone CSS exports. Search and catalogue cards always open the component route directly.
+
+`SHOWCASE_SECTION_MAP` accounts for every top-level section in `packages/tokens/index.html`. The unit tests compare
+the non-composite catalogue entries with `styles/components/*.css` and compare that section map with the live
+showcase. Adding a public stylesheet or showcase section without a docs destination therefore fails the docs test
+instead of silently creating a coverage gap.
 
 Keep package names, exports, version labels, class names, and props synchronized with the live manifests and
 `packages/react/etc/uix-react.api.md`. The docs must describe verified reality, not a future API.
