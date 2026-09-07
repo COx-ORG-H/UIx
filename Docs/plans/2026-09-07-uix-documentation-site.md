@@ -3,7 +3,7 @@
 **Date:** 2026-09-07
 **Status:** Complete
 **Owner:** Codex
-**Delivery surface:** `packages/tokens/docs/`
+**Delivery surface:** `packages/tokens/docs/` and GitHub Pages
 
 ## Definition of Ready
 
@@ -17,7 +17,7 @@ UIx already has a comprehensive build-free showcase, token package, React packag
 - Do not add a framework, build step, backend, authentication, analytics, or external content service.
 - Do not claim pricing, support guarantees, public availability, or package capabilities not present in the repository.
 - Do not attempt exhaustive handwritten API documentation for every React export in this first delivery; make the full inventory discoverable and provide detailed pages for the highest-frequency adoption paths and primitives.
-- Do not publish or change hosting configuration as part of this existing-site edit.
+- Do not add a hosted runtime, custom domain, or deployment platform beyond the user-requested GitHub Pages static publication.
 
 ### Acceptance criteria
 
@@ -48,7 +48,7 @@ All content is first-party static documentation. There is no user data, persiste
 ### Production-readiness seed
 
 - Accessibility: owned in this slice through semantics, keyboard paths, reduced motion, and axe coverage.
-- Delivery: stays on the existing static-site pipeline; no hosting mutation in this slice.
+- Delivery: GitHub Pages publishes the verified static package through a pinned GitHub Actions workflow.
 - Observability, tenancy, identity, persistence, recovery, secrets, compliance logging, and AI safety: deferred until UIx docs gain a hosted runtime or user-owned data because this surface is static and read-only.
 
 ## Visual thesis
@@ -76,6 +76,7 @@ All content is first-party static documentation. There is no user data, persiste
 - `packages/tokens/docs/README.md` — maintainer guide.
 - `packages/tokens/README.md` — consumer-facing docs entry update.
 - `tests/a11y/a11y.spec.mjs` — documentation page included in the existing accessibility gate.
+- `.github/workflows/docs-pages.yml` — builds and publishes the static UIx package to GitHub Pages.
 
 ## Verification record
 
@@ -88,5 +89,13 @@ All content is first-party static documentation. There is no user data, persiste
 - `Invoke-WebRequest http://localhost:4178/packages/tokens/docs/explorer.html#introduction` — served artifact returned HTTP 200.
 - The live documentation route was handed off to the Codex preview at `http://localhost:4178/packages/tokens/docs/explorer.html#introduction`.
 
-No hosting configuration or production deployment was changed. Unrelated in-progress chart/workflow edits appeared
-in the shared worktree during verification and were preserved outside this documentation slice.
+### GitHub Pages addendum
+
+At the user's request, the repository's existing GitHub Pages configuration is now driven by
+`.github/workflows/docs-pages.yml`. The workflow builds the token contract, assembles the static package without
+source-only or dependency directories, uploads the Pages artifact, and deploys it with least-privilege permissions.
+Every third-party action is pinned to an immutable commit SHA. The full style guide publishes at the Pages root and
+the documentation product at `/docs/`; the repository homepage points directly to that documentation URL.
+
+Unrelated in-progress chart/workflow edits appeared in the shared worktree during verification and were preserved
+outside this documentation slice.
