@@ -8,6 +8,18 @@
   min-height: 100vh;
 }
 
+/* Phase 46.9 showcase page layout (component visuals remain in styles/components/*). */
+.uix-phase-page__header { display:flex; justify-content:space-between; align-items:flex-end; gap:var(--uix-space-6); max-width:94rem; margin-inline:auto; padding:var(--uix-space-8) var(--uix-space-6); border-bottom:1px solid var(--uix-border); }
+.uix-phase-page__header>div:first-child { display:grid; gap:var(--uix-space-2); max-width:52rem; }
+.uix-phase-page { max-width:94rem; margin-inline:auto; padding-inline:var(--uix-space-6); }
+.uix-phase-page__split { display:grid; grid-template-columns:1fr 1fr; gap:var(--uix-space-6); align-items:center; }
+.uix-phase-page__overflow { width:28%; }
+.uix-phase-page__brand-swatch,.uix-phase-page__brand-preview { background:var(--uix-accent); }
+.uix-phase-page__fg-swatch { background:var(--uix-accent-fg); }
+.uix-phase-page__brand-preview { color:var(--uix-accent-fg); }
+@media (max-width:720px) { .uix-phase-page__header { display:grid; padding:var(--uix-space-5) var(--uix-space-4); } .uix-phase-page { padding-inline:var(--uix-space-4); } .uix-phase-page__split { grid-template-columns:1fr; } }
+@media (min-width:721px) { .uix-guide__section:has([data-color-dialog]:not([hidden])) { padding-bottom:26rem; } }
+
 /* ---- nav rail ---- */
 .uix-guide__nav {
   position: sticky; top: 0; align-self: start;

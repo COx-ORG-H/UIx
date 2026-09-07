@@ -1,0 +1,8 @@
+@layer uix.components {
+  .uix-license-position { display:grid; gap:var(--uix-space-2); color:var(--uix-text); }
+  .uix-license-position__header { display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); }
+  .uix-license-position__value { font-variant-numeric:tabular-nums; font-weight:600; }
+  .uix-license-position__track { position:relative; padding-bottom:var(--uix-space-2); }
+  .uix-license-position__overflow { position:absolute; top:100%; right:0; height:var(--uix-space-2); border-radius:var(--uix-radius-pill); background:var(--uix-danger-solid); }
+  .uix-license-position--over .uix-meter { outline:2px solid var(--uix-danger); outline-offset:2px; }
+}

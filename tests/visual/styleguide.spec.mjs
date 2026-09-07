@@ -15,6 +15,8 @@ const PAGES = [
   { name: 'index', path: 'index.html' },      // the component showcase
   { name: 'tables', path: 'tables.html' },    // data-grid example app
   { name: 'dashboard', path: 'dashboard.html' }, // dashboard example app
+  { name: 'phase-46-9-wide', path: 'phase-46-9.html' },
+  { name: 'phase-46-9-narrow', path: 'phase-46-9.html', viewport: { width: 390, height: 844 } },
 ];
 
 for (const pg of PAGES) {
@@ -24,6 +26,7 @@ for (const pg of PAGES) {
       try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
     }, theme);
 
+    if (pg.viewport) await page.setViewportSize(pg.viewport);
     await page.goto(pg.path, { waitUntil: 'networkidle' });
     // theme seeded correctly + webfonts resolved before we snapshot
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -39,6 +42,13 @@ for (const pg of PAGES) {
       await page.evaluate(() => window.scrollTo(0, 0));
     }
 
-    await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true });
+    // Capture the full ColorPicker surface rather than only its trigger on the
+    // dedicated Phase 46.9 page.
+    if (pg.path === 'phase-46-9.html') {
+      await page.locator('[data-color-trigger]').click();
+      await expect(page.locator('[data-color-dialog]')).toBeVisible();
+    }
+
+    await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true, timeout: 20_000 });
   });
 }

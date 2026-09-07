@@ -190,3 +190,63 @@ export type {
   NewsLeadProps, ContentListProps, ContentListItemProps, ResourceGridProps,
   StatLineProps, StatLineItem, EventRowProps, StatusRowProps,
 } from './components/EditorialHome.js';
+
+// Phase 46.9 — domain-neutral authoring, scheduling, review, branding, and diff capabilities
+export type { JsonPrimitive, JsonValue } from './json-value.js';
+
+export { RuleBuilder } from './components/RuleBuilder.js';
+export type {
+  RuleBuilderProps, RuleValueEditorProps, RuleFieldDefinition,
+  RuleOperatorDefinition, RuleActionDefinition,
+} from './components/RuleBuilder.js';
+export {
+  appendRuleNode, findRuleNodeDepth, isRuleGroup, mapRuleGroup, moveRuleNode,
+  removeRuleNode, ruleDepth, summarizeRule, validateRuleDefinition,
+} from './rule-builder-model.js';
+export type { RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue } from './rule-builder-model.js';
+
+export { BuilderCanvas } from './components/BuilderCanvas.js';
+export type { BuilderCanvasProps, BuilderCanvasItem, BuilderPaletteItem } from './components/BuilderCanvas.js';
+
+export { SchedulingCalendar } from './components/SchedulingCalendar.js';
+export type {
+  SchedulingCalendarProps, SchedulingCalendarView, SchedulingCalendarEntry,
+  SchedulingCalendarOverlay, SchedulingEntryState, SchedulingOverlayKind,
+} from './components/SchedulingCalendar.js';
+
+export { DateRangePicker } from './components/DateRangePicker.js';
+export type { DateRangePickerProps } from './components/DateRangePicker.js';
+export {
+  addCalendarDays, addCalendarMonths, buildMonthGrid, enumerateDateSpan,
+  isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,
+  toDateKey, zonedDateKey, zonedDateSpan,
+} from './calendar-model.js';
+export type { CalendarDay, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
+
+export { RelationshipGraph } from './components/RelationshipGraph.js';
+export type { RelationshipGraphProps, RelationshipGraphLegendItem } from './components/RelationshipGraph.js';
+export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode } from './relationship-graph-model.js';
+export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph } from './relationship-graph-model.js';
+
+export { MatchReview } from './components/MatchReview.js';
+export type { MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
+
+export { MetricInput } from './components/MetricInput.js';
+export type { MetricInputProps } from './components/MetricInput.js';
+export { clampMetricValue, parseMetricValue, stepMetricValue } from './metric-model.js';
+
+export { LicensePositionBar } from './components/LicensePositionBar.js';
+export type { LicensePositionBarProps } from './components/LicensePositionBar.js';
+
+export { BrandProfiles, BrandProfileEditor, applyBrandProfile, restoreBrandProfile } from './components/BrandProfiles.js';
+export type { BrandProfile, BrandProfileTypography, BrandProfileLogo, BrandProfileEditorProps, AppliedBrandProfileSnapshot } from './components/BrandProfiles.js';
+
+export { DiffViewer } from './components/DiffViewer.js';
+export type { DiffViewerProps } from './components/DiffViewer.js';
+export { buildThreeWayDiff, summarizeDiff } from './diff-model.js';
+export type { DiffEntry, DiffKind, DiffResolution, DiffSummary } from './diff-model.js';
+
+export { ColorPicker } from './components/ColorPicker.js';
+export type { ColorPickerProps } from './components/ColorPicker.js';
+export { contrastRatio, hexToRgb, hsvToHex, hsvToRgb, meetsContrast, normalizeHex, rgbToHex, rgbToHsv } from './color-model.js';
+export type { RgbColor, HsvColor } from './color-model.js';
