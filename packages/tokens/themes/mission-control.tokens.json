@@ -18,8 +18,8 @@
   "text-hushed": { "light": "rgba(12,10,8,0.60)", "dark": "rgba(227,224,219,0.60)" },
   "text-muted":  { "light": "#6E6A68", "dark": "rgba(227,224,219,0.60)" },
 
-  "nodata": { "light": "var(--uix-sev-5)", "dark": "var(--uix-sev-5)" },
-  "stale":  { "light": "var(--uix-border-strong)", "dark": "var(--uix-border-strong)" },
+  "nodata": { "light": "var(--uix-border-strong)", "dark": "var(--uix-border-strong)" },
+  "stale":  { "light": "var(--uix-text-hushed)", "dark": "var(--uix-text-hushed)" },
 
   "font-sans": { "light": "\"Geist\", system-ui, sans-serif" },
   "font-mono": { "light": "\"Geist Mono\", ui-monospace, monospace" },
