@@ -41,5 +41,14 @@
   "danger":        { "light": "#be1f25", "dark": "#ff4245" },
   "danger-fg":     { "light": "#FFFFFF", "dark": "#0C0A08" },
   "danger-bg":     { "light": "#FBE4E4", "dark": "rgba(242,109,109,0.16)" },
-  "danger-solid":  { "light": "#ff383c", "dark": "#ff4245" }
+  "danger-solid":  { "light": "#ff383c", "dark": "#ff4245" },
+
+  "heat-0": { "light": "#1b6b33", "dark": "#30d158" },
+  "heat-1": { "light": "#9a6700", "dark": "#ffd60a" },
+  "heat-2": { "light": "#b54708", "dark": "#ff9230" },
+  "heat-3": { "light": "#be1f25", "dark": "#ff4245" },
+
+  "aura-alpha":  { "light": "0", "dark": "0.28" },
+  "aura-blur":   { "light": "0", "dark": "18px" },
+  "aura-spread": { "light": "0", "dark": "1px" }
 }
