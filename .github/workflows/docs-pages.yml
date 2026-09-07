@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - codex/release-uix-2-13-0
     paths:
       - .github/workflows/docs-pages.yml
       - packages/tokens/**

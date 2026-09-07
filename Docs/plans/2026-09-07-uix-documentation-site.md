@@ -96,6 +96,8 @@ At the user's request, the repository's existing GitHub Pages configuration is n
 source-only or dependency directories, uploads the Pages artifact, and deploys it with least-privilege permissions.
 Every third-party action is pinned to an immutable commit SHA. The full style guide publishes at the Pages root and
 the documentation product at `/docs/`; the repository homepage points directly to that documentation URL.
+Deployment is deliberately limited to `master`, matching the `github-pages` environment protection rule; pull
+requests run the normal CI gates and publish only after merge.
 
 Unrelated in-progress chart/workflow edits appeared in the shared worktree during verification and were preserved
 outside this documentation slice.
