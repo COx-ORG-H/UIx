@@ -91,3 +91,12 @@ The site remains static. It contains no user data, authentication, persistence, 
 - `packages/tokens/phase-46-9.html` (removed)
 - `Docs/audits/2026-09-07-uix-adoption-and-docs-audit.md` (new)
 - this plan
+
+## Completion record
+
+- Consolidated all three legacy surfaces into 25 searchable docs routes and removed their standalone HTML files.
+- Added the Component status matrix and enforced 80/80 CSS reference/example coverage without presenting the 24 CSS-only modules as React exports.
+- Corrected legacy contract mismatches, supplied the five missing specimens, and gave Color Picker its own interactive route instead of a cross-page pointer.
+- Expanded the accessibility gate from a few page-level scans to every integrated example in both themes. The migration audit fixed two scroll-region keyboard gaps and invalid calendar ARIA; 79 cases passed together and the single table scan that timed out under concurrent visual load passed alone. All 80 cases therefore have a green Linux result.
+- Replaced obsolete index/dashboard/Phase screenshot baselines with representative docs-route baselines. The pinned Linux visual run passes all 10 screenshots.
+- Kept direct-file viewing through the repository-root `index.html`; the explicit `packages/tokens/docs/index.html` path also works with the repo's local static-server configuration.

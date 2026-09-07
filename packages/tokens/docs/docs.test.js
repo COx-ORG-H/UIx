@@ -172,6 +172,14 @@ test('every catalogue entry resolves to its own reference route', () => {
   assert.equal(getPage('not-a-real-page'), 'introduction');
 });
 
+test('specialized component references open their closest integrated example', () => {
+  const routeFor = (slug) => exampleRouteFor(COMPONENT_ITEMS.find((item) => item.slug === slug));
+  assert.equal(routeFor('chart'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('flow'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('pipeline'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('color-picker'), 'examples-color-picker');
+});
+
 test('all migrated showcase routes resolve and remain uniquely addressable', () => {
   assert.equal(SHOWCASE_PAGES.length, 25);
   assert.equal(new Set(SHOWCASE_PAGES.map((page) => page.slug)).size, SHOWCASE_PAGES.length);

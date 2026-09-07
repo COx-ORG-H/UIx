@@ -42,7 +42,7 @@ To inspect the documentation and examples the gates render against:
 
 ```bash
 npm run serve:styleguide   # serve . on http://localhost:4178
-# then open http://localhost:4178/packages/tokens/docs/  (also tables.html)
+# then open http://localhost:4178/packages/tokens/docs/index.html  (also tables.html)
 ```
 
 ---
@@ -197,7 +197,7 @@ component's CSS.
 3. **Make the change** in `packages/tokens/styles/components/…` (or wherever), then
    rebuild: `npm run build`.
 4. **Eyeball it.** `npm run serve:styleguide`, open
-   `http://localhost:4178/packages/tokens/docs/`, then the relevant reference and example routes.
+   `http://localhost:4178/packages/tokens/docs/index.html`, then the relevant reference and example routes.
 5. **Run the gates you touched.**
    ```bash
    npm run test:parity       # if you changed token values, expect this to fail until you

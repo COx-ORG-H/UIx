@@ -55,7 +55,7 @@ test('bulk review announces results', async ({ page }) => {
 });
 
 test('metric stepping announces the value', async ({ page }) => {
-  await openExample(page, 'metric-input');
+  await openExample(page, 'metrics');
   await page.locator('[data-metric-step="10"]').focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-metric]')).toHaveValue('260');

@@ -44,7 +44,7 @@ From the repository root:
 
 ```sh
 npm run serve:styleguide
-# http://localhost:4178/packages/tokens/docs/
+# http://localhost:4178/packages/tokens/docs/index.html
 
 node --test packages/tokens/docs/docs.test.js
 npm run test:a11y -- --grep docs

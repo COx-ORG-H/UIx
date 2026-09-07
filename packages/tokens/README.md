@@ -101,5 +101,5 @@ Serve it from the repo root (the styleguide's static root) so relative asset pat
 
 ```sh
 npm run docs:serve
-# → http://localhost:4178/packages/tokens/docs/
+# → http://localhost:4178/packages/tokens/docs/index.html
 ```
