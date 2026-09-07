@@ -1,7 +1,7 @@
 # UIx component roadmap — canonical coverage map
 
 This is the **canonical** source of truth for UIx component coverage: one row per CSS component file
-in `packages/tokens/styles/components/*.css` (69 files at HEAD), mapped to its `@tensor_1/react`
+in `packages/tokens/styles/components/*.css` (80 files at HEAD), mapped to its `@tensor_1/react`
 export (if any), maturity, and a11y-review status. When you add or promote a component, update this
 table — do not re-maintain a parallel "backlog" list elsewhere.
 
@@ -33,18 +33,23 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Attachment | attachment.css | absent | Planned | no | Planned wrapper (presentational). |
 | AuditLog | audit-log.css | absent | Planned | no | Planned wrapper (presentational). |
 | Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. |
+| BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
 | Breadcrumbs | breadcrumbs.css | absent | Planned | no | Planned wrapper (presentational). |
+| BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
 | Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Card | card.css | ✓ `Card` | Stable | no | Layout container. |
 | Chart | chart.css | absent | Planned | no | Planned wrapper; CSS only at HEAD (not yet in `index.ts`). |
 | Checkbox | checkbox.css | ✓ `Checkbox` | Stable | no | Form primitive. |
+| ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
 | Combobox | combobox.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. Recently landed. |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
+| DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. Recently landed. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold. |
+| DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. |
 | EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
@@ -56,12 +61,15 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
 | Kbd | kbd.css | absent | Planned | no | Planned wrapper (presentational). |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
+| LicensePositionBar | license-position-bar.css | ✓ `LicensePositionBar` | Beta | no | Meter + status recipe with explicit over-entitlement state. |
 | Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
 | Link | link.css | n/a | Beta | no | Quiet-link pattern in four forms: `.uix-link--quiet` opt-in, plus quiet-by-default title/name slots, data cells (`.uix-table td`, `.uix-dl dd`) and container anchors (`a.uix-card` etc.). In-text prose links keep the base blue + underline (WCAG 1.4.1); prose, alerts/toasts and `.uix-peek__title` are documented exclusions. CSS-only by design; landed 2.9.0, extended kit-wide in 2.10.0. |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
+| MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
 | Menu | menu.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
+| MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook. |
 | NotificationCenter | notification-center.css | absent | Planned | no | Planned wrapper (presentational). |
 | PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
@@ -73,6 +81,9 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Prose | prose.css | ✓ `Prose` | Stable | no | Also `Note` (`NoteTone`). |
 | Radio | radio.css | ✓ `Radio` | Stable | no | Also `RadioGroup`. |
 | Reactions | reactions.css | absent | Planned | no | Planned wrapper (presentational). |
+| RelationshipGraph | relationship-graph.css | ✓ `RelationshipGraph` | Beta | no | Bounded deterministic SVG with accessible equivalent list and traversal. |
+| RuleBuilder | rule-builder.css | ✓ `RuleBuilder` | Beta | no | Declarative nested conditions-to-actions editor and model helpers. |
+| SchedulingCalendar | scheduling-calendar.css | ✓ `SchedulingCalendar` | Beta | no | Month/week/agenda schedule with time-zone ranges and overlays. |
 | Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. Recently landed. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
 | Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also `SidebarSection`, `NavItem`, `NavGroup`, `SubNavItem`. |

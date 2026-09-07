@@ -1,0 +1,14 @@
+@layer uix.components {
+  .uix-diff-viewer { display:grid; gap:var(--uix-space-4); color:var(--uix-text); }
+  .uix-diff-viewer__summary { display:flex; flex-wrap:wrap; gap:var(--uix-space-2); } .uix-diff-viewer__summary span { padding:var(--uix-space-2) var(--uix-space-3); border-radius:var(--uix-radius-pill); background:var(--uix-bg-subtle); color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-diff-viewer__group { display:grid; gap:var(--uix-space-2); } .uix-diff-viewer__group>h3 { display:flex; gap:var(--uix-space-2); align-items:center; } .uix-diff-viewer__group>h3 span { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-diff-viewer__entry { border:1px solid var(--uix-border); border-left:4px solid var(--uix-info); border-radius:var(--uix-radius-md); background:var(--uix-surface); overflow:hidden; }
+  .uix-diff-viewer__entry[data-kind="conflicted"] { border-left-color:var(--uix-danger); } .uix-diff-viewer__entry[data-kind="added"] { border-left-color:var(--uix-success); } .uix-diff-viewer__entry[data-kind="removed"] { border-left-color:var(--uix-warning); }
+  .uix-diff-viewer__entry summary { display:flex; justify-content:space-between; align-items:center; gap:var(--uix-space-3); padding:var(--uix-space-3); cursor:pointer; background:var(--uix-bg-subtle); }
+  .uix-diff-viewer__versions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); background:var(--uix-border); }
+  .uix-diff-viewer__versions>div { min-width:0; padding:var(--uix-space-3); border-right:1px solid var(--uix-border); background:var(--uix-surface); } .uix-diff-viewer__versions>div:last-child { border-right:0; } .uix-diff-viewer__versions strong { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-diff-viewer__versions pre { max-height:14rem; overflow:auto; margin-top:var(--uix-space-2); color:var(--uix-text); font-family:var(--uix-font-mono); white-space:pre-wrap; overflow-wrap:anywhere; }
+  .uix-diff-viewer__actions { display:flex; flex-wrap:wrap; gap:var(--uix-space-2); padding:var(--uix-space-3); border-top:1px solid var(--uix-border); }
+  .uix-diff-viewer--empty { padding:var(--uix-space-6); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); color:var(--uix-text-muted); }
+  @media (max-width:720px) { .uix-diff-viewer__versions { grid-template-columns:1fr; } }
+}

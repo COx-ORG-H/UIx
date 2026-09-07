@@ -75,6 +75,12 @@ The following CSS primitives (and their `@tensor_1/react` wrappers) are the inte
 | App-shell nav width tiers | `app-shell.css` `.uix-shell[data-nav="full\|rail\|hidden"]` · `<AppShell nav>` | `--uix-sidebar-w`, `--uix-sidebar-w-rail` |
 | Shell focus / full-bleed | `app-shell.css` `.uix-shell[data-focus]` / `.uix-shell__main--bleed` · `<AppShell focus mainBleed>` | `--uix-z-overlay`, `--uix-space-7` |
 | Table logic engine | `@tensor_1/react` `table-engine` (multiSort / applyFilters / searchRows / serializeView / virtualWindow / selection) | — behaviour primitive; keeps vanilla + React grids identical |
+| Rule authoring | `rule-builder.css` · `<RuleBuilder>` | Existing surface, form, border, text, state, and focus tokens |
+| Builder canvas | `builder-canvas.css` · `<BuilderCanvas>` | Existing surface, spacing, border, text, and focus tokens |
+| Scheduling + date range | `scheduling-calendar.css` / `date-range-picker.css` · React wrappers | Existing calendar, surface, semantic-state, and focus tokens |
+| Relationship graph | `relationship-graph.css` · `<RelationshipGraph>` | Existing chart, surface, border, semantic-state, and focus tokens |
+| Review + configuration | `match-review.css`, `metric-input.css`, `license-position-bar.css`, `diff-viewer.css` · React wrappers | Existing form, table, meter, status, and semantic-state tokens |
+| Brand profiles + color | `brand-profiles.css`, `color-picker.css` · React wrappers | Write-only `--uix-brand` / `--uix-brand-fg` through the existing accent chain |
 
 If you reach for `var(--uix-danger)` or `var(--uix-warning)` to render SLA urgency or severity, use `<StatusPill tone="sla-breached">` or `<StatusPill tone="p1">` instead — the component handles WCAG contrast, dark mode, and brand overrides; a raw literal does not.
 

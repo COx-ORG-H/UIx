@@ -23,6 +23,10 @@ npx serve .
 
 No build step.
 
+The dense UIX-V3 capability set (rules, canvas authoring, scheduling, graph,
+review, configuration, and branding) has a dedicated deterministic showcase at
+`packages/tokens/phase-46-9.html`.
+
 ## Use it in a project
 
 Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind

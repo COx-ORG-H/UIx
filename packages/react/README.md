@@ -40,4 +40,20 @@ import { Chart } from "@tensor_1/react/chart/preset";
 Large fixed-height tables can use `useVirtualRows(rows, { rowHeight })`; attach its `containerRef` to
 `TableWrap` and render the returned row window between spacer rows.
 
+## UIX-V3 capability components
+
+Phase 46.9 adds eleven controlled, domain-neutral components:
+
+- Authoring: `RuleBuilder` and `BuilderCanvas`.
+- Time: `SchedulingCalendar` and `DateRangePicker`.
+- Relationships and review: `RelationshipGraph` and `MatchReview`.
+- Configuration: `MetricInput`, `LicensePositionBar`, `BrandProfiles` (also
+  `BrandProfileEditor`), `DiffViewer`, and `ColorPicker`.
+
+Their serializable helpers are exported from the main entry as well: immutable
+rule-tree operations, calendar/time-zone helpers, bounded graph layout and
+traversal, three-way JSON diffing, metric parsing/stepping, color conversion and
+contrast checks, plus brand-profile apply/restore helpers. No graph or date
+runtime dependency is required.
+
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.

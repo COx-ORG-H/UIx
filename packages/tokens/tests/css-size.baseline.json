@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 108674,
-      "gzip": 15745,
-      "brotli": 13658
+      "raw": 130791,
+      "gzip": 18393,
+      "brotli": 15906
     },
     "build/css/styles.css": {
-      "raw": 116844,
-      "gzip": 18033,
-      "brotli": 15535
+      "raw": 138961,
+      "gzip": 20688,
+      "brotli": 17791
     },
     "build/css/tokens.css": {
       "raw": 7673,
@@ -41,10 +41,20 @@
       "gzip": 739,
       "brotli": 585
     },
+    "styles/components/brand-profiles.css": {
+      "raw": 1662,
+      "gzip": 520,
+      "brotli": 424
+    },
     "styles/components/breadcrumbs.css": {
       "raw": 725,
       "gzip": 387,
       "brotli": 283
+    },
+    "styles/components/builder-canvas.css": {
+      "raw": 2479,
+      "gzip": 642,
+      "brotli": 524
     },
     "styles/components/button.css": {
       "raw": 3113,
@@ -71,6 +81,11 @@
       "gzip": 568,
       "brotli": 448
     },
+    "styles/components/color-picker.css": {
+      "raw": 2409,
+      "gzip": 667,
+      "brotli": 545
+    },
     "styles/components/combobox.css": {
       "raw": 1008,
       "gzip": 434,
@@ -91,6 +106,11 @@
       "gzip": 350,
       "brotli": 272
     },
+    "styles/components/date-range-picker.css": {
+      "raw": 1823,
+      "gzip": 570,
+      "brotli": 464
+    },
     "styles/components/description-list.css": {
       "raw": 379,
       "gzip": 232,
@@ -101,15 +121,20 @@
       "gzip": 275,
       "brotli": 225
     },
+    "styles/components/diff-viewer.css": {
+      "raw": 2370,
+      "gzip": 651,
+      "brotli": 544
+    },
     "styles/components/drawer.css": {
       "raw": 1633,
       "gzip": 601,
       "brotli": 468
     },
     "styles/components/editorial-home.css": {
-      "raw": 16518,
-      "gzip": 3392,
-      "brotli": 2882
+      "raw": 16791,
+      "gzip": 3520,
+      "brotli": 3001
     },
     "styles/components/file-upload.css": {
       "raw": 1320,
@@ -156,6 +181,11 @@
       "gzip": 500,
       "brotli": 418
     },
+    "styles/components/license-position-bar.css": {
+      "raw": 695,
+      "gzip": 334,
+      "brotli": 256
+    },
     "styles/components/lightbox.css": {
       "raw": 1113,
       "gzip": 632,
@@ -171,6 +201,11 @@
       "gzip": 353,
       "brotli": 274
     },
+    "styles/components/match-review.css": {
+      "raw": 1612,
+      "gzip": 514,
+      "brotli": 420
+    },
     "styles/components/media.css": {
       "raw": 746,
       "gzip": 383,
@@ -185,6 +220,11 @@
       "raw": 695,
       "gzip": 314,
       "brotli": 254
+    },
+    "styles/components/metric-input.css": {
+      "raw": 1153,
+      "gzip": 423,
+      "brotli": 350
     },
     "styles/components/modal.css": {
       "raw": 2421,
@@ -240,6 +280,21 @@
       "raw": 1690,
       "gzip": 580,
       "brotli": 480
+    },
+    "styles/components/relationship-graph.css": {
+      "raw": 3573,
+      "gzip": 854,
+      "brotli": 694
+    },
+    "styles/components/rule-builder.css": {
+      "raw": 2082,
+      "gzip": 517,
+      "brotli": 445
+    },
+    "styles/components/scheduling-calendar.css": {
+      "raw": 3958,
+      "gzip": 897,
+      "brotli": 749
     },
     "styles/components/segmented.css": {
       "raw": 1047,
