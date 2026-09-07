@@ -34,6 +34,10 @@ const ALLOWED = new Set([
   'attention', 'attention-bg', 'attention-text', 'attention-solid',
   'overdue', 'overdue-bg', 'overdue-text', 'overdue-solid',
   'row-selected-bg',
+  // Absence roles (Mission Control Project Hub, R6). Both alias the existing neutral chain
+  // rather than introducing colour: absence must be chroma-free, because a missing value that
+  // carries chroma reads as a heat state, and "we never measured this" would render as a claim.
+  'nodata', 'stale',
 ]);
 
 const files = (await readdir(DIR)).filter((f) => f.endsWith('.tokens.json'));
