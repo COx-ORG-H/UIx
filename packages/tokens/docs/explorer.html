@@ -3,49 +3,108 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UIx Component Docs — UIx v2</title>
-  <!-- no-flash: apply stored/OS theme before first paint -->
+  <meta name="description" content="UIx documentation for tokens, themes, CSS components, and React primitives.">
+  <title>UIx Docs — Enterprise interface system</title>
   <script>
     (function () {
       try {
-        var t = localStorage.getItem('uix-theme');
-        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {}
+        var stored = localStorage.getItem('uix-theme');
+        var theme = stored || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {}
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- one level deeper than index.html → ../ to reach the production CSS build -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../build/css/styles.css">
   <link rel="stylesheet" href="docs.css">
 </head>
 <body>
-  <div class="uix-docs">
-    <!-- left: component nav -->
-    <nav class="uix-docs__nav" aria-label="Components">
-      <div class="uix-docs__brand">UIx <small>docs</small></div>
-      <div data-uix-docs-nav></div>
-    </nav>
+  <a class="uix-docs__skip" href="#main-content">Skip to documentation</a>
 
-    <!-- right: per-component page template — EMPTY regions keyed by data-region -->
-    <main class="uix-docs__main">
-      <header class="uix-docs__topbar">
-        <h1 data-uix-docs-title>Component</h1>
-        <span style="flex:1"></span>
-        <button class="uix-docs__icon-btn" type="button" data-uix-theme-toggle aria-label="Toggle theme"></button>
-      </header>
+  <header class="uix-docs__header">
+    <div class="uix-docs__header-inner">
+      <button class="uix-docs__mobile-trigger" type="button" aria-label="Open documentation navigation" aria-expanded="false" data-docs-menu>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <a class="uix-docs__logo" href="#introduction" aria-label="UIx documentation home">
+        <span class="uix-docs__logo-mark" aria-hidden="true">U</span>
+        <span class="uix-docs__wordmark">UIx</span>
+        <span class="uix-docs__product">Docs</span>
+      </a>
+      <span class="uix-docs__version">v2.13</span>
 
-      <article class="uix-docs__page">
-        <section class="uix-docs__region" data-region="overview" aria-label="Overview"></section>
-        <section class="uix-docs__region" data-region="live-example" aria-label="Live example"></section>
-        <section class="uix-docs__region" data-region="props-table" aria-label="Props"></section>
-        <section class="uix-docs__region" data-region="do-dont" aria-label="Do and don't"></section>
-        <section class="uix-docs__region" data-region="a11y-notes" aria-label="Accessibility notes"></section>
-      </article>
+      <button class="uix-docs__search-trigger" type="button" data-docs-search-open>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <span>Search UIx</span>
+        <kbd>⌘ K</kbd>
+      </button>
+
+      <nav class="uix-docs__header-links" aria-label="Product links">
+        <a href="../index.html">Style guide</a>
+        <a href="../dashboard.html">Examples</a>
+        <a href="../../react/etc/uix-react.api.md">API</a>
+      </nav>
+      <button class="uix-docs__theme" type="button" data-uix-theme-toggle aria-label="Switch color theme">
+        <svg class="uix-docs__theme-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="uix-docs__theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="uix-docs__backdrop" data-docs-backdrop hidden></div>
+
+  <div class="uix-docs__layout">
+    <aside class="uix-docs__sidebar" data-docs-sidebar aria-label="Documentation navigation">
+      <div class="uix-docs__sidebar-head">
+        <span>Browse UIx</span>
+        <button type="button" aria-label="Close documentation navigation" data-docs-menu-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <nav data-uix-docs-nav></nav>
+      <div class="uix-docs__sidebar-foot">
+        <span class="uix-docs__health-dot" aria-hidden="true"></span>
+        Contract synced with v2.13.0
+      </div>
+    </aside>
+
+    <main class="uix-docs__main" id="main-content" tabindex="-1">
+      <article class="uix-docs__page" data-docs-page aria-live="polite"></article>
     </main>
+
+    <aside class="uix-docs__toc" aria-label="On this page">
+      <p>On this page</p>
+      <nav data-docs-toc></nav>
+      <div class="uix-docs__toc-card">
+        <span>Need the full canvas?</span>
+        <a href="../index.html">Open the style guide →</a>
+      </div>
+    </aside>
   </div>
+
+  <dialog class="uix-docs__search" data-docs-search aria-labelledby="search-title">
+    <div class="uix-docs__search-box">
+      <div class="uix-docs__search-input-wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <label class="uix-visually-hidden" for="docs-search-input" id="search-title">Search UIx documentation</label>
+        <input id="docs-search-input" type="search" autocomplete="off" placeholder="Search components, tokens, or guides…" data-docs-search-input>
+        <kbd>Esc</kbd>
+      </div>
+      <div class="uix-docs__search-results" data-docs-search-results role="listbox" aria-label="Search results"></div>
+      <div class="uix-docs__search-help">
+        <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+        <span><kbd>↵</kbd> Open</span>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="uix-docs__toast" role="status" aria-live="polite" data-docs-toast hidden>Copied to clipboard</div>
+
+  <noscript>
+    <div class="uix-docs__noscript">UIx Docs needs JavaScript to switch reference pages. The component style guide remains available at <a href="../index.html">index.html</a>.</div>
+  </noscript>
 
   <script type="module" src="docs.js"></script>
 </body>

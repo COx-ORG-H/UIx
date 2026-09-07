@@ -88,11 +88,16 @@ Likewise, don't fork the data grid: a product-local `data-table.tsx` (bespoke so
 
 ## Documentation site
 
-A **build-free** component explorer lives in [`docs/`](./docs/) — a no-bundler HTML shell (`docs/explorer.html`) with a left component nav and a per-component page whose regions (`overview`, `live-example`, `props-table`, `do-dont`, `a11y-notes`) are keyed by `data-region` and filled in incrementally. It reuses the styleguide's theming verbatim (the no-flash `data-theme` script + `[data-uix-theme-toggle]`) and links the same `--uix-*` contract via `../styles/main.css`, so light/dark behaves identically to `index.html`. `docs/docs.js` exposes pure, unit-tested helpers (`slugify`, `componentNav`, `renderPropsTable`) behind a `typeof document` DOM guard; run `node --test docs/docs.test.js`.
+A **build-free documentation site** lives in [`docs/`](./docs/). It provides an actionable quick start, grouped
+navigation, keyboard search, token and theming guidance, a complete component catalogue, detailed core-component
+references, live UIx examples, React integration, accessibility guidance, and enterprise workflow patterns. The
+site consumes `build/css/styles.css` directly, so its examples exercise the shipped contract rather than a parallel
+documentation theme. `docs/docs.js` keeps the content registry, hash routing, and pure unit-tested search/render
+helpers in one dependency-free module.
 
 Serve it from the repo root (the styleguide's static root) so relative asset paths resolve:
 
 ```sh
 npm run docs:serve
-# → http://localhost:4178/packages/tokens/docs/explorer.html
+# → http://localhost:4178/packages/tokens/docs/
 ```
