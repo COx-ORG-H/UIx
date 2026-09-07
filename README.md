@@ -1,8 +1,8 @@
 # uix-styleguide — UIx v2
 
-A **framework-agnostic, build-free style guide** for CRM/ITSM products. Plain HTML + CSS + a little vanilla
-JS — open `index.html` in any browser to see every component in light and dark mode; drop the CSS into any
-project (HTML, React, Vue, Tailwind, server-rendered — anything) to use it.
+A **framework-agnostic, build-free design system** for CRM/ITSM products. Plain HTML + CSS + a little vanilla
+JS power a unified documentation site with component references, adoption status, and live examples; drop the
+CSS into any project (HTML, React, Vue, Tailwind, server-rendered — anything) to use it.
 
 It's "UIx v2": the next generation of the house design system. Where **UIx v1** (`../UIx`) is a
 React/Next/shadcn token + composite registry locked to that stack, v2 is **stack-neutral** and **standalone**,
@@ -14,18 +14,19 @@ while deliberately **reusing v1's `--uix-*` token contract** so the two stay swa
 
 ## View it
 
-Open `index.html` directly, or serve the folder:
+Open `index.html` directly. It redirects to the canonical docs and works without a server.
+
+For the same site over HTTP (recommended while developing):
 
 ```powershell
 # any static server works, e.g.
 npx serve .
 ```
 
-No build step.
-
-The dense UIX-V3 capability set (rules, canvas authoring, scheduling, graph,
-review, configuration, and branding) has a dedicated deterministic showcase at
-`packages/tokens/phase-46-9.html`.
+No build step. The docs' **Example gallery** contains the original component specimens, the complete workspace
+composition, and the dense UIX-V3 examples (rules, canvas authoring, scheduling, graph, review, configuration,
+and branding) in one searchable shell. **Component status** reports CSS, React, docs, and example coverage
+separately.
 
 ## Use it in a project
 
@@ -62,7 +63,7 @@ in load order `base.css` → `utilities.css` → `motion.css` → `components/*`
 robust regardless). Copy-paste still works too — every file references the same `--uix-*` names.
 
 Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
-The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.
+The no-flash snippet in `packages/tokens/docs/explorer.html` shows how to apply the stored theme before paint.
 
 ## Brand a project (override the theme)
 
@@ -123,4 +124,4 @@ default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove
 ## Fonts & icons
 
 Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts
-(`<link>` in `index.html`). Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.
+in the docs shell. Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.

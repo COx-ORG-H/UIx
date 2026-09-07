@@ -38,11 +38,11 @@ npm run test:a11y        # axe over the static styleguide, light + dark
 # npm run test:visual    # Playwright VR — see caveat; do NOT trust local results on Windows
 ```
 
-To eyeball the styleguide the gates render against:
+To inspect the documentation and examples the gates render against:
 
 ```bash
 npm run serve:styleguide   # serve . on http://localhost:4178
-# then open http://localhost:4178/packages/tokens/index.html  (also tables.html, dashboard.html)
+# then open http://localhost:4178/packages/tokens/docs/  (also tables.html)
 ```
 
 ---
@@ -60,8 +60,8 @@ regression can't land silently. The CI definition is
 | **contract** | `npm run test:contract` | The contract is structurally complete (every token family present, every theme covers its tier) and no component CSS hardcodes a contract-class value. | enforced in-script; justified exceptions in `packages/tokens/tests/raw-value-allowlist.json` |
 | **api** | `npm run test:api` | The public API surface of `@tensor_1/react` (main + `./chart`) is unchanged. | `packages/react/etc/uix-react.api.md` and `packages/react/etc/uix-react-chart.api.md` |
 | **smoke** | `npm run test:smoke` | The *published* tarballs actually install, import (ESM + CJS), resolve their subpath exports, and type-check for a real consumer. | `tests/smoke-consumer/` (fixtures: `app.tsx`, `tsconfig.json`) |
-| **visual** | `npm run test:visual` | Full-page rendering of the 3 styleguide pages, light + dark, is pixel-stable. | `tests/visual/__screenshots__/*-linux.png` |
-| **a11y** | `npm run test:a11y` | No serious/critical WCAG 2.1 A/AA violations across the styleguide, light + dark. | enforced in-script; exceptions in the `A11Y_ALLOW` list in `tests/a11y/a11y.spec.mjs` (currently empty) |
+| **visual** | `npm run test:visual` | Representative docs/example routes and the table specimen are pixel-stable in light + dark. | `tests/visual/__screenshots__/*-linux.png` |
+| **a11y** | `npm run test:a11y` | No serious/critical WCAG 2.1 A/AA violations across every integrated example route, the docs shell, and the table specimen. | enforced in-script; exceptions in the `A11Y_ALLOW` list in `tests/a11y/a11y.spec.mjs` (currently empty) |
 
 ### parity — `packages/tokens/scripts/check-parity.mjs`
 
@@ -104,9 +104,9 @@ run `npm run build:all` first (CI does).
 
 ### visual — Playwright VR (read this before running locally)
 
-`test:visual` runs `playwright test tests/visual`: full-page screenshots of
-`index.html`, `tables.html`, and `dashboard.html` in both `light` and `dark` projects,
-compared against the committed `*-linux.png` goldens.
+`test:visual` runs `playwright test tests/visual`: full-page screenshots of representative integrated docs
+examples and `tables.html` in both `light` and `dark` projects, compared against the committed `*-linux.png`
+goldens.
 
 - **The goldens are Linux-rendered and OS-suffixed.** On Windows/macOS, Playwright
   produces `*-win32` / `*-darwin` images that will **not** match the Linux goldens and
@@ -127,7 +127,7 @@ compared against the committed `*-linux.png` goldens.
 
 ### a11y — `tests/a11y/a11y.spec.mjs`
 
-Runs axe-core over the same three styleguide pages in light + dark, gating on
+Runs axe-core over every integrated example route, the docs shell, and the table specimen in light + dark, gating on
 **serious/critical** WCAG 2.1 A/AA violations (minor/moderate are attached for triage,
 not failed). It is DOM-rule based and therefore OS-independent, so it runs safely
 locally and needs no pinned container (CI runs it on plain `ubuntu-latest` with a
@@ -197,7 +197,7 @@ component's CSS.
 3. **Make the change** in `packages/tokens/styles/components/…` (or wherever), then
    rebuild: `npm run build`.
 4. **Eyeball it.** `npm run serve:styleguide`, open
-   `http://localhost:4178/packages/tokens/index.html`, confirm it looks right.
+   `http://localhost:4178/packages/tokens/docs/`, then the relevant reference and example routes.
 5. **Run the gates you touched.**
    ```bash
    npm run test:parity       # if you changed token values, expect this to fail until you
