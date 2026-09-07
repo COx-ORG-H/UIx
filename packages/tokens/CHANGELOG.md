@@ -1,5 +1,19 @@
 # @tensor_1/tokens
 
+## 2.13.0
+
+### Minor Changes
+
+- 6c119f3: Add the complete Phase 46.9 UIX-V3 component set: rule and canvas authoring,
+  scheduling and date ranges, relationship graph and match review, metric and
+  license controls, brand profiles, three-way diffs, and an accessible color
+  picker. The release includes token-only component CSS, React 18/19 wrappers,
+  serializable model helpers, deterministic examples, and accessibility coverage.
+
+### Patch Changes
+
+- 0f676da: `.uix-searchbar`: centre the well and its button and lift the button to the well's 44px height, so the two edges line up at every width (previously the 36px button sat top-aligned, 8px short of the input). README: document the `@layer` order a Tailwind consumer must declare when importing `bundle`/`styles`, so the UIx element reset cannot sit above Tailwind's utilities.
+
 ## 2.12.0
 
 ### Minor Changes
