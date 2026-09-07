@@ -16,6 +16,7 @@ const PAGES = [
   { name: 'tables', path: 'tables.html' },    // data-grid example app
   { name: 'dashboard', path: 'dashboard.html' }, // dashboard example app
   { name: 'phase-46-9', path: 'phase-46-9.html' }, // advanced Phase 46.9 component suite
+  { name: 'docs', path: 'docs/explorer.html#introduction' }, // documentation product
 ];
 
 const GATED = new Set(['serious', 'critical']);

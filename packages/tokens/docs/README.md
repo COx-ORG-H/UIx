@@ -1,41 +1,42 @@
-# Component docs — the explorer shell
+# UIx Docs
 
-A **build-free** documentation site for the UIx v2 components, served straight from the static
-repo root. No bundler, no framework — just an HTML shell, one stylesheet, and one ES module.
+The build-free UIx documentation product. It turns the token package, CSS catalogue, React package, and
+enterprise interaction patterns into a searchable reference without introducing a second framework or build.
 
-## Files
+## Entry points
 
-| File | What |
+| File | Purpose |
 |---|---|
-| `explorer.html` | The shell: left component nav + a per-component page whose regions are **empty** and keyed by `data-region` (`overview`, `live-example`, `props-table`, `do-dont`, `a11y-notes`). Later slices fill those regions. |
-| `docs.css` | Two-column layout chrome (nav + content). Uses the `--uix-*` tokens from `../styles/main.css`; declares no tokens. |
-| `docs.js` | Pure helpers (`slugify`, `componentNav`, `renderPropsTable`, `esc`) exported for tests, plus DOM wiring guarded by `if (typeof document !== 'undefined')` so it imports DOM-free under `node:test`. |
-| `docs.test.js` | `node:test` unit tests for the pure helpers. |
+| `index.html` | Clean `/docs/` entry that preserves a requested hash and opens the canonical explorer. |
+| `explorer.html` | Persistent application shell: product header, grouped navigation, article host, page TOC, search dialog, mobile drawer, and copy feedback. |
+| `docs.css` | Documentation-only chrome. It consumes the generated `--uix-*` contract and is never shipped to product consumers. |
+| `docs.js` | Static content registry, hash router, search ranking, navigation, TOC, copy actions, examples, tabs, theme handling, and mobile focus behavior. |
+| `docs.test.js` | DOM-free unit tests for escaping, route normalization, navigation data, prop tables, and search ranking. |
 
-## Theming
+## Content model
 
-`explorer.html` reuses the styleguide's theming verbatim: the no-flash inline `<script>` sets
-`data-theme` on `<html>` before first paint, `../styles/main.css` provides the token contract, and
-the `[data-uix-theme-toggle]` button flips light/dark (persisted in `localStorage` under `uix-theme`),
-so theming behaves identically to `../index.html`.
+`NAV_ITEMS` in `docs.js` is the canonical page order and search metadata. `PAGES` maps each slug to a content
+renderer. Add a page in both places, then use the shared `pageHeader`, `section`, `demo`, `codeBlock`, `callout`,
+and `compare` helpers so reference pages keep one rhythm.
 
-> The stylesheet link is `../styles/main.css` (not `styles/main.css`): `docs/explorer.html` sits one
-> directory deeper than `index.html`, so the `../` prefix climbs back up to `packages/tokens/`.
+The complete CSS inventory lives in `COMPONENT_GROUPS`. A component with a detailed page links there directly;
+the remaining cards point readers to the canonical style guide. Search indexes both reference pages and all
+catalogue component names, so an undocumented primitive remains discoverable.
 
-## Serve it
+Keep package names, exports, version labels, class names, and props synchronized with the live manifests and
+`packages/react/etc/uix-react.api.md`. The docs must describe verified reality, not a future API.
 
-From the repo root (the static root the styleguide is served from):
+## Run and test
 
-```sh
-npm run docs:serve
-# → http://localhost:4178/packages/tokens/docs/explorer.html
-```
-
-`docs:serve` is modeled on the root `serve:styleguide` (`serve -l 4178 .`) — same static root, same
-port — so relative links to `../styles/main.css` resolve exactly as they do for the styleguide.
-
-## Test
+From the repository root:
 
 ```sh
-node --test docs/docs.test.js
+npm run serve:styleguide
+# http://localhost:4178/packages/tokens/docs/
+
+node --test packages/tokens/docs/docs.test.js
+npm run test:a11y -- --grep docs
 ```
+
+The page uses the same no-flash `uix-theme` preference and generated CSS bundle as the primary showcase. It has
+no runtime data source, user data, or persistence beyond that existing color-mode preference.

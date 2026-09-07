@@ -3,7 +3,15 @@
    The module's DOM block is guarded by `typeof document`, so importing it here is DOM-free. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { slugify, componentNav, renderPropsTable, esc } from './docs.js';
+import {
+  slugify,
+  componentNav,
+  renderPropsTable,
+  esc,
+  normalizeHash,
+  buildSearchIndex,
+  matchDocs,
+} from './docs.js';
 
 test('slugify: lowercases, hyphenates, trims edges', () => {
   assert.equal(slugify('Button'), 'button');
@@ -79,4 +87,31 @@ test('renderPropsTable: escapes HTML in every field (no injection)', () => {
 
 test('esc: escapes the five HTML-significant characters', () => {
   assert.equal(esc(`<a href="x" data='y'>&`), '&lt;a href=&quot;x&quot; data=&#39;y&#39;&gt;&amp;');
+});
+
+test('normalizeHash: creates a stable route and falls back to introduction', () => {
+  assert.equal(normalizeHash('#Design Tokens'), 'design-tokens');
+  assert.equal(normalizeHash('#status-pill?theme=dark'), 'status-pill');
+  assert.equal(normalizeHash(''), 'introduction');
+});
+
+test('matchDocs: exact and prefix name matches outrank keyword matches', () => {
+  const index = buildSearchIndex([
+    { name: 'Table', group: 'Components', summary: 'Dense data display', keywords: ['grid'] },
+    { name: 'Data workflows', group: 'Patterns', summary: 'Table filters and saved views', keywords: ['table'] },
+    { name: 'Tabs', group: 'Components', summary: 'Peer navigation', keywords: [] },
+  ]);
+  assert.deepEqual(matchDocs(index, 'table').map((item) => item.name), ['Table', 'Data workflows']);
+  assert.equal(matchDocs(index, 'tab')[0].name, 'Table');
+});
+
+test('matchDocs: all query terms must match and results respect the limit', () => {
+  const index = buildSearchIndex([
+    { name: 'Status Pill', group: 'Components', summary: 'Semantic status and SLA', keywords: ['badge'] },
+    { name: 'Alert', group: 'Components', summary: 'Semantic feedback', keywords: ['status'] },
+    { name: 'Theming', group: 'Foundations', summary: 'Product brand profiles', keywords: ['dark'] },
+  ]);
+  assert.deepEqual(matchDocs(index, 'status semantic').map((item) => item.name), ['Status Pill', 'Alert']);
+  assert.equal(matchDocs(index, '', 2).length, 2);
+  assert.deepEqual(matchDocs(index, 'missing'), []);
 });
