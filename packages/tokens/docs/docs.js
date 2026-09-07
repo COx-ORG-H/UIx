@@ -72,6 +72,8 @@ const NAV_ITEMS = [
   { name: 'React', slug: 'react', group: 'Getting started', summary: 'Use UIx primitives in React applications.', keywords: ['tsx', 'components', 'package'] },
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
+  { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
+  { name: 'Icons & assets', slug: 'icons-assets', group: 'Foundations', summary: 'Icon, emoji, image, and media usage across UIx products.', keywords: ['icons', 'emoji', 'images', 'media'] },
   { name: 'Accessibility', slug: 'accessibility', group: 'Foundations', summary: 'Keyboard, focus, contrast, and motion expectations.', keywords: ['a11y', 'wcag', 'screen reader'] },
   { name: 'All components', slug: 'all-components', group: 'Components', summary: 'Browse the complete CSS component inventory.', keywords: ['catalog', 'inventory'], badge: '80', featured: true },
   { name: 'Button', slug: 'button', group: 'Components', summary: 'Actions, variants, sizing, loading, and disabled states.', keywords: ['primary', 'danger', 'icon'] },
@@ -84,8 +86,8 @@ const NAV_ITEMS = [
   { name: 'Data workflows', slug: 'data-workflows', group: 'Patterns', summary: 'Filters, saved views, pinning, and record peek.', keywords: ['table', 'filters', 'peek', 'pin'] },
 ];
 
-const COMPONENT_GROUPS = {
-  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Combobox', 'Tag input', 'File upload', 'Date range picker', 'Color picker', 'Metric input', 'Form'],
+export const COMPONENT_GROUPS = {
+  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Tag input', 'File upload', 'Date range picker', 'Color picker', 'Metric input', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Tooltip', 'States'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox'],
@@ -94,8 +96,36 @@ const COMPONENT_GROUPS = {
   'Content & utilities': ['Typography', 'Prose', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits', 'View menu'],
 };
 
-const CATALOG_SEARCH_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group, names]) =>
-  names.map((name) => ({ name, slug: 'all-components', group, summary: `Find ${name} in the complete UIx component catalogue.`, keywords: ['component', slugify(name)], kind: 'Catalog' })));
+export const COMPOSITE_PATTERNS = ['Nav favourites', 'Composer'];
+
+export const SHOWCASE_SECTION_MAP = {
+  foundations: 'design-tokens',
+  motion: 'motion',
+  'form-controls': 'all-components',
+  navigation: 'all-components',
+  'data-display': 'all-components',
+  overlays: 'all-components',
+  'crm-itsm': 'all-components',
+  'workflows-pipelines': 'data-workflows',
+  'editorial-home': 'editorial-home',
+  icons: 'icons-assets',
+  emoji: 'icons-assets',
+  images: 'icons-assets',
+  prose: 'prose',
+  utility: 'utility-bits',
+};
+
+export const COMPONENT_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group, names]) =>
+  names.map((name) => ({
+    name,
+    slug: slugify(name),
+    group,
+    composite: COMPOSITE_PATTERNS.includes(name),
+  })));
+
+const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
+  .filter((component) => !NAV_ITEMS.some((item) => item.slug === component.slug))
+  .map((component) => ({ ...component, summary: `Open the ${component.name} reference.`, keywords: ['component', component.slug], kind: 'Catalog' }));
 
 const SEARCH_INDEX = buildSearchIndex([...NAV_ITEMS, ...CATALOG_SEARCH_ITEMS]);
 
@@ -134,14 +164,50 @@ const compare = (doText, dontText) => `<div class="uix-docs__compare">
   <div class="uix-docs__compare-card uix-docs__compare-card--dont"><strong>Don’t</strong><p>${esc(dontText)}</p></div>
 </div>`;
 
+const COMPONENT_GUIDANCE = {
+  'Form controls': ['Keep the visible label, current value, validation state, and recovery guidance available together.', 'Use the native control semantics first; add ARIA only for behavior the native element cannot express.'],
+  Navigation: ['Use this pattern for wayfinding or switching context, never as a disguised action control.', 'Expose the current destination and preserve a predictable keyboard and focus order.'],
+  'Data display': ['Choose a density that preserves comparison and scanning without hiding the meaning of the data.', 'Provide text alternatives for visual encoding and keep reading order meaningful without CSS.'],
+  'Feedback & overlays': ['Match interruption level to urgency and always provide a clear dismissal or recovery path.', 'Manage focus for modal surfaces and announce asynchronous feedback at the least disruptive live-region level.'],
+  'Enterprise patterns': ['Keep status, ownership, next action, and exceptional branches explicit in operational workflows.', 'Ensure every action is keyboard reachable and every loading, empty, error, and forbidden state has a useful next step.'],
+  'Advanced workflows': ['Use progressive disclosure so complex authoring remains inspectable, reversible, and testable.', 'Represent connections and state with labels and structure as well as position, motion, or color.'],
+  'Content & utilities': ['Use the shared primitive to reinforce hierarchy and avoid product-local visual dialects.', 'Preserve semantic HTML, readable zoom behavior, alternative text, and reduced-motion preferences.'],
+};
+
+const showcaseSectionFor = (item) => {
+  if (item.slug === 'editorial-home') return 'editorial-home';
+  if (item.slug === 'prose' || item.slug === 'typography') return 'prose';
+  if (item.slug === 'media') return 'images';
+  if (item.group === 'Form controls') return 'form-controls';
+  if (item.group === 'Navigation') return 'navigation';
+  if (item.group === 'Data display') return 'data-display';
+  if (item.group === 'Feedback & overlays') return 'overlays';
+  if (item.group === 'Enterprise patterns') return item.slug === 'pipeline' ? 'workflows-pipelines' : 'crm-itsm';
+  if (item.group === 'Advanced workflows') return 'workflows-pipelines';
+  return 'utility';
+};
+
+const renderComponentReference = (item) => {
+  const [usage, accessibility] = COMPONENT_GUIDANCE[item.group];
+  const showcaseSection = showcaseSectionFor(item);
+  const availability = item.composite
+    ? callout('Composite showcase pattern', `${esc(item.name)} is assembled from existing UIx primitives in the canonical style guide. It does not have a standalone <code>@tensor_1/tokens/components/${esc(item.slug)}</code> export.`)
+    : `${codeBlock(`@import "@tensor_1/tokens/components/${item.slug}";`, 'css')}<p>This stylesheet is independently exported by <code>@tensor_1/tokens</code>. Import the full bundle instead when the product uses many UIx components.</p>`;
+  return `${pageHeader(item.group, item.name, `${item.name} is part of UIx’s production ${item.group.toLowerCase()} surface. This reference records availability, implementation boundaries, and the route to the complete visual state matrix.`, [item.composite ? 'composite pattern' : 'CSS module', 'build-free reference', 'canonical showcase linked'])}
+    ${section('availability', 'Availability', availability)}
+    ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
+    ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
+    ${section('state-matrix', 'Examples and state matrix', `<p>The original showcase remains the canonical visual matrix for variants, combinations, and dense product context.</p><p><a class="uix-btn uix-btn--primary" href="../index.html#${esc(showcaseSection)}">Open ${esc(item.name)} in the full style guide</a> <a class="uix-btn uix-btn--outline" href="#all-components">Back to all components</a></p>`)}`;
+};
+
 const renderCatalog = () => Object.entries(COMPONENT_GROUPS).map(([group, names]) => section(
   slugify(group),
   group,
   `<div class="uix-docs__component-grid">${names.map((name) => {
+    const component = COMPONENT_ITEMS.find((item) => item.name === name);
     const route = NAV_ITEMS.find((item) => item.name === name || (name === 'Input' && item.slug === 'input'));
-    return route
-      ? `<a class="uix-docs__component-card" href="#${route.slug}"><strong>${esc(name)}</strong><span>${esc(route.summary)}</span><em>Open reference →</em></a>`
-      : `<div class="uix-docs__component-card uix-docs__component-card--catalog"><strong>${esc(name)}</strong><span>Production CSS available in the complete style guide.</span><em>CSS primitive</em></div>`;
+    const summary = route?.summary || (component.composite ? 'Composite pattern documented in the canonical showcase.' : 'Independently importable production CSS module.');
+    return `<a class="uix-docs__component-card${component.composite ? ' uix-docs__component-card--catalog' : ''}" href="#${component.slug}"><strong>${esc(name)}</strong><span>${esc(summary)}</span><em>Open reference →</em></a>`;
   }).join('')}</div>`
 )).join('');
 
@@ -236,13 +302,29 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('preview', 'Theme-safe composition', `${demo(`<div class="uix-stack"><div class="uix-alert uix-alert--info"><div><div class="uix-alert__title">Semantic by construction</div><div class="uix-alert__body">This surface follows both theme and brand overrides.</div></div></div><div class="uix-cluster"><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Primary action completed">Primary action</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Secondary action completed">Secondary</button></div></div>`, `<div class="uix-alert uix-alert--info">…</div>
 <button class="uix-btn uix-btn--primary">Primary action</button>`, { column: true })}`)}`,
 
+  motion: () => `${pageHeader('Foundations', 'Motion', 'Purposeful, subtle motion explains change without delaying work. Entrances decelerate, exits accelerate, and non-essential movement yields to user preference.', ['4 duration tokens', '4 easing tokens', 'reduced-motion aware'])}
+    ${section('tokens', 'Duration and easing', `${codeBlock(`.surface {
+  transition:
+    transform var(--uix-dur) var(--uix-ease-out),
+    opacity var(--uix-dur-fast) var(--uix-ease-in);
+}`, 'css')}<table class="uix-docs__token-table"><thead><tr><th>Contract</th><th>Use</th></tr></thead><tbody><tr><td><code>--uix-dur-fast</code> / <code>--uix-dur</code></td><td>Micro feedback and standard transitions</td></tr><tr><td><code>--uix-dur-slow</code> / <code>--uix-dur-slower</code></td><td>Overlays and large surfaces</td></tr><tr><td><code>--uix-ease-out</code></td><td>Entrances</td></tr><tr><td><code>--uix-ease-in</code></td><td>Exits</td></tr><tr><td><code>--uix-ease-in-out</code></td><td>Movement already on screen</td></tr><tr><td><code>--uix-ease-spring</code></td><td>Rare, non-critical emphasis</td></tr></tbody></table>`)}
+    ${section('reduced-motion', 'Respect reduced motion', `<p>UIx’s motion layer removes non-essential animation when <code>prefers-reduced-motion: reduce</code> is active. Product-specific animation must honor the same preference and preserve the final state without relying on movement to explain it.</p>${compare('Use motion to connect cause and effect, orient spatial change, or confirm a completed action.', 'Animate routine navigation, loop decoration indefinitely, or make progress wait for a transition.')}`)}
+    ${section('showcase', 'Motion specimens', `<p><a class="uix-btn uix-btn--primary" href="../index.html#motion">Open the interactive motion matrix</a></p>`)}`,
+
+  'icons-assets': () => `${pageHeader('Foundations', 'Icons & assets', 'UIx uses a restrained Lucide icon set plus explicit patterns for emoji, avatars, product imagery, attachments, and zoomable media.', ['Lucide SVG', '16 / 20 / 24 px', 'alternative text required'])}
+    ${section('icons', 'Icons', `<p>Render Lucide glyphs as inline SVG using <code>currentColor</code>, a stroke width of 2, and round caps. Use the shared small, medium, and large icon sizes instead of drawing product-local glyphs.</p>${codeBlock(`<button class="uix-btn uix-btn--icon" type="button" aria-label="Search">
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">…</svg>
+</button>`, 'html')}<p><a href="../index.html#icons">Browse and copy the icon inventory →</a></p>`)}
+    ${section('emoji', 'Emoji and reactions', `<p>Use the curated work-appropriate set for warmth or acknowledgement, never as the only carrier of meaning and never as the status model for formal or destructive workflows.</p><p><a href="../index.html#emoji">Open emoji and reaction examples →</a></p>`)}
+    ${section('images', 'Images and media', `<ul><li>Write alternative text for the image’s purpose in context; use empty alt text when the image is decorative.</li><li>Keep avatar upload, empty, failure, and replacement states available without pointer-only interaction.</li><li>Open detail imagery with a real button and a focus-managed dialog; retain the source image’s description.</li><li>Use optimized product assets and reserve layout space to avoid content shift.</li></ul><p><a href="../index.html#images">Open avatar, asset-card, and lightbox examples →</a></p>`)}`,
+
   accessibility: () => `${pageHeader('Foundations', 'Accessibility', 'UIx provides the visual and structural baseline; product code remains responsible for correct names, relationships, state, and workflow recovery.', ['WCAG 2.1 A/AA gate', 'keyboard first', 'reduced motion'])}
     ${section('baseline', 'The UIx baseline', `<ul><li>Visible <code>:focus-visible</code> treatment on interactive primitives.</li><li>Semantic foreground/background token pairs calibrated for contrast.</li><li>Reduced-motion overrides for non-essential transitions.</li><li>Native elements and ARIA patterns for dialogs, tabs, menus, comboboxes, and trees.</li><li>Serious and critical axe findings gated in both light and dark mode.</li></ul>`)}
     ${section('product-responsibility', 'What the product must add', `<div class="uix-docs__principles"><div class="uix-docs__principle"><span class="uix-docs__principle-number">NAME</span><strong>Clear purpose</strong><p>Every icon-only control needs an accessible name; every field needs a visible label.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">STATE</span><strong>Announced change</strong><p>Expose selected, expanded, invalid, busy, and live-update state through semantics.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">PATH</span><strong>A way forward</strong><p>Empty, error, forbidden, and not-found states need a focusable next action.</p></div></div>`)}
     ${section('keyboard', 'Keyboard behavior', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Expected behavior</th></tr></thead><tbody><tr><td>Global</td><td>Tab and Shift+Tab follow visual order; focus is never trapped accidentally.</td></tr><tr><td>Dialog / drawer</td><td>Focus enters the overlay, remains contained, closes on Escape, then returns to the trigger.</td></tr><tr><td>Tabs</td><td>Arrow keys move between tabs; the selected tab owns the active panel.</td></tr><tr><td>Menu / listbox</td><td>Arrow keys move active choice; Enter or Space commits; Escape dismisses.</td></tr><tr><td>Dense table</td><td>High-frequency actions remain keyboard-reachable without turning every cell into a tab stop.</td></tr></tbody></table>`)}
     ${section('review', 'Before shipping', `${compare('Test the real journey with a keyboard, zoom, both themes, and at least the required screen-reader matrix.', 'Assume that using a UIx class automatically makes the surrounding workflow accessible.')}`)}`,
 
-  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['80 CSS modules', '58 React components', 'modular exports'])}${renderCatalog()}${section('full-showcase', 'See every state together', `<p>The canonical style guide presents the complete CSS surface in context, including states and complex compositions that are intentionally too broad for a single reference page.</p><p><a class="uix-btn uix-btn--primary" href="../index.html">Open full style guide</a> <a class="uix-btn uix-btn--outline" href="../phase-46-9.html">Open advanced showcase</a></p>`)}`,
+  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['80 CSS modules', '2 composite patterns', '58 React components'])}${callout('Coverage is enforced', 'Every independently importable component stylesheet has a reference route. Composite patterns are retained from the original showcase and labeled separately so availability is never ambiguous.')}${renderCatalog()}${section('full-showcase', 'See every state together', `<p>The canonical style guide presents the complete CSS surface in context, including states and complex compositions that are intentionally too broad for a single reference page.</p><p><a class="uix-btn uix-btn--primary" href="../index.html">Open full style guide</a> <a class="uix-btn uix-btn--outline" href="../phase-46-9.html">Open advanced showcase</a></p>`)}`,
 
   button: () => `${pageHeader('Components', 'Button', 'Buttons communicate action hierarchy and preserve clear states across mouse, touch, and keyboard input.', ['CSS primitive', 'React component', '6 variants'])}
     ${section('example', 'Example', demo(`<button class="uix-btn uix-btn--primary" type="button" data-demo-action="Primary action completed">Primary</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Secondary action completed">Secondary</button><button class="uix-btn uix-btn--outline" type="button" data-demo-action="Outline action completed">Outline</button><button class="uix-btn uix-btn--ghost" type="button" data-demo-action="Ghost action completed">Ghost</button><button class="uix-btn uix-btn--danger" type="button" data-demo-action="Danger example selected">Danger</button>`, `<button class="uix-btn uix-btn--primary">Primary</button>
@@ -316,7 +398,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('journey-budget', 'Set a journey budget', `<p>For a frequent queue workflow, define an observable budget: for example, reach the assigned queue in one navigation action, inspect a record in one more, and complete the common transition without leaving the keyboard. Measure the real journey—not only component render speed.</p>`)}`,
 };
 
-const getPage = (slug) => PAGES[slug] ? slug : 'introduction';
+export const getPage = (slug) => (PAGES[slug] || COMPONENT_ITEMS.some((item) => item.slug === slug)) ? slug : 'introduction';
 
 const renderNav = (activeSlug) => {
   const host = document.querySelector('[data-uix-docs-nav]');
@@ -339,6 +421,9 @@ const renderToc = () => {
 
 const renderPager = (slug) => {
   const index = NAV_ITEMS.findIndex((item) => item.slug === slug);
+  if (index < 0) {
+    return '<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#all-components"><span>Component index</span><strong>← All components</strong></a><span></span></nav>';
+  }
   const previous = index > 0 ? NAV_ITEMS[index - 1] : null;
   const next = index < NAV_ITEMS.length - 1 ? NAV_ITEMS[index + 1] : null;
   return `<nav class="uix-docs__pager" aria-label="Documentation pages">${previous ? `<a href="#${previous.slug}"><span>Previous</span><strong>← ${esc(previous.name)}</strong></a>` : '<span></span>'}${next ? `<a href="#${next.slug}"><span>Next</span><strong>${esc(next.name)} →</strong></a>` : ''}</nav>`;
@@ -350,10 +435,12 @@ const renderPage = () => {
   const slug = getPage(requested);
   const host = document.querySelector('[data-docs-page]');
   if (!host) return;
-  host.innerHTML = `${PAGES[slug]()}${renderPager(slug)}`;
+  const component = COMPONENT_ITEMS.find((item) => item.slug === slug);
+  const page = PAGES[slug] ? PAGES[slug]() : renderComponentReference(component);
+  host.innerHTML = `${page}${renderPager(slug)}`;
   renderNav(slug);
   renderToc();
-  const item = NAV_ITEMS.find((entry) => entry.slug === slug);
+  const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component;
   document.title = `${item?.name || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);
   closeMobileMenu();
