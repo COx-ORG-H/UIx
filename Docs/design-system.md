@@ -139,11 +139,11 @@ Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pur
 this is what keeps UIx stack-neutral). Current set:
 
 - **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
-- **Layout:** Card, **PageHeader**, **DetailLayout**, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
-- **Overlays:** Modal, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
+- **Layout:** Card/CardLink, **PageHeader**, **DetailLayout/DetailPage**, Breadcrumbs, RelatedLinks, CollapsibleSection, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
+- **Overlays:** Modal, ConfirmDialog, PromptDialog, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
 - **Data display:** Table (+Th/Td/Tr/Wrap; `fixed` layout, Th `sortOrder` for multi-sort; **BulkBar, RowActions/RowAction, ExpandToggle, CellStrong/CellSub, Mark/Highlighted**), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**
-- **Capability:** Kanban (+Column/Card), Tree, Chart
+- **Capability:** Combobox, ViewMenu/FilterPopover/SavedViewMenu, RelativeTime, ToggleRow, AsyncOperationStatus, Kanban (+Column/Card), Tree, Chart
 - **Table engine (framework-agnostic):** `table-engine` — `multiSort` / `toggleSort`, `applyFilters` (typed ops), `searchRows` / `highlightSegments`, `serializeView` / `parseView` (linkable saved views), `virtualWindow`, and selection helpers (`toggleId`, `selectAllState`, `togglePage`, `mergePinned`). Pure, dependency-free, unit-tested; the **`useTable`** hook composes it into React selection/sort/filter/search/view state, and `guide/app.js` ports the same algorithms so the vanilla styleguide behaves identically.
 
 **Bold = added in the UIx-adoption pass** (the components Tensor had rebuilt bespoke now live here).

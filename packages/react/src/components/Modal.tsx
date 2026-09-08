@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from 'react';
 import type { ReactNode, CSSProperties } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
@@ -18,18 +19,21 @@ export interface ModalProps {
   footer?: ReactNode;
   className?: string;
   style?: CSSProperties;
+  closeLabel?: string;
+  role?: 'dialog' | 'alertdialog';
 }
 
-export function Modal({ open, onClose, title, children, footer, className, style }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, className, style, closeLabel = 'Close dialog', role = 'dialog' }: ModalProps) {
   const ref = useDialog(open);
+  const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-dialog', className)} style={style} onClose={onClose}>
+    <dialog ref={ref} className={cx('uix-dialog', className)} style={style} onClose={onClose} role={role} aria-labelledby={title != null ? titleId : undefined}>
       {(title != null || onClose) && (
         <div className="uix-dialog__header">
-          {title && <div className="uix-dialog__title">{title}</div>}
+          {title && <div id={titleId} className="uix-dialog__title">{title}</div>}
           {onClose && (
-            <button className="uix-dialog__close" onClick={onClose} aria-label="Close dialog">
+            <button type="button" className="uix-dialog__close" onClick={onClose} aria-label={closeLabel}>
               <CloseIcon />
             </button>
           )}

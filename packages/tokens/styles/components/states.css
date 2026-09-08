@@ -4,10 +4,20 @@
   .uix-empty__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--uix-bg-subtle); color: var(--uix-text-muted); }
   .uix-empty__icon svg { width: 22px; height: 22px; }
   .uix-empty__title { font-size: var(--uix-text-h3); font-weight: 600; color: var(--uix-text); }
+  .uix-empty > p { max-width: 52ch; margin: 0; }
+  .uix-empty--drawer { padding: var(--uix-space-5); }
+  .uix-empty--inline { align-items: flex-start; padding: var(--uix-space-4); text-align: left; }
+  .uix-empty--page, .uix-empty--full-page { min-height: min(55vh, 520px); justify-content: center; }
   /* error tone — ErrorState reuses .uix-empty with a danger-toned icon */
   .uix-empty__icon--danger { background: var(--uix-danger-bg); color: var(--uix-danger); }
+  .uix-empty__icon--warning { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
+  .uix-stack--compact { gap: var(--uix-space-2); }
 
   .uix-skeleton { background: linear-gradient(90deg, var(--uix-bg-subtle) 25%, var(--uix-bg-hover) 50%, var(--uix-bg-subtle) 75%); background-size: 200% 100%; animation: uix-shimmer 1.4s linear infinite; border-radius: var(--uix-radius-sm); }
   .uix-skeleton--text { height: 12px; border-radius: var(--uix-radius-pill); }
   .uix-skeleton--circle { border-radius: 50%; }
+  .uix-operation { display: grid; gap: var(--uix-space-3); padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-operation__head { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); }
+  .uix-operation__description { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-operation__action { justify-self: start; }
 }
