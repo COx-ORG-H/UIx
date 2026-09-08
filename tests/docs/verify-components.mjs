@@ -41,7 +41,7 @@ try {
         const stage = host.locator('.uix-docs__demo-stage');
         await stage.waitFor({ state: 'visible', timeout: 3000 });
         assert(await stage.locator(COMPONENT_SPECIMENS[item.slug].selector).count(), 'Specimen selector absent');
-        const overlay = ['modal','drawer','peek','popover','lightbox','combobox','view-menu'].includes(item.slug);
+        const overlay = ['modal','confirm-dialog','prompt-dialog','drawer','peek','popover','lightbox','combobox','view-menu'].includes(item.slug);
         if (!overlay) assert(await stage.locator(COMPONENT_SPECIMENS[item.slug].selector).first().isVisible(), 'Component is hidden');
         assert(await stage.locator(':scope > *').count(), 'Empty preview');
         const copiedMarkup = await host.locator('.uix-docs__demo-code code').textContent();
@@ -63,6 +63,8 @@ try {
   assert(await pipelineStage.evaluate((element) => element === document.activeElement));
   for (const [slug, trigger, specimen] of [
     ['modal', '[data-uix-open="#demo-modal"]', '.uix-dialog'],
+    ['confirm-dialog', '[data-uix-open="#demo-confirm"]', '#demo-confirm'],
+    ['prompt-dialog', '[data-uix-open="#demo-prompt"]', '#demo-prompt'],
     ['drawer', '[data-uix-open="#demo-drawer"]', '.uix-drawer'],
     ['peek', '[data-uix-open-peek]', '.uix-peek'],
     ['popover', '[popovertarget="demo-pop"]', '.uix-popover'],

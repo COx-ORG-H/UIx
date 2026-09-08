@@ -47,7 +47,7 @@ scope. Demonstration data stays local; file selection must never imply a real up
 
 - `packages/tokens/docs/docs.js`: routing, references, shared preview mounting, guides/nav.
 - `packages/tokens/docs/component-specimens.js`: explicit specimen selection contract.
-- `packages/tokens/docs/component-guidance.js`: use case and expected result for all 82 entries.
+- `packages/tokens/docs/component-guidance.js`: use case and expected result for all 92 entries (80 CSS modules and 12 component compositions).
 - `packages/tokens/docs/form-specimens.js`: shared working tag/file examples.
 - `packages/tokens/guide/app.js`: route lifecycle cleanup.
 - `packages/tokens/guide/phase-46-9.js`: working HSV/hex/contrast demo, scoped to the picker.
@@ -60,7 +60,7 @@ scope. Demonstration data stays local; file selection must never imply a real up
 
 ## Status
 
-Implemented. References now mount previews from maintained composition markup; all 82 entries
+Implemented. References now mount previews from maintained composition markup; all 92 entries
 have navigation, guidance and specimen contracts. Added Build with UIx and Extend the system
 guides. Compositions link back to their constituent references. Tag and file examples work
 locally; color HSV/hex editing updates the actual swatch and computes white-text contrast.
@@ -68,7 +68,7 @@ locally; color HSV/hex editing updates the actual swatch and computes white-text
 ## Verification and handoff
 
 - 57 docs/guide unit tests pass.
-- Browser verification passes 82 routes in both themes (164 mounts), visible ordinary
+- Browser verification passes 92 routes in both themes (184 mounts), visible ordinary
   specimens, combobox filtering/selection, repeated lightbox visits, tag add/duplicate/remove,
   local file selection, code view, color HSV/hex and computed swatch/contrast checks.
 - Axe reports no serious/critical WCAG A/AA findings on the three focused controls and two
@@ -90,12 +90,17 @@ locally; color HSV/hex editing updates the actual swatch and computes white-text
   family showcase, including docs-only layout classes, and Media copying a repository-only image
   URL. Overlay specimen contracts now select the matching trigger and surface explicitly, and
   extracted images use a self-contained data image. The browser gate rejects docs-only classes
-  and assets in every copied component snippet and opens/closes all five overlays.
-- Follow-up verification: token build, parity and contract checks pass; docs tests pass 24/24;
-  component browser verification passes 82 routes in both themes; React workflow/chart tests pass
+  and assets in every copied component snippet and opens/closes all seven overlay references.
+- Follow-up verification: token build, parity and contract checks pass; docs/guide tests pass 57/57;
+  component browser verification passes 92 routes in both themes; React workflow/chart tests pass
   5/5; API extraction passes; the isolated package smoke test passes with React 18 and 19; and the
   full accessibility matrix passes 80/80 in light and dark. Linux visual status remains delegated
-  to CI by repository policy; final-revision confirmation is recorded in the draft PR check history.
+  to CI by repository policy; final-revision confirmation is recorded in the PR check history.
+- Integration with the current default branch added ten React component compositions: Filter popover,
+  Saved view menu, Relative time, Confirm dialog, Prompt dialog, Async operation status, Detail page,
+  Related links, Toggle row and Collapsible section. Each now has component-specific guidance, a shared
+  portable specimen and an explicit React-availability mapping. The catalogue duplicate for View menu
+  was removed, the browser gate opens both new dialogs, and the coverage count is now 92 unique routes.
 
 Scope limits: previews demonstrate production HTML/CSS plus documented sample behavior;
 they do not mount the React adapters or provide backend persistence/uploads. Existing React

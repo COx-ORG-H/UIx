@@ -159,12 +159,15 @@ test('each component has an explicit specimen using a selector from its own CSS 
 });
 
 test('showcase-only compositions are explicit and never presented as CSS exports', () => {
-  assert.deepEqual(COMPOSITE_PATTERNS, ['Nav favourites', 'Composer']);
+  assert.deepEqual(COMPOSITE_PATTERNS, [
+    'Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog',
+    'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer',
+  ]);
   assert.deepEqual(
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 82);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 92);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -255,7 +258,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 58);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 68);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });

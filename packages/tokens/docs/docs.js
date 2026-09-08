@@ -107,10 +107,10 @@ export const COMPONENT_GROUPS = {
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
-  'Content & utilities': ['Typography', 'Prose', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits', 'View menu'],
+  'Content & utilities': ['Typography', 'Prose', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits'],
 };
 
-export const COMPOSITE_PATTERNS = ['Nav favourites', 'Composer', 'Filter popover', 'Saved view menu', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Relative time'];
+export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer'];
 
 export const SHOWCASE_SECTION_MAP = {
   foundations: 'examples-foundations',
@@ -138,13 +138,15 @@ export const COMPONENT_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group,
   })));
 
 export const REACT_COMPONENT_SLUGS = [
-  'alert', 'app-shell', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card', 'chart', 'checkbox',
-  'color-picker', 'command-palette', 'comments', 'composer', 'date-range-picker', 'description-list',
-  'detail-layout', 'diff-viewer', 'drawer', 'editorial-home', 'flow', 'form', 'inbox', 'input', 'kanban',
+  'alert', 'app-shell', 'async-operation-status', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card',
+  'chart', 'checkbox', 'collapsible-section', 'color-picker', 'command-palette', 'comments', 'composer',
+  'confirm-dialog', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
+  'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
   'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
   'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph',
-  'rule-builder', 'scheduling-calendar', 'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states',
-  'status-pill', 'switch', 'table', 'tabs', 'textarea', 'timeline', 'toast', 'tooltip', 'tree',
+  'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
+  'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
+  'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'tree',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

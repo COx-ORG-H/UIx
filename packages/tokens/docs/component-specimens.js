@@ -334,5 +334,47 @@ export const COMPONENT_SPECIMENS = {
   "view-menu": {
     "route": "examples-workspace",
     "selector": ".uix-view-menu"
+  },
+  "filter-popover": {
+    "route": "examples-data-display",
+    "selector": ".uix-filter-popover"
+  },
+  "saved-view-menu": {
+    "route": "examples-data-display",
+    "selector": ".uix-saved-views"
+  },
+  "relative-time": {
+    "route": "examples-utility",
+    "selector": "[data-uix-relative-time]"
+  },
+  "confirm-dialog": {
+    "route": "examples-overlays",
+    "selector": "#demo-confirm",
+    "parts": ["[data-uix-open=\"#demo-confirm\"]", "#demo-confirm"]
+  },
+  "prompt-dialog": {
+    "route": "examples-overlays",
+    "selector": "#demo-prompt",
+    "parts": ["[data-uix-open=\"#demo-prompt\"]", "#demo-prompt"]
+  },
+  "async-operation-status": {
+    "route": "examples-overlays",
+    "selector": ".uix-operation"
+  },
+  "detail-page": {
+    "route": "examples-workspace",
+    "selector": ".uix-detail-page"
+  },
+  "related-links": {
+    "route": "examples-workspace",
+    "selector": ".uix-related-links"
+  },
+  "toggle-row": {
+    "route": "examples-form-controls",
+    "selector": ".uix-toggle-row"
+  },
+  "collapsible-section": {
+    "route": "examples-data-display",
+    "selector": ".uix-collapsible"
   }
 };

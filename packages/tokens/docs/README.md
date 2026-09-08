@@ -36,7 +36,7 @@ and one complete workspace composition. The unit tests compare the non-composite
 that names a class outside production or docs-only CSS. Adding a public stylesheet without docs and example
 coverage therefore fails the docs test instead of silently creating a gap.
 
-`tests/docs/verify-components.mjs` checks that all 82 component pages mount their registered specimen in light
+`tests/docs/verify-components.mjs` checks that all 92 component pages mount their registered specimen in light
 and dark mode, ordinary specimens are visible, navigation selects the component, and tag input, file selection,
 color editing, combobox selection and repeated lightbox visits work. It also checks narrow/wide pages and axe
 on the new guides and focused form references. CI runs this in the a11y job. The explicit selector must belong
