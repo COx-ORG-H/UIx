@@ -3,7 +3,7 @@
 **Date:** 2026-09-08  
 **Owner:** UIx maintainers  
 **Delivery:** one additive UIx minor release, followed by independently landable TENSOR adoption slices  
-**Status:** UIx implementation complete; release verification in progress
+**Status:** Complete — released as UIx 2.15.0
 
 ## Definition of Ready
 
@@ -208,3 +208,7 @@ models, shared relative-time clock, render/model tests, API report, docs catalog
 export list, linked minor changeset, and intentional CSS-size baseline are included. TENSOR was inspected
 read-only and was not modified. Paste-ready registration and implementation prompts are stored in
 `Docs/plans/2026-09-08-tensor-uix-adoption-prompts.md`.
+
+Released through feature PR #27 and release PR #28. Tag `v2.15.0` passed the reusable gates, Linux
+visual regression, accessibility, and publish jobs. Independent npm registry queries confirmed both
+`@tensor_1/tokens@2.15.0` and `@tensor_1/react@2.15.0`.
