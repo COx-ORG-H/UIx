@@ -21,7 +21,9 @@ const PAGES = [
   { name: 'tables', path: 'tables.html' },
   { name: 'docs-workspace', path: 'docs/explorer.html#examples-workspace' },
   { name: 'docs-rule-builder-wide', path: 'docs/explorer.html#examples-rule-builder' },
-  { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#examples-color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
+  { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
+  { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
+  { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
 ];
 
 for (const pg of PAGES) {
@@ -55,6 +57,7 @@ for (const pg of PAGES) {
     if (pg.openColorPicker) {
       await page.locator('[data-color-trigger]').click();
       await expect(page.locator('[data-color-dialog]')).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
     }
 
     await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true, timeout: 20_000 });

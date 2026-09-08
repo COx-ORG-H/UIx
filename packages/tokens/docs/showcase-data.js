@@ -1,3 +1,4 @@
+import { tagInputMarkup, fileUploadMarkup } from "./form-specimens.js";
 /* Generated once from the retired UIx showcase pages. The docs router is now the canonical owner. */
 export const SHOWCASE_PAGES = [
   {
@@ -233,5 +234,80 @@ export const ADDITIONAL_EXAMPLES = [
     "route": "examples-utility",
     "title": "Typography utilities",
     "html": "<div class=\"uix-stack\"><span class=\"uix-text-display\">Display</span><span class=\"uix-text-h2\">Section heading</span><span class=\"uix-text-h3\">Card heading</span><span class=\"uix-text-body\">Operational body copy stays readable at product density.</span><span class=\"uix-text-meta\">Metadata · updated 4m ago</span><span class=\"uix-text-eyebrow\">Eyebrow label</span><span class=\"uix-text-data-hero\">98.7%</span></div>"
+  },
+  {
+    "module": "filter-popover",
+    "route": "examples-data-display",
+    "title": "Filter popover",
+    "html": "<div class=\"uix-popover uix-filter-popover\"><label class=\"uix-label\"><span>Status</span><select class=\"uix-select\"><option>Any status</option><option>Open</option><option>Resolved</option></select></label><div class=\"uix-filter-popover__actions\"><button class=\"uix-btn uix-btn--secondary\" type=\"button\">Clear</button><button class=\"uix-btn uix-btn--primary\" type=\"button\">Apply</button></div></div>"
+  },
+  {
+    "module": "saved-view-menu",
+    "route": "examples-data-display",
+    "title": "Saved view menu",
+    "html": "<ul class=\"uix-menu uix-saved-views\" aria-label=\"Saved views\"><li class=\"uix-saved-views__row\"><button class=\"uix-menu__item\" type=\"button\" data-active>My open work</button><button class=\"uix-saved-views__pin\" type=\"button\" data-on aria-label=\"Unpin My open work\">★</button></li><li class=\"uix-saved-views__row\"><button class=\"uix-menu__item\" type=\"button\">Team queue</button><button class=\"uix-saved-views__pin\" type=\"button\" aria-label=\"Pin Team queue\">★</button></li><li class=\"uix-saved-views__footer\"><button class=\"uix-btn uix-btn--link\" type=\"button\">Manage views</button></li></ul>"
+  },
+  {
+    "module": "relative-time",
+    "route": "examples-utility",
+    "title": "Relative time",
+    "html": "<time class=\"uix-text-meta\" data-uix-relative-time datetime=\"2026-09-08T10:00:00Z\" title=\"September 8, 2026 at 12:00 PM\">4 minutes ago</time>"
+  },
+  {
+    "module": "confirm-dialog",
+    "route": "examples-overlays",
+    "title": "Confirm dialog",
+    "html": "<button class=\"uix-btn uix-btn--danger\" type=\"button\" data-uix-open=\"#demo-confirm\">Delete policy</button><dialog class=\"uix-dialog\" id=\"demo-confirm\" role=\"alertdialog\" aria-labelledby=\"demo-confirm-title\"><div class=\"uix-dialog__header\"><h2 class=\"uix-dialog__title\" id=\"demo-confirm-title\">Delete policy?</h2><button class=\"uix-dialog__close\" type=\"button\" data-uix-close aria-label=\"Close\">×</button></div><div class=\"uix-dialog__body\">This permanently removes the policy from future evaluations.</div><div class=\"uix-dialog__footer\"><button class=\"uix-btn uix-btn--secondary\" type=\"button\" data-uix-close>Cancel</button><button class=\"uix-btn uix-btn--danger\" type=\"button\">Delete policy</button></div></dialog>"
+  },
+  {
+    "module": "prompt-dialog",
+    "route": "examples-overlays",
+    "title": "Prompt dialog",
+    "html": "<button class=\"uix-btn uix-btn--primary\" type=\"button\" data-uix-open=\"#demo-prompt\">Rename view</button><dialog class=\"uix-dialog\" id=\"demo-prompt\" aria-labelledby=\"demo-prompt-title\"><div class=\"uix-dialog__header\"><h2 class=\"uix-dialog__title\" id=\"demo-prompt-title\">Rename saved view</h2><button class=\"uix-dialog__close\" type=\"button\" data-uix-close aria-label=\"Close\">×</button></div><form class=\"uix-prompt\"><div class=\"uix-dialog__body\"><label class=\"uix-field\" for=\"demo-prompt-name\"><span class=\"uix-field__label\">View name</span><input class=\"uix-input\" id=\"demo-prompt-name\" value=\"My open work\"></label></div><div class=\"uix-dialog__footer uix-prompt__actions\"><button class=\"uix-btn uix-btn--secondary\" type=\"button\" data-uix-close>Cancel</button><button class=\"uix-btn uix-btn--primary\" type=\"submit\">Save</button></div></form></dialog>"
+  },
+  {
+    "module": "async-operation-status",
+    "route": "examples-overlays",
+    "title": "Async operation status",
+    "html": "<div class=\"uix-operation\" role=\"status\" aria-live=\"polite\"><div class=\"uix-operation__head\"><strong>Importing customers</strong><span class=\"uix-pill uix-pill--info\">Running</span></div><div class=\"uix-operation__description\">Validating 2,400 records.</div><div class=\"uix-progress\" role=\"progressbar\" aria-label=\"Customer import\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"64\"><div class=\"uix-progress__bar\" style=\"width:64%\"></div></div></div>"
+  },
+  {
+    "module": "detail-page",
+    "route": "examples-workspace",
+    "title": "Detail page",
+    "html": "<section class=\"uix-detail-page\" aria-labelledby=\"demo-detail-title\"><a class=\"uix-link uix-link--quiet uix-detail-page__back\" href=\"#examples-workspace\">← All incidents</a><div class=\"uix-page-header\"><div class=\"uix-page-header__titles\"><div class=\"uix-page-header__eyebrow\">Incident</div><h2 class=\"uix-page-header__title\" id=\"demo-detail-title\">INC-2043</h2><div class=\"uix-page-header__subtitle\">VPN disconnects randomly</div></div></div><dl class=\"uix-detail-page__metrics\"><div><dt>Status</dt><dd>Open</dd></div><div><dt>Priority</dt><dd>High</dd></div></dl><nav class=\"uix-tabs\" aria-label=\"Incident sections\"><a class=\"uix-tab\" aria-current=\"page\" href=\"#detail-overview\">Overview</a><a class=\"uix-tab\" href=\"#detail-activity\">Activity</a></nav><div class=\"uix-detail\"><main class=\"uix-detail__main\">Primary record content</main><aside class=\"uix-detail__side\">Supporting context</aside></div></section>"
+  },
+  {
+    "module": "related-links",
+    "route": "examples-workspace",
+    "title": "Related links",
+    "html": "<section class=\"uix-related-links\" aria-labelledby=\"related-links-title\"><h2 class=\"uix-related-links__title\" id=\"related-links-title\">Related resources</h2><ul class=\"uix-related-links__list\"><li><a class=\"uix-link\" href=\"#build-with-uix\">Service runbook</a><span>Documentation</span></li><li><a class=\"uix-link\" href=\"#examples-workspace\">Identity gateway</a><span>Service</span></li></ul></section>"
+  },
+  {
+    "module": "toggle-row",
+    "route": "examples-form-controls",
+    "title": "Toggle row",
+    "html": "<div class=\"uix-toggle-row\"><div class=\"uix-toggle-row__copy\"><div class=\"uix-toggle-row__label\" id=\"toggle-row-label\">Email notifications</div><div class=\"uix-toggle-row__description\" id=\"toggle-row-description\">Send updates when this incident changes.</div></div><label class=\"uix-switch\"><input type=\"checkbox\" checked aria-labelledby=\"toggle-row-label\" aria-describedby=\"toggle-row-description\"><span class=\"uix-switch__track\"></span></label></div>"
+  },
+  {
+    "module": "collapsible-section",
+    "route": "examples-data-display",
+    "title": "Collapsible section",
+    "html": "<details class=\"uix-collapsible\" open><summary class=\"uix-collapsible__summary\"><span><span class=\"uix-collapsible__title\">Advanced settings</span><span class=\"uix-collapsible__meta\">3 options</span></span><span class=\"uix-collapsible__chevron\" aria-hidden=\"true\">⌄</span></summary><div class=\"uix-collapsible__body\">Secondary controls remain available without overwhelming the default view.</div></details>"
   }
 ];
+
+// Share the usable form specimens across component and composition pages.
+const forms = SHOWCASE_PAGES.find((page) => page.slug === "examples-form-controls");
+forms.html = forms.html.replace(/<span class="uix-taginput"[\s\S]*?<\/span>\s*<\/div>\s*<\/div>/, `${tagInputMarkup}</div></div>`).replace(/<label class="uix-dropzone"[\s\S]*?<\/label>/, fileUploadMarkup);
+
+forms.html = forms.html.replaceAll("<div  data-uix-richselect>", '<div class="uix-combobox" data-uix-richselect>');
+
+forms.html = forms.html.replace('id="rs-type" popover class="uix-cmdk"', 'id="rs-type" popover class="uix-popover uix-cmdk"');
+
+const colorPicker = SHOWCASE_PAGES.find((page) => page.slug === "examples-color-picker");
+colorPicker.html = colorPicker.html.replace(' aria-modal="true"', "").replace("normalized hex input, palettes, focus restoration", "normalized hex input, focus restoration");
+
+colorPicker.html = colorPicker.html.replace('class="uix-color-picker__swatch uix-phase-page__brand-swatch"', 'class="uix-color-picker__swatch" style="background:var(--uix-accent)"').replace('class="uix-color-picker__preview uix-phase-page__brand-preview"', 'class="uix-color-picker__preview" style="background:var(--uix-accent);color:#fff"');
+
+colorPicker.summary = colorPicker.summary.replace("normalized hex input, palettes, focus restoration", "normalized hex input, focus restoration");

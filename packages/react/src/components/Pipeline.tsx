@@ -12,7 +12,7 @@ export interface PipelineProps extends HTMLAttributes<HTMLOListElement> {
 }
 
 /** Ordered progress rail. Consumers own workflow meaning; UIx owns stage semantics and presentation. */
-export function Pipeline({ detailed = false, children, className, ...props }: PipelineProps) {
+export function Pipeline({ detailed = false, children, className, tabIndex, ...props }: PipelineProps) {
   const stages = detailed
     ? Children.map(children, (child) => (
         isValidElement<PipelineStageProps>(child) && child.type === PipelineStage
@@ -21,7 +21,11 @@ export function Pipeline({ detailed = false, children, className, ...props }: Pi
       ))
     : children;
   return (
-    <ol className={cx('uix-pipeline', detailed && 'uix-pipeline--detailed', className)} {...props}>
+    <ol
+      className={cx('uix-pipeline', detailed && 'uix-pipeline--detailed', className)}
+      tabIndex={tabIndex ?? (detailed ? 0 : undefined)}
+      {...props}
+    >
       {stages}
     </ol>
   );

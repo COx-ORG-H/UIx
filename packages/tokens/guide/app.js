@@ -272,8 +272,15 @@ export const aaVerdict = (ratio) => (ratio >= 4.5 ? 'AA' : ratio >= 3 ? 'AA-lg' 
 /* ----------------------------------------------------------------------------
  * DOM wiring (browser only)
  * --------------------------------------------------------------------------*/
+let activeShowcaseCleanup = () => {};
+export const disposeShowcase = () => { activeShowcaseCleanup(); activeShowcaseCleanup = () => {}; };
 export const initShowcase = (options = {}) => {
   if (typeof document === 'undefined') return;
+  disposeShowcase();
+  const disposers = [];
+  const controller = new AbortController();
+  const listen = (target, type, handler, options = {}) => target.addEventListener(type, handler, { ...options, signal: controller.signal });
+  activeShowcaseCleanup = () => { controller.abort(); disposers.forEach((dispose) => dispose()); };
   const { manageTheme = true } = options;
   const root = document.documentElement;
   const KEY = 'uix-theme';
@@ -367,10 +374,11 @@ export const initShowcase = (options = {}) => {
       { rootMargin: '-40% 0px -55% 0px' }
     );
     document.querySelectorAll('main section[id]').forEach((s) => obs.observe(s));
+    disposers.push(() => obs.disconnect());
   };
 
   // ---- global click delegation: theme toggle + copy ----
-  document.addEventListener('click', (e) => {
+  listen(document, 'click', (e) => {
     if (manageTheme && e.target.closest('[data-uix-theme-toggle]')) {
       const next = nextTheme(root.getAttribute('data-theme') || 'light');
       root.setAttribute('data-theme', next);
@@ -679,6 +687,7 @@ export const initShowcase = (options = {}) => {
     // .close(), including animated (allow-discrete) exits where the 'close' event is deferred until
     // after the transition. Observe → disconnect gives exactly one unlock per open.
     const obs = new MutationObserver(() => { if (!dlg.open) { obs.disconnect(); unlockBodyScroll(); } });
+    disposers.push(() => { obs.disconnect(); unlockBodyScroll(); });
     obs.observe(dlg, { attributes: true, attributeFilter: ['open'] });
     dlg.showModal();
   };
@@ -687,7 +696,7 @@ export const initShowcase = (options = {}) => {
   const setupOverlays = () => {
     document.querySelectorAll('[data-uix-open]').forEach((btn) =>
       btn.addEventListener('click', () => openModal(document.querySelector(btn.getAttribute('data-uix-open')))));
-    document.addEventListener('click', (e) => {
+    listen(document, 'click', (e) => {
       const close = e.target.closest('[data-uix-close]');
       if (close) { close.closest('dialog')?.close(); return; }
       if (e.target.tagName === 'DIALOG') e.target.close();   // click on the backdrop
@@ -725,8 +734,8 @@ export const initShowcase = (options = {}) => {
         if (e.newState === 'open') {
           position(); // the CSS opacity fade-in hides this first-frame placement
           onMove = position;
-          window.addEventListener('scroll', onMove, { passive: true, capture: true });
-          window.addEventListener('resize', onMove);
+          listen(window, 'scroll', onMove, { passive: true, capture: true });
+          listen(window, 'resize', onMove);
         } else if (onMove) {
           window.removeEventListener('scroll', onMove, true);
           window.removeEventListener('resize', onMove);
@@ -747,6 +756,7 @@ export const initShowcase = (options = {}) => {
     bubble.setAttribute('popover', 'manual');
     bubble.setAttribute('role', 'tooltip');
     document.body.appendChild(bubble);
+    disposers.push(() => { bubble.remove(); document.documentElement.classList.remove('uix-has-js-tip'); });
     document.documentElement.classList.add('uix-has-js-tip'); // suppresses the CSS-only ::after
     let current = null;
     const show = (el) => {
@@ -770,7 +780,7 @@ export const initShowcase = (options = {}) => {
       el.addEventListener('focus', () => show(el));
       el.addEventListener('blur', hide);
     });
-    window.addEventListener('scroll', () => { if (current) show(current); }, { passive: true, capture: true });
+    listen(window, 'scroll', () => { if (current) show(current); }, { passive: true, capture: true });
   };
 
   // ---- tree: WAI-ARIA keyboard nav + roving tabindex (mirror of the React <Tree>, UIX-FIX-04) ----
@@ -855,7 +865,7 @@ export const initShowcase = (options = {}) => {
   const setupCmdk = () => {
     const dlg = document.querySelector('[data-uix-cmdk-dialog]');
     if (!dlg) return;
-    document.addEventListener('keydown', (e) => {
+    listen(document, 'keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openModal(dlg); }
     });
   };
@@ -883,7 +893,7 @@ export const initShowcase = (options = {}) => {
       el.querySelector('.uix-toast__close').addEventListener('click', leave);
       setTimeout(leave, 4000);
     };
-    document.addEventListener('uix:toast', (e) => push(e.detail));
+    listen(document, 'uix:toast', (e) => push(e.detail));
     document.querySelectorAll('[data-uix-toast]').forEach((btn) =>
       btn.addEventListener('click', () => push({ title: btn.dataset.toastTitle, msg: btn.dataset.toastMsg, tone: btn.dataset.toastTone })));
   };
@@ -988,7 +998,7 @@ export const initShowcase = (options = {}) => {
     const dlg = document.querySelector('[data-uix-lightbox-dialog]');
     if (!dlg) return;
     const img = dlg.querySelector('img');
-    document.addEventListener('click', (e) => {
+    listen(document, 'click', (e) => {
       const t = e.target.closest('[data-uix-lightbox]'); if (!t) return;
       img.src = t.dataset.src; img.alt = t.querySelector('img')?.alt || '';
       openModal(dlg);
@@ -1110,7 +1120,7 @@ export const initShowcase = (options = {}) => {
     navBtns.forEach((b) => b.addEventListener('click', () => { prefs.nav = b.dataset.nav; applyNav(); save(); }));
     bleedInput?.addEventListener('change', () => { prefs.bleed = bleedInput.checked; applyBleed(); save(); });
     focusBtns.forEach((b) => b.addEventListener('click', () => setFocus(!shell.hasAttribute('data-focus'))));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && shell.hasAttribute('data-focus')) setFocus(false); });
+    listen(document, 'keydown', (e) => { if (e.key === 'Escape' && shell.hasAttribute('data-focus')) setFocus(false); });
 
     applyNav(); applyBleed();
   };
@@ -1148,6 +1158,7 @@ export const initShowcase = (options = {}) => {
           initialize();
         }, { rootMargin: '600px 0px' });
         observer.observe(firstChart);
+        disposers.push(() => observer.disconnect());
       }
     }
   };

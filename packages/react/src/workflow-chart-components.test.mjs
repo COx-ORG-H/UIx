@@ -13,12 +13,17 @@ test('detailed pipeline exposes ordered current-stage semantics and visible stat
     h(PipelineStage, { label: 'Deploy', state: 'pending' }),
   ));
 
-  assert.match(html, /<ol class="uix-pipeline uix-pipeline--detailed" aria-label="Release pipeline">/);
+  assert.match(html, /<ol class="uix-pipeline uix-pipeline--detailed" tabindex="0" aria-label="Release pipeline">/);
   assert.match(html, /data-state="blocked" aria-current="step"/);
   assert.match(html, /Blocked/);
   assert.match(html, /aria-current="step"/);
   assert.match(html, /uix-pipeline__meta/);
   assert.match(html, /<div class="uix-pipeline__title">Deploy<\/div>/);
+
+  const callerManaged = renderToStaticMarkup(h(Pipeline, { detailed: true, tabIndex: -1 },
+    h(PipelineStage, { label: 'Build', state: 'complete' }),
+  ));
+  assert.match(callerManaged, /tabindex="-1"/);
 });
 
 test('flow wrappers keep state text and operational metadata in the class contract', () => {
