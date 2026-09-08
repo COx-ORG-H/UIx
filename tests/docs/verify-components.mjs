@@ -89,9 +89,11 @@ try {
   await page.locator('[data-color-hex]').fill('#FFFFFF');
   await page.locator('[data-color-set]').click();
   assert((await page.locator('[data-color-live]').innerText()).includes('1.00:1'));
+  assert.equal(await page.locator('.uix-color-picker__swatch').evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--uix-brand')), '');
   await page.locator('[data-color-dialog] input[type=range]').last().fill('0');
   assert.equal(await page.locator('[data-color-value]').innerText(), '#000000');
+  assert.equal(await page.locator('.uix-color-picker__swatch').evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(0, 0, 0)');
   assert((await page.locator('[data-color-live]').innerText()).includes('21.00:1'));
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('[data-color-trigger]').getAttribute('aria-expanded'), 'false');

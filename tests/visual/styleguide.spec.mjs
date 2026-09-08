@@ -21,7 +21,9 @@ const PAGES = [
   { name: 'tables', path: 'tables.html' },
   { name: 'docs-workspace', path: 'docs/explorer.html#examples-workspace' },
   { name: 'docs-rule-builder-wide', path: 'docs/explorer.html#examples-rule-builder' },
-  { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#examples-color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
+  { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
+  { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
+  { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
 ];
 
 for (const pg of PAGES) {

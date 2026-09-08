@@ -244,3 +244,10 @@ forms.html = forms.html.replace(/<span class="uix-taginput"[\s\S]*?<\/span>\s*<\
 forms.html = forms.html.replaceAll("<div  data-uix-richselect>", '<div class="uix-combobox" data-uix-richselect>');
 
 forms.html = forms.html.replace('id="rs-type" popover class="uix-cmdk"', 'id="rs-type" popover class="uix-popover uix-cmdk"');
+
+const colorPicker = SHOWCASE_PAGES.find((page) => page.slug === "examples-color-picker");
+colorPicker.html = colorPicker.html.replace(' aria-modal="true"', "").replace("normalized hex input, palettes, focus restoration", "normalized hex input, focus restoration");
+
+colorPicker.html = colorPicker.html.replace('class="uix-color-picker__swatch uix-phase-page__brand-swatch"', 'class="uix-color-picker__swatch" style="background:var(--uix-accent)"').replace('class="uix-color-picker__preview uix-phase-page__brand-preview"', 'class="uix-color-picker__preview" style="background:var(--uix-accent);color:#fff"');
+
+colorPicker.summary = colorPicker.summary.replace("normalized hex input, palettes, focus restoration", "normalized hex input, focus restoration");

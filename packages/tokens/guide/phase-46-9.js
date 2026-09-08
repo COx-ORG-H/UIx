@@ -121,7 +121,7 @@ const applyColor = (value, syncRanges = true) => {
     .reduce((sum, v, index) => sum + v * [0.2126, 0.7152, 0.0722][index], 0);
   const contrast = 1.05 / (luminance + 0.05);
   // Scope the user's demo choice to this picker, never the documentation theme.
-  colorTrigger.closest('.uix-color-picker').style.setProperty('--uix-brand', value);
+  colorTrigger.closest('.uix-color-picker').style.setProperty('--uix-accent', value);
   $('[data-color-value]').textContent = value;
   $('[data-color-hex]').value = value;
   $('[data-color-hex]').removeAttribute('aria-invalid');
