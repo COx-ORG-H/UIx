@@ -47,6 +47,10 @@ scope. Demonstration data stays local; file selection must never imply a real up
 
 - `packages/tokens/docs/docs.js`: routing, references, shared preview mounting, guides/nav.
 - `packages/tokens/docs/component-specimens.js`: explicit specimen selection contract.
+- `packages/tokens/docs/component-guidance.js`: use case and expected result for all 82 entries.
+- `packages/tokens/docs/form-specimens.js`: shared working tag/file examples.
+- `packages/tokens/guide/app.js`: route lifecycle cleanup.
+- `packages/tokens/guide/phase-46-9.js`: working HSV/hex/contrast demo, scoped to the picker.
 - `packages/tokens/docs/docs.test.js`: registry and per-component coverage gates.
 - `tests/docs/`: browser regression verification.
 - `packages/tokens/docs/README.md`: authoring instructions.
@@ -54,4 +58,30 @@ scope. Demonstration data stays local; file selection must never imply a real up
 
 ## Status
 
-Ready: scope and acceptance derived from the user request; implementation in progress.
+Implemented. References now mount previews from maintained composition markup; all 82 entries
+have navigation, guidance and specimen contracts. Added Build with UIx and Extend the system
+guides. Compositions link back to their constituent references. Tag and file examples work
+locally; color HSV/hex editing updates the actual swatch and computes white-text contrast.
+
+## Verification and handoff
+
+- 57 docs/guide unit tests pass.
+- Browser verification passes 82 routes in both themes (164 mounts), visible ordinary
+  specimens, combobox filtering/selection, repeated lightbox visits, tag add/duplicate/remove,
+  local file selection, code view, color HSV/hex and computed swatch/contrast checks.
+- Axe reports no serious/critical WCAG A/AA findings on the three focused controls and two
+  new guides in both themes, including the open color picker (10 scans).
+- Narrow/wide screenshots inspected. Native file input uses the UIx input class to avoid
+  overflowing its narrow preview. Color screenshots reset scroll after opening the picker.
+- CI's a11y job now runs the docs unit suite and component browser verification.
+- Linux visual coverage now includes the actual color-picker, tag-input and file-upload
+  references, plus existing foundations, workspace, rule-builder and table pages (14 images).
+- Independent read-only review caught stale global listeners, a wrong combobox specimen,
+  static color behavior and a swatch variable-resolution issue. All were fixed and covered
+  by interaction or computed-style assertions.
+
+Scope limits: previews demonstrate production HTML/CSS plus documented sample behavior;
+they do not mount the React adapters or provide backend persistence/uploads. Existing React
+API reports remain the exact prop reference. No production deployment or package release.
+This branch builds on `codex/release-uix-2-13-0` (PR #23); review it against that branch to
+avoid including earlier workflow/chart changes. Follow normal required CI gates before merge.
