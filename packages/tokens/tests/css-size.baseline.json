@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 130791,
-      "gzip": 18393,
-      "brotli": 15906
+      "raw": 136110,
+      "gzip": 19099,
+      "brotli": 16514
     },
     "build/css/styles.css": {
-      "raw": 138961,
-      "gzip": 20688,
-      "brotli": 17791
+      "raw": 144280,
+      "gzip": 21399,
+      "brotli": 18405
     },
     "build/css/tokens.css": {
       "raw": 7673,
@@ -47,9 +47,9 @@
       "brotli": 424
     },
     "styles/components/breadcrumbs.css": {
-      "raw": 725,
-      "gzip": 387,
-      "brotli": 283
+      "raw": 766,
+      "gzip": 409,
+      "brotli": 300
     },
     "styles/components/builder-canvas.css": {
       "raw": 2479,
@@ -67,9 +67,9 @@
       "brotli": 420
     },
     "styles/components/card.css": {
-      "raw": 834,
-      "gzip": 345,
-      "brotli": 269
+      "raw": 2247,
+      "gzip": 664,
+      "brotli": 529
     },
     "styles/components/chart.css": {
       "raw": 856,
@@ -87,9 +87,9 @@
       "brotli": 545
     },
     "styles/components/combobox.css": {
-      "raw": 1008,
-      "gzip": 434,
-      "brotli": 323
+      "raw": 1311,
+      "gzip": 559,
+      "brotli": 439
     },
     "styles/components/command-palette.css": {
       "raw": 1632,
@@ -117,9 +117,9 @@
       "brotli": 180
     },
     "styles/components/detail-layout.css": {
-      "raw": 502,
-      "gzip": 275,
-      "brotli": 225
+      "raw": 1216,
+      "gzip": 471,
+      "brotli": 384
     },
     "styles/components/diff-viewer.css": {
       "raw": 2370,
@@ -147,9 +147,9 @@
       "brotli": 2433
     },
     "styles/components/form.css": {
-      "raw": 1078,
-      "gzip": 435,
-      "brotli": 346
+      "raw": 1552,
+      "gzip": 553,
+      "brotli": 438
     },
     "styles/components/heartbeat.css": {
       "raw": 1234,
@@ -192,9 +192,9 @@
       "brotli": 486
     },
     "styles/components/link.css": {
-      "raw": 5612,
-      "gzip": 2178,
-      "brotli": 1758
+      "raw": 6015,
+      "gzip": 2305,
+      "brotli": 1867
     },
     "styles/components/list.css": {
       "raw": 784,
@@ -227,9 +227,9 @@
       "brotli": 350
     },
     "styles/components/modal.css": {
-      "raw": 2421,
-      "gzip": 834,
-      "brotli": 661
+      "raw": 2621,
+      "gzip": 876,
+      "brotli": 705
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -307,9 +307,9 @@
       "brotli": 664
     },
     "styles/components/sidebar.css": {
-      "raw": 7552,
-      "gzip": 1879,
-      "brotli": 1588
+      "raw": 8158,
+      "gzip": 1934,
+      "brotli": 1634
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -332,9 +332,9 @@
       "brotli": 380
     },
     "styles/components/states.css": {
-      "raw": 1146,
-      "gzip": 504,
-      "brotli": 416
+      "raw": 2060,
+      "gzip": 738,
+      "brotli": 611
     },
     "styles/components/status-pill.css": {
       "raw": 3794,
@@ -357,9 +357,9 @@
       "brotli": 387
     },
     "styles/components/table-toolbar.css": {
-      "raw": 1546,
-      "gzip": 577,
-      "brotli": 497
+      "raw": 1838,
+      "gzip": 645,
+      "brotli": 543
     },
     "styles/components/table.css": {
       "raw": 14748,
@@ -412,9 +412,9 @@
       "brotli": 455
     },
     "styles/components/view-menu.css": {
-      "raw": 1279,
-      "gzip": 533,
-      "brotli": 409
+      "raw": 1908,
+      "gzip": 687,
+      "brotli": 542
     }
   }
 }

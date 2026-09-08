@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -25,5 +25,33 @@ export function Card({ title, subtitle, headerAction, footer, children, classNam
       {children != null && <div className="uix-card__body">{children}</div>}
       {footer != null && <div className="uix-card__footer">{footer}</div>}
     </div>
+  );
+}
+
+export interface CardLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'title'> {
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  headerAction?: ReactNode;
+  footer?: ReactNode;
+  children?: ReactNode;
+}
+
+/** A whole-card anchor with visible hover and keyboard focus affordances. */
+export function CardLink({ title, subtitle, headerAction, footer, children, className, ...props }: CardLinkProps) {
+  const hasHeader = title != null || subtitle != null || headerAction != null;
+  return (
+    <a className={cx('uix-card', 'uix-card--interactive', className)} {...props}>
+      {hasHeader && (
+        <div className="uix-card__header">
+          <div style={{ flex: 1 }}>
+            {title != null && <div className="uix-card__title">{title}</div>}
+            {subtitle != null && <div className="uix-card__subtitle">{subtitle}</div>}
+          </div>
+          {headerAction}
+        </div>
+      )}
+      {children != null && <div className="uix-card__body">{children}</div>}
+      {footer != null && <div className="uix-card__footer">{footer}</div>}
+    </a>
   );
 }

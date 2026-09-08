@@ -11,4 +11,9 @@
   .uix-validation-summary strong { color: var(--uix-danger-text); }
   .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
   .uix-validation-summary a { color: var(--uix-danger-text); text-decoration: underline; }
+  .uix-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-5); padding-block: var(--uix-space-3); }
+  .uix-toggle-row + .uix-toggle-row { border-top: 1px solid var(--uix-border); }
+  .uix-toggle-row__copy { min-width: 0; }
+  .uix-toggle-row__label { color: var(--uix-text); font-weight: 500; }
+  .uix-toggle-row__description { margin-top: var(--uix-space-1); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
 }
