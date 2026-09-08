@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.14.2
+
+### Patch Changes
+
+- Align the linked token and React package versions for exact-version consumers.
+
 ## 2.14.0
 
 ### Minor Changes
