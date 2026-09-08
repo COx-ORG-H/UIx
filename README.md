@@ -1,5 +1,7 @@
 # uix-styleguide — UIx v2
 
+https://cox-org-h.github.io/UIx/docs/explorer.html#introduction
+
 A **framework-agnostic, build-free design system** for CRM/ITSM products. Plain HTML + CSS + a little vanilla
 JS power a unified documentation site with component references, adoption status, and live examples; drop the
 CSS into any project (HTML, React, Vue, Tailwind, server-rendered — anything) to use it.
