@@ -1,8 +1,10 @@
 /* UIx Docs — pure helpers plus a dependency-free documentation application. */
 
 import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
-import { initShowcase } from '../guide/app.js';
+import { initShowcase, disposeShowcase } from '../guide/app.js';
 import { initAdvancedShowcase } from '../guide/phase-46-9.js';
+import { COMPONENT_SPECIMENS } from './component-specimens.js';
+import { initFormSpecimens } from './form-specimens.js';
 
 export const slugify = (name) =>
   String(name)
@@ -37,7 +39,7 @@ export const renderPropsTable = (props = []) => {
     const defaultValue = prop.default == null || prop.default === '' ? '—' : `<code>${esc(prop.default)}</code>`;
     return `<tr><td><code>${esc(prop.name)}</code>${required}</td><td>${type}</td><td>${defaultValue}</td><td>${esc(prop.description || '')}</td></tr>`;
   }).join('');
-  return `<table class="uix-table"><thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<div class="uix-docs__table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="uix-table"><thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 };
 
 export const normalizeHash = (hash, fallback = 'introduction') => {
@@ -74,6 +76,8 @@ const NAV_ITEMS = [
   { name: 'Introduction', slug: 'introduction', group: 'Getting started', summary: 'What UIx is and how its packages fit together.', keywords: ['overview', 'quick start'], featured: true },
   { name: 'Installation', slug: 'installation', group: 'Getting started', summary: 'Install CSS, tokens, Tailwind, or React.', keywords: ['npm', 'imports', 'setup'], featured: true },
   { name: 'React', slug: 'react', group: 'Getting started', summary: 'Use UIx primitives in React applications.', keywords: ['tsx', 'components', 'package'] },
+  { name: 'Build with UIx', slug: 'build-with-uix', group: 'Getting started', summary: 'Compose a complete interface with UIx layout, components, tokens and behavior.', keywords: ['style guide', 'system', 'composition', 'utilities'], featured: true },
+  { name: 'Extend the system', slug: 'extend-the-system', group: 'Getting started', summary: 'Turn discoveries from each product into reusable components.', keywords: ['contribute', 'agent', 'new component', 'workflow'] },
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
@@ -238,11 +242,40 @@ const renderComponentReference = (item) => {
   const availability = item.composite
     ? callout('Composite example pattern', `${esc(item.name)} is assembled from existing UIx primitives. It does not have a standalone <code>@tensor_1/tokens/components/${esc(item.slug)}</code> export.`)
     : `${codeBlock(`@import "@tensor_1/tokens/components/${item.slug}";`, 'css')}<p>This stylesheet is independently exported by <code>@tensor_1/tokens</code>. Import the full bundle instead when the product uses many UIx components.</p>`;
-  return `${pageHeader(item.group, item.name, `${item.name} is part of UIx’s production ${item.group.toLowerCase()} surface. This reference records availability, implementation boundaries, and the route to the complete visual state matrix.`, [item.composite ? 'composite pattern' : 'CSS module', 'build-free reference', 'canonical showcase linked'])}
+  return `${pageHeader(item.group, item.name, COMPONENT_DETAILS[item.slug]?.[0] || `${item.name} belongs to the ${item.group.toLowerCase()} family. Inspect the rendered contract below, then copy its HTML or use the available React adapter.`, [item.composite ? 'composite pattern' : 'CSS module', REACT_COMPONENT_SLUGS.includes(item.slug) ? 'React adapter available' : 'CSS + application behavior', 'live preview'])}
+    ${componentPreview(item)}
     ${section('availability', 'Availability', availability)}
+    ${section('behavior-contract', 'Behavior and expected result', `<p>${esc(COMPONENT_DETAILS[item.slug]?.[1] || usage)}</p><p>${REACT_COMPONENT_SLUGS.includes(item.slug) ? 'A React adapter is available. See the <a href="#react">React integration guide</a> and the <a href="../../react/etc/uix-react.api.md">exported API</a> for its exact props. The preview here demonstrates HTML/CSS with docs behavior; it does not mount React.' : 'This is a CSS contract. Your application owns events, state, validation and persistence; importing CSS does not install those behaviors.'}</p><p>Start with <code>@import "@tensor_1/tokens/bundle";</code> to include tokens, base styles, components and layout utilities. A component-only import requires those shared layers separately. <a href="#installation">Installation</a> · <a href="#build-with-uix">Composition and styling</a></p>`)}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
     ${section('state-matrix', 'Examples and state matrix', `<p>Examples now live in the same documentation system as the component contract, so variants, combinations, and dense product context stay searchable and versioned together.</p><p><a class="uix-btn uix-btn--primary" href="#${esc(exampleRoute)}">Open ${esc(item.name)} examples</a> <a class="uix-btn uix-btn--outline" href="#all-components">Back to all components</a></p>`)}`;
+};
+
+const COMPONENT_DETAILS = {
+  'color-picker': ['Choose an exact color for a brand, label or visual property. Keep semantic status colors tied to the theme rather than arbitrary user selections.', 'Open the swatch, edit a six-digit hex value or the HSV controls. Expect a normalized hex value, an updated swatch and contrast feedback. Escape closes the picker and returns focus. Your application stores the chosen value; contrast feedback is advisory, not a validation gate.'],
+  'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. The app owns the allowed vocabulary, maximum count and saved array.'],
+  'file-upload': ['Let people choose attachments with a native file input. Show selected filenames before starting a transfer.', 'Choose files to see a local selection list. No bytes are uploaded by this documentation example. The app owns size/type validation, transfer progress, cancellation, server validation and retry. File selection alone is not upload success.'],
+};
+
+const componentPreview = (item) => section('component-preview', 'Preview and markup', `<div data-component-preview="${item.slug}"></div><p class="uix-text-muted">Uses the shared UIx stylesheet. The Code view shows the initial HTML; application behavior is separate.</p>`);
+
+// Resolve from the same maintained markup as composition pages: no second set of demos.
+export const mountComponentPreview = (item, host) => {
+  const spec = COMPONENT_SPECIMENS[item.slug];
+  if (!spec) throw new Error(`Missing component specimen: ${item.slug}`);
+  const page = SHOWCASE_PAGES.find((entry) => entry.slug === spec.route);
+  const additional = ADDITIONAL_EXAMPLES.find((entry) => entry.module === item.slug);
+  const template = document.createElement('template');
+  template.innerHTML = additional?.html || page.html;
+  const target = template.content.querySelector(spec.anchor || spec.selector);
+  if (!target) throw new Error(`Missing specimen selector: ${item.slug} ${spec.selector}`);
+  // Preserve companion controls for interactive advanced examples and native overlays.
+  const contextual = ['modal', 'drawer', 'peek', 'popover', 'lightbox', 'toast'].includes(item.slug);
+  const fragment = page.source === 'advanced' || contextual
+    ? stripShowcaseFrame(additional?.html || page.html)
+    : (spec.container ? target.closest(spec.container).outerHTML : target.closest('[data-tag-example], [data-file-example]')?.outerHTML || target.closest('[data-uix-example]')?.querySelector('.uix-example__preview')?.innerHTML || target.outerHTML);
+  host.innerHTML = demo(fragment, fragment, { column: true });
+  host.dataset.showcaseSource = page.source;
 };
 
 const renderCatalog = () => Object.entries(COMPONENT_GROUPS).map(([group, names]) => section(
@@ -261,7 +294,7 @@ const exampleCards = (source) => SHOWCASE_PAGES
   .map((page) => `<a class="uix-docs__component-card" href="#${page.slug}"><strong>${esc(page.title)}</strong><span>${esc(page.summary)}</span><em>Open examples →</em></a>`)
   .join('');
 
-const renderExamplesOverview = () => `${pageHeader('Examples', 'Example gallery', 'The original UIx showcases are now part of the documentation system. Browse focused routes instead of leaving the docs for separate, competing pages.', ['25 migrated examples', '80 CSS modules demonstrated', 'one canonical docs shell'])}
+const renderExamplesOverview = () => `${pageHeader('Examples', 'Example gallery', 'See how UIx components work together in forms, workspaces and operational workflows. Each composition connects back to the component contracts it uses.', ['25 compositions', '80 CSS modules', 'shared component specimens'])}
   ${section('product-example', 'Complete product composition', `<div class="uix-docs__component-grid">${exampleCards('workspace')}</div>`)}
   ${section('core-examples', 'Foundations and component families', `<div class="uix-docs__component-grid">${exampleCards('core')}</div>`)}
   ${section('advanced-examples', 'Advanced workflow examples', `<div class="uix-docs__component-grid">${exampleCards('advanced')}</div>`)}
@@ -277,11 +310,12 @@ const renderShowcasePage = (page) => {
     .filter((example) => example.route === page.slug)
     .map((example) => section(`additional-${example.module}`, example.title, demo(example.html)))
     .join('');
-  const sourceLabel = page.source === 'advanced' ? 'advanced workflow' : page.source === 'workspace' ? 'product composition' : 'core showcase';
+  const related = COMPONENT_ITEMS.filter((item) => COMPONENT_SPECIMENS[item.slug]?.route === page.slug);
+  const sourceLabel = page.source === 'advanced' ? 'advanced workflow' : page.source === 'workspace' ? 'product composition' : 'component composition';
   return `${pageHeader('Examples', page.title, page.summary, [sourceLabel, 'live UIx contract', 'integrated reference'])}
     ${section('live-example', 'Live example', `<div class="uix-docs__showcase" data-showcase-source="${page.source}">${stripShowcaseFrame(page.html)}</div>`)}
     ${additional}
-    ${section('reference-links', 'Related reference', `<p><a class="uix-btn uix-btn--outline" href="#all-components">Browse component references</a> <a class="uix-btn uix-btn--outline" href="#examples">Back to example gallery</a></p>`)}`;
+    ${section('reference-links', 'Components in this composition', `<div class="uix-cluster">${related.map((item) => `<a class="uix-btn uix-btn--outline" href="#${item.slug}">${esc(item.name)}</a>`).join('')}</div><p><a href="#all-components">All component references</a> · <a href="#examples">Example gallery</a> · <a href="#build-with-uix">Composition guidance</a></p>`)}`;
 };
 
 const statusCell = (available, label = 'Available') => available
@@ -308,6 +342,21 @@ const buttonProps = [
 ];
 
 const PAGES = {
+  'build-with-uix': () => `${pageHeader('Getting started', 'Build with UIx', 'The style guide is the system: foundations define the visual language, components implement it, and compositions show how the pieces work together.', ['UIx CSS', 'optional React', 'shared theme'])}
+    ${section('start-with-the-system', 'Start with the system', `<p>Import the bundle once at the application entry. Use semantic HTML and UIx classes in any framework, or use the React adapters for their supported behavior. UIx does not require Tailwind.</p>${codeBlock('@import "@tensor_1/tokens/bundle";', 'css')}<p><a href="#installation">Installation paths</a> · <a href="#component-status">CSS and React availability</a></p>`)}
+    ${section('compose-a-screen', 'Compose a screen', `<p>Use App shell for navigation and workspace structure, Page header for the task title and actions, Card for a related content group, and Field for each label/control/message pair. Use <code>uix-stack</code> for vertical rhythm and <code>uix-cluster</code> for wrapping actions.</p>${demo(`<section class="uix-card"><header class="uix-card__header"><h3 class="uix-card__title">Project settings</h3></header><div class="uix-card__body uix-stack"><label class="uix-field"><span class="uix-field__label">Project name</span><input class="uix-input" value="Customer portal"><span class="uix-field__hint">A name people recognize in navigation.</span></label><div class="uix-cluster"><span class="uix-pill uix-pill--info">Draft</span><span class="uix-text-muted">Changes stay local in this preview.</span></div></div></section>`)}<p>This composition needs no product-specific stylesheet. For a complete workspace, <a href="#examples-workspace">open the workspace composition</a>.</p>`)}
+    ${section('choose-the-layer', 'Choose the right styling layer', renderPropsTable([
+      {name:'Theme',type:'--uix-*',description:'Set supported brand slots once for the product; switch light/dark with data-theme on the root. See Theming.'},
+      {name:'Component',type:'uix-* classes',description:'Use the documented structure, variants and state attributes. Do not override internal selectors per screen.'},
+      {name:'Layout',type:'uix-stack / uix-cluster / App shell',description:'Compose existing primitives. For genuinely new layout needs, add a reusable primitive to UIx.'},
+      {name:'Behavior',type:'React adapter or application code',description:'Own state, validation and persistence explicitly. CSS styles a state; it does not create a backend or event handler.'},
+    ]))}
+    ${section('expected-result', 'What to expect', `<p>Components inherit the same typography, spacing, surfaces, focus rings and semantic colors in both themes. A product-specific layout may still need CSS; use UIx tokens and contribute repeated patterns back to the system. UIx is an expanding library, not a promise that every possible interface already exists.</p><p><a href="#theming">Theme your product</a> · <a href="#design-tokens">Inspect tokens</a> · <a href="#accessibility">Verify accessibility</a> · <a href="#extend-the-system">Add missing patterns</a></p>`)}`,
+  'extend-the-system': () => `${pageHeader('Getting started', 'Extend the system', 'Make each project improve the starting point for the next one. Promote reusable structure and behavior into UIx while keeping product data and policy in the application.')}
+    ${section('reuse-first', 'Find the existing contract', `<p>Search the component catalogue and inspect its preview, markup and availability. Check whether a variant or composition solves the need before creating a component. <a href="#all-components">Browse components</a> · <a href="#examples">Explore compositions</a></p>`)}
+    ${section('contribution-contract', 'Add a component as one complete change', `<ol><li>Define who needs it, when to use it, input/output, keyboard behavior, empty/loading/error/disabled states and expected appearance.</li><li>Add production styles in <code>packages/tokens/styles/components/&lt;slug&gt;.css</code>, using existing UIx tokens and the component cascade layer. Register the stylesheet in <code>styles/component-list.css</code>.</li><li>If stateful React behavior belongs in the system, add an adapter in <code>packages/react/src/components</code>, export it from <code>src/index.ts</code>, and document the public props. Keep network requests and product policy in the consumer.</li><li>Add a maintained specimen in <code>docs/showcase-data.js</code> and a selector in <code>docs/component-specimens.js</code>. Register the component and specific usage guidance in <code>docs/docs.js</code>. Its own page must visibly render the component.</li><li>Test appearance in both themes, narrow layout, keyboard operation, validation and state transitions. Copy the example into a consumer and confirm it uses published UIx exports.</li><li>Add a changeset for package changes, update the API report when needed, run the repository gates and release through the maintainer workflow. Upgrade consuming projects and verify the actual rendered component.</li></ol>`)}
+    ${section('agent-handoff', 'Contract for humans and agents', `${codeBlock('Component: <name and slug>\nUse when: <user task>\nAvoid when: <better alternative>\nInputs and outputs: <values, events, ownership>\nVisual states: <default, focus, disabled, invalid, empty, loading>\nKeyboard: <tab order and shortcuts>\nPreview: <component route and specimen selector>\nIntegration: <CSS imports; React export if available>\nVerification: <behavior checks and screenshots>\nConsumer: <project that proves the contract>', 'text')}<p>Use <a href="../../../Docs/contract-change-process.md">the contract change process</a> and <a href="../../../Docs/maintainer-runbook.md">the maintainer runbook</a> for versioning and release rules.</p>`)}
+    ${section('completion-gate', 'Completion means usable and documented', `<p>A stylesheet appearing somewhere in a gallery is insufficient. Every catalogue entry must resolve to a visible specimen on its own page. The component-to-specimen registry and browser coverage tests enforce this relationship. New behavior also needs its own interaction tests.</p>`)}`,
   introduction: () => `${pageHeader('Getting started', 'Build enterprise interfaces with less drift.', 'UIx is the shared visual and interaction contract for dense operational products—available as framework-neutral CSS, typed tokens, Tailwind bindings, and React primitives.', ['v2.13.0', '80 CSS modules', '58 React components'])}
     <div class="uix-docs__hero-grid">
       <div>
@@ -547,7 +596,7 @@ const renderNav = (activeSlug) => {
   const host = document.querySelector('[data-uix-docs-nav]');
   if (!host) return;
   const groups = [];
-  for (const item of NAV_ITEMS) {
+  for (const item of [...NAV_ITEMS, ...CATALOG_SEARCH_ITEMS]) {
     let group = groups.find((entry) => entry.name === item.group);
     if (!group) { group = { name: item.group, items: [] }; groups.push(group); }
     group.items.push(item);
@@ -587,11 +636,15 @@ const renderPage = () => {
     : component
       ? renderComponentReference(component)
       : renderShowcasePage(example);
-  host.innerHTML = `${content}${renderPager(slug)}`;
+  disposeShowcase();
+  host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
+  if (component) mountComponentPreview(component, host.querySelector('[data-component-preview]'));
   renderNav(slug);
   renderToc();
-  if (example?.source === 'core' || example?.source === 'workspace') initShowcase({ manageTheme: false });
-  if (example?.source === 'advanced') initAdvancedShowcase();
+  const source = example?.source || host.querySelector('[data-component-preview]')?.dataset.showcaseSource;
+  if (source === 'core' || source === 'workspace') initShowcase({ manageTheme: false });
+  if (source === 'advanced') initAdvancedShowcase();
+  initFormSpecimens(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);

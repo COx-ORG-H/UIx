@@ -327,6 +327,11 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__demo-tab[aria-selected="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
 .uix-docs__demo-stage { min-height: 170px; padding: clamp(24px, 7vw, 56px); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--uix-space-3); background-image: radial-gradient(var(--uix-border) .75px, transparent .75px); background-size: 16px 16px; }
 .uix-docs__demo-stage--column { align-items: stretch; flex-direction: column; }
+.uix-docs__table-scroll { max-width: 100%; overflow-x: auto; }
+[data-component-preview] { min-width: 0; }
+[data-component-preview] .uix-docs__demo-stage { overflow-x: auto; }
+[data-component-preview="color-picker"] .uix-docs__demo-stage:has([data-color-dialog]:not([hidden])) { min-height: 44rem; justify-content: flex-start; }
+[data-component-preview="color-picker"] .uix-color-picker__popover { max-width: 100%; }
 .uix-docs__demo-stage[hidden], .uix-docs__demo-code[hidden] { display: none; }
 .uix-docs__demo-code .uix-docs__code { margin: 0; border: 0; border-radius: 0; }
 

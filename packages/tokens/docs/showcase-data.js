@@ -1,3 +1,4 @@
+import { tagInputMarkup, fileUploadMarkup } from "./form-specimens.js";
 /* Generated once from the retired UIx showcase pages. The docs router is now the canonical owner. */
 export const SHOWCASE_PAGES = [
   {
@@ -235,3 +236,11 @@ export const ADDITIONAL_EXAMPLES = [
     "html": "<div class=\"uix-stack\"><span class=\"uix-text-display\">Display</span><span class=\"uix-text-h2\">Section heading</span><span class=\"uix-text-h3\">Card heading</span><span class=\"uix-text-body\">Operational body copy stays readable at product density.</span><span class=\"uix-text-meta\">Metadata · updated 4m ago</span><span class=\"uix-text-eyebrow\">Eyebrow label</span><span class=\"uix-text-data-hero\">98.7%</span></div>"
   }
 ];
+
+// Share the usable form specimens across component and composition pages.
+const forms = SHOWCASE_PAGES.find((page) => page.slug === "examples-form-controls");
+forms.html = forms.html.replace(/<span class="uix-taginput"[\s\S]*?<\/span>\s*<\/div>\s*<\/div>/, `${tagInputMarkup}</div></div>`).replace(/<label class="uix-dropzone"[\s\S]*?<\/label>/, fileUploadMarkup);
+
+forms.html = forms.html.replaceAll("<div  data-uix-richselect>", '<div class="uix-combobox" data-uix-richselect>');
+
+forms.html = forms.html.replace('id="rs-type" popover class="uix-cmdk"', 'id="rs-type" popover class="uix-popover uix-cmdk"');

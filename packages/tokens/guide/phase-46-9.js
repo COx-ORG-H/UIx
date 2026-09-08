@@ -114,6 +114,43 @@ const closeColor = () => { colorDialog.hidden = true; colorTrigger.setAttribute(
 colorTrigger?.addEventListener('click', () => { colorDialog.hidden = false; colorTrigger.setAttribute('aria-expanded', 'true'); $('[data-color-hex]').focus(); });
 $('[data-color-done]')?.addEventListener('click', closeColor);
 colorDialog?.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); closeColor(); } });
-$('[data-color-set]')?.addEventListener('click', () => { const input = $('[data-color-hex]'); const value = input.value.trim().toUpperCase(); if (!/^#[0-9A-F]{6}$/.test(value)) { input.setAttribute('aria-invalid', 'true'); $('[data-color-live]').textContent = 'Enter a six-digit hex color.'; return; } input.removeAttribute('aria-invalid'); $('[data-color-value]').textContent = value; document.documentElement.style.setProperty('--uix-brand', value); $('[data-color-live]').textContent = 'Color normalized and applied to the live preview.'; });
+const colorRanges = colorDialog ? $$('input[type="range"]', colorDialog) : [];
+const applyColor = (value, syncRanges = true) => {
+  const rgb = value.match(/[0-9A-F]{2}/g).map((part) => parseInt(part, 16) / 255);
+  const luminance = rgb.map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, v, index) => sum + v * [0.2126, 0.7152, 0.0722][index], 0);
+  const contrast = 1.05 / (luminance + 0.05);
+  // Scope the user's demo choice to this picker, never the documentation theme.
+  colorTrigger.closest('.uix-color-picker').style.setProperty('--uix-brand', value);
+  $('[data-color-value]').textContent = value;
+  $('[data-color-hex]').value = value;
+  $('[data-color-hex]').removeAttribute('aria-invalid');
+  const live = $('[data-color-live]');
+  live.textContent = `White text contrast ${contrast.toFixed(2)}:1 — ${contrast >= 4.5 ? 'passes' : 'below'} WCAG AA for normal text.`;
+  live.classList.toggle('uix-color-picker__contrast--pass', contrast >= 4.5);
+  live.classList.toggle('uix-color-picker__contrast--fail', contrast < 4.5);
+  if (syncRanges) {
+    const [r, g, b] = rgb, max = Math.max(...rgb), min = Math.min(...rgb), delta = max - min;
+    const hue = !delta ? 0 : max === r ? ((g - b) / delta + 6) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+    [hue * 60, max ? delta / max * 100 : 0, max * 100].forEach((v, index) => colorRanges[index].value = Math.round(v));
+  }
+  colorRanges.forEach((range, index) => range.previousElementSibling.textContent = `${range.value}${index ? '%' : '°'}`);
+};
+$('[data-color-set]')?.addEventListener('click', () => {
+  const input = $('[data-color-hex]');
+  const value = input.value.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(value)) { input.setAttribute('aria-invalid', 'true'); $('[data-color-live]').textContent = 'Enter a six-digit hex color.'; return; }
+  applyColor(value);
+});
+colorRanges.forEach((range) => range.addEventListener('input', () => {
+  const [h, saturation, brightness] = colorRanges.map((input) => Number(input.value));
+  const s = saturation / 100, v = brightness / 100;
+  const channel = (offset) => { const k = (offset + h / 60) % 6; return Math.round(255 * (v - v * s * Math.max(0, Math.min(k, 4 - k, 1)))).toString(16).padStart(2, '0'); };
+  applyColor(`#${channel(5)}${channel(3)}${channel(1)}`.toUpperCase(), false);
+}));
+if (colorTrigger) {
+  colorDialog.removeAttribute('aria-modal'); // This popover does not trap focus.
+  applyColor($('[data-color-hex]').value);
+}
 $('[data-profile-apply]')?.addEventListener('click', () => { $('[data-profile-live]').textContent = 'Northwind applied. Existing accent, link, ring, and muted roles re-derived.'; });
 };

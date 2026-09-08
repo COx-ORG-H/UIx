@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { COMPONENT_SPECIMENS } from './component-specimens.js';
 import {
   slugify,
   componentNav,
@@ -142,6 +143,17 @@ test('component catalogue covers every independently importable CSS module exact
 
   assert.equal(new Set(COMPONENT_ITEMS.map((item) => item.slug)).size, COMPONENT_ITEMS.length);
   assert.deepEqual(documentedModules, cssModules);
+});
+
+test('each component has an explicit specimen using a selector from its own CSS contract', () => {
+  assert.deepEqual(Object.keys(COMPONENT_SPECIMENS).sort(), COMPONENT_ITEMS.map((item) => item.slug).sort());
+  for (const item of COMPONENT_ITEMS) {
+    const spec = COMPONENT_SPECIMENS[item.slug];
+    assert(SHOWCASE_PAGES.some((page) => page.slug === spec.route), item.slug);
+    if (item.composite) continue;
+    const css = readFileSync(resolve(docsDirectory, `../styles/components/${item.slug}.css`), 'utf8');
+    assert(css.includes(spec.selector), `${item.slug} does not own ${spec.selector}`);
+  }
 });
 
 test('showcase-only compositions are explicit and never presented as CSS exports', () => {
