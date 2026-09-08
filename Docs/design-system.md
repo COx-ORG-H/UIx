@@ -143,7 +143,7 @@ this is what keeps UIx stack-neutral). Current set:
 - **Overlays:** Modal, ConfirmDialog, PromptDialog, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
 - **Data display:** Table (+Th/Td/Tr/Wrap; `fixed` layout, Th `sortOrder` for multi-sort; **BulkBar, RowActions/RowAction, ExpandToggle, CellStrong/CellSub, Mark/Highlighted**), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**
-- **Capability:** Combobox, ViewMenu/FilterPopover/SavedViewMenu, RelativeTime, ToggleRow, AsyncOperationStatus, Kanban (+Column/Card), Tree, Chart
+- **Capability:** Combobox, ViewMenu/FilterPopover/SavedViewMenu, RelativeTime, ToggleRow, AsyncOperationStatus, Kanban (+Column/Card), Tree, Pipeline (+Stage), Flow (+Node), Chart (+Metric/Legend behind the chart entry)
 - **Table engine (framework-agnostic):** `table-engine` — `multiSort` / `toggleSort`, `applyFilters` (typed ops), `searchRows` / `highlightSegments`, `serializeView` / `parseView` (linkable saved views), `virtualWindow`, and selection helpers (`toggleId`, `selectAllState`, `togglePage`, `mergePinned`). Pure, dependency-free, unit-tested; the **`useTable`** hook composes it into React selection/sort/filter/search/view state, and `guide/app.js` ports the same algorithms so the vanilla styleguide behaves identically.
 
 **Bold = added in the UIx-adoption pass** (the components Tensor had rebuilt bespoke now live here).
@@ -172,11 +172,11 @@ Prioritize by product demand. (Meter, Progress, Segmented, Inbox, DescriptionLis
 Kanban, and CommandPalette are **already wrapped** — they are not in this list.)
 
 - **Presentational (easy wrap):** breadcrumbs, kbd, steps, stepper, reactions,
-  attachment, audit-log, notification-center, pipeline, flow, sla, heartbeat, media, lightbox,
+  attachment, audit-log, notification-center, sla, heartbeat, media, lightbox,
   contact-card, view-menu
 - **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
-  menu, chart, form (FormGrid/Fieldset)
+  menu, form (FormGrid/Fieldset)
 - **CSS-only (no wrapper by design):** table-toolbar, utility-bits, typography
 
 When you build one: add `packages/react/src/components/<Name>.tsx`, export from `packages/react/src/index.ts`,
-and if it needs a demo, add it to `packages/tokens/index.html`.
+and add its reference and specimen to the integrated docs catalogue in `packages/tokens/docs/`.

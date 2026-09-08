@@ -1,3 +1,5 @@
+export const initAdvancedShowcase = () => {
+if (typeof document === 'undefined') return;
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -62,7 +64,7 @@ const monthNames = ['September 2026', 'October 2026'];
 const monthLengths = [30, 31];
 const monthOffsets = [1, 3];
 const rangeMonths = $('[data-range-months]');
-monthNames.forEach((name, monthIndex) => {
+if (rangeMonths) monthNames.forEach((name, monthIndex) => {
   const month = document.createElement('div'); month.className = 'uix-date-range-picker__month';
   const title = document.createElement('h4'); title.textContent = name; month.append(title);
   const weekdays = document.createElement('div'); weekdays.className = 'uix-date-range-picker__weekdays'; weekdays.setAttribute('aria-hidden', 'true');
@@ -114,3 +116,4 @@ $('[data-color-done]')?.addEventListener('click', closeColor);
 colorDialog?.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); closeColor(); } });
 $('[data-color-set]')?.addEventListener('click', () => { const input = $('[data-color-hex]'); const value = input.value.trim().toUpperCase(); if (!/^#[0-9A-F]{6}$/.test(value)) { input.setAttribute('aria-invalid', 'true'); $('[data-color-live]').textContent = 'Enter a six-digit hex color.'; return; } input.removeAttribute('aria-invalid'); $('[data-color-value]').textContent = value; document.documentElement.style.setProperty('--uix-brand', value); $('[data-color-live]').textContent = 'Color normalized and applied to the live preview.'; });
 $('[data-profile-apply]')?.addEventListener('click', () => { $('[data-profile-live]').textContent = 'Northwind applied. Existing accent, link, ring, and muted roles re-derived.'; });
+};

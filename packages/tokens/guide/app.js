@@ -272,13 +272,16 @@ export const aaVerdict = (ratio) => (ratio >= 4.5 ? 'AA' : ratio >= 3 ? 'AA-lg' 
 /* ----------------------------------------------------------------------------
  * DOM wiring (browser only)
  * --------------------------------------------------------------------------*/
-if (typeof document !== 'undefined') {
+export const initShowcase = (options = {}) => {
+  if (typeof document === 'undefined') return;
+  const { manageTheme = true } = options;
   const root = document.documentElement;
   const KEY = 'uix-theme';
 
   // a hidden probe lets us resolve var()/color-mix() to concrete rgb() values
   const probe = document.createElement('span');
   probe.setAttribute('aria-hidden', 'true');
+  probe.dataset.uixShowcaseProbe = '';
   probe.style.cssText = 'position:absolute;left:-9999px;width:0;height:0';
 
   const resolveColor = (expr) => {
@@ -288,7 +291,7 @@ if (typeof document !== 'undefined') {
   };
 
   // ---- theme toggle ----
-  const toggleBtn = document.querySelector('[data-uix-theme-toggle]');
+  const toggleBtn = manageTheme ? document.querySelector('[data-uix-theme-toggle]') : null;
   const paintToggle = () => {
     if (!toggleBtn) return;
     const dark = root.getAttribute('data-theme') === 'dark';
@@ -368,7 +371,7 @@ if (typeof document !== 'undefined') {
 
   // ---- global click delegation: theme toggle + copy ----
   document.addEventListener('click', (e) => {
-    if (e.target.closest('[data-uix-theme-toggle]')) {
+    if (manageTheme && e.target.closest('[data-uix-theme-toggle]')) {
       const next = nextTheme(root.getAttribute('data-theme') || 'light');
       root.setAttribute('data-theme', next);
       localStorage.setItem(KEY, next);
@@ -1113,6 +1116,7 @@ if (typeof document !== 'undefined') {
   };
 
   const init = () => {
+    document.querySelector('[data-uix-showcase-probe]')?.remove();
     document.body.appendChild(probe);
     paintToggle();
     buildTokenReference();
@@ -1147,6 +1151,5 @@ if (typeof document !== 'undefined') {
       }
     }
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-}
+  init();
+};

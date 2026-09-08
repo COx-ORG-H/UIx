@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 136110,
-      "gzip": 19099,
-      "brotli": 16514
+      "raw": 145483,
+      "gzip": 20391,
+      "brotli": 17578
     },
     "build/css/styles.css": {
-      "raw": 144280,
-      "gzip": 21399,
-      "brotli": 18405
+      "raw": 153653,
+      "gzip": 22688,
+      "brotli": 19464
     },
     "build/css/tokens.css": {
       "raw": 7673,
@@ -72,9 +72,9 @@
       "brotli": 529
     },
     "styles/components/chart.css": {
-      "raw": 856,
-      "gzip": 397,
-      "brotli": 303
+      "raw": 5514,
+      "gzip": 1462,
+      "brotli": 1203
     },
     "styles/components/checkbox.css": {
       "raw": 1495,
@@ -142,9 +142,9 @@
       "brotli": 391
     },
     "styles/components/flow.css": {
-      "raw": 10569,
-      "gzip": 2824,
-      "brotli": 2433
+      "raw": 12036,
+      "gzip": 3083,
+      "brotli": 2652
     },
     "styles/components/form.css": {
       "raw": 1552,
@@ -252,9 +252,9 @@
       "brotli": 981
     },
     "styles/components/pipeline.css": {
-      "raw": 800,
-      "gzip": 337,
-      "brotli": 265
+      "raw": 5936,
+      "gzip": 1464,
+      "brotli": 1228
     },
     "styles/components/popover.css": {
       "raw": 873,

@@ -37,6 +37,11 @@ For common line, bar, and pie charts, the tree-shaken preset avoids shipping the
 import { Chart } from "@tensor_1/react/chart/preset";
 ```
 
+Both chart entries also export `ChartMetric`, `ChartLegend`, and `ChartLegendItem` for consistent analytical card
+chrome. `Chart` supports `headerAction`, `footer`, `loading`, `empty`, and an accessible table equivalent. For
+workflow surfaces, the main entry exports `Pipeline`/`PipelineStage` (compact or detailed operational rail) and
+`Flow`/`FlowNode` (consumer-owned graph geometry with explicit text states).
+
 Large fixed-height tables can use `useVirtualRows(rows, { rowHeight })`; attach its `containerRef` to
 `TableWrap` and render the returned row window between spacer rows.
 

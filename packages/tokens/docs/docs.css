@@ -438,3 +438,57 @@ body[data-docs-menu-open] { overflow: hidden; }
   html { scroll-behavior: auto; }
   .uix-docs__sidebar, .uix-docs__component-card { transition: none; }
 }
+
+/* Integrated component examples. The legacy guide stylesheet provides specimen-only
+   helpers; these rules make those specimens belong to the docs article and shell. */
+.uix-docs__showcase {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.uix-docs__showcase .uix-guide__section {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  scroll-margin-top: calc(var(--docs-header-h) + var(--uix-space-4));
+}
+
+.uix-docs__showcase .uix-guide__section > h2,
+.uix-docs__showcase .uix-guide__section > p.lead {
+  display: none;
+}
+
+.uix-docs__showcase .uix-phase-page__split { align-items: start; }
+.uix-docs__showcase .uix-shell {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--uix-border);
+  border-radius: var(--uix-radius-lg);
+}
+
+.uix-docs__showcase .dash-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: var(--uix-space-4); align-items: start; }
+.uix-docs__showcase .dash-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--uix-space-3); margin: var(--uix-space-4) 0 var(--uix-space-5); }
+.uix-docs__showcase .dash-rail { display: flex; flex-direction: column; gap: var(--uix-space-4); }
+.uix-docs__showcase .dash-lower { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--uix-space-4); margin-top: var(--uix-space-4); }
+
+.uix-docs__status-table { overflow-x: auto; }
+.uix-docs__status-table table { min-width: 760px; }
+.uix-docs__status-table th[scope="row"] > span { display: block; margin-top: 2px; color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 400; }
+.uix-docs__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uix-space-1);
+  color: var(--uix-text-muted);
+  white-space: nowrap;
+}
+.uix-docs__status[data-status="yes"] { color: var(--uix-success-text, var(--uix-success)); }
+.uix-docs__status[data-status="no"] { color: var(--uix-text-muted); }
+
+@container (max-width: 760px) {
+  .uix-docs__showcase .dash-grid,
+  .uix-docs__showcase .uix-phase-page__split,
+  .uix-docs__showcase .uix-guide__chart-grid { grid-template-columns: 1fr; }
+  .uix-docs__showcase .uix-guide__chart-grid > .uix-chart:first-child { grid-column: auto; }
+  .uix-docs__showcase .uix-builder-canvas { grid-template-columns: 1fr; }
+}

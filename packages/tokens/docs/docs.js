@@ -1,5 +1,9 @@
 /* UIx Docs — pure helpers plus a dependency-free documentation application. */
 
+import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
+import { initShowcase } from '../guide/app.js';
+import { initAdvancedShowcase } from '../guide/phase-46-9.js';
+
 export const slugify = (name) =>
   String(name)
     .trim()
@@ -76,14 +80,19 @@ const NAV_ITEMS = [
   { name: 'Icons & assets', slug: 'icons-assets', group: 'Foundations', summary: 'Icon, emoji, image, and media usage across UIx products.', keywords: ['icons', 'emoji', 'images', 'media'] },
   { name: 'Accessibility', slug: 'accessibility', group: 'Foundations', summary: 'Keyboard, focus, contrast, and motion expectations.', keywords: ['a11y', 'wcag', 'screen reader'] },
   { name: 'All components', slug: 'all-components', group: 'Components', summary: 'Browse the complete CSS component inventory.', keywords: ['catalog', 'inventory'], badge: '80', featured: true },
+  { name: 'Component status', slug: 'component-status', group: 'Components', summary: 'Compare CSS, React, documentation, and example coverage.', keywords: ['coverage', 'support', 'adoption', 'matrix'], featured: true },
   { name: 'Button', slug: 'button', group: 'Components', summary: 'Actions, variants, sizing, loading, and disabled states.', keywords: ['primary', 'danger', 'icon'] },
   { name: 'Input & field', slug: 'input', group: 'Components', summary: 'Labels, hints, errors, and adornments.', keywords: ['form', 'validation', 'text field'] },
   { name: 'Status pill', slug: 'status-pill', group: 'Components', summary: 'Semantic status, priority, and SLA tones.', keywords: ['badge', 'chip', 'severity'] },
   { name: 'Alert', slug: 'alert', group: 'Components', summary: 'Inline informational and semantic messages.', keywords: ['banner', 'feedback', 'warning'] },
   { name: 'Tabs', slug: 'tabs', group: 'Components', summary: 'Line, enclosed, and pill navigation.', keywords: ['navigation', 'tabpanel'] },
   { name: 'Table', slug: 'table', group: 'Components', summary: 'Dense enterprise data display and table states.', keywords: ['grid', 'rows', 'data'] },
+  { name: 'Chart', slug: 'chart', group: 'Components', summary: 'Accessible analytical cards, legends, metrics, and renderer slots.', keywords: ['graph', 'visualization', 'echarts', 'mission control'] },
   { name: 'App shell', slug: 'app-shell', group: 'Patterns', summary: 'Sidebar, top bar, and responsive workspace layout.', keywords: ['layout', 'navigation', 'sidebar'] },
   { name: 'Data workflows', slug: 'data-workflows', group: 'Patterns', summary: 'Filters, saved views, pinning, and record peek.', keywords: ['table', 'filters', 'peek', 'pin'] },
+  { name: 'Pipeline', slug: 'pipeline', group: 'Patterns', summary: 'Compact and detailed stage rails for operational progress.', keywords: ['workflow', 'stage', 'approval', 'duration', 'mission control'] },
+  { name: 'Flow', slug: 'flow', group: 'Patterns', summary: 'Presentational process graphs with explicit node state.', keywords: ['workflow', 'node', 'connector', 'graph', 'mission control'] },
+  { name: 'Example gallery', slug: 'examples', group: 'Examples', summary: 'Browse every migrated component and pattern specimen inside the docs.', keywords: ['showcase', 'demos', 'style guide'], badge: '25', featured: true },
 ];
 
 export const COMPONENT_GROUPS = {
@@ -99,20 +108,20 @@ export const COMPONENT_GROUPS = {
 export const COMPOSITE_PATTERNS = ['Nav favourites', 'Composer', 'Filter popover', 'Saved view menu', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Relative time'];
 
 export const SHOWCASE_SECTION_MAP = {
-  foundations: 'design-tokens',
-  motion: 'motion',
-  'form-controls': 'all-components',
-  navigation: 'all-components',
-  'data-display': 'all-components',
-  overlays: 'all-components',
-  'crm-itsm': 'all-components',
-  'workflows-pipelines': 'data-workflows',
-  'editorial-home': 'editorial-home',
-  icons: 'icons-assets',
-  emoji: 'icons-assets',
-  images: 'icons-assets',
-  prose: 'prose',
-  utility: 'utility-bits',
+  foundations: 'examples-foundations',
+  motion: 'examples-motion',
+  'form-controls': 'examples-form-controls',
+  navigation: 'examples-navigation',
+  'data-display': 'examples-data-display',
+  overlays: 'examples-overlays',
+  'crm-itsm': 'examples-crm-itsm',
+  'workflows-pipelines': 'examples-workflows-pipelines',
+  'editorial-home': 'examples-editorial-home',
+  icons: 'examples-icons',
+  emoji: 'examples-emoji',
+  images: 'examples-images',
+  prose: 'examples-prose',
+  utility: 'examples-utility',
 };
 
 export const COMPONENT_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group, names]) =>
@@ -123,11 +132,30 @@ export const COMPONENT_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group,
     composite: COMPOSITE_PATTERNS.includes(name),
   })));
 
+export const REACT_COMPONENT_SLUGS = [
+  'alert', 'app-shell', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card', 'chart', 'checkbox',
+  'color-picker', 'command-palette', 'comments', 'composer', 'date-range-picker', 'description-list',
+  'detail-layout', 'diff-viewer', 'drawer', 'editorial-home', 'flow', 'form', 'inbox', 'input', 'kanban',
+  'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
+  'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph',
+  'rule-builder', 'scheduling-calendar', 'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states',
+  'status-pill', 'switch', 'table', 'tabs', 'textarea', 'timeline', 'toast', 'tooltip', 'tree',
+];
+
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
   .filter((component) => !NAV_ITEMS.some((item) => item.slug === component.slug))
   .map((component) => ({ ...component, summary: `Open the ${component.name} reference.`, keywords: ['component', component.slug], kind: 'Catalog' }));
 
-const SEARCH_INDEX = buildSearchIndex([...NAV_ITEMS, ...CATALOG_SEARCH_ITEMS]);
+const EXAMPLE_SEARCH_ITEMS = SHOWCASE_PAGES.map((page) => ({
+  name: `${page.title} examples`,
+  slug: page.slug,
+  group: 'Examples',
+  summary: page.summary,
+  keywords: ['showcase', page.sectionId, page.source],
+  kind: 'Example',
+}));
+
+const SEARCH_INDEX = buildSearchIndex([...NAV_ITEMS, ...CATALOG_SEARCH_ITEMS, ...EXAMPLE_SEARCH_ITEMS]);
 
 let codeCounter = 0;
 const codeBlock = (code, language = 'html') => {
@@ -174,30 +202,47 @@ const COMPONENT_GUIDANCE = {
   'Content & utilities': ['Use the shared primitive to reinforce hierarchy and avoid product-local visual dialects.', 'Preserve semantic HTML, readable zoom behavior, alternative text, and reduced-motion preferences.'],
 };
 
-const showcaseSectionFor = (item) => {
-  if (item.slug === 'editorial-home') return 'editorial-home';
-  if (item.slug === 'prose' || item.slug === 'typography') return 'prose';
-  if (item.slug === 'media') return 'images';
-  if (item.group === 'Form controls') return 'form-controls';
-  if (item.group === 'Navigation') return 'navigation';
-  if (item.group === 'Data display') return 'data-display';
-  if (item.group === 'Feedback & overlays') return 'overlays';
-  if (item.group === 'Enterprise patterns') return item.slug === 'pipeline' ? 'workflows-pipelines' : 'crm-itsm';
-  if (item.group === 'Advanced workflows') return 'workflows-pipelines';
-  return 'utility';
+export const exampleRouteFor = (item) => {
+  const direct = {
+    'brand-profiles': 'examples-brand-profiles',
+    'builder-canvas': 'examples-builder-canvas',
+    chart: 'examples-workflows-pipelines',
+    'color-picker': 'examples-color-picker',
+    'date-range-picker': 'examples-date-range-picker',
+    'diff-viewer': 'examples-diff-viewer',
+    'license-position-bar': 'examples-metrics',
+    'match-review': 'examples-match-review',
+    'metric-input': 'examples-metrics',
+    flow: 'examples-workflows-pipelines',
+    pipeline: 'examples-workflows-pipelines',
+    'relationship-graph': 'examples-relationship-graph',
+    'rule-builder': 'examples-rule-builder',
+    'scheduling-calendar': 'examples-scheduling-calendar',
+  }[item.slug];
+  if (direct) return direct;
+  if (item.slug === 'editorial-home') return 'examples-editorial-home';
+  if (item.slug === 'prose') return 'examples-prose';
+  if (item.slug === 'media') return 'examples-images';
+  if (item.group === 'Form controls') return 'examples-form-controls';
+  if (item.group === 'Navigation') return 'examples-navigation';
+  if (item.group === 'Data display') return 'examples-data-display';
+  if (item.group === 'Feedback & overlays') return 'examples-overlays';
+  if (item.group === 'Enterprise patterns') return item.slug === 'pipeline' ? 'examples-workflows-pipelines' : 'examples-crm-itsm';
+  if (item.group === 'Advanced workflows') return 'examples-workflows-pipelines';
+  return 'examples-utility';
 };
 
 const renderComponentReference = (item) => {
   const [usage, accessibility] = COMPONENT_GUIDANCE[item.group];
-  const showcaseSection = showcaseSectionFor(item);
+  const exampleRoute = exampleRouteFor(item);
   const availability = item.composite
-    ? callout('Composite showcase pattern', `${esc(item.name)} is assembled from existing UIx primitives in the canonical style guide. It does not have a standalone <code>@tensor_1/tokens/components/${esc(item.slug)}</code> export.`)
+    ? callout('Composite example pattern', `${esc(item.name)} is assembled from existing UIx primitives. It does not have a standalone <code>@tensor_1/tokens/components/${esc(item.slug)}</code> export.`)
     : `${codeBlock(`@import "@tensor_1/tokens/components/${item.slug}";`, 'css')}<p>This stylesheet is independently exported by <code>@tensor_1/tokens</code>. Import the full bundle instead when the product uses many UIx components.</p>`;
   return `${pageHeader(item.group, item.name, `${item.name} is part of UIx’s production ${item.group.toLowerCase()} surface. This reference records availability, implementation boundaries, and the route to the complete visual state matrix.`, [item.composite ? 'composite pattern' : 'CSS module', 'build-free reference', 'canonical showcase linked'])}
     ${section('availability', 'Availability', availability)}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
-    ${section('state-matrix', 'Examples and state matrix', `<p>The original showcase remains the canonical visual matrix for variants, combinations, and dense product context.</p><p><a class="uix-btn uix-btn--primary" href="../index.html#${esc(showcaseSection)}">Open ${esc(item.name)} in the full style guide</a> <a class="uix-btn uix-btn--outline" href="#all-components">Back to all components</a></p>`)}`;
+    ${section('state-matrix', 'Examples and state matrix', `<p>Examples now live in the same documentation system as the component contract, so variants, combinations, and dense product context stay searchable and versioned together.</p><p><a class="uix-btn uix-btn--primary" href="#${esc(exampleRoute)}">Open ${esc(item.name)} examples</a> <a class="uix-btn uix-btn--outline" href="#all-components">Back to all components</a></p>`)}`;
 };
 
 const renderCatalog = () => Object.entries(COMPONENT_GROUPS).map(([group, names]) => section(
@@ -210,6 +255,50 @@ const renderCatalog = () => Object.entries(COMPONENT_GROUPS).map(([group, names]
     return `<a class="uix-docs__component-card${component.composite ? ' uix-docs__component-card--catalog' : ''}" href="#${component.slug}"><strong>${esc(name)}</strong><span>${esc(summary)}</span><em>Open reference →</em></a>`;
   }).join('')}</div>`
 )).join('');
+
+const exampleCards = (source) => SHOWCASE_PAGES
+  .filter((page) => page.source === source)
+  .map((page) => `<a class="uix-docs__component-card" href="#${page.slug}"><strong>${esc(page.title)}</strong><span>${esc(page.summary)}</span><em>Open examples →</em></a>`)
+  .join('');
+
+const renderExamplesOverview = () => `${pageHeader('Examples', 'Example gallery', 'The original UIx showcases are now part of the documentation system. Browse focused routes instead of leaving the docs for separate, competing pages.', ['25 migrated examples', '80 CSS modules demonstrated', 'one canonical docs shell'])}
+  ${section('product-example', 'Complete product composition', `<div class="uix-docs__component-grid">${exampleCards('workspace')}</div>`)}
+  ${section('core-examples', 'Foundations and component families', `<div class="uix-docs__component-grid">${exampleCards('core')}</div>`)}
+  ${section('advanced-examples', 'Advanced workflow examples', `<div class="uix-docs__component-grid">${exampleCards('advanced')}</div>`)}
+  ${section('how-to-read', 'How to read an example', `<ul><li>The component reference owns availability, imports, guidance, and accessibility requirements.</li><li>The example route shows the component in realistic product context and exercises its interaction model.</li><li>The status matrix reports CSS, React, documentation, and demonstration coverage independently.</li></ul><p><a class="uix-btn uix-btn--primary" href="#component-status">Open component status</a></p>`)}`;
+
+const stripShowcaseFrame = (html) => String(html)
+  .replace(/^<section\b[^>]*>/i, '')
+  .replace(/<\/section>\s*$/i, '')
+  .replace(/^\s*<h2>[\s\S]*?<\/h2>\s*<p class="lead">[\s\S]*?<\/p>/i, '');
+
+const renderShowcasePage = (page) => {
+  const additional = ADDITIONAL_EXAMPLES
+    .filter((example) => example.route === page.slug)
+    .map((example) => section(`additional-${example.module}`, example.title, demo(example.html)))
+    .join('');
+  const sourceLabel = page.source === 'advanced' ? 'advanced workflow' : page.source === 'workspace' ? 'product composition' : 'core showcase';
+  return `${pageHeader('Examples', page.title, page.summary, [sourceLabel, 'live UIx contract', 'integrated reference'])}
+    ${section('live-example', 'Live example', `<div class="uix-docs__showcase" data-showcase-source="${page.source}">${stripShowcaseFrame(page.html)}</div>`)}
+    ${additional}
+    ${section('reference-links', 'Related reference', `<p><a class="uix-btn uix-btn--outline" href="#all-components">Browse component references</a> <a class="uix-btn uix-btn--outline" href="#examples">Back to example gallery</a></p>`)}`;
+};
+
+const statusCell = (available, label = 'Available') => available
+  ? `<span class="uix-docs__status" data-status="yes"><span aria-hidden="true">✓</span>${esc(label)}</span>`
+  : '<span class="uix-docs__status" data-status="no"><span aria-hidden="true">—</span>Not available</span>';
+
+const renderComponentStatus = () => {
+  const rows = COMPONENT_ITEMS.map((item) => {
+    const css = !item.composite;
+    const react = REACT_COMPONENT_SLUGS.includes(item.slug);
+    return `<tr><th scope="row"><a href="#${item.slug}">${esc(item.name)}</a><span>${esc(item.group)}</span></th><td>${statusCell(css, css ? 'CSS module' : 'Composed')}</td><td>${statusCell(react, 'React')}</td><td>${statusCell(true, 'Reference')}</td><td><a href="#${exampleRouteFor(item)}">Open example</a></td></tr>`;
+  }).join('');
+  return `${pageHeader('Components', 'Component status', 'Implementation layers are reported independently. A CSS module does not imply a React adapter, and a visual example does not imply a supported behavior API.', ['80 CSS modules', '58 mapped React components', '82 documented entries'])}
+    ${callout('What “covered” means', 'Every row has a maintained reference and an integrated example. CSS and React availability remain explicit so product teams can choose the correct integration without guessing.')}
+    ${section('coverage-matrix', 'Coverage matrix', `<div class="uix-docs__status-table"><table class="uix-table"><thead><tr><th scope="col">Component</th><th scope="col">CSS</th><th scope="col">React</th><th scope="col">Docs</th><th scope="col">Examples</th></tr></thead><tbody>${rows}</tbody></table></div>`)}
+    ${section('coverage-policy', 'Coverage policy', `<ul><li>New public CSS modules must add a catalogue entry, reference route, and example in the same change.</li><li>React availability is verified from the package export surface, not inferred from a similarly named stylesheet.</li><li>Showcase-only classes must be declared in <code>guide/guide.css</code> and are never presented as product contracts.</li><li>Any class defined in neither production CSS nor the showcase stylesheet fails the documentation coverage test.</li></ul>`)}`;
+};
 
 const buttonProps = [
   { name: 'variant', type: "'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link'", default: 'secondary', description: 'Sets the visual action hierarchy.' },
@@ -309,14 +398,14 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     opacity var(--uix-dur-fast) var(--uix-ease-in);
 }`, 'css')}<table class="uix-docs__token-table"><thead><tr><th>Contract</th><th>Use</th></tr></thead><tbody><tr><td><code>--uix-dur-fast</code> / <code>--uix-dur</code></td><td>Micro feedback and standard transitions</td></tr><tr><td><code>--uix-dur-slow</code> / <code>--uix-dur-slower</code></td><td>Overlays and large surfaces</td></tr><tr><td><code>--uix-ease-out</code></td><td>Entrances</td></tr><tr><td><code>--uix-ease-in</code></td><td>Exits</td></tr><tr><td><code>--uix-ease-in-out</code></td><td>Movement already on screen</td></tr><tr><td><code>--uix-ease-spring</code></td><td>Rare, non-critical emphasis</td></tr></tbody></table>`)}
     ${section('reduced-motion', 'Respect reduced motion', `<p>UIx’s motion layer removes non-essential animation when <code>prefers-reduced-motion: reduce</code> is active. Product-specific animation must honor the same preference and preserve the final state without relying on movement to explain it.</p>${compare('Use motion to connect cause and effect, orient spatial change, or confirm a completed action.', 'Animate routine navigation, loop decoration indefinitely, or make progress wait for a transition.')}`)}
-    ${section('showcase', 'Motion specimens', `<p><a class="uix-btn uix-btn--primary" href="../index.html#motion">Open the interactive motion matrix</a></p>`)}`,
+    ${section('showcase', 'Motion specimens', `<p><a class="uix-btn uix-btn--primary" href="#examples-motion">Open the interactive motion examples</a></p>`)}`,
 
   'icons-assets': () => `${pageHeader('Foundations', 'Icons & assets', 'UIx uses a restrained Lucide icon set plus explicit patterns for emoji, avatars, product imagery, attachments, and zoomable media.', ['Lucide SVG', '16 / 20 / 24 px', 'alternative text required'])}
     ${section('icons', 'Icons', `<p>Render Lucide glyphs as inline SVG using <code>currentColor</code>, a stroke width of 2, and round caps. Use the shared small, medium, and large icon sizes instead of drawing product-local glyphs.</p>${codeBlock(`<button class="uix-btn uix-btn--icon" type="button" aria-label="Search">
   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">…</svg>
-</button>`, 'html')}<p><a href="../index.html#icons">Browse and copy the icon inventory →</a></p>`)}
-    ${section('emoji', 'Emoji and reactions', `<p>Use the curated work-appropriate set for warmth or acknowledgement, never as the only carrier of meaning and never as the status model for formal or destructive workflows.</p><p><a href="../index.html#emoji">Open emoji and reaction examples →</a></p>`)}
-    ${section('images', 'Images and media', `<ul><li>Write alternative text for the image’s purpose in context; use empty alt text when the image is decorative.</li><li>Keep avatar upload, empty, failure, and replacement states available without pointer-only interaction.</li><li>Open detail imagery with a real button and a focus-managed dialog; retain the source image’s description.</li><li>Use optimized product assets and reserve layout space to avoid content shift.</li></ul><p><a href="../index.html#images">Open avatar, asset-card, and lightbox examples →</a></p>`)}`,
+</button>`, 'html')}<p><a href="#examples-icons">Browse and copy the icon inventory →</a></p>`)}
+    ${section('emoji', 'Emoji and reactions', `<p>Use the curated work-appropriate set for warmth or acknowledgement, never as the only carrier of meaning and never as the status model for formal or destructive workflows.</p><p><a href="#examples-emoji">Open emoji and reaction examples →</a></p>`)}
+    ${section('images', 'Images and media', `<ul><li>Write alternative text for the image’s purpose in context; use empty alt text when the image is decorative.</li><li>Keep avatar upload, empty, failure, and replacement states available without pointer-only interaction.</li><li>Open detail imagery with a real button and a focus-managed dialog; retain the source image’s description.</li><li>Use optimized product assets and reserve layout space to avoid content shift.</li></ul><p><a href="#examples-images">Open avatar, asset-card, and lightbox examples →</a></p>`)}`,
 
   accessibility: () => `${pageHeader('Foundations', 'Accessibility', 'UIx provides the visual and structural baseline; product code remains responsible for correct names, relationships, state, and workflow recovery.', ['WCAG 2.1 A/AA gate', 'keyboard first', 'reduced motion'])}
     ${section('baseline', 'The UIx baseline', `<ul><li>Visible <code>:focus-visible</code> treatment on interactive primitives.</li><li>Semantic foreground/background token pairs calibrated for contrast.</li><li>Reduced-motion overrides for non-essential transitions.</li><li>Native elements and ARIA patterns for dialogs, tabs, menus, comboboxes, and trees.</li><li>Serious and critical axe findings gated in both light and dark mode.</li></ul>`)}
@@ -324,7 +413,11 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('keyboard', 'Keyboard behavior', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Expected behavior</th></tr></thead><tbody><tr><td>Global</td><td>Tab and Shift+Tab follow visual order; focus is never trapped accidentally.</td></tr><tr><td>Dialog / drawer</td><td>Focus enters the overlay, remains contained, closes on Escape, then returns to the trigger.</td></tr><tr><td>Tabs</td><td>Arrow keys move between tabs; the selected tab owns the active panel.</td></tr><tr><td>Menu / listbox</td><td>Arrow keys move active choice; Enter or Space commits; Escape dismisses.</td></tr><tr><td>Dense table</td><td>High-frequency actions remain keyboard-reachable without turning every cell into a tab stop.</td></tr></tbody></table>`)}
     ${section('review', 'Before shipping', `${compare('Test the real journey with a keyboard, zoom, both themes, and at least the required screen-reader matrix.', 'Assume that using a UIx class automatically makes the surrounding workflow accessible.')}`)}`,
 
-  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['80 CSS modules', '2 composite patterns', '58 React components'])}${callout('Coverage is enforced', 'Every independently importable component stylesheet has a reference route. Composite patterns are retained from the original showcase and labeled separately so availability is never ambiguous.')}${renderCatalog()}${section('full-showcase', 'See every state together', `<p>The canonical style guide presents the complete CSS surface in context, including states and complex compositions that are intentionally too broad for a single reference page.</p><p><a class="uix-btn uix-btn--primary" href="../index.html">Open full style guide</a> <a class="uix-btn uix-btn--outline" href="../phase-46-9.html">Open advanced showcase</a></p>`)}`,
+  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['80 CSS modules', '2 composite patterns', '58 React mappings'])}${callout('Coverage is enforced', 'Every independently importable component stylesheet has a reference route and an integrated example. Composite patterns are labeled separately so availability is never ambiguous.')}${renderCatalog()}${section('examples', 'See components in context', `<p>Examples, state matrices, and advanced workflow specimens now live inside this documentation system.</p><p><a class="uix-btn uix-btn--primary" href="#examples">Browse example gallery</a> <a class="uix-btn uix-btn--outline" href="#component-status">Compare component status</a></p>`)}`,
+
+  'component-status': renderComponentStatus,
+
+  examples: renderExamplesOverview,
 
   button: () => `${pageHeader('Components', 'Button', 'Buttons communicate action hierarchy and preserve clear states across mouse, touch, and keyboard input.', ['CSS primitive', 'React component', '6 variants'])}
     ${section('example', 'Example', demo(`<button class="uix-btn uix-btn--primary" type="button" data-demo-action="Primary action completed">Primary</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Secondary action completed">Secondary</button><button class="uix-btn uix-btn--outline" type="button" data-demo-action="Outline action completed">Outline</button><button class="uix-btn uix-btn--ghost" type="button" data-demo-action="Ghost action completed">Ghost</button><button class="uix-btn uix-btn--danger" type="button" data-demo-action="Danger example selected">Danger</button>`, `<button class="uix-btn uix-btn--primary">Primary</button>
@@ -385,20 +478,70 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('row-actions', 'Rows, selection, and actions', `<p>The record title opens the full record. Peek previews it without navigation. Selection enables bulk action and must report partial failure per item. Avoid making an entire complex row a button when the row already contains links, checkboxes, or menus.</p>${compare('Give every column a clear purpose and keep the primary record link visually dominant.', 'Place unrelated actions in every cell or hide critical state behind hover-only controls.')}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Use native table semantics for tabular data; do not add grid roles unless spreadsheet-style keyboard editing is implemented.</li><li>Provide accessible sort names and expose the active direction with <code>aria-sort</code>.</li><li>Associate select-all and row-selection controls with their scope.</li><li>At narrow widths, preserve meaning through horizontal scrolling or a deliberate alternate layout—not arbitrary column loss.</li></ul>`)}`,
 
+  chart: () => `${pageHeader('Components', 'Chart', 'Chart provides reusable analytical card chrome around a consumer-owned renderer, with first-class metrics, legends, annotations, freshness, loading, empty, and accessible table states.', ['@tensor_1/react/chart', 'renderer optional', 'Mission Control ready'])}
+    ${section('anatomy', 'Anatomy', `<table class="uix-docs__token-table"><thead><tr><th>Part</th><th>Purpose</th></tr></thead><tbody><tr><td>Header</td><td>Eyebrow, title, subtitle, primary metric, delta, and optional action.</td></tr><tr><td>Plot</td><td>A stable renderer slot for ECharts or another chart engine.</td></tr><tr><td>Legend</td><td>Named color, line, dashed-line, or threshold keys outside the plot.</td></tr><tr><td>Annotation</td><td>A concise explanation of an operationally meaningful change.</td></tr><tr><td>Footer</td><td>Source, freshness, time range, or other provenance.</td></tr><tr><td>Data table</td><td>The equivalent values for screen readers and non-visual inspection.</td></tr></tbody></table>`)}
+    ${section('css-example', 'CSS and HTML', `${demo(`<article class="uix-chart"><header class="uix-chart__header"><div class="uix-chart__heading"><span class="uix-chart__eyebrow">Delivery health</span><h3 class="uix-chart__title">Checkpoint residence</h3><p class="uix-chart__subtitle">Median hours by checkpoint · last 14 days</p></div><div class="uix-chart__metric"><strong>18.4h</strong><span class="uix-chart__delta uix-chart__delta--good">↓ 12%</span></div></header><div class="uix-chart__tick-strip" role="img" aria-label="Checkpoint residence improved across fourteen daily samples"><span style="--uix-chart-value:42%"></span><span style="--uix-chart-value:58%"></span><span style="--uix-chart-value:50%"></span><span style="--uix-chart-value:71%"></span><span style="--uix-chart-value:64%"></span><span style="--uix-chart-value:82%"></span><span style="--uix-chart-value:76%"></span><span style="--uix-chart-value:91%"></span></div><footer class="uix-chart__footer"><span>Mission Control telemetry</span><span>Updated 2m ago</span></footer></article>`, `<article class="uix-chart">
+  <header class="uix-chart__header">…metric and context…</header>
+  <div class="uix-chart__plot" data-uix-chart="residence"></div>
+  <div class="uix-chart__legend">…</div>
+  <footer class="uix-chart__footer">…source and freshness…</footer>
+  <table class="uix-chart__table uix-visually-hidden">…equivalent values…</table>
+</article>`)}`)}
+    ${section('react-api', 'React composition', `${codeBlock(`import { Chart, ChartLegend, ChartLegendItem, ChartMetric } from "@tensor_1/react/chart";
+
+<Chart
+  option={option}
+  title="Checkpoint residence"
+  subtitle="Median hours by checkpoint · last 14 days"
+  headerAction={<ChartMetric value="18.4h" delta="↑ 3.4h over budget" deltaTone="warning" />}
+  footer={<ChartLegend><ChartLegendItem label="Residence" color="var(--uix-chart-1)" /></ChartLegend>}
+  tableHeaders={["Date", "Hours"]}
+  tableData={rows}
+/>`, 'tsx')}<p>Use the lean <code>@tensor_1/react/chart-preset</code> entry when a consumer needs the bundled ECharts adapter. The main entry remains runtime-free.</p>`)}
+    ${section('states', 'Loading, empty, and failure', `<p>Use <code>loading</code> while the first meaningful dataset is unresolved and <code>empty</code> when the resolved query has no plottable values. Keep retry and failure handling in the consumer so it can explain the real data source and recovery path.</p>${callout('Freshness is part of the data', 'Operational charts should identify their source and last successful refresh. Never let an old chart look current after ingestion stalls.', 'warning')}`)}
+    ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Pass a captioned data table with the same values shown by the renderer.</li><li>Do not rely on color alone; legend labels and annotation text carry the meaning.</li><li>Use discrete ticks for low-volume throughput instead of implying continuous activity.</li><li>Keep tooltips supplemental—the underlying values must remain available without hover.</li></ul><p><a class="uix-btn uix-btn--primary" href="#examples-data-display">Open the complete chart set</a></p>`)}`,
+
+  pipeline: () => `${pageHeader('Patterns', 'Pipeline', 'Pipeline turns a simple progress bar into an operational stage rail with current state, ownership, duration, blockers, and the next decision kept visible.', ['compact + detailed', 'ordered semantics', 'explicit state'])}
+    ${section('choose-a-density', 'Choose a density', `<table class="uix-docs__token-table"><thead><tr><th>Variant</th><th>Use when</th></tr></thead><tbody><tr><td>Compact</td><td>Only stage names and progress are needed in a table row, card, or summary.</td></tr><tr><td>Detailed</td><td>Operators need owner, timing, explanation, exception state, or a decision point.</td></tr></tbody></table>`)}
+    ${section('example', 'Detailed operational rail', `${demo(`<ol class="uix-pipeline uix-pipeline--detailed" aria-label="Release 1842 progress"><li class="uix-pipeline__stage" data-state="done"><span class="uix-pipeline__marker">1</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Build</span><span class="uix-pipeline__state">Complete</span><strong class="uix-pipeline__title">Package artifacts</strong><span class="uix-pipeline__description">Checksums and provenance attached.</span><span class="uix-pipeline__meta">Automation · 4m 12s</span></div></li><li class="uix-pipeline__stage" data-state="blocked" aria-current="step"><span class="uix-pipeline__marker">2</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Review</span><span class="uix-pipeline__state">Blocked</span><strong class="uix-pipeline__title">Production approval</strong><span class="uix-pipeline__description">Waiting for the release manager.</span><span class="uix-pipeline__meta">Maya Chen · 18m</span></div></li><li class="uix-pipeline__stage" data-state="pending"><span class="uix-pipeline__marker">3</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Deploy</span><span class="uix-pipeline__state">Pending</span><strong class="uix-pipeline__title">Production rollout</strong><span class="uix-pipeline__description">Progressive deployment across regions.</span><span class="uix-pipeline__meta">Automation · est. 12m</span></div></li></ol>`, `<Pipeline aria-label="Release 1842 progress" detailed>
+  <PipelineStage state="done" stateLabel="Complete" label="Package artifacts" description="Checksums attached." meta="Automation · 4m 12s" marker="1" />
+  <PipelineStage state="blocked" current label="Production approval" description="Waiting for release manager." meta="Maya Chen · 18m" marker="2" />
+  <PipelineStage state="pending" label="Production rollout" description="Progressive regional deploy." meta="Automation · est. 12m" marker="3" />
+</Pipeline>`, { language: 'tsx' })}`)}
+    ${section('state-model', 'State model', `<p>Use <code>pending</code>, <code>active</code>, <code>done</code>, <code>blocked</code>, or <code>failed</code> as the shared visual vocabulary. Products own the domain transition, permissions, audit trail, and approval action; UIx owns only the presentation.</p>${compare('Show a visible state word and use aria-current="step" for the current stage.', 'Encode progress only with connector color, animation, or icon shape.')}`)}
+    ${section('responsive', 'Responsive behavior', `<p>The detailed rail preserves its readable stage width and scrolls horizontally on narrow surfaces. Keep the active stage in view when application logic advances the workflow; do not compress titles and metadata into illegible columns.</p><p><a class="uix-btn uix-btn--primary" href="#examples-workflows-pipelines">Open workflow specimens</a></p>`)}`,
+
+  flow: () => `${pageHeader('Patterns', 'Flow', 'Flow is a presentational process-graph shell for readable nodes and connectors. Consumers retain layout, graph traversal, selection, and domain behavior.', ['renderer free', 'explicit node state', 'consumer-owned geometry'])}
+    ${section('boundary', 'What UIx owns', `<table class="uix-docs__token-table"><thead><tr><th>UIx owns</th><th>The consumer owns</th></tr></thead><tbody><tr><td>Node surface, typography, ports, connector states, focus, and visible status.</td><td>Graph data, positioning, routing, zoom, persistence, permissions, and execution.</td></tr></tbody></table>`)}
+    ${section('react-api', 'React composition', `${codeBlock(`import { Flow, FlowNode } from "@tensor_1/react";
+
+<Flow aria-label="Release automation">
+  <FlowNode eyebrow="Trigger" title="Commit received" state="done" />
+  <span className="uix-flow__connector" data-running aria-hidden="true" />
+  <FlowNode eyebrow="Decision" title="Policy check" state="active" />
+</Flow>`, 'tsx')}<p>Use <code>aria-label</code> on the graph and retain a meaningful DOM order. A visual edge must not be the only place a relationship is described.</p>`)}
+    ${section('usage-guidance', 'Usage guidance', `${compare('Use Flow for branching or connected process structure where node relationships matter.', 'Use a graph when an ordered Pipeline would communicate the same process more simply.')}<p>Keep node titles concise, label exceptional states in text, and reserve motion for genuinely running connectors.</p>`)}
+    ${section('accessibility-notes', 'Accessibility notes', `<p>DOM order should provide a coherent linear reading of the graph. Interactive nodes must be keyboard reachable, show focus, and expose their action. For complex branching, pair the visual canvas with an outline, table, or other structured representation.</p><p><a class="uix-btn uix-btn--primary" href="#examples-workflows-pipelines">Open workflow specimens</a></p>`)}`,
+
   'app-shell': () => `${pageHeader('Patterns', 'App shell', 'The shell establishes persistent wayfinding, global action, and a predictable working area for dense products.', ['sidebar + top bar', 'responsive rail', 'persistent navigation'])}
     ${section('anatomy', 'Anatomy', `<ol class="uix-docs__steps"><li><h3>Global sidebar</h3><p>One canonical home, grouped primary destinations, favorites, and visible active state.</p></li><li><h3>Top bar</h3><p>Page context, global search, cross-product actions, theme, and account access.</p></li><li><h3>Working canvas</h3><p>Page header, task controls, feedback, and content sized for the job rather than the browser.</p></li></ol>`)}
     ${section('preview', 'In context', `<div class="uix-docs__demo"><div class="uix-docs__demo-stage" style="padding:16px;display:block"><div class="uix-card" style="overflow:hidden"><div style="display:grid;grid-template-columns:150px 1fr;min-height:280px"><nav style="padding:16px;background:var(--uix-bg-subtle);border-right:1px solid var(--uix-border)" aria-label="Example navigation"><strong style="display:block;margin-bottom:18px">Operations</strong><a class="uix-navitem" href="#app-shell" aria-current="page">Overview</a><a class="uix-navitem" href="#table">Incidents</a><a class="uix-navitem" href="#data-workflows">Changes</a></nav><div><div style="height:52px;padding:0 18px;display:flex;align-items:center;border-bottom:1px solid var(--uix-border)"><strong>Service workspace</strong></div><div style="padding:24px"><p class="uix-docs__eyebrow">Today</p><h3 style="margin-top:0">Good morning, Maya</h3><p class="uix-text-muted">Three incidents need attention before the handover.</p><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Queue opened">Open my queue</button></div></div></div></div></div></div>`)}
     ${section('wayfinding', 'Wayfinding rules', `<ul><li>Every primary surface gets a persistent visible entry; a command palette is a shortcut, not the only route.</li><li>Personal actions live under the person or account, not tenant administration.</li><li>Use one canonical start surface per persona.</li><li>Collapse to an icon rail only when icons have clear accessible names and a discoverable expansion path.</li></ul>`)}
     ${section('responsive', 'Responsive behavior', `<p>On narrow screens the sidebar becomes a modal navigation drawer, the top bar preserves the current context, and the working canvas owns the viewport. Do not shrink a desktop rail until labels become unreadable.</p>`)}`,
 
-  'data-workflows': () => `${pageHeader('Patterns', 'Data workflows', 'UIx connects filtering, saved views, row pinning, and record peek into one predictable loop for high-volume operators.', ['filter → inspect → act', 'keyboard path', 'recoverable states'])}
+  'data-workflows': () => `${pageHeader('Patterns', 'Data workflows', 'UIx connects filtering, saved views, row pinning, record peek, operational pipelines, and analytical feedback into one predictable loop for high-volume operators.', ['filter → inspect → act', 'pipeline visibility', 'recoverable states'])}
     ${section('model', 'The working loop', `<ol class="uix-docs__steps"><li><h3>Shape the queue</h3><p>Search and filters change the real query; active criteria remain visible and removable.</p></li><li><h3>Preserve a useful view</h3><p>Saved views capture query and presentation preferences with a clear scope.</p></li><li><h3>Inspect without losing place</h3><p>Peek opens a record preview while keeping the queue, scroll position, and selection intact.</p></li><li><h3>Act with feedback</h3><p>Mutations confirm the outcome, update the row, and expose partial failures.</p></li></ol>`)}
     ${section('pin-peek-favorite', 'Pin, peek, and favorite are different', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Meaning</th><th>Scope</th></tr></thead><tbody><tr><td>Pin</td><td>Keep a record visible above sort or filter results.</td><td>Table + saved view</td></tr><tr><td>Peek</td><td>Inspect a record without navigating away.</td><td>Current list context</td></tr><tr><td>Favorite</td><td>Promote a destination into persistent navigation.</td><td>User navigation</td></tr></tbody></table>`)}
     ${section('states', 'Every branch has a next action', `<p>Loading, empty, filtered-empty, error, forbidden, and end-of-results are different states. Each one should explain what happened and provide the most likely recovery action.</p>${callout('Empty is not one state', '“No records exist” may lead to Create. “No matches” should lead to Clear filters. “No access” should lead to Request access or Return. The control must match the actual branch.')}`)}
+    ${section('operational-feedback', 'Make progress and evidence reusable', `<p>Use <a href="#pipeline">Pipeline</a> for ordered stage progress, <a href="#flow">Flow</a> for branching process structure, and <a href="#chart">Chart</a> for outcome, throughput, residence-time, and health evidence. These primitives keep presentation consistent while Mission Control owns telemetry, workflow rules, permissions, and actions.</p>`)}
     ${section('journey-budget', 'Set a journey budget', `<p>For a frequent queue workflow, define an observable budget: for example, reach the assigned queue in one navigation action, inspect a record in one more, and complete the common transition without leaving the keyboard. Measure the real journey—not only component render speed.</p>`)}`,
 };
 
-export const getPage = (slug) => (PAGES[slug] || COMPONENT_ITEMS.some((item) => item.slug === slug)) ? slug : 'introduction';
+export const getPage = (slug) => (
+  PAGES[slug]
+  || COMPONENT_ITEMS.some((item) => item.slug === slug)
+  || SHOWCASE_PAGES.some((page) => page.slug === slug)
+) ? slug : 'introduction';
 
 const renderNav = (activeSlug) => {
   const host = document.querySelector('[data-uix-docs-nav]');
@@ -422,7 +565,9 @@ const renderToc = () => {
 const renderPager = (slug) => {
   const index = NAV_ITEMS.findIndex((item) => item.slug === slug);
   if (index < 0) {
-    return '<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#all-components"><span>Component index</span><strong>← All components</strong></a><span></span></nav>';
+    const isExample = SHOWCASE_PAGES.some((page) => page.slug === slug);
+    const target = isExample ? ['examples', 'Example gallery'] : ['all-components', 'All components'];
+    return `<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#${target[0]}"><span>Back to index</span><strong>← ${target[1]}</strong></a><span></span></nav>`;
   }
   const previous = index > 0 ? NAV_ITEMS[index - 1] : null;
   const next = index < NAV_ITEMS.length - 1 ? NAV_ITEMS[index + 1] : null;
@@ -436,12 +581,19 @@ const renderPage = () => {
   const host = document.querySelector('[data-docs-page]');
   if (!host) return;
   const component = COMPONENT_ITEMS.find((item) => item.slug === slug);
-  const page = PAGES[slug] ? PAGES[slug]() : renderComponentReference(component);
-  host.innerHTML = `${page}${renderPager(slug)}`;
+  const example = SHOWCASE_PAGES.find((item) => item.slug === slug);
+  const content = PAGES[slug]
+    ? PAGES[slug]()
+    : component
+      ? renderComponentReference(component)
+      : renderShowcasePage(example);
+  host.innerHTML = `${content}${renderPager(slug)}`;
   renderNav(slug);
   renderToc();
-  const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component;
-  document.title = `${item?.name || 'UIx'} · UIx Docs`;
+  if (example?.source === 'core' || example?.source === 'workspace') initShowcase({ manageTheme: false });
+  if (example?.source === 'advanced') initAdvancedShowcase();
+  const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
+  document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);
   closeMobileMenu();
   window.scrollTo({ top: 0, behavior: 'auto' });

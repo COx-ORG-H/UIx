@@ -38,7 +38,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run serve:styleguide',
-    url: `${BASE}index.html`,
+    url: `${BASE}docs/index.html`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

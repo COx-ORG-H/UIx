@@ -10,8 +10,9 @@ enterprise interaction patterns into a searchable reference without introducing 
 | `index.html` | Clean `/docs/` entry that preserves a requested hash and opens the canonical explorer. |
 | `explorer.html` | Persistent application shell: product header, grouped navigation, article host, page TOC, search dialog, mobile drawer, and copy feedback. |
 | `docs.css` | Documentation-only chrome. It consumes the generated `--uix-*` contract and is never shipped to product consumers. |
-| `docs.js` | Static content registry, hash router, search ranking, navigation, TOC, copy actions, examples, tabs, theme handling, and mobile focus behavior. |
-| `docs.test.js` | DOM-free unit tests for escaping, route normalization, navigation data, prop tables, and search ranking. |
+| `docs.js` | Static content registry, hash router, search ranking, navigation, status matrix, copy actions, examples, tabs, theme handling, and mobile focus behavior. |
+| `showcase-data.js` | One-time migration of the retired style-guide, workspace, and advanced specimens into 25 independently addressable docs routes. |
+| `docs.test.js` | DOM-free tests for rendering helpers, search, catalogue parity, example coverage, and public-class integrity. |
 
 ## Content model
 
@@ -21,13 +22,18 @@ component slugs to content renderers. Add a major guide page in both places, the
 
 The complete component inventory lives in `COMPONENT_GROUPS`. Every entry gets its own route: a hand-authored
 page when one exists, otherwise a generated reference with its verified import path and a link to the relevant
-state matrix in the canonical style guide. `COMPOSITE_PATTERNS` identifies showcase compositions that do not have
-standalone CSS exports. Search and catalogue cards always open the component route directly.
+integrated example. `COMPOSITE_PATTERNS` identifies showcase compositions that do not have standalone CSS exports.
+Search and catalogue cards always open the component route directly.
 
-`SHOWCASE_SECTION_MAP` accounts for every top-level section in `packages/tokens/index.html`. The unit tests compare
-the non-composite catalogue entries with `styles/components/*.css` and compare that section map with the live
-showcase. Adding a public stylesheet or showcase section without a docs destination therefore fails the docs test
-instead of silently creating a coverage gap.
+`SHOWCASE_PAGES` is the canonical example inventory: 14 core specimen chapters, 10 advanced component chapters,
+and one complete workspace composition. The unit tests compare the non-composite catalogue with
+`styles/components/*.css`, require every CSS module to appear in an integrated example, and reject example markup
+that names a class outside production or docs-only CSS. Adding a public stylesheet without docs and example
+coverage therefore fails the docs test instead of silently creating a gap.
+
+Do not add another standalone showcase page. Add a route to the registry (or a hand-authored docs renderer), map
+the related catalogue entries to it, and keep **Component status** honest about whether CSS, React, docs, and an
+example each exist.
 
 Keep package names, exports, version labels, class names, and props synchronized with the live manifests and
 `packages/react/etc/uix-react.api.md`. The docs must describe verified reality, not a future API.
@@ -38,7 +44,7 @@ From the repository root:
 
 ```sh
 npm run serve:styleguide
-# http://localhost:4178/packages/tokens/docs/
+# http://localhost:4178/packages/tokens/docs/index.html
 
 node --test packages/tokens/docs/docs.test.js
 npm run test:a11y -- --grep docs

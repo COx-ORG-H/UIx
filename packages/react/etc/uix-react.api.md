@@ -1037,6 +1037,48 @@ export interface FlatNode<T> {
 export function flattenTree<T extends TreeLike<T>>(nodes: readonly T[], expanded: ReadonlySet<string>, level?: number): FlatNode<T>[];
 
 // @public
+export function Flow(input: FlowProps): react.JSX.Element;
+
+// @public
+export function FlowNode(input: FlowNodeProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FlowNodeProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    // (undocumented)
+    eyebrow?: ReactNode;
+    // (undocumented)
+    footer?: ReactNode;
+    // (undocumented)
+    icon?: ReactNode;
+    // (undocumented)
+    meta?: ReactNode;
+    // (undocumented)
+    state?: FlowNodeState;
+    // (undocumented)
+    stateLabel?: ReactNode;
+    // (undocumented)
+    title: ReactNode;
+    // (undocumented)
+    wide?: boolean;
+}
+
+// @public (undocumented)
+export type FlowNodeState = 'pending' | 'active' | 'running' | 'done' | 'error';
+
+// @public (undocumented)
+export interface FlowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    panel?: boolean;
+    // (undocumented)
+    variant?: FlowVariant;
+}
+
+// @public (undocumented)
+export type FlowVariant = 'linear' | 'branch' | 'loop' | 'mindmap' | 'canvas';
+
+// @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1642,6 +1684,42 @@ export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | '
 
 // @public (undocumented)
 export type PillTreatment = 'filled' | 'outline';
+
+// @public
+export function Pipeline(input: PipelineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineProps extends HTMLAttributes<HTMLOListElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    detailed?: boolean;
+}
+
+// @public
+export function PipelineStage(input: PipelineStageProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PipelineStageProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    current?: boolean;
+    // (undocumented)
+    description?: ReactNode;
+    // (undocumented)
+    detailed?: boolean;
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    marker?: ReactNode;
+    // (undocumented)
+    meta?: ReactNode;
+    // (undocumented)
+    state?: PipelineStageState;
+    // (undocumented)
+    stateLabel?: ReactNode;
+}
+
+// @public (undocumented)
+export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 'running' | 'done' | 'complete' | 'blocked' | 'failed' | 'error';
 
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;

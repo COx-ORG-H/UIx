@@ -124,12 +124,12 @@ try {
 
   step('2. ESM import (runtime)');
   execFileSync(process.execPath, ['--input-type=module', '-e',
-    "import { Button } from '@tensor_1/react'; import { Chart } from '@tensor_1/react/chart'; import { Chart as PresetChart } from '@tensor_1/react/chart/preset'; import { cssVar } from '@tensor_1/tokens/ts'; if(!Button||!Chart||!PresetChart||!cssVar?.accent) process.exit(3);"],
+    "import { Button, Pipeline, Flow } from '@tensor_1/react'; import { Chart, ChartMetric } from '@tensor_1/react/chart'; import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset'; import { cssVar } from '@tensor_1/tokens/ts'; if(!Button||!Pipeline||!Flow||!Chart||!ChartMetric||!PresetChart||!ChartLegend||!cssVar?.accent) process.exit(3);"],
     { cwd: tmp, stdio: 'inherit' });
 
   step('3. CJS require + 4. export resolution');
   execFileSync(process.execPath, ['-e',
-    "const u=require('@tensor_1/react'); const required=['Button','Card','Breadcrumbs','Combobox','RelativeTime','CardLink','DetailPage','ConfirmDialog','PromptDialog','AsyncOperationStatus','ViewMenu','FilterPopover','SavedViewMenu','RuleBuilder','BuilderCanvas','SchedulingCalendar','DateRangePicker','RelationshipGraph','MatchReview','MetricInput','LicensePositionBar','BrandProfiles','DiffViewer','ColorPicker']; if(required.some(k=>!u[k])) process.exit(4);" +
+    "const u=require('@tensor_1/react'); const required=['Button','Card','Breadcrumbs','Combobox','RelativeTime','CardLink','DetailPage','ConfirmDialog','PromptDialog','AsyncOperationStatus','ViewMenu','FilterPopover','SavedViewMenu','Pipeline','PipelineStage','Flow','FlowNode','RuleBuilder','BuilderCanvas','SchedulingCalendar','DateRangePicker','RelationshipGraph','MatchReview','MetricInput','LicensePositionBar','BrandProfiles','DiffViewer','ColorPicker']; if(required.some(k=>!u[k])) process.exit(4);" +
     "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/components/button','@tensor_1/tokens/utilities','@tensor_1/tokens/motion','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart','@tensor_1/react/chart/preset']" +
     ".forEach(s=>require.resolve(s));"],
     { cwd: tmp, stdio: 'inherit' });

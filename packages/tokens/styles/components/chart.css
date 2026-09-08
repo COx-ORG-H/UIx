@@ -1,9 +1,83 @@
-/* uix chart container + legend — palette + framing only; pair sample SVGs / a chart lib using --uix-chart-*. */
+/* uix chart — analytical card chrome and token-aware legend/annotation primitives.
+   Pair with semantic SVG/canvas output or the optional @tensor_1/react chart adapter. */
 @layer uix.components {
-  .uix-chart { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-5); }
-  .uix-chart__title { font-size: var(--uix-text-h3); font-weight: 600; }
-  .uix-chart__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-4); }
-  .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-3); margin-top: var(--uix-space-3); }
-  .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-legend__swatch { width: 10px; height: 10px; border-radius: var(--uix-radius-xs); flex: none; }
+  .uix-chart {
+    position: relative; min-width: 0; overflow: hidden; padding: var(--uix-space-5);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-sm);
+  }
+  .uix-chart--flat { box-shadow: none; }
+  .uix-chart--hero { padding: var(--uix-space-6); }
+  .uix-chart__header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: var(--uix-space-4); min-width: 0; margin-bottom: var(--uix-space-4);
+  }
+  .uix-chart__heading { min-width: 0; }
+  .uix-chart__eyebrow {
+    margin-bottom: var(--uix-space-2); color: var(--uix-text-muted);
+    font-size: var(--uix-text-eyebrow); font-weight: 600;
+    letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+  }
+  .uix-chart__title { color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-chart__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); }
+  .uix-chart__title + .uix-chart__subtitle { margin-top: var(--uix-space-1); }
+  .uix-chart__metric { flex: none; text-align: right; }
+  .uix-chart__metric-value {
+    color: var(--uix-text); font-family: var(--uix-font-mono); font-size: var(--uix-text-h2);
+    font-weight: 600; letter-spacing: var(--uix-tracking-tight); line-height: var(--uix-leading-h2);
+  }
+  .uix-chart__metric-label { margin-top: var(--uix-space-1); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-chart__delta {
+    display: inline-flex; align-items: center; gap: var(--uix-space-1);
+    margin-top: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600;
+  }
+  .uix-chart__delta[data-tone="positive"] { color: var(--uix-success); }
+  .uix-chart__delta[data-tone="negative"] { color: var(--uix-danger-text); }
+  .uix-chart__delta[data-tone="warning"] { color: var(--uix-warning-text); }
+  .uix-chart__plot { position: relative; min-width: 0; }
+  .uix-chart__plot[data-loading] { display: grid; min-height: 180px; place-items: center; border-radius: var(--uix-radius-md); background: var(--uix-bg-subtle); }
+  .uix-chart__plot[data-loading]::after { content: "Loading chart…"; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-chart__plot[data-loading] > * { position: absolute; opacity: 0; pointer-events: none; }
+  .uix-chart__plot[data-empty] {
+    display: grid; min-height: 180px; place-items: center; padding: var(--uix-space-6);
+    border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-md);
+    color: var(--uix-text-muted); text-align: center;
+  }
+  .uix-chart__annotation {
+    display: flex; align-items: flex-start; gap: var(--uix-space-2);
+    margin-top: var(--uix-space-3); padding: var(--uix-space-3);
+    border-left: 3px solid var(--uix-accent); border-radius: 0 var(--uix-radius-sm) var(--uix-radius-sm) 0;
+    background: var(--uix-brand-muted); color: var(--uix-text-hushed);
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta);
+  }
+  .uix-chart__footer {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--uix-space-4); min-width: 0; margin-top: var(--uix-space-4);
+    padding-top: var(--uix-space-3); border-top: 1px solid var(--uix-border);
+    color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+  }
+  .uix-chart__source { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-2) var(--uix-space-4); margin: 0; padding: 0; list-style: none; }
+  .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
+  .uix-legend__swatch { width: 10px; height: 10px; flex: none; border-radius: var(--uix-radius-xs); background: var(--legend-color, var(--uix-chart-1)); }
+  .uix-legend__swatch--line { width: 18px; height: 3px; border-radius: var(--uix-radius-pill); }
+  .uix-legend__swatch--dash { width: 18px; height: 0; border-top: 2px dashed var(--legend-color, var(--uix-chart-1)); border-radius: 0; background: transparent; }
+
+  /* Runtime-free throughput/history strip. Put its accessible summary on the parent figure. */
+  .uix-chart-ticks { display: grid; grid-template-columns: repeat(var(--tick-count, 12), minmax(3px, 1fr)); align-items: end; gap: var(--uix-space-1); height: 72px; }
+  .uix-chart-tick {
+    min-height: 4px; height: calc(var(--tick-value, .25) * 100%);
+    border-radius: var(--uix-radius-xs) var(--uix-radius-xs) 0 0;
+    background: var(--tick-color, var(--uix-chart-1));
+  }
+  .uix-chart-tick[data-state="quiet"] { --tick-color: var(--uix-bg-active); }
+  .uix-chart-tick[data-state="warning"] { --tick-color: var(--uix-warning); }
+  .uix-chart-tick[data-state="danger"] { --tick-color: var(--uix-danger); }
+  .uix-chart-tick[data-current] { box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring); }
+  @media (max-width: 520px) {
+    .uix-chart, .uix-chart--hero { padding: var(--uix-space-4); }
+    .uix-chart__header { flex-direction: column; }
+    .uix-chart__metric { text-align: left; }
+    .uix-chart__footer { align-items: flex-start; flex-direction: column; gap: var(--uix-space-2); }
+  }
 }
