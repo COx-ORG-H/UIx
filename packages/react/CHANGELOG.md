@@ -1,5 +1,17 @@
 # @tensor_1/react
 
+## 2.15.0
+
+### Minor Changes
+
+- af365d6: Promote reusable product patterns into UIx: Breadcrumbs, Combobox, RelativeTime, rich states, CardLink, DetailPage, related/settings compositions, generic dialogs, async-operation status, and controlled table view/filter/saved-view controls. Deepen Sidebar and NavGroup with complete rail styling, controlled disclosure, and focus restoration.
+
+## 2.14.2
+
+### Patch Changes
+
+- Align the linked React package release with the Project Hub token contract.
+
 ## 2.13.0
 
 ### Minor Changes

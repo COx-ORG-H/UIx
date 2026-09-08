@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -12,20 +12,24 @@ const ChevronIcon = () => (
 
 export interface SidebarProps extends HTMLAttributes<HTMLElement> {
   collapsed?: boolean;
+  nav?: 'full' | 'rail';
   onToggle?: () => void;
   brand?: ReactNode;
   toggleIcon?: ReactNode;
   children?: ReactNode;
+  expandLabel?: string;
+  collapseLabel?: string;
 }
 
-export function Sidebar({ collapsed, onToggle, brand, toggleIcon, children, className, ...props }: SidebarProps) {
+export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, children, expandLabel = 'Expand sidebar', collapseLabel = 'Collapse sidebar', className, ...props }: SidebarProps) {
+  const isCollapsed = collapsed ?? nav === 'rail';
   return (
-    <nav className={cx('uix-sidebar', className)} data-collapsed={collapsed || undefined} {...props}>
+    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={nav} {...props}>
       {(brand != null || onToggle) && (
         <div className="uix-sidebar__head">
           {brand && <div className="uix-sidebar__brand">{brand}</div>}
           {onToggle && (
-            <button className="uix-sidebar__toggle" onClick={onToggle} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+            <button type="button" className="uix-sidebar__toggle" onClick={onToggle} aria-label={isCollapsed ? expandLabel : collapseLabel}>
               {toggleIcon ?? (
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
                   <rect x="3" y="4" width="12" height="1.5" rx=".75" />
@@ -69,6 +73,7 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', children, classNam
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
     return (
       <button
+        type="button"
         className={cx('uix-navitem', className)}
         aria-current={active ? 'page' : undefined}
         {...(btnProps as HTMLAttributes<HTMLButtonElement>)}
@@ -98,23 +103,43 @@ export interface NavGroupProps {
   label: ReactNode;
   children?: ReactNode;
   defaultExpanded?: boolean;
+  expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
 }
 
-export function NavGroup({ icon, label, children, defaultExpanded = true }: NavGroupProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+export function NavGroup({ icon, label, children, defaultExpanded = true, expanded: controlledExpanded, onExpandedChange }: NavGroupProps) {
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const expanded = controlledExpanded ?? internalExpanded;
+  const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    panelRef.current?.toggleAttribute('inert', !expanded);
+    if (!expanded && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
+  }, [expanded]);
+
+  const setExpanded = (next: boolean) => {
+    if (!next && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
+    if (controlledExpanded == null) setInternalExpanded(next);
+    onExpandedChange?.(next);
+  };
 
   return (
     <div className="uix-navgroup">
       <button
+        ref={triggerRef}
+        type="button"
         className="uix-navitem uix-navgroup__trigger"
         aria-expanded={expanded}
-        onClick={() => setExpanded((v) => !v)}
+        aria-controls={panelId}
+        onClick={() => setExpanded(!expanded)}
       >
         {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
         <span className="uix-navitem__label">{label}</span>
         <ChevronIcon />
       </button>
-      <div className="uix-navgroup__panel">
+      <div ref={panelRef} id={panelId} className="uix-navgroup__panel" aria-hidden={!expanded}>
         <div>{children}</div>
       </div>
     </div>
@@ -132,7 +157,7 @@ export function SubNavItem({ active, as: Tag = 'a', children, className, ...prop
   if (Tag === 'button') {
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
     return (
-      <button className={cls} aria-current={active ? 'page' : undefined} {...(btnProps as HTMLAttributes<HTMLButtonElement>)}>
+      <button type="button" className={cls} aria-current={active ? 'page' : undefined} {...(btnProps as HTMLAttributes<HTMLButtonElement>)}>
         <span className="uix-navitem__label">{children}</span>
       </button>
     );

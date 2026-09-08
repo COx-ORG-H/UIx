@@ -96,3 +96,9 @@
      link.css is imported last, so a blanket display here would flatten them. */
   a:is(.uix-card, .uix-stat, .uix-kanban__card) { display: block; }
 }
+
+@layer uix.components {
+  .uix-related-links__title { margin: 0 0 var(--uix-space-3); font-size: var(--uix-text-h3); }
+  .uix-related-links__list { display: grid; gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; }
+  .uix-related-links__list li { display: flex; justify-content: space-between; gap: var(--uix-space-3); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+}
