@@ -23,6 +23,10 @@ export type { ButtonProps, ButtonGroupProps } from './components/Button.js';
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
 
+export { Combobox } from './components/Combobox.js';
+export type { ComboboxProps, ComboboxOption } from './components/Combobox.js';
+export { filterComboboxOptions } from './combobox-model.js';
+
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
@@ -45,6 +49,9 @@ export type { FieldProps } from './components/Field.js';
 export { Modal } from './components/Modal.js';
 export type { ModalProps } from './components/Modal.js';
 
+export { ConfirmDialog, PromptDialog } from './components/Dialogs.js';
+export type { ConfirmDialogProps, PromptDialogProps } from './components/Dialogs.js';
+
 export { Drawer } from './components/Drawer.js';
 export type { DrawerProps } from './components/Drawer.js';
 
@@ -52,14 +59,29 @@ export { Peek } from './components/Peek.js';
 export type { PeekProps } from './components/Peek.js';
 
 // Layout
-export { Card } from './components/Card.js';
-export type { CardProps } from './components/Card.js';
+export { Card, CardLink } from './components/Card.js';
+export type { CardProps, CardLinkProps } from './components/Card.js';
+
+export { Breadcrumbs } from './components/Breadcrumbs.js';
+export type { BreadcrumbsProps, BreadcrumbItem } from './components/Breadcrumbs.js';
 
 export { PageHeader } from './components/PageHeader.js';
 export type { PageHeaderProps } from './components/PageHeader.js';
 
 export { DetailLayout } from './components/DetailLayout.js';
 export type { DetailLayoutProps } from './components/DetailLayout.js';
+
+export { DetailPage } from './components/DetailPage.js';
+export type { DetailPageProps, DetailPageTab, DetailPageMetric } from './components/DetailPage.js';
+
+export { RelatedLinks } from './components/RelatedLinks.js';
+export type { RelatedLinksProps, RelatedLinkItem } from './components/RelatedLinks.js';
+
+export { ToggleRow } from './components/ToggleRow.js';
+export type { ToggleRowProps } from './components/ToggleRow.js';
+
+export { CollapsibleSection } from './components/CollapsibleSection.js';
+export type { CollapsibleSectionProps } from './components/CollapsibleSection.js';
 
 export { List, ListItem } from './components/List.js';
 export type { ListProps, ListItemProps } from './components/List.js';
@@ -124,13 +146,23 @@ export { Tooltip } from './components/Tooltip.js';
 export type { TooltipProps } from './components/Tooltip.js';
 
 // States / feedback
-export { EmptyState, ErrorState, Skeleton, LoadingState } from './components/States.js';
+export { EmptyState, ErrorState, ForbiddenState, NotFoundState, FilteredEmptyState, Skeleton, LoadingState } from './components/States.js';
 export type {
   EmptyStateProps,
   ErrorStateProps,
+  AccessStateProps,
+  StateVariant,
   SkeletonProps,
   LoadingStateProps,
 } from './components/States.js';
+
+export { RelativeTime } from './components/RelativeTime.js';
+export type { RelativeTimeProps, RelativeTimeFormatContext } from './components/RelativeTime.js';
+export { parseDateValue, relativeTimeValue } from './relative-time-model.js';
+export type { RelativeTimeUnit, RelativeTimeValue } from './relative-time-model.js';
+
+export { AsyncOperationStatus } from './components/AsyncOperationStatus.js';
+export type { AsyncOperationStatusProps, AsyncOperationState } from './components/AsyncOperationStatus.js';
 
 export { Label } from './components/Label.js';
 export type { LabelProps } from './components/Label.js';
@@ -146,6 +178,11 @@ export type { ComposerProps, ComposerBarProps } from './components/Composer.js';
 
 export { Segmented, SegmentedOption } from './components/Segmented.js';
 export type { SegmentedProps, SegmentedOptionProps } from './components/Segmented.js';
+
+export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableControls.js';
+export type {
+  ViewMenuProps, ViewMenuColumn, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem,
+} from './components/TableControls.js';
 
 export { Timeline, TimelineItem } from './components/Timeline.js';
 export type { TimelineProps, TimelineItemProps } from './components/Timeline.js';

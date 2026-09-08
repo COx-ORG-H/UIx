@@ -34,7 +34,7 @@
   .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
   .uix-navitem__star { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navitem__star svg { width: 15px; height: 15px; }
-  .uix-navitem:hover .uix-navitem__star { opacity: 1; }
+  .uix-navitem:hover .uix-navitem__star, .uix-navitem:focus-within .uix-navitem__star, .uix-navitem__star:focus-visible { opacity: 1; }
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
@@ -47,13 +47,13 @@
     border: 0; background: transparent; cursor: pointer; color: inherit;
   }
   .uix-favourites__list { display: flex; flex-direction: column; gap: calc(var(--uix-space-1) / 4); list-style: none; margin: 0; padding: 0; }
-  .uix-favourites__empty { padding: calc(var(--uix-space-1) * 1.5) var(--uix-space-2); color: color-mix(in srgb, var(--uix-text) 50%, transparent); }
+  .uix-favourites__empty { padding: calc(var(--uix-space-1) * 1.5) var(--uix-space-2); color: var(--uix-text-hushed); }
   .uix-favourites__row { position: relative; display: flex; align-items: center; }
   .uix-favourites__link { min-width: 0; flex: 1; }
   .uix-favourites__menu-trigger {
     margin-left: auto; display: inline-flex; height: 20px; width: 20px; flex-shrink: 0;
     align-items: center; justify-content: center; border: 0; border-radius: calc(var(--uix-radius-xs) / 2);
-    background: transparent; cursor: pointer; color: color-mix(in srgb, var(--uix-text) 50%, transparent);
+    background: transparent; cursor: pointer; color: var(--uix-text-muted);
     opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-favourites__row:hover .uix-favourites__menu-trigger,
@@ -96,7 +96,16 @@
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
   .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
   .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  .uix-sidebar[data-nav="rail"] .uix-navitem__label,
+  .uix-sidebar[data-nav="rail"] .uix-navitem__badge,
+  .uix-sidebar[data-nav="rail"] .uix-navitem__star,
+  .uix-sidebar[data-nav="rail"] .uix-sidebar__eyebrow,
+  .uix-sidebar[data-nav="rail"] .uix-sidebar__brand,
+  .uix-sidebar[data-nav="rail"] .uix-navgroup__chevron,
+  .uix-sidebar[data-nav="rail"] .uix-navgroup__panel { display: none; }
   /* center the icon-only rail; head keeps just the toggle, centered */
   .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
   .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
+  .uix-sidebar[data-nav="rail"] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-nav="rail"] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
 }

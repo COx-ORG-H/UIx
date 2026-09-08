@@ -1,5 +1,23 @@
 # @tensor_1/tokens
 
+## 2.15.0
+
+### Minor Changes
+
+- af365d6: Promote reusable product patterns into UIx: Breadcrumbs, Combobox, RelativeTime, rich states, CardLink, DetailPage, related/settings compositions, generic dialogs, async-operation status, and controlled table view/filter/saved-view controls. Deepen Sidebar and NavGroup with complete rail styling, controlled disclosure, and focus restoration.
+
+## 2.14.2
+
+### Patch Changes
+
+- Align the linked token and React package versions for exact-version consumers.
+
+## 2.14.0
+
+### Minor Changes
+
+- 9ddd973: Add Mission Control Project Hub heat, absence, and dark-only aura roles.
+
 ## 2.13.0
 
 ### Minor Changes

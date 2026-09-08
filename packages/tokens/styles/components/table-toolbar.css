@@ -17,4 +17,7 @@
   .uix-chip:hover { border-color: var(--uix-border-strong); color: var(--uix-text); }
   .uix-chip[data-on] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); }
   .uix-chip__count { font-variant-numeric: tabular-nums; opacity: .7; }
+  .uix-filter-popover { display: grid; gap: var(--uix-space-4); min-width: 260px; padding: var(--uix-space-4); }
+  .uix-filter-popover .uix-label { display: grid; gap: var(--uix-space-2); }
+  .uix-filter-popover__actions { display: flex; justify-content: flex-end; gap: var(--uix-space-2); }
 }
