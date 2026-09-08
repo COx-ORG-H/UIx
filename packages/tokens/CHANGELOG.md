@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.14.0
+
+### Minor Changes
+
+- 9ddd973: Add Mission Control Project Hub heat, absence, and dark-only aura roles.
+
 ## 2.13.0
 
 ### Minor Changes
