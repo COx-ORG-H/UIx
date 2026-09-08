@@ -171,13 +171,18 @@ const codeBlock = (code, language = 'html') => {
 const demo = (markup, code = markup, options = {}) => {
   const id = `docs-demo-${++codeCounter}`;
   const stageClass = options.column ? ' uix-docs__demo-stage--column' : '';
+  const previewMarkup = String(markup).replace(
+    /<ol class="([^"]*\buix-pipeline--detailed\b[^"]*)"(?![^>]*\btabindex=)/g,
+    '<ol class="$1" tabindex="0"',
+  );
+  const copiedCode = code === markup ? previewMarkup : code;
   return `<div class="uix-docs__demo" data-demo>
     <div class="uix-docs__demo-head" role="tablist" aria-label="Example view">
       <button class="uix-docs__demo-tab" type="button" role="tab" aria-selected="true" data-demo-tab="preview" aria-controls="${id}-preview">Preview</button>
       <button class="uix-docs__demo-tab" type="button" role="tab" aria-selected="false" data-demo-tab="code" aria-controls="${id}-code">Code</button>
     </div>
-    <div class="uix-docs__demo-stage${stageClass}" id="${id}-preview" role="tabpanel">${markup}</div>
-    <div class="uix-docs__demo-code" id="${id}-code" role="tabpanel" hidden>${codeBlock(code, options.language || 'html')}</div>
+    <div class="uix-docs__demo-stage${stageClass}" id="${id}-preview" role="tabpanel" tabindex="0">${previewMarkup}</div>
+    <div class="uix-docs__demo-code" id="${id}-code" role="tabpanel" tabindex="0" hidden>${codeBlock(copiedCode, options.language || 'html')}</div>
   </div>`;
 };
 
@@ -260,6 +265,9 @@ const COMPONENT_DETAILS = {
 
 const componentPreview = (item) => section('component-preview', 'Preview and markup', `<div data-component-preview="${item.slug}"></div><p class="uix-text-muted">Uses the shared UIx stylesheet. The Code view shows the initial HTML; application behavior is separate.</p>`);
 
+const PORTABLE_SPECIMEN_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 96'%3E%3Crect width='160' height='96' rx='12' fill='%23dbeafe'/%3E%3Cpath d='M18 70l32-32 24 24 18-18 50 50H18z' fill='%2360a5fa'/%3E%3Ccircle cx='118' cy='27' r='10' fill='%23f8fafc'/%3E%3C/svg%3E";
+const portableSpecimenMarkup = (html) => String(html).replace(/(?:\.\.\/)?assets\/img\/[^"']+/g, PORTABLE_SPECIMEN_IMAGE);
+
 // Resolve from the same maintained markup as composition pages: no second set of demos.
 export const mountComponentPreview = (item, host) => {
   const spec = COMPONENT_SPECIMENS[item.slug];
@@ -270,12 +278,16 @@ export const mountComponentPreview = (item, host) => {
   template.innerHTML = additional?.html || page.html;
   const target = template.content.querySelector(spec.anchor || spec.selector);
   if (!target) throw new Error(`Missing specimen selector: ${item.slug} ${spec.selector}`);
-  // Preserve companion controls for interactive advanced examples and native overlays.
-  const contextual = ['modal', 'drawer', 'peek', 'popover', 'lightbox', 'toast'].includes(item.slug);
-  const fragment = page.source === 'advanced' || contextual
-    ? stripShowcaseFrame(additional?.html || page.html)
+  // Explicit parts keep native overlay triggers beside their top-layer content without
+  // copying the surrounding docs-only family layout into a consumer example.
+  const fragment = spec.parts
+    ? spec.parts.map((selector) => template.content.querySelector(selector)?.outerHTML).filter(Boolean).join('\n')
+    : page.source === 'advanced'
+      ? stripShowcaseFrame(additional?.html || page.html)
     : (spec.container ? target.closest(spec.container).outerHTML : target.closest('[data-tag-example], [data-file-example]')?.outerHTML || target.closest('[data-uix-example]')?.querySelector('.uix-example__preview')?.innerHTML || target.outerHTML);
-  host.innerHTML = demo(fragment, fragment, { column: true });
+  if (!fragment) throw new Error(`Missing specimen parts: ${item.slug}`);
+  const portableFragment = portableSpecimenMarkup(fragment);
+  host.innerHTML = demo(portableFragment, portableFragment, { column: true });
   host.dataset.showcaseSource = page.source;
 };
 
@@ -559,7 +571,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
   <PipelineStage state="pending" label="Production rollout" description="Progressive regional deploy." meta="Automation · est. 12m" marker="3" />
 </Pipeline>`, { language: 'tsx' })}`)}
     ${section('state-model', 'State model', `<p>Use <code>pending</code>, <code>active</code>, <code>done</code>, <code>blocked</code>, or <code>failed</code> as the shared visual vocabulary. Products own the domain transition, permissions, audit trail, and approval action; UIx owns only the presentation.</p>${compare('Show a visible state word and use aria-current="step" for the current stage.', 'Encode progress only with connector color, animation, or icon shape.')}`)}
-    ${section('responsive', 'Responsive behavior', `<p>The detailed rail preserves its readable stage width and scrolls horizontally on narrow surfaces. Keep the active stage in view when application logic advances the workflow; do not compress titles and metadata into illegible columns.</p><p><a class="uix-btn uix-btn--primary" href="#examples-workflows-pipelines">Open workflow specimens</a></p>`)}`,
+    ${section('responsive', 'Responsive behavior', `<p>The detailed rail preserves its readable stage width and scrolls horizontally on narrow surfaces. Plain HTML must put <code>tabindex="0"</code> on that scroll container; the React <code>Pipeline</code> adapter does this by default when <code>detailed</code> is true. Keep the active stage in view when application logic advances the workflow; do not compress titles and metadata into illegible columns.</p><p><a class="uix-btn uix-btn--primary" href="#examples-workflows-pipelines">Open workflow specimens</a></p>`)}`,
 
   flow: () => `${pageHeader('Patterns', 'Flow', 'Flow is a presentational process-graph shell for readable nodes and connectors. Consumers retain layout, graph traversal, selection, and domain behavior.', ['renderer free', 'explicit node state', 'consumer-owned geometry'])}
     ${section('boundary', 'What UIx owns', `<table class="uix-docs__token-table"><thead><tr><th>UIx owns</th><th>The consumer owns</th></tr></thead><tbody><tr><td>Node surface, typography, ports, connector states, focus, and visible status.</td><td>Graph data, positioning, routing, zoom, persistence, permissions, and execution.</td></tr></tbody></table>`)}

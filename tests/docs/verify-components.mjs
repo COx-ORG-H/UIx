@@ -44,6 +44,11 @@ try {
         const overlay = ['modal','drawer','peek','popover','lightbox','combobox','view-menu'].includes(item.slug);
         if (!overlay) assert(await stage.locator(COMPONENT_SPECIMENS[item.slug].selector).first().isVisible(), 'Component is hidden');
         assert(await stage.locator(':scope > *').count(), 'Empty preview');
+        const copiedMarkup = await host.locator('.uix-docs__demo-code code').textContent();
+        const docsClass = copiedMarkup.match(/class=["'][^"']*uix-(?:docs|guide)__[^"']*/)?.[0];
+        const docsAsset = copiedMarkup.match(/(?:src|href)=["'][^"']*assets\/[^"']*/)?.[0];
+        assert(!docsClass, `Copied markup depends on docs-only CSS: ${docsClass}`);
+        assert(!docsAsset, `Copied markup depends on a docs-only asset: ${docsAsset}`);
         assert(await page.locator(`[data-uix-docs-nav] a[href="#${item.slug}"][aria-current="page"]`).count(), 'No active sidebar entry');
       } catch (error) { failures.push(`${theme}/${item.slug}: ${error.message.split('\n')[0]}`); }
     }
@@ -51,6 +56,24 @@ try {
   console.log(JSON.stringify({ failures, errors }, null, 2));
   assert.deepEqual(failures, []);
   assert.deepEqual(errors, []);
+  await page.evaluate(() => location.hash = 'pipeline');
+  const pipelineStage = page.locator('ol[aria-label="Release 1842 progress"]');
+  assert.equal(await pipelineStage.getAttribute('tabindex'), '0');
+  await pipelineStage.focus();
+  assert(await pipelineStage.evaluate((element) => element === document.activeElement));
+  for (const [slug, trigger, specimen] of [
+    ['modal', '[data-uix-open="#demo-modal"]', '.uix-dialog'],
+    ['drawer', '[data-uix-open="#demo-drawer"]', '.uix-drawer'],
+    ['peek', '[data-uix-open-peek]', '.uix-peek'],
+    ['popover', '[popovertarget="demo-pop"]', '.uix-popover'],
+    ['lightbox', '[data-uix-lightbox]', '.uix-lightbox'],
+  ]) {
+    await page.evaluate((route) => location.hash = route, slug);
+    const preview = page.locator(`[data-component-preview="${slug}"]`);
+    await preview.locator(trigger).click();
+    assert(await preview.locator(specimen).isVisible(), `${slug} does not open its specimen`);
+    await page.keyboard.press('Escape');
+  }
   await page.evaluate(() => location.hash = 'combobox');
   const combo = page.locator('[data-component-preview="combobox"]');
   await combo.locator('[popovertarget]').click();

@@ -40,7 +40,10 @@ coverage therefore fails the docs test instead of silently creating a gap.
 and dark mode, ordinary specimens are visible, navigation selects the component, and tag input, file selection,
 color editing, combobox selection and repeated lightbox visits work. It also checks narrow/wide pages and axe
 on the new guides and focused form references. CI runs this in the a11y job. The explicit selector must belong
-to the component's production CSS module; a generic button elsewhere in the gallery is not sufficient.
+to the component's production CSS module; a generic button elsewhere in the gallery is not sufficient. Native
+overlay entries declare their trigger and surface as explicit `parts`, so their code views do not copy the
+surrounding family showcase. The browser gate also rejects docs-only classes and repository asset URLs in copied
+component snippets.
 
 Add a use case and expected result in `component-guidance.js`; extend `COMPONENT_DETAILS` for more detailed behavior. The
 `#build-with-uix` and `#extend-the-system` pages describe composition and the contribution contract for

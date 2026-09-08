@@ -184,19 +184,23 @@ export const COMPONENT_SPECIMENS = {
   },
   "modal": {
     "route": "examples-overlays",
-    "selector": ".uix-dialog"
+    "selector": ".uix-dialog",
+    "parts": ["[data-uix-open=\"#demo-modal\"]", "#demo-modal"]
   },
   "drawer": {
     "route": "examples-overlays",
-    "selector": ".uix-drawer"
+    "selector": ".uix-drawer",
+    "parts": ["[data-uix-open=\"#demo-drawer\"]", "#demo-drawer"]
   },
   "popover": {
     "route": "examples-overlays",
-    "selector": ".uix-popover"
+    "selector": ".uix-popover",
+    "parts": ["[popovertarget=\"demo-pop\"]", "#demo-pop"]
   },
   "peek": {
     "route": "examples-overlays",
-    "selector": ".uix-peek"
+    "selector": ".uix-peek",
+    "parts": ["[data-uix-open-peek]", "#demo-peek"]
   },
   "spinner": {
     "route": "examples-overlays",
@@ -204,7 +208,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "lightbox": {
     "route": "examples-images",
-    "selector": ".uix-lightbox"
+    "selector": ".uix-lightbox",
+    "parts": ["[data-uix-lightbox]", "[data-uix-lightbox-dialog]"]
   },
   "inbox": {
     "route": "examples-crm-itsm",

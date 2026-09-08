@@ -51,6 +51,8 @@ scope. Demonstration data stays local; file selection must never imply a real up
 - `packages/tokens/docs/form-specimens.js`: shared working tag/file examples.
 - `packages/tokens/guide/app.js`: route lifecycle cleanup.
 - `packages/tokens/guide/phase-46-9.js`: working HSV/hex/contrast demo, scoped to the picker.
+- `packages/react/src/components/Pipeline.tsx`: keyboard-focusable detailed overflow rail.
+- `packages/react/src/workflow-chart-components.test.mjs`: React Pipeline render contract.
 - `packages/tokens/docs/docs.test.js`: registry and per-component coverage gates.
 - `tests/docs/`: browser regression verification.
 - `packages/tokens/docs/README.md`: authoring instructions.
@@ -79,6 +81,21 @@ locally; color HSV/hex editing updates the actual swatch and computes white-text
 - Independent read-only review caught stale global listeners, a wrong combobox specimen,
   static color behavior and a swatch variable-resolution issue. All were fixed and covered
   by interaction or computed-style assertions.
+- Follow-up audit on 2026-09-08 found CI's full a11y matrix correctly blocking the static
+  Pipeline preview: first the scrollable demo panel and then the detailed rail itself had no
+  keyboard focus target. Demo tabpanels are now focusable; detailed plain-HTML pipelines receive
+  `tabindex="0"`; and the React adapter supplies the same default while preserving a caller
+  override. The browser gate explicitly focuses the actual Pipeline element.
+- The same audit found Modal, Drawer, Popover, Peek and Lightbox code views copying their entire
+  family showcase, including docs-only layout classes, and Media copying a repository-only image
+  URL. Overlay specimen contracts now select the matching trigger and surface explicitly, and
+  extracted images use a self-contained data image. The browser gate rejects docs-only classes
+  and assets in every copied component snippet and opens/closes all five overlays.
+- Follow-up verification: token build, parity and contract checks pass; docs tests pass 24/24;
+  component browser verification passes 82 routes in both themes; React workflow/chart tests pass
+  5/5; API extraction passes; the isolated package smoke test passes with React 18 and 19; and the
+  full accessibility matrix passes 80/80 in light and dark. Linux visual status remains delegated
+  to CI by repository policy; final-revision confirmation is recorded in the draft PR check history.
 
 Scope limits: previews demonstrate production HTML/CSS plus documented sample behavior;
 they do not mount the React adapters or provide backend persistence/uploads. Existing React
