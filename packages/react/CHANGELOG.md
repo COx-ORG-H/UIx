@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.14.2
+
+### Patch Changes
+
+- Align the linked React package release with the Project Hub token contract.
+
 ## 2.13.0
 
 ### Minor Changes
