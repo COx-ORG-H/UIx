@@ -7,6 +7,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { COMPONENT_SPECIMENS } from './component-specimens.js';
+import { COMPONENT_GUIDANCE } from './component-guidance.js';
 import {
   slugify,
   componentNav,
@@ -146,6 +147,7 @@ test('component catalogue covers every independently importable CSS module exact
 });
 
 test('each component has an explicit specimen using a selector from its own CSS contract', () => {
+  assert.deepEqual(Object.keys(COMPONENT_GUIDANCE).sort(), COMPONENT_ITEMS.map((item) => item.slug).sort());
   assert.deepEqual(Object.keys(COMPONENT_SPECIMENS).sort(), COMPONENT_ITEMS.map((item) => item.slug).sort());
   for (const item of COMPONENT_ITEMS) {
     const spec = COMPONENT_SPECIMENS[item.slug];

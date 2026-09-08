@@ -13,6 +13,7 @@ enterprise interaction patterns into a searchable reference without introducing 
 | `docs.js` | Static content registry, hash router, search ranking, navigation, status matrix, copy actions, examples, tabs, theme handling, and mobile focus behavior. |
 | `showcase-data.js` | One-time migration of the retired style-guide, workspace, and advanced specimens into 25 independently addressable docs routes. |
 | `component-specimens.js` | Explicit catalogue-to-specimen selector registry; references and compositions consume the same markup. |
+| `component-guidance.js` | Component-specific use cases and expected results for every catalogue entry. |
 | `form-specimens.js` | Shared tag-input and file-selection markup and local demo behavior. |
 | `docs.test.js` | DOM-free tests for rendering helpers, search, catalogue parity, example coverage, and public-class integrity. |
 
@@ -41,7 +42,7 @@ color editing, combobox selection and repeated lightbox visits work. It also che
 on the new guides and focused form references. CI runs this in the a11y job. The explicit selector must belong
 to the component's production CSS module; a generic button elsewhere in the gallery is not sufficient.
 
-Add component-specific guidance in `COMPONENT_DETAILS` for behavior beyond the family baseline. The
+Add a use case and expected result in `component-guidance.js`; extend `COMPONENT_DETAILS` for more detailed behavior. The
 `#build-with-uix` and `#extend-the-system` pages describe composition and the contribution contract for
 humans and agents. Call `disposeShowcase()` before replacing mounted markup to release global listeners,
 observers and tooltip nodes. A preview documents the HTML/CSS layer and docs behavior, not a mounted React tree.

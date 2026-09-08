@@ -57,6 +57,7 @@ for (const pg of PAGES) {
     if (pg.openColorPicker) {
       await page.locator('[data-color-trigger]').click();
       await expect(page.locator('[data-color-dialog]')).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
     }
 
     await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true, timeout: 20_000 });

@@ -12,7 +12,7 @@ export const tagInputMarkup = `<div class="uix-stack" data-tag-example>
 export const fileUploadMarkup = `<div class="uix-stack" data-file-example>
   <label class="uix-dropzone"><strong>Choose attachments</strong>
     <span>Local preview only. Files are not uploaded.</span>
-    <input type="file" multiple aria-label="Choose attachments">
+    <input class="uix-input" type="file" multiple aria-label="Choose attachments">
   </label>
   <div class="uix-filelist" data-file-list></div>
   <p class="uix-field__hint" role="status" data-file-status>No files selected.</p>

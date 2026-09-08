@@ -124,7 +124,9 @@ jobs:
         run: npm run test:a11y
 
       - name: Component documentation coverage and interactions
-        run: node tests/docs/verify-components.mjs
+        run: |
+          node --test packages/tokens/docs/docs.test.js packages/tokens/guide/app.test.js
+          node tests/docs/verify-components.mjs
 
       - name: Upload a11y report
         if: ${{ !cancelled() }}
