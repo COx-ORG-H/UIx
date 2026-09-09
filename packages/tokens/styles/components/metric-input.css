@@ -1,0 +1,9 @@
+@layer uix.components {
+  .uix-metric-input { display:grid; gap:var(--uix-space-2); color:var(--uix-text); }
+  .uix-metric-input__control { position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:stretch; max-width:22rem; }
+  .uix-metric-input__control .uix-input { border-top-right-radius:0; border-bottom-right-radius:0; font-variant-numeric:tabular-nums; }
+  .uix-metric-input__unit { display:flex; align-items:center; padding-inline:var(--uix-space-3); border-block:1px solid var(--uix-border-strong); background:var(--uix-bg-subtle); color:var(--uix-text-muted); }
+  .uix-metric-input__steps { display:grid; width:2.5rem; }
+  .uix-metric-input__step { border:1px solid var(--uix-border-strong); background:var(--uix-surface); color:var(--uix-text); line-height:1; } .uix-metric-input__step:first-child { border-top-right-radius:var(--uix-radius-md); } .uix-metric-input__step:last-child { border-top:0; border-bottom-right-radius:var(--uix-radius-md); }
+  .uix-metric-input__step:hover { background:var(--uix-bg-hover); } .uix-metric-input--invalid .uix-metric-input__control { color:var(--uix-danger-text); }
+}

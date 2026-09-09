@@ -1,0 +1,21 @@
+@layer uix.components {
+  .uix-relationship-graph { display:grid; gap:var(--uix-space-3); color:var(--uix-text); }
+  .uix-relationship-graph__toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-1); } .uix-relationship-graph__toolbar button,.uix-relationship-graph__list-actions button { padding:var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text); }
+  .uix-relationship-graph__toolbar span,.uix-relationship-graph__bounded { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__visual { min-height:22rem; border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); overflow:hidden; background:var(--uix-bg-subtle); }
+  .uix-relationship-graph__visual svg { display:block; width:100%; height:22rem; }
+  .uix-relationship-graph__edge { stroke:var(--uix-border-strong); stroke-width:2; } .uix-relationship-graph__edge[data-highlighted] { stroke:var(--uix-accent); stroke-width:4; } .uix-relationship-graph__edge[data-conflicted] { stroke:var(--uix-danger); stroke-dasharray:6 4; }
+  .uix-relationship-graph__node { cursor:pointer; } .uix-relationship-graph__node rect { fill:var(--uix-surface); stroke:var(--uix-border-strong); stroke-width:2; } .uix-relationship-graph__node text { fill:var(--uix-text); font-family:var(--uix-font-sans); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__node[data-selected] rect,.uix-relationship-graph__node[data-highlighted] rect { fill:var(--uix-brand-muted); stroke:var(--uix-accent); stroke-width:3; } .uix-relationship-graph__node[data-conflicted] rect { fill:var(--uix-danger-bg); stroke:var(--uix-danger); stroke-dasharray:4 2; }
+  .uix-relationship-graph__node:focus-visible rect { stroke:var(--uix-ring); stroke-width:4; }
+  .uix-relationship-graph__legend { display:flex; gap:var(--uix-space-4); flex-wrap:wrap; margin:0; padding:0; list-style:none; color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__legend li::before { content:""; display:inline-block; width:.8rem; height:.8rem; margin-right:var(--uix-space-1); border:2px solid var(--uix-chart-1); border-radius:var(--uix-radius-pill); vertical-align:middle; }
+  .uix-relationship-graph__list { padding:var(--uix-space-3); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); }
+  .uix-relationship-graph__list>ul { display:grid; gap:var(--uix-space-2); margin:var(--uix-space-2) 0 0; padding:0; list-style:none; }
+  .uix-relationship-graph__list li { display:flex; justify-content:space-between; gap:var(--uix-space-2); padding:var(--uix-space-2); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
+  .uix-relationship-graph__list li>button:first-child { display:grid; gap:var(--uix-space-1); flex:1; border:0; background:transparent; color:var(--uix-text); text-align:left; } .uix-relationship-graph__list li>button span { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__list-actions { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); }
+  .uix-relationship-graph--compact .uix-relationship-graph__visual,.uix-relationship-graph--compact .uix-relationship-graph__visual svg { min-height:16rem; height:16rem; }
+  .uix-relationship-graph--state { padding:var(--uix-space-8); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); }
+  @media (max-width:640px) { .uix-relationship-graph__list li { display:grid; } }
+}

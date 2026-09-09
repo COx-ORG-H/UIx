@@ -1,9 +1,144 @@
-/* uix deal / pipeline stage bar — depends only on --uix-* tokens. */
+/* uix pipeline — compact stage bar + detailed operational stage rail.
+   Depends only on --uix-* tokens; state is always repeated in visible text. */
 @layer uix.components {
-  .uix-pipeline { display: flex; gap: var(--uix-space-1); }
-  .uix-pipeline__stage { flex: 1; text-align: center; padding: var(--uix-space-2) var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); background: var(--uix-bg-subtle); }
+  .uix-pipeline {
+    display: flex;
+    gap: var(--uix-space-1);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .uix-pipeline__stage {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    padding: var(--uix-space-2);
+    text-align: center;
+    font-size: var(--uix-text-meta);
+    color: var(--stage-fg, var(--uix-text-muted));
+    background: var(--stage-bg, var(--uix-bg-subtle));
+    border-color: var(--stage-border, transparent);
+  }
   .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
   .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }
-  .uix-pipeline__stage[data-state="done"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
-  .uix-pipeline__stage[data-state="active"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 600; }
+  .uix-pipeline__stage[data-state="done"],
+  .uix-pipeline__stage[data-state="complete"] {
+    --stage-bg: var(--uix-accent); --stage-fg: var(--uix-accent-fg); --stage-dot: var(--uix-success);
+  }
+  .uix-pipeline__stage[data-state="active"],
+  .uix-pipeline__stage[data-state="current"],
+  .uix-pipeline__stage[data-state="running"] {
+    --stage-bg: var(--uix-brand-muted); --stage-fg: var(--uix-link);
+    --stage-border: var(--uix-accent); --stage-dot: var(--uix-accent); font-weight: 600;
+  }
+  .uix-pipeline__stage[data-state="failed"],
+  .uix-pipeline__stage[data-state="error"] {
+    --stage-bg: var(--uix-danger-bg); --stage-fg: var(--uix-danger-text);
+    --stage-border: var(--uix-danger); --stage-dot: var(--uix-danger);
+  }
+  .uix-pipeline__stage[data-state="blocked"] {
+    --stage-bg: var(--uix-warning-bg); --stage-fg: var(--uix-warning-text);
+    --stage-border: var(--uix-warning); --stage-dot: var(--uix-warning);
+  }
+  .uix-pipeline__stage[data-state="waiting"],
+  .uix-pipeline__stage[data-state="pending"] { --stage-dot: var(--uix-text-muted); }
+
+  /* Detailed mode scrolls at narrow widths instead of crushing timing and state. */
+  .uix-pipeline--detailed {
+    position: relative;
+    gap: 0;
+    overflow-x: auto;
+    padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-4);
+    scrollbar-width: thin;
+    scrollbar-color: var(--uix-border-strong) transparent;
+    scroll-snap-type: x proximity;
+  }
+  .uix-pipeline--detailed::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--uix-space-1) + 21px);
+    right: var(--uix-space-8);
+    left: var(--uix-space-8);
+    height: 2px;
+    background: var(--uix-border);
+  }
+  .uix-pipeline--detailed .uix-pipeline__stage {
+    flex: 1 0 168px;
+    display: grid;
+    grid-template-rows: 42px auto;
+    gap: var(--uix-space-3);
+    padding: 0 var(--uix-space-2);
+    text-align: left;
+    color: var(--uix-text);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    scroll-snap-align: start;
+  }
+  .uix-pipeline__marker {
+    position: relative;
+    z-index: var(--uix-z-raised);
+    display: grid;
+    place-items: center;
+    align-self: start;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--stage-border, var(--uix-border-strong));
+    border-radius: var(--uix-radius-pill);
+    background: var(--stage-bg, var(--uix-surface));
+    color: var(--stage-fg, var(--uix-text-muted));
+    box-shadow: 0 0 0 var(--uix-space-1) var(--uix-surface), var(--uix-shadow-sm);
+    font-family: var(--uix-font-mono);
+    font-size: var(--uix-text-meta);
+    font-weight: 600;
+  }
+  .uix-pipeline__marker svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-pipeline__content {
+    min-width: 0;
+    padding: var(--uix-space-3);
+    border: 1px solid var(--stage-border, var(--uix-border));
+    border-radius: var(--uix-radius-md);
+    background: var(--uix-surface);
+    box-shadow: var(--uix-shadow-sm);
+  }
+  .uix-pipeline__stage[data-state="active"] .uix-pipeline__content,
+  .uix-pipeline__stage[data-state="current"] .uix-pipeline__content,
+  .uix-pipeline__stage[data-state="running"] .uix-pipeline__content {
+    box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--uix-brand-muted);
+  }
+  .uix-pipeline__eyebrow {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2);
+    margin-bottom: var(--uix-space-2); color: var(--stage-fg, var(--uix-text-muted));
+    font-size: var(--uix-text-eyebrow); font-weight: 600;
+    letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+  }
+  .uix-pipeline__state { display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-pipeline__state::before {
+    content: ""; width: 7px; height: 7px; flex: none; border-radius: 50%;
+    background: var(--stage-dot, var(--uix-text-muted));
+  }
+  .uix-pipeline__stage[data-state="blocked"] .uix-pipeline__state::before { border-radius: var(--uix-radius-xs); }
+  .uix-pipeline__title {
+    overflow: hidden; color: var(--uix-text); font-size: var(--uix-text-body); font-weight: 600;
+    line-height: var(--uix-leading-body); text-overflow: ellipsis; white-space: nowrap;
+  }
+  .uix-pipeline__description {
+    margin-top: var(--uix-space-1); color: var(--uix-text-muted);
+    font-size: var(--uix-text-meta); font-weight: 400; line-height: var(--uix-leading-meta);
+  }
+  .uix-pipeline__meta {
+    display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0;
+    margin-top: var(--uix-space-3); padding-top: var(--uix-space-3); border-top: 1px solid var(--uix-border);
+    color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 400;
+  }
+  .uix-pipeline__meta > :last-child { margin-left: auto; }
+  .uix-pipeline__stage:focus-visible,
+  .uix-pipeline__stage:has(:focus-visible) .uix-pipeline__content {
+    outline: none; border-color: var(--uix-ring);
+    box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring);
+  }
+  @media (max-width: 640px) {
+    .uix-pipeline--detailed .uix-pipeline__stage { flex-basis: min(78vw, 240px); }
+  }
 }

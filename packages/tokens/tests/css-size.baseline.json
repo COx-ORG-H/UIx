@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 146854,
-      "gzip": 26214,
-      "brotli": 21863
+      "raw": 147763,
+      "gzip": 20696,
+      "brotli": 17836
     },
     "build/css/styles.css": {
-      "raw": 162583,
-      "gzip": 30620,
-      "brotli": 25289
+      "raw": 157023,
+      "gzip": 23257,
+      "brotli": 19904
     },
     "build/css/tokens.css": {
       "raw": 7699,
@@ -41,10 +41,20 @@
       "gzip": 739,
       "brotli": 585
     },
+    "styles/components/brand-profiles.css": {
+      "raw": 1662,
+      "gzip": 520,
+      "brotli": 424
+    },
     "styles/components/breadcrumbs.css": {
-      "raw": 538,
-      "gzip": 278,
-      "brotli": 206
+      "raw": 766,
+      "gzip": 409,
+      "brotli": 300
+    },
+    "styles/components/builder-canvas.css": {
+      "raw": 2479,
+      "gzip": 642,
+      "brotli": 524
     },
     "styles/components/button.css": {
       "raw": 3113,
@@ -57,24 +67,29 @@
       "brotli": 420
     },
     "styles/components/card.css": {
-      "raw": 834,
-      "gzip": 345,
-      "brotli": 269
+      "raw": 2247,
+      "gzip": 664,
+      "brotli": 529
     },
     "styles/components/chart.css": {
-      "raw": 856,
-      "gzip": 397,
-      "brotli": 303
+      "raw": 5514,
+      "gzip": 1462,
+      "brotli": 1203
     },
     "styles/components/checkbox.css": {
       "raw": 1637,
       "gzip": 626,
       "brotli": 488
     },
+    "styles/components/color-picker.css": {
+      "raw": 2409,
+      "gzip": 667,
+      "brotli": 545
+    },
     "styles/components/combobox.css": {
-      "raw": 1008,
-      "gzip": 434,
-      "brotli": 323
+      "raw": 1311,
+      "gzip": 559,
+      "brotli": 439
     },
     "styles/components/command-palette.css": {
       "raw": 1890,
@@ -91,15 +106,25 @@
       "gzip": 350,
       "brotli": 272
     },
+    "styles/components/date-range-picker.css": {
+      "raw": 1823,
+      "gzip": 570,
+      "brotli": 464
+    },
     "styles/components/description-list.css": {
       "raw": 379,
       "gzip": 232,
       "brotli": 180
     },
     "styles/components/detail-layout.css": {
-      "raw": 502,
-      "gzip": 275,
-      "brotli": 225
+      "raw": 1216,
+      "gzip": 471,
+      "brotli": 384
+    },
+    "styles/components/diff-viewer.css": {
+      "raw": 2370,
+      "gzip": 651,
+      "brotli": 544
     },
     "styles/components/drawer.css": {
       "raw": 1633,
@@ -107,9 +132,9 @@
       "brotli": 468
     },
     "styles/components/editorial-home.css": {
-      "raw": 16385,
-      "gzip": 3322,
-      "brotli": 2832
+      "raw": 16791,
+      "gzip": 3520,
+      "brotli": 3001
     },
     "styles/components/file-upload.css": {
       "raw": 1320,
@@ -117,14 +142,14 @@
       "brotli": 391
     },
     "styles/components/flow.css": {
-      "raw": 10569,
-      "gzip": 2824,
-      "brotli": 2433
+      "raw": 12036,
+      "gzip": 3083,
+      "brotli": 2652
     },
     "styles/components/form.css": {
-      "raw": 1519,
-      "gzip": 599,
-      "brotli": 487
+      "raw": 1993,
+      "gzip": 718,
+      "brotli": 578
     },
     "styles/components/heartbeat.css": {
       "raw": 1234,
@@ -156,20 +181,30 @@
       "gzip": 500,
       "brotli": 418
     },
+    "styles/components/license-position-bar.css": {
+      "raw": 695,
+      "gzip": 334,
+      "brotli": 256
+    },
     "styles/components/lightbox.css": {
       "raw": 1113,
       "gzip": 632,
       "brotli": 486
     },
     "styles/components/link.css": {
-      "raw": 2209,
-      "gzip": 977,
-      "brotli": 770
+      "raw": 6015,
+      "gzip": 2305,
+      "brotli": 1867
     },
     "styles/components/list.css": {
       "raw": 784,
       "gzip": 353,
       "brotli": 274
+    },
+    "styles/components/match-review.css": {
+      "raw": 1612,
+      "gzip": 514,
+      "brotli": 420
     },
     "styles/components/media.css": {
       "raw": 746,
@@ -186,10 +221,15 @@
       "gzip": 314,
       "brotli": 254
     },
+    "styles/components/metric-input.css": {
+      "raw": 1153,
+      "gzip": 423,
+      "brotli": 350
+    },
     "styles/components/modal.css": {
-      "raw": 2655,
-      "gzip": 964,
-      "brotli": 767
+      "raw": 2855,
+      "gzip": 1007,
+      "brotli": 801
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -212,9 +252,9 @@
       "brotli": 1197
     },
     "styles/components/pipeline.css": {
-      "raw": 800,
-      "gzip": 337,
-      "brotli": 265
+      "raw": 5936,
+      "gzip": 1464,
+      "brotli": 1228
     },
     "styles/components/popover.css": {
       "raw": 873,
@@ -241,6 +281,21 @@
       "gzip": 580,
       "brotli": 480
     },
+    "styles/components/relationship-graph.css": {
+      "raw": 3573,
+      "gzip": 854,
+      "brotli": 694
+    },
+    "styles/components/rule-builder.css": {
+      "raw": 2082,
+      "gzip": 517,
+      "brotli": 445
+    },
+    "styles/components/scheduling-calendar.css": {
+      "raw": 3958,
+      "gzip": 897,
+      "brotli": 749
+    },
     "styles/components/segmented.css": {
       "raw": 1001,
       "gzip": 432,
@@ -252,9 +307,9 @@
       "brotli": 664
     },
     "styles/components/sidebar.css": {
-      "raw": 6278,
-      "gzip": 1813,
-      "brotli": 1517
+      "raw": 9249,
+      "gzip": 2323,
+      "brotli": 1956
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -277,9 +332,9 @@
       "brotli": 447
     },
     "styles/components/states.css": {
-      "raw": 1146,
-      "gzip": 504,
-      "brotli": 416
+      "raw": 2060,
+      "gzip": 738,
+      "brotli": 611
     },
     "styles/components/status-pill.css": {
       "raw": 3794,
@@ -302,9 +357,9 @@
       "brotli": 387
     },
     "styles/components/table-toolbar.css": {
-      "raw": 1546,
-      "gzip": 577,
-      "brotli": 497
+      "raw": 1838,
+      "gzip": 645,
+      "brotli": 543
     },
     "styles/components/table.css": {
       "raw": 15599,
@@ -357,9 +412,9 @@
       "brotli": 455
     },
     "styles/components/view-menu.css": {
-      "raw": 1279,
-      "gzip": 533,
-      "brotli": 409
+      "raw": 1908,
+      "gzip": 687,
+      "brotli": 542
     }
   }
 }

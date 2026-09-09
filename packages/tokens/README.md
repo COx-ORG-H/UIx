@@ -43,6 +43,8 @@ Override the write-only brand slots; `accent` / `link` / `ring` / `brand-muted` 
 |---|---|
 | `./css` | the `--uix-*` contract (`:root` light, dark selector) |
 | `./styles` | component CSS (use with the tokens + a theme) |
+| `./components/*` | one component stylesheet for selective loading |
+| `./utilities` · `./motion` | shared utility and motion layers |
 | `./tailwind` · `./tailwind/preset` | Tailwind v4 `@theme` / v3 preset |
 | `./ts` | typed `cssVar` / `light` / `dark` / `num` |
 | `./themes/{tensor,posx,shopx,mission-control}` | per-product brand |
@@ -73,6 +75,14 @@ The following CSS primitives (and their `@tensor_1/react` wrappers) are the inte
 | App-shell nav width tiers | `app-shell.css` `.uix-shell[data-nav="full\|rail\|hidden"]` · `<AppShell nav>` | `--uix-sidebar-w`, `--uix-sidebar-w-rail` |
 | Shell focus / full-bleed | `app-shell.css` `.uix-shell[data-focus]` / `.uix-shell__main--bleed` · `<AppShell focus mainBleed>` | `--uix-z-overlay`, `--uix-space-7` |
 | Table logic engine | `@tensor_1/react` `table-engine` (multiSort / applyFilters / searchRows / serializeView / virtualWindow / selection) | — behaviour primitive; keeps vanilla + React grids identical |
+| Rule authoring | `rule-builder.css` · `<RuleBuilder>` | Existing surface, form, border, text, state, and focus tokens |
+| Builder canvas | `builder-canvas.css` · `<BuilderCanvas>` | Existing surface, spacing, border, text, and focus tokens |
+| Scheduling + date range | `scheduling-calendar.css` / `date-range-picker.css` · React wrappers | Existing calendar, surface, semantic-state, and focus tokens |
+| Relationship graph | `relationship-graph.css` · `<RelationshipGraph>` | Existing chart, surface, border, semantic-state, and focus tokens |
+| Operational pipeline + flow | `pipeline.css`, `flow.css` · `<Pipeline>` / `<Flow>` families | Existing surface, border, spacing, semantic-state, focus, and motion tokens |
+| Analytical charts | `chart.css` · `<Chart>` through the optional React chart entry | Existing chart palette, surface, text, semantic-state, and focus tokens |
+| Review + configuration | `match-review.css`, `metric-input.css`, `license-position-bar.css`, `diff-viewer.css` · React wrappers | Existing form, table, meter, status, and semantic-state tokens |
+| Brand profiles + color | `brand-profiles.css`, `color-picker.css` · React wrappers | Write-only `--uix-brand` / `--uix-brand-fg` through the existing accent chain |
 
 If you reach for `var(--uix-danger)` or `var(--uix-warning)` to render SLA urgency or severity, use `<StatusPill tone="sla-breached">` or `<StatusPill tone="p1">` instead — the component handles WCAG contrast, dark mode, and brand overrides; a raw literal does not.
 
@@ -80,11 +90,16 @@ Likewise, don't fork the data grid: a product-local `data-table.tsx` (bespoke so
 
 ## Documentation site
 
-A **build-free** component explorer lives in [`docs/`](./docs/) — a no-bundler HTML shell (`docs/explorer.html`) with a left component nav and a per-component page whose regions (`overview`, `live-example`, `props-table`, `do-dont`, `a11y-notes`) are keyed by `data-region` and filled in incrementally. It reuses the styleguide's theming verbatim (the no-flash `data-theme` script + `[data-uix-theme-toggle]`) and links the same `--uix-*` contract via `../styles/main.css`, so light/dark behaves identically to `index.html`. `docs/docs.js` exposes pure, unit-tested helpers (`slugify`, `componentNav`, `renderPropsTable`) behind a `typeof document` DOM guard; run `node --test docs/docs.test.js`.
+A **build-free documentation site** lives in [`docs/`](./docs/). It provides an actionable quick start, grouped
+navigation, keyboard search, token and theming guidance, a complete component catalogue, detailed core-component
+references, live UIx examples, React integration, accessibility guidance, and enterprise workflow patterns. The
+site consumes `build/css/styles.css` directly, so its examples exercise the shipped contract rather than a parallel
+documentation theme. `docs/docs.js` keeps the content registry, hash routing, and pure unit-tested search/render
+helpers in one dependency-free module.
 
 Serve it from the repo root (the styleguide's static root) so relative asset paths resolve:
 
 ```sh
 npm run docs:serve
-# → http://localhost:4178/packages/tokens/docs/explorer.html
+# → http://localhost:4178/packages/tokens/docs/index.html
 ```

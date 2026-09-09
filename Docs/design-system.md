@@ -34,11 +34,30 @@ kit title slots and table cells rendered brand-blue + bold + underlined — unre
 (TENSOR INTRA-04, operator-rejected).
 
 `styles/components/link.css` therefore ships the **quiet link**: `color: inherit`, no underline at rest,
-underline on hover/focus. Quiet **by default** in the editorial-home title slots
-(`.uix-content-list__title a`, `.uix-news-lead__title a`, `.uix-rundown__item-title a`,
-`.uix-event-row__title a`) and in classless `.uix-table td` anchors; **opt in** anywhere else with
-`.uix-link--quiet` (whole-card links, hand-composed rows). Never quiet a link inside prose — in-text
-links keep blue + underline. Demo + rationale: styleguide → Utility / typography.
+underline on hover/focus. The global `:focus-visible` ring still fires, so the keyboard affordance never
+rests on the underline alone.
+
+A slot is quiet **by default** only when the anchor *is the whole block* — a title, a name, a data cell —
+**and** the surrounding row/card already reads as interactive. Four forms:
+
+| Form | Scope |
+|---|---|
+| **Title / name slots** | `.uix-featured__title`, `.uix-rail-card__title`, `.uix-news-lead__title`, `.uix-content-list__title`, `.uix-rundown__item-title`, `.uix-event-row__title`, `.uix-status-row__name`, `.uix-card__title`, `.uix-list__title`, `.uix-inbox__subject`, `.uix-kanban__card-title`, `.uix-media__name`, `.uix-attachment__name`, `.uix-contact__name`, `.uix-user-chip__name`, `.uix-audit__actor` — scoped `a:not(.uix-btn)` |
+| **Data cells** | classless anchors in `.uix-table td` and `.uix-dl dd` (`:not([class])` keeps `.uix-btn--link`, pills and tags styled) |
+| **Container anchors** | the anchor *is* the block: `a.uix-card`, `.uix-stat`, `.uix-list__item`, `.uix-inbox__item`, `.uix-kanban__card`, `.uix-notif`, `.uix-media`, `.uix-attachment`, `.uix-contact`, `.uix-cmdk__item`, `.uix-content-list__item`, `.uix-event-row`, `.uix-status-row`. Without this the base `a { color }` tints every word in the block brand-blue. These take the standard `--uix-bg-hover` row tint on hover/focus, **never** an underline — it would strike through the whole block. |
+| **`.uix-link--quiet`** | the opt-in utility for anything outside the registry (hand-composed block links in product markup) |
+
+**Deliberately left loud** — do not "finish the job": prose and message bodies (`.uix-prose`, `.uix-note`,
+notice copy, `.uix-timeline__body`, `.uix-audit__detail`, notification copy), where links sit inside
+sentences and 1.4.1 applies; `.uix-alert` / `.uix-toast` / `.uix-peek__title`, where nothing else in the
+container signals that the link navigates, so the colour *is* the affordance; and `.uix-comment__author`,
+because a byline reads "Author · 22m ago" — the name is a phrase inside a text run, not the whole block
+(opt in with `.uix-link--quiet` for the GitHub-style quiet byline). Sidebar nav items, breadcrumbs and
+section links are already quiet by their own design and need no class.
+
+The registry is locked from both ends by `packages/react/src/quiet-link.test.mjs`: the wrappers must nest
+the anchor inside the slot-classed element, and every asserted slot must still appear in `link.css`.
+Demo + rationale: styleguide → Utility / typography.
 
 ### Table columns — sizing & cell behaviour
 Consuming products size and truncate table columns by attaching a **UIx class to a column** — keyed to a
@@ -120,11 +139,11 @@ Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pur
 this is what keeps UIx stack-neutral). Current set:
 
 - **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
-- **Layout:** Card, **PageHeader**, **DetailLayout**, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
-- **Overlays:** Modal, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
+- **Layout:** Card/CardLink, **PageHeader**, **DetailLayout/DetailPage**, Breadcrumbs, RelatedLinks, CollapsibleSection, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
+- **Overlays:** Modal, ConfirmDialog, PromptDialog, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
 - **Data display:** Table (+Th/Td/Tr/Wrap; `fixed` layout, Th `sortOrder` for multi-sort; **BulkBar, RowActions/RowAction, ExpandToggle, CellStrong/CellSub, Mark/Highlighted**), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**
-- **Capability:** Kanban (+Column/Card), Tree, Chart
+- **Capability:** Combobox, ViewMenu/FilterPopover/SavedViewMenu, RelativeTime, ToggleRow, AsyncOperationStatus, Kanban (+Column/Card), Tree, Pipeline (+Stage), Flow (+Node), Chart (+Metric/Legend behind the chart entry)
 - **Table engine (framework-agnostic):** `table-engine` — `multiSort` / `toggleSort`, `applyFilters` (typed ops), `searchRows` / `highlightSegments`, `serializeView` / `parseView` (linkable saved views), `virtualWindow`, and selection helpers (`toggleId`, `selectAllState`, `togglePage`, `mergePinned`). Pure, dependency-free, unit-tested; the **`useTable`** hook composes it into React selection/sort/filter/search/view state, and `guide/app.js` ports the same algorithms so the vanilla styleguide behaves identically.
 
 **Bold = added in the UIx-adoption pass** (the components Tensor had rebuilt bespoke now live here).
@@ -153,11 +172,11 @@ Prioritize by product demand. (Meter, Progress, Segmented, Inbox, DescriptionLis
 Kanban, and CommandPalette are **already wrapped** — they are not in this list.)
 
 - **Presentational (easy wrap):** breadcrumbs, kbd, steps, stepper, reactions,
-  attachment, audit-log, notification-center, pipeline, flow, sla, heartbeat, media, lightbox,
+  attachment, audit-log, notification-center, sla, heartbeat, media, lightbox,
   contact-card, view-menu
 - **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
-  menu, chart, form (FormGrid/Fieldset)
+  menu, form (FormGrid/Fieldset)
 - **CSS-only (no wrapper by design):** table-toolbar, utility-bits, typography
 
 When you build one: add `packages/react/src/components/<Name>.tsx`, export from `packages/react/src/index.ts`,
-and if it needs a demo, add it to `packages/tokens/index.html`.
+and add its reference and specimen to the integrated docs catalogue in `packages/tokens/docs/`.

@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, createContext, isValidElement, useContext, useEffect, useId, useRef } from 'react';
+import { Children, createContext, isValidElement, useContext, useEffect, useId, useMemo, useRef } from 'react';
 import type { KeyboardEvent, ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -24,6 +24,7 @@ export interface TabsProps {
 export function Tabs({ variant = 'line', value, onChange, children, className }: TabsProps) {
   const baseId = useId();
   const listRef = useRef<HTMLDivElement>(null);
+  const contextValue = useMemo(() => ({ value, onChange, baseId }), [value, onChange, baseId]);
 
   // A tabpanel must not live inside the tablist — hoist TabPanel children out so consumers
   // can co-locate panels with their tabs (UIX-A11Y-2). Wrapped panels (custom components)
@@ -68,7 +69,7 @@ export function Tabs({ variant = 'line', value, onChange, children, className }:
   };
 
   return (
-    <TabsCtx.Provider value={{ value, onChange, baseId }}>
+    <TabsCtx.Provider value={contextValue}>
       <div
         ref={listRef}
         role="tablist"

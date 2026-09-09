@@ -1,5 +1,5 @@
-/* Accessibility gate (ADR-0016 Decision 6 — S6). Runs axe-core over the three static
- * styleguide pages in both themes and fails on serious/critical WCAG 2.1 A/AA violations.
+/* Accessibility gate (ADR-0016 Decision 6 — S6). Runs axe-core over the canonical docs,
+ * every integrated example route, and the specialist table specimen in both themes.
  *
  * Bar (the plan's "calibrated baseline"): serious + critical are GATED; minor/moderate are
  * reported as attachments but not failed. Any unavoidable, justified exception goes in
@@ -10,11 +10,20 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { SHOWCASE_PAGES } from '../../packages/tokens/docs/showcase-data.js';
 
 const PAGES = [
-  { name: 'index', path: 'index.html' },      // the component showcase
-  { name: 'tables', path: 'tables.html' },    // data-grid example app
-  { name: 'dashboard', path: 'dashboard.html' }, // dashboard example app
+  { name: 'tables', path: 'tables.html' }, // specialist data-grid specimen
+  { name: 'docs', path: 'docs/explorer.html#introduction' },
+  { name: 'docs-status', path: 'docs/explorer.html#component-status' },
+  { name: 'docs-chart', path: 'docs/explorer.html#chart' }, // analytical component reference
+  { name: 'docs-pipeline', path: 'docs/explorer.html#pipeline' }, // operational stage reference
+  { name: 'docs-flow', path: 'docs/explorer.html#flow' }, // process graph reference
+  ...SHOWCASE_PAGES.map(({ slug, title }) => ({
+    name: slug,
+    path: `docs/explorer.html#${slug}`,
+    title,
+  })),
 ];
 
 const GATED = new Set(['serious', 'critical']);

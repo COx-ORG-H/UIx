@@ -1,0 +1,14 @@
+@layer uix.components {
+  .uix-color-picker { position:relative; display:inline-block; color:var(--uix-text); font-weight:400; }
+  .uix-color-picker__trigger { display:flex; align-items:center; gap:var(--uix-space-2); min-height:var(--uix-control-h); padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); color:var(--uix-text); font-family:var(--uix-font-mono); }
+  .uix-color-picker__swatch,.uix-color-picker__preset { width:1.5rem; height:1.5rem; border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-sm); }
+  .uix-color-picker__popover { position:absolute; z-index:var(--uix-z-dropdown); top:calc(100% + var(--uix-space-2)); left:0; display:grid; gap:var(--uix-space-3); width:min(20rem,calc(100vw - var(--uix-space-8))); padding:var(--uix-space-4); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); box-shadow:var(--uix-shadow-popover); }
+  .uix-color-picker__popover[hidden] { display:none; }
+  .uix-color-picker__preview { display:grid; place-items:center; min-height:5rem; border:1px solid var(--uix-border); border-radius:var(--uix-radius-md); font-size:var(--uix-text-h2); font-weight:700; }
+  .uix-color-picker__range,.uix-color-picker__hex { display:grid; grid-template-columns:1fr auto; gap:var(--uix-space-1); color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-color-picker__range input { grid-column:1/-1; width:100%; accent-color:var(--uix-accent); }
+  .uix-color-picker__hex-row { grid-column:1/-1; display:grid; grid-template-columns:1fr auto; gap:var(--uix-space-2); }
+  .uix-color-picker__palettes { display:grid; gap:var(--uix-space-2); } .uix-color-picker__palettes fieldset { border:0; } .uix-color-picker__palettes legend { margin-bottom:var(--uix-space-1); color:var(--uix-text-muted); font-size:var(--uix-text-meta); } .uix-color-picker__palettes fieldset>div { display:flex; flex-wrap:wrap; gap:var(--uix-space-2); }
+  .uix-color-picker__preset { padding:0; } .uix-color-picker__contrast { padding:var(--uix-space-2); border-radius:var(--uix-radius-md); font-size:var(--uix-text-meta); }
+  .uix-color-picker__contrast--pass { background:var(--uix-success-bg); color:var(--uix-text); } .uix-color-picker__contrast--fail { background:var(--uix-danger-bg); color:var(--uix-danger-text); }
+}

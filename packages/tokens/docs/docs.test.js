@@ -3,7 +3,30 @@
    The module's DOM block is guarded by `typeof document`, so importing it here is DOM-free. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { slugify, componentNav, renderPropsTable, esc } from './docs.js';
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { COMPONENT_SPECIMENS } from './component-specimens.js';
+import { COMPONENT_GUIDANCE } from './component-guidance.js';
+import {
+  slugify,
+  componentNav,
+  renderPropsTable,
+  esc,
+  normalizeHash,
+  buildSearchIndex,
+  matchDocs,
+  COMPONENT_GROUPS,
+  COMPONENT_ITEMS,
+  COMPOSITE_PATTERNS,
+  SHOWCASE_SECTION_MAP,
+  REACT_COMPONENT_SLUGS,
+  exampleRouteFor,
+  getPage,
+} from './docs.js';
+import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
+
+const docsDirectory = dirname(fileURLToPath(import.meta.url));
 
 test('slugify: lowercases, hyphenates, trims edges', () => {
   assert.equal(slugify('Button'), 'button');
@@ -79,4 +102,163 @@ test('renderPropsTable: escapes HTML in every field (no injection)', () => {
 
 test('esc: escapes the five HTML-significant characters', () => {
   assert.equal(esc(`<a href="x" data='y'>&`), '&lt;a href=&quot;x&quot; data=&#39;y&#39;&gt;&amp;');
+});
+
+test('normalizeHash: creates a stable route and falls back to introduction', () => {
+  assert.equal(normalizeHash('#Design Tokens'), 'design-tokens');
+  assert.equal(normalizeHash('#status-pill?theme=dark'), 'status-pill');
+  assert.equal(normalizeHash(''), 'introduction');
+});
+
+test('matchDocs: exact and prefix name matches outrank keyword matches', () => {
+  const index = buildSearchIndex([
+    { name: 'Table', group: 'Components', summary: 'Dense data display', keywords: ['grid'] },
+    { name: 'Data workflows', group: 'Patterns', summary: 'Table filters and saved views', keywords: ['table'] },
+    { name: 'Tabs', group: 'Components', summary: 'Peer navigation', keywords: [] },
+  ]);
+  assert.deepEqual(matchDocs(index, 'table').map((item) => item.name), ['Table', 'Data workflows']);
+  assert.equal(matchDocs(index, 'tab')[0].name, 'Table');
+});
+
+test('matchDocs: all query terms must match and results respect the limit', () => {
+  const index = buildSearchIndex([
+    { name: 'Status Pill', group: 'Components', summary: 'Semantic status and SLA', keywords: ['badge'] },
+    { name: 'Alert', group: 'Components', summary: 'Semantic feedback', keywords: ['status'] },
+    { name: 'Theming', group: 'Foundations', summary: 'Product brand profiles', keywords: ['dark'] },
+  ]);
+  assert.deepEqual(matchDocs(index, 'status semantic').map((item) => item.name), ['Status Pill', 'Alert']);
+  assert.equal(matchDocs(index, '', 2).length, 2);
+  assert.deepEqual(matchDocs(index, 'missing'), []);
+});
+
+test('component catalogue covers every independently importable CSS module exactly once', () => {
+  const componentDirectory = resolve(docsDirectory, '../styles/components');
+  const cssModules = readdirSync(componentDirectory)
+    .filter((name) => name.endsWith('.css'))
+    .map((name) => name.slice(0, -4))
+    .sort();
+  const documentedModules = COMPONENT_ITEMS
+    .filter((item) => !item.composite)
+    .map((item) => item.slug)
+    .sort();
+
+  assert.equal(new Set(COMPONENT_ITEMS.map((item) => item.slug)).size, COMPONENT_ITEMS.length);
+  assert.deepEqual(documentedModules, cssModules);
+});
+
+test('each component has an explicit specimen using a selector from its own CSS contract', () => {
+  assert.deepEqual(Object.keys(COMPONENT_GUIDANCE).sort(), COMPONENT_ITEMS.map((item) => item.slug).sort());
+  assert.deepEqual(Object.keys(COMPONENT_SPECIMENS).sort(), COMPONENT_ITEMS.map((item) => item.slug).sort());
+  for (const item of COMPONENT_ITEMS) {
+    const spec = COMPONENT_SPECIMENS[item.slug];
+    assert(SHOWCASE_PAGES.some((page) => page.slug === spec.route), item.slug);
+    if (item.composite) continue;
+    const css = readFileSync(resolve(docsDirectory, `../styles/components/${item.slug}.css`), 'utf8');
+    assert(css.includes(spec.selector), `${item.slug} does not own ${spec.selector}`);
+  }
+});
+
+test('showcase-only compositions are explicit and never presented as CSS exports', () => {
+  assert.deepEqual(COMPOSITE_PATTERNS, [
+    'Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog',
+    'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer',
+  ]);
+  assert.deepEqual(
+    COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
+    COMPOSITE_PATTERNS,
+  );
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 92);
+});
+
+test('every retired style-guide section is preserved as a documentation route', () => {
+  const sectionIds = SHOWCASE_PAGES
+    .filter((page) => page.source === 'core')
+    .map((page) => page.sectionId)
+    .sort();
+  assert.deepEqual(Object.keys(SHOWCASE_SECTION_MAP).sort(), sectionIds);
+  for (const route of Object.values(SHOWCASE_SECTION_MAP)) {
+    assert.equal(getPage(route), route);
+  }
+});
+
+test('every catalogue entry resolves to its own reference route', () => {
+  for (const item of COMPONENT_ITEMS) {
+    assert.equal(getPage(item.slug), item.slug);
+    assert.equal(getPage(exampleRouteFor(item)), exampleRouteFor(item));
+  }
+  assert.equal(getPage('not-a-real-page'), 'introduction');
+});
+
+test('specialized component references open their closest integrated example', () => {
+  const routeFor = (slug) => exampleRouteFor(COMPONENT_ITEMS.find((item) => item.slug === slug));
+  assert.equal(routeFor('chart'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('flow'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('pipeline'), 'examples-workflows-pipelines');
+  assert.equal(routeFor('color-picker'), 'examples-color-picker');
+});
+
+test('all migrated showcase routes resolve and remain uniquely addressable', () => {
+  assert.equal(SHOWCASE_PAGES.length, 25);
+  assert.equal(new Set(SHOWCASE_PAGES.map((page) => page.slug)).size, SHOWCASE_PAGES.length);
+  assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'advanced').length, 10);
+  assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'workspace').length, 1);
+  for (const page of SHOWCASE_PAGES) assert.equal(getPage(page.slug), page.slug);
+});
+
+test('every CSS module is exercised by an integrated example', () => {
+  const componentDirectory = resolve(docsDirectory, '../styles/components');
+  const exampleMarkup = [
+    ...SHOWCASE_PAGES.map((page) => page.html),
+    ...ADDITIONAL_EXAMPLES.map((example) => example.html),
+  ].join('\n');
+  const uncovered = readdirSync(componentDirectory)
+    .filter((name) => name.endsWith('.css'))
+    .filter((name) => {
+      const css = readFileSync(resolve(componentDirectory, name), 'utf8');
+      const classes = [...css.matchAll(/\.([a-zA-Z_][\w-]*)/g)]
+        .map((match) => match[1])
+        .filter((className) => className.startsWith('uix-'));
+      return !classes.some((className) => exampleMarkup.includes(className));
+    });
+  assert.deepEqual(uncovered, []);
+});
+
+test('integrated examples do not use phantom public UIx classes', () => {
+  const stylesDirectory = resolve(docsDirectory, '../styles');
+  const cssFiles = [];
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) visit(path);
+      else if (entry.name.endsWith('.css')) cssFiles.push(path);
+    }
+  };
+  visit(stylesDirectory);
+  const defined = new Set(cssFiles.flatMap((file) =>
+    [...readFileSync(file, 'utf8').matchAll(/\.([a-zA-Z_][\w-]*)/g)].map((match) => match[1])));
+  const guideClasses = new Set(
+    [...readFileSync(resolve(docsDirectory, '../guide/guide.css'), 'utf8').matchAll(/\.([a-zA-Z_][\w-]*)/g)]
+      .map((match) => match[1]),
+  );
+  const reactDirectory = resolve(docsDirectory, '../../react/src/components');
+  const reactClasses = new Set(readdirSync(reactDirectory)
+    .filter((name) => name.endsWith('.tsx'))
+    .flatMap((name) => [...readFileSync(resolve(reactDirectory, name), 'utf8').matchAll(/\buix-[a-z0-9_-]+\b/g)]
+      .map((match) => match[0])));
+  const markup = [...SHOWCASE_PAGES.map((page) => page.html), ...ADDITIONAL_EXAMPLES.map((example) => example.html)].join('\n');
+  const used = new Set([...markup.matchAll(/class="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)));
+  const phantom = [...used]
+    .filter((className) => className.startsWith('uix-'))
+    .filter((className) => !defined.has(className))
+    .filter((className) => !guideClasses.has(className))
+    .filter((className) => !reactClasses.has(className))
+    .sort();
+  assert.deepEqual(phantom, []);
+});
+
+test('React availability mappings are explicit, unique, and catalogue-backed', () => {
+  assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 68);
+  const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
+  assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });

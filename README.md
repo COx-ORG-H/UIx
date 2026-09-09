@@ -1,8 +1,10 @@
 # uix-styleguide — UIx v2
 
-A **framework-agnostic, build-free style guide** for CRM/ITSM products. Plain HTML + CSS + a little vanilla
-JS — open `index.html` in any browser to see every component in light and dark mode; drop the CSS into any
-project (HTML, React, Vue, Tailwind, server-rendered — anything) to use it.
+https://cox-org-h.github.io/UIx/docs/explorer.html#introduction
+
+A **framework-agnostic, build-free design system** for CRM/ITSM products. Plain HTML + CSS + a little vanilla
+JS power a unified documentation site with component references, adoption status, and live examples; drop the
+CSS into any project (HTML, React, Vue, Tailwind, server-rendered — anything) to use it.
 
 It's "UIx v2": the next generation of the house design system. Where **UIx v1** (`../UIx`) is a
 React/Next/shadcn token + composite registry locked to that stack, v2 is **stack-neutral** and **standalone**,
@@ -14,14 +16,19 @@ while deliberately **reusing v1's `--uix-*` token contract** so the two stay swa
 
 ## View it
 
-Open `index.html` directly, or serve the folder:
+Open `index.html` directly. It redirects to the canonical docs and works without a server.
+
+For the same site over HTTP (recommended while developing):
 
 ```powershell
 # any static server works, e.g.
 npx serve .
 ```
 
-No build step.
+No build step. The docs' **Example gallery** contains the original component specimens, the complete workspace
+composition, and the dense UIX-V3 examples (rules, canvas authoring, scheduling, graph, review, configuration,
+and branding) in one searchable shell. **Component status** reports CSS, React, docs, and example coverage
+separately.
 
 ## Use it in a project
 
@@ -36,7 +43,20 @@ theme, and typed TS constants). Add it as a dependency and import what your stac
   @import "tailwindcss";
   ```
   (Tailwind v3 projects use `presets: [require('@tensor_1/tokens/tailwind/preset')]` instead.)
-- **Plain CSS:** link `@tensor_1/tokens/build/css/tokens.css`, then your product theme css.
+
+  **If you import `bundle` / `styles` (base + components) into a Tailwind app, declare the
+  layer order yourself as the FIRST line of the entry stylesheet:**
+  ```css
+  @layer theme, base, uix.tokens, uix.base, uix.util, uix.motion, uix.components, components, utilities;
+  ```
+  A layer's position is fixed by its first mention. Without this, `@import "tailwindcss"`
+  declares `theme, base, components, utilities` and the bundle's own `@layer uix.tokens, …`
+  statement appends the UIx layers AFTER `utilities` — so `uix.base`'s `h1…h6, p, ul … { margin: 0 }`
+  reset beats every `mb-*` / `space-y-*` on a heading or paragraph, and `h1 { font-weight: 600 }`
+  beats your own heading class. Layers beat specificity; no utility can win. Preflight (`base`)
+  goes before the UIx layers so UIx element defaults still beat preflight's `font-size: inherit`.
+- **Plain CSS:** use `@tensor_1/tokens/bundle` for everything, or combine `css`, a theme,
+  `motion`, and only the required `components/*` exports for the smallest payload.
 - **TS / ECharts / React Native:** `import { cssVar, light, dark, num } from "@tensor_1/tokens/ts";`
   — use `cssVar` in the browser (respects brand + dark), `light`/`dark`/`num` for non-DOM.
 
@@ -45,7 +65,7 @@ in load order `base.css` → `utilities.css` → `motion.css` → `components/*`
 robust regardless). Copy-paste still works too — every file references the same `--uix-*` names.
 
 Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
-The no-flash snippet in `index.html`'s `<head>` shows how to apply the stored theme before paint.
+The no-flash snippet in `packages/tokens/docs/explorer.html` shows how to apply the stored theme before paint.
 
 ## Brand a project (override the theme)
 
@@ -106,4 +126,4 @@ default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove
 ## Fonts & icons
 
 Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts
-(`<link>` in `index.html`). Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.
+in the docs shell. Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.

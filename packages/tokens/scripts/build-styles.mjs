@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
 import postcssImport from 'postcss-import';
+import { transform } from 'esbuild';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = join(__dir, '..');
@@ -24,7 +25,10 @@ async function bundle(srcName, outName) {
   const to = join(root, 'build', 'css', outName);
   const css = readFileSync(from, 'utf8');
   const result = await postcss([postcssImport]).process(css, { from, to });
-  writeFileSync(to, result.css);
+  // Authored CSS stays readable under styles/. Published output is minified so
+  // consumers do not pay for comments and formatting on the wire or in parsing.
+  const built = await transform(result.css, { loader: 'css', minify: true });
+  writeFileSync(to, built.code);
   console.log(`✓ build/css/${outName}`);
 }
 

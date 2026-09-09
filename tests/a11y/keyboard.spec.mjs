@@ -4,6 +4,9 @@
  * found missing: the skip link, dialog focus restore, rich-select AT feedback while
  * arrowing, sortable-header keyboard operation, and separator-based column resize.
  * Keyboard behavior is theme-independent, so this spec runs only in the light project.
+ *
+ * Overlay + form specimens live on the docs example routes (the standalone index.html was
+ * consolidated into docs/); the data-grid specimen is still tables.html.
  */
 import { test, expect } from '@playwright/test';
 
@@ -11,18 +14,24 @@ test.beforeEach(async ({}, testInfo) => {
   test.skip(testInfo.project.name !== 'light', 'keyboard behavior is theme-independent');
 });
 
+/** Open a docs example route and wait until its specimen markup is mounted. */
+async function gotoRoute(page, route, readySelector) {
+  await page.goto(`docs/explorer.html#${route}`, { waitUntil: 'networkidle' });
+  await expect(page.locator(readySelector)).toBeAttached();
+}
+
 test('skip link is the first tab stop and targets main content', async ({ page }) => {
-  await page.goto('index.html', { waitUntil: 'networkidle' });
+  await gotoRoute(page, 'introduction', '[data-docs-page] h1');
   await page.keyboard.press('Tab');
   const focused = page.locator(':focus');
-  await expect(focused).toHaveClass(/uix-skiplink/);
-  await expect(focused).toHaveAttribute('href', '#main');
+  await expect(focused).toHaveClass(/uix-docs__skip/);
+  await expect(focused).toHaveAttribute('href', '#main-content');
   await page.keyboard.press('Enter');
-  await expect(page.locator('#main')).toBeFocused();
+  await expect(page.locator('#main-content')).toBeFocused();
 });
 
 test('modal: Esc closes, focus returns to the trigger, scroll unlocks', async ({ page }) => {
-  await page.goto('index.html', { waitUntil: 'networkidle' });
+  await gotoRoute(page, 'examples-overlays', 'dialog#demo-modal');
   const trigger = page.getByRole('button', { name: 'Open modal' });
   await trigger.click();
   const dialog = page.locator('dialog#demo-modal');
@@ -35,7 +44,7 @@ test('modal: Esc closes, focus returns to the trigger, scroll unlocks', async ({
 });
 
 test('rich select: combobox states and audible arrowing', async ({ page }) => {
-  await page.goto('index.html', { waitUntil: 'networkidle' });
+  await gotoRoute(page, 'examples-form-controls', '[popovertarget="status-sel"]');
   const trigger = page.locator('[popovertarget="status-sel"]');
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');

@@ -1,18 +1,59 @@
 # @tensor_1/react
 
-## 2.10.0
+## 2.15.0
 
 ### Minor Changes
 
-- d25e54f: Accessibility remediation across the library (2026-07 audit, all S1–S4 findings):
+- af365d6: Promote reusable product patterns into UIx: Breadcrumbs, Combobox, RelativeTime, rich states, CardLink, DetailPage, related/settings compositions, generic dialogs, async-operation status, and controlled table view/filter/saved-view controls. Deepen Sidebar and NavGroup with complete rail styling, controlled disclosure, and focus restoration.
 
-  **Blockers fixed:** sortable table headers are now real buttons inside the `<th>` (keyboard-operable, `aria-sort` preserved); the rich select and CommandPalette implement the full APG combobox pattern (`aria-activedescendant`, `aria-expanded`, labelled triggers, result-count announcements); Inbox is a working keyboard listbox; sidebar rail mode keeps nav-item accessible names via the visually-hidden clip pattern.
+## 2.14.2
 
-  **React:** Modal/Drawer/Peek dialogs are named via `aria-labelledby` (title is now an `h2`) and spread rest props onto the `<dialog>`; `useDialog(open, onClose?)` syncs state and scroll-lock on native Esc close; Tooltip moves `aria-describedby` onto the trigger, adds Esc dismissal and hoverable bubbles (WCAG 1.4.13); Toast gains a persistent polite announcer, `role="region"` and dismiss focus handoff; Tabs implement roving tabindex + arrow keys with the new `TabPanel` export; virtualized Tree keeps focus/tab-entry across window eviction and gains typeahead; Kanban cards are focusable listitems with an `onMove` Alt+Arrow contract; Field auto-associates label↔control and injects `aria-required`; Button loading uses `aria-disabled`/`aria-busy` instead of hard-disabling; Alert gets live-region roles; Chart's fallback table is correctly hidden (`uix-visually-hidden`) and honors reduced motion; Progress/Meter/Spinner/States gain accessible names and reliable announcements; Stat/Avatar/Meter no longer encode state by color alone; Timeline is a real list; AppShell ships a skip link; `Tr` uses `data-selected` (aria-selected is invalid on native rows).
+### Patch Changes
 
-  **Tokens/CSS:** new `forced-colors.css` layer (Windows High Contrast support for switch/radio/checkbox/progress/meter and text-field focus); global `[hidden]` guard; hover-revealed controls (nav star, table pin) reveal on `:focus-visible`; 24px minimum targets for tag-remove and nav star; type scale emitted in rem; collapsed nav groups and hidden AppShell sidebars are `visibility:hidden` (no invisible tab stops); indeterminate checkbox mark renders.
+- Align the linked React package release with the Project Hub token contract.
 
-  New a11y gates: open-state axe scans (modal + rich select open) and keyboard-operability tests (skip link, dialog focus restore, combobox arrowing, sort, column resize).
+## 2.13.0
+
+### Minor Changes
+
+- 6c119f3: Add the complete Phase 46.9 UIX-V3 component set: rule and canvas authoring,
+  scheduling and date ranges, relationship graph and match review, metric and
+  license controls, brand profiles, three-way diffs, and an accessible color
+  picker. The release includes token-only component CSS, React 18/19 wrappers,
+  serializable model helpers, deterministic examples, and accessibility coverage.
+
+## 2.12.0
+
+### Minor Changes
+
+- 0450b44: Improve table and chart runtime performance, add opt-in row virtualization and a lean chart preset, ship minified CSS with selective component exports, and defer styleguide chart loading.
+
+## 2.11.0
+
+### Minor Changes
+
+- Republish of the platform-wide quiet-link registry, which never reached npm under 2.10.0.
+
+  **No source change from what master already carried.** This release exists because `2.10.0` was claimed twice. The a11y remediation branch (`fix/a11y-remediation-2026-07`, gitHead `6dbc192`) published `2.10.0` to npm on 2026-07-30; the quiet-link work landed on master the next day and its release commit stamped `2.10.0` a second time. Tagging `v2.10.0` then ran the Release workflow, which reported success while publishing nothing — `changeset publish` skips a package whose version already exists on the registry:
+
+  ```
+  🦋  warn @tensor_1/tokens is not being published because version 2.10.0 is already published on npm
+  🦋  warn No unpublished projects to publish
+  ```
+
+  So npm's `2.10.0` is the accessibility release, and every consumer that bumped to it got the a11y remediation with the narrow 2.9.0-era link registry. The platform-wide registry — the title/name slots, `.uix-dl dd` data cells, and the container anchors — ships here, in `2.11.0`. Read the `2.10.0` CHANGELOG entry below for the full registry; it describes this code, just under a version number that never carried it.
+
+  Consumers on `2.10.0` need only bump; there is nothing to migrate.
+
+## 2.10.0
+
+> **Never published under this version.** npm's `2.10.0` is the accessibility remediation release, published from `fix/a11y-remediation-2026-07` before this work landed on master. The changes described below shipped in `2.11.0`.
+
+### Minor Changes
+
+- 52cfd0c: Quiet links, platform-wide: the pattern shipped in 2.9.0 for the editorial-home title slots and table cells now covers the rest of the kit's container-affordance contexts. `link.css` grows a documented registry in four forms — **title/name slots** (adds `.uix-featured__title`, `.uix-rail-card__title`, `.uix-status-row__name`, `.uix-card__title`, `.uix-list__title`, `.uix-inbox__subject`, `.uix-kanban__card-title`, `.uix-media__name`, `.uix-attachment__name`, `.uix-contact__name`, `.uix-user-chip__name`, `.uix-audit__actor`, now scoped `a:not(.uix-btn)` so a button-styled anchor in a title keeps its treatment); **data cells** (adds `.uix-dl dd` alongside `.uix-table td`, both `:not([class])`); **container anchors** — when the anchor _is_ the kit block (`<a class="uix-card">`, `.uix-stat`, `.uix-list__item`, `.uix-inbox__item`, `.uix-kanban__card`, `.uix-notif`, `.uix-media`, `.uix-attachment`, `.uix-contact`, `.uix-cmdk__item`, `.uix-content-list__item`, `.uix-event-row`, `.uix-status-row`), which previously let the base `a { color }` tint every word in the block brand-blue; and the unchanged `.uix-link--quiet` opt-in utility. Container anchors take the standard `--uix-bg-hover` row tint on hover/focus rather than an underline, which would strike through the whole block, and the three that declare no display of their own (`.uix-card`, `.uix-stat`, `.uix-kanban__card`) are laid out as blocks. `.uix-comment__author` is deliberately excluded — a byline reads "Author · 22m ago", so the name is a phrase inside a text run rather than the whole block; opt in with `.uix-link--quiet`.
+
+  Prose and message bodies (`.uix-prose`, `.uix-note`, notice copy, `.uix-timeline__body`, `.uix-audit__detail`, notification copy) and `.uix-alert` / `.uix-toast` / `.uix-peek__title` are deliberately excluded and documented as such — links there sit inside sentences (WCAG 1.4.1) or the colour is the only affordance. `.uix-breadcrumbs a` and `.uix-section-link`, already quiet by their own design, gain `:focus-visible` parity with their hover state. React wrappers are unchanged; `quiet-link.test.mjs` locks the registry from both ends — the wrappers must nest the anchor inside the slot-classed element, and every asserted slot must still appear in `link.css`.
 
 ## 2.9.0
 

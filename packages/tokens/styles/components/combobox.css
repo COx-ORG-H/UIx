@@ -1,6 +1,8 @@
 /* uix combobox / listbox surface — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-combobox { position: relative; }
+  .uix-combobox > .uix-input { width: 100%; }
+  .uix-combobox__listbox { position: absolute; z-index: var(--uix-z-dropdown); inset-inline: 0; top: calc(100% + var(--uix-space-1)); max-height: 240px; overflow-y: auto; }
   .uix-listbox {
     list-style: none; margin: 0; padding: var(--uix-space-1); min-width: 200px;
     background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
@@ -11,6 +13,7 @@
     cursor: pointer; display: flex; align-items: center; gap: var(--uix-space-2);
   }
   .uix-listbox__option:hover, .uix-listbox__option[aria-selected="true"], .uix-listbox__option[data-active] { background: var(--uix-bg-hover); }
+  .uix-listbox__option[aria-disabled="true"] { cursor: not-allowed; opacity: .55; }
   .uix-listbox__option[aria-selected="true"] { color: var(--uix-link); }
   .uix-listbox__empty { padding: var(--uix-space-3); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
 }

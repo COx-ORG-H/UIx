@@ -11,4 +11,9 @@
   .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
   .uix-view-menu__cols { display: flex; flex-direction: column; gap: var(--uix-space-1); max-height: 180px; overflow: auto; }
   .uix-view-menu__cols .uix-menu__item { font-size: var(--uix-text-meta); }
+  .uix-saved-views__row { display: flex; align-items: center; }
+  .uix-saved-views__row > .uix-menu__item { min-width: 0; flex: 1; }
+  .uix-saved-views__pin { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer; }
+  .uix-saved-views__pin:is(:hover, :focus-visible), .uix-saved-views__pin[data-on] { color: var(--uix-warning-text); background: var(--uix-bg-hover); }
+  .uix-saved-views__footer { border-top: 1px solid var(--uix-border); margin-top: var(--uix-space-1); padding: var(--uix-space-2); }
 }

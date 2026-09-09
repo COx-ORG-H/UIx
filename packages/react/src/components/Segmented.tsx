@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 
@@ -26,8 +26,9 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
  * the caller only wires `value` + `onChange` once.
  */
 export function Segmented({ value, onChange, children, className, ...props }: SegmentedProps) {
+  const contextValue = useMemo(() => ({ value, onChange }), [value, onChange]);
   return (
-    <SegmentedCtx.Provider value={{ value, onChange }}>
+    <SegmentedCtx.Provider value={contextValue}>
       <div role="group" className={cx('uix-segmented', className)} {...props}>
         {children}
       </div>
