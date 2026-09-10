@@ -157,9 +157,11 @@ The flow:
    a11y. Only if that passes does the `publish` job run `npx changeset publish`, which
    pushes any package whose version isn't yet on npm.
 
-The publish step is **inert-safe**: without the `NPM_TOKEN` secret the gates still run
-and publish skips cleanly (it prints a notice and exits 0), so the workflow can land
-before the npm scope is claimed.
+The publish step **fails closed**: if the `NPM_TOKEN` secret is missing or blank, the
+gates still run but the run goes red with an error, because nothing was published. It
+used to skip with a notice and exit 0, which let `v2.16.0` go green with no package on
+npm. After fixing the secret, re-run the failed `publish` job for the same tag. Always
+confirm the version with `npm view @tensor_1/tokens version` afterwards.
 
 To queue a release from a feature branch, add a changeset while you work:
 
