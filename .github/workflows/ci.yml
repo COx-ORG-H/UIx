@@ -57,6 +57,12 @@ jobs:
       - name: Contract completeness
         run: npm run test:contract
 
+      # Token behaviour tests, including the computed contrast of selected-chip text
+      # for every theme in light and dark (no specimen renders a chip pre-selected,
+      # so the a11y job cannot see that state).
+      - name: Token tests
+        run: npm run test:tokens
+
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
