@@ -15,7 +15,7 @@
     --uix-accent:var(--uix-brand,#1447E6); --uix-accent-dark:#0E3AC0; --uix-accent-light:#4D77F0;
     --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 88%, #000000);
     --uix-accent-fg:var(--uix-brand-fg,#FFFFFF);
-    --uix-link:var(--uix-brand,#1447E6); --uix-ring:var(--uix-brand,#1447E6);
+    --uix-link:var(--uix-brand,#1447E6); --uix-accent-text:color-mix(in srgb, var(--uix-accent) 65%, #000000); --uix-ring:var(--uix-brand,#1447E6);
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 12%, transparent);
 
     /* status */
@@ -87,7 +87,7 @@
 
     --uix-text:#FAFAFA; --uix-text-hushed:rgba(250,250,250,.64); --uix-text-muted:#A1A1A1;
 
-    --uix-accent:var(--uix-brand,#2563EB); --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF); --uix-link:color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF); --uix-ring:var(--uix-brand,#3080FF);
+    --uix-accent:var(--uix-brand,#2563EB); --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF); --uix-link:color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF); --uix-accent-text:color-mix(in srgb, var(--uix-accent) 70%, #FFFFFF); --uix-ring:var(--uix-brand,#3080FF);
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 16%, transparent);
 
     --uix-success:#00D294; --uix-success-fg:#002C22; --uix-success-bg:rgba(0,210,148,.15);

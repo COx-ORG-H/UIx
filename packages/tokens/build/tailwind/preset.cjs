@@ -24,6 +24,7 @@ module.exports = {
       "uix-accent-hover": "var(--uix-accent-hover)",
       "uix-accent-fg": "var(--uix-accent-fg)",
       "uix-link": "var(--uix-link)",
+      "uix-accent-text": "var(--uix-accent-text)",
       "uix-ring": "var(--uix-ring)",
       "uix-brand-muted": "var(--uix-brand-muted)",
       "uix-success": "var(--uix-success)",

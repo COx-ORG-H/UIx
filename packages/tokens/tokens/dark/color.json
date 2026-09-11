@@ -16,6 +16,7 @@
   "accent":       { "$type": "color", "$value": "var(--uix-brand,#2563EB)" },
   "accent-hover": { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF)", "$description": "On dark, primary-button hover LIGHTENS the accent (the light-theme value darkens). Tracks the live brand override." },
   "link":         { "$type": "color", "$value": "color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF)", "$description": "Brightened on dark so links read clearly as links and stay distinct from the solid accent button background." },
+  "accent-text":  { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 70%, #FFFFFF)", "$description": "On dark, accent-hued text LIGHTENS the accent (the light-theme value darkens): the solid dark accent measured 3.2:1 on its own 16% tint. Same 70% weight as --uix-link." },
   "ring":         { "$type": "color", "$value": "var(--uix-brand,#3080FF)" },
   "brand-muted": { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 16%, transparent)" },
 

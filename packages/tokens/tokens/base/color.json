@@ -21,6 +21,7 @@
   "accent-hover": { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 88%, #000000)", "$description": "Primary-button hover. Theme-aware: derived from the live accent so it tracks the brand override (light darkens, dark lightens — see tokens/dark)." },
   "accent-fg":    { "$type": "color", "$value": "var(--uix-brand-fg,#FFFFFF)", "$description": "Runtime: chains through --uix-brand-fg." },
   "link":         { "$type": "color", "$value": "var(--uix-brand,#1447E6)", "$description": "Runtime: chains through --uix-brand." },
+  "accent-text":  { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 65%, #000000)", "$description": "The brand hue as TEXT on a neutral or --uix-brand-muted surface (a selected filter chip, an active tab label). The raw accent is a fill colour: a bright brand (POSx green, mission-control blue) reads below 3:1 as text on its own tint. Darkened from the live accent so it tracks the brand override; the worst shipped theme is 5.5:1 on brand-muted. Not for text ON a solid accent fill, which is --uix-accent-fg." },
   "ring":         { "$type": "color", "$value": "var(--uix-brand,#1447E6)", "$description": "Runtime: chains through --uix-brand." },
   "brand-muted":  { "$type": "color", "$value": "color-mix(in srgb, var(--uix-accent) 12%, transparent)", "$description": "Runtime: color-mix of the live accent." },
 

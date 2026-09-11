@@ -2,9 +2,10 @@ name: Release
 
 # Publish-on-tag (ADR-0016 Decision 6): tagging v* runs ALL trust gates as a HARD
 # precondition, then `changeset publish` pushes any package whose version isn't yet
-# on npm. Inert-safe: without the NPM_TOKEN secret the gates still run and publish
-# skips cleanly (so the workflow can land before the scope is claimed — see
-# Docs/plans phase2 human-action checklist).
+# on npm. Fail-closed: a v* tag with no usable NPM_TOKEN secret FAILS the run. It used
+# to skip with a notice (so the workflow could land before the scope was claimed), but
+# the scope has been claimed since 2.x, and a green Release run that published nothing
+# is how v2.16.0 was tagged on 2026-09-10 with no package on npm.
 #
 # The gates are NOT copied here anymore: this workflow CALLS ci.yml as a reusable
 # workflow (GOV-6 / corrections C3), so the exact gates+visual+a11y jobs that guard
@@ -48,14 +49,15 @@ jobs:
       # restore them so `npx changeset publish` can resolve the executable.
       - run: npm ci
 
-      - name: Publish (inert without NPM_TOKEN)
+      - name: Publish (fails without NPM_TOKEN)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
         run: |
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            echo "::notice::NPM_TOKEN not set — gates passed, skipping publish. Set the secret to enable real publishing."
-            exit 0
+          if [ -z "${NODE_AUTH_TOKEN//[[:space:]]/}" ]; then
+            echo "::error::NPM_TOKEN is missing or blank — the gates passed but NOTHING was published. \
+          Set the repository secret to a valid npm automation token, then re-run this job."
+            exit 1
           fi
           # `changeset publish` exits 0 when it publishes NOTHING — it only warns that a
           # version is already on npm. v2.10.0 shipped exactly that way: a green Release
