@@ -6,6 +6,8 @@
   .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); }
   .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
   .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
+  /* direction glyph inside the chip (UIX-A11Y-4) — sized to sit on the text baseline row */
+  .uix-stat__trend svg { width: 10px; height: 10px; flex: none; }
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
   .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
 }

@@ -9,7 +9,14 @@
  */
 
 /** Minimal shape a node must have; the concrete node (label, icon, …) rides along as `T`. */
-export interface TreeLike<T> { id: string; children?: T[]; }
+export interface TreeLike<T> {
+  id: string;
+  children?: T[];
+  /** The display label — typeahead matches it only when it is a plain string (UIX-A11Y-2). */
+  label?: unknown;
+  /** Explicit typeahead text for nodes whose `label` is not a string (rich ReactNode labels). */
+  typeaheadLabel?: string;
+}
 
 export interface FlatNode<T> {
   node: T;
@@ -92,6 +99,17 @@ export function treeNav<T extends TreeLike<T>>(
         ? { toggleId: cur.node.id, selectId: cur.node.id }
         : { selectId: cur.node.id };
     default:
+      // Single-char typeahead (UIX-A11Y-2): the next visible node — starting after the
+      // current one, wrapping — whose label starts with the char, case-insensitively.
+      // Only nodes with a string label (or an explicit typeaheadLabel) participate.
+      if (key.length === 1) {
+        const q = key.toLowerCase();
+        for (let step = 1; step <= flat.length; step++) {
+          const f = flat[(idx + step) % flat.length];
+          const label = f.node.typeaheadLabel ?? (typeof f.node.label === 'string' ? f.node.label : undefined);
+          if (label != null && label.toLowerCase().startsWith(q)) return { focusId: f.node.id };
+        }
+      }
       return {};
   }
 }

@@ -16,7 +16,8 @@ export function DetailLayout({ side, children, className, ...props }: DetailLayo
   return (
     <div className={cx('uix-detail', className)} {...props}>
       <div className="uix-detail__main">{children}</div>
-      {side != null && <div className="uix-detail__side">{side}</div>}
+      {/* complementary landmark — side meta is supporting content, skippable by AT (UIX-A11Y-4) */}
+      {side != null && <aside className="uix-detail__side">{side}</aside>}
     </div>
   );
 }

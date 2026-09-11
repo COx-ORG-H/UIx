@@ -14,7 +14,8 @@
   }
   .uix-checkbox > input:checked + .uix-checkbox__box,
   .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
-  .uix-checkbox > input:checked + .uix-checkbox__box svg { opacity: 1; transform: none; }
+  .uix-checkbox > input:checked + .uix-checkbox__box svg,
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transform: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
   .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-checkbox > input:disabled ~ * { opacity: .5; }
 }

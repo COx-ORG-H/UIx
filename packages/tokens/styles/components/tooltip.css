@@ -13,7 +13,8 @@
     background: var(--uix-text); color: var(--uix-bg-app);
     font-size: var(--uix-text-meta); font-weight: 500; line-height: 1.4;
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm);
-    box-shadow: var(--uix-shadow-popover); white-space: normal; pointer-events: none;
+    /* no pointer-events:none — the bubble must be hoverable (WCAG 1.4.13, UIX-A11Y-1) */
+    box-shadow: var(--uix-shadow-popover); white-space: normal;
     opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-tooltip__bubble:popover-open { opacity: 1; }

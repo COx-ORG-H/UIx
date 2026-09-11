@@ -18,6 +18,15 @@ export function uixChartPalette(): string[] {
   return [1, 2, 3, 4, 5, 6, 7, 8].map((i) => readToken(`--uix-chart-${i}`));
 }
 
+/** Merge `animation: false` when the user prefers reduced motion. Only called from effects (client-side),
+    but guard matchMedia anyway for SSR safety (UIX-A11Y-4). */
+function motionSafe(option: EChartsOption): EChartsOption {
+  if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return { ...option, animation: false };
+  }
+  return option;
+}
+
 export interface ChartTableRow {
   [key: string]: string | number;
 }
@@ -70,8 +79,11 @@ export function ChartCore({
   const onReadyRef = useRef(onReady);
   const tableId = useId();
   const hasEmpty = empty != null;
+  const hasTextAlternative = Boolean(ariaLabel || title || tableData?.length);
+  const hasTextAlternativeRef = useRef(hasTextAlternative);
   latestOptionRef.current = option;
   onReadyRef.current = onReady;
+  hasTextAlternativeRef.current = hasTextAlternative;
 
   useEffect(() => {
     const element = containerRef.current;
@@ -79,9 +91,14 @@ export function ChartCore({
 
     const chart = engine.init(element, null, { renderer: 'svg' });
     chartRef.current = chart;
-    chart.setOption(latestOptionRef.current);
+    chart.setOption(motionSafe(latestOptionRef.current));
     appliedOptionRef.current = latestOptionRef.current;
     onReadyRef.current?.(chart);
+
+    // once per mount: the role="img" fallback name ("Chart") tells AT users nothing (UIX-A11Y-4)
+    if (!hasTextAlternativeRef.current) {
+      console.warn('[uix] Chart has no text alternative — provide ariaLabel, title, or tableData.');
+    }
 
     let frame = 0;
     let width = element.clientWidth;
@@ -112,7 +129,7 @@ export function ChartCore({
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || appliedOptionRef.current === option) return;
-    chart.setOption(option, { notMerge: false });
+    chart.setOption(motionSafe(option), { notMerge: false });
     appliedOptionRef.current = option;
   }, [option]);
 
@@ -146,7 +163,7 @@ export function ChartCore({
         </div>
       )}
       {hasTable ? (
-        <table id={tableId} className="sr-only" aria-label={`${effectiveAriaLabel} — data table`}>
+        <table id={tableId} className="uix-visually-hidden" aria-label={`${effectiveAriaLabel} — data table`}>
           <thead><tr>{tableHeaders!.map((label) => <th key={label} scope="col">{label}</th>)}</tr></thead>
           <tbody>
             {tableData!.map((row, index) => (

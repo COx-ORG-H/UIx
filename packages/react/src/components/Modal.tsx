@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from 'react';
-import type { ReactNode, CSSProperties } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
 
@@ -11,27 +11,29 @@ const CloseIcon = () => (
   </svg>
 );
 
-export interface ModalProps {
+export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
   open: boolean;
   onClose?: () => void;
   title?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  /** Accessible name for the close button (default "Close dialog"). */
   closeLabel?: string;
   role?: 'dialog' | 'alertdialog';
 }
 
-export function Modal({ open, onClose, title, children, footer, className, style, closeLabel = 'Close dialog', role = 'dialog' }: ModalProps) {
-  const ref = useDialog(open);
+export function Modal({ open, onClose, title, children, footer, className, closeLabel = 'Close dialog', role = 'dialog', ...rest }: ModalProps) {
+  // onClose also fires on a native close (Esc / method="dialog") via the hook, so the dialog
+  // carries no onClose prop of its own — that would double-fire (UIX-A11Y-1).
+  const ref = useDialog(open, onClose);
+  // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
   const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-dialog', className)} style={style} onClose={onClose} role={role} aria-labelledby={title != null ? titleId : undefined}>
+    <dialog ref={ref} className={cx('uix-dialog', className)} role={role} aria-labelledby={title != null ? titleId : undefined} {...rest}>
       {(title != null || onClose) && (
         <div className="uix-dialog__header">
-          {title && <div id={titleId} className="uix-dialog__title">{title}</div>}
+          {title && <h2 className="uix-dialog__title" id={titleId}>{title}</h2>}
           {onClose && (
             <button type="button" className="uix-dialog__close" onClick={onClose} aria-label={closeLabel}>
               <CloseIcon />

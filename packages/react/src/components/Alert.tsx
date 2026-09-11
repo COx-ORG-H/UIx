@@ -12,7 +12,12 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 
 export function Alert({ tone, title, icon, children, className, ...props }: AlertProps) {
   return (
-    <div className={cx('uix-alert', tone && tone !== 'neutral' && `uix-alert--${tone}`, className)} {...props}>
+    <div
+      className={cx('uix-alert', tone && tone !== 'neutral' && `uix-alert--${tone}`, className)}
+      // urgent tones interrupt, the rest announce politely; before the spread so an explicit `role` wins (UIX-A11Y-4)
+      role={tone === 'danger' || tone === 'warning' ? 'alert' : 'status'}
+      {...props}
+    >
       {icon && <div className="uix-alert__icon">{icon}</div>}
       <div>
         {title && <div className="uix-alert__title">{title}</div>}

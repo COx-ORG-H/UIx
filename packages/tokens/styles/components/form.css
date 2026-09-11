@@ -3,6 +3,11 @@
   .uix-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--uix-space-5); }
   .uix-fieldset { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
   .uix-fieldset > legend { padding: 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
+  /* Labeled RadioGroup renders as a fieldset (UIX-A11Y-3): strip the UA chrome so it
+     looks identical to the plain-div group; the legend spaces itself (fieldset gap
+     doesn't reach a legend). */
+  fieldset.uix-radio-group { border: 0; margin: 0; padding: 0; min-inline-size: auto; }
+  .uix-radio-group__legend { padding: 0; margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
   .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
   .uix-validation-summary {
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);

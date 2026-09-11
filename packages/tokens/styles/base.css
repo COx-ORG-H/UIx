@@ -37,6 +37,9 @@
   h3 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
 
   img, svg, video, canvas { display: block; max-width: 100%; }
+  /* the display:block reset above (and any component display) would defeat the `hidden`
+     attribute; restore it globally. `until-found` keeps find-in-page auto-reveal (UIX-A11Y-4). */
+  [hidden]:not([hidden="until-found"]) { display: none !important; }
   input, button, textarea, select { font: inherit; color: inherit; }
   code, kbd, pre, samp { font-family: var(--uix-font-mono); }
 

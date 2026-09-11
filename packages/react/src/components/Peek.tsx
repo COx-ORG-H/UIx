@@ -1,6 +1,7 @@
 "use client";
 
-import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import { useId } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
 
@@ -22,7 +23,7 @@ const ChevronDown = () => (
   </svg>
 );
 
-export interface PeekProps {
+export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
   open: boolean;
   onClose?: () => void;
   title?: ReactNode;
@@ -31,12 +32,13 @@ export interface PeekProps {
   onNavPrev?: () => void;
   onNavNext?: () => void;
   hint?: string;
-  className?: string;
 }
 
-export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, className }: PeekProps) {
-  const ref = useDialog(open);
+export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, className, onClick, ...rest }: PeekProps) {
+  const ref = useDialog(open, onClose);
   const hasNav = onNavPrev != null || onNavNext != null;
+  // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
+  const titleId = useId();
 
   // Light-dismiss: a native <dialog> closes on Escape + the close button, but
   // NOT on a backdrop click. The peek panel is right-aligned (width
@@ -45,6 +47,7 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
   // body keep it open.) Guarded so a zero-size rect — e.g. the click that fired
   // while the dialog is mid-close — never spuriously re-triggers onClose.
   const onBackdropClick = (e: ReactMouseEvent<HTMLDialogElement>) => {
+    onClick?.(e);
     if (!onClose || e.target !== e.currentTarget) return;
     const r = e.currentTarget.getBoundingClientRect();
     if (r.width === 0) return;
@@ -54,19 +57,21 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
   };
 
   return (
-    <dialog ref={ref} className={cx('uix-peek', className)} onClose={onClose} onClick={onBackdropClick}>
+    <dialog ref={ref} className={cx('uix-peek', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={onBackdropClick}>
       <div className="uix-peek__header">
         {hasNav && (
           <div className="uix-peek__nav">
-            <button className="uix-peek__navbtn" onClick={onNavPrev} disabled={!onNavPrev} aria-label="Previous record">
+            {/* aria-disabled (not disabled) at the boundary keeps the button focusable, so focus
+                isn't stranded when the last record makes it unavailable (UIX-A11Y-1). */}
+            <button className="uix-peek__navbtn" onClick={() => onNavPrev?.()} aria-disabled={onNavPrev ? undefined : true} aria-label="Previous record">
               <ChevronUp />
             </button>
-            <button className="uix-peek__navbtn" onClick={onNavNext} disabled={!onNavNext} aria-label="Next record">
+            <button className="uix-peek__navbtn" onClick={() => onNavNext?.()} aria-disabled={onNavNext ? undefined : true} aria-label="Next record">
               <ChevronDown />
             </button>
           </div>
         )}
-        {title && <div className="uix-peek__title">{title}</div>}
+        {title && <h2 className="uix-peek__title" id={titleId}>{title}</h2>}
         {hint && <span className="uix-peek__hint">{hint}</span>}
         {onClose && (
           <button className="uix-peek__close" onClick={onClose} aria-label="Close preview">

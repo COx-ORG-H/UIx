@@ -42,8 +42,10 @@ function unlockBodyScroll() {
   }
 }
 
-export function useDialog(open: boolean): React.RefObject<HTMLDialogElement> {
+export function useDialog(open: boolean, onClose?: () => void): React.RefObject<HTMLDialogElement> {
   const ref = useRef<HTMLDialogElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     const el = ref.current;
@@ -53,8 +55,20 @@ export function useDialog(open: boolean): React.RefObject<HTMLDialogElement> {
     }
     if (!el.open) el.showModal();
     lockBodyScroll();
+    /* A native close (Esc → cancel → close, or a method="dialog" form) bypasses React state, so
+     * without this listener the scroll lock leaked whenever the consumer forgot onClose
+     * (UIX-A11Y-1). `locked` scopes this hook's share of the refcount so the lock is released
+     * exactly once — here on a native close, or in the cleanup below (which removes the listener
+     * BEFORE calling el.close(), so a hook-initiated close never double-unlocks). */
+    let locked = true;
+    const handleClose = () => {
+      if (locked) { locked = false; unlockBodyScroll(); }
+      onCloseRef.current?.();
+    };
+    el.addEventListener('close', handleClose);
     return () => {
-      unlockBodyScroll();
+      el.removeEventListener('close', handleClose);
+      if (locked) { locked = false; unlockBodyScroll(); }
       if (el.open) el.close();
     };
   }, [open]);

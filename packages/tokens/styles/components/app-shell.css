@@ -9,7 +9,7 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); overflow: hidden;
     transition: grid-template-columns var(--uix-dur) var(--uix-ease-out), grid-template-rows var(--uix-dur) var(--uix-ease-out);
   }
-  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; overflow-x: hidden; }
+  .uix-shell__sidebar { grid-row: 1 / 3; background: var(--uix-bg-subtle); border-right: 1px solid var(--uix-border); overflow-y: auto; overflow-x: hidden; visibility: visible; transition: visibility var(--uix-dur) var(--uix-ease-out); }
   .uix-shell__topbar { grid-column: 2; display: flex; align-items: center; gap: var(--uix-space-3); padding: 0 var(--uix-space-6); background: var(--uix-bg-app); border-bottom: 1px solid var(--uix-border); }
   .uix-shell__main { grid-column: 2; overflow: auto; padding: var(--uix-space-7); background: var(--uix-bg-app); }
 
@@ -18,16 +18,38 @@
      only) → hidden (0). data-collapsed stays a back-compat alias for the rail. */
   .uix-shell[data-nav="rail"], .uix-shell[data-collapsed] { grid-template-columns: var(--uix-sidebar-w-rail) 1fr; }
   .uix-shell[data-nav="hidden"] { grid-template-columns: 0 1fr; }
+  /* the 0-width column still renders its links — visibility removes them from the tab
+     order / accessibility tree while keeping the width transition (UIX-A11Y-2) */
+  .uix-shell[data-nav="hidden"] .uix-shell__sidebar { visibility: hidden; }
 
   /* ── focus / immersive mode ───────────────────────────────────────────────────
      A table-scoped escape hatch: hide the sidebar AND the topbar so a dense grid
      uses the whole frame. The app toggles [data-focus] (from a toolbar maximize
      control) and restores the previous nav state + focus on Esc. */
   .uix-shell[data-focus] { grid-template-columns: 0 1fr; grid-template-rows: 0 1fr; }
+  .uix-shell[data-focus] .uix-shell__sidebar { visibility: hidden; } /* see [data-nav="hidden"] above (UIX-A11Y-2) */
   .uix-shell[data-focus] .uix-shell__topbar { display: none; }
 
   /* a floating host for the "exit focus" affordance (Esc also exits) */
   .uix-shell__focus-exit { position: absolute; top: var(--uix-space-3); right: var(--uix-space-3); z-index: var(--uix-z-overlay); }
+
+  /* ── skip link ────────────────────────────────────────────────────────────────
+     First tab stop in the shell (UIX-A11Y-2): visually hidden until keyboard focus,
+     then a small pill floating over the shell's top-left corner. */
+  .uix-skiplink {
+    position: absolute; top: var(--uix-space-3); left: var(--uix-space-3); z-index: var(--uix-z-overlay);
+    width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+  }
+  .uix-skiplink:focus-visible {
+    width: auto; height: auto; clip: auto;
+    display: inline-flex; align-items: center;
+    padding: var(--uix-space-2) var(--uix-space-4);
+    background: var(--uix-surface); color: var(--uix-text);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    box-shadow: var(--uix-shadow-popover);
+    outline: 2px solid var(--uix-ring); outline-offset: 2px;
+    font-size: var(--uix-text-meta); font-weight: 500; text-decoration: none;
+  }
 
   /* ── full-bleed main ──────────────────────────────────────────────────────────
      Opt-in per surface: a genuinely wide grid drops the content gutter and runs

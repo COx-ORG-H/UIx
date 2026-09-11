@@ -16,7 +16,9 @@ export function Avatar({ size = 'md', src, alt, children, status, className, ...
   return (
     <span className={cx('uix-avatar', size !== 'md' && `uix-avatar--${size}`, className)} {...props}>
       {src ? <img src={src} alt={alt ?? ''} /> : children}
-      {status && <span className="uix-avatar__status" />}
+      {/* dot is colour-only — pair it with hidden text so AT hears the presence state (UIX-A11Y-4) */}
+      {status && <span className="uix-avatar__status" aria-hidden="true" />}
+      {status && <span className="uix-visually-hidden">online</span>}
     </span>
   );
 }
