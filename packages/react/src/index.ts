@@ -266,10 +266,10 @@ export {
 } from './calendar-model.js';
 export type { CalendarDay, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
 
-export { RelationshipGraph } from './components/RelationshipGraph.js';
-export type { RelationshipGraphProps, RelationshipGraphLegendItem } from './components/RelationshipGraph.js';
-export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode } from './relationship-graph-model.js';
-export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph } from './relationship-graph-model.js';
+export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
+export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';
+export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel } from './relationship-graph-model.js';
+export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey } from './relationship-graph-model.js';
 
 export { MatchReview } from './components/MatchReview.js';
 export type { MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';

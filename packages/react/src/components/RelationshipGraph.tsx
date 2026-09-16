@@ -1,15 +1,101 @@
 "use client";
 
 import { useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
-import { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode } from '../relationship-graph-model.js';
-import type { RelationshipGraphEdge, RelationshipGraphNode } from '../relationship-graph-model.js';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { boundRelationshipGraph, layoutRelationshipGraph, traverseRelationshipNode } from '../relationship-graph-model.js';
+import type { RelationshipGraphCluster, RelationshipGraphEdge, RelationshipGraphNode } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
+import { LayeredRelationshipGraph } from './RelationshipGraphLayered.js';
+import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 
 export interface RelationshipGraphLegendItem {
   id: string;
   label: string;
 }
+
+/** Every visible or announced string. Pass translations; English defaults fill the gaps. */
+export interface RelationshipGraphLabels {
+  graph: string;
+  controls: string;
+  list: string;
+  listHeading: string;
+  legend: string;
+  panLeft: string;
+  panRight: string;
+  panUp: string;
+  panDown: string;
+  left: string;
+  right: string;
+  up: string;
+  down: string;
+  zoomIn: string;
+  zoomOut: string;
+  fit: string;
+  reset: string;
+  zoomLevel: (percent: number) => string;
+  bounded: (shown: number, omitted: number) => string;
+  graphSummary: (nodes: number, edges: number) => string;
+  relationship: string;
+  conflict: string;
+  connectedTo: (names: string) => string;
+  noConnections: string;
+  expandNeighbors: string;
+  openDetails: string;
+  /** Layered column header, e.g. "2 hops · 14". */
+  column: (depth: number, count: number) => string;
+  cluster: (count: number, type: string | undefined, edgeLabel: string | undefined) => string;
+  expandCluster: string;
+  collapseCluster: (count: number, type: string | undefined) => string;
+  cycle: string;
+  relationships: (count: number) => string;
+  roleDescription: string;
+  keyboardHint: string;
+  loading: string;
+  retry: string;
+  emptyTitle: string;
+  emptyHint: string;
+}
+
+export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels = {
+  graph: 'Relationship graph',
+  controls: 'Graph view controls',
+  list: 'Accessible relationship list',
+  listHeading: 'Relationship list',
+  legend: 'Relationship types',
+  panLeft: 'Pan left',
+  panRight: 'Pan right',
+  panUp: 'Pan up',
+  panDown: 'Pan down',
+  left: 'Left',
+  right: 'Right',
+  up: 'Up',
+  down: 'Down',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  fit: 'Fit',
+  reset: 'Reset view',
+  zoomLevel: (percent) => `Zoom ${percent}%`,
+  bounded: (shown, omitted) => `Showing ${shown} nodes; ${omitted} outside this bounded neighborhood.`,
+  graphSummary: (nodes, edges) => `Graph with ${nodes} nodes and ${edges} relationships`,
+  relationship: 'Relationship',
+  conflict: 'conflict',
+  connectedTo: (names) => `Connected to ${names}`,
+  noConnections: 'No visible connections',
+  expandNeighbors: 'Expand neighbors',
+  openDetails: 'Open details',
+  column: (depth, count) => `${depth === 0 ? 'Start' : `${depth} ${depth === 1 ? 'hop' : 'hops'}`} · ${count}`,
+  cluster: (count, type, edgeLabel) => `${count} × ${type ?? 'items'}${edgeLabel ? ` · ${edgeLabel}` : ''}`,
+  expandCluster: 'Show all',
+  collapseCluster: (count, type) => `Collapse ${count} ${type ?? 'items'}`,
+  cycle: 'cycle',
+  relationships: (count) => `${count} ${count === 1 ? 'relationship' : 'relationships'}`,
+  roleDescription: 'relationship map',
+  keyboardHint: 'Arrow keys move between connected items, Enter selects, Home returns to the start.',
+  loading: 'Loading relationships…',
+  retry: 'Try again',
+  emptyTitle: 'No relationships to display.',
+  emptyHint: 'Adjust the neighborhood or filters to include a node.',
+};
 
 export interface RelationshipGraphProps {
   nodes: RelationshipGraphNode[];
@@ -18,6 +104,7 @@ export interface RelationshipGraphProps {
   onSelect?: (node: RelationshipGraphNode) => void;
   onExpandNeighbors?: (node: RelationshipGraphNode) => void;
   onOpenDetails?: (node: RelationshipGraphNode) => void;
+  /** Node budget. Default 40 (radial) or 400 (layered). */
   maxNodes?: number;
   density?: 'compact' | 'standard';
   highlightedNodeIds?: ReadonlySet<string>;
@@ -29,18 +116,59 @@ export interface RelationshipGraphProps {
   error?: string;
   onRetry?: () => void;
   className?: string;
+  /** `radial` (default) rings around the selection; `layered` reads left to right by distance from `rootId`. */
+  layout?: 'radial' | 'layered';
+  /** Layered: the column-0 node (default: the first node). */
+  rootId?: string;
+  labels?: Partial<RelationshipGraphLabels>;
+  /** Layered: node body. Whatever it shows must also be in `nodeAriaLabel`. */
+  renderNode?: (node: RelationshipGraphNode, state: { selected: boolean; dimmed: boolean }) => ReactNode;
+  /** Layered: full accessible name for a node. */
+  nodeAriaLabel?: (node: RelationshipGraphNode) => string;
+  /** Layered: cluster body. Whatever it shows must also be in the cluster's accessible name. */
+  renderCluster?: (cluster: RelationshipGraphCluster) => ReactNode;
+  /** Layered: minimum leaf-sibling group that collapses into a cluster. Default 6; 0 disables. */
+  clusterThreshold?: number;
+  /** Layered: controlled set of expanded cluster ids. */
+  expandedClusterIds?: ReadonlySet<string>;
+  onToggleCluster?: (clusterId: string, expanded: boolean) => void;
+  /** Layered: nodes drawn muted (state must also be stated in text by the consumer). */
+  dimmedNodeIds?: ReadonlySet<string>;
+  /** Layered: when edge labels show. `auto` = emphasised edges, small fan-outs, and edges of the active node. */
+  edgeLabels?: 'auto' | 'always' | 'never';
+  /** Render the built-in equivalent list. Set false ONLY when an equivalent list is rendered in the same region. */
+  showList?: boolean;
+  /** Layered: CSS length for the viewport height. */
+  height?: string;
+  /** Layered: controlled roving focus. */
+  focusId?: string;
+  onFocusChange?: (id: string) => void;
 }
 
 const EMPTY_IDS: ReadonlySet<string> = new Set<string>();
 const EMPTY_LEGEND: RelationshipGraphLegendItem[] = [];
 
 /** Bounded, deterministic SVG relationship view with an equivalent accessible list. */
-export function RelationshipGraph({
+export function RelationshipGraph(props: RelationshipGraphProps) {
+  const labels = useMemo(() => ({ ...DEFAULT_RELATIONSHIP_GRAPH_LABELS, ...props.labels }), [props.labels]);
+  const stateClass = cx('uix-relationship-graph uix-relationship-graph--state', props.className);
+  if (props.loading) return <div className={stateClass} role="status">{labels.loading}</div>;
+  if (props.error) {
+    return <div className={stateClass} role="alert"><p>{props.error}</p>{props.onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={props.onRetry}>{labels.retry}</button>}</div>;
+  }
+  if (props.nodes.length === 0) return <div className={stateClass}><p>{labels.emptyTitle}</p><p>{labels.emptyHint}</p></div>;
+  if (props.layout === 'layered') return <LayeredRelationshipGraph {...props} labels={labels} />;
+  return <RadialRelationshipGraph {...props} labels={labels} />;
+}
+
+export type ResolvedRelationshipGraphProps = Omit<RelationshipGraphProps, 'labels'> & { labels: RelationshipGraphLabels };
+
+function RadialRelationshipGraph({
   nodes, edges, selectedId, onSelect, onExpandNeighbors, onOpenDetails, maxNodes = 40,
   density = 'standard', highlightedNodeIds = EMPTY_IDS, conflictedNodeIds = EMPTY_IDS,
   highlightedEdgeIds = EMPTY_IDS, conflictedEdgeIds = EMPTY_IDS, legend = EMPTY_LEGEND,
-  loading, error, onRetry, className,
-}: RelationshipGraphProps) {
+  className, labels, showList = true,
+}: ResolvedRelationshipGraphProps) {
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
   const positioned = useMemo(() => layoutRelationshipGraph(bounded.nodes, bounded.edges, selectedId), [bounded, selectedId]);
   const positionedById = useMemo(() => new Map(positioned.map((node) => [node.id, node])), [positioned]);
@@ -62,33 +190,29 @@ export function RelationshipGraph({
   };
   const reset = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
-  if (loading) return <div className={cx('uix-relationship-graph uix-relationship-graph--state', className)} role="status">Loading relationships…</div>;
-  if (error) return <div className={cx('uix-relationship-graph uix-relationship-graph--state', className)} role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>Try again</button>}</div>;
-  if (bounded.nodes.length === 0) return <div className={cx('uix-relationship-graph uix-relationship-graph--state', className)}><p>No relationships to display.</p><p>Adjust the neighborhood or filters to include a node.</p></div>;
-
-  return <section className={cx('uix-relationship-graph', `uix-relationship-graph--${density}`, className)} aria-label="Relationship graph">
-    <div className="uix-relationship-graph__toolbar" aria-label="Graph view controls">
-      <button type="button" onClick={() => setPan((value) => ({ ...value, x: value.x - 24 }))} aria-label="Pan left">Left</button>
-      <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y - 24 }))} aria-label="Pan up">Up</button>
-      <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y + 24 }))} aria-label="Pan down">Down</button>
-      <button type="button" onClick={() => setPan((value) => ({ ...value, x: value.x + 24 }))} aria-label="Pan right">Right</button>
-      <button type="button" onClick={() => setZoom((value) => Math.min(2, Number((value + 0.2).toFixed(1))))} aria-label="Zoom in">Zoom in</button>
-      <button type="button" onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.2).toFixed(1))))} aria-label="Zoom out">Zoom out</button>
-      <button type="button" onClick={reset}>Reset view</button>
-      <span aria-live="polite">Zoom {Math.round(zoom * 100)}%</span>
+  return <section className={cx('uix-relationship-graph', `uix-relationship-graph--${density}`, className)} aria-label={labels.graph}>
+    <div className="uix-relationship-graph__toolbar" aria-label={labels.controls}>
+      <button type="button" onClick={() => setPan((value) => ({ ...value, x: value.x - 24 }))} aria-label={labels.panLeft}>{labels.left}</button>
+      <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y - 24 }))} aria-label={labels.panUp}>{labels.up}</button>
+      <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y + 24 }))} aria-label={labels.panDown}>{labels.down}</button>
+      <button type="button" onClick={() => setPan((value) => ({ ...value, x: value.x + 24 }))} aria-label={labels.panRight}>{labels.right}</button>
+      <button type="button" onClick={() => setZoom((value) => Math.min(2, Number((value + 0.2).toFixed(1))))} aria-label={labels.zoomIn}>{labels.zoomIn}</button>
+      <button type="button" onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.2).toFixed(1))))} aria-label={labels.zoomOut}>{labels.zoomOut}</button>
+      <button type="button" onClick={reset}>{labels.reset}</button>
+      <span aria-live="polite">{labels.zoomLevel(Math.round(zoom * 100))}</span>
     </div>
-    {bounded.omittedNodeCount > 0 && <p className="uix-relationship-graph__bounded" role="status">Showing {bounded.nodes.length} nodes; {bounded.omittedNodeCount} outside this bounded neighborhood.</p>}
+    {bounded.omittedNodeCount > 0 && <p className="uix-relationship-graph__bounded" role="status">{labels.bounded(bounded.nodes.length, bounded.omittedNodeCount)}</p>}
     <div className="uix-relationship-graph__visual">
-      <svg ref={svgRef} viewBox="0 0 600 400" role="group" aria-label={`Graph with ${bounded.nodes.length} nodes and ${bounded.edges.length} relationships`}>
+      <svg ref={svgRef} viewBox="0 0 600 400" role="group" aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)}>
         <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
           {bounded.edges.map((edge) => {
             const source = positionedById.get(edge.source)!;
             const target = positionedById.get(edge.target)!;
-            return <line key={edge.id} x1={source.x * 6} y1={source.y * 4} x2={target.x * 6} y2={target.y * 4} className="uix-relationship-graph__edge" data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? 'Relationship'}</title></line>;
+            return <line key={edge.id} x1={source.x * 6} y1={source.y * 4} x2={target.x * 6} y2={target.y * 4} className="uix-relationship-graph__edge" data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
           })}
           {positioned.map((node) => <g
             key={node.id} transform={`translate(${node.x * 6} ${node.y * 4})`} role="button"
-            aria-label={`${node.label}${node.type ? `, ${node.type}` : ''}${conflictedNodeIds.has(node.id) ? ', conflict' : ''}`}
+            aria-label={`${node.label}${node.type ? `, ${node.type}` : ''}${conflictedNodeIds.has(node.id) ? `, ${labels.conflict}` : ''}`}
             tabIndex={focusedId === node.id ? 0 : -1} data-node-id={node.id} className="uix-relationship-graph__node"
             data-selected={selectedId === node.id || undefined} data-highlighted={highlightedNodeIds.has(node.id) || undefined}
             data-conflicted={conflictedNodeIds.has(node.id) || undefined} onFocus={() => setFocusedId(node.id)}
@@ -97,16 +221,7 @@ export function RelationshipGraph({
         </g>
       </svg>
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label="Relationship types">{legend.map((item) => <li key={item.id} data-type={item.id}>{item.label}</li>)}</ul>}
-    <div className="uix-relationship-graph__list" role="region" aria-label="Accessible relationship list">
-      <h3>Relationship list</h3>
-      <ul>{bounded.nodes.map((node) => {
-        const neighbors = relationshipNeighbors(node.id, bounded.edges).map((id) => bounded.nodes.find((item) => item.id === id)?.label ?? id);
-        return <li key={node.id} data-selected={selectedId === node.id || undefined}>
-          <button type="button" onClick={() => select(node.id)} aria-pressed={selectedId === node.id}><strong>{node.label}</strong>{node.type && <span>{node.type}</span>}<span>{neighbors.length ? `Connected to ${neighbors.join(', ')}` : 'No visible connections'}</span></button>
-          <span className="uix-relationship-graph__list-actions">{onExpandNeighbors && <button type="button" onClick={() => onExpandNeighbors(node)}>Expand neighbors</button>}{onOpenDetails && <button type="button" onClick={() => onOpenDetails(node)}>Open details</button>}</span>
-        </li>;
-      })}</ul>
-    </div>
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((item) => <li key={item.id} data-type={item.id}>{item.label}</li>)}</ul>}
+    {showList && <EquivalentRelationshipList nodes={bounded.nodes} edges={bounded.edges} selectedId={selectedId} labels={labels} onSelect={select} onExpandNeighbors={onExpandNeighbors} onOpenDetails={onOpenDetails} />}
   </section>;
 }

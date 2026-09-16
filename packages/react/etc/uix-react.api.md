@@ -419,6 +419,12 @@ export function clampMetricValue(value: number, min?: number, max?: number): num
 // @public
 export function clampWidth(width: number, min?: number, max?: number): number;
 
+// @public
+export function classifyLayeredEdges(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string | undefined): LayeredEdgeClassification;
+
+// @public (undocumented)
+export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string;
+
 // @public (undocumented)
 export function CollapsibleSection(input: CollapsibleSectionProps): react.JSX.Element;
 
@@ -681,6 +687,9 @@ export interface DateRangeValue {
     // (undocumented)
     start?: string;
 }
+
+// @public (undocumented)
+export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -1265,6 +1274,99 @@ export interface LabelProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     dot?: boolean;
 }
+
+// @public (undocumented)
+export interface LayeredColumn {
+    count: number;
+    // (undocumented)
+    depth: number;
+    // (undocumented)
+    x: number;
+}
+
+// @public (undocumented)
+export interface LayeredEdgeClassification {
+    // (undocumented)
+    depthById: Map<string, number>;
+    // (undocumented)
+    kindById: Map<string, LayeredEdgeKind>;
+}
+
+// @public (undocumented)
+export type LayeredEdgeKind = 'forward' | 'lateral' | 'cycle';
+
+// @public (undocumented)
+export interface LayeredItem {
+    // (undocumented)
+    children: string[];
+    // (undocumented)
+    cluster?: RelationshipGraphCluster;
+    degree: number;
+    // (undocumented)
+    depth: number;
+    expandedGroup?: RelationshipGraphCluster;
+    // (undocumented)
+    height: number;
+    id: string;
+    inCycle: boolean;
+    index: number;
+    // (undocumented)
+    kind: 'node' | 'cluster';
+    // (undocumented)
+    node?: RelationshipGraphNode;
+    parents: string[];
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public (undocumented)
+export interface LayeredLayout {
+    // (undocumented)
+    clusters: RelationshipGraphCluster[];
+    // (undocumented)
+    columns: LayeredColumn[];
+    // (undocumented)
+    edges: RoutedEdge[];
+    // (undocumented)
+    headerHeight: number;
+    // (undocumented)
+    height: number;
+    itemOf: Record<string, string>;
+    // (undocumented)
+    items: LayeredItem[];
+    // (undocumented)
+    nodeHeight: number;
+    // (undocumented)
+    nodeWidth: number;
+    // (undocumented)
+    rootId: string | undefined;
+    // (undocumented)
+    width: number;
+}
+
+// @public (undocumented)
+export interface LayeredLayoutOptions {
+    clusterThreshold?: number;
+    // (undocumented)
+    density?: 'compact' | 'standard';
+    // (undocumented)
+    expandedClusterIds?: ReadonlySet<string>;
+    // (undocumented)
+    rootId?: string;
+}
+
+// @public (undocumented)
+export type LayeredNavigationKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End';
+
+// @public
+export function layeredNeighbor(layout: LayeredLayout, currentId: string | undefined, key: LayeredNavigationKey): string | undefined;
+
+// @public
+export function layoutLayeredGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], options?: LayeredLayoutOptions): LayeredLayout;
 
 // @public (undocumented)
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
@@ -1890,10 +1992,33 @@ export interface RelatedLinksProps extends Omit<HTMLAttributes<HTMLElement>, 'ti
 }
 
 // @public
-export function RelationshipGraph(input: RelationshipGraphProps): react.JSX.Element;
+export function RelationshipGraph(props: RelationshipGraphProps): react.JSX.Element;
+
+// @public
+export type RelationshipGraphArrow = 'forward' | 'backward' | 'none';
+
+// @public (undocumented)
+export interface RelationshipGraphCluster {
+    // (undocumented)
+    depth: number;
+    // (undocumented)
+    edgeLabel?: string;
+    // (undocumented)
+    edgeType?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    members: RelationshipGraphNode[];
+    // (undocumented)
+    parentId: string;
+    // (undocumented)
+    type?: string;
+}
 
 // @public (undocumented)
 export interface RelationshipGraphEdge {
+    arrow?: RelationshipGraphArrow;
+    emphasis?: boolean;
     // (undocumented)
     id: string;
     // (undocumented)
@@ -1906,6 +2031,85 @@ export interface RelationshipGraphEdge {
     type?: string;
 }
 
+// @public
+export interface RelationshipGraphLabels {
+    // (undocumented)
+    bounded: (shown: number, omitted: number) => string;
+    // (undocumented)
+    cluster: (count: number, type: string | undefined, edgeLabel: string | undefined) => string;
+    // (undocumented)
+    collapseCluster: (count: number, type: string | undefined) => string;
+    column: (depth: number, count: number) => string;
+    // (undocumented)
+    conflict: string;
+    // (undocumented)
+    connectedTo: (names: string) => string;
+    // (undocumented)
+    controls: string;
+    // (undocumented)
+    cycle: string;
+    // (undocumented)
+    down: string;
+    // (undocumented)
+    emptyHint: string;
+    // (undocumented)
+    emptyTitle: string;
+    // (undocumented)
+    expandCluster: string;
+    // (undocumented)
+    expandNeighbors: string;
+    // (undocumented)
+    fit: string;
+    // (undocumented)
+    graph: string;
+    // (undocumented)
+    graphSummary: (nodes: number, edges: number) => string;
+    // (undocumented)
+    keyboardHint: string;
+    // (undocumented)
+    left: string;
+    // (undocumented)
+    legend: string;
+    // (undocumented)
+    list: string;
+    // (undocumented)
+    listHeading: string;
+    // (undocumented)
+    loading: string;
+    // (undocumented)
+    noConnections: string;
+    // (undocumented)
+    openDetails: string;
+    // (undocumented)
+    panDown: string;
+    // (undocumented)
+    panLeft: string;
+    // (undocumented)
+    panRight: string;
+    // (undocumented)
+    panUp: string;
+    // (undocumented)
+    relationship: string;
+    // (undocumented)
+    relationships: (count: number) => string;
+    // (undocumented)
+    reset: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    right: string;
+    // (undocumented)
+    roleDescription: string;
+    // (undocumented)
+    up: string;
+    // (undocumented)
+    zoomIn: string;
+    // (undocumented)
+    zoomLevel: (percent: number) => string;
+    // (undocumented)
+    zoomOut: string;
+}
+
 // @public (undocumented)
 export interface RelationshipGraphLegendItem {
     // (undocumented)
@@ -1916,6 +2120,7 @@ export interface RelationshipGraphLegendItem {
 
 // @public (undocumented)
 export interface RelationshipGraphNode {
+    depth?: number;
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -1934,30 +2139,41 @@ export interface RelationshipGraphNode {
 export interface RelationshipGraphProps {
     // (undocumented)
     className?: string;
+    clusterThreshold?: number;
     // (undocumented)
     conflictedEdgeIds?: ReadonlySet<string>;
     // (undocumented)
     conflictedNodeIds?: ReadonlySet<string>;
     // (undocumented)
     density?: 'compact' | 'standard';
+    dimmedNodeIds?: ReadonlySet<string>;
+    edgeLabels?: 'auto' | 'always' | 'never';
     // (undocumented)
     edges: RelationshipGraphEdge[];
     // (undocumented)
     error?: string;
+    expandedClusterIds?: ReadonlySet<string>;
+    focusId?: string;
+    height?: string;
     // (undocumented)
     highlightedEdgeIds?: ReadonlySet<string>;
     // (undocumented)
     highlightedNodeIds?: ReadonlySet<string>;
     // (undocumented)
+    labels?: Partial<RelationshipGraphLabels>;
+    layout?: 'radial' | 'layered';
+    // (undocumented)
     legend?: RelationshipGraphLegendItem[];
     // (undocumented)
     loading?: boolean;
-    // (undocumented)
     maxNodes?: number;
+    nodeAriaLabel?: (node: RelationshipGraphNode) => string;
     // (undocumented)
     nodes: RelationshipGraphNode[];
     // (undocumented)
     onExpandNeighbors?: (node: RelationshipGraphNode) => void;
+    // (undocumented)
+    onFocusChange?: (id: string) => void;
     // (undocumented)
     onOpenDetails?: (node: RelationshipGraphNode) => void;
     // (undocumented)
@@ -1965,7 +2181,16 @@ export interface RelationshipGraphProps {
     // (undocumented)
     onSelect?: (node: RelationshipGraphNode) => void;
     // (undocumented)
+    onToggleCluster?: (clusterId: string, expanded: boolean) => void;
+    renderCluster?: (cluster: RelationshipGraphCluster) => ReactNode;
+    renderNode?: (node: RelationshipGraphNode, state: {
+        selected: boolean;
+        dimmed: boolean;
+    }) => ReactNode;
+    rootId?: string;
+    // (undocumented)
     selectedId?: string;
+    showList?: boolean;
 }
 
 // @public (undocumented)
@@ -2052,6 +2277,39 @@ export function rgbToHex(input: RgbColor): string;
 
 // @public (undocumented)
 export function rgbToHsv(input: RgbColor): HsvColor;
+
+// @public (undocumented)
+export interface RoutedEdge {
+    // (undocumented)
+    arrow: RelationshipGraphArrow;
+    // (undocumented)
+    arrowAngle: number;
+    arrowX: number;
+    // (undocumented)
+    arrowY: number;
+    autoLabel: boolean;
+    edgeIds: string[];
+    // (undocumented)
+    emphasis: boolean;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: LayeredEdgeKind;
+    // (undocumented)
+    label?: string;
+    labelLines: string[];
+    // (undocumented)
+    labelX: number;
+    // (undocumented)
+    labelY: number;
+    // (undocumented)
+    path: string;
+    source: string;
+    // (undocumented)
+    target: string;
+    // (undocumented)
+    type?: string;
+}
 
 // @public (undocumented)
 export type Row = Record<string, unknown>;
@@ -3058,6 +3316,9 @@ export interface VirtualWindow {
 
 // @public
 export function virtualWindow(scrollTop: number, viewportH: number, rowH: number, count: number, overscan?: number): VirtualWindow;
+
+// @public
+export function wrapEdgeLabel(label: string, width: number): string[];
 
 // @public (undocumented)
 export function zonedDateKey(instant: string | Date, timeZone: string): string;

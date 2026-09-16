@@ -46,6 +46,24 @@ test('graph traversal follows the roving keyboard path', async ({ page }) => {
   await expect(page.locator('[data-node-id="beta"]')).toBeFocused();
 });
 
+test('layered graph traversal follows edges and columns', async ({ page }) => {
+  await openExample(page, 'relationship-graph');
+  const map = page.locator('[data-layered-specimen]');
+  const root = map.locator('[data-node-id="svc"]');
+  await expect(root).toHaveAttribute('tabindex', '0');
+  await root.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(map.locator('[data-node-id="checkout"]')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(map.locator('[data-node-id="ledger"]')).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(map.locator('[data-node-id="db"]')).toBeFocused();
+  await expect(map.locator('[data-node-id="db"]')).toHaveAttribute('aria-label', /Payments database cluster, Database/);
+  await page.keyboard.press('Home');
+  await expect(root).toBeFocused();
+  await expect(map.locator('[data-kind="cluster"]')).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('bulk review announces results', async ({ page }) => {
   await openExample(page, 'match-review');
   await page.locator('[data-match-check]').first().check();

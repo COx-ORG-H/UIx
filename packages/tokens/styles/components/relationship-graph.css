@@ -18,4 +18,38 @@
   .uix-relationship-graph--compact .uix-relationship-graph__visual,.uix-relationship-graph--compact .uix-relationship-graph__visual svg { min-height:16rem; height:16rem; }
   .uix-relationship-graph--state { padding:var(--uix-space-8); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); }
   @media (max-width:640px) { .uix-relationship-graph__list li { display:grid; } }
+
+  /* Layered mode (ADR-0002): HTML node buttons over an SVG edge layer, one transformed stage. */
+  .uix-relationship-graph--layered .uix-relationship-graph__toolbar button:disabled { opacity:.5; cursor:not-allowed; }
+  .uix-relationship-graph__viewport { position:relative; height:var(--uix-relationship-graph-height, 22rem); overflow:hidden; border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-bg-subtle); cursor:grab; touch-action:pan-y; }
+  .uix-relationship-graph__viewport:active { cursor:grabbing; }
+  .uix-relationship-graph__stage { position:absolute; top:0; left:0; transform-origin:0 0; }
+  .uix-relationship-graph__stage[data-animate] { transition:transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-relationship-graph__edges { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
+  .uix-relationship-graph__link path { fill:none; stroke:color-mix(in srgb, var(--uix-text) 28%, transparent); stroke-width:1.5px; }
+  .uix-relationship-graph__link polygon { fill:color-mix(in srgb, var(--uix-text) 45%, transparent); }
+  .uix-relationship-graph__link text { fill:var(--uix-text-muted); font-family:var(--uix-font-sans); font-size:var(--uix-text-eyebrow); paint-order:stroke; stroke:var(--uix-bg-subtle); stroke-width:4px; stroke-linejoin:round; }
+  .uix-relationship-graph__link[data-kind="lateral"] path, .uix-relationship-graph__link[data-kind="cycle"] path { stroke-dasharray:5 4; }
+  .uix-relationship-graph__link[data-emphasis] path { stroke:color-mix(in srgb, var(--uix-text) 55%, transparent); }
+  .uix-relationship-graph__link[data-active] path { stroke:var(--uix-accent); stroke-width:2.5px; }
+  .uix-relationship-graph__link[data-active] polygon { fill:var(--uix-accent); }
+  .uix-relationship-graph__link[data-active] text { fill:var(--uix-text); }
+  .uix-relationship-graph__link[data-conflicted] path { stroke:var(--uix-danger); }
+  .uix-relationship-graph__link[data-dimmed] { opacity:.35; }
+  .uix-relationship-graph__column { position:absolute; top:var(--uix-space-4); overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; text-transform:uppercase; letter-spacing:.04em; pointer-events:none; }
+  .uix-relationship-graph__item { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:var(--uix-space-1); padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); color:var(--uix-text); font:inherit; text-align:left; cursor:pointer; transition:border-color var(--uix-dur-fast) var(--uix-ease-out), opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-relationship-graph__item:hover { border-color:var(--uix-accent); }
+  .uix-relationship-graph__item:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
+  .uix-relationship-graph__item[data-root] { border-width:2px; }
+  .uix-relationship-graph__item[data-selected], .uix-relationship-graph__item[data-highlighted] { border-color:var(--uix-accent); background:color-mix(in srgb, var(--uix-accent) 8%, var(--uix-surface)); }
+  .uix-relationship-graph__item[data-conflicted] { border-color:var(--uix-danger); border-style:dashed; }
+  .uix-relationship-graph__item[data-dimmed] { opacity:.45; }
+  .uix-relationship-graph__item[data-kind="cluster"] { border-style:dashed; background:var(--uix-surface-2); }
+  .uix-relationship-graph__item-label { min-width:0; display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; font-size:var(--uix-text-body); line-height:1.25; }
+  .uix-relationship-graph__item-meta { min-width:0; overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
+  .uix-relationship-graph__item-flag { position:absolute; top:-9px; right:var(--uix-space-2); padding:0 var(--uix-space-1); border:1px solid var(--uix-border); border-radius:var(--uix-radius-pill); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); line-height:1.4; }
+  .uix-relationship-graph__collapse { position:absolute; height:22px; padding:0 var(--uix-space-2); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-pill); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); cursor:pointer; }
+  .uix-relationship-graph__collapse:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
+  .uix-relationship-graph--compact .uix-relationship-graph__item { padding:var(--uix-space-1) var(--uix-space-2); }
+  @media (forced-colors: active) { .uix-relationship-graph__link path { stroke:CanvasText; } .uix-relationship-graph__link polygon { fill:CanvasText; } .uix-relationship-graph__item { border-color:ButtonText; } }
 }
