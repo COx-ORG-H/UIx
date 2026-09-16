@@ -39,7 +39,8 @@
  *   2 · TITLE / NAME SLOTS — quiet by default. `:not(.uix-btn)` so an anchor deliberately
  *       styled as a button inside a title slot keeps its button treatment.
  *   3 · DATA CELLS — table cells and description-list values. `:not([class])` so
- *       class-bearing anchors (`.uix-btn--link`, pills, tags) stay styled.
+ *       class-bearing anchors (`.uix-btn--link`, pills, tags) stay styled. Table BODY
+ *       links skip the hover underline too — see table.css (the row hover is the cue).
  *   4 · CONTAINER ANCHORS — the anchor IS the kit block (`<a class="uix-card">`). Without
  *       this the base `a { color }` tints every word in the block brand-blue.
  * Depends only on --uix-* tokens. */
@@ -79,7 +80,8 @@
     .uix-audit__actor
   ) a:not(.uix-btn):is(:hover, :focus-visible),
 
-  :is(.uix-table td, .uix-dl dd) a:not([class]):is(:hover, :focus-visible) { text-decoration: underline; }
+  /* body-row links are excluded: table.css keeps them calm on hover (the row tint is the cue) */
+  :is(.uix-table :is(thead, tfoot) td, .uix-dl dd) a:not([class]):is(:hover, :focus-visible) { text-decoration: underline; }
 
   /* Container anchors never underline: the anchor wraps the whole block, so an underline
      would strike through every word in it. They take the kit's standard row-hover tint

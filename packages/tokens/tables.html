@@ -153,7 +153,7 @@
   .tbx-sronly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .uix-table td .uix-user-chip__name { font-weight: 400; }
   .tbx-divider-demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-  .tbx-divider-demos figcaption { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: 8px; }
+  .tbx-divider-demos figcaption, .tbx-mini > figcaption { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: 8px; }
   .tbx-mini .uix-table-wrap { max-height: none; }
   .tbx-mini .uix-table td { height: 40px; }
   .tbx-mini .uix-table thead th { height: 36px; }
@@ -388,6 +388,20 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.3 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
           <div><strong>The five-greys problem.</strong> Zebra + hover + selected + disabled + pinned can put five different background greys in play at once, breaking visual continuity. If your table is interactive and stateful, drop zebra and let the 1px divider do the work.</div>
         </div>
+
+        <div class="uix-guide__subhead">Row links</div>
+        <p class="tbx-note">Links in body rows stay calm: they take the row's text colour and never underline, even on hover or focus. The row tint is the affordance, and it fades in and out quickly (instantly with reduced motion). Keyboard focus still shows the focus ring. This covers plain anchors and framework <code>&lt;Link className&gt;</code> anchors alike. Anchors styled with <code>.uix-btn</code> keep their button treatment. Hover the rows in both themes (theme toggle, top right).</p>
+        <figure class="tbx-mini" style="margin:0">
+          <div class="uix-table-wrap"><table class="uix-table uix-table--no-zebra uix-table--pinned-col" aria-label="Row links example">
+            <thead><tr><th>ID</th><th>Subject</th><th>Assignee</th><th class="uix-table__actions"><span class="uix-visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+              <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4821</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">Disk pressure on db-03</a></td><td>M. Okafor</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
+              <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4822</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">DNS flap in eu-west</a></td><td>R. Lindqvist</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
+              <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4823</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">Certificate expiry on api-gw</a></td><td>S. Haddad</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
+            </tbody>
+          </table></div>
+          <figcaption>ID: plain anchor. Subject: a class-bearing anchor, as a framework <code>Link</code> renders it. Open: a <code>.uix-btn</code> link, which keeps its own hover.</figcaption>
+        </figure>
       </section>
 
       <!-- ===================== SORTING ===================== -->
