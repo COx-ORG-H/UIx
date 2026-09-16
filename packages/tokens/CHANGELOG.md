@@ -1,5 +1,18 @@
 # @tensor_1/tokens
 
+## 2.17.0
+
+### Minor Changes
+
+- Remediate every S1–S4 finding from the 2026-07 in-depth accessibility audit. Sortable headers are real buttons, the rich select and CommandPalette follow the APG combobox pattern with `aria-activedescendant`, Inbox is a keyboard listbox, and rail-mode nav items keep their accessible names. React: named dialogs with `h2` titles and attribute pass-through, `useDialog(open, onClose?)` releases the scroll lock on a native Esc, WCAG 1.4.13 tooltips, Toast announcer and focus hand-off, a complete Tabs pattern with the new `TabPanel` export, virtual-Tree focus lifecycle and typeahead, Kanban Alt+Arrow moves, Field auto label association, non-hard-disabled loading buttons, a live-region and naming pass over the feedback family, and a skip link in AppShell. Tokens/CSS: a `forced-colors.css` layer for Windows High Contrast, a global `[hidden]` guard, focus-visible reveals for hover-revealed controls, 24px minimum targets, and the type scale moved from px to rem. Two new automated gates scan overlays in their OPEN state and assert keyboard operability.
+- 8322a79: `.uix-table`: body-row links stay calm, and the row hover eases in.
+
+  - Links in `tbody` no longer underline or turn link-coloured on hover or keyboard focus. They keep the row's `--uix-text` colour, and the row tint is the cue. This covers plain anchors and class-bearing ones, such as a framework `<Link className>`, which the base layer's `a:hover { text-decoration: underline }` used to reach. Anchors styled with `.uix-btn` are unchanged, and the global `:focus-visible` ring still shows. The quiet-link registry (`link.css`) no longer underlines table body links on hover. Its data-cell hover underline now applies only to `thead`/`tfoot` cells and `.uix-dl dd`.
+  - `.uix-table tbody tr` and `.uix-table--pinned-col tbody tr td:first-child` now fade their background over `--uix-dur-fast` / `--uix-ease-out`. Under `prefers-reduced-motion: reduce` there is no transition.
+  - The tables guide has a new "Row links" specimen under _Row styles & dividers_, and a Playwright check covers it in light and dark.
+
+  **TENSOR follow-up:** after TENSOR moves to this version, it can delete its HAR-133 override block in `apps/web/app/globals.css` (TENSOR PR #1878). This release ships the same behaviour.
+
 ## 2.16.0
 
 ### Minor Changes

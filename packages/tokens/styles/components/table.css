@@ -26,7 +26,7 @@
   .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
-  .uix-table tbody tr { background: var(--uix-row); }
+  .uix-table tbody tr { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
   .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
   .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
@@ -34,6 +34,10 @@
      table row — AT state comes from the row checkbox (UIX-A11Y-2). */
   .uix-table tbody tr[data-selected] { background: var(--uix-row-selected-bg); }
   .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
+  /* Row links stay calm on hover/focus: the row tint is the affordance, so neither the base
+     layer's `a:hover` underline nor link.css reaches them. `:not(.uix-btn)` keeps buttons
+     styled; the global :focus-visible ring still marks keyboard focus. */
+  .uix-table tbody a:not(.uix-btn):is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: none; }
   .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
   .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
@@ -48,13 +52,16 @@
   /* frozen first column (opt-in via .uix-table--pinned-col) */
   .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
   .uix-table--pinned-col thead th:first-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
-  .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-table--pinned-col tbody tr:nth-child(even) td:first-child { background: var(--uix-row-alt); }
   .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
   .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
   .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
   .uix-table--pinned-col tbody tr[data-selected] td:first-child { background: var(--uix-row-selected-bg); }
   .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
+  @media (prefers-reduced-motion: reduce) {
+    .uix-table tbody tr, .uix-table--pinned-col tbody tr td:first-child { transition: none; }
+  }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
   .uix-table--fixed { table-layout: fixed; width: 100%; }
