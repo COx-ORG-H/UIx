@@ -71,7 +71,7 @@ for (const item of layout.items) {
   markup = markup.replace(`data-node-id="${item.id}"`, () => `data-node-id="${item.id}" ${attrs}`);
 }
 
-const section = `${START}<div class="uix-guide__subhead">Layered layout</div><p class="lead">Columns are hops from the root. Shared nodes are drawn once, the storage → database back edge is a marked cycle, the 12-host fan-out is a cluster, and supplier edges keep their labels. Tab into the map, then use the arrow keys.</p><div data-layered-specimen>${markup}</div>${END}`;
+const section = `${START}<h3>Layered layout</h3><p>Columns are hops from the root. Shared nodes are drawn once, the storage → database back edge is a marked cycle, the 12-host fan-out is a cluster, and supplier edges keep their labels. Tab into the map, then use the arrow keys.</p><div data-layered-specimen>${markup}</div>${END}`;
 
 const source = readFileSync(target, 'utf8');
 const pages = source.match(/"slug": "examples-relationship-graph"[\s\S]*?"html": ("(?:[^"\\]|\\.)*")/);
