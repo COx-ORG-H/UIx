@@ -79,6 +79,86 @@ test('RelationshipGraph pairs its bounded SVG with an equivalent named list', ()
   assert.match(html, /Connected to Beta/);
 });
 
+const LAYERED_NODES = [
+  { id: 'svc', label: 'Payments service', type: 'Service', depth: 0 },
+  { id: 'app-a', label: 'Checkout app', type: 'Application', depth: 1 },
+  { id: 'app-b', label: 'Ledger app', type: 'Application', depth: 1 },
+  { id: 'db', label: 'Shared database', type: 'Database', depth: 2 },
+  ...Array.from({ length: 7 }, (_, i) => ({ id: `vm${i}`, label: `VM ${i}`, type: 'Server', depth: 3 })),
+];
+const LAYERED_EDGES = [
+  { id: 'e1', source: 'svc', target: 'app-a', type: 'depends_on' },
+  { id: 'e2', source: 'svc', target: 'app-b', type: 'depends_on' },
+  { id: 'e3', source: 'app-a', target: 'db', type: 'depends_on' },
+  { id: 'e4', source: 'app-b', target: 'db', type: 'depends_on', arrow: 'backward', emphasis: true },
+  ...Array.from({ length: 7 }, (_, i) => ({ id: `r${i}`, source: 'db', target: `vm${i}`, type: 'runs_on' })),
+];
+
+test('RelationshipGraph layered mode renders nodes as buttons, columns, a cluster and one tab stop', () => {
+  const html = render(RelationshipGraph, { layout: 'layered', rootId: 'svc', nodes: LAYERED_NODES, edges: LAYERED_EDGES });
+  assert.match(html, /uix-relationship-graph--layered/);
+  assert.equal((html.match(/class="uix-relationship-graph__item"/g) ?? []).length, 5);
+  assert.match(html, /aria-label="Shared database, Database, 9 relationships"/);
+  assert.match(html, /7 × Server · runs_on, Show all/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /2 hops · 1/);
+  assert.match(html, /3 hops · 7/);
+  assert.equal((html.match(/tabindex="0"/g) ?? []).length, 1);
+  assert.match(html, /aria-roledescription="relationship map"/);
+  assert.match(html, /aria-label="Accessible relationship list"/);
+  assert.doesNotMatch(html, /…/);
+});
+
+test('RelationshipGraph layered mode is fully localisable and honours the render slots', () => {
+  const de = {
+    graph: 'Beziehungsgraph', controls: 'Ansichtssteuerung', zoomIn: 'Vergrößern', zoomOut: 'Verkleinern',
+    fit: 'Einpassen', reset: 'Ansicht zurücksetzen', panLeft: 'Nach links', panRight: 'Nach rechts',
+    panUp: 'Nach oben', panDown: 'Nach unten', left: 'Links', right: 'Rechts', up: 'Oben', down: 'Unten',
+    zoomLevel: (p) => `Zoom ${p} %`, graphSummary: (n, e) => `Graph mit ${n} Knoten und ${e} Beziehungen`,
+    column: (d, c) => `${d === 0 ? 'Start' : `${d} Schritte`} · ${c}`,
+    cluster: (c, t, l) => `${c} × ${t} · ${l}`, expandCluster: 'Alle anzeigen',
+    roleDescription: 'Beziehungskarte', keyboardHint: 'Pfeiltasten bewegen den Fokus.',
+    relationships: (c) => `${c} Beziehungen`, cycle: 'Zyklus',
+  };
+  const html = render(RelationshipGraph, {
+    layout: 'layered', rootId: 'svc', nodes: LAYERED_NODES, edges: LAYERED_EDGES, labels: de, showList: false,
+    renderNode: (node) => (node.id === 'db' ? h('strong', { 'data-slot': 'db' }, 'Kritisch') : null),
+    nodeAriaLabel: (node) => `${node.label}, kritisch`,
+  });
+  for (const english of ['Zoom in', 'Zoom out', 'Reset view', 'relationship map', 'hops', 'Show all', 'Relationship list']) {
+    assert.doesNotMatch(html, new RegExp(english), `English "${english}" leaked`);
+  }
+  assert.match(html, /data-slot="db"/);
+  assert.match(html, /aria-label="Shared database, kritisch"/);
+  // A nullish renderNode falls back to the default body.
+  assert.match(html, /<span class="uix-relationship-graph__item-label">Checkout app<\/span>/);
+  assert.doesNotMatch(html, /uix-relationship-graph__list/);
+});
+
+test('RelationshipGraph layered mode marks cycles and expanded clusters', () => {
+  const nodes = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C' }];
+  const edges = [{ id: 'ab', source: 'a', target: 'b' }, { id: 'bc', source: 'b', target: 'c' }, { id: 'ca', source: 'c', target: 'b', type: 'depends_on' }];
+  const cyclic = render(RelationshipGraph, { layout: 'layered', nodes, edges, edgeLabels: 'always' });
+  assert.match(cyclic, /aria-label="C, 1 relationship, cycle"|aria-label="C, 2 relationships, cycle"/);
+  assert.match(cyclic, /<tspan[^>]*>depends_on<\/tspan><tspan[^>]*>cycle<\/tspan>/);
+  const expanded = render(RelationshipGraph, {
+    layout: 'layered', rootId: 'svc', nodes: LAYERED_NODES, edges: LAYERED_EDGES,
+    expandedClusterIds: new Set(['cluster:db:Server:runs_on']),
+  });
+  assert.equal((expanded.match(/class="uix-relationship-graph__item"/g) ?? []).length, 11);
+  assert.match(expanded, /aria-expanded="true"[^>]*>Collapse 7 Server/);
+});
+
+test('RelationshipGraph radial mode keeps its English defaults and accepts labels', () => {
+  const html = render(RelationshipGraph, {
+    nodes: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }],
+    edges: [{ id: 'ab', source: 'a', target: 'b' }],
+    labels: { connectedTo: (names) => `Verbunden mit ${names}` },
+  });
+  assert.match(html, /Verbunden mit Beta/);
+  assert.match(html, /aria-label="Pan left">Left</);
+});
+
 test('MatchReview renders descriptor-driven fields and keyboard actions', () => {
   const html = render(MatchReview, {
     incoming: { name: 'Incoming' }, fields: [{ id: 'name', label: 'Name' }],

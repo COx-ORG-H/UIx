@@ -91,12 +91,45 @@ $$('[data-range-date]').forEach((button, index, buttons) => {
   button.addEventListener('keydown', (event) => { const offset = { ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7 }[event.key]; if (!offset) return; event.preventDefault(); let target = Math.max(0, Math.min(buttons.length - 1, index + offset)); while (buttons[target]?.disabled && target >= 0 && target < buttons.length) target += offset > 0 ? 1 : -1; const next = buttons[target]; if (next) { buttons.forEach((item) => { item.tabIndex = -1; }); next.tabIndex = 0; next.focus(); } });
 });
 
-const graphNodes = $$('[data-node-id]');
+const graphNodes = $$('g[data-node-id]');
 graphNodes.forEach((node, index) => node.addEventListener('keydown', (event) => {
   if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
   event.preventDefault(); const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
   const next = graphNodes[(index + direction + graphNodes.length) % graphNodes.length]; graphNodes.forEach((item) => item.tabIndex = -1); next.tabIndex = 0; next.focus();
 }));
+
+// Layered RelationshipGraph specimen (ADR-0003): the static page has no React, so the
+// generated markup carries data-nav-* neighbours and this reproduces the component's
+// roving focus and view controls.
+$$('[data-layered-specimen]').forEach((root) => {
+  const items = $$('.uix-relationship-graph__item', root);
+  const stage = $('.uix-relationship-graph__stage', root);
+  const live = $('.uix-relationship-graph__toolbar [aria-live]', root);
+  const view = { x: 0, y: 0, zoom: 1 };
+  const apply = () => { stage.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`; if (live) live.textContent = `Zoom ${Math.round(view.zoom * 100)}%`; };
+  const navKey = { ArrowLeft: 'navLeft', ArrowRight: 'navRight', ArrowUp: 'navUp', ArrowDown: 'navDown', Home: 'navHome', End: 'navEnd' };
+  items.forEach((item) => item.addEventListener('keydown', (event) => {
+    const id = item.dataset[navKey[event.key]];
+    if (!navKey[event.key]) return;
+    event.preventDefault();
+    const next = id && $(`[data-node-id="${id}"]`, root);
+    if (!next) return;
+    items.forEach((other) => { other.tabIndex = -1; });
+    next.tabIndex = 0;
+    next.focus({ preventScroll: true });
+  }));
+  const [zoomIn, zoomOut, fit, reset, left, up, down, right] = $$('.uix-relationship-graph__toolbar button', root);
+  const zoomTo = (value) => { view.zoom = Math.max(0.4, Math.min(1.5, value)); apply(); };
+  zoomIn?.addEventListener('click', () => zoomTo(view.zoom * 1.2));
+  zoomOut?.addEventListener('click', () => zoomTo(view.zoom / 1.2));
+  fit?.addEventListener('click', () => { const box = $('.uix-relationship-graph__viewport', root); view.x = 0; view.y = 0; zoomTo(Math.min(box.clientWidth / stage.offsetWidth, box.clientHeight / stage.offsetHeight, 1)); });
+  reset?.addEventListener('click', () => { view.x = 0; view.y = 0; zoomTo(1); });
+  left?.addEventListener('click', () => { view.x += 64; apply(); });
+  up?.addEventListener('click', () => { view.y += 64; apply(); });
+  down?.addEventListener('click', () => { view.y -= 64; apply(); });
+  right?.addEventListener('click', () => { view.x -= 64; apply(); });
+});
+
 let zoom = 100;
 $$('[data-graph-zoom]').forEach((button) => button.addEventListener('click', () => { zoom = Math.max(50, Math.min(200, zoom + (button.dataset.graphZoom === 'in' ? 20 : -20))); $('[data-graph-live]').textContent = `Zoom ${zoom}%`; $('[data-graph-stage]').setAttribute('transform', `translate(${300 - 3 * zoom} ${200 - 2 * zoom}) scale(${zoom / 100})`); }));
 

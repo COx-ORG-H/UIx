@@ -61,4 +61,33 @@ traversal, three-way JSON diffing, metric parsing/stepping, color conversion and
 contrast checks, plus brand-profile apply/restore helpers. No graph or date
 runtime dependency is required.
 
+### RelationshipGraph layouts
+
+`RelationshipGraph` has two layouts:
+- `radial` (the default): a small neighbourhood ringed around the selection.
+- `layered` (ADR-0003): reads left to right by distance from `rootId`.
+
+Layered mode draws shared nodes once, marks cycles, collapses leaf fan-outs into clusters and labels edges. It adds structural keyboard traversal (←/→ along edges, ↑/↓ in a column, Home, End), pan and Ctrl/⌘-wheel zoom.
+
+```tsx
+<RelationshipGraph
+  layout="layered"
+  rootId={root.id}
+  nodes={nodes}            // { id, label, type?, description?, depth? }
+  edges={edges}            // { id, source, target, type?, label?, arrow?, emphasis? }
+  labels={translatedLabels} // Partial<RelationshipGraphLabels>
+  renderNode={(node) => <MyNodeBody node={node} />}
+  nodeAriaLabel={(node) => `${node.label}, ${riskText(node)}`}
+  onSelect={openPeek}
+  height="clamp(360px, 60vh, 640px)"
+/>
+```
+
+Rules the component cannot enforce for you:
+
+- **Whatever `renderNode` / `renderCluster` shows must also be in the accessible name.** Pass `nodeAriaLabel` whenever the node body carries meaning beyond `label`, `type` and `description`.
+- **Keep the equivalent list.** `showList={false}` is allowed only when the same labelled region renders a complete equivalent: every node, its relations and its state.
+- **Dimming is not a signal.** `dimmedNodeIds` must be accompanied by text that says what is dimmed and why.
+- **Localise everything.** Every visible and announced string comes from `labels`; the English defaults live in `DEFAULT_RELATIONSHIP_GRAPH_LABELS`.
+
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
