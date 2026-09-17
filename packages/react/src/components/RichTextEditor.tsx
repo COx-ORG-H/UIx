@@ -210,6 +210,7 @@ export function suggestEmoji(query: string, limit = 8): EmojiItem[] {
 }
 
 interface SuggestState {
+  query: string;
   items: EmojiItem[];
   command: (item: EmojiItem) => void;
   rect: DOMRect | null;
@@ -342,7 +343,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   bridge.current = {
     update: (p) => {
       if (!p || p.items.length === 0) { setSuggest(null); return; }
-      setSuggest({ items: p.items, command: p.command, rect: p.clientRect?.() ?? null });
+      setSuggest({ query: p.query, items: p.items, command: p.command, rect: p.clientRect?.() ?? null });
       setSuggestIndex(0);
     },
     keyDown: ({ event }) => {
@@ -605,7 +606,6 @@ export function RichTextEditor(props: RichTextEditorProps) {
           'aria-disabled': htmlAttr(disabled),
           'aria-readonly': htmlAttr(readOnly),
           'aria-autocomplete': emoji ? 'list' : undefined,
-          'aria-expanded': emoji ? String(suggestOpen) : undefined,
           'aria-controls': suggestOpen ? suggestId : undefined,
           'aria-activedescendant': suggestOpen ? `${suggestId}-${suggestIndex}` : undefined,
           class: 'uix-rich-text__content uix-prose',
@@ -966,6 +966,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
           id={suggestId}
           label={labels.emojiSuggestions}
           items={suggest.items}
+          query={suggest.query}
           active={suggestIndex}
           rect={suggest.rect}
           onPick={(item) => suggest.command(item)}
@@ -1026,13 +1027,14 @@ interface EmojiSuggestionsProps {
   id: string;
   label: string;
   items: EmojiItem[];
+  query: string;
   active: number;
   rect: DOMRect | null;
   onPick: (item: EmojiItem) => void;
   renderEmoji: (emoji: string) => ReactNode;
 }
 
-function EmojiSuggestions({ id, label, items, active, rect, onPick, renderEmoji }: EmojiSuggestionsProps) {
+function EmojiSuggestions({ id, label, items, query, active, rect, onPick, renderEmoji }: EmojiSuggestionsProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -1072,7 +1074,7 @@ function EmojiSuggestions({ id, label, items, active, rect, onPick, renderEmoji 
           onMouseDown={(event) => { event.preventDefault(); onPick(item); }}
         >
           <span className="uix-rich-text__suggest-emoji" aria-hidden="true">{renderEmoji(item.emoji ?? '')}</span>
-          <span className="uix-rich-text__suggest-name">:{item.shortcodes[0] ?? item.name}:</span>
+          <span className="uix-rich-text__suggest-name">:{item.shortcodes.find((s) => s.startsWith(query.toLowerCase())) ?? item.shortcodes[0] ?? item.name}:</span>
         </div>
       ))}
     </div>

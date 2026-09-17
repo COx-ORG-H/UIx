@@ -13,7 +13,7 @@
  * Assumes the packages are built (CI runs build:all first). Run: npm run test:smoke
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, copyFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, copyFileSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -103,6 +103,8 @@ try {
   }, null, 2));
   copyFileSync(join(HERE, 'app.tsx'), join(tmp, 'app.tsx'));
   copyFileSync(join(HERE, 'tsconfig.json'), join(tmp, 'tsconfig.json'));
+  copyFileSync(join(HERE, 'app-rich-text.tsx'), join(tmp, 'app-rich-text.tsx'));
+  copyFileSync(join(HERE, 'tsconfig.rich-text.json'), join(tmp, 'tsconfig.rich-text.json'));
 
   step('npm install (isolated; tarballs, no symlinks)');
   npm(['install', '--no-audit', '--no-fund', '--prefer-offline', '--silent'], { cwd: tmp, stdio: 'inherit' });
@@ -130,9 +132,15 @@ try {
   step('3. CJS require + 4. export resolution');
   execFileSync(process.execPath, ['-e',
     "const u=require('@tensor_1/react'); const required=['Button','Card','Breadcrumbs','Combobox','RelativeTime','CardLink','DetailPage','ConfirmDialog','PromptDialog','AsyncOperationStatus','ViewMenu','FilterPopover','SavedViewMenu','Pipeline','PipelineStage','Flow','FlowNode','RuleBuilder','BuilderCanvas','SchedulingCalendar','DateRangePicker','RelationshipGraph','MatchReview','MetricInput','LicensePositionBar','BrandProfiles','DiffViewer','ColorPicker']; if(required.some(k=>!u[k])) process.exit(4);" +
-    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/components/button','@tensor_1/tokens/utilities','@tensor_1/tokens/motion','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart','@tensor_1/react/chart/preset']" +
+    "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/components/button','@tensor_1/tokens/utilities','@tensor_1/tokens/motion','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart','@tensor_1/react/chart/preset','@tensor_1/react/rich-text','@tensor_1/react/markdown','@tensor_1/react/emoji']" +
     ".forEach(s=>require.resolve(s));"],
     { cwd: tmp, stdio: 'inherit' });
+
+  step('3b. ./markdown works with no optional peer installed (ESM + CJS)');
+  execFileSync(process.execPath, ['--input-type=module', '-e',
+    "import { createElement as h } from 'react'; import { renderToStaticMarkup } from 'react-dom/server'; import { Markdown } from '@tensor_1/react/markdown'; const html = renderToStaticMarkup(h(Markdown, null, '# T\\n\\n- [x] ok')); if (!html.includes('<h3>T</h3>') || !html.includes('checkbox')) process.exit(6);"],
+    { cwd: tmp, stdio: 'inherit' });
+  execFileSync(process.execPath, ['-e', "if (!require('@tensor_1/react/markdown').Markdown) process.exit(6);"], { cwd: tmp, stdio: 'inherit' });
 
   step('5. types (tsc --noEmit)');
   execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.json')],
@@ -148,11 +156,27 @@ try {
     "import React from 'react'; import { RuleBuilder, ColorPicker } from '@tensor_1/react'; if(!React.version.startsWith('19.')||!RuleBuilder||!ColorPicker) process.exit(5);"],
     { cwd: tmp, stdio: 'inherit' });
 
+  step('7. ./rich-text and ./emoji with the exact optional peers the package declares');
+  const manifest = JSON.parse(readFileSync(join(tmp, 'node_modules', '@tensor_1', 'react', 'package.json'), 'utf8'));
+  const optional = Object.keys(manifest.peerDependenciesMeta ?? {}).filter((name) => name !== 'echarts' && manifest.peerDependenciesMeta[name].optional);
+  const bad = optional.filter((name) => !/^\d+\.\d+\.\d+$/.test(manifest.peerDependencies[name]));
+  if (bad.length) throw new Error(`optional peers must be exact pins: ${bad.join(', ')}`);
+  npm(['install', '--no-save', '--no-audit', '--no-fund', '--prefer-offline', '--silent',
+    ...optional.map((name) => `${name}@${manifest.peerDependencies[name]}`)], { cwd: tmp, stdio: 'inherit' });
+  execFileSync(process.execPath, ['--input-type=module', '-e',
+    "import { RichTextEditor, roundTripMarkdown } from '@tensor_1/react/rich-text'; import { EmojiPicker, ReactionBar, loadEmojiData } from '@tensor_1/react/emoji'; const md = 'Grüße {{name}} 👩‍💻\\n\\n| a | b |\\n|:-|-:|\\n| 1 | 2 |\\n'; if (!RichTextEditor || !EmojiPicker || !ReactionBar || !loadEmojiData || (await roundTripMarkdown(md)) !== md) process.exit(7);"],
+    { cwd: tmp, stdio: 'inherit' });
+  execFileSync(process.execPath, ['-e',
+    "const r = require('@tensor_1/react/rich-text'); const e = require('@tensor_1/react/emoji'); if (!r.RichTextEditor || !r.roundTripMarkdown || !e.ReactionBar) process.exit(7);"],
+    { cwd: tmp, stdio: 'inherit' });
+  execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.rich-text.json')],
+    { cwd: tmp, stdio: 'inherit' });
+
   ok = true;
 } finally {
   try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best effort */ }
 }
 
-console.log(ok ? '\n✓ smoke OK — packed packages install, import (ESM+CJS), resolve, and type-check with React 18 and 19 in an isolated consumer.'
+console.log(ok ? '\n✓ smoke OK — packed packages install, import (ESM+CJS), resolve, and type-check with React 18 and 19 in an isolated consumer, including the rich-text/markdown/emoji subpaths.'
               : '\n✗ smoke FAILED');
 process.exit(ok ? 0 : 1);

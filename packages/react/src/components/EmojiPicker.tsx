@@ -196,7 +196,11 @@ export function EmojiPicker({
   };
 
   const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown' && flat.length) {
+    // A search field consumes Escape to clear itself; in the picker Escape always closes.
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      hide();
+    } else if (event.key === 'ArrowDown' && flat.length) {
       event.preventDefault();
       focusCell(0);
     } else if (event.key === 'Enter' && query.trim() && flat[0]) {

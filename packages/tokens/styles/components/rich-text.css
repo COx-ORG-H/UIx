@@ -22,6 +22,8 @@
     display: flex; align-items: center; gap: var(--uix-space-1); min-width: 0;
     padding: var(--uix-space-1) var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
     overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin;
+    /* size to the container, never to the row of tools (keeps grid/flex parents from widening) */
+    contain: inline-size;
   }
   .uix-rich-text__group { display: flex; align-items: center; gap: var(--uix-space-0); flex: none; }
   .uix-rich-text__group + .uix-rich-text__group { padding-left: var(--uix-space-1); border-left: 1px solid var(--uix-border); }
@@ -67,7 +69,8 @@
   @keyframes uix-rich-text-caret { to { visibility: hidden; } }
   .uix-rich-text__content--loading { color: var(--uix-text-muted); cursor: progress; }
   .uix-rich-text__content--loading > .uix-prose { max-width: none; }
-  .uix-rich-text__content :where(p, li) { color: var(--uix-text); }
+  /* editing text is full contrast (the reading view keeps prose's hushed body) */
+  .uix-rich-text .uix-rich-text__content :is(p, li) { color: var(--uix-text); }
   /* Editor headings stay h1–h3 in the DOM; they look like the viewer's demoted h3–h5. */
   .uix-rich-text__content h1 { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
   .uix-rich-text__content h2 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }

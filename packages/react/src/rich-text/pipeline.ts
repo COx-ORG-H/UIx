@@ -224,8 +224,22 @@ const normalize = (schema: Schema, content: JSONContent[]): JSONContent[] => {
  * the UIx Markdown viewer) and a block that fails to parse is kept as literal text.
  */
 export function readMarkdown(source: string, manager: MarkdownManager, schema: Schema): MarkdownSource {
-  const tokens = manager.instance.lexer(source) as Array<{ type: string; raw: string }>;
-  const joined = tokens.map((t) => t.raw).join('');
+  // marked lexes with CR/CRLF normalized to LF. Lex that, then cut the ORIGINAL text at the
+  // mapped offsets so CRLF documents keep their bytes too.
+  const normalized = source.replace(/\r\n?/g, '\n');
+  const lexed = manager.instance.lexer(normalized) as Array<{ type: string; raw: string }>;
+  const origin: number[] = [];
+  for (let i = 0, o = 0; i <= normalized.length; i += 1, o += 1) {
+    origin.push(o);
+    if (source[o] === '\r' && source[o + 1] === '\n') o += 1;
+  }
+  let cursor = 0;
+  const tokens = lexed.map((t) => {
+    const start = origin[cursor]!;
+    cursor += t.raw.length;
+    return { type: t.type, raw: source.slice(start, origin[cursor]) };
+  });
+  const joined = lexed.map((t) => t.raw).join('') === normalized ? tokens.map((t) => t.raw).join('') : null;
   const blocks: MarkdownBlock[] = [];
   let lead = '';
 
@@ -259,9 +273,14 @@ export function readMarkdown(source: string, manager: MarkdownManager, schema: S
       lead += token.raw;
       continue;
     }
-    const core = token.raw.replace(/\s+$/u, '');
+    // marked sometimes attaches the blank lines before a block to its raw text; they are
+    // separator, not content (indentation on the first content line is kept).
+    const leading = /^(?:[ \t]*\r?\n)*/.exec(token.raw)![0];
+    lead += leading;
+    const body = token.raw.slice(leading.length);
+    const core = body.replace(/\s+$/u, '');
     pushBlock(core);
-    lead += token.raw.slice(core.length);
+    lead += body.slice(core.length);
   }
 
   return {
@@ -296,14 +315,16 @@ export function writeMarkdown(doc: JSONContent, origin: MarkdownSource, manager:
 
   const keys = content.map(nodeKey);
   const { blocks } = origin;
-  type Piece = { text: string; block?: number };
+  // `slot`: the original block a piece occupies — reused unchanged, or edited in place.
+  // Inserted pieces have none. Separators are kept between consecutive slots.
+  type Piece = { text: string; slot?: number };
   const pieces: Piece[] = [];
   let i = 0;
   let j = 0;
 
   while (i < content.length) {
     if (j < blocks.length && matchesAt(keys, i, blocks[j]!)) {
-      pieces.push({ text: blocks[j]!.raw, block: j });
+      pieces.push({ text: blocks[j]!.raw, slot: j });
       i += blocks[j]!.keys.length;
       j += 1;
       continue;
@@ -324,9 +345,11 @@ export function writeMarkdown(doc: JSONContent, origin: MarkdownSource, manager:
       j += skip;
       continue;
     }
-    pieces.push({ text: manager.serialize({ type: 'doc', content: [content[i]!] }).replace(/^\n+|\n+$/g, '') });
+    const text = manager.serialize({ type: 'doc', content: [content[i]!] }).replace(/^\n+|\n+$/g, '');
+    // An edited single-node block is edited in place, unless new nodes are being inserted before it.
+    const inPlace = !insert && j < blocks.length && blocks[j]!.keys.length === 1;
+    pieces.push(inPlace ? { text, slot: j } : { text });
     i += 1;
-    // An edited node replaces the block it sits on, unless new nodes are being inserted before it.
     if (!insert && j < blocks.length) j += 1;
   }
 
@@ -334,16 +357,16 @@ export function writeMarkdown(doc: JSONContent, origin: MarkdownSource, manager:
   pieces.forEach((piece, n) => {
     const prev = pieces[n - 1];
     if (n === 0) {
-      out += piece.block === 0 ? blocks[0]!.lead : '';
-    } else if (piece.block !== undefined && prev?.block === piece.block - 1) {
-      out += blocks[piece.block]!.lead;
+      out += piece.slot === 0 ? blocks[0]!.lead : '';
+    } else if (piece.slot !== undefined && prev?.slot === piece.slot - 1) {
+      out += blocks[piece.slot]!.lead;
     } else {
       out += '\n\n';
     }
     out += piece.text;
   });
   const last = pieces[pieces.length - 1]!;
-  if (last.block === blocks.length - 1) out += origin.tail;
+  if (last.slot === blocks.length - 1) out += origin.tail;
   else if (origin.tail.endsWith('\n')) out += '\n';
   return out;
 }

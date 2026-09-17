@@ -1,5 +1,13 @@
 import { createPipeline } from './pipeline.js';
-import type { MarkdownPipeline, SchemaExtensionOptions } from './pipeline.js';
+import type { MarkdownPipeline } from './pipeline.js';
+
+/** Editor options that change how markdown is read. */
+export interface RoundTripOptions {
+  /** As on RichTextEditor. Does not affect round-trip bytes; accepted for parity. */
+  headingLevels?: ReadonlyArray<1 | 2 | 3>;
+  /** As on RichTextEditor. */
+  isSafeUrl?: (url: string) => boolean;
+}
 
 let shared: MarkdownPipeline | undefined;
 
@@ -17,7 +25,7 @@ let shared: MarkdownPipeline | undefined;
  *   expect(await roundTripMarkdown(article.body)).toBe(article.body);
  * }
  */
-export async function roundTripMarkdown(markdown: string, options?: SchemaExtensionOptions): Promise<string> {
+export async function roundTripMarkdown(markdown: string, options?: RoundTripOptions): Promise<string> {
   const pipeline = options ? createPipeline(options) : (shared ??= createPipeline());
   const origin = pipeline.read(markdown);
   const doc = pipeline.schema.nodeFromJSON(origin.doc).toJSON();

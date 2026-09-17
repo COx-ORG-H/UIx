@@ -202,7 +202,7 @@ test('egress: RichTextEditor (full, comment, template) makes no network request 
     await settle();
     const listbox = view.host.querySelector('[role="listbox"]');
     assert.ok(listbox, `${features}: suggestion list open`);
-    assert.equal(editor.view.dom.getAttribute('aria-expanded'), 'true');
+    assert.equal(editor.view.dom.getAttribute('aria-controls'), listbox.id);
     assert.ok(editor.view.dom.getAttribute('aria-activedescendant'));
     await keydown(editor.view.dom, 'Enter');
     await settle();

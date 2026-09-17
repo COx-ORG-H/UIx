@@ -9,4 +9,7 @@ export type {
   RichTextHeadingLevel,
 } from './components/RichTextEditor.js';
 export { roundTripMarkdown } from './rich-text/round-trip.js';
-export type { SchemaExtensionOptions as RoundTripOptions } from './rich-text/pipeline.js';
+export type { RoundTripOptions } from './rich-text/round-trip.js';
+export type { EmojiLocale } from './emoji-model.js';
+export type { EmojiPickerLabels } from './components/EmojiPicker.js';
+export { emojiImageFileName } from './emoji-image.js';

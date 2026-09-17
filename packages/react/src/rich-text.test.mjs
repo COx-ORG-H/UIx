@@ -57,6 +57,34 @@ test('deleting a block keeps the rest byte-exact', () => {
   assert.equal(pipeline.write(doc, origin), '# Plan\n\n\n* keep   this  star list\n* as written\n\nTail paragraph.\n');
 });
 
+test('blank lines marked attaches to the next block stay separators', () => {
+  const md = '# Plan\n\nDeploy the **ledger** fix. ✅\n\n- [x] CAB\n- [ ] Rehearsal\n\n| a | b |\n| :- | -: |\n| 1 | 2 |';
+  const { origin, doc } = reload(md);
+  doc.content[1].content.at(-1).text += ' Now.';
+  assert.equal(pipeline.write(doc, origin), md.replace('✅', '✅ Now.'));
+});
+
+test('editing any single block changes only that block (whole corpus)', () => {
+  const source = MARKDOWN_CORPUS.map((f) => f.markdown).filter((m) => m.trim()).join('\n\n\n') + '\n';
+  const origin = pipeline.read(source);
+  assert.equal(origin.blocks.map((b) => b.lead + b.raw).join('') + origin.tail, source, 'blocks reassemble the source');
+  const firstText = (node) => (node.type === 'text' ? node : (node.content ?? []).map(firstText).find(Boolean));
+  let edited = 0;
+  origin.blocks.forEach((block, k) => {
+    if (block.keys.length !== 1) return;
+    const doc = pipeline.schema.nodeFromJSON(origin.doc).toJSON();
+    const index = origin.blocks.slice(0, k).reduce((n, b) => n + b.keys.length, 0);
+    const text = firstText(doc.content[index]);
+    if (!text || doc.content[index].type === 'codeBlock') return;
+    text.text = `${text.text}Z`;
+    const fresh = pipeline.write({ type: 'doc', content: [doc.content[index]] }, pipeline.read(''));
+    const expected = origin.blocks.map((b, n) => b.lead + (n === k ? fresh : b.raw)).join('') + origin.tail;
+    assert.equal(pipeline.write(doc, origin), expected, `block ${k}: ${JSON.stringify(block.raw.slice(0, 40))}`);
+    edited += 1;
+  });
+  assert.ok(edited > 15, `edited ${edited} blocks`);
+});
+
 test('an emptied document serializes to the empty string', () => {
   const { origin } = reload(SOURCE);
   assert.equal(pipeline.write({ type: 'doc', content: [{ type: 'paragraph' }] }, origin), '');
