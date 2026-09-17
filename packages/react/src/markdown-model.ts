@@ -55,6 +55,7 @@ const NAMED_ENTITIES: Record<string, string> = {
 const ENTITY_RE = /^&(?:#(\d{1,7})|#[xX]([\da-fA-F]{1,6})|([a-zA-Z][a-zA-Z\d]{1,31}));/;
 const ENTITY_GLOBAL = /&(?:#\d{1,7}|#[xX][\da-fA-F]{1,6}|[a-zA-Z][a-zA-Z\d]{1,31});/g;
 const BARE_URL_RE = /^https?:\/\/[^\s<>()]+/;
+const BR_RE = /^<br\s*\/?>/i;
 const AUTOLINK_RE = /^<((?:https?:|mailto:)[^\s<>]*)>/i;
 
 const decodeEntity = (match: RegExpExecArray): string | null => {
@@ -212,6 +213,13 @@ export function parseInline(text: string, depth = 0): MarkdownInline[] {
       }
     }
     if (ch === '<') {
+      // `<br>` is the one tag read (a line break; GFM table cells have no other way to hold one).
+      const br = BR_RE.exec(rest);
+      if (br) {
+        out.push({ type: 'br' });
+        i += br[0].length;
+        continue;
+      }
       const auto = AUTOLINK_RE.exec(rest);
       if (auto) {
         out.push({ type: 'link', href: auto[1]!, children: [{ type: 'text', value: auto[1]!.replace(/^mailto:/i, '') }], bare: true });

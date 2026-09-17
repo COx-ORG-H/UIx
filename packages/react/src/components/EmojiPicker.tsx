@@ -181,9 +181,11 @@ export function EmojiPicker({
 
   const focusCell = useCallback((index: number) => {
     setActive(index);
-    requestAnimationFrame(() => {
-      gridRef.current?.querySelector<HTMLButtonElement>(`[data-emoji-index="${index}"]`)?.focus();
-    });
+    const find = () => gridRef.current?.querySelector<HTMLButtonElement>(`[data-emoji-index="${index}"]`);
+    // Move now when the cell is rendered, so a fast Enter acts on it; otherwise after the next render.
+    const cell = find();
+    if (cell) cell.focus();
+    else requestAnimationFrame(() => find()?.focus());
   }, []);
 
   const onGridKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

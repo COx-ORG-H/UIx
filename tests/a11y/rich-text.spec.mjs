@@ -9,6 +9,9 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { MARKDOWN_CORPUS } from '../../packages/react/src/fixtures/markdown-corpus.mjs';
 
+// A live editor, lazy emoji data and several axe passes per test: allow for a loaded CI runner.
+test.setTimeout(60_000);
+
 const HARNESS = '/tests/rich-text/harness.html';
 const GATED = new Set(['serious', 'critical']);
 
@@ -32,16 +35,19 @@ test.afterEach(async ({}, testInfo) => {
   expect(testInfo.external, 'no request leaves the origin').toEqual([]);
 });
 
-/**
- * ProseMirror reads the DOM selection asynchronously (selectionchange). A shortcut pressed in
- * the same frame as a caret move would act on the previous position, so wait for the sync.
- */
-const settleSelection = (page, id) => page.waitForFunction((editorId) => {
-  const view = document.getElementById(editorId)?.editor?.view;
-  const dom = getSelection();
-  if (!view || !dom?.focusNode) return false;
-  try { return view.state.selection.head === view.posAtDOM(dom.focusNode, dom.focusOffset); } catch { return false; }
-}, id);
+/** Put the caret at the end of an editor's first paragraph (or of the document), deterministically. */
+const caretAtEnd = (page, id, { firstParagraph = false } = {}) => page.evaluate(({ editorId, first }) => {
+  const editor = document.getElementById(editorId).editor;
+  const { doc } = editor.state;
+  let pos = doc.content.size - 1;
+  if (first) {
+    doc.descendants((node, at) => {
+      if (node.type.name === 'paragraph' && pos === doc.content.size - 1) { pos = at + node.nodeSize - 1; return false; }
+      return true;
+    });
+  }
+  editor.chain().focus().setTextSelection(pos).run();
+}, { editorId: id, first: firstParagraph });
 
 const changes = (page, key) => page.evaluate((k) => window.__rte.changes[k] ?? [], key);
 const axe = async (page, testInfo, include, label) => {
@@ -88,8 +94,7 @@ test('no onChange on mount; typing emits markdown that keeps untouched blocks', 
   expect(await changes(page, 'field')).toEqual([]);
   expect(await changes(page, 'template')).toEqual([]);
   const before = await page.getByTestId('field-value').textContent();
-  await page.locator('#field p').first().click();
-  await page.keyboard.press('End');
+  await caretAtEnd(page, 'field', { firstParagraph: true });
   await page.keyboard.type(' Now.');
   const after = (await changes(page, 'field')).at(-1);
   expect(after).toBe(before.replace('✅', '✅ Now.'));
@@ -117,9 +122,7 @@ test('toolbar: one tab stop, arrow keys, Home/End, pressed state', async ({ page
   await page.keyboard.press('Tab');
   await expect(page.locator('#field')).toBeFocused();
 
-  await page.locator('#field p').first().click();
-  await page.keyboard.press('End');
-  await settleSelection(page, 'field');
+  await caretAtEnd(page, 'field', { firstParagraph: true });
   await page.keyboard.press('ControlOrMeta+b');
   await expect(toolbar.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.type('loud');
@@ -127,9 +130,7 @@ test('toolbar: one tab stop, arrow keys, Home/End, pressed state', async ({ page
 });
 
 test('markdown input rules and headingLevels', async ({ page }) => {
-  const field = page.locator('#field');
-  await field.click();
-  await page.keyboard.press('ControlOrMeta+End');
+  await caretAtEnd(page, 'field');
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
   await page.keyboard.type('## Risks');
@@ -145,8 +146,7 @@ test('markdown input rules and headingLevels', async ({ page }) => {
   // The template editor offers H3 only: "## " stays text there.
   const template = page.locator('#template');
   await expect(page.getByRole('toolbar').nth(2).getByRole('button', { name: /^Heading/ })).toHaveCount(1);
-  await template.click();
-  await page.keyboard.press('ControlOrMeta+End');
+  await caretAtEnd(page, 'template');
   await page.keyboard.press('Enter');
   await page.keyboard.type('## Not a heading');
   await expect(template.locator('h2')).toHaveCount(0);
@@ -155,9 +155,7 @@ test('markdown input rules and headingLevels', async ({ page }) => {
 });
 
 test('emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage', async ({ page }) => {
-  const field = page.locator('#field');
-  await field.click();
-  await page.keyboard.press('ControlOrMeta+End');
+  await caretAtEnd(page, 'field');
   const emojiButton = page.getByRole('toolbar').first().getByRole('button', { name: 'Emoji' });
   await emojiButton.focus();
   await page.keyboard.press('Enter');
@@ -171,6 +169,7 @@ test('emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage
   await page.keyboard.press('ArrowRight');
   await expect(results.nth(1)).toBeFocused();
   await page.keyboard.press('ArrowLeft');
+  await expect(results.first()).toBeFocused();
   const glyph = await results.first().textContent();
   await page.keyboard.press('Enter');
   await expect(search).toBeHidden();

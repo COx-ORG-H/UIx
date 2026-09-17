@@ -8,7 +8,7 @@ Rich-text authoring, a markdown viewer and emoji reactions (RTE-01), as three op
 - **`@tensor_1/react/rich-text`:** `RichTextEditor` and `RichTextEditorFallback` on Tiptap 3.31.3.
   - Markdown in, markdown out. `onChange` fires only for user edits.
   - Untouched blocks keep their exact source bytes, CRLF and `{{variables}}` included. Only edited blocks are re-serialized.
-  - Raw HTML stays literal text. Link and image policies come from `isSafeUrl` and `resolveImageSrc`.
+  - Raw HTML stays literal text, except `<br>`, which is a line break (GFM table cells need it). Link and image policies come from `isSafeUrl` and `resolveImageSrc`.
   - `full` / `comment` / `template` presets, `headingLevels`, image upload, paste and drop, and a Ctrl/Cmd+Enter submit shortcut.
   - Markdown source mode, a character counter, and a `composer` variant that renders in `Composer` / `ComposerBar` with `toolbarEnd`.
   - Unicode emoji from a toolbar picker and `:shortcode` suggestions.

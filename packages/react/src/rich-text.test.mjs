@@ -222,7 +222,7 @@ test('serialized text reads back as the same text (property)', () => {
       { type: 'taskList', content: [{ type: 'taskItem', attrs: { checked: false }, content: [para] }] },
       { type: 'table', content: [
         { type: 'tableRow', content: [cell('tableHeader', paragraph('h')), cell('tableHeader', paragraph('k'))] },
-        { type: 'tableRow', content: [cell('tableCell', { type: 'paragraph', content: content.filter((c) => c.type === 'text').slice(0, 1) }), cell('tableCell', paragraph('z'))] },
+        { type: 'tableRow', content: [cell('tableCell', { type: 'paragraph', content }), cell('tableCell', paragraph('z'))] },
       ] },
     ];
     const block = pipeline.schema.nodeFromJSON(containers[run % containers.length]).toJSON();

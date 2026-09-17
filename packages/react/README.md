@@ -74,7 +74,7 @@ import { Markdown } from "@tensor_1/react/markdown";
 touch keep their exact source bytes, including their spacing, list markers, table alignment, CRLF line endings,
 `{{variables}}`, umlauts and emoji ZWJ sequences. Only edited blocks are re-serialized, and their text is escaped
 only where a markdown reader would misread it (`Tom & Jerry` and `snake_case` stay as typed). Raw HTML is never
-interpreted; it stays literal text. Gate your own content with the same pipeline, which runs without a DOM:
+interpreted; it stays literal text. The one exception is `<br>`, which is read as a line break because GFM table cells have no other way to hold one. Gate your own content with the same pipeline, which runs without a DOM:
 
 ```ts
 import { roundTripMarkdown } from "@tensor_1/react/rich-text";

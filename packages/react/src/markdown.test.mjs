@@ -162,6 +162,11 @@ test('character references in link targets are decoded before the policy check',
   assert.deepEqual(hrefs(render('[a](/x&amp;y) [b](jav&#x61;script:alert(1)) [c](&#106;avascript:x)')), ['/x&amp;y'], 'href is /x&y (attribute-escaped; undecoded would be /x&amp;amp;y)');
 });
 
+test('<br> is read as a line break (table cells), every other tag stays text', () => {
+  const html = render('| a |' + NL + '| - |' + NL + '| one<br>two<BR/>three <b>x</b> |');
+  assert.match(html, /<td>one<br\/>two<br\/>three &lt;b&gt;x&lt;\/b&gt;<\/td>/);
+});
+
 test('hostile nesting and unclosed brackets stay fast and do not throw', () => {
   const inputs = [
     '['.repeat(5000) + 'a' + '](x)'.repeat(5000),

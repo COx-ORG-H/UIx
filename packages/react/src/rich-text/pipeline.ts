@@ -245,7 +245,12 @@ export function createMarked(): Marked {
     gfm: true,
     tokenizer: {
       html: () => undefined,
-      tag: () => undefined,
+      // `<br>` is the one tag read: GFM tables have no other way to hold a line break,
+      // and Tiptap writes hard breaks in cells that way.
+      tag: (src: string) => {
+        const br = /^<br\s*\/?>/i.exec(src);
+        return br ? ({ type: 'br', raw: br[0] } as never) : undefined;
+      },
     },
   });
 }
