@@ -100,6 +100,8 @@ export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, Su
 
 export { StarButton } from './components/StarButton.js';
 export type { StarButtonProps } from './components/StarButton.js';
+export { CopyButton } from './components/CopyButton.js';
+export type { CopyButtonProps } from './components/CopyButton.js';
 
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';
