@@ -1,6 +1,8 @@
 import { defineConfig } from 'tsup';
 
-const external = ['react', 'react/jsx-runtime', 'react-dom', 'echarts', 'echarts/core'];
+// Optional peers stay external in both formats: Tiptap, marked and the emoji dataset
+// belong to the consumer's install (and the emoji JSON is loaded on demand).
+const external = ['react', 'react/jsx-runtime', 'react-dom', 'echarts', 'echarts/core', /^@tiptap\//, 'marked', /^emojibase-data\//];
 
 // Dual build (ADR-0016, Decision 5 — "emit use client from the build, per-file").
 //
@@ -26,7 +28,14 @@ export default defineConfig([
     clean: true,
   },
   {
-    entry: { index: 'src/index.ts', chart: 'src/chart.ts', 'chart-preset': 'src/chart-preset.tsx' },
+    entry: {
+      index: 'src/index.ts',
+      chart: 'src/chart.ts',
+      'chart-preset': 'src/chart-preset.tsx',
+      'rich-text': 'src/rich-text.ts',
+      markdown: 'src/markdown.ts',
+      emoji: 'src/emoji.ts',
+    },
     format: ['cjs'],
     dts: true,
     bundle: true,
