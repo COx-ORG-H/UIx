@@ -24,6 +24,8 @@ Rich-text authoring, a markdown viewer and emoji reactions (RTE-01), as three op
   - `@tiptap/extension-emoji` runs on a list without its CDN `fallbackImage` URLs or GitHub image emoji (`forceFallbackImages: false`).
   - A jsdom egress test spies on fetch, XHR, WebSocket, EventSource, beacons, image sources and appended resources.
 - **`emojiImageBaseUrl`** (editor, picker, reaction bar): an optional same-origin folder of `<codepoints>.png` images for devices that cannot draw an emoji. Unset means native emoji only, and no image set ships.
+- **Default link rule** (viewer and editor, used when no `isSafeUrl` is passed): http(s), mailto and same-app paths only. It refuses `//host`, backslashes and control characters. The viewer also bounds nesting and bracket scans, so hostile input cannot stall a server render.
+- **Known markdown limits**, documented in the README: edited lines lose leading spaces; tabs and space runs in list items and table cells become single spaces; a line break inside a checklist item is saved as a new paragraph of that item.
 - **Styles:** `.uix-rich-text` (new module), prose rules for tables, code blocks, rules, images and task lists, and the full `.uix-emoji-picker` and reaction focus/disabled states. Existing `--uix-*` tokens only; light and dark.
 
 Optional peer dependencies, all exact pins and all MIT:
