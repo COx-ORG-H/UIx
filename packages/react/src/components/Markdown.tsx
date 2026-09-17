@@ -4,9 +4,10 @@ import { cx } from '../cx.js';
 import { parseMarkdown, plainText } from '../markdown-model.js';
 import type { MarkdownBlock, MarkdownInline, MarkdownList } from '../markdown-model.js';
 
-/** Default link policy: http(s), mailto and same-app paths (`/`, `#`, `./`, `../`). */
-const SAFE_URL_RE = /^(https?:|mailto:|\/|#|\.\/|\.\.\/)/i;
-export const defaultMarkdownIsSafeUrl = (url: string): boolean => SAFE_URL_RE.test(url.trim());
+import { defaultIsSafeUrl } from '../url-policy.js';
+
+/** Default link policy: http(s), mailto and same-app paths (`/`, `#`, `./`, `../`); never `//host`. */
+export const defaultMarkdownIsSafeUrl = defaultIsSafeUrl;
 
 export interface MarkdownProps {
   /** Raw markdown source. Empty or whitespace-only input renders nothing. */

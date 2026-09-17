@@ -154,7 +154,7 @@ export function EmojiPicker({
       return data ? [{ key: 'results', title: labels.search, emojis: searchEmoji(data, query).map((e) => e.emoji) }] : [];
     }
     const list: Section[] = [];
-    if (quickPicks?.length) list.push({ key: 'quick', title: labels.quickPicks, emojis: quickPicks });
+    if (quickPicks?.length) list.push({ key: 'quick', title: labels.quickPicks, emojis: [...new Set(quickPicks)] });
     if (recent.length) list.push({ key: 'recent', title: labels.recent, emojis: recent });
     if (data) {
       data.groups.forEach((group, index) => {
@@ -165,6 +165,12 @@ export function EmojiPicker({
   }, [query, data, quickPicks, recent, labels.search, labels.quickPicks, labels.recent]);
 
   const flat = useMemo(() => sections.flatMap((s) => s.emojis), [sections]);
+  const sectionStart = useMemo(() => {
+    const starts = new Map<string, number>();
+    let at = 0;
+    for (const section of sections) { starts.set(section.key, at); at += section.emojis.length; }
+    return starts;
+  }, [sections]);
   const activeIndex = Math.min(active, Math.max(flat.length - 1, 0));
 
   const choose = (emoji: string) => {
@@ -282,7 +288,7 @@ export function EmojiPicker({
                     aria-label={section.title}
                     title={section.title}
                     onClick={() => {
-                      const start = flat.indexOf(section.emojis[0] ?? '');
+                      const start = section.emojis.length ? sectionStart.get(section.key) ?? -1 : -1;
                       gridRef.current?.querySelector(`[data-section="${section.key}"]`)?.scrollIntoView({ block: 'start' });
                       if (start >= 0) focusCell(start);
                     }}

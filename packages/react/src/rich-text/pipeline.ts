@@ -18,19 +18,19 @@
  * No React and no DOM here: this module runs in Node for the fixture suite and for
  * consumers gating their own corpus with roundTripMarkdown.
  */
-import { getSchema } from '@tiptap/core';
+import { getSchema, renderNestedMarkdownContent } from '@tiptap/core';
 import type { AnyExtension, JSONContent } from '@tiptap/core';
 import type { Schema } from '@tiptap/pm/model';
 import { MarkdownManager } from '@tiptap/markdown';
-import { TaskItem, TaskList } from '@tiptap/extension-list';
+import { ListItem, TaskItem, TaskList } from '@tiptap/extension-list';
 import { TableKit } from '@tiptap/extension-table';
 import { Image } from '@tiptap/extension-image';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Marked } from 'marked';
+import { defaultIsSafeUrl } from '../url-policy.js';
 
 /** Link policy used when the consumer passes none: http(s), mailto and same-app paths. */
-export const DEFAULT_SAFE_URL_RE = /^(https?:|mailto:|\/|#|\.\/|\.\.\/)/i;
-export const defaultIsSafeUrl = (url: string): boolean => DEFAULT_SAFE_URL_RE.test(url.trim());
+export { defaultIsSafeUrl };
 
 export interface SchemaExtensionOptions {
   /** Heading levels the schema accepts. Parsed headings outside the set still round-trip (see below). */
@@ -39,6 +39,53 @@ export interface SchemaExtensionOptions {
   /** Replacement for the image node (same name and attributes), e.g. with a render policy. */
   image?: AnyExtension;
 }
+
+type RenderHelpers = Parameters<typeof renderNestedMarkdownContent>[1];
+
+/**
+ * Lines after a hard break in an item's first paragraph are written indented to the
+ * item's content (Tiptap reads list continuation at two spaces). Unindented "lazy"
+ * continuation lines are fragile: a line containing ` #` ends the item for the next one.
+ */
+const indentContinuation = (h: RenderHelpers): RenderHelpers => {
+  let first = true;
+  return {
+    ...h,
+    renderChildren: (nodes: JSONContent[]) => {
+      const out = h.renderChildren(nodes);
+      if (!first) return out;
+      first = false;
+      return out.split('\n').map((line, n) => (n > 0 && line ? h.indent(line) : line)).join('\n');
+    },
+  };
+};
+
+const listItemRender = ListItem.config.renderMarkdown as unknown as (node: JSONContent, h: RenderHelpers, ctx: unknown) => string;
+const UixListItem = ListItem.extend({
+  renderMarkdown: (node: JSONContent, h: RenderHelpers, ctx: unknown) => listItemRender(node, indentContinuation(h), ctx),
+});
+
+/**
+ * Tiptap's task-list tokenizer reads one line per item, so a hard break inside a task
+ * item cannot be stored as such. Its lines are written as paragraphs of the same item
+ * (`- [ ] one` / blank / `  two`), which keeps every word inside the item.
+ */
+const UixTaskItem = TaskItem.extend({
+  renderMarkdown: (node: JSONContent, h: Parameters<typeof renderNestedMarkdownContent>[1]) => {
+    const prefix = `- [${node.attrs?.checked ? 'x' : ' '}] `;
+    const [first, ...rest] = node.content ?? [];
+    if (first?.type !== 'paragraph' || !(first.content ?? []).some((c) => c.type === 'hardBreak')) {
+      return renderNestedMarkdownContent(node, h, prefix);
+    }
+    const lines: JSONContent[][] = [[]];
+    for (const child of first.content ?? []) {
+      if (child.type === 'hardBreak') lines.push([]);
+      else lines[lines.length - 1]!.push(child);
+    }
+    const paragraphs = lines.filter((line) => line.length > 0).map((content) => ({ type: 'paragraph', content }));
+    return renderNestedMarkdownContent({ ...node, content: [...paragraphs, ...rest] }, h, prefix);
+  },
+});
 
 /**
  * The node/mark set, identical in the editor and in headless use so the same markdown
@@ -52,6 +99,7 @@ export function createSchemaExtensions(options: SchemaExtensionOptions = {}): An
   return [
     StarterKit.configure({
       underline: false,
+      listItem: false,
       heading: { levels: [...(options.headingLevels ?? [1, 2, 3])] },
       link: {
         openOnClick: false,
@@ -64,17 +112,30 @@ export function createSchemaExtensions(options: SchemaExtensionOptions = {}): An
         HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: null },
       },
     }),
+    UixListItem,
     TaskList,
-    TaskItem.configure({ nested: true }),
+    UixTaskItem.configure({ nested: true }),
     TableKit.configure({ table: { resizable: false } }),
     options.image ?? Image.configure({ inline: true, allowBase64: false }),
   ];
 }
 
 /** Characters that start markup only in some positions; see encodeText. */
-const ENTITY_LIKE = /&(?=#\d+;|#x[\da-f]+;|[a-z][a-z\d]*;)/gi;
-const TAG_LIKE = /<(?=[a-z/!?])/gi;
+const ENTITY_AFTER_AMP = /^(?:#\d+;|#x[\da-f]+;|[a-z][a-z\d]*;)/i;
+const TAG_START = /^[a-z/!?]$/i;
 const ASCII_PUNCT = /[!-/:-@[-`{-~]/;
+const LIST_MARKER = /^(?:\d+|[ivxlcdmIVXLCDM]+|[a-zA-Z]{1,2})$/;
+
+export interface EncodeTextOptions {
+  /** The text sits in a table cell, where `|` ends the cell. */
+  inTable?: boolean;
+  /** The next inline node opens a link, so a trailing `!` would turn it into an image. */
+  beforeLink?: boolean;
+  /** The text starts a line (first in its block, or after a hard break). Default true. */
+  lineStart?: boolean;
+  /** The text ends an ATX heading, where a trailing ` #` run would be dropped as a closing sequence. */
+  headingEnd?: boolean;
+}
 
 /**
  * Text encoding for serialized (edited) blocks. Tiptap's default turns every `&`, `<`
@@ -82,60 +143,97 @@ const ASCII_PUNCT = /[!-/:-@[-`{-~]/;
  * "Tom & Jerry" or "snake_case" would store `Tom &amp; Jerry` / `snake\_case`. This
  * encodes only what a CommonMark reader would otherwise misread, which keeps the stored
  * text readable in every plain-text sink.
+ *
+ * At the start of a line (first text in a block, or after a hard break) leading
+ * whitespace is dropped and list/heading/quote/rule/setext markers are escaped, so edited
+ * text never changes its block type.
  */
-export function encodeText(text: string): string {
+
+const BACKSLASH = String.fromCharCode(92);
+
+export function encodeText(text: string, options: EncodeTextOptions = {}): string {
   let out = '';
   const chars = Array.from(text);
   let lineStart = 0;
+  let inLead = options.lineStart ?? true;
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i]!;
     const prev = chars[i - 1] ?? '';
     const next = chars[i + 1] ?? '';
-    if (ch === '\n') lineStart = i + 1;
-    // Block syntax only counts at the start of a line; a text node is treated as one.
-    if (i === lineStart || (i > lineStart && /^\d+$/.test(chars.slice(lineStart, i).join('')))) {
-      const line = chars.slice(lineStart).join('').split('\n')[0]!;
-      const endOrSpace = next === '' || next === '\n' || /\s/u.test(next);
-      if (
-        (i === lineStart && /[-+*#]/.test(ch) && (endOrSpace || (ch === '#' && next === '#'))) ||
-        (i === lineStart && /[-=*_]/.test(ch) && new RegExp(`^(?:\\${ch}\\s*){2,}$`).test(line)) ||
-        (i > lineStart && /[.)]/.test(ch) && endOrSpace)
-      ) {
-        out += `\\${ch}`;
-        continue;
-      }
+    if (ch === '\n') {
+      out += ch;
+      lineStart = i + 1;
+      inLead = true;
+      continue;
+    }
+    if (inLead && (ch === ' ' || ch === '\t')) {
+      // Insignificant in a markdown paragraph (every reader strips it), and four spaces
+      // or a tab would turn the line into a code block: leave it out.
+      continue;
+    }
+    const atStart = inLead;
+    inLead = false;
+    const lineRest = chars.slice(i).join('').split('\n')[0]!;
+    const endOrSpace = next === '' || next === '\n' || /\s/u.test(next);
+    // Ordered-list markers as @tiptap/extension-list reads them: 12. / iv) / a. / AB)
+    const markerBefore = !atStart && LIST_MARKER.test(out.slice(out.lastIndexOf('\n') + 1));
+    if (
+      // `#` always: marked ends a list item at a line starting with `#`, space or not.
+      (atStart && (ch === '#' || (/[-+*]/.test(ch) && endOrSpace))) ||
+      (atStart && /[-=*_]/.test(ch) && new RegExp(`^(?:\\${ch}[ \\t]*)+$`).test(lineRest)) ||
+      (markerBefore && /[.)]/.test(ch) && endOrSpace)
+    ) {
+      out += BACKSLASH + ch;
+      continue;
+    }
+    if (ch === '#' && options.headingEnd && (prev === '' || /\s/u.test(prev)) && /^#+$/.test(lineRest)) {
+      out += BACKSLASH + ch;
+      continue;
     }
     switch (ch) {
-      case '\\':
+      case BACKSLASH:
         // A backslash is only an escape before ASCII punctuation (`C:\Users` stays as is).
-        out += ASCII_PUNCT.test(next) || next === '' ? '\\\\' : '\\';
+        out += ASCII_PUNCT.test(next) || next === '' ? BACKSLASH + BACKSLASH : BACKSLASH;
         break;
       case '`':
       case '[':
       case ']':
       case '~':
-        out += `\\${ch}`;
+        out += BACKSLASH + ch;
+        break;
+      case '|':
+        out += options.inTable ? BACKSLASH + ch : ch;
+        break;
+      case '&':
+        out += ENTITY_AFTER_AMP.test(chars.slice(i + 1, i + 40).join('')) ? '&amp;' : ch;
+        break;
+      case '<':
+        out += TAG_START.test(next) ? '&lt;' : ch;
+        break;
+      case '!':
+        out += next === '' && options.beforeLink ? BACKSLASH + ch : ch;
         break;
       case '*':
       case '_': {
         const spaced = (prev === '' || /\s/u.test(prev)) && (next === '' || /\s/u.test(next));
         const intraword = ch === '_' && /[\p{L}\p{N}]/u.test(prev) && /[\p{L}\p{N}]/u.test(next);
-        out += spaced || intraword ? ch : `\\${ch}`;
+        out += spaced || intraword ? ch : BACKSLASH + ch;
         break;
       }
       case '>':
-        out += i === 0 ? '\\>' : ch;
+        out += atStart ? BACKSLASH + ch : ch;
         break;
       default:
         out += ch;
     }
   }
-  return out.replace(ENTITY_LIKE, '&amp;').replace(TAG_LIKE, '&lt;');
+  return out;
 }
 
 type ManagerInternals = {
   encodeTextForMarkdown: (text: string, node: JSONContent, parentNode?: JSONContent) => string;
   codeTypes: Set<string>;
+  uixInTable?: boolean;
 };
 
 /**
@@ -152,6 +250,9 @@ export function createMarked(): Marked {
   });
 }
 
+const hasLink = (node: JSONContent | undefined): boolean =>
+  (node?.marks ?? []).some((m) => (typeof m === 'string' ? m : m.type) === 'link');
+
 /**
  * Applies the narrower text encoding to a Tiptap MarkdownManager. The method is
  * private upstream; the exact version pin plus the byte-exact fixture suite guard it.
@@ -162,9 +263,31 @@ export function patchManager(manager: MarkdownManager): MarkdownManager {
     const inCode =
       (parentNode?.type != null && internals.codeTypes.has(parentNode.type)) ||
       (node.marks ?? []).some((m) => internals.codeTypes.has(typeof m === 'string' ? m : m.type));
-    return inCode ? text : encodeText(text);
+    if (inCode) return text;
+    const siblings = parentNode?.content ?? [];
+    const index = siblings.indexOf(node);
+    const previous = index > 0 ? siblings[index - 1] : undefined;
+    const next = index >= 0 ? siblings[index + 1] : undefined;
+    return encodeText(text, {
+      inTable: !!internals.uixInTable,
+      beforeLink: hasLink(next) && !hasLink(node),
+      // Unknown position (node not found among its siblings): assume a line start, the safe side.
+      lineStart: index <= 0 || previous?.type === 'hardBreak',
+      headingEnd: parentNode?.type === 'heading' && (index < 0 || index === siblings.length - 1),
+    });
   };
   return manager;
+}
+
+/** Serialize one top-level node with the patched encoder. */
+function serializeNode(manager: MarkdownManager, node: JSONContent): string {
+  const internals = manager as unknown as ManagerInternals;
+  internals.uixInTable = node.type === 'table';
+  try {
+    return manager.serialize({ type: 'doc', content: [node] }).replace(/^\n+|\n+$/g, '');
+  } finally {
+    internals.uixInTable = false;
+  }
 }
 
 export function createManager(extensions: AnyExtension[]): MarkdownManager {
@@ -182,6 +305,8 @@ export interface MarkdownBlock {
   nodes: JSONContent[];
   /** JSON keys of `nodes`, for comparison with the live document. */
   keys: string[];
+  /** Reference definitions (and other text that parses to nothing) inside `lead`. */
+  defs: string[];
 }
 
 export interface MarkdownSource {
@@ -189,6 +314,10 @@ export interface MarkdownSource {
   blocks: MarkdownBlock[];
   /** Text after the last block (usually the final newline). */
   tail: string;
+  /** Reference definitions inside `tail`. */
+  tailDefs: string[];
+  /** Line ending the document uses throughout (CRLF only when every break is CRLF). */
+  eol: string;
   /** The document the editor loads. */
   doc: JSONContent;
 }
@@ -241,7 +370,14 @@ export function readMarkdown(source: string, manager: MarkdownManager, schema: S
   });
   const joined = lexed.map((t) => t.raw).join('') === normalized ? tokens.map((t) => t.raw).join('') : null;
   const blocks: MarkdownBlock[] = [];
+  const eol = /\r\n/.test(source) && !/(^|[^\r])\n/.test(source) ? '\r\n' : '\n';
   let lead = '';
+  let defs: string[] = [];
+  const keepInLead = (raw: string) => {
+    lead += raw;
+    const text = raw.replace(/\s+$/u, '').replace(/^\s+/u, '');
+    if (text) defs.push(text);
+  };
 
   const pushBlock = (raw: string) => {
     let nodes: JSONContent[];
@@ -252,11 +388,12 @@ export function readMarkdown(source: string, manager: MarkdownManager, schema: S
     }
     if (nodes.length === 0) {
       // Parses to nothing (e.g. an empty heading marker): keep it with the separators.
-      lead += raw;
+      keepInLead(raw);
       return;
     }
-    blocks.push({ raw, lead, nodes, keys: nodes.map(nodeKey) });
+    blocks.push({ raw, lead, nodes, keys: nodes.map(nodeKey), defs });
     lead = '';
+    defs = [];
   };
 
   if (joined !== source) {
@@ -265,12 +402,13 @@ export function readMarkdown(source: string, manager: MarkdownManager, schema: S
     lead = source.slice(0, source.length - source.trimStart().length);
     if (core.trim()) pushBlock(core.trimStart());
     const tail = source.slice(core.length);
-    return { source, blocks, tail, doc: { type: 'doc', content: blocks.flatMap((b) => b.nodes) } };
+    return { source, blocks, tail, tailDefs: [], eol, doc: { type: 'doc', content: blocks.flatMap((b) => b.nodes) } };
   }
 
   for (const token of tokens) {
     if (SEPARATOR_TOKENS.has(token.type) || token.raw.trim() === '') {
-      lead += token.raw;
+      if (token.type === 'def') keepInLead(token.raw);
+      else lead += token.raw;
       continue;
     }
     // marked sometimes attaches the blank lines before a block to its raw text; they are
@@ -287,6 +425,8 @@ export function readMarkdown(source: string, manager: MarkdownManager, schema: S
     source,
     blocks,
     tail: lead,
+    tailDefs: defs,
+    eol,
     doc: { type: 'doc', content: blocks.flatMap((b) => b.nodes) },
   };
 }
@@ -314,17 +454,17 @@ export function writeMarkdown(doc: JSONContent, origin: MarkdownSource, manager:
   }
 
   const keys = content.map(nodeKey);
-  const { blocks } = origin;
+  const { blocks, eol } = origin;
   // `slot`: the original block a piece occupies — reused unchanged, or edited in place.
   // Inserted pieces have none. Separators are kept between consecutive slots.
-  type Piece = { text: string; slot?: number };
+  type Piece = { text: string; slot?: number; edited: boolean };
   const pieces: Piece[] = [];
   let i = 0;
   let j = 0;
 
   while (i < content.length) {
     if (j < blocks.length && matchesAt(keys, i, blocks[j]!)) {
-      pieces.push({ text: blocks[j]!.raw, slot: j });
+      pieces.push({ text: blocks[j]!.raw, slot: j, edited: false });
       i += blocks[j]!.keys.length;
       j += 1;
       continue;
@@ -345,29 +485,47 @@ export function writeMarkdown(doc: JSONContent, origin: MarkdownSource, manager:
       j += skip;
       continue;
     }
-    const text = manager.serialize({ type: 'doc', content: [content[i]!] }).replace(/^\n+|\n+$/g, '');
+    let text = serializeNode(manager, content[i]!);
+    if (eol !== '\n') text = text.replace(/\n/g, eol);
     // An edited single-node block is edited in place, unless new nodes are being inserted before it.
     const inPlace = !insert && j < blocks.length && blocks[j]!.keys.length === 1;
-    pieces.push(inPlace ? { text, slot: j } : { text });
+    pieces.push(inPlace ? { text, slot: j, edited: true } : { text, edited: true });
     i += 1;
     if (!insert && j < blocks.length) j += 1;
   }
 
+  const blank = eol + eol;
+  const emitted = new Set<number>();
   let out = '';
   pieces.forEach((piece, n) => {
     const prev = pieces[n - 1];
+    const slot = piece.slot;
+    const lead = slot !== undefined ? blocks[slot]!.lead : '';
     if (n === 0) {
-      out += piece.slot === 0 ? blocks[0]!.lead : '';
-    } else if (piece.slot !== undefined && prev?.slot === piece.slot - 1) {
-      out += blocks[piece.slot]!.lead;
+      if (slot === 0) { out += lead; emitted.add(0); }
+    } else if (
+      slot !== undefined && prev?.slot === slot - 1 &&
+      // Next to a re-serialized block, only a separator with a blank line is safe.
+      (!(piece.edited || prev.edited) || /\n[ \t]*\r?\n/.test(lead))
+    ) {
+      out += lead;
+      emitted.add(slot);
     } else {
-      out += '\n\n';
+      out += blank;
     }
     out += piece.text;
   });
   const last = pieces[pieces.length - 1]!;
-  if (last.slot === blocks.length - 1) out += origin.tail;
-  else if (origin.tail.endsWith('\n')) out += '\n';
+  const tailKept = last.slot === blocks.length - 1;
+  // Reference definitions sit in separators the editor never shows: keep the ones whose
+  // separator was not written, at the end of the document.
+  const lost = [
+    ...blocks.flatMap((block, n) => (emitted.has(n) ? [] : block.defs)),
+    ...(tailKept ? [] : origin.tailDefs),
+  ];
+  if (lost.length) out += blank + lost.join(eol);
+  if (tailKept) out += origin.tail;
+  else if (/\n$/.test(origin.tail)) out += eol;
   return out;
 }
 

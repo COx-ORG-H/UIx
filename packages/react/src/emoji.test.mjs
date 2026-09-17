@@ -115,6 +115,8 @@ test('emojiImageBaseUrl accepts same-origin paths only', async () => {
     assert.equal(normalizeEmojiImageBaseUrl('/static/emoji/'), '/static/emoji');
     assert.equal(normalizeEmojiImageBaseUrl('./emoji'), './emoji');
     assert.equal(normalizeEmojiImageBaseUrl('/'), '/');
+    assert.equal(normalizeEmojiImageBaseUrl('./'), '.');
+    assert.equal(normalizeEmojiImageBaseUrl(normalizeEmojiImageBaseUrl('./emoji/')), './emoji', 'idempotent');
     assert.equal(normalizeEmojiImageBaseUrl('/tenant/a:b/emoji'), '/tenant/a:b/emoji');
     for (const bad of ['https://cdn.test/e', 'http://x', '//cdn.test/e', '/' + String.fromCharCode(92) + 'cdn.test', 'javascript:alert(1)', 'data:image/png,x', 'emoji', '../emoji', ' /emoji', '/emo ji']) {
       assert.equal(normalizeEmojiImageBaseUrl(bad), undefined, bad);

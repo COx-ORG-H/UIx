@@ -81,6 +81,16 @@ import { roundTripMarkdown } from "@tensor_1/react/rich-text";
 for (const doc of corpus) expect(await roundTripMarkdown(doc.body)).toBe(doc.body);
 ```
 
+Pass the markdown from `onChange` back as `value` in the same update, as React state does. The editor treats any
+other `value` as an outside change and replaces its content.
+
+Markdown cannot represent everything a user can type. When the editor re-serializes an edited block:
+
+- Leading spaces on a line are dropped.
+- Tabs in list items and table cells, and runs of spaces in table cells, become single spaces.
+- A line break inside a checklist item is saved as a new paragraph of that item.
+- Reference definitions (`[id]: url`) are kept. If their surrounding block is deleted, they move to the end.
+
 Editor props: `features` (`full` / `comment` / `template`), `headingLevels` (limits the toolbar and input rules;
 existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop),
 `isSafeUrl`, `resolveImageSrc` (its return value is used verbatim), `onSubmitShortcut` (Ctrl/Cmd+Enter), `emoji`,

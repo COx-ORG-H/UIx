@@ -6,8 +6,10 @@
 
 import * as react from 'react';
 
-// @public (undocumented)
-export const defaultMarkdownIsSafeUrl: (url: string) => boolean;
+// Warning: (ae-forgotten-export) The symbol "defaultIsSafeUrl" needs to be exported by the entry point markdown.d.ts
+//
+// @public
+export const defaultMarkdownIsSafeUrl: typeof defaultIsSafeUrl;
 
 // @public
 export function Markdown(input: MarkdownProps): react.JSX.Element | null;
@@ -98,7 +100,7 @@ export interface MarkdownProps {
 }
 
 // @public
-export function parseInline(text: string): MarkdownInline[];
+export function parseInline(text: string, depth?: number): MarkdownInline[];
 
 // @public
 export function parseMarkdown(source: string): MarkdownBlock[];

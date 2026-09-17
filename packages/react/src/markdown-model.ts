@@ -53,6 +53,7 @@ const NAMED_ENTITIES: Record<string, string> = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', copy: '©', reg: '®', hellip: '…', mdash: '—', ndash: '–',
 };
 const ENTITY_RE = /^&(?:#(\d{1,7})|#[xX]([\da-fA-F]{1,6})|([a-zA-Z][a-zA-Z\d]{1,31}));/;
+const ENTITY_GLOBAL = /&(?:#\d{1,7}|#[xX][\da-fA-F]{1,6}|[a-zA-Z][a-zA-Z\d]{1,31});/g;
 const BARE_URL_RE = /^https?:\/\/[^\s<>()]+/;
 const AUTOLINK_RE = /^<((?:https?:|mailto:)[^\s<>]*)>/i;
 
@@ -63,10 +64,18 @@ const decodeEntity = (match: RegExpExecArray): string | null => {
   return name && Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name]! : null;
 };
 
+/**
+ * Bounds that keep hostile input linear-ish on the server: link text and destinations
+ * longer than MAX_SCAN characters are not links, and spans nest at most MAX_DEPTH deep.
+ */
+const MAX_SCAN = 2000;
+const MAX_DEPTH = 12;
+
 /** Index of the `]` matching the `[` at `open`, honouring escapes and nesting. */
 const findBracketEnd = (text: string, open: number): number => {
   let depth = 0;
-  for (let i = open; i < text.length; i += 1) {
+  const stop = Math.min(text.length, open + MAX_SCAN);
+  for (let i = open; i < stop; i += 1) {
     const ch = text[i];
     if (ch === '\\') { i += 1; continue; }
     if (ch === '`') {
@@ -84,7 +93,8 @@ const readDestination = (text: string, open: number): { url: string; title?: str
   if (text[open] !== '(') return null;
   let depth = 0;
   let end = -1;
-  for (let i = open; i < text.length; i += 1) {
+  const stop = Math.min(text.length, open + MAX_SCAN);
+  for (let i = open; i < stop; i += 1) {
     const ch = text[i];
     if (ch === '\\') { i += 1; continue; }
     if (ch === '(') depth += 1;
@@ -94,18 +104,31 @@ const readDestination = (text: string, open: number): { url: string; title?: str
   const inner = text.slice(open + 1, end).trim();
   const titled = /^(\S+)\s+(?:"([^"]*)"|'([^']*)')$/.exec(inner);
   const rawUrl = titled ? titled[1]! : inner;
-  const url = rawUrl.replace(/^<(.*)>$/, '$1').replace(/\\([!-/:-@[-`{-~])/g, '$1');
+  const url = rawUrl
+    .replace(/^<(.*)>$/, '$1')
+    .replace(/\\([!-/:-@[-`{-~])/g, '$1')
+    .replace(ENTITY_GLOBAL, (match: string) => decodeEntity(ENTITY_RE.exec(match)!) ?? match);
   const title = titled ? (titled[2] ?? titled[3]) : undefined;
   return title === undefined ? { url, end } : { url, title, end };
 };
 
-/** Finds the closing delimiter run for emphasis-like spans. */
-const findCloser = (text: string, from: number, delim: string): number => {
+const backtickRun = (text: string, at: number): string => {
+  let end = at;
+  while (text[end] === '`') end += 1;
+  return text.slice(at, end);
+};
+
+/**
+ * Finds the closing delimiter run for emphasis-like spans. `misses` remembers, per
+ * delimiter, the earliest start that found no closer: a later start cannot find one either.
+ */
+const findCloser = (text: string, from: number, delim: string, misses: Map<string, number>): number => {
+  if (from >= (misses.get(delim) ?? Infinity)) return -1;
   for (let i = from; i < text.length; i += 1) {
     const ch = text[i];
     if (ch === '\\') { i += 1; continue; }
     if (ch === '`') {
-      const run = /^`+/.exec(text.slice(i))![0];
+      const run = backtickRun(text, i);
       const close = text.indexOf(run, i + run.length);
       if (close > 0) { i = close + run.length - 1; continue; }
     }
@@ -116,6 +139,7 @@ const findCloser = (text: string, from: number, delim: string): number => {
       return i;
     }
   }
+  misses.set(delim, Math.min(from, misses.get(delim) ?? Infinity));
   return -1;
 };
 
@@ -127,8 +151,13 @@ const pushText = (out: MarkdownInline[], value: string) => {
 };
 
 /** Inline markdown to nodes. Newlines become line breaks. */
-export function parseInline(text: string): MarkdownInline[] {
+export function parseInline(text: string, depth = 0): MarkdownInline[] {
   const out: MarkdownInline[] = [];
+  if (depth > MAX_DEPTH) {
+    pushText(out, text);
+    return out;
+  }
+  const misses = new Map<string, number>();
   let i = 0;
   while (i < text.length) {
     const ch = text[i]!;
@@ -145,7 +174,7 @@ export function parseInline(text: string): MarkdownInline[] {
       continue;
     }
     if (ch === '`') {
-      const run = /^`+/.exec(rest)![0];
+      const run = backtickRun(text, i);
       const close = text.indexOf(run, i + run.length);
       if (close > 0 && text[close + run.length] !== '`') {
         let value = text.slice(i + run.length, close).replace(/\n/g, ' ');
@@ -162,7 +191,7 @@ export function parseInline(text: string): MarkdownInline[] {
       const end = findBracketEnd(text, i + 1);
       const dest = end > 0 ? readDestination(text, end + 1) : null;
       if (dest) {
-        const alt = plainText(parseInline(text.slice(i + 2, end)));
+        const alt = plainText(parseInline(text.slice(i + 2, end), depth + 1));
         out.push(dest.title === undefined
           ? { type: 'image', src: dest.url, alt }
           : { type: 'image', src: dest.url, alt, title: dest.title });
@@ -174,7 +203,7 @@ export function parseInline(text: string): MarkdownInline[] {
       const end = findBracketEnd(text, i);
       const dest = end > 0 ? readDestination(text, end + 1) : null;
       if (dest) {
-        const children = parseInline(text.slice(i + 1, end));
+        const children = parseInline(text.slice(i + 1, end), depth + 1);
         out.push(dest.title === undefined
           ? { type: 'link', href: dest.url, children }
           : { type: 'link', href: dest.url, title: dest.title, children });
@@ -200,9 +229,9 @@ export function parseInline(text: string): MarkdownInline[] {
       }
     }
     if (ch === '~' && text[i + 1] === '~' && text[i + 2] && !/\s/u.test(text[i + 2]!)) {
-      const close = findCloser(text, i + 2, '~~');
+      const close = findCloser(text, i + 2, '~~', misses);
       if (close > 0) {
-        out.push({ type: 'del', children: parseInline(text.slice(i + 2, close)) });
+        out.push({ type: 'del', children: parseInline(text.slice(i + 2, close), depth + 1) });
         i = close + 2;
         continue;
       }
@@ -213,9 +242,9 @@ export function parseInline(text: string): MarkdownInline[] {
       const delim = double ? ch + ch : ch;
       const after = text[i + delim.length];
       if (leftOk && after && !/\s/u.test(after)) {
-        const close = findCloser(text, i + delim.length, delim);
+        const close = findCloser(text, i + delim.length, delim, misses);
         if (close > 0) {
-          const children = parseInline(text.slice(i + delim.length, close));
+          const children = parseInline(text.slice(i + delim.length, close), depth + 1);
           out.push(double ? { type: 'strong', children } : { type: 'em', children });
           i = close + delim.length;
           continue;

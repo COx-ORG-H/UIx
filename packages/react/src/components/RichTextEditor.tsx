@@ -124,7 +124,11 @@ export const DEFAULT_RICH_TEXT_LABELS: RichTextLabels = {
 export interface RichTextEditorProps {
   /** Markdown. */
   value: string;
-  /** Fired only for user edits — never on mount or when `value` changes from outside. */
+  /**
+   * Fired only for user edits — never on mount or when `value` changes from outside.
+   * Pass the emitted markdown back as `value` in the same update (as React state does):
+   * a different `value` is treated as an outside change and replaces the content.
+   */
   onChange: (markdown: string) => void;
   /** Toolbar preset. Default `'full'`. */
   features?: RichTextFeatures;
@@ -301,7 +305,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
     className, onBlur, emojiImageBaseUrl,
   } = props;
   const emojiBase = useMemo(() => normalizeEmojiImageBaseUrl(emojiImageBaseUrl), [emojiImageBaseUrl]);
-  const renderEmoji = useEmojiRenderer(emojiBase);
+  const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
   const labels = useMemo(() => ({ ...DEFAULT_RICH_TEXT_LABELS, ...labelOverrides }), [labelOverrides]);
   const uid = useId();
   const counterId = `${uid}-counter`;
@@ -394,7 +398,11 @@ export function RichTextEditor(props: RichTextEditorProps) {
         return { emojis: this.options.emojis, isSupported: () => true };
       },
       // Emoji are inserted as text; the node type exists only because the extension defines it.
-      renderMarkdown: (node) => findShortcode(String(node.attrs?.name ?? ''))?.emoji ?? '',
+      // Unknown names (e.g. pasted from another editor) keep their shortcode rather than vanish.
+      renderMarkdown: (node) => {
+        const name = String(node.attrs?.name ?? '');
+        return findShortcode(name)?.emoji ?? (name ? `:${name}:` : '');
+      },
       addInputRules() {
         return [new InputRule({
           find: SHORTCODE_RE,
@@ -823,7 +831,8 @@ export function RichTextEditor(props: RichTextEditorProps) {
       className="uix-rich-text__toolbar"
       role="toolbar"
       aria-label={labels.toolbar}
-      aria-controls={id}
+      // Only once the controlled surface (editor or source textarea) carries the id.
+      aria-controls={editor || mode === 'source' ? id : undefined}
       onKeyDown={onToolbarKeyDown}
     >
       {groups.map((group, g) => (
@@ -836,7 +845,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
           <EmojiPicker
             labels={emojiPickerLabels}
             locale={emojiLocale}
-            emojiImageBaseUrl={emojiBase}
+            emojiImageBaseUrl={emojiImageBaseUrl}
             onSelect={insertEmoji}
             trigger={
               (() => {
@@ -958,7 +967,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
       ) : (
         // One frame before Tiptap mounts: the same content, read-only, without layout shift.
         <div className="uix-rich-text__content uix-rich-text__content--loading" aria-busy="true" style={{ minHeight: `calc(${rows} * 1lh + 2 * var(--uix-space-3))` }}>
-          <Markdown>{value}</Markdown>
+          <Markdown isSafeUrl={isSafeUrl} resolveImageSrc={resolveImageSrc}>{value}</Markdown>
         </div>
       )}
       {suggestOpen && suggest ? (

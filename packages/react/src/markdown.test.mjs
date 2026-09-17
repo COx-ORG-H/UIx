@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MARKDOWN_CORPUS } from './fixtures/markdown-corpus.mjs';
-import { Markdown, parseMarkdown, parseInline } from '../dist/markdown.js';
+import { Markdown, defaultMarkdownIsSafeUrl, parseMarkdown, parseInline } from '../dist/markdown.js';
 
 const render = (source, props = {}) => renderToStaticMarkup(h(Markdown, props, source));
 const hrefs = (html) => [...html.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1]);
@@ -141,6 +141,44 @@ test('horizontal rules and headings with closing hashes', () => {
 test('headingOffset is capped at h6', () => {
   assert.match(render('###### Deep', { headingOffset: 2 }), /<h6>Deep<\/h6>/);
   assert.match(render('# Top', { headingOffset: 0 }), /<h1>Top<\/h1>/);
+});
+
+// ── review regressions ─────────────────────────────────────────────────────────
+const TAB = String.fromCharCode(9);
+const NL = String.fromCharCode(10);
+const BSL = String.fromCharCode(92);
+
+test('protocol-relative and backslash tricks are not same-app links', () => {
+  const targets = ['//evil.test', '/' + BSL + 'evil.test', '/' + TAB + '/evil.test', ' //evil.test', BSL + BSL + 'evil.test'];
+  for (const target of targets) {
+    assert.deepEqual(hrefs(render(`[x](<${target}>)`)), [], JSON.stringify(target));
+    assert.equal(defaultMarkdownIsSafeUrl(target), false, JSON.stringify(target));
+  }
+  assert.equal(defaultMarkdownIsSafeUrl('/kb/1'), true);
+  assert.equal(defaultMarkdownIsSafeUrl('/a/' + NL + 'b'), true, 'newlines are removed first');
+});
+
+test('character references in link targets are decoded before the policy check', () => {
+  assert.deepEqual(hrefs(render('[a](/x&amp;y) [b](jav&#x61;script:alert(1)) [c](&#106;avascript:x)')), ['/x&amp;y'], 'href is /x&y (attribute-escaped; undecoded would be /x&amp;amp;y)');
+});
+
+test('hostile nesting and unclosed brackets stay fast and do not throw', () => {
+  const inputs = [
+    '['.repeat(5000) + 'a' + '](x)'.repeat(5000),
+    '['.repeat(60000),
+    '!['.repeat(30000),
+    '[a]('.repeat(15000),
+    '*'.repeat(60000) + 'a',
+    '**a'.repeat(20000),
+    '_a '.repeat(20000),
+    '~~a'.repeat(20000),
+    '`'.repeat(3) + 'a`'.repeat(20000),
+  ];
+  for (const input of inputs) {
+    const started = Date.now();
+    assert.doesNotThrow(() => render(input));
+    assert.ok(Date.now() - started < 2000, `${input.slice(0, 12)}… took ${Date.now() - started} ms`);
+  }
 });
 
 for (const fixture of MARKDOWN_CORPUS) {

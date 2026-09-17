@@ -85,6 +85,78 @@ test('editing any single block changes only that block (whole corpus)', () => {
   assert.ok(edited > 15, `edited ${edited} blocks`);
 });
 
+// ── review regressions ─────────────────────────────────────────────────────────
+const TAB = String.fromCharCode(9);
+const BS = String.fromCharCode(92);
+const fresh = (doc) => pipeline.write(doc, pipeline.read(''));
+const reparsed = (md) => reload(md).doc;
+const docOf = (...content) => ({ type: 'doc', content });
+const link = (text, href) => ({ type: 'text', text, marks: [{ type: 'link', attrs: { href, target: null, rel: 'noopener noreferrer nofollow', class: null, title: null } }] });
+
+test('a "!" before a link does not turn the link into an image', () => {
+  const doc = docOf({ type: 'paragraph', content: [{ type: 'text', text: 'wow!' }, link('x', 'https://a.test')] });
+  const md = fresh(doc);
+  assert.ok(md.startsWith('wow' + BS + '!['), md);
+  const back = reparsed(md);
+  assert.equal(JSON.stringify(back).includes('"image"'), false);
+  assert.equal(back.content[0].content[0].text, 'wow!');
+  assert.equal(fresh(docOf(paragraph('Done!'))), 'Done!', 'plain trailing ! stays unescaped');
+});
+
+test('a "|" typed into a table cell stays in that cell', () => {
+  const { origin, doc } = reload('| a | b |\n| - | - |\n| c | d |');
+  const cell = doc.content[0].content[1].content[0].content[0];
+  cell.content[0].text = 'c|x';
+  const md = pipeline.write(doc, origin);
+  const row = reparsed(md).content[0].content[1].content;
+  assert.equal(row.length, 2, md);
+  assert.equal(row[0].content[0].content[0].text, 'c|x');
+  assert.equal(row[1].content[0].content[0].text, 'd');
+  assert.equal(fresh(docOf(paragraph('a | b'))), 'a | b', 'outside tables | is left alone');
+});
+
+test('neighbouring blocks never merge after an edit', () => {
+  const { origin, doc } = reload('# H\ntext');
+  doc.content[0] = paragraph('H');
+  const md = pipeline.write(doc, origin);
+  assert.equal(reparsed(md).content.length, 2, JSON.stringify(md));
+});
+
+test('reference definitions survive deleting the blocks around them', () => {
+  const cases = [
+    ['A\n\n[r]: http://x.test\n\nB', 0],
+    ['A\n\nB\n\n[r]: http://x.test\n', 1],
+    ['[r]: http://x.test\n\nA\n\nB', 0],
+  ];
+  for (const [md, drop] of cases) {
+    const { origin, doc } = reload(md);
+    doc.content.splice(drop, 1);
+    const out = pipeline.write(doc, origin);
+    assert.ok(out.includes('[r]: http://x.test'), `${JSON.stringify(md)} → ${JSON.stringify(out)}`);
+  }
+});
+
+test('text that looks like block syntax keeps its type and characters', () => {
+  const texts = [' - x', '  # h', '    code', `${TAB}x`, '=', '--', '1) one', '12. twelve', 'a. alpha', 'iv) roman', 'OK. fine', '+ plus', '### deep', `${BS}not an escape`];
+  for (const text of texts) {
+    const md = fresh(docOf(paragraph(text)));
+    // Leading whitespace is insignificant in markdown and dropped; the block type and the rest stay.
+    assert.deepEqual(reparsed(md).content, [paragraph(text.trimStart())], `${JSON.stringify(text)} → ${JSON.stringify(md)}`);
+  }
+  const broken = docOf({ type: 'paragraph', content: [{ type: 'text', text: 'Title' }, { type: 'hardBreak' }, { type: 'text', text: '=' }] });
+  const md = fresh(broken);
+  assert.deepEqual(reparsed(md).content, broken.content, JSON.stringify(md));
+});
+
+test('edited blocks in a CRLF document use CRLF', () => {
+  const src = 'One\r\n\r\nTwo\r\nlines\r\n';
+  const { origin, doc } = reload(src);
+  doc.content[1] = { type: 'paragraph', content: [{ type: 'text', text: 'Two' }, { type: 'hardBreak' }, { type: 'text', text: 'edited' }] };
+  const out = pipeline.write(doc, origin);
+  assert.ok(out.startsWith('One\r\n\r\nTwo'), JSON.stringify(out));
+  assert.ok(!/(^|[^\r])\n/.test(out), JSON.stringify(out));
+});
+
 test('an emptied document serializes to the empty string', () => {
   const { origin } = reload(SOURCE);
   assert.equal(pipeline.write({ type: 'doc', content: [{ type: 'paragraph' }] }, origin), '');
@@ -125,14 +197,42 @@ test('encodeText escapes only what would be re-read as markup', () => {
 });
 
 test('serialized text reads back as the same text (property)', () => {
-  const alphabet = ['a', 'Z', ' ', '_', '*', '&', '<', '>', '\\', '[', ']', '`', '~', '#', 'ä', '👍', ';', '/', '1', '.', '!'];
+  const alphabet = ['a', 'Z', 'i', 'v', 'x', ' ', ' ', String.fromCharCode(9), '_', '*', '&', '<', '>', String.fromCharCode(92), '[', ']', '`', '~', '#', 'ä', '👍', ';', '/', '1', '.', '!', '-', '+', '=', ')', '|', '(', ':', '"'];
   let seed = 7;
   const next = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
-  for (let run = 0; run < 400; run += 1) {
-    const text = Array.from({ length: 1 + Math.floor(next() * 14) }, () => alphabet[Math.floor(next() * alphabet.length)]).join('');
-    if (!text.trim() || text !== text.trim()) continue;
-    const md = pipeline.write({ type: 'doc', content: [paragraph(text)] }, pipeline.read(''));
+  const word = () => Array.from({ length: 1 + Math.floor(next() * 10) }, () => alphabet[Math.floor(next() * alphabet.length)]).join('');
+  let checked = 0;
+  for (let run = 0; run < 6000; run += 1) {
+    // One to three lines joined by hard breaks; readers drop leading/trailing whitespace, so none is generated.
+    // List items and table cells store tabs as spaces (marked / Tiptap limitation), so those runs use none.
+    const inList = [3, 4, 5].includes(run % 6);
+    const lines = Array.from({ length: 1 + Math.floor(next() * 3) }, word)
+      .map((l) => (inList ? l.replaceAll(String.fromCharCode(9), ' ') : l).trim())
+      // Table cells also collapse whitespace runs (Tiptap's table renderer).
+      .map((l) => (run % 6 === 5 ? l.replace(/\s+/g, ' ') : l));
+    if (lines.some((l) => !l.trim())) continue;
+    const content = lines.flatMap((l, n) => (n ? [{ type: 'hardBreak' }, { type: 'text', text: l }] : [{ type: 'text', text: l }]));
+    const para = { type: 'paragraph', content };
+    const cell = (type, inner) => ({ type, attrs: { colspan: 1, rowspan: 1, colwidth: null }, content: [inner] });
+    const containers = [
+      para,
+      { type: 'heading', attrs: { level: 2 }, content: content.filter((c) => c.type === 'text').slice(0, 1) },
+      { type: 'blockquote', content: [para] },
+      { type: 'bulletList', content: [{ type: 'listItem', content: [para] }] },
+      { type: 'taskList', content: [{ type: 'taskItem', attrs: { checked: false }, content: [para] }] },
+      { type: 'table', content: [
+        { type: 'tableRow', content: [cell('tableHeader', paragraph('h')), cell('tableHeader', paragraph('k'))] },
+        { type: 'tableRow', content: [cell('tableCell', { type: 'paragraph', content: content.filter((c) => c.type === 'text').slice(0, 1) }), cell('tableCell', paragraph('z'))] },
+      ] },
+    ];
+    const block = pipeline.schema.nodeFromJSON(containers[run % containers.length]).toJSON();
+    const doc = { type: 'doc', content: [block] };
+    // A task item cannot hold a hard break in markdown: its lines come back as paragraphs of the item.
+    const expected = block.type !== 'taskList' ? doc.content : [{ ...block, content: [{ ...block.content[0], content: lines.map((l) => paragraph(l)) }] }];
+    const md = pipeline.write(doc, pipeline.read(''));
     const back = reload(md).doc.content;
-    assert.deepEqual(back, [paragraph(text)], `text ${JSON.stringify(text)} → ${JSON.stringify(md)}`);
+    assert.deepEqual(back, expected, `${block.type} lines ${JSON.stringify(lines)} → ${JSON.stringify(md)}`);
+    checked += 1;
   }
+  assert.ok(checked > 3000, `checked ${checked}`);
 });
