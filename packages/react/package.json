@@ -31,6 +31,21 @@
       "types": "./dist/chart-preset.d.ts",
       "import": "./dist/chart-preset.js",
       "require": "./dist/chart-preset.cjs"
+    },
+    "./rich-text": {
+      "types": "./dist/rich-text.d.ts",
+      "import": "./dist/rich-text.js",
+      "require": "./dist/rich-text.cjs"
+    },
+    "./markdown": {
+      "types": "./dist/markdown.d.ts",
+      "import": "./dist/markdown.js",
+      "require": "./dist/markdown.cjs"
+    },
+    "./emoji": {
+      "types": "./dist/emoji.d.ts",
+      "import": "./dist/emoji.js",
+      "require": "./dist/emoji.cjs"
     }
   },
   "scripts": {
@@ -42,20 +57,86 @@
     "size": "node scripts/check-chart-preset-size.mjs"
   },
   "peerDependencies": {
+    "@tiptap/core": "3.31.3",
+    "@tiptap/extension-emoji": "3.31.3",
+    "@tiptap/extension-image": "3.31.3",
+    "@tiptap/extension-list": "3.31.3",
+    "@tiptap/extension-table": "3.31.3",
+    "@tiptap/extensions": "3.31.3",
+    "@tiptap/markdown": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/react": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
+    "@tiptap/suggestion": "3.31.3",
     "echarts": "^5.6.0",
+    "emojibase-data": "17.0.0",
+    "marked": "17.0.6",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-emoji": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extension-list": {
+      "optional": true
+    },
+    "@tiptap/extension-table": {
+      "optional": true
+    },
+    "@tiptap/extensions": {
+      "optional": true
+    },
+    "@tiptap/markdown": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "@tiptap/suggestion": {
+      "optional": true
+    },
     "echarts": {
+      "optional": true
+    },
+    "emojibase-data": {
+      "optional": true
+    },
+    "marked": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@tiptap/core": "3.31.3",
+    "@tiptap/extension-emoji": "3.31.3",
+    "@tiptap/extension-image": "3.31.3",
+    "@tiptap/extension-list": "3.31.3",
+    "@tiptap/extension-table": "3.31.3",
+    "@tiptap/extensions": "3.31.3",
+    "@tiptap/markdown": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/react": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
+    "@tiptap/suggestion": "3.31.3",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "echarts": "^5.6.0",
+    "emojibase-data": "17.0.0",
     "esbuild": "^0.27.0",
+    "jsdom": "30.1.0",
+    "marked": "17.0.6",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   }

@@ -7,7 +7,7 @@ Thin React wrappers over the UIx v2 CSS component library — every component is
 ```sh
 npm i @tensor_1/react @tensor_1/tokens
 ```
-Peer deps: `react` / `react-dom` (`^18` or `^19`). Install `echarts` only when using a chart entry.
+Peer deps: `react` / `react-dom` (`^18` or `^19`). Install `echarts` only when using a chart entry, and the Tiptap/`marked`/`emojibase-data` peers only for `./rich-text` and `./emoji` (see below).
 
 ## Use
 
@@ -44,6 +44,89 @@ workflow surfaces, the main entry exports `Pipeline`/`PipelineStage` (compact or
 
 Large fixed-height tables can use `useVirtualRows(rows, { rowHeight })`; attach its `containerRef` to
 `TableWrap` and render the returned row window between spacer rows.
+
+## Rich text, markdown and emoji
+
+Three optional entries (RTE-01). None of them is imported by the root entry.
+
+| Entry | Exports | Needs |
+|---|---|---|
+| `@tensor_1/react/markdown` | `Markdown`, `parseMarkdown`, `parseInline`, `plainText`, `defaultMarkdownIsSafeUrl` | nothing (server-component safe: no hooks, no `"use client"`) |
+| `@tensor_1/react/rich-text` | `RichTextEditor`, `RichTextEditorFallback`, `roundTripMarkdown`, `DEFAULT_RICH_TEXT_LABELS`, `emojiImageFileName` | the optional peers below |
+| `@tensor_1/react/emoji` | `EmojiPicker`, `ReactionBar`, `loadEmojiData`, `buildEmojiData`, `searchEmoji`, `canRenderEmoji`, `emojiImageFileName`, `normalizeEmojiImageBaseUrl` | `emojibase-data` (dynamic import on first open) |
+
+Install the optional peers at exactly the versions `@tensor_1/react` declares (`npm view @tensor_1/react peerDependencies`):
+`@tiptap/core`, `@tiptap/pm`, `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/markdown`, `@tiptap/extension-list`,
+`@tiptap/extension-table`, `@tiptap/extension-image`, `@tiptap/extension-emoji`, `@tiptap/extensions`,
+`@tiptap/suggestion`, `marked`, `emojibase-data` — all MIT. Styles ship in `@tensor_1/tokens` (`.uix-rich-text`,
+`.uix-prose`, `.uix-emoji-picker`, `.uix-reactions`); the editor injects no `<style>` at runtime.
+
+```tsx
+import { RichTextEditor } from "@tensor_1/react/rich-text";
+import { Markdown } from "@tensor_1/react/markdown";
+
+<RichTextEditor value={body} onChange={setBody} aria-labelledby="body-label" features="full" maxLength={20000} />;
+<Markdown resolveImageSrc={(src) => (isOurImage(src) ? withBasePath(src) : null)}>{body}</Markdown>;
+```
+
+**Markdown is the stored format, and the editor never rewrites it silently.**
+`onChange` fires only for user edits, never on mount or when `value` changes from outside. Blocks the user did not
+touch keep their exact source bytes, including their spacing, list markers, table alignment, CRLF line endings,
+`{{variables}}`, umlauts and emoji ZWJ sequences. Only edited blocks are re-serialized, and their text is escaped
+only where a markdown reader would misread it (`Tom & Jerry` and `snake_case` stay as typed). Raw HTML is never
+interpreted; it stays literal text. The one exception is `<br>`, which is read as a line break because GFM table cells have no other way to hold one. Gate your own content with the same pipeline, which runs without a DOM:
+
+```ts
+import { roundTripMarkdown } from "@tensor_1/react/rich-text";
+for (const doc of corpus) expect(await roundTripMarkdown(doc.body)).toBe(doc.body);
+```
+
+Pass the markdown from `onChange` back as `value` in the same update, as React state does. The editor treats any
+other `value` as an outside change and replaces its content.
+
+Markdown cannot represent everything a user can type. When the editor re-serializes an edited block:
+
+- Leading spaces on a line are dropped.
+- Tabs in list items and table cells, and runs of spaces in table cells, become single spaces.
+- A line break inside a checklist item is saved as a new paragraph of that item.
+- Reference definitions (`[id]: url`) are kept. If their surrounding block is deleted, they move to the end.
+
+Editor props: `features` (`full` / `comment` / `template`), `headingLevels` (limits the toolbar and input rules;
+existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop),
+`isSafeUrl`, `resolveImageSrc` (its return value is used verbatim), `onSubmitShortcut` (Ctrl/Cmd+Enter), `emoji`,
+`emojiImageBaseUrl`, `maxLength` (counter; over the limit sets `aria-invalid`), `placeholder`, `disabled`, `readOnly`,
+`labels` (every string, placeholders `{count}` `{max}`), `emojiPickerLabels`, `emojiLocale`, `id`, `name` (adds a
+hidden input), ARIA props, `variant` (`field` / `composer`, which renders in `Composer` with the toolbar in `ComposerBar`),
+`toolbarEnd`, `minRows`, `className`, `onBlur`. Markdown shortcuts (`## `, `- `, `1. `, `[ ] `, `> `, triple backtick)
+work in every preset; the toolbar is one tab stop with arrow-key navigation and scrolls sideways on narrow screens.
+`RichTextEditorFallback` takes the same props and renders a plain textarea, for loading and error-boundary states.
+
+**No network access.** The editor, picker and reaction bar make no requests. `@tiptap/extension-emoji` is configured
+with a list stripped of its CDN `fallbackImage` URLs and GitHub image emoji (`forceFallbackImages: false`), and the
+emoji dataset is a bundled dynamic-import chunk. A jsdom egress test guards this.
+
+**Emoji fallback images (`emojiImageBaseUrl`).** Unset by default, which means native emoji only; UIx ships no image
+set. On clients without a colour emoji font (VDI, thin clients), pass a same-origin folder (`"/static/emoji"` or
+`"./emoji"`). Values with a scheme or `//` are ignored, with a development warning. Emoji the device cannot draw then
+render as `<img class="uix-emoji-img" src="{base}/{file}" alt="{emoji}">`. `{file}` is every code point of the emoji
+in lowercase hex, joined with `-`, keeping `fe0f` and `200d`:
+
+| Emoji | File |
+|---|---|
+| 👍 | `1f44d.png` |
+| ❤️ | `2764-fe0f.png` |
+| 👩‍💻 | `1f469-200d-1f4bb.png` |
+| 👍🏽 | `1f44d-1f3fd.png` |
+| 🇩🇪 | `1f1e9-1f1ea.png` |
+
+Image sets that drop `fe0f` from file names (Twemoji, for example) need copies under the full name.
+`emojiImageFileName(emoji)` generates the mapping.
+
+`EmojiPicker` (`onSelect`, `trigger`, `locale: 'en' | 'de'`, `labels`, `quickPicks`, `emojiImageBaseUrl`,
+`loadData`) searches localized names, remembers recent picks in `localStorage` and loads its data on first open.
+`ReactionBar` (`reactions`, `onToggle`, `disabled`, `quickPicks`, `labels`, `pickerLabels`, `locale`,
+`emojiImageBaseUrl`) renders `aria-pressed` toggle chips named after the reactors (`{names} reacted with {emoji}`),
+plus an add-reaction picker.
 
 ## UIX-V3 capability components
 

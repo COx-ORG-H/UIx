@@ -19,4 +19,33 @@
   .uix-emoji-picker { display: flex; flex-wrap: wrap; gap: var(--uix-space-1); width: 196px; }
   .uix-emoji-picker__btn { font-size: 18px; line-height: 1; padding: var(--uix-space-2); border: 0; background: transparent; border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-emoji-picker__btn:hover { background: var(--uix-bg-hover); }
+  .uix-emoji-picker__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-reaction:focus-visible, .uix-reaction-add:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-reaction:disabled, .uix-reaction-add:disabled { opacity: .55; cursor: not-allowed; }
+  .uix-reaction > span[aria-hidden] { line-height: inherit; }
+
+  /* full picker (EmojiPicker, RTE-01): search, category jump bar, sectioned 8-column grid */
+  .uix-emoji-picker__anchor { display: inline-flex; }
+  .uix-emoji-picker-popover { padding: var(--uix-space-2); }
+  .uix-emoji-picker--full { display: flex; flex-direction: column; flex-wrap: nowrap; gap: var(--uix-space-2); width: 324px; max-width: calc(100vw - 32px); }
+  .uix-emoji-picker__nav { display: flex; gap: var(--uix-space-0); overflow-x: auto; scrollbar-width: none; }
+  .uix-emoji-picker__nav-btn {
+    flex: none; width: 32px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm);
+    background: transparent; font-size: var(--uix-text-body); cursor: pointer;
+  }
+  .uix-emoji-picker__nav-btn:hover { background: var(--uix-bg-hover); }
+  .uix-emoji-picker__nav-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-emoji-picker__grid { height: 264px; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: var(--uix-space-6); }
+  .uix-emoji-picker__section { content-visibility: auto; contain-intrinsic-size: auto 15rem; }
+  .uix-emoji-picker__heading {
+    position: sticky; top: 0; z-index: var(--uix-z-raised); padding: var(--uix-space-1) var(--uix-space-1);
+    background: var(--uix-surface-2); color: var(--uix-text-muted);
+    font-size: var(--uix-text-eyebrow); font-weight: 600; letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+  }
+  .uix-emoji-picker__cells { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--uix-space-0); }
+  .uix-emoji-picker--full .uix-emoji-picker__btn { display: flex; align-items: center; justify-content: center; padding: var(--uix-space-1); }
+  /* same-origin fallback image for emoji the device cannot draw (emojiImageBaseUrl) */
+  .uix-emoji-img { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -.2em; object-fit: contain; }
+  .uix-emoji-picker__status { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-emoji-picker__status:empty { display: none; }
 }

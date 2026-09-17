@@ -51,6 +51,7 @@
 @import "components/detail-layout.css";
 @import "components/comments.css";
 @import "components/reactions.css";
+@import "components/rich-text.css";
 @import "components/media.css";
 @import "components/lightbox.css";
 @import "components/prose.css";
