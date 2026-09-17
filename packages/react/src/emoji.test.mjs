@@ -103,3 +103,41 @@ test('EmojiPicker renders only its trigger until opened', () => {
   assert.match(html, /role="dialog" aria-label="Choose an emoji"/);
   assert.ok(!html.includes('uix-emoji-picker__btn'));
 });
+
+test('emojiImageBaseUrl accepts same-origin paths only', async () => {
+  const { normalizeEmojiImageBaseUrl } = await import('../dist/emoji.js');
+  const warn = console.warn;
+  const warnings = [];
+  console.warn = (m) => warnings.push(m);
+  try {
+    assert.equal(normalizeEmojiImageBaseUrl(undefined), undefined);
+    assert.equal(normalizeEmojiImageBaseUrl(''), undefined);
+    assert.equal(normalizeEmojiImageBaseUrl('/static/emoji/'), '/static/emoji');
+    assert.equal(normalizeEmojiImageBaseUrl('./emoji'), './emoji');
+    assert.equal(normalizeEmojiImageBaseUrl('/'), '/');
+    assert.equal(normalizeEmojiImageBaseUrl('/tenant/a:b/emoji'), '/tenant/a:b/emoji');
+    for (const bad of ['https://cdn.test/e', 'http://x', '//cdn.test/e', '/' + String.fromCharCode(92) + 'cdn.test', 'javascript:alert(1)', 'data:image/png,x', 'emoji', '../emoji', ' /emoji', '/emo ji']) {
+      assert.equal(normalizeEmojiImageBaseUrl(bad), undefined, bad);
+    }
+    assert.ok(warnings.length > 0 && warnings.every((w) => w.startsWith('uix: emojiImageBaseUrl')));
+  } finally {
+    console.warn = warn;
+  }
+});
+
+test('emoji image files are named by lowercase hyphenated code points', async () => {
+  const { emojiImageFileName, canRenderEmoji } = await import('../dist/emoji.js');
+  assert.equal(emojiImageFileName('👍'), '1f44d.png');
+  assert.equal(emojiImageFileName('❤️'), '2764-fe0f.png');
+  assert.equal(emojiImageFileName('👩‍💻'), '1f469-200d-1f4bb.png');
+  assert.equal(emojiImageFileName('👍🏽'), '1f44d-1f3fd.png');
+  assert.equal(emojiImageFileName('🇩🇪'), '1f1e9-1f1ea.png');
+  assert.equal(emojiImageFileName('#️⃣'), '23-fe0f-20e3.png');
+  assert.equal(canRenderEmoji('👍'), true, 'no DOM → native text');
+});
+
+test('emojiPattern finds whole sequences', async () => {
+  const { emojiPattern } = await import('../dist/emoji-image.js');
+  const found = [...'ok 👩‍💻 and 👍🏽, 🇩🇪 ❤️ text'.matchAll(emojiPattern())].map((m) => m[0]);
+  assert.deepEqual(found, ['👩‍💻', '👍🏽', '🇩🇪', '❤️']);
+});

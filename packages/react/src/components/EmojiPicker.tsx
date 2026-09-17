@@ -9,6 +9,7 @@ import {
   DEFAULT_RECENT_KEY, emojiGridMove, loadEmojiData, pushRecentEmoji, readRecentEmoji, searchEmoji,
 } from '../emoji-model.js';
 import type { EmojiData, EmojiDataLoader, EmojiLocale } from '../emoji-model.js';
+import { useEmojiRenderer } from './EmojiGlyph.js';
 
 export interface EmojiPickerLabels {
   /** Accessible name of the picker dialog. */
@@ -50,7 +51,15 @@ export interface EmojiPickerProps {
   locale?: EmojiLocale;
   /** Emoji shown first, before recents and categories. */
   quickPicks?: ReadonlyArray<string>;
-  /** Replace the emojibase loader (tests, or a self-hosted dataset). */
+  /**
+   * Same-origin folder of fallback PNGs for emoji this device cannot draw (see
+   * `emojiImageFileName` for the naming). Unset = native emoji only.
+   */
+  emojiImageBaseUrl?: string;
+  /**
+   * Replace the emojibase loader (tests, or another bundled dataset). The default loads
+   * a bundled chunk through dynamic `import()`; it never fetches a URL.
+   */
   loadData?: EmojiDataLoader;
   /** localStorage key for recently used emoji. */
   recentStorageKey?: string;
@@ -75,8 +84,9 @@ interface Section {
  */
 export function EmojiPicker({
   onSelect, trigger, labels: labelOverrides, locale = 'en', quickPicks, loadData = loadEmojiData,
-  recentStorageKey = DEFAULT_RECENT_KEY, placement = 'bottom-start', onOpenChange, className,
+  recentStorageKey = DEFAULT_RECENT_KEY, placement = 'bottom-start', onOpenChange, className, emojiImageBaseUrl,
 }: EmojiPickerProps) {
+  const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
   const labels = { ...DEFAULT_EMOJI_PICKER_LABELS, ...labelOverrides };
   const id = useId();
   const popoverId = `${id}-picker`;
@@ -92,16 +102,19 @@ export function EmojiPicker({
   const [active, setActive] = useState(0);
 
   const popoverEl = () => (typeof document === 'undefined' ? null : document.getElementById(popoverId));
+  const isOpen = (el: Element | null | undefined): boolean => {
+    try { return !!el?.matches(':popover-open'); } catch { return false; }
+  };
 
   useEffect(() => {
     const el = popoverEl();
     if (!el) return;
     const onToggle = (event: Event) => {
       const { newState } = event as Event & { newState?: string };
-      const isOpen = newState ? newState === 'open' : el.matches(':popover-open');
-      setOpen(isOpen);
-      onOpenChange?.(isOpen);
-      if (isOpen) {
+      const nowOpen = newState ? newState === 'open' : isOpen(el);
+      setOpen(nowOpen);
+      onOpenChange?.(nowOpen);
+      if (nowOpen) {
         setRecent(readRecentEmoji(recentStorageKey));
         setQuery('');
         setActive(0);
@@ -133,7 +146,7 @@ export function EmojiPicker({
 
   const hide = () => {
     const el = popoverEl();
-    if (el?.matches(':popover-open')) el.hidePopover();
+    if (el && isOpen(el)) el.hidePopover();
   };
 
   const sections: Section[] = useMemo(() => {
@@ -199,7 +212,7 @@ export function EmojiPicker({
     pointerWasOpen.current = null;
     // A pointer press outside an open auto popover already closed it (light dismiss).
     if (was === true) return;
-    if (el.matches(':popover-open')) el.hidePopover();
+    if (isOpen(el)) el.hidePopover();
     else el.showPopover();
   };
 
@@ -210,7 +223,7 @@ export function EmojiPicker({
         'aria-expanded': open,
         'aria-controls': popoverId,
         onPointerDown: (event: MouseEvent<HTMLElement>) => {
-          pointerWasOpen.current = !!popoverEl()?.matches(':popover-open');
+          pointerWasOpen.current = isOpen(popoverEl());
           (triggerProps.onPointerDown as ((e: MouseEvent<HTMLElement>) => void) | undefined)?.(event);
         },
         onClick: (event: MouseEvent<HTMLElement>) => {
@@ -270,7 +283,7 @@ export function EmojiPicker({
                       if (start >= 0) focusCell(start);
                     }}
                   >
-                    <span aria-hidden="true">{section.emojis[0]}</span>
+                    <span aria-hidden="true">{section.emojis[0] ? renderEmoji(section.emojis[0]) : null}</span>
                   </button>
                 ))}
               </div>
@@ -299,7 +312,7 @@ export function EmojiPicker({
                             onClick={() => choose(emoji)}
                             onFocus={() => setActive(index)}
                           >
-                            {emoji}
+                            {renderEmoji(emoji)}
                           </button>
                         );
                       })}

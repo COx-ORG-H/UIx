@@ -311,6 +311,14 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-label"
   },
+  "rich-text": {
+    "route": "examples-rich-text",
+    "selector": ".uix-rich-text"
+  },
+  "markdown": {
+    "route": "examples-rich-text",
+    "selector": ".uix-markdown"
+  },
   "reactions": {
     "route": "examples-crm-itsm",
     "selector": ".uix-reactions"

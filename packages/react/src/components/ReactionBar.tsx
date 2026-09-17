@@ -4,6 +4,7 @@ import { cx } from '../cx.js';
 import { formatLabel } from '../emoji-model.js';
 import type { EmojiDataLoader, EmojiLocale } from '../emoji-model.js';
 import { EditorIcon } from './EditorIcons.js';
+import { useEmojiRenderer } from './EmojiGlyph.js';
 import { EmojiPicker } from './EmojiPicker.js';
 import type { EmojiPickerLabels } from './EmojiPicker.js';
 import { Tooltip } from './Tooltip.js';
@@ -55,6 +56,8 @@ export interface ReactionBarProps {
   /** Language of emoji names in the picker. Default `'en'`. */
   locale?: EmojiLocale;
   loadData?: EmojiDataLoader;
+  /** Same-origin folder of fallback emoji PNGs, as on EmojiPicker. Unset = native emoji only. */
+  emojiImageBaseUrl?: string;
   /** Names listed before "and N more". Default 10. */
   maxNames?: number;
   className?: string;
@@ -68,8 +71,9 @@ export interface ReactionBarProps {
  */
 export function ReactionBar({
   reactions, onToggle, disabled = false, quickPicks = DEFAULT_QUICK_REACTIONS, labels: labelOverrides,
-  pickerLabels, locale, loadData, maxNames = 10, className,
+  pickerLabels, locale, loadData, maxNames = 10, className, emojiImageBaseUrl,
 }: ReactionBarProps) {
+  const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
   const labels = { ...DEFAULT_REACTION_BAR_LABELS, ...labelOverrides };
 
   const describe = (reaction: ReactionSummary): string => {
@@ -97,7 +101,7 @@ export function ReactionBar({
               disabled={disabled}
               onClick={() => onToggle(reaction.emoji)}
             >
-              <span aria-hidden="true">{reaction.emoji}</span>
+              <span aria-hidden="true">{renderEmoji(reaction.emoji)}</span>
               <span className="uix-reaction__count" aria-hidden="true">{reaction.count}</span>
             </button>
           </Tooltip>
@@ -108,6 +112,7 @@ export function ReactionBar({
         labels={pickerLabels}
         locale={locale}
         loadData={loadData}
+        emojiImageBaseUrl={emojiImageBaseUrl}
         onSelect={(emoji) => {
           if (!reactions.some((r) => r.emoji === emoji && r.reactedByMe)) onToggle(emoji);
         }}

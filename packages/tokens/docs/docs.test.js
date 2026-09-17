@@ -161,13 +161,13 @@ test('each component has an explicit specimen using a selector from its own CSS 
 test('showcase-only compositions are explicit and never presented as CSS exports', () => {
   assert.deepEqual(COMPOSITE_PATTERNS, [
     'Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog',
-    'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer',
+    'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown',
   ]);
   assert.deepEqual(
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 92);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 94);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -198,9 +198,9 @@ test('specialized component references open their closest integrated example', (
 });
 
 test('all migrated showcase routes resolve and remain uniquely addressable', () => {
-  assert.equal(SHOWCASE_PAGES.length, 25);
+  assert.equal(SHOWCASE_PAGES.length, 26);
   assert.equal(new Set(SHOWCASE_PAGES.map((page) => page.slug)).size, SHOWCASE_PAGES.length);
-  assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'advanced').length, 10);
+  assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'advanced').length, 11);
   assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'workspace').length, 1);
   for (const page of SHOWCASE_PAGES) assert.equal(getPage(page.slug), page.slug);
 });
@@ -258,7 +258,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 68);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 71);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });

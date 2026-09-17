@@ -97,7 +97,7 @@ const NAV_ITEMS = [
   { name: 'Data workflows', slug: 'data-workflows', group: 'Patterns', summary: 'Filters, saved views, pinning, and record peek.', keywords: ['table', 'filters', 'peek', 'pin'] },
   { name: 'Pipeline', slug: 'pipeline', group: 'Patterns', summary: 'Compact and detailed stage rails for operational progress.', keywords: ['workflow', 'stage', 'approval', 'duration', 'mission control'] },
   { name: 'Flow', slug: 'flow', group: 'Patterns', summary: 'Presentational process graphs with explicit node state.', keywords: ['workflow', 'node', 'connector', 'graph', 'mission control'] },
-  { name: 'Example gallery', slug: 'examples', group: 'Examples', summary: 'Browse every migrated component and pattern specimen inside the docs.', keywords: ['showcase', 'demos', 'style guide'], badge: '25', featured: true },
+  { name: 'Example gallery', slug: 'examples', group: 'Examples', summary: 'Browse every migrated component and pattern specimen inside the docs.', keywords: ['showcase', 'demos', 'style guide'], badge: '26', featured: true },
 ];
 
 export const COMPONENT_GROUPS = {
@@ -107,10 +107,10 @@ export const COMPONENT_GROUPS = {
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
-  'Content & utilities': ['Typography', 'Prose', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits'],
+  'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits'],
 };
 
-export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer'];
+export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown'];
 
 export const SHOWCASE_SECTION_MAP = {
   foundations: 'examples-foundations',
@@ -146,7 +146,7 @@ export const REACT_COMPONENT_SLUGS = [
   'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph',
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
-  'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'tree',
+  'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'tree', 'rich-text', 'markdown', 'reactions',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -309,7 +309,7 @@ const exampleCards = (source) => SHOWCASE_PAGES
   .map((page) => `<a class="uix-docs__component-card" href="#${page.slug}"><strong>${esc(page.title)}</strong><span>${esc(page.summary)}</span><em>Open examples →</em></a>`)
   .join('');
 
-const renderExamplesOverview = () => `${pageHeader('Examples', 'Example gallery', 'See how UIx components work together in forms, workspaces and operational workflows. Each composition connects back to the component contracts it uses.', ['25 compositions', '80 CSS modules', 'shared component specimens'])}
+const renderExamplesOverview = () => `${pageHeader('Examples', 'Example gallery', 'See how UIx components work together in forms, workspaces and operational workflows. Each composition connects back to the component contracts it uses.', ['26 compositions', '81 CSS modules', 'shared component specimens'])}
   ${section('product-example', 'Complete product composition', `<div class="uix-docs__component-grid">${exampleCards('workspace')}</div>`)}
   ${section('core-examples', 'Foundations and component families', `<div class="uix-docs__component-grid">${exampleCards('core')}</div>`)}
   ${section('advanced-examples', 'Advanced workflow examples', `<div class="uix-docs__component-grid">${exampleCards('advanced')}</div>`)}
@@ -343,7 +343,7 @@ const renderComponentStatus = () => {
     const react = REACT_COMPONENT_SLUGS.includes(item.slug);
     return `<tr><th scope="row"><a href="#${item.slug}">${esc(item.name)}</a><span>${esc(item.group)}</span></th><td>${statusCell(css, css ? 'CSS module' : 'Composed')}</td><td>${statusCell(react, 'React')}</td><td>${statusCell(true, 'Reference')}</td><td><a href="#${exampleRouteFor(item)}">Open example</a></td></tr>`;
   }).join('');
-  return `${pageHeader('Components', 'Component status', 'Implementation layers are reported independently. A CSS module does not imply a React adapter, and a visual example does not imply a supported behavior API.', ['80 CSS modules', '58 mapped React components', '82 documented entries'])}
+  return `${pageHeader('Components', 'Component status', 'Implementation layers are reported independently. A CSS module does not imply a React adapter, and a visual example does not imply a supported behavior API.', ['81 CSS modules', '58 mapped React components', '82 documented entries'])}
     ${callout('What “covered” means', 'Every row has a maintained reference and an integrated example. CSS and React availability remain explicit so product teams can choose the correct integration without guessing.')}
     ${section('coverage-matrix', 'Coverage matrix', `<div class="uix-docs__status-table"><table class="uix-table"><thead><tr><th scope="col">Component</th><th scope="col">CSS</th><th scope="col">React</th><th scope="col">Docs</th><th scope="col">Examples</th></tr></thead><tbody>${rows}</tbody></table></div>`)}
     ${section('coverage-policy', 'Coverage policy', `<ul><li>New public CSS modules must add a catalogue entry, reference route, and example in the same change.</li><li>React availability is verified from the package export surface, not inferred from a similarly named stylesheet.</li><li>Showcase-only classes must be declared in <code>guide/guide.css</code> and are never presented as product contracts.</li><li>Any class defined in neither production CSS nor the showcase stylesheet fails the documentation coverage test.</li></ul>`)}`;
@@ -372,7 +372,7 @@ const PAGES = {
     ${section('contribution-contract', 'Add a component as one complete change', `<ol><li>Define who needs it, when to use it, input/output, keyboard behavior, empty/loading/error/disabled states and expected appearance.</li><li>Add production styles in <code>packages/tokens/styles/components/&lt;slug&gt;.css</code>, using existing UIx tokens and the component cascade layer. Register the stylesheet in <code>styles/component-list.css</code>.</li><li>If stateful React behavior belongs in the system, add an adapter in <code>packages/react/src/components</code>, export it from <code>src/index.ts</code>, and document the public props. Keep network requests and product policy in the consumer.</li><li>Add a maintained specimen in <code>docs/showcase-data.js</code> and a selector in <code>docs/component-specimens.js</code>. Register the component and specific usage guidance in <code>docs/docs.js</code>. Its own page must visibly render the component.</li><li>Test appearance in both themes, narrow layout, keyboard operation, validation and state transitions. Copy the example into a consumer and confirm it uses published UIx exports.</li><li>Add a changeset for package changes, update the API report when needed, run the repository gates and release through the maintainer workflow. Upgrade consuming projects and verify the actual rendered component.</li></ol>`)}
     ${section('agent-handoff', 'Contract for humans and agents', `${codeBlock('Component: <name and slug>\nUse when: <user task>\nAvoid when: <better alternative>\nInputs and outputs: <values, events, ownership>\nVisual states: <default, focus, disabled, invalid, empty, loading>\nKeyboard: <tab order and shortcuts>\nPreview: <component route and specimen selector>\nIntegration: <CSS imports; React export if available>\nVerification: <behavior checks and screenshots>\nConsumer: <project that proves the contract>', 'text')}<p>Use <a href="../../../Docs/contract-change-process.md">the contract change process</a> and <a href="../../../Docs/maintainer-runbook.md">the maintainer runbook</a> for versioning and release rules.</p>`)}
     ${section('completion-gate', 'Completion means usable and documented', `<p>A stylesheet appearing somewhere in a gallery is insufficient. Every catalogue entry must resolve to a visible specimen on its own page. The component-to-specimen registry and browser coverage tests enforce this relationship. New behavior also needs its own interaction tests.</p>`)}`,
-  introduction: () => `${pageHeader('Getting started', 'Build enterprise interfaces with less drift.', 'UIx is the shared visual and interaction contract for dense operational products—available as framework-neutral CSS, typed tokens, Tailwind bindings, and React primitives.', ['v2.13.0', '80 CSS modules', '58 React components'])}
+  introduction: () => `${pageHeader('Getting started', 'Build enterprise interfaces with less drift.', 'UIx is the shared visual and interaction contract for dense operational products—available as framework-neutral CSS, typed tokens, Tailwind bindings, and React primitives.', ['v2.13.0', '81 CSS modules', '58 React components'])}
     <div class="uix-docs__hero-grid">
       <div>
         <div class="uix-docs__hero-actions">
@@ -477,7 +477,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('keyboard', 'Keyboard behavior', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Expected behavior</th></tr></thead><tbody><tr><td>Global</td><td>Tab and Shift+Tab follow visual order; focus is never trapped accidentally.</td></tr><tr><td>Dialog / drawer</td><td>Focus enters the overlay, remains contained, closes on Escape, then returns to the trigger.</td></tr><tr><td>Tabs</td><td>Arrow keys move between tabs; the selected tab owns the active panel.</td></tr><tr><td>Menu / listbox</td><td>Arrow keys move active choice; Enter or Space commits; Escape dismisses.</td></tr><tr><td>Dense table</td><td>High-frequency actions remain keyboard-reachable without turning every cell into a tab stop.</td></tr></tbody></table>`)}
     ${section('review', 'Before shipping', `${compare('Test the real journey with a keyboard, zoom, both themes, and at least the required screen-reader matrix.', 'Assume that using a UIx class automatically makes the surrounding workflow accessible.')}`)}`,
 
-  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['80 CSS modules', '2 composite patterns', '58 React mappings'])}${callout('Coverage is enforced', 'Every independently importable component stylesheet has a reference route and an integrated example. Composite patterns are labeled separately so availability is never ambiguous.')}${renderCatalog()}${section('examples', 'See components in context', `<p>Examples, state matrices, and advanced workflow specimens now live inside this documentation system.</p><p><a class="uix-btn uix-btn--primary" href="#examples">Browse example gallery</a> <a class="uix-btn uix-btn--outline" href="#component-status">Compare component status</a></p>`)}`,
+  'all-components': () => `${pageHeader('Components', 'Component catalogue', 'A production-oriented inventory spanning primitives, navigation, dense data, feedback, CRM and ITSM patterns, and advanced authoring workflows.', ['81 CSS modules', '2 composite patterns', '58 React mappings'])}${callout('Coverage is enforced', 'Every independently importable component stylesheet has a reference route and an integrated example. Composite patterns are labeled separately so availability is never ambiguous.')}${renderCatalog()}${section('examples', 'See components in context', `<p>Examples, state matrices, and advanced workflow specimens now live inside this documentation system.</p><p><a class="uix-btn uix-btn--primary" href="#examples">Browse example gallery</a> <a class="uix-btn uix-btn--outline" href="#component-status">Compare component status</a></p>`)}`,
 
   'component-status': renderComponentStatus,
 

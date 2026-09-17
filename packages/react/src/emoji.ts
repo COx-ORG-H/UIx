@@ -6,6 +6,7 @@ export type { EmojiPickerProps, EmojiPickerLabels } from './components/EmojiPick
 export { ReactionBar, DEFAULT_REACTION_BAR_LABELS, DEFAULT_QUICK_REACTIONS } from './components/ReactionBar.js';
 export type { ReactionBarProps, ReactionBarLabels, ReactionSummary } from './components/ReactionBar.js';
 export { buildEmojiData, loadEmojiData, searchEmoji } from './emoji-model.js';
+export { canRenderEmoji, emojiImageFileName, normalizeEmojiImageBaseUrl } from './emoji-image.js';
 export type {
   EmojiData, EmojiDataLoader, EmojiEntry, EmojiGroup, EmojiLocale, CompactEmoji, EmojiMessages,
 } from './emoji-model.js';

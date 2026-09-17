@@ -1,0 +1,154 @@
+/* uix rich-text editor — markdown editing surface (.uix-prose), a roving-tabindex toolbar that
+   scrolls sideways on narrow screens, source mode, counter/status footer, link popover and the
+   :shortcode emoji list. Composes with .uix-composer for comment boxes. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-rich-text {
+    display: flex; flex-direction: column; min-width: 0;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-rich-text:hover { border-color: var(--uix-border-strong); }
+  .uix-rich-text:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-rich-text[data-invalid] { border-color: var(--uix-danger); }
+  .uix-rich-text[data-invalid]:focus-within { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
+  .uix-rich-text[data-disabled] { opacity: .55; background: var(--uix-bg-subtle); }
+  .uix-rich-text[data-readonly] { background: var(--uix-bg-subtle); }
+  /* The fallback is a bare textarea: the textarea draws the box, not the wrapper. */
+  .uix-rich-text--fallback { border: 0; background: transparent; }
+  .uix-rich-text--fallback:focus-within { box-shadow: none; }
+
+  /* toolbar — one row; scrolls instead of wrapping so a narrow screen never loses a control */
+  .uix-rich-text__toolbar {
+    display: flex; align-items: center; gap: var(--uix-space-1); min-width: 0;
+    padding: var(--uix-space-1) var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin;
+  }
+  .uix-rich-text__group { display: flex; align-items: center; gap: var(--uix-space-0); flex: none; }
+  .uix-rich-text__group + .uix-rich-text__group { padding-left: var(--uix-space-1); border-left: 1px solid var(--uix-border); }
+  .uix-rich-text__group--end { margin-left: auto; }
+  .uix-rich-text__tool {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--uix-radius-sm);
+    background: transparent; color: var(--uix-text-hushed); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-rich-text__tool svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-rich-text__tool:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-rich-text__tool:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-rich-text__tool[aria-pressed="true"] { background: var(--uix-brand-muted); color: var(--uix-accent-text); }
+  .uix-rich-text__tool:disabled { opacity: .4; cursor: not-allowed; background: transparent; }
+
+  /* editing surface — .uix-prose supplies the typography */
+  .uix-rich-text__surface { position: relative; display: flex; flex-direction: column; min-width: 0; }
+  .uix-rich-text__editor { display: contents; }
+  .uix-rich-text__content {
+    max-width: none; padding: var(--uix-space-3); outline: none; overflow-wrap: anywhere;
+    font-size: var(--uix-text-body); line-height: var(--uix-leading-body); cursor: text;
+  }
+  .uix-rich-text[data-disabled] .uix-rich-text__content { cursor: not-allowed; }
+  /* ProseMirror essentials (the editor runs with injectCSS off, so a strict style-src CSP holds) */
+  .uix-rich-text__content.ProseMirror {
+    position: relative; white-space: pre-wrap; white-space: break-spaces; word-wrap: break-word;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0;
+  }
+  .uix-rich-text__content [contenteditable="false"] { white-space: normal; }
+  .uix-rich-text__content [contenteditable="false"] [contenteditable="true"],
+  .uix-rich-text__content pre { white-space: pre-wrap; }
+  .uix-rich-text__content img.ProseMirror-separator { display: inline; border: 0; margin: 0; width: 0; height: 0; }
+  .uix-rich-text__content .ProseMirror-gapcursor { display: none; position: absolute; margin: 0; pointer-events: none; }
+  .uix-rich-text__content .ProseMirror-gapcursor::after {
+    content: ""; display: block; position: absolute; top: -2px; width: 20px; border-top: 1px solid var(--uix-text);
+    animation: uix-rich-text-caret 1.1s steps(2, start) infinite;
+  }
+  .uix-rich-text__content.ProseMirror-focused .ProseMirror-gapcursor { display: block; }
+  .uix-rich-text__content.ProseMirror-hideselection *::selection { background: transparent; }
+  .uix-rich-text__content.ProseMirror-hideselection * { caret-color: transparent; }
+  .uix-rich-text__content .tableWrapper { overflow-x: auto; }
+  @keyframes uix-rich-text-caret { to { visibility: hidden; } }
+  .uix-rich-text__content--loading { color: var(--uix-text-muted); cursor: progress; }
+  .uix-rich-text__content--loading > .uix-prose { max-width: none; }
+  .uix-rich-text__content :where(p, li) { color: var(--uix-text); }
+  /* Editor headings stay h1–h3 in the DOM; they look like the viewer's demoted h3–h5. */
+  .uix-rich-text__content h1 { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
+  .uix-rich-text__content h2 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
+  .uix-rich-text__content h3 { font-size: var(--uix-text-body); line-height: var(--uix-leading-body); }
+  .uix-rich-text__content .is-editor-empty:first-child::before {
+    content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--uix-text-muted);
+  }
+  .uix-rich-text__content a { cursor: text; }
+  /* the glyph stays in the text for editing and copying; its fallback image is drawn beside it */
+  .uix-rich-text__emoji-text { font-size: 0; }
+  .uix-rich-text__content .ProseMirror-selectednode { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-rich-text__content .selectedCell { background: var(--uix-row-selected-bg); }
+  .uix-rich-text__content table { table-layout: fixed; width: 100%; }
+  .uix-rich-text__content ul[data-type="taskList"] { list-style: none; padding-left: 0; }
+  .uix-rich-text__content ul[data-type="taskList"] li { display: flex; gap: var(--uix-space-2); align-items: flex-start; }
+  .uix-rich-text__content ul[data-type="taskList"] li > label { flex: none; padding-top: var(--uix-space-1); }
+  .uix-rich-text__content ul[data-type="taskList"] li > div { flex: 1 1 auto; min-width: 0; }
+  .uix-rich-text__content ul[data-type="taskList"] input { accent-color: var(--uix-accent); margin: 0; }
+  .uix-rich-text__image-link {
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: 0 var(--uix-space-2);
+    border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-sm);
+    color: var(--uix-link); font-size: var(--uix-text-meta);
+  }
+
+  /* source mode — the textarea sits flush inside the frame */
+  .uix-rich-text__source.uix-textarea {
+    border: 0; border-radius: 0; background: transparent; box-shadow: none;
+    font-family: var(--uix-font-mono); font-size: var(--uix-text-meta);
+  }
+  .uix-rich-text__source.uix-textarea:focus { box-shadow: none; }
+  .uix-rich-text--fallback .uix-rich-text__source.uix-textarea {
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+    font-family: inherit; font-size: var(--uix-text-body);
+  }
+  .uix-rich-text--fallback .uix-rich-text__source.uix-textarea:focus { box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+
+  /* footer — status, counter, trailing actions */
+  .uix-rich-text__footer {
+    display: flex; align-items: center; justify-content: flex-end; gap: var(--uix-space-2); flex-wrap: wrap;
+    padding: 0 var(--uix-space-3) var(--uix-space-2);
+  }
+  .uix-rich-text__footer:not(:has(> :not(:empty))) { display: none; }
+  .uix-rich-text--fallback .uix-rich-text__footer { padding: var(--uix-space-1) 0 0; }
+  .uix-rich-text__status { margin-right: auto; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-rich-text__status:empty { display: none; }
+  .uix-rich-text__status[data-kind="error"] { color: var(--uix-danger-text); }
+  .uix-rich-text__counter { font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
+  .uix-rich-text__counter[data-over] { color: var(--uix-danger-text); font-weight: 600; }
+
+  /* composer variant — the composer draws the box; the toolbar joins the action bar */
+  .uix-rich-text--composer { border-radius: var(--uix-radius-md); }
+  .uix-rich-text--composer.uix-rich-text:focus-within { box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-rich-text--composer .uix-rich-text__bar { align-items: center; justify-content: flex-start; min-width: 0; }
+  .uix-rich-text--composer .uix-rich-text__toolbar { flex: 1 1 auto; padding: 0; border-bottom: 0; }
+  .uix-rich-text--composer .uix-rich-text__group--end { margin-left: 0; }
+  .uix-rich-text--composer .uix-rich-text__counter,
+  .uix-rich-text--composer .uix-rich-text__status { flex: none; margin-right: 0; }
+  .uix-rich-text--composer .uix-rich-text__bar > :last-child:not(.uix-rich-text__toolbar) { margin-left: auto; }
+  .uix-rich-text--composer .uix-rich-text__source.uix-textarea { border: 0; box-shadow: none; }
+
+  /* link popover */
+  .uix-rich-text__link { width: 320px; max-width: calc(100vw - 32px); padding: var(--uix-space-3); }
+  .uix-rich-text__link-form { display: flex; flex-direction: column; gap: var(--uix-space-3); }
+  .uix-rich-text__link-actions { display: flex; justify-content: flex-end; gap: var(--uix-space-2); }
+
+  /* :shortcode suggestions */
+  .uix-rich-text__suggest {
+    position: fixed; z-index: var(--uix-z-dropdown); min-width: 220px; max-height: 280px; overflow-y: auto;
+    padding: var(--uix-space-1); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface-2); box-shadow: var(--uix-shadow-popover); color: var(--uix-text);
+  }
+  .uix-rich-text__suggest-item {
+    display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2);
+    border-radius: var(--uix-radius-sm); cursor: pointer; font-size: var(--uix-text-body);
+  }
+  .uix-rich-text__suggest-item:hover { background: var(--uix-bg-hover); }
+  .uix-rich-text__suggest-item[aria-selected="true"] { background: var(--uix-brand-muted); color: var(--uix-accent-text); }
+  .uix-rich-text__suggest-emoji { font-size: var(--uix-text-h3); line-height: 1; }
+  .uix-rich-text__suggest-name { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uix-rich-text, .uix-rich-text__tool { transition: none; }
+  }
+}

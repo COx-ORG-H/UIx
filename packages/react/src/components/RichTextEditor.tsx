@@ -8,14 +8,19 @@ import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { Markdown as MarkdownExtension } from '@tiptap/markdown';
 import { Placeholder } from '@tiptap/extensions';
 import { Image } from '@tiptap/extension-image';
-import { Emoji, emojis as emojiItems } from '@tiptap/extension-emoji';
+import { Emoji } from '@tiptap/extension-emoji';
 import type { EmojiItem } from '@tiptap/extension-emoji';
 import { Suggestion } from '@tiptap/suggestion';
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
-import { PluginKey } from '@tiptap/pm/state';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import type { Node as PMNode } from '@tiptap/pm/model';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { cx } from '../cx.js';
 import { computePosition } from '../overlay-position.js';
 import { formatLabel } from '../emoji-model.js';
+import { canRenderEmoji, emojiImageSrc, emojiPattern, normalizeEmojiImageBaseUrl } from '../emoji-image.js';
+import { OFFLINE_EMOJI_ITEMS } from '../rich-text/emoji-items.js';
+import { useEmojiRenderer } from './EmojiGlyph.js';
 import type { EmojiLocale } from '../emoji-model.js';
 import {
   createMarked, createSchemaExtensions, defaultIsSafeUrl, patchManager, readMarkdown, writeMarkdown,
@@ -135,6 +140,13 @@ export interface RichTextEditorProps {
   onSubmitShortcut?: () => void;
   /** Emoji button and `:shortcode` suggestions. Default `true`. */
   emoji?: boolean;
+  /**
+   * Same-origin folder of fallback emoji PNGs for devices without a colour emoji font
+   * (e.g. `/static/emoji`). Emoji the device cannot draw show as
+   * `<img src="{base}/{codepoints}.png">`; see `emojiImageFileName`. Values with a scheme or
+   * `//` are ignored. Unset = native emoji only; UIx ships no image set.
+   */
+  emojiImageBaseUrl?: string;
   /** Shows a character counter (markdown characters); over the limit sets `aria-invalid`. */
   maxLength?: number;
   placeholder?: string;
@@ -177,6 +189,8 @@ const PRESETS: Record<RichTextFeatures, ReadonlySet<Control>> = {
 const emojiSuggestionKey = new PluginKey('uixEmojiSuggestion');
 const SHORTCODE_RE = /:([a-zA-Z0-9_+-]+):$/;
 
+const emojiItems = OFFLINE_EMOJI_ITEMS;
+
 const findShortcode = (name: string): EmojiItem | undefined =>
   emojiItems.find((item) => item.emoji && (item.name === name || item.shortcodes.includes(name)));
 
@@ -208,6 +222,10 @@ type SuggestBridge = {
 
 const htmlAttr = (value: string | boolean | undefined): string | undefined =>
   value === undefined || value === false || value === '' ? undefined : String(value);
+
+const popoverOpen = (el: Element): boolean => {
+  try { return el.matches(':popover-open'); } catch { return false; }
+};
 
 const isMac = (): boolean => typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
 
@@ -279,8 +297,10 @@ export function RichTextEditor(props: RichTextEditorProps) {
     value, onChange, features = 'full', headingLevels = [1, 2, 3], onUploadImage, isSafeUrl = defaultIsSafeUrl,
     resolveImageSrc, onSubmitShortcut, emoji = true, maxLength, placeholder, disabled = false, readOnly = false,
     labels: labelOverrides, emojiPickerLabels, emojiLocale, id, name, variant = 'field', toolbarEnd, minRows,
-    className, onBlur,
+    className, onBlur, emojiImageBaseUrl,
   } = props;
+  const emojiBase = useMemo(() => normalizeEmojiImageBaseUrl(emojiImageBaseUrl), [emojiImageBaseUrl]);
+  const renderEmoji = useEmojiRenderer(emojiBase);
   const labels = useMemo(() => ({ ...DEFAULT_RICH_TEXT_LABELS, ...labelOverrides }), [labelOverrides]);
   const uid = useId();
   const counterId = `${uid}-counter`;
@@ -390,6 +410,10 @@ export function RichTextEditor(props: RichTextEditorProps) {
         return [Suggestion({ editor: this.editor, ...this.options.suggestion })];
       },
     }).configure({
+      // Offline list: no CDN fallbackImage, no GitHub image-only emoji (on-prem, CSP img-src 'self').
+      emojis: [...emojiItems],
+      enableEmoticons: false,
+      forceFallbackImages: false,
       suggestion: {
         char: ':',
         pluginKey: emojiSuggestionKey,
@@ -426,6 +450,46 @@ export function RichTextEditor(props: RichTextEditorProps) {
       },
     });
 
+    // Same-origin fallback images for emoji the device cannot draw; only with emojiImageBaseUrl.
+    const emojiImages = Extension.create({
+      name: 'uixEmojiImages',
+      addProseMirrorPlugins() {
+        const key = new PluginKey<DecorationSet>('uixEmojiImages');
+        const build = (doc: PMNode): DecorationSet => {
+          if (!emojiBase) return DecorationSet.empty;
+          const decorations: Decoration[] = [];
+          doc.descendants((node, pos) => {
+            if (node.type.spec.code) return false;
+            if (!node.isText || !node.text) return true;
+            for (const match of node.text.matchAll(emojiPattern())) {
+              const glyph = match[0];
+              if (canRenderEmoji(glyph)) continue;
+              const from = pos + (match.index ?? 0);
+              decorations.push(Decoration.inline(from, from + glyph.length, { class: 'uix-rich-text__emoji-text' }));
+              decorations.push(Decoration.widget(from, () => {
+                const img = document.createElement('img');
+                img.className = 'uix-emoji-img';
+                img.alt = glyph;
+                img.draggable = false;
+                img.src = emojiImageSrc(emojiBase, glyph);
+                return img;
+              }, { side: -1, key: `emoji-${glyph}`, ignoreSelection: true }));
+            }
+            return false;
+          });
+          return DecorationSet.create(doc, decorations);
+        };
+        return [new Plugin<DecorationSet>({
+          key,
+          state: {
+            init: (_, state) => build(state.doc),
+            apply: (tr, previous) => (tr.docChanged ? build(tr.doc) : previous),
+          },
+          props: { decorations: (state) => key.getState(state) },
+        })];
+      },
+    });
+
     return [
       ...createSchemaExtensions({
         headingLevels: headingKey.split(',').map(Number) as RichTextHeadingLevel[],
@@ -436,8 +500,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
       Placeholder.configure({ placeholder: () => latest.current.placeholder ?? '' }),
       shortcuts,
       ...(emoji ? [unicodeEmoji] : []),
+      ...(emojiBase ? [emojiImages] : []),
     ];
-  }, [headingKey, emoji]);
+  }, [headingKey, emoji, emojiBase]);
 
   const managerOf = (ed: Editor) => {
     const manager = (ed as Editor & { markdown?: Parameters<typeof patchManager>[0] }).markdown
@@ -475,6 +540,8 @@ export function RichTextEditor(props: RichTextEditorProps) {
   const editor = useEditor({
     extensions,
     immediatelyRender: false,
+    // Styles ship in @tensor_1/tokens (rich-text.css); no runtime <style> injection under CSP.
+    injectCSS: false,
     shouldRerenderOnTransaction: false,
     editable: !disabled && !readOnly,
     editorProps: {
@@ -581,14 +648,14 @@ export function RichTextEditor(props: RichTextEditorProps) {
     setLinkUrl(String(editor.getAttributes('link').href ?? ''));
     setLinkError(false);
     const pop = document.getElementById(linkPopoverId);
-    if (pop && !pop.matches(':popover-open')) pop.showPopover();
+    if (pop && !popoverOpen(pop)) pop.showPopover();
     requestAnimationFrame(() => linkInputRef.current?.select());
   };
   openLinkRef.current = openLink;
 
   const closeLink = () => {
     const pop = document.getElementById(linkPopoverId);
-    if (pop?.matches(':popover-open')) pop.hidePopover();
+    if (pop && popoverOpen(pop)) pop.hidePopover();
     editor?.commands.focus();
   };
 
@@ -769,6 +836,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
           <EmojiPicker
             labels={emojiPickerLabels}
             locale={emojiLocale}
+            emojiImageBaseUrl={emojiBase}
             onSelect={insertEmoji}
             trigger={
               (() => {
@@ -805,7 +873,8 @@ export function RichTextEditor(props: RichTextEditorProps) {
             onSubmit={(event) => { event.preventDefault(); applyLink(); }}
             onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); closeLink(); } }}
           >
-            <label className="uix-label" htmlFor={`${uid}-link-url`}>{labels.linkUrl}</label>
+            <div className="uix-field">
+            <label className="uix-field__label" htmlFor={`${uid}-link-url`}>{labels.linkUrl}</label>
             <input
               ref={linkInputRef}
               id={`${uid}-link-url`}
@@ -818,7 +887,12 @@ export function RichTextEditor(props: RichTextEditorProps) {
               aria-describedby={linkError ? `${uid}-link-error` : undefined}
               onChange={(event) => { setLinkUrl(event.target.value); setLinkError(false); }}
             />
-            {linkError ? <p id={`${uid}-link-error`} className="uix-rich-text__link-error" role="alert">{labels.linkInvalid}</p> : null}
+            {linkError ? (
+              <div className="uix-field__msg">
+                <span id={`${uid}-link-error`} className="uix-field__error" role="alert">{labels.linkInvalid}</span>
+              </div>
+            ) : null}
+            </div>
             <div className="uix-rich-text__link-actions">
               {state?.link ? (
                 <button
@@ -895,6 +969,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
           active={suggestIndex}
           rect={suggest.rect}
           onPick={(item) => suggest.command(item)}
+          renderEmoji={renderEmoji}
         />
       ) : null}
     </div>
@@ -954,9 +1029,10 @@ interface EmojiSuggestionsProps {
   active: number;
   rect: DOMRect | null;
   onPick: (item: EmojiItem) => void;
+  renderEmoji: (emoji: string) => ReactNode;
 }
 
-function EmojiSuggestions({ id, label, items, active, rect, onPick }: EmojiSuggestionsProps) {
+function EmojiSuggestions({ id, label, items, active, rect, onPick, renderEmoji }: EmojiSuggestionsProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -974,7 +1050,7 @@ function EmojiSuggestions({ id, label, items, active, rect, onPick }: EmojiSugge
   }, [rect, items.length]);
 
   useEffect(() => {
-    listRef.current?.querySelector(`#${CSS.escape(`${id}-${active}`)}`)?.scrollIntoView?.({ block: 'nearest' });
+    document.getElementById(`${id}-${active}`)?.scrollIntoView?.({ block: 'nearest' });
   }, [active, id]);
 
   return (
@@ -995,7 +1071,7 @@ function EmojiSuggestions({ id, label, items, active, rect, onPick }: EmojiSugge
           className="uix-rich-text__suggest-item"
           onMouseDown={(event) => { event.preventDefault(); onPick(item); }}
         >
-          <span className="uix-rich-text__suggest-emoji" aria-hidden="true">{item.emoji}</span>
+          <span className="uix-rich-text__suggest-emoji" aria-hidden="true">{renderEmoji(item.emoji ?? '')}</span>
           <span className="uix-rich-text__suggest-name">:{item.shortcodes[0] ?? item.name}:</span>
         </div>
       ))}
