@@ -14,6 +14,12 @@ export interface CopyButtonProps {
   label: string;
   /** Announced through a polite status region after a successful copy, e.g. "Copied". */
   copiedLabel: string;
+  /**
+   * Announced when the copy fails (no clipboard, or the write was refused), e.g.
+   * "Could not copy — select the text instead". Without it a failure is silent: nothing
+   * false is shown, but the person is left guessing why nothing happened.
+   */
+  failedLabel?: string;
   className?: string;
 }
 
@@ -32,11 +38,12 @@ const CheckGlyph = () => (
 
 /**
  * Icon-only ghost button that copies `value`. On success it shows a check for 1.5 s and
- * announces `copiedLabel`. On failure (no clipboard, or the write was refused) it does
- * nothing visible and announces nothing.
+ * announces `copiedLabel`. On failure (no clipboard, or the write was refused) it shows no
+ * check and announces `failedLabel` when one is given.
  */
-export function CopyButton({ value, label, copiedLabel, className }: CopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+export function CopyButton({ value, label, copiedLabel, failedLabel, className }: CopyButtonProps) {
+  const [outcome, setOutcome] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const copied = outcome === 'copied';
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const mounted = useRef(true);
 
@@ -49,10 +56,12 @@ export function CopyButton({ value, label, copiedLabel, className }: CopyButtonP
   }, []);
 
   const onClick = async () => {
-    if (!(await copyText(value)) || !mounted.current) return;
+    const ok = await copyText(value);
+    if (!mounted.current) return;
     clearTimeout(timer.current);
-    setCopied(true);
-    timer.current = setTimeout(() => setCopied(false), CONFIRM_MS);
+    if (!ok && !failedLabel) { setOutcome('idle'); return; }
+    setOutcome(ok ? 'copied' : 'failed');
+    timer.current = setTimeout(() => setOutcome('idle'), CONFIRM_MS);
   };
 
   return (
@@ -66,7 +75,9 @@ export function CopyButton({ value, label, copiedLabel, className }: CopyButtonP
       >
         {copied ? <CheckGlyph /> : <CopyGlyph />}
       </button>
-      <span role="status" className="uix-visually-hidden">{copied ? copiedLabel : ''}</span>
+      <span role="status" className="uix-visually-hidden">
+        {outcome === 'copied' ? copiedLabel : outcome === 'failed' ? failedLabel : ''}
+      </span>
     </>
   );
 }
