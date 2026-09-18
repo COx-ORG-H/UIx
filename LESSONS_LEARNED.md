@@ -1,5 +1,10 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
+
+### 2026-09-18 · layout tests · `8f4970d`
+- **Rule:** an overflow or reflow test run against a docs specimen must first write in the longest real (localised) label the component will get; the specimen's short English copy fits even when the CSS is broken.  **Why:** the `1fr 1fr` + nowrap grid only overflowed with German portal labels, so a plain `scrollWidth === clientWidth` check passed on the broken CSS.  **Gate:** `tests/a11y/reflow-320.spec.mjs` injects a long label before measuring.  **Tag:** false-green, i18n, reflow
+
 ## Component documentation must verify the component route
 
 Gallery-wide CSS selector coverage does not prove that a component reference shows the
