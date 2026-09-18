@@ -123,7 +123,8 @@
   /* composer variant — the composer draws the box; the toolbar joins the action bar */
   .uix-rich-text--composer { border-radius: var(--uix-radius-md); }
   .uix-rich-text--composer.uix-rich-text:focus-within { box-shadow: 0 0 0 3px var(--uix-brand-muted); }
-  .uix-rich-text--composer .uix-rich-text__bar { align-items: center; justify-content: flex-start; min-width: 0; }
+  /* one row: the toolbar scrolls instead of wrapping */
+  .uix-rich-text--composer .uix-rich-text__bar { flex-wrap: nowrap; align-items: center; justify-content: flex-start; min-width: 0; }
   .uix-rich-text--composer .uix-rich-text__toolbar { flex: 1 1 auto; padding: 0; border-bottom: 0; }
   .uix-rich-text--composer .uix-rich-text__group--end { margin-left: 0; }
   .uix-rich-text--composer .uix-rich-text__counter,

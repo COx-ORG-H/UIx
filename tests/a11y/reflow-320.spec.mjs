@@ -76,3 +76,86 @@ test('shortcut grid fits 320 px even with a long label', async ({ page }, testIn
   expect(seen.gridScroll, 'the grid overflows its track').toBeLessThanOrEqual(seen.gridClient);
   expect(seen.docScroll, `${seen.docScroll} px of content in a ${seen.docClient} px viewport`).toBe(seen.docClient);
 });
+
+/* Bar-shaped footers (TENSOR PR #1780, 2026-09-18). `.uix-composer__bar` was a
+ * nowrap flex row, so an audience toggle (`.uix-segmented`) at the start plus the primary
+ * submit button at the end pushed the button out of the card at 320 px. TENSOR patched it
+ * with an inline `flexWrap: 'wrap'`; the primitive must not need one. The same trap sat in
+ * `.uix-dialog__footer` and `.uix-card__footer`, which host the same two-group rows.
+ *
+ * Each bar is filled with labels TENSOR actually gives it (worklog-feed defaults, dialog
+ * footers), then every child is measured against the bar's own box: nothing may cross an
+ * edge, and the bar may not scroll. The consumer's inline `justify-content` is mirrored
+ * where it sets one, because that is the layout the primitive has to survive.
+ */
+const fillAndMeasure = (locator, { html, justify }) => locator.evaluate((el, opts) => {
+  if (opts.justify) el.style.justifyContent = opts.justify;
+  el.innerHTML = opts.html;
+  const bar = el.getBoundingClientRect();
+  const kids = Array.from(el.children).map((c) => {
+    const r = c.getBoundingClientRect();
+    return { label: c.textContent.trim().slice(0, 24), left: Math.round(r.left - bar.left), right: Math.round(r.right - bar.right), top: Math.round(r.top) };
+  });
+  return {
+    barWidth: Math.round(bar.width),
+    wrap: getComputedStyle(el).flexWrap,
+    rows: new Set(kids.map((k) => k.top)).size,
+    overflow: el.scrollWidth - el.clientWidth,
+    escaped: kids.filter((k) => k.right > 0 || k.left < 0),
+  };
+}, { html, justify });
+
+const expectContained = (seen, what) => {
+  console.log(`320 px ${what}: bar ${seen.barWidth} px, flex-wrap ${seen.wrap}, ${seen.rows} row(s), overflow ${seen.overflow} px, escaped ${JSON.stringify(seen.escaped)}`);
+  expect(seen.barWidth, `${what} was not narrowed by the phone viewport`).toBeLessThan(NARROW.width);
+  expect(seen.escaped, `${what}: a control crosses the bar's edge`).toEqual([]);
+  expect(seen.overflow, `${what} overflows its own box`).toBeLessThanOrEqual(0);
+};
+
+const SEGMENTED_AUDIENCE = `
+  <fieldset class="uix-segmented">
+    <legend class="uix-visually-hidden">Post as</legend>
+    <button type="button" class="uix-segmented__option" aria-pressed="true">Internal note</button>
+    <button type="button" class="uix-segmented__option" aria-pressed="false">Reply to requester</button>
+  </fieldset>`;
+
+test('composer bar keeps the submit button inside at 320 px with an audience toggle', async ({ page }, testInfo) => {
+  await open(page, testInfo, 'docs/explorer.html#examples-crm-itsm');
+  const bar = page.locator('.uix-composer .uix-composer__bar').first();
+  await expect(bar, 'no composer bar on the crm-itsm example').toBeVisible();
+
+  const seen = await fillAndMeasure(bar, {
+    justify: 'space-between', // worklog-feed.tsx sets this inline when the toggle is shown
+    html: `${SEGMENTED_AUDIENCE}<button type="submit" class="uix-btn uix-btn--primary">Reply to requester</button>`,
+  });
+  expectContained(seen, 'composer bar (toggle + submit)');
+  expect(seen.rows, 'toggle and submit should stack rather than clip').toBeGreaterThan(1);
+});
+
+test('dialog footer keeps three actions inside at 320 px', async ({ page }, testInfo) => {
+  await open(page, testInfo, 'docs/explorer.html#examples-overlays');
+  const dialog = page.locator('#demo-modal');
+  await dialog.evaluate((d) => d.showModal());
+  const footer = dialog.locator('.uix-dialog__footer');
+  await expect(footer, 'no footer on the demo modal').toBeVisible();
+
+  const seen = await fillAndMeasure(footer, {
+    html: `<button type="button" class="uix-btn uix-btn--ghost" style="margin-right:auto">Delete</button>
+      <button type="button" class="uix-btn uix-btn--secondary">Cancel</button>
+      <button type="submit" class="uix-btn uix-btn--primary">Save changes</button>`,
+  });
+  expectContained(seen, 'dialog footer (delete · cancel · save)');
+});
+
+test('card footer keeps its meta and two actions inside at 320 px', async ({ page }, testInfo) => {
+  await open(page, testInfo, 'docs/explorer.html#examples-workflows-pipelines');
+  const footer = page.locator('.uix-card__footer').first();
+  await expect(footer, 'no card footer on the workflows-pipelines example').toBeVisible();
+
+  const seen = await fillAndMeasure(footer, {
+    html: `<span style="margin-right:auto">Last event 32s ago</span>
+      <button type="button" class="uix-btn uix-btn--secondary">Cancel</button>
+      <button type="button" class="uix-btn uix-btn--primary">Save changes</button>`,
+  });
+  expectContained(seen, 'card footer (meta · cancel · save)');
+});
