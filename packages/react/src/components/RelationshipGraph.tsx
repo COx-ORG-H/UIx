@@ -148,6 +148,32 @@ export interface RelationshipGraphProps {
 const EMPTY_IDS: ReadonlySet<string> = new Set<string>();
 const EMPTY_LEGEND: RelationshipGraphLegendItem[] = [];
 
+/* Radial geometry. The model works in a 0-100 space; these scale it to user units and
+ * size the node box. They are the single source of truth for both the <rect>s and the
+ * viewBox, so the two can never disagree. */
+const RADIAL_SCALE_X = 6;
+const RADIAL_SCALE_Y = 4;
+const RADIAL_NODE_HALF_W = 55;
+const RADIAL_NODE_HALF_H = 18;
+const RADIAL_MARGIN = 12;
+
+/** A viewBox that contains every node box. A fixed one clipped anything a consumer
+ *  positioned outside it — and a clipped node is invisible, never an error. */
+function radialViewBox(nodes: { x: number; y: number }[]): string {
+  if (nodes.length === 0) return '0 0 600 400';
+  const xs = nodes.map((node) => node.x * RADIAL_SCALE_X);
+  const ys = nodes.map((node) => node.y * RADIAL_SCALE_Y);
+  const minX = Math.min(...xs) - RADIAL_NODE_HALF_W - RADIAL_MARGIN;
+  const maxX = Math.max(...xs) + RADIAL_NODE_HALF_W + RADIAL_MARGIN;
+  const minY = Math.min(...ys) - RADIAL_NODE_HALF_H - RADIAL_MARGIN;
+  const maxY = Math.max(...ys) + RADIAL_NODE_HALF_H + RADIAL_MARGIN;
+  const round = (value: number) => Number(value.toFixed(2));
+  // never narrower than the historical box, so an ordinary graph keeps its proportions
+  const width = Math.max(round(maxX - minX), 600);
+  const height = Math.max(round(maxY - minY), 400);
+  return `${round(minX)} ${round(minY)} ${width} ${height}`;
+}
+
 /** Bounded, deterministic SVG relationship view with an equivalent accessible list. */
 export function RelationshipGraph(props: RelationshipGraphProps) {
   const labels = useMemo(() => ({ ...DEFAULT_RELATIONSHIP_GRAPH_LABELS, ...props.labels }), [props.labels]);
@@ -203,21 +229,29 @@ function RadialRelationshipGraph({
     </div>
     {bounded.omittedNodeCount > 0 && <p className="uix-relationship-graph__bounded" role="status">{labels.bounded(bounded.nodes.length, bounded.omittedNodeCount)}</p>}
     <div className="uix-relationship-graph__visual">
-      <svg ref={svgRef} viewBox="0 0 600 400" role="group" aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)}>
+      <svg ref={svgRef} viewBox={radialViewBox(positioned)} role="group" aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)}>
         <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
           {bounded.edges.map((edge) => {
             const source = positionedById.get(edge.source)!;
             const target = positionedById.get(edge.target)!;
-            return <line key={edge.id} x1={source.x * 6} y1={source.y * 4} x2={target.x * 6} y2={target.y * 4} className="uix-relationship-graph__edge" data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
+            return <line key={edge.id} x1={source.x * RADIAL_SCALE_X} y1={source.y * RADIAL_SCALE_Y} x2={target.x * RADIAL_SCALE_X} y2={target.y * RADIAL_SCALE_Y} className="uix-relationship-graph__edge" data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
           })}
           {positioned.map((node) => <g
-            key={node.id} transform={`translate(${node.x * 6} ${node.y * 4})`} role="button"
+            key={node.id} transform={`translate(${node.x * RADIAL_SCALE_X} ${node.y * RADIAL_SCALE_Y})`} role="button"
             aria-label={`${node.label}${node.type ? `, ${node.type}` : ''}${conflictedNodeIds.has(node.id) ? `, ${labels.conflict}` : ''}`}
             tabIndex={focusedId === node.id ? 0 : -1} data-node-id={node.id} className="uix-relationship-graph__node"
             data-selected={selectedId === node.id || undefined} data-highlighted={highlightedNodeIds.has(node.id) || undefined}
             data-conflicted={conflictedNodeIds.has(node.id) || undefined} onFocus={() => setFocusedId(node.id)}
             onKeyDown={(event) => onNodeKeyDown(event, node.id)} onClick={() => select(node.id)}
-          ><rect x="-55" y="-18" width="110" height="36" rx="8" /><text textAnchor="middle" dominantBaseline="middle">{node.label.length > 16 ? `${node.label.slice(0, 15)}…` : node.label}</text></g>)}
+          >
+            {/* The ring's node box is a fixed width, so a long label is still shortened on
+                screen — but the whole label is now in <title>, so a pointer reads it and
+                the group's aria-label announces it. Use layout="layered" when the labels
+                matter more than the ring. */}
+            <title>{node.label}</title>
+            <rect x={-RADIAL_NODE_HALF_W} y={-RADIAL_NODE_HALF_H} width={RADIAL_NODE_HALF_W * 2} height={RADIAL_NODE_HALF_H * 2} rx="8" />
+            <text textAnchor="middle" dominantBaseline="middle">{node.label.length > 16 ? `${node.label.slice(0, 15)}…` : node.label}</text>
+          </g>)}
         </g>
       </svg>
     </div>
