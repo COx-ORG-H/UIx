@@ -1,9 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
-
-### 2026-09-18 · layout primitives · TENSOR #1780
-- **Rule:** a flex row that holds two groups (start + end) must wrap; `justify-content: flex-end` or `space-between` without `flex-wrap` pushes the trailing control out of its box at 320 px.  **Why:** `.uix-composer__bar` with a segmented audience toggle clipped TENSOR's submit button at 400% zoom; `.uix-dialog__footer` and `.uix-card__footer` had the same trap.  **Gate:** `tests/a11y/reflow-320.spec.mjs` fills each bar with real TENSOR labels and fails if any child crosses the bar's edge.  **Tag:** reflow, wcag-1.4.10, flexbox
 
 ### 2026-09-18 · layout tests · `8f4970d`
 - **Rule:** an overflow or reflow test run against a docs specimen must first write in the longest real (localised) label the component will get; the specimen's short English copy fits even when the CSS is broken.  **Why:** the `1fr 1fr` + nowrap grid only overflowed with German portal labels, so a plain `scrollWidth === clientWidth` check passed on the broken CSS.  **Gate:** `tests/a11y/reflow-320.spec.mjs` injects a long label before measuring.  **Tag:** false-green, i18n, reflow
