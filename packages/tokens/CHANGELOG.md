@@ -1,5 +1,52 @@
 # @tensor_1/tokens
 
+## 2.19.0
+
+### Minor Changes
+
+- 4c0a8ef: Calm links, a phone-fitting portal grid, kept tab panels, a RelationshipGraph that fits its content, comment variants and a SaveStatus indicator (TENSOR remediation RX-20..RX-23).
+
+  - **Links no longer underline on hover unless they are content links.** The base layer dropped its blanket `a:hover` underline. Classless links in text keep their persistent underline (WCAG 1.4.1). Buttons and tabs rendered as `<a>` stop underlining under the pointer. Opt-in hover underlines (`.uix-link--quiet`, title slots, `.uix-btn--link`) are unchanged. If a product relied on the base hover underline for a class-bearing link inside running text, give that link a visible cue of its own.
+  - **`.uix-cell-link`:** a table link that is quiet at rest as well as on hover. It keeps the row's text colour, never underlines, and keeps the focus ring. Use it on framework `<Link className>` anchors in table cells.
+  - **`.uix-id-cell__btn`** keeps the row's text colour on hover instead of turning accent blue.
+  - **`.uix-shortcut-grid`** fits its container (`auto-fit`, `minmax(min(100%, 12rem), 1fr)`) and lets labels wrap, so it no longer scrolls sideways at 320 px. Desktop column counts now follow the available width instead of a fixed four.
+  - **`TabPanel keepMounted`** keeps an inactive panel mounted, `hidden` and out of the tab order. It is off by default.
+  - **`RelationshipGraph` (radial):** every node carries its full label in `<title>`, and the `viewBox` grows to contain every node, including consumer-positioned ones.
+  - **`Comment`:** `variant="system"` with `systemLabel`, and a `replyTo` quote with `replyToLabel`.
+  - **`SaveStatus`:** `idle` / `saving` / `saved` / `failed`, with `onRetry` and translatable `labels`. The text sits in a polite live region that stays mounted in every state. New CSS module `components/save-status.css`.
+
+- e409ef2: Rich-text authoring, a markdown viewer and emoji reactions (RTE-01), as three optional entries. The root entry imports none of them.
+
+  - **`@tensor_1/react/rich-text`:** `RichTextEditor` and `RichTextEditorFallback` on Tiptap 3.31.3.
+    - Markdown in, markdown out. `onChange` fires only for user edits.
+    - Untouched blocks keep their exact source bytes, CRLF and `{{variables}}` included. Only edited blocks are re-serialized.
+    - Raw HTML stays literal text, except `<br>`, which is a line break (GFM table cells need it). Link and image policies come from `isSafeUrl` and `resolveImageSrc`.
+    - `full` / `comment` / `template` presets, `headingLevels`, image upload, paste and drop, and a Ctrl/Cmd+Enter submit shortcut.
+    - Markdown source mode, a character counter, and a `composer` variant that renders in `Composer` / `ComposerBar` with `toolbarEnd`.
+    - Unicode emoji from a toolbar picker and `:shortcode` suggestions.
+    - `roundTripMarkdown(md)` runs the same pipeline without a DOM, so consumers can gate their own content corpus.
+  - **`@tensor_1/react/markdown`:** TENSOR's dependency-free, sink-free `Markdown` viewer, with its behaviour preserved.
+    - Adds strikethrough, task lists, GFM tables, nested lists, escapes and character references.
+    - Renders images only when `resolveImageSrc` returns a URL, which is used verbatim.
+    - Server-component safe: no hooks, no `"use client"`.
+  - **`@tensor_1/react/emoji`:** `EmojiPicker` and `ReactionBar`.
+    - `EmojiPicker`: search, categories, recent picks, and English or German names. The emoji data is a lazily imported bundled chunk.
+    - `ReactionBar`: `aria-pressed` chips with reactor names in the tooltip and in the accessible name, plus quick picks.
+  - **Offline by design:** no runtime network requests.
+    - `@tiptap/extension-emoji` runs on a list without its CDN `fallbackImage` URLs or GitHub image emoji (`forceFallbackImages: false`).
+    - A jsdom egress test spies on fetch, XHR, WebSocket, EventSource, beacons, image sources and appended resources.
+  - **`emojiImageBaseUrl`** (editor, picker, reaction bar): an optional same-origin folder of `<codepoints>.png` images for devices that cannot draw an emoji. Unset means native emoji only, and no image set ships.
+  - **Default link rule** (viewer and editor, used when no `isSafeUrl` is passed): http(s), mailto and same-app paths only. It refuses `//host`, backslashes and control characters. The viewer also bounds nesting and bracket scans, so hostile input cannot stall a server render.
+  - **Known markdown limits**, documented in the README: edited lines lose leading spaces; tabs and space runs in list items and table cells become single spaces; a line break inside a checklist item is saved as a new paragraph of that item.
+  - **Styles:** `.uix-rich-text` (new module), prose rules for tables, code blocks, rules, images and task lists, and the full `.uix-emoji-picker` and reaction focus/disabled states. Existing `--uix-*` tokens only; light and dark.
+
+  Optional peer dependencies, all exact pins and all MIT:
+
+  - `@tiptap/core`, `@tiptap/pm`, `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/markdown`, `@tiptap/extension-list`, `@tiptap/extension-table`, `@tiptap/extension-image`, `@tiptap/extension-emoji`, `@tiptap/extensions` and `@tiptap/suggestion`, all 3.31.3.
+  - `marked` 17.0.6 and `emojibase-data` 17.0.0.
+
+  Their installed dependencies are also all MIT (prosemirror-_, linkifyjs, emoji-regex, emojibase, is-emoji-supported, @floating-ui/_, fast-equals, use-sync-external-store); `is-emoji-supported` 0.0.5 ships no LICENSE file. `dist/` bundles none of this code. `@tensor_1/react` itself is `UNLICENSED` and ships no LICENSE file.
+
 ## 2.18.0
 
 ### Minor Changes
