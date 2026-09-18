@@ -2,19 +2,19 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 166698,
-      "gzip": 23659,
-      "brotli": 20140
+      "raw": 170514,
+      "gzip": 24247,
+      "brotli": 20596
     },
     "build/css/styles.css": {
-      "raw": 176064,
-      "gzip": 26218,
-      "brotli": 22209
+      "raw": 179998,
+      "gzip": 26830,
+      "brotli": 22675
     },
     "build/css/tokens.css": {
-      "raw": 7849,
-      "gzip": 2110,
-      "brotli": 1784
+      "raw": 7987,
+      "gzip": 2137,
+      "brotli": 1807
     },
     "styles/components/alert.css": {
       "raw": 1403,
@@ -105,6 +105,11 @@
       "raw": 928,
       "gzip": 350,
       "brotli": 272
+    },
+    "styles/components/copy-button.css": {
+      "raw": 477,
+      "gzip": 262,
+      "brotli": 211
     },
     "styles/components/date-range-picker.css": {
       "raw": 1823,
@@ -337,9 +342,9 @@
       "brotli": 299
     },
     "styles/components/stat-tile.css": {
-      "raw": 1480,
-      "gzip": 554,
-      "brotli": 447
+      "raw": 3659,
+      "gzip": 1084,
+      "brotli": 902
     },
     "styles/components/states.css": {
       "raw": 2060,
@@ -377,9 +382,9 @@
       "brotli": 3284
     },
     "styles/components/tabs.css": {
-      "raw": 2040,
-      "gzip": 678,
-      "brotli": 552
+      "raw": 4577,
+      "gzip": 1381,
+      "brotli": 1171
     },
     "styles/components/tag-input.css": {
       "raw": 1485,

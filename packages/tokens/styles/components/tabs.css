@@ -4,6 +4,8 @@
   .uix-tab {
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
     color: var(--uix-text-hushed); padding: var(--uix-space-3) var(--uix-space-3); cursor: pointer; position: relative;
+    /* long or translated labels wrap (two lines at the 16rem cap) instead of truncating */
+    white-space: normal; max-width: 16rem; text-align: start;
     transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-tab:hover { color: var(--uix-text); }
@@ -28,4 +30,38 @@
   .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: var(--uix-space-1); border-radius: var(--uix-radius-md); }
   .uix-tabs--pill .uix-tab { padding: var(--uix-space-2) var(--uix-space-4); border-radius: calc(var(--uix-radius-md) - 3px); }
   .uix-tabs--pill .uix-tab[aria-selected="true"] { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
+
+  /* overflow="scroll" — one scrolling row inside .uix-tabs-scroller; edge buttons appear only
+     on the side that has hidden tabs. Keyboard users move with Arrow/Home/End, so the buttons
+     are pointer-only (aria-hidden, tabindex -1). */
+  .uix-tabs-scroller { position: relative; min-width: 0; max-width: 100%; }
+  .uix-tabs--scroll {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; scroll-behavior: smooth; overscroll-behavior-x: contain;
+  }
+  .uix-tabs--scroll::-webkit-scrollbar { display: none; }
+  .uix-tabs--scroll .uix-tab { flex: none; }
+  /* a scroll container clips the -1px overlaps the line/enclosed variants use, so the base
+     rule is drawn inside the box instead */
+  .uix-tabs--scroll.uix-tabs--line, .uix-tabs--scroll.uix-tabs--enclosed { border-bottom: 0; box-shadow: inset 0 -1px 0 var(--uix-border); }
+  .uix-tabs--scroll.uix-tabs--line .uix-tab::after { bottom: 0; }
+  .uix-tabs--scroll.uix-tabs--enclosed .uix-tab { margin-bottom: 0; }
+  .uix-tabs--scroll.uix-tabs--pill { display: flex; }
+
+  .uix-tabs-scroller__prev, .uix-tabs-scroller__next {
+    position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised);
+    display: flex; align-items: center; justify-content: center;
+    width: var(--uix-control-h); padding: 0; border: 0; cursor: pointer;
+    color: var(--uix-text-hushed); font: inherit;
+  }
+  .uix-tabs-scroller__prev[hidden], .uix-tabs-scroller__next[hidden] { display: none; }
+  .uix-tabs-scroller__prev { inset-inline-start: 0; background: linear-gradient(to right, var(--uix-bg-app) 60%, transparent); }
+  .uix-tabs-scroller__next { inset-inline-end: 0; background: linear-gradient(to left, var(--uix-bg-app) 60%, transparent); }
+  .uix-tabs-scroller__prev:dir(rtl) { background: linear-gradient(to left, var(--uix-bg-app) 60%, transparent); }
+  .uix-tabs-scroller__next:dir(rtl) { background: linear-gradient(to right, var(--uix-bg-app) 60%, transparent); }
+  .uix-tabs-scroller__prev:hover, .uix-tabs-scroller__next:hover { color: var(--uix-text); }
+  .uix-tabs-scroller__prev svg, .uix-tabs-scroller__next svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-tabs-scroller__prev:dir(rtl) svg, .uix-tabs-scroller__next:dir(rtl) svg { transform: scaleX(-1); }
+
+  @media (prefers-reduced-motion: reduce) { .uix-tabs--scroll { scroll-behavior: auto; } }
 }

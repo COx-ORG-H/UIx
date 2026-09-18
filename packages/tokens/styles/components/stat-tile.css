@@ -2,12 +2,39 @@
 @layer uix.components {
   .uix-stat { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
   .uix-stat__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); }
+  .uix-stat__label > span { min-width: 0; overflow-wrap: anywhere; }
   .uix-stat__label svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-stat__value { font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); }
-  .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-stat__value { display: block; font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); overflow-wrap: anywhere; }
+  .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); overflow-wrap: anywhere; }
   .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
   /* direction glyph inside the chip (UIX-A11Y-4) — sized to sit on the text baseline row */
   .uix-stat__trend svg { width: 10px; height: 10px; flex: none; }
   .uix-stat__trend--up { color: var(--uix-success); background: var(--uix-success-bg); }
   .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
+
+  /* tones — an outlined tile whose value carries the tone; the label keeps its muted colour */
+  .uix-stat--warning { border-color: var(--uix-warning-border); }
+  .uix-stat--warning .uix-stat__value { color: var(--uix-warning-text); }
+  .uix-stat--danger { border-color: var(--uix-danger-border); }
+  .uix-stat--danger .uix-stat__value { color: var(--uix-danger-text); }
+
+  /* compact — for dense fact bands */
+  .uix-stat--compact { padding: var(--uix-space-3) var(--uix-space-4); }
+  .uix-stat--compact .uix-stat__value { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); margin-top: var(--uix-space-1); }
+  .uix-stat--compact .uix-stat__meta { margin-top: var(--uix-space-1); }
+
+  /* interactive — the whole tile is a <button> that opens an editor */
+  .uix-stat--interactive {
+    display: block; width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-stat--interactive:hover { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); }
+  .uix-stat--interactive.uix-stat--warning:hover { border-color: var(--uix-warning-border); }
+  .uix-stat--interactive.uix-stat--danger:hover { border-color: var(--uix-danger-border); }
+  .uix-stat--interactive:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-stat--interactive[aria-expanded="true"] { border-color: var(--uix-ring); }
+  .uix-stat__chevron { display: inline-flex; flex: none; margin-inline-start: auto; color: var(--uix-text-muted); }
+  .uix-stat__label .uix-stat__chevron svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-stat--interactive[aria-expanded="true"] .uix-stat__chevron svg { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { .uix-stat--interactive, .uix-stat__label .uix-stat__chevron svg { transition: none; } }
 }

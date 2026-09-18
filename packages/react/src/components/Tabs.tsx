@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, createContext, isValidElement, useContext, useEffect, useId, useMemo, useRef } from 'react';
+import { Children, createContext, isValidElement, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
@@ -19,12 +19,29 @@ export interface TabsProps {
   onChange?: (value: string) => void;
   children?: ReactNode;
   className?: string;
+  /**
+   * What happens when the tabs don't fit. `'wrap'` (default) keeps today's layout.
+   * `'scroll'` keeps one row that scrolls sideways, with pointer-only edge buttons
+   * shown on the side that has hidden tabs. The selected tab is always scrolled into view.
+   */
+  overflow?: 'wrap' | 'scroll';
 }
 
-export function Tabs({ variant = 'line', value, onChange, children, className }: TabsProps) {
+const Chevron = ({ d }: { d: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={d} />
+  </svg>
+);
+
+/** Scroll offset from the inline start, positive in both writing directions. */
+const inlineOffset = (el: HTMLElement, rtl: boolean) => (rtl ? -el.scrollLeft : el.scrollLeft);
+
+export function Tabs({ variant = 'line', value, onChange, children, className, overflow = 'wrap' }: TabsProps) {
   const baseId = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const contextValue = useMemo(() => ({ value, onChange, baseId }), [value, onChange, baseId]);
+  const scroll = overflow === 'scroll';
+  const [hidden, setHidden] = useState({ start: false, end: false });
 
   // A tabpanel must not live inside the tablist — hoist TabPanel children out so consumers
   // can co-locate panels with their tabs (UIX-A11Y-2). Wrapped panels (custom components)
@@ -45,6 +62,53 @@ export function Tabs({ variant = 'line', value, onChange, children, className }:
     const active = enabled.find((t) => t.getAttribute('aria-selected') === 'true') ?? enabled[0];
     for (const t of all) t.tabIndex = t === active ? 0 : -1;
   });
+
+  // overflow="scroll": track which edges hide tabs. Tabs can change width without the list
+  // resizing (a label loads, a font swaps), so each tab is observed as well.
+  useEffect(() => {
+    const list = listRef.current;
+    if (!scroll || !list) return;
+    const measure = () => {
+      const rtl = getComputedStyle(list).direction === 'rtl';
+      const pos = inlineOffset(list, rtl);
+      const max = list.scrollWidth - list.clientWidth;
+      const next = { start: pos > 1, end: pos < max - 1 };
+      setHidden((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
+    };
+    measure();
+    list.addEventListener('scroll', measure, { passive: true });
+    if (typeof ResizeObserver === 'undefined') return () => list.removeEventListener('scroll', measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    for (const tab of Array.from(list.children)) observer.observe(tab);
+    return () => {
+      list.removeEventListener('scroll', measure);
+      observer.disconnect();
+    };
+  });
+
+  // Keep the selected tab visible. Only the list scrolls: scrollIntoView would also move
+  // the page to a tab row that sits below the fold.
+  useEffect(() => {
+    const list = listRef.current;
+    const tab = list?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    if (!scroll || !list || !tab) return;
+    const outer = list.getBoundingClientRect();
+    const inner = tab.getBoundingClientRect();
+    // leave room for the edge button that overlays an overflowing side
+    const reserve = list.scrollWidth > list.clientWidth
+      ? Number.parseFloat(getComputedStyle(list).getPropertyValue('--uix-control-h')) || 0
+      : 0;
+    if (inner.left < outer.left + reserve) list.scrollBy({ left: inner.left - outer.left - reserve });
+    else if (inner.right > outer.right - reserve) list.scrollBy({ left: inner.right - outer.right + reserve });
+  }, [scroll, value]);
+
+  const page = (direction: 1 | -1) => {
+    const list = listRef.current;
+    if (!list) return;
+    const rtl = getComputedStyle(list).direction === 'rtl';
+    list.scrollBy({ left: direction * (rtl ? -1 : 1) * list.clientWidth * 0.8 });
+  };
 
   // APG automatic activation: Arrow/Home/End move focus and select the newly-focused tab
   // (via the tab's own click handler); disabled tabs are skipped by the selector.
@@ -68,16 +132,48 @@ export function Tabs({ variant = 'line', value, onChange, children, className }:
     if (target) { target.focus(); target.click(); }
   };
 
+  const list = (
+    <div
+      ref={listRef}
+      role="tablist"
+      className={cx('uix-tabs', `uix-tabs--${variant}`, scroll && 'uix-tabs--scroll', className)}
+      onKeyDown={onKeyDown}
+    >
+      {tabs}
+    </div>
+  );
+
   return (
     <TabsCtx.Provider value={contextValue}>
-      <div
-        ref={listRef}
-        role="tablist"
-        className={cx('uix-tabs', `uix-tabs--${variant}`, className)}
-        onKeyDown={onKeyDown}
-      >
-        {tabs}
-      </div>
+      {scroll ? (
+        <div className="uix-tabs-scroller">
+          {/* Pointer-only: keyboard users already move with Arrow/Home/End, and mousedown is
+              cancelled so a click never parks focus on a hidden control. */}
+          <button
+            type="button"
+            className="uix-tabs-scroller__prev"
+            aria-hidden="true"
+            tabIndex={-1}
+            hidden={!hidden.start}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => page(-1)}
+          >
+            <Chevron d="m15 18-6-6 6-6" />
+          </button>
+          {list}
+          <button
+            type="button"
+            className="uix-tabs-scroller__next"
+            aria-hidden="true"
+            tabIndex={-1}
+            hidden={!hidden.end}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => page(1)}
+          >
+            <Chevron d="m9 18 6-6-6-6" />
+          </button>
+        </div>
+      ) : list}
       {panels}
     </TabsCtx.Provider>
   );
