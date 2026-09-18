@@ -646,6 +646,19 @@ export interface ContentListProps extends HTMLAttributes<HTMLUListElement> {
 // @public (undocumented)
 export function contrastRatio(background: string, foreground: string): number | undefined;
 
+// @public
+export function CopyButton(input: CopyButtonProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CopyButtonProps {
+    // (undocumented)
+    className?: string;
+    copiedLabel: string;
+    failedLabel?: string;
+    label: string;
+    value: string;
+}
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -2765,7 +2778,7 @@ export interface StarButtonProps {
 export function startOfMonth(value: string): string;
 
 // @public
-export function Stat(input: StatProps): react.JSX.Element;
+export const Stat: react.ForwardRefExoticComponent<StatProps & react.RefAttributes<HTMLElement>>;
 
 // @public (undocumented)
 export type StateVariant = 'section' | 'inline' | 'drawer' | 'page' | 'full-page';
@@ -2791,11 +2804,16 @@ export interface StatLineProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public (undocumented)
-export interface StatProps extends HTMLAttributes<HTMLDivElement> {
+export interface StatProps extends HTMLAttributes<HTMLElement> {
+    activateLabel?: string;
+    expanded?: boolean;
     icon?: ReactNode;
     // (undocumented)
     label: ReactNode;
     meta?: ReactNode;
+    onActivate?: () => void;
+    size?: 'hero' | 'compact';
+    tone?: 'neutral' | 'warning' | 'danger';
     trend?: StatTrend;
     // (undocumented)
     value: ReactNode;
@@ -2938,6 +2956,7 @@ export interface TabsProps {
     className?: string;
     // (undocumented)
     onChange?: (value: string) => void;
+    overflow?: 'wrap' | 'scroll';
     // (undocumented)
     value?: string;
     // (undocumented)

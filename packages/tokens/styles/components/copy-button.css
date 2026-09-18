@@ -1,0 +1,8 @@
+/* uix copy button — an icon-only ghost button that copies a value and confirms with a check.
+   Pair it with .uix-btn .uix-btn--ghost .uix-btn--icon; depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-copy-button { flex: none; color: var(--uix-text-muted); }
+  .uix-copy-button:hover { color: var(--uix-text); }
+  .uix-copy-button svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-copy-button[data-copied] { color: var(--uix-success); }
+}

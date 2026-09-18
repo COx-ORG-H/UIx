@@ -45,6 +45,7 @@ export const COMPONENT_GUIDANCE = {
   chart: ['Compare values, trends or distributions visually.', 'A chart frame with labels, legend and equivalent data; a renderer supplies the plotted graphic.'],
   tooltip: ['Explain an icon or add brief nonessential context.', 'A short description appears on hover and keyboard focus; essential instructions stay visible.'],
   states: ['Explain loading, empty or failed content.', 'A clear state message and, when relevant, a usable next action.'],
+  'copy-button': ['Let people copy a value (an email, an id, a token) without selecting text.', 'An icon-only button named for what it copies; a check and a polite "copied" announcement confirm success, and an optional failure announcement explains a refused copy.'],
   'relative-time': ['Show when a recent event happened in scan-friendly language.', 'A semantic time value with an absolute timestamp available as context; the React adapter owns locale-aware refresh behavior.'],
   alert: ['Show contextual information that should remain visible.', 'An inline message with semantic tone and a readable title or explanation.'],
   toast: ['Acknowledge a completed action without interrupting the task.', 'A temporary announced message; critical recovery information also belongs on the page.'],

@@ -31,6 +31,7 @@
   --color-uix-warning-fg: var(--uix-warning-fg);
   --color-uix-warning-bg: var(--uix-warning-bg);
   --color-uix-warning-text: var(--uix-warning-text);
+  --color-uix-warning-border: var(--uix-warning-border);
   --color-uix-info: var(--uix-info);
   --color-uix-info-fg: var(--uix-info-fg);
   --color-uix-info-bg: var(--uix-info-bg);
@@ -38,6 +39,7 @@
   --color-uix-danger: var(--uix-danger);
   --color-uix-danger-fg: var(--uix-danger-fg);
   --color-uix-danger-bg: var(--uix-danger-bg);
+  --color-uix-danger-border: var(--uix-danger-border);
   --color-uix-danger-text: var(--uix-danger-text);
   --color-uix-amber: var(--uix-amber);
   --color-uix-amber-text: var(--uix-amber-text);
