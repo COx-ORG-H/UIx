@@ -116,23 +116,36 @@ export interface TabPanelProps extends HTMLAttributes<HTMLDivElement> {
   /** The owning `<Tab>`'s value — the panel renders only while that tab is selected. */
   value: string;
   children?: ReactNode;
+  /**
+   * Keep the panel mounted while another tab is selected, `hidden` instead of removed.
+   * Opt in when leaving the tab would throw away work or a fetch the user already paid
+   * for — a loaded list, a half-filled form, a scroll position. Off by default: the
+   * panel's subtree then costs nothing until it is first shown.
+   */
+  keepMounted?: boolean;
 }
 
 /**
  * The tabpanel paired with a `<Tab>` by `value` (UIX-A11Y-2): labelled by its tab,
  * `tabIndex 0` so Tab from the tablist lands in the content, rendered only while
- * selected. Place it as a direct child of `<Tabs>` — it is hoisted out of the tablist —
- * or anywhere the Tabs context reaches.
+ * selected — or kept `hidden` with `keepMounted`. Place it as a direct child of
+ * `<Tabs>` — it is hoisted out of the tablist — or anywhere the Tabs context reaches.
  */
-export function TabPanel({ value, children, ...props }: TabPanelProps) {
+export function TabPanel({ value, children, keepMounted, ...props }: TabPanelProps) {
   const ctx = useContext(TabsCtx);
-  if (ctx.value !== value) return null;
+  const selected = ctx.value === value;
+  if (!selected && !keepMounted) return null;
   return (
     <div
       role="tabpanel"
       id={ctx.baseId ? `${ctx.baseId}-panel-${value}` : undefined}
       aria-labelledby={ctx.baseId ? `${ctx.baseId}-tab-${value}` : undefined}
-      tabIndex={0}
+      // `hidden` (not display:none in a class) is what takes a kept panel out of the
+      // accessibility tree and out of find-in-page; base.css restores the `display: none`
+      // its own element reset would otherwise defeat. A hidden panel must also stop being
+      // a tab stop, or Tab would land in invisible content.
+      hidden={!selected || undefined}
+      tabIndex={selected ? 0 : -1}
       {...props}
     >
       {children}
