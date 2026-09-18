@@ -38,7 +38,11 @@ export interface ComposerBarProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }
 
-/** Action footer for a `<Composer>` over `.uix-composer__bar` (top-bordered, right-aligned). */
+/**
+ * Action footer for a `<Composer>` over `.uix-composer__bar` (top-bordered, right-aligned).
+ * The bar wraps, so a start group (e.g. a `.uix-segmented` audience toggle) and the submit
+ * button stack in a narrow container. No inline `flexWrap` is needed.
+ */
 export function ComposerBar({ children, className, ...props }: ComposerBarProps) {
   return (
     <div className={cx('uix-composer__bar', className)} {...props}>

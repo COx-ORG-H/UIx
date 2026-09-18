@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 166609,
-      "gzip": 23643,
-      "brotli": 20132
+      "raw": 166698,
+      "gzip": 23659,
+      "brotli": 20140
     },
     "build/css/styles.css": {
-      "raw": 175975,
-      "gzip": 26201,
-      "brotli": 22188
+      "raw": 176064,
+      "gzip": 26218,
+      "brotli": 22209
     },
     "build/css/tokens.css": {
       "raw": 7849,
@@ -67,9 +67,9 @@
       "brotli": 420
     },
     "styles/components/card.css": {
-      "raw": 2247,
-      "gzip": 664,
-      "brotli": 529
+      "raw": 2302,
+      "gzip": 707,
+      "brotli": 564
     },
     "styles/components/chart.css": {
       "raw": 5514,
@@ -97,9 +97,9 @@
       "brotli": 629
     },
     "styles/components/comments.css": {
-      "raw": 3029,
-      "gzip": 992,
-      "brotli": 790
+      "raw": 3148,
+      "gzip": 1055,
+      "brotli": 853
     },
     "styles/components/contact-card.css": {
       "raw": 928,
@@ -227,9 +227,9 @@
       "brotli": 350
     },
     "styles/components/modal.css": {
-      "raw": 2855,
-      "gzip": 1007,
-      "brotli": 801
+      "raw": 2910,
+      "gzip": 1041,
+      "brotli": 842
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -287,9 +287,9 @@
       "brotli": 1514
     },
     "styles/components/rich-text.css": {
-      "raw": 10972,
-      "gzip": 2695,
-      "brotli": 2306
+      "raw": 11048,
+      "gzip": 2713,
+      "brotli": 2322
     },
     "styles/components/rule-builder.css": {
       "raw": 2082,
