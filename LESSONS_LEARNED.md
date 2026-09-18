@@ -3,7 +3,7 @@
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
 
-### 2026-09-18 · layout tests · segmented fieldset
+### 2026-09-18 · layout tests · `2f6e67a`
 - **Rule:** measure an overrun against the parent's *content* box, and calibrate a self-sizing test against a property the fix does not touch.  **Why:** `.uix-composer`'s 8 px padding hid an 8 px `.uix-segmented` overrun that was measured against its border box, and a `min-content` calibration collapsed to one character as soon as `overflow-wrap: anywhere` landed, so the test narrowed the box to nonsense and failed for the wrong reason.  **Gate:** `tests/a11y/reflow-320.spec.mjs` measures against the bar's padding edge and forces `overflow-wrap: normal` on the options while calibrating.  **Tag:** false-green, reflow, test-calibration
 
 ### 2026-09-18 · layout tests · `8f4970d`
