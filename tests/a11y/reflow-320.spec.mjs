@@ -159,3 +159,75 @@ test('card footer keeps its meta and two actions inside at 320 px', async ({ pag
   });
   expectContained(seen, 'card footer (meta · cancel · save)');
 });
+
+/* Segmented control on a <fieldset> (TENSOR worklog composer, 2026-09-18). A fieldset's UA
+ * default is `min-inline-size: min-content`, so `.uix-segmented` rendered on one can never be
+ * narrower than its longest words side by side. At 320 px (400 % zoom, WCAG 1.4.10) TENSOR's
+ * audience toggle ran ~8 px past `.uix-composer` and was clipped. The bar is filled with
+ * TENSOR's markup (sr-only legend, icon + label options), the toggle's own min-content width
+ * is measured, and the composer is then narrowed to 8 px less than that, so the number does not
+ * depend on the font. The toggle is measured against the bar's content box (the composer's
+ * padding must not be what hides an overrun): it may not cross the edge, and an option may
+ * break its label onto a second line but may not clip it.
+ */
+const ICON = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>';
+const SEGMENTED_FIELDSET = `
+  <fieldset class="uix-segmented">
+    <legend class="uix-visually-hidden">Post as</legend>
+    <button type="button" class="uix-segmented__option" style="display:inline-flex;align-items:center;gap:4px" aria-pressed="true">${ICON}Internal note</button>
+    <button type="button" class="uix-segmented__option" style="display:inline-flex;align-items:center;gap:4px" aria-pressed="false">${ICON}Reply to requester</button>
+  </fieldset>`;
+
+test('segmented fieldset stays inside a composer narrower than its longest words at 320 px', async ({ page }, testInfo) => {
+  await open(page, testInfo, 'docs/explorer.html#examples-crm-itsm');
+  const composer = page.locator('.uix-composer').first();
+  await expect(composer, 'no composer on the crm-itsm example').toBeVisible();
+
+  const seen = await composer.evaluate((el, html) => {
+    const bar = el.querySelector('.uix-composer__bar');
+    bar.style.justifyContent = 'space-between'; // worklog-feed.tsx sets this inline
+    bar.innerHTML = html;
+    const seg = bar.querySelector('.uix-segmented');
+
+    // Calibrate: the narrowest the toggle gets by wrapping at word boundaries alone. The
+    // options' own overflow-wrap is forced off while measuring, so the number is a property
+    // of the labels and the font, not of the CSS under test.
+    const options = Array.from(seg.querySelectorAll('.uix-segmented__option'));
+    el.style.inlineSize = '1000px';
+    seg.style.inlineSize = 'min-content';
+    for (const o of options) o.style.overflowWrap = 'normal';
+    const minContent = Math.round(seg.getBoundingClientRect().width);
+    seg.style.inlineSize = '';
+    for (const o of options) o.style.overflowWrap = '';
+
+    // The composer's content box is then 8 px narrower than that (border + padding = 18 px).
+    const inset = el.getBoundingClientRect().width - el.clientWidth + (bar.getBoundingClientRect().width - bar.clientWidth) + 2 * parseFloat(getComputedStyle(bar).paddingLeft);
+    el.style.inlineSize = `${minContent - 8 + inset}px`;
+
+    const box = el.getBoundingClientRect();
+    const content = bar.getBoundingClientRect().right - parseFloat(getComputedStyle(bar).paddingRight);
+    const s = seg.getBoundingClientRect();
+    return {
+      minContent,
+      composerWidth: Math.round(box.width),
+      segmentedWidth: Math.round(s.width),
+      pastEdge: Math.round(s.right - content),
+      overflow: seg.scrollWidth - seg.clientWidth,
+      options: options.map((o) => ({
+        label: o.textContent.trim(),
+        width: Math.round(o.getBoundingClientRect().width),
+        clipped: o.scrollWidth - o.clientWidth,
+      })),
+    };
+  }, `${SEGMENTED_FIELDSET}<button type="submit" class="uix-btn uix-btn--primary">Reply to requester</button>`);
+
+  console.log(`320 px segmented fieldset: toggle min-content ${seen.minContent} px, composer ${seen.composerWidth} px, toggle ${seen.segmentedWidth} px (${seen.pastEdge} px past the edge, overflow ${seen.overflow} px), options ${JSON.stringify(seen.options)}`);
+
+  expect(seen.composerWidth, 'the composer was not narrowed below the toggle').toBeLessThan(seen.minContent + 18);
+  expect(seen.pastEdge, 'the toggle runs past the bar content edge').toBeLessThanOrEqual(0);
+  expect(seen.segmentedWidth, 'the toggle is wider than its composer').toBeLessThanOrEqual(seen.composerWidth - 18);
+  expect(seen.overflow, 'the toggle overflows its own box').toBeLessThanOrEqual(0);
+  for (const o of seen.options) {
+    expect(o.clipped, `"${o.label}" is clipped inside its option`).toBeLessThanOrEqual(0);
+  }
+});
