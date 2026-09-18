@@ -86,3 +86,24 @@ test('quiet-link exclusions stay loud: prose, the peek title and bylines are not
   // Comment still renders the byline slot the exclusion is written against.
   assert.match(render(h(Comment, { author: link('Ada Lovelace') })), /<span class="uix-comment__author"><a href="\/r\/1">/);
 });
+
+test('form 5: .uix-cell-link is quiet at rest and is never given a hover underline', () => {
+  // The CSS-side half of RX-20. The rendered proof is tests/a11y/calm-links.spec.mjs; this
+  // guards the source, because deleting the selector would leave that spec's specimen the
+  // only thing holding the contract and a silent rename would read as "no rule matched".
+  const restGroup = LINK_CSS.split('{')[1] ?? '';
+  assert.ok(
+    /^\s*\.uix-cell-link\s*,\s*$/m.test(LINK_CSS),
+    '.uix-cell-link must join the quiet REST group (color: inherit; text-decoration: none)',
+  );
+  assert.ok(restGroup.includes('.uix-cell-link'), '.uix-cell-link left the rest-state selector list');
+  assert.match(
+    LINK_CSS,
+    /\.uix-cell-link:is\(:hover, :focus-visible\) \{ color: inherit; text-decoration: none; \}/,
+    '.uix-cell-link must state its calm hover/focus explicitly',
+  );
+  // and it must NOT appear in the group that adds an underline on hover
+  const underlineRule = LINK_CSS.slice(0, LINK_CSS.indexOf('{ text-decoration: underline; }'));
+  const hoverGroup = underlineRule.slice(underlineRule.lastIndexOf('.uix-link--quiet:is('));
+  assert.ok(!hoverGroup.includes('.uix-cell-link'), '.uix-cell-link must never underline on hover');
+});

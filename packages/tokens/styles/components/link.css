@@ -34,7 +34,7 @@
  *   • .uix-navitem, .uix-breadcrumbs a, .uix-section-link are already quiet by their own
  *     design and need no class here.
  *
- * Four forms:
+ * Five forms:
  *   1 · `.uix-link--quiet` — the opt-in utility, for block links outside the registry.
  *   2 · TITLE / NAME SLOTS — quiet by default. `:not(.uix-btn)` so an anchor deliberately
  *       styled as a button inside a title slot keeps its button treatment.
@@ -43,9 +43,14 @@
  *       links skip the hover underline too — see table.css (the row hover is the cue).
  *   4 · CONTAINER ANCHORS — the anchor IS the kit block (`<a class="uix-card">`). Without
  *       this the base `a { color }` tints every word in the block brand-blue.
+ *   5 · `.uix-cell-link` — a data cell's whole value, when the framework <Link> carries a
+ *       class so form 3's `:not([class])` cannot reach it. Quiet at REST as well: form 3
+ *       and table.css calm only the hover, so such links flipped from brand-blue to text
+ *       colour under the pointer (LD-06/CM-45). Row tint + focus ring are the cues.
  * Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-link--quiet,
+  .uix-cell-link,
 
   /* 2 · title / name slots */
   :is(
@@ -82,6 +87,11 @@
 
   /* body-row links are excluded: table.css keeps them calm on hover (the row tint is the cue) */
   :is(.uix-table :is(thead, tfoot) td, .uix-dl dd) a:not([class]):is(:hover, :focus-visible) { text-decoration: underline; }
+
+  /* Form 5 states its hover/focus rather than relying on no rule matching, so the contract
+     is written down. base.css supplies the ring; the radius keeps it hugging the text. */
+  .uix-cell-link:is(:hover, :focus-visible) { color: inherit; text-decoration: none; }
+  .uix-cell-link:focus-visible { border-radius: var(--uix-radius-xs); }
 
   /* Container anchors never underline: the anchor wraps the whole block, so an underline
      would strike through every word in it. They take the kit's standard row-hover tint
