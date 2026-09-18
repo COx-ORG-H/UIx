@@ -1,0 +1,18 @@
+/* uix save status — inline saving → saved → failed feedback for autosave and inline edits,
+ * where a toast is too loud and silence leaves the user guessing (TENSOR LD-13). The text
+ * sits in a polite live region the React component keeps mounted in every state. Colour
+ * is never the only cue: each state has its own words. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-save-status { display: inline-flex; align-items: center; gap: var(--uix-space-1); min-height: var(--uix-icon-sm); color: var(--uix-text-muted); font-size: var(--uix-text-meta); white-space: nowrap; }
+  .uix-save-status__icon { width: var(--uix-space-2); height: var(--uix-space-2); flex-shrink: 0; border-radius: var(--uix-radius-pill); }
+  .uix-save-status[data-state="idle"] .uix-save-status__icon { display: none; }
+
+  .uix-save-status[data-state="saving"] .uix-save-status__icon { border: 1px solid var(--uix-border-strong); border-top-color: transparent; animation: uix-spin var(--uix-dur-slower) linear infinite; }
+  .uix-save-status[data-state="saved"] .uix-save-status__icon { background: var(--uix-success); }
+  .uix-save-status[data-state="failed"] { color: var(--uix-danger-text); }
+  .uix-save-status[data-state="failed"] .uix-save-status__icon { background: var(--uix-danger); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uix-save-status[data-state="saving"] .uix-save-status__icon { animation: none; }
+  }
+}

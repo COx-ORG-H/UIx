@@ -172,6 +172,8 @@ export type { AvatarProps, AvatarGroupProps, UserChipProps } from './components/
 
 export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
+export { SaveStatus, DEFAULT_SAVE_STATUS_LABELS } from './components/SaveStatus.js';
+export type { SaveStatusProps, SaveStatusLabels, SaveStatusState } from './components/SaveStatus.js';
 
 export { Composer, ComposerBar } from './components/Composer.js';
 export type { ComposerProps, ComposerBarProps } from './components/Composer.js';

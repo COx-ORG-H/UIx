@@ -51,6 +51,7 @@ export const COMPONENT_GUIDANCE = {
   modal: ['Request a focused decision that temporarily blocks the underlying task.', 'A dialog with a title, controlled focus and a clear close or completion action.'],
   'confirm-dialog': ['Confirm a consequential action before applying it.', 'An alert dialog names the consequence and offers explicit cancel and confirm actions; authorization and compensation remain application-owned.'],
   'prompt-dialog': ['Collect one short value in a focused dialog.', 'A labeled field with validation, cancel and submit actions; submission and persistence remain application-owned.'],
+  'save-status': ['Tell people an inline edit or autosave is saving, saved, or failed — without a toast.', 'Words in a polite live region that stays mounted, a small state mark, and a retry when a save fails.'],
   'async-operation-status': ['Report queued, running, completed or failed background work.', 'A live status combines text, semantic tone and optional progress; the backend remains the source of truth.'],
   drawer: ['Inspect or edit supporting information beside a workspace.', 'A side panel with heading, content and actions; modal drawers need focus management.'],
   popover: ['Show contextual choices near their trigger.', 'An anchored surface that can dismiss without navigating away.'],

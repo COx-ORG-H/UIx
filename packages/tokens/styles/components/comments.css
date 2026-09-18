@@ -6,6 +6,18 @@
   .uix-comment__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-bottom: var(--uix-space-1); }
   .uix-comment__author { font-weight: 600; color: var(--uix-text); }
   .uix-mention { color: var(--uix-link); background: var(--uix-brand-muted); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); font-weight: 500; }
+
+  /* System events (status changed, assigned) are chrome, not speech: no bubble, muted meta
+     size, so a thread reads as people talking with the product's record in between. */
+  .uix-comment--system .uix-comment__body { background: transparent; border: 0; padding: 0 var(--uix-space-3); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-comment--system .uix-comment__meta { margin-bottom: 0; }
+  .uix-comment--system .uix-comment__author { font-weight: 500; color: var(--uix-text-muted); }
+
+  /* Reply quote: the answered message, above the answer. Two lines at most — it is a
+     pointer back, not a copy — with a rule so it never reads as part of the reply. */
+  .uix-comment__reply { margin: 0 0 var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2); border-left: 2px solid var(--uix-border-strong); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-comment__reply-label { display: block; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); }
+  .uix-comment__reply-body { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .uix-composer { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-composer:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-composer textarea { width: 100%; border: 0; background: transparent; resize: vertical; padding: var(--uix-space-3) var(--uix-space-3); color: var(--uix-text); font: inherit; min-height: 60px; }
