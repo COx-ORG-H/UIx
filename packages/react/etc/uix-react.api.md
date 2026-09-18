@@ -559,6 +559,10 @@ export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
+    replyTo?: ReactNode;
+    replyToLabel?: string;
+    systemLabel?: string;
+    variant?: 'person' | 'system';
 }
 
 // @public
@@ -690,6 +694,9 @@ export interface DateRangeValue {
 
 // @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
+
+// @public (undocumented)
+export const DEFAULT_SAVE_STATUS_LABELS: SaveStatusLabels;
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -2487,6 +2494,32 @@ export type SavedViewMenuProps = SavedViewMenuBaseProps & ({
 });
 
 // @public
+export function SaveStatus(input: SaveStatusProps): react.JSX.Element;
+
+// @public
+export interface SaveStatusLabels {
+    // (undocumented)
+    failed: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    saved: string;
+    // (undocumented)
+    saving: string;
+}
+
+// @public (undocumented)
+export interface SaveStatusProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    // (undocumented)
+    labels?: Partial<SaveStatusLabels>;
+    onRetry?: () => void;
+    state: SaveStatusState;
+}
+
+// @public (undocumented)
+export type SaveStatusState = 'idle' | 'saving' | 'saved' | 'failed';
+
+// @public
 export function SchedulingCalendar(input: SchedulingCalendarProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -2880,6 +2913,7 @@ export function TabPanel(input: TabPanelProps): react.JSX.Element | null;
 export interface TabPanelProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    keepMounted?: boolean;
     value: string;
 }
 

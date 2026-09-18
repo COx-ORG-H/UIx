@@ -391,6 +391,7 @@
 
         <div class="uix-guide__subhead">Row links</div>
         <p class="tbx-note">Links in body rows stay calm: they take the row's text colour and never underline, even on hover or focus. The row tint is the affordance, and it fades in and out quickly (instantly with reduced motion). Keyboard focus still shows the focus ring. This covers plain anchors and framework <code>&lt;Link className&gt;</code> anchors alike. Anchors styled with <code>.uix-btn</code> keep their button treatment. Hover the rows in both themes (theme toggle, top right).</p>
+        <p class="tbx-note">A class-bearing anchor is only calm on <em>hover</em> — at rest it still takes the link colour, because a class can mean anything. When the link is the cell's whole value, add <code>.uix-cell-link</code> and it is quiet at rest as well (last row below).</p>
         <figure class="tbx-mini" style="margin:0">
           <div class="uix-table-wrap"><table class="uix-table uix-table--no-zebra uix-table--pinned-col" aria-label="Row links example">
             <thead><tr><th>ID</th><th>Subject</th><th>Assignee</th><th class="uix-table__actions"><span class="uix-visually-hidden">Actions</span></th></tr></thead>
@@ -398,9 +399,10 @@
               <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4821</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">Disk pressure on db-03</a></td><td>M. Okafor</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
               <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4822</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">DNS flap in eu-west</a></td><td>R. Lindqvist</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
               <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4823</a></td><td><a class="tbx-rowlink" href="#rows" onclick="return false">Certificate expiry on api-gw</a></td><td>S. Haddad</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
+              <tr><td class="uix-mono"><a href="#rows" onclick="return false">INC-4824</a></td><td><a class="uix-cell-link" href="#rows" onclick="return false">Backup window overran on vault-01</a></td><td>P. Novak</td><td class="uix-table__actions"><a class="uix-btn uix-btn--ghost uix-btn--sm" href="#rows" onclick="return false">Open</a></td></tr>
             </tbody>
           </table></div>
-          <figcaption>ID: plain anchor. Subject: a class-bearing anchor, as a framework <code>Link</code> renders it. Open: a <code>.uix-btn</code> link, which keeps its own hover.</figcaption>
+          <figcaption>ID: plain anchor. Subject: a class-bearing anchor, as a framework <code>Link</code> renders it — calm on hover, link-coloured at rest. Last row: the same anchor with <code>.uix-cell-link</code>, quiet at rest too. Open: a <code>.uix-btn</code> link, which keeps its own hover.</figcaption>
         </figure>
       </section>
 

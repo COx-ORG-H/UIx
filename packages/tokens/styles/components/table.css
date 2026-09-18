@@ -88,7 +88,10 @@
     color: var(--uix-text); font: inherit;
     display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
   }
-  .uix-id-cell__btn:hover { color: var(--uix-accent); }
+  /* No accent flip on hover: the row tint plus the revealed ↗ arrow are the affordance, and
+     an id that turns brand-blue under the pointer reads as a state change on the record
+     (HAR-133). Keeps --uix-text; the focus ring below is the keyboard cue. */
+  .uix-id-cell__btn:hover { color: var(--uix-text); }
   .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
   .uix-id-cell__arrow {
     width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);

@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 164828,
-      "gzip": 23360,
-      "brotli": 19953
+      "raw": 166609,
+      "gzip": 23643,
+      "brotli": 20132
     },
     "build/css/styles.css": {
-      "raw": 174228,
-      "gzip": 25921,
-      "brotli": 22033
+      "raw": 175975,
+      "gzip": 26201,
+      "brotli": 22188
     },
     "build/css/tokens.css": {
       "raw": 7849,
@@ -97,9 +97,9 @@
       "brotli": 629
     },
     "styles/components/comments.css": {
-      "raw": 1877,
-      "gzip": 661,
-      "brotli": 526
+      "raw": 3029,
+      "gzip": 992,
+      "brotli": 790
     },
     "styles/components/contact-card.css": {
       "raw": 928,
@@ -132,9 +132,9 @@
       "brotli": 468
     },
     "styles/components/editorial-home.css": {
-      "raw": 16791,
-      "gzip": 3520,
-      "brotli": 3001
+      "raw": 17418,
+      "gzip": 3865,
+      "brotli": 3284
     },
     "styles/components/file-upload.css": {
       "raw": 1320,
@@ -192,9 +192,9 @@
       "brotli": 486
     },
     "styles/components/link.css": {
-      "raw": 6232,
-      "gzip": 2397,
-      "brotli": 1952
+      "raw": 6952,
+      "gzip": 2668,
+      "brotli": 2193
     },
     "styles/components/list.css": {
       "raw": 784,
@@ -267,9 +267,9 @@
       "brotli": 393
     },
     "styles/components/prose.css": {
-      "raw": 4273,
-      "gzip": 1138,
-      "brotli": 947
+      "raw": 4221,
+      "gzip": 1128,
+      "brotli": 939
     },
     "styles/components/radio.css": {
       "raw": 1310,
@@ -295,6 +295,11 @@
       "raw": 2082,
       "gzip": 517,
       "brotli": 445
+    },
+    "styles/components/save-status.css": {
+      "raw": 1429,
+      "gzip": 624,
+      "brotli": 516
     },
     "styles/components/scheduling-calendar.css": {
       "raw": 3958,
@@ -367,9 +372,9 @@
       "brotli": 569
     },
     "styles/components/table.css": {
-      "raw": 16253,
-      "gzip": 3700,
-      "brotli": 3182
+      "raw": 16514,
+      "gzip": 3824,
+      "brotli": 3284
     },
     "styles/components/tabs.css": {
       "raw": 2040,

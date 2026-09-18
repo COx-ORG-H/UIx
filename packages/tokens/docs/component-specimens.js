@@ -227,6 +227,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-comments"
   },
+  "save-status": {
+    "route": "examples-crm-itsm",
+    "selector": ".uix-save-status"
+  },
   "composer": {
     "route": "examples-crm-itsm",
     "selector": ".uix-composer"

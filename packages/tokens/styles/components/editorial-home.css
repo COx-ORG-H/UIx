@@ -23,8 +23,14 @@
   .uix-searchbar__wrap { position: relative; }
   .uix-searchbar__wrap > svg { position: absolute; top: 50%; left: 14px; z-index: var(--uix-z-raised); width: 17px; height: 17px; color: var(--uix-text-hushed); transform: translateY(-50%); pointer-events: none; }
 
-  .uix-shortcut-grid { grid-column: 1 / -1; margin-top: var(--uix-space-4); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--uix-space-2); }
-  .uix-shortcut-grid .uix-btn { min-height: 42px; justify-content: flex-start; }
+  /* The grid fits ITSELF rather than counting columns: a fixed count is only safe for label
+     lengths you already know, and `1fr` takes an auto minimum, so nowrap button labels push
+     the track past the viewport (LD-11: 382 px of content at 320 px on the German portal).
+     `min(100%, 12rem)` lets the track shrink to the container on a phone — one full-width
+     column — while 12rem keeps a sensible shortcut width on a desktop. Labels wrap, which
+     is why the track can shrink at all: .uix-btn is nowrap by design. */
+  .uix-shortcut-grid { grid-column: 1 / -1; margin-top: var(--uix-space-4); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--uix-space-2); }
+  .uix-shortcut-grid .uix-btn { min-height: 42px; justify-content: flex-start; white-space: normal; overflow-wrap: anywhere; text-align: left; }
 
   /* ── notice queue — rotating "important updates" banner ────────────────────── */
   .uix-notice { min-height: 48px; padding: var(--uix-space-2) var(--uix-space-4); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-3); border-left: 2px solid var(--uix-text); background: var(--uix-bg-subtle); }
@@ -153,7 +159,6 @@
     /* stacked zones: the caret flips to point up at the stage above */
     .uix-rundown__item[data-selected="true"]::before { top: -23px; left: 22px; transform: rotate(45deg); border-bottom: 0; border-top: 1px solid var(--uix-border-strong); }
 
-    .uix-shortcut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (max-width: 620px) {
@@ -174,7 +179,8 @@
     .uix-searchbar { grid-template-columns: 1fr; }
 
     .uix-page-intro { margin-top: var(--uix-space-5); gap: var(--uix-space-5); }
-    .uix-shortcut-grid { grid-template-columns: 1fr 1fr; }
+    /* auto-fit already narrows the tracks; only the touch target grows here. Re-pinning a
+       column count would reintroduce LD-11. */
     .uix-shortcut-grid .uix-btn { min-height: 48px; }
 
     .uix-story-signal { top: 20px; left: 20px; }

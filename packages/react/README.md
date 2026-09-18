@@ -173,4 +173,22 @@ Rules the component cannot enforce for you:
 - **Dimming is not a signal.** `dimmedNodeIds` must be accompanied by text that says what is dimmed and why.
 - **Localise everything.** Every visible and announced string comes from `labels`; the English defaults live in `DEFAULT_RELATIONSHIP_GRAPH_LABELS`.
 
+Radial mode still shortens long labels to fit its ring, but every node carries its full label in a `<title>`, and the `viewBox` grows to contain every node, including nodes you position yourself. Use `layout="layered"` when the labels matter more than the ring.
+
+### Conversations, save feedback and kept tabs
+
+- **`Comment variant="system"`** marks a product event, such as a status change, apart from people. It has no speech bubble and a `systemLabel` byline (default "System").
+- **`Comment replyTo`** quotes the answered message above the body. Its label comes from `replyToLabel` (default "In reply to"). Mentions in a body use the `.uix-mention` class.
+- **`SaveStatus`** shows `idle`, `saving`, `saved` or `failed` for inline edits and autosave. It offers `onRetry` when a save fails, and every string comes from `labels`. The status text sits in a polite live region that stays mounted while idle, so keep one `SaveStatus` mounted and change its `state`. Mounting it only when a save starts means the first announcement is lost.
+- **`TabPanel keepMounted`** keeps an inactive panel in the DOM, `hidden` and out of the tab order, so switching back keeps its state and data. It is off by default.
+
+```tsx
+<Comment variant="system" systemLabel={t('system')} meta={ago}>{t('statusChanged', { to })}</Comment>
+<Comment author={name} meta={ago} replyTo={<a href={`#c-${parent.id}`}>{parent.excerpt}</a>} replyToLabel={t('inReplyTo')}>
+  {body}
+</Comment>
+<SaveStatus state={saveState} onRetry={save} labels={{ saving: t('saving'), saved: t('saved'), failed: t('saveFailed'), retry: t('retry') }} />
+<TabPanel value="history" keepMounted>{history}</TabPanel>
+```
+
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
