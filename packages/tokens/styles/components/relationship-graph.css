@@ -9,7 +9,9 @@
   .uix-relationship-graph__node[data-selected] rect,.uix-relationship-graph__node[data-highlighted] rect { fill:var(--uix-brand-muted); stroke:var(--uix-accent); stroke-width:3; } .uix-relationship-graph__node[data-conflicted] rect { fill:var(--uix-danger-bg); stroke:var(--uix-danger); stroke-dasharray:4 2; }
   .uix-relationship-graph__node:focus-visible rect { stroke:var(--uix-ring); stroke-width:4; }
   .uix-relationship-graph__legend { display:flex; gap:var(--uix-space-4); flex-wrap:wrap; margin:0; padding:0; list-style:none; color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
-  .uix-relationship-graph__legend li::before { content:""; display:inline-block; width:.8rem; height:.8rem; margin-right:var(--uix-space-1); border:2px solid var(--uix-chart-1); border-radius:var(--uix-radius-pill); vertical-align:middle; }
+  .uix-relationship-graph__legend li::before { content:""; display:inline-block; width:.8rem; height:.8rem; margin-right:var(--uix-space-1); border:2px solid var(--uix-graph-type-color, var(--uix-chart-1)); border-radius:var(--uix-radius-pill); vertical-align:middle; }
+  /* TENSOR RX-125 (UIX-14): an edge whose type is in the legend draws that type's colour. */
+  .uix-relationship-graph__edge[data-typed] { stroke:var(--uix-graph-type-color, var(--uix-border-strong)); }
   .uix-relationship-graph__list { padding:var(--uix-space-3); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); }
   .uix-relationship-graph__list>ul { display:grid; gap:var(--uix-space-2); margin:var(--uix-space-2) 0 0; padding:0; list-style:none; }
   .uix-relationship-graph__list li { display:flex; justify-content:space-between; gap:var(--uix-space-2); padding:var(--uix-space-2); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }

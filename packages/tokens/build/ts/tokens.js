@@ -84,6 +84,7 @@ export const cssVar = {
   "scrim": "var(--uix-scrim)",
   "scrim-strong": "var(--uix-scrim-strong)",
   "shadow-sm": "var(--uix-shadow-sm)",
+  "shadow-md": "var(--uix-shadow-md)",
   "shadow-popover": "var(--uix-shadow-popover)",
   "shadow-overlay": "var(--uix-shadow-overlay)",
   "highlight-top": "var(--uix-highlight-top)",
@@ -241,6 +242,7 @@ export const light = {
   "scrim": "rgba(0,0,0,.5)",
   "scrim-strong": "rgba(0,0,0,.7)",
   "shadow-sm": "0 1px 2px rgba(0,0,0,.06)",
+  "shadow-md": "0 4px 12px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05)",
   "shadow-popover": "0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05)",
   "shadow-overlay": "0 16px 48px rgba(0,0,0,.18)",
   "highlight-top": "inset 0 1px 0 rgba(255,255,255,0)",
@@ -384,6 +386,10 @@ export const dark = {
   "scrollbar-thumb": "rgba(255,255,255,.18)",
   "scrollbar-thumb-hover": "rgba(255,255,255,.30)",
   "highlight-top": "inset 0 1px 0 rgba(255,255,255,.04)",
+  "shadow-sm": "0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.04)",
+  "shadow-md": "0 4px 12px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)",
+  "shadow-popover": "0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05)",
+  "shadow-overlay": "0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05)",
 };
 
 export const num = {

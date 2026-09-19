@@ -31,6 +31,25 @@ export interface ChartTableRow {
   [key: string]: string | number;
 }
 
+/**
+ * Every word the chart renders itself (TENSOR RX-125, UIX-04 / UIX-05). The
+ * loading text used to live in CSS `content:`, where nothing could translate it.
+ */
+export interface ChartLabels {
+  /** Shown (and announced inside the busy region) while `loading`. */
+  loading: ReactNode;
+  /** Accessible name when neither `ariaLabel` nor `title` is given. */
+  chart: string;
+  /** Appended to the chart's name for its data-table alternative. */
+  dataTableSuffix: string;
+}
+
+export const DEFAULT_CHART_LABELS: ChartLabels = {
+  loading: 'Loading chart…',
+  chart: 'Chart',
+  dataTableSuffix: 'data table',
+};
+
 export interface ChartProps {
   option: EChartsOption;
   title?: string;
@@ -47,6 +66,8 @@ export interface ChartProps {
   footer?: ReactNode;
   loading?: boolean;
   empty?: ReactNode;
+  /** Translatable words; English defaults in {@link DEFAULT_CHART_LABELS}. */
+  labels?: Partial<ChartLabels>;
 }
 
 interface ChartCoreProps extends ChartProps {
@@ -71,7 +92,9 @@ export function ChartCore({
   footer,
   loading = false,
   empty,
+  labels: labelOverrides,
 }: ChartCoreProps) {
+  const labels: ChartLabels = { ...DEFAULT_CHART_LABELS, ...labelOverrides };
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ECharts | null>(null);
   const appliedOptionRef = useRef<EChartsOption | null>(null);
@@ -134,7 +157,7 @@ export function ChartCore({
   }, [option]);
 
   const heightValue = typeof height === 'number' ? `${height}px` : height;
-  const effectiveAriaLabel = ariaLabel ?? title ?? 'Chart';
+  const effectiveAriaLabel = ariaLabel ?? title ?? labels.chart;
   const hasTable = Boolean(tableData?.length && tableHeaders?.length);
 
   return (
@@ -153,6 +176,7 @@ export function ChartCore({
         <div className="uix-chart__plot" data-empty>{empty}</div>
       ) : (
         <div className="uix-chart__plot" data-loading={loading || undefined} aria-busy={loading || undefined}>
+          {loading ? <span className="uix-chart__loading">{labels.loading}</span> : null}
           <div
             ref={containerRef}
             style={{ height: heightValue }}
@@ -163,7 +187,7 @@ export function ChartCore({
         </div>
       )}
       {hasTable ? (
-        <table id={tableId} className="uix-visually-hidden" aria-label={`${effectiveAriaLabel} — data table`}>
+        <table id={tableId} className="uix-visually-hidden" aria-label={`${effectiveAriaLabel} — ${labels.dataTableSuffix}`}>
           <thead><tr>{tableHeaders!.map((label) => <th key={label} scope="col">{label}</th>)}</tr></thead>
           <tbody>
             {tableData!.map((row, index) => (

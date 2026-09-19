@@ -2,7 +2,11 @@
    column sizing, bulk actions, row actions, expandable rows, inline edit, resize,
    search highlight, responsive ladder + compare. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-table-wrap { overflow: auto; max-height: 460px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  /* TENSOR RX-125 (UIX-07): no height cap by default — a nested scroller hid rows
+     below 460px on every table. Opt in with .uix-table-wrap--scroll or set
+     --uix-table-max-height. */
+  .uix-table-wrap { overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  .uix-table-wrap--scroll { max-height: var(--uix-table-max-height, 460px); }
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
 
   .uix-table thead th {

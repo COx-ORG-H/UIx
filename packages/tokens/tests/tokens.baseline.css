@@ -51,6 +51,7 @@
 
     /* elevation */
     --uix-shadow-sm:0 1px 2px rgba(0,0,0,.06);
+    --uix-shadow-md:0 4px 12px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
     --uix-shadow-popover:0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05);
     --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.18);
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,0);
@@ -104,6 +105,10 @@
     --uix-chart-neutral:#A1A1A1;
 
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,.04);
+    --uix-shadow-sm:0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.04);
+    --uix-shadow-md:0 4px 12px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
+    --uix-shadow-popover:0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05);
+    --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05);
 
     --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
     --uix-scrollbar-thumb:rgba(255,255,255,.18); --uix-scrollbar-thumb-hover:rgba(255,255,255,.30);

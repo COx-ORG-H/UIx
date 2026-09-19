@@ -1,3 +1,7 @@
 {
-  "highlight-top": { "$type": "shadow", "$value": "inset 0 1px 0 rgba(255,255,255,.04)" }
+  "highlight-top": { "$type": "shadow", "$value": "inset 0 1px 0 rgba(255,255,255,.04)" },
+  "shadow-sm":      { "$type": "shadow", "$value": "0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.04)", "$description": "RX-125 UIX-02 — dark elevation: a stronger drop (a light-mode 6% shadow is invisible on a dark surface) plus the top highlight that reads as the lit edge." },
+  "shadow-md":      { "$type": "shadow", "$value": "0 4px 12px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)" },
+  "shadow-popover": { "$type": "shadow", "$value": "0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05)" },
+  "shadow-overlay": { "$type": "shadow", "$value": "0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05)" }
 }

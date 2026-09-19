@@ -34,5 +34,5 @@ export function Chart(props: ChartProps) {
   return <ChartCore {...props} engine={presetEngine} />;
 }
 
-export { ChartLegend, ChartLegendItem, ChartMetric, uixChartPalette } from './components/ChartCore.js';
-export type { ChartLegendItemProps, ChartLegendProps, ChartMetricProps, ChartProps, ChartTableRow } from './components/ChartCore.js';
+export { ChartLegend, ChartLegendItem, ChartMetric, DEFAULT_CHART_LABELS, uixChartPalette } from './components/ChartCore.js';
+export type { ChartLabels, ChartLegendItemProps, ChartLegendProps, ChartMetricProps, ChartProps, ChartTableRow } from './components/ChartCore.js';
