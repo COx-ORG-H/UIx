@@ -72,7 +72,7 @@ export { DetailLayout } from './components/DetailLayout.js';
 export type { DetailLayoutProps } from './components/DetailLayout.js';
 
 export { DetailPage } from './components/DetailPage.js';
-export type { DetailPageProps, DetailPageTab, DetailPageMetric } from './components/DetailPage.js';
+export type { DetailPageLinkProps, DetailPageProps, DetailPageTab, DetailPageMetric } from './components/DetailPage.js';
 
 export { RelatedLinks } from './components/RelatedLinks.js';
 export type { RelatedLinksProps, RelatedLinkItem } from './components/RelatedLinks.js';
@@ -261,8 +261,8 @@ export type {
   SchedulingCalendarOverlay, SchedulingEntryState, SchedulingOverlayKind,
 } from './components/SchedulingCalendar.js';
 
-export { DateRangePicker } from './components/DateRangePicker.js';
-export type { DateRangePickerProps } from './components/DateRangePicker.js';
+export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
+export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
 export {
   addCalendarDays, addCalendarMonths, buildMonthGrid, enumerateDateSpan,
   isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,

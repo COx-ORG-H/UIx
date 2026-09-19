@@ -25,6 +25,13 @@ export interface TabsProps {
    * shown on the side that has hidden tabs. The selected tab is always scrolled into view.
    */
   overflow?: 'wrap' | 'scroll';
+  /**
+   * Keyboard activation (TENSOR RX-125, UIX-11). `'automatic'` (default, unchanged):
+   * Arrow/Home/End move focus AND select, so traversing mounts every panel passed over.
+   * `'manual'`: arrows only move focus; Enter/Space (the button's own click) selects —
+   * the APG choice when a panel is costly to show. Pairs with `TabPanel keepMounted`.
+   */
+  activation?: 'automatic' | 'manual';
 }
 
 const Chevron = ({ d }: { d: string }) => (
@@ -36,7 +43,7 @@ const Chevron = ({ d }: { d: string }) => (
 /** Scroll offset from the inline start, positive in both writing directions. */
 const inlineOffset = (el: HTMLElement, rtl: boolean) => (rtl ? -el.scrollLeft : el.scrollLeft);
 
-export function Tabs({ variant = 'line', value, onChange, children, className, overflow = 'wrap' }: TabsProps) {
+export function Tabs({ variant = 'line', value, onChange, children, className, overflow = 'wrap', activation = 'automatic' }: TabsProps) {
   const baseId = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const contextValue = useMemo(() => ({ value, onChange, baseId }), [value, onChange, baseId]);
@@ -110,8 +117,8 @@ export function Tabs({ variant = 'line', value, onChange, children, className, o
     list.scrollBy({ left: direction * (rtl ? -1 : 1) * list.clientWidth * 0.8 });
   };
 
-  // APG automatic activation: Arrow/Home/End move focus and select the newly-focused tab
-  // (via the tab's own click handler); disabled tabs are skipped by the selector.
+  // APG activation: Arrow/Home/End move focus; in automatic mode they also select the
+  // newly-focused tab (via its own click handler). Disabled tabs are skipped.
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const items = Array.from(
       listRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)') ?? [],
@@ -129,7 +136,9 @@ export function Tabs({ variant = 'line', value, onChange, children, className, o
     }
     e.preventDefault();
     const target = items[next];
-    if (target) { target.focus(); target.click(); }
+    if (!target) return;
+    target.focus();
+    if (activation === 'automatic') target.click();
   };
 
   const list = (
