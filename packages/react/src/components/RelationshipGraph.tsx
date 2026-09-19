@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
 import { boundRelationshipGraph, layoutRelationshipGraph, traverseRelationshipNode } from '../relationship-graph-model.js';
 import type { RelationshipGraphCluster, RelationshipGraphEdge, RelationshipGraphNode } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
@@ -197,6 +197,13 @@ function RadialRelationshipGraph({
 }: ResolvedRelationshipGraphProps) {
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
   const positioned = useMemo(() => layoutRelationshipGraph(bounded.nodes, bounded.edges, selectedId), [bounded, selectedId]);
+  // TENSOR RX-125 (UIX-14): each legend type owns a chart colour (in legend
+  // order), and the swatch and every edge of that type draw it — the legend
+  // used to show one colour for every type, promising a mapping that did not exist.
+  const typeColor = useMemo(
+    () => new Map(legend.map((item, index) => [item.id, `var(--uix-chart-${(index % 8) + 1})`])),
+    [legend],
+  );
   const positionedById = useMemo(() => new Map(positioned.map((node) => [node.id, node])), [positioned]);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -234,7 +241,7 @@ function RadialRelationshipGraph({
           {bounded.edges.map((edge) => {
             const source = positionedById.get(edge.source)!;
             const target = positionedById.get(edge.target)!;
-            return <line key={edge.id} x1={source.x * RADIAL_SCALE_X} y1={source.y * RADIAL_SCALE_Y} x2={target.x * RADIAL_SCALE_X} y2={target.y * RADIAL_SCALE_Y} className="uix-relationship-graph__edge" data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
+            return <line key={edge.id} x1={source.x * RADIAL_SCALE_X} y1={source.y * RADIAL_SCALE_Y} x2={target.x * RADIAL_SCALE_X} y2={target.y * RADIAL_SCALE_Y} className="uix-relationship-graph__edge" data-typed={(edge.type != null && typeColor.has(edge.type)) || undefined} style={edge.type != null && typeColor.has(edge.type) ? ({ '--uix-graph-type-color': typeColor.get(edge.type) } as CSSProperties) : undefined} data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
           })}
           {positioned.map((node) => <g
             key={node.id} transform={`translate(${node.x * RADIAL_SCALE_X} ${node.y * RADIAL_SCALE_Y})`} role="button"
@@ -255,7 +262,7 @@ function RadialRelationshipGraph({
         </g>
       </svg>
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((item) => <li key={item.id} data-type={item.id}>{item.label}</li>)}</ul>}
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((item) => <li key={item.id} data-type={item.id} style={{ '--uix-graph-type-color': typeColor.get(item.id) } as CSSProperties}>{item.label}</li>)}</ul>}
     {showList && <EquivalentRelationshipList nodes={bounded.nodes} edges={bounded.edges} selectedId={selectedId} labels={labels} onSelect={select} onExpandNeighbors={onExpandNeighbors} onOpenDetails={onOpenDetails} />}
   </section>;
 }

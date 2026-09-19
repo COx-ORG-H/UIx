@@ -26,6 +26,10 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   sidebar?: ReactNode;
   topbar?: ReactNode;
   children?: ReactNode;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  skipToContentLabel?: ReactNode;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  exitFocusLabel?: ReactNode;
 }
 
 export function AppShell({
@@ -38,6 +42,8 @@ export function AppShell({
   sidebar,
   topbar,
   children,
+  skipToContentLabel = 'Skip to content',
+  exitFocusLabel = 'Esc · Exit focus',
   className,
   ...props
 }: AppShellProps) {
@@ -61,14 +67,14 @@ export function AppShell({
       {...props}
     >
       {/* First tab stop in the shell; tabIndex -1 on main makes the anchor jump move focus cross-browser (UIX-A11Y-2). */}
-      <a className="uix-skiplink" href={`#${mainId}`}>Skip to content</a>
+      <a className="uix-skiplink" href={`#${mainId}`}>{skipToContentLabel}</a>
       {sidebar && <div className="uix-shell__sidebar">{sidebar}</div>}
       {topbar && <div className="uix-shell__topbar">{topbar}</div>}
       <main id={mainId} tabIndex={-1} className={cx('uix-shell__main', mainBleed && 'uix-shell__main--bleed')}>{children}</main>
       {focus && onExitFocus && (
         <div className="uix-shell__focus-exit">
           <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={onExitFocus}>
-            Esc · Exit focus
+            {exitFocusLabel}
           </button>
         </div>
       )}

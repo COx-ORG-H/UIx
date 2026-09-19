@@ -11,6 +11,8 @@ export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
   tone?: MeterTone;
   /** Accessible name — rendered as `aria-label` (an explicit `aria-label` prop wins). */
   label?: string;
+  /** TENSOR RX-125 (UIX-04): the spoken tone words; English defaults. */
+  toneLabels?: Partial<Record<Exclude<MeterTone, 'success'>, string>>;
 }
 
 /** Spoken tone suffix — the fill colour is the only visual tone cue (UIX-A11Y-4). */
@@ -22,7 +24,8 @@ const toneText: Record<Exclude<MeterTone, 'success'>, string> = {
 };
 
 /** Horizontal utilization / threshold bar backed by `.uix-meter`. */
-export function Meter({ value = 0, tone, label, className, ...props }: MeterProps) {
+export function Meter({ value = 0, tone, label, toneLabels, className, ...props }: MeterProps) {
+  const spoken = { ...toneText, ...toneLabels };
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div
@@ -31,7 +34,7 @@ export function Meter({ value = 0, tone, label, className, ...props }: MeterProp
       aria-valuemin={0}
       aria-valuemax={100}
       // non-default tones are colour-only on screen; speak them via aria-valuetext (UIX-A11Y-4)
-      aria-valuetext={tone && tone !== 'success' ? `${pct}%, ${toneText[tone]}` : undefined}
+      aria-valuetext={tone && tone !== 'success' ? `${pct}%, ${spoken[tone]}` : undefined}
       aria-label={label}
       className={cx('uix-meter', className)}
       {...props}

@@ -36,8 +36,10 @@
   .uix-chart__delta[data-tone="warning"] { color: var(--uix-warning-text); }
   .uix-chart__plot { position: relative; min-width: 0; }
   .uix-chart__plot[data-loading] { display: grid; min-height: 180px; place-items: center; border-radius: var(--uix-radius-md); background: var(--uix-bg-subtle); }
-  .uix-chart__plot[data-loading]::after { content: "Loading chart…"; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
-  .uix-chart__plot[data-loading] > * { position: absolute; opacity: 0; pointer-events: none; }
+  /* TENSOR RX-125 (UIX-05): the loading text is a real, translatable child
+     (ChartLabels.loading), not CSS content. */
+  .uix-chart__loading { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-chart__plot[data-loading] > :not(.uix-chart__loading) { position: absolute; opacity: 0; pointer-events: none; }
   .uix-chart__plot[data-empty] {
     display: grid; min-height: 180px; place-items: center; padding: var(--uix-space-6);
     border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-md);

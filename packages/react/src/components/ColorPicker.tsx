@@ -4,6 +4,45 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { contrastRatio, hexToRgb, hsvToHex, normalizeHex, rgbToHsv } from '../color-model.js';
+import { fillLabel } from '../fill-label.js';
+
+/**
+ * Every word the colour picker renders (TENSOR RX-125, UIX-12). `{label}`, `{color}`,
+ * `{ratio}` and `{minimum}` are placeholders; `sample` is the contrast preview text.
+ */
+export interface ColorPickerLabels {
+  trigger: string;
+  sample: string;
+  hue: string;
+  saturation: string;
+  brightness: string;
+  hex: string;
+  set: string;
+  presets: string;
+  recent: string;
+  usePreset: string;
+  useRecent: string;
+  contrastPasses: string;
+  contrastFails: string;
+  done: string;
+}
+
+export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels = {
+  trigger: '{label}: {color}',
+  sample: 'Aa',
+  hue: 'Hue',
+  saturation: 'Saturation',
+  brightness: 'Brightness',
+  hex: 'Hex',
+  set: 'Set',
+  presets: 'Presets',
+  recent: 'Recent',
+  usePreset: 'Use preset {color}',
+  useRecent: 'Use recent color {color}',
+  contrastPasses: 'Contrast {ratio}:1 — passes WCAG AA ({minimum}:1)',
+  contrastFails: 'Contrast {ratio}:1 — does not meet WCAG AA ({minimum}:1)',
+  done: 'Done',
+};
 
 export interface ColorPickerProps {
   value: string;
@@ -15,6 +54,7 @@ export interface ColorPickerProps {
   label?: string;
   disabled?: boolean;
   className?: string;
+  labels?: Partial<ColorPickerLabels>;
 }
 
 const EMPTY_COLORS: string[] = [];
@@ -22,8 +62,9 @@ const EMPTY_COLORS: string[] = [];
 /** Token-friendly HSV/hex picker with a fully keyboard-operable path and contrast feedback. */
 export function ColorPicker({
   value, onChange, foreground, presets = EMPTY_COLORS, recent = EMPTY_COLORS, minimumContrast = 4.5,
-  label = 'Choose color', disabled, className,
+  label = 'Choose color', disabled, className, labels: labelOverrides,
 }: ColorPickerProps) {
+  const labels: ColorPickerLabels = { ...DEFAULT_COLOR_PICKER_LABELS, ...labelOverrides };
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -75,7 +116,7 @@ export function ColorPicker({
     <div className={cx('uix-color-picker', className)}>
       <button
         ref={triggerRef} type="button" className="uix-color-picker__trigger"
-        aria-label={`${label}: ${normalized}`} aria-expanded={open} aria-controls={`${id}-dialog`}
+        aria-label={fillLabel(labels.trigger, { label, color: normalized })} aria-expanded={open} aria-controls={`${id}-dialog`}
         onClick={() => setOpen((current) => !current)} disabled={disabled}
       >
         <span className="uix-color-picker__swatch" style={sampleStyle} aria-hidden="true" />
@@ -86,31 +127,31 @@ export function ColorPicker({
         className="uix-color-picker__popover" onKeyDown={onDialogKeyDown}
       >
         <div className="uix-color-picker__preview" style={sampleStyle}>
-          <span style={{ color: foreground }}>Aa</span>
+          <span style={{ color: foreground }}>{labels.sample}</span>
         </div>
-        <label className="uix-color-picker__range">Hue <span>{Math.round(hsv.h)}°</span>
+        <label className="uix-color-picker__range">{labels.hue} <span>{Math.round(hsv.h)}°</span>
           <input type="range" min="0" max="359" value={Math.round(hsv.h)} onChange={(event) => updateHsv({ h: Number(event.currentTarget.value) })} />
         </label>
-        <label className="uix-color-picker__range">Saturation <span>{Math.round(hsv.s * 100)}%</span>
+        <label className="uix-color-picker__range">{labels.saturation} <span>{Math.round(hsv.s * 100)}%</span>
           <input type="range" min="0" max="100" value={Math.round(hsv.s * 100)} onChange={(event) => updateHsv({ s: Number(event.currentTarget.value) / 100 })} />
         </label>
-        <label className="uix-color-picker__range">Brightness <span>{Math.round(hsv.v * 100)}%</span>
+        <label className="uix-color-picker__range">{labels.brightness} <span>{Math.round(hsv.v * 100)}%</span>
           <input type="range" min="0" max="100" value={Math.round(hsv.v * 100)} onChange={(event) => updateHsv({ v: Number(event.currentTarget.value) / 100 })} />
         </label>
-        <label className="uix-color-picker__hex">Hex
+        <label className="uix-color-picker__hex">{labels.hex}
           <span className="uix-color-picker__hex-row">
             <input className="uix-input" value={hexText} onChange={(event) => setHexText(event.currentTarget.value)} onBlur={commitHex} onKeyDown={(event) => { if (event.key === 'Enter') commitHex(); }} aria-invalid={!normalizeHex(hexText)} />
-            <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={commitHex} disabled={!normalizeHex(hexText)}>Set</button>
+            <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={commitHex} disabled={!normalizeHex(hexText)}>{labels.set}</button>
           </span>
         </label>
         {(presets.length > 0 || recent.length > 0) && <div className="uix-color-picker__palettes">
-          {presets.length > 0 && <fieldset><legend>Presets</legend><div>{presets.map((color) => <button key={color} type="button" className="uix-color-picker__preset" style={{ backgroundColor: normalizeHex(color) ?? color }} onClick={() => choose(color)} aria-label={`Use preset ${color}`} />)}</div></fieldset>}
-          {recent.length > 0 && <fieldset><legend>Recent</legend><div>{recent.map((color) => <button key={color} type="button" className="uix-color-picker__preset" style={{ backgroundColor: normalizeHex(color) ?? color }} onClick={() => choose(color)} aria-label={`Use recent color ${color}`} />)}</div></fieldset>}
+          {presets.length > 0 && <fieldset><legend>{labels.presets}</legend><div>{presets.map((color) => <button key={color} type="button" className="uix-color-picker__preset" style={{ backgroundColor: normalizeHex(color) ?? color }} onClick={() => choose(color)} aria-label={fillLabel(labels.usePreset, { color })} />)}</div></fieldset>}
+          {recent.length > 0 && <fieldset><legend>{labels.recent}</legend><div>{recent.map((color) => <button key={color} type="button" className="uix-color-picker__preset" style={{ backgroundColor: normalizeHex(color) ?? color }} onClick={() => choose(color)} aria-label={fillLabel(labels.useRecent, { color })} />)}</div></fieldset>}
         </div>}
         <p className={cx('uix-color-picker__contrast', passes ? 'uix-color-picker__contrast--pass' : 'uix-color-picker__contrast--fail')} role="status" aria-live="polite">
-          Contrast {ratio.toFixed(2)}:1 — {passes ? `passes WCAG AA (${minimumContrast}:1)` : `does not meet WCAG AA (${minimumContrast}:1)`}
+          {fillLabel(passes ? labels.contrastPasses : labels.contrastFails, { ratio: ratio.toFixed(2), minimum: minimumContrast })}
         </p>
-        <button type="button" className="uix-btn uix-btn--primary uix-btn--sm" onClick={close}>Done</button>
+        <button type="button" className="uix-btn uix-btn--primary uix-btn--sm" onClick={close}>{labels.done}</button>
       </div>}
     </div>
   );

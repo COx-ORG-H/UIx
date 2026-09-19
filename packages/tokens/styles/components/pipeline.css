@@ -18,7 +18,9 @@
     font-size: var(--uix-text-meta);
     color: var(--stage-fg, var(--uix-text-muted));
     background: var(--stage-bg, var(--uix-bg-subtle));
-    border-color: var(--stage-border, transparent);
+    /* TENSOR RX-125 (UIX-17): a border-color alone draws nothing. */
+    border: 1px solid var(--stage-border, transparent);
+    overflow-wrap: anywhere;
   }
   .uix-pipeline__stage:first-child { border-radius: var(--uix-radius-pill) 0 0 var(--uix-radius-pill); }
   .uix-pipeline__stage:last-child { border-radius: 0 var(--uix-radius-pill) var(--uix-radius-pill) 0; }

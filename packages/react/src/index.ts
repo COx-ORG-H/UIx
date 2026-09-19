@@ -72,7 +72,7 @@ export { DetailLayout } from './components/DetailLayout.js';
 export type { DetailLayoutProps } from './components/DetailLayout.js';
 
 export { DetailPage } from './components/DetailPage.js';
-export type { DetailPageProps, DetailPageTab, DetailPageMetric } from './components/DetailPage.js';
+export type { DetailPageLinkProps, DetailPageProps, DetailPageTab, DetailPageMetric } from './components/DetailPage.js';
 
 export { RelatedLinks } from './components/RelatedLinks.js';
 export type { RelatedLinksProps, RelatedLinkItem } from './components/RelatedLinks.js';
@@ -129,8 +129,8 @@ export type {
 // Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection
 export * from './table-engine.js';
 
-export { Pagination } from './components/Pagination.js';
-export type { PaginationProps } from './components/Pagination.js';
+export { DEFAULT_PAGINATION_LABELS, Pagination } from './components/Pagination.js';
+export type { PaginationLabels, PaginationProps } from './components/Pagination.js';
 
 export { StatusPill } from './components/StatusPill.js';
 export type { StatusPillProps, PillTone, PillTreatment } from './components/StatusPill.js';
@@ -241,9 +241,9 @@ export type {
 // Phase 46.9 — domain-neutral authoring, scheduling, review, branding, and diff capabilities
 export type { JsonPrimitive, JsonValue } from './json-value.js';
 
-export { RuleBuilder } from './components/RuleBuilder.js';
+export { DEFAULT_RULE_BUILDER_LABELS, RuleBuilder } from './components/RuleBuilder.js';
 export type {
-  RuleBuilderProps, RuleValueEditorProps, RuleFieldDefinition,
+  RuleBuilderLabels, RuleBuilderProps, RuleValueEditorProps, RuleFieldDefinition,
   RuleOperatorDefinition, RuleActionDefinition,
 } from './components/RuleBuilder.js';
 export {
@@ -252,17 +252,17 @@ export {
 } from './rule-builder-model.js';
 export type { RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue } from './rule-builder-model.js';
 
-export { BuilderCanvas } from './components/BuilderCanvas.js';
-export type { BuilderCanvasProps, BuilderCanvasItem, BuilderPaletteItem } from './components/BuilderCanvas.js';
+export { BuilderCanvas, DEFAULT_BUILDER_CANVAS_LABELS } from './components/BuilderCanvas.js';
+export type { BuilderCanvasLabels, BuilderCanvasProps, BuilderCanvasItem, BuilderPaletteItem } from './components/BuilderCanvas.js';
 
-export { SchedulingCalendar } from './components/SchedulingCalendar.js';
-export type {
+export { DEFAULT_SCHEDULING_CALENDAR_LABELS, SchedulingCalendar } from './components/SchedulingCalendar.js';
+export type { SchedulingCalendarLabels,
   SchedulingCalendarProps, SchedulingCalendarView, SchedulingCalendarEntry,
   SchedulingCalendarOverlay, SchedulingEntryState, SchedulingOverlayKind,
 } from './components/SchedulingCalendar.js';
 
-export { DateRangePicker } from './components/DateRangePicker.js';
-export type { DateRangePickerProps } from './components/DateRangePicker.js';
+export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
+export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
 export {
   addCalendarDays, addCalendarMonths, buildMonthGrid, enumerateDateSpan,
   isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,
@@ -275,8 +275,8 @@ export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipG
 export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel } from './relationship-graph-model.js';
 export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey } from './relationship-graph-model.js';
 
-export { MatchReview } from './components/MatchReview.js';
-export type { MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
+export { DEFAULT_MATCH_REVIEW_LABELS, MatchReview } from './components/MatchReview.js';
+export type { MatchReviewLabels, MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
 
 export { MetricInput } from './components/MetricInput.js';
 export type { MetricInputProps } from './components/MetricInput.js';
@@ -285,15 +285,15 @@ export { clampMetricValue, parseMetricValue, stepMetricValue } from './metric-mo
 export { LicensePositionBar } from './components/LicensePositionBar.js';
 export type { LicensePositionBarProps } from './components/LicensePositionBar.js';
 
-export { BrandProfiles, BrandProfileEditor, applyBrandProfile, restoreBrandProfile } from './components/BrandProfiles.js';
-export type { BrandProfile, BrandProfileTypography, BrandProfileLogo, BrandProfileEditorProps, AppliedBrandProfileSnapshot } from './components/BrandProfiles.js';
+export { BrandProfiles, BrandProfileEditor, DEFAULT_BRAND_PROFILE_EDITOR_LABELS, applyBrandProfile, restoreBrandProfile } from './components/BrandProfiles.js';
+export type { BrandProfileEditorLabels, BrandProfile, BrandProfileTypography, BrandProfileLogo, BrandProfileEditorProps, AppliedBrandProfileSnapshot } from './components/BrandProfiles.js';
 
-export { DiffViewer } from './components/DiffViewer.js';
-export type { DiffViewerProps } from './components/DiffViewer.js';
+export { DEFAULT_DIFF_VIEWER_LABELS, DiffViewer } from './components/DiffViewer.js';
+export type { DiffViewerLabels, DiffViewerProps } from './components/DiffViewer.js';
 export { buildThreeWayDiff, summarizeDiff } from './diff-model.js';
 export type { DiffEntry, DiffKind, DiffResolution, DiffSummary } from './diff-model.js';
 
-export { ColorPicker } from './components/ColorPicker.js';
-export type { ColorPickerProps } from './components/ColorPicker.js';
+export { ColorPicker, DEFAULT_COLOR_PICKER_LABELS } from './components/ColorPicker.js';
+export type { ColorPickerLabels, ColorPickerProps } from './components/ColorPicker.js';
 export { contrastRatio, hexToRgb, hsvToHex, hsvToRgb, meetsContrast, normalizeHex, rgbToHex, rgbToHsv } from './color-model.js';
 export type { RgbColor, HsvColor } from './color-model.js';

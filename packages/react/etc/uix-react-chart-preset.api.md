@@ -14,6 +14,13 @@ import { ReactNode } from 'react';
 // @public
 export function Chart(props: ChartProps): react.JSX.Element;
 
+// @public
+export interface ChartLabels {
+    chart: string;
+    dataTableSuffix: string;
+    loading: ReactNode;
+}
+
 // @public (undocumented)
 export function ChartLegend(input: ChartLegendProps): react.JSX.Element;
 
@@ -67,6 +74,7 @@ export interface ChartProps {
     headerAction?: ReactNode;
     // (undocumented)
     height?: string | number;
+    labels?: Partial<ChartLabels>;
     // (undocumented)
     loading?: boolean;
     // (undocumented)
@@ -90,6 +98,9 @@ export interface ChartTableRow {
     // (undocumented)
     [key: string]: string | number;
 }
+
+// @public (undocumented)
+export const DEFAULT_CHART_LABELS: ChartLabels;
 
 // @public (undocumented)
 export function uixChartPalette(): string[];

@@ -32,6 +32,8 @@ export interface TreeNodeProps {
   onSelect?: (id: string) => void;
   onFocusNode: (id: string) => void;
   level?: number;
+  /** Whether a click on the row itself toggles a branch (see {@link TreeProps.toggleOnRowClick}). */
+  rowToggles?: boolean;
 }
 
 /**
@@ -40,7 +42,7 @@ export interface TreeNodeProps {
  * child list as `role="group"`. The treeitem itself is the focusable element (roving tabindex),
  * so the row is a plain, presentational span (UIX-FIX-04).
  */
-function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1 }: TreeNodeProps) {
+function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1, rowToggles = true }: TreeNodeProps) {
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const isExpanded = expanded.has(node.id);
 
@@ -56,13 +58,26 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
       onFocus={(e: FocusEvent<HTMLLIElement>) => { if (e.target === e.currentTarget) onFocusNode(node.id); }}
       onClick={(e: MouseEvent<HTMLLIElement>) => {
         e.stopPropagation(); // act on the clicked node only, not its ancestors
-        if (hasChildren) onToggle(node.id);
+        if (hasChildren && rowToggles) onToggle(node.id);
         onSelect?.(node.id);
         onFocusNode(node.id);
       }}
     >
       <span className="uix-tree__row">
-        <span className="uix-tree__toggle">{hasChildren && <ChevronIcon />}</span>
+        {hasChildren ? (
+          // TENSOR RX-125 (UIX-09): the chevron is its own pointer target, so a
+          // branch can be expanded without selecting it. Keyboard users toggle with
+          // the arrow keys on the treeitem, so it stays out of the tab order.
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            className="uix-tree__toggle"
+            onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onToggle(node.id); onFocusNode(node.id); }}
+          >
+            <ChevronIcon />
+          </button>
+        ) : <span className="uix-tree__toggle" />}
         {node.icon && <span aria-hidden="true">{node.icon}</span>}
         <span className="uix-tree__label">{node.label}</span>
       </span>
@@ -80,6 +95,7 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
               onSelect={onSelect}
               onFocusNode={onFocusNode}
               level={level + 1}
+              rowToggles={rowToggles}
             />
           ))}
         </ul>
@@ -106,17 +122,24 @@ export interface TreeProps extends Omit<HTMLAttributes<HTMLUListElement>, 'onSel
   rowHeight?: number;
   /** Scroll-viewport height (px) when virtualizing. Default 384. */
   maxHeight?: number;
+  /**
+   * Whether clicking a branch row toggles it (TENSOR RX-125, UIX-09). Defaults to true for a
+   * pure navigation tree and to false when the tree is selectable (`selected` / `onSelect`),
+   * where a row click only selects and the chevron toggles. Enter/Space still does both.
+   */
+  toggleOnRowClick?: boolean;
 }
 
 export function Tree({
   nodes, expanded: controlledExpanded, defaultExpanded, selected, onToggle, onSelect,
-  virtualize, rowHeight = 32, maxHeight = 384, className, ...props
+  virtualize, rowHeight = 32, maxHeight = 384, toggleOnRowClick, className, ...props
 }: TreeProps) {
   const [internalExpanded, setInternalExpanded] = useState<Set<string>>(defaultExpanded ?? new Set());
   const expanded = controlledExpanded ?? internalExpanded;
   const rootRef = useRef<HTMLUListElement>(null);
   const [focusedId, setFocusedId] = useState<string | undefined>(undefined);
   const selectable = selected !== undefined || onSelect != null;
+  const rowToggles = toggleOnRowClick ?? !selectable;
 
   const handleToggle = useCallback((id: string) => {
     if (!controlledExpanded) {
@@ -144,7 +167,7 @@ export function Tree({
         flat={flat} rowHeight={rowHeight} maxHeight={maxHeight}
         selectable={selectable} selected={selected} tabbableId={tabbableId}
         onToggle={handleToggle} onSelect={onSelect} focusedId={focusedId} setFocusedId={setFocusedId}
-        className={className} {...props}
+        rowToggles={rowToggles} className={className} {...props}
       />
     );
   }
@@ -208,6 +231,7 @@ export function Tree({
           onSelect={onSelect}
           onFocusNode={setFocusedId}
           level={1}
+          rowToggles={rowToggles}
         />
       ))}
     </ul>
@@ -225,6 +249,7 @@ interface VirtualTreeViewProps extends Omit<HTMLAttributes<HTMLUListElement>, 'o
   onSelect?: (id: string) => void;
   focusedId?: string;
   setFocusedId: (id: string | undefined) => void;
+  rowToggles: boolean;
 }
 
 /**
@@ -236,7 +261,7 @@ interface VirtualTreeViewProps extends Omit<HTMLAttributes<HTMLUListElement>, 'o
  * moving focus (UIX-FIX-05).
  */
 function VirtualTreeView({
-  flat, rowHeight, maxHeight, selectable, selected, tabbableId, onToggle, onSelect, focusedId, setFocusedId, className, ...props
+  flat, rowHeight, maxHeight, selectable, selected, tabbableId, onToggle, onSelect, focusedId, setFocusedId, rowToggles, className, ...props
 }: VirtualTreeViewProps) {
   const scrollRef = useRef<HTMLUListElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -305,7 +330,11 @@ function VirtualTreeView({
     >
       {win.padTop > 0 && <li role="presentation" aria-hidden="true" style={{ height: win.padTop }} />}
       {rows.map((f, i) => {
-        const rowStyle: CSSProperties = { height: rowHeight, paddingLeft: `calc(${f.level - 1} * var(--uix-space-5))` };
+        // UIX-08: the indent stops growing past level 4 (as in the nested tree).
+        const rowStyle: CSSProperties = {
+          height: rowHeight,
+          paddingLeft: `calc(${Math.min(f.level - 1, 4)} * var(--uix-space-5) + ${Math.max(0, f.level - 5)} * var(--uix-space-1))`,
+        };
         return (
           <li
             key={f.node.id}
@@ -321,13 +350,26 @@ function VirtualTreeView({
             onFocus={(e: FocusEvent<HTMLLIElement>) => { if (e.target === e.currentTarget) setFocusedId(f.node.id); }}
             onClick={(e: MouseEvent<HTMLLIElement>) => {
               e.stopPropagation();
-              if (f.hasChildren) onToggle(f.node.id);
+              if (f.hasChildren && rowToggles) onToggle(f.node.id);
               onSelect?.(f.node.id);
               setFocusedId(f.node.id);
             }}
           >
             <span className="uix-tree__row" style={rowStyle}>
-              <span className="uix-tree__toggle">{f.hasChildren && <ChevronIcon />}</span>
+              {f.hasChildren ? (
+          // TENSOR RX-125 (UIX-09): the chevron is its own pointer target, so a
+          // branch can be expanded without selecting it. Keyboard users toggle with
+          // the arrow keys on the treeitem, so it stays out of the tab order.
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            className="uix-tree__toggle"
+            onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onToggle(f.node.id); setFocusedId(f.node.id); }}
+          >
+            <ChevronIcon />
+          </button>
+        ) : <span className="uix-tree__toggle" />}
               {f.node.icon && <span aria-hidden="true">{f.node.icon}</span>}
               <span className="uix-tree__label">{f.node.label}</span>
             </span>

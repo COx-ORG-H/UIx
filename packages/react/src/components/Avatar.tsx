@@ -2,6 +2,8 @@ import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  onlineLabel?: string;
   size?: 'sm' | 'md' | 'lg';
   src?: string;
   alt?: string;
@@ -12,13 +14,13 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 /** Avatar over `.uix-avatar`. Renders an image when `src` is set, else children (initials). */
-export function Avatar({ size = 'md', src, alt, children, status, className, ...props }: AvatarProps) {
+export function Avatar({ size = 'md', src, alt, children, status, onlineLabel = 'online', className, ...props }: AvatarProps) {
   return (
     <span className={cx('uix-avatar', size !== 'md' && `uix-avatar--${size}`, className)} {...props}>
       {src ? <img src={src} alt={alt ?? ''} /> : children}
       {/* dot is colour-only — pair it with hidden text so AT hears the presence state (UIX-A11Y-4) */}
       {status && <span className="uix-avatar__status" aria-hidden="true" />}
-      {status && <span className="uix-visually-hidden">online</span>}
+      {status && <span className="uix-visually-hidden">{onlineLabel}</span>}
     </span>
   );
 }

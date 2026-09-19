@@ -217,6 +217,10 @@
 
   @media (max-width: 720px) {
     .uix-flow--panel { padding: var(--uix-space-4); overflow-x: auto; }
+    /* TENSOR RX-125 (UIX-16): branch, loop and mind-map nodes are positioned over a
+       scaled canvas; below this width the nodes would overlap, so the canvas keeps a
+       minimum width and the panel scrolls, as the linear layout already does. */
+    .uix-flow--branch, .uix-flow--loop, .uix-flow--mindmap { min-width: 640px; }
     .uix-flow--linear .uix-flow__row { min-width: max-content; flex-wrap: nowrap; }
     .uix-flow--linear .uix-flow__connector { flex-basis: 38px; }
   }

@@ -14,6 +14,8 @@ export type ToastTone = 'success' | 'danger' | 'info';
 const ToasterContext = createContext<{ announce: (text: string) => void } | null>(null);
 
 export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  dismissLabel?: string;
   title?: ReactNode;
   message?: ReactNode;
   tone?: ToastTone;
@@ -22,7 +24,7 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   leaving?: boolean;
 }
 
-export function Toast({ title, message, tone, icon, onClose, leaving, className, ...props }: ToastProps) {
+export function Toast({ title, message, tone, icon, onClose, leaving, dismissLabel = 'Dismiss', className, ...props }: ToastProps) {
   // Errors interrupt (assertive); everything else waits its turn (polite). Danger stays its own
   // role="alert" (announced reliably on insertion); polite toasts announce via the Toaster's
   // persistent region when one is present (UIX-A11Y-1), falling back to per-toast role="status".
@@ -68,7 +70,7 @@ export function Toast({ title, message, tone, icon, onClose, leaving, className,
         {message && <div className="uix-toast__msg">{message}</div>}
       </div>
       {onClose && (
-        <button className="uix-toast__close" onClick={handleClose} aria-label="Dismiss">
+        <button className="uix-toast__close" onClick={handleClose} aria-label={dismissLabel}>
           ×
         </button>
       )}
@@ -77,10 +79,12 @@ export function Toast({ title, message, tone, icon, onClose, leaving, className,
 }
 
 export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  regionLabel?: string;
   children?: ReactNode;
 }
 
-export function Toaster({ children, className, ...props }: ToasterProps) {
+export function Toaster({ children, regionLabel = 'Notifications', className, ...props }: ToasterProps) {
   // Positioning container + notifications landmark. The always-mounted visually-hidden region
   // below does the polite announcing for child toasts (see ToasterContext); it is cleared after
   // ~3s so an identical follow-up toast re-announces. aria-label is overridable via props spread.
@@ -102,7 +106,7 @@ export function Toaster({ children, className, ...props }: ToasterProps) {
 
   return (
     <ToasterContext.Provider value={ctx}>
-      <div className={cx('uix-toaster', className)} role="region" aria-label="Notifications" {...props}>
+      <div className={cx('uix-toaster', className)} role="region" aria-label={regionLabel} {...props}>
         <span className="uix-visually-hidden" role="status" aria-live="polite">{announced}</span>
         {children}
       </div>

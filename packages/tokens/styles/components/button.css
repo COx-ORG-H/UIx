@@ -35,11 +35,18 @@
   .uix-btn--icon.uix-btn--lg { width: 44px; }
 
   .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
+  /* The label is hidden (color: transparent), so the ring cannot inherit
+     currentColor from the button; each variant names its own foreground.
+     TENSOR RX-125 (UIX-01): the ring was on-accent for every variant, so a
+     loading secondary/outline/ghost button rendered blank. */
   .uix-btn[data-loading]::after {
     content: ""; position: absolute; width: 1em; height: 1em;
     border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
-    color: var(--uix-accent-fg); animation: uix-spin .6s linear infinite;
+    color: var(--uix-text); animation: uix-spin .6s linear infinite;
   }
+  .uix-btn--primary[data-loading]::after { color: var(--uix-accent-fg); }
+  .uix-btn--danger[data-loading]::after { color: var(--uix-danger-fg); }
+  .uix-btn--link[data-loading]::after { color: var(--uix-link); }
 
   /* attached group */
   .uix-btn-group { display: inline-flex; }
