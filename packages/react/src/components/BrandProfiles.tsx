@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { cx } from '../cx.js';
 import { normalizeHex } from '../color-model.js';
 import { ColorPicker } from './ColorPicker.js';
+import { fillLabel } from '../fill-label.js';
 
 export interface BrandProfileTypography {
   sans?: string;
@@ -87,6 +88,54 @@ export function restoreBrandProfile(snapshot: AppliedBrandProfileSnapshot, targe
   if (snapshot.logoAlt) element.dataset.uixBrandLogoAlt = snapshot.logoAlt; else delete element.dataset.uixBrandLogoAlt;
 }
 
+/**
+ * Every word the brand-profile editor renders (TENSOR RX-125, UIX-12). `{name}` is the
+ * profile's name. The preview copy is sample content and may be replaced too.
+ */
+export interface BrandProfileEditorLabels {
+  region: string;
+  profile: string;
+  name: string;
+  brand: string;
+  brandColor: string;
+  onBrand: string;
+  onBrandColor: string;
+  bodyFont: string;
+  headingFont: string;
+  logoFile: string;
+  apply: string;
+  applied: string;
+  preview: string;
+  logoPlaceholder: string;
+  previewTitleFallback: string;
+  previewHeading: string;
+  previewBody: string;
+  previewPrimary: string;
+  previewLink: string;
+}
+
+export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels = {
+  region: 'Brand profile editor',
+  profile: 'Profile',
+  name: 'Name',
+  brand: 'Brand',
+  brandColor: 'Brand color',
+  onBrand: 'On brand',
+  onBrandColor: 'Brand foreground color',
+  bodyFont: 'Body font',
+  headingFont: 'Heading font',
+  logoFile: 'Logo file',
+  apply: 'Apply profile',
+  applied: '{name} applied.',
+  preview: 'Live preview of {name}',
+  logoPlaceholder: 'Logo',
+  previewTitleFallback: 'Brand preview',
+  previewHeading: 'Readable, serializable branding',
+  previewBody: 'Accent, links, rings, and muted states continue through the existing UIx token chain.',
+  previewPrimary: 'Primary action',
+  previewLink: 'Preview link',
+};
+
 export interface BrandProfileEditorProps {
   value: BrandProfile;
   onChange: (profile: BrandProfile) => void;
@@ -97,19 +146,21 @@ export interface BrandProfileEditorProps {
   onLogoFile?: (file: File) => void;
   colorPresets?: string[];
   className?: string;
+  labels?: Partial<BrandProfileEditorLabels>;
 }
 
 /** Small controlled editor composition for serializable UIx brand profiles. */
 export function BrandProfileEditor({
   value, onChange, profiles = EMPTY_PROFILES, onSelectProfile, onApply, applyTarget, onLogoFile,
-  colorPresets = EMPTY_COLORS, className,
+  colorPresets = EMPTY_COLORS, className, labels: labelOverrides,
 }: BrandProfileEditorProps) {
+  const labels: BrandProfileEditorLabels = { ...DEFAULT_BRAND_PROFILE_EDITOR_LABELS, ...labelOverrides };
   const [announcement, setAnnouncement] = useState('');
   const update = (patch: Partial<BrandProfile>) => onChange({ ...value, ...patch });
   const apply = () => {
     if (applyTarget !== null) applyBrandProfile(value, applyTarget);
     onApply?.(value);
-    setAnnouncement(`${value.name} applied.`);
+    setAnnouncement(fillLabel(labels.applied, { name: value.name }));
   };
   const onFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
@@ -123,35 +174,35 @@ export function BrandProfileEditor({
   } as CSSProperties;
 
   return (
-    <section className={cx('uix-brand-profiles', className)} aria-label="Brand profile editor">
+    <section className={cx('uix-brand-profiles', className)} aria-label={labels.region}>
       <div className="uix-brand-profiles__form">
-        {profiles.length > 0 && <label className="uix-field__label">Profile
+        {profiles.length > 0 && <label className="uix-field__label">{labels.profile}
           <select className="uix-select" value={value.id} onChange={(event) => {
             const selected = profiles.find((profile) => profile.id === event.currentTarget.value);
             if (selected) onSelectProfile?.(selected);
           }}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
         </label>}
-        <label className="uix-field__label">Name<input className="uix-input" value={value.name} onChange={(event) => update({ name: event.currentTarget.value })} /></label>
+        <label className="uix-field__label">{labels.name}<input className="uix-input" value={value.name} onChange={(event) => update({ name: event.currentTarget.value })} /></label>
         <div className="uix-brand-profiles__colors">
-          <label>Brand<ColorPicker label="Brand color" value={value.brand} foreground={value.brandForeground} presets={colorPresets} onChange={(brand) => update({ brand })} /></label>
-          <label>On brand<ColorPicker label="Brand foreground color" value={value.brandForeground} foreground={value.brand} presets={colorPresets} onChange={(brandForeground) => update({ brandForeground })} /></label>
+          <label>{labels.brand}<ColorPicker label={labels.brandColor} value={value.brand} foreground={value.brandForeground} presets={colorPresets} onChange={(brand) => update({ brand })} /></label>
+          <label>{labels.onBrand}<ColorPicker label={labels.onBrandColor} value={value.brandForeground} foreground={value.brand} presets={colorPresets} onChange={(brandForeground) => update({ brandForeground })} /></label>
         </div>
-        <label className="uix-field__label">Body font<input className="uix-input" value={value.typography?.sans ?? ''} onChange={(event) => update({ typography: { ...value.typography, sans: event.currentTarget.value || undefined } })} /></label>
-        <label className="uix-field__label">Heading font<input className="uix-input" value={value.typography?.heading ?? ''} onChange={(event) => update({ typography: { ...value.typography, heading: event.currentTarget.value || undefined } })} /></label>
-        <label className="uix-file-upload uix-brand-profiles__upload">Logo file<input type="file" accept="image/*" onChange={onFile} /></label>
-        <button type="button" className="uix-btn uix-btn--primary" onClick={apply}>Apply profile</button>
+        <label className="uix-field__label">{labels.bodyFont}<input className="uix-input" value={value.typography?.sans ?? ''} onChange={(event) => update({ typography: { ...value.typography, sans: event.currentTarget.value || undefined } })} /></label>
+        <label className="uix-field__label">{labels.headingFont}<input className="uix-input" value={value.typography?.heading ?? ''} onChange={(event) => update({ typography: { ...value.typography, heading: event.currentTarget.value || undefined } })} /></label>
+        <label className="uix-file-upload uix-brand-profiles__upload">{labels.logoFile}<input type="file" accept="image/*" onChange={onFile} /></label>
+        <button type="button" className="uix-btn uix-btn--primary" onClick={apply}>{labels.apply}</button>
         <span className="uix-visually-hidden" aria-live="polite">{announcement}</span>
       </div>
-      <div className="uix-brand-profiles__preview" style={previewStyle} aria-label={`Live preview of ${value.name}`}>
+      <div className="uix-brand-profiles__preview" style={previewStyle} aria-label={fillLabel(labels.preview, { name: value.name })}>
         <div className="uix-brand-profiles__preview-header">
-          {value.logo ? <img src={value.logo.src} alt={value.logo.alt} /> : <span className="uix-brand-profiles__logo-placeholder">Logo</span>}
-          <strong>{value.name || 'Brand preview'}</strong>
+          {value.logo ? <img src={value.logo.src} alt={value.logo.alt} /> : <span className="uix-brand-profiles__logo-placeholder">{labels.logoPlaceholder}</span>}
+          <strong>{value.name || labels.previewTitleFallback}</strong>
         </div>
         <div className="uix-brand-profiles__preview-body">
-          <h3>Readable, serializable branding</h3>
-          <p>Accent, links, rings, and muted states continue through the existing UIx token chain.</p>
-          <button type="button" className="uix-btn uix-btn--primary">Primary action</button>
-          <a href="#brand-profile-preview">Preview link</a>
+          <h3>{labels.previewHeading}</h3>
+          <p>{labels.previewBody}</p>
+          <button type="button" className="uix-btn uix-btn--primary">{labels.previewPrimary}</button>
+          <a href="#brand-profile-preview">{labels.previewLink}</a>
         </div>
       </div>
     </section>

@@ -5,6 +5,7 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, startOfMonth, zonedDateSpan } from '../calendar-model.js';
 import { cx } from '../cx.js';
 import { StatusPill } from './StatusPill.js';
+import { fillLabel } from '../fill-label.js';
 
 export type SchedulingCalendarView = 'month' | 'week' | 'agenda';
 export type SchedulingEntryState = 'scheduled' | 'conflicted' | 'in-progress' | 'blackout-violation';
@@ -27,6 +28,46 @@ export interface SchedulingCalendarOverlay {
   kind: SchedulingOverlayKind;
 }
 
+/**
+ * Every word the calendar renders (TENSOR RX-125, UIX-12). `{timeZone}`, `{view}`,
+ * `{title}`, `{state}`, `{start}`, `{end}` are placeholders.
+ */
+export interface SchedulingCalendarLabels {
+  region: string;
+  previous: string;
+  next: string;
+  viewGroup: string;
+  viewMonth: string;
+  viewWeek: string;
+  viewAgenda: string;
+  loading: string;
+  retry: string;
+  agenda: string;
+  agendaEmpty: string;
+  grid: string;
+  entry: string;
+  legend: string;
+  states: Record<SchedulingEntryState, string>;
+}
+
+export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
+  region: 'Scheduling calendar in {timeZone}',
+  previous: 'Previous',
+  next: 'Next',
+  viewGroup: 'Calendar view',
+  viewMonth: 'Month',
+  viewWeek: 'Week',
+  viewAgenda: 'Agenda',
+  loading: 'Loading schedule…',
+  retry: 'Try again',
+  agenda: 'Schedule agenda',
+  agendaEmpty: 'No scheduled entries match the current filters.',
+  grid: '{view} schedule',
+  entry: '{title}, {state}, {start} to {end}',
+  legend: 'Schedule state legend',
+  states: { scheduled: 'Scheduled', conflicted: 'Conflicted', 'in-progress': 'In progress', 'blackout-violation': 'Blackout violation' },
+};
+
 export interface SchedulingCalendarProps {
   entries: SchedulingCalendarEntry[];
   anchorDate: string;
@@ -43,9 +84,9 @@ export interface SchedulingCalendarProps {
   error?: string;
   onRetry?: () => void;
   className?: string;
+  labels?: Partial<SchedulingCalendarLabels>;
 }
 
-const stateLabel: Record<SchedulingEntryState, string> = { scheduled: 'Scheduled', conflicted: 'Conflicted', 'in-progress': 'In progress', 'blackout-violation': 'Blackout violation' };
 const stateTone = (state: SchedulingEntryState) => state === 'scheduled' ? 'info' : state === 'in-progress' ? 'success' : 'danger';
 const dateLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
@@ -53,8 +94,15 @@ const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 /** Month/week/agenda calendar for UTC ranges rendered in an explicit IANA time zone. */
 export function SchedulingCalendar({
   entries, anchorDate, timeZone, view: controlledView, onViewChange, onAnchorDateChange,
-  onSelectEntry, overlays = EMPTY_OVERLAYS, filter, renderEntry, locale, loading, error, onRetry, className,
+  onSelectEntry, overlays = EMPTY_OVERLAYS, filter, renderEntry, locale, loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
+  const labels: SchedulingCalendarLabels = {
+    ...DEFAULT_SCHEDULING_CALENDAR_LABELS,
+    ...labelOverrides,
+    states: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.states, ...labelOverrides?.states },
+  };
+  const stateLabel = labels.states;
+  const viewLabel = { month: labels.viewMonth, week: labels.viewWeek, agenda: labels.viewAgenda } as const;
   const [internalView, setInternalView] = useState<SchedulingCalendarView>('month');
   const view = controlledView ?? internalView;
   const [activeDate, setActiveDate] = useState(anchorDate);
@@ -88,16 +136,16 @@ export function SchedulingCalendar({
   const overlaysFor = (date: string) => overlays.filter((overlay) => { const span = overlaySpans.get(overlay.id)!; return date >= span.start && date <= span.end; });
   const formatInstant = (instant: string) => new Intl.DateTimeFormat(locale, { timeZone, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(instant));
 
-  return <section className={cx('uix-scheduling-calendar', className)} aria-label={`Scheduling calendar in ${timeZone}`}>
+  return <section className={cx('uix-scheduling-calendar', className)} aria-label={fillLabel(labels.region, { timeZone })}>
     <div className="uix-scheduling-calendar__header">
-      <div><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(-1)} disabled={!onAnchorDateChange}>Previous</button><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(1)} disabled={!onAnchorDateChange}>Next</button></div>
+      <div><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(-1)} disabled={!onAnchorDateChange}>{labels.previous}</button><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(1)} disabled={!onAnchorDateChange}>{labels.next}</button></div>
       <strong>{view === 'month' ? new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${anchorDate}T00:00:00Z`)) : `${dateLabel(weekStart, locale)} – ${dateLabel(weekDays[weekDays.length - 1]!, locale)}`}</strong>
-      <div className="uix-segmented" role="group" aria-label="Calendar view">{(['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{option[0]!.toUpperCase()}{option.slice(1)}</button>)}</div>
+      <div className="uix-segmented" role="group" aria-label={labels.viewGroup}>{(['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{viewLabel[option]}</button>)}</div>
     </div>
-    {loading ? <div className="uix-scheduling-calendar__state" role="status">Loading schedule…</div>
-      : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>Try again</button>}</div>
-      : view === 'agenda' ? <div className="uix-scheduling-calendar__agenda" role="region" aria-label="Schedule agenda">{visibleEntries.length === 0 ? <p>No scheduled entries match the current filters.</p> : <ol>{[...visibleEntries].sort((a, b) => a.start.localeCompare(b.start)).map((entry) => { const state = entry.state ?? 'scheduled'; return <li key={entry.id}><button type="button" onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span><StatusPill tone={stateTone(state)}>{stateLabel[state]}</StatusPill></button></li>; })}</ol>}</div>
-      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} role="group" aria-label={`${view} schedule`}>
+    {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
+      : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
+      : view === 'agenda' ? <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>{visibleEntries.length === 0 ? <p>{labels.agendaEmpty}</p> : <ol>{[...visibleEntries].sort((a, b) => a.start.localeCompare(b.start)).map((entry) => { const state = entry.state ?? 'scheduled'; return <li key={entry.id}><button type="button" onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span><StatusPill tone={stateTone(state)}>{stateLabel[state]}</StatusPill></button></li>; })}</ol>}</div>
+      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
         {days.map((date, index) => {
           const dayEntries = entriesFor(date);
           const dayOverlays = overlaysFor(date);
@@ -107,11 +155,11 @@ export function SchedulingCalendar({
             <div className="uix-scheduling-calendar__entries">{dayEntries.map((entry) => {
               const span = entrySpans.get(entry.id)!;
               const state = entry.state ?? 'scheduled';
-              return <button key={entry.id} type="button" className="uix-scheduling-calendar__entry" data-state={state} data-range-start={date === span.start || undefined} data-range-end={date === span.end || undefined} onClick={() => onSelectEntry?.(entry)} aria-label={`${entry.title}, ${stateLabel[state]}, ${formatInstant(entry.start)} to ${formatInstant(entry.end)}`}><span>{renderEntry?.(entry) ?? entry.title}</span><span className="uix-visually-hidden">{stateLabel[state]}</span></button>;
+              return <button key={entry.id} type="button" className="uix-scheduling-calendar__entry" data-state={state} data-range-start={date === span.start || undefined} data-range-end={date === span.end || undefined} onClick={() => onSelectEntry?.(entry)} aria-label={fillLabel(labels.entry, { title: entry.title, state: stateLabel[state], start: formatInstant(entry.start), end: formatInstant(entry.end) })}><span>{renderEntry?.(entry) ?? entry.title}</span><span className="uix-visually-hidden">{stateLabel[state]}</span></button>;
             })}</div>
           </div>;
         })}
       </div>}
-    <div className="uix-scheduling-calendar__legend" aria-label="Schedule state legend">{(['scheduled', 'conflicted', 'in-progress', 'blackout-violation'] as const).map((state) => <span key={state} data-state={state}>{stateLabel[state]}</span>)}</div>
+    <div className="uix-scheduling-calendar__legend" aria-label={labels.legend}>{(['scheduled', 'conflicted', 'in-progress', 'blackout-violation'] as const).map((state) => <span key={state} data-state={state}>{stateLabel[state]}</span>)}</div>
   </section>;
 }

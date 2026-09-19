@@ -26,6 +26,8 @@ export function Inbox({ view, children, className, ...props }: InboxProps) {
 const InboxListCtx = createContext<{ activeId?: string }>({});
 
 export interface InboxListProps extends HTMLAttributes<HTMLDivElement> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  listLabel?: string;
   children?: ReactNode;
 }
 
@@ -34,7 +36,7 @@ export interface InboxListProps extends HTMLAttributes<HTMLDivElement> {
  * (UIX-A11Y-2): the list is the single tab stop; ArrowUp/ArrowDown/Home/End move the
  * active option via `aria-activedescendant`, Enter/Space click it.
  */
-export function InboxList({ children, className, ...props }: InboxListProps) {
+export function InboxList({ children, listLabel = 'Inbox', className, ...props }: InboxListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [activeId, setActiveId] = useState<string | undefined>(undefined);
   const ctx = useMemo(() => ({ activeId }), [activeId]);
@@ -69,7 +71,7 @@ export function InboxList({ children, className, ...props }: InboxListProps) {
         className={cx('uix-inbox__list', className)}
         role="listbox"
         tabIndex={0}
-        aria-label="Inbox"
+        aria-label={listLabel}
         aria-activedescendant={activeId}
         onKeyDown={onKeyDown}
         {...props}

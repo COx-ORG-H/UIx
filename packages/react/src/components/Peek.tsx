@@ -24,6 +24,12 @@ const ChevronDown = () => (
 );
 
 export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  previousLabel?: string;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  nextLabel?: string;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  closeLabel?: string;
   open: boolean;
   onClose?: () => void;
   title?: ReactNode;
@@ -34,7 +40,7 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
   hint?: string;
 }
 
-export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, className, onClick, ...rest }: PeekProps) {
+export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel = 'Previous record', nextLabel = 'Next record', closeLabel = 'Close preview', className, onClick, ...rest }: PeekProps) {
   const ref = useDialog(open, onClose);
   const hasNav = onNavPrev != null || onNavNext != null;
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
@@ -63,10 +69,10 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
           <div className="uix-peek__nav">
             {/* aria-disabled (not disabled) at the boundary keeps the button focusable, so focus
                 isn't stranded when the last record makes it unavailable (UIX-A11Y-1). */}
-            <button className="uix-peek__navbtn" onClick={() => onNavPrev?.()} aria-disabled={onNavPrev ? undefined : true} aria-label="Previous record">
+            <button className="uix-peek__navbtn" onClick={() => onNavPrev?.()} aria-disabled={onNavPrev ? undefined : true} aria-label={previousLabel}>
               <ChevronUp />
             </button>
-            <button className="uix-peek__navbtn" onClick={() => onNavNext?.()} aria-disabled={onNavNext ? undefined : true} aria-label="Next record">
+            <button className="uix-peek__navbtn" onClick={() => onNavNext?.()} aria-disabled={onNavNext ? undefined : true} aria-label={nextLabel}>
               <ChevronDown />
             </button>
           </div>
@@ -74,7 +80,7 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
         {title && <h2 className="uix-peek__title" id={titleId}>{title}</h2>}
         {hint && <span className="uix-peek__hint">{hint}</span>}
         {onClose && (
-          <button className="uix-peek__close" onClick={onClose} aria-label="Close preview">
+          <button className="uix-peek__close" onClick={onClose} aria-label={closeLabel}>
             <CloseIcon />
           </button>
         )}

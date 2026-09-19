@@ -13,22 +13,37 @@ function getPageNumbers(page: number, total: number): (number | 'ellipsis')[] {
   return pages;
 }
 
+/** TENSOR RX-125 (UIX-04): the pager's accessible names. */
+export interface PaginationLabels {
+  region: string;
+  previous: string;
+  next: string;
+}
+
+export const DEFAULT_PAGINATION_LABELS: PaginationLabels = {
+  region: 'Pagination',
+  previous: 'Previous page',
+  next: 'Next page',
+};
+
 export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   page: number;
   pageCount: number;
   onChange: (page: number) => void;
+  labels?: Partial<PaginationLabels>;
 }
 
-export function Pagination({ page, pageCount, onChange, className, ...props }: PaginationProps) {
+export function Pagination({ page, pageCount, onChange, labels: labelOverrides, className, ...props }: PaginationProps) {
+  const labels = { ...DEFAULT_PAGINATION_LABELS, ...labelOverrides };
   const pages = getPageNumbers(page, pageCount);
 
   return (
-    <nav aria-label="Pagination" className={cx('uix-pagination', className)} {...props}>
+    <nav aria-label={labels.region} className={cx('uix-pagination', className)} {...props}>
       <button
         className="uix-pagination__btn"
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        aria-label="Previous page"
+        aria-label={labels.previous}
       >
         ‹
       </button>
@@ -52,7 +67,7 @@ export function Pagination({ page, pageCount, onChange, className, ...props }: P
         className="uix-pagination__btn"
         onClick={() => onChange(page + 1)}
         disabled={page >= pageCount}
-        aria-label="Next page"
+        aria-label={labels.next}
       >
         ›
       </button>

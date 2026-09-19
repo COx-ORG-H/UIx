@@ -12,6 +12,8 @@ const CloseIcon = () => (
 );
 
 export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  closeLabel?: string;
   open: boolean;
   onClose?: () => void;
   title?: ReactNode;
@@ -19,7 +21,7 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   footer?: ReactNode;
 }
 
-export function Drawer({ open, onClose, title, children, footer, className, ...rest }: DrawerProps) {
+export function Drawer({ open, onClose, title, children, footer, closeLabel = 'Close drawer', className, ...rest }: DrawerProps) {
   const ref = useDialog(open, onClose);
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it. The
   // inherit resets neutralize the base h2 heading font/tracking/leading so it renders exactly
@@ -39,7 +41,7 @@ export function Drawer({ open, onClose, title, children, footer, className, ...r
             <button
               style={{ marginLeft: 'auto', border: 0, background: 'transparent', color: 'var(--uix-text-muted)', cursor: 'pointer', width: 30, height: 30, display: 'grid', placeItems: 'center', borderRadius: 'var(--uix-radius-sm)' }}
               onClick={onClose}
-              aria-label="Close drawer"
+              aria-label={closeLabel}
             >
               <CloseIcon />
             </button>

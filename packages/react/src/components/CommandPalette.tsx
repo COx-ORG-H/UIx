@@ -17,6 +17,8 @@ interface CmdkContextValue {
 const CmdkContext = createContext<CmdkContextValue | null>(null);
 
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  inputLabel?: string;
   /** Props for the search input (value/onChange/placeholder wired by the consumer). */
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
   children?: ReactNode;
@@ -28,7 +30,7 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * a combobox over the listbox of `CommandItem`s; spreads override every default, so
  * consumers already passing their own roles/labels keep working.
  */
-export function CommandPalette({ inputProps, children, className, ...props }: CommandPaletteProps) {
+export function CommandPalette({ inputProps, children, inputLabel = 'Command palette', className, ...props }: CommandPaletteProps) {
   const listId = useId();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
@@ -60,7 +62,7 @@ export function CommandPalette({ inputProps, children, className, ...props }: Co
           aria-autocomplete="list"
           aria-controls={listId}
           aria-activedescendant={activeId ?? undefined}
-          aria-label="Command palette"
+          aria-label={inputLabel}
           {...inputProps}
         />
         <div className="uix-cmdk__list" role="listbox" id={listId}>{children}</div>

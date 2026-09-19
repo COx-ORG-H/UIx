@@ -27,6 +27,8 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   onActivate?: () => void;
   /** Action word appended to the accessible name, e.g. "change" → "Priority: P1, change". */
   activateLabel?: string;
+  /** TENSOR RX-125 (UIX-04): the spoken trend direction; English defaults. */
+  trendLabels?: { up?: string; down?: string };
   /** Whether the editor this tile opens is currently open (`aria-expanded`). */
   expanded?: boolean;
 }
@@ -44,7 +46,7 @@ const Chevron = () => (
  * ref then points at that button, so a popover can anchor to it.
  */
 export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
-  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, className, onClick, ...props },
+  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, trendLabels, className, onClick, ...props },
   ref,
 ) {
   const id = useId();
@@ -75,7 +77,7 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {trend.direction === 'up' ? <path d="M12 19V5m-6 6 6-6 6 6" /> : <path d="M12 5v14m6-6-6 6-6-6" />}
               </svg>
-              <span className="uix-visually-hidden">{trend.direction === 'up' ? 'up' : 'down'}</span>
+              <span className="uix-visually-hidden">{trend.direction === 'up' ? (trendLabels?.up ?? 'up') : (trendLabels?.down ?? 'down')}</span>
               {trend.label}
             </span>
           )}

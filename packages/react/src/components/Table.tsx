@@ -136,16 +136,20 @@ export function Tr({ selected, pinned, className, children, ...props }: TrProps)
 /* ── selection & bulk actions ─────────────────────────────────────────────────── */
 
 export interface BulkBarProps extends HTMLAttributes<HTMLDivElement> {
-  /** number of selected rows, rendered as "N selected" */
+  /** number of selected rows, rendered through `selectedLabel` */
   count?: number;
   children?: ReactNode;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  label?: string;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  selectedLabel?: (count: number) => ReactNode;
 }
 
 /** Contextual action bar shown above the table when ≥1 row is selected. */
-export function BulkBar({ count, children, className, ...props }: BulkBarProps) {
+export function BulkBar({ count, children, label = 'Bulk actions', selectedLabel = (n: number) => `${n} selected`, className, ...props }: BulkBarProps) {
   return (
-    <div className={cx('uix-bulkbar', className)} role="toolbar" aria-label="Bulk actions" {...props}>
-      {count != null && <span className="uix-bulkbar__count">{count} selected</span>}
+    <div className={cx('uix-bulkbar', className)} role="toolbar" aria-label={label} {...props}>
+      {count != null && <span className="uix-bulkbar__count">{selectedLabel(count)}</span>}
       <span className="uix-bulkbar__spacer" />
       {children}
     </div>
@@ -183,20 +187,24 @@ export function RowAction({ children, className, type = 'button', ...props }: Ro
 /* ── expandable inline row ────────────────────────────────────────────────────── */
 
 export interface ExpandToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  expandLabel?: string;
+  /** TENSOR RX-125 (UIX-04): translatable; English default. */
+  collapseLabel?: string;
   expanded?: boolean;
   /** id of the detail row this toggle controls → `aria-controls` (UIX-A11Y-2). */
   controls?: string;
 }
 
 /** Chevron button that expands/collapses an inline detail row. */
-export function ExpandToggle({ expanded, controls, className, type = 'button', ...props }: ExpandToggleProps) {
+export function ExpandToggle({ expanded, controls, expandLabel = 'Expand row', collapseLabel = 'Collapse row', className, type = 'button', ...props }: ExpandToggleProps) {
   return (
     <button
       type={type}
       className={cx('uix-table__expand', className)}
       aria-expanded={expanded}
       aria-controls={controls}
-      aria-label={expanded ? 'Collapse row' : 'Expand row'}
+      aria-label={expanded ? collapseLabel : expandLabel}
       {...props}
     >
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
