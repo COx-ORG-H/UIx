@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 7d2221d squash-merge of 8c831c1 (already skipped: routine CSS layout fixes) -->
 <!-- lesson-skip: 8c831c1 routine CSS layout fixes; each cause shown by measuring the element -->
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
