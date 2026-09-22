@@ -1,6 +1,6 @@
 /* uix number stepper — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-stepper { display: inline-flex; align-items: center; height: var(--uix-control-h); overflow: hidden;
+  .uix-stepper { display: inline-flex; align-items: center; width: fit-content; height: var(--uix-control-h); overflow: hidden;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-stepper__btn { width: 32px; align-self: stretch; border: 0; background: transparent; color: var(--uix-text); cursor: pointer;
     display: grid; place-items: center; transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }

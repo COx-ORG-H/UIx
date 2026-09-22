@@ -4,7 +4,7 @@ import { cx } from '../cx.js';
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
   onlineLabel?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   src?: string;
   alt?: string;
   /** Initials / fallback shown when there is no `src`. */

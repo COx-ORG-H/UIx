@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 171523,
-      "gzip": 24381,
-      "brotli": 20698
+      "raw": 172278,
+      "gzip": 24563,
+      "brotli": 20821
     },
     "build/css/styles.css": {
-      "raw": 181429,
-      "gzip": 27005,
-      "brotli": 22864
+      "raw": 182184,
+      "gzip": 27191,
+      "brotli": 22967
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -37,14 +37,14 @@
       "brotli": 328
     },
     "styles/components/avatar.css": {
-      "raw": 1982,
-      "gzip": 739,
-      "brotli": 585
+      "raw": 2351,
+      "gzip": 805,
+      "brotli": 653
     },
     "styles/components/brand-profiles.css": {
-      "raw": 1662,
-      "gzip": 520,
-      "brotli": 424
+      "raw": 2042,
+      "gzip": 649,
+      "brotli": 534
     },
     "styles/components/breadcrumbs.css": {
       "raw": 766,
@@ -227,9 +227,9 @@
       "brotli": 254
     },
     "styles/components/metric-input.css": {
-      "raw": 1153,
-      "gzip": 423,
-      "brotli": 350
+      "raw": 1387,
+      "gzip": 532,
+      "brotli": 441
     },
     "styles/components/modal.css": {
       "raw": 2910,
@@ -287,9 +287,9 @@
       "brotli": 1025
     },
     "styles/components/relationship-graph.css": {
-      "raw": 8703,
-      "gzip": 1866,
-      "brotli": 1570
+      "raw": 8903,
+      "gzip": 1935,
+      "brotli": 1629
     },
     "styles/components/rich-text.css": {
       "raw": 11048,
@@ -357,9 +357,9 @@
       "brotli": 856
     },
     "styles/components/stepper.css": {
-      "raw": 1169,
-      "gzip": 504,
-      "brotli": 403
+      "raw": 1189,
+      "gzip": 512,
+      "brotli": 405
     },
     "styles/components/steps.css": {
       "raw": 1361,
