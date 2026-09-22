@@ -107,7 +107,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. |
 | Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. |
 | UtilityBits | utility-bits.css | n/a | Stable | no | CSS-only utilities (`.uix-stack`/`.uix-cluster` etc.); no standalone wrapper by design. |
-| ViewMenu | view-menu.css | ✓ `ViewMenu` | Beta | no | Controlled density/row/column presentation; also `SavedViewMenu`. |
+| ViewMenu | view-menu.css | ✓ `ViewMenu` | Beta | no | Controlled density/row/column presentation; also `SavedViewMenu` (titled sections, grip · name · overflow rows, `onReorder` within a section). |
 
 ## Notes
 

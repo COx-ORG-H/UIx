@@ -2914,6 +2914,12 @@ export function SavedViewMenu(input: SavedViewMenuProps): react.JSX.Element;
 //
 // @public (undocumented)
 export type SavedViewMenuProps = SavedViewMenuBaseProps & ({
+    items: readonly SavedViewItem[];
+    sections?: never;
+} | {
+    sections: readonly SavedViewSection[];
+    items?: never;
+}) & ({
     onPinChange: (id: string, pinned: boolean) => void;
     pinLabel: string;
     unpinLabel: string;
@@ -2921,7 +2927,23 @@ export type SavedViewMenuProps = SavedViewMenuBaseProps & ({
     onPinChange?: undefined;
     pinLabel?: never;
     unpinLabel?: never;
+}) & ({
+    onReorder: (orderedIds: string[], sectionId: string | undefined) => void;
+    reorderLabel: string;
+} | {
+    onReorder?: undefined;
+    reorderLabel?: never;
 });
+
+// @public
+export interface SavedViewSection {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    items: readonly SavedViewItem[];
+    // (undocumented)
+    label: ReactNode;
+}
 
 // @public
 export function SaveStatus(input: SaveStatusProps): react.JSX.Element;

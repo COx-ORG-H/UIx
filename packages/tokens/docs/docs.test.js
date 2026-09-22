@@ -262,3 +262,13 @@ test('React availability mappings are explicit, unique, and catalogue-backed', (
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });
+
+test('docs prose list rules never reach kit lists', () => {
+  // docs.css is unlayered, so a bare `.uix-docs__page ul` / `li + li` beats every @layer uix.components
+  // rule and gives list-based specimens (ul.uix-menu, .uix-tree ul, .uix-prose ul …) prose indents and gaps.
+  const css = readFileSync(resolve(docsDirectory, 'docs.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const selectors = [...css.matchAll(/([^{}]+)\{[^}]*\}/g)].flatMap((m) => m[1].split(/,(?![^(]*\))/).map((s) => s.trim()));
+  const bare = selectors.filter((s) => /^\.uix-docs__page\s+(ul|ol|li(\s*\+\s*li)?)$/.test(s));
+  assert.deepEqual(bare, [], 'scope prose list rules to docs-authored lists (see the :where(:not(...)) rule)');
+  assert.ok(selectors.some((s) => s.includes('[class*="uix-"]:not([class*="uix-docs"]) *') && s.endsWith('> li + li')), 'the scoped prose li + li rule exists');
+});

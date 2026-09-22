@@ -11,8 +11,29 @@
   .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
   .uix-view-menu__cols { display: flex; flex-direction: column; gap: var(--uix-space-1); max-height: 180px; overflow: auto; }
   .uix-view-menu__cols .uix-menu__item { font-size: var(--uix-text-meta); }
-  .uix-saved-views__row { display: flex; align-items: center; }
+  /* Saved views: optional titled sections in one scrolling menu; a row is grip · name · overflow.
+     Hover and selection paint the WHOLE row; the selected row is an accent tint, never a check glyph. */
+  .uix-saved-views { max-width: 400px; max-height: min(60vh, 440px); overflow-y: auto; overscroll-behavior: contain; }
+  .uix-saved-views__section + .uix-saved-views__section { margin-top: var(--uix-space-1); }
+  .uix-saved-views__section-label { position: sticky; top: calc(-1 * var(--uix-space-1)); z-index: var(--uix-z-raised); background: var(--uix-surface-2); }
+  .uix-saved-views__group { margin: 0; padding: 0; list-style: none; }
+  .uix-saved-views__row { display: flex; align-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-saved-views__row:hover { background: var(--uix-bg-hover); }
+  .uix-saved-views__row[data-active] { background: var(--uix-brand-muted); }
+  .uix-saved-views__row[data-dragging] { opacity: .55; }
+  .uix-saved-views[data-dragging] { cursor: grabbing; user-select: none; }
   .uix-saved-views__row > .uix-menu__item { min-width: 0; flex: 1; }
+  .uix-saved-views__row > .uix-menu__item:is(:hover, [data-active]) { background: transparent; }
+  .uix-saved-views__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-saved-views__grip { display: grid; place-items: center; flex: none; width: 20px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
+  .uix-saved-views__grip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-saved-views__actions { display: flex; flex: none; align-items: center; }
+  /* Quiet affordances: grip and overflow are dimmed on purpose until the row is hovered or holds focus,
+     the grip is in use, or the overflow menu is open. Idle is 75% (not lower): the muted grip on the
+     panel surface needs it to keep WCAG 1.4.11 3:1 non-text contrast at rest (3.19:1 light, 4.45:1 dark). */
+  :is(.uix-saved-views__grip, .uix-saved-views__actions) { opacity: .75; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-saved-views__row:is(:hover, :focus-within, [data-dragging]) :is(.uix-saved-views__grip, .uix-saved-views__actions),
+  .uix-saved-views__actions:has([aria-expanded="true"]) { opacity: 1; }
   .uix-saved-views__pin { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer; }
   .uix-saved-views__pin:is(:hover, :focus-visible), .uix-saved-views__pin[data-on] { color: var(--uix-warning-text); background: var(--uix-bg-hover); }
   .uix-saved-views__footer { border-top: 1px solid var(--uix-border); margin-top: var(--uix-space-1); padding: var(--uix-space-2); }

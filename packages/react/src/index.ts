@@ -185,7 +185,7 @@ export type { SegmentedProps, SegmentedOptionProps } from './components/Segmente
 
 export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableControls.js';
 export type {
-  ViewMenuProps, ViewMenuColumn, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem,
+  ViewMenuProps, ViewMenuColumn, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem, SavedViewSection,
 } from './components/TableControls.js';
 
 export { Timeline, TimelineItem } from './components/Timeline.js';

@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-/* Lucide glyphs (ISC) for the editor toolbar, emoji picker and reaction bar.
+/* Lucide glyphs (ISC) for the editor toolbar, emoji picker, reaction bar and saved-view grip.
  * viewBox 24, stroke-width 2, round caps; sized by the surrounding CSS. */
 const PATHS = {
   heading1: 'M4 12h8M4 18V6M12 18V6M17 12l3-2v8',
@@ -31,6 +31,7 @@ const PATHS = {
   sourceMode: 'M10 12.5 8 15l2 2.5M14 12.5l2 2.5-2 2.5M14 2v4a2 2 0 0 0 2 2h4M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z',
   richMode: 'M14 2v4a2 2 0 0 0 2 2h4M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM8 13h8M8 17h5',
   clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM12 6v6l4 2',
+  grip: 'M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01',
 } as const;
 
 export type EditorIconName = keyof typeof PATHS;
