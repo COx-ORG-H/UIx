@@ -25,6 +25,9 @@
     .uix-progress, .uix-meter { border: 1px solid ButtonText; }
     .uix-progress__bar, .uix-meter__fill { background: SelectedItem; forced-color-adjust: none; }
 
+    /* saved views — the selected row is a background tint only (no check glyph) */
+    .uix-saved-views__row[data-active] { outline: 2px solid SelectedItem; outline-offset: -2px; }
+
     /* text fields — components replace the focus outline with a box-shadow ring, which WHCM strips */
     .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {
       outline: 2px solid Highlight; outline-offset: 1px;

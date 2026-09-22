@@ -259,9 +259,11 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__page h2 { margin: 0 0 var(--uix-space-4); font-size: 1.7rem; line-height: 1.2; letter-spacing: -.025em; }
 .uix-docs__page h3 { margin: var(--uix-space-6) 0 var(--uix-space-3); font-size: 1.08rem; letter-spacing: -.01em; }
 .uix-docs__page p { margin: 0 0 var(--uix-space-4); }
-.uix-docs__page ul,
-.uix-docs__page ol { margin: 0 0 var(--uix-space-5); padding-left: 1.35rem; }
-.uix-docs__page li + li { margin-top: var(--uix-space-2); }
+/* Prose lists only — docs-authored (class-less or uix-docs__*) lists outside any kit component. These rules are
+   unlayered, so an unscoped `ul`/`li + li` would beat every @layer uix.components rule and give kit lists
+   (ul.uix-menu, .uix-tree ul, .uix-prose ul …) prose indents and gaps. :where() keeps the old specificity. */
+.uix-docs__page :is(ul, ol):where(:not([class*="uix-"]:not([class*="uix-docs"]), [class*="uix-"]:not([class*="uix-docs"]) *)) { margin: 0 0 var(--uix-space-5); padding-left: 1.35rem; }
+.uix-docs__page :where(ul, ol):where(:not([class*="uix-"]:not([class*="uix-docs"]), [class*="uix-"]:not([class*="uix-docs"]) *)) > li + li { margin-top: var(--uix-space-2); }
 .uix-docs__page :not(pre) > code { padding: .14em .38em; border: 1px solid var(--uix-border); border-radius: 5px; background: var(--uix-bg-subtle); color: var(--uix-text); font-size: .86em; }
 
 .uix-docs__hero-grid { margin-top: var(--uix-space-7); display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr); gap: var(--uix-space-4); }

@@ -31,7 +31,7 @@ export const COMPONENT_GUIDANCE = {
   table: ['Compare many records across the same fields.', 'Aligned headers and cells; sorting, filtering and pagination must match the data source.'],
   'table-toolbar': ['Place collection actions and filters above a table.', 'A consistent area for search, selection actions and view controls.'],
   'filter-popover': ['Edit one bounded filter without leaving a collection.', 'A labeled control with explicit Apply and Clear actions; the application owns query state and serialization.'],
-  'saved-view-menu': ['Choose or manage a reusable collection view.', 'Named views expose selection and pin state; persistence, ownership and authorization belong to the application.'],
+  'saved-view-menu': ['Choose, order or manage reusable collection views.', 'Optional titled sections (custom views above presets) in one scrolling menu. A row is grip · name · overflow; the selected row is tinted as a whole, and the grip reorders within its section. The grip and overflow are dimmed on purpose; hovering or focusing the row reveals them, and the idle value (75%) still meets 3:1 non-text contrast. Persistence, permissions and labels belong to the application.'],
   list: ['Scan records whose content varies more than table columns allow.', 'Repeated rows with clear titles, metadata and optional trailing actions.'],
   'description-list': ['Inspect labeled properties of one record.', 'Semantic term/value pairs with a consistent label column.'],
   'status-pill': ['Communicate a concise status or priority.', 'A short label and semantic tone; the text carries meaning independently of color.'],
