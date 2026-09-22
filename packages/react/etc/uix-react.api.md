@@ -146,7 +146,7 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     children?: ReactNode;
     onlineLabel?: string;
     // (undocumented)
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     // (undocumented)
     src?: string;
     status?: boolean;

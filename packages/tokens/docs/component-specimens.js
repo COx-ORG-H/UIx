@@ -136,7 +136,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "avatar": {
     "route": "examples-data-display",
-    "selector": ".uix-avatar"
+    "selector": ".uix-avatar",
+    "container": "[data-avatar-specimen]"
   },
   "stat-tile": {
     "route": "examples-data-display",
