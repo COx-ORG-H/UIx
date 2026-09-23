@@ -12,6 +12,11 @@ import { fillLabel } from '../fill-label.js';
  * Every word the diff viewer renders (TENSOR RX-125, UIX-12). `base` / `current` /
  * `incoming` keep their meaning from before; `{path}`, `{version}`, `{resolved}` and
  * `{total}` are placeholders.
+ *
+ * `acceptIncomingFor` / `keepCurrentFor` / `markPendingFor` are the accessible names of
+ * the three action buttons, so a screen reader hears which entry each one resolves. Keep
+ * the visible word inside the translated name (WCAG 2.5.3 Label in Name): speech-input
+ * users say what they see.
  */
 export interface DiffViewerLabels {
   base: string;
@@ -32,6 +37,9 @@ export interface DiffViewerLabels {
   acceptIncoming: string;
   keepCurrent: string;
   markPending: string;
+  acceptIncomingFor: string;
+  keepCurrentFor: string;
+  markPendingFor: string;
   resolutionAccept: string;
   resolutionSkip: string;
   resolutionPending: string;
@@ -58,6 +66,9 @@ export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels = {
   acceptIncoming: 'Accept incoming',
   keepCurrent: 'Keep current',
   markPending: 'Mark pending',
+  acceptIncomingFor: 'Accept incoming for {path}',
+  keepCurrentFor: 'Keep current for {path}',
+  markPendingFor: 'Mark pending for {path}',
   resolutionAccept: 'accepted',
   resolutionSkip: 'kept',
   resolutionPending: 'pending',
@@ -73,6 +84,12 @@ export interface DiffViewerProps {
   resolutions?: Record<string, DiffResolution>;
   onResolutionChange?: (path: string, resolution: DiffResolution) => void;
   labels?: Partial<DiffViewerLabels>;
+  /**
+   * Height of the resolution buttons and the entry disclosure rows. `sm` (the default) is
+   * the compact 28px kit size; `md` follows `--uix-control-h`, so a theme that sets its
+   * own control height (for example 60px touch targets) gets it here too; `lg` is 44px.
+   */
+  controlSize?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
@@ -83,10 +100,11 @@ const renderValue = (value: JsonValue | undefined, notPresent: string) => value 
 /** Three-way configuration diff with per-entry keyboard-operable resolution. */
 export function DiffViewer({
   base, current, incoming, entries: providedEntries, resolutions: controlledResolutions,
-  onResolutionChange, labels: labelOverrides, className,
+  onResolutionChange, labels: labelOverrides, controlSize = 'sm', className,
 }: DiffViewerProps) {
   const labels: DiffViewerLabels = { ...DEFAULT_DIFF_VIEWER_LABELS, ...labelOverrides };
   const resolutionLabel = { accept: labels.resolutionAccept, skip: labels.resolutionSkip, pending: labels.resolutionPending } as const;
+  const buttonSize = controlSize === 'md' ? undefined : `uix-btn--${controlSize}`;
   const id = useId();
   const entries = useMemo(() => providedEntries ?? buildThreeWayDiff(base, current, incoming), [providedEntries, base, current, incoming]);
   const [internalResolutions, setInternalResolutions] = useState<Record<string, DiffResolution>>({});
@@ -100,8 +118,8 @@ export function DiffViewer({
   if (entries.length === 0) return <section className={cx('uix-diff-viewer uix-diff-viewer--empty', className)} aria-label={labels.region}><h3>{labels.noDifferences}</h3><p>{labels.noDifferencesDetail}</p></section>;
 
   return (
-    <section className={cx('uix-diff-viewer', className)} aria-label={labels.region}>
-      <div className="uix-diff-viewer__summary" aria-label={labels.summary}>
+    <section className={cx('uix-diff-viewer', className)} aria-label={labels.region} data-control-size={controlSize}>
+      <div className="uix-diff-viewer__summary" role="group" aria-label={labels.summary}>
         {GROUPS.map((kind) => <span key={kind}><b>{summary[kind]}</b> {labels[kind].toLowerCase()}</span>)}
         <span><b>{summary.resolved}</b> {labels.resolved}</span><span><b>{summary.pending}</b> {labels.pending}</span>
       </div>
@@ -120,10 +138,10 @@ export function DiffViewer({
                   <pre>{renderValue(entry[version], labels.notPresent)}</pre>
                 </div>)}
               </div>
-              <div className="uix-diff-viewer__actions" aria-label={fillLabel(labels.resolve, { path: entry.path })}>
-                <button type="button" className="uix-btn uix-btn--primary uix-btn--sm" aria-pressed={resolution === 'accept'} onClick={() => resolve(entry.path, 'accept')}>{labels.acceptIncoming}</button>
-                <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" aria-pressed={resolution === 'skip'} onClick={() => resolve(entry.path, 'skip')}>{labels.keepCurrent}</button>
-                <button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" aria-pressed={resolution === 'pending'} onClick={() => resolve(entry.path, 'pending')}>{labels.markPending}</button>
+              <div className="uix-diff-viewer__actions" role="group" aria-label={fillLabel(labels.resolve, { path: entry.path })}>
+                <button type="button" className={cx('uix-btn uix-btn--primary', buttonSize)} aria-label={fillLabel(labels.acceptIncomingFor, { path: entry.path })} aria-pressed={resolution === 'accept'} onClick={() => resolve(entry.path, 'accept')}>{labels.acceptIncoming}</button>
+                <button type="button" className={cx('uix-btn uix-btn--secondary', buttonSize)} aria-label={fillLabel(labels.keepCurrentFor, { path: entry.path })} aria-pressed={resolution === 'skip'} onClick={() => resolve(entry.path, 'skip')}>{labels.keepCurrent}</button>
+                <button type="button" className={cx('uix-btn uix-btn--ghost', buttonSize)} aria-label={fillLabel(labels.markPendingFor, { path: entry.path })} aria-pressed={resolution === 'pending'} onClick={() => resolve(entry.path, 'pending')}>{labels.markPending}</button>
               </div>
             </details>;
           })}

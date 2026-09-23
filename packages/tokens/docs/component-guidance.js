@@ -79,7 +79,7 @@ export const COMPONENT_GUIDANCE = {
   'builder-canvas': ['Arrange configurable items in an authoring workspace.', 'A canvas and item controls; keyboard alternatives must accompany pointer operations.'],
   'relationship-graph': ['Inspect how entities are connected.', 'Named nodes and connections with a readable alternative to the visual graph.'],
   'scheduling-calendar': ['Inspect events against a time grid.', 'Positioned events with dates and times; the app owns timezone and scheduling rules.'],
-  'diff-viewer': ['Compare versions of textual content.', 'Added, removed and unchanged lines remain distinguishable with textual markers.'],
+  'diff-viewer': ['Compare base, current and incoming configuration and resolve each difference.', 'Grouped entries with every version labelled; each action is named for its entry, and controlSize md follows --uix-control-h for touch-sized controls.'],
   'match-review': ['Review proposed matches before accepting them.', 'Candidate information and explicit decisions; the application owns matching and persistence.'],
   'license-position-bar': ['Compare consumption against entitlement.', 'A labeled capacity position including any overage; values come from the application.'],
   'brand-profiles': ['Compare supported product brand configurations.', 'The same components rendered with different brand slots while preserving the system contract.'],
