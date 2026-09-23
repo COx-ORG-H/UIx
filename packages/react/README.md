@@ -205,4 +205,24 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 <CopyButton value={email} label={t('copyEmail')} copiedLabel={t('copied')} failedLabel={t('copyFailed')} />
 ```
 
+### DiffViewer words and control size
+
+- **Every word is a label.** `labels` (a `Partial<DiffViewerLabels>`, English defaults in `DEFAULT_DIFF_VIEWER_LABELS`) covers the version names, group titles, the summary, the live progress text, and the action buttons.
+- **Each action is named for its entry.** The visible words come from `acceptIncoming` / `keepCurrent` / `markPending`. The accessible names come from `acceptIncomingFor` / `keepCurrentFor` / `markPendingFor`, e.g. "Accept incoming for $.limit". Each entry's three buttons sit in a group named by `resolve`. When you translate a name, keep the visible word inside it, so people using speech input can say what they see (WCAG 2.5.3).
+- **`controlSize`** sets the height of the action buttons and the entry rows. `sm` (the default) is the compact 28px kit size. `md` follows `--uix-control-h`, so a theme with 60px controls gets 60px actions. `lg` is 44px.
+
+```tsx
+<DiffViewer
+  base={published} current={draft} incoming={remote}
+  controlSize="md"
+  labels={{
+    acceptIncoming: t('acceptIncoming'), acceptIncomingFor: t('acceptIncomingFor'), // 'Prihvati dolazno za {path}'
+    keepCurrent: t('keepCurrent'), keepCurrentFor: t('keepCurrentFor'),
+    markPending: t('markPending'), markPendingFor: t('markPendingFor'),
+    resolve: t('resolve'), /* …the rest of DiffViewerLabels */
+  }}
+  onResolutionChange={record}
+/>
+```
+
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.

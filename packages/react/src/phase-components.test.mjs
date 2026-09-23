@@ -10,6 +10,7 @@ import {
   BuilderCanvas,
   ColorPicker,
   DateRangePicker,
+  DEFAULT_DIFF_VIEWER_LABELS,
   DiffViewer,
   LicensePositionBar,
   MatchReview,
@@ -203,6 +204,59 @@ test('DiffViewer groups conflicts and labels all three versions', () => {
   assert.match(html, /Base value for \$\.limit/);
   assert.match(html, /Current value for \$\.limit/);
   assert.match(html, /Incoming value for \$\.limit/);
+});
+
+const CONFLICT = { base: { limit: 1 }, current: { limit: 2 }, incoming: { limit: 3 } };
+const actionButtons = (html) => [...html.matchAll(/<button [^>]*>[^<]*<\/button>/g)].map(([markup]) => markup);
+
+test('DiffViewer names each action for its entry and groups the actions', () => {
+  const html = render(DiffViewer, CONFLICT);
+  assert.match(html, /<div class="uix-diff-viewer__actions" role="group" aria-label="Resolve \$\.limit">/);
+  assert.match(html, /<div class="uix-diff-viewer__summary" role="group" aria-label="Difference summary">/);
+  const buttons = actionButtons(html);
+  assert.equal(buttons.length, 3);
+  assert.match(buttons[0], /aria-label="Accept incoming for \$\.limit"[^>]*>Accept incoming</);
+  assert.match(buttons[1], /aria-label="Keep current for \$\.limit"[^>]*>Keep current</);
+  assert.match(buttons[2], /aria-label="Mark pending for \$\.limit"[^>]*>Mark pending</);
+});
+
+test('DiffViewer default action names contain their visible label (WCAG 2.5.3)', () => {
+  for (const [visible, named] of [['acceptIncoming', 'acceptIncomingFor'], ['keepCurrent', 'keepCurrentFor'], ['markPending', 'markPendingFor']]) {
+    assert.ok(DEFAULT_DIFF_VIEWER_LABELS[named].includes(DEFAULT_DIFF_VIEWER_LABELS[visible]), `${named} contains "${DEFAULT_DIFF_VIEWER_LABELS[visible]}"`);
+    assert.ok(DEFAULT_DIFF_VIEWER_LABELS[named].includes('{path}'), `${named} names the entry`);
+  }
+});
+
+test('DiffViewer renders localized action words and action names (MOTUS bs)', () => {
+  const html = render(DiffViewer, {
+    ...CONFLICT,
+    labels: {
+      acceptIncoming: 'Prihvati dolaznu', keepCurrent: 'Zadrži trenutnu', markPending: 'Označi na čekanju',
+      acceptIncomingFor: 'Prihvati dolaznu za {path}', keepCurrentFor: 'Zadrži trenutnu za {path}',
+      markPendingFor: 'Označi na čekanju za {path}', resolve: 'Razriješi {path}',
+    },
+  });
+  const buttons = actionButtons(html);
+  assert.match(buttons[0], /aria-label="Prihvati dolaznu za \$\.limit"[^>]*>Prihvati dolaznu</);
+  assert.match(buttons[1], /aria-label="Zadrži trenutnu za \$\.limit"[^>]*>Zadrži trenutnu</);
+  assert.match(buttons[2], /aria-label="Označi na čekanju za \$\.limit"[^>]*>Označi na čekanju</);
+  assert.match(html, /aria-label="Razriješi \$\.limit"/);
+  for (const english of ['Accept incoming', 'Keep current', 'Mark pending', 'Resolve ']) {
+    assert.ok(!html.includes(english), `no English "${english}" once translated`);
+  }
+});
+
+test('DiffViewer controlSize sets the action button size; sm stays the default', () => {
+  const sizeOf = (props) => {
+    const html = render(DiffViewer, { ...CONFLICT, ...props });
+    return {
+      root: html.match(/<section class="uix-diff-viewer"[^>]*data-control-size="([a-z]+)"/)?.[1],
+      buttons: actionButtons(html).map((b) => b.match(/uix-btn--(sm|lg)\b/)?.[1] ?? 'md'),
+    };
+  };
+  assert.deepEqual(sizeOf({}), { root: 'sm', buttons: ['sm', 'sm', 'sm'] });
+  assert.deepEqual(sizeOf({ controlSize: 'md' }), { root: 'md', buttons: ['md', 'md', 'md'] });
+  assert.deepEqual(sizeOf({ controlSize: 'lg' }), { root: 'lg', buttons: ['lg', 'lg', 'lg'] });
 });
 
 test('ColorPicker normalizes its swatch trigger and names the control', () => {

@@ -1046,6 +1046,8 @@ export interface DiffViewerLabels {
     // (undocumented)
     acceptIncoming: string;
     // (undocumented)
+    acceptIncomingFor: string;
+    // (undocumented)
     added: string;
     // (undocumented)
     base: string;
@@ -1060,7 +1062,11 @@ export interface DiffViewerLabels {
     // (undocumented)
     keepCurrent: string;
     // (undocumented)
+    keepCurrentFor: string;
+    // (undocumented)
     markPending: string;
+    // (undocumented)
+    markPendingFor: string;
     // (undocumented)
     noDifferences: string;
     // (undocumented)
@@ -1097,6 +1103,7 @@ export interface DiffViewerProps {
     base?: JsonValue;
     // (undocumented)
     className?: string;
+    controlSize?: 'sm' | 'md' | 'lg';
     // (undocumented)
     current?: JsonValue;
     // (undocumented)

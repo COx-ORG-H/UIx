@@ -28,3 +28,5 @@ tests/visual/__screenshots__/*-darwin.png
 tests/rich-text/dist/
 # operator-primitives Playwright harness bundle (tests/operator-primitives/build.mjs)
 tests/operator-primitives/dist/
+# DiffViewer Playwright harness bundle (tests/diff-viewer/build.mjs)
+tests/diff-viewer/dist/

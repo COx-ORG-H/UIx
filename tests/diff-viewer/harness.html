@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiffViewer harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/diff-viewer.spec.mjs and tests/visual/diff-viewer.spec.mjs. Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { padding: var(--uix-space-5); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; gap: var(--uix-space-6); max-width: 60rem; margin: 0 auto; }
+    section { display: grid; gap: var(--uix-space-3); }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>
