@@ -3,7 +3,8 @@
 import { buildHarness } from './rich-text/build.mjs';
 import { buildOperatorHarness } from './operator-primitives/build.mjs';
 import { buildDiffViewerHarness } from './diff-viewer/build.mjs';
+import { buildViewMenuHarness } from './view-menu/build.mjs';
 
 export default async function globalSetup() {
-  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness()]);
+  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness(), buildViewMenuHarness()]);
 }

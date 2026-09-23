@@ -1,16 +1,48 @@
-/* uix table View menu — consolidates density / zebra / freeze / columns into one popover.
-   Reuses .uix-popover (surface + animation), .uix-segmented, .uix-switch. Depends only on --uix-* tokens. */
+/* uix table View menu — density / zebra / freeze / columns in one panel with its OWN surface, so it
+   renders opaque inside a Popover or inside an overlay shell that adds no chrome. Section titles stay
+   pinned while the panel scrolls; a column row is grip · checkbox · name · ⋯.
+   Reuses .uix-segmented, .uix-switch, .uix-checkbox, .uix-menu__item. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-view-menu { min-width: 248px; padding: var(--uix-space-2); }
+  .uix-view-menu {
+    min-width: 280px; max-width: 360px; max-height: min(60vh, 480px); overflow-y: auto; overscroll-behavior: contain;
+    padding: var(--uix-space-2); color: var(--uix-text);
+    background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover);
+  }
+  /* Inside a .uix-popover the popover is the surface; don't draw a second border and shadow. */
+  .uix-popover > .uix-view-menu { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
   .uix-view-menu__group { padding: var(--uix-space-2) var(--uix-space-2); }
   .uix-view-menu__group + .uix-view-menu__group { border-top: 1px solid var(--uix-border); }
-  .uix-view-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
+  .uix-view-menu__label {
+    position: sticky; top: calc(-1 * var(--uix-space-2)); z-index: var(--uix-z-raised); padding-block: var(--uix-space-1); margin-bottom: var(--uix-space-1);
+    background: var(--uix-surface-2); font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted);
+  }
   .uix-view-menu__row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); font-size: var(--uix-text-body); color: var(--uix-text); cursor: pointer; }
   .uix-view-menu__row + .uix-view-menu__row { margin-top: var(--uix-space-3); }
   .uix-view-menu .uix-segmented { display: flex; width: 100%; }
   .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
-  .uix-view-menu__cols { display: flex; flex-direction: column; gap: var(--uix-space-1); max-height: 180px; overflow: auto; }
-  .uix-view-menu__cols .uix-menu__item { font-size: var(--uix-text-meta); }
+  .uix-view-menu__cols { display: flex; flex-direction: column; margin: 0 calc(-1 * var(--uix-space-1)); padding: 0; list-style: none; }
+  .uix-view-menu__footer { border-top: 1px solid var(--uix-border); padding: var(--uix-space-1) 0 0; }
+  /* Column rows. Hover paints the WHOLE row (grip, checkbox, name, ⋯ together), never just the label. */
+  .uix-view-menu__col { display: flex; align-items: center; gap: var(--uix-space-1); border-radius: var(--uix-radius-sm); }
+  .uix-view-menu__col:hover { background: var(--uix-bg-hover); }
+  .uix-view-menu__col[data-dragging] { opacity: .55; }
+  .uix-view-menu[data-dragging] { cursor: grabbing; user-select: none; }
+  /* The toggle is a .uix-checkbox (or, for a required column, a plain span) — not a .uix-menu__item,
+     whose svg rule would recolour and resize the check glyph. */
+  .uix-view-menu__col-toggle { display: flex; flex: 1; min-width: 0; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-1); font-size: var(--uix-text-body); color: var(--uix-text); }
+  span.uix-view-menu__col-toggle { cursor: default; }
+  /* A required column has no checkbox; the box's width is kept so every name starts at the same x. */
+  .uix-view-menu__col-box { flex: none; width: 18px; }
+  .uix-view-menu__col-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-view-menu__grip { display: grid; place-items: center; flex: none; width: 20px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
+  .uix-view-menu__grip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-view-menu__actions { display: flex; flex: none; align-items: center; }
+  .uix-view-menu__row-menu { min-width: 160px; padding: var(--uix-space-1); }
+  /* Grip and ⋯ are quiet until the row is hovered or holds focus, the grip is in use, or the menu is
+     open — at 75%, the same WCAG 1.4.11 floor as the saved-views row (see below). */
+  :is(.uix-view-menu__grip, .uix-view-menu__actions) { opacity: .75; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-view-menu__col:is(:hover, :focus-within, [data-dragging]) :is(.uix-view-menu__grip, .uix-view-menu__actions),
+  .uix-view-menu__actions:has([aria-expanded="true"]) { opacity: 1; }
   /* Saved views: optional titled sections in one scrolling menu; a row is grip · name · overflow.
      Hover and selection paint the WHOLE row; the selected row is an accent tint, never a check glyph. */
   .uix-saved-views { max-width: 400px; max-height: min(60vh, 440px); overflow-y: auto; overscroll-behavior: contain; }

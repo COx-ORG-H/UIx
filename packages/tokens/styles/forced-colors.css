@@ -27,6 +27,8 @@
 
     /* saved views — the selected row is a background tint only (no check glyph) */
     .uix-saved-views__row[data-active] { outline: 2px solid SelectedItem; outline-offset: -2px; }
+    /* view menu — the dragged column row is only dimmed (opacity), which WHCM keeps but can hide */
+    .uix-view-menu__col[data-dragging] { outline: 2px dashed Highlight; outline-offset: -2px; }
 
     /* text fields — components replace the focus outline with a box-shadow ring, which WHCM strips */
     .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {

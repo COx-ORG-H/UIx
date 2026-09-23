@@ -30,3 +30,5 @@ tests/rich-text/dist/
 tests/operator-primitives/dist/
 # DiffViewer Playwright harness bundle (tests/diff-viewer/build.mjs)
 tests/diff-viewer/dist/
+# ViewMenu Playwright harness bundle (tests/view-menu/build.mjs)
+tests/view-menu/dist/

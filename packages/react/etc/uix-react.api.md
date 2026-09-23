@@ -3793,25 +3793,48 @@ export interface ViewMenuColumn {
     id: string;
     // (undocumented)
     label: ReactNode;
+    required?: boolean;
+    textLabel?: string;
     // (undocumented)
     visible: boolean;
+}
+
+// @public
+export interface ViewMenuColumnLabels {
+    // (undocumented)
+    hide: string;
+    moved: string;
+    // (undocumented)
+    moveDown: string;
+    // (undocumented)
+    moveUp: string;
+    reorder: string;
+    required: string;
+    rowActions: string;
+    // (undocumented)
+    show: string;
 }
 
 // @public (undocumented)
 export interface ViewMenuProps {
     // (undocumented)
+    className?: string;
+    // (undocumented)
+    columnLabels?: Partial<ViewMenuColumnLabels>;
+    // (undocumented)
     columns?: readonly ViewMenuColumn[];
     // (undocumented)
     columnsLabel?: ReactNode;
+    density?: string;
     // (undocumented)
-    density: string;
+    densityLabel?: ReactNode;
     // (undocumented)
-    densityLabel: ReactNode;
-    // (undocumented)
-    densityOptions: readonly {
+    densityOptions?: readonly {
         value: string;
         label: ReactNode;
     }[];
+    displayLabel?: ReactNode;
+    footer?: ReactNode;
     // (undocumented)
     freeze?: {
         checked: boolean;
@@ -3821,7 +3844,8 @@ export interface ViewMenuProps {
     // (undocumented)
     onColumnVisibilityChange?: (id: string, visible: boolean) => void;
     // (undocumented)
-    onDensityChange: (value: string) => void;
+    onDensityChange?: (value: string) => void;
+    onReorder?: (orderedIds: string[]) => void;
     // (undocumented)
     zebra?: {
         checked: boolean;
