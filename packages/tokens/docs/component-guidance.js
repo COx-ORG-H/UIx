@@ -95,5 +95,5 @@ export const COMPONENT_GUIDANCE = {
   kbd: ['Explain a keyboard shortcut.', 'A visually distinct key label; rendering it does not register a shortcut.'],
   link: ['Navigate to another destination or related content.', 'Recognizable inline links or quiet links within already-interactive content rows.'],
   'utility-bits': ['Add small supporting content treatments.', 'Shared code, quotation, divider and activity treatments without a local visual dialect.'],
-  'view-menu': ['Adjust how a collection is displayed.', 'Grouped density, column and view choices; the application applies and stores the preferences.'],
+  'view-menu': ['Adjust how a collection is displayed.', 'One panel with its own surface (it stays opaque inside any overlay shell): density, display switches and columns under section titles that stay pinned while the panel scrolls. A column row is grip · checkbox · name · ⋯; a required column shows its name without a checkbox. With reordering on, the grip drags a row and the ⋯ menu offers Move up, Move down and Hide or Show, which is the keyboard path. Grip and ⋯ idle at 75% so they still meet 3:1 non-text contrast. The application applies and stores the preferences and the column order.'],
 };

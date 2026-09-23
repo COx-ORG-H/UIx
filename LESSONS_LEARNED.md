@@ -1,9 +1,13 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 5551372 not a fix from this session; arrived via git pull of master (PR #44, own session owns its lesson call) -->
 <!-- lesson-skip: 7d2221d squash-merge of 8c831c1 (already skipped: routine CSS layout fixes) -->
 <!-- lesson-skip: 8c831c1 routine CSS layout fixes; each cause shown by measuring the element -->
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
+
+### 2026-09-24 · live-reorder drag · `feat/view-menu-columns-anatomy`
+- **Rule:** a list that reorders *while* a row is dragged must follow the pointer on the window (not on the grip through pointer capture), and must compute the drop slot from the OTHER rows only.  **Why:** React re-keys by moving the dragged row's DOM node, and moving a node releases its pointer capture (and its focus), so SavedViewMenu's drag stalled after the first step down. Counting the dragged row's own midpoint pushed it one slot past the pointer. The jsdom test stubbed fixed rects and dispatched every event on the grip, so it passed on both bugs.  **Gate:** `tests/a11y/view-menu.spec.mjs` drags with a real mouse in Chromium (ViewMenu and SavedViewMenu); both drag tests fail when the dragged row is counted again.
 
 ### 2026-09-22 · docs specimens · `feat/saved-view-menu-sections`
 - **Rule:** a list-based specimen (`ul.uix-menu` and similar) inside `.uix-docs__page` has to be looked at rendered, because the docs prose rules (`ul { padding-left }`, `li + li { margin-top }`) are unlayered and so beat every `@layer uix.components` rule.  **Why:** the saved-view specimen had been showing prose indents and gaps since it shipped, while contract, a11y and visual gates all stayed green (its route has no golden). The sectioned redesign made the rows look mis-indented against their section titles.  **Gate:** none general. `docs.css` now scopes its prose list rules with `:where()` to docs-authored lists only, so every kit list (`ul.uix-menu`, `.uix-prose ul`, `.uix-related-links__list`, `.uix-tree ul` …) is exempt; the workspace VR golden moved 44 px for exactly the two kit lists on that page and was re-baselined.  **Tag:** false-green, cascade-layers, docs
