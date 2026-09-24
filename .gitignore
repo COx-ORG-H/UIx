@@ -32,3 +32,5 @@ tests/operator-primitives/dist/
 tests/diff-viewer/dist/
 # ViewMenu Playwright harness bundle (tests/view-menu/build.mjs)
 tests/view-menu/dist/
+# InfoTip Playwright harness bundle (tests/info-tip/build.mjs)
+tests/info-tip/dist/

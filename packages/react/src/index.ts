@@ -146,6 +146,8 @@ export type { StatProps, StatTrend } from './components/Stat.js';
 
 export { Tooltip } from './components/Tooltip.js';
 export type { TooltipProps } from './components/Tooltip.js';
+export { InfoTip } from './components/InfoTip.js';
+export type { InfoTipProps } from './components/InfoTip.js';
 
 // States / feedback
 export { EmptyState, ErrorState, ForbiddenState, NotFoundState, FilteredEmptyState, Skeleton, LoadingState } from './components/States.js';

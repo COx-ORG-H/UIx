@@ -3,6 +3,7 @@
   .uix-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); box-shadow: var(--uix-shadow-sm); }
   .uix-card__header { padding: var(--uix-space-5) var(--uix-space-6); border-bottom: 1px solid var(--uix-border); display: flex; align-items: center; gap: var(--uix-space-3); }
   .uix-card__title { font-size: var(--uix-text-h3); font-weight: 600; }
+  .uix-card__title-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-size: var(--uix-text-h3); }
   .uix-card__subtitle { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
   .uix-card__body { padding: var(--uix-space-6); }
   /* wraps at 320 px (WCAG 1.4.10) */

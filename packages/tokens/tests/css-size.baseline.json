@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 175896,
-      "gzip": 24996,
-      "brotli": 21179
+      "raw": 177684,
+      "gzip": 25259,
+      "brotli": 21387
     },
     "build/css/styles.css": {
-      "raw": 185972,
-      "gzip": 27670,
-      "brotli": 23314
+      "raw": 187760,
+      "gzip": 27935,
+      "brotli": 23519
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -67,9 +67,9 @@
       "brotli": 420
     },
     "styles/components/card.css": {
-      "raw": 2302,
-      "gzip": 707,
-      "brotli": 564
+      "raw": 2437,
+      "gzip": 735,
+      "brotli": 590
     },
     "styles/components/chart.css": {
       "raw": 5615,
@@ -137,9 +137,9 @@
       "brotli": 468
     },
     "styles/components/editorial-home.css": {
-      "raw": 17418,
-      "gzip": 3865,
-      "brotli": 3284
+      "raw": 17599,
+      "gzip": 3888,
+      "brotli": 3306
     },
     "styles/components/file-upload.css": {
       "raw": 1320,
@@ -166,10 +166,15 @@
       "gzip": 728,
       "brotli": 578
     },
+    "styles/components/info-tip.css": {
+      "raw": 2544,
+      "gzip": 1195,
+      "brotli": 959
+    },
     "styles/components/input.css": {
-      "raw": 2866,
-      "gzip": 961,
-      "brotli": 770
+      "raw": 3296,
+      "gzip": 1091,
+      "brotli": 876
     },
     "styles/components/kanban.css": {
       "raw": 1617,
@@ -242,9 +247,9 @@
       "brotli": 386
     },
     "styles/components/page-header.css": {
-      "raw": 990,
-      "gzip": 401,
-      "brotli": 324
+      "raw": 1367,
+      "gzip": 546,
+      "brotli": 447
     },
     "styles/components/pagination.css": {
       "raw": 1055,

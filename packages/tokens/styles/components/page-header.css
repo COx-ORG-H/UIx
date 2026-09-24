@@ -4,6 +4,9 @@
   .uix-page-header__titles { flex: 1; min-width: 220px; }
   .uix-page-header__eyebrow { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
   .uix-page-header__title { font-size: var(--uix-text-h2); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
+  /* title + help ? (React PageHeader `help`): the ? sits beside the heading, not inside it; the row
+     carries the title size so the ? (info-tip.css) lands at the top right of the title text */
+  .uix-page-header__title-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); }
   .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: var(--uix-space-2); max-width: 70ch; }
   .uix-page-header__actions { display: flex; gap: var(--uix-space-2); align-items: center; flex-wrap: wrap; }
 }

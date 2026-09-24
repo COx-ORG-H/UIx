@@ -171,6 +171,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-tooltip"
   },
+  "info-tip": {
+    "route": "examples-data-display",
+    "selector": ".uix-info-tip",
+    "parts": ["#demo-info-tip-page", "#demo-info-tip-field"]
+  },
   "states": {
     "route": "examples-data-display",
     "selector": ".uix-empty"
