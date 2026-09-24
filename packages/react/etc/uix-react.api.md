@@ -13,6 +13,7 @@ import { InputHTMLAttributes } from 'react';
 import { MouseEvent as MouseEvent_2 } from 'react';
 import * as react from 'react';
 import { ReactNode } from 'react';
+import { Ref } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
 import { TableHTMLAttributes } from 'react';
@@ -1367,6 +1368,16 @@ export interface FlowProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public (undocumented)
 export type FlowVariant = 'linear' | 'branch' | 'loop' | 'mindmap' | 'canvas';
+
+// @public
+export interface FoldedText {
+    source: number[];
+    sourceEnd: number[];
+    text: string;
+}
+
+// @public
+export function foldForSearch(text: string): FoldedText;
 
 // @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
@@ -3092,6 +3103,63 @@ export type SchedulingOverlayKind = 'maintenance' | 'blackout';
 
 // @public
 export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
+
+// @public
+export interface SearchSegment {
+    // (undocumented)
+    match: boolean;
+    // (undocumented)
+    text: string;
+}
+
+// @public
+export function searchSegments(text: string, query: string): SearchSegment[];
+
+// @public
+export function SearchSuggest(input: SearchSuggestProps): react.JSX.Element;
+
+// @public
+export interface SearchSuggestAction {
+    label: string;
+    onSelect: () => void;
+}
+
+// @public
+export interface SearchSuggestOption {
+    description?: string;
+    icon?: ReactNode;
+    id: string;
+    meta?: readonly string[];
+    title: string;
+}
+
+// @public
+export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'onSelect' | 'title' | 'defaultValue'> {
+    autoFocus?: boolean;
+    clearLabel?: string;
+    empty?: ReactNode;
+    error?: ReactNode;
+    footer?: SearchSuggestAction;
+    heading?: string;
+    headingAction?: SearchSuggestAction;
+    highlight?: string;
+    inputRef?: Ref<HTMLInputElement | null>;
+    label: string;
+    loading?: boolean;
+    loadingLabel?: string;
+    name?: string;
+    onOpenChange?: (open: boolean) => void;
+    onSelect: (id: string, option: SearchSuggestOption) => void;
+    onValueChange: (value: string) => void;
+    open?: boolean;
+    options: readonly SearchSuggestOption[];
+    // (undocumented)
+    placeholder?: string;
+    shortcutHint?: string;
+    size?: 'md' | 'lg';
+    status?: string;
+    value: string;
+}
 
 // @public
 export function SectionHead(input: SectionHeadProps): react.JSX.Element;

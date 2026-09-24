@@ -214,6 +214,18 @@ export const SHOWCASE_PAGES = [
 /* These five public modules existed but were not exercised by either retired showcase. */
 export const ADDITIONAL_EXAMPLES = [
   {
+    "module": "search-suggest",
+    "route": "examples-form-controls",
+    "title": "Search suggest",
+    "html": "<div class=\"uix-search-suggest\" data-open style=\"max-width:28rem;padding-bottom:17rem\"><div class=\"uix-search-suggest__field\"><span class=\"uix-search-suggest__lead\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"></circle><path d=\"m20 20-3.5-3.5\"></path></svg></span><input class=\"uix-input uix-search-suggest__input\" type=\"text\" role=\"combobox\" aria-label=\"Search settings\" aria-autocomplete=\"list\" aria-expanded=\"true\" aria-controls=\"ss-demo-list\" aria-activedescendant=\"ss-demo-0\" value=\"zone\"></div><div class=\"uix-search-suggest__popup\"><ul id=\"ss-demo-list\" role=\"listbox\" aria-label=\"Search settings\" class=\"uix-search-suggest__list\"><li id=\"ss-demo-0\" role=\"option\" aria-selected=\"true\" data-active class=\"uix-search-suggest__option\" aria-label=\"Time zone, Settings › Presentation › General\"><span class=\"uix-search-suggest__body\"><span class=\"uix-search-suggest__title\">Time <mark class=\"uix-search-suggest__match\">zone</mark></span><span class=\"uix-search-suggest__meta\" title=\"Settings › Presentation › General\"><span class=\"uix-search-suggest__crumb\">Settings</span><span class=\"uix-search-suggest__crumb\">Presentation</span><span class=\"uix-search-suggest__crumb\">General</span></span><span class=\"uix-search-suggest__desc\">Used for due dates, SLA clocks and every time shown in this workspace.</span></span></li><li id=\"ss-demo-1\" role=\"option\" aria-selected=\"false\" class=\"uix-search-suggest__option\" aria-label=\"Out-of-office time zone, Settings › My account › Out of office\"><span class=\"uix-search-suggest__body\"><span class=\"uix-search-suggest__title\">Out-of-office time <mark class=\"uix-search-suggest__match\">zone</mark></span><span class=\"uix-search-suggest__meta\" title=\"Settings › My account › Out of office\"><span class=\"uix-search-suggest__crumb\">Settings</span><span class=\"uix-search-suggest__crumb\">My account</span><span class=\"uix-search-suggest__crumb\">Out of office</span></span></span></li><li id=\"ss-demo-2\" role=\"option\" aria-selected=\"false\" class=\"uix-search-suggest__footer\">Show all 4 results</li></ul></div></div>"
+  },
+  {
+    "module": "arrival",
+    "route": "examples-motion",
+    "title": "Arrival",
+    "html": "<div class=\"uix-stack\" data-arrival-specimen><p class=\"uix-field__hint\">Added by the page after it scrolls a linked target into view. The tint fades on its own; under reduced motion it is a steady outline.</p><div class=\"uix-arrival\" style=\"padding:var(--uix-space-3)\"><div class=\"uix-field\"><label class=\"uix-field__label\" for=\"arrival-demo\">Time zone</label><input class=\"uix-input\" id=\"arrival-demo\" value=\"Europe/Berlin\"></div></div></div>"
+  },
+  {
     "module": "avatar",
     "route": "examples-data-display",
     "title": "Avatar",

@@ -42,6 +42,14 @@ export const COMPONENT_SPECIMENS = {
     "anchor": "#rs-type",
     "container": "[data-uix-richselect]"
   },
+  "search-suggest": {
+    "route": "examples-form-controls",
+    "selector": ".uix-search-suggest"
+  },
+  "arrival": {
+    "route": "examples-motion",
+    "selector": ".uix-arrival"
+  },
   "tag-input": {
     "route": "examples-form-controls",
     "selector": ".uix-taginput"
