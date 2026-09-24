@@ -486,6 +486,8 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
     footer?: ReactNode;
     // (undocumented)
     headerAction?: ReactNode;
+    help?: string | null;
+    helpLabel?: string;
     // (undocumented)
     subtitle?: ReactNode;
     // (undocumented)
@@ -1249,6 +1251,8 @@ export interface FieldProps {
     className?: string;
     // (undocumented)
     error?: string;
+    help?: string | null;
+    helpLabel?: string;
     // (undocumented)
     hint?: string;
     // (undocumented)
@@ -1456,6 +1460,16 @@ export interface InboxProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
     view?: 'list' | 'detail';
+}
+
+// @public
+export function InfoTip(input: InfoTipProps): react.JSX.Element | null;
+
+// @public (undocumented)
+export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content' | 'children'> {
+    content: string;
+    label: string;
+    placement?: Placement;
 }
 
 // @public (undocumented)
@@ -2101,6 +2115,8 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     as?: 'h1' | 'h2';
     // (undocumented)
     eyebrow?: ReactNode;
+    help?: string | null;
+    helpLabel?: string;
     subtitle?: ReactNode;
     // (undocumented)
     title: ReactNode;
@@ -3168,6 +3184,8 @@ export function SectionHead(input: SectionHeadProps): react.JSX.Element;
 // @public (undocumented)
 export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     action?: ReactNode;
+    help?: string | null;
+    helpLabel?: string;
     // (undocumented)
     title: ReactNode;
     titleId?: string;

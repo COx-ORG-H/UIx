@@ -45,6 +45,7 @@ export const COMPONENT_GUIDANCE = {
   tree: ['Navigate or inspect hierarchical items.', 'Expandable branches and leaves with a predictable keyboard order.'],
   calendar: ['Inspect a month or select a date.', 'A calendar grid with weekday context, current date and selection styling.'],
   chart: ['Compare values, trends or distributions visually.', 'A chart frame with labels, legend and equivalent data; a renderer supplies the plotted graphic.'],
+  'info-tip': ['Explain what a page, section or field is for without a permanent subtitle.', 'A small ? at the top right of the title or label, the same size everywhere. Hover (after a short delay), keyboard focus or a tap opens a plain-text panel; a click keeps it open, and Esc or a click outside closes it. Instructions the user needs while typing stay visible as a hint.'],
   tooltip: ['Explain an icon or add brief nonessential context.', 'A short description appears on hover and keyboard focus; essential instructions stay visible.'],
   states: ['Explain loading, empty or failed content.', 'A clear state message and, when relevant, a usable next action.'],
   'copy-button': ['Let people copy a value (an email, an id, a token) without selecting text.', 'An icon-only button named for what it copies; a check and a polite "copied" announcement confirm success, and an optional failure announcement explains a refused copy.'],

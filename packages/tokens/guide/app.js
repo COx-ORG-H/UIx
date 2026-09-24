@@ -775,6 +775,89 @@ export const initShowcase = (options = {}) => {
     });
   };
 
+  // ---- info tips: the ? help panel (HAR-737), same behaviour as React <InfoTip> ----
+  // Hover opens after 300 ms, keyboard focus opens at once, a click pins it open; Esc (focus
+  // returns to the ?) and a press outside close it. popover="manual", so it never light-dismisses
+  // another open popover.
+  const enhanceInfoTips = (root = document) => {
+    root.querySelectorAll('.uix-info-tip').forEach((tip) => {
+      const button = tip.querySelector('.uix-info-tip__button');
+      const panel = button && document.getElementById(button.getAttribute('aria-describedby'));
+      if (!panel || tip.dataset.uixInfoTip) return;
+      tip.dataset.uixInfoTip = '1';
+      let timer = null;
+      let pinned = false;
+      let pressing = false;
+      const isOpen = () => panel.matches(':popover-open');
+      const position = () => {
+        const a = button.getBoundingClientRect();
+        panel.style.position = 'fixed'; panel.style.inset = 'auto'; panel.style.margin = '0';
+        const pos = computeOverlayPosition(
+          { x: a.x, y: a.y, width: a.width, height: a.height },
+          { width: panel.offsetWidth, height: panel.offsetHeight },
+          { width: window.innerWidth, height: window.innerHeight },
+          { placement: 'bottom-start', offset: 6 },
+        );
+        panel.style.left = Math.round(pos.x) + 'px'; panel.style.top = Math.round(pos.y) + 'px';
+      };
+      const later = (fn, ms) => { clearTimeout(timer); timer = setTimeout(fn, ms); };
+      const onKey = (e) => {
+        if (e.key !== 'Escape') return;
+        const active = document.activeElement;
+        const inside = !active || active === document.body || tip.contains(active);
+        hide();
+        if (inside && active !== button) { refocus = true; button.focus(); refocus = false; }
+      };
+      const onPress = (e) => { if (!tip.contains(e.target)) hide(); };
+      let refocus = false;
+      const show = () => {
+        clearTimeout(timer);
+        if (isOpen()) return;
+        try { panel.showPopover(); } catch { return; }
+        position();
+        tip.dataset.open = 'true';
+        listen(document, 'keydown', onKey);
+        listen(document, 'pointerdown', onPress, { capture: true });
+        listen(window, 'scroll', position, { passive: true, capture: true });
+        listen(window, 'resize', position);
+      };
+      const hide = () => {
+        clearTimeout(timer);
+        pinned = false;
+        delete tip.dataset.open;
+        document.removeEventListener('keydown', onKey);
+        document.removeEventListener('pointerdown', onPress, true);
+        window.removeEventListener('scroll', position, true);
+        window.removeEventListener('resize', position);
+        if (isOpen()) { try { panel.hidePopover(); } catch { /* noop */ } }
+      };
+      const leave = () => {
+        if (!isOpen()) { clearTimeout(timer); return; }
+        if (pinned || document.activeElement === button) return;
+        later(hide, 100);
+      };
+      listen(button, 'pointerenter', () => { if (isOpen()) clearTimeout(timer); else later(show, 300); });
+      listen(button, 'pointerleave', leave);
+      listen(button, 'pointerdown', () => { pressing = true; });
+      listen(button, 'focus', () => { if (!refocus) show(); });
+      listen(button, 'blur', (e) => { if (!pinned || (e.relatedTarget && !tip.contains(e.relatedTarget))) hide(); });
+      listen(button, 'click', () => {
+        const viaPointer = pressing;
+        pressing = false;
+        if (isOpen() && (pinned || !viaPointer)) hide();
+        else { show(); pinned = true; }
+      });
+      listen(button, 'keydown', (e) => {
+        pressing = false;
+        if (e.key === 'Escape' && isOpen()) { e.preventDefault(); e.stopPropagation(); hide(); }
+      });
+      listen(panel, 'pointerenter', () => { if (isOpen()) clearTimeout(timer); });
+      listen(panel, 'pointerleave', leave);
+      listen(panel, 'pointerdown', () => { pinned = true; });
+      disposers.push(() => { clearTimeout(timer); hide(); });
+    });
+  };
+
   // ---- tooltips: promote the CSS-only [data-uix-tip] to a top-layer bubble (UIX-FIX-02) ----
   // The ::after tooltip is clipped by any overflow:hidden/scroll ancestor; a single shared
   // popover bubble in the top layer never is. Shown on hover + focus, positioned with flip/shift.
@@ -1251,6 +1334,7 @@ export const initShowcase = (options = {}) => {
     setupTree();
     enhanceAnchoredPopovers(); // after all setups so dynamically-rendered pickers are covered too
     enhanceTooltips();
+    enhanceInfoTips();
     const firstChart = document.querySelector('[data-uix-chart]');
     if (firstChart) {
       const initialize = () => void loadCharts().then((charts) => charts?.initCharts());

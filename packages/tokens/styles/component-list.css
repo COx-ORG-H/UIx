@@ -36,6 +36,7 @@
 @import "components/typography.css";
 @import "components/avatar.css";
 @import "components/tooltip.css";
+@import "components/info-tip.css";
 @import "components/progress.css";
 @import "components/meter.css";
 @import "components/timeline.css";

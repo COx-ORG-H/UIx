@@ -3,6 +3,10 @@
   .uix-field { display: flex; flex-direction: column; gap: var(--uix-space-2); }
   .uix-field__label { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text); }
   .uix-field__label[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  /* label + help ? (React Field `help`): the ? stays OUTSIDE the <label> (a button inside a label
+     is its activation target), so the row draws the required marker after the ? */
+  .uix-field__label-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-size: var(--uix-text-meta); }
+  .uix-field__required { font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-danger-text); }
   /* message slot for hint / error / success — reserves one line so an appearing error never
      shifts the layout (UIX-FIX-04); the React <Field> always renders it. */
   .uix-field__msg { font-size: var(--uix-text-meta); line-height: 1.45; min-height: 1.45em; }

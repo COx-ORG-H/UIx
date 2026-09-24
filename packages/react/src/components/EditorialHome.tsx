@@ -1,5 +1,7 @@
 import type { ReactNode, HTMLAttributes, ButtonHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { InfoTip } from './InfoTip.js';
+import { hasHelp, helpLabelFor } from '../info-tip-model.js';
 
 /*
  * Editorial-home kit — the intranet "editorial" landing patterns (INTRA-04),
@@ -61,15 +63,28 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
   title: ReactNode;
   /** id for the `<h2>`, for `aria-labelledby` wiring on the enclosing section. */
   titleId?: string;
+  /**
+   * Plain-text help behind a ? button after the title. Blank lines separate paragraphs;
+   * empty, whitespace-only or `null` renders no button.
+   */
+  help?: string | null;
+  /** Accessible name of the ? button. Default `"About: <title>"` when title is text; pass a localised one. */
+  helpLabel?: string;
   /** Right-aligned slot — a `.uix-section-link` anchor, a button, a pill. */
   action?: ReactNode;
 }
 
-/** Section head — title row with an optional trailing action (`.uix-section-head`). */
-export function SectionHead({ title, titleId, action, className, ...props }: SectionHeadProps) {
+/** Section head — title row (+ optional `help` ?) with an optional trailing action (`.uix-section-head`). */
+export function SectionHead({ title, titleId, help, helpLabel, action, className, ...props }: SectionHeadProps) {
+  const heading = <h2 className="uix-section-title" id={titleId}>{title}</h2>;
   return (
     <div className={cx('uix-section-head', className)} {...props}>
-      <h2 className="uix-section-title" id={titleId}>{title}</h2>
+      {hasHelp(help) ? (
+        <div className="uix-section-head__title-row">
+          {heading}
+          <InfoTip content={help} label={helpLabel ?? helpLabelFor(title)} />
+        </div>
+      ) : heading}
       {action}
     </div>
   );
