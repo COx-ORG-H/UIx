@@ -146,6 +146,38 @@ test('Enter on the footer runs its action', () => {
   unmount();
 });
 
+test('after Escape closed the list, Enter does not open a row the user can no longer see', () => {
+  const { host, input, log, unmount } = mount({ initial: 'time' });
+  focus(input);
+  key(input, 'Escape');
+  assert.equal(popup(host).hidden, true);
+  key(input, 'Enter');
+  assert.deepEqual(log.picks, []);
+  unmount();
+});
+
+test('an Enter that confirms an IME composition is left to the composition', () => {
+  const { input, log, unmount } = mount({ initial: 'ti' });
+  focus(input);
+  act(() => input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true })));
+  act(() => input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', isComposing: true, bubbles: true, cancelable: true })));
+  assert.deepEqual(log.picks, []);
+  assert.equal(input.getAttribute('aria-activedescendant'), null);
+  unmount();
+});
+
+test('when the options shrink without a keystroke, the active row never points past the list', () => {
+  const { host, input, rerender, unmount } = mount({ initial: 'ti' });
+  focus(input);
+  key(input, 'ArrowUp'); // the last of three rows
+  assert.ok(activeRow(host, input).textContent.startsWith('Two-factor'));
+  rerender({ options: OPTIONS.slice(0, 1) });
+  const id = input.getAttribute('aria-activedescendant');
+  assert.ok(id === null || document.getElementById(id), 'no dangling aria-activedescendant');
+  assert.equal(rows(host).filter((r) => r.getAttribute('aria-selected') === 'true').length <= 1, true);
+  unmount();
+});
+
 test('Escape closes the list first, then clears the text', () => {
   const { host, input, log, unmount } = mount({ initial: 'time' });
   focus(input);

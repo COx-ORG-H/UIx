@@ -14,6 +14,7 @@ SearchSuggest and `.uix-arrival`: "search and jump", the pattern behind Windows 
   - Enter opens the active row, or the first row when none is active.
   - Escape closes the list, and a second Escape clears the text.
   - Each row is named "title, crumb › crumb" and described by its context.
+  - An Enter or arrow key that belongs to an IME composition is left alone, and after Escape closes the list, Enter does not open a row the user can no longer see.
 - **Optional slots:**
   - `heading` + `headingAction`, e.g. "Recently opened · Clear";
   - `footer`, a last row reachable by the arrow keys, e.g. "Show all 23 results";

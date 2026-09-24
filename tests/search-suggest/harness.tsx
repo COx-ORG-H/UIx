@@ -3,7 +3,8 @@
  *   - #full: a settings search over a small catalog — recent list on focus, footer, empty state,
  *     and a jump that lands on a target below with the arrival highlight;
  *   - #narrow: the same field at 280px, where the breadcrumb must truncate its MIDDLE crumbs;
- *   - #loading / #error: the two fetch states.
+ *   - #loading / #error: the two fetch states;
+ *   - #clipped: strategy="fixed" inside an overflow:hidden toolbar, which must not cut the list off.
  * window.__ss records what the tests need to observe. */
 import { StrictMode, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -88,6 +89,20 @@ function Narrow() {
   );
 }
 
+/* A header bar that clips (overflow: hidden, fixed height), like app toolbars do: the list must
+ * float on the viewport (strategy="fixed") to be seen at all. */
+function Clipped() {
+  const [value, setValue] = useState('s');
+  const options = CATALOG.filter((o) => matches(o, value)).slice(0, 4);
+  return (
+    <section id="clipped" aria-label="Clipped">
+      <div data-clip style={{ overflow: 'hidden', height: 56, padding: 'var(--uix-space-2)', border: '1px solid var(--uix-border)', borderRadius: 'var(--uix-radius-md)' }}>
+        <SearchSuggest value={value} onValueChange={setValue} options={options} onSelect={() => {}} label="Search settings (toolbar)" strategy="fixed" />
+      </div>
+    </section>
+  );
+}
+
 function Fetching({ id, loading, error }: { id: string; loading?: boolean; error?: boolean }) {
   const [value, setValue] = useState('tim');
   return (
@@ -115,5 +130,7 @@ createRoot(document.getElementById('root')!).render(
       <Fetching id="loading" loading />
       <Fetching id="error" error />
     </div>
+    <Clipped />
+    <div aria-hidden="true" style={{ height: '60rem' }} />
   </StrictMode>,
 );

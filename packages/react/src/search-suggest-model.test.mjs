@@ -25,6 +25,15 @@ test('diacritics and ß fold, and the ORIGINAL letters are marked', () => {
   assert.deepEqual(marked('Straße', 'ss'), ['ß']);
 });
 
+test('each query word is marked at every word start, not only the first', () => {
+  assert.deepEqual(marked('Reset password, Reset display name', 'reset name'), ['Reset', 'Reset', 'name']);
+});
+
+test('Turkish dotted capital I folds to a plain i', () => {
+  assert.equal(foldForSearch('İstanbul').text, 'istanbul');
+  assert.deepEqual(marked('İstanbul office', 'istanbul'), ['İstanbul']);
+});
+
 test('segments rebuild the text exactly', () => {
   for (const [text, query] of [['Zwei-Faktor-Anmeldung', 'faktor'], ['Café crème', 'creme'], ['a', ''], ['', 'x']]) {
     assert.equal(searchSegments(text, query).map((s) => s.text).join(''), text);

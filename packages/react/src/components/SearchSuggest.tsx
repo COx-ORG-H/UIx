@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
+import { useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import type { FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, ReactNode, Ref } from 'react';
 import { cx } from '../cx.js';
+import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
 import { Spinner } from './Spinner.js';
 
@@ -70,6 +71,12 @@ export interface SearchSuggestProps
   open?: boolean;
   /** Called when the list opens or closes. */
   onOpenChange?: (open: boolean) => void;
+  /**
+   * `absolute` (default) places the list under the field inside its own box. `fixed` floats it on
+   * the viewport, so a clipping ancestor (`overflow: hidden` toolbars and headers) cannot cut it off;
+   * it follows the field on scroll and resize and flips above it when there is no room below.
+   */
+  strategy?: 'absolute' | 'fixed';
   /** Focus the field from outside (e.g. a "/" shortcut). */
   inputRef?: Ref<HTMLInputElement | null>;
   /** Focus the field on mount. */
@@ -105,6 +112,9 @@ function Emphasised({ text, query }: { text: string; query: string }) {
 
 const keepFocus = (event: MouseEvent) => event.preventDefault();
 
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
 /**
  * A search field with a suggestion list underneath: the "search and jump" pattern of Windows
  * Settings, Android Settings and most docs sites. Each row shows a name, where it lives and a line
@@ -132,6 +142,7 @@ export function SearchSuggest({
   status,
   size = 'md',
   open: openProp,
+  strategy = 'absolute',
   onOpenChange,
   inputRef,
   autoFocus,
@@ -154,9 +165,12 @@ export function SearchSuggest({
     if (next !== open) onOpenChange?.(next);
   };
   const [focused, setFocused] = useState(false);
-  const [active, setActive] = useState(-1);
+  const [activeState, setActive] = useState(-1);
 
   const itemCount = options.length + (footer ? 1 : 0);
+  // Clamp during render: when options shrink without a keystroke (a fetch resolving), the stale
+  // index must never name a row that is gone, not even for the frame before the reset effect runs.
+  const active = activeState < itemCount ? activeState : -1;
   const optionKey = options.map((option) => option.id).join('|');
   useEffect(() => setActive(-1), [optionKey]);
 
@@ -182,6 +196,8 @@ export function SearchSuggest({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    // An IME is composing (CJK input): its Enter and arrows belong to the composition, not the list.
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
@@ -193,7 +209,8 @@ export function SearchSuggest({
           setActive(down ? 0 : itemCount - 1);
           return;
         }
-        setActive((current) => {
+        setActive((stored) => {
+          const current = stored < itemCount ? stored : -1;
           if (current < 0) return down ? 0 : itemCount - 1;
           return (current + (down ? 1 : -1) + itemCount) % itemCount;
         });
@@ -209,7 +226,8 @@ export function SearchSuggest({
         return;
       case 'Enter':
         if (visible && active >= 0) { event.preventDefault(); choose(active); return; }
-        if (hasText && options.length) { event.preventDefault(); choose(0); }
+        // Only a row the user can see: after Escape closed the list, Enter must not act on it.
+        if (visible && hasText && options.length) { event.preventDefault(); choose(0); }
         return;
       case 'Escape':
         if (visible) {
@@ -244,6 +262,21 @@ export function SearchSuggest({
 
   const activeId = visible && active >= 0 ? optionId(active) : undefined;
 
+  const fieldBoxRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const floating = strategy === 'fixed';
+  // Width first (declared before the hook, so it runs first): the hook measures the list to flip it.
+  useIsomorphicLayoutEffect(() => {
+    const popup = popupRef.current;
+    const box = fieldBoxRef.current;
+    if (!floating || !visible || !popup || !box) return;
+    const size = () => { popup.style.width = `${box.offsetWidth}px`; };
+    size();
+    window.addEventListener('resize', size);
+    return () => window.removeEventListener('resize', size);
+  }, [floating, visible]);
+  useAnchoredPosition(floating ? fieldBoxRef : null, popupRef, { open: floating && visible, placement: 'bottom-start', offset: 4 });
+
   return (
     <div
       ref={rootRef}
@@ -252,7 +285,7 @@ export function SearchSuggest({
       onBlur={handleBlur}
       {...props}
     >
-      <div className="uix-search-suggest__field">
+      <div ref={fieldBoxRef} className="uix-search-suggest__field">
         <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>
         <input
           ref={fieldRef}
@@ -292,7 +325,7 @@ export function SearchSuggest({
         </span>
       </div>
 
-      <div className="uix-search-suggest__popup" hidden={!visible}>
+      <div ref={popupRef} className="uix-search-suggest__popup" data-strategy={floating ? 'fixed' : undefined} hidden={!visible}>
         {heading && options.length > 0 && (
           <div className="uix-search-suggest__header">
             <span className="uix-search-suggest__heading" id={headingId}>{heading}</span>

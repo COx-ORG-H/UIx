@@ -31,12 +31,13 @@ export function foldForSearch(text: string): FoldedText {
   const sourceEnd: number[] = [];
   let index = 0;
   for (const char of text) {
-    const base = char === 'ß' || char === 'ẞ' ? 'ss' : char.normalize('NFD');
+    // Lower-case BEFORE decomposing: 'İ'.toLowerCase() is 'i' + a combining dot, which the mark
+    // filter below must still see and drop.
+    const base = char === 'ß' || char === 'ẞ' ? 'ss' : char.toLowerCase().normalize('NFD');
     for (const part of base) {
       if (COMBINING_MARK.test(part)) continue;
-      const lower = part.toLowerCase();
-      folded += lower;
-      for (let i = 0; i < lower.length; i += 1) {
+      folded += part;
+      for (let i = 0; i < part.length; i += 1) {
         source.push(index);
         sourceEnd.push(index + char.length);
       }
@@ -63,9 +64,10 @@ function foldedRanges(haystack: string, query: string): Range[] {
     return out;
   }
   for (const token of whole.split(/\s+/)) {
-    let at = haystack.indexOf(token);
-    while (at !== -1 && !isWordStart(haystack, at)) at = haystack.indexOf(token, at + 1);
-    if (at !== -1) out.push([at, at + token.length]);
+    // every word-start occurrence, as the whole-query branch marks every occurrence
+    for (let at = haystack.indexOf(token); at !== -1; at = haystack.indexOf(token, at + 1)) {
+      if (isWordStart(haystack, at)) out.push([at, at + token.length]);
+    }
   }
   return out;
 }

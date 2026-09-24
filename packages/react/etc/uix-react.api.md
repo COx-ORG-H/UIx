@@ -3158,6 +3158,7 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     shortcutHint?: string;
     size?: 'md' | 'lg';
     status?: string;
+    strategy?: 'absolute' | 'fixed';
     value: string;
 }
 

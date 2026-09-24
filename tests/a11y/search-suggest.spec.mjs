@@ -105,6 +105,26 @@ test('Escape closes the list, a second Escape clears the text', async ({ page })
   await expect(field(page)).toHaveValue('');
 });
 
+test('strategy="fixed": the list escapes a clipping toolbar and matches the field width', async ({ page }) => {
+  await page.locator('#clipped').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  const toolbarField = page.getByRole('combobox', { name: 'Search settings (toolbar)' });
+  await toolbarField.focus();
+  const popup = page.locator('#clipped .uix-search-suggest__popup');
+  await expect(popup).toBeVisible();
+  const geo = await page.evaluate(() => {
+    const clip = document.querySelector('#clipped [data-clip]').getBoundingClientRect();
+    const list = document.querySelector('#clipped .uix-search-suggest__popup');
+    const field = document.querySelector('#clipped .uix-search-suggest__field').getBoundingClientRect();
+    const box = list.getBoundingClientRect();
+    const probe = document.elementFromPoint(box.left + box.width / 2, Math.min(box.bottom - 4, clip.bottom + 24));
+    return { clipBottom: clip.bottom, listBottom: box.bottom, listWidth: Math.round(box.width), fieldWidth: Math.round(field.width), hit: list.contains(probe), position: getComputedStyle(list).position };
+  });
+  expect(geo.position).toBe('fixed');
+  expect(geo.listBottom, 'the fixture must overflow the clip, or this proves nothing').toBeGreaterThan(geo.clipBottom + 24);
+  expect(geo.hit, 'the part below the clipping box is painted, not cut off').toBe(true);
+  expect(geo.listWidth).toBe(geo.fieldWidth);
+});
+
 test('reduced motion: no list animation, and the arrival is a static outline', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await field(page).fill('mailbox');
