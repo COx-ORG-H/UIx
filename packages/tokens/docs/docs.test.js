@@ -167,7 +167,7 @@ test('showcase-only compositions are explicit and never presented as CSS exports
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 97);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 99);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -258,7 +258,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 74);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 75);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });

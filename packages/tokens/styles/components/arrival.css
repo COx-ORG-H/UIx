@@ -1,0 +1,28 @@
+/* uix arrival — "you are here": the highlight a page puts on the element a link or a search result
+   landed on (a settings row, a section, a comment). Add the class after scrolling the target into
+   view; it tints the target and fades out on its own. To replay it, remove the class, force a
+   reflow, and add it again. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-arrival {
+    border-radius: var(--uix-radius-md);
+    scroll-margin-block: var(--uix-space-10);
+    animation: uix-arrival 2.4s var(--uix-ease-out) both;
+  }
+  @keyframes uix-arrival {
+    0%, 40% { background-color: var(--uix-brand-muted); box-shadow: 0 0 0 var(--uix-space-2) var(--uix-brand-muted); }
+    100% { background-color: transparent; box-shadow: 0 0 0 var(--uix-space-2) transparent; }
+  }
+
+  /* no fade: a steady outline for two seconds, then nothing */
+  @keyframes uix-arrival-static {
+    0% { outline: 2px solid var(--uix-ring); outline-offset: var(--uix-space-1); }
+    100% { outline: 2px solid transparent; outline-offset: var(--uix-space-1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .uix-arrival { animation: uix-arrival-static 2s step-end both; }
+  }
+
+  @media (forced-colors: active) {
+    .uix-arrival { animation: uix-arrival-static 2s step-end both; }
+  }
+}

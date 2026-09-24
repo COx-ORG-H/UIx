@@ -34,3 +34,4 @@ tests/diff-viewer/dist/
 tests/view-menu/dist/
 # InfoTip Playwright harness bundle (tests/info-tip/build.mjs)
 tests/info-tip/dist/
+tests/search-suggest/dist/
