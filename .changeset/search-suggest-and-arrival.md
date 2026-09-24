@@ -24,6 +24,7 @@ SearchSuggest and `.uix-arrival`: "search and jump", the pattern behind Windows 
   - `shortcutHint`, a `/` badge in the empty field;
   - a clear button;
   - `size="lg"` for page-level search;
+  - `strategy="fixed"`, which floats the list on the viewport so a clipping toolbar or header (`overflow: hidden`) cannot cut it off; it follows the field and flips above it when there is no room below;
   - `inputRef`, to focus the field from a shortcut;
   - controlled `open`.
 - **Matching.** `searchSegments(text, query)` and `foldForSearch(text)` fold case, diacritics and ß, so "ubersicht" marks "Übersicht" and "strasse" marks "Straße". The whole query is marked where it occurs; otherwise each word is marked where it starts a word. The consumer still decides which rows match.
