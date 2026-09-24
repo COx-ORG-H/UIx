@@ -71,6 +71,28 @@ function Note() {
   );
 }
 
+/** Images in the comment preset (TENSOR HAR-749): the composer toolbar gains the image tool. */
+function Update() {
+  const [value, setValue] = useState('');
+  return (
+    <section>
+      <h2>Incident update</h2>
+      <RichTextEditor
+        id="update"
+        value={value}
+        onChange={(md) => { log('update')(md); setValue(md); }}
+        features="comment"
+        variant="composer"
+        aria-label="Incident update"
+        placeholder="Paste a screenshot or write an update"
+        onUploadImage={async (file) => ({ src: `/images/${file.name}`, alt: file.name })}
+        resolveImageSrc={resolveImageSrc}
+        toolbarEnd={<button type="button" className="uix-btn uix-btn--primary uix-btn--sm">Post update</button>}
+      />
+    </section>
+  );
+}
+
 function Template() {
   const [value, setValue] = useState('Hello {{customer.name}},\n\nyour ticket {{ticket.id}} is resolved.');
   return (
@@ -82,6 +104,7 @@ function Template() {
         onChange={(md) => { log('template')(md); setValue(md); }}
         features="template"
         headingLevels={[3]}
+        imagesUnavailableReason="Templates are sent as email; link to an attachment instead."
         aria-labelledby="template-label"
       />
     </section>
@@ -138,6 +161,7 @@ createRoot(document.getElementById('root')!).render(
     <h1>Rich text harness</h1>
     <Field />
     <Note />
+    <Update />
     <Template />
     <Reactions />
     <Viewer />

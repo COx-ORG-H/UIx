@@ -6,7 +6,8 @@ import { buildDiffViewerHarness } from './diff-viewer/build.mjs';
 import { buildViewMenuHarness } from './view-menu/build.mjs';
 import { buildInfoTipHarness } from './info-tip/build.mjs';
 import { buildSearchSuggestHarness } from './search-suggest/build.mjs';
+import { buildDrawerHarness } from './drawer/build.mjs';
 
 export default async function globalSetup() {
-  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness(), buildViewMenuHarness(), buildInfoTipHarness(), buildSearchSuggestHarness()]);
+  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness(), buildViewMenuHarness(), buildInfoTipHarness(), buildSearchSuggestHarness(), buildDrawerHarness()]);
 }

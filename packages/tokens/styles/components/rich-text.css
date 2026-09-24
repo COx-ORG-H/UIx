@@ -130,6 +130,11 @@
   .uix-rich-text--composer .uix-rich-text__counter,
   .uix-rich-text--composer .uix-rich-text__status { flex: none; margin-right: 0; }
   .uix-rich-text--composer .uix-rich-text__bar > :last-child:not(.uix-rich-text__toolbar) { margin-left: auto; }
+  /* a status message (uploading, failed, images off) takes its own row under the tools: inline, a
+     long message squeezed the toolbar to a sliver on a 320 px phone (TENSOR HAR-749) */
+  .uix-rich-text--composer .uix-rich-text__bar:has(> .uix-rich-text__status:not(:empty)) { flex-wrap: wrap; }
+  .uix-rich-text--composer .uix-rich-text__bar:has(> .uix-rich-text__status:not(:empty)) > .uix-rich-text__toolbar { flex-basis: 0; }
+  .uix-rich-text--composer .uix-rich-text__status:not(:empty) { order: 1; flex: 1 0 100%; }
   .uix-rich-text--composer .uix-rich-text__source.uix-textarea { border: 0; box-shadow: none; }
 
   /* link popover */

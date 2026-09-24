@@ -347,3 +347,77 @@ test('egress: emojiImageBaseUrl only ever yields same-origin images', async () =
     resetEmojiSupportCache();
   }
 });
+
+// ── images in every preset (TENSOR HAR-749) ────────────────────────────────────
+const pasteInto = (host, { files = [], text = '' }) => act(async () => {
+  const event = new window.Event('paste', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'clipboardData', {
+    value: { files, types: text ? ['text/plain', 'Files'] : ['Files'], getData: (type) => (type === 'text/plain' ? text : '') },
+  });
+  host.querySelector('.ProseMirror').dispatchEvent(event);
+});
+const png = () => new window.File([new Uint8Array([137, 80, 78, 71])], 'screenshot.png', { type: 'image/png' });
+const statusOf = (host) => host.querySelector('.uix-rich-text__status');
+
+test('images: comment and template presets take a pasted image when onUploadImage is set', async () => {
+  for (const features of ['comment', 'template']) {
+    const uploads = [];
+    const changes = [];
+    const view = await mount(h(RichTextEditor, {
+      value: '', features, 'aria-label': 'Work note',
+      onChange: (md) => changes.push(md),
+      onUploadImage: async (file) => { uploads.push(file.name); return { src: '/files/1.png', alt: 'shot' }; },
+    }));
+    assert.ok(view.host.querySelector('button[aria-label="Image"]'), `${features}: toolbar image button`);
+    await pasteInto(view.host, { files: [png()] });
+    await settle();
+    assert.deepEqual(uploads, ['screenshot.png'], `${features}: onUploadImage called`);
+    assert.ok(changes.at(-1)?.includes('![shot](/files/1.png)'), `${features}: image in the markdown`);
+    await view.unmount();
+  }
+});
+
+test('images: without onUploadImage a pasted image inserts nothing and the status line says why', async () => {
+  const changes = [];
+  const view = await mount(h(RichTextEditor, { value: '', features: 'comment', 'aria-label': 'Work note', onChange: (md) => changes.push(md) }));
+  assert.equal(view.host.querySelector('button[aria-label="Image"]'), null, 'no image button');
+  await pasteInto(view.host, { files: [png()] });
+  await settle();
+  assert.deepEqual(changes, [], 'nothing inserted');
+  assert.equal(statusOf(view.host).textContent, "Images can't be added here.");
+  assert.equal(statusOf(view.host).getAttribute('role'), 'status');
+  assert.equal(statusOf(view.host).dataset.kind, 'notice');
+
+  // The notice clears with the next edit.
+  await act(async () => { editorOf(view.host).commands.insertContent('ok'); });
+  assert.equal(statusOf(view.host).textContent, '');
+  await view.unmount();
+
+  const custom = await mount(h(RichTextEditor, {
+    value: '', features: 'full', 'aria-label': 'Decision', onChange() {},
+    imagesUnavailableReason: 'Attach files to the incident instead.',
+  }));
+  await pasteInto(custom.host, { files: [png()] });
+  await settle();
+  assert.equal(statusOf(custom.host).textContent, 'Attach files to the incident instead.');
+  await custom.unmount();
+});
+
+test('images: a paste that also carries text (Excel, Word) is a text paste — no upload, no notice', async () => {
+  const uploads = [];
+  const view = await mount(h(RichTextEditor, {
+    value: '', features: 'comment', 'aria-label': 'Work note', onChange() {},
+    onUploadImage: async (file) => { uploads.push(file.name); return { src: '/files/1.png', alt: '' }; },
+  }));
+  await pasteInto(view.host, { files: [png()], text: 'a\tb\n1\t2' });
+  await settle();
+  assert.deepEqual(uploads, []);
+  assert.equal(statusOf(view.host).textContent, '');
+  await view.unmount();
+
+  const off = await mount(h(RichTextEditor, { value: '', features: 'comment', 'aria-label': 'Work note', onChange() {} }));
+  await pasteInto(off.host, { files: [png()], text: 'cells' });
+  await settle();
+  assert.equal(statusOf(off.host).textContent, '');
+  await off.unmount();
+});

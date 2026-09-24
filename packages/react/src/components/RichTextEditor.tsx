@@ -70,6 +70,8 @@ export interface RichTextLabels {
   image: string;
   imageUploading: string;
   imageFailed: string;
+  /** Shown when an image is pasted or dropped where images are off (default for `imagesUnavailableReason`). */
+  imagesUnsupported: string;
   emoji: string;
   /** Accessible name of the `:shortcode` suggestion list. */
   emojiSuggestions: string;
@@ -112,6 +114,7 @@ export const DEFAULT_RICH_TEXT_LABELS: RichTextLabels = {
   image: 'Image',
   imageUploading: 'Uploading image…',
   imageFailed: 'The image could not be added.',
+  imagesUnsupported: "Images can't be added here.",
   emoji: 'Emoji',
   emojiSuggestions: 'Emoji suggestions',
   undo: 'Undo',
@@ -134,8 +137,14 @@ export interface RichTextEditorProps {
   features?: RichTextFeatures;
   /** Heading levels the toolbar and input rules offer. Default `[1, 2, 3]`. */
   headingLevels?: ReadonlyArray<RichTextHeadingLevel>;
-  /** Enables the image button (preset `full`), and image paste/drop. */
+  /** Enables image paste/drop and the toolbar image button, in every preset. */
   onUploadImage?: (file: File) => Promise<{ src: string; alt: string }>;
+  /**
+   * Shown in the status line when an image is pasted or dropped while images are off (no
+   * `onUploadImage`), e.g. "Attach files to the incident instead.". Nothing is inserted.
+   * Default: the `imagesUnsupported` label.
+   */
+  imagesUnavailableReason?: string;
   /** Link policy. Default: http(s), mailto and same-app paths. */
   isSafeUrl?: (url: string) => boolean;
   /** Image policy: the URL to display, or `null` to show the image as a link chip. */
@@ -186,8 +195,9 @@ type Control =
 const COMMON: Control[] = ['bold', 'italic', 'strike', 'code', 'bulletList', 'orderedList', 'taskList', 'blockquote', 'codeBlock', 'link', 'emoji', 'history', 'source'];
 const PRESETS: Record<RichTextFeatures, ReadonlySet<Control>> = {
   full: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table', 'image']),
-  comment: new Set<Control>(COMMON),
-  template: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table']),
+  // Images in every preset once the consumer supplies onUploadImage (TENSOR HAR-749).
+  comment: new Set<Control>([...COMMON, 'image']),
+  template: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table', 'image']),
 };
 
 const emojiSuggestionKey = new PluginKey('uixEmojiSuggestion');
@@ -302,7 +312,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
     value, onChange, features = 'full', headingLevels = [1, 2, 3], onUploadImage, isSafeUrl = defaultIsSafeUrl,
     resolveImageSrc, onSubmitShortcut, emoji = true, maxLength, placeholder, disabled = false, readOnly = false,
     labels: labelOverrides, emojiPickerLabels, emojiLocale, id, name, variant = 'field', toolbarEnd, minRows,
-    className, onBlur, emojiImageBaseUrl,
+    className, onBlur, emojiImageBaseUrl, imagesUnavailableReason,
   } = props;
   const emojiBase = useMemo(() => normalizeEmojiImageBaseUrl(emojiImageBaseUrl), [emojiImageBaseUrl]);
   const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
@@ -318,17 +328,19 @@ export function RichTextEditor(props: RichTextEditorProps) {
     controls.has(control) && (control !== 'emoji' || emoji) && (control !== 'image' || !!onUploadImage);
 
   // Latest props for callbacks that the editor captured at creation.
-  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder, imagesOn: false });
+  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder, imagesOn: false, imagesOffText: '' });
   latest.current = {
     onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder,
     imagesOn: controls.has('image') && !!onUploadImage,
+    imagesOffText: imagesUnavailableReason?.trim() || labels.imagesUnsupported,
   };
 
   const lastValue = useRef(value);
   const origin = useRef<MarkdownSource | null>(null);
   const [markdown, setMarkdown] = useState(value);
   const [mode, setMode] = useState<'rich' | 'source'>('rich');
-  const [status, setStatus] = useState<{ kind: 'busy' | 'error'; text: string } | null>(null);
+  // `notice` (images refused) clears on the next edit; `error` stays until the next upload.
+  const [status, setStatus] = useState<{ kind: 'busy' | 'error' | 'notice'; text: string } | null>(null);
   const [suggest, setSuggest] = useState<SuggestState | null>(null);
   const [suggestIndex, setSuggestIndex] = useState(0);
   const [linkUrl, setLinkUrl] = useState('');
@@ -554,22 +566,31 @@ export function RichTextEditor(props: RichTextEditorProps) {
     shouldRerenderOnTransaction: false,
     editable: !disabled && !readOnly,
     editorProps: {
+      // An image file pasted or dropped where images are off used to vanish silently; now the
+      // status line says so (TENSOR HAR-749). A paste that also carries text is a text paste:
+      // Excel, Word and Docs add a PNG rendering of the copied cells or text, which must not
+      // replace (or block) the text itself.
       handlePaste: (_view, event) => {
-        const files = Array.from(event.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
-        if (!files.length || !latest.current.imagesOn || !editorRef.current) return false;
-        files.forEach((file) => void uploadImage(editorRef.current!, file));
+        const data = event.clipboardData;
+        const files = Array.from(data?.files ?? []).filter((f) => f.type.startsWith('image/'));
+        if (!files.length || !editorRef.current || data?.getData('text/plain').trim()) return false;
+        event.preventDefault();
+        if (!latest.current.imagesOn) setStatus({ kind: 'notice', text: latest.current.imagesOffText });
+        else files.forEach((file) => void uploadImage(editorRef.current!, file));
         return true;
       },
       handleDrop: (_view, event) => {
         const files = Array.from((event as DragEvent).dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'));
-        if (!files.length || !latest.current.imagesOn || !editorRef.current) return false;
+        if (!files.length || !editorRef.current) return false;
         event.preventDefault();
-        files.forEach((file) => void uploadImage(editorRef.current!, file));
+        if (!latest.current.imagesOn) setStatus({ kind: 'notice', text: latest.current.imagesOffText });
+        else files.forEach((file) => void uploadImage(editorRef.current!, file));
         return true;
       },
     },
     onCreate: ({ editor: ed }) => load(ed, lastValue.current),
     onUpdate: ({ editor: ed }) => {
+      setStatus((s) => (s?.kind === 'notice' ? null : s));
       if (!origin.current) return;
       emit(writeMarkdown(ed.getJSON(), origin.current, managerOf(ed)));
     },

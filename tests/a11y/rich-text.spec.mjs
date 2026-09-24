@@ -272,3 +272,67 @@ test('focus rings are visible on tools, chips and picker cells', async ({ page }
   await page.keyboard.press('Tab');
   expect((await outline(page.getByRole('group', { name: 'Reactions' }).getByRole('button').first())).style).toBe('solid');
 });
+
+// ── images in every preset (TENSOR HAR-749) ────────────────────────────────────
+/** Paste a PNG (optionally with text, as Excel/Word do) into an editor through a real ClipboardEvent. */
+const pasteImage = (page, id, text = '') => page.evaluate(({ editorId, withText }) => {
+  const dt = new DataTransfer();
+  dt.items.add(new File([new Uint8Array([137, 80, 78, 71])], 'screenshot.png', { type: 'image/png' }));
+  if (withText) dt.setData('text/plain', withText);
+  document.getElementById(editorId).dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+}, { editorId: id, withText: text });
+// The composer puts its status line in the ComposerBar, outside the editor surface: scope by section.
+const statusOf = (page, id) => page.locator('section').filter({ has: page.locator(`#${id}`) }).locator('.uix-rich-text__status');
+
+test('images: a comment composer with onUploadImage has the image tool and takes a pasted screenshot', async ({ page }) => {
+  const composer = page.locator('.uix-rich-text').filter({ has: page.locator('#update') });
+  await expect(composer.getByRole('button', { name: 'Image', exact: true })).toBeVisible();
+  await pasteImage(page, 'update');
+  await expect.poll(async () => (await changes(page, 'update')).at(-1) ?? '').toContain('![screenshot.png](/images/screenshot.png)');
+  await expect(page.locator('#update img[src="/images/screenshot.png"]')).toBeVisible();
+});
+
+test('images off: a pasted image inserts nothing and the status line says why', async ({ page }) => {
+  await pasteImage(page, 'note');
+  await expect(statusOf(page, 'note')).toHaveText("Images can't be added here.");
+  await expect(statusOf(page, 'note')).toHaveAttribute('role', 'status');
+  expect(await changes(page, 'note')).toEqual([]);
+  // The next edit clears it.
+  await page.locator('#note').click();
+  await page.keyboard.type('ok');
+  await expect(statusOf(page, 'note')).toHaveText('');
+
+  await pasteImage(page, 'template');
+  await expect(statusOf(page, 'template')).toHaveText('Templates are sent as email; link to an attachment instead.');
+
+  // Excel/Word put a PNG next to the text: that stays a text paste, with no notice.
+  await pasteImage(page, 'note', 'cells');
+  await expect(statusOf(page, 'note')).toHaveText('');
+});
+
+for (const width of [320, 360, 375, 390, 414]) {
+  test(`phone ${width} px: the image-enabled composer fits — page never scrolls sideways, action stays on screen`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    const composer = page.locator('.uix-rich-text').filter({ has: page.locator('#update') });
+    await composer.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const post = await composer.getByRole('button', { name: 'Post update' }).boundingBox();
+    expect(post.x).toBeGreaterThanOrEqual(0);
+    expect(post.x + post.width).toBeLessThanOrEqual(width);
+    // The image tool is reachable: in view, or in the toolbar's own sideways scroll.
+    const tool = composer.getByRole('button', { name: 'Image', exact: true });
+    await tool.scrollIntoViewIfNeeded();
+    const box = await tool.boundingBox();
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    // A status message takes its own row: it never squeezes the composer toolbar to a sliver.
+    const note = page.locator('section').filter({ has: page.locator('#note') });
+    const toolsBefore = await note.getByRole('toolbar').boundingBox();
+    await pasteImage(page, 'note');
+    await expect(statusOf(page, 'note')).toHaveText("Images can't be added here.");
+    const status = await statusOf(page, 'note').boundingBox();
+    const tools = await note.getByRole('toolbar').boundingBox();
+    expect(status.x + status.width).toBeLessThanOrEqual(width);
+    expect(tools.width).toBeGreaterThanOrEqual(toolsBefore.width - 1);
+    expect(status.y).toBeGreaterThanOrEqual(tools.y + tools.height - 1);
+  });
+}
