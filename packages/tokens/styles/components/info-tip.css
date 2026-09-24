@@ -1,0 +1,41 @@
+/* uix info tip — a small ? that opens a plain-text help panel beside a page title, section title
+   or field label. The panel is a top-layer .uix-popover (React <InfoTip> positions it with the
+   shared overlay engine); this file owns the ? and the panel's type and measure.
+   The ? is a fixed 9px filled glyph (no circle), whatever the size of the text it follows, and
+   sits superscript-style at the top right of that text: the .uix-info-tip box sits on the text's
+   baseline and raises the glyph so its top overshoots the capitals (`1cap`) by 0.2em. A glyph
+   whose top only met the cap line spanned the whole height of 15px capitals and read as centred.
+   That holds for any line-height, inline in running text too. The slot rows (page header, card, section
+   head, field) align on the first baseline and set the title's font-size, so `cap` measures the
+   title. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-info-tip { display: inline-block; flex: none; line-height: 1; }
+
+  .uix-info-tip__button {
+    position: relative;
+    /* no text inside, so its baseline is its bottom edge: raise its top 0.2em above cap height */
+    display: inline-block; vertical-align: calc(1cap + 0.2em - 9px);
+    width: 7px; height: 9px; padding: 0; margin: 0;
+    border: 0; border-radius: var(--uix-radius-sm);
+    background: transparent; color: var(--uix-text-muted);
+    cursor: pointer;
+    transition: color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  /* 25px hit area around the 7x9px glyph (WCAG 2.5.8), without changing the layout */
+  .uix-info-tip__button::before { content: ""; position: absolute; inset: -8px -9px; }
+  .uix-info-tip__button svg { width: 7px; height: 9px; display: block; }
+  .uix-info-tip__button:hover,
+  .uix-info-tip[data-open] .uix-info-tip__button { color: var(--uix-accent); }  /* the primary-button blue */
+  .uix-info-tip__button:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+
+  .uix-popover.uix-info-tip__panel {
+    width: max-content; max-width: min(360px, calc(100vw - 16px));
+    padding: var(--uix-space-3);
+    font-size: var(--uix-text-meta); font-weight: 400; line-height: var(--uix-leading-body);
+    color: var(--uix-text); text-align: start; text-transform: none; letter-spacing: normal;
+    overflow-wrap: anywhere;
+  }
+  /* single line breaks inside a paragraph are kept; blank lines already split paragraphs */
+  .uix-info-tip__panel p { margin: 0; white-space: pre-line; }
+  .uix-info-tip__panel p + p { margin-top: var(--uix-space-2); }
+}

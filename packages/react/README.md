@@ -226,3 +226,20 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 ```
 
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
+
+### InfoTip and `help` slots
+
+A small ? next to a title or label opens a plain-text explanation. Use it for what a page, section or field *means*. Keep instructions the user needs while typing ("8+ characters", "ISO date") visible in `hint`.
+
+```tsx
+<PageHeader title={t('incidents')} help={t('incidents.help')} helpLabel={t('aboutIncidents')} />
+<Card title="Open work" titleAs="h2" help={help.openWork}>…</Card>
+<SectionHead title="Latest news" help={help.news} />
+<Field label="Impact" required help={help.impact}><Input /></Field>
+<InfoTip content={text} label="About: Impact" />
+```
+
+- **`help?: string | null`** on `PageHeader`, `Card`, `SectionHead` and `Field`. Empty, whitespace-only or `null` renders nothing, so pass the resolved string without a guard. Blank lines become paragraphs. The text is always plain, never HTML.
+- **`helpLabel`** is the ? button's accessible name. It defaults to `"About: <title>"` (English), so pass a translated one.
+- **Placement:** the ? is a fixed 9 px glyph, superscript at the top right of the title or label, whatever the text size. It sits beside the heading or `<label>`, never inside it, so the heading's name stays the title and clicking a field label still focuses the input.
+- **Behaviour:** hover opens it after about 300 ms, keyboard focus opens it at once, and a click or tap keeps it open. Esc closes it and keeps focus on the ?, and a press outside also closes it. The panel is the button's `aria-describedby`, so screen readers announce it on focus. It uses `popover="manual"`, so it never closes another open popover.
