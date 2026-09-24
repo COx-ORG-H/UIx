@@ -92,8 +92,9 @@ Markdown cannot represent everything a user can type. When the editor re-seriali
 - Reference definitions (`[id]: url`) are kept. If their surrounding block is deleted, they move to the end.
 
 Editor props: `features` (`full` / `comment` / `template`), `headingLevels` (limits the toolbar and input rules;
-existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop),
-`isSafeUrl`, `resolveImageSrc` (its return value is used verbatim), `onSubmitShortcut` (Ctrl/Cmd+Enter), `emoji`,
+existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop in every preset),
+`imagesUnavailableReason` (the status-line note when an image is pasted or dropped where images are off; nothing is
+inserted; default label `imagesUnsupported`), `isSafeUrl`, `resolveImageSrc` (its return value is used verbatim), `onSubmitShortcut` (Ctrl/Cmd+Enter), `emoji`,
 `emojiImageBaseUrl`, `maxLength` (counter; over the limit sets `aria-invalid`), `placeholder`, `disabled`, `readOnly`,
 `labels` (every string, placeholders `{count}` `{max}`), `emojiPickerLabels`, `emojiLocale`, `id`, `name` (adds a
 hidden input), ARIA props, `variant` (`field` / `composer`, which renders in `Composer` with the toolbar in `ComposerBar`),

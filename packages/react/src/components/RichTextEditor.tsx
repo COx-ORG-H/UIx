@@ -70,6 +70,8 @@ export interface RichTextLabels {
   image: string;
   imageUploading: string;
   imageFailed: string;
+  /** Shown when an image is pasted or dropped where images are off and no `imagesUnavailableReason` is set. */
+  imagesUnsupported: string;
   emoji: string;
   /** Accessible name of the `:shortcode` suggestion list. */
   emojiSuggestions: string;
@@ -112,6 +114,7 @@ export const DEFAULT_RICH_TEXT_LABELS: RichTextLabels = {
   image: 'Image',
   imageUploading: 'Uploading image…',
   imageFailed: 'The image could not be added.',
+  imagesUnsupported: "Images can't be added here.",
   emoji: 'Emoji',
   emojiSuggestions: 'Emoji suggestions',
   undo: 'Undo',
@@ -134,8 +137,13 @@ export interface RichTextEditorProps {
   features?: RichTextFeatures;
   /** Heading levels the toolbar and input rules offer. Default `[1, 2, 3]`. */
   headingLevels?: ReadonlyArray<RichTextHeadingLevel>;
-  /** Enables the image button (preset `full`), and image paste/drop. */
+  /** Enables the image button and image paste/drop, in every preset. */
   onUploadImage?: (file: File) => Promise<{ src: string; alt: string }>;
+  /**
+   * Status-line note when an image is pasted or dropped and images are off (no `onUploadImage`).
+   * Nothing is inserted. Unset = `labels.imagesUnsupported`.
+   */
+  imagesUnavailableReason?: string;
   /** Link policy. Default: http(s), mailto and same-app paths. */
   isSafeUrl?: (url: string) => boolean;
   /** Image policy: the URL to display, or `null` to show the image as a link chip. */
@@ -183,9 +191,10 @@ type Control =
   | 'heading' | 'bold' | 'italic' | 'strike' | 'code' | 'bulletList' | 'orderedList' | 'taskList'
   | 'blockquote' | 'codeBlock' | 'horizontalRule' | 'link' | 'table' | 'image' | 'emoji' | 'history' | 'source';
 
-const COMMON: Control[] = ['bold', 'italic', 'strike', 'code', 'bulletList', 'orderedList', 'taskList', 'blockquote', 'codeBlock', 'link', 'emoji', 'history', 'source'];
+// `image` shows only when the host passes onUploadImage.
+const COMMON: Control[] = ['bold', 'italic', 'strike', 'code', 'bulletList', 'orderedList', 'taskList', 'blockquote', 'codeBlock', 'link', 'image', 'emoji', 'history', 'source'];
 const PRESETS: Record<RichTextFeatures, ReadonlySet<Control>> = {
-  full: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table', 'image']),
+  full: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table']),
   comment: new Set<Control>(COMMON),
   template: new Set<Control>([...COMMON, 'heading', 'horizontalRule', 'table']),
 };
@@ -302,7 +311,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
     value, onChange, features = 'full', headingLevels = [1, 2, 3], onUploadImage, isSafeUrl = defaultIsSafeUrl,
     resolveImageSrc, onSubmitShortcut, emoji = true, maxLength, placeholder, disabled = false, readOnly = false,
     labels: labelOverrides, emojiPickerLabels, emojiLocale, id, name, variant = 'field', toolbarEnd, minRows,
-    className, onBlur, emojiImageBaseUrl,
+    className, onBlur, emojiImageBaseUrl, imagesUnavailableReason,
   } = props;
   const emojiBase = useMemo(() => normalizeEmojiImageBaseUrl(emojiImageBaseUrl), [emojiImageBaseUrl]);
   const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
@@ -318,17 +327,18 @@ export function RichTextEditor(props: RichTextEditorProps) {
     controls.has(control) && (control !== 'emoji' || emoji) && (control !== 'image' || !!onUploadImage);
 
   // Latest props for callbacks that the editor captured at creation.
-  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder, imagesOn: false });
+  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder, imagesOn: false, imagesOff: '' });
   latest.current = {
     onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder,
     imagesOn: controls.has('image') && !!onUploadImage,
+    imagesOff: imagesUnavailableReason || labels.imagesUnsupported,
   };
 
   const lastValue = useRef(value);
   const origin = useRef<MarkdownSource | null>(null);
   const [markdown, setMarkdown] = useState(value);
   const [mode, setMode] = useState<'rich' | 'source'>('rich');
-  const [status, setStatus] = useState<{ kind: 'busy' | 'error'; text: string } | null>(null);
+  const [status, setStatus] = useState<{ kind: 'busy' | 'error' | 'notice'; text: string } | null>(null);
   const [suggest, setSuggest] = useState<SuggestState | null>(null);
   const [suggestIndex, setSuggestIndex] = useState(0);
   const [linkUrl, setLinkUrl] = useState('');
@@ -556,14 +566,24 @@ export function RichTextEditor(props: RichTextEditorProps) {
     editorProps: {
       handlePaste: (_view, event) => {
         const files = Array.from(event.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
-        if (!files.length || !latest.current.imagesOn || !editorRef.current) return false;
+        if (!files.length || !editorRef.current) return false;
+        if (!latest.current.imagesOn) {
+          // Office apps put a picture of copied text next to the text: paste the text (images are stripped).
+          if (event.clipboardData?.getData('text/plain')) return false;
+          setStatus({ kind: 'notice', text: latest.current.imagesOff });
+          return true;
+        }
         files.forEach((file) => void uploadImage(editorRef.current!, file));
         return true;
       },
       handleDrop: (_view, event) => {
         const files = Array.from((event as DragEvent).dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'));
-        if (!files.length || !latest.current.imagesOn || !editorRef.current) return false;
+        if (!files.length || !editorRef.current) return false;
         event.preventDefault();
+        if (!latest.current.imagesOn) {
+          setStatus({ kind: 'notice', text: latest.current.imagesOff });
+          return true;
+        }
         files.forEach((file) => void uploadImage(editorRef.current!, file));
         return true;
       },

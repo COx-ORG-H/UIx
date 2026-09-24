@@ -64,6 +64,8 @@ function Note() {
         variant="composer"
         aria-label="Work note"
         placeholder="Add a work note"
+        onUploadImage={async (file) => ({ src: `/images/${file.name}`, alt: file.name })}
+        resolveImageSrc={resolveImageSrc}
         onSubmitShortcut={() => { window.__rte.submits += 1; }}
         toolbarEnd={<button type="button" className="uix-btn uix-btn--primary uix-btn--sm">Add note</button>}
       />
@@ -82,6 +84,7 @@ function Template() {
         onChange={(md) => { log('template')(md); setValue(md); }}
         features="template"
         headingLevels={[3]}
+        imagesUnavailableReason="Notification templates are sent as plain text, so they can't carry images."
         aria-labelledby="template-label"
       />
     </section>

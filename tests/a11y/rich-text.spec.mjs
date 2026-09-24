@@ -229,6 +229,32 @@ test('reactions: pressed toggles with names, add via quick pick', async ({ page 
   await expect(bar.getByRole('button', { name: 'Add reaction' })).toBeFocused();
 });
 
+test('images: a paste in the comment preset uploads; a drop where images are off shows the note', async ({ page }, testInfo) => {
+  const note = page.locator('#note');
+  await note.click();
+  await expect(page.locator('section:has(#note)').getByRole('button', { name: 'Image' })).toBeVisible();
+  await note.evaluate((el) => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array([137, 80, 78, 71])], 'graph.png', { type: 'image/png' }));
+    el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await expect.poll(async () => (await changes(page, 'note')).at(-1)).toContain('](/images/graph.png)');
+
+  const template = page.locator('#template');
+  const box = await template.boundingBox();
+  await template.evaluate((el, { x, y }) => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array([137, 80, 78, 71])], 'graph.png', { type: 'image/png' }));
+    el.dispatchEvent(new DragEvent('drop', { dataTransfer: data, clientX: x, clientY: y, bubbles: true, cancelable: true }));
+  }, { x: box.x + 24, y: box.y + 12 });
+  const status = page.locator('section:has(#template)').getByRole('status');
+  await expect(status).toHaveText("Notification templates are sent as plain text, so they can't carry images.");
+  await expect(template).toHaveAttribute('aria-describedby', new RegExp(await status.getAttribute('id')));
+  expect(await changes(page, 'template')).toEqual([]);
+  await expect(template.locator('img')).toHaveCount(0);
+  await axe(page, testInfo, 'section:has(#template)', 'images-unavailable');
+});
+
 test('viewer renders every corpus fixture as expected', async ({ page }) => {
   for (const fixture of MARKDOWN_CORPUS) {
     const article = page.locator(`article[data-fixture="${fixture.name}"]`);

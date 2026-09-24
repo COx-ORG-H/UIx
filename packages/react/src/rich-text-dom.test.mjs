@@ -265,6 +265,73 @@ test('onChange fires for user edits only — never on mount or external value ch
   await view.unmount();
 });
 
+const paste = (el, files, data = {}) => act(async () => {
+  const event = new window.Event('paste', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'clipboardData', {
+    value: { files, types: [...Object.keys(data), 'Files'], getData: (type) => data[type] ?? '' },
+  });
+  el.dispatchEvent(event);
+});
+const pngFile = () => new window.File([new Uint8Array([137, 80, 78, 71])], 'graph.png', { type: 'image/png' });
+
+test('images: comment preset uploads a pasted image when onUploadImage is set', async () => {
+  const uploads = [];
+  const changes = [];
+  const view = await mount(h(RichTextEditor, {
+    value: 'Latency graph:',
+    onChange: (md) => changes.push(md),
+    features: 'comment',
+    variant: 'composer',
+    'aria-label': 'Work note',
+    onUploadImage: async (file) => { uploads.push(file); return { src: '/api/images/7', alt: 'Latency graph' }; },
+    resolveImageSrc: (src) => (src.startsWith('/api/') ? src : null),
+  }));
+  assert.ok(view.host.querySelector('[data-tool="image"]'), 'image button in the comment toolbar');
+  const editor = editorOf(view.host);
+  await act(async () => { editor.chain().focus('end').run(); });
+  await paste(editor.view.dom, [pngFile()]);
+  await settle();
+  assert.equal(uploads.length, 1);
+  assert.equal(uploads[0].name, 'graph.png');
+  assert.match(changes.at(-1), /!\[Latency graph\]\(\/api\/images\/7\)/);
+  assert.equal(view.host.querySelector('[role="status"]').textContent, '');
+  await view.unmount();
+});
+
+test('images: without onUploadImage a pasted image inserts nothing and the status line says why', async () => {
+  for (const [features, reason, expected] of [
+    ['comment', undefined, "Images can't be added here."],
+    ['template', 'Customers receive this as plain text, so it cannot carry images.', 'Customers receive this as plain text, so it cannot carry images.'],
+    ['full', undefined, "Images can't be added here."],
+  ]) {
+    const changes = [];
+    const view = await mount(h(RichTextEditor, {
+      value: 'Body',
+      onChange: (md) => changes.push(md),
+      features,
+      imagesUnavailableReason: reason,
+      'aria-label': `Body ${features}`,
+    }));
+    assert.equal(view.host.querySelector('[data-tool="image"]'), null, `${features}: no image button`);
+    const editor = editorOf(view.host);
+    await act(async () => { editor.chain().focus('end').run(); });
+    await paste(editor.view.dom, [pngFile()], { 'text/html': '<img src="/api/images/9" alt="x">' });
+    await settle();
+    assert.deepEqual(changes, [], `${features}: nothing inserted`);
+    assert.equal(editor.view.dom.querySelector('img, .uix-rich-text__image-link'), null);
+    const status = view.host.querySelector('[role="status"]');
+    assert.equal(status.textContent, expected, `${features}: status text`);
+    assert.equal(status.dataset.kind, 'notice');
+    assert.ok(editor.view.dom.getAttribute('aria-describedby').split(' ').includes(status.id), `${features}: editor described by the note`);
+
+    // Office copies carry a picture of the text next to the text: the text still pastes.
+    await paste(editor.view.dom, [pngFile()], { 'text/plain': 'Row 1' });
+    await settle();
+    assert.ok(changes.at(-1)?.includes('Row 1'), `${features}: text pasted (${JSON.stringify(changes.at(-1))})`);
+    await view.unmount();
+  }
+});
+
 test('egress: EmojiPicker and ReactionBar load, search and pick without network access', async () => {
   requests.length = 0;
   window.localStorage.clear(); // recents from earlier tests would come first
