@@ -58,6 +58,7 @@ export interface RichTextEditorProps {
     headingLevels?: ReadonlyArray<RichTextHeadingLevel>;
     // (undocumented)
     id?: string;
+    imagesUnavailableReason?: string;
     isSafeUrl?: (url: string) => boolean;
     // (undocumented)
     labels?: Partial<RichTextLabels>;
@@ -116,6 +117,7 @@ export interface RichTextLabels {
     image: string;
     // (undocumented)
     imageFailed: string;
+    imagesUnsupported: string;
     // (undocumented)
     imageUploading: string;
     // (undocumented)

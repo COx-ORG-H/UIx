@@ -1129,6 +1129,7 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
     // (undocumented)
     children?: ReactNode;
     closeLabel?: string;
+    dismissOnBackdrop?: boolean;
     // (undocumented)
     footer?: ReactNode;
     // (undocumented)

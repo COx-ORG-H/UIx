@@ -92,7 +92,9 @@ Markdown cannot represent everything a user can type. When the editor re-seriali
 - Reference definitions (`[id]: url`) are kept. If their surrounding block is deleted, they move to the end.
 
 Editor props: `features` (`full` / `comment` / `template`), `headingLevels` (limits the toolbar and input rules;
-existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop),
+existing headings at other levels keep their level), `onUploadImage` (enables the image button and image paste/drop in
+every preset), `imagesUnavailableReason` (status-line text when an image is pasted or dropped while images are off;
+default label `imagesUnsupported`, "Images can't be added here."; a paste that also carries text stays a text paste),
 `isSafeUrl`, `resolveImageSrc` (its return value is used verbatim), `onSubmitShortcut` (Ctrl/Cmd+Enter), `emoji`,
 `emojiImageBaseUrl`, `maxLength` (counter; over the limit sets `aria-invalid`), `placeholder`, `disabled`, `readOnly`,
 `labels` (every string, placeholders `{count}` `{max}`), `emojiPickerLabels`, `emojiLocale`, `id`, `name` (adds a
@@ -226,6 +228,18 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 ```
 
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
+
+### Drawer closes on a backdrop click
+
+`Drawer` closes on a click on the dimmed backdrop, as well as on Escape and its close button, and calls the same
+`onClose` (TENSOR HAR-547). `Peek` already did; both now share one handler. On a drawer that holds unsaved form input,
+pass `dismissOnBackdrop={false}` so a stray click can't discard it; Escape and the close button still close. On a
+phone the panel stops 2em + 6px short of the left edge (the browser's modal-dialog `max-width`), and a tap on that
+strip closes it too.
+
+```tsx
+<Drawer open={open} onClose={close} title="Edit user" dismissOnBackdrop={!dirty}>…</Drawer>
+```
 
 ### InfoTip and `help` slots
 

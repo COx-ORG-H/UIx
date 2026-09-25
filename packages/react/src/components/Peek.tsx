@@ -1,9 +1,10 @@
 "use client";
 
 import { useId } from 'react';
-import type { MouseEvent as ReactMouseEvent, ReactNode, HTMLAttributes } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
+import { backdropDismiss } from '../hooks/backdropDismiss.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -46,24 +47,8 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
   const titleId = useId();
 
-  // Light-dismiss: a native <dialog> closes on Escape + the close button, but
-  // NOT on a backdrop click. The peek panel is right-aligned (width
-  // --uix-peek-w); the ::backdrop dims the rest. A click whose coordinates fall
-  // outside the panel's box is a backdrop click → close. (Clicks on the panel
-  // body keep it open.) Guarded so a zero-size rect — e.g. the click that fired
-  // while the dialog is mid-close — never spuriously re-triggers onClose.
-  const onBackdropClick = (e: ReactMouseEvent<HTMLDialogElement>) => {
-    onClick?.(e);
-    if (!onClose || e.target !== e.currentTarget) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    if (r.width === 0) return;
-    const outside =
-      e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
-    if (outside) onClose();
-  };
-
   return (
-    <dialog ref={ref} className={cx('uix-peek', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={onBackdropClick}>
+    <dialog ref={ref} className={cx('uix-peek', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick)}>
       <div className="uix-peek__header">
         {hasNav && (
           <div className="uix-peek__nav">

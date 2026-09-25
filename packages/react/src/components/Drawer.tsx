@@ -4,6 +4,7 @@ import { useId } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useDialog } from '../hooks/useDialog.js';
+import { backdropDismiss } from '../hooks/backdropDismiss.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -16,12 +17,18 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   closeLabel?: string;
   open: boolean;
   onClose?: () => void;
+  /**
+   * A click on the dimmed backdrop calls `onClose`, like Escape and the close button
+   * (TENSOR HAR-547). Pass `false` on a drawer that holds unsaved form input, so a stray click
+   * can't discard it; Escape and the close button still close. Default `true`.
+   */
+  dismissOnBackdrop?: boolean;
   title?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
 }
 
-export function Drawer({ open, onClose, title, children, footer, closeLabel = 'Close drawer', className, ...rest }: DrawerProps) {
+export function Drawer({ open, onClose, dismissOnBackdrop = true, title, children, footer, closeLabel = 'Close drawer', className, onClick, ...rest }: DrawerProps) {
   const ref = useDialog(open, onClose);
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it. The
   // inherit resets neutralize the base h2 heading font/tracking/leading so it renders exactly
@@ -29,7 +36,7 @@ export function Drawer({ open, onClose, title, children, footer, closeLabel = 'C
   const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-drawer', className)} aria-labelledby={title ? titleId : undefined} {...rest}>
+    <dialog ref={ref} className={cx('uix-drawer', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick, dismissOnBackdrop)}>
       {(title != null || onClose) && (
         <div className="uix-drawer__header">
           {title && (
