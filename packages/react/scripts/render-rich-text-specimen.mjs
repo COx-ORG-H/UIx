@@ -60,6 +60,7 @@ const composer = resting(renderToStaticMarkup(h(RichTextEditor, {
   features: 'comment',
   variant: 'composer',
   placeholder: 'Add a work note — type : for emoji',
+  onUploadImage: async () => ({ src: '', alt: '' }),
   'aria-label': 'Work note',
   toolbarEnd: h('button', { type: 'button', className: 'uix-btn uix-btn--primary uix-btn--sm' }, 'Add note'),
 })));
@@ -120,7 +121,7 @@ const picker = `<div class="uix-popover uix-emoji-picker-popover" role="dialog" 
 const block = (title, text, markup) => `<h3>${title}</h3><p>${text}</p>${markup}`;
 const section = START + [
   block('Field', 'The <code>full</code> preset: headings, marks, lists, quote, code, divider, link, table, image (when the host supports uploads), emoji, undo/redo and a markdown source toggle. The toolbar is one tab stop — arrow keys move inside it — and scrolls sideways on narrow screens. The counter counts stored markdown characters.', field),
-  block('Composer', 'The <code>comment</code> preset inside <code>Composer</code>: the toolbar shares the bar with the host’s actions (<code>toolbarEnd</code>). Ctrl/Cmd+Enter submits, <code>:</code> opens emoji suggestions.', composer),
+  block('Composer', 'The <code>comment</code> preset inside <code>Composer</code>: the toolbar shares the bar with the host’s actions (<code>toolbarEnd</code>). Ctrl/Cmd+Enter submits, <code>:</code> opens emoji suggestions. Every preset takes pasted or dropped images when the host passes <code>onUploadImage</code>. Without it, an image paste inserts nothing and the status line says why: the host’s <code>imagesUnavailableReason</code>, or “Images can’t be added here.”', composer),
   block('Loading and error state', '<code>RichTextEditorFallback</code> accepts the same props and renders a plain textarea, so a failed editor chunk never blocks saving.', fallback),
   block('Markdown viewer', 'Server-safe rendering of the same markdown: no HTML sink, unsafe links become text, and images render only when the host’s <code>resolveImageSrc</code> allows them.', viewer),
   block('Reactions and emoji picker', 'Toggle chips name every reactor in the tooltip and the accessible name. The picker searches English or German names, remembers recent picks and loads its data on first open.', `${reactions}${picker}`),
