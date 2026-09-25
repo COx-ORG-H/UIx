@@ -905,7 +905,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
             className="uix-rich-text__link-form"
             onKeyDown={(event) => {
               if (event.key === 'Escape') { event.preventDefault(); closeLink(); }
-              // Enter would otherwise implicitly submit the host form.
+              // Enter would otherwise implicitly submit the host form. An IME's
+              // composition-confirming Enter is not a submit, as with a native form.
+              if (event.nativeEvent.isComposing || event.keyCode === 229) return;
               if (event.key === 'Enter' && event.target === linkInputRef.current) { event.preventDefault(); applyLink(); }
             }}
           >

@@ -278,6 +278,12 @@ test('link popover inside a host form: Apply and Enter insert the link and never
   await click(view.host.querySelector('[data-tool="link"]'));
   await settle();
   await typeInto(linkInput, 'https://example.test/other');
+  const composing = new window.KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true });
+  const changesBeforeIme = changes.length;
+  await act(async () => { linkInput.dispatchEvent(composing); });
+  await settle();
+  assert.equal(composing.defaultPrevented, false, 'an IME composition Enter is left to the IME');
+  assert.equal(changes.length, changesBeforeIme, 'an IME composition Enter does not apply the link');
   const enter = new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
   await act(async () => { linkInput.dispatchEvent(enter); });
   await settle();
