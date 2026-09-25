@@ -145,7 +145,7 @@ test('markdown input rules and headingLevels', async ({ page }) => {
 
   // The template editor offers H3 only: "## " stays text there.
   const template = page.locator('#template');
-  await expect(page.getByRole('toolbar').nth(2).getByRole('button', { name: /^Heading/ })).toHaveCount(1);
+  await expect(page.locator('section').filter({ has: template }).getByRole('toolbar').getByRole('button', { name: /^Heading/ })).toHaveCount(1);
   await caretAtEnd(page, 'template');
   await page.keyboard.press('Enter');
   await page.keyboard.type('## Not a heading');
