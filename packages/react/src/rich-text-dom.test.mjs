@@ -240,7 +240,7 @@ test('egress: RichTextEditor (full, comment, template) makes no network request 
     await settle();
     const linkInput = view.host.querySelector('.uix-rich-text__link input');
     await typeInto(linkInput, 'javascript:alert(1)');
-    await act(async () => { linkInput.form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); });
+    await keydown(linkInput, 'Enter');
     assert.ok(view.host.querySelector('.uix-rich-text__link [role="alert"]'), 'invalid link message');
     assert.ok(!changes.at(-1).includes('javascript:'));
     await view.unmount();
@@ -248,6 +248,51 @@ test('egress: RichTextEditor (full, comment, template) makes no network request 
   assert.deepEqual(absoluteRequests(), []);
   assert.deepEqual(remoteResources(), []);
   assert.ok(requests.every((r) => r.kind !== 'fetch' && r.kind !== 'xhr' && r.kind !== 'websocket'), JSON.stringify(requests));
+});
+
+test('link popover inside a host form: Apply and Enter insert the link and never submit the host form', async () => {
+  // Consumers mount the editor inside their own record form. The popover renders in
+  // place (no portal), so any submit it raises reaches the host form — React bubbles
+  // synthetic onSubmit through ancestors, and a nested <form> is invalid HTML anyway.
+  const hostSubmits = [];
+  const changes = [];
+  function Host() {
+    const [value, setValue] = useState('Runbook');
+    return h('form', { onSubmit: (event) => { hostSubmits.push(event.type); event.preventDefault(); } },
+      h(RichTextEditor, { value, onChange: (md) => { changes.push(md); setValue(md); }, 'aria-label': 'Body' }));
+  }
+  const view = await mount(h(Host));
+  const popover = view.host.querySelector('.uix-rich-text__link');
+
+  await act(async () => { editorOf(view.host).chain().focus('end').run(); });
+  await click(view.host.querySelector('[data-tool="link"]'));
+  await settle();
+  const linkInput = popover.querySelector('input');
+  await typeInto(linkInput, 'https://example.test/runbook');
+  const apply = [...popover.querySelectorAll('button')].at(-1);
+  await click(apply);
+  await settle();
+  assert.deepEqual(hostSubmits, [], 'Apply did not submit the host form');
+  assert.ok(changes.at(-1)?.includes('](https://example.test/runbook)'), JSON.stringify(changes.at(-1)));
+
+  await click(view.host.querySelector('[data-tool="link"]'));
+  await settle();
+  await typeInto(linkInput, 'https://example.test/other');
+  const composing = new window.KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true });
+  const changesBeforeIme = changes.length;
+  await act(async () => { linkInput.dispatchEvent(composing); });
+  await settle();
+  assert.equal(composing.defaultPrevented, false, 'an IME composition Enter is left to the IME');
+  assert.equal(changes.length, changesBeforeIme, 'an IME composition Enter does not apply the link');
+  const enter = new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+  await act(async () => { linkInput.dispatchEvent(enter); });
+  await settle();
+  assert.equal(enter.defaultPrevented, true, 'Enter cannot fall through to implicit submission of the host form');
+  assert.ok(changes.at(-1)?.includes('](https://example.test/other)'), JSON.stringify(changes.at(-1)));
+  assert.deepEqual(hostSubmits, []);
+  assert.equal(popover.querySelector('form') === null, true, 'no <form> nested inside the host form');
+  assert.equal(String(apply.type), 'button', 'Apply is not a submit button');
+  await view.unmount();
 });
 
 test('onChange fires for user edits only — never on mount or external value changes', async () => {

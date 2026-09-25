@@ -898,10 +898,18 @@ export function RichTextEditor(props: RichTextEditorProps) {
       ) : null}
       {has('link') ? (
         <Popover id={linkPopoverId} anchor={linkButtonRef} className="uix-rich-text__link" role="dialog" aria-label={labels.link}>
-          <form
+          {/* Not a <form>: the popover renders in place, and consumers mount the editor
+              inside their own record form. A nested form is invalid HTML and its submit
+              bubbles (React onSubmit) into the host form, saving/navigating the page. */}
+          <div
             className="uix-rich-text__link-form"
-            onSubmit={(event) => { event.preventDefault(); applyLink(); }}
-            onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); closeLink(); } }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') { event.preventDefault(); closeLink(); }
+              // Enter would otherwise implicitly submit the host form. An IME's
+              // composition-confirming Enter is not a submit, as with a native form.
+              if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+              if (event.key === 'Enter' && event.target === linkInputRef.current) { event.preventDefault(); applyLink(); }
+            }}
           >
             <div className="uix-field">
             <label className="uix-field__label" htmlFor={`${uid}-link-url`}>{labels.linkUrl}</label>
@@ -933,9 +941,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
                   {labels.linkRemove}
                 </button>
               ) : null}
-              <button type="submit" className="uix-btn uix-btn--primary uix-btn--sm">{labels.linkApply}</button>
+              <button type="button" className="uix-btn uix-btn--primary uix-btn--sm" onClick={applyLink}>{labels.linkApply}</button>
             </div>
-          </form>
+          </div>
         </Popover>
       ) : null}
       {has('image') ? (
