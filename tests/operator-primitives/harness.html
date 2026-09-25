@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Operator primitives — UIx v2</title>
+  <!-- Specimen for tests/a11y/operator-primitives.spec.mjs and the visual gate.
+       Offline: no external fonts or assets, so the goldens stay deterministic. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; gap: var(--uix-space-8); max-width: 72rem; margin: 0 auto; }
+    section { display: grid; gap: var(--uix-space-4); min-width: 0; }
+    .ops-panel { padding: var(--uix-space-4) var(--uix-space-2); }
+    .ops-stats { display: grid; gap: var(--uix-space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); }
+    .ops-copy { display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; }
+    .ops-copy span:first-child { overflow-wrap: anywhere; min-width: 0; }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the specimen…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

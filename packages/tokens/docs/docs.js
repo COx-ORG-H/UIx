@@ -107,7 +107,7 @@ export const COMPONENT_GROUPS = {
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
-  'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Utility bits'],
+  'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Copy button', 'Link', 'Utility bits'],
 };
 
 export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown'];
@@ -140,7 +140,7 @@ export const COMPONENT_ITEMS = Object.entries(COMPONENT_GROUPS).flatMap(([group,
 export const REACT_COMPONENT_SLUGS = [
   'alert', 'app-shell', 'async-operation-status', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card',
   'chart', 'checkbox', 'collapsible-section', 'color-picker', 'command-palette', 'comments', 'composer',
-  'confirm-dialog', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
+  'confirm-dialog', 'copy-button', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
   'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
   'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
   'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph',
@@ -528,7 +528,12 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 </div>
 <div id="overview" role="tabpanel">…</div>`))}
     ${section('variants', 'Variants', demo(`<div class="uix-stack"><div class="uix-tabs uix-tabs--enclosed" role="tablist" aria-label="Enclosed example"><button class="uix-tab" role="tab" aria-selected="true">Details</button><button class="uix-tab" role="tab" aria-selected="false">History</button></div><div class="uix-tabs uix-tabs--pill" role="tablist" aria-label="Pill example"><button class="uix-tab" role="tab" aria-selected="true">Week</button><button class="uix-tab" role="tab" aria-selected="false">Month</button><button class="uix-tab" role="tab" aria-selected="false">Quarter</button></div></div>`, undefined, { column: true }))}
-    ${section('guidance', 'Usage guidance', `${compare('Use tabs for a small set of peer views whose content can change without changing the task context.', 'Use tabs as a substitute for primary navigation or for steps that must be completed in order.')}<p>Keep labels short, use sentence case, and avoid more tabs than fit at the narrowest supported width.</p>`)}
+    ${section('guidance', 'Usage guidance', `${compare('Use tabs for a small set of peer views whose content can change without changing the task context.', 'Use tabs as a substitute for primary navigation or for steps that must be completed in order.')}<p>Keep labels short and use sentence case. Labels wrap to a second line at <code>16rem</code> rather than truncating, so translated labels stay readable.</p>`)}
+    ${section('overflow', 'Scrolling tab rows', `<p>When a record has more peer views than fit at the narrowest width, pass <code>overflow="scroll"</code> to the React <code>Tabs</code>. The row stays on one line and scrolls sideways inside <code>.uix-tabs-scroller</code>; edge buttons appear only on the side with hidden tabs, and the selected tab is always scrolled into view. The buttons are pointer-only: keyboard users move with Arrow, Home and End. The row never widens its container.</p>${codeBlock(`<Tabs overflow="scroll" value={tab} onChange={setTab}>
+  <Tab value="incidents">Related incidents</Tab>
+  <Tab value="changes">Changes</Tab>
+  <TabPanel value="incidents">…</TabPanel>
+</Tabs>`, 'tsx')}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>Each tab owns one panel through <code>aria-controls</code>; each panel points back with <code>aria-labelledby</code>. Arrow keys move focus inside the tab list, Home and End jump to boundaries, and only the active tab is in the page tab order.</p>`)}`,
 
   table: () => `${pageHeader('Components', 'Table', 'Tables support dense operational decisions with explicit sorting, selection, status, ownership, and view controls.', ['sticky headers', '3 density tiers', 'pin + peek patterns'])}

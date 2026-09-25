@@ -327,6 +327,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-images",
     "selector": ".uix-media"
   },
+  "copy-button": {
+    "route": "examples-utility",
+    "selector": ".uix-copy-button"
+  },
   "kbd": {
     "route": "examples-utility",
     "selector": ".uix-kbd"
