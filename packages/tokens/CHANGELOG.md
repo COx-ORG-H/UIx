@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.26.2
+
+### Patch Changes
+
+- No changes. Released in lockstep with `@tensor_1/react` 2.26.2, because consumers pin both packages to one exact version (TENSOR `installed-artifacts.test.ts`).
+
 ## 2.26.1
 
 ### Patch Changes
