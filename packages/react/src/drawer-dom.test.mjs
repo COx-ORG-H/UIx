@@ -115,8 +115,11 @@ test('Drawer dismissOnBackdrop={false}: the backdrop click does nothing; Escape 
   clickAt(dialog, 200, 300);
   assert.equal(onClose.calls, 0);
 
-  // Escape: the browser fires cancel → close on the dialog; useDialog forwards `close` to onClose.
-  act(() => dialog.dispatchEvent(new window.Event('close')));
+  // Escape: the browser fires cancel, then closes the dialog, then `close`; useDialog forwards
+  // `close` to onClose. (A `close` that finds its dialog still open is stale and ignored.)
+  act(() => {
+    if (dialog.dispatchEvent(new window.Event('cancel', { cancelable: true }))) dialog.close();
+  });
   assert.equal(onClose.calls, 1);
 
   clickAt(dialog.querySelector('button[aria-label="Close drawer"]'), 900, 20);
