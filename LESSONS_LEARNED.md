@@ -6,6 +6,9 @@
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
 
+### 2026-09-29 · dialog lifecycle · `d3f4d53`
+- **Symptom:** Drawer/Modal/Peek mounted with `open` closed itself ~25 ms later in `next dev` (TENSOR HAR-882), releasing the scroll lock.  **Root cause:** browsers QUEUE a `<dialog>`'s `close` event; under StrictMode (or `open` true → false → true in one task) the effect cleanup's `close()` event arrived after the re-run's `showModal()` and reached the NEW listener. The jsdom test stubs dispatched `close` synchronously, so no test could see it.  **Fix:** `useDialog`'s `handleClose` ignores a `close` that finds its dialog open again.  **Gate:** `packages/react/src/dialog-stale-close-dom.test.mjs` queues `close` via `setTimeout(0)`, mounts under StrictMode, asserts the effect really ran twice; all 10 cases fail without the fix. Model: Opus 5.5.  **Tag:** false-green, test-double-fidelity, strictmode
+
 ### 2026-09-24 · live-reorder drag · `feat/view-menu-columns-anatomy`
 - **Rule:** a list that reorders *while* a row is dragged must follow the pointer on the window (not on the grip through pointer capture), and must compute the drop slot from the OTHER rows only.  **Why:** React re-keys by moving the dragged row's DOM node, and moving a node releases its pointer capture (and its focus), so SavedViewMenu's drag stalled after the first step down. Counting the dragged row's own midpoint pushed it one slot past the pointer. The jsdom test stubbed fixed rects and dispatched every event on the grip, so it passed on both bugs.  **Gate:** `tests/a11y/view-menu.spec.mjs` drags with a real mouse in Chromium (ViewMenu and SavedViewMenu); both drag tests fail when the dragged row is counted again.
 

@@ -59,9 +59,15 @@ export function useDialog(open: boolean, onClose?: () => void): React.RefObject<
      * without this listener the scroll lock leaked whenever the consumer forgot onClose
      * (UIX-A11Y-1). `locked` scopes this hook's share of the refcount so the lock is released
      * exactly once — here on a native close, or in the cleanup below (which removes the listener
-     * BEFORE calling el.close(), so a hook-initiated close never double-unlocks). */
+     * BEFORE calling el.close(), so a hook-initiated close never double-unlocks).
+     * Browsers QUEUE the `close` event, so the one fired by a cleanup's el.close() can arrive after
+     * a re-run of this effect has reopened the dialog and added a new listener — every mount under
+     * StrictMode, or `open` going true → false → true within a task. A close event that finds its
+     * dialog open again is stale: ignore it, or it would unlock scroll and onClose a dialog that
+     * just opened (TENSOR HAR-882). */
     let locked = true;
     const handleClose = () => {
+      if (el.open) return;
       if (locked) { locked = false; unlockBodyScroll(); }
       onCloseRef.current?.();
     };
