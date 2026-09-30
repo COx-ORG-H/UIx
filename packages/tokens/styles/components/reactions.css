@@ -24,18 +24,19 @@
   .uix-reaction:disabled, .uix-reaction-add:disabled { opacity: .55; cursor: not-allowed; }
   .uix-reaction > span[aria-hidden] { line-height: inherit; }
 
-  /* full picker (EmojiPicker, RTE-01): search, category jump bar, sectioned 8-column grid */
+  /* full picker (EmojiPicker, RTE-01): search, category jump bar, sectioned 8-column grid.
+     Fixed-height rows: one size loading, loaded, searching or failed, so it never re-places. */
   .uix-emoji-picker__anchor { display: inline-flex; }
   .uix-emoji-picker-popover { padding: var(--uix-space-2); }
   .uix-emoji-picker--full { display: flex; flex-direction: column; flex-wrap: nowrap; gap: var(--uix-space-2); width: 324px; max-width: calc(100vw - 32px); }
-  .uix-emoji-picker__nav { display: flex; gap: var(--uix-space-0); overflow-x: auto; scrollbar-width: none; }
+  .uix-emoji-picker__nav { display: flex; flex: none; gap: var(--uix-space-0); height: 28px; overflow-x: auto; scrollbar-width: none; }
   .uix-emoji-picker__nav-btn {
     flex: none; width: 32px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm);
     background: transparent; font-size: var(--uix-text-body); cursor: pointer;
   }
   .uix-emoji-picker__nav-btn:hover { background: var(--uix-bg-hover); }
   .uix-emoji-picker__nav-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
-  .uix-emoji-picker__grid { height: 264px; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: var(--uix-space-6); }
+  .uix-emoji-picker__grid { flex: none; height: 264px; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: var(--uix-space-6); }
   .uix-emoji-picker__section { content-visibility: auto; contain-intrinsic-size: auto 15rem; }
   .uix-emoji-picker__heading {
     position: sticky; top: 0; z-index: var(--uix-z-raised); padding: var(--uix-space-1) var(--uix-space-1);
@@ -48,4 +49,9 @@
   .uix-emoji-img { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -.2em; object-fit: contain; }
   .uix-emoji-picker__status { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-emoji-picker__status:empty { display: none; }
+  /* inside the grid (React): adds no height, stays visible at the bottom */
+  .uix-emoji-picker__grid > .uix-emoji-picker__status {
+    position: sticky; bottom: 0; z-index: var(--uix-z-raised); margin: 0;
+    padding: var(--uix-space-2) var(--uix-space-1); background: var(--uix-surface-2);
+  }
 }

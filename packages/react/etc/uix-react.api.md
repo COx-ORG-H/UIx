@@ -2251,7 +2251,9 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
     anchor?: RefObject<HTMLElement | null> | HTMLElement | null;
     // (undocumented)
     children?: ReactNode;
+    closeWhenAnchorHidden?: boolean;
     offset?: number;
+    onAnchorHidden?: () => void;
     placement?: Placement;
     popover?: 'auto' | 'manual';
 }
@@ -2273,6 +2275,7 @@ interface PositionOptions_2 {
     padding?: number;
     placement?: Placement;
     shift?: boolean;
+    stickySide?: Side;
 }
 export { PositionOptions_2 as PositionOptions }
 

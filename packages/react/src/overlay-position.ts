@@ -34,6 +34,13 @@ export interface PositionOptions {
   flip?: boolean;
   /** Slide along the cross axis to stay on-screen. Default true. */
   shift?: boolean;
+  /**
+   * The side the element is already on, while it stays open. It is kept unless it no longer
+   * fits AND the opposite side does, so a size change or a small scroll never flips an open
+   * overlay back and forth. Ignored when it is not on `placement`'s axis. Unset = decide from
+   * `placement` alone (an overlay that is opening).
+   */
+  stickySide?: Side;
 }
 
 export interface PositionResult {
@@ -77,12 +84,19 @@ function fitsOn(side: Side, a: Rect, f: Size, vp: Size, offset: number, padding:
  * Coordinates are for `position: fixed` (same space as getBoundingClientRect).
  */
 export function computePosition(anchor: Rect, floating: Size, viewport: Size, options: PositionOptions = {}): PositionResult {
-  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true } = options;
+  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true, stickySide } = options;
   const { side: preferred, align } = parsePlacement(placement);
 
-  // 1. flip — keep the preferred side unless it doesn't fit and the opposite side is better
+  // 1. flip
   let side = preferred;
-  if (flip && !fitsOn(side, anchor, floating, viewport, offset, padding)) {
+  const sticky = stickySide === preferred || stickySide === OPPOSITE[preferred] ? stickySide : undefined;
+  if (flip && sticky) {
+    // already open: stay put while the current side fits, or while the other side is no better
+    side = sticky;
+    const opp = OPPOSITE[side];
+    if (!fitsOn(side, anchor, floating, viewport, offset, padding) && fitsOn(opp, anchor, floating, viewport, offset, padding)) side = opp;
+  } else if (flip && !fitsOn(side, anchor, floating, viewport, offset, padding)) {
+    // opening: keep the preferred side unless it doesn't fit and the opposite side is better
     const opp = OPPOSITE[side];
     if (fitsOn(opp, anchor, floating, viewport, offset, padding) || spaceOn(opp, anchor, viewport, offset) > spaceOn(side, anchor, viewport, offset)) {
       side = opp;

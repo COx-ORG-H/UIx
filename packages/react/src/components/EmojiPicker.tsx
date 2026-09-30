@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent, MouseEvent, ReactElement, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { Popover } from './Popover.js';
@@ -77,10 +77,28 @@ interface Section {
   emojis: ReadonlyArray<string>;
 }
 
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
+/**
+ * Scroll the grid (and only the grid) so `cell` is visible below the sticky section heading.
+ * `focus()` / `scrollIntoView()` would also scroll the page when the popover sticks out of it.
+ */
+function revealInGrid(grid: HTMLElement, cell: HTMLElement): void {
+  const g = grid.getBoundingClientRect();
+  const c = cell.getBoundingClientRect();
+  const top = g.top + (parseFloat(getComputedStyle(grid).scrollPaddingTop) || 0);
+  if (c.top < top) grid.scrollTop -= top - c.top;
+  else if (c.bottom > g.bottom) grid.scrollTop += c.bottom - g.bottom;
+}
+
 /**
  * Emoji picker in a native popover: search, quick picks, recently used and the
  * Unicode categories, with names in English or German. The emoji dataset loads on
  * first open. The grid is one tab stop; arrow keys, Home and End move within it.
+ * The picker is one size in every state (loading, searching, failed), so it keeps the
+ * side it opened on; it stays attached to its trigger while the page scrolls and
+ * closes once the trigger is scrolled out of view.
  */
 export function EmojiPicker({
   onSelect, trigger, labels: labelOverrides, locale = 'en', quickPicks, loadData = loadEmojiData,
@@ -94,6 +112,10 @@ export function EmojiPicker({
   const searchRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pointerWasOpen = useRef<boolean | null>(null);
+  /** The popover is closing because its trigger scrolled out of view. */
+  const closedByAnchor = useRef(false);
+  /** A category chosen during a search: shown once the search is cleared. */
+  const pendingJump = useRef<string | null>(null);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<EmojiData | null>(null);
   const [failed, setFailed] = useState(false);
@@ -115,10 +137,15 @@ export function EmojiPicker({
       setOpen(nowOpen);
       onOpenChange?.(nowOpen);
       if (nowOpen) {
+        closedByAnchor.current = false;
+        pendingJump.current = null;
         setRecent(readRecentEmoji(recentStorageKey));
         setQuery('');
         setActive(0);
-        requestAnimationFrame(() => searchRef.current?.focus());
+        requestAnimationFrame(() => searchRef.current?.focus({ preventScroll: true }));
+      } else if (closedByAnchor.current) {
+        // The trigger scrolled away: leave focus with the page, never pull it (and the page) back.
+        closedByAnchor.current = false;
       } else if (el.contains(document.activeElement) || document.activeElement === document.body) {
         focusTrigger();
       }
@@ -149,10 +176,8 @@ export function EmojiPicker({
     if (el && isOpen(el)) el.hidePopover();
   };
 
-  const sections: Section[] = useMemo(() => {
-    if (query.trim()) {
-      return data ? [{ key: 'results', title: labels.search, emojis: searchEmoji(data, query).map((e) => e.emoji) }] : [];
-    }
+  /** Quick picks, recents and the categories: the grid without a search, and the category bar. */
+  const browseSections: Section[] = useMemo(() => {
     const list: Section[] = [];
     if (quickPicks?.length) list.push({ key: 'quick', title: labels.quickPicks, emojis: [...new Set(quickPicks)] });
     if (recent.length) list.push({ key: 'recent', title: labels.recent, emojis: recent });
@@ -162,7 +187,12 @@ export function EmojiPicker({
       });
     }
     return list;
-  }, [query, data, quickPicks, recent, labels.search, labels.quickPicks, labels.recent]);
+  }, [data, quickPicks, recent, labels.quickPicks, labels.recent]);
+
+  const sections: Section[] = useMemo(() => {
+    if (!query.trim()) return browseSections;
+    return data ? [{ key: 'results', title: labels.search, emojis: searchEmoji(data, query).map((e) => e.emoji) }] : [];
+  }, [query, data, browseSections, labels.search]);
 
   const flat = useMemo(() => sections.flatMap((s) => s.emojis), [sections]);
   const sectionStart = useMemo(() => {
@@ -179,14 +209,48 @@ export function EmojiPicker({
     hide();
   };
 
-  const focusCell = useCallback((index: number) => {
+  const focusCell = useCallback((index: number, reveal = true) => {
     setActive(index);
     const find = () => gridRef.current?.querySelector<HTMLButtonElement>(`[data-emoji-index="${index}"]`);
+    // Focus without letting the browser scroll anything; the grid alone scrolls to the cell.
+    const move = (cell: HTMLButtonElement) => {
+      cell.focus({ preventScroll: true });
+      if (reveal && gridRef.current) revealInGrid(gridRef.current, cell);
+    };
     // Move now when the cell is rendered, so a fast Enter acts on it; otherwise after the next render.
     const cell = find();
-    if (cell) cell.focus();
-    else requestAnimationFrame(() => find()?.focus());
+    if (cell) move(cell);
+    else requestAnimationFrame(() => { const later = find(); if (later) move(later); });
   }, []);
+
+  /** Scroll the grid (never the page) to a section's heading and focus its first emoji. */
+  const showSection = (key: string) => {
+    const grid = gridRef.current;
+    const section = grid?.querySelector<HTMLElement>(`[data-section="${key}"]`);
+    if (!grid || !section) return;
+    grid.scrollTop += section.getBoundingClientRect().top - grid.getBoundingClientRect().top;
+    const start = sectionStart.get(key);
+    if (start !== undefined) focusCell(start, false);
+  };
+
+  const onCategory = (key: string) => {
+    if (!query.trim()) {
+      showSection(key);
+      return;
+    }
+    // Choosing a category ends the search; the section is shown once the categories are back.
+    pendingJump.current = key;
+    setQuery('');
+    setActive(0);
+  };
+
+  useIsomorphicLayoutEffect(() => {
+    const key = pendingJump.current;
+    if (key === null || query.trim()) return;
+    pendingJump.current = null;
+    showSection(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, sections]);
 
   const onGridKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -195,7 +259,7 @@ export function EmojiPicker({
     const next = emojiGridMove(index, event.key, flat.length, EMOJI_GRID_COLUMNS);
     if (event.key === 'ArrowUp' && next === null) {
       event.preventDefault();
-      searchRef.current?.focus();
+      searchRef.current?.focus({ preventScroll: true });
       return;
     }
     if (next === null) return;
@@ -265,6 +329,8 @@ export function EmojiPicker({
         className="uix-emoji-picker-popover"
         role="dialog"
         aria-label={labels.dialog}
+        closeWhenAnchorHidden
+        onAnchorHidden={() => { closedByAnchor.current = true; }}
       >
         {open ? (
           <div className="uix-emoji-picker uix-emoji-picker--full" lang={locale}>
@@ -280,26 +346,26 @@ export function EmojiPicker({
               autoComplete="off"
               spellCheck={false}
             />
-            {data && !query.trim() ? (
-              <div className="uix-emoji-picker__nav" role="group" aria-label={labels.categories}>
-                {sections.map((section) => (
-                  <button
-                    key={section.key}
-                    type="button"
-                    className="uix-emoji-picker__nav-btn"
-                    aria-label={section.title}
-                    title={section.title}
-                    onClick={() => {
-                      const start = section.emojis.length ? sectionStart.get(section.key) ?? -1 : -1;
-                      gridRef.current?.querySelector(`[data-section="${section.key}"]`)?.scrollIntoView({ block: 'start' });
-                      if (start >= 0) focusCell(start);
-                    }}
-                  >
-                    <span aria-hidden="true">{section.emojis[0] ? renderEmoji(section.emojis[0]) : null}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
+            {/* Always rendered at its fixed height, so the picker never changes size (and never
+                re-places itself) when the data arrives or a search starts. */}
+            <div
+              className="uix-emoji-picker__nav"
+              role={data ? 'group' : undefined}
+              aria-label={data ? labels.categories : undefined}
+            >
+              {data ? browseSections.map((section) => (
+                <button
+                  key={section.key}
+                  type="button"
+                  className="uix-emoji-picker__nav-btn"
+                  aria-label={section.title}
+                  title={section.title}
+                  onClick={() => onCategory(section.key)}
+                >
+                  <span aria-hidden="true">{section.emojis[0] ? renderEmoji(section.emojis[0]) : null}</span>
+                </button>
+              )) : null}
+            </div>
             <div className="uix-emoji-picker__grid" ref={gridRef} onKeyDown={onGridKeyDown}>
               {sections.map((section) => {
                 const start = offset;
@@ -332,8 +398,9 @@ export function EmojiPicker({
                   </section>
                 );
               })}
+              {/* Inside the fixed-height grid: loading, failure and "no results" add no height. */}
+              <p className="uix-emoji-picker__status" role="status">{status}</p>
             </div>
-            <p className="uix-emoji-picker__status" role="status">{status}</p>
           </div>
         ) : null}
       </Popover>

@@ -61,6 +61,9 @@ const axe = async (page, testInfo, include, label) => {
   expect(gated, `${label} [${testInfo.project.name}]:\n${summary}`).toEqual([]);
 };
 
+/** Axe measures colours as painted: wait until a popover's enter fade has finished. */
+const settled = (locator) => expect.poll(() => locator.evaluate((el) => el.getAnimations().length)).toBe(0);
+
 test('axe: editors, viewer and reactions at rest', async ({ page }, testInfo) => {
   await axe(page, testInfo, '#root', 'rest');
 });
@@ -69,6 +72,7 @@ test('axe: open emoji picker, link dialog, suggestions and source mode', async (
   await page.locator('#standalone-picker').click();
   const dialog = page.getByRole('dialog', { name: 'Emoji auswählen' });
   await expect(dialog.getByRole('heading', { name: 'Smileys & Emotionen' })).toBeVisible();
+  await settled(dialog);
   await axe(page, testInfo, '[role="dialog"]:popover-open', 'picker');
   await page.keyboard.press('Escape');
 
@@ -76,6 +80,7 @@ test('axe: open emoji picker, link dialog, suggestions and source mode', async (
   await field.click();
   await page.keyboard.press('ControlOrMeta+k');
   await expect(page.getByRole('dialog', { name: 'Link' })).toBeVisible();
+  await settled(page.getByRole('dialog', { name: 'Link' }));
   await axe(page, testInfo, '[role="dialog"]:popover-open', 'link-dialog');
   await page.keyboard.press('Escape');
 
