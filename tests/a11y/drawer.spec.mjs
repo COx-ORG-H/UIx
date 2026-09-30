@@ -52,7 +52,8 @@ test('form drawer (dismissOnBackdrop={false}): the backdrop keeps it open; Escap
   expect((await closes(page)).form).toBe(0);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveJSProperty('open', false);
-  expect((await closes(page)).form).toBe(1);
+  // `open` drops at once, but the browser fires `close` (which onClose rides) in a later task.
+  await expect.poll(async () => (await closes(page)).form).toBe(1);
 });
 
 test('axe: open drawer', async ({ page }, testInfo) => {
