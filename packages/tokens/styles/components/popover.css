@@ -1,11 +1,18 @@
-/* uix popover — generic anchored surface via the native Popover API; animated with @starting-style. */
+/* uix popover — generic anchored surface via the native Popover API; animated with @starting-style.
+   Enter/exit: fade + --uix-lift slide, always away from the anchor (the React Popover sets
+   data-placement, and data-uix-placing holds the first frame until it is placed). */
 @layer uix.components {
   .uix-popover { margin: 0; padding: var(--uix-space-2); background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); color: var(--uix-text); }
   [popover].uix-popover {
-    opacity: 0; transform: translateY(calc(-1 * var(--uix-lift)));
+    --popover-from: translateY(calc(-1 * var(--uix-lift)));
+    opacity: 0; transform: var(--popover-from);
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out),
                 overlay var(--uix-dur-fast) allow-discrete, display var(--uix-dur-fast) allow-discrete;
   }
+  [popover].uix-popover[data-placement^="top"] { --popover-from: translateY(var(--uix-lift)); }
+  [popover].uix-popover[data-placement^="left"] { --popover-from: translateX(var(--uix-lift)); }
+  [popover].uix-popover[data-placement^="right"] { --popover-from: translateX(calc(-1 * var(--uix-lift))); }
   [popover].uix-popover:popover-open { opacity: 1; transform: none; }
-  @starting-style { [popover].uix-popover:popover-open { opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))); } }
+  @starting-style { [popover].uix-popover:popover-open { opacity: 0; transform: var(--popover-from); } }
+  [popover].uix-popover[data-uix-placing]:popover-open { opacity: 0; transform: var(--popover-from); transition: none; }
 }

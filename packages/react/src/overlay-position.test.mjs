@@ -97,3 +97,40 @@ test('computePosition: shift disabled leaves the cross axis unclamped', () => {
   const r = computePosition(anchor, { width: 200, height: 80 }, VP, { placement: 'bottom-start', shift: false });
   assert.equal(r.x, 950); // off-screen, but shift was turned off
 });
+
+/* stickySide — an OPEN overlay keeps its side (HAR-993). The emoji picker opened below its
+ * trigger, grew when its data loaded, and the next scroll event re-decided from scratch and
+ * jumped it to the top. The hook now passes the side it is on; these lock the hysteresis. */
+
+test('computePosition: stickySide keeps a flipped overlay on top while top still fits', () => {
+  // Opened near the bottom, so it went on top. Now there is room below as well: it stays on top.
+  const anchor = { x: 100, y: 400, width: 80, height: 30 };
+  const opening = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start' });
+  assert.equal(opening.side, 'bottom', 'from scratch it would pick the preferred side');
+  const open = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start', stickySide: 'top' });
+  assert.equal(open.side, 'top');
+  assert.equal(open.y, 400 - 120 - 6);
+  assert.equal(open.placement, 'top-start');
+});
+
+test('computePosition: stickySide flips only when its side no longer fits AND the other side does', () => {
+  // grew taller than the room below (324 px) while open: moves to the top, where it fits
+  const anchor = { x: 100, y: 440, width: 80, height: 30 };
+  const grown = computePosition(anchor, { width: 200, height: 380 }, VP, { placement: 'bottom-start', stickySide: 'bottom' });
+  assert.equal(grown.side, 'top');
+  // fits neither side: stays where it is, even though the other side has more room
+  const shortVp = { width: 1000, height: 200 };
+  const tight = { x: 100, y: 120, width: 80, height: 30 };
+  const neither = computePosition(tight, { width: 200, height: 300 }, shortVp, { placement: 'bottom-start', stickySide: 'bottom' });
+  assert.equal(neither.side, 'bottom', 'no flip-flop when the other side does not fit either');
+  const fresh = computePosition(tight, { width: 200, height: 300 }, shortVp, { placement: 'bottom-start' });
+  assert.equal(fresh.side, 'top', 'without stickySide the roomier side wins, as before');
+});
+
+test('computePosition: stickySide off the placement axis, or with flip disabled, is ignored', () => {
+  const anchor = { x: 100, y: 400, width: 80, height: 30 };
+  const offAxis = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start', stickySide: 'left' });
+  assert.equal(offAxis.side, 'bottom');
+  const noFlip = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start', stickySide: 'top', flip: false });
+  assert.equal(noFlip.side, 'bottom');
+});

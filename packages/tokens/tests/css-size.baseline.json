@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 184293,
-      "gzip": 26163,
-      "brotli": 22083
+      "raw": 184916,
+      "gzip": 26265,
+      "brotli": 22167
     },
     "build/css/styles.css": {
-      "raw": 194369,
-      "gzip": 28850,
-      "brotli": 24198
+      "raw": 194992,
+      "gzip": 28959,
+      "brotli": 24283
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -272,9 +272,9 @@
       "brotli": 1273
     },
     "styles/components/popover.css": {
-      "raw": 873,
-      "gzip": 382,
-      "brotli": 306
+      "raw": 1493,
+      "gzip": 541,
+      "brotli": 433
     },
     "styles/components/progress.css": {
       "raw": 1059,
@@ -292,9 +292,9 @@
       "brotli": 396
     },
     "styles/components/reactions.css": {
-      "raw": 4116,
-      "gzip": 1247,
-      "brotli": 1025
+      "raw": 4546,
+      "gzip": 1373,
+      "brotli": 1134
     },
     "styles/components/relationship-graph.css": {
       "raw": 8903,

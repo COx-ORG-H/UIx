@@ -4,11 +4,12 @@ import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RichTextEditor } from '../../packages/react/src/rich-text.js';
 import { Markdown } from '../../packages/react/src/markdown.js';
-import { EmojiPicker, ReactionBar } from '../../packages/react/src/emoji.js';
-import type { ReactionSummary } from '../../packages/react/src/emoji.js';
+import { EmojiPicker, ReactionBar, loadEmojiData } from '../../packages/react/src/emoji.js';
+import type { EmojiData, EmojiLocale, ReactionSummary } from '../../packages/react/src/emoji.js';
 import { MARKDOWN_CORPUS } from '../../packages/react/src/fixtures/markdown-corpus.mjs';
 
-type Log = { changes: Record<string, string[]>; submits: number; picked: string[]; toggled: string[] };
+type Gate = { release: () => void; fail: () => void };
+type Log = { changes: Record<string, string[]>; submits: number; picked: string[]; toggled: string[]; emojiGate?: Gate };
 declare global { interface Window { __rte: Log } }
 window.__rte = { changes: {}, submits: 0, picked: [], toggled: [] };
 const log = (key: string) => (md: string) => { (window.__rte.changes[key] ??= []).push(md); };
@@ -142,6 +143,28 @@ function Reactions() {
   );
 }
 
+/** HAR-993: an emoji picker whose data load the test releases (or fails), to measure every state. */
+const gatedLoader = (locale: EmojiLocale) => new Promise<EmojiData>((resolve, reject) => {
+  window.__rte.emojiGate = {
+    release: () => { loadEmojiData(locale).then(resolve, reject); },
+    fail: () => reject(new Error('offline')),
+  };
+});
+
+function Placement() {
+  return (
+    <section id="placement">
+      <h2>Emoji picker placement</h2>
+      <EmojiPicker
+        onSelect={(emoji) => window.__rte.picked.push(emoji)}
+        loadData={gatedLoader}
+        labels={{ dialog: 'Gated emoji picker' }}
+        trigger={<button type="button" className="uix-btn uix-btn--outline" id="gated-picker">Gated emoji</button>}
+      />
+    </section>
+  );
+}
+
 function Viewer() {
   return (
     <section>
@@ -164,6 +187,7 @@ createRoot(document.getElementById('root')!).render(
     <Update />
     <Template />
     <Reactions />
+    <Placement />
     <Viewer />
   </StrictMode>,
 );
