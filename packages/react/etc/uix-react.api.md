@@ -965,6 +965,12 @@ export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels;
 export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
 
 // @public (undocumented)
+export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels;
+
+// @public (undocumented)
+export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels;
+
+// @public (undocumented)
 export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels;
 
 // @public (undocumented)
@@ -1236,6 +1242,9 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
 }
 
 // @public
+export function emptyFilterValue(kind: FilterValueKind): FilterValue;
+
+// @public
 export function EmptyState(input: EmptyStateProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1361,11 +1370,96 @@ export interface FieldProps {
     success?: string;
 }
 
+// @public
+export interface FilterChoice {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
 // @public (undocumented)
 export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
 
 // @public
 export function FilteredEmptyState(props: EmptyStateProps): react.JSX.Element;
+
+// @public
+export function FilterEditor(input: FilterEditorProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FilterEditorLabels {
+    and: string;
+    // (undocumented)
+    any: string;
+    // (undocumented)
+    apply: string;
+    // (undocumented)
+    clear: string;
+    // (undocumented)
+    from: string;
+    // (undocumented)
+    no: string;
+    // (undocumented)
+    noMatches: string;
+    // (undocumented)
+    operator: string;
+    // (undocumented)
+    operators: Record<TextFilterOperator | NumberFilterOperator, string>;
+    remove: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    search: string;
+    // (undocumented)
+    searchFailed: string;
+    // (undocumented)
+    searching: string;
+    // (undocumented)
+    selectAll: string;
+    selected: string;
+    // (undocumented)
+    selectNone: string;
+    // (undocumented)
+    to: string;
+    // (undocumented)
+    value: string;
+    // (undocumented)
+    yes: string;
+}
+
+// @public (undocumented)
+export interface FilterEditorProps {
+    // (undocumented)
+    field: FilterField;
+    // (undocumented)
+    labels?: Partial<FilterEditorLabels>;
+    // (undocumented)
+    onApply: () => void;
+    // (undocumented)
+    onClear: () => void;
+    // (undocumented)
+    onValueChange: (value: FilterValue) => void;
+    searchDelay?: number;
+    searchThreshold?: number;
+    value: FilterValue | undefined;
+}
+
+// @public (undocumented)
+export interface FilterField {
+    // (undocumented)
+    falseLabel?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: FilterValueKind;
+    label: string;
+    onSearch?: (query: string) => Promise<readonly FilterChoice[]>;
+    operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
+    options?: readonly FilterChoice[];
+    trueLabel?: string;
+    unit?: string;
+}
 
 // @public (undocumented)
 export type FilterKind = 'enum' | 'text' | 'number' | 'date' | 'boolean';
@@ -1407,6 +1501,48 @@ export interface FilterPopoverProps {
     // (undocumented)
     value: string;
 }
+
+// @public (undocumented)
+export interface FilterSummaryLabels {
+    from: string;
+    more: string;
+    // (undocumented)
+    no: string;
+    // (undocumented)
+    operators: Record<TextFilterOperator | NumberFilterOperator, string>;
+    range: string;
+    until: string;
+    // (undocumented)
+    yes: string;
+}
+
+// @public (undocumented)
+export type FilterValue = {
+    kind: 'enum';
+    values: string[];
+} | {
+    kind: 'text';
+    operator: TextFilterOperator;
+    text: string;
+} | {
+    kind: 'number';
+    operator: NumberFilterOperator;
+    value?: number;
+    to?: number;
+} | {
+    kind: 'date-range';
+    from?: string;
+    to?: string;
+} | {
+    kind: 'boolean';
+    value?: boolean;
+} | {
+    kind: 'reference';
+    values: FilterChoice[];
+};
+
+// @public (undocumented)
+export type FilterValueKind = FilterValue['kind'];
 
 // @public (undocumented)
 export function findRuleNodeDepth(group: RuleGroup, id: string, depth?: number): number | undefined;
@@ -1615,6 +1751,9 @@ export function isDateUnavailable(date: string, options: {
     max?: string;
     isDisabled?: (date: string) => boolean;
 }): boolean;
+
+// @public
+export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
@@ -2285,6 +2424,12 @@ export interface NoticeQueueProps extends Omit<HTMLAttributes<HTMLElement>, 'tit
     summary?: ReactNode;
     title?: ReactNode;
 }
+
+// @public (undocumented)
+export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
+
+// @public (undocumented)
+export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
 
 // @public
 export function PageHeader(input: PageHeaderProps): react.JSX.Element;
@@ -3908,6 +4053,18 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
 // @public (undocumented)
 export function summarizeDiff(entries: DiffEntry[], resolutions?: Record<string, DiffResolution>): DiffSummary;
 
+// @public
+export function summarizeFilter(field: FilterField, value: FilterValue | undefined, options?: SummarizeFilterOptions): string;
+
+// @public (undocumented)
+export interface SummarizeFilterOptions {
+    formatDate?: (date: string) => string;
+    formatNumber?: (value: number) => string;
+    // (undocumented)
+    labels?: Partial<FilterSummaryLabels>;
+    maxListed?: number;
+}
+
 // @public (undocumented)
 export function summarizeRule(value: RuleDefinition, labels?: {
     fields?: Record<string, string>;
@@ -4008,6 +4165,9 @@ export interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
 }
 
 // @public (undocumented)
+export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[];
+
+// @public (undocumented)
 export const Textarea: react.ForwardRefExoticComponent<TextareaProps & react.RefAttributes<HTMLTextAreaElement>>;
 
 // @public (undocumented)
@@ -4015,6 +4175,9 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
     // (undocumented)
     invalid?: boolean;
 }
+
+// @public (undocumented)
+export type TextFilterOperator = 'contains' | 'not-contains' | 'is' | 'is-not' | 'starts-with';
 
 // @public (undocumented)
 export function Th(input: ThProps): react.JSX.Element;
