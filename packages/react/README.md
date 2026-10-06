@@ -403,3 +403,18 @@ const field: FilterField = { id: 'state', label: t('state'), kind: 'enum', optio
 
 `isFilterEmpty`, `emptyFilterValue`, the operator lists and all words (`labels`) are exported, and the value is plain
 data for your own query string. Stale search results are ignored.
+### EntityPicker
+
+A form field that holds one record found by an async search (HAR-1366; TENSOR's `entity-picker.tsx` and its
+person, incident and CI pickers; MOTUS's author filter). Built on `SearchSuggest`.
+
+```tsx
+<Field label={t('assignee')} htmlFor="assignee" hint={t('assigneeHint')}>
+  <EntityPicker id="assignee" name="assignee_id" label={t('assignee')} value={assignee} onValueChange={setAssignee}
+    onSearch={(q) => api.people.search(q)} labels={{ none: t('choosePerson') }} />
+</Field>
+```
+
+- **Chosen:** the record shows in the field (title plus its last breadcrumb, or `renderValue`), with a × named "Clear {title}". Choosing the field again opens a fresh search; Escape with an empty query returns to the record.
+- **Searching:** debounced (`delay`, 250 ms) from `minQueryLength` (0) characters, with loading, empty and error states. **Retry is a list row**, so arrow keys reach it. Stale results are ignored. Focus returns to the field after a choice.
+- **Forms:** `name` posts the chosen id in a hidden input; `id` and the `Field` hint and error wire to the active control. `SearchSuggest` gains `inputId` and `inputDescribedBy` for the same purpose.

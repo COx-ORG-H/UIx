@@ -114,3 +114,21 @@
     .uix-search-suggest__match { text-decoration: underline; }
   }
 }
+
+/* EntityPicker (React, HAR-1366): a form field holding one record found by SearchSuggest */
+@layer uix.components {
+  .uix-entity-picker { position: relative; display: flex; align-items: stretch; min-width: 0; }
+  .uix-entity-picker--editing > .uix-search-suggest { flex: 1; min-width: 0; }
+  .uix-entity-picker__value { flex: 1; display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; padding-right: var(--uix-space-8); text-align: start; cursor: pointer; }
+  .uix-entity-picker__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-entity-picker__text { display: flex; align-items: baseline; gap: var(--uix-space-2); min-width: 0; overflow: hidden; }
+  .uix-entity-picker__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--uix-text); }
+  .uix-entity-picker__meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-entity-picker__clear {
+    position: absolute; top: 50%; right: var(--uix-space-1); width: 24px; height: 24px; transform: translateY(-50%);
+    display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+  }
+  .uix-entity-picker__clear svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-entity-picker__clear:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-entity-picker__clear:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+}
