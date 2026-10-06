@@ -37,3 +37,5 @@ tests/info-tip/dist/
 tests/search-suggest/dist/
 # Drawer/Peek Playwright harness bundle (tests/drawer/build.mjs)
 tests/drawer/dist/
+# TextDiff Playwright harness bundle (tests/text-diff/build.mjs)
+tests/text-diff/dist/

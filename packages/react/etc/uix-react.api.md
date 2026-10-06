@@ -1052,6 +1052,9 @@ export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 // @public (undocumented)
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
+// @public (undocumented)
+export const DEFAULT_TEXT_DIFF_LABELS: TextDiffLabels;
+
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
 
@@ -1198,6 +1201,12 @@ export interface DiffSummary {
     // (undocumented)
     resolved: number;
 }
+
+// @public
+export function diffText(before: string, after: string, input?: TextDiffOptions): TextDiffResult;
+
+// @public
+export function diffTokens(a: readonly string[], b: readonly string[], maxEdits?: number): TextDiffOp[];
 
 // @public
 export function DiffViewer(input: DiffViewerProps): react.JSX.Element;
@@ -4448,6 +4457,117 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
     invalid?: boolean;
 }
 
+// @public
+export function TextDiff(input: TextDiffProps): react.JSX.Element;
+
+// @public
+export type TextDiffGranularity = 'line' | 'word';
+
+// @public (undocumented)
+export interface TextDiffLabels {
+    added: string;
+    // (undocumented)
+    after: string;
+    // (undocumented)
+    before: string;
+    // (undocumented)
+    noChanges: string;
+    removed: string;
+    showUnchanged: string;
+    summary: string;
+    // (undocumented)
+    tooLarge: string;
+}
+
+// @public (undocumented)
+export interface TextDiffLine {
+    number: number;
+    segments: TextDiffSegment[];
+}
+
+// @public (undocumented)
+export interface TextDiffOp {
+    tokens: string[];
+    // (undocumented)
+    type: 'equal' | 'insert' | 'delete';
+}
+
+// @public (undocumented)
+export interface TextDiffOptions {
+    // (undocumented)
+    granularity?: TextDiffGranularity;
+    maxEdits?: number;
+    maxTokens?: number;
+}
+
+// @public (undocumented)
+export interface TextDiffProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    // (undocumented)
+    after: string;
+    // (undocumented)
+    afterLabel?: ReactNode;
+    // (undocumented)
+    before: string;
+    beforeLabel?: ReactNode;
+    context?: number;
+    granularity?: TextDiffGranularity;
+    hideSummary?: boolean;
+    label?: string;
+    // (undocumented)
+    labels?: Partial<TextDiffLabels>;
+    // (undocumented)
+    maxEdits?: number;
+    maxTokens?: number;
+    view?: 'split' | 'unified';
+}
+
+// @public (undocumented)
+export interface TextDiffResult {
+    added: number;
+    // (undocumented)
+    granularity: TextDiffGranularity;
+    // (undocumented)
+    ops: TextDiffOp[];
+    // (undocumented)
+    removed: number;
+    // (undocumented)
+    status: 'ok' | 'too-large';
+}
+
+// @public (undocumented)
+export type TextDiffRow = {
+    kind: 'equal';
+    before: TextDiffLine;
+    after: TextDiffLine;
+} | {
+    kind: 'change';
+    before: TextDiffLine;
+    after: TextDiffLine;
+} | {
+    kind: 'delete';
+    before: TextDiffLine;
+} | {
+    kind: 'insert';
+    after: TextDiffLine;
+} | {
+    kind: 'fold';
+    count: number;
+    rows: TextDiffRow[];
+};
+
+// @public
+export function textDiffRows(result: TextDiffResult, input?: {
+    context?: number;
+}): TextDiffRow[];
+
+// @public
+export interface TextDiffSegment {
+    // (undocumented)
+    changed: boolean;
+    // (undocumented)
+    text: string;
+}
+
 // @public (undocumented)
 export type TextFilterOperator = 'contains' | 'not-contains' | 'is' | 'is-not' | 'starts-with';
 
@@ -4683,6 +4803,9 @@ export interface ToggleRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 export function toggleSort(keys: readonly SortKey[], field: string, additive?: boolean): SortKey[];
 
 // @public
+export function tokenizeText(text: string, granularity: TextDiffGranularity): string[];
+
+// @public
 export function Tooltip(input: TooltipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -4836,6 +4959,8 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    // (undocumented)
+    textDiff?: Partial<TextDiffLabels>;
     // (undocumented)
     toast?: {
         dismiss?: string;
