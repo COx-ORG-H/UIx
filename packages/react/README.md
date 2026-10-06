@@ -457,3 +457,20 @@ A full-screen media viewer (HAR-1367; TENSOR's capture viewer, MOTUS's programme
 - **List:** each file shows its size and status. Uploads show a progress bar (indeterminate without `progress`), and failures show the reason and a Retry button. `previewUrl` shows a thumbnail, and `onAltChange` asks for alt text on images.
 - **Attachment:** the name is the link (`href`, `download`, `renderLink`). It has a quieter `meta` line, a `state` slot (e.g. a "Scanning" `StatusPill`), `actions`, `onRemove`, and `status` `loading` | `error` | `forbidden` (no link, and the reason shown). It's server-renderable.
 - Pure helpers: `formatFileSize`, `fileMatchesAccept`, `partitionFiles`, `fileKind`.
+
+### TextDiff
+
+A two-way diff of two texts (HAR-1368; TENSOR's knowledge-article version diff). `DiffViewer` stays the three-way configuration diff.
+
+```tsx
+<TextDiff before={v3.body} after={v4.body} beforeLabel={t('version', { n: 3 })} afterLabel={t('version', { n: 4 })}
+  label={t('bodyChanges')} context={3} />
+<TextDiff before={v3.title} after={v4.title} granularity="word" label={t('titleChanges')} />
+```
+
+- **Lines** (`granularity="line"`, the default): a Myers diff. Removed and added lines are paired with their closest counterpart, so a renumbered list still lines up, and only the changed words are marked inside a pair.
+- **Words** (`granularity="word"`): prose compared as one flow. Changed words across a space join into one change.
+- **Views:** `split` (the default) puts the versions side by side and stacks below about 36rem of container width. `unified` interleaves them.
+- **Not colour alone:** changes are `<del>` / `<ins>`, with a −/+ sign and a spoken "Removed:" / "Added:" (`labels`). Struck and underlined words mark changes inside a line.
+- **Long texts:** `context` keeps that many unchanged lines around each change. Longer runs fold behind "Show n unchanged lines", and focus moves to the first revealed line. Over `maxTokens` (20 000) a note replaces the diff. Past `maxEdits` (2 000) the changed middle shows as one replacement instead of stalling.
+- Pure model for tests and servers: `diffText`, `diffTokens`, `textDiffRows`, `tokenizeText`.

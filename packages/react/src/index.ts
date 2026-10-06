@@ -357,6 +357,10 @@ export { DEFAULT_DIFF_VIEWER_LABELS, DiffViewer } from './components/DiffViewer.
 export type { DiffViewerLabels, DiffViewerProps } from './components/DiffViewer.js';
 export { buildThreeWayDiff, summarizeDiff } from './diff-model.js';
 export type { DiffEntry, DiffKind, DiffResolution, DiffSummary } from './diff-model.js';
+export { DEFAULT_TEXT_DIFF_LABELS, TextDiff } from './components/TextDiff.js';
+export type { TextDiffLabels, TextDiffProps } from './components/TextDiff.js';
+export { diffText, diffTokens, textDiffRows, tokenizeText } from './text-diff-model.js';
+export type { TextDiffGranularity, TextDiffLine, TextDiffOp, TextDiffOptions, TextDiffResult, TextDiffRow, TextDiffSegment } from './text-diff-model.js';
 
 export { ColorPicker, DEFAULT_COLOR_PICKER_LABELS } from './components/ColorPicker.js';
 export type { ColorPickerLabels, ColorPickerProps } from './components/ColorPicker.js';

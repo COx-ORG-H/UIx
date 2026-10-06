@@ -301,6 +301,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-scheduling-calendar",
     "selector": ".uix-scheduling-calendar"
   },
+  "text-diff": {
+    "route": "examples-text-diff",
+    "selector": ".uix-text-diff"
+  },
   "diff-viewer": {
     "route": "examples-diff-viewer",
     "selector": ".uix-diff-viewer"

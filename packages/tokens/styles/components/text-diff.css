@@ -1,0 +1,50 @@
+/* TextDiff (HAR-1368): two-way line/word diff. Changes carry a −/+ sign, strike/underline and
+   spoken words as well as colour. Split view stacks below ~36rem (container query). */
+@layer uix.components {
+  .uix-text-diff { container-type: inline-size; min-width: 0; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); color: var(--uix-text); overflow: hidden; }
+  .uix-text-diff__summary { margin: 0; padding: var(--uix-space-2) var(--uix-space-3); border-bottom: 1px solid var(--uix-border); font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-text-diff__heads { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--uix-border); background: var(--uix-bg-subtle); font-size: var(--uix-text-meta); font-weight: 600; }
+  .uix-text-diff__head { padding: var(--uix-space-2) var(--uix-space-3); min-width: 0; overflow-wrap: anywhere; }
+  .uix-text-diff__head + .uix-text-diff__head { border-left: 1px solid var(--uix-border); }
+  .uix-text-diff[data-view="unified"] .uix-text-diff__heads { display: flex; flex-wrap: wrap; column-gap: var(--uix-space-3); }
+  .uix-text-diff[data-view="unified"] .uix-text-diff__head + .uix-text-diff__head { border-left: 0; }
+  .uix-text-diff__body { position: relative; overflow: auto; font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); line-height: 1.6; }
+  .uix-text-diff__row { display: grid; grid-template-columns: 1fr 1fr; min-width: 0; }
+  .uix-text-diff[data-view="unified"] .uix-text-diff__row { grid-template-columns: 1fr; }
+  .uix-text-diff__row:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-text-diff__cell { display: grid; grid-template-columns: 4ch 2ch minmax(0, 1fr); min-width: 0; }
+  .uix-text-diff__cell + .uix-text-diff__cell { border-left: 1px solid var(--uix-border); }
+  .uix-text-diff__cell[data-empty] { background: var(--uix-bg-subtle); }
+  .uix-text-diff__cell[data-kind="delete"] { background: var(--uix-danger-bg); }
+  .uix-text-diff__cell[data-kind="insert"] { background: var(--uix-success-bg); }
+  .uix-text-diff__num { padding-inline-end: var(--uix-space-1); text-align: end; color: var(--uix-text-muted); user-select: none; }
+  .uix-text-diff__sign { text-align: center; color: var(--uix-text-muted); user-select: none; }
+  .uix-text-diff__cell[data-kind="delete"] .uix-text-diff__sign, .uix-text-diff__cell[data-kind="insert"] .uix-text-diff__sign { color: var(--uix-text); font-weight: 600; }
+  .uix-text-diff__text { min-width: 0; padding-inline-end: var(--uix-space-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .uix-text-diff del, .uix-text-diff ins { border-radius: var(--uix-radius-sm); color: var(--uix-text); }
+  .uix-text-diff del { background: color-mix(in srgb, var(--uix-danger) 22%, transparent); text-decoration: line-through; }
+  .uix-text-diff ins { background: color-mix(in srgb, var(--uix-success) 22%, transparent); text-decoration: underline; text-underline-offset: 0.2em; }
+  /* A whole added/removed line: the row tint, the sign and the spoken word carry it; striking a whole line hurts reading. */
+  .uix-text-diff__cell del[data-whole], .uix-text-diff__cell ins[data-whole] { background: none; text-decoration: none; }
+  .uix-text-diff__row[data-kind="fold"] { grid-template-columns: 1fr; background: var(--uix-bg-subtle); }
+  .uix-text-diff__fold { justify-self: start; margin: 0; padding: var(--uix-space-1) var(--uix-space-3); border: 0; background: none; font: inherit; color: var(--uix-link); cursor: pointer; }
+  .uix-text-diff__fold:hover { text-decoration: underline; }
+  .uix-text-diff__fold:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-text-diff__row[data-kind="prose"] { grid-template-columns: 1fr 1fr; }
+  .uix-text-diff__prose { min-width: 0; padding: var(--uix-space-3); font-family: var(--uix-font-sans); font-size: var(--uix-text-body); line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .uix-text-diff__side { min-width: 0; }
+  .uix-text-diff__side + .uix-text-diff__side { border-left: 1px solid var(--uix-border); }
+  .uix-text-diff__side > .uix-text-diff__head { border-bottom: 1px solid var(--uix-border); background: var(--uix-bg-subtle); font-family: var(--uix-font-sans); font-size: var(--uix-text-meta); font-weight: 600; }
+  .uix-text-diff__note { margin: 0; padding: var(--uix-space-3); color: var(--uix-text-muted); }
+  @container (max-width: 36rem) {
+    .uix-text-diff[data-view="split"] .uix-text-diff__heads { display: none; }
+    .uix-text-diff[data-view="split"] .uix-text-diff__row { grid-template-columns: 1fr; }
+    .uix-text-diff[data-view="split"] .uix-text-diff__cell + .uix-text-diff__cell { border-left: 0; }
+    .uix-text-diff[data-view="split"] .uix-text-diff__row[data-kind="equal"] .uix-text-diff__cell[data-side="after"],
+    .uix-text-diff[data-view="split"] .uix-text-diff__cell[data-empty] { display: none; }
+    .uix-text-diff__side + .uix-text-diff__side { border-left: 0; border-top: 1px solid var(--uix-border); }
+  }
+  @media (forced-colors: active) {
+    .uix-text-diff del, .uix-text-diff ins { forced-color-adjust: none; background: Canvas; color: CanvasText; outline: 1px solid CanvasText; }
+  }
+}

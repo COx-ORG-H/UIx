@@ -6,6 +6,7 @@ import type { PaginationLabels } from './components/Pagination.js';
 import type { SchedulingCalendarLabels } from './components/SchedulingCalendar.js';
 import type { DateRangePickerLabels } from './components/DateRangePicker.js';
 import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.js';
+import type { TextDiffLabels } from './components/TextDiff.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -30,6 +31,7 @@ export interface UixLabels {
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
+  textDiff?: Partial<TextDiffLabels>;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */
