@@ -1,5 +1,37 @@
 # @tensor_1/tokens
 
+## 2.27.0
+
+### Minor Changes
+
+- dce872e: The small gaps TENSOR and MOTUS were hand-building around (workspace ADR-0038 "always use UIx"; the 2026-10-06 reuse audits; UIx HAR-1346 batch (a)). Every addition is optional, so existing calls render as before.
+
+  - **SchedulingCalendar** (HAR-1347, TENSOR B1/C9): `weekStartsOn` (0–6, default Monday), `formatDate(date, 'day' | 'weekday' | 'month')` and `formatInstant` for a product date format, `maxEntriesPerDay` with a "+N more" toggle that expands the day or calls `onShowMore`, and `renderDayBadge`. The month and week grids gain weekday column headers. `buildMonthGrid` accepts any `CalendarWeekday`.
+  - **ButtonLink** and **`size="xs"`** (HAR-1348, TENSOR A4/B5/B18, MOTUS C-3): a link that looks like a `Button`, and a 24 px button. One link adapter, `renderLink` (`UixRenderLink`, `UixLinkProps`), serves `ButtonLink`, `Stat`, `Pagination`, `MenuItem`, `Chip` and `Step`.
+  - **Tooltip `content`** (HAR-1349, TENSOR A3): rich, non-interactive tooltip content.
+  - **Stat `href` / `current` / `haspopup`** (HAR-1350, TENSOR B6/B7, MOTUS B-A7): a server-renderable link tile, and `aria-haspopup` that can say `menu` or nothing.
+  - **Drawer `side`** (HAR-1351, TENSOR B15, MOTUS C-14): `start` for phone navigation, `bottom` for a bottom sheet.
+  - **NavItem `description`** (HAR-1355, TENSOR B31): a wrapping second line. `.uix-navitem` now has a `min-height` of 36 px instead of a fixed height.
+  - **CollapsibleSection `lazy` / `persistKey` / `openRequest`** (HAR-1352, TENSOR B32). Without them it is still a JS-free `<details>`.
+  - **DescriptionList**: a long unbroken value wraps instead of widening the grid (HAR-1353).
+  - **Card `titleId`** (HAR-1354, MOTUS B-A5).
+  - **ConfirmDialog** `children`, `error`, `initialFocus`, `aria-describedby`, `tertiaryLabel`/`onTertiary`, `typeToConfirm`, `compensation`; new **Popconfirm**, an anchored single-step confirmation (HAR-1356, TENSOR C2, MOTUS B-A4/C-5). A `destructive` dialog now opens with focus on Cancel.
+  - **Pagination** link mode (`hrefFor`) and cursor mode (`mode="cursor"`, First / Previous / Next, `summary`); `PaginationLabels.first` (HAR-1357, MOTUS B-P5/B-A22). Page buttons now carry `type="button"`.
+  - **UixLabelsProvider** / **useUixLabels** (HAR-1358, TENSOR C20, MOTUS #3): translate kit chrome once for a subtree.
+  - New **Menu**, **MenuItem**, **MenuGroup**, **MenuSeparator** (HAR-1359, TENSOR C1); **Chip**, **ChipGroup** (HAR-1360, TENSOR C7/B34, MOTUS C-6); **Kbd**, **KbdCombo** (HAR-1361, TENSOR C14, MOTUS B-A16); **Steps**, **Step** (HAR-1362, TENSOR C13, MOTUS C-9).
+
+  Fixes found while building these: `PromptDialog`'s input label used `.uix-label` (the Label chip) and rendered as a blue pill; it is now a field label. `.uix-chip__count` used `opacity: .7`, which dropped the count below AA contrast; it now uses `--uix-text-muted` (and inherits on a pressed chip).
+
+### Patch Changes
+
+- b955d5e: The rich-text `composer` variant no longer squeezes its tool row to nothing when `toolbarEnd` is wide (TENSOR HAR-1125).
+
+  - **The bug.** `.uix-rich-text--composer .uix-rich-text__bar` stayed on one row (`flex-wrap: nowrap`), and the tool row (`contain: inline-size`, so it has no content width of its own) only got the space the other items left. An audience toggle plus a submit button in `toolbarEnd` left it 0 px wide at 375 and 320 px: no formatting tool or emoji was reachable, and a click on a tool landed on the toggle.
+  - **The fix** (`@tensor_1/tokens`, `rich-text.css`). The bar wraps, and the tool row keeps at least five tools (160 px, or the whole bar when the bar is narrower). When the counter or `toolbarEnd` would take that room, they move to their own row below the tools; the submit stays at the end. The tool row still scrolls sideways and never wraps. A status message still takes its own row (HAR-749); its separate `:has()` rule is gone because the bar now always wraps.
+  - **What moves.** Only composers whose tool row was narrower than five tools: their trailing items now sit below the tools. Where the row already had room for five tools, nothing moves, and the visual goldens are unchanged. The loading/error fallback bar (no tools) wraps too, so a wide `toolbarEnd` stacks there instead of overflowing.
+  - `@tensor_1/react` has no code change and is versioned in lockstep.
+  - **Migration:** none. Consumers can delete local overrides of the composer bar's wrapping.
+
 ## 2.26.3
 
 ### Patch Changes
