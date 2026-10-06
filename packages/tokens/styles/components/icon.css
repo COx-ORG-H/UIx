@@ -1,0 +1,22 @@
+/* uix icon (React `@tensor_1/react/icons`, HAR-996) — inline SVG in currentColor, sized by the
+   --uix-icon-* tokens. A product sizing class (utilities layer) wins over these on purpose. */
+@layer uix.components {
+  .uix-icon { display: inline-block; flex: none; width: var(--uix-icon-md); height: var(--uix-icon-md); vertical-align: middle; }
+  .uix-icon--sm { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-icon--lg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
+  .uix-icon--muted { color: var(--uix-text-muted); }
+  .uix-icon--accent { color: var(--uix-link); }
+  .uix-icon--success { color: var(--uix-success); }
+  .uix-icon--warning { color: var(--uix-warning-text); }
+  .uix-icon--danger { color: var(--uix-danger-text); }
+  .uix-icon--info { color: var(--uix-info-text); }
+  /* stroke is currentColor, so forced-colors mode recolours it with the text */
+  @media (forced-colors: active) { .uix-icon { forced-color-adjust: auto; } }
+}
+
+/* A reference grid of glyphs (docs and icon pickers) */
+@layer uix.components {
+  .uix-icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; }
+  .uix-icon-grid__item { display: grid; justify-items: center; gap: var(--uix-space-2); padding: var(--uix-space-3) var(--uix-space-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface); color: var(--uix-text); }
+  .uix-icon-grid__item code { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: break-word; text-align: center; }
+}
