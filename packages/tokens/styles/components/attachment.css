@@ -15,6 +15,7 @@
   .uix-attachment__body { flex: 1; display: grid; gap: var(--uix-space-1); min-width: 0; }
   .uix-attachment__line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-width: 0; }
   .uix-attachment__line .uix-attachment__name { min-width: 0; overflow-wrap: anywhere; }
+  .uix-attachment__state { display: inline-flex; align-items: center; }
   .uix-attachment__meta { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-attachment__meta:empty { display: none; }
   .uix-attachment__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); }

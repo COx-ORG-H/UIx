@@ -145,7 +145,7 @@ export function FileUpload({
   return (
     <div className={cx('uix-file-upload', className)} data-disabled={disabled || undefined}>
       <div
-        className="uix-dropzone uix-file-upload__zone"
+        className="uix-dropzone"
         data-dragover={over || undefined}
         onDragOver={(event) => { if (disabled) return; event.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
@@ -194,7 +194,7 @@ export function FileUpload({
                     {item.status !== 'uploading' && <span className="uix-file-upload__status">{statusText}</span>}
                   </span>
                   {item.status === 'uploading' && (
-                    <Progress value={item.progress} indeterminate={item.progress === undefined} max={100} label={statusText} className="uix-file-upload__progress" />
+                    <Progress value={item.progress} indeterminate={item.progress === undefined} max={100} label={statusText} />
                   )}
                   {item.status === 'error' && item.error != null && <span className="uix-file-upload__error">{item.error}</span>}
                   {image && onAltChange && (

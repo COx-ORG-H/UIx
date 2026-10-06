@@ -15,7 +15,8 @@
 
 /* React `FileUpload` (HAR-984): validated picking, per-file progress, retry, alt text */
 @layer uix.components {
-  .uix-file-upload { display: grid; gap: var(--uix-space-3); min-width: 0; }
+  /* :not(label) — BrandProfiles has long put this class on its upload label as a hook. */
+  .uix-file-upload:not(label) { display: grid; gap: var(--uix-space-3); min-width: 0; }
   .uix-file-upload[data-disabled] .uix-dropzone { opacity: .6; cursor: not-allowed; }
   .uix-file-upload__hint { font-size: var(--uix-text-meta); }
   .uix-file-upload__errors { margin: 0; padding-left: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
