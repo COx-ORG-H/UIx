@@ -965,6 +965,9 @@ export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels;
 export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
 
 // @public (undocumented)
+export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
+
+// @public (undocumented)
 export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels;
 
 // @public (undocumented)
@@ -1256,6 +1259,51 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     // (undocumented)
     title?: ReactNode;
     variant?: StateVariant;
+}
+
+// @public
+export function EntityPicker(input: EntityPickerProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface EntityPickerLabels {
+    change: string;
+    clear: string;
+    // (undocumented)
+    empty: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    loading: string;
+    none: string;
+    results: string;
+    // (undocumented)
+    retry: string;
+    search: string;
+}
+
+// @public (undocumented)
+export interface EntityPickerProps {
+    'aria-describedby'?: string;
+    // (undocumented)
+    className?: string;
+    delay?: number;
+    // (undocumented)
+    disabled?: boolean;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    label: string;
+    // (undocumented)
+    labels?: Partial<EntityPickerLabels>;
+    minQueryLength?: number;
+    name?: string;
+    onSearch: (query: string) => Promise<readonly SearchSuggestOption[]>;
+    // (undocumented)
+    onValueChange: (next: SearchSuggestOption | null) => void;
+    // (undocumented)
+    placeholder?: string;
+    renderValue?: (option: SearchSuggestOption) => ReactNode;
+    value: SearchSuggestOption | null;
 }
 
 // @public (undocumented)
@@ -3698,6 +3746,8 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     heading?: string;
     headingAction?: SearchSuggestAction;
     highlight?: string;
+    inputDescribedBy?: string;
+    inputId?: string;
     inputRef?: Ref<HTMLInputElement | null>;
     label: string;
     loading?: boolean;

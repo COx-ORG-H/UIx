@@ -84,6 +84,10 @@ export interface SearchSuggestProps
   autoFocus?: boolean;
   /** Form field name of the input. */
   name?: string;
+  /** Id of the input itself (for a `<label for>` / `Field htmlFor`); `id` stays on the wrapper. */
+  inputId?: string;
+  /** `aria-describedby` of the input (hint and error text from a `Field`). */
+  inputDescribedBy?: string;
 }
 
 const SearchIcon = () => (
@@ -148,6 +152,8 @@ export function SearchSuggest({
   inputRef,
   autoFocus,
   name,
+  inputId,
+  inputDescribedBy,
   className,
   onBlur,
   ...props
@@ -292,6 +298,8 @@ export function SearchSuggest({
         <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>
         <input
           ref={fieldRef}
+          id={inputId}
+          aria-describedby={inputDescribedBy}
           className="uix-input uix-search-suggest__input"
           type="text"
           role="combobox"
