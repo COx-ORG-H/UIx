@@ -11,3 +11,42 @@
   .uix-lightbox img { display: block; width: min(720px, 92vw); height: auto; max-height: 92vh; border-radius: var(--uix-radius-md); }
   .uix-lightbox::backdrop { background: var(--uix-scrim-strong); }
 }
+
+/* React `Lightbox` gallery (HAR-1367): full viewport, media fitted, controls on surface chips so they
+   read on the scrim in both themes. */
+@layer uix.components {
+  .uix-lightbox--gallery { width: 100vw; height: 100dvh; max-width: 100vw; max-height: 100dvh; margin: 0; padding: var(--uix-space-4); box-shadow: none; overflow: hidden; }
+  .uix-lightbox--gallery[open] { display: grid; place-items: center; }
+  .uix-lightbox__figure { display: grid; justify-items: center; gap: var(--uix-space-3); max-width: 100%; margin: 0; }
+  .uix-lightbox__stage { max-height: calc(100dvh - 8rem); overflow: hidden; border-radius: var(--uix-radius-md); touch-action: pan-y; }
+  .uix-lightbox__stage[data-zoomed] { overflow: auto; touch-action: auto; }
+  /* A definite width (a shrink-to-fit grid makes max-width:100% cyclic and the image collapses to 0);
+     object-fit keeps the aspect ratio inside it. Room is left for the side buttons. */
+  .uix-lightbox--gallery .uix-lightbox__media { display: block; width: min(72rem, calc(100vw - 2 * var(--uix-space-4) - 7rem)); height: auto; max-height: calc(100dvh - 8rem); object-fit: contain; border-radius: var(--uix-radius-md); }
+  .uix-lightbox--gallery .uix-lightbox__stage[data-zoomed] { max-width: calc(100vw - 2 * var(--uix-space-4)); }
+  .uix-lightbox--gallery .uix-lightbox__stage[data-zoomed] .uix-lightbox__media { width: auto; max-width: none; max-height: none; }
+  .uix-lightbox__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--uix-space-3); max-width: min(48rem, 100%); padding: var(--uix-space-2) var(--uix-space-4); border-radius: var(--uix-radius-pill); background: var(--uix-surface); color: var(--uix-text); font-size: var(--uix-text-meta); }
+  .uix-lightbox__counter { font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }
+  .uix-lightbox__caption { min-width: 0; overflow-wrap: anywhere; }
+  .uix-lightbox__tool { padding: var(--uix-space-1) var(--uix-space-2); border: 0; border-radius: var(--uix-radius-xs); background: transparent; color: var(--uix-link); font: inherit; font-weight: 600; cursor: pointer; }
+  .uix-lightbox__tool:hover { background: var(--uix-bg-hover); }
+  .uix-lightbox__nav, .uix-lightbox__close {
+    position: absolute; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-popover); cursor: pointer;
+  }
+  .uix-lightbox__nav svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-lightbox__close svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-lightbox__nav { top: 50%; transform: translateY(-50%); }
+  .uix-lightbox__nav--prev { left: var(--uix-space-3); }
+  .uix-lightbox__nav--next { right: var(--uix-space-3); }
+  .uix-lightbox__close { top: var(--uix-space-3); right: var(--uix-space-3); }
+  .uix-lightbox__nav:disabled { opacity: .4; cursor: default; }
+  .uix-lightbox__nav:not(:disabled):hover, .uix-lightbox__close:hover { background: var(--uix-bg-hover); }
+  .uix-lightbox__nav:focus-visible, .uix-lightbox__close:focus-visible, .uix-lightbox__tool:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  /* phones: the image takes the width; previous/next sit at the bottom corners, clear of it */
+  @media (max-width: 40rem) {
+    .uix-lightbox--gallery .uix-lightbox__media { width: calc(100vw - 2 * var(--uix-space-4)); max-height: calc(100dvh - 10rem); }
+    .uix-lightbox__nav { top: auto; bottom: var(--uix-space-3); transform: none; }
+    .uix-lightbox__figure { margin-bottom: 3.5rem; }
+  }
+}

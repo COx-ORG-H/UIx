@@ -418,3 +418,18 @@ person, incident and CI pickers; MOTUS's author filter). Built on `SearchSuggest
 - **Chosen:** the record shows in the field (title plus its last breadcrumb, or `renderValue`), with a × named "Clear {title}". Choosing the field again opens a fresh search; Escape with an empty query returns to the record.
 - **Searching:** debounced (`delay`, 250 ms) from `minQueryLength` (0) characters, with loading, empty and error states. **Retry is a list row**, so arrow keys reach it. Stale results are ignored. Focus returns to the field after a choice.
 - **Forms:** `name` posts the chosen id in a hidden input; `id` and the `Field` hint and error wire to the active control. `SearchSuggest` gains `inputId` and `inputDescribedBy` for the same purpose.
+
+### Lightbox
+
+A full-screen media viewer (HAR-1367; TENSOR's capture viewer, MOTUS's programme gallery and photo zoom).
+
+```tsx
+<Lightbox items={photos.map((p) => ({ src: p.url, alt: p.alt, caption: p.caption, width: p.w, height: p.h }))}
+  index={index} onIndexChange={setIndex} open={open} onClose={() => setOpen(false)} />
+```
+
+- **Moving:** previous/next buttons, ←/→, Home/End and a swipe on touch (`loop` wraps). An announced "{index} of {total}" counter and the caption sit under the media.
+- **Size:** "Show actual size" switches between fitted and natural size; the stage scrolls when zoomed.
+- **Video:** `kind: 'video'` renders a native player, which keeps its own arrow keys.
+- **Dialog:** native `<dialog>`. Focus starts on Close, Escape and a backdrop click close it, and focus returns to the opener. Every word is in `labels`.
+- **Image size:** pass `width` and `height` so an SVG or a slow image keeps its box.
