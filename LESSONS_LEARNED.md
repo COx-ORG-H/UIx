@@ -6,6 +6,9 @@
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
 
+### 2026-10-06 · CSS class hooks · `c595cdb`
+- **Rule:** before giving a new component's block class (e.g. `.uix-file-upload`) its first CSS rule, look the class up in `HOOKS` in `packages/react/src/react-classes-defined.test.mjs`. Another component may already emit it as an unstyled hook (BrandProfiles' upload `<label>` did), and a bare rule silently restyles that component.  **Why:** when the class gains a rule, the gate says "drop from HOOKS". Doing exactly that ships the restyle, and no visual golden covers the other component.  **Gate:** ⚠ TODO. The HOOKS failure message should name the component that emits the hook. Until then, scope the rule (`:not(label)`) or pick a new block name.  **Tag:** css-collision, false-green
+
 ### 2026-10-06 · public API names · `feat/har-1365-filter-popover`
 - **Symptom:** the API report for `FilterEditor` (HAR-1365) showed `FilterKind` changing from `'enum' | 'text' | 'number' | 'date' | 'boolean'` to a new union. That is a breaking change to `table-engine`'s exported type, and `tsc` and the build were both green.  **Root cause:** `index.ts` re-exports `table-engine` with `export * from`, and a named export of the same name in the entry silently wins over the star binding. No error, no warning; the old type just leaves the public API.  **Fix:** the new type is `FilterValueKind`.  **Gate:** `packages/react/src/export-names.test.mjs` fails when an entry's explicit export reuses a name from one of its `export *` modules (it fails with the original name). Model: Opus 5.5.  **Tag:** false-green, public-api
 - **Rule:** read the `-` lines of an `.api.md` diff before calling a change additive. A "minor" whose report removes or narrows anything is a major in disguise.
