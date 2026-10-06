@@ -1,0 +1,961 @@
+{
+  "lucideReact": "1.39.0",
+  "names": {
+    "Accessibility": {
+      "component": "AccessibilityIcon",
+      "glyph": "accessibility"
+    },
+    "Activity": {
+      "component": "ActivityIcon",
+      "glyph": "activity"
+    },
+    "AlertCircle": {
+      "component": "AlertCircleIcon",
+      "glyph": "circle-alert"
+    },
+    "AlertOctagon": {
+      "component": "AlertOctagonIcon",
+      "glyph": "octagon-alert"
+    },
+    "AlertTriangle": {
+      "component": "AlertTriangleIcon",
+      "glyph": "triangle-alert"
+    },
+    "Archive": {
+      "component": "ArchiveIcon",
+      "glyph": "archive"
+    },
+    "ArrowDown": {
+      "component": "ArrowDownIcon",
+      "glyph": "arrow-down"
+    },
+    "ArrowLeft": {
+      "component": "ArrowLeftIcon",
+      "glyph": "arrow-left"
+    },
+    "ArrowLeftRight": {
+      "component": "ArrowLeftRightIcon",
+      "glyph": "arrow-left-right"
+    },
+    "ArrowRight": {
+      "component": "ArrowRightIcon",
+      "glyph": "arrow-right"
+    },
+    "ArrowUp": {
+      "component": "ArrowUpIcon",
+      "glyph": "arrow-up"
+    },
+    "ArrowUpDown": {
+      "component": "ArrowUpDownIcon",
+      "glyph": "arrow-up-down"
+    },
+    "ArrowUpRight": {
+      "component": "ArrowUpRightIcon",
+      "glyph": "arrow-up-right"
+    },
+    "Award": {
+      "component": "AwardIcon",
+      "glyph": "award"
+    },
+    "BadgeCheck": {
+      "component": "BadgeCheckIcon",
+      "glyph": "badge-check"
+    },
+    "Banknote": {
+      "component": "BanknoteIcon",
+      "glyph": "banknote"
+    },
+    "BarChart3": {
+      "component": "BarChart3Icon",
+      "glyph": "chart-column"
+    },
+    "Bell": {
+      "component": "BellIcon",
+      "glyph": "bell"
+    },
+    "BellOff": {
+      "component": "BellOffIcon",
+      "glyph": "bell-off"
+    },
+    "BellRing": {
+      "component": "BellRingIcon",
+      "glyph": "bell-ring"
+    },
+    "BookOpen": {
+      "component": "BookOpenIcon",
+      "glyph": "book-open"
+    },
+    "Bookmark": {
+      "component": "BookmarkIcon",
+      "glyph": "bookmark"
+    },
+    "Bot": {
+      "component": "BotIcon",
+      "glyph": "bot"
+    },
+    "Boxes": {
+      "component": "BoxesIcon",
+      "glyph": "boxes"
+    },
+    "Briefcase": {
+      "component": "BriefcaseIcon",
+      "glyph": "briefcase"
+    },
+    "Building2": {
+      "component": "Building2Icon",
+      "glyph": "building-2"
+    },
+    "Calendar": {
+      "component": "CalendarIcon",
+      "glyph": "calendar"
+    },
+    "CalendarCheck": {
+      "component": "CalendarCheckIcon",
+      "glyph": "calendar-check"
+    },
+    "CalendarClock": {
+      "component": "CalendarClockIcon",
+      "glyph": "calendar-clock"
+    },
+    "CalendarDays": {
+      "component": "CalendarDaysIcon",
+      "glyph": "calendar-days"
+    },
+    "CalendarOff": {
+      "component": "CalendarOffIcon",
+      "glyph": "calendar-off"
+    },
+    "CalendarX": {
+      "component": "CalendarXIcon",
+      "glyph": "calendar-x"
+    },
+    "Camera": {
+      "component": "CameraIcon",
+      "glyph": "camera"
+    },
+    "Check": {
+      "component": "CheckIcon",
+      "glyph": "check"
+    },
+    "CheckCheck": {
+      "component": "CheckCheckIcon",
+      "glyph": "check-check"
+    },
+    "CheckCircle": {
+      "component": "CheckCircleIcon",
+      "glyph": "circle-check-big"
+    },
+    "CheckCircle2": {
+      "component": "CheckCircle2Icon",
+      "glyph": "circle-check"
+    },
+    "ChevronDown": {
+      "component": "ChevronDownIcon",
+      "glyph": "chevron-down"
+    },
+    "ChevronLeft": {
+      "component": "ChevronLeftIcon",
+      "glyph": "chevron-left"
+    },
+    "ChevronRight": {
+      "component": "ChevronRightIcon",
+      "glyph": "chevron-right"
+    },
+    "ChevronUp": {
+      "component": "ChevronUpIcon",
+      "glyph": "chevron-up"
+    },
+    "ChevronsDownUp": {
+      "component": "ChevronsDownUpIcon",
+      "glyph": "chevrons-down-up"
+    },
+    "ChevronsLeft": {
+      "component": "ChevronsLeftIcon",
+      "glyph": "chevrons-left"
+    },
+    "ChevronsRight": {
+      "component": "ChevronsRightIcon",
+      "glyph": "chevrons-right"
+    },
+    "ChevronsUpDown": {
+      "component": "ChevronsUpDownIcon",
+      "glyph": "chevrons-up-down"
+    },
+    "Circle": {
+      "component": "CircleIcon",
+      "glyph": "circle"
+    },
+    "CircleCheck": {
+      "component": "CircleCheckIcon",
+      "glyph": "circle-check"
+    },
+    "CircleDot": {
+      "component": "CircleDotIcon",
+      "glyph": "circle-dot"
+    },
+    "CircleHelp": {
+      "component": "CircleHelpIcon",
+      "glyph": "circle-question-mark"
+    },
+    "CircleX": {
+      "component": "CircleXIcon",
+      "glyph": "circle-x"
+    },
+    "ClipboardCheck": {
+      "component": "ClipboardCheckIcon",
+      "glyph": "clipboard-check"
+    },
+    "ClipboardList": {
+      "component": "ClipboardListIcon",
+      "glyph": "clipboard-list"
+    },
+    "Clock": {
+      "component": "ClockIcon",
+      "glyph": "clock"
+    },
+    "Cloud": {
+      "component": "CloudIcon",
+      "glyph": "cloud"
+    },
+    "CloudOff": {
+      "component": "CloudOffIcon",
+      "glyph": "cloud-off"
+    },
+    "Coins": {
+      "component": "CoinsIcon",
+      "glyph": "coins"
+    },
+    "Columns3": {
+      "component": "Columns3Icon",
+      "glyph": "columns-3"
+    },
+    "Command": {
+      "component": "CommandIcon",
+      "glyph": "command"
+    },
+    "Component": {
+      "component": "ComponentIcon",
+      "glyph": "component"
+    },
+    "Copy": {
+      "component": "CopyIcon",
+      "glyph": "copy"
+    },
+    "CornerUpLeft": {
+      "component": "CornerUpLeftIcon",
+      "glyph": "corner-up-left"
+    },
+    "CreditCard": {
+      "component": "CreditCardIcon",
+      "glyph": "credit-card"
+    },
+    "Database": {
+      "component": "DatabaseIcon",
+      "glyph": "database"
+    },
+    "DatabaseBackup": {
+      "component": "DatabaseBackupIcon",
+      "glyph": "database-backup"
+    },
+    "DoorOpen": {
+      "component": "DoorOpenIcon",
+      "glyph": "door-open"
+    },
+    "Download": {
+      "component": "DownloadIcon",
+      "glyph": "download"
+    },
+    "Ellipsis": {
+      "component": "EllipsisIcon",
+      "glyph": "ellipsis"
+    },
+    "EllipsisVertical": {
+      "component": "EllipsisVerticalIcon",
+      "glyph": "ellipsis-vertical"
+    },
+    "ExternalLink": {
+      "component": "ExternalLinkIcon",
+      "glyph": "external-link"
+    },
+    "Eye": {
+      "component": "EyeIcon",
+      "glyph": "eye"
+    },
+    "EyeOff": {
+      "component": "EyeOffIcon",
+      "glyph": "eye-off"
+    },
+    "File": {
+      "component": "FileIcon",
+      "glyph": "file"
+    },
+    "FileArchive": {
+      "component": "FileArchiveIcon",
+      "glyph": "file-archive"
+    },
+    "FileBarChart": {
+      "component": "FileBarChartIcon",
+      "glyph": "file-chart-column-increasing"
+    },
+    "FileCheck": {
+      "component": "FileCheckIcon",
+      "glyph": "file-check"
+    },
+    "FileCheck2": {
+      "component": "FileCheck2Icon",
+      "glyph": "file-check-corner"
+    },
+    "FileDown": {
+      "component": "FileDownIcon",
+      "glyph": "file-down"
+    },
+    "FileImage": {
+      "component": "FileImageIcon",
+      "glyph": "file-image"
+    },
+    "FileInput": {
+      "component": "FileInputIcon",
+      "glyph": "file-input"
+    },
+    "FileQuestion": {
+      "component": "FileQuestionIcon",
+      "glyph": "file-question-mark"
+    },
+    "FileSearch": {
+      "component": "FileSearchIcon",
+      "glyph": "file-search"
+    },
+    "FileSpreadsheet": {
+      "component": "FileSpreadsheetIcon",
+      "glyph": "file-spreadsheet"
+    },
+    "FileText": {
+      "component": "FileTextIcon",
+      "glyph": "file-text"
+    },
+    "FileUp": {
+      "component": "FileUpIcon",
+      "glyph": "file-up"
+    },
+    "Filter": {
+      "component": "FilterIcon",
+      "glyph": "funnel"
+    },
+    "Flag": {
+      "component": "FlagIcon",
+      "glyph": "flag"
+    },
+    "FolderCheck": {
+      "component": "FolderCheckIcon",
+      "glyph": "folder-check"
+    },
+    "FolderKanban": {
+      "component": "FolderKanbanIcon",
+      "glyph": "folder-kanban"
+    },
+    "FolderTree": {
+      "component": "FolderTreeIcon",
+      "glyph": "folder-tree"
+    },
+    "Funnel": {
+      "component": "FunnelIcon",
+      "glyph": "funnel"
+    },
+    "GanttChartSquare": {
+      "component": "GanttChartSquareIcon",
+      "glyph": "square-chart-gantt"
+    },
+    "Gauge": {
+      "component": "GaugeIcon",
+      "glyph": "gauge"
+    },
+    "GitBranch": {
+      "component": "GitBranchIcon",
+      "glyph": "git-branch"
+    },
+    "GitBranchPlus": {
+      "component": "GitBranchPlusIcon",
+      "glyph": "git-branch-plus"
+    },
+    "GitCompareArrows": {
+      "component": "GitCompareArrowsIcon",
+      "glyph": "git-compare-arrows"
+    },
+    "GitMerge": {
+      "component": "GitMergeIcon",
+      "glyph": "git-merge"
+    },
+    "GitPullRequestArrow": {
+      "component": "GitPullRequestArrowIcon",
+      "glyph": "git-pull-request-arrow"
+    },
+    "GitPullRequestClosed": {
+      "component": "GitPullRequestClosedIcon",
+      "glyph": "git-pull-request-closed"
+    },
+    "Globe": {
+      "component": "GlobeIcon",
+      "glyph": "globe"
+    },
+    "GraduationCap": {
+      "component": "GraduationCapIcon",
+      "glyph": "graduation-cap"
+    },
+    "Grid3x3": {
+      "component": "Grid3x3Icon",
+      "glyph": "grid-3x3"
+    },
+    "GripVertical": {
+      "component": "GripVerticalIcon",
+      "glyph": "grip-vertical"
+    },
+    "HandHeart": {
+      "component": "HandHeartIcon",
+      "glyph": "hand-heart"
+    },
+    "Heart": {
+      "component": "HeartIcon",
+      "glyph": "heart"
+    },
+    "HeartPulse": {
+      "component": "HeartPulseIcon",
+      "glyph": "heart-pulse"
+    },
+    "Hexagon": {
+      "component": "HexagonIcon",
+      "glyph": "hexagon"
+    },
+    "History": {
+      "component": "HistoryIcon",
+      "glyph": "rotate-ccw-clock"
+    },
+    "Hourglass": {
+      "component": "HourglassIcon",
+      "glyph": "hourglass"
+    },
+    "House": {
+      "component": "HouseIcon",
+      "glyph": "house"
+    },
+    "IdCard": {
+      "component": "IdCardIcon",
+      "glyph": "id-card"
+    },
+    "Image": {
+      "component": "ImageIcon",
+      "glyph": "image"
+    },
+    "Inbox": {
+      "component": "InboxIcon",
+      "glyph": "inbox"
+    },
+    "Info": {
+      "component": "InfoIcon",
+      "glyph": "info"
+    },
+    "Key": {
+      "component": "KeyIcon",
+      "glyph": "key"
+    },
+    "KeyRound": {
+      "component": "KeyRoundIcon",
+      "glyph": "key-round"
+    },
+    "Languages": {
+      "component": "LanguagesIcon",
+      "glyph": "languages"
+    },
+    "Laptop": {
+      "component": "LaptopIcon",
+      "glyph": "laptop"
+    },
+    "Layers": {
+      "component": "LayersIcon",
+      "glyph": "layers"
+    },
+    "LayoutDashboard": {
+      "component": "LayoutDashboardIcon",
+      "glyph": "layout-dashboard"
+    },
+    "LayoutTemplate": {
+      "component": "LayoutTemplateIcon",
+      "glyph": "layout-template"
+    },
+    "Library": {
+      "component": "LibraryIcon",
+      "glyph": "library"
+    },
+    "LifeBuoy": {
+      "component": "LifeBuoyIcon",
+      "glyph": "life-buoy"
+    },
+    "Lightbulb": {
+      "component": "LightbulbIcon",
+      "glyph": "lightbulb"
+    },
+    "Link": {
+      "component": "LinkIcon",
+      "glyph": "link"
+    },
+    "Link2": {
+      "component": "Link2Icon",
+      "glyph": "link-2"
+    },
+    "Link2Off": {
+      "component": "Link2OffIcon",
+      "glyph": "link-2-off"
+    },
+    "ListChecks": {
+      "component": "ListChecksIcon",
+      "glyph": "list-checks"
+    },
+    "ListFilter": {
+      "component": "ListFilterIcon",
+      "glyph": "list-filter"
+    },
+    "ListTree": {
+      "component": "ListTreeIcon",
+      "glyph": "list-tree"
+    },
+    "Loader2": {
+      "component": "Loader2Icon",
+      "glyph": "loader-circle"
+    },
+    "Lock": {
+      "component": "LockIcon",
+      "glyph": "lock"
+    },
+    "LogIn": {
+      "component": "LogInIcon",
+      "glyph": "log-in"
+    },
+    "LogOut": {
+      "component": "LogOutIcon",
+      "glyph": "log-out"
+    },
+    "Mail": {
+      "component": "MailIcon",
+      "glyph": "mail"
+    },
+    "MapPin": {
+      "component": "MapPinIcon",
+      "glyph": "map-pin"
+    },
+    "Maximize2": {
+      "component": "Maximize2Icon",
+      "glyph": "maximize-2"
+    },
+    "Megaphone": {
+      "component": "MegaphoneIcon",
+      "glyph": "megaphone"
+    },
+    "Menu": {
+      "component": "MenuIcon",
+      "glyph": "menu"
+    },
+    "MessageCircle": {
+      "component": "MessageCircleIcon",
+      "glyph": "message-circle"
+    },
+    "MessageSquare": {
+      "component": "MessageSquareIcon",
+      "glyph": "message-square"
+    },
+    "Minimize2": {
+      "component": "Minimize2Icon",
+      "glyph": "minimize-2"
+    },
+    "Minus": {
+      "component": "MinusIcon",
+      "glyph": "minus"
+    },
+    "Monitor": {
+      "component": "MonitorIcon",
+      "glyph": "monitor"
+    },
+    "MonitorCog": {
+      "component": "MonitorCogIcon",
+      "glyph": "monitor-cog"
+    },
+    "Moon": {
+      "component": "MoonIcon",
+      "glyph": "moon"
+    },
+    "MoreHorizontal": {
+      "component": "MoreHorizontalIcon",
+      "glyph": "ellipsis"
+    },
+    "Newspaper": {
+      "component": "NewspaperIcon",
+      "glyph": "newspaper"
+    },
+    "NotebookPen": {
+      "component": "NotebookPenIcon",
+      "glyph": "notebook-pen"
+    },
+    "OctagonAlert": {
+      "component": "OctagonAlertIcon",
+      "glyph": "octagon-alert"
+    },
+    "Package": {
+      "component": "PackageIcon",
+      "glyph": "package"
+    },
+    "PackageOpen": {
+      "component": "PackageOpenIcon",
+      "glyph": "package-open"
+    },
+    "PackageSearch": {
+      "component": "PackageSearchIcon",
+      "glyph": "package-search"
+    },
+    "Palette": {
+      "component": "PaletteIcon",
+      "glyph": "palette"
+    },
+    "PanelLeft": {
+      "component": "PanelLeftIcon",
+      "glyph": "panel-left"
+    },
+    "Paperclip": {
+      "component": "PaperclipIcon",
+      "glyph": "paperclip"
+    },
+    "PartyPopper": {
+      "component": "PartyPopperIcon",
+      "glyph": "party-popper"
+    },
+    "Pause": {
+      "component": "PauseIcon",
+      "glyph": "pause"
+    },
+    "PauseCircle": {
+      "component": "PauseCircleIcon",
+      "glyph": "circle-pause"
+    },
+    "PenLine": {
+      "component": "PenLineIcon",
+      "glyph": "pen-line"
+    },
+    "Pencil": {
+      "component": "PencilIcon",
+      "glyph": "pencil"
+    },
+    "Phone": {
+      "component": "PhoneIcon",
+      "glyph": "phone"
+    },
+    "Plane": {
+      "component": "PlaneIcon",
+      "glyph": "plane"
+    },
+    "Play": {
+      "component": "PlayIcon",
+      "glyph": "play"
+    },
+    "PlayCircle": {
+      "component": "PlayCircleIcon",
+      "glyph": "circle-play"
+    },
+    "Plug": {
+      "component": "PlugIcon",
+      "glyph": "plug"
+    },
+    "Plus": {
+      "component": "PlusIcon",
+      "glyph": "plus"
+    },
+    "Printer": {
+      "component": "PrinterIcon",
+      "glyph": "printer"
+    },
+    "QrCode": {
+      "component": "QrCodeIcon",
+      "glyph": "qr-code"
+    },
+    "Radio": {
+      "component": "RadioIcon",
+      "glyph": "radio"
+    },
+    "RadioTower": {
+      "component": "RadioTowerIcon",
+      "glyph": "radio-tower"
+    },
+    "Receipt": {
+      "component": "ReceiptIcon",
+      "glyph": "receipt"
+    },
+    "RefreshCw": {
+      "component": "RefreshCwIcon",
+      "glyph": "refresh-cw"
+    },
+    "RotateCcw": {
+      "component": "RotateCcwIcon",
+      "glyph": "rotate-ccw"
+    },
+    "Route": {
+      "component": "RouteIcon",
+      "glyph": "route"
+    },
+    "Rows2": {
+      "component": "Rows2Icon",
+      "glyph": "rows-2"
+    },
+    "Rows3": {
+      "component": "Rows3Icon",
+      "glyph": "rows-3"
+    },
+    "Rows4": {
+      "component": "Rows4Icon",
+      "glyph": "rows-4"
+    },
+    "Save": {
+      "component": "SaveIcon",
+      "glyph": "save"
+    },
+    "Scale": {
+      "component": "ScaleIcon",
+      "glyph": "scale"
+    },
+    "ScanBarcode": {
+      "component": "ScanBarcodeIcon",
+      "glyph": "scan-barcode"
+    },
+    "ScanSearch": {
+      "component": "ScanSearchIcon",
+      "glyph": "scan-search"
+    },
+    "ScrollText": {
+      "component": "ScrollTextIcon",
+      "glyph": "scroll-text"
+    },
+    "Search": {
+      "component": "SearchIcon",
+      "glyph": "search"
+    },
+    "SearchX": {
+      "component": "SearchXIcon",
+      "glyph": "search-x"
+    },
+    "Send": {
+      "component": "SendIcon",
+      "glyph": "send"
+    },
+    "Server": {
+      "component": "ServerIcon",
+      "glyph": "server"
+    },
+    "Settings": {
+      "component": "SettingsIcon",
+      "glyph": "settings"
+    },
+    "Settings2": {
+      "component": "Settings2Icon",
+      "glyph": "settings-2"
+    },
+    "Shapes": {
+      "component": "ShapesIcon",
+      "glyph": "shapes"
+    },
+    "Share2": {
+      "component": "Share2Icon",
+      "glyph": "share-2"
+    },
+    "Shield": {
+      "component": "ShieldIcon",
+      "glyph": "shield"
+    },
+    "ShieldAlert": {
+      "component": "ShieldAlertIcon",
+      "glyph": "shield-alert"
+    },
+    "ShieldCheck": {
+      "component": "ShieldCheckIcon",
+      "glyph": "shield-check"
+    },
+    "ShieldHalf": {
+      "component": "ShieldHalfIcon",
+      "glyph": "shield-half"
+    },
+    "ShieldOff": {
+      "component": "ShieldOffIcon",
+      "glyph": "shield-off"
+    },
+    "ShieldX": {
+      "component": "ShieldXIcon",
+      "glyph": "shield-x"
+    },
+    "ShoppingCart": {
+      "component": "ShoppingCartIcon",
+      "glyph": "shopping-cart"
+    },
+    "Signpost": {
+      "component": "SignpostIcon",
+      "glyph": "signpost"
+    },
+    "Siren": {
+      "component": "SirenIcon",
+      "glyph": "siren"
+    },
+    "SlidersHorizontal": {
+      "component": "SlidersHorizontalIcon",
+      "glyph": "sliders-horizontal"
+    },
+    "Smile": {
+      "component": "SmileIcon",
+      "glyph": "face-slightly-smiling"
+    },
+    "Sparkles": {
+      "component": "SparklesIcon",
+      "glyph": "sparkles"
+    },
+    "Square": {
+      "component": "SquareIcon",
+      "glyph": "square"
+    },
+    "Stamp": {
+      "component": "StampIcon",
+      "glyph": "stamp"
+    },
+    "Star": {
+      "component": "StarIcon",
+      "glyph": "star"
+    },
+    "StarOff": {
+      "component": "StarOffIcon",
+      "glyph": "star-off"
+    },
+    "Store": {
+      "component": "StoreIcon",
+      "glyph": "store"
+    },
+    "Sun": {
+      "component": "SunIcon",
+      "glyph": "sun"
+    },
+    "Tag": {
+      "component": "TagIcon",
+      "glyph": "tag"
+    },
+    "Tags": {
+      "component": "TagsIcon",
+      "glyph": "tags"
+    },
+    "ThumbsDown": {
+      "component": "ThumbsDownIcon",
+      "glyph": "thumbs-down"
+    },
+    "ThumbsUp": {
+      "component": "ThumbsUpIcon",
+      "glyph": "thumbs-up"
+    },
+    "Ticket": {
+      "component": "TicketIcon",
+      "glyph": "ticket"
+    },
+    "Timer": {
+      "component": "TimerIcon",
+      "glyph": "timer"
+    },
+    "TimerOff": {
+      "component": "TimerOffIcon",
+      "glyph": "timer-off"
+    },
+    "Trash2": {
+      "component": "Trash2Icon",
+      "glyph": "trash-2"
+    },
+    "TrendingDown": {
+      "component": "TrendingDownIcon",
+      "glyph": "trending-down"
+    },
+    "TrendingUp": {
+      "component": "TrendingUpIcon",
+      "glyph": "trending-up"
+    },
+    "TriangleAlert": {
+      "component": "TriangleAlertIcon",
+      "glyph": "triangle-alert"
+    },
+    "Unlink": {
+      "component": "UnlinkIcon",
+      "glyph": "unlink"
+    },
+    "Upload": {
+      "component": "UploadIcon",
+      "glyph": "upload"
+    },
+    "User": {
+      "component": "UserIcon",
+      "glyph": "user"
+    },
+    "UserCheck": {
+      "component": "UserCheckIcon",
+      "glyph": "user-check"
+    },
+    "UserCog": {
+      "component": "UserCogIcon",
+      "glyph": "user-cog"
+    },
+    "UserPlus": {
+      "component": "UserPlusIcon",
+      "glyph": "user-plus"
+    },
+    "UserRound": {
+      "component": "UserRoundIcon",
+      "glyph": "user-round"
+    },
+    "UserX": {
+      "component": "UserXIcon",
+      "glyph": "user-x"
+    },
+    "Users": {
+      "component": "UsersIcon",
+      "glyph": "users"
+    },
+    "UsersRound": {
+      "component": "UsersRoundIcon",
+      "glyph": "users-round"
+    },
+    "Wallet": {
+      "component": "WalletIcon",
+      "glyph": "wallet"
+    },
+    "Waypoints": {
+      "component": "WaypointsIcon",
+      "glyph": "waypoints"
+    },
+    "Webhook": {
+      "component": "WebhookIcon",
+      "glyph": "webhook"
+    },
+    "Wifi": {
+      "component": "WifiIcon",
+      "glyph": "wifi"
+    },
+    "WifiOff": {
+      "component": "WifiOffIcon",
+      "glyph": "wifi-off"
+    },
+    "Workflow": {
+      "component": "WorkflowIcon",
+      "glyph": "workflow"
+    },
+    "Wrench": {
+      "component": "WrenchIcon",
+      "glyph": "wrench"
+    },
+    "X": {
+      "component": "XIcon",
+      "glyph": "x"
+    },
+    "XCircle": {
+      "component": "XCircleIcon",
+      "glyph": "circle-x"
+    },
+    "Zap": {
+      "component": "ZapIcon",
+      "glyph": "zap"
+    }
+  }
+}

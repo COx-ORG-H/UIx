@@ -95,6 +95,7 @@ export const COMPONENT_GUIDANCE = {
   markdown: ['Show stored markdown safely, including on the server.', 'Formatted headings, lists, tables and links; raw HTML stays text and URLs pass the host’s policy.'],
   reactions: ['Let people acknowledge content with lightweight feedback.', 'Toggle chips with counts and reactor names, plus an emoji picker; the app stores the user’s choice.'],
   media: ['Present an image or other media with supporting context.', 'A media frame with an appropriate alternative description and stable layout.'],
+  icon: ['Show a glyph beside a label, a state or an icon-only control.', 'Inline SVG from @tensor_1/react/icons in currentColor at the --uix-icon-* sizes; decorative unless labelled. The product decides which icon means what, and never lets an icon carry meaning alone.'],
   kbd: ['Explain a keyboard shortcut.', 'A visually distinct key label; rendering it does not register a shortcut.'],
   link: ['Navigate to another destination or related content.', 'Recognizable inline links or quiet links within already-interactive content rows.'],
   'utility-bits': ['Add small supporting content treatments.', 'Shared code, quotation, divider and activity treatments without a local visual dialect.'],

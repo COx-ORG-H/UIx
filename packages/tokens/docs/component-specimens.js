@@ -349,6 +349,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-images",
     "selector": ".uix-media"
   },
+  "icon": {
+    "route": "examples-icons",
+    "selector": ".uix-icon"
+  },
   "kbd": {
     "route": "examples-utility",
     "selector": ".uix-kbd"

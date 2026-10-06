@@ -331,3 +331,26 @@ toast.dismiss(id);   // or toast.dismiss() for all
 - **Accessibility:** errors are `role="alert"`. Everything else is announced through the toaster's polite live region, and a loading toast that settles is announced again. Esc closes the focused toast. Tone glyphs are decorative; the text carries the meaning.
 - **Stores:** `toast` writes to a default store that `<Toaster />` reads. `createToastApi(createToastStore())` gives a separate queue (tests, embedded apps); pass its `store` to `<Toaster store>`. The store has no React dependency.
 - `<Toaster>` still renders hand-managed `<Toast>` children first. `Toast` gains `tone="warning"` and an `action` slot.
+### Icons (`@tensor_1/react/icons`)
+
+The UIx icon set (HAR-996): 233 glyphs drawn in `currentColor` at the `--uix-icon-*` sizes. Icons come only from UIx
+(workspace ADR-0038); no product adds an icon library. The glyphs are Lucide's (ISC); the licence travels in
+`THIRD_PARTY_NOTICES.md`. Import the CSS once: `@tensor_1/tokens/components/icon` (also in the bundle).
+
+```tsx
+import { ShieldCheckIcon, TriangleAlertIcon, Icon } from '@tensor_1/react/icons';
+import type { UixIcon, IconName } from '@tensor_1/react/icons';
+
+<ShieldCheckIcon />                                   // decorative: aria-hidden, 20 px (md)
+<ShieldCheckIcon size="sm" tone="success" label="Verified" />   // role="img" with a name
+<Button icon aria-label="Delete"><Trash2Icon /></Button>         // the button carries the name
+<Icon name={entityIconName} />                          // chosen at run time (loads the whole set)
+const icons: Record<EntityType, UixIcon> = { incident: SirenIcon, change: GitBranchIcon };
+```
+
+- **Migrating from `lucide-react`:** import from `@tensor_1/react/icons` and add `Icon` to the name: `ShieldCheck` → `ShieldCheckIcon`. The older Lucide names the products use are kept as aliases (`AlertTriangleIcon`, `CheckCircle2Icon`, `Loader2Icon`, …). `etc/icon-names.json` maps every Lucide name to its UIx component and glyph, for a codemod. `LucideIcon` becomes `UixIcon`.
+- **Size:** `sm` 16 px, `md` 20 px (default), `lg` 24 px, or any CSS length or pixel number. A product sizing class (a Tailwind `size-4`) wins over the default.
+- **Tone:** `current` (default, inherits the text colour), `muted`, `accent`, `success`, `warning`, `danger`, `info`.
+- **Accessibility:** decorative unless `label` is set. Never let an icon carry meaning alone; pair it with text.
+- **Bundle size:** each `<Name>Icon` is tree-shaken; one icon adds well under 3 KB minified. `<Icon name>` and `ICON_GLYPHS` load all of them.
+- **A glyph is missing?** Add its Lucide name to `scripts/icon-names.txt`, run `node scripts/generate-icons.mjs <lucide-react dir>` and release. Do not paste an SVG into a product.

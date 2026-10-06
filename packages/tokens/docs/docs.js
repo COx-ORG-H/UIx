@@ -107,7 +107,7 @@ export const COMPONENT_GROUPS = {
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
-  'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Kbd', 'Link', 'Copy button', 'Utility bits'],
+  'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Utility bits'],
 };
 
 export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown'];
@@ -147,7 +147,7 @@ export const REACT_COMPONENT_SLUGS = [
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
-  'save-status', 'copy-button', 'menu', 'steps', 'kbd',
+  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -231,6 +231,7 @@ export const exampleRouteFor = (item) => {
     'relationship-graph': 'examples-relationship-graph',
     'rule-builder': 'examples-rule-builder',
     'scheduling-calendar': 'examples-scheduling-calendar',
+    icon: 'examples-icons',
   }[item.slug];
   if (direct) return direct;
   if (item.slug === 'editorial-home') return 'examples-editorial-home';

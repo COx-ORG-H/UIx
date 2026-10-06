@@ -35,6 +35,7 @@ export default defineConfig([
       'rich-text': 'src/rich-text.ts',
       markdown: 'src/markdown.ts',
       emoji: 'src/emoji.ts',
+      icons: 'src/icons.ts',
     },
     format: ['cjs'],
     dts: true,

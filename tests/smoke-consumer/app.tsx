@@ -36,6 +36,13 @@ import type { BrandProfile, ButtonProps, LayeredLayout, RelationshipGraphLabels,
 import { Chart, ChartMetric } from '@tensor_1/react/chart';
 import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset';
 import { cssVar, light, dark, num } from '@tensor_1/tokens/ts';
+import { Icon, ShieldCheckIcon, AlertTriangleIcon } from '@tensor_1/react/icons';
+import type { IconName, UixIcon } from '@tensor_1/react/icons';
+
+// The icon subpath (HAR-996): a typed name, a component type that replaces LucideIcon.
+const iconName: IconName = 'shield-check';
+const entityIcon: UixIcon = AlertTriangleIcon;
+const iconElements = [<Icon key="n" name={iconName} size="sm" label="Verified" />, <ShieldCheckIcon key="c" tone="success" />, entityIcon];
 
 // cssVar/light are Record<UixTokenName,string>; dark/num are Partial<Record<…>>.
 const accent: string = cssVar.accent;
@@ -67,5 +74,5 @@ export default {
   DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,
   PresetChart, ChartMetric, ChartLegend, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
-  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand,
+  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand, iconElements,
 };
