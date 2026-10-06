@@ -71,6 +71,9 @@ export { Drawer } from './components/Drawer.js';
 export type { DrawerProps } from './components/Drawer.js';
 
 export { Peek } from './components/Peek.js';
+
+export { Lightbox, DEFAULT_LIGHTBOX_LABELS } from './components/Lightbox.js';
+export type { LightboxProps, LightboxItem, LightboxLabels } from './components/Lightbox.js';
 export type { PeekProps } from './components/Peek.js';
 
 // Layout

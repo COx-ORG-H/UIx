@@ -974,6 +974,9 @@ export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels;
 export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels;
 
 // @public (undocumented)
+export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
+
+// @public (undocumented)
 export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels;
 
 // @public (undocumented)
@@ -2008,6 +2011,58 @@ export interface LicensePositionBarProps extends Omit<HTMLAttributes<HTMLDivElem
     overLabel?: string;
     // (undocumented)
     unit?: string;
+}
+
+// @public
+export function Lightbox(input: LightboxProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LightboxItem {
+    alt: string;
+    // (undocumented)
+    caption?: ReactNode;
+    // (undocumented)
+    height?: number;
+    // (undocumented)
+    kind?: 'image' | 'video';
+    // (undocumented)
+    src: string;
+    width?: number;
+}
+
+// @public (undocumented)
+export interface LightboxLabels {
+    // (undocumented)
+    close: string;
+    counter: string;
+    // (undocumented)
+    next: string;
+    // (undocumented)
+    previous: string;
+    // (undocumented)
+    region: string;
+    // (undocumented)
+    zoomIn: string;
+    // (undocumented)
+    zoomOut: string;
+}
+
+// @public (undocumented)
+export interface LightboxProps {
+    // (undocumented)
+    className?: string;
+    index: number;
+    // (undocumented)
+    items: readonly LightboxItem[];
+    // (undocumented)
+    labels?: Partial<LightboxLabels>;
+    loop?: boolean;
+    // (undocumented)
+    onClose: () => void;
+    // (undocumented)
+    onIndexChange: (index: number) => void;
+    // (undocumented)
+    open: boolean;
 }
 
 // @public
