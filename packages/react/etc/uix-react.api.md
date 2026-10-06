@@ -869,6 +869,12 @@ export interface CopyButtonProps {
     value: string;
 }
 
+// @public
+export function createToastApi(store: ToastStore): ToastApi;
+
+// @public
+export function createToastStore(): ToastStore;
+
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
@@ -3871,6 +3877,43 @@ export interface TimelineProps extends HTMLAttributes<HTMLOListElement> {
 // @public (undocumented)
 export function Toast(input: ToastProps): react.JSX.Element;
 
+// @public
+export const toast: ToastApi;
+
+// @public
+export const TOAST_LEAVE_MS = 200;
+
+// @public (undocumented)
+export interface ToastAction {
+    // (undocumented)
+    label: string;
+    onClick: () => void;
+}
+
+// @public (undocumented)
+export interface ToastApi {
+    // (undocumented)
+    (message: ReactNode, options?: ToastOptions): string;
+    dismiss: (id?: string) => void;
+    // (undocumented)
+    error: (message: ReactNode, options?: ToastOptions) => string;
+    // (undocumented)
+    info: (message: ReactNode, options?: ToastOptions) => string;
+    // (undocumented)
+    loading: (message: ReactNode, options?: ToastOptions) => string;
+    promise: <T>(promise: Promise<T>, messages: ToastPromiseMessages<T>, options?: ToastOptions) => Promise<T>;
+    store: ToastStore;
+    // (undocumented)
+    success: (message: ReactNode, options?: ToastOptions) => string;
+    undoable: (message: ReactNode, options: UndoableToastOptions) => string;
+    update: (id: string, patch: Partial<Omit<ToastRecord, 'id' | 'version'>>) => void;
+    // (undocumented)
+    warning: (message: ReactNode, options?: ToastOptions) => string;
+}
+
+// @public
+export type ToastDismissReason = 'timeout' | 'close' | 'action' | 'programmatic';
+
 // @public (undocumented)
 export function Toaster(input: ToasterProps): react.JSX.Element;
 
@@ -3878,11 +3921,39 @@ export function Toaster(input: ToasterProps): react.JSX.Element;
 export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    limit?: number;
+    position?: 'bottom-end' | 'bottom-start' | 'bottom-center' | 'top-end' | 'top-start' | 'top-center';
     regionLabel?: string;
+    store?: ToastStore;
+}
+
+// @public
+export type ToastKind = 'success' | 'error' | 'warning' | 'info' | 'loading' | 'default';
+
+// @public (undocumented)
+export interface ToastOptions {
+    // (undocumented)
+    action?: ToastAction;
+    description?: ReactNode;
+    duration?: number | null;
+    icon?: ReactNode;
+    id?: string;
+    onDismiss?: (reason: ToastDismissReason) => void;
+}
+
+// @public (undocumented)
+export interface ToastPromiseMessages<T> {
+    // (undocumented)
+    error: ReactNode | ((error: unknown) => ReactNode);
+    // (undocumented)
+    loading: ReactNode;
+    // (undocumented)
+    success: ReactNode | ((value: T) => ReactNode);
 }
 
 // @public (undocumented)
 export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    action?: ReactNode;
     dismissLabel?: string;
     // (undocumented)
     icon?: ReactNode;
@@ -3899,7 +3970,43 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 }
 
 // @public (undocumented)
-export type ToastTone = 'success' | 'danger' | 'info';
+export interface ToastRecord {
+    // (undocumented)
+    action?: ToastAction;
+    // (undocumented)
+    description?: ReactNode;
+    // (undocumented)
+    duration: number | null;
+    // (undocumented)
+    icon?: ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: ToastKind;
+    leaving?: boolean;
+    // (undocumented)
+    message: ReactNode;
+    // (undocumented)
+    onDismiss?: (reason: ToastDismissReason) => void;
+    version: number;
+}
+
+// @public (undocumented)
+export interface ToastStore {
+    // (undocumented)
+    dismiss: (id?: string, reason?: ToastDismissReason) => void;
+    // (undocumented)
+    getSnapshot: () => readonly ToastRecord[];
+    // (undocumented)
+    show: (kind: ToastKind, message: ReactNode, options?: ToastOptions) => string;
+    // (undocumented)
+    subscribe: (listener: () => void) => () => void;
+    // (undocumented)
+    update: (id: string, patch: Partial<Omit<ToastRecord, 'id' | 'version'>>) => void;
+}
+
+// @public (undocumented)
+export type ToastTone = 'success' | 'danger' | 'info' | 'warning';
 
 // @public (undocumented)
 export function toDateKey(date: Date): string;
@@ -4117,6 +4224,13 @@ export interface UixLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 
 // @public
 export type UixRenderLink = (props: UixLinkProps) => ReactNode;
+
+// @public (undocumented)
+export interface UndoableToastOptions extends Omit<ToastOptions, 'action' | 'onDismiss'> {
+    onCommit: () => void;
+    onUndo: () => void;
+    undoLabel?: string;
+}
 
 // @public
 export function useAnchoredPosition(anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined, floatingRef: RefObject<HTMLElement | null>, input: UseAnchoredPositionOptions): () => void;
