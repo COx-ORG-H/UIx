@@ -341,3 +341,52 @@ for (const width of [320, 360, 375, 390, 414]) {
     expect(status.y).toBeGreaterThanOrEqual(tools.y + tools.height - 1);
   });
 }
+
+// ── a wide toolbarEnd (TENSOR HAR-1125) ────────────────────────────────────────
+/* An audience toggle + submit in toolbarEnd took the whole one-row composer bar and left the tool
+   row 0 px wide on a phone: no tool was reachable, and a click on one landed on the toggle or the bar. */
+const TOOL = 32; // .uix-rich-text__tool
+const USABLE_TOOLS = 5; // the row never drops below one full group of tools; the end slot wraps first
+
+for (const width of [1280, 768, 375, 320]) {
+  test(`wide toolbarEnd at ${width} px: every tool reachable and hit-testable, the end slot whole and clear of the tools`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const composer = page.locator('.uix-rich-text').filter({ has: page.locator('#reply') });
+    await composer.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'no sideways page scroll').toBe(true);
+
+    const g = await composer.evaluate((root) => {
+      const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
+      const bar = root.querySelector('.uix-rich-text__bar');
+      const row = bar.querySelector(':scope > .uix-rich-text__toolbar');
+      const cs = getComputedStyle(bar);
+      const inner = bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      // Bring each tool into view (scrolling the row, as a user would), then hit-test its centre.
+      const tools = [...row.querySelectorAll('.uix-rich-text__tool')];
+      const misses = [];
+      for (const tool of tools) {
+        tool.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        const r = tool.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        if (!tool.contains(hit)) misses.push(`${tool.dataset.tool} -> ${hit ? `${hit.tagName}.${hit.className}` : 'nothing'}`);
+      }
+      row.scrollLeft = 0;
+      const ends = [...bar.querySelectorAll(':scope > fieldset, :scope > .uix-btn')]
+        .map((el) => ({ name: el.textContent.trim(), ...box(el), scroll: el.scrollWidth, client: el.clientWidth }));
+      return { bar: box(bar), inner, row: box(row), tools: tools.length, misses, ends };
+    });
+
+    expect(g.tools).toBeGreaterThanOrEqual(10);
+    expect.soft(g.row.width, 'the tool row keeps a usable width').toBeGreaterThanOrEqual(Math.min(USABLE_TOOLS * TOOL, g.inner) - 0.5);
+    expect.soft(g.misses, 'every tool, once scrolled into its row, is what a click at its centre hits').toEqual([]);
+    expect(g.ends).toHaveLength(2);
+    for (const end of g.ends) {
+      expect.soft(end.left, `${end.name}: inside the bar`).toBeGreaterThanOrEqual(g.bar.left - 0.5);
+      expect.soft(end.right, `${end.name}: inside the bar`).toBeLessThanOrEqual(g.bar.right + 0.5);
+      expect.soft(end.right, `${end.name}: on screen`).toBeLessThanOrEqual(width);
+      expect.soft(end.scroll, `${end.name}: nothing clipped inside`).toBeLessThanOrEqual(end.client);
+      const clear = end.top >= g.row.bottom - 0.5 || end.left >= g.row.right - 0.5 || end.right <= g.row.left + 0.5;
+      expect.soft(clear, `${end.name}: never overlaps the tool row`).toBe(true);
+    }
+  });
+}

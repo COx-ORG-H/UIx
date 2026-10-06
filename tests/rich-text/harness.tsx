@@ -94,6 +94,44 @@ function Update() {
   );
 }
 
+/** A wide toolbarEnd, as TENSOR's incident worklog renders it (HAR-1125): an audience toggle
+ *  plus a submit button, both direct children of the composer bar. Public by default, so the
+ *  submit carries the longest real label. */
+function Reply() {
+  const [value, setValue] = useState('');
+  const [isPublic, setPublic] = useState(true);
+  return (
+    <section>
+      <h2>Worklog reply</h2>
+      <RichTextEditor
+        id="reply"
+        value={value}
+        onChange={(md) => { log('reply')(md); setValue(md); }}
+        features="comment"
+        variant="composer"
+        aria-label="Worklog-Eintrag"
+        placeholder="Antwort schreiben…"
+        onUploadImage={async (file) => ({ src: `/images/${file.name}`, alt: file.name })}
+        resolveImageSrc={resolveImageSrc}
+        toolbarEnd={
+          <>
+            <fieldset className="uix-segmented">
+              <legend className="uix-visually-hidden">Zielgruppe</legend>
+              <button type="button" className="uix-segmented__option" aria-pressed={!isPublic} onClick={() => setPublic(false)}>
+                Interne Notiz
+              </button>
+              <button type="button" className="uix-segmented__option" aria-pressed={isPublic} onClick={() => setPublic(true)}>
+                Antwort an Melder
+              </button>
+            </fieldset>
+            <button type="button" className="uix-btn uix-btn--primary">{isPublic ? 'Antwort an Melder' : 'Senden'}</button>
+          </>
+        }
+      />
+    </section>
+  );
+}
+
 function Template() {
   const [value, setValue] = useState('Hello {{customer.name}},\n\nyour ticket {{ticket.id}} is resolved.');
   return (
@@ -185,6 +223,7 @@ createRoot(document.getElementById('root')!).render(
     <Field />
     <Note />
     <Update />
+    <Reply />
     <Template />
     <Reactions />
     <Placement />

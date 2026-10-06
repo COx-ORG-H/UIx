@@ -123,17 +123,15 @@
   /* composer variant — the composer draws the box; the toolbar joins the action bar */
   .uix-rich-text--composer { border-radius: var(--uix-radius-md); }
   .uix-rich-text--composer.uix-rich-text:focus-within { box-shadow: 0 0 0 3px var(--uix-brand-muted); }
-  /* one row: the toolbar scrolls instead of wrapping */
-  .uix-rich-text--composer .uix-rich-text__bar { flex-wrap: nowrap; align-items: center; justify-content: flex-start; min-width: 0; }
-  .uix-rich-text--composer .uix-rich-text__toolbar { flex: 1 1 auto; padding: 0; border-bottom: 0; }
+  /* the tool row scrolls and keeps five tools; the counter and toolbarEnd wrap below it first (a
+     toggle + submit on one row left the tools 0 px on a phone, TENSOR HAR-1125) */
+  .uix-rich-text--composer .uix-rich-text__bar { flex-wrap: wrap; align-items: center; justify-content: flex-start; min-width: 0; }
+  .uix-rich-text--composer .uix-rich-text__toolbar { flex: 1 1 0; min-width: min(5 * 32px, 100%); padding: 0; border-bottom: 0; }
   .uix-rich-text--composer .uix-rich-text__group--end { margin-left: 0; }
   .uix-rich-text--composer .uix-rich-text__counter,
   .uix-rich-text--composer .uix-rich-text__status { flex: none; margin-right: 0; }
   .uix-rich-text--composer .uix-rich-text__bar > :last-child:not(.uix-rich-text__toolbar) { margin-left: auto; }
-  /* a status message (uploading, failed, images off) takes its own row under the tools: inline, a
-     long message squeezed the toolbar to a sliver on a 320 px phone (TENSOR HAR-749) */
-  .uix-rich-text--composer .uix-rich-text__bar:has(> .uix-rich-text__status:not(:empty)) { flex-wrap: wrap; }
-  .uix-rich-text--composer .uix-rich-text__bar:has(> .uix-rich-text__status:not(:empty)) > .uix-rich-text__toolbar { flex-basis: 0; }
+  /* a status message (uploading, failed, images off) takes its own row (HAR-749) */
   .uix-rich-text--composer .uix-rich-text__status:not(:empty) { order: 1; flex: 1 0 100%; }
   .uix-rich-text--composer .uix-rich-text__source.uix-textarea { border: 0; box-shadow: none; }
 
