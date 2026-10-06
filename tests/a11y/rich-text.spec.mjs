@@ -101,9 +101,11 @@ test('no onChange on mount; typing emits markdown that keeps untouched blocks', 
   const before = await page.getByTestId('field-value').textContent();
   await caretAtEnd(page, 'field', { firstParagraph: true });
   await page.keyboard.type(' Now.');
-  const after = (await changes(page, 'field')).at(-1);
-  expect(after).toBe(before.replace('✅', '✅ Now.'));
-  await expect(page.locator('input[type="hidden"][name="description"]')).toHaveValue(after);
+  // onChange arrives after the last keystroke's transaction, not synchronously with
+  // keyboard.type(): wait for it rather than reading once (it raced on a loaded CI runner).
+  const expected = before.replace('✅', '✅ Now.');
+  await expect.poll(async () => (await changes(page, 'field')).at(-1)).toBe(expected);
+  await expect(page.locator('input[type="hidden"][name="description"]')).toHaveValue(expected);
 });
 
 test('toolbar: one tab stop, arrow keys, Home/End, pressed state', async ({ page }) => {
