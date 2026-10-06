@@ -377,3 +377,29 @@ markers). It pairs with `SchedulingCalendar`: same entry states, the same explic
 - **Keyboard:** one tab stop. ←/→ go to the previous or next bar in a lane, ↑/↓ to the nearest bar in the next lane, Home/End to the lane's ends, and Enter selects.
 - **Windows and markers:** `overlays` (`freeze`, `maintenance`, `blackout`; all lanes, or one with `laneId`), `markers` (a point in time) and `now` are drawn behind the bars and listed for screen readers.
 - Pure helpers are exported for tests and server code: `timelineTicks`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`.
+
+### FilterEditor (typed column filters)
+
+`FilterEditor` is the content of one column-filter popover with a typed value (HAR-1365; TENSOR's
+`table-filter-editor.tsx`, MOTUS's "+ filter"). `summarizeFilter` turns the applied value into the chip text.
+`FilterPopover` stays for the single-string case.
+
+```tsx
+const field: FilterField = { id: 'state', label: t('state'), kind: 'enum', options: states };
+<Popover anchor={chipRef} popover="manual">
+  <FilterEditor field={field} value={draft} onValueChange={setDraft} onApply={() => apply(field.id, draft)} onClear={() => clear(field.id)} />
+</Popover>
+<Chip onClick={edit} onRemove={remove}>{summarizeFilter(field, applied, { formatDate: formatDisplayDate })}</Chip>
+```
+
+| `kind` | Value | Editor |
+|---|---|---|
+| `enum` | `{ values: string[] }` | checkboxes; a diacritic-insensitive search above more than `searchThreshold` (8) options; Select all / Clear selection |
+| `text` | `{ operator, text }` | condition (`contains`, `not-contains`, `is`, `is-not`, `starts-with`) + text; Enter applies |
+| `number` | `{ operator, value, to? }` | condition (`eq`…`gte`, `between`) + value(s), optional `unit` |
+| `date-range` | `{ from?, to? }` | two date fields that bound each other |
+| `boolean` | `{ value?: boolean }` | Any / Yes / No (`trueLabel`, `falseLabel`) |
+| `reference` | `{ values: { value, label }[] }` | `onSearch(query)` → records, debounced (`searchDelay`), with loading, empty and error (retry) states; chosen records as removable chips |
+
+`isFilterEmpty`, `emptyFilterValue`, the operator lists and all words (`labels`) are exported, and the value is plain
+data for your own query string. Stale search results are ignored.

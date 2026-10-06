@@ -51,3 +51,19 @@
   .uix-chip__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
   .uix-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
 }
+
+/* FilterEditor (React, HAR-1365): typed filter content inside .uix-filter-popover */
+@layer uix.components {
+  .uix-filter-editor { width: min(22rem, calc(100vw - 4rem)); min-width: 0; gap: var(--uix-space-3); }
+  .uix-filter-editor[data-kind="number"] .uix-filter-editor__row > .uix-select { flex-basis: 100%; }
+  .uix-filter-editor__label { font-weight: 600; color: var(--uix-text); }
+  .uix-filter-editor__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
+  .uix-filter-editor__row > .uix-input, .uix-filter-editor__row > .uix-select { flex: 1 1 8rem; min-width: 0; }
+  .uix-filter-editor__and, .uix-filter-editor__unit { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-filter-editor__date { display: grid; flex: 1 1 8rem; gap: var(--uix-space-1); min-width: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-filter-editor__bulk { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--uix-space-3); }
+  .uix-filter-editor__count { margin-right: auto; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-filter-editor__list { display: grid; gap: var(--uix-space-2); max-height: 16rem; overflow-y: auto; padding: var(--uix-space-1); }
+  .uix-filter-editor__note { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-filter-editor__choices { display: grid; gap: var(--uix-space-2); }
+}
