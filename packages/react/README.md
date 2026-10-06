@@ -354,3 +354,26 @@ const icons: Record<EntityType, UixIcon> = { incident: SirenIcon, change: GitBra
 - **Accessibility:** decorative unless `label` is set. Never let an icon carry meaning alone; pair it with text.
 - **Bundle size:** each `<Name>Icon` is tree-shaken; one icon adds well under 3 KB minified. `<Icon name>` and `ICON_GLYPHS` load all of them.
 - **A glyph is missing?** Add its Lucide name to `scripts/icon-names.txt`, run `node scripts/generate-icons.mjs <lucide-react dir>` and release. Do not paste an SVG into a product.
+### SchedulingTimeline
+
+Lanes of bars on a time axis (HAR-1364; TENSOR's change day/week timeline, rollout Gantt rows and licence-renewal
+markers). It pairs with `SchedulingCalendar`: same entry states, the same explicit time zone.
+
+```tsx
+<SchedulingTimeline
+  lanes={[{ id: 'net', label: 'Network', meta: '3 changes' }]}
+  items={changes.map((c) => ({ id: c.id, laneId: c.team, title: c.title, start: c.start, end: c.end, state: c.state }))}
+  range={{ start: weekStart, end: weekEnd }} scale="day" timeZone={tz} now={nowIso}
+  overlays={[{ id: 'q4', kind: 'freeze', label: 'Q4 freeze', start, end }]}
+  markers={[{ id: 'r1', label: 'Renewal: Fortinet', at, laneId: 'net' }]}
+  onSelectItem={(item) => openChange(item.id)}
+  onMoveItem={(id, { start, end }) => reschedule(id, start, end)}
+/>
+```
+
+- **Axis:** `scale` is `hour`, `day` (default), `week` or `month`. Ticks fall on wall-clock boundaries in `timeZone` (DST and half-hour zones included). `tickWidth` sets the width of one unit; the axis scrolls inside the component and the lane column stays put.
+- **Bars:** overlapping bars in a lane stack and are hatched (`data-conflict`), so an overlap reads without colour. A bar cut off by the range shows a dashed edge. `renderItem` replaces the bar text. The full title is in the name and the `title` tooltip.
+- **Moving:** with `onMoveItem`, bars move by drag or Shift+←/→ and their end changes with Alt+Shift+←/→. Moves snap to `step` (15 min on an hour axis, 1 h on a day axis, 1 day otherwise), and each move is announced. `movable: false` pins a bar. The component never moves a bar itself; it reports the new start and end and renders what you pass back.
+- **Keyboard:** one tab stop. ←/→ go to the previous or next bar in a lane, ↑/↓ to the nearest bar in the next lane, Home/End to the lane's ends, and Enter selects.
+- **Windows and markers:** `overlays` (`freeze`, `maintenance`, `blackout`; all lanes, or one with `laneId`), `markers` (a point in time) and `now` are drawn behind the bars and listed for screen readers.
+- Pure helpers are exported for tests and server code: `timelineTicks`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`.

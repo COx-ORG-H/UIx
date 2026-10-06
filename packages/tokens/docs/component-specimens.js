@@ -293,6 +293,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-relationship-graph",
     "selector": ".uix-relationship-graph"
   },
+  "scheduling-timeline": {
+    "route": "examples-scheduling-calendar",
+    "selector": ".uix-scheduling-timeline"
+  },
   "scheduling-calendar": {
     "route": "examples-scheduling-calendar",
     "selector": ".uix-scheduling-calendar"
