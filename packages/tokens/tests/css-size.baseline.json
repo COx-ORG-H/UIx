@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 185675,
-      "gzip": 26360,
-      "brotli": 22234
+      "raw": 192775,
+      "gzip": 27324,
+      "brotli": 23080
     },
     "build/css/styles.css": {
-      "raw": 195751,
-      "gzip": 29058,
-      "brotli": 24351
+      "raw": 202851,
+      "gzip": 30046,
+      "brotli": 25196
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -62,9 +62,9 @@
       "brotli": 524
     },
     "styles/components/button.css": {
-      "raw": 3608,
-      "gzip": 1120,
-      "brotli": 886
+      "raw": 3953,
+      "gzip": 1212,
+      "brotli": 973
     },
     "styles/components/calendar.css": {
       "raw": 1361,
@@ -122,9 +122,9 @@
       "brotli": 464
     },
     "styles/components/description-list.css": {
-      "raw": 379,
-      "gzip": 232,
-      "brotli": 180
+      "raw": 534,
+      "gzip": 331,
+      "brotli": 255
     },
     "styles/components/detail-layout.css": {
       "raw": 1216,
@@ -137,9 +137,9 @@
       "brotli": 609
     },
     "styles/components/drawer.css": {
-      "raw": 1633,
-      "gzip": 601,
-      "brotli": 468
+      "raw": 2533,
+      "gzip": 839,
+      "brotli": 688
     },
     "styles/components/editorial-home.css": {
       "raw": 17599,
@@ -187,9 +187,9 @@
       "brotli": 456
     },
     "styles/components/kbd.css": {
-      "raw": 489,
-      "gzip": 303,
-      "brotli": 232
+      "raw": 737,
+      "gzip": 384,
+      "brotli": 303
     },
     "styles/components/labels.css": {
       "raw": 936,
@@ -227,9 +227,9 @@
       "brotli": 294
     },
     "styles/components/menu.css": {
-      "raw": 1403,
-      "gzip": 548,
-      "brotli": 423
+      "raw": 2142,
+      "gzip": 751,
+      "brotli": 591
     },
     "styles/components/meter.css": {
       "raw": 695,
@@ -242,9 +242,9 @@
       "brotli": 441
     },
     "styles/components/modal.css": {
-      "raw": 2910,
-      "gzip": 1041,
-      "brotli": 842
+      "raw": 3708,
+      "gzip": 1192,
+      "brotli": 976
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -257,9 +257,9 @@
       "brotli": 447
     },
     "styles/components/pagination.css": {
-      "raw": 1055,
-      "gzip": 447,
-      "brotli": 360
+      "raw": 1389,
+      "gzip": 563,
+      "brotli": 453
     },
     "styles/components/peek.css": {
       "raw": 3983,
@@ -272,9 +272,9 @@
       "brotli": 1273
     },
     "styles/components/popover.css": {
-      "raw": 1493,
-      "gzip": 541,
-      "brotli": 433
+      "raw": 2112,
+      "gzip": 742,
+      "brotli": 632
     },
     "styles/components/progress.css": {
       "raw": 1059,
@@ -337,9 +337,9 @@
       "brotli": 664
     },
     "styles/components/sidebar.css": {
-      "raw": 9249,
-      "gzip": 2323,
-      "brotli": 1956
+      "raw": 9918,
+      "gzip": 2490,
+      "brotli": 2101
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -357,9 +357,9 @@
       "brotli": 299
     },
     "styles/components/stat-tile.css": {
-      "raw": 3659,
-      "gzip": 1084,
-      "brotli": 902
+      "raw": 3996,
+      "gzip": 1215,
+      "brotli": 1009
     },
     "styles/components/states.css": {
       "raw": 2060,
@@ -377,9 +377,9 @@
       "brotli": 405
     },
     "styles/components/steps.css": {
-      "raw": 1361,
-      "gzip": 501,
-      "brotli": 405
+      "raw": 3773,
+      "gzip": 1070,
+      "brotli": 865
     },
     "styles/components/switch.css": {
       "raw": 1198,
@@ -387,9 +387,9 @@
       "brotli": 387
     },
     "styles/components/table-toolbar.css": {
-      "raw": 1930,
-      "gzip": 679,
-      "brotli": 569
+      "raw": 3838,
+      "gzip": 1177,
+      "brotli": 990
     },
     "styles/components/table.css": {
       "raw": 16766,
@@ -422,9 +422,9 @@
       "brotli": 526
     },
     "styles/components/tooltip.css": {
-      "raw": 2288,
-      "gzip": 933,
-      "brotli": 769
+      "raw": 2530,
+      "gzip": 1021,
+      "brotli": 844
     },
     "styles/components/tree.css": {
       "raw": 2441,

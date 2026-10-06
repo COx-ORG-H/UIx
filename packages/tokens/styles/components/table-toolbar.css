@@ -17,8 +17,37 @@
   .uix-chip:hover { border-color: var(--uix-border-strong); color: var(--uix-text); }
   .uix-chip[data-on] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent-text); }
   .uix-chip:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  .uix-chip__count { font-variant-numeric: tabular-nums; opacity: .7; }
+  /* muted text, not opacity: .7 opacity on hushed text fell below AA (HAR-1360) */
+  .uix-chip__count { font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }
+  .uix-chip[data-on] .uix-chip__count { color: inherit; }
   .uix-filter-popover { display: grid; gap: var(--uix-space-4); min-width: 260px; padding: var(--uix-space-4); }
   .uix-filter-popover .uix-label { display: grid; gap: var(--uix-space-2); }
   .uix-filter-popover__actions { display: flex; justify-content: flex-end; gap: var(--uix-space-2); }
+}
+
+/* Chip (React `Chip`, HAR-1360): removable, toggle, link, static and "+ add" chips, and the group */
+@layer uix.components {
+  a.uix-chip, .uix-chip__main { text-decoration: none; }
+  .uix-chip--static, .uix-chip--removable { cursor: default; }
+  .uix-chip--add { border-style: dashed; }
+  .uix-chip:disabled, .uix-chip[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .uix-chip__icon { display: inline-flex; flex: none; }
+  .uix-chip__label { min-width: 0; overflow-wrap: anywhere; }
+  .uix-chip__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-chip--removable { padding-inline-end: var(--uix-space-1); }
+  .uix-chip__main {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 0; border: 0;
+    background: transparent; color: inherit; font: inherit; border-radius: var(--uix-radius-pill);
+  }
+  button.uix-chip__main, a.uix-chip__main { cursor: pointer; }
+  .uix-chip__main:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  /* 24 px hit area (WCAG 2.5.8) without growing the chip: the negative block margin eats the overhang */
+  .uix-chip__remove {
+    display: inline-grid; place-items: center; width: 24px; height: 24px; margin-block: calc(-1 * var(--uix-space-1)); padding: 0; flex: none;
+    border: 0; border-radius: var(--uix-radius-pill); background: transparent; color: inherit; cursor: pointer;
+  }
+  .uix-chip__remove svg { width: 12px; height: 12px; }
+  .uix-chip__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-chip__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  .uix-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
 }

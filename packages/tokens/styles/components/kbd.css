@@ -6,3 +6,9 @@
     background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-bottom-width: 2px; border-radius: var(--uix-radius-xs);
   }
 }
+
+/* A shortcut of several keys (React `KbdCombo`, HAR-1361) */
+@layer uix.components {
+  .uix-kbd-combo { display: inline-flex; align-items: center; }
+  .uix-kbd-combo__keys { display: inline-flex; align-items: center; gap: var(--uix-space-1); }
+}

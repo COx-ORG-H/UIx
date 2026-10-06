@@ -59,7 +59,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
-| Kbd | kbd.css | absent | Planned | no | Planned wrapper (presentational). |
+| Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
 | LicensePositionBar | license-position-bar.css | ✓ `LicensePositionBar` | Beta | no | Meter + status recipe with explicit over-entitlement state. |
 | Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
@@ -67,7 +67,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
 | MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
-| Menu | menu.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
+| Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
 | MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. |
@@ -93,11 +93,11 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Stat | stat-tile.css | ✓ `Stat` | Stable | no | Exported as `Stat` (`StatTrend`). |
 | States | states.css | ✓ `EmptyState` | Stable | no | Also rich page/drawer variants, `ErrorState`, `ForbiddenState`, `NotFoundState`, `LoadingState`, `Skeleton`, and `AsyncOperationStatus`. |
 | StatusPill | status-pill.css | ✓ `StatusPill` | Stable | no | `PillTone`, `PillTreatment`. |
-| Stepper | stepper.css | absent | Planned | no | Planned wrapper (presentational). |
-| Steps | steps.css | absent | Planned | no | Planned wrapper (presentational). |
+| Stepper | stepper.css | absent | Planned | no | The numeric −/+ stepper (not a wizard; that is `Steps`). `MetricInput` covers bounded numeric entry today. |
+| Steps | steps.css | ✓ `Steps` | Beta | no | Also `Step`; ordered list, state in text (complete/current/upcoming/waiting/error), navigable steps, stacks below 40rem. Landed 2.27.0 (HAR-1362). |
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |
 | Table | table.css | ✓ `Table` | Stable | no | Family: `TableWrap`, `Th`, `Td`, `Tr`, `BulkBar`, `RowActions`, etc.; `useTable` + `table-engine`. |
-| TableToolbar | table-toolbar.css | n/a | Stable | no | CSS support for Table and the exported `FilterPopover` composition. |
+| TableToolbar | table-toolbar.css | ✓ `Chip` | Stable | no | CSS support for Table and the exported `FilterPopover` composition. Also home of `.uix-chip`: React `Chip` (toggle, removable, link, "+ add") and `ChipGroup` landed 2.27.0 (HAR-1360). |
 | Tabs | tabs.css | ✓ `Tabs` | Stable | no | Also `Tab`. |
 | TagInput | tag-input.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |
@@ -115,6 +115,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
   `RelatedLinks`, `ToggleRow`, `CollapsibleSection`, dialog, table-control, and detail-page React exports have no
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
-- The **12 currently-planned presentational wrappers** are kbd, steps, stepper, reactions, attachment, audit-log,
+- The **10 currently-planned presentational wrappers** are stepper, reactions, attachment, audit-log,
   notification-center, sla, heartbeat, media, lightbox, and contact-card. In addition, calendar, file-upload,
-  slider, tag-input, and menu remain Planned; those need real behaviour, not just a class wrapper.
+  slider and tag-input remain Planned; those need real behaviour, not just a class wrapper. Kbd, Steps and
+  Menu gained wrappers in 2.27.0 (the UIx reuse remediation, HAR-1346).

@@ -28,9 +28,13 @@
   .uix-btn--link      { background: transparent; color: var(--uix-link); height: auto; padding: 0; }
   .uix-btn--link:hover      { text-decoration: underline; }
 
+  /* xs: the 24 px floor of WCAG 2.5.8, for dense tool rows (HAR-1348). */
+  .uix-btn--xs { height: 24px; padding: 0 var(--uix-space-2); gap: .25em; border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); }
+  .uix-btn--xs svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-btn--sm { height: 28px; padding: 0 var(--uix-space-3); font-size: var(--uix-text-meta); }
   .uix-btn--lg { height: 44px; padding: 0 var(--uix-space-5); }
   .uix-btn--icon { width: var(--uix-control-h); padding: 0; }
+  .uix-btn--icon.uix-btn--xs { width: 24px; }
   .uix-btn--icon.uix-btn--sm { width: 28px; }
   .uix-btn--icon.uix-btn--lg { width: 44px; }
 

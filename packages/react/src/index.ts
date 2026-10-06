@@ -17,8 +17,16 @@ export type {
 } from './overlay-position.js';
 
 // Form primitives
-export { Button, ButtonGroup } from './components/Button.js';
-export type { ButtonProps, ButtonGroupProps } from './components/Button.js';
+export { Button, ButtonGroup, ButtonLink } from './components/Button.js';
+export type { ButtonProps, ButtonGroupProps, ButtonLinkProps, ButtonSize, ButtonVariant } from './components/Button.js';
+
+// Kit chrome strings for a subtree (HAR-1358)
+export { UixLabelsProvider, useUixLabels } from './labels-context.js';
+export type { UixLabels, UixLabelsProviderProps } from './labels-context.js';
+
+// Link adapter — one renderLink callback for every component that can render a link (HAR-1348)
+export { renderPlainLink } from './link.js';
+export type { UixLinkProps, UixRenderLink } from './link.js';
 
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
@@ -54,8 +62,8 @@ export type { FieldProps } from './components/Field.js';
 export { Modal } from './components/Modal.js';
 export type { ModalProps } from './components/Modal.js';
 
-export { ConfirmDialog, PromptDialog } from './components/Dialogs.js';
-export type { ConfirmDialogProps, PromptDialogProps } from './components/Dialogs.js';
+export { ConfirmDialog, Popconfirm, PromptDialog } from './components/Dialogs.js';
+export type { ConfirmDialogProps, PopconfirmProps, PromptDialogProps } from './components/Dialogs.js';
 
 export { Drawer } from './components/Drawer.js';
 export type { DrawerProps } from './components/Drawer.js';
@@ -149,6 +157,15 @@ export type { MeterProps, MeterTone } from './components/Meter.js';
 export { Stat } from './components/Stat.js';
 export type { StatProps, StatTrend } from './components/Stat.js';
 
+export { Chip, ChipGroup } from './components/Chip.js';
+export type { ChipProps, ChipGroupProps } from './components/Chip.js';
+
+export { Kbd, KbdCombo } from './components/Kbd.js';
+export type { KbdProps, KbdComboProps, KbdPlatform } from './components/Kbd.js';
+
+export { Steps, Step, DEFAULT_STEP_STATE_LABELS } from './components/Steps.js';
+export type { StepsProps, StepProps, StepState, StepStateLabels } from './components/Steps.js';
+
 export { Tooltip } from './components/Tooltip.js';
 export type { TooltipProps } from './components/Tooltip.js';
 export { InfoTip } from './components/InfoTip.js';
@@ -208,6 +225,9 @@ export { Prose, Note } from './components/Prose.js';
 export type { ProseProps, NoteProps, NoteTone } from './components/Prose.js';
 
 export { Popover } from './components/Popover.js';
+
+export { Menu, MenuItem, MenuGroup, MenuSeparator } from './components/Menu.js';
+export type { MenuProps, MenuItemProps, MenuGroupProps } from './components/Menu.js';
 export type { PopoverProps } from './components/Popover.js';
 
 export { CommandPalette, CommandGroup, CommandItem } from './components/CommandPalette.js';

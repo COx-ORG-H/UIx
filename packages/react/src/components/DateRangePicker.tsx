@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth } from '../calendar-model.js';
 import type { DateRangeValue } from '../calendar-model.js';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 
 /**
  * Every word the picker renders or announces (TENSOR RX-125, UIX-13). `{start}` and
@@ -75,7 +76,8 @@ export function DateRangePicker({
   invalidMessage = 'The selected date range is invalid.', disabled, className, labels: labelOverrides,
 }: DateRangePickerProps) {
   const id = useId();
-  const labels: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...labelOverrides };
+  const uixLabels = useUixLabels();
+  const labels: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...uixLabels.dateRangePicker, ...labelOverrides };
   const weekdays = useMemo(() => weekdayNames(locale), [locale]);
   const [internalMonth, setInternalMonth] = useState(() => startOfMonth(controlledMonth ?? value.start ?? new Date().toISOString().slice(0, 10)));
   const visibleMonth = startOfMonth(controlledMonth ?? internalMonth);

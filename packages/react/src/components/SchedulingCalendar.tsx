@@ -5,6 +5,7 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, startOfMonth, zonedDateSpan } from '../calendar-model.js';
 import type { CalendarWeekday } from '../calendar-model.js';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { StatusPill } from './StatusPill.js';
 import { fillLabel } from '../fill-label.js';
 
@@ -151,10 +152,12 @@ export function SchedulingCalendar({
   onSelectEntry, overlays = EMPTY_OVERLAYS, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
+  const uixLabels = useUixLabels();
   const labels: SchedulingCalendarLabels = {
     ...DEFAULT_SCHEDULING_CALENDAR_LABELS,
+    ...uixLabels.schedulingCalendar,
     ...labelOverrides,
-    states: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.states, ...labelOverrides?.states },
+    states: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.states, ...uixLabels.schedulingCalendar?.states, ...labelOverrides?.states },
   };
   const stateLabel = labels.states;
   const viewLabel = { month: labels.viewMonth, week: labels.viewWeek, agenda: labels.viewAgenda } as const;

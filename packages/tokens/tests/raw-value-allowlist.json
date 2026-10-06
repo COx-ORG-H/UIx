@@ -24,6 +24,7 @@
     { "file":"search-suggest.css", "prop":"padding-right", "value":"44px", "why":"Clearance for the trailing slot (24px clear button or 18px shortcut chip at right:8px + gap), so typed text never runs under it. Component-intrinsic layout dimension." },
     { "file":"search-suggest.css", "prop":"padding-left", "value":"44px", "why":"Leading-icon clearance of the lg field (icon at left:14px + 20px glyph + gap); the lg mirror of the 38px md clearance. Component-intrinsic layout dimension." },
     { "file":"search-suggest.css", "prop":"margin-top", "value":"2px", "why":"Optical nudge aligning a row icon with the cap height of the 1.35 line-height title. Sub-scale hairline below the 4px space scale." },
-    { "file":"search-suggest.css", "prop":"gap", "value":"2px", "why":"Hairline gap between a row's title, breadcrumb and context lines — the line heights do the rhythm; 4px (space-1) reads as three separate items. Sub-scale optical value." }
+    { "file":"search-suggest.css", "prop":"gap", "value":"2px", "why":"Hairline gap between a row's title, breadcrumb and context lines — the line heights do the rhythm; 4px (space-1) reads as three separate items. Sub-scale optical value." },
+    { "file":"steps.css", "prop":"margin-top", "value":"13px", "why":"Centres the horizontal connector line on the 26px step marker (26 / 2). Tied to the marker size in .uix-step__marker; component-intrinsic geometry, not a spacing-scale step (HAR-1362)." }
   ]
 }

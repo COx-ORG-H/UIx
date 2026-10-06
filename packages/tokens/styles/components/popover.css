@@ -16,3 +16,11 @@
   @starting-style { [popover].uix-popover:popover-open { opacity: 0; transform: var(--popover-from); } }
   [popover].uix-popover[data-uix-placing]:popover-open { opacity: 0; transform: var(--popover-from); transition: none; }
 }
+
+/* Popconfirm — the anchored single-step confirmation (HAR-1356) */
+@layer uix.components {
+  .uix-popconfirm { display: grid; gap: var(--uix-space-2); width: max-content; max-width: min(20rem, calc(100vw - 2 * var(--uix-space-4))); padding: var(--uix-space-3); }
+  .uix-popconfirm__title { font-weight: 600; color: var(--uix-text); }
+  .uix-popconfirm__body { display: grid; gap: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
+  .uix-popconfirm__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--uix-space-2); margin-top: var(--uix-space-1); }
+}

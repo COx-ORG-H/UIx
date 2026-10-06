@@ -257,3 +257,54 @@ A small ? next to a title or label opens a plain-text explanation. Use it for wh
 - **`helpLabel`** is the ? button's accessible name. It defaults to `"About: <title>"` (English), so pass a translated one.
 - **Placement:** the ? is a fixed 9 px glyph, superscript at the top right of the title or label, whatever the text size. It sits beside the heading or `<label>`, never inside it, so the heading's name stays the title and clicking a field label still focuses the input.
 - **Behaviour:** hover opens it after about 300 ms, keyboard focus opens it at once, and a click or tap keeps it open. Esc closes it and keeps focus on the ?, and a press outside also closes it. The panel is the button's `aria-describedby`, so screen readers announce it on focus. It uses `popover="manual"`, so it never closes another open popover.
+
+### Small gaps from the UIx reuse audits (2.27.0)
+
+TENSOR and MOTUS were hand-building these because the kit lacked them (workspace ADR-0038; UIx HAR-1346). Every
+addition is optional; existing calls render as before.
+
+```tsx
+// One link adapter for every component that renders a link
+const toRoute = (p: UixLinkProps) => <NextLink {...p} />;
+<ButtonLink href="/tickets/new" variant="primary" renderLink={toRoute}>New ticket</ButtonLink>
+<Button size="xs" icon aria-label="Remove row"><XIcon /></Button>           // 24 px, the WCAG 2.5.8 floor
+<Stat label="Open" value={12} href="/incidents?state=open" current renderLink={toRoute} />
+<Stat label="Status" value="New" onActivate={openMenu} haspopup="menu" />
+<Pagination page={page} pageCount={9} hrefFor={(p) => `/katalog?page=${p}`} />          // server-safe links
+<Pagination mode="cursor" hasPrevious={!!before} hasNext={!!after} onFirst={first} onPrevious={prev} onNext={next} summary="21–40" />
+
+// SchedulingCalendar: week start, product date format, busy days, a per-day badge
+<SchedulingCalendar weekStartsOn={0} formatDate={(d, part) => part === 'day' ? toDDMMYYYY(d) : intl(d, part)}
+  maxEntriesPerDay={3} onShowMore={(date, entries) => openDay(date)}
+  renderDayBadge={(date, entries) => collisions(entries) || null} … />
+
+// Overlays and disclosure
+<Drawer side="start" …/>  <Drawer side="bottom" …/>
+<Tooltip content={<ul><li>Angry 2</li><li>Calm 5</li></ul>}><button>Mood</button></Tooltip>
+<CollapsibleSection title="SLA" lazy persistKey="incident-sla" openRequest={jumpToSla}>…</CollapsibleSection>
+<ConfirmDialog … destructive typeToConfirm="web-01" compensation="Restore it from the archive within 30 days."
+  error={failure} tertiaryLabel="Archive instead" onTertiary={archive}><dl>…</dl></ConfirmDialog>
+<Popconfirm open={asking} anchor={buttonRef} title="Unlink this CI?" … />
+
+// New components
+<Menu trigger={<Button>Actions</Button>}>
+  <MenuItem onSelect={assign} shortcut={<KbdCombo keys={['Mod', 'M']} />}>Assign to me</MenuItem>
+  <MenuSeparator />
+  <MenuGroup label="Danger zone"><MenuItem tone="danger" onSelect={remove}>Delete</MenuItem></MenuGroup>
+</Menu>
+<ChipGroup label="Active filters">
+  <Chip pressed={mine} onPressedChange={setMine}>Assigned to me</Chip>
+  <Chip count={12} onRemove={clearState}>State: Open</Chip>
+  <Chip variant="add" onClick={addFilter}>+ Add filter</Chip>
+</ChipGroup>
+<Steps label="Intake"><Step title="Scan" state="complete" /><Step title="Review" state="current" /><Step title="Shelve" state="waiting" /></Steps>
+
+// Translate kit chrome once
+<UixLabelsProvider labels={{ drawer: { close: 'Schließen' }, peek: { previous: 'Vorheriger Datensatz' } }}>…</UixLabelsProvider>
+```
+
+- **`renderLink`** (`UixRenderLink`) receives `UixLinkProps` (`href`, `className`, `children`, ARIA). A nullish return falls back to a plain `<a>`.
+- **`UixLabelsProvider`** reaches the client components (`Modal`, `Drawer`, `Peek`, `Toast`, `Toaster`, `AppShell`, `Sidebar`, `SearchSuggest`, `CommandPalette`, `ConfirmDialog`, `Popconfirm`, `SchedulingCalendar`, `DateRangePicker`). `Pagination` and `BulkBar` stay server-renderable, so they cannot read context: pass `labels={useUixLabels().pagination}` from a client parent, or translate on the server. An explicit prop always wins.
+- **`CollapsibleSection`** stays a JS-free `<details>` unless you pass `lazy`, `persistKey` or `openRequest`. `lazy` unmounts a closed body; `lazy="keep"` keeps it after the first open.
+- **`ConfirmDialog`** focuses the type-to-confirm field, else Cancel when `destructive`. `Popconfirm` is for low-risk, easily undone actions; use `ConfirmDialog` for anything hard to undo.
+- **`KbdCombo`** renders the non-Apple glyphs on the server and switches to ⌘/⇧/⌥ after mount, so hydration matches. Pass `platform` to pin it.

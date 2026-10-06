@@ -10,8 +10,10 @@ import { ButtonHTMLAttributes } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
+import { LiHTMLAttributes } from 'react';
 import { MouseEvent as MouseEvent_2 } from 'react';
 import * as react from 'react';
+import { ReactElement } from 'react';
 import { ReactNode } from 'react';
 import { Ref } from 'react';
 import { RefObject } from 'react';
@@ -401,7 +403,7 @@ export interface BuilderPaletteItem {
 }
 
 // @public (undocumented)
-export function buildMonthGrid(month: string, weekStartsOn?: 0 | 1): CalendarDay[];
+export function buildMonthGrid(month: string, weekStartsOn?: CalendarWeekday): CalendarDay[];
 
 // @public (undocumented)
 export function buildThreeWayDiff(base: JsonValue | undefined, current: JsonValue | undefined, incoming: JsonValue | undefined, path?: string): DiffEntry[];
@@ -432,6 +434,24 @@ export interface ButtonGroupProps {
     className?: string;
 }
 
+// @public
+export function ButtonLink(input: ButtonLinkProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+    // (undocumented)
+    children?: ReactNode;
+    disabled?: boolean;
+    // (undocumented)
+    href: string;
+    icon?: boolean;
+    renderLink?: UixRenderLink;
+    // (undocumented)
+    size?: ButtonSize;
+    // (undocumented)
+    variant?: ButtonVariant;
+}
+
 // @public (undocumented)
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     // (undocumented)
@@ -441,10 +461,16 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     // (undocumented)
     loading?: boolean;
     // (undocumented)
-    size?: 'sm' | 'md' | 'lg';
+    size?: ButtonSize;
     // (undocumented)
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
+    variant?: ButtonVariant;
 }
+
+// @public
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+
+// @public (undocumented)
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
 
 // @public (undocumented)
 export interface CalendarDay {
@@ -457,6 +483,9 @@ export interface CalendarDay {
     // (undocumented)
     weekday: number;
 }
+
+// @public
+export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 // @public (undocumented)
 export function Card(input: CardProps): react.JSX.Element;
@@ -493,6 +522,7 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
     // (undocumented)
     title?: ReactNode;
     titleAs?: 'h2' | 'h3' | 'h4' | 'div';
+    titleId?: string;
 }
 
 // @public
@@ -512,6 +542,39 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
     label?: ReactNode;
 }
 
+// @public
+export function Chip(input: ChipProps): react.JSX.Element;
+
+// @public
+export function ChipGroup(input: ChipGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ChipGroupProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: string;
+}
+
+// @public (undocumented)
+export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> {
+    children?: ReactNode;
+    count?: ReactNode;
+    // (undocumented)
+    disabled?: boolean;
+    href?: string;
+    // (undocumented)
+    icon?: ReactNode;
+    onClick?: () => void;
+    // (undocumented)
+    onPressedChange?: (pressed: boolean) => void;
+    onRemove?: () => void;
+    pressed?: boolean;
+    removeLabel?: string;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    variant?: 'default' | 'add';
+}
+
 // @public (undocumented)
 export function clampMetricValue(value: number, min?: number, max?: number): number;
 
@@ -524,13 +587,16 @@ export function classifyLayeredEdges(nodes: RelationshipGraphNode[], edges: Rela
 // @public (undocumented)
 export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string;
 
-// @public (undocumented)
-export function CollapsibleSection(input: CollapsibleSectionProps): react.JSX.Element;
+// @public
+export function CollapsibleSection(props: CollapsibleSectionProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface CollapsibleSectionProps extends Omit<DetailsHTMLAttributes<HTMLDetailsElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    lazy?: boolean | 'keep';
+    openRequest?: number;
+    persistKey?: string;
     // (undocumented)
     summary?: ReactNode;
     // (undocumented)
@@ -737,24 +803,34 @@ export function ConfirmDialog(input: ConfirmDialogProps): react.JSX.Element;
 export interface ConfirmDialogProps {
     // (undocumented)
     cancelLabel: ReactNode;
+    children?: ReactNode;
     // (undocumented)
     closeLabel: string;
+    compensation?: ReactNode;
+    compensationLabel?: string;
     // (undocumented)
     confirmLabel: ReactNode;
     // (undocumented)
     description?: ReactNode;
     // (undocumented)
     destructive?: boolean;
+    error?: ReactNode;
+    initialFocus?: 'cancel' | 'confirm';
     // (undocumented)
     onCancel: () => void;
     // (undocumented)
     onConfirm: () => void | Promise<void>;
     // (undocumented)
+    onTertiary?: () => void | Promise<void>;
+    // (undocumented)
     open: boolean;
     // (undocumented)
     pending?: boolean;
+    tertiaryLabel?: ReactNode;
     // (undocumented)
     title: ReactNode;
+    typeToConfirm?: string;
+    typeToConfirmLabel?: string;
 }
 
 // @public
@@ -896,6 +972,9 @@ export const DEFAULT_SAVE_STATUS_LABELS: SaveStatusLabels;
 
 // @public (undocumented)
 export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
+
+// @public (undocumented)
+export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -1136,6 +1215,7 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
     onClose?: () => void;
     // (undocumented)
     open: boolean;
+    side?: 'end' | 'start' | 'bottom';
     // (undocumented)
     title?: ReactNode;
 }
@@ -1570,6 +1650,28 @@ export interface KanbanProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function Kbd(input: KbdProps): react.JSX.Element;
+
+// @public
+export function KbdCombo(input: KbdComboProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    keyLabels?: Partial<Record<string, string>>;
+    keys: string[];
+    platform?: KbdPlatform;
+}
+
+// @public (undocumented)
+export type KbdPlatform = 'mac' | 'other';
+
+// @public (undocumented)
+export interface KbdProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public
 export function Label(input: LabelProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1904,6 +2006,61 @@ export interface MatchReviewProps {
 export function meetsContrast(background: string, foreground: string, minimum?: number): boolean;
 
 // @public
+export function Menu(input: MenuProps): react.JSX.Element;
+
+// @public (undocumented)
+export function MenuGroup(input: MenuGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MenuGroupProps {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    label: ReactNode;
+}
+
+// @public (undocumented)
+export function MenuItem(input: MenuItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MenuItemProps {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    href?: string;
+    // (undocumented)
+    icon?: ReactNode;
+    onSelect?: () => void;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    shortcut?: ReactNode;
+    // (undocumented)
+    tone?: 'default' | 'danger';
+}
+
+// @public (undocumented)
+export interface MenuProps {
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    defaultOpen?: boolean;
+    label?: string;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    open?: boolean;
+    // (undocumented)
+    placement?: Placement;
+    trigger: ReactElement;
+}
+
+// @public (undocumented)
+export function MenuSeparator(): react.JSX.Element;
+
+// @public
 export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
 
 // @public
@@ -2053,6 +2210,7 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
     badge?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    description?: ReactNode;
     // (undocumented)
     icon?: ReactNode;
 }
@@ -2143,6 +2301,7 @@ export function Pagination(input: PaginationProps): react.JSX.Element;
 
 // @public
 export interface PaginationLabels {
+    first: string;
     // (undocumented)
     next: string;
     // (undocumented)
@@ -2154,13 +2313,28 @@ export interface PaginationLabels {
 // @public (undocumented)
 export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
     // (undocumented)
+    firstHref?: string;
+    hasNext?: boolean;
+    hasPrevious?: boolean;
+    hrefFor?: (page: number) => string;
+    // (undocumented)
     labels?: Partial<PaginationLabels>;
+    mode?: 'offset' | 'cursor';
     // (undocumented)
-    onChange: (page: number) => void;
+    nextHref?: string;
+    onChange?: (page: number) => void;
     // (undocumented)
-    page: number;
+    onFirst?: () => void;
     // (undocumented)
-    pageCount: number;
+    onNext?: () => void;
+    // (undocumented)
+    onPrevious?: () => void;
+    page?: number;
+    pageCount?: number;
+    // (undocumented)
+    previousHref?: string;
+    renderLink?: UixRenderLink;
+    summary?: ReactNode;
 }
 
 // @public (undocumented)
@@ -2242,6 +2416,36 @@ export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 
 
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;
+
+// @public
+export function Popconfirm(input: PopconfirmProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PopconfirmProps {
+    anchor: RefObject<HTMLElement | null> | HTMLElement | null;
+    // (undocumented)
+    cancelLabel: ReactNode;
+    compensation?: ReactNode;
+    // (undocumented)
+    compensationLabel?: string;
+    // (undocumented)
+    confirmLabel: ReactNode;
+    // (undocumented)
+    description?: ReactNode;
+    // (undocumented)
+    destructive?: boolean;
+    onCancel: () => void;
+    // (undocumented)
+    onConfirm: () => void | Promise<void>;
+    // (undocumented)
+    open: boolean;
+    // (undocumented)
+    pending?: boolean;
+    // (undocumented)
+    placement?: Placement;
+    // (undocumented)
+    title: ReactNode;
+}
 
 // @public
 export function Popover(input: PopoverProps): react.JSX.Element;
@@ -2659,6 +2863,9 @@ export function relativeTimeValue(date: Date, now: Date): RelativeTimeValue;
 // @public (undocumented)
 export function removeRuleNode(group: RuleGroup, id: string): RuleGroup;
 
+// @public (undocumented)
+export const renderPlainLink: UixRenderLink;
+
 // @public
 export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 
@@ -3036,12 +3243,15 @@ export interface SchedulingCalendarLabels {
     agendaEmpty: string;
     // (undocumented)
     entry: string;
+    fewerEntries: string;
     // (undocumented)
     grid: string;
     // (undocumented)
     legend: string;
     // (undocumented)
     loading: string;
+    moreEntries: string;
+    moreEntriesLabel: string;
     // (undocumented)
     next: string;
     // (undocumented)
@@ -3088,32 +3298,41 @@ export interface SchedulingCalendarProps {
     error?: string;
     // (undocumented)
     filter?: (entry: SchedulingCalendarEntry) => boolean;
+    formatDate?: (date: string, part: SchedulingDatePart) => string;
+    formatInstant?: (instant: string) => string;
     // (undocumented)
     labels?: Partial<SchedulingCalendarLabels>;
     // (undocumented)
     loading?: boolean;
     // (undocumented)
     locale?: string;
+    maxEntriesPerDay?: number;
     // (undocumented)
     onAnchorDateChange?: (date: string) => void;
     // (undocumented)
     onRetry?: () => void;
     // (undocumented)
     onSelectEntry?: (entry: SchedulingCalendarEntry) => void;
+    onShowMore?: (date: string, entries: SchedulingCalendarEntry[]) => void;
     // (undocumented)
     onViewChange?: (view: SchedulingCalendarView) => void;
     // (undocumented)
     overlays?: SchedulingCalendarOverlay[];
+    renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
     // (undocumented)
     renderEntry?: (entry: SchedulingCalendarEntry) => ReactNode;
     // (undocumented)
     timeZone: string;
     // (undocumented)
     view?: SchedulingCalendarView;
+    weekStartsOn?: CalendarWeekday;
 }
 
 // @public (undocumented)
 export type SchedulingCalendarView = 'month' | 'week' | 'agenda';
+
+// @public
+export type SchedulingDatePart = 'day' | 'weekday' | 'month';
 
 // @public (undocumented)
 export type SchedulingEntryState = 'scheduled' | 'conflicted' | 'in-progress' | 'blackout-violation';
@@ -3379,12 +3598,16 @@ export interface StatLineProps extends HTMLAttributes<HTMLDivElement> {
 // @public (undocumented)
 export interface StatProps extends HTMLAttributes<HTMLElement> {
     activateLabel?: string;
+    current?: boolean;
     expanded?: boolean;
+    haspopup?: 'dialog' | 'menu' | 'listbox' | false;
+    href?: string;
     icon?: ReactNode;
     // (undocumented)
     label: ReactNode;
     meta?: ReactNode;
     onActivate?: () => void;
+    renderLink?: UixRenderLink;
     size?: 'hero' | 'compact';
     tone?: 'neutral' | 'warning' | 'danger';
     trend?: StatTrend;
@@ -3429,11 +3652,62 @@ export interface StatusRowProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public (undocumented)
+export function Step(input: StepProps): react.JSX.Element;
+
+// @public (undocumented)
 export function stepMetricValue(value: number | null, direction: -1 | 1, options?: {
     min?: number;
     max?: number;
     step?: number;
 }): number;
+
+// @public (undocumented)
+export interface StepProps extends Omit<LiHTMLAttributes<HTMLLIElement>, 'title'> {
+    // (undocumented)
+    description?: ReactNode;
+    href?: string;
+    index?: number;
+    last?: boolean;
+    marker?: ReactNode;
+    // (undocumented)
+    onSelect?: () => void;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    // (undocumented)
+    state?: StepState;
+    stateLabels?: StepStateLabels;
+    // (undocumented)
+    title: ReactNode;
+}
+
+// @public
+export function Steps(input: StepsProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StepsProps extends HTMLAttributes<HTMLOListElement> {
+    children?: ReactNode;
+    label?: string;
+    orientation?: 'horizontal' | 'vertical';
+    // (undocumented)
+    stateLabels?: Partial<StepStateLabels>;
+}
+
+// @public (undocumented)
+export type StepState = 'complete' | 'current' | 'upcoming' | 'waiting' | 'error';
+
+// @public
+export interface StepStateLabels {
+    // (undocumented)
+    complete: string;
+    // (undocumented)
+    current: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    upcoming: string;
+    // (undocumented)
+    waiting: string;
+}
 
 // @public (undocumented)
 export function SubNavItem(input: SubNavItemProps): react.JSX.Element;
@@ -3662,10 +3936,11 @@ export function toggleSort(keys: readonly SortKey[], field: string, additive?: b
 export function Tooltip(input: TooltipProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
+export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
     // (undocumented)
     children?: ReactNode;
-    label: string;
+    content?: ReactNode;
+    label?: string;
     placement?: Placement;
 }
 
@@ -3763,6 +4038,87 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 // @public
+export interface UixLabels {
+    // (undocumented)
+    appShell?: {
+        skipToContent?: string;
+        exitFocus?: string;
+    };
+    bulkBar?: {
+        region?: string;
+    };
+    // (undocumented)
+    commandPalette?: {
+        input?: string;
+    };
+    // (undocumented)
+    confirmDialog?: {
+        typeToConfirm?: string;
+        compensation?: string;
+    };
+    // (undocumented)
+    dateRangePicker?: Partial<DateRangePickerLabels>;
+    // (undocumented)
+    drawer?: {
+        close?: string;
+    };
+    // (undocumented)
+    modal?: {
+        close?: string;
+    };
+    pagination?: Partial<PaginationLabels>;
+    // (undocumented)
+    peek?: {
+        previous?: string;
+        next?: string;
+        close?: string;
+    };
+    // (undocumented)
+    schedulingCalendar?: Partial<SchedulingCalendarLabels>;
+    // (undocumented)
+    searchSuggest?: {
+        clear?: string;
+    };
+    // (undocumented)
+    sidebar?: {
+        expand?: string;
+        collapse?: string;
+    };
+    // (undocumented)
+    toast?: {
+        dismiss?: string;
+    };
+    // (undocumented)
+    toaster?: {
+        region?: string;
+    };
+}
+
+// @public
+export function UixLabelsProvider(input: UixLabelsProviderProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface UixLabelsProviderProps {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    labels: UixLabels;
+}
+
+// @public
+export interface UixLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    href: string;
+}
+
+// @public
+export type UixRenderLink = (props: UixLinkProps) => ReactNode;
+
+// @public
 export function useAnchoredPosition(anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined, floatingRef: RefObject<HTMLElement | null>, input: UseAnchoredPositionOptions): () => void;
 
 // @public (undocumented)
@@ -3842,6 +4198,9 @@ export interface UseTableResult<T> {
     // (undocumented)
     viewQueryString: string;
 }
+
+// @public
+export function useUixLabels(): UixLabels;
 
 // @public
 export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptions): UseVirtualRowsResult<T>;

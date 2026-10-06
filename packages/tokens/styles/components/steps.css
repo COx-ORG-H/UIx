@@ -16,3 +16,31 @@
   .uix-step[data-state="done"] + .uix-step__connector,
   .uix-step__connector[data-done] { background: var(--uix-accent); }
 }
+
+/* React `Steps` (HAR-1362): an <ol>, each <li> = marker · title/description · connector */
+@layer uix.components {
+  .uix-steps--list { margin: 0; padding: 0; list-style: none; align-items: flex-start; }
+  .uix-steps--list > .uix-step { align-items: flex-start; min-width: 0; }
+  .uix-steps--list > .uix-step:not(:last-child) { flex: 1; }
+  .uix-step__text { display: grid; min-width: 0; padding-top: var(--uix-space-1); }
+  .uix-step__title { font-size: var(--uix-text-meta); font-weight: 500; }
+  .uix-step__desc { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-step__action { color: inherit; text-decoration: none; padding: 0; border: 0; background: transparent; font: inherit; text-align: start; }
+  a.uix-step__action, button.uix-step__action { cursor: pointer; text-decoration: underline; text-underline-offset: .15em; }
+  .uix-steps--list .uix-step__connector { align-self: center; margin-top: 0; }
+  .uix-steps--horizontal > .uix-step > .uix-step__connector { align-self: flex-start; margin-top: 13px; }
+  .uix-steps--horizontal > .uix-step > .uix-step__text { flex: 0 0 auto; max-width: 12rem; }
+  .uix-step[data-state="waiting"] .uix-step__marker { border-style: dashed; border-color: var(--uix-warning-border); color: var(--uix-warning-text); }
+  .uix-step[data-state="error"] { color: var(--uix-text); }
+  .uix-step[data-state="error"] .uix-step__marker { background: var(--uix-danger-bg); border-color: var(--uix-danger-border); color: var(--uix-danger-text); }
+  /* vertical (and horizontal below 40rem): a column, the connector a line under the marker */
+  .uix-steps--vertical { flex-direction: column; gap: 0; }
+  .uix-steps--vertical > .uix-step { position: relative; padding-bottom: var(--uix-space-4); }
+  .uix-steps--vertical > .uix-step > .uix-step__connector { position: absolute; left: 13px; top: 30px; bottom: 4px; width: 1px; height: auto; min-width: 0; margin: 0; }
+  @media (max-width: 40rem) {
+    .uix-steps--horizontal { flex-direction: column; gap: 0; }
+    .uix-steps--horizontal > .uix-step { position: relative; padding-bottom: var(--uix-space-4); }
+    .uix-steps--horizontal > .uix-step > .uix-step__text { flex: 1 1 auto; max-width: none; }
+    .uix-steps--horizontal > .uix-step > .uix-step__connector { position: absolute; left: 13px; top: 30px; bottom: 4px; width: 1px; height: auto; min-width: 0; margin: 0; }
+  }
+}

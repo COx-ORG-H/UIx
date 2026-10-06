@@ -18,7 +18,7 @@
   .uix-sidebar__toggle svg { width: 18px; height: 18px; }
 
   .uix-navitem {
-    display: flex; align-items: center; gap: var(--uix-space-3); height: 36px; padding: 0 var(--uix-space-3);
+    display: flex; align-items: center; gap: var(--uix-space-3); min-height: 36px; padding: 0 var(--uix-space-3);
     border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
@@ -30,6 +30,11 @@
   .uix-navitem__icon { width: var(--uix-icon-md); height: var(--uix-icon-md); flex: none; }
   .uix-navitem__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* two-line row: a label plus a wrapping second line (HAR-1355). min-height above lets it grow. */
+  .uix-navitem[data-multiline] { align-items: flex-start; padding-block: var(--uix-space-2); }
+  .uix-navitem__text { flex: 1; min-width: 0; display: grid; }
+  .uix-navitem__desc { font-size: var(--uix-text-meta); line-height: 1.35; color: var(--uix-text-muted); overflow-wrap: anywhere; white-space: normal; font-weight: 400; }
+  .uix-navitem[aria-current="page"] .uix-navitem__desc { color: var(--uix-text-hushed); }
   /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
   .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
   .uix-navitem__star { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
@@ -100,13 +105,15 @@
   .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
   .uix-sidebar[data-collapsed] .uix-navgroup__chevron,
-  .uix-sidebar[data-collapsed] .uix-navgroup__panel { display: none; }
+  .uix-sidebar[data-collapsed] .uix-navgroup__panel,
+  .uix-sidebar[data-collapsed] .uix-navitem__desc { display: none; }
   .uix-sidebar[data-nav="rail"] .uix-navitem__badge,
   .uix-sidebar[data-nav="rail"] .uix-navitem__star,
   .uix-sidebar[data-nav="rail"] .uix-sidebar__eyebrow,
   .uix-sidebar[data-nav="rail"] .uix-sidebar__brand,
   .uix-sidebar[data-nav="rail"] .uix-navgroup__chevron,
-  .uix-sidebar[data-nav="rail"] .uix-navgroup__panel { display: none; }
+  .uix-sidebar[data-nav="rail"] .uix-navgroup__panel,
+  .uix-sidebar[data-nav="rail"] .uix-navitem__desc { display: none; }
   /* rail labels stay in the accessibility tree — clip pattern (mirrors .uix-visually-hidden),
      not display:none, so icon-only nav items keep their names (UIX-A11Y-2). position:absolute
      removes the label from the flex row, so the centered rail layout is unaffected. */
@@ -119,8 +126,8 @@
     white-space: nowrap; border: 0;
   }
   /* center the icon-only rail; head keeps just the toggle, centered */
-  .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-collapsed] .uix-navitem { justify-content: center; align-items: center; padding: 0; gap: 0; }
   .uix-sidebar[data-collapsed] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
-  .uix-sidebar[data-nav="rail"] .uix-navitem { justify-content: center; padding: 0; gap: 0; }
+  .uix-sidebar[data-nav="rail"] .uix-navitem { justify-content: center; align-items: center; padding: 0; gap: 0; }
   .uix-sidebar[data-nav="rail"] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
 }

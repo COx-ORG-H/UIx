@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { backdropDismiss } from '../hooks/backdropDismiss.js';
 
@@ -23,12 +24,19 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
    * can't discard it; Escape and the close button still close. Default `true`.
    */
   dismissOnBackdrop?: boolean;
+  /**
+   * Edge the drawer slides from (HAR-1351). `end` (default) is the side sheet; `start` is
+   * the phone navigation drawer; `bottom` is a bottom sheet capped at 85% of the viewport.
+   */
+  side?: 'end' | 'start' | 'bottom';
   title?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
 }
 
-export function Drawer({ open, onClose, dismissOnBackdrop = true, title, children, footer, closeLabel = 'Close drawer', className, onClick, ...rest }: DrawerProps) {
+export function Drawer({ open, onClose, dismissOnBackdrop = true, side = 'end', title, children, footer, closeLabel: closeLabelProp, className, onClick, ...rest }: DrawerProps) {
+  const uixLabels = useUixLabels();
+  const closeLabel = closeLabelProp ?? uixLabels.drawer?.close ?? 'Close drawer';
   const ref = useDialog(open, onClose);
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it. The
   // inherit resets neutralize the base h2 heading font/tracking/leading so it renders exactly
@@ -36,7 +44,7 @@ export function Drawer({ open, onClose, dismissOnBackdrop = true, title, childre
   const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-drawer', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick, dismissOnBackdrop)}>
+    <dialog ref={ref} className={cx('uix-drawer', side !== 'end' && `uix-drawer--${side}`, className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick, dismissOnBackdrop)}>
       {(title != null || onClose) && (
         <div className="uix-drawer__header">
           {title && (

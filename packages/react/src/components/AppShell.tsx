@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
@@ -42,11 +43,14 @@ export function AppShell({
   sidebar,
   topbar,
   children,
-  skipToContentLabel = 'Skip to content',
-  exitFocusLabel = 'Esc · Exit focus',
+  skipToContentLabel: skipToContentLabelProp,
+  exitFocusLabel: exitFocusLabelProp,
   className,
   ...props
 }: AppShellProps) {
+  const uixLabels = useUixLabels();
+  const skipToContentLabel = skipToContentLabelProp ?? uixLabels.appShell?.skipToContent ?? 'Skip to content';
+  const exitFocusLabel = exitFocusLabelProp ?? uixLabels.appShell?.exitFocus ?? 'Esc · Exit focus';
   const navState: ShellNav = nav ?? (collapsed ? 'rail' : 'full');
 
   useEffect(() => {

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useState } from 'react';
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 
 /* Combobox wiring shared across the palette family (UIX-A11Y-1): the root owns the listbox id
  * and the active option id (input → aria-activedescendant), and counts mounted items so a status
@@ -30,7 +31,9 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * a combobox over the listbox of `CommandItem`s; spreads override every default, so
  * consumers already passing their own roles/labels keep working.
  */
-export function CommandPalette({ inputProps, children, inputLabel = 'Command palette', className, ...props }: CommandPaletteProps) {
+export function CommandPalette({ inputProps, children, inputLabel: inputLabelProp, className, ...props }: CommandPaletteProps) {
+  const uixLabels = useUixLabels();
+  const inputLabel = inputLabelProp ?? uixLabels.commandPalette?.input ?? 'Command palette';
   const listId = useId();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [count, setCount] = useState(0);

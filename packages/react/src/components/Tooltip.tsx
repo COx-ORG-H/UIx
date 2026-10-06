@@ -6,9 +6,15 @@ import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 
-export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
-  /** Tooltip text. */
-  label: string;
+export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
+  /** Tooltip text. Pass this or `content`. */
+  label?: string;
+  /**
+   * Rich, non-interactive tooltip content, e.g. a short list (HAR-1349; TENSOR A3). It is
+   * still a `role="tooltip"` description: no links or buttons inside — use `InfoTip` or
+   * `Popover` for content the user must reach. Wins over `label` when both are set.
+   */
+  content?: ReactNode;
   /** Preferred placement. Default `'top'`. */
   placement?: Placement;
   children?: ReactNode;
@@ -22,7 +28,7 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
  * (document-level, per WCAG 1.4.13), and hoverable: the bubble stays open while
  * the pointer is over it (UIX-A11Y-1).
  */
-export function Tooltip({ label, placement = 'top', className, children, ...props }: TooltipProps) {
+export function Tooltip({ label, content, placement = 'top', className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | null>(null);
@@ -107,7 +113,7 @@ export function Tooltip({ label, placement = 'top', className, children, ...prop
         onMouseLeave={scheduleHide}
         {...bubbleAttr}
       >
-        {label}
+        {content ?? label}
       </span>
     </span>
   );
