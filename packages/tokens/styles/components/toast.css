@@ -19,3 +19,19 @@
   .uix-toast--danger  .uix-toast__icon { color: var(--uix-danger); }
   .uix-toast--info    .uix-toast__icon { color: var(--uix-info); }
 }
+
+/* Imperative toasts (React `toast()` + `Toaster`, HAR-1363): warning tone, action, loading, positions */
+@layer uix.components {
+  .uix-toast--warning .uix-toast__icon { color: var(--uix-warning-text); }
+  .uix-toast__action-slot { flex: none; align-self: center; }
+  .uix-toast__action {
+    border: 0; background: transparent; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-xs);
+    color: var(--uix-link); font: inherit; font-size: var(--uix-text-meta); font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .uix-toast__action:hover { background: var(--uix-bg-hover); }
+  .uix-toast__action:focus-visible, .uix-toast__close:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  .uix-toast__spinner { width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-toaster[data-position^="top"] { top: var(--uix-space-4); bottom: auto; }
+  .uix-toaster[data-position$="start"] { left: var(--uix-space-4); right: auto; }
+  .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
+}

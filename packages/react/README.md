@@ -308,3 +308,26 @@ const toRoute = (p: UixLinkProps) => <NextLink {...p} />;
 - **`CollapsibleSection`** stays a JS-free `<details>` unless you pass `lazy`, `persistKey` or `openRequest`. `lazy` unmounts a closed body; `lazy="keep"` keeps it after the first open.
 - **`ConfirmDialog`** focuses the type-to-confirm field, else Cancel when `destructive`. `Popconfirm` is for low-risk, easily undone actions; use `ConfirmDialog` for anything hard to undo.
 - **`KbdCombo`** renders the non-Apple glyphs on the server and switches to ⌘/⇧/⌥ after mount, so hydration matches. Pass `platform` to pin it.
+
+### Imperative toasts (2.28.0)
+
+`toast()` queues a toast from anywhere on the client (a mutation hook, a tRPC error handler); every mounted
+`<Toaster />` renders the queue (UIx HAR-1363; replaces `sonner` in TENSOR and MOTUS).
+
+```tsx
+<Toaster position="bottom-end" limit={3} />                       // once, in the app shell
+
+toast.success('Saved', { description: 'Change CHG-1042 updated.' });
+toast.error('Could not save', { action: { label: 'Copy details', onClick: copy } });   // stays until dismissed
+toast.warning('Export is taking longer than usual');
+const id = toast.loading('Exporting…'); toast.update(id, { kind: 'success', message: 'Exported' });
+toast.promise(save(), { loading: 'Saving…', success: 'Saved', error: (e) => `Failed: ${message(e)}` });
+toast.undoable('Ticket closed', { onUndo: reopen, onCommit: close });   // TENSOR C2 useUndoableAction
+toast.dismiss(id);   // or toast.dismiss() for all
+```
+
+- **Timing:** success, info and default toasts stay 5 s, warnings 8 s; errors and loading toasts stay until dismissed or updated. Pass `duration` (ms, or `null`) to override. Timers pause while the pointer or focus is inside the toaster and while the tab is hidden.
+- **Stacking:** at most `limit` toasts show (default 3). The rest wait their turn. Reusing an `id` replaces a toast in place.
+- **Accessibility:** errors are `role="alert"`. Everything else is announced through the toaster's polite live region, and a loading toast that settles is announced again. Esc closes the focused toast. Tone glyphs are decorative; the text carries the meaning.
+- **Stores:** `toast` writes to a default store that `<Toaster />` reads. `createToastApi(createToastStore())` gives a separate queue (tests, embedded apps); pass its `store` to `<Toaster store>`. The store has no React dependency.
+- `<Toaster>` still renders hand-managed `<Toast>` children first. `Toast` gains `tone="warning"` and an `action` slot.

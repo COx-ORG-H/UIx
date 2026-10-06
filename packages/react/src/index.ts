@@ -128,6 +128,12 @@ export type { SpinnerProps } from './components/Spinner.js';
 
 export { Toast, Toaster } from './components/Toast.js';
 export type { ToastProps, ToasterProps, ToastTone } from './components/Toast.js';
+// Imperative toast queue (HAR-1363): toast.success(…), toast.promise(…), toast.undoable(…)
+export { toast, createToastStore, createToastApi, TOAST_LEAVE_MS } from './toast-store.js';
+export type {
+  ToastApi, ToastStore, ToastRecord, ToastKind, ToastOptions, ToastAction, ToastDismissReason,
+  ToastPromiseMessages, UndoableToastOptions,
+} from './toast-store.js';
 
 // Data display
 export {
