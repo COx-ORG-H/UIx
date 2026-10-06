@@ -147,7 +147,7 @@ export const REACT_COMPONENT_SLUGS = [
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
-  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline',
+  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

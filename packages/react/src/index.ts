@@ -124,6 +124,14 @@ export type { CopyButtonProps } from './components/CopyButton.js';
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';
 
+// Files (HAR-984/985): upload with validation and progress, and file rows
+export { FileUpload, DEFAULT_FILE_UPLOAD_LABELS } from './components/FileUpload.js';
+export type { FileUploadProps, FileUploadItem, FileUploadLabels, FileUploadStatus } from './components/FileUpload.js';
+export { Attachment, AttachmentList, DEFAULT_ATTACHMENT_LABELS } from './components/Attachment.js';
+export type { AttachmentProps, AttachmentListProps, AttachmentLabels } from './components/Attachment.js';
+export { fileKind, fileMatchesAccept, formatFileSize, partitionFiles } from './file-model.js';
+export type { FileRejection, FileRejectionReason } from './file-model.js';
+
 // Feedback
 export { Alert } from './components/Alert.js';
 export type { AlertProps, AlertTone } from './components/Alert.js';

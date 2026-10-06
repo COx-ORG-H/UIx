@@ -8,3 +8,18 @@
   .uix-attachment__size { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-attachment__actions { margin-left: auto; }
 }
+
+/* React `Attachment` rows (HAR-985): name link, meta, state slot, remove, statuses */
+@layer uix.components {
+  .uix-attachments--list { margin: 0; padding: 0; list-style: none; }
+  .uix-attachment__body { flex: 1; display: grid; gap: var(--uix-space-1); min-width: 0; }
+  .uix-attachment__line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-width: 0; }
+  .uix-attachment__line .uix-attachment__name { min-width: 0; overflow-wrap: anywhere; }
+  .uix-attachment__meta { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-attachment__meta:empty { display: none; }
+  .uix-attachment__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); }
+  .uix-attachment__icon img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--uix-radius-sm); }
+  .uix-attachment__actions { display: flex; align-items: center; gap: var(--uix-space-1); flex: none; }
+  .uix-attachment[data-status="loading"] .uix-attachment__name, .uix-attachment[data-status="forbidden"] .uix-attachment__name { color: var(--uix-text-muted); }
+  .uix-attachment[data-status="error"] { border-color: var(--uix-danger-border); }
+}

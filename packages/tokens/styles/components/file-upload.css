@@ -12,3 +12,22 @@
   .uix-filelist__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text); }
   .uix-filelist__size { margin-left: auto; color: var(--uix-text-muted); }
 }
+
+/* React `FileUpload` (HAR-984): validated picking, per-file progress, retry, alt text */
+@layer uix.components {
+  .uix-file-upload { display: grid; gap: var(--uix-space-3); min-width: 0; }
+  .uix-file-upload[data-disabled] .uix-dropzone { opacity: .6; cursor: not-allowed; }
+  .uix-file-upload__hint { font-size: var(--uix-text-meta); }
+  .uix-file-upload__errors { margin: 0; padding-left: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
+  .uix-file-upload__list { margin: 0; padding: 0; list-style: none; }
+  .uix-file-upload__item { align-items: flex-start; }
+  .uix-file-upload__item[data-status="error"] { border-color: var(--uix-danger-border); }
+  .uix-file-upload__thumb { width: 40px; height: 40px; flex: none; object-fit: cover; border-radius: var(--uix-radius-sm); }
+  .uix-file-upload__body { flex: 1; display: grid; gap: var(--uix-space-1); min-width: 0; }
+  .uix-file-upload__name { min-width: 0; overflow-wrap: break-word; font-weight: 500; }
+  .uix-file-upload__meta { display: flex; flex-wrap: wrap; gap: var(--uix-space-1) var(--uix-space-3); color: var(--uix-text-muted); }
+  .uix-file-upload__meta > * { white-space: nowrap; }
+  .uix-file-upload__item[data-status="done"] .uix-file-upload__status { color: var(--uix-success); }
+  .uix-file-upload__error { color: var(--uix-danger-text); }
+  .uix-file-upload__actions { display: flex; align-items: center; gap: var(--uix-space-1); flex: none; }
+}
