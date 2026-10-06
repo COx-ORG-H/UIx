@@ -265,7 +265,7 @@ export type { BuilderCanvasLabels, BuilderCanvasProps, BuilderCanvasItem, Builde
 export { DEFAULT_SCHEDULING_CALENDAR_LABELS, SchedulingCalendar } from './components/SchedulingCalendar.js';
 export type { SchedulingCalendarLabels,
   SchedulingCalendarProps, SchedulingCalendarView, SchedulingCalendarEntry,
-  SchedulingCalendarOverlay, SchedulingEntryState, SchedulingOverlayKind,
+  SchedulingCalendarOverlay, SchedulingDatePart, SchedulingEntryState, SchedulingOverlayKind,
 } from './components/SchedulingCalendar.js';
 
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
@@ -275,7 +275,7 @@ export {
   isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,
   toDateKey, zonedDateKey, zonedDateSpan,
 } from './calendar-model.js';
-export type { CalendarDay, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
+export type { CalendarDay, CalendarWeekday, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
 
 export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
 export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';

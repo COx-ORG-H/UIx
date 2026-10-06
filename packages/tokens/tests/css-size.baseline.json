@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 184916,
-      "gzip": 26265,
-      "brotli": 22167
+      "raw": 185675,
+      "gzip": 26360,
+      "brotli": 22234
     },
     "build/css/styles.css": {
-      "raw": 194992,
-      "gzip": 28959,
-      "brotli": 24283
+      "raw": 195751,
+      "gzip": 29058,
+      "brotli": 24351
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -302,9 +302,9 @@
       "brotli": 1629
     },
     "styles/components/rich-text.css": {
-      "raw": 11572,
-      "gzip": 2866,
-      "brotli": 2451
+      "raw": 11377,
+      "gzip": 2881,
+      "brotli": 2457
     },
     "styles/components/rule-builder.css": {
       "raw": 2082,
@@ -317,9 +317,9 @@
       "brotli": 516
     },
     "styles/components/scheduling-calendar.css": {
-      "raw": 3958,
-      "gzip": 897,
-      "brotli": 749
+      "raw": 4986,
+      "gzip": 1019,
+      "brotli": 851
     },
     "styles/components/search-suggest.css": {
       "raw": 6903,
