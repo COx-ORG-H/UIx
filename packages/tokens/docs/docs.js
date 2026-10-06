@@ -106,7 +106,7 @@ export const COMPONENT_GROUPS = {
   'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
-  'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
+  'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Utility bits'],
 };
 
@@ -147,7 +147,7 @@ export const REACT_COMPONENT_SLUGS = [
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
-  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon',
+  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -232,6 +232,7 @@ export const exampleRouteFor = (item) => {
     'rule-builder': 'examples-rule-builder',
     'scheduling-calendar': 'examples-scheduling-calendar',
     icon: 'examples-icons',
+    'scheduling-timeline': 'examples-scheduling-calendar',
   }[item.slug];
   if (direct) return direct;
   if (item.slug === 'editorial-home') return 'examples-editorial-home';

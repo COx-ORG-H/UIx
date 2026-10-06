@@ -294,6 +294,16 @@ export type { SchedulingCalendarLabels,
   SchedulingCalendarOverlay, SchedulingDatePart, SchedulingEntryState, SchedulingOverlayKind,
 } from './components/SchedulingCalendar.js';
 
+export { DEFAULT_SCHEDULING_TIMELINE_LABELS, SchedulingTimeline } from './components/SchedulingTimeline.js';
+export type {
+  SchedulingTimelineLabels, SchedulingTimelineProps, SchedulingTimelineLane, SchedulingTimelineItem,
+  SchedulingTimelineOverlay, SchedulingTimelineOverlayKind, SchedulingTimelineMarker,
+} from './components/SchedulingTimeline.js';
+export {
+  DAY, HOUR, defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, snapToStep, timelineTicks,
+} from './scheduling-timeline-model.js';
+export type { PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineTick } from './scheduling-timeline-model.js';
+
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
 export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
 export {

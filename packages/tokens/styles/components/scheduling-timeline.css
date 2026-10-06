@@ -1,0 +1,51 @@
+/* uix scheduling timeline (React `SchedulingTimeline`, HAR-1364) — lanes of bars on a time
+   axis. Depends only on --uix-* tokens. The lane label column is sticky; the axis scrolls. */
+@layer uix.components {
+  .uix-scheduling-timeline { display: grid; gap: var(--uix-space-3); color: var(--uix-text); min-width: 0; }
+  .uix-scheduling-timeline__scroller { position: relative; overflow-x: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-scheduling-timeline__grid { display: grid; width: max-content; min-width: 100%; }
+  .uix-scheduling-timeline__row { display: flex; border-bottom: 1px solid var(--uix-border); }
+  .uix-scheduling-timeline__row:last-child { border-bottom: 0; }
+  .uix-scheduling-timeline__lane-label {
+    position: sticky; left: 0; z-index: var(--uix-z-sticky); flex: 0 0 clamp(7.5rem, 30vw, 12rem); display: grid; align-content: center; gap: var(--uix-space-1);
+    padding: var(--uix-space-2) var(--uix-space-3); border-right: 1px solid var(--uix-border); background: var(--uix-surface); min-width: 0;
+  }
+  .uix-scheduling-timeline__row--axis .uix-scheduling-timeline__lane-label { background: var(--uix-bg-subtle); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 600; }
+  .uix-scheduling-timeline__lane-name { font-weight: 500; overflow-wrap: break-word; hyphens: auto; }
+  .uix-scheduling-timeline__lane-meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-scheduling-timeline__track { position: relative; flex: 1 0 auto; min-height: calc(var(--uix-timeline-rows, 1) * 2.25rem + 2 * var(--uix-space-2)); }
+  .uix-scheduling-timeline__axis { min-height: 2.25rem; background: var(--uix-bg-subtle); }
+  .uix-scheduling-timeline__tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--uix-border); }
+  .uix-scheduling-timeline__tick[data-major] { border-left-color: var(--uix-border-strong); }
+  .uix-scheduling-timeline__tick-label { position: absolute; top: 50%; left: var(--uix-space-1); transform: translateY(-50%); white-space: nowrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-scheduling-timeline__tick[data-major] .uix-scheduling-timeline__tick-label { color: var(--uix-text); font-weight: 600; }
+  .uix-scheduling-timeline__gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--uix-border); }
+  .uix-scheduling-timeline__gridline[data-major] { background: var(--uix-border-strong); }
+  .uix-scheduling-timeline__overlay { position: absolute; top: 0; bottom: 0; background: var(--uix-info-bg); }
+  .uix-scheduling-timeline__overlay[data-kind="freeze"],
+  .uix-scheduling-timeline__overlay[data-kind="blackout"] { background: var(--uix-danger-bg); border-inline: 1px dashed var(--uix-danger-border); }
+  .uix-scheduling-timeline__overlay-label { position: absolute; top: var(--uix-space-1); left: var(--uix-space-1); right: var(--uix-space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text); }
+  .uix-scheduling-timeline__now { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); width: 2px; transform: translateX(-50%); background: var(--uix-danger); }
+  .uix-scheduling-timeline__now-label { position: absolute; top: 0; left: var(--uix-space-1); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--uix-danger); color: var(--uix-danger-fg); font-size: var(--uix-text-eyebrow); white-space: nowrap; }
+  .uix-scheduling-timeline__marker { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); border-left: 2px dashed var(--uix-warning); }
+  .uix-scheduling-timeline__items { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+  .uix-scheduling-timeline__slot { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * 2.25rem); height: 2rem; min-width: 0.5rem; }
+  .uix-scheduling-timeline__item {
+    display: flex; align-items: center; gap: var(--uix-space-2); width: 100%; height: 100%; padding: 0 var(--uix-space-2); overflow: hidden;
+    border: 0; border-left: 3px solid var(--uix-info); border-radius: var(--uix-radius-sm); background: var(--uix-info-bg); color: var(--uix-info-text);
+    font: inherit; font-size: var(--uix-text-meta); text-align: start; white-space: nowrap; cursor: pointer;
+  }
+  .uix-scheduling-timeline__item-title { overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+  .uix-scheduling-timeline__item-meta { overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+  .uix-scheduling-timeline__item[data-state="conflicted"], .uix-scheduling-timeline__item[data-state="blackout-violation"] { border-color: var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-danger-text); }
+  .uix-scheduling-timeline__item[data-state="in-progress"] { border-color: var(--uix-success); background: var(--uix-success-bg); color: var(--uix-text); }
+  /* overlap with another bar in the lane: hatched, so it reads without colour */
+  .uix-scheduling-timeline__item[data-conflict] { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, currentColor 20%, transparent) 6px 9px); }
+  .uix-scheduling-timeline__item[data-clipped-start] { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-style: dashed; }
+  .uix-scheduling-timeline__item[data-clipped-end] { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .uix-scheduling-timeline__item[data-movable] { cursor: grab; touch-action: none; }
+  .uix-scheduling-timeline__item[data-dragging] { cursor: grabbing; box-shadow: var(--uix-shadow-popover); position: relative; z-index: var(--uix-z-raised); }
+  .uix-scheduling-timeline__item:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; position: relative; z-index: var(--uix-z-raised); }
+  .uix-scheduling-timeline__empty { margin: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-scheduling-timeline__state { padding: var(--uix-space-8); border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-lg); text-align: center; }
+}

@@ -947,6 +947,9 @@ export interface DateRangeValue {
 }
 
 // @public (undocumented)
+export const DAY: number;
+
+// @public (undocumented)
 export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
 
 // @public (undocumented)
@@ -980,7 +983,13 @@ export const DEFAULT_SAVE_STATUS_LABELS: SaveStatusLabels;
 export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
 
 // @public (undocumented)
+export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
+
+// @public (undocumented)
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
+
+// @public
+export const defaultTimelineStep: (scale: TimelineScale) => number;
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -1491,6 +1500,9 @@ export interface HighlightedProps {
 export function highlightSegments(text: string, query: string): Segment[];
 
 // @public (undocumented)
+export const HOUR = 3600000;
+
+// @public (undocumented)
 export interface HsvColor {
     // (undocumented)
     h: number;
@@ -1778,6 +1790,9 @@ export type LayeredNavigationKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'Arro
 
 // @public
 export function layeredNeighbor(layout: LayeredLayout, currentId: string | undefined, key: LayeredNavigationKey): string | undefined;
+
+// @public
+export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange): PlacedSpan<T>[];
 
 // @public
 export function layoutLayeredGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], options?: LayeredLayoutOptions): LayeredLayout;
@@ -2420,8 +2435,31 @@ export interface PipelineStageProps extends Omit<HTMLAttributes<HTMLLIElement>, 
 // @public (undocumented)
 export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 'running' | 'done' | 'complete' | 'blocked' | 'failed' | 'error';
 
+// @public
+export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number;
+
+// @public (undocumented)
+export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
+    // (undocumented)
+    clippedEnd: boolean;
+    clippedStart: boolean;
+    conflict: boolean;
+    // (undocumented)
+    item: T;
+    left: number;
+    row: number;
+    // (undocumented)
+    width: number;
+}
+
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;
+
+// @public
+export function placeSpan(span: {
+    start: string;
+    end: string;
+}, range: TimelineRange): Omit<PlacedSpan, 'item' | 'row' | 'conflict'> | null;
 
 // @public
 export function Popconfirm(input: PopconfirmProps): react.JSX.Element;
@@ -3347,6 +3385,133 @@ export type SchedulingEntryState = 'scheduled' | 'conflicted' | 'in-progress' | 
 export type SchedulingOverlayKind = 'maintenance' | 'blackout';
 
 // @public
+export function SchedulingTimeline(input: SchedulingTimelineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SchedulingTimelineItem {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    laneId: string;
+    // (undocumented)
+    meta?: string;
+    movable?: boolean;
+    start: string;
+    // (undocumented)
+    state?: SchedulingEntryState;
+    // (undocumented)
+    title: string;
+}
+
+// @public (undocumented)
+export interface SchedulingTimelineLabels {
+    // (undocumented)
+    conflict: string;
+    // (undocumented)
+    empty: string;
+    item: string;
+    // (undocumented)
+    lanes: string;
+    // (undocumented)
+    loading: string;
+    moved: string;
+    // (undocumented)
+    moveHint: string;
+    // (undocumented)
+    now: string;
+    // (undocumented)
+    overlays: Record<SchedulingTimelineOverlayKind, string>;
+    // (undocumented)
+    region: string;
+    resized: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    states: Record<SchedulingEntryState, string>;
+    windows: string;
+}
+
+// @public (undocumented)
+export interface SchedulingTimelineLane {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: ReactNode;
+    meta?: ReactNode;
+}
+
+// @public (undocumented)
+export interface SchedulingTimelineMarker {
+    at: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    laneId?: string;
+}
+
+// @public (undocumented)
+export interface SchedulingTimelineOverlay {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: SchedulingTimelineOverlayKind;
+    // (undocumented)
+    label: string;
+    laneId?: string;
+    // (undocumented)
+    start: string;
+}
+
+// @public (undocumented)
+export type SchedulingTimelineOverlayKind = 'freeze' | 'maintenance' | 'blackout';
+
+// @public (undocumented)
+export interface SchedulingTimelineProps {
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    error?: string;
+    formatInstant?: (instant: string) => string;
+    formatTick?: (at: Date, scale: TimelineScale) => string;
+    // (undocumented)
+    items: SchedulingTimelineItem[];
+    // (undocumented)
+    labels?: Partial<SchedulingTimelineLabels>;
+    // (undocumented)
+    lanes: SchedulingTimelineLane[];
+    // (undocumented)
+    loading?: boolean;
+    // (undocumented)
+    locale?: string;
+    // (undocumented)
+    markers?: SchedulingTimelineMarker[];
+    now?: string;
+    onMoveItem?: (id: string, next: {
+        start: string;
+        end: string;
+    }) => void;
+    // (undocumented)
+    onRetry?: () => void;
+    // (undocumented)
+    onSelectItem?: (item: SchedulingTimelineItem) => void;
+    // (undocumented)
+    overlays?: SchedulingTimelineOverlay[];
+    range: TimelineRange;
+    renderItem?: (item: SchedulingTimelineItem) => ReactNode;
+    scale?: TimelineScale;
+    step?: number;
+    tickWidth?: string;
+    timeZone: string;
+    weekStartsOn?: number;
+}
+
+// @public
 export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
 
 // @public
@@ -3474,6 +3639,15 @@ export function serializeView(v: ViewState): string;
 // @public (undocumented)
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
+// @public
+export function shiftSpan(span: {
+    start: string;
+    end: string;
+}, delta: number, mode: 'move' | 'resize', step: number): {
+    start: string;
+    end: string;
+};
+
 // @public (undocumented)
 export function shouldVirtualize(count: number, threshold?: number): boolean;
 
@@ -3534,6 +3708,9 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     width?: number | string;
 }
+
+// @public
+export const snapToStep: (ms: number, step: number) => number;
 
 // @public
 export type SortDir = 'ascending' | 'descending';
@@ -3875,6 +4052,37 @@ export interface TimelineProps extends HTMLAttributes<HTMLOListElement> {
 }
 
 // @public (undocumented)
+export interface TimelineRange {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    start: string;
+}
+
+// @public
+export type TimelineScale = 'hour' | 'day' | 'week' | 'month';
+
+// @public (undocumented)
+export interface TimelineSpan {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    start: string;
+}
+
+// @public (undocumented)
+export interface TimelineTick {
+    at: number;
+    major: boolean;
+    offset: number;
+}
+
+// @public
+export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZone: string, weekStartsOn?: number): TimelineTick[];
+
+// @public (undocumented)
 export function Toast(input: ToastProps): react.JSX.Element;
 
 // @public
@@ -4182,6 +4390,8 @@ export interface UixLabels {
     };
     // (undocumented)
     schedulingCalendar?: Partial<SchedulingCalendarLabels>;
+    // (undocumented)
+    schedulingTimeline?: Partial<SchedulingTimelineLabels>;
     // (undocumented)
     searchSuggest?: {
         clear?: string;

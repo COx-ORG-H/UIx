@@ -77,6 +77,7 @@
 @import "components/rule-builder.css";
 @import "components/builder-canvas.css";
 @import "components/scheduling-calendar.css";
+@import "components/scheduling-timeline.css";
 @import "components/date-range-picker.css";
 @import "components/relationship-graph.css";
 @import "components/match-review.css";
