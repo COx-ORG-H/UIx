@@ -21,7 +21,6 @@ const componentsDir = resolve(here, 'components');
 
 const HOOKS = new Map([
   ['uix-main', 'AppShell mainId default: an element id, not a class'],
-  ['uix-file-upload', 'BrandProfiles upload label: styled by .uix-brand-profiles__upload'],
   ['uix-builder-canvas__items', 'structural hook; the list is styled through its items'],
   ['uix-link', 'DetailPage back link: base anchor styles + .uix-link--quiet'],
   ['uix-emoji-picker__search', 'styled by .uix-input; hook for tests'],

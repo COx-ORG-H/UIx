@@ -433,3 +433,27 @@ A full-screen media viewer (HAR-1367; TENSOR's capture viewer, MOTUS's programme
 - **Video:** `kind: 'video'` renders a native player, which keeps its own arrow keys.
 - **Dialog:** native `<dialog>`. Focus starts on Close, Escape and a backdrop click close it, and focus returns to the opener. Every word is in `labels`.
 - **Image size:** pass `width` and `height` so an SVG or a slow image keeps its box.
+
+### FileUpload and Attachment
+
+`FileUpload` is a drop zone, file picker and upload list (HAR-984; TENSOR's attachment panel, MOTUS's photo intake). `Attachment` is a row for a file that is already stored (HAR-985).
+
+```tsx
+<FileUpload items={uploads} accept=".pdf,image/*" maxSize={20_000_000} maxFiles={10}
+  hint="PDF or photos, up to 20 MB"
+  onFilesAdded={(accepted) => accepted.forEach(startUpload)}
+  onRetry={retryUpload} onRemove={removeUpload} />
+
+<AttachmentList label={`Attachments (${files.length})`}>
+  {files.map((f) => (
+    <Attachment key={f.id} name={f.name} size={f.size} type={f.type} href={f.url} download
+      meta={`${f.addedBy} · ${f.addedAt}`} onRemove={() => confirmRemove(f)} />
+  ))}
+</AttachmentList>
+```
+
+- **The product uploads.** `onFilesAdded(accepted, rejected)` gets the files that passed `accept`, `maxSize` and `maxFiles` (counting `items`). Report progress, success and failure back through `items` (`status`, `progress`, `error`). Rejected files are listed in an alert, one sentence each.
+- **Keyboard:** "Choose files" is a real button, described by the `hint`. Dropping is an extra, not the only way in. `capture` opens the camera on phones.
+- **List:** each file shows its size and status. Uploads show a progress bar (indeterminate without `progress`), and failures show the reason and a Retry button. `previewUrl` shows a thumbnail, and `onAltChange` asks for alt text on images.
+- **Attachment:** the name is the link (`href`, `download`, `renderLink`). It has a quieter `meta` line, a `state` slot (e.g. a "Scanning" `StatusPill`), `actions`, `onRemove`, and `status` `loading` | `error` | `forbidden` (no link, and the reason shown). It's server-renderable.
+- Pure helpers: `formatFileSize`, `fileMatchesAccept`, `partitionFiles`, `fileKind`.

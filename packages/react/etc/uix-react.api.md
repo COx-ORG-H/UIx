@@ -131,6 +131,52 @@ export interface AsyncOperationStatusProps extends Omit<HTMLAttributes<HTMLDivEl
 }
 
 // @public
+export function Attachment(input: AttachmentProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AttachmentLabels {
+    download: string;
+    // (undocumented)
+    forbidden: string;
+    // (undocumented)
+    loading: string;
+    remove: string;
+}
+
+// @public
+export function AttachmentList(input: AttachmentListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AttachmentListProps extends HTMLAttributes<HTMLUListElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label?: string;
+}
+
+// @public (undocumented)
+export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, 'children'> {
+    actions?: ReactNode;
+    download?: boolean | string;
+    // (undocumented)
+    error?: ReactNode;
+    href?: string;
+    // (undocumented)
+    labels?: Partial<AttachmentLabels>;
+    // (undocumented)
+    locale?: string;
+    meta?: ReactNode;
+    name: string;
+    onRemove?: () => void;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    size?: number;
+    state?: ReactNode;
+    status?: 'ready' | 'loading' | 'error' | 'forbidden';
+    thumbnail?: ReactNode;
+    type?: string;
+}
+
+// @public
 export function Avatar(input: AvatarProps): react.JSX.Element;
 
 // @public
@@ -950,6 +996,9 @@ export interface DateRangeValue {
 export const DAY: number;
 
 // @public (undocumented)
+export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
+
+// @public (undocumented)
 export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
 
 // @public (undocumented)
@@ -966,6 +1015,9 @@ export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
 
 // @public (undocumented)
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_FILE_UPLOAD_LABELS: FileUploadLabels;
 
 // @public (undocumented)
 export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels;
@@ -1422,6 +1474,103 @@ export interface FieldProps {
 }
 
 // @public
+export function fileKind(file: {
+    name: string;
+    type?: string;
+}): 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
+
+// @public
+export function fileMatchesAccept(file: {
+    name: string;
+    type?: string;
+}, accept?: string): boolean;
+
+// @public (undocumented)
+export interface FileRejection<F = File> {
+    // (undocumented)
+    file: F;
+    // (undocumented)
+    reason: FileRejectionReason;
+}
+
+// @public (undocumented)
+export type FileRejectionReason = 'type' | 'size' | 'count';
+
+// @public
+export function FileUpload(input: FileUploadProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FileUploadItem {
+    alt?: string;
+    error?: ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+    previewUrl?: string;
+    progress?: number;
+    size: number;
+    // (undocumented)
+    status: FileUploadStatus;
+    // (undocumented)
+    type?: string;
+}
+
+// @public (undocumented)
+export interface FileUploadLabels {
+    added: string;
+    alt: string;
+    // (undocumented)
+    choose: string;
+    // (undocumented)
+    done: string;
+    drop: string;
+    // (undocumented)
+    failed: string;
+    // (undocumented)
+    list: string;
+    // (undocumented)
+    queued: string;
+    // (undocumented)
+    remove: string;
+    retry: string;
+    retryShort: string;
+    title: string;
+    tooLarge: string;
+    tooMany: string;
+    uploading: string;
+    wrongType: string;
+}
+
+// @public (undocumented)
+export interface FileUploadProps {
+    accept?: string;
+    capture?: 'user' | 'environment';
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    hint?: ReactNode;
+    items: readonly FileUploadItem[];
+    // (undocumented)
+    labels?: Partial<FileUploadLabels>;
+    // (undocumented)
+    locale?: string;
+    maxFiles?: number;
+    maxSize?: number;
+    multiple?: boolean;
+    onAltChange?: (id: string, alt: string) => void;
+    onFilesAdded: (accepted: File[], rejected: FileRejection[]) => void;
+    // (undocumented)
+    onRemove?: (id: string) => void;
+    // (undocumented)
+    onRetry?: (id: string) => void;
+}
+
+// @public (undocumented)
+export type FileUploadStatus = 'queued' | 'uploading' | 'done' | 'error';
+
+// @public
 export interface FilterChoice {
     // (undocumented)
     label: string;
@@ -1668,6 +1817,9 @@ export function foldForSearch(text: string): FoldedText;
 
 // @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
+
+// @public
+export function formatFileSize(bytes: number, locale?: string): string;
 
 // @public (undocumented)
 export function hexToRgb(value: string): RgbColor | undefined;
@@ -2614,6 +2766,21 @@ export function parseMetricValue(value: string): number | null;
 
 // @public
 export function parseView(qs: string): ViewState;
+
+// @public
+export function partitionFiles<F extends {
+    name: string;
+    type?: string;
+    size: number;
+}>(files: readonly F[], input: {
+    accept?: string;
+    maxSize?: number;
+    maxFiles?: number;
+    existing?: number;
+}): {
+    accepted: F[];
+    rejected: FileRejection<F>[];
+};
 
 // @public (undocumented)
 export function Peek(input: PeekProps): react.JSX.Element;
