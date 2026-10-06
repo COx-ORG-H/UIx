@@ -7,10 +7,12 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleAnimations } from './settle.mjs';
 
 const GATED = new Set(['serious', 'critical']);
 
 async function expectNoGatedViolations(page, testInfo, label) {
+  await settleAnimations(page); // overlays fade in; axe mid-fade measures blended colours
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

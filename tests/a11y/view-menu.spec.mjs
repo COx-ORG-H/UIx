@@ -7,6 +7,7 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/view-menu/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -29,6 +30,7 @@ const rowNames = (page) => bare(page).locator('.uix-view-menu__col-name').allTex
 test('no serious or critical axe violations, with a row menu open', async ({ page }) => {
   await page.getByRole('button', { name: 'Column actions: Title' }).first().click();
   await expect(page.getByRole('menu', { name: 'Column actions: Title' })).toBeVisible();
+  await settleAnimations(page); // the menu is a fading popover
   const { violations } = await new AxeBuilder({ page }).include('#bare').analyze();
   const gated = violations.filter((v) => GATED.has(v.impact));
   expect(gated.map((v) => `${v.id}: ${v.nodes.length} node(s)`)).toEqual([]);

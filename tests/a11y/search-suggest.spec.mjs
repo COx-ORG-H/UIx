@@ -8,6 +8,7 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/search-suggest/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -27,6 +28,7 @@ const field = (page) => page.getByRole('combobox', { name: 'Search settings', ex
 test('no serious or critical axe violations with results, recent list, loading and error open', async ({ page }) => {
   await field(page).fill('zone');
   await expect(page.locator('#full [role="option"]').first()).toBeVisible();
+  await settleAnimations(page); // the list fades in; axe mid-fade measures blended colours
   const withResults = await new AxeBuilder({ page }).include('#full .uix-search-suggest').include('#narrow').analyze();
   expect(withResults.passes.length, 'axe measured something').toBeGreaterThan(0);
   expect(withResults.violations.filter((v) => GATED.has(v.impact)).map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
@@ -34,6 +36,7 @@ test('no serious or critical axe violations with results, recent list, loading a
   await field(page).fill('');
   await expect(page.getByText('Recently opened')).toBeVisible();
   await page.getByRole('combobox', { name: 'Search settings (loading)' }).focus();
+  await settleAnimations(page);
   const states = await new AxeBuilder({ page }).include('#full .uix-search-suggest').include('#loading').include('#error').analyze();
   expect(states.passes.length).toBeGreaterThan(0);
   expect(states.violations.filter((v) => GATED.has(v.impact)).map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);

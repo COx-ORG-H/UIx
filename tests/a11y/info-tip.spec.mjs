@@ -7,6 +7,7 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/info-tip/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -27,6 +28,7 @@ const panelOf = async (page, button) => page.locator(`[id="${await button.getAtt
 test('no serious or critical axe violations, with a panel open', async ({ page }) => {
   await pageTip(page).click();
   await expect(await panelOf(page, pageTip(page))).toBeVisible();
+  await settleAnimations(page); // the panel is a fading popover
   const { violations } = await new AxeBuilder({ page }).analyze();
   const gated = violations.filter((v) => GATED.has(v.impact));
   expect(gated.map((v) => `${v.id}: ${v.nodes.length} node(s)`)).toEqual([]);
@@ -200,6 +202,7 @@ test.describe('styleguide reference route (operator check)', () => {
     await expect(panel).toBeHidden();
     await expect(button).toBeFocused();
 
+    await settleAnimations(page); // the panel's exit fade
     const { violations } = await new AxeBuilder({ page }).include('[data-component-preview="info-tip"]').analyze();
     expect(violations.filter((v) => GATED.has(v.impact)).map((v) => v.id)).toEqual([]);
   });
