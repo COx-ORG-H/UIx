@@ -2,5 +2,6 @@
 @layer uix.components {
   .uix-dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--uix-space-3) var(--uix-space-6); }
   .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
-  .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; }
+  /* min-width:0 + anywhere: a long unbroken value (URL, id, hash) wraps instead of widening the grid (HAR-1353) */
+  .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; min-width: 0; overflow-wrap: anywhere; }
 }

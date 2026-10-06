@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 
 const CloseIcon = () => (
@@ -22,7 +23,9 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
   role?: 'dialog' | 'alertdialog';
 }
 
-export function Modal({ open, onClose, title, children, footer, className, closeLabel = 'Close dialog', role = 'dialog', ...rest }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, className, closeLabel: closeLabelProp, role = 'dialog', ...rest }: ModalProps) {
+  const uixLabels = useUixLabels();
+  const closeLabel = closeLabelProp ?? uixLabels.modal?.close ?? 'Close dialog';
   // onClose also fires on a native close (Esc / method="dialog") via the hook, so the dialog
   // carries no onClose prop of its own — that would double-fire (UIX-A11Y-1).
   const ref = useDialog(open, onClose);

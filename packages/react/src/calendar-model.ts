@@ -45,7 +45,10 @@ export function startOfMonth(value: string): string {
   return `${value.slice(0, 7)}-01`;
 }
 
-export function buildMonthGrid(month: string, weekStartsOn: 0 | 1 = 1): CalendarDay[] {
+/** A weekday in `Date.getUTCDay()` numbering: 0 = Sunday … 6 = Saturday. */
+export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export function buildMonthGrid(month: string, weekStartsOn: CalendarWeekday = 1): CalendarDay[] {
   const first = fromDateKey(startOfMonth(month));
   const offset = (first.getUTCDay() - weekStartsOn + 7) % 7;
   const start = addCalendarDays(toDateKey(first), -offset);

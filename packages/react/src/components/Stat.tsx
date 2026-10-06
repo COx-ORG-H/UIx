@@ -1,6 +1,8 @@
 import { forwardRef, useId } from 'react';
 import type { ReactNode, HTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
+import { renderUixLink } from '../link.js';
+import type { UixRenderLink } from '../link.js';
 
 export interface StatTrend {
   direction: 'up' | 'down';
@@ -31,6 +33,21 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   trendLabels?: { up?: string; down?: string };
   /** Whether the editor this tile opens is currently open (`aria-expanded`). */
   expanded?: boolean;
+  /**
+   * What `onActivate` opens, for `aria-haspopup` (HAR-1350; TENSOR B6). Default `'dialog'`;
+   * `'menu'` for a status menu; `false` for an in-place action (no chevron either).
+   */
+  haspopup?: 'dialog' | 'menu' | 'listbox' | false;
+  /**
+   * Makes the whole tile a link (HAR-1350; TENSOR B7, MOTUS B-A7). Server-renderable, unlike
+   * `onActivate`. Ignored when `onActivate` is set. The forwarded ref reaches the `<a>` only
+   * without `renderLink`.
+   */
+  href?: string;
+  /** The link tile is the current page (`aria-current="page"`). */
+  current?: boolean;
+  /** Your router's link for `href`; default a plain `<a>`. */
+  renderLink?: UixRenderLink;
 }
 
 const Chevron = () => (
@@ -46,27 +63,29 @@ const Chevron = () => (
  * ref then points at that button, so a popover can anchor to it.
  */
 export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
-  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, trendLabels, className, onClick, ...props },
+  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, trendLabels, haspopup = 'dialog', href, current, renderLink, className, onClick, ...props },
   ref,
 ) {
   const id = useId();
   const interactive = onActivate != null;
+  const linked = !interactive && href != null;
   const classes = cx(
     'uix-stat',
     tone !== 'neutral' && `uix-stat--${tone}`,
     size === 'compact' && 'uix-stat--compact',
-    interactive && 'uix-stat--interactive',
+    (interactive || linked) && 'uix-stat--interactive',
+    linked && 'uix-stat--link',
     className,
   );
 
-  // a <button> may only hold phrasing content, so the interactive tile uses block spans
-  const Row = interactive ? 'span' : 'div';
+  // a <button> or <a> holds the tile, so the rows are block spans rather than divs
+  const Row = interactive || linked ? 'span' : 'div';
   const body = (
     <>
       <Row className="uix-stat__label">
         <span id={interactive ? `${id}-label` : undefined}>{label}</span>
         {icon}
-        {interactive && <Chevron />}
+        {interactive && haspopup !== false && <Chevron />}
       </Row>
       <Row className="uix-stat__value" id={interactive ? `${id}-value` : undefined}>{value}</Row>
       {(meta != null || trend != null) && (
@@ -87,6 +106,11 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     </>
   );
 
+  if (linked) {
+    const linkProps = { ...(props as HTMLAttributes<HTMLAnchorElement>), href, className: classes, onClick, 'aria-current': current ? 'page' as const : undefined, children: body };
+    return <>{renderLink ? renderUixLink(renderLink, linkProps) : <a ref={ref as Ref<HTMLAnchorElement>} {...linkProps} />}</>;
+  }
+
   if (!interactive) {
     return <div ref={ref as Ref<HTMLDivElement>} className={classes} onClick={onClick} {...(props as HTMLAttributes<HTMLDivElement>)}>{body}</div>;
   }
@@ -99,7 +123,7 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
       {...(props as HTMLAttributes<HTMLButtonElement>)}
       ref={ref as Ref<HTMLButtonElement>}
       className={classes}
-      aria-haspopup="dialog"
+      aria-haspopup={haspopup === false ? undefined : haspopup}
       aria-expanded={expanded}
       aria-labelledby={`${id}-label ${id}-sep ${id}-value${activateLabel ? ` ${id}-action` : ''}`}
       aria-describedby={meta != null || trend != null ? `${id}-meta` : undefined}

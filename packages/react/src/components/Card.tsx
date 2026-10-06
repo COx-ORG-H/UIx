@@ -7,6 +7,12 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
   title?: ReactNode;
   /** Element for the title — pick a real heading to slot the card into the page outline (UIX-A11Y-4). Default `div` keeps legacy rendering. */
   titleAs?: 'h2' | 'h3' | 'h4' | 'div';
+  /**
+   * Id of the title element (HAR-1354; MOTUS B-A5), so a form, table or region elsewhere
+   * can point `aria-labelledby` at it. With a `role` (e.g. `role="region"`), the card is
+   * labelled by its title too; a plain card has no role, and ARIA forbids naming it.
+   */
+  titleId?: string;
   subtitle?: ReactNode;
   /**
    * Plain-text help behind a ? button after the title. Blank lines separate paragraphs;
@@ -20,11 +26,11 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
   children?: ReactNode;
 }
 
-export function Card({ title, titleAs: TitleTag = 'div', subtitle, help, helpLabel, headerAction, footer, children, className, ...props }: CardProps) {
+export function Card({ title, titleAs: TitleTag = 'div', titleId, subtitle, help, helpLabel, headerAction, footer, children, className, ...props }: CardProps) {
   const hasHeader = title != null || subtitle != null || headerAction != null;
-  const heading = title ? <TitleTag className="uix-card__title">{title}</TitleTag> : null;
+  const heading = title ? <TitleTag className="uix-card__title" id={titleId}>{title}</TitleTag> : null;
   return (
-    <div className={cx('uix-card', className)} {...props}>
+    <div className={cx('uix-card', className)} aria-labelledby={heading && titleId && props.role ? titleId : undefined} {...props}>
       {hasHeader && (
         <div className="uix-card__header">
           <div style={{ flex: 1 }}>

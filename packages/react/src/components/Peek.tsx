@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { backdropDismiss } from '../hooks/backdropDismiss.js';
 
@@ -41,7 +42,11 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
   hint?: string;
 }
 
-export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel = 'Previous record', nextLabel = 'Next record', closeLabel = 'Close preview', className, onClick, ...rest }: PeekProps) {
+export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel: previousLabelProp, nextLabel: nextLabelProp, closeLabel: closeLabelProp, className, onClick, ...rest }: PeekProps) {
+  const uixLabels = useUixLabels();
+  const previousLabel = previousLabelProp ?? uixLabels.peek?.previous ?? 'Previous record';
+  const nextLabel = nextLabelProp ?? uixLabels.peek?.next ?? 'Next record';
+  const closeLabel = closeLabelProp ?? uixLabels.peek?.close ?? 'Close preview';
   const ref = useDialog(open, onClose);
   const hasNav = onNavPrev != null || onNavNext != null;
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).

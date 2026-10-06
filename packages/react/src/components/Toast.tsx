@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, MouseEvent as ReactMouseEvent } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 
 export type ToastTone = 'success' | 'danger' | 'info';
 
@@ -24,7 +25,9 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   leaving?: boolean;
 }
 
-export function Toast({ title, message, tone, icon, onClose, leaving, dismissLabel = 'Dismiss', className, ...props }: ToastProps) {
+export function Toast({ title, message, tone, icon, onClose, leaving, dismissLabel: dismissLabelProp, className, ...props }: ToastProps) {
+  const uixLabels = useUixLabels();
+  const dismissLabel = dismissLabelProp ?? uixLabels.toast?.dismiss ?? 'Dismiss';
   // Errors interrupt (assertive); everything else waits its turn (polite). Danger stays its own
   // role="alert" (announced reliably on insertion); polite toasts announce via the Toaster's
   // persistent region when one is present (UIX-A11Y-1), falling back to per-toast role="status".
@@ -84,7 +87,9 @@ export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }
 
-export function Toaster({ children, regionLabel = 'Notifications', className, ...props }: ToasterProps) {
+export function Toaster({ children, regionLabel: regionLabelProp, className, ...props }: ToasterProps) {
+  const uixLabels = useUixLabels();
+  const regionLabel = regionLabelProp ?? uixLabels.toaster?.region ?? 'Notifications';
   // Positioning container + notifications landmark. The always-mounted visually-hidden region
   // below does the polite announcing for child toasts (see ToasterContext); it is cleared after
   // ~3s so an identical follow-up toast re-announces. aria-label is overridable via props spread.

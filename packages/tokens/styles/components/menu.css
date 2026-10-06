@@ -13,3 +13,15 @@
   .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
   .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
 }
+
+/* React `Menu` row parts (HAR-1359) */
+@layer uix.components {
+  .uix-menu__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-menu__item--danger .uix-menu__icon { color: var(--uix-danger-text); }
+  .uix-menu__text { flex: 1; min-width: 0; }
+  .uix-menu__shortcut { margin-left: auto; padding-left: var(--uix-space-4); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  a.uix-menu__item { text-decoration: none; }
+  .uix-menu__item:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; background: var(--uix-bg-hover); }
+  .uix-menu__item[aria-disabled="true"] { opacity: .5; cursor: default; }
+  .uix-menu__item[aria-disabled="true"]:hover { background: transparent; }
+}

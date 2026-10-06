@@ -4,6 +4,12 @@
   .uix-scheduling-calendar__grid { display:grid; grid-template-columns:repeat(7,minmax(6.5rem,1fr)); border-top:1px solid var(--uix-border); border-left:1px solid var(--uix-border); overflow:auto; }
   .uix-scheduling-calendar__day { min-height:8rem; padding:var(--uix-space-2); border-right:1px solid var(--uix-border); border-bottom:1px solid var(--uix-border); background:var(--uix-surface); }
   .uix-scheduling-calendar__day[data-outside] { background:var(--uix-bg-subtle); color:var(--uix-text-muted); }
+  .uix-scheduling-calendar__weekday { padding:var(--uix-space-1) var(--uix-space-2); border-right:1px solid var(--uix-border); border-bottom:1px solid var(--uix-border); background:var(--uix-bg-subtle); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-weight:600; text-align:right; }
+  .uix-scheduling-calendar__dayhead { display:flex; align-items:center; gap:var(--uix-space-1); min-width:0; }
+  .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__date { flex:1 1 auto; width:auto; }
+  .uix-scheduling-calendar__badge { display:inline-flex; align-items:center; min-width:0; overflow:hidden; white-space:nowrap; font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__more { justify-self:start; padding:var(--uix-space-1) var(--uix-space-2); border:0; border-radius:var(--uix-radius-sm); background:transparent; color:var(--uix-link); font-size:var(--uix-text-meta); font-weight:600; text-align:left; cursor:pointer; }
+  .uix-scheduling-calendar__more:hover { background:var(--uix-bg-subtle); }
   .uix-scheduling-calendar__date { display:block; width:100%; border:0; background:transparent; color:inherit; text-align:right; font-size:var(--uix-text-meta); }
   .uix-scheduling-calendar__overlay { display:block; margin-block:var(--uix-space-1); padding:var(--uix-space-1) var(--uix-space-2); border-radius:var(--uix-radius-sm); background:var(--uix-info-bg); color:var(--uix-info-text); font-size:var(--uix-text-meta); }
   .uix-scheduling-calendar__overlay[data-kind="blackout"] { background:var(--uix-danger-bg); color:var(--uix-danger-text); }

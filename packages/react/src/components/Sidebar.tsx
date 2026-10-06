@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 
 const ChevronIcon = () => (
   <svg className="uix-navgroup__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -21,7 +22,10 @@ export interface SidebarProps extends HTMLAttributes<HTMLElement> {
   collapseLabel?: string;
 }
 
-export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, children, expandLabel = 'Expand sidebar', collapseLabel = 'Collapse sidebar', className, ...props }: SidebarProps) {
+export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, children, expandLabel: expandLabelProp, collapseLabel: collapseLabelProp, className, ...props }: SidebarProps) {
+  const uixLabels = useUixLabels();
+  const expandLabel = expandLabelProp ?? uixLabels.sidebar?.expand ?? 'Expand sidebar';
+  const collapseLabel = collapseLabelProp ?? uixLabels.sidebar?.collapse ?? 'Collapse sidebar';
   const isCollapsed = collapsed ?? nav === 'rail';
   return (
     <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={nav} {...props}>
@@ -65,10 +69,19 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   badge?: ReactNode;
   active?: boolean;
   as?: 'a' | 'button';
+  /**
+   * A second line under the label (a sub-label, a count, a long German term); it wraps,
+   * and the row grows to fit (HAR-1355; TENSOR B31). Hidden in the rail.
+   */
+  description?: ReactNode;
   children?: ReactNode;
 }
 
-export function NavItem({ icon, badge, active, as: Tag = 'a', children, className, ...props }: NavItemProps) {
+export function NavItem({ icon, badge, active, as: Tag = 'a', description, children, className, ...props }: NavItemProps) {
+  const text = description == null
+    ? <span className="uix-navitem__label">{children}</span>
+    : <span className="uix-navitem__text"><span className="uix-navitem__label">{children}</span><span className="uix-navitem__desc">{description}</span></span>;
+  const multiline = description == null ? undefined : true;
   if (Tag === 'button') {
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
     return (
@@ -76,10 +89,11 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', children, classNam
         type="button"
         className={cx('uix-navitem', className)}
         aria-current={active ? 'page' : undefined}
+        data-multiline={multiline}
         {...(btnProps as HTMLAttributes<HTMLButtonElement>)}
       >
         {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
-        <span className="uix-navitem__label">{children}</span>
+        {text}
         {badge != null && <span className="uix-navitem__badge">{badge}</span>}
       </button>
     );
@@ -89,10 +103,11 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', children, classNam
     <a
       className={cx('uix-navitem', className)}
       aria-current={active ? 'page' : undefined}
+      data-multiline={multiline}
       {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
     >
       {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
-      <span className="uix-navitem__label">{children}</span>
+      {text}
       {badge != null && <span className="uix-navitem__badge">{badge}</span>}
     </a>
   );

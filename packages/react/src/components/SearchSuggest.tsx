@@ -3,6 +3,7 @@
 import { useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import type { FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, ReactNode, Ref } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
 import { Spinner } from './Spinner.js';
@@ -138,7 +139,7 @@ export function SearchSuggest({
   empty,
   error,
   shortcutHint,
-  clearLabel = 'Clear search',
+  clearLabel: clearLabelProp,
   status,
   size = 'md',
   open: openProp,
@@ -151,6 +152,8 @@ export function SearchSuggest({
   onBlur,
   ...props
 }: SearchSuggestProps) {
+  const uixLabels = useUixLabels();
+  const clearLabel = clearLabelProp ?? uixLabels.searchSuggest?.clear ?? 'Clear search';
   const id = useId();
   const listboxId = `${id}-listbox`;
   const headingId = `${id}-heading`;

@@ -37,3 +37,13 @@
   .uix-prompt { display: grid; gap: var(--uix-space-3); }
   .uix-prompt__actions { margin: var(--uix-space-3) calc(var(--uix-space-5) * -1) calc(var(--uix-space-5) * -1); }
 }
+
+/* ConfirmDialog body, compensation, type-to-confirm and error (HAR-1356) */
+@layer uix.components {
+  .uix-confirm { display: grid; gap: var(--uix-space-4); }
+  .uix-confirm__body { display: grid; gap: var(--uix-space-3); }
+  .uix-confirm__compensation { display: grid; gap: var(--uix-space-1); padding: var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); color: var(--uix-text); font-size: var(--uix-text-meta); }
+  .uix-confirm__compensation-title { font-weight: 600; }
+  .uix-confirm__error { padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-danger-bg); color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
+  .uix-dialog__footer .uix-confirm__tertiary { margin-inline-end: auto; }
+}
