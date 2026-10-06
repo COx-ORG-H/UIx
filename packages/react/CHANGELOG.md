@@ -1,5 +1,27 @@
 # @tensor_1/react
 
+## 2.31.0
+
+### Minor Changes
+
+- 5fda359: New `EntityPicker`: a form field that holds one record found by an async search (HAR-1366; TENSOR B28/C5 `entity-picker.tsx` and its eight consumers, MOTUS B-P10). It shows the chosen record with a named clear button. Choosing again opens a `SearchSuggest` list with loading, empty and error states, and Retry is a keyboard-reachable list row (the defect in TENSOR HAR-1336). Stale results are ignored and focus is returned. `name` posts the id; `id` and `aria-describedby` work with `Field`.
+
+  `SearchSuggest` gains `inputId` and `inputDescribedBy`, which put an id and a description on the input itself.
+
+- 61ea6bc: New `FileUpload` and `Attachment` / `AttachmentList` (HAR-984/985; TENSOR C15 attachments panel, MOTUS C-7 photo intake). `FileUpload` checks picked or dropped files against `accept`, `maxSize` and `maxFiles` and hands the accepted ones to the product, which uploads them and reports progress, success and failure through `items`. It has a real "Choose files" button, a rejection alert, per-file progress, Retry, remove, thumbnails and optional alt text. `Attachment` is a stored-file row: the name as a link or download, size, meta, a state slot, actions, remove, and `loading`/`error`/`forbidden` statuses. It's server-renderable. New pure helpers: `formatFileSize`, `fileMatchesAccept`, `partitionFiles`, `fileKind`. Tokens: `.uix-file-upload*` rules in `components/file-upload` and list rules in `components/attachment` (`.uix-attachments--list`, `__body`, `__line`, `__meta`, `__error`, `__actions`). Existing `.uix-dropzone`, `.uix-filelist` and `.uix-attachment` rules are unchanged.
+- 372e973: New `FilterEditor` and a typed filter model (HAR-1365; TENSOR C6 `table-filter-editor.tsx`, MOTUS C-1 "+ filter"). `FilterPopover`'s value is one string; `FilterEditor` edits a typed `FilterValue`:
+
+  - `enum`: multi-select checkboxes, with a diacritic-insensitive option search once the list is long.
+  - `text`: a condition and text.
+  - `number`: a condition (incl. `between`) and an optional unit.
+  - `date-range`: two date fields.
+  - `boolean`: Any / Yes / No.
+  - `reference`: records found by an async `onSearch`, with loading, empty and error-with-retry states and removable chips.
+
+  `summarizeFilter(field, value, { formatDate })` writes the chip text ("State: Open, Pending", "Age: 3 – 14 days", "Created: 01.10.2026 – 05.10.2026"). `isFilterEmpty` and `emptyFilterValue` complete the model. `FilterPopover` is unchanged. Tokens: `.uix-filter-editor*` rules in `components/table-toolbar`.
+
+- 9d3143a: New `Lightbox`, a full-screen media viewer (HAR-1367; TENSOR C12 `capture-viewer.tsx`, MOTUS C-8 programme gallery). It has previous/next buttons, ←/→, Home/End and swipe, an announced counter, a caption, a fit/actual-size toggle and video items. It's a native `<dialog>` with focus on Close and focus returned to the opener. Tokens: gallery rules in `components/lightbox` (`.uix-lightbox--gallery`, `__stage`, `__media`, `__bar`, `__nav`, `__close`). The single-image `.uix-lightbox` is unchanged.
+
 ## 2.30.0
 
 ### Minor Changes
