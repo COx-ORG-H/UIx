@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 069a9ec routine: docs contrast badge ignored alpha; caught by eyeballing the golden -->
 <!-- lesson-skip: 5551372 not a fix from this session; arrived via git pull of master (PR #44, own session owns its lesson call) -->
 <!-- lesson-skip: 7d2221d squash-merge of 8c831c1 (already skipped: routine CSS layout fixes) -->
 <!-- lesson-skip: 8c831c1 routine CSS layout fixes; each cause shown by measuring the element -->
