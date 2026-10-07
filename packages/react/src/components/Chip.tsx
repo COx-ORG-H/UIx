@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { XIcon } from '../icons/components.js';
 import { fillLabel } from '../fill-label.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
@@ -88,7 +89,7 @@ export function Chip({
     <span className={outer} data-on={pressed || undefined} {...props}>
       {main('uix-chip__main')}
       <button type="button" className="uix-chip__remove" aria-label={removeName} disabled={disabled} onClick={onRemove}>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" /></svg>
+        <XIcon />
       </button>
     </span>
   );

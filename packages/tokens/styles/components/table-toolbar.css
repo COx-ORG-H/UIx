@@ -34,20 +34,24 @@
   .uix-chip__icon { display: inline-flex; flex: none; }
   .uix-chip__label { min-width: 0; overflow-wrap: anywhere; }
   .uix-chip__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
-  .uix-chip--removable { padding-inline-end: var(--uix-space-1); }
+  .uix-chip--removable { padding-inline-end: calc(var(--uix-space-1) / 2); }
   .uix-chip__main {
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 0; border: 0;
     background: transparent; color: inherit; font: inherit; border-radius: var(--uix-radius-pill);
   }
   button.uix-chip__main, a.uix-chip__main { cursor: pointer; }
   .uix-chip__main:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  /* 24 px hit area (WCAG 2.5.8) without growing the chip: the negative block margin eats the overhang */
+  /* remove x (HAR-1569): one spec with .uix-tag__remove, pinned by tests/dismiss-control.test.mjs */
   .uix-chip__remove {
-    display: inline-grid; place-items: center; width: 24px; height: 24px; margin-block: calc(-1 * var(--uix-space-1)); padding: 0; flex: none;
-    border: 0; border-radius: var(--uix-radius-pill); background: transparent; color: inherit; cursor: pointer;
+    position: relative; display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px;
+    margin-block: calc(var(--uix-space-1) / -2); padding: 0; border: 0; border-radius: var(--uix-radius-pill);
+    background: transparent; color: inherit; font: inherit; line-height: 0; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-chip__remove svg { width: 12px; height: 12px; }
-  .uix-chip__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-chip__remove::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
+  .uix-chip__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
+  .uix-chip__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); color: var(--uix-text); }
+  .uix-chip__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }
   .uix-chip__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
   .uix-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
 }

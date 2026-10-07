@@ -139,7 +139,7 @@ Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pur
 this is what keeps UIx stack-neutral). Current set:
 
 - **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
-- **Layout:** Card/CardLink, **PageHeader**, **DetailLayout/DetailPage**, Breadcrumbs, RelatedLinks, CollapsibleSection, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
+- **Layout:** Card/CardLink, DashboardGrid (+Item; spans 1/2/full, container-query columns), **PageHeader**, **DetailLayout/DetailPage**, Breadcrumbs, RelatedLinks, CollapsibleSection, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
 - **Overlays:** Modal, ConfirmDialog, PromptDialog, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**
 - **Data display:** Table (+Th/Td/Tr/Wrap; `fixed` layout, Th `sortOrder` for multi-sort; **BulkBar, RowActions/RowAction, ExpandToggle, CellStrong/CellSub, Mark/Highlighted**), Pagination, StatusPill, **Stat**, **Label**, **Tooltip**, **Avatar/AvatarGroup/UserChip**, **Comments/Comment**, **Timeline/TimelineItem**, **Prose/Note**
@@ -153,7 +153,8 @@ this is what keeps UIx stack-neutral). Current set:
 UIx is **presentational and stack-neutral**. Business logic, data-fetching, and domain concepts stay in the
 **consumer**, composed from UIx primitives:
 
-- Data-coupled widgets (tRPC/query-driven dashboards) → build in the product, render with UIx `Card`/`Stat`/`Chart`.
+- Data-coupled widgets (tRPC/query-driven dashboards) → build in the product, render with UIx `Card`/`Stat`/`Chart`,
+  laid out on UIx `DashboardGrid` (the generic layout half; drag-and-drop and persistence stay in the product).
 - Workflow/compliance components (e.g. an approval `ConfirmAction` carrying audit/RBAC metadata) → product owns
   the logic; the **shell** uses UIx `Button`/`Modal`/`Alert`.
 - Domain badges/icons (regulatory status, entity-type icons) → product owns the meaning; styling via UIx `Label`/`StatusPill`.
