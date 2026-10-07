@@ -62,9 +62,9 @@
       "brotli": 973
     },
     "styles/components/calendar.css": {
-      "raw": 1361,
-      "gzip": 545,
-      "brotli": 420
+      "raw": 3635,
+      "gzip": 1130,
+      "brotli": 915
     },
     "styles/components/card.css": {
       "raw": 3028,
@@ -117,9 +117,9 @@
       "brotli": 1186
     },
     "styles/components/date-range-picker.css": {
-      "raw": 1823,
-      "gzip": 570,
-      "brotli": 464
+      "raw": 5100,
+      "gzip": 1420,
+      "brotli": 1195
     },
     "styles/components/description-list.css": {
       "raw": 534,

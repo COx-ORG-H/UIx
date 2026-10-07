@@ -27,6 +27,8 @@ const PAGES = [
   // HAR-1573: the field must read as a plain label over the control, with no tag band. Captured as
   // the specimen's preview only, so prose changes on the reference page do not move this golden.
   { name: 'docs-filter-popover', path: 'docs/explorer.html#filter-popover', element: '.uix-docs__page .uix-filter-popover' },
+  // HAR-1570: start/end circles, the band between them and today's ring.
+  { name: 'docs-date-range-picker', path: 'docs/explorer.html#examples-date-range-picker', pickRangeEnd: '2026-09-12' },
 ];
 
 for (const pg of PAGES) {
@@ -63,10 +65,18 @@ for (const pg of PAGES) {
       await page.evaluate(() => window.scrollTo(0, 0));
     }
 
+    // The date-range specimen starts with only a start date; pick an end so the band shows.
+    if (pg.pickRangeEnd) {
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).click();
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).blur();
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
     if (pg.element) {
       await expect(page.locator(pg.element)).toHaveScreenshot(`${pg.name}.png`, { timeout: 20_000 });
       return;
     }
+
     await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true, timeout: 20_000 });
   });
 }

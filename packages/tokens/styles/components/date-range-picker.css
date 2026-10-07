@@ -5,12 +5,44 @@
   .uix-date-range-picker__month h4 { margin-bottom:var(--uix-space-2); text-align:center; }
   .uix-date-range-picker__weekdays,.uix-date-range-picker__grid { display:grid; grid-template-columns:repeat(7,1fr); }
   .uix-date-range-picker__weekdays span { padding:var(--uix-space-1); color:var(--uix-text-muted); text-align:center; font-size:var(--uix-text-meta); }
-  .uix-date-range-picker__grid button { aspect-ratio:1; min-width:2rem; border:0; border-radius:0; background:transparent; color:var(--uix-text); }
-  .uix-date-range-picker__grid button:hover { background:var(--uix-bg-hover); }
-  .uix-date-range-picker__grid button[data-in-range] { background:var(--uix-brand-muted); }
-  .uix-date-range-picker__grid button[data-range-edge] { border-radius:var(--uix-radius-pill); background:var(--uix-accent); color:var(--uix-accent-fg); font-weight:600; }
+  /* Day cell (HAR-1570): one shape for every state. The button is a transparent square;
+     ::after is the circle (hover, start/end, today, focus), concentric with the cell, and
+     ::before is the range band, exactly the circle's height so band and circle meet with
+     no notches. A start/end cell draws half a band toward its neighbour, and only when
+     that neighbour is in range, so a lone start (or a one-day range) has no band. The
+     half band uses logical insets, so RTL mirrors on its own. */
+  .uix-date-range-picker__grid button { position:relative; isolation:isolate; aspect-ratio:1; min-width:2rem; border:0; border-radius:0; background:transparent; color:var(--uix-text); }
+  .uix-date-range-picker__grid button::before,
+  .uix-date-range-picker__grid button::after { content:""; position:absolute; z-index:calc(-1 * var(--uix-z-raised)); pointer-events:none; }
+  .uix-date-range-picker__grid button::before { inset:3px 0; }
+  .uix-date-range-picker__grid button::after { inset:3px; border-radius:50%; }
+  .uix-date-range-picker__grid button:hover:not(:disabled)::after { background:var(--uix-bg-hover); }
+  .uix-date-range-picker__grid button[data-in-range]::before { background:var(--uix-brand-muted); }
+  .uix-date-range-picker__grid button[data-in-range]:hover:not(:disabled)::after { background:color-mix(in srgb, var(--uix-accent) 18%, transparent); }
+  .uix-date-range-picker__grid button[data-range-edge]::before { background:none; }
+  .uix-date-range-picker__grid button[data-range-edge="start"]:has(+ [data-in-range])::before { inset-inline-start:50%; background:var(--uix-brand-muted); }
+  .uix-date-range-picker__grid [data-in-range] + button[data-range-edge="end"]::before { inset-inline-end:50%; background:var(--uix-brand-muted); }
+  .uix-date-range-picker__grid button[data-range-edge] { color:var(--uix-accent-fg); font-weight:600; }
+  .uix-date-range-picker__grid button[data-range-edge]::after,
+  .uix-date-range-picker__grid button[data-range-edge]:hover:not(:disabled)::after { background:var(--uix-accent); }
+  .uix-date-range-picker__grid button[aria-current="date"]::after { box-shadow:inset 0 0 0 1px var(--uix-text-muted); }
+  /* Focus: a round ring with a surface gap; a plain ring would merge into the accent circle. */
+  .uix-date-range-picker__grid button:focus-visible { z-index:var(--uix-z-raised); outline:none; }
+  .uix-date-range-picker__grid button:focus-visible::after { box-shadow:0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring); }
+  .uix-date-range-picker__grid button[aria-current="date"]:focus-visible::after { box-shadow:inset 0 0 0 1px var(--uix-text-muted), 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring); }
   .uix-date-range-picker__grid button:disabled { color:var(--uix-text-hushed); text-decoration:line-through; }
   .uix-date-range-picker__selection { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-date-range-picker--invalid { border-color:var(--uix-danger); }
   @media (max-width:640px) { .uix-date-range-picker__months { grid-template-columns:1fr; } }
+  /* Forced colours drop backgrounds and box-shadows: the edges keep a Highlight circle,
+     in-range days an underline, today and focus a system-colour outline on the circle. */
+  @media (forced-colors:active) {
+    .uix-date-range-picker__grid button[data-range-edge] { forced-color-adjust:none; color:HighlightText; }
+    .uix-date-range-picker__grid button[data-range-edge]::after,
+    .uix-date-range-picker__grid button[data-range-edge]:hover:not(:disabled)::after { forced-color-adjust:none; background:Highlight; }
+    .uix-date-range-picker__grid button[data-in-range]:not([data-range-edge]) { text-decoration-line:underline; text-decoration-thickness:.15em; text-underline-offset:.2em; }
+    .uix-date-range-picker__grid button[data-in-range]:not([data-range-edge]):disabled { text-decoration-line:underline line-through; }
+    .uix-date-range-picker__grid button[aria-current="date"]::after { outline:1px solid CanvasText; outline-offset:-1px; }
+    .uix-date-range-picker__grid button:focus-visible::after { outline:2px solid CanvasText; outline-offset:2px; }
+  }
 }

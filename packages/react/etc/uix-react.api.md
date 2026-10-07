@@ -1024,6 +1024,7 @@ export interface DateRangePickerProps {
     onChange: (value: DateRangeValue) => void;
     // (undocumented)
     onVisibleMonthChange?: (month: string) => void;
+    today?: string | null;
     // (undocumented)
     value: DateRangeValue;
     // (undocumented)
