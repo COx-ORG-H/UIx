@@ -12,12 +12,15 @@ export const tagInputMarkup = `<div class="uix-stack" data-tag-example>
   <p class="uix-field__hint" role="status" data-tag-status>No changes yet.</p>
 </div>`;
 
-export const fileUploadMarkup = `<div class="uix-stack" data-file-example>
-  <label class="uix-dropzone"><strong>Choose attachments</strong>
-    <span>Local preview only. Files are not uploaded.</span>
-    <input class="uix-input" type="file" multiple aria-label="Choose attachments">
-  </label>
-  <div class="uix-filelist" data-file-list></div>
+export const fileUploadMarkup = `<div class="uix-file-upload" data-file-example>
+  <div class="uix-dropzone">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
+    <strong>Choose attachments</strong>
+    <span class="uix-file-upload__hint" id="example-file-hint">Local preview only. Files are not uploaded.</span>
+    <button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-file-choose aria-describedby="example-file-hint">Choose files</button>
+    <input class="uix-visually-hidden" type="file" tabindex="-1" aria-hidden="true" multiple>
+  </div>
+  <ul class="uix-filelist uix-file-upload__list" data-file-list aria-label="Selected files" hidden></ul>
   <p class="uix-field__hint" role="status" data-file-status>No files selected.</p>
 </div>`;
 
@@ -49,18 +52,26 @@ export const initFormSpecimens = (root) => {
     });
   });
   root.querySelectorAll('[data-file-example]').forEach((example) => {
-    example.querySelector('input').addEventListener('change', (event) => {
-      const files = [...event.target.files];
-      const list = example.querySelector('[data-file-list]');
+    const input = example.querySelector('input[type=file]');
+    const zone = example.querySelector('.uix-dropzone');
+    const list = example.querySelector('[data-file-list]');
+    const status = example.querySelector('[data-file-status]');
+    // The button opens the chooser; a click on the empty drop zone does the same (like React FileUpload).
+    zone.addEventListener('click', (event) => {
+      if (event.target === zone || event.target.closest('[data-file-choose]')) input.click();
+    });
+    input.addEventListener('change', () => {
+      const files = [...input.files];
       list.replaceChildren();
       for (const file of files) {
-        const row = document.createElement('div'); row.className = 'uix-filelist__item';
+        const row = document.createElement('li'); row.className = 'uix-filelist__item';
         const name = document.createElement('span'); name.textContent = file.name;
         const size = document.createElement('span'); size.className = 'uix-filelist__size';
         size.textContent = `${new Intl.NumberFormat().format(file.size)} bytes`;
         row.append(name, size); list.append(row);
       }
-      example.querySelector('[data-file-status]').textContent = files.length ? `${files.length} file(s) selected locally. Nothing uploaded.` : 'No files selected.';
+      list.hidden = files.length === 0;
+      status.textContent = files.length ? `${files.length} file(s) selected locally. Nothing uploaded.` : 'No files selected.';
     });
   });
   initSelectSpecimens(root);

@@ -108,6 +108,8 @@ try {
   await page.evaluate(() => location.hash = 'file-upload');
   await page.locator('[data-component-preview="file-upload"] input').setInputFiles({ name:'example.txt', mimeType:'text/plain', buffer:Buffer.from('UIx') });
   assert.equal(await page.locator('[data-file-list]').innerText(), 'example.txt\n3 bytes');
+  assert.equal(await page.locator('[data-file-list] li').count(), 1);
+  assert(await page.locator('[data-component-preview="file-upload"] button[data-file-choose].uix-btn').isVisible());
   // Select (HAR-1572): the reference shows the real markup, no visible native <select>, and the
   // APG keys work: typing "re" lands on Resolved, Escape keeps the value and focus.
   await page.evaluate(() => location.hash = 'select');
