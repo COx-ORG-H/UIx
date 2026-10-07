@@ -9,8 +9,9 @@ import { Radio, RadioGroup } from './Radio.js';
 import { Select } from './Select.js';
 import { Chip } from './Chip.js';
 import { fillLabel } from '../fill-label.js';
+import { useUixLabels } from '../labels-context.js';
 import { foldForSearch } from '../search-suggest-model.js';
-import { NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue } from '../filter-model.js';
+import { NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, matchFilterPreset } from '../filter-model.js';
 import type { FilterChoice, FilterField, FilterValue, NumberFilterOperator, TextFilterOperator } from '../filter-model.js';
 
 export interface FilterEditorLabels {
@@ -36,6 +37,8 @@ export interface FilterEditorLabels {
   selected: string;
   /** Remove one chosen record. `{label}`. */
   remove: string;
+  /** Names the row of `field.presets` chips. Optional so existing label objects still type-check; default "Presets". */
+  presets?: string;
   operators: Record<TextFilterOperator | NumberFilterOperator, string>;
 }
 
@@ -59,6 +62,7 @@ export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels = {
   selectNone: 'Clear selection',
   selected: '{count} selected',
   remove: 'Remove {label}',
+  presets: 'Presets',
   operators: {
     contains: 'contains', 'not-contains': 'does not contain', is: 'is', 'is-not': 'is not', 'starts-with': 'starts with',
     eq: 'equals', neq: 'does not equal', lt: 'less than', lte: 'at most', gt: 'more than', gte: 'at least', between: 'between',
@@ -84,9 +88,15 @@ export interface FilterEditorProps {
  * multi-select, text or number with a condition, a date range, yes/no, or records found by
  * an async search. The product owns the popover trigger and the query; `summarizeFilter`
  * turns the applied value into the chip text. `FilterPopover` stays for the one-string case.
+ * An enum field's `presets` (HAR-1505) render as toggle chips above its options. Words come
+ * from `labels`, or from `UixLabelsProvider`'s `filterEditor` entry.
  */
 export function FilterEditor({ field, value: valueProp, onValueChange, onApply, onClear, labels: labelOverrides, searchThreshold = 8, searchDelay = 250 }: FilterEditorProps) {
-  const labels: FilterEditorLabels = { ...DEFAULT_FILTER_EDITOR_LABELS, ...labelOverrides, operators: { ...DEFAULT_FILTER_EDITOR_LABELS.operators, ...labelOverrides?.operators } };
+  const provided = useUixLabels().filterEditor;
+  const labels: FilterEditorLabels = {
+    ...DEFAULT_FILTER_EDITOR_LABELS, ...provided, ...labelOverrides,
+    operators: { ...DEFAULT_FILTER_EDITOR_LABELS.operators, ...provided?.operators, ...labelOverrides?.operators },
+  };
   const id = useId();
   const value = valueProp?.kind === field.kind ? valueProp : emptyFilterValue(field.kind);
 
@@ -159,8 +169,15 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
   }, [options, query]);
   const selected = new Set(value.values);
   const toggle = (v: string, on: boolean) => onChange({ kind: 'enum', values: on ? [...value.values, v] : value.values.filter((x) => x !== v) });
+  const presets = field.presets ?? [];
+  const active = matchFilterPreset(field, value);
   return (
     <>
+      {presets.length > 0 && (
+        <div className="uix-chip-group uix-filter-editor__presets" role="group" aria-label={labels.presets ?? DEFAULT_FILTER_EDITOR_LABELS.presets}>
+          {presets.map((p) => <Chip key={p.id} pressed={p === active} onPressedChange={() => onChange({ kind: 'enum', values: [...p.values] })}>{p.label}</Chip>)}
+        </div>
+      )}
       {options.length > threshold && <Input type="search" size="sm" aria-label={labels.search} placeholder={labels.search} value={query} onChange={(e) => setQuery(e.currentTarget.value)} autoFocus />}
       <div className="uix-filter-editor__bulk">
         <span className="uix-filter-editor__count" aria-live="polite">{fillLabel(labels.selected, { count: value.values.length })}</span>
