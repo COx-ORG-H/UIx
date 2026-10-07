@@ -16,16 +16,17 @@ while deliberately **reusing v1's `--uix-*` token contract** so the two stay swa
 
 ## View it
 
-Open `index.html` directly. It redirects to the canonical docs and works without a server.
-
-For the same site over HTTP (recommended while developing):
+Serve the repository root with any static server and open `index.html`; it redirects to the canonical docs:
 
 ```powershell
-# any static server works, e.g.
 npx serve .
 ```
 
-No build step. The docs' **Example gallery** contains the original component specimens, the complete workspace
+(Opened straight from disk, `tables.html` works, but Chromium refuses to load the docs explorer's module
+script from a `file://` page, so the explorer stays empty there.)
+
+No build step. The pages link the shipped bundle, `build/css/styles.css`, which is built and not committed;
+in a clone that has not run `npm run build` they load the same rules from `styles/main.css` instead. The docs' **Example gallery** contains the original component specimens, the complete workspace
 composition, and the dense UIX-V3 examples (rules, canvas authoring, scheduling, graph, review, configuration,
 and branding) in one searchable shell. **Component status** reports CSS, React, docs, and example coverage
 separately.
@@ -119,7 +120,11 @@ npm run build        # build:tokens + build:themes -> build/ and themes/*.css
 npm run test:parity  # assert the generated CSS still matches the contract baseline
 ```
 
-Generated output under `build/` is committed (so the showcase stays build-free to open) and `package.json`
+Generated output under `build/` is committed (so the showcase stays build-free to open), with one exception:
+the two minified bundles, `build/css/styles.css` and `build/css/components.css`, are built by `npm run build`,
+by CI, by the docs deployment and before every publish, and are git-ignored. Each is a single line, so two
+branches that both committed one always conflicted
+([maintainer runbook](Docs/maintainer-runbook.md#generated-files-and-parallel-prs)). `package.json`
 `exports` maps `./css`, `./tailwind`, `./ts`, and `./themes/*` for consumers. The package is `private` by
 default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove `private` before publishing.
 

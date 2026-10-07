@@ -22,6 +22,17 @@ export type FilterValue =
 
 export type FilterValueKind = FilterValue['kind'];
 
+/**
+ * A named selection for an `enum` field (HAR-1505), e.g. "Open work" = new, open and pending.
+ * The id, label and values come from the product.
+ */
+export interface FilterPreset {
+  id: string;
+  label: string;
+  /** The option values the preset selects. Compared as a set: order and repeats do not matter. */
+  values: readonly string[];
+}
+
 export interface FilterField {
   id: string;
   /** Column name, also the start of the chip summary. */
@@ -38,6 +49,12 @@ export interface FilterField {
   /** `boolean`: words for true and false, e.g. Escalated / Not escalated. Default from labels. */
   trueLabel?: string;
   falseLabel?: string;
+  /**
+   * `enum`: named selections shown as toggle chips above the options. Activating one replaces
+   * the selection with its values; the one equal to the selection is pressed, and the chip
+   * summary names it.
+   */
+  presets?: readonly FilterPreset[];
 }
 
 export interface FilterSummaryLabels {
@@ -52,6 +69,8 @@ export interface FilterSummaryLabels {
   until: string;
   /** More than `maxListed` values: `{first}`, `{count}`. */
   more: string;
+  /** An `enum` value equal to a preset: `{label}` (the preset), `{field}`. Default `{label}`. */
+  preset?: string;
 }
 
 export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
@@ -65,6 +84,7 @@ export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
   from: 'from {from}',
   until: 'until {to}',
   more: '{first} +{count}',
+  preset: '{label}',
 };
 
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[] = ['contains', 'not-contains', 'is', 'is-not', 'starts-with'];
@@ -94,6 +114,19 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean {
   }
 }
 
+/**
+ * The first of `field.presets` whose values equal the value's as a set, or undefined. Only an
+ * `enum` value can match a preset.
+ */
+export function matchFilterPreset(field: FilterField, value: FilterValue | undefined): FilterPreset | undefined {
+  if (value?.kind !== 'enum' || !field.presets?.length) return undefined;
+  const chosen = new Set(value.values);
+  return field.presets.find((preset) => {
+    const wanted = new Set(preset.values);
+    return wanted.size === chosen.size && [...wanted].every((v) => chosen.has(v));
+  });
+}
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
 
@@ -109,7 +142,8 @@ export interface SummarizeFilterOptions {
 
 /**
  * One line for the filter chip, e.g. "State: Open, Pending", "Priority ≥ 2", "Created:
- * 01.10.2026 – 05.10.2026", "Escalated: Yes". Empty values give an empty string.
+ * 01.10.2026 – 05.10.2026", "Escalated: Yes". An enum value equal to one of `field.presets`
+ * gives that preset's label (the `preset` label). Empty values give an empty string.
  */
 export function summarizeFilter(field: FilterField, value: FilterValue | undefined, options: SummarizeFilterOptions = {}): string {
   if (!value || isFilterEmpty(value)) return '';
@@ -122,6 +156,8 @@ export function summarizeFilter(field: FilterField, value: FilterValue | undefin
   };
   switch (value.kind) {
     case 'enum': {
+      const preset = matchFilterPreset(field, value);
+      if (preset) return fill(labels.preset ?? DEFAULT_FILTER_SUMMARY_LABELS.preset!, { label: preset.label, field: field.label });
       const byValue = new Map((field.options ?? []).map((o) => [o.value, o.label]));
       return `${field.label}: ${list(value.values.map((v) => byValue.get(v) ?? v))}`;
     }

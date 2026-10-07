@@ -17,7 +17,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../build/css/styles.css">
+  <!-- The shipped bundle. It is built, not committed; in a clone that has not run `npm run build`
+       the same rules load from the authored sources through native @import. -->
+  <link rel="stylesheet" href="../build/css/styles.css" onerror="this.onerror=null;this.href='../styles/main.css'">
   <link rel="stylesheet" href="../guide/guide.css">
   <link rel="stylesheet" href="docs.css">
 </head>
