@@ -43,13 +43,14 @@ test('modal: Esc closes, focus returns to the trigger, scroll unlocks', async ({
   await expect(trigger).toBeFocused();
 });
 
-test('rich select: combobox states and audible arrowing', async ({ page }) => {
-  await gotoRoute(page, 'examples-form-controls', '[popovertarget="status-sel"]');
-  const trigger = page.locator('[popovertarget="status-sel"]');
+test('select: combobox states and audible arrowing (HAR-1572)', async ({ page }) => {
+  await gotoRoute(page, 'examples-form-controls', '#sel-status-form');
+  const trigger = page.locator('#sel-status-form');
+  await expect(trigger).toHaveAttribute('role', 'combobox');
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
-  // the field label must reach the trigger's accessible name (audit S1)
-  await expect(trigger).toHaveAttribute('aria-labelledby', /.+/);
+  // the field label must reach the trigger's accessible name (audit S1): <label for>
+  expect(await trigger.evaluate((t) => t.labels?.[0]?.textContent)).toBe('Status');
   await trigger.click();
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   // arrowing must move aria-activedescendant (audit S1: previously silent)
@@ -58,8 +59,11 @@ test('rich select: combobox states and audible arrowing', async ({ page }) => {
   expect(active).toBeTruthy();
   const option = page.locator(`#${active}`);
   await expect(option).toHaveAttribute('role', 'option');
+  await expect(option).toHaveText('Closed');
   await page.keyboard.press('Escape');
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  await expect(trigger).toHaveText('Resolved');
+  await expect(trigger).toBeFocused();
 });
 
 test('table sort is keyboard-operable and announced', async ({ page }) => {

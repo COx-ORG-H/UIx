@@ -29,6 +29,9 @@ const PAGES = [
   { name: 'docs-filter-popover', path: 'docs/explorer.html#filter-popover', element: '.uix-docs__page .uix-filter-popover' },
   // HAR-1570: start/end circles, the band between them and today's ring.
   { name: 'docs-date-range-picker', path: 'docs/explorer.html#examples-date-range-picker', pickRangeEnd: '2026-09-12' },
+  // Select draws its own list (HAR-1572): every state at desktop width and at 320 px.
+  { name: 'docs-select', path: 'docs/explorer.html#select' },
+  { name: 'docs-select-320', path: 'docs/explorer.html#select', viewport: { width: 320, height: 844 } },
 ];
 
 for (const pg of PAGES) {

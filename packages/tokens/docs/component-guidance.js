@@ -3,7 +3,7 @@ export const COMPONENT_GUIDANCE = {
   button: ['Trigger an action such as saving or opening a dialog.', 'A labeled action with explicit priority, focus and disabled styling.'],
   input: ['Enter a short text value in a form.', 'A labeled control with its hint or validation message beside the value.'],
   textarea: ['Enter multi-line plain text.', 'A resizable text area; the application owns length limits and validation.'],
-  select: ['Choose one value from a short, known list.', 'A trigger displaying the selected option and a menu of alternatives.'],
+  select: ['Choose one or several values from a known list: a plain Select for up to about 12 options, a searchable Select for longer lists, EntityPicker or SearchSuggest for records.', 'A trigger showing the value opens a UIx-drawn list (never the browser dropdown): arrows, Home/End, PageUp/PageDown and typing move, Enter or Space chooses, Escape closes and keeps the value. On a phone the list opens as a bottom sheet. A hidden native select carries the form value.'],
   checkbox: ['Toggle independent choices or confirm a boolean value.', 'A visible checked, unchecked or mixed state with an associated label.'],
   radio: ['Choose exactly one option from a visible group.', 'One selected option in a named, mutually exclusive group.'],
   switch: ['Turn a setting on or off.', 'A binary state indicator; explain whether changes apply immediately or require Save.'],

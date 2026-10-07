@@ -553,3 +553,21 @@ The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure
 - **`gap`:** `sm` (--uix-space-3), `md` (default, --uix-space-4), `lg` (--uix-space-6).
 - Refs reach the grid and item `<div>`s, and other props pass through. For an element you render yourself (a drag-and-drop library's sortable node, a server template), use `dashboardGridClassName(columns, gap)` and `dashboardGridItemClassName(span)`.
 - Plain HTML: `.uix-dashboard-grid` with `--cols-N` / `--{sm,md,lg,xl}-cols-N` and `--gap-sm|lg`, items `.uix-dashboard-grid__item` with `--span-2` / `--full`. Every direct child of the grid is a cell.
+
+### Select draws its own list
+
+`Select` (HAR-1572) no longer opens the browser's dropdown. It is the WAI-ARIA select-only combobox: a `<button role="combobox">` trigger and a UIx-drawn listbox in the top layer (a bottom sheet on phones). The props did not change, so existing call sites keep working:
+
+```tsx
+<Select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+  <option value="" disabled hidden>Choose a status</option>
+  <optgroup label="Active">{active.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
+</Select>
+<Select options={teams} value={team} onValueChange={(v) => setTeam(v as string)} searchable="auto" placeholder={t('team')} />
+<Select multiple name="labels" options={labels} defaultValue={['network']} />
+<Select loadOptions={(q, signal) => api.owners(q, { signal })} searchable options={[owner]} value={owner.value} />
+```
+
+- **Forms:** a visually hidden `<select data-uix-select-proxy>` holds `name`, `required`, `form`, `multiple` and the value. `ref` points at it, so `FormData`, `form.reset()`, autofill, react-hook-form `register` and `Controller` work as before. `onChange(e)` gets `e.target.value`, and a failed `required` focuses the trigger.
+- **Keyboard:** ↑ ↓ Home End PageUp PageDown and typing move (repeat one letter to cycle). Enter, Space, Tab and Alt+↑ choose. Escape closes and keeps the value. With `multiple`, Space toggles and Delete clears.
+- Plain Select for up to about 12 options, `searchable` for longer lists, `EntityPicker` or `SearchSuggest` for records.

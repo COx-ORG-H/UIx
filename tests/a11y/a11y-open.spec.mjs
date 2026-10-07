@@ -51,10 +51,9 @@ test('modal open', async ({ page }, testInfo) => {
   await expectNoGatedViolations(page, testInfo, 'modal');
 });
 
-test('rich select open', async ({ page }, testInfo) => {
-  await gotoRoute(page, 'examples-form-controls', '[popovertarget="status-sel"]');
-  const trigger = page.locator('[popovertarget="status-sel"]');
-  await trigger.click();
-  await expect(page.locator('#status-sel')).toBeVisible();
-  await expectNoGatedViolations(page, testInfo, 'rich-select');
+test('select open (the real Select markup, HAR-1572)', async ({ page }, testInfo) => {
+  await gotoRoute(page, 'examples-form-controls', '#sel-status-form');
+  await page.locator('#sel-status-form').click();
+  await expect(page.locator('#sel-status-form-listbox')).toBeVisible();
+  await expectNoGatedViolations(page, testInfo, 'select');
 });

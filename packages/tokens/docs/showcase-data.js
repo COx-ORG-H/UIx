@@ -1,4 +1,4 @@
-import { tagInputMarkup, fileUploadMarkup } from "./form-specimens.js";
+import { tagInputMarkup, fileUploadMarkup, selectMarkup, selectStatesMarkup, SELECT_SPECIMENS } from "./form-specimens.js";
 /* Generated once from the retired UIx showcase pages. The docs router is now the canonical owner. */
 export const SHOWCASE_PAGES = [
   {
@@ -350,6 +350,19 @@ const forms = SHOWCASE_PAGES.find((page) => page.slug === "examples-form-control
 forms.html = forms.html.replace(/<span class="uix-taginput"[\s\S]*?<\/span>\s*<\/div>\s*<\/div>/, `${tagInputMarkup}</div></div>`).replace(/<label class="uix-dropzone"[\s\S]*?<\/label>/, fileUploadMarkup);
 
 forms.html = forms.html.replaceAll("<div  data-uix-richselect>", '<div class="uix-combobox" data-uix-richselect>');
+
+// The Status field shows the real Select markup (HAR-1572): the docs-only rich select it replaces
+// looked like a UIx list while every shipped Select opened the browser's own dropdown.
+forms.html = forms.html.replace(/<label class="uix-field__label" id="status-sel-label">Status<\/label>\s*<div class="uix-combobox" data-uix-richselect>[\s\S]*?<\/ul>\s*<\/div>/, `<label class="uix-field__label" for="${SELECT_SPECIMENS.status.id}-form">Status</label>${selectMarkup({ ...SELECT_SPECIMENS.status, id: `${SELECT_SPECIMENS.status.id}-form` })}`);
+
+forms.html = forms.html.replace(/<label class="uix-field__label" id="cat-sel-label">Category<\/label><div class="uix-combobox" data-uix-richselect>[\s\S]*?<\/ul><\/div>/, `<label class="uix-field__label" for="sel-category">Category</label>${selectMarkup({ id: 'sel-category', name: 'category', value: ['network'], items: [{ value: 'network', label: 'Network' }, { value: 'access', label: 'Access' }] })}`);
+
+ADDITIONAL_EXAMPLES.push({
+  module: "select",
+  route: "examples-form-controls",
+  title: "Select",
+  html: selectStatesMarkup,
+});
 
 forms.html = forms.html.replace('id="rs-type" popover class="uix-cmdk"', 'id="rs-type" popover class="uix-popover uix-cmdk"');
 

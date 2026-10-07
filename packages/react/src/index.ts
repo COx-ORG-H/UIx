@@ -46,7 +46,7 @@ export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
 export { Select } from './components/Select.js';
-export type { SelectProps } from './components/Select.js';
+export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 
 export { Checkbox } from './components/Checkbox.js';
 export type { CheckboxProps } from './components/Checkbox.js';
