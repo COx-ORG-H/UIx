@@ -126,9 +126,11 @@ test('HAR-1355: NavItem description renders a second line and marks the row mult
 });
 
 test('HAR-1352: CollapsibleSection stays plain without the new props; lazy, persistKey and openRequest work', async () => {
+  const icons = await import('../dist/icons.js');
+  const chevron = renderToStaticMarkup(h(icons.ChevronDownIcon, { size: 'sm' }));
   assert.equal(
     renderToStaticMarkup(h(ui.CollapsibleSection, { title: 'SLA' }, 'Body')),
-    '<details class="uix-collapsible"><summary class="uix-collapsible__summary"><span><span class="uix-collapsible__title">SLA</span></span><span class="uix-collapsible__chevron" aria-hidden="true">⌄</span></summary><div class="uix-collapsible__body">Body</div></details>',
+    `<details class="uix-collapsible"><summary class="uix-collapsible__summary"><span><span class="uix-collapsible__title">SLA</span></span><span class="uix-collapsible__chevron" aria-hidden="true">${chevron}</span></summary><div class="uix-collapsible__body">Body</div></details>`,
   );
 
   let renders = 0;
@@ -376,4 +378,29 @@ test('HAR-1362: Steps is an ordered list with state in text and aria-current on 
   const nav = renderToStaticMarkup(h(ui.Steps, { orientation: 'vertical' }, h(ui.Step, { title: 'Details', state: 'complete', href: '/new?step=1' })));
   assert.match(nav, /<a href="\/new\?step=1" class="uix-step__action">/);
   assert.match(nav, /uix-steps--vertical/);
+});
+
+test('HAR-1571: the CollapsibleSection chevron is the UIx ChevronDown svg, with no text node, in both variants', async () => {
+  const icons = await import('../dist/icons.js');
+  const expectedPath = icons.ICON_GLYPHS['chevron-down'][0][1].d;
+  assert.equal(expectedPath, 'm6 9 6 6 6-6', 'the glyph is the Lucide chevron-down path');
+  const check = (markup, label) => {
+    const host = document.createElement('div');
+    host.innerHTML = markup;
+    const chevron = host.querySelector('.uix-collapsible__chevron');
+    assert.ok(chevron, `${label}: chevron present`);
+    assert.equal(chevron.getAttribute('aria-hidden'), 'true', `${label}: decorative`);
+    assert.equal(chevron.textContent, '', `${label}: no text glyph`);
+    assert.equal([...chevron.childNodes].filter((n) => n.nodeType === 3).length, 0, `${label}: no text node`);
+    const svg = chevron.querySelector('svg');
+    assert.ok(svg, `${label}: contains an svg`);
+    assert.equal(svg.querySelector('path')?.getAttribute('d'), expectedPath, `${label}: path matches glyphChevronDown`);
+    assert.ok(svg.classList.contains('uix-icon--sm'), `${label}: icon-sm size`);
+  };
+  check(renderToStaticMarkup(h(ui.CollapsibleSection, { title: 'Plain' }, 'Body')), 'plain');
+  check(renderToStaticMarkup(h(ui.CollapsibleSection, { title: 'Lazy', lazy: true }, 'Body')), 'stateful');
+  const { host, unmount } = mount(h(ui.CollapsibleSection, { title: 'Stateful', persistKey: 'har-1571' }, 'Body'));
+  assert.equal(host.querySelector('.uix-collapsible__chevron svg path')?.getAttribute('d'), expectedPath, 'mounted stateful section');
+  assert.equal(host.querySelector('.uix-collapsible__chevron').textContent, '');
+  unmount();
 });

@@ -333,7 +333,7 @@ export const ADDITIONAL_EXAMPLES = [
     "module": "collapsible-section",
     "route": "examples-data-display",
     "title": "Collapsible section",
-    "html": "<details class=\"uix-collapsible\" open><summary class=\"uix-collapsible__summary\"><span><span class=\"uix-collapsible__title\">Advanced settings</span><span class=\"uix-collapsible__meta\">3 options</span></span><span class=\"uix-collapsible__chevron\" aria-hidden=\"true\">⌄</span></summary><div class=\"uix-collapsible__body\">Secondary controls remain available without overwhelming the default view.</div></details>"
+    "html": "<details class=\"uix-collapsible\" open><summary class=\"uix-collapsible__summary\"><span><span class=\"uix-collapsible__title\">Advanced settings</span><span class=\"uix-collapsible__meta\">3 options</span></span><span class=\"uix-collapsible__chevron\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" focusable=\"false\" class=\"uix-icon uix-icon--sm\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></span></summary><div class=\"uix-collapsible__body\">Secondary controls remain available without overwhelming the default view.</div></details>"
   }
 ];
 

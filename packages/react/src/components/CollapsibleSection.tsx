@@ -1,5 +1,6 @@
 import type { DetailsHTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { ChevronDownIcon } from '../icons/components.js';
 import { CollapsibleSectionState } from './CollapsibleSectionState.js';
 
 export interface CollapsibleSectionProps extends Omit<DetailsHTMLAttributes<HTMLDetailsElement>, 'title'> {
@@ -33,7 +34,7 @@ export function CollapsibleSection(props: CollapsibleSectionProps) {
     <details className={cx('uix-collapsible', className)} {...rest}>
       <summary className="uix-collapsible__summary">
         <span><span className="uix-collapsible__title">{title}</span>{summary != null && <span className="uix-collapsible__meta">{summary}</span>}</span>
-        <span className="uix-collapsible__chevron" aria-hidden="true">⌄</span>
+        <span className="uix-collapsible__chevron" aria-hidden="true"><ChevronDownIcon size="sm" /></span>
       </summary>
       <div className="uix-collapsible__body">{children}</div>
     </details>

@@ -67,9 +67,9 @@
       "brotli": 420
     },
     "styles/components/card.css": {
-      "raw": 2437,
-      "gzip": 735,
-      "brotli": 590
+      "raw": 3028,
+      "gzip": 917,
+      "brotli": 757
     },
     "styles/components/chart.css": {
       "raw": 5615,
