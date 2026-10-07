@@ -39,3 +39,5 @@ tests/search-suggest/dist/
 tests/drawer/dist/
 # TextDiff Playwright harness bundle (tests/text-diff/build.mjs)
 tests/text-diff/dist/
+# Select Playwright harness bundle (tests/select/build.mjs)
+tests/select/dist/

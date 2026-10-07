@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 212303,
-      "gzip": 30113,
-      "brotli": 25205
+      "raw": 218607,
+      "gzip": 30919,
+      "brotli": 25834
     },
     "build/css/styles.css": {
-      "raw": 222379,
-      "gzip": 32776,
-      "brotli": 27316
+      "raw": 228683,
+      "gzip": 33573,
+      "brotli": 27954
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -92,9 +92,9 @@
       "brotli": 545
     },
     "styles/components/combobox.css": {
-      "raw": 1311,
-      "gzip": 559,
-      "brotli": 439
+      "raw": 3218,
+      "gzip": 1078,
+      "brotli": 861
     },
     "styles/components/command-palette.css": {
       "raw": 1890,
@@ -342,9 +342,9 @@
       "brotli": 500
     },
     "styles/components/select.css": {
-      "raw": 2113,
-      "gzip": 819,
-      "brotli": 664
+      "raw": 8546,
+      "gzip": 2366,
+      "brotli": 1972
     },
     "styles/components/sidebar.css": {
       "raw": 9918,

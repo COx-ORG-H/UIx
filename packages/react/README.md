@@ -512,3 +512,21 @@ A two-way diff of two texts (HAR-1368; TENSOR's knowledge-article version diff).
 - **Not colour alone:** changes are `<del>` / `<ins>`, with a −/+ sign and a spoken "Removed:" / "Added:" (`labels`). Struck and underlined words mark changes inside a line.
 - **Long texts:** `context` keeps that many unchanged lines around each change. Longer runs fold behind "Show n unchanged lines", and focus moves to the first revealed line. Over `maxTokens` (20 000) a note replaces the diff. Past `maxEdits` (2 000) the changed middle shows as one replacement instead of stalling.
 - Pure model for tests and servers: `diffText`, `diffTokens`, `textDiffRows`, `tokenizeText`.
+
+### Select draws its own list
+
+`Select` (HAR-1572) no longer opens the browser's dropdown. It is the WAI-ARIA select-only combobox: a `<button role="combobox">` trigger and a UIx-drawn listbox in the top layer (a bottom sheet on phones). The props did not change, so existing call sites keep working:
+
+```tsx
+<Select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+  <option value="" disabled hidden>Choose a status</option>
+  <optgroup label="Active">{active.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
+</Select>
+<Select options={teams} value={team} onValueChange={(v) => setTeam(v as string)} searchable="auto" placeholder={t('team')} />
+<Select multiple name="labels" options={labels} defaultValue={['network']} />
+<Select loadOptions={(q, signal) => api.owners(q, { signal })} searchable options={[owner]} value={owner.value} />
+```
+
+- **Forms:** a visually hidden `<select data-uix-select-proxy>` holds `name`, `required`, `form`, `multiple` and the value. `ref` points at it, so `FormData`, `form.reset()`, autofill, react-hook-form `register` and `Controller` work as before. `onChange(e)` gets `e.target.value`, and a failed `required` focuses the trigger.
+- **Keyboard:** ↑ ↓ Home End PageUp PageDown and typing move (repeat one letter to cycle). Enter, Space, Tab and Alt+↑ choose. Escape closes and keeps the value. With `multiple`, Space toggles and Delete clears.
+- Plain Select for up to about 12 options, `searchable` for longer lists, `EntityPicker` or `SearchSuggest` for records.

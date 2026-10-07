@@ -1,4 +1,6 @@
-/* uix select (native, styled) — depends only on --uix-* tokens. */
+/* uix select — depends only on --uix-* tokens.
+   `.uix-select` styles both a plain native <select> (HTML consumers) and the React Select's
+   trigger, a <button role="combobox"> that opens a UIx-drawn listbox (HAR-1572). */
 @layer uix.components {
   .uix-select {
     height: var(--uix-control-h); width: 100%; padding: 0 var(--uix-space-8) 0 var(--uix-space-3); appearance: none;
@@ -20,4 +22,89 @@
   .uix-select-trigger:hover { border-color: var(--uix-border-strong); }
   .uix-select-trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+
+  /* the React trigger: one line, the value ends in an ellipsis instead of being cut off */
+  button.uix-select { display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; text-align: start; line-height: 1.25; }
+  .uix-select[aria-expanded="true"] { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-select[aria-invalid="true"] { border-color: var(--uix-danger); }
+  .uix-select[aria-invalid="true"]:focus, .uix-select[aria-invalid="true"][aria-expanded="true"] { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
+  .uix-select[aria-readonly="true"] { cursor: default; background-color: var(--uix-bg-subtle); background-image: none; padding-right: var(--uix-space-3); }
+  .uix-select__value { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--uix-space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-select__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-select__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-select__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-select[data-placeholder] .uix-select__value { color: var(--uix-text-muted); }
+  .uix-select__more {
+    flex: none; padding: 0 var(--uix-space-2); border-radius: var(--uix-radius-pill); background: var(--uix-bg-subtle);
+    color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums;
+  }
+
+  /* the form proxy: a real <select> that holds the value; not seen, not tabbable, sits right after
+     the trigger so a native "please select an item" bubble points at the field */
+  .uix-select__proxy {
+    position: absolute; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none;
+  }
+
+  /* the list: a top-layer popover placed by useAnchoredPosition (inline min-width / max-height) */
+  .uix-select__popup {
+    z-index: var(--uix-z-dropdown); box-sizing: border-box; flex-direction: column; overflow: hidden;
+    margin: 0; padding: var(--uix-space-1); max-width: min(28rem, calc(100vw - 2 * var(--uix-space-4)));
+    background: var(--uix-surface-2); color: var(--uix-text); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    box-shadow: var(--uix-shadow-popover);
+  }
+  .uix-select__popup:not([hidden]) { display: flex; }
+  [popover].uix-select__popup:not(:popover-open) { display: none; }
+  [popover].uix-select__popup { opacity: 1; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), overlay var(--uix-dur-fast) allow-discrete, display var(--uix-dur-fast) allow-discrete; }
+  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; } }
+  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; }
+  .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .uix-select__popup .uix-listbox:focus { outline: none; }
+  .uix-select__search { flex: none; margin-bottom: var(--uix-space-1); }
+  .uix-select__toolbar {
+    flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3);
+    padding: var(--uix-space-1) var(--uix-space-2) var(--uix-space-1) var(--uix-space-3); margin-bottom: var(--uix-space-1);
+    border-bottom: 1px solid var(--uix-border); color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+  }
+  .uix-select__state {
+    flex: none; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--uix-space-2);
+    padding: var(--uix-space-3); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+  }
+  .uix-select__spinner { width: 14px; height: 14px; }
+
+  /* the phone sheet (Drawer side="bottom"): touch-sized rows */
+  .uix-select__sheet .uix-drawer__body { display: flex; flex-direction: column; padding: var(--uix-space-2); }
+  .uix-select__sheet .uix-listbox { min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+  .uix-select__sheet .uix-listbox:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-sm); }
+  .uix-select__sheet .uix-listbox__option { min-height: 44px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    [popover].uix-select__popup { transition: none; }
+  }
+}
+
+/* CSS-only tier for a plain <select class="uix-select">: where the browser supports customizable
+   select (`appearance: base-select`: Chromium 135+, Safari 27+), its open list is drawn with the
+   same tokens. Firefox still shows the operating-system list. */
+@layer uix.components {
+  @supports (appearance: base-select) {
+    select.uix-select, select.uix-select::picker(select) { appearance: base-select; }
+    select.uix-select { display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    select.uix-select selectedcontent { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    select.uix-select::picker-icon { display: none; }
+    select.uix-select::picker(select) {
+      margin-block: var(--uix-space-1); padding: var(--uix-space-1); min-width: anchor-size(width);
+      background: var(--uix-surface-2); color: var(--uix-text); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+      box-shadow: var(--uix-shadow-popover);
+    }
+    select.uix-select option {
+      display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-3);
+      border-radius: var(--uix-radius-sm); font-size: var(--uix-text-body);
+    }
+    select.uix-select option:hover, select.uix-select option:focus-visible { background: var(--uix-bg-hover); outline: none; }
+    select.uix-select option:checked { color: var(--uix-link); font-weight: 500; }
+    select.uix-select option::checkmark { order: 1; margin-inline-start: auto; }
+    select.uix-select option:disabled { opacity: .55; }
+    select.uix-select optgroup { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); }
+  }
 }

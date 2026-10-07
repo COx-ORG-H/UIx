@@ -37,6 +37,12 @@ export default defineConfig({
   projects: [
     { name: 'light', use: { browserName: 'chromium', colorScheme: 'light' } },
     { name: 'dark', use: { browserName: 'chromium', colorScheme: 'dark' } },
+    // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572). Opt-in, so the
+    // default runs stay Chromium-only:  UIX_CROSS_BROWSER=1 npx playwright test tests/a11y/select.spec.mjs
+    //   --project=chromium --project=firefox --project=webkit   (needs `npx playwright install firefox webkit`)
+    ...(process.env.UIX_CROSS_BROWSER ? ['chromium', 'firefox', 'webkit'].map((browserName) => ({
+      name: browserName, testMatch: /select\.spec\.mjs$/, use: { browserName, colorScheme: 'light' },
+    })) : []),
   ],
   webServer: {
     command: 'npm run serve:styleguide',

@@ -24,6 +24,9 @@ const PAGES = [
   { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
   { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
   { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
+  // Select draws its own list (HAR-1572): every state at desktop width and at 320 px.
+  { name: 'docs-select', path: 'docs/explorer.html#select' },
+  { name: 'docs-select-320', path: 'docs/explorer.html#select', viewport: { width: 320, height: 844 } },
 ];
 
 for (const pg of PAGES) {

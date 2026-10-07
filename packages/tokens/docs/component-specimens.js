@@ -14,7 +14,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "select": {
     "route": "examples-form-controls",
-    "selector": ".uix-select-trigger"
+    "selector": ".uix-select__value",
+    "container": "[data-select-example]"
   },
   "checkbox": {
     "route": "examples-form-controls",

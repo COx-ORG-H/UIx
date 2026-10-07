@@ -100,6 +100,37 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  select-cross-browser:
+    # The Select listbox's keyboard, focus and placement in Chromium, Firefox and WebKit
+    # (HAR-1572). The pinned Playwright container ships all three engines and their system
+    # libraries, so no browser download or apt step can flake here.
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      - name: Select in Chromium, Firefox and WebKit
+        env:
+          UIX_CROSS_BROWSER: '1'
+          # Firefox refuses a HOME it does not own; the container runs as root (Playwright's CI docs).
+          HOME: /root
+        run: npx playwright test tests/a11y/select.spec.mjs --project=chromium --project=firefox --project=webkit
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: select-cross-browser-report
+          path: playwright-report/
+          retention-days: 7
+
   a11y:
     # Accessibility gate (ADR-0016 Decision 6 — S6). axe-core over the static styleguide in
     # light + dark. Fails on serious/critical WCAG 2.1 A/AA violations; the two design-level
