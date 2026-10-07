@@ -2,12 +2,34 @@
 @layer uix.components {
   .uix-calendar { width: 280px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); padding: var(--uix-space-3); }
   .uix-calendar__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--uix-space-2); font-weight: 600; font-size: var(--uix-text-body); }
-  .uix-calendar__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--uix-space-1); }
+  .uix-calendar__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--uix-space-1) 0; }
   .uix-calendar__dow { text-align: center; font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted); padding: var(--uix-space-1) 0; }
-  .uix-calendar__day { aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); color: var(--uix-text); cursor: pointer; border: 0; background: transparent; }
-  .uix-calendar__day:hover { background: var(--uix-bg-hover); }
+  /* Day states share DateRangePicker's shape language (HAR-1570): ::after is the circle
+     (hover, selected, today, focus), ::before the range band at the circle's height. Columns
+     have no gap, so neighbouring bands meet; a selected day draws half a band toward an
+     in-range neighbour (logical insets mirror for RTL). */
+  .uix-calendar__day { position: relative; isolation: isolate; aspect-ratio: 1; display: grid; place-items: center; border-radius: 0; font-size: var(--uix-text-meta); color: var(--uix-text); cursor: pointer; border: 0; background: transparent; }
+  .uix-calendar__day::before,
+  .uix-calendar__day::after { content: ""; position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; }
+  .uix-calendar__day::before { inset: 3px 0; }
+  .uix-calendar__day::after { inset: 3px; border-radius: 50%; }
+  .uix-calendar__day:hover::after { background: var(--uix-bg-hover); }
   .uix-calendar__day[data-muted] { color: var(--uix-text-muted); opacity: .45; }
-  .uix-calendar__day[data-today] { box-shadow: inset 0 0 0 1px var(--uix-border-strong); }
-  .uix-calendar__day[data-range] { background: var(--uix-brand-muted); border-radius: 0; }
-  .uix-calendar__day[aria-selected="true"] { background: var(--uix-accent); color: var(--uix-accent-fg); }
+  .uix-calendar__day:is([data-today], [aria-current="date"])::after { box-shadow: inset 0 0 0 1px var(--uix-text-muted); }
+  .uix-calendar__day[data-range]::before { background: var(--uix-brand-muted); }
+  .uix-calendar__day[data-range]:hover::after { background: color-mix(in srgb, var(--uix-accent) 18%, transparent); }
+  .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"]) { color: var(--uix-accent-fg); }
+  .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"])::after { background: var(--uix-accent); }
+  .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"]):has(+ [data-range])::before { inset-inline-start: 50%; background: var(--uix-brand-muted); }
+  .uix-calendar__day[data-range] + .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"])::before { inset-inline-end: 50%; background: var(--uix-brand-muted); }
+  .uix-calendar__day:focus-visible { z-index: var(--uix-z-raised); outline: none; }
+  .uix-calendar__day:focus-visible::after { box-shadow: 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring); }
+  .uix-calendar__day:is([data-today], [aria-current="date"]):focus-visible::after { box-shadow: inset 0 0 0 1px var(--uix-text-muted), 0 0 0 2px var(--uix-surface), 0 0 0 4px var(--uix-ring); }
+  @media (forced-colors: active) {
+    .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"]) { forced-color-adjust: none; color: HighlightText; }
+    .uix-calendar__day:is([aria-selected="true"], [aria-pressed="true"])::after { forced-color-adjust: none; background: Highlight; }
+    .uix-calendar__day[data-range] { text-decoration-line: underline; text-decoration-thickness: .15em; text-underline-offset: .2em; }
+    .uix-calendar__day:is([data-today], [aria-current="date"])::after { outline: 1px solid CanvasText; outline-offset: -1px; }
+    .uix-calendar__day:focus-visible::after { outline: 2px solid CanvasText; outline-offset: 2px; }
+  }
 }

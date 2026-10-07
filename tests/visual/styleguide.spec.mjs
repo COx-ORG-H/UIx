@@ -24,6 +24,8 @@ const PAGES = [
   { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
   { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
   { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
+  // HAR-1570: start/end circles, the band between them and today's ring.
+  { name: 'docs-date-range-picker', path: 'docs/explorer.html#examples-date-range-picker', pickRangeEnd: '2026-09-12' },
 ];
 
 for (const pg of PAGES) {
@@ -57,6 +59,13 @@ for (const pg of PAGES) {
     if (pg.openColorPicker) {
       await page.locator('[data-color-trigger]').click();
       await expect(page.locator('[data-color-dialog]')).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
+    // The date-range specimen starts with only a start date; pick an end so the band shows.
+    if (pg.pickRangeEnd) {
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).click();
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).blur();
       await page.evaluate(() => window.scrollTo(0, 0));
     }
 

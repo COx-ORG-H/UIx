@@ -54,8 +54,16 @@ export interface DateRangePickerProps {
   className?: string;
   /** Translatable words; English defaults in {@link DEFAULT_DATE_RANGE_PICKER_LABELS}. */
   labels?: Partial<DateRangePickerLabels>;
+  /**
+   * The ISO date (`YYYY-MM-DD`) that gets the today ring and `aria-current="date"`.
+   * Defaults to the viewer's local date; pass it when rendering on a server (whose
+   * clock and zone may differ from the viewer's), or `null` for no today marker.
+   */
+  today?: string | null;
 }
 
+/** The viewer's local calendar date as `YYYY-MM-DD` (not UTC: "today" is a local idea). */
+const localDateKey = (now = new Date()) => `${now.getFullYear().toString().padStart(4, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
 const monthLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 const dateLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 
@@ -73,7 +81,7 @@ const weekdayNames = (locale?: string) => {
 export function DateRangePicker({
   value, onChange, visibleMonth: controlledMonth, onVisibleMonthChange, months = 2,
   min, max, isDateDisabled, locale, label = 'Choose date range', invalid,
-  invalidMessage = 'The selected date range is invalid.', disabled, className, labels: labelOverrides,
+  invalidMessage = 'The selected date range is invalid.', disabled, className, labels: labelOverrides, today,
 }: DateRangePickerProps) {
   const id = useId();
   const uixLabels = useUixLabels();
@@ -89,6 +97,7 @@ export function DateRangePicker({
     const month = startOfMonth(addCalendarMonths(visibleMonth, index));
     return { month, days: buildMonthGrid(month).filter((day) => day.inMonth) };
   }), [visibleMonth, count]);
+  const todayDate = today === undefined ? localDateKey() : today;
   const rangeInvalid = invalid || (!!value.start && !!value.end && value.start > value.end);
 
   useEffect(() => {
@@ -155,6 +164,7 @@ export function DateRangePicker({
               key={day.date} type="button" data-date={day.date} data-range-edge={edge}
               data-in-range={isDateInRange(day.date, value) || undefined} aria-pressed={edge != null || isDateInRange(day.date, value)}
               aria-label={`${dateLabel(day.date, locale)}${edge ? `, ${edge === 'start' ? labels.rangeStart : labels.rangeEnd}` : isDateInRange(day.date, value) ? `, ${labels.inRange}` : ''}`}
+              aria-current={day.date === todayDate ? 'date' : undefined}
               tabIndex={activeDate === day.date ? 0 : -1} disabled={unavailable}
               onFocus={() => setActiveDate(day.date)} onKeyDown={(event) => onDateKeyDown(event, day.date)} onClick={() => choose(day.date)}
             >{day.day}</button>;
