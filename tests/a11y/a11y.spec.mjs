@@ -19,6 +19,7 @@ const PAGES = [
   { name: 'docs-chart', path: 'docs/explorer.html#chart' }, // analytical component reference
   { name: 'docs-pipeline', path: 'docs/explorer.html#pipeline' }, // operational stage reference
   { name: 'docs-flow', path: 'docs/explorer.html#flow' }, // process graph reference
+  { name: 'docs-calendar-model', path: 'docs/explorer.html#calendar-model' }, // zoned calendar functions (HAR-1504)
   ...SHOWCASE_PAGES.map(({ slug, title }) => ({
     name: slug,
     path: `docs/explorer.html#${slug}`,

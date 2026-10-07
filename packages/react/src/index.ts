@@ -231,10 +231,10 @@ export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableContro
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';
 export {
-  DEFAULT_FILTER_SUMMARY_LABELS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isFilterEmpty, summarizeFilter,
+  DEFAULT_FILTER_SUMMARY_LABELS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isFilterEmpty, matchFilterPreset, summarizeFilter,
 } from './filter-model.js';
 export type {
-  FilterChoice, FilterField, FilterValueKind, FilterSummaryLabels, FilterValue, NumberFilterOperator, SummarizeFilterOptions, TextFilterOperator,
+  FilterChoice, FilterField, FilterPreset, FilterValueKind, FilterSummaryLabels, FilterValue, NumberFilterOperator, SummarizeFilterOptions, TextFilterOperator,
 } from './filter-model.js';
 export type {
   ViewMenuProps, ViewMenuColumn, ViewMenuColumnLabels, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem, SavedViewSection,
@@ -329,11 +329,14 @@ export type { PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineTi
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
 export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
 export {
-  addCalendarDays, addCalendarMonths, buildMonthGrid, enumerateDateSpan,
-  isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,
-  toDateKey, zonedDateKey, zonedDateSpan,
+  addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
+  isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,
+  toDateKey, zonedDateKey, zonedDateSpan, zonedDayBounds, zonedDaySpan, zonedHourSlots,
 } from './calendar-model.js';
-export type { CalendarDay, CalendarWeekday, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
+export type {
+  CalendarDay, CalendarWeekday, DateRangeValue, LaneCluster, LaneInterval, LanePlacement, PackedLanes, PackLanesOptions,
+  ZonedDateSpan, ZonedDayBounds, ZonedDayShift, ZonedDaySpan, ZonedHourSlot,
+} from './calendar-model.js';
 
 export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
 export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';

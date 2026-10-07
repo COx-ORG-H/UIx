@@ -66,4 +66,6 @@
   .uix-filter-editor__list { display: grid; gap: var(--uix-space-2); max-height: 16rem; overflow-y: auto; padding: var(--uix-space-1); }
   .uix-filter-editor__note { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-filter-editor__choices { display: grid; gap: var(--uix-space-2); }
+  /* HAR-1505: enum presets, a toggle-chip row above the search box and options */
+  .uix-filter-editor__presets { padding-bottom: var(--uix-space-3); border-bottom: 1px solid var(--uix-border); }
 }
