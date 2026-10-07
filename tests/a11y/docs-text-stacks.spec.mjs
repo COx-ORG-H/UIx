@@ -16,6 +16,8 @@
  * Sweeps are layout-only, so they run once (light); the focused checks run in both themes.
  */
 import { test, expect } from '@playwright/test';
+import { COMPONENT_ITEMS } from '../../packages/tokens/docs/docs.js';
+import { SHOWCASE_PAGES } from '../../packages/tokens/docs/showcase-data.js';
 
 const THEME_SEED = (theme) => { try { localStorage.setItem('uix-theme', theme); } catch { /* private mode */ } };
 
@@ -34,12 +36,12 @@ const open = async (page, route) => {
   await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
 };
 
-/** Every explorer route, read from the docs nav so a new route is swept without editing this spec. */
+/** Every explorer route: the component and example slugs, plus whatever the docs nav lists (guide pages). */
 const routesOf = async (page) => {
   await open(page, 'introduction');
-  const routes = await page.evaluate(() => [...document.querySelectorAll('[data-uix-docs-nav] a[href^="#"]')]
+  const nav = await page.evaluate(() => [...document.querySelectorAll('[data-uix-docs-nav] a[href^="#"]')]
     .map((a) => a.getAttribute('href').slice(1)));
-  return [...new Set(routes)];
+  return [...new Set([...nav, ...COMPONENT_ITEMS.map((item) => item.slug), ...SHOWCASE_PAGES.map((p) => p.slug)])];
 };
 
 /* In-page detector. Serialised into the browser, so it must stay self-contained. */
