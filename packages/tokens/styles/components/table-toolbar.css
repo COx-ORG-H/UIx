@@ -21,6 +21,9 @@
   .uix-chip__count { font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }
   .uix-chip[data-on] .uix-chip__count { color: inherit; }
   .uix-filter-popover { display: grid; gap: var(--uix-space-4); min-width: 260px; padding: var(--uix-space-4); }
+  /* One element as both surface and content (the docs specimen, plain-CSS markup): popover.css's
+     8 px padding loads later and won, so the field sat 8 px from the edge (HAR-1573). */
+  .uix-popover.uix-filter-popover { padding: var(--uix-space-4); }
   .uix-filter-popover__actions { display: flex; justify-content: flex-end; gap: var(--uix-space-2); }
 }
 
