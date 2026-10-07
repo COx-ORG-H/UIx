@@ -249,7 +249,7 @@ export const ADDITIONAL_EXAMPLES = [
     "module": "list",
     "route": "examples-data-display",
     "title": "List",
-    "html": "<div class=\"uix-list\" aria-label=\"Recent services\"><a class=\"uix-list__item\" href=\"#examples-data-display\"><span><span class=\"uix-list__title\">Identity gateway</span><span class=\"uix-list__meta\">Updated 8 minutes ago</span></span><span class=\"uix-list__trail\"><span class=\"uix-pill uix-pill--success\">Healthy</span></span></a><a class=\"uix-list__item\" href=\"#examples-data-display\"><span><span class=\"uix-list__title\">Billing export</span><span class=\"uix-list__meta\">Updated 14 minutes ago</span></span><span class=\"uix-list__trail\"><span class=\"uix-pill uix-pill--warning\">Delayed</span></span></a></div>"
+    "html": "<div class=\"uix-list\" aria-label=\"Recent services\"><a class=\"uix-list__item\" href=\"#examples-data-display\"><div><div class=\"uix-list__title\">Identity gateway</div><div class=\"uix-list__meta\">Updated 8 minutes ago</div></div><span class=\"uix-list__trail\"><span class=\"uix-pill uix-pill--success\">Healthy</span></span></a><a class=\"uix-list__item\" href=\"#examples-data-display\"><div><div class=\"uix-list__title\">Billing export</div><div class=\"uix-list__meta\">Updated 14 minutes ago</div></div><span class=\"uix-list__trail\"><span class=\"uix-pill uix-pill--warning\">Delayed</span></span></a></div>"
   },
   {
     "module": "tooltip",
@@ -261,7 +261,7 @@ export const ADDITIONAL_EXAMPLES = [
     "module": "toast",
     "route": "examples-overlays",
     "title": "Toast",
-    "html": "<div class=\"uix-toast uix-toast--success\" role=\"status\"><span class=\"uix-toast__icon\" aria-hidden=\"true\">✓</span><span class=\"uix-toast__body\"><span class=\"uix-toast__title\">Changes saved</span><span class=\"uix-toast__msg\">The service policy is now active.</span></span><button class=\"uix-toast__close\" type=\"button\" aria-label=\"Dismiss notification\">×</button></div>"
+    "html": "<div class=\"uix-toast uix-toast--success\" role=\"status\"><span class=\"uix-toast__icon\" aria-hidden=\"true\">✓</span><div class=\"uix-toast__body\"><div class=\"uix-toast__title\">Changes saved</div><div class=\"uix-toast__msg\">The service policy is now active.</div></div><button class=\"uix-toast__close\" type=\"button\" aria-label=\"Dismiss notification\">×</button></div>"
   },
   {
     "module": "typography",
