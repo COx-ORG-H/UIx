@@ -21,7 +21,6 @@
   .uix-chip__count { font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }
   .uix-chip[data-on] .uix-chip__count { color: inherit; }
   .uix-filter-popover { display: grid; gap: var(--uix-space-4); min-width: 260px; padding: var(--uix-space-4); }
-  .uix-filter-popover .uix-label { display: grid; gap: var(--uix-space-2); }
   .uix-filter-popover__actions { display: flex; justify-content: flex-end; gap: var(--uix-space-2); }
 }
 

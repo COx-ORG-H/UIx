@@ -1,6 +1,9 @@
 /* uix label / tag taxonomy — colored via --label-color (set to a --uix-chart-* token). */
 @layer uix.components {
-  .uix-label {
+  /* :not(label): the class is the tag pill, never a form label. Put on a label element, it wrapped
+     PromptDialog's and then FilterPopover's control in a tinted band (HAR-1573); a form label is
+     .uix-field__label. The guard is packages/react/src/no-label-tag-class.test.mjs. */
+  .uix-label:not(label) {
     display: inline-flex; align-items: center; gap: var(--uix-space-2); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-sm);
     font-size: var(--uix-text-meta); font-weight: 500;
     background: color-mix(in srgb, var(--label-color, var(--uix-accent)) 16%, transparent);

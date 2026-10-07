@@ -46,12 +46,15 @@ const visit = (dir) => {
 visit(stylesDir);
 const defined = new Set(cssFiles.flatMap((file) => [...readFileSync(file, 'utf8').matchAll(/\.([a-zA-Z_][\w-]*)/g)].map((m) => m[1])));
 
+// class -> every component file that emits it (the phantom message names the first)
 const emitted = new Map();
 for (const file of readdirSync(componentsDir).filter((f) => f.endsWith('.tsx'))) {
   const source = readFileSync(join(componentsDir, file), 'utf8');
   for (const [, , literal] of source.matchAll(/(['"`])([^'"`\n]*\buix-[^'"`\n]*)\1/g)) {
     for (const token of literal.split(/\s+/)) {
-      if (/^uix-[\w-]*[a-z0-9]$/.test(token) && !emitted.has(token)) emitted.set(token, file);
+      if (!/^uix-[\w-]*[a-z0-9]$/.test(token)) continue;
+      const by = emitted.get(token) ?? [];
+      if (!by.includes(file)) emitted.set(token, [...by, file]);
     }
   }
 }
@@ -64,12 +67,19 @@ test('the scan sees the React class vocabulary', () => {
 test('every uix-* class React emits has a rule in @tensor_1/tokens, or is a listed hook', () => {
   const phantom = [...emitted]
     .filter(([name]) => !defined.has(name) && !HOOKS.has(name))
-    .map(([name, file]) => `${name} (${file})`)
+    .map(([name, files]) => `${name} (${files[0]})`)
     .sort();
   assert.deepEqual(phantom, []);
 });
 
 test('the hook list has no stale entries', () => {
-  const stale = [...HOOKS.keys()].filter((name) => defined.has(name) || !emitted.has(name)).sort();
-  assert.deepEqual(stale, [], 'defined now, or no longer emitted: drop from HOOKS');
+  // A hook that gained a rule is not simply stale: the component below still emits it as an
+  // unstyled hook, and the new rule now restyles that component too (BrandProfiles' upload <label>
+  // picked up .uix-file-upload, lesson c595cdb). So the message names the emitter: check that it
+  // still renders right with the rule (or scope the rule / pick another class) before dropping it.
+  const stale = [...HOOKS.keys()].filter((name) => defined.has(name) || !emitted.has(name)).sort()
+    .map((name) => (emitted.has(name)
+      ? `${name}: now has a CSS rule, which also restyles ${emitted.get(name).join(', ')} (emitted there as a hook). Check that component, then drop it from HOOKS`
+      : `${name}: no component emits it any more. Drop it from HOOKS`));
+  assert.deepEqual(stale, []);
 });
