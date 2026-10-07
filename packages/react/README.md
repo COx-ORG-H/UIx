@@ -378,6 +378,44 @@ markers). It pairs with `SchedulingCalendar`: same entry states, the same explic
 - **Windows and markers:** `overlays` (`freeze`, `maintenance`, `blackout`; all lanes, or one with `laneId`), `markers` (a point in time) and `now` are drawn behind the bars and listed for screen readers.
 - Pure helpers are exported for tests and server code: `timelineTicks`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`.
 
+### Calendar model (zoned days, hour slots, lanes)
+
+Pure functions for calendar geometry in one explicit IANA display zone (HAR-1504). They use only
+`Intl.DateTimeFormat`, never the process time zone, and never a fixed day length: DST days have 23 or 25
+hours. Every interval is half-open, `[start, end)`.
+
+```ts
+zonedDayBounds('2026-10-25', 'Europe/Berlin');   // { start: 2026-10-24T22:00Z, end: 2026-10-25T23:00Z } (25 h)
+zonedHourSlots('2026-10-25', 'Europe/Berlin');   // 25 slots; '02' twice, offsetLabel '+02:00' then '+01:00'
+zonedHourSlots('2026-03-29', 'Europe/Berlin');   // 23 slots; no '02'
+addZonedDays('2026-10-24T20:00Z', 1, 'Europe/Berlin');  // { instant: 2026-10-25T21:00Z, adjusted: null }
+addZonedDays('2026-03-28T01:30Z', 1, 'Europe/Berlin');  // 03:30 local, adjusted: 'gap_forward'
+zonedDaySpan('2026-10-10T22:00Z', '2026-10-11T22:00Z', 'Europe/Berlin'); // { start: '2026-10-11', end: '2026-10-12' }
+enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { dates: ['2026-10-11'], truncated: false }
+```
+
+- **Days:** `zonedDayBounds(dateKey, tz)` is the day's first instant and the next day's first instant, so the end of
+  one day is the start of the next. A day whose midnight is skipped starts at its first existing instant (01:00).
+- **Hour slots:** `zonedHourSlots(dateKey, tz)` gives one `{ instant, label, offsetLabel }` per real hour start.
+  `label` is the local hour (`'00'`–`'23'`); `offsetLabel` (`'+02:00'`) is set on both occurrences of a repeated
+  hour and is `null` otherwise.
+- **"+1 day":** `addZonedDays(instant, n, tz)` keeps the wall-clock time. A repeated wall time keeps the source's
+  offset; a skipped one moves forward once and returns `adjusted: 'gap_forward'`, so the caller can announce it.
+- **Day membership:** `zonedDaySpan(start, end, tz)` returns the days an entry touches as `[start, end)` date keys;
+  an entry ending at local 00:00 does not touch the next day. It throws a `RangeError` when `end` is not after
+  `start` and never swaps. `enumerateDateKeys(span, { limit })` lists them (default limit 370, `Infinity` for none)
+  and returns `truncated: true` instead of stopping silently.
+- **Lanes:** `packLanes(intervals, maxLanes, { order })` assigns first-fit lanes; overlapping intervals never share a
+  lane, touching ones may. Intervals that do not fit get `lane: null`, and each overlap cluster reports its
+  `laneCount` and `overflow`. `order: 'start'` (default) is greedy by start, then end, then id; `order: 'given'`
+  packs in input order, so a consumer's ranking decides who gets a lane.
+- **Top-N:** `rankOverflow(items, compare, n)` is a stable sort and cut: `{ visible, hidden }`. `hidden` counts only
+  what it was given; show the consumer's own total when it has one.
+- **Formatters:** `cachedDateTimeFormat(locale, options)` returns one shared `Intl.DateTimeFormat` per locale and
+  options shape. The model formats through it, so a 2,100-entry month builds at most a handful of formatters.
+- **Deprecated:** `zonedDateSpan` (end-inclusive, swaps inverted ends) and `enumerateDateSpan` (stops silently at
+  370) are unchanged in 2.x. Use `zonedDaySpan` and `enumerateDateKeys`.
+
 ### FilterEditor (typed column filters)
 
 `FilterEditor` is the content of one column-filter popover with a typed value (HAR-1365; TENSOR's
@@ -403,6 +441,26 @@ const field: FilterField = { id: 'state', label: t('state'), kind: 'enum', optio
 
 `isFilterEmpty`, `emptyFilterValue`, the operator lists and all words (`labels`) are exported, and the value is plain
 data for your own query string. Stale search results are ignored.
+
+**Presets (enum, HAR-1505).** `field.presets` names selections the product defines, e.g. a default scope. They
+render as toggle `Chip`s (`aria-pressed`) in a labelled group above the search box and options. Activating one
+replaces the selection with its `values`; the preset whose values equal the selection (as a set) is pressed, so
+ticking another option un-presses it. `summarizeFilter` then returns the preset's label (the `preset` summary
+label, default `'{label}'`; use `'{field}: {label}'` to keep the column name), and `matchFilterPreset(field, value)`
+returns the matching preset for your own use. The group's name is `labels.presets` (default "Presets").
+
+```tsx
+const state: FilterField = {
+  id: 'state', label: t('state'), kind: 'enum', options: states,
+  presets: [
+    { id: 'open', label: t('openWork'), values: ['new', 'open', 'pending'] },
+    { id: 'all', label: t('all'), values: states.map((s) => s.value) },
+  ],
+};
+```
+
+Every `FilterEditor` word can also come from `<UixLabelsProvider labels={{ filterEditor: { … } }}>`; an
+explicit `labels` prop still wins.
 ### EntityPicker
 
 A form field that holds one record found by an async search (HAR-1366; TENSOR's `entity-picker.tsx` and its

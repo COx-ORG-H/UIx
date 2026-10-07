@@ -57,6 +57,11 @@ jobs:
       - name: Contract completeness
         run: npm run test:contract
 
+      # Per-file CSS budget plus the bundle-to-inputs ratio. The bundles it reads come from the
+      # build step above: build/css/styles.css and components.css are not committed.
+      - name: CSS size budget
+        run: npm run test:size:css
+
       # Token behaviour tests, including the computed contrast of selected-chip text
       # for every theme in light and dark (no specimen renders a chip pre-selected,
       # so the a11y job cannot see that state).
