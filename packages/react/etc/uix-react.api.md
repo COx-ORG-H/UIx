@@ -43,6 +43,9 @@ export function addCalendarDays(value: string, amount: number): string;
 // @public (undocumented)
 export function addCalendarMonths(value: string, amount: number): string;
 
+// @public
+export function addZonedDays(instant: string | Date, days: number, timeZone: string): ZonedDayShift;
+
 // @public (undocumented)
 export function Alert(input: AlertProps): react.JSX.Element;
 
@@ -517,6 +520,9 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 // @public (undocumented)
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
+
+// @public
+export function cachedDateTimeFormat(locale: string | readonly string[] | undefined, options?: Intl.DateTimeFormatOptions): Intl.DateTimeFormat;
 
 // @public (undocumented)
 export interface CalendarDay {
@@ -1370,7 +1376,15 @@ export interface EntityPickerProps {
     value: SearchSuggestOption | null;
 }
 
-// @public (undocumented)
+// @public
+export function enumerateDateKeys(span: ZonedDaySpan, options?: {
+    limit?: number;
+}): {
+    dates: string[];
+    truncated: boolean;
+};
+
+// @public @deprecated
 export function enumerateDateSpan(span: ZonedDateSpan, limit?: number): string[];
 
 // @public
@@ -2053,6 +2067,28 @@ export interface LabelProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 // @public (undocumented)
+export interface LaneCluster {
+    ids: string[];
+    laneCount: number;
+    overflow: number;
+}
+
+// @public (undocumented)
+export interface LaneInterval {
+    // (undocumented)
+    end: string | number | Date;
+    // (undocumented)
+    id: string;
+    start: string | number | Date;
+}
+
+// @public (undocumented)
+export interface LanePlacement {
+    cluster: number;
+    lane: number | null;
+}
+
+// @public (undocumented)
 export interface LayeredColumn {
     count: number;
     // (undocumented)
@@ -2695,6 +2731,23 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
 
+// @public (undocumented)
+export interface PackedLanes {
+    // (undocumented)
+    clusters: LaneCluster[];
+    // (undocumented)
+    lanes: Record<string, LanePlacement>;
+    overflow: number;
+}
+
+// @public
+export function packLanes(intervals: readonly LaneInterval[], maxLanes: number, options?: PackLanesOptions): PackedLanes;
+
+// @public (undocumented)
+export interface PackLanesOptions {
+    order?: 'start' | 'given';
+}
+
 // @public
 export function PageHeader(input: PageHeaderProps): react.JSX.Element;
 
@@ -3038,6 +3091,12 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     // (undocumented)
     label?: ReactNode;
 }
+
+// @public
+export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => number, n: number): {
+    visible: T[];
+    hidden: number;
+};
 
 // @public
 export interface Rect {
@@ -5222,7 +5281,7 @@ export function virtualWindow(scrollTop: number, viewportH: number, rowH: number
 // @public
 export function wrapEdgeLabel(label: string, width: number): string[];
 
-// @public (undocumented)
+// @public
 export function zonedDateKey(instant: string | Date, timeZone: string): string;
 
 // @public (undocumented)
@@ -5233,8 +5292,45 @@ export interface ZonedDateSpan {
     start: string;
 }
 
-// @public (undocumented)
+// @public @deprecated
 export function zonedDateSpan(start: string, end: string, timeZone: string): ZonedDateSpan;
+
+// @public (undocumented)
+export interface ZonedDayBounds {
+    end: Date;
+    start: Date;
+}
+
+// @public
+export function zonedDayBounds(dateKey: string, timeZone: string): ZonedDayBounds;
+
+// @public (undocumented)
+export interface ZonedDayShift {
+    adjusted: 'gap_forward' | null;
+    // (undocumented)
+    instant: Date;
+}
+
+// @public
+export interface ZonedDaySpan {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    start: string;
+}
+
+// @public
+export function zonedDaySpan(start: string | Date, end: string | Date, timeZone: string): ZonedDaySpan;
+
+// @public (undocumented)
+export interface ZonedHourSlot {
+    instant: Date;
+    label: string;
+    offsetLabel: string | null;
+}
+
+// @public
+export function zonedHourSlots(dateKey: string, timeZone: string): ZonedHourSlot[];
 
 // (No @packageDocumentation comment for this package)
 
