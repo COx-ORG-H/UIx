@@ -15,6 +15,11 @@ const HARNESS = '/tests/dismiss-control/harness.html';
 const DOCS = 'docs/explorer.html#tag-input';
 const REMOVE = '.uix-tag__remove, .uix-chip__remove';
 const GATED = new Set(['serious', 'critical']);
+// The measured hit area: 24 px nominal, less the 0.25 px scan step. Hit-testing uses the box snapped to
+// whole pixels, so a button at a fractional position (the tag sits at y = n.3125) reads up to 0.5 px
+// off-centre plus the scan step; the drawn circle and glyph are held to 0.5 px separately.
+const HIT_MIN = 23.75;
+const HIT_CENTRE = 0.75;
 
 /** Runs in the page: every number the acceptance criteria name, for one remove button. */
 function geometry(btn) {
@@ -44,11 +49,15 @@ function geometry(btn) {
   if (label) range.selectNodeContents(label);
   else range.selectNodeContents(pill.firstChild);
   const text = range.getBoundingClientRect();
-  // hit area: on the 24 px circle (11.5 px out) every axis and diagonal point is the button
+  // hit area: scan out from the centre along each axis and diagonal (0.25 px steps) to where the
+  // button stops being the hit target. Chromium snaps the ::before box to whole pixels, so a
+  // 24 px circle measures 23.5–24.5 depending on where the button lands on the pixel grid.
   const hits = (dx, dy) => document.elementFromPoint(cx + dx, cy + dy)?.closest('.uix-tag__remove, .uix-chip__remove') === btn;
-  const d = 11.5 / Math.SQRT2;
-  const onRing = [[11.5, 0], [-11.5, 0], [0, 11.5], [0, -11.5], [d, d], [-d, d], [d, -d], [-d, -d]].every(([x, y]) => hits(x, y));
-  const beyond = [[13, 0], [-13, 0], [0, 13], [0, -13]].filter(([x, y]) => hits(x, y)).length;
+  const reach = (ux, uy) => { let t = 0; while (t < 20 && hits(ux * (t + 0.25), uy * (t + 0.25))) t += 0.25; return t; };
+  const s = Math.SQRT1_2;
+  const reaches = { right: reach(1, 0), left: reach(-1, 0), down: reach(0, 1), up: reach(0, -1), diag: Math.min(reach(s, s), reach(-s, s), reach(s, -s), reach(-s, -s)) };
+  const hitW = reaches.left + reaches.right;
+  const hitH = reaches.up + reaches.down;
   // pill height with and without the button: the button must not grow it
   const height = p.height;
   btn.style.display = 'none';
@@ -67,8 +76,9 @@ function geometry(btn) {
     trailingGap: p.right - parseFloat(ps.borderRightWidth) - r.right,
     height,
     bare,
-    onRing,
-    beyond,
+    hit: [hitW, hitH],
+    hitOffset: [(reaches.right - reaches.left) / 2, (reaches.down - reaches.up) / 2],
+    hitDiagonal: reaches.diag,
   };
 }
 
@@ -118,8 +128,13 @@ const expectGeometry = (g, name) => {
   expect(Math.abs(g.textDy), `${name}: centred on the text line`).toBeLessThanOrEqual(1);
   expect(Math.abs(g.trailingGap - 2), `${name}: 2 px trailing gap`).toBeLessThanOrEqual(0.5);
   expect(g.height, `${name}: the button does not grow the pill`).toBeCloseTo(g.bare, 1);
-  expect(g.onRing, `${name}: 24 px concentric hit area`).toBe(true);
-  expect(g.beyond, `${name}: the hit area stops at 24 px`).toBe(0);
+  for (const side of g.hit) {
+    expect(side, `${name}: a 24 px hit area`).toBeGreaterThanOrEqual(HIT_MIN);
+    expect(side, `${name}: the hit area stays a 24 px circle`).toBeLessThanOrEqual(25);
+  }
+  for (const off of g.hitOffset) expect(Math.abs(off), `${name}: the hit area is concentric`).toBeLessThanOrEqual(HIT_CENTRE);
+  expect(g.hitDiagonal, `${name}: the hit area is round`).toBeGreaterThanOrEqual(11);
+  expect(g.hitDiagonal, `${name}: the hit area is round, not square`).toBeLessThan(14);
 };
 
 async function open(page, theme, url, width) {

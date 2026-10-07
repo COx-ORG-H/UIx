@@ -41,10 +41,7 @@
   }
   button.uix-chip__main, a.uix-chip__main { cursor: pointer; }
   .uix-chip__main:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  /* The remove "x" (HAR-1569) — ONE spec with .uix-tag__remove in tag-input.css; the two rule sets
-   * must stay identical apart from colour (packages/tokens/tests/dismiss-control.test.mjs).
-   * A 20 px circle, icon centred, 2 px inside the trailing border; ::before makes the hit area a
-   * concentric 24 px (WCAG 2.5.8) and the negative block margin keeps the chip height. */
+  /* remove x (HAR-1569): one spec with .uix-tag__remove, pinned by tests/dismiss-control.test.mjs */
   .uix-chip__remove {
     position: relative; display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px;
     margin-block: calc(var(--uix-space-1) / -2); padding: 0; border: 0; border-radius: var(--uix-radius-pill);
@@ -53,10 +50,9 @@
   }
   .uix-chip__remove::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
   .uix-chip__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
-  .uix-chip__remove:hover { background: color-mix(in srgb, var(--uix-text) 16%, transparent); color: var(--uix-text); }
-  .uix-chip__remove:active { background: color-mix(in srgb, var(--uix-text) 24%, transparent); }
+  .uix-chip__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); color: var(--uix-text); }
+  .uix-chip__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }
   .uix-chip__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
-  /* forced colours: the hover outline lives in styles/forced-colors.css */
   .uix-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
 }
 

@@ -10,11 +10,8 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
-  /* The remove "x" (HAR-1569) — ONE spec with .uix-chip__remove in table-toolbar.css; the two rule
-   * sets must stay identical apart from colour (packages/tokens/tests/dismiss-control.test.mjs).
-   * A 20 px circle with the icon centred in it, at the pill's trailing end 2 px from the edge. The
-   * negative block margin keeps the pill height; ::before grows the hit area to a concentric 24 px
-   * (WCAG 2.5.8). The hover is a tint of the text colour, so it shows on any pill fill. */
+  /* remove x (HAR-1569): one spec with .uix-chip__remove, pinned by tests/dismiss-control.test.mjs.
+   * 20 px circle, 2 px from the trailing edge; ::before makes a concentric 24 px hit area. */
   .uix-tag:has(> .uix-tag__remove:last-child) { padding-inline-end: calc(var(--uix-space-1) / 2); }
   .uix-tag__remove {
     position: relative; display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px;
@@ -24,8 +21,7 @@
   }
   .uix-tag__remove::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
   .uix-tag__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
-  .uix-tag__remove:hover { background: color-mix(in srgb, var(--uix-text) 16%, transparent); color: var(--uix-text); }
-  .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 24%, transparent); }
+  .uix-tag__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); color: var(--uix-text); }
+  .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }
   .uix-tag__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
-  /* forced colours: the hover outline lives in styles/forced-colors.css */
 }
