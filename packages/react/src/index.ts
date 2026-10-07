@@ -329,11 +329,14 @@ export type { PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineTi
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
 export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
 export {
-  addCalendarDays, addCalendarMonths, buildMonthGrid, enumerateDateSpan,
-  isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth,
-  toDateKey, zonedDateKey, zonedDateSpan,
+  addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
+  isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,
+  toDateKey, zonedDateKey, zonedDateSpan, zonedDayBounds, zonedDaySpan, zonedHourSlots,
 } from './calendar-model.js';
-export type { CalendarDay, CalendarWeekday, DateRangeValue, ZonedDateSpan } from './calendar-model.js';
+export type {
+  CalendarDay, CalendarWeekday, DateRangeValue, LaneCluster, LaneInterval, LanePlacement, PackedLanes, PackLanesOptions,
+  ZonedDateSpan, ZonedDayBounds, ZonedDayShift, ZonedDaySpan, ZonedHourSlot,
+} from './calendar-model.js';
 
 export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
 export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';
