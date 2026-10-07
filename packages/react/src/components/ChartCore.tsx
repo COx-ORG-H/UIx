@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import type { ECharts, EChartsOption } from 'echarts';
 import { cx } from '../cx.js';
+import { mergeChartTheme, uixChartTheme } from '../chart-theme.js';
 
 export interface ChartEngine {
   init(element: HTMLElement, theme?: string | null, options?: { renderer?: 'svg' | 'canvas' }): ECharts;
@@ -16,6 +17,12 @@ function readToken(name: string): string {
 
 export function uixChartPalette(): string[] {
   return [1, 2, 3, 4, 5, 6, 7, 8].map((i) => readToken(`--uix-chart-${i}`));
+}
+
+/** The option ECharts receives: the consumer's, over the UIx theme read from the chart's own element
+    (so a scoped `.dark` subtree themes its charts too). */
+function themed(option: EChartsOption, theme: 'uix' | 'none', element: Element): EChartsOption {
+  return theme === 'none' ? option : mergeChartTheme(uixChartTheme(element), option);
 }
 
 /** Merge `animation: false` when the user prefers reduced motion. Only called from effects (client-side),
@@ -68,6 +75,11 @@ export interface ChartProps {
   empty?: ReactNode;
   /** Translatable words; English defaults in {@link DEFAULT_CHART_LABELS}. */
   labels?: Partial<ChartLabels>;
+  /**
+   * `'uix'` (default) merges {@link uixChartTheme} under `option` — token palette, fonts, a solid hairline
+   * grid and the UIx tooltip — and re-applies it when the page theme changes. `'none'` renders `option` as is.
+   */
+  theme?: 'uix' | 'none';
 }
 
 interface ChartCoreProps extends ChartProps {
@@ -93,6 +105,7 @@ export function ChartCore({
   loading = false,
   empty,
   labels: labelOverrides,
+  theme = 'uix',
 }: ChartCoreProps) {
   const labels: ChartLabels = { ...DEFAULT_CHART_LABELS, ...labelOverrides };
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,7 +117,9 @@ export function ChartCore({
   const hasEmpty = empty != null;
   const hasTextAlternative = Boolean(ariaLabel || title || tableData?.length);
   const hasTextAlternativeRef = useRef(hasTextAlternative);
+  const themeRef = useRef(theme);
   latestOptionRef.current = option;
+  themeRef.current = theme;
   onReadyRef.current = onReady;
   hasTextAlternativeRef.current = hasTextAlternative;
 
@@ -114,9 +129,20 @@ export function ChartCore({
 
     const chart = engine.init(element, null, { renderer: 'svg' });
     chartRef.current = chart;
-    chart.setOption(motionSafe(latestOptionRef.current));
+    chart.setOption(motionSafe(themed(latestOptionRef.current, themeRef.current, element)));
     appliedOptionRef.current = latestOptionRef.current;
     onReadyRef.current?.(chart);
+
+    // Re-read the tokens when the page theme flips (class / data-theme on <html>, or the OS scheme),
+    // so a mounted chart recolours in place instead of remounting.
+    const retheme = () => {
+      if (themeRef.current === 'none') return;
+      chart.setOption(motionSafe(themed(latestOptionRef.current, themeRef.current, element)));
+    };
+    const themeObserver = typeof MutationObserver === 'undefined' ? null : new MutationObserver(retheme);
+    themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    const scheme = typeof matchMedia === 'undefined' ? null : matchMedia('(prefers-color-scheme: dark)');
+    scheme?.addEventListener?.('change', retheme);
 
     // once per mount: the role="img" fallback name ("Chart") tells AT users nothing (UIX-A11Y-4)
     if (!hasTextAlternativeRef.current) {
@@ -142,6 +168,8 @@ export function ChartCore({
 
     return () => {
       observer.disconnect();
+      themeObserver?.disconnect();
+      scheme?.removeEventListener?.('change', retheme);
       if (frame) cancelAnimationFrame(frame);
       chart.dispose();
       chartRef.current = null;
@@ -151,10 +179,11 @@ export function ChartCore({
 
   useEffect(() => {
     const chart = chartRef.current;
-    if (!chart || appliedOptionRef.current === option) return;
-    chart.setOption(motionSafe(option), { notMerge: false });
+    const element = containerRef.current;
+    if (!chart || !element || appliedOptionRef.current === option) return;
+    chart.setOption(motionSafe(themed(option, theme, element)), { notMerge: false });
     appliedOptionRef.current = option;
-  }, [option]);
+  }, [option, theme]);
 
   const heightValue = typeof height === 'number' ? `${height}px` : height;
   const effectiveAriaLabel = ariaLabel ?? title ?? labels.chart;

@@ -10,9 +10,9 @@
   @keyframes uix-toast-out { to { opacity: 0; transform: translateX(16px); } }
   .uix-toast__icon { flex: none; margin-top: 1px; }
   .uix-toast__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-toast__body { flex: 1; }
+  .uix-toast__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--uix-space-1); }
   .uix-toast__title { font-weight: 600; font-size: var(--uix-text-body); }
-  .uix-toast__msg { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-1); }
+  .uix-toast__msg { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-toast__close { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-xs); }
   .uix-toast__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-toast--success .uix-toast__icon { color: var(--uix-success); }

@@ -89,6 +89,7 @@ export interface ChartProps {
     tableData?: ChartTableRow[];
     // (undocumented)
     tableHeaders?: string[];
+    theme?: 'uix' | 'none';
     // (undocumented)
     title?: string;
 }
@@ -99,11 +100,74 @@ export interface ChartTableRow {
     [key: string]: string | number;
 }
 
+// @public
+export type ChartTokenSource = Element | ((token: string) => string);
+
 // @public (undocumented)
 export const DEFAULT_CHART_LABELS: ChartLabels;
 
+// @public
+export function mergeChartTheme(theme: EChartsOption, option: EChartsOption): EChartsOption;
+
+// @public
+export function uixChartAreaGradient(color: string): {
+    type: "linear";
+    x: number;
+    y: number;
+    x2: number;
+    y2: number;
+    colorStops: {
+        offset: number;
+        color: string;
+    }[];
+};
+
 // @public (undocumented)
 export function uixChartPalette(): string[];
+
+// @public
+export function uixChartTheme(source?: ChartTokenSource): EChartsOption;
+
+// @public
+export interface UixChartTokens {
+    // (undocumented)
+    axis: string;
+    // (undocumented)
+    border: string;
+    // (undocumented)
+    comparison: string;
+    // (undocumented)
+    event: string;
+    // (undocumented)
+    fontMono: string;
+    // (undocumented)
+    fontSans: string;
+    // (undocumented)
+    forecastBand: string;
+    // (undocumented)
+    grid: string;
+    // (undocumented)
+    neutral: string;
+    // (undocumented)
+    palette: string[];
+    // (undocumented)
+    partial: string;
+    // (undocumented)
+    reference: string;
+    // (undocumented)
+    surface: string;
+    // (undocumented)
+    text: string;
+    // (undocumented)
+    textMuted: string;
+    // (undocumented)
+    zoneDanger: string;
+    // (undocumented)
+    zoneWarning: string;
+}
+
+// @public
+export function uixChartTokens(source?: ChartTokenSource): UixChartTokens;
 
 // (No @packageDocumentation comment for this package)
 

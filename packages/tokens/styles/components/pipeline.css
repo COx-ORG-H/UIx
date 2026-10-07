@@ -122,11 +122,11 @@
   }
   .uix-pipeline__stage[data-state="blocked"] .uix-pipeline__state::before { border-radius: var(--uix-radius-xs); }
   .uix-pipeline__title {
-    overflow: hidden; color: var(--uix-text); font-size: var(--uix-text-body); font-weight: 600;
+    display: block; overflow: hidden; color: var(--uix-text); font-size: var(--uix-text-body); font-weight: 600;
     line-height: var(--uix-leading-body); text-overflow: ellipsis; white-space: nowrap;
   }
   .uix-pipeline__description {
-    margin-top: var(--uix-space-1); color: var(--uix-text-muted);
+    display: block; margin-top: var(--uix-space-1); color: var(--uix-text-muted);
     font-size: var(--uix-text-meta); font-weight: 400; line-height: var(--uix-leading-meta);
   }
   .uix-pipeline__meta {

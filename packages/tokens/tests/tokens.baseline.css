@@ -19,7 +19,7 @@
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 12%, transparent);
 
     /* status */
-    --uix-success:#047857; --uix-success-fg:#FFFFFF; --uix-success-bg:#D0FAE5;
+    --uix-success:#047857; --uix-success-fg:#FFFFFF; --uix-success-bg:#D0FAE5; --uix-success-text:var(--uix-success);
     --uix-warning:#F99C00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:#FEF3D6; --uix-warning-text:#92400E; --uix-warning-border:#D97706;
     --uix-info:#1447E6;    --uix-info-fg:#FFFFFF;    --uix-info-bg:#E3EBFF;  --uix-info-text:#1447E6;
     --uix-danger:#E40014;  --uix-danger-fg:#FFFFFF;  --uix-danger-bg:#FFE4E6; --uix-danger-text:#C20012; --uix-danger-border:#E40014;
@@ -29,12 +29,17 @@
     --uix-sev-4:var(--uix-info); --uix-sev-4-bg:var(--uix-info-bg); --uix-sev-4-text:var(--uix-info-text);
     --uix-sev-5:var(--uix-text-muted); --uix-sev-5-bg:var(--uix-bg-active); --uix-sev-5-text:var(--uix-text-hushed);
     --uix-success-solid:#10B981; --uix-warning-solid:#F59E0B; --uix-info-solid:#2563EB; --uix-danger-solid:#EF4444;
+    --uix-neutral-solid:#8A8A8A; --uix-neutral-text:var(--uix-text-hushed); --uix-neutral-bg:var(--uix-bg-active); --uix-neutral-border:var(--uix-border-strong);
 
     /* chart (categorical) */
     /* chart palette — harmonized, vibrant on white (Tailwind ~600 level), distinct hues */
-    --uix-chart-1:#2563EB; --uix-chart-2:#0891B2; --uix-chart-3:#16A34A; --uix-chart-4:#F59E0B;
-    --uix-chart-5:#EA580C; --uix-chart-6:#E11D48; --uix-chart-7:#7C3AED; --uix-chart-8:#DB2777;
+    --uix-chart-1:#0455E6; --uix-chart-2:#249BC8; --uix-chart-3:#06A543; --uix-chart-4:#905709;
+    --uix-chart-5:#F25C1B; --uix-chart-6:#B00825; --uix-chart-7:#8143E6; --uix-chart-8:#DB2579;
     --uix-chart-neutral:#64748B;
+    /* chart analytic roles (HAR-1552) */
+    --uix-chart-grid:#EDEDED; --uix-chart-axis:#D4D4D4; --uix-chart-reference:#525252;
+    --uix-chart-zone-warning:rgba(217,119,6,.10); --uix-chart-zone-danger:rgba(228,0,20,.07); --uix-chart-forecast-band:rgba(10,10,10,.06);
+    --uix-chart-event:#737373; --uix-chart-partial:rgba(10,10,10,.10); --uix-chart-comparison:#B8B8B8;
 
     /* type */
     /* fonts — Inter (body) + IBM Plex Sans (headings) + IBM Plex Mono; loaded via Google Fonts in index.html */
@@ -47,7 +52,7 @@
     --uix-text-eyebrow:0.6875rem; --uix-leading-eyebrow:1.2; --uix-tracking-tight:-0.02em; --uix-tracking-eyebrow:0.06em;
 
     /* radius */
-    --uix-radius-xs:4px; --uix-radius-sm:8px; --uix-radius-md:12px; --uix-radius-lg:16px; --uix-radius-pill:999px;
+    --uix-radius-xs:4px; --uix-radius-sm:8px; --uix-radius-md:12px; --uix-radius-lg:16px; --uix-radius-xl:24px; --uix-radius-pill:999px;
 
     /* elevation */
     --uix-shadow-sm:0 1px 2px rgba(0,0,0,.06);
@@ -91,18 +96,22 @@
     --uix-accent:var(--uix-brand,#2563EB); --uix-accent-hover:color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF); --uix-link:color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF); --uix-accent-text:color-mix(in srgb, var(--uix-accent) 70%, #FFFFFF); --uix-ring:var(--uix-brand,#3080FF);
     --uix-brand-muted:color-mix(in srgb, var(--uix-accent) 16%, transparent);
 
-    --uix-success:#00D294; --uix-success-fg:#002C22; --uix-success-bg:rgba(0,210,148,.15);
-    --uix-warning:#FCBB00; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(249,156,0,.16); --uix-warning-text:var(--uix-warning,#FCBB00); --uix-warning-border:#CA8A04;
-    --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(48,128,255,.16); --uix-info-text:#60A5FA;
-    --uix-danger:#DC2626; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(220,38,38,.20); --uix-danger-text:#F87171; --uix-danger-border:#DC2626;
-    --uix-amber:#E6B25C; --uix-amber-text:#E6B25C; --uix-amber-bg:rgba(201,138,30,.14);
-    --uix-attention:#FB923C; --uix-attention-bg:rgba(234,88,12,.16); --uix-attention-text:#FDBA74; --uix-attention-solid:#F97316;
-    --uix-overdue:#F87171; --uix-overdue-bg:rgba(220,38,38,.18); --uix-overdue-text:#FCA5A5; --uix-overdue-solid:#F87171;
-    --uix-success-solid:#34D399; --uix-warning-solid:#FBBF24; --uix-info-solid:#3B82F6; --uix-danger-solid:#F87171;
+    --uix-success:#49AF7E; --uix-success-fg:#002C22; --uix-success-bg:rgba(73,175,126,.12); --uix-success-text:#7CC79F;
+    --uix-warning:#D7B672; --uix-warning-fg:#1A1A1A; --uix-warning-bg:rgba(217,164,64,.12); --uix-warning-text:var(--uix-warning,#D7B672); --uix-warning-border:#CA8A04;
+    --uix-info:#2563EB; --uix-info-fg:#FFFFFF; --uix-info-bg:rgba(98,147,219,.12); --uix-info-text:#8DB4E7;
+    --uix-danger:#BE3A41; --uix-danger-fg:#FFFFFF; --uix-danger-bg:rgba(218,108,108,.12); --uix-danger-text:#E69593; --uix-danger-border:#DA6C6C;
+    --uix-amber:#E6B25C; --uix-amber-text:#DDB370; --uix-amber-bg:rgba(201,138,30,.14);
+    --uix-attention:#DD854C; --uix-attention-bg:rgba(221,133,76,.12); --uix-attention-text:#DFA779; --uix-attention-solid:#DD854C;
+    --uix-overdue:#DA6C6C; --uix-overdue-bg:rgba(218,108,108,.12); --uix-overdue-text:#E89D9F; --uix-overdue-solid:#DA6C6C;
+    --uix-success-solid:#49AF7E; --uix-warning-solid:#D9A440; --uix-info-solid:#6293DB; --uix-danger-solid:#DA6C6C;
+    --uix-neutral-solid:#868686;
 
-    --uix-chart-1:#3080FF; --uix-chart-2:#00C2B0; --uix-chart-3:#00D294; --uix-chart-4:#FCBB00;
-    --uix-chart-5:#FF8B1A; --uix-chart-6:#FF6568; --uix-chart-7:#A685FF; --uix-chart-8:#FF667F;
+    --uix-chart-1:#3280FC; --uix-chart-2:#15A7A4; --uix-chart-3:#127A3D; --uix-chart-4:#AB9017;
+    --uix-chart-5:#8F530C; --uix-chart-6:#CD766F; --uix-chart-7:#9A77F4; --uix-chart-8:#FB416A;
     --uix-chart-neutral:#A1A1A1;
+    --uix-chart-grid:#232323; --uix-chart-axis:#3A3A3A; --uix-chart-reference:#B3B3B3;
+    --uix-chart-zone-warning:rgba(217,164,64,.10); --uix-chart-zone-danger:rgba(218,108,108,.10); --uix-chart-forecast-band:rgba(250,250,250,.06);
+    --uix-chart-event:#8C8C8C; --uix-chart-partial:rgba(250,250,250,.12); --uix-chart-comparison:#5C5C5C;
 
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,.04);
     --uix-shadow-sm:0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.04);
