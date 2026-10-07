@@ -13,7 +13,7 @@ export const COMPONENT_GUIDANCE = {
   combobox: ['Search a longer list before choosing a value.', 'A searchable dropdown that filters choices and displays the chosen label.'],
   'search-suggest': ['Find one item among many and jump to it, such as a setting, a page or a record.', 'A search field with a list of results underneath; each row shows the name, where it lives and a line of context, and Enter opens the first one.'],
   'tag-input': ['Enter several short labels.', 'A wrapping list of removable labels and a field for the next value.'],
-  'file-upload': ['Choose files to attach to a record.', 'A file selection control and a list of chosen files; transfer is an application responsibility.'],
+  'file-upload': ['Choose files to attach to a record.', 'A drop zone with a centred Choose files button and a list of chosen files; transfer is an application responsibility.'],
   'date-range-picker': ['Choose a start and end date for a report or booking.', 'A paired date selection; define inclusive boundaries and timezone rules in the application.'],
   'color-picker': ['Choose an exact user-defined color.', 'A swatch, editable value and color controls; semantic status colors remain part of the theme.'],
   'metric-input': ['Enter a numeric measurement with a unit.', 'The value and unit remain readable together; the application supplies bounds and precision.'],

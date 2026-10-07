@@ -108,6 +108,8 @@ try {
   await page.evaluate(() => location.hash = 'file-upload');
   await page.locator('[data-component-preview="file-upload"] input').setInputFiles({ name:'example.txt', mimeType:'text/plain', buffer:Buffer.from('UIx') });
   assert.equal(await page.locator('[data-file-list]').innerText(), 'example.txt\n3 bytes');
+  assert.equal(await page.locator('[data-file-list] li').count(), 1);
+  assert(await page.locator('[data-component-preview="file-upload"] button[data-file-choose].uix-btn').isVisible());
   await page.evaluate(() => location.hash = 'color-picker');
   await page.locator('[data-color-trigger]').click();
   assert.equal(await page.locator('[data-color-trigger]').getAttribute('aria-expanded'), 'true');
