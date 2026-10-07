@@ -35,21 +35,38 @@ test.afterEach(async ({}, testInfo) => {
   expect(testInfo.external, 'no request leaves the origin').toEqual([]);
 });
 
-/** Put the caret at the end of an editor's first paragraph (or of the document), deterministically. */
-const caretAtEnd = (page, id, { firstParagraph = false } = {}) => page.evaluate(({ editorId, first }) => {
-  const editor = document.getElementById(editorId).editor;
-  const { doc } = editor.state;
-  let pos = doc.content.size - 1;
-  if (first) {
-    doc.descendants((node, at) => {
-      if (node.type.name === 'paragraph' && pos === doc.content.size - 1) { pos = at + node.nodeSize - 1; return false; }
-      return true;
-    });
-  }
-  editor.chain().focus().setTextSelection(pos).run();
-}, { editorId: id, first: firstParagraph });
+/** Put the caret at the end of an editor's first paragraph (or of the document), deterministically,
+ * and resolve only once the editor has focus with the browser's caret there. TipTap's focus()
+ * command defers view.focus() to a requestAnimationFrame, so keystrokes sent straight after it
+ * were dropped on a loaded CI runner ("✅ Now." arrived as "✅w."): focus synchronously, then
+ * wait for the state typing actually depends on. */
+const caretAtEnd = async (page, id, { firstParagraph = false } = {}) => {
+  const pos = await page.evaluate(({ editorId, first }) => {
+    const editor = document.getElementById(editorId).editor;
+    const { doc } = editor.state;
+    let at = doc.content.size - 1;
+    if (first) {
+      doc.descendants((node, offset) => {
+        if (node.type.name === 'paragraph' && at === doc.content.size - 1) { at = offset + node.nodeSize - 1; return false; }
+        return true;
+      });
+    }
+    editor.chain().setTextSelection(at).run();
+    editor.view.focus();
+    return at;
+  }, { editorId: id, first: firstParagraph });
+  await expect(page.locator(`#${id}`)).toBeFocused();
+  await expect.poll(() => page.evaluate((editorId) => {
+    const { view, state } = document.getElementById(editorId).editor;
+    const sel = document.getSelection();
+    if (!sel.isCollapsed || !view.dom.contains(sel.anchorNode)) return null;
+    return { state: state.selection.from, dom: view.posAtDOM(sel.anchorNode, sel.anchorOffset) };
+  }, id), `caret at ${pos} in #${id}`).toEqual({ state: pos, dom: pos });
+};
 
 const changes = (page, key) => page.evaluate((k) => window.__rte.changes[k] ?? [], key);
+/** The editor's latest emitted markdown: onChange lands after the keystroke's transaction, so poll it. */
+const lastChange = (page, key) => expect.poll(async () => (await changes(page, key)).at(-1));
 const axe = async (page, testInfo, include, label) => {
   const { violations } = await new AxeBuilder({ page })
     .include(include)
@@ -104,7 +121,7 @@ test('no onChange on mount; typing emits markdown that keeps untouched blocks', 
   // onChange arrives after the last keystroke's transaction, not synchronously with
   // keyboard.type(): wait for it rather than reading once (it raced on a loaded CI runner).
   const expected = before.replace('✅', '✅ Now.');
-  await expect.poll(async () => (await changes(page, 'field')).at(-1)).toBe(expected);
+  await lastChange(page, 'field').toBe(expected);
   await expect(page.locator('input[type="hidden"][name="description"]')).toHaveValue(expected);
 });
 
@@ -133,7 +150,7 @@ test('toolbar: one tab stop, arrow keys, Home/End, pressed state', async ({ page
   await page.keyboard.press('ControlOrMeta+b');
   await expect(toolbar.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.type('loud');
-  expect((await changes(page, 'field')).at(-1)).toContain('✅**loud**');
+  await lastChange(page, 'field').toContain('✅**loud**');
 });
 
 test('markdown input rules and headingLevels', async ({ page }) => {
@@ -146,8 +163,8 @@ test('markdown input rules and headingLevels', async ({ page }) => {
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
   await page.keyboard.type('> quoted');
+  await lastChange(page, 'field').toContain('\n\n## Risks\n\n- first\n\n> quoted');
   const md = (await changes(page, 'field')).at(-1);
-  expect(md).toContain('\n\n## Risks\n\n- first\n\n> quoted');
   expect(md.startsWith('# Change plan\n\nDeploy the **ledger** fix')).toBe(true);
 
   // The template editor offers H3 only: "## " stays text there.
@@ -157,6 +174,7 @@ test('markdown input rules and headingLevels', async ({ page }) => {
   await page.keyboard.press('Enter');
   await page.keyboard.type('## Not a heading');
   await expect(template.locator('h2')).toHaveCount(0);
+  await lastChange(page, 'template').toContain('Not a heading');
   const out = (await changes(page, 'template')).at(-1);
   expect(out.startsWith('Hello {{customer.name}},\n\nyour ticket {{ticket.id}} is resolved.')).toBe(true);
 });
@@ -181,7 +199,7 @@ test('emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage
   await page.keyboard.press('Enter');
   await expect(search).toBeHidden();
   await expect(page.locator('#field')).toBeFocused();
-  expect((await changes(page, 'field')).at(-1)).toContain(glyph);
+  await lastChange(page, 'field').toContain(glyph);
 
   const note = page.locator('#note');
   await note.click();
@@ -191,10 +209,9 @@ test('emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage
   await expect(note).toHaveAttribute('aria-activedescendant', /.+/);
   await page.keyboard.press('Enter');
   await expect(listbox).toBeHidden();
-  const md = (await changes(page, 'note')).at(-1);
-  expect(md).toBe('Rolled back 🎉');
+  await lastChange(page, 'note').toBe('Rolled back 🎉');
   await page.keyboard.press('ControlOrMeta+Enter');
-  expect(await page.evaluate(() => window.__rte.submits)).toBe(1);
+  await expect.poll(() => page.evaluate(() => window.__rte.submits)).toBe(1);
 });
 
 test('emoji picker: German names, grid navigation, Escape returns focus', async ({ page }) => {
