@@ -197,9 +197,9 @@
       "brotli": 303
     },
     "styles/components/labels.css": {
-      "raw": 936,
-      "gzip": 500,
-      "brotli": 418
+      "raw": 1026,
+      "gzip": 550,
+      "brotli": 464
     },
     "styles/components/license-position-bar.css": {
       "raw": 695,

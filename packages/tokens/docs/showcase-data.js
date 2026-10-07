@@ -281,7 +281,7 @@ export const ADDITIONAL_EXAMPLES = [
     "module": "filter-popover",
     "route": "examples-data-display",
     "title": "Filter popover",
-    "html": "<div class=\"uix-popover uix-filter-popover\"><label class=\"uix-label\"><span>Status</span><select class=\"uix-select\"><option>Any status</option><option>Open</option><option>Resolved</option></select></label><div class=\"uix-filter-popover__actions\"><button class=\"uix-btn uix-btn--secondary\" type=\"button\">Clear</button><button class=\"uix-btn uix-btn--primary\" type=\"button\">Apply</button></div></div>"
+    "html": "<div class=\"uix-popover uix-filter-popover\"><div class=\"uix-field\"><label class=\"uix-field__label\" for=\"demo-filter-status\">Status</label><select class=\"uix-select\" id=\"demo-filter-status\"><option>Any status</option><option>Open</option><option>Resolved</option></select></div><div class=\"uix-filter-popover__actions\"><button class=\"uix-btn uix-btn--secondary\" type=\"button\">Clear</button><button class=\"uix-btn uix-btn--primary\" type=\"button\">Apply</button></div></div>"
   },
   {
     "module": "saved-view-menu",
