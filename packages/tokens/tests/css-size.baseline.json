@@ -2,14 +2,14 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 212407,
-      "gzip": 30130,
-      "brotli": 25215
+      "raw": 215308,
+      "gzip": 30502,
+      "brotli": 25508
     },
     "build/css/styles.css": {
-      "raw": 222483,
-      "gzip": 32793,
-      "brotli": 27344
+      "raw": 225384,
+      "gzip": 33167,
+      "brotli": 27622
     },
     "build/css/tokens.css": {
       "raw": 8438,
@@ -115,6 +115,11 @@
       "raw": 477,
       "gzip": 262,
       "brotli": 211
+    },
+    "styles/components/dashboard-grid.css": {
+      "raw": 5174,
+      "gzip": 1397,
+      "brotli": 1186
     },
     "styles/components/date-range-picker.css": {
       "raw": 1823,
