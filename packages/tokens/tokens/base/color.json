@@ -28,6 +28,7 @@
   "success":    { "$type": "color", "$value": "#047857" },
   "success-fg": { "$type": "color", "$value": "#FFFFFF" },
   "success-bg": { "$type": "color", "$value": "#D0FAE5" },
+  "success-text": { "$type": "color", "$value": "var(--uix-success)", "$description": "Success-toned TEXT (pill, alert icon, stat trend, SLA ok). Light aliases --uix-success (#047857, already AA on the pale tint), so a theme's light success override still reaches text; dark sets its own value in the calibrated status-text band (HAR-1562). Paint text with this, not with --uix-success, which is the solid/dot role on dark." },
   "warning":      { "$type": "color", "$value": "#F99C00" },
   "warning-fg":   { "$type": "color", "$value": "#1A1A1A" },
   "warning-bg":   { "$type": "color", "$value": "#FEF3D6" },
@@ -67,6 +68,11 @@
   "warning-solid": { "$type": "color", "$value": "#F59E0B", "$description": "SOLID status role (see success-solid)." },
   "info-solid":    { "$type": "color", "$value": "#2563EB", "$description": "SOLID status role (see success-solid)." },
   "danger-solid":  { "$type": "color", "$value": "#EF4444", "$description": "SOLID status role (see success-solid)." },
+
+  "neutral-solid":  { "$type": "color", "$value": "#8A8A8A", "$description": "NEUTRAL status family (HAR-1562): the default, non-alarming status tone (open, scheduled, draft, in progress). Solid = the dot/fill, 3:1 non-text on white. Dark overrides." },
+  "neutral-text":   { "$type": "color", "$value": "var(--uix-text-hushed)", "$description": "Neutral status TEXT, alias of --uix-text-hushed. var() reference, no dark override needed." },
+  "neutral-bg":     { "$type": "color", "$value": "var(--uix-bg-active)", "$description": "Neutral status tint, alias of --uix-bg-active." },
+  "neutral-border": { "$type": "color", "$value": "var(--uix-border-strong)", "$description": "Neutral status outline, alias of --uix-border-strong." },
 
   "chart-1": { "$type": "color", "$value": "#2563EB" },
   "chart-2": { "$type": "color", "$value": "#0891B2" },

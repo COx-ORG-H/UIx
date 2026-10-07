@@ -27,6 +27,7 @@
   --color-uix-success: var(--uix-success);
   --color-uix-success-fg: var(--uix-success-fg);
   --color-uix-success-bg: var(--uix-success-bg);
+  --color-uix-success-text: var(--uix-success-text);
   --color-uix-warning: var(--uix-warning);
   --color-uix-warning-fg: var(--uix-warning-fg);
   --color-uix-warning-bg: var(--uix-warning-bg);
@@ -62,6 +63,10 @@
   --color-uix-warning-solid: var(--uix-warning-solid);
   --color-uix-info-solid: var(--uix-info-solid);
   --color-uix-danger-solid: var(--uix-danger-solid);
+  --color-uix-neutral-solid: var(--uix-neutral-solid);
+  --color-uix-neutral-text: var(--uix-neutral-text);
+  --color-uix-neutral-bg: var(--uix-neutral-bg);
+  --color-uix-neutral-border: var(--uix-neutral-border);
   --color-uix-chart-1: var(--uix-chart-1);
   --color-uix-chart-2: var(--uix-chart-2);
   --color-uix-chart-3: var(--uix-chart-3);
@@ -85,6 +90,7 @@
   --radius-uix-sm: var(--uix-radius-sm);
   --radius-uix-md: var(--uix-radius-md);
   --radius-uix-lg: var(--uix-radius-lg);
+  --radius-uix-xl: var(--uix-radius-xl);
   --radius-uix-pill: var(--uix-radius-pill);
 
   --font-uix-sans: var(--uix-font-sans);

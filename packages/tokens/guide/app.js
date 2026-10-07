@@ -335,8 +335,10 @@ export const initShowcase = (options = {}) => {
       '--uix-surface', '--uix-surface-2', '--uix-surface-3', '--uix-border', '--uix-border-strong'];
     const text = ['--uix-text', '--uix-text-hushed', '--uix-text-muted'];
     const accent = ['--uix-accent', '--uix-accent-dark', '--uix-accent-light', '--uix-link', '--uix-ring', '--uix-brand-muted'];
-    const status = ['--uix-success', '--uix-success-bg', '--uix-warning', '--uix-warning-bg',
-      '--uix-info', '--uix-info-bg', '--uix-danger', '--uix-danger-bg'];
+    // Status families, neutral first: TEXT (labels), SOLID (dots, fills), BG (faint tint) per tone.
+    const status = ['neutral', 'success', 'info', 'warning', 'attention', 'danger', 'overdue']
+      .flatMap((tone) => [`--uix-${tone}-text`, `--uix-${tone}-solid`, `--uix-${tone}-bg`])
+      .concat(['--uix-danger']);
     const chart = ['--uix-chart-1', '--uix-chart-2', '--uix-chart-3', '--uix-chart-4',
       '--uix-chart-5', '--uix-chart-6', '--uix-chart-7', '--uix-chart-8', '--uix-chart-neutral'];
 
@@ -355,6 +357,8 @@ export const initShowcase = (options = {}) => {
       contrastRow('--uix-warning-fg', '--uix-warning', 'warning-fg on warning'),
       contrastRow('--uix-info-fg', '--uix-info', 'info-fg on info'),
       contrastRow('--uix-danger-fg', '--uix-danger', 'danger-fg on danger'),
+      ...['neutral', 'success', 'info', 'warning', 'attention', 'danger', 'overdue'].map((tone) =>
+        contrastRow(`--uix-${tone}-text`, '--uix-surface', `${tone}-text on surface`)),
     ].join(''));
   };
 
