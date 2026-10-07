@@ -94,7 +94,9 @@ A **build-free documentation site** lives in [`docs/`](./docs/). It provides an 
 navigation, keyboard search, token and theming guidance, a complete component catalogue, detailed core-component
 references, live UIx examples, React integration, accessibility guidance, and enterprise workflow patterns. The
 site consumes `build/css/styles.css` directly, so its examples exercise the shipped contract rather than a parallel
-documentation theme. `docs/docs.js` keeps the content registry, hash routing, and pure unit-tested search/render
+documentation theme. That bundle is built, not committed: before the first `npm run build` the pages fall back to
+`styles/main.css`, which loads the same authored files through native `@import`
+(`tests/a11y/docs-source-fallback.spec.mjs` holds the two renderings equal). `docs/docs.js` keeps the content registry, hash routing, and pure unit-tested search/render
 helpers in one dependency-free module.
 
 Serve it from the repo root (the styleguide's static root) so relative asset paths resolve:

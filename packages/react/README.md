@@ -441,6 +441,26 @@ const field: FilterField = { id: 'state', label: t('state'), kind: 'enum', optio
 
 `isFilterEmpty`, `emptyFilterValue`, the operator lists and all words (`labels`) are exported, and the value is plain
 data for your own query string. Stale search results are ignored.
+
+**Presets (enum, HAR-1505).** `field.presets` names selections the product defines, e.g. a default scope. They
+render as toggle `Chip`s (`aria-pressed`) in a labelled group above the search box and options. Activating one
+replaces the selection with its `values`; the preset whose values equal the selection (as a set) is pressed, so
+ticking another option un-presses it. `summarizeFilter` then returns the preset's label (the `preset` summary
+label, default `'{label}'`; use `'{field}: {label}'` to keep the column name), and `matchFilterPreset(field, value)`
+returns the matching preset for your own use. The group's name is `labels.presets` (default "Presets").
+
+```tsx
+const state: FilterField = {
+  id: 'state', label: t('state'), kind: 'enum', options: states,
+  presets: [
+    { id: 'open', label: t('openWork'), values: ['new', 'open', 'pending'] },
+    { id: 'all', label: t('all'), values: states.map((s) => s.value) },
+  ],
+};
+```
+
+Every `FilterEditor` word can also come from `<UixLabelsProvider labels={{ filterEditor: { … } }}>`; an
+explicit `labels` prop still wins.
 ### EntityPicker
 
 A form field that holds one record found by an async search (HAR-1366; TENSOR's `entity-picker.tsx` and its

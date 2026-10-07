@@ -7,6 +7,7 @@ import type { SchedulingCalendarLabels } from './components/SchedulingCalendar.j
 import type { DateRangePickerLabels } from './components/DateRangePicker.js';
 import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.js';
 import type { TextDiffLabels } from './components/TextDiff.js';
+import type { FilterEditorLabels } from './components/FilterEditor.js';
 import type { SelectLabels } from './components/Select.js';
 
 /**
@@ -33,6 +34,7 @@ export interface UixLabels {
   dateRangePicker?: Partial<DateRangePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
+  filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
