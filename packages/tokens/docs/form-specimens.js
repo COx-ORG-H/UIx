@@ -1,8 +1,11 @@
 /* Shared by the component reference and the form composition. CSS is production UIx. */
+// Lucide X, the same glyph as XIcon in @tensor_1/react/icons (HAR-1569): an icon, never a text "×".
+const removeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+
 export const tagInputMarkup = `<div class="uix-stack" data-tag-example>
   <label class="uix-field__label" for="example-tags">Project labels</label>
   <div class="uix-taginput">
-    <span class="uix-tag">network <button type="button" class="uix-tag__remove" aria-label="Remove network">×</button></span>
+    <span class="uix-tag">network <button type="button" class="uix-tag__remove" aria-label="Remove network">${removeIcon}</button></span>
     <input id="example-tags" class="uix-taginput__field" placeholder="Add a label" aria-describedby="example-tags-hint">
   </div>
   <p id="example-tags-hint" class="uix-field__hint">Press Enter to add a label. Duplicate labels are ignored.</p>
@@ -34,7 +37,7 @@ export const initFormSpecimens = (root) => {
       tag.append(document.createTextNode(`${value} `));
       const remove = document.createElement('button');
       remove.type = 'button'; remove.className = 'uix-tag__remove';
-      remove.setAttribute('aria-label', `Remove ${value}`); remove.textContent = '×';
+      remove.setAttribute('aria-label', `Remove ${value}`); remove.innerHTML = removeIcon;
       tag.append(remove); field.before(tag); field.value = '';
       status.textContent = `Added ${value}.`;
     });
