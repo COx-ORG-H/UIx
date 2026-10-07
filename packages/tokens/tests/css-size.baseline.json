@@ -111,6 +111,11 @@
       "gzip": 262,
       "brotli": 211
     },
+    "styles/components/dashboard-grid.css": {
+      "raw": 5174,
+      "gzip": 1397,
+      "brotli": 1186
+    },
     "styles/components/date-range-picker.css": {
       "raw": 1823,
       "gzip": 570,
