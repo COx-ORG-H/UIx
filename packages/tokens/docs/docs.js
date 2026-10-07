@@ -445,7 +445,7 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
 
   'chart-tokens': () => {
     const sw = (token, name) => `<div class="uix-docs__swatch"><div class="uix-docs__swatch-color" style="--swatch:var(${token})"></div><div class="uix-docs__swatch-meta"><strong>${esc(name)}</strong><code>${token}</code></div></div>`;
-    const palette = ['Blue', 'Cyan', 'Green', 'Ochre', 'Orange', 'Crimson', 'Violet', 'Pink'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
+    const palette = ['Blue', 'Cyan', 'Green', 'Ochre', 'Orange', 'Red', 'Violet', 'Pink'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
     const roles = [
       ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind the data. Never dashed.'],
       ['--uix-chart-axis', 'Axis', 'Axis line. Labels use --uix-text-muted.'],
@@ -462,19 +462,26 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
     ${section('roles', 'Analytic roles', `<p>Thresholds, forecasts and events get their own channel, separate from series colour, so a target line never reads as “series 9”. Status colours stay reserved for status.</p><table class="uix-docs__token-table"><thead><tr><th>Token</th><th>Role</th><th>Use</th></tr></thead><tbody>${roles}</tbody></table>`)}
     ${section('theme', 'The shipped theme', `<p><code>Chart</code> merges <code>uixChartTheme()</code> under your option and re-applies it when the page theme changes, without a remount. Your option always wins; pass <code>theme="none"</code> to opt out.</p>${codeBlock(`import { Chart } from "@tensor_1/react/chart";
 
-// No styling: palette, fonts, a solid hairline grid and the UIx tooltip come from tokens.
+// No styling: palette, fonts, grid and tooltip come from tokens.
 <Chart title="Throughput" option={{
   xAxis: { type: "category", data: weeks },
   yAxis: { type: "value" },
   series: [{ type: "line", data: merged }],
 }} />`, 'tsx')}${codeBlock(`import { mergeChartTheme, uixChartTheme, uixChartTokens } from "@tensor_1/react/chart";
 
-// Raw ECharts: merge the same theme yourself, and use the analytic roles for marks.
-const k = uixChartTokens();
+// Raw ECharts: merge the same theme yourself.
+const k = uixChartTokens(); // the analytic roles
 chart.setOption(mergeChartTheme(uixChartTheme(), {
-  series: [{ type: "line", data, markLine: { lineStyle: { color: k.reference, type: "dashed" }, data: [{ yAxis: 15 }] } }],
+  series: [{
+    type: "line",
+    data,
+    markLine: {
+      lineStyle: { color: k.reference, type: "dashed" },
+      data: [{ yAxis: 15 }],
+    },
+  }],
 }));`, 'tsx')}`)}
-    ${section('rules', 'Rules', `${compare('Draw the grid as a quiet solid hairline. Keep dashes for thresholds and projections, so a dashed line always means “not measured”. Label values and legends in text tokens.', 'Dash the gridlines, colour a target line with a series or status hue, or paint axis labels in the series colour.')}<p><a class="uix-btn uix-btn--secondary" href="#examples-data-display">Open the chart examples</a></p>`)}`;
+    ${section('rules', 'Rules', `<p><a class="uix-btn uix-btn--secondary" href="#examples-data-display">Open the chart examples</a></p>${compare('Draw the grid as a quiet solid hairline. Keep dashes for thresholds and projections, so a dashed line always means “not measured”. Label values and legends in text tokens.', 'Dash the gridlines, colour a target line with a series or status hue, or paint axis labels in the series colour.')}`)}`;
   },
 
   theming: () => `${pageHeader('Foundations', 'Theming', 'UIx ships light and dark modes from the same semantic contract, with two write-only brand slots for product identity.', ['light + dark', 'no-flash', 'brand profiles'])}
