@@ -1,10 +1,19 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 597cd33 rebased copy of fb709c3 (lesson recorded below under fb709c3) -->
+<!-- lesson-skip: 5bee362 rebased copy of 069a9ec (already skipped: routine docs contrast fix) -->
+<!-- lesson-skip: 069a9ec routine: docs contrast badge ignored alpha; caught by eyeballing the golden -->
 <!-- lesson-skip: 5551372 not a fix from this session; arrived via git pull of master (PR #44, own session owns its lesson call) -->
 <!-- lesson-skip: 7d2221d squash-merge of 8c831c1 (already skipped: routine CSS layout fixes) -->
 <!-- lesson-skip: 8c831c1 routine CSS layout fixes; each cause shown by measuring the element -->
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
+
+### 2026-10-07 · chart theme · `fb709c3`
+- **Rule:** a theme merged into an ECharts option may only *style* components the consumer's option already has. Any component key in the option (`legend`, `title`, `xAxis`, `dataZoom`, `visualMap` …) makes ECharts draw that component, so a theme default for it must be dropped when the option lacks the key.  **Why:** `uixChartTheme()` carried a styled `legend`, and the docs residence chart, which asks for none, grew a "Residence" legend. Every theme test still passed.  **Gate:** `mergeChartTheme`'s `STYLED_ONLY` list plus a `chart-theme.test.mjs` case. `tests/a11y/chart-theme.spec.mjs` asserts the residence chart has no legend text, and it fails on the old merge.  **Tag:** false-green, echarts
+
+### 2026-10-07 · parallel Playwright · `b775755`
+- **Rule:** when several worktrees run on one machine, never trust a local Playwright result from the repo config. `playwright.config.mjs` uses port 4178 with `reuseExistingServer`, so it silently tests whichever worktree's `serve` already holds 4178. Run with an untracked config on a unique port and `reuseExistingServer: false`.  **Why:** two agents' a11y runs hit another worktree's server today. One noticed only because its new spec found nothing.  **Gate:** ⚠ TODO. Let the config take its port from an env var, or fail when the server's root isn't this checkout.  **Tag:** false-green, concurrency
 
 ### 2026-10-06 · CSS class hooks · `c595cdb`
 - **Rule:** before giving a new component's block class (e.g. `.uix-file-upload`) its first CSS rule, look the class up in `HOOKS` in `packages/react/src/react-classes-defined.test.mjs`. Another component may already emit it as an unstyled hook (BrandProfiles' upload `<label>` did), and a bare rule silently restyles that component.  **Why:** when the class gains a rule, the gate says "drop from HOOKS". Doing exactly that ships the restyle, and no visual golden covers the other component.  **Gate:** ⚠ TODO. The HOOKS failure message should name the component that emits the hook. Until then, scope the rule (`:not(label)`) or pick a new block name.  **Tag:** css-collision, false-green

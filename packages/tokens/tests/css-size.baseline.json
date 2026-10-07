@@ -7,14 +7,14 @@
       "brotli": 25225
     },
     "build/css/styles.css": {
-      "raw": 222797,
-      "gzip": 32881,
-      "brotli": 27384
+      "raw": 223439,
+      "gzip": 33064,
+      "brotli": 27500
     },
     "build/css/tokens.css": {
-      "raw": 8761,
-      "gzip": 2249,
-      "brotli": 1906
+      "raw": 9497,
+      "gzip": 2425,
+      "brotli": 2025
     },
     "styles/components/alert.css": {
       "raw": 1413,

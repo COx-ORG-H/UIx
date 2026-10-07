@@ -343,6 +343,7 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__swatch-meta { padding: var(--uix-space-3); }
 .uix-docs__swatch-meta strong { display: block; font-size: .82rem; }
 .uix-docs__swatch-meta code { color: var(--uix-text-muted); font-size: .72rem; }
+.uix-docs__chip-swatch { display: inline-block; width: 12px; height: 12px; border-radius: var(--uix-radius-xs); background: var(--swatch); border: 1px solid var(--uix-border); vertical-align: -1px; }
 
 .uix-docs__token-table,
 .uix-docs__api-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); overflow: hidden; font-size: .875rem; }
