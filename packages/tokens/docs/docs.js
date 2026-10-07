@@ -104,7 +104,7 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Color picker', 'Metric input', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Tooltip', 'Info tip', 'States', 'Relative time'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Dashboard grid', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
@@ -149,6 +149,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
+  'dashboard-grid',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -225,6 +226,7 @@ export const exampleRouteFor = (item) => {
     'date-range-picker': 'examples-date-range-picker',
     'diff-viewer': 'examples-diff-viewer',
     'text-diff': 'examples-text-diff',
+    'dashboard-grid': 'examples-dashboard-grid',
     'license-position-bar': 'examples-metrics',
     'match-review': 'examples-match-review',
     'metric-input': 'examples-metrics',

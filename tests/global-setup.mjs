@@ -8,7 +8,8 @@ import { buildInfoTipHarness } from './info-tip/build.mjs';
 import { buildSearchSuggestHarness } from './search-suggest/build.mjs';
 import { buildDrawerHarness } from './drawer/build.mjs';
 import { buildTextDiffHarness } from './text-diff/build.mjs';
+import { buildDashboardGridHarness } from './dashboard-grid/build.mjs';
 
 export default async function globalSetup() {
-  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness(), buildViewMenuHarness(), buildInfoTipHarness(), buildSearchSuggestHarness(), buildDrawerHarness(), buildTextDiffHarness()]);
+  await Promise.all([buildHarness(), buildOperatorHarness(), buildDiffViewerHarness(), buildViewMenuHarness(), buildInfoTipHarness(), buildSearchSuggestHarness(), buildDrawerHarness(), buildTextDiffHarness(), buildDashboardGridHarness()]);
 }

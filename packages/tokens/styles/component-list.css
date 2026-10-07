@@ -45,6 +45,7 @@
 @import "components/calendar.css";
 @import "components/states.css";
 @import "components/chart.css";
+@import "components/dashboard-grid.css";
 @import "components/alert.css";
 @import "components/toast.css";
 @import "components/modal.css";

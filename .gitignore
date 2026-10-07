@@ -39,3 +39,5 @@ tests/search-suggest/dist/
 tests/drawer/dist/
 # TextDiff Playwright harness bundle (tests/text-diff/build.mjs)
 tests/text-diff/dist/
+# DashboardGrid Playwright harness bundle (tests/dashboard-grid/build.mjs)
+tests/dashboard-grid/dist/
