@@ -73,31 +73,34 @@ for (const viewport of VIEWPORTS) {
       expect(Math.abs(m.hintGap - 12), 'drop zone to hint').toBeLessThanOrEqual(1);
     });
 
-    test('the button is a tab stop, Enter and Space open the chooser, the hidden input is not a tab stop', async ({ page }, testInfo) => {
-      const example = await open(page, testInfo, viewport);
-      const button = example.getByRole('button', { name: 'Choose files' });
-      await expect(button).toHaveAccessibleDescription(/Local preview only/);
-
-      for (const key of ['Enter', 'Space']) {
-        await example.locator('strong').click(); // park focus off the button
+    for (const key of ['Enter', 'Space']) {
+      test(`${key} on the focused button opens the file chooser`, async ({ page }, testInfo) => {
+        const example = await open(page, testInfo, viewport);
+        const button = example.getByRole('button', { name: 'Choose files' });
+        await expect(button).toHaveAccessibleDescription(/Local preview only/);
         await button.focus();
         await expect(button).toBeFocused();
         const chooser = page.waitForEvent('filechooser');
         await page.keyboard.press(key);
-        expect((await chooser).isMultiple(), `${key} opens a multiple chooser`).toBe(true);
-      }
+        expect((await chooser).isMultiple()).toBe(true);
+      });
+    }
 
-      // Tab from the button must leave the drop zone without stopping on the hidden input.
-      await button.focus();
+    test('Tab reaches the button first and skips the hidden input', async ({ page }, testInfo) => {
+      const example = await open(page, testInfo, viewport);
+      const button = example.getByRole('button', { name: 'Choose files' });
+
+      // Tab from the title (made focusable only for this test) lands on the button, not on the input.
+      const title = example.locator('strong');
+      await title.evaluate((el) => el.setAttribute('tabindex', '-1'));
+      await title.focus();
+      await page.keyboard.press('Tab');
+      await expect(button).toBeFocused();
+
+      // ...and Tab from the button leaves the drop zone without stopping on the input.
       await page.keyboard.press('Tab');
       expect(await page.evaluate(() => document.activeElement?.matches('input[type=file]'))).toBe(false);
       await page.keyboard.press('Shift+Tab');
-      await expect(button).toBeFocused();
-
-      // Tab from the element before the zone reaches the button first.
-      await example.locator('strong').evaluate((el) => el.setAttribute('tabindex', '-1'));
-      await example.locator('strong').focus();
-      await page.keyboard.press('Tab');
       await expect(button).toBeFocused();
     });
 

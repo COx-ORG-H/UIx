@@ -9,7 +9,6 @@
   .uix-dropzone:hover, .uix-dropzone[data-dragover] { border-color: var(--uix-accent); background: var(--uix-brand-muted); color: var(--uix-text); }
   .uix-dropzone svg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
   .uix-filelist { display: flex; flex-direction: column; gap: var(--uix-space-2); margin-top: var(--uix-space-3); }
-  /* An empty list must not add its margin/gap: the spacer below an upload zone with nothing chosen. */
   .uix-filelist:empty { display: none; }
   .uix-filelist__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text); }
   .uix-filelist__size { margin-left: auto; color: var(--uix-text-muted); }
