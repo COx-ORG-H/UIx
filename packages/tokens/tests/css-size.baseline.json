@@ -2,22 +2,22 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
   "sizes": {
     "build/css/components.css": {
-      "raw": 212407,
-      "gzip": 30130,
-      "brotli": 25215
+      "raw": 212437,
+      "gzip": 30132,
+      "brotli": 25225
     },
     "build/css/styles.css": {
-      "raw": 222483,
-      "gzip": 32793,
-      "brotli": 27344
+      "raw": 222797,
+      "gzip": 32881,
+      "brotli": 27384
     },
     "build/css/tokens.css": {
-      "raw": 8438,
-      "gzip": 2180,
-      "brotli": 1846
+      "raw": 8761,
+      "gzip": 2249,
+      "brotli": 1906
     },
     "styles/components/alert.css": {
-      "raw": 1403,
+      "raw": 1413,
       "gzip": 483,
       "brotli": 402
     },
@@ -352,7 +352,7 @@
       "brotli": 2101
     },
     "styles/components/sla.css": {
-      "raw": 516,
+      "raw": 521,
       "gzip": 293,
       "brotli": 240
     },
@@ -367,9 +367,9 @@
       "brotli": 299
     },
     "styles/components/stat-tile.css": {
-      "raw": 3996,
-      "gzip": 1215,
-      "brotli": 1009
+      "raw": 4001,
+      "gzip": 1214,
+      "brotli": 1006
     },
     "styles/components/states.css": {
       "raw": 2060,
@@ -377,9 +377,9 @@
       "brotli": 611
     },
     "styles/components/status-pill.css": {
-      "raw": 3794,
-      "gzip": 1029,
-      "brotli": 856
+      "raw": 3799,
+      "gzip": 1028,
+      "brotli": 872
     },
     "styles/components/stepper.css": {
       "raw": 1189,
