@@ -11,6 +11,11 @@ packages/*/dist/
 # imports build/css/tokens.css through styles/. Override the global gitignore that excludes build/.
 !build/
 !build/**
+# ...except the two minified bundles. Each is ONE line, so any two PRs that touch component CSS
+# conflict on it by construction (2026-10-07: ten open PRs went DIRTY on one merge). CI, the docs
+# site and publishing all build them, and without a build the docs load styles/main.css instead.
+packages/tokens/build/css/styles.css
+packages/tokens/build/css/components.css
 
 # Playwright VR (S5): run outputs are transient; only the Linux goldens are tracked.
 test-results/
@@ -24,20 +29,6 @@ tests/visual/__screenshots__/*-darwin.png
 # Playwright MCP verification artifacts (screenshots/snapshots/console logs)
 .playwright-mcp/
 
-# rich-text Playwright harness bundle (tests/rich-text/build.mjs)
-tests/rich-text/dist/
-# operator-primitives Playwright harness bundle (tests/operator-primitives/build.mjs)
-tests/operator-primitives/dist/
-# DiffViewer Playwright harness bundle (tests/diff-viewer/build.mjs)
-tests/diff-viewer/dist/
-# ViewMenu Playwright harness bundle (tests/view-menu/build.mjs)
-tests/view-menu/dist/
-# InfoTip Playwright harness bundle (tests/info-tip/build.mjs)
-tests/info-tip/dist/
-tests/search-suggest/dist/
-# Drawer/Peek Playwright harness bundle (tests/drawer/build.mjs)
-tests/drawer/dist/
-# TextDiff Playwright harness bundle (tests/text-diff/build.mjs)
-tests/text-diff/dist/
-# DashboardGrid Playwright harness bundle (tests/dashboard-grid/build.mjs)
-tests/dashboard-grid/dist/
+# Playwright harness bundles: tests/<name>/build.mjs writes tests/<name>/dist/. One pattern for all
+# of them: a line per harness was a line every harness PR appended here, so they conflicted.
+tests/*/dist/
