@@ -23,12 +23,27 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 const closes = (page) => page.evaluate(() => ({ ...window.__drawer }));
-/** Open a panel and wait for its slide-in to finish, so its box is final. */
+/** Open a panel and wait until its box is final. A computed `transform` of 'none' is no signal on
+ * its own: a dialog that isn't rendered reads 'none' too, with a 0×0 box at the origin. So wait
+ * until it is modal, nothing on it or its ::backdrop is transitioning (getAnimations() flushes
+ * style, so a slide-in that hasn't started yet still counts), and its box is non-empty and the
+ * same on two polls in a row. The roomy timeout is only a ceiling for a starved renderer, which
+ * can stall for seconds under full CPU load; settled, this resolves in a few hundred ms. */
 const openPanel = async (page, button, id) => {
   await page.locator(`#${button}`).click();
   const dialog = page.locator(`dialog#${id}`);
   await expect(dialog).toHaveJSProperty('open', true);
-  await expect.poll(() => dialog.evaluate((d) => getComputedStyle(d).transform)).toBe('none');
+  let last;
+  await expect.poll(async () => {
+    const { modal, animating, rect } = await dialog.evaluate((d) => {
+      const { x, y, width, height } = d.getBoundingClientRect();
+      return { modal: d.matches(':modal'), animating: d.getAnimations({ subtree: true }).length > 0, rect: { x, y, width, height } };
+    });
+    const key = JSON.stringify(rect);
+    const settled = modal && !animating && rect.width > 0 && key === last;
+    last = key;
+    return settled;
+  }, { message: `#${id} settles: modal, no running transitions, a stable box`, timeout: 15_000 }).toBe(true);
   return dialog;
 };
 
