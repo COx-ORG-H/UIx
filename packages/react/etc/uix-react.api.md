@@ -1629,6 +1629,7 @@ export interface FilterEditorLabels {
     operator: string;
     // (undocumented)
     operators: Record<TextFilterOperator | NumberFilterOperator, string>;
+    presets?: string;
     remove: string;
     // (undocumented)
     retry: string;
@@ -1680,6 +1681,7 @@ export interface FilterField {
     onSearch?: (query: string) => Promise<readonly FilterChoice[]>;
     operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
     options?: readonly FilterChoice[];
+    presets?: readonly FilterPreset[];
     trueLabel?: string;
     unit?: string;
 }
@@ -1725,6 +1727,15 @@ export interface FilterPopoverProps {
     value: string;
 }
 
+// @public
+export interface FilterPreset {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    values: readonly string[];
+}
+
 // @public (undocumented)
 export interface FilterSummaryLabels {
     from: string;
@@ -1733,6 +1744,7 @@ export interface FilterSummaryLabels {
     no: string;
     // (undocumented)
     operators: Record<TextFilterOperator | NumberFilterOperator, string>;
+    preset?: string;
     range: string;
     until: string;
     // (undocumented)
@@ -2319,6 +2331,9 @@ export interface MatchBulkResult {
 
 // @public (undocumented)
 export function matchFilter(row: Row, f: ColumnFilter): boolean;
+
+// @public
+export function matchFilterPreset(field: FilterField, value: FilterValue | undefined): FilterPreset | undefined;
 
 // @public
 export function MatchReview(input: MatchReviewProps): react.JSX.Element;
@@ -4994,6 +5009,8 @@ export interface UixLabels {
     drawer?: {
         close?: string;
     };
+    // (undocumented)
+    filterEditor?: Partial<FilterEditorLabels>;
     // (undocumented)
     modal?: {
         close?: string;
