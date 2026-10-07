@@ -39,3 +39,5 @@ tests/search-suggest/dist/
 tests/drawer/dist/
 # TextDiff Playwright harness bundle (tests/text-diff/build.mjs)
 tests/text-diff/dist/
+# Tag/chip remove Playwright harness bundle (tests/dismiss-control/build.mjs)
+tests/dismiss-control/dist/

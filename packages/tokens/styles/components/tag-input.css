@@ -10,9 +10,22 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
-  .uix-tag__remove { position: relative; display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); }
-  /* Invisible overlay grows the 16px visual to a 24px hit target (UIX-A11Y-3). */
-  .uix-tag__remove::before { content: ""; position: absolute; inset: -4px; }
-  .uix-tag__remove:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
-  .uix-tag__remove svg { width: 12px; height: 12px; }
+  /* The remove "x" (HAR-1569) — ONE spec with .uix-chip__remove in table-toolbar.css; the two rule
+   * sets must stay identical apart from colour (packages/tokens/tests/dismiss-control.test.mjs).
+   * A 20 px circle with the icon centred in it, at the pill's trailing end 2 px from the edge. The
+   * negative block margin keeps the pill height; ::before grows the hit area to a concentric 24 px
+   * (WCAG 2.5.8). The hover is a tint of the text colour, so it shows on any pill fill. */
+  .uix-tag:has(> .uix-tag__remove:last-child) { padding-inline-end: calc(var(--uix-space-1) / 2); }
+  .uix-tag__remove {
+    position: relative; display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px;
+    margin-block: calc(var(--uix-space-1) / -2); padding: 0; border: 0; border-radius: var(--uix-radius-pill);
+    background: transparent; color: var(--uix-text-muted); font: inherit; line-height: 0; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-tag__remove::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
+  .uix-tag__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
+  .uix-tag__remove:hover { background: color-mix(in srgb, var(--uix-text) 16%, transparent); color: var(--uix-text); }
+  .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 24%, transparent); }
+  .uix-tag__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  /* forced colours: the hover outline lives in styles/forced-colors.css */
 }
