@@ -93,6 +93,7 @@ const NAV_ITEMS = [
   { name: 'Tabs', slug: 'tabs', group: 'Components', summary: 'Line, enclosed, and pill navigation.', keywords: ['navigation', 'tabpanel'] },
   { name: 'Table', slug: 'table', group: 'Components', summary: 'Dense enterprise data display and table states.', keywords: ['grid', 'rows', 'data'] },
   { name: 'Chart', slug: 'chart', group: 'Components', summary: 'Accessible analytical cards, legends, metrics, and renderer slots.', keywords: ['graph', 'visualization', 'echarts', 'mission control'] },
+  { name: 'Calendar model', slug: 'calendar-model', group: 'Patterns', summary: 'Zoned days, real hour slots, "+1 day" and lane packing for calendar views.', keywords: ['time zone', 'dst', 'daylight saving', 'hour slots', 'packLanes', 'zonedDayBounds', 'addZonedDays'] },
   { name: 'App shell', slug: 'app-shell', group: 'Patterns', summary: 'Sidebar, top bar, and responsive workspace layout.', keywords: ['layout', 'navigation', 'sidebar'] },
   { name: 'Data workflows', slug: 'data-workflows', group: 'Patterns', summary: 'Filters, saved views, pinning, and record peek.', keywords: ['table', 'filters', 'peek', 'pin'] },
   { name: 'Pipeline', slug: 'pipeline', group: 'Patterns', summary: 'Compact and detailed stage rails for operational progress.', keywords: ['workflow', 'stage', 'approval', 'duration', 'mission control'] },
@@ -595,6 +596,37 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 </Flow>`, 'tsx')}<p>Use <code>aria-label</code> on the graph and retain a meaningful DOM order. A visual edge must not be the only place a relationship is described.</p>`)}
     ${section('usage-guidance', 'Usage guidance', `${compare('Use Flow for branching or connected process structure where node relationships matter.', 'Use a graph when an ordered Pipeline would communicate the same process more simply.')}<p>Keep node titles concise, label exceptional states in text, and reserve motion for genuinely running connectors.</p>`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>DOM order should provide a coherent linear reading of the graph. Interactive nodes must be keyboard reachable, show focus, and expose their action. For complex branching, pair the visual canvas with an outline, table, or other structured representation.</p><p><a class="uix-btn uix-btn--primary" href="#examples-workflows-pipelines">Open workflow specimens</a></p>`)}`,
+
+  'calendar-model': () => {
+    const fn = (name, signature, result) => `<tr><td><code>${esc(name)}</code></td><td><code>${esc(signature)}</code></td><td>${result}</td></tr>`;
+    const slot = (label, offset, utc) => `<tr><td>${label}</td><td>${offset}</td><td><code>${utc}</code></td></tr>`;
+    return `${pageHeader('Patterns', 'Calendar model', 'Pure functions in @tensor_1/react for calendar geometry in one explicit IANA display zone. Days, hour slots and "+1 day" come from real instants, so daylight-saving days have 23 or 25 hours.', ['@tensor_1/react', 'Intl only', 'half-open intervals'])}
+    ${section('functions', 'Functions', `<table class="uix-docs__token-table"><thead><tr><th>Function</th><th>Signature</th><th>Returns</th></tr></thead><tbody>
+      ${fn('zonedDayBounds', '(dateKey, timeZone)', 'The day as <code>{ start, end }</code> instants; <code>end</code> of a day is <code>start</code> of the next. A day whose midnight is skipped starts at its first existing instant.')}
+      ${fn('zonedHourSlots', '(dateKey, timeZone)', 'One <code>{ instant, label, offsetLabel }</code> per real hour start: 23, 24 or 25 entries. <code>offsetLabel</code> is set on both occurrences of a repeated hour.')}
+      ${fn('addZonedDays', '(instant, days, timeZone)', 'The same wall-clock time <code>days</code> later, as <code>{ instant, adjusted }</code>. A skipped time moves forward once, with <code>adjusted: &#39;gap_forward&#39;</code>.')}
+      ${fn('zonedDaySpan', '(start, end, timeZone)', 'The days an entry touches, as <code>[start, end)</code> date keys. An entry ending at local 00:00 stays on its last day. Throws a <code>RangeError</code> when <code>end</code> is not after <code>start</code>.')}
+      ${fn('enumerateDateKeys', '(span, { limit })', '<code>{ dates, truncated }</code>; a span longer than <code>limit</code> (370) reports <code>truncated: true</code>.')}
+      ${fn('packLanes', '(intervals, maxLanes, { order })', 'A lane (or <code>null</code>) per id and, per overlap cluster, <code>laneCount</code> and <code>overflow</code>. <code>order</code> is <code>&#39;start&#39;</code> or <code>&#39;given&#39;</code>.')}
+      ${fn('rankOverflow', '(items, compare, n)', 'A stable sort and cut: <code>{ visible, hidden }</code>.')}
+      ${fn('cachedDateTimeFormat', '(locale, options)', 'One shared <code>Intl.DateTimeFormat</code> per locale and options shape.')}
+      ${fn('zonedDateKey', '(instant, timeZone)', 'The <code>YYYY-MM-DD</code> date of an instant in the zone.')}
+    </tbody></table>${callout('Deprecated in 2.x', '<code>zonedDateSpan</code> (end-inclusive, swaps inverted ends) and <code>enumerateDateSpan</code> (stops silently at 370 days) keep their behaviour. Use <code>zonedDaySpan</code> and <code>enumerateDateKeys</code>.', 'warning')}`)}
+    ${section('dst-example', 'Example: 25 October 2026 in Europe/Berlin', `<p>Clocks go back from 03:00 to 02:00, so the day has 25 hours and the hour labelled 02 occurs twice. <code>zonedHourSlots('2026-10-25', 'Europe/Berlin')</code> returns 25 slots; the first six are:</p><table class="uix-docs__token-table"><thead><tr><th>label</th><th>offsetLabel</th><th>instant (UTC)</th></tr></thead><tbody>
+      ${slot('00', 'null', '2026-10-24T22:00:00Z')}${slot('01', 'null', '2026-10-24T23:00:00Z')}${slot('02', '+02:00', '2026-10-25T00:00:00Z')}${slot('02', '+01:00', '2026-10-25T01:00:00Z')}${slot('03', 'null', '2026-10-25T02:00:00Z')}${slot('04', 'null', '2026-10-25T03:00:00Z')}
+    </tbody></table><p>On 29 March 2026 clocks go forward from 02:00 to 03:00: the day has 23 slots and none is labelled 02. Moving 28 March 02:30 by one day with <code>addZonedDays</code> gives 29 March 03:30 and <code>adjusted: 'gap_forward'</code>, so the interface can say why the time changed.</p>${codeBlock(`import { addZonedDays, packLanes, zonedDayBounds, zonedHourSlots } from "@tensor_1/react";
+
+const tz = "Europe/Berlin";
+const { start, end } = zonedDayBounds("2026-10-25", tz); // 25 hours apart
+const rows = zonedHourSlots("2026-10-25", tz);             // 25 rows; "02" twice
+const top = (t: Date) => ((t.getTime() - start.getTime()) / 3_600_000) * hourHeight;
+
+const next = addZonedDays(entry.start, 1, tz);
+if (next.adjusted === "gap_forward") announce(labels.movedPastGap);
+
+const { lanes, clusters } = packLanes(dayEntries, 3);       // lane: number | null`, 'ts')}`)}
+    ${section('rules', 'Rules for calendar views', `<ul><li>Compute days, slots and moves only with these functions: no <code>setHours</code>, <code>setDate</code> or fixed 24-hour arithmetic.</li><li>Every interval is half-open, <code>[start, end)</code>. An inverted interval is an error, never swapped.</li><li>A view renders the entries and the overflow count it is given. <code>packLanes</code> places entries; it does not decide which entries matter.</li></ul>`)}`;
+  },
 
   'app-shell': () => `${pageHeader('Patterns', 'App shell', 'The shell establishes persistent wayfinding, global action, and a predictable working area for dense products.', ['sidebar + top bar', 'responsive rail', 'persistent navigation'])}
     ${section('anatomy', 'Anatomy', `<ol class="uix-docs__steps"><li><h3>Global sidebar</h3><p>One canonical home, grouped primary destinations, favorites, and visible active state.</p></li><li><h3>Top bar</h3><p>Page context, global search, cross-product actions, theme, and account access.</p></li><li><h3>Working canvas</h3><p>Page header, task controls, feedback, and content sized for the job rather than the browser.</p></li></ol>`)}
