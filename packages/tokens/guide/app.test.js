@@ -28,6 +28,12 @@ test('parseColor handles hex (3 + 6) and rgb', () => {
   assert.deepEqual(parseColor('rgb(255 101 104)'), [255, 101, 104]);
 });
 
+test('getContrast composites a translucent color over the other first (HAR-1562)', () => {
+  // dark --uix-text-hushed rgba(250,250,250,.64) over --uix-surface #111111 renders as #A6A6A6: 7.77:1
+  assert.equal(getContrast('rgb(17, 17, 17)', 'rgba(250, 250, 250, 0.64)').toFixed(2), '7.77');
+  assert.equal(getContrast('rgba(250, 250, 250, 0.64)', 'rgb(17, 17, 17)').toFixed(2), '7.77');
+});
+
 test('getContrast: black/white is ~21, white/white is 1', () => {
   assert.ok(Math.abs(getContrast('#000000', '#ffffff') - 21) < 0.01);
   assert.ok(Math.abs(getContrast('#ffffff', '#ffffff') - 1) < 0.01);

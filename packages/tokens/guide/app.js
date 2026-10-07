@@ -257,10 +257,24 @@ const _lin = (c) => {
 };
 const _lum = ([r, g, b]) => 0.2126 * _lin(r) + 0.7152 * _lin(g) + 0.0722 * _lin(b);
 
-/** WCAG contrast ratio between two CSS colors (1–21). */
+/** The alpha of an rgba() / 8-digit hex color (1 when opaque or unparsable). */
+const parseAlpha = (str) => {
+  const s = String(str).trim();
+  if (s.startsWith('#')) return s.length === 9 ? parseInt(s.slice(7), 16) / 255 : 1;
+  const m = s.match(/-?\d*\.?\d+/g);
+  return m && m.length >= 4 ? +m[3] : 1;
+};
+const over = (fg, alpha, bg) => fg.map((c, i) => c * alpha + bg[i] * (1 - alpha));
+
+/** WCAG contrast ratio between two CSS colors (1–21). A translucent color (e.g. --uix-text-hushed)
+    is composited over the other one first, as it renders. */
 export const getContrast = (a, b) => {
-  const L1 = _lum(parseColor(a));
-  const L2 = _lum(parseColor(b));
+  let [ca, cb] = [parseColor(a), parseColor(b)];
+  const [aa, ab] = [parseAlpha(a), parseAlpha(b)];
+  if (aa < 1) ca = over(ca, aa, cb);
+  else if (ab < 1) cb = over(cb, ab, ca);
+  const L1 = _lum(ca);
+  const L2 = _lum(cb);
   const hi = Math.max(L1, L2);
   const lo = Math.min(L1, L2);
   return (hi + 0.05) / (lo + 0.05);
