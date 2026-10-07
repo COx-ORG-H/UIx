@@ -931,6 +931,46 @@ export function createToastStore(): ToastStore;
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
 // @public
+export const DashboardGrid: react.ForwardRefExoticComponent<DashboardGridProps & react.RefAttributes<HTMLDivElement>> & {
+    Item: react.ForwardRefExoticComponent<DashboardGridItemProps & react.RefAttributes<HTMLDivElement>>;
+};
+
+// @public
+export type DashboardGridBreakpoint = 'base' | 'sm' | 'md' | 'lg' | 'xl';
+
+// @public
+export function dashboardGridClassName(columns?: DashboardGridColumns, gap?: DashboardGridGap): string;
+
+// @public
+export type DashboardGridColumnCount = 1 | 2 | 3 | 4;
+
+// @public
+export type DashboardGridColumns = DashboardGridColumnCount | Partial<Record<DashboardGridBreakpoint, DashboardGridColumnCount>>;
+
+// @public
+export type DashboardGridGap = 'sm' | 'md' | 'lg';
+
+// @public
+export const DashboardGridItem: react.ForwardRefExoticComponent<DashboardGridItemProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public
+export function dashboardGridItemClassName(span?: DashboardGridSpan): string;
+
+// @public (undocumented)
+export interface DashboardGridItemProps extends HTMLAttributes<HTMLDivElement> {
+    span?: DashboardGridSpan;
+}
+
+// @public (undocumented)
+export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
+    columns?: DashboardGridColumns;
+    gap?: DashboardGridGap;
+}
+
+// @public
+export type DashboardGridSpan = 1 | 2 | 'full';
+
+// @public
 export function DateRangePicker(input: DateRangePickerProps): react.JSX.Element;
 
 // @public
@@ -984,6 +1024,7 @@ export interface DateRangePickerProps {
     onChange: (value: DateRangeValue) => void;
     // (undocumented)
     onVisibleMonthChange?: (month: string) => void;
+    today?: string | null;
     // (undocumented)
     value: DateRangeValue;
     // (undocumented)

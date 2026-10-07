@@ -176,6 +176,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-chart"
   },
+  "dashboard-grid": {
+    "route": "examples-dashboard-grid",
+    "selector": ".uix-dashboard-grid"
+  },
   "tooltip": {
     "route": "examples-data-display",
     "selector": ".uix-tooltip"

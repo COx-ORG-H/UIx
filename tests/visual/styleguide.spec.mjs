@@ -24,6 +24,11 @@ const PAGES = [
   { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
   { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
   { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
+  // HAR-1573: the field must read as a plain label over the control, with no tag band. Captured as
+  // the specimen's preview only, so prose changes on the reference page do not move this golden.
+  { name: 'docs-filter-popover', path: 'docs/explorer.html#filter-popover', element: '.uix-docs__page .uix-filter-popover' },
+  // HAR-1570: start/end circles, the band between them and today's ring.
+  { name: 'docs-date-range-picker', path: 'docs/explorer.html#examples-date-range-picker', pickRangeEnd: '2026-09-12' },
   // Select draws its own list (HAR-1572): every state at desktop width and at 320 px.
   { name: 'docs-select', path: 'docs/explorer.html#select' },
   { name: 'docs-select-320', path: 'docs/explorer.html#select', viewport: { width: 320, height: 844 } },
@@ -61,6 +66,18 @@ for (const pg of PAGES) {
       await page.locator('[data-color-trigger]').click();
       await expect(page.locator('[data-color-dialog]')).toBeVisible();
       await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
+    // The date-range specimen starts with only a start date; pick an end so the band shows.
+    if (pg.pickRangeEnd) {
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).click();
+      await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).blur();
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
+    if (pg.element) {
+      await expect(page.locator(pg.element)).toHaveScreenshot(`${pg.name}.png`, { timeout: 20_000 });
+      return;
     }
 
     await expect(page).toHaveScreenshot(`${pg.name}.png`, { fullPage: true, timeout: 20_000 });

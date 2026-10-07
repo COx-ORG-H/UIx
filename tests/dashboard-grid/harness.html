@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DashboardGrid harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/dashboard-grid.spec.mjs. Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; gap: var(--uix-space-6); }
+    section { display: grid; gap: var(--uix-space-3); min-width: 0; }
+    #narrow { max-width: 35rem; }
+    .tile { padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>
