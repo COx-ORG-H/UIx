@@ -1,20 +1,15 @@
 {
-  "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. A deliberate size change means re-running --update in the same reviewed commit.",
+  "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw, gzip or brotli size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. --update rewrites only the entries that are out of tolerance, new or gone, so an entry changes only in the PR that resized that file. The two bundles (build/css/styles.css, components.css) deliberately have no entry: they are checked against the sum of their inputs instead.",
   "sizes": {
-    "build/css/components.css": {
-      "raw": 212407,
-      "gzip": 30130,
-      "brotli": 25215
-    },
-    "build/css/styles.css": {
-      "raw": 222483,
-      "gzip": 32793,
-      "brotli": 27344
-    },
     "build/css/tokens.css": {
       "raw": 8438,
       "gzip": 2180,
       "brotli": 1846
+    },
+    "styles/base.css": {
+      "raw": 4169,
+      "gzip": 1831,
+      "brotli": 1484
     },
     "styles/components/alert.css": {
       "raw": 1403,
@@ -460,6 +455,21 @@
       "raw": 7170,
       "gzip": 1989,
       "brotli": 1645
+    },
+    "styles/forced-colors.css": {
+      "raw": 2426,
+      "gzip": 914,
+      "brotli": 749
+    },
+    "styles/motion.css": {
+      "raw": 1853,
+      "gzip": 726,
+      "brotli": 614
+    },
+    "styles/utilities.css": {
+      "raw": 1310,
+      "gzip": 652,
+      "brotli": 522
     }
   }
 }
