@@ -1,0 +1,87 @@
+/* DashboardGrid (HAR-1555): the layout grid for dashboard widgets. Items span 1 column,
+   2 columns or the full row, and the column count follows the GRID'S OWN WIDTH (a container
+   query), not the viewport, so a dashboard beside an open sidebar gets fewer columns.
+
+   How it works: the grid always has 12 equal tracks (12 is divisible by 1, 2, 3 and 4). A
+   container query on the grid picks the column count, and each child spans 12 / columns
+   tracks (span 2: twice that, never more than 12). Span 2 therefore clamps to the columns
+   there are, and a full item is `grid-column: 1 / -1` at every width.
+
+   Column breakpoints (grid width): sm 36rem · md 48rem · lg 60rem · xl 80rem. They are sized
+   for widgets of about 280–320 px: 2 columns from 36rem, 3 from 60rem, 4 from 80rem.
+   Without a column class: 1 column, 2 from sm, 3 from lg. Any column class replaces those
+   defaults at every width it covers (the defaults are zero-specificity `:where()` rules).
+
+   Each item is an inline-size container (`uix-dashboard-grid-item`), so a chart or card inside
+   can use @container queries or cqi units against the item's width. */
+@layer uix.components {
+  .uix-dashboard-grid {
+    --dashboard-grid-gap: var(--uix-space-4);
+    container: uix-dashboard-grid / inline-size;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    /* 11 column gaps sit between the 12 tracks. Capping each at 1/12 of the width keeps a very
+       narrow grid from being pushed wider than its box by the gaps alone. */
+    column-gap: min(var(--dashboard-grid-gap), calc(100% / 12));
+    row-gap: var(--dashboard-grid-gap);
+    min-width: 0;
+  }
+  .uix-dashboard-grid--gap-sm { --dashboard-grid-gap: var(--uix-space-3); }
+  .uix-dashboard-grid--gap-lg { --dashboard-grid-gap: var(--uix-space-6); }
+
+  /* Every direct child is a cell. --dashboard-grid-one / -two are the tracks a span-1 / span-2
+     child takes at the current width; the rules below set them. */
+  .uix-dashboard-grid > * { grid-column: span var(--dashboard-grid-one, 12); min-width: 0; }
+  .uix-dashboard-grid > .uix-dashboard-grid__item--span-2 { grid-column: span var(--dashboard-grid-two, 12); }
+
+  /* The item fills its row (widgets in one row share a height) and is the container its
+     content sizes against. Its last child takes the spare height. */
+  .uix-dashboard-grid__item {
+    container: uix-dashboard-grid-item / inline-size;
+    display: flex;
+    flex-direction: column;
+  }
+  .uix-dashboard-grid__item > :last-child { flex-grow: 1; }
+
+  /* Base (any width). Default: 1 column. */
+  :where(.uix-dashboard-grid) > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+  .uix-dashboard-grid--cols-1 > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+  .uix-dashboard-grid--cols-2 > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+  .uix-dashboard-grid--cols-3 > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+  .uix-dashboard-grid--cols-4 > * { --dashboard-grid-one: 3; --dashboard-grid-two: 6; }
+
+  @container uix-dashboard-grid (min-width: 36rem) {
+    /* Default: 2 columns. */
+    :where(.uix-dashboard-grid) > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--sm-cols-1 > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--sm-cols-2 > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--sm-cols-3 > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+    .uix-dashboard-grid--sm-cols-4 > * { --dashboard-grid-one: 3; --dashboard-grid-two: 6; }
+  }
+
+  @container uix-dashboard-grid (min-width: 48rem) {
+    .uix-dashboard-grid--md-cols-1 > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--md-cols-2 > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--md-cols-3 > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+    .uix-dashboard-grid--md-cols-4 > * { --dashboard-grid-one: 3; --dashboard-grid-two: 6; }
+  }
+
+  @container uix-dashboard-grid (min-width: 60rem) {
+    /* Default: 3 columns. */
+    :where(.uix-dashboard-grid) > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+    .uix-dashboard-grid--lg-cols-1 > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--lg-cols-2 > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--lg-cols-3 > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+    .uix-dashboard-grid--lg-cols-4 > * { --dashboard-grid-one: 3; --dashboard-grid-two: 6; }
+  }
+
+  @container uix-dashboard-grid (min-width: 80rem) {
+    .uix-dashboard-grid--xl-cols-1 > * { --dashboard-grid-one: 12; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--xl-cols-2 > * { --dashboard-grid-one: 6; --dashboard-grid-two: 12; }
+    .uix-dashboard-grid--xl-cols-3 > * { --dashboard-grid-one: 4; --dashboard-grid-two: 8; }
+    .uix-dashboard-grid--xl-cols-4 > * { --dashboard-grid-one: 3; --dashboard-grid-two: 6; }
+  }
+
+  /* Last, so it wins over every span rule above: the whole row at every width. */
+  .uix-dashboard-grid > .uix-dashboard-grid__item--full { grid-column: 1 / -1; }
+}

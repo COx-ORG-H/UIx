@@ -364,14 +364,19 @@ export interface FilterPopoverProps {
 
 /** Controlled filter editor content; applications own query serialization and the popover trigger. */
 export function FilterPopover({ label, type = 'text', value, onValueChange, options, applyLabel, clearLabel, onApply, onClear, placeholder }: FilterPopoverProps) {
+  const controlId = useId();
   return (
     <div className="uix-filter-popover">
-      <label className="uix-label">
-        <span>{label}</span>
+      {/* A plain UIx field: label above the control, tied by for/id. Not `.uix-label` — that is
+          the Label tag pill, and on a <label> it drew a tinted band around the control (HAR-1573).
+          No `.uix-field__msg` row: there is no hint or error here, and the reserved row would
+          push the actions away from the control. */}
+      <div className="uix-field">
+        <label className="uix-field__label" htmlFor={controlId}>{label}</label>
         {type === 'select' || type === 'enum' || type === 'boolean'
-          ? <select className="uix-select" value={value} onChange={(event) => onValueChange(event.currentTarget.value)}>{options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
-          : <Input type={type} value={value} placeholder={placeholder} onChange={(event) => onValueChange(event.currentTarget.value)} />}
-      </label>
+          ? <select id={controlId} className="uix-select" value={value} onChange={(event) => onValueChange(event.currentTarget.value)}>{options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+          : <Input id={controlId} type={type} value={value} placeholder={placeholder} onChange={(event) => onValueChange(event.currentTarget.value)} />}
+      </div>
       <div className="uix-filter-popover__actions"><Button type="button" onClick={onClear}>{clearLabel}</Button><Button type="button" variant="primary" onClick={onApply}>{applyLabel}</Button></div>
     </div>
   );

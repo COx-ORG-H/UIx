@@ -80,6 +80,12 @@ export type { PeekProps } from './components/Peek.js';
 export { Card, CardLink } from './components/Card.js';
 export type { CardProps, CardLinkProps } from './components/Card.js';
 
+export { DashboardGrid, DashboardGridItem, dashboardGridClassName, dashboardGridItemClassName } from './components/DashboardGrid.js';
+export type {
+  DashboardGridProps, DashboardGridItemProps, DashboardGridColumns, DashboardGridColumnCount,
+  DashboardGridBreakpoint, DashboardGridSpan, DashboardGridGap,
+} from './components/DashboardGrid.js';
+
 export { Breadcrumbs } from './components/Breadcrumbs.js';
 export type { BreadcrumbsProps, BreadcrumbItem } from './components/Breadcrumbs.js';
 

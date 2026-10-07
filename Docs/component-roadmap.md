@@ -42,6 +42,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Chart | chart.css | ✓ `Chart` (`@tensor_1/react/chart`) | Beta | no | Optional ECharts adapter with accessible data table, analytical card states, metric, and legend chrome; lean preset also available. |
 | Checkbox | checkbox.css | ✓ `Checkbox` | Stable | no | Form primitive. |
 | ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
+| DashboardGrid | dashboard-grid.css | ✓ `DashboardGrid` | Beta | no | Layout grid for dashboard widgets: spans 1, 2 (clamped) and `full`; column count follows the grid's own width (container query); each item is an inline-size container so charts size from it. Also `DashboardGridItem` / `DashboardGrid.Item`, `dashboardGridClassName`. Landed with HAR-1555. |
 | Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. Recently landed. |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |

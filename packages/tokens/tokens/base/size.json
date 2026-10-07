@@ -3,6 +3,7 @@
   "radius-sm":   { "$type": "dimension", "$value": "8px" },
   "radius-md":   { "$type": "dimension", "$value": "12px" },
   "radius-lg":   { "$type": "dimension", "$value": "16px" },
+  "radius-xl":   { "$type": "dimension", "$value": "24px", "$description": "Largest corner radius below pill: hero cards, sheets, large dialogs (HAR-1384, shipped with HAR-1562)." },
   "radius-pill": { "$type": "dimension", "$value": "999px" },
 
   "row-h":             { "$type": "dimension", "$value": "56px" },
