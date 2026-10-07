@@ -11,6 +11,11 @@ packages/*/dist/
 # imports build/css/tokens.css through styles/. Override the global gitignore that excludes build/.
 !build/
 !build/**
+# ...except the two minified bundles. Each is ONE line, so any two PRs that touch component CSS
+# conflict on it by construction (2026-10-07: ten open PRs went DIRTY on one merge). CI, the docs
+# site and publishing all build them, and without a build the docs load styles/main.css instead.
+packages/tokens/build/css/styles.css
+packages/tokens/build/css/components.css
 
 # Playwright VR (S5): run outputs are transient; only the Linux goldens are tracked.
 test-results/
