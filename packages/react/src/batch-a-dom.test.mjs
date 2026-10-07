@@ -399,7 +399,8 @@ test('HAR-1571: the CollapsibleSection chevron is the UIx ChevronDown svg, with 
   };
   check(renderToStaticMarkup(h(ui.CollapsibleSection, { title: 'Plain' }, 'Body')), 'plain');
   check(renderToStaticMarkup(h(ui.CollapsibleSection, { title: 'Lazy', lazy: true }, 'Body')), 'stateful');
-  const host = mount(h(ui.CollapsibleSection, { title: 'Stateful', persistKey: 'har-1571' }, 'Body'));
+  const { host, unmount } = mount(h(ui.CollapsibleSection, { title: 'Stateful', persistKey: 'har-1571' }, 'Body'));
   assert.equal(host.querySelector('.uix-collapsible__chevron svg path')?.getAttribute('d'), expectedPath, 'mounted stateful section');
   assert.equal(host.querySelector('.uix-collapsible__chevron').textContent, '');
+  unmount();
 });
