@@ -247,6 +247,40 @@ never run by GitHub, so PRs would still show as conflicting and the merge button
 still be disabled; it also runs per file in the middle of a merge, before the sources it
 would have to rebuild from are merged.
 
+### Playwright harnesses are discovered, not listed
+
+A harness is a directory `tests/<name>/` with a `harness.html`, a `harness.tsx` and a
+`build.mjs` that exports one function named `build…Harness` (copy `tests/drawer/`). That
+directory is the whole change. `tests/global-setup.mjs` imports every `tests/*/build.mjs`
+and calls that function, once per run, and `.gitignore` covers every bundle with the one
+pattern `tests/*/dist/`. Both used to be hand-kept lists that each harness PR extended
+(an import plus an entry on a single `Promise.all` line, and an ignore line at the end
+of the file), so any two harness PRs conflicted on them.
+
+A list that is derived can come up short without anyone seeing it, so global setup stops
+the run when a `tests/*/harness.html` has no `build.mjs` next to it, when a `build.mjs`
+exports no `build…Harness` function or more than one, and when it finds no harness at
+all. `tests/a11y/harness-discovery.spec.mjs` runs each of those cases.
+`tests/require-bundle.mjs` stays a separate file and stays first in `globalSetup`.
+
+**A branch cut before discovery** (it adds an import and a `Promise.all` entry to
+`tests/global-setup.mjs` and a `tests/<name>/dist/` line to `.gitignore`) conflicts once
+on those two files when master is merged in. Take master's version of both. The branch's
+own `tests/<name>/build.mjs` is found without being named, and its `dist/` is already
+ignored:
+
+```bash
+git merge origin/master
+git checkout origin/master -- tests/global-setup.mjs .gitignore
+# resolve any conflict in files you authored, then:
+git commit
+npm run build && npx playwright test tests/a11y/harness-discovery.spec.mjs
+```
+
+If the branch changed `.gitignore` for something other than its harness line, add that
+change back before `git commit`. The last command fails, naming the directory, if the
+branch's harness does not follow the convention.
+
 ---
 
 ## Governance-artifact map
