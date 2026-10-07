@@ -208,8 +208,12 @@ of every CI job, `docs-pages.yml` before it assembles the site, and `prepublishO
 built still shows the docs: the `<link>` to the bundle in `docs/explorer.html` and
 `tables.html` has an `onerror` that loads `styles/main.css`, and
 `tests/a11y/docs-source-fallback.spec.mjs` keeps that rendering identical to the bundle's.
-The Playwright suites themselves refuse to start without the bundle
-(`tests/global-setup.mjs`), so they always test what ships.
+
+One thing changes for a local checkout: git no longer swaps the bundles when you switch
+branches or pull, so the copy on disk is whatever you last built. Run `npm run build`
+after either. The Playwright suites refuse to start when the bundle is missing or older
+than any stylesheet under `styles/` (`tests/require-bundle.mjs`), so they always test
+this tree's CSS.
 
 Gates: `packages/tokens/tests/generated-bundles.test.mjs` fails if a bundle is tracked
 again or a docs page loses its fallback; `packages/tokens/tests/size-report.test.mjs`
