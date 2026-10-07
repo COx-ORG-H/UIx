@@ -28,7 +28,8 @@ const open = async (page, theme, width) => {
 
 const measure = (popover) => popover.evaluate((root) => {
   const label = root.querySelector('label');
-  const control = label && document.getElementById(label.htmlFor);
+  // Fall back to the first control so the old markup (no for/id) fails on the assertions, not here.
+  const control = (label.htmlFor && document.getElementById(label.htmlFor)) || root.querySelector('select, input');
   const actions = root.querySelector('.uix-filter-popover__actions');
   const box = (el) => el.getBoundingClientRect();
   const cs = getComputedStyle(root);
@@ -47,8 +48,8 @@ const measure = (popover) => popover.evaluate((root) => {
   return {
     labelClass: label.className,
     labelFor: label.htmlFor,
-    controlId: control?.id ?? null,
-    controlTag: control?.tagName ?? null,
+    controlId: control.id || null,
+    controlTag: control.tagName,
     labelWrapsControl: label.contains(control),
     tagPills: root.querySelectorAll('.uix-label').length,
     bands: [label, ...chain].map((el) => {
