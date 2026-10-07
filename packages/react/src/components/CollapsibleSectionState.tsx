@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { cx } from '../cx.js';
+import { ChevronDownIcon } from '../icons/components.js';
 import type { CollapsibleSectionProps } from './CollapsibleSection.js';
 
 const STORAGE_PREFIX = 'uix:collapsible:';
@@ -66,7 +67,7 @@ export function CollapsibleSectionState({ title, summary, children, className, l
     <details ref={ref} className={cx('uix-collapsible', className)} {...props} open={isOpen} onToggle={handleToggle}>
       <summary className="uix-collapsible__summary">
         <span><span className="uix-collapsible__title">{title}</span>{summary != null && <span className="uix-collapsible__meta">{summary}</span>}</span>
-        <span className="uix-collapsible__chevron" aria-hidden="true">⌄</span>
+        <span className="uix-collapsible__chevron" aria-hidden="true"><ChevronDownIcon size="sm" /></span>
       </summary>
       <div className="uix-collapsible__body">{mountBody ? children : null}</div>
     </details>
