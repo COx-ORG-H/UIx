@@ -78,10 +78,14 @@ test('mergeChartTheme: the consumer wins, plain objects merge deeply, arrays are
   assert.equal(theme.xAxis.splitLine.show, undefined);
 });
 
-test('mergeChartTheme adds no axes to an option without them (pie, gauge)', () => {
+test('mergeChartTheme adds no axes, legend or title the option does not have', () => {
   const merged = shipped.mergeChartTheme(shipped.uixChartTheme(light), { series: [{ type: 'pie', data: [] }] });
-  assert.equal('xAxis' in merged, false);
-  assert.equal('yAxis' in merged, false);
+  for (const key of ['xAxis', 'yAxis', 'legend', 'title']) assert.equal(key in merged, false, key);
+  const titled = shipped.mergeChartTheme(shipped.uixChartTheme(light), { legend: { top: 0 }, title: [{ text: 'A' }, { text: 'B' }] });
+  assert.equal(titled.legend.top, 0);
+  assert.equal(titled.legend.textStyle.color, light('--uix-text-muted'));
+  assert.equal(titled.title.length, 2);
+  assert.equal(titled.title[1].textStyle.color, light('--uix-text'));
 });
 
 test('uixChartAreaGradient fades the series colour to transparent', () => {

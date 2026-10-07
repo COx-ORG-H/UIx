@@ -102,6 +102,9 @@ test('docs chart examples: gridlines are solid, only the threshold is dashed', a
   const dashed = all.filter((s) => s.dash !== 'none');
   expect(dashed.length).toBeGreaterThan(0);
   expect(dashed.every((s) => s.stroke === reference), JSON.stringify(dashed)).toBe(true);
+  // the theme styles a legend but never adds one: the residence chart asks for none
+  const residenceText = await page.locator('[data-uix-chart="residence"] svg text').allTextContents();
+  expect(residenceText).not.toContain('Residence');
 });
 
 test('no serious or critical axe violations', async ({ page }) => {

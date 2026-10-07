@@ -88,9 +88,11 @@ function deepMerge(base, over) {
   return out;
 }
 
+const STYLED_ONLY = ['xAxis', 'yAxis', 'legend', 'title'];
+
 export function mergeChartTheme(theme, option) {
   const merged = deepMerge(theme, option);
-  for (const key of ['xAxis', 'yAxis']) {
+  for (const key of STYLED_ONLY) {
     if (Array.isArray(option[key])) merged[key] = option[key].map((axis) => deepMerge(theme[key], axis));
     else if (!(key in option)) delete merged[key];
   }

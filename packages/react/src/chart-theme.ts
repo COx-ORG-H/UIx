@@ -126,15 +126,20 @@ function deepMerge(base: unknown, over: unknown): unknown {
   return out;
 }
 
+/** Components the theme only styles: present in the merge only when the consumer's option has them
+    (a theme `legend` or `xAxis` alone would make ECharts draw one). */
+const STYLED_ONLY = ['xAxis', 'yAxis', 'legend', 'title'];
+
 /**
  * Merge the theme under a consumer option: plain objects merge deeply, everything else (arrays,
- * series, data, functions) is the consumer's. `xAxis` / `yAxis` arrays take the theme axis per entry.
+ * series, data, functions) is the consumer's. Array-valued components (`xAxis: [...]`, `title: [...]`)
+ * take the theme entry per element.
  */
 export function mergeChartTheme(theme: EChartsOption, option: EChartsOption): EChartsOption {
   const merged = deepMerge(theme, option) as Record<string, unknown>;
   const source = option as Record<string, unknown>;
   const base = theme as Record<string, unknown>;
-  for (const key of ['xAxis', 'yAxis']) {
+  for (const key of STYLED_ONLY) {
     if (Array.isArray(source[key])) merged[key] = (source[key] as unknown[]).map((axis) => deepMerge(base[key], axis));
     else if (!(key in source)) delete merged[key];
   }
