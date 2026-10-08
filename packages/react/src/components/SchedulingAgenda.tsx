@@ -9,7 +9,7 @@ import type { FocusEvent, KeyboardEvent, ReactNode } from 'react';
 import { zonedTimeOfDay } from '../calendar-model.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { fillLabel } from '../fill-label.js';
-import { afterNextPaint, syncRovingStop } from '../roving.js';
+import { syncRovingStop } from '../roving.js';
 import type { RovingStop } from '../roving.js';
 import type {
   SchedulingAgendaGroup, SchedulingCalendarEntry, SchedulingCalendarLabels, SchedulingCalendarOverlay, SchedulingDatePart, SchedulingMarker,
@@ -75,7 +75,28 @@ export function SchedulingAgenda({
     stop.current = syncRovingStop(controls(), stop.current, target);
     target.focus();
   };
-  useEffect(() => { stop.current = syncRovingStop(controls(), stop.current); });
+  // A step that has to wait for rows the scroll brings in. It is taken after the render that
+  // mounts them, not after a guessed delay: `land` runs after every render until it succeeds.
+  const landing = useRef<{ to: 'start' | 'end' } | { from: HTMLElement; step: 1 | -1 } | null>(null);
+  const windowStart = virtual.startIndex;
+  const windowEnd = virtual.startIndex + virtual.rows.length;
+  const land = () => {
+    const wanted = landing.current;
+    if (!wanted) return;
+    const all = controls();
+    if ('to' in wanted) {
+      // The first or last control only counts once the rows at that end are the mounted ones.
+      if (wanted.to === 'start' ? windowStart > 0 : windowEnd < flatRows.length) return;
+      landing.current = null;
+      focusStop(wanted.to === 'start' ? all[0] : all[all.length - 1]);
+      return;
+    }
+    const target = all[all.indexOf(wanted.from) + wanted.step];
+    if (!target) { if (!all.includes(wanted.from)) landing.current = null; return; }
+    landing.current = null;
+    focusStop(target);
+  };
+  useEffect(() => { stop.current = syncRovingStop(controls(), stop.current); land(); });
   const onFocus = (event: FocusEvent<HTMLDivElement>) => { stop.current = syncRovingStop(controls(), stop.current, event.target as HTMLElement); };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const from = event.target as HTMLElement;
@@ -84,19 +105,22 @@ export function SchedulingAgenda({
     const box = scroller();
     if (event.key === 'Home' || event.key === 'End') {
       const end = event.key === 'End';
-      if (box) box.scrollTop = end ? box.scrollHeight : 0;
-      const land = () => { const all = controls(); focusStop(end ? all[all.length - 1] : all[0]); };
-      if (box) afterNextPaint(land); else land();
+      const all = controls();
+      if (!box) { focusStop(end ? all[all.length - 1] : all[0]); return; }
+      landing.current = { to: end ? 'end' : 'start' };
+      box.scrollTop = end ? box.scrollHeight : 0;
+      // Already at that end: no scroll, so no render will come to finish the step.
+      land();
       return;
     }
     const step = event.key === 'ArrowDown' ? 1 : -1;
     const all = controls();
     const next = all[all.indexOf(from) + step];
-    if (next) { focusStop(next); return; }
-    // The last mounted row of a long agenda: bring the next rows in, then take the step.
-    if (!box) return;
+    if (next) { landing.current = null; focusStop(next); return; }
+    // The last mounted row of a long agenda: bring the next rows in; the step is taken when they are mounted.
+    if (!box || (step === 1 ? windowEnd >= flatRows.length : windowStart === 0)) return;
+    landing.current = { from, step };
     box.scrollTop += step * AGENDA_VIRTUAL_ROW * 3;
-    afterNextPaint(() => { const now = controls(); focusStop(now[now.indexOf(from) + step]); });
   };
 
   const heading = (group: SchedulingAgendaGroup) => <div className="uix-scheduling-calendar__agenda-head">

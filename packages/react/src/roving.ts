@@ -19,9 +19,3 @@ export function syncRovingStop(all: readonly HTMLElement[], stop: RovingStop, ne
   for (const element of all) element.tabIndex = element === current ? 0 : -1;
   return { node: current, index: all.indexOf(current) };
 }
-
-/** Runs `task` once the next frame has been painted (the rows a scroll brings in are mounted by then). */
-export function afterNextPaint(task: () => void): void {
-  if (typeof requestAnimationFrame !== 'function') { setTimeout(task, 0); return; }
-  requestAnimationFrame(() => requestAnimationFrame(task));
-}
