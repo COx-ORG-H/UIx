@@ -147,7 +147,7 @@ export function computePosition(anchor: Rect, floating: Size, viewport: Size, op
     if (shift) y = clamp(y, padding, Math.max(padding, viewport.height - floating.height - padding));
   }
 
-  // 4. main axis — an element that fits on neither side slides over the anchor to stay on-screen
+  // 4. main axis â€” an element that fits on neither side slides over the anchor to stay on-screen
   const mainAxisNatural = horizontal ? y! : x!;
   const anchorInView = horizontal
     ? anchor.y + anchor.height > 0 && anchor.y < viewport.height
