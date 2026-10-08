@@ -5,7 +5,7 @@
  * Harness: tests/overlay/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { settleAnimations } from './settle.mjs';
+import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/overlay/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -109,7 +109,7 @@ test('a menu longer than the screen stays inside it, scrolls, and keeps the focu
   await trigger.click();
   const menu = page.getByRole('menu', { name: 'Long' });
   await expect(menu).toBeVisible();
-  await expect.poll(() => menu.evaluate((el) => el.getAnimations().length)).toBe(0);
+  await settleOverlay(menu);
   const inside = async (label) => {
     const b = await menu.evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; });
     expect(b.top, `${label}: top`).toBeGreaterThanOrEqual(7.5);

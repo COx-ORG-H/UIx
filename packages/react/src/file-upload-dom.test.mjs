@@ -73,7 +73,11 @@ test('FileUpload: a real Choose button, validation messages, accepted files hand
   assert.deepEqual(calls, [[['plan.pdf'], ['type', 'size']]]);
   const errors = [...host.querySelectorAll('.uix-file-upload__errors li')].map((li) => li.textContent);
   assert.deepEqual(errors, ['virus.exe is not an accepted file type (.pdf,image/*).', 'big.pdf is larger than 1 MB.']);
-  assert.equal(host.querySelector('.uix-file-upload__errors').getAttribute('role'), 'alert');
+  // an alert that CONTAINS a list: the <ul> keeps its own role, so its <li>s are list items
+  const errorList = host.querySelector('.uix-file-upload__errors');
+  assert.equal(errorList.tagName, 'UL');
+  assert.equal(errorList.hasAttribute('role'), false);
+  assert.equal(errorList.parentElement.getAttribute('role'), 'alert');
   assert.equal(host.querySelector('[role="status"]').textContent, '1 added');
   unmount();
 });

@@ -180,9 +180,13 @@ export function FileUpload({
         />
       </div>
       {messages.length > 0 && (
-        <ul className="uix-file-upload__errors" role="alert">
-          {messages.map((m, i) => <li key={i}>{m}</li>)}
-        </ul>
+        // The alert wraps the list: role="alert" on the <ul> itself replaced its list role and
+        // left the <li>s outside any list (axe `listitem`).
+        <div role="alert">
+          <ul className="uix-file-upload__errors">
+            {messages.map((m, i) => <li key={i}>{m}</li>)}
+          </ul>
+        </div>
       )}
       <span className="uix-visually-hidden" role="status" aria-live="polite">{announce}</span>
       {items.length > 0 && (

@@ -19,6 +19,7 @@
  * within 64 px of it, and the last test pins that hand-over.
  * Harness: tests/overlay/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
+import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/overlay/harness.html';
 const PAD = 8;
@@ -57,7 +58,7 @@ const frames = (page, n = 2) => page.evaluate((count) => new Promise((resolve) =
   requestAnimationFrame(tick);
 }), n);
 
-const settled = (page, pop) => expect.poll(() => pop.evaluate((el) => el.getAnimations().length)).toBe(0);
+const settled = (_page, pop) => settleOverlay(pop);
 
 const box = (pop) => pop.evaluate((el) => {
   const r = el.getBoundingClientRect();
