@@ -115,6 +115,7 @@ test('DatePicker shows the formatted date, the locale placeholder and submits IS
   assert.equal(empty.input().value, '');
   assert.equal(empty.input().placeholder, 'DD.MM.YYYY');
   assert.equal(empty.input().getAttribute('aria-label'), 'Due');
+  assert.equal(empty.input().hasAttribute('inputmode'), false, 'a numeric keypad could not type the separators');
   assert.equal(empty.toggle().getAttribute('aria-label'), 'Choose date');
   assert.equal(empty.toggle().getAttribute('aria-haspopup'), 'dialog');
   assert.equal(empty.toggle().getAttribute('aria-expanded'), 'false');

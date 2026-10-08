@@ -190,7 +190,8 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   return <div ref={anchorRef} className={cx('uix-date-picker', size === 'sm' && 'uix-date-picker--sm', className)} style={style}>
     <div className="uix-date-picker__control">
       <input
-        ref={inputRef} id={id} type="text" inputMode="numeric" autoComplete="off" spellCheck={false}
+        // No inputMode: a phone's numeric keypad has no "." or "/" to separate the parts with.
+        ref={inputRef} id={id} type="text" autoComplete="off" spellCheck={false}
         className={cx('uix-input', size === 'sm' && 'uix-input--sm', 'uix-date-picker__input')}
         value={text} placeholder={placeholder ?? (formatDate ? undefined : pattern)}
         disabled={disabled} readOnly={readOnly} required={required}
