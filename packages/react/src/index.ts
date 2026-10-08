@@ -145,6 +145,9 @@ export type { AlertProps, AlertTone } from './components/Alert.js';
 export { Spinner } from './components/Spinner.js';
 export type { SpinnerProps } from './components/Spinner.js';
 
+export { Heartbeat, LiveIndicator } from './components/Heartbeat.js';
+export type { HeartbeatProps, HeartbeatState, LiveIndicatorProps } from './components/Heartbeat.js';
+
 export { Toast, Toaster } from './components/Toast.js';
 export type { ToastProps, ToasterProps, ToastTone } from './components/Toast.js';
 // Imperative toast queue (HAR-1363): toast.success(…), toast.promise(…), toast.undoable(…)

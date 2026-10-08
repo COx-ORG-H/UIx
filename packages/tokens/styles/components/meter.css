@@ -6,4 +6,9 @@
   .uix-meter__fill[data-tone="danger"]    { background: var(--uix-danger); }
   .uix-meter__fill[data-tone="attention"] { background: var(--uix-attention); }
   .uix-meter__fill[data-tone="overdue"]   { background: var(--uix-overdue); }
+  /* not a status (HAR-1606): a share or a count. Both clear 3:1 against the track in light and
+     dark for every theme (packages/tokens/tests/meter-contrast.test.mjs). The accent fill is
+     --uix-accent-text, not --uix-accent: the raw accent of a bright brand is 2.62:1 on the track. */
+  .uix-meter__fill[data-tone="neutral"]   { background: var(--uix-text-muted); }
+  .uix-meter__fill[data-tone="accent"]    { background: var(--uix-accent-text); }
 }
