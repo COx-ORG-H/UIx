@@ -119,6 +119,15 @@ test('layoutMonthSpans rejects a grid that is not whole consecutive weeks, a wro
   assert.throws(() => layoutMonthSpans([one], OCTOBER, { timeZone: 'UTC', laneCap: -1 }), RangeError);
 });
 
+test('ids are unique per group: a window and an item may share one', () => {
+  const spans = [
+    { id: '1', start: '2026-10-05T06:00:00Z', end: '2026-10-07T18:00:00Z', group: 'window' },
+    { id: '1', start: '2026-10-06T06:00:00Z', end: '2026-10-08T18:00:00Z', group: 'item' },
+  ];
+  assert.deepEqual(layoutMonthSpans(spans, OCTOBER, { timeZone: 'UTC' }).placed.map((p) => [p.id, p.group, p.startCol, p.endCol]), [['1', 'window', 0, 2], ['1', 'item', 1, 3]]);
+  assert.throws(() => layoutMonthSpans([spans[0], spans[0]], OCTOBER, { timeZone: 'UTC' }), /duplicate window id 1/);
+});
+
 test('the layout is a pure function of its input (same input, same output)', () => {
   const spans = [
     { id: 'a', start: '2026-10-05T06:00:00Z', end: '2026-10-09T18:00:00Z', group: 'window' },

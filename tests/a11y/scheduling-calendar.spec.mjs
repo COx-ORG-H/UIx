@@ -266,6 +266,18 @@ test('AC13: tentative is dashed at full weight, dead is dotted and struck throug
   expect(done.border).toBe('none');
   expect(done.color).not.toBe(committed.color);
   expect(done.strike).toBe('none');
+  // On the filled band the fill hides dimming, so each status keeps a line the fill cannot hide.
+  const onFill = (id) => page.locator(`[data-item-id="${id}"]`).evaluate((el) => {
+    const item = getComputedStyle(el);
+    return { fill: item.backgroundColor, top: item.borderTopStyle, bottom: item.borderBottomStyle, rule: item.borderBottomColor };
+  });
+  const [high, highDone, highTentative] = await Promise.all(['band-high', 'high-done', 'high-tentative'].map(onFill));
+  expect(highDone.fill).toBe(high.fill);
+  expect(high.rule, 'a committed high item has no visible rule').toBe(high.fill);
+  expect([highDone.top, highDone.bottom]).toEqual(['none', 'solid']);
+  expect(highDone.rule, 'done on the fill shows a rule in the text colour').not.toBe(highDone.fill);
+  expect(highTentative.top).toBe('dashed');
+  expect(highTentative.rule).not.toBe(highTentative.fill);
 });
 
 test('AC15: at 375 px the month scrolls inside its own container and the page does not', async ({ page }) => {
