@@ -70,7 +70,7 @@ ${step(3, 'Review', '<p>Check the two parts above, then submit.</p>', true)}
 <span class="uix-file-upload__hint">PDF, up to 20 MB</span>
 <button type="button" class="uix-btn uix-btn--secondary uix-btn--sm">Choose files</button>
 </div>
-<ul class="uix-file-upload__errors" role="alert"><li>${LONG_NAME.replace('.pdf', '.exe')} is not an accepted file type (.pdf).</li></ul>
+<div role="alert"><ul class="uix-file-upload__errors"><li>${LONG_NAME.replace('.pdf', '.exe')} is not an accepted file type (.pdf).</li></ul></div>
 <ul class="uix-filelist uix-file-upload__list" aria-label="Files">
 <li class="uix-filelist__item uix-file-upload__item" data-status="done"><span class="uix-attachment__icon">${FILE}</span><div class="uix-file-upload__body"><span class="uix-file-upload__name">${LONG_NAME}</span><span class="uix-file-upload__meta"><span>2.3 MB</span><span class="uix-file-upload__status">Uploaded</span></span></div></li>
 </ul>

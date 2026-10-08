@@ -5,7 +5,7 @@
  * Harness: tests/tensor-gaps/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { settleAnimations } from './settle.mjs';
+import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/tensor-gaps/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -219,7 +219,7 @@ test.describe('Chip: a filter chip that anchors its editor by ref, and link chip
     const editor = page.getByRole('dialog', { name: 'Status filter' });
     await expect(editor).toBeVisible();
     await expect(body).toHaveAttribute('aria-expanded', 'true');
-    await expect.poll(() => editor.evaluate((el) => el.getAnimations().length)).toBe(0);
+    await settleOverlay(editor);
     const gap = await page.evaluate(() => {
       const chip = document.getElementById('status-chip').getBoundingClientRect();
       const pop = document.getElementById('status-editor').getBoundingClientRect();
@@ -277,6 +277,10 @@ test.describe('FileUpload and Attachment in a narrow rail', () => {
     expect(Math.round(w.width)).toBe(288);
     expect(w.scroll).toBeLessThanOrEqual(w.client);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    // This state exists only after a rejection, so no page scan ever saw it: the list's
+    // role="alert" used to replace its list role (axe `listitem`, serious).
+    await expect(page.locator('#upload-rail').getByRole('alert').getByRole('listitem')).toHaveCount(1);
+    expect(await axe(page, '#upload-rail')).toEqual([]);
   });
 
   test('sizes are counted in 1024s where asked, and the rail passes axe', async ({ page }, testInfo) => {
@@ -378,7 +382,7 @@ test.describe('Callouts and dialogs', () => {
     await expect(card).toBeHidden();
     await anchor.hover();
     await expect(card).toBeVisible();
-    await expect.poll(() => card.evaluate((el) => el.getAnimations().length)).toBe(0);
+    await settleOverlay(card);
     // travel from the anchor into the card: it stays open and its link can be reached
     await page.locator('#user-profile').hover();
     await page.waitForTimeout(400);
