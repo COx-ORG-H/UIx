@@ -1,0 +1,26 @@
+/* uix inline edit — a value that is edited in place (React `InlineEdit`, HAR-1381).
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-inline-edit { display: inline-flex; max-width: 100%; min-width: 0; vertical-align: top; }
+  .uix-inline-edit--editing { display: flex; }
+  /* The value IS the button: it looks like text until it is hovered or focused. The negative
+     inline margin keeps the text on the column it had as plain text. */
+  .uix-inline-edit__view {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); max-width: 100%; min-width: 0; min-height: 28px;
+    margin: 0 calc(-1 * var(--uix-space-2)); padding: var(--uix-space-1) var(--uix-space-2);
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: inherit; font: inherit; text-align: start; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-inline-edit__view:hover { background: var(--uix-bg-hover); }
+  .uix-inline-edit__view:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  .uix-inline-edit__value { min-width: 0; overflow-wrap: anywhere; }
+  .uix-inline-edit__placeholder { color: var(--uix-text-muted); }
+  /* 75% at rest keeps the pencil above 3:1 (the same floor as the view menu's quiet controls). */
+  .uix-inline-edit__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); opacity: .75; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-inline-edit__view:is(:hover, :focus-visible) .uix-inline-edit__icon { opacity: 1; }
+  .uix-inline-edit__editor { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2); flex: 1; min-width: 0; }
+  .uix-inline-edit__control { flex: 1 1 12rem; min-width: 0; }
+  .uix-inline-edit__control > * { width: 100%; }
+  .uix-inline-edit__actions { display: inline-flex; flex: none; gap: var(--uix-space-2); }
+  .uix-inline-edit__error { flex-basis: 100%; }
+}

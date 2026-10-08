@@ -45,6 +45,9 @@ export type { SearchSegment, FoldedText } from './search-suggest-model.js';
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
+export { InlineEdit, DEFAULT_INLINE_EDIT_LABELS } from './components/InlineEdit.js';
+export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps } from './components/InlineEdit.js';
+
 export { Select } from './components/Select.js';
 export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 

@@ -14,6 +14,7 @@ import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
 import type { EntityPickerLabels } from './components/EntityPicker.js';
 import type { TreeLabels } from './components/Tree.js';
+import type { InlineEditLabels } from './components/InlineEdit.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -37,6 +38,7 @@ export interface UixLabels {
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;
   tree?: Partial<TreeLabels>;
+  inlineEdit?: Partial<InlineEditLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
