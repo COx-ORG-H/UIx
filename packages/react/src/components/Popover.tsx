@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, RefObject } from 'react';
 import { cx } from '../cx.js';
-import { resolveAnchor, useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
+import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
@@ -34,7 +34,8 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
   popover?: 'auto' | 'manual';
   /**
    * Element (or ref) to anchor against. When set, the popover is placed with
-   * cross-browser JS positioning — flip when it won't fit, shift to stay on-screen.
+   * cross-browser JS positioning — flip when it won't fit, shift to stay on-screen. A popover
+   * that fits neither above nor below slides over its anchor rather than leave the viewport.
    * Where the browser supports CSS anchor positioning, the placement is written as an
    * offset from the anchor, so it stays attached while the page scrolls; elsewhere it
    * follows scroll from JS. The native Popover API still provides the top layer (so it
@@ -54,6 +55,11 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
   closeWhenAnchorHidden?: boolean;
   /** Called when `closeWhenAnchorHidden` is about to close the popover. */
   onAnchorHidden?: () => void;
+  /**
+   * Cap the popover's height to the viewport (minus 8 px at each edge) and scroll inside it,
+   * for content that can be taller than a phone screen. Needs `anchor`. Default `false`.
+   */
+  capHeight?: boolean;
   children?: ReactNode;
 }
 
@@ -64,7 +70,7 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
  */
 export function Popover({
   popover = 'auto', anchor, placement = 'bottom-start', offset = 6, closeWhenAnchorHidden = false, onAnchorHidden,
-  className, children, ...props
+  capHeight = false, className, children, ...props
 }: PopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -75,7 +81,17 @@ export function Popover({
   const popoverAttr = { popover } as Record<string, string>;
 
   const reposition = useAnchoredPosition(anchor ?? null, ref, {
-    open: open && !!anchor, placement, offset,
+    open: open && !!anchor, placement, offset, capHeight,
+    onAnchorHidden: closeWhenAnchorHidden ? () => {
+      const el = ref.current;
+      if (!el || !isPopoverOpen(el)) return;
+      onAnchorHiddenRef.current?.();
+      // Blur first: hiding a popover that holds focus would send focus back to its invoker,
+      // which is the anchor that just scrolled away.
+      const active = el.ownerDocument.activeElement as HTMLElement | null;
+      if (active && el.contains(active)) active.blur();
+      el.hidePopover();
+    } : undefined,
   });
 
   useEffect(() => {
@@ -124,25 +140,6 @@ export function Popover({
     openRef.current = open;
     if (open && ref.current) settle(ref.current);
   }, [open]);
-
-  useEffect(() => {
-    const el = ref.current;
-    const anchorEl = resolveAnchor(anchor);
-    if (!closeWhenAnchorHidden || !open || !el || !anchorEl || typeof IntersectionObserver !== 'function') return;
-    // The implicit root is the viewport, clipped by every overflow ancestor of the anchor.
-    const observer = new IntersectionObserver((entries) => {
-      const latest = entries[entries.length - 1];
-      if (!latest || latest.isIntersecting || !isPopoverOpen(el)) return;
-      onAnchorHiddenRef.current?.();
-      // Blur first: hiding a popover that holds focus would send focus back to its invoker,
-      // which is the anchor that just scrolled away.
-      const active = el.ownerDocument.activeElement as HTMLElement | null;
-      if (active && el.contains(active)) active.blur();
-      el.hidePopover();
-    });
-    observer.observe(anchorEl);
-    return () => observer.disconnect();
-  }, [closeWhenAnchorHidden, open, anchor]);
 
   return (
     <div ref={ref} className={cx('uix-popover', className)} {...popoverAttr} {...props}>

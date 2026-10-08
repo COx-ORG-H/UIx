@@ -134,3 +134,75 @@ test('computePosition: stickySide off the placement axis, or with flip disabled,
   const noFlip = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start', stickySide: 'top', flip: false });
   assert.equal(noFlip.side, 'bottom');
 });
+
+// ── main-axis shift (HAR-1613) ───────────────────────────────────────────────
+// TENSOR /incidents at 320 × 640, the columns menu: trigger top 302 / bottom 338, a 304 × 384
+// panel, 302 px free above and below. 2.31.0 chose the top and put the panel at a negative top.
+const PHONE = { width: 320, height: 640 };
+const TRIGGER = { x: 216, y: 302, width: 96, height: 36 };
+const PANEL = { width: 304, height: 384 };
+
+test('computePosition: an element that fits neither above nor below stays inside the viewport', () => {
+  const r = computePosition(TRIGGER, PANEL, PHONE, { placement: 'bottom-end' });
+  assert.ok(r.y >= 8, `top ${r.y} is inside the padding`);
+  assert.ok(r.y + PANEL.height <= PHONE.height - 8, `bottom ${r.y + PANEL.height} is inside the padding`);
+  assert.deepEqual(r.mainAxisRange, [8, 640 - 384 - 8]);
+  assert.notEqual(r.mainAxisNatural, r.y, 'it was moved off the flush position (and covers the anchor)');
+  // the cross axis is still shifted as before
+  assert.ok(r.x >= 8 && r.x + PANEL.width <= PHONE.width - 8);
+});
+
+test('computePosition: the same holds wherever the anchor is while it is in view, for both sides', () => {
+  for (const placement of ['bottom-end', 'top-end', 'bottom-start', 'top']) {
+    for (let y = -30; y <= 630; y += 15) {
+      const r = computePosition({ ...TRIGGER, y }, PANEL, PHONE, { placement });
+      assert.ok(r.y >= 8 && r.y + PANEL.height <= PHONE.height - 8, `${placement} anchor y ${y}: top ${r.y}`);
+    }
+  }
+});
+
+test('computePosition: shiftMainAxis false keeps the old result (the element leaves the viewport)', () => {
+  const r = computePosition(TRIGGER, PANEL, PHONE, { placement: 'bottom-end', shiftMainAxis: false });
+  assert.ok(r.y < 0 || r.y + PANEL.height > PHONE.height, 'outside, as in 2.31.0');
+  assert.equal(r.mainAxisRange, null);
+  assert.equal(r.mainAxisNatural, r.y);
+});
+
+test('computePosition: an element that fits is not moved by the main-axis shift', () => {
+  const anchor = { x: 100, y: 100, width: 80, height: 30 };
+  const r = computePosition(anchor, { width: 200, height: 120 }, VP, { placement: 'bottom-start', offset: 6 });
+  assert.equal(r.y, 136);
+  assert.equal(r.mainAxisNatural, 136);
+  assert.deepEqual(r.mainAxisRange, [8, 800 - 120 - 8]);
+});
+
+test('computePosition: an element taller than the viewport starts at the padding, with the room it has', () => {
+  const r = computePosition(TRIGGER, { width: 304, height: 900 }, PHONE, { placement: 'bottom-end' });
+  assert.equal(r.y, 8);
+  assert.deepEqual(r.mainAxisRange, [8, 8]);
+  assert.deepEqual(r.available, { width: 320 - 16, height: 640 - 16 });
+});
+
+test('computePosition: once the anchor has left the viewport the element follows it out', () => {
+  // scrolled away above: the panel hangs below an anchor that ends at y = -4
+  const above = computePosition({ ...TRIGGER, y: -40 }, PANEL, PHONE, { placement: 'bottom-end', stickySide: 'bottom' });
+  assert.equal(above.mainAxisRange, null);
+  assert.equal(above.y, -40 + 36 + 6, 'flush against the anchor, not held at the padding');
+  // scrolled away below
+  const below = computePosition({ ...TRIGGER, y: 700 }, PANEL, PHONE, { placement: 'top-end', stickySide: 'top' });
+  assert.equal(below.mainAxisRange, null);
+  assert.equal(below.y, 700 - 384 - 6);
+  // and the hand-over at the viewport edge is continuous (no jump as the anchor leaves)
+  const leaving = computePosition({ ...TRIGGER, y: -35 }, PANEL, PHONE, { placement: 'bottom-end', stickySide: 'bottom' });
+  assert.ok(Math.abs(leaving.y - above.y) <= 8, `held ${leaving.y} vs flush ${above.y}`);
+});
+
+test('computePosition: left / right placements are kept inside horizontally', () => {
+  const narrow = { width: 320, height: 640 };
+  const anchor = { x: 130, y: 300, width: 60, height: 30 };
+  for (const placement of ['right-start', 'left-start']) {
+    const r = computePosition(anchor, { width: 240, height: 100 }, narrow, { placement });
+    assert.ok(r.x >= 8 && r.x + 240 <= 320 - 8, `${placement}: left ${r.x}`);
+    assert.deepEqual(r.mainAxisRange, [8, 320 - 240 - 8]);
+  }
+});

@@ -25,3 +25,10 @@
   .uix-menu__item[aria-disabled="true"] { opacity: .5; cursor: default; }
   .uix-menu__item[aria-disabled="true"]:hover { background: transparent; }
 }
+
+/* Radio and checkbox rows (HAR-1629): a fixed check column, so checked and unchecked text lines up. */
+@layer uix.components {
+  .uix-menu__check { display: inline-flex; flex: none; width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-link); }
+  .uix-menu__item .uix-menu__check svg { width: 100%; height: 100%; color: inherit; }
+  .uix-menu__item[aria-checked="true"] { font-weight: 500; }
+}

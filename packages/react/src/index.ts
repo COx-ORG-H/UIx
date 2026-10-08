@@ -260,8 +260,10 @@ export type { ProseProps, NoteProps, NoteTone } from './components/Prose.js';
 
 export { Popover } from './components/Popover.js';
 
-export { Menu, MenuItem, MenuGroup, MenuSeparator } from './components/Menu.js';
-export type { MenuProps, MenuItemProps, MenuGroupProps } from './components/Menu.js';
+export { Menu, MenuItem, MenuItemRadio, MenuItemCheckbox, MenuRadioGroup, MenuGroup, MenuSeparator } from './components/Menu.js';
+export type {
+  MenuProps, MenuItemProps, MenuItemAttributes, MenuItemRadioProps, MenuItemCheckboxProps, MenuRadioGroupProps, MenuGroupProps,
+} from './components/Menu.js';
 export type { PopoverProps } from './components/Popover.js';
 
 export { CommandPalette, CommandGroup, CommandItem } from './components/CommandPalette.js';

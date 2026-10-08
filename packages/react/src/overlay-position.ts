@@ -35,6 +35,13 @@ export interface PositionOptions {
   /** Slide along the cross axis to stay on-screen. Default true. */
   shift?: boolean;
   /**
+   * Also keep the element inside the viewport on the main axis (the side it hangs off) when it
+   * fits on neither side; it then covers part of the anchor instead of leaving the viewport.
+   * Not applied once the anchor itself is outside the viewport on that axis: the element then
+   * follows its anchor out, as an element that fits does. Default true.
+   */
+  shiftMainAxis?: boolean;
+  /**
    * The side the element is already on, while it stays open. It is kept unless it no longer
    * fits AND the opposite side does, so a size change or a small scroll never flips an open
    * overlay back and forth. Ignored when it is not on `placement`'s axis. Unset = decide from
@@ -52,6 +59,19 @@ export interface PositionResult {
   placement: Placement;
   side: Side;
   align: Align;
+  /**
+   * The main-axis coordinate (`y` for top/bottom, `x` for left/right) before the main-axis
+   * shift: flush against the anchor. Equal to `y` / `x` when nothing was shifted.
+   */
+  mainAxisNatural: number;
+  /**
+   * The `[min, max]` the main-axis coordinate is kept in, or `null` when the main-axis shift is
+   * off or the anchor has left the viewport. `min === max` for an element larger than the
+   * viewport: it starts at the padding and has to be capped or scrolled.
+   */
+  mainAxisRange: [number, number] | null;
+  /** Largest size that fits the viewport inside the padding: the cap for an oversized element. */
+  available: Size;
 }
 
 const OPPOSITE: Record<Side, Side> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
@@ -84,7 +104,7 @@ function fitsOn(side: Side, a: Rect, f: Size, vp: Size, offset: number, padding:
  * Coordinates are for `position: fixed` (same space as getBoundingClientRect).
  */
 export function computePosition(anchor: Rect, floating: Size, viewport: Size, options: PositionOptions = {}): PositionResult {
-  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true, stickySide } = options;
+  const { placement = 'bottom-start', offset = 6, padding = 8, flip = true, shift = true, shiftMainAxis = true, stickySide } = options;
   const { side: preferred, align } = parsePlacement(placement);
 
   // 1. flip
@@ -127,11 +147,30 @@ export function computePosition(anchor: Rect, floating: Size, viewport: Size, op
     if (shift) y = clamp(y, padding, Math.max(padding, viewport.height - floating.height - padding));
   }
 
+  // 4. main axis — an element that fits on neither side slides over the anchor to stay on-screen
+  const mainAxisNatural = horizontal ? y! : x!;
+  const anchorInView = horizontal
+    ? anchor.y + anchor.height > 0 && anchor.y < viewport.height
+    : anchor.x + anchor.width > 0 && anchor.x < viewport.width;
+  let mainAxisRange: [number, number] | null = null;
+  if (shiftMainAxis && anchorInView) {
+    const extent = horizontal ? viewport.height - floating.height : viewport.width - floating.width;
+    mainAxisRange = [padding, Math.max(padding, extent - padding)];
+    if (horizontal) y = clamp(y!, mainAxisRange[0], mainAxisRange[1]);
+    else x = clamp(x!, mainAxisRange[0], mainAxisRange[1]);
+  }
+
   return {
     x: x!,
     y: y!,
     placement: (align === 'center' ? side : `${side}-${align}`) as Placement,
     side,
     align,
+    mainAxisNatural,
+    mainAxisRange,
+    available: {
+      width: Math.max(0, viewport.width - 2 * padding),
+      height: Math.max(0, viewport.height - 2 * padding),
+    },
   };
 }
