@@ -60,6 +60,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Heartbeat | heartbeat.css | ✓ `Heartbeat` | Beta | no | The pulsing status dot (`live`, `idle`, `warning`, `danger`), decorative unless labelled; also `LiveIndicator` (dot + state text). Landed 2.32.0 (HAR-1606). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 233 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |
+| InlineEdit | inline-edit.css | ✓ `InlineEdit` | Beta | no | A value edited in place: the value is a button, the editor has Save and Cancel, Enter / Escape, pending and error states, focus returns to the value. Custom editors through `renderEditor`. Landed 2.33.0 (HAR-1381). |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
 | Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). |

@@ -184,6 +184,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-tooltip"
   },
+  "inline-edit": {
+    "route": "examples-form-controls",
+    "selector": ".uix-inline-edit",
+    "container": "[data-inline-edit-example]"
+  },
   "info-tip": {
     "route": "examples-data-display",
     "selector": ".uix-info-tip",
