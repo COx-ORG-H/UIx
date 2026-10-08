@@ -30,6 +30,10 @@
     /* view menu — the dragged column row is only dimmed (opacity), which WHCM keeps but can hide */
     .uix-view-menu__col[data-dragging] { outline: 2px dashed Highlight; outline-offset: -2px; }
 
+    /* tag / chip remove — the hover circle is a background tint only (HAR-1569); the icon is
+       currentColor, so it already takes ButtonText */
+    .uix-tag__remove:hover, .uix-chip__remove:hover { outline: 1px solid Highlight; outline-offset: -1px; }
+
     /* text fields — components replace the focus outline with a box-shadow ring, which WHCM strips */
     .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {
       outline: 2px solid Highlight; outline-offset: 1px;

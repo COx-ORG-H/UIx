@@ -76,6 +76,9 @@ if (rangeMonths) monthNames.forEach((name, monthIndex) => {
     button.type = 'button'; button.textContent = String(day); button.dataset.rangeDate = date; button.setAttribute('aria-label', `${day} ${name}`); button.tabIndex = date === '2026-09-08' ? 0 : -1;
     if (date === '2026-09-08') { button.dataset.rangeEdge = 'start'; button.setAttribute('aria-pressed', 'true'); }
     if (date === '2026-09-16' || date === '2026-10-01') button.disabled = true;
+    // The specimen's fixed "today" (the page stays deterministic for visual goldens; the
+    // React adapter defaults to the viewer's local date).
+    if (date === '2026-09-18') { button.setAttribute('aria-current', 'date'); button.setAttribute('aria-label', `${day} ${name}, today`); }
     grid.append(button);
   }
   month.append(grid); rangeMonths.append(month);

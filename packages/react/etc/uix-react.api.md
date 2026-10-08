@@ -931,6 +931,46 @@ export function createToastStore(): ToastStore;
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
 
 // @public
+export const DashboardGrid: react.ForwardRefExoticComponent<DashboardGridProps & react.RefAttributes<HTMLDivElement>> & {
+    Item: react.ForwardRefExoticComponent<DashboardGridItemProps & react.RefAttributes<HTMLDivElement>>;
+};
+
+// @public
+export type DashboardGridBreakpoint = 'base' | 'sm' | 'md' | 'lg' | 'xl';
+
+// @public
+export function dashboardGridClassName(columns?: DashboardGridColumns, gap?: DashboardGridGap): string;
+
+// @public
+export type DashboardGridColumnCount = 1 | 2 | 3 | 4;
+
+// @public
+export type DashboardGridColumns = DashboardGridColumnCount | Partial<Record<DashboardGridBreakpoint, DashboardGridColumnCount>>;
+
+// @public
+export type DashboardGridGap = 'sm' | 'md' | 'lg';
+
+// @public
+export const DashboardGridItem: react.ForwardRefExoticComponent<DashboardGridItemProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public
+export function dashboardGridItemClassName(span?: DashboardGridSpan): string;
+
+// @public (undocumented)
+export interface DashboardGridItemProps extends HTMLAttributes<HTMLDivElement> {
+    span?: DashboardGridSpan;
+}
+
+// @public (undocumented)
+export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
+    columns?: DashboardGridColumns;
+    gap?: DashboardGridGap;
+}
+
+// @public
+export type DashboardGridSpan = 1 | 2 | 'full';
+
+// @public
 export function DateRangePicker(input: DateRangePickerProps): react.JSX.Element;
 
 // @public
@@ -984,6 +1024,7 @@ export interface DateRangePickerProps {
     onChange: (value: DateRangeValue) => void;
     // (undocumented)
     onVisibleMonthChange?: (month: string) => void;
+    today?: string | null;
     // (undocumented)
     value: DateRangeValue;
     // (undocumented)
@@ -4115,7 +4156,7 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     value?: string;
 }
 
-// @public (undocumented)
+// @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
 // @public (undocumented)
@@ -4125,7 +4166,61 @@ export type SelectAllState = 'none' | 'some' | 'all';
 export function selectAllState(selected: ReadonlySet<string>, pageIds: readonly string[]): SelectAllState;
 
 // @public (undocumented)
+export interface SelectGroup {
+    disabled?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    options: readonly SelectOption[];
+}
+
+// @public
+export interface SelectLabels {
+    clear: string;
+    done: string;
+    empty: string;
+    error: string;
+    // (undocumented)
+    loading: string;
+    noMatches: string;
+    results: string;
+    // (undocumented)
+    retry: string;
+    search: string;
+    searchPlaceholder: string;
+    selectedCount: string;
+}
+
+// @public
+export interface SelectOption {
+    description?: string;
+    // (undocumented)
+    disabled?: boolean;
+    icon?: ReactNode;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
+// @public (undocumented)
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+    invalid?: boolean;
+    // (undocumented)
+    labels?: Partial<SelectLabels>;
+    loadOptions?: (query: string, signal: AbortSignal) => Promise<readonly (SelectOption | SelectGroup)[]>;
+    onValueChange?: (value: string | string[], option?: SelectOption) => void;
+    options?: readonly (SelectOption | SelectGroup)[];
+    placeholder?: string;
+    placement?: Placement;
+    readOnly?: boolean;
+    renderOption?: (option: SelectOption, state: {
+        selected: boolean;
+        active: boolean;
+    }) => ReactNode;
+    renderValue?: (selected: readonly SelectOption[]) => ReactNode;
+    searchable?: boolean | 'auto';
     // (undocumented)
     size?: 'sm' | 'md';
 }
@@ -5030,6 +5125,8 @@ export interface UixLabels {
     searchSuggest?: {
         clear?: string;
     };
+    // (undocumented)
+    select?: Partial<SelectLabels>;
     // (undocumented)
     sidebar?: {
         expand?: string;

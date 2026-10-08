@@ -14,7 +14,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "select": {
     "route": "examples-form-controls",
-    "selector": ".uix-select-trigger"
+    "selector": ".uix-select__value",
+    "container": "[data-select-example]"
   },
   "checkbox": {
     "route": "examples-form-controls",
@@ -174,6 +175,10 @@ export const COMPONENT_SPECIMENS = {
   "chart": {
     "route": "examples-data-display",
     "selector": ".uix-chart"
+  },
+  "dashboard-grid": {
+    "route": "examples-dashboard-grid",
+    "selector": ".uix-dashboard-grid"
   },
   "tooltip": {
     "route": "examples-data-display",

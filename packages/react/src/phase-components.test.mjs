@@ -70,6 +70,17 @@ test('DateRangePicker marks edges and in-range dates', () => {
   assert.match(html, /aria-live="polite"/);
 });
 
+test('DateRangePicker marks exactly one day as today (HAR-1570)', () => {
+  const props = { value: { start: '2026-09-03', end: '2026-09-05' }, visibleMonth: '2026-09-01', months: 2, onChange: noop };
+  const marked = (html) => [...html.matchAll(/<button[^>]*aria-current="date"[^>]*>/g)].map((m) => m[0].match(/data-date="([^"]+)"/)[1]);
+  assert.deepEqual(marked(render(DateRangePicker, { ...props, today: '2026-09-18' })), ['2026-09-18']);
+  assert.deepEqual(marked(render(DateRangePicker, { ...props, today: null })), []);
+  // the default is the viewer's LOCAL date, not the UTC one
+  const now = new Date();
+  const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  assert.deepEqual(marked(render(DateRangePicker, { ...props, visibleMonth: `${local.slice(0, 7)}-01` })), [local]);
+});
+
 test('RelationshipGraph pairs its bounded SVG with an equivalent named list', () => {
   const html = render(RelationshipGraph, {
     nodes: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }],

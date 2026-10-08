@@ -108,6 +108,24 @@ try {
   await page.evaluate(() => location.hash = 'file-upload');
   await page.locator('[data-component-preview="file-upload"] input').setInputFiles({ name:'example.txt', mimeType:'text/plain', buffer:Buffer.from('UIx') });
   assert.equal(await page.locator('[data-file-list]').innerText(), 'example.txt\n3 bytes');
+  assert.equal(await page.locator('[data-file-list] li').count(), 1);
+  assert(await page.locator('[data-component-preview="file-upload"] button[data-file-choose].uix-btn').isVisible());
+  // Select (HAR-1572): the reference shows the real markup, no visible native <select>, and the
+  // APG keys work: typing "re" lands on Resolved, Escape keeps the value and focus.
+  await page.evaluate(() => location.hash = 'select');
+  const sel = page.locator('[data-component-preview="select"]');
+  await sel.locator('#sel-status').waitFor();
+  assert.equal(await page.evaluate(() => [...document.querySelectorAll('select:not([data-uix-select-proxy])')]
+    .filter((s) => { const r = s.getBoundingClientRect(); return r.width > 1 && r.height > 1; }).length), 0, '#select shows a native select');
+  await sel.locator('#sel-status').click();
+  assert(await sel.locator('#sel-status-listbox').isVisible(), 'the Select list does not open');
+  await page.keyboard.press('Escape');
+  await page.keyboard.type('re');
+  assert.equal(await page.evaluate(() => document.getElementById(document.getElementById('sel-status').getAttribute('aria-activedescendant'))?.textContent), 'Resolved');
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Enter');
+  assert.equal(await sel.locator('#sel-status').innerText(), 'In progress');
+  assert.equal(await sel.locator('#sel-status ~ select[data-uix-select-proxy]').first().evaluate((s) => s.value), 'progress');
   await page.evaluate(() => location.hash = 'color-picker');
   await page.locator('[data-color-trigger]').click();
   assert.equal(await page.locator('[data-color-trigger]').getAttribute('aria-expanded'), 'true');
@@ -126,17 +144,18 @@ try {
   await page.addScriptTag({ path:axePath });
   for (const theme of ['light','dark']) {
     await page.evaluate((theme) => document.documentElement.dataset.theme = theme, theme);
-    for (const slug of ['color-picker','tag-input','file-upload','build-with-uix','extend-the-system']) {
+    for (const slug of ['color-picker','tag-input','file-upload','select','build-with-uix','extend-the-system']) {
       await page.evaluate((slug) => location.hash = slug, slug);
       await page.waitForFunction((slug) => document.title.startsWith(slug === 'build-with-uix' ? 'Build with UIx' : slug === 'extend-the-system' ? 'Extend the system' : slug.split('-').map((v,i) => i ? v : v[0].toUpperCase()+v.slice(1)).join(' ')), slug);
       if (slug === 'color-picker') await page.locator('[data-color-trigger]').click();
+      if (slug === 'select') { await page.locator('#sel-team').click(); await page.waitForTimeout(250); }
       const violations = await page.evaluate(async () => (await window.axe.run(document, {runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}})).violations.filter((v) => ['serious','critical'].includes(v.impact)).map((v) => ({id:v.id,targets:v.nodes.map((n)=>n.target)})));
       assert.deepEqual(violations, [], `${theme}/${slug} accessibility`);
     }
   }
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height:900 });
-    for (const slug of ['color-picker','tag-input','file-upload','build-with-uix']) {
+    for (const slug of ['color-picker','tag-input','file-upload','select','build-with-uix']) {
       await page.evaluate((slug) => location.hash = slug, slug);
       await page.locator('h1').waitFor();
       await page.screenshot({ path:resolve(root, `test-results/docs/${slug}-${width}.png`), fullPage:true, animations:'disabled' });

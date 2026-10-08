@@ -80,6 +80,7 @@ const NAV_ITEMS = [
   { name: 'Build with UIx', slug: 'build-with-uix', group: 'Getting started', summary: 'Compose a complete interface with UIx layout, components, tokens and behavior.', keywords: ['style guide', 'system', 'composition', 'utilities'], featured: true },
   { name: 'Extend the system', slug: 'extend-the-system', group: 'Getting started', summary: 'Turn discoveries from each product into reusable components.', keywords: ['contribute', 'agent', 'new component', 'workflow'] },
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
+  { name: 'Chart tokens', slug: 'chart-tokens', group: 'Foundations', summary: 'The categorical palette, analytic roles and the shipped ECharts theme.', keywords: ['chart', 'palette', 'echarts', 'threshold', 'forecast', 'dataviz'] },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
   { name: 'Icons & assets', slug: 'icons-assets', group: 'Foundations', summary: 'Icon, emoji, image, and media usage across UIx products.', keywords: ['icons', 'emoji', 'images', 'media'] },
@@ -104,7 +105,7 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Color picker', 'Metric input', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Tooltip', 'Info tip', 'States', 'Relative time'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Dashboard grid', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
@@ -149,6 +150,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
+  'dashboard-grid',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -225,6 +227,7 @@ export const exampleRouteFor = (item) => {
     'date-range-picker': 'examples-date-range-picker',
     'diff-viewer': 'examples-diff-viewer',
     'text-diff': 'examples-text-diff',
+    'dashboard-grid': 'examples-dashboard-grid',
     'license-position-bar': 'examples-metrics',
     'match-review': 'examples-match-review',
     'metric-input': 'examples-metrics',
@@ -267,7 +270,7 @@ const renderComponentReference = (item) => {
 const COMPONENT_DETAILS = {
   'color-picker': ['Choose an exact color for a brand, label or visual property. Keep semantic status colors tied to the theme rather than arbitrary user selections.', 'Open the swatch, edit a six-digit hex value or the HSV controls. Expect a normalized hex value, an updated swatch and contrast feedback. Escape closes the picker and returns focus. Your application stores the chosen value; contrast feedback is advisory, not a validation gate.'],
   'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. The app owns the allowed vocabulary, maximum count and saved array.'],
-  'file-upload': ['Let people choose attachments with a native file input. Show selected filenames before starting a transfer.', 'Choose files to see a local selection list. No bytes are uploaded by this documentation example. The app owns size/type validation, transfer progress, cancellation, server validation and retry. File selection alone is not upload success.'],
+  'file-upload': ['Let people choose attachments with a centred UIx button inside a drop zone. Show selected filenames before starting a transfer.', 'Choose files to see a local selection list. No bytes are uploaded by this documentation example. The app owns size/type validation, transfer progress, cancellation, server validation and retry. File selection alone is not upload success.'],
 };
 
 const componentPreview = (item) => section('component-preview', 'Preview and markup', `<div data-component-preview="${item.slug}"></div><p class="uix-text-muted">Uses the shared UIx stylesheet. The Code view shows the initial HTML; application behavior is separate.</p>`);
@@ -442,6 +445,47 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
   ├─ build/tailwind/preset.cjs
   └─ build/ts/tokens.{js,d.ts}`, 'text')}<p>Edit DTCG source files, then run the token build. Do not hand-edit generated files: parity and contract checks treat source-to-output agreement as a release gate.</p>`)}`,
 
+  'chart-tokens': () => {
+    const sw = (token, name) => `<div class="uix-docs__swatch"><div class="uix-docs__swatch-color" style="--swatch:var(${token})"></div><div class="uix-docs__swatch-meta"><strong>${esc(name)}</strong><code>${token}</code></div></div>`;
+    const palette = ['Blue', 'Cyan', 'Green', 'Ochre', 'Orange', 'Red', 'Violet', 'Pink'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
+    const roles = [
+      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind the data. Never dashed.'],
+      ['--uix-chart-axis', 'Axis', 'Axis line. Labels use --uix-text-muted.'],
+      ['--uix-chart-reference', 'Reference', 'Neutral ink for target, budget and baseline lines.'],
+      ['--uix-chart-zone-warning', 'Warning zone', 'Alpha fill for a warning threshold band.'],
+      ['--uix-chart-zone-danger', 'Danger zone', 'Alpha fill for a danger threshold band.'],
+      ['--uix-chart-forecast-band', 'Forecast band', 'Neutral alpha fill for a forecast or confidence interval.'],
+      ['--uix-chart-event', 'Event', 'Marker line and label for deploys, incidents and releases.'],
+      ['--uix-chart-partial', 'Partial period', 'Hatch base for an incomplete period.'],
+      ['--uix-chart-comparison', 'Comparison', 'Muted ghost line for the previous period.'],
+    ].map(([token, name, use]) => `<tr><td><span class="uix-docs__chip-swatch" style="--swatch:var(${token})" aria-hidden="true"></span> <code>${token}</code></td><td>${esc(name)}</td><td>${esc(use)}</td></tr>`).join('');
+    return `${pageHeader('Foundations', 'Chart tokens', 'Every UIx chart reads its palette, grid, axes, tooltip and analytic marks from tokens, so a chart with no styling of its own looks like UIx in both themes.', ['8 validated slots', '9 analytic roles', 'uixChartTheme()'])}
+    ${section('palette', 'Categorical palette', `<p>Assign slots in this fixed order, one per series, never cycled. A ninth series folds into “Other” or a second chart. Both modes pass the palette checks on adjacent slots: lightness band, chroma ≥ 0.10, colour-vision separation ΔE ≥ 8, normal-vision ΔE ≥ 15 and ≥ 3:1 on the surface (<code>packages/tokens/tests/chart-palette.test.mjs</code>). Toggle the theme to see the dark steps.</p><div class="uix-docs__swatches">${palette}</div>`)}
+    ${section('roles', 'Analytic roles', `<p>Thresholds, forecasts and events get their own channel, separate from series colour, so a target line never reads as “series 9”. Status colours stay reserved for status.</p><table class="uix-docs__token-table"><thead><tr><th>Token</th><th>Role</th><th>Use</th></tr></thead><tbody>${roles}</tbody></table>`)}
+    ${section('theme', 'The shipped theme', `<p><code>Chart</code> merges <code>uixChartTheme()</code> under your option and re-applies it when the page theme changes, without a remount. Your option always wins; pass <code>theme="none"</code> to opt out.</p>${codeBlock(`import { Chart } from "@tensor_1/react/chart";
+
+// No styling: palette, fonts, grid and tooltip come from tokens.
+<Chart title="Throughput" option={{
+  xAxis: { type: "category", data: weeks },
+  yAxis: { type: "value" },
+  series: [{ type: "line", data: merged }],
+}} />`, 'tsx')}${codeBlock(`import { mergeChartTheme, uixChartTheme, uixChartTokens } from "@tensor_1/react/chart";
+
+// Raw ECharts: merge the same theme yourself.
+const k = uixChartTokens(); // the analytic roles
+chart.setOption(mergeChartTheme(uixChartTheme(), {
+  series: [{
+    type: "line",
+    data,
+    markLine: {
+      lineStyle: { color: k.reference, type: "dashed" },
+      data: [{ yAxis: 15 }],
+    },
+  }],
+}));`, 'tsx')}`)}
+    ${section('rules', 'Rules', `<p><a class="uix-btn uix-btn--secondary" href="#examples-data-display">Open the chart examples</a></p>${compare('Draw the grid as a quiet solid hairline. Keep dashes for thresholds and projections, so a dashed line always means “not measured”. Label values and legends in text tokens.', 'Dash the gridlines, colour a target line with a series or status hue, or paint axis labels in the series colour.')}`)}`;
+  },
+
   theming: () => `${pageHeader('Foundations', 'Theming', 'UIx ships light and dark modes from the same semantic contract, with two write-only brand slots for product identity.', ['light + dark', 'no-flash', 'brand profiles'])}
     ${section('color-mode', 'Set the color mode', `<p>Apply the theme to the document root. Components inherit the correct semantic values without variant-specific markup.</p>${codeBlock(`<html data-theme="dark">`, 'html')}${codeBlock(`document.documentElement.dataset.theme = "dark";`, 'js')}`)}
     ${section('no-flash', 'Avoid a theme flash', `<p>Resolve the saved preference before styles paint. If no explicit preference exists, follow the operating system.</p>${codeBlock(`const saved = localStorage.getItem("uix-theme");
@@ -577,7 +621,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 
   pipeline: () => `${pageHeader('Patterns', 'Pipeline', 'Pipeline turns a simple progress bar into an operational stage rail with current state, ownership, duration, blockers, and the next decision kept visible.', ['compact + detailed', 'ordered semantics', 'explicit state'])}
     ${section('choose-a-density', 'Choose a density', `<table class="uix-docs__token-table"><thead><tr><th>Variant</th><th>Use when</th></tr></thead><tbody><tr><td>Compact</td><td>Only stage names and progress are needed in a table row, card, or summary.</td></tr><tr><td>Detailed</td><td>Operators need owner, timing, explanation, exception state, or a decision point.</td></tr></tbody></table>`)}
-    ${section('example', 'Detailed operational rail', `${demo(`<ol class="uix-pipeline uix-pipeline--detailed" aria-label="Release 1842 progress"><li class="uix-pipeline__stage" data-state="done"><span class="uix-pipeline__marker">1</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Build</span><span class="uix-pipeline__state">Complete</span><strong class="uix-pipeline__title">Package artifacts</strong><span class="uix-pipeline__description">Checksums and provenance attached.</span><span class="uix-pipeline__meta">Automation · 4m 12s</span></div></li><li class="uix-pipeline__stage" data-state="blocked" aria-current="step"><span class="uix-pipeline__marker">2</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Review</span><span class="uix-pipeline__state">Blocked</span><strong class="uix-pipeline__title">Production approval</strong><span class="uix-pipeline__description">Waiting for the release manager.</span><span class="uix-pipeline__meta">Maya Chen · 18m</span></div></li><li class="uix-pipeline__stage" data-state="pending"><span class="uix-pipeline__marker">3</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Deploy</span><span class="uix-pipeline__state">Pending</span><strong class="uix-pipeline__title">Production rollout</strong><span class="uix-pipeline__description">Progressive deployment across regions.</span><span class="uix-pipeline__meta">Automation · est. 12m</span></div></li></ol>`, `<Pipeline aria-label="Release 1842 progress" detailed>
+    ${section('example', 'Detailed operational rail', `${demo(`<ol class="uix-pipeline uix-pipeline--detailed" aria-label="Release 1842 progress"><li class="uix-pipeline__stage" data-state="done"><span class="uix-pipeline__marker">1</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Build</span><span class="uix-pipeline__state">Complete</span><div class="uix-pipeline__title">Package artifacts</div><div class="uix-pipeline__description">Checksums and provenance attached.</div><span class="uix-pipeline__meta">Automation · 4m 12s</span></div></li><li class="uix-pipeline__stage" data-state="blocked" aria-current="step"><span class="uix-pipeline__marker">2</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Review</span><span class="uix-pipeline__state">Blocked</span><div class="uix-pipeline__title">Production approval</div><div class="uix-pipeline__description">Waiting for the release manager.</div><span class="uix-pipeline__meta">Maya Chen · 18m</span></div></li><li class="uix-pipeline__stage" data-state="pending"><span class="uix-pipeline__marker">3</span><div class="uix-pipeline__content"><span class="uix-pipeline__eyebrow">Deploy</span><span class="uix-pipeline__state">Pending</span><div class="uix-pipeline__title">Production rollout</div><div class="uix-pipeline__description">Progressive deployment across regions.</div><span class="uix-pipeline__meta">Automation · est. 12m</span></div></li></ol>`, `<Pipeline aria-label="Release 1842 progress" detailed>
   <PipelineStage state="done" stateLabel="Complete" label="Package artifacts" description="Checksums attached." meta="Automation · 4m 12s" marker="1" />
   <PipelineStage state="blocked" current label="Production approval" description="Waiting for release manager." meta="Maya Chen · 18m" marker="2" />
   <PipelineStage state="pending" label="Production rollout" description="Progressive regional deploy." meta="Automation · est. 12m" marker="3" />

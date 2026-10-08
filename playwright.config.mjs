@@ -17,8 +17,9 @@ export default defineConfig({
   // covers tests/visual (VR) + tests/a11y (axe); the scripts filter by subdir. The
   // smoke-consumer fixtures aren't *.spec.* so they're never picked up.
   testDir: './tests',
-  // bundles the React harnesses once (tests/a11y/rich-text.spec.mjs, operator-primitives.spec.mjs)
-  globalSetup: './tests/global-setup.mjs',
+  // stops a run that has no built CSS, then bundles the React harnesses once
+  // (tests/a11y/rich-text.spec.mjs, operator-primitives.spec.mjs)
+  globalSetup: ['./tests/require-bundle.mjs', './tests/global-setup.mjs'],
   // flat, project- and platform-suffixed so light/dark/OS goldens never collide
   snapshotPathTemplate: 'tests/visual/__screenshots__/{projectName}-{arg}-{platform}{ext}',
   fullyParallel: true,
@@ -37,6 +38,12 @@ export default defineConfig({
   projects: [
     { name: 'light', use: { browserName: 'chromium', colorScheme: 'light' } },
     { name: 'dark', use: { browserName: 'chromium', colorScheme: 'dark' } },
+    // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572). Opt-in, so the
+    // default runs stay Chromium-only:  UIX_CROSS_BROWSER=1 npx playwright test tests/a11y/select.spec.mjs
+    //   --project=chromium --project=firefox --project=webkit   (needs `npx playwright install firefox webkit`)
+    ...(process.env.UIX_CROSS_BROWSER ? ['chromium', 'firefox', 'webkit'].map((browserName) => ({
+      name: browserName, testMatch: /select\.spec\.mjs$/, use: { browserName, colorScheme: 'light' },
+    })) : []),
   ],
   webServer: {
     command: 'npm run serve:styleguide',

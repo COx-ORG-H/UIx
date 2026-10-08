@@ -532,3 +532,42 @@ A two-way diff of two texts (HAR-1368; TENSOR's knowledge-article version diff).
 - **Not colour alone:** changes are `<del>` / `<ins>`, with a −/+ sign and a spoken "Removed:" / "Added:" (`labels`). Struck and underlined words mark changes inside a line.
 - **Long texts:** `context` keeps that many unchanged lines around each change. Longer runs fold behind "Show n unchanged lines", and focus moves to the first revealed line. Over `maxTokens` (20 000) a note replaces the diff. Past `maxEdits` (2 000) the changed middle shows as one replacement instead of stalling.
 - Pure model for tests and servers: `diffText`, `diffTokens`, `textDiffRows`, `tokenizeText`.
+
+### DashboardGrid
+
+The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure layout: drag-and-drop, persistence and widget chrome stay in the product. Server-renderable.
+
+```tsx
+<DashboardGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="md">
+  <DashboardGrid.Item><Stat label="Open incidents" value={42} /></DashboardGrid.Item>
+  <DashboardGrid.Item span={2}><Card title="Queue by team">…</Card></DashboardGrid.Item>
+  <DashboardGrid.Item span="full">
+    <Chart title="Resolved per hour" option={option} height="clamp(160px, 40cqi, 360px)" />
+  </DashboardGrid.Item>
+</DashboardGrid>
+```
+
+- **Columns follow the grid's own width**, not the viewport (a container query), so the same dashboard has fewer columns beside an open sidebar. Breakpoints: `sm` 36rem, `md` 48rem, `lg` 60rem, `xl` 80rem of grid width, sized for widgets of about 280–320 px (2 columns from 36rem, 3 from 60rem, 4 from 80rem). A breakpoint you leave out keeps the count of the next smaller one; a missing `base` is 1. Without `columns`: 1, 2 from `sm`, 3 from `lg`. Counts are 1–4.
+- **Spans:** `span={1}` (default), `span={2}` (clamps to the columns there are, so it is the whole row at one column), `span="full"` (`grid-column: 1 / -1`, the whole row at every width).
+- **Size-aware content:** each item is an inline-size container named `uix-dashboard-grid-item`. Give a Chart a height in `cqi` (a share of the item's width), or pass your own height per widget size; the Chart already redraws at the item's width. Use `@container uix-dashboard-grid-item (min-width: …)` for a card's own split layout. Widgets in one row share a height (the item's last child grows).
+- **`gap`:** `sm` (--uix-space-3), `md` (default, --uix-space-4), `lg` (--uix-space-6).
+- Refs reach the grid and item `<div>`s, and other props pass through. For an element you render yourself (a drag-and-drop library's sortable node, a server template), use `dashboardGridClassName(columns, gap)` and `dashboardGridItemClassName(span)`.
+- Plain HTML: `.uix-dashboard-grid` with `--cols-N` / `--{sm,md,lg,xl}-cols-N` and `--gap-sm|lg`, items `.uix-dashboard-grid__item` with `--span-2` / `--full`. Every direct child of the grid is a cell.
+
+### Select draws its own list
+
+`Select` (HAR-1572) no longer opens the browser's dropdown. It is the WAI-ARIA select-only combobox: a `<button role="combobox">` trigger and a UIx-drawn listbox in the top layer (a bottom sheet on phones). The props did not change, so existing call sites keep working:
+
+```tsx
+<Select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+  <option value="" disabled hidden>Choose a status</option>
+  <optgroup label="Active">{active.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
+</Select>
+<Select options={teams} value={team} onValueChange={(v) => setTeam(v as string)} searchable="auto" placeholder={t('team')} />
+<Select multiple name="labels" options={labels} defaultValue={['network']} />
+<Select loadOptions={(q, signal) => api.owners(q, { signal })} searchable options={[owner]} value={owner.value} />
+```
+
+- **Forms:** a visually hidden `<select data-uix-select-proxy>` holds `name`, `required`, `form`, `multiple` and the value. `ref` points at it, so `FormData`, `form.reset()`, autofill, react-hook-form `register` and `Controller` work as before. `onChange(e)` gets `e.target.value`, and a failed `required` focuses the trigger.
+- **Keyboard:** ↑ ↓ Home End PageUp PageDown and typing move (repeat one letter to cycle). Enter, Space, Tab and Alt+↑ choose. Escape closes and keeps the value. With `multiple`, Space toggles and Delete clears.
+- Plain Select for up to about 12 options, `searchable` for longer lists, `EntityPicker` or `SearchSuggest` for records.

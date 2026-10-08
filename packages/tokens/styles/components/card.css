@@ -16,7 +16,10 @@
   .uix-collapsible__summary::-webkit-details-marker { display: none; }
   .uix-collapsible__title { color: var(--uix-text); font-weight: 600; }
   .uix-collapsible__meta { margin-left: var(--uix-space-2); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
-  .uix-collapsible__chevron { transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
+  /* HAR-1571: icon-sm box on the first (title) line; only rotates, never moves. space-1 = fallback for no `lh` unit. */
+  .uix-collapsible__chevron { display: inline-grid; place-items: center; flex: none; align-self: flex-start; margin-block: var(--uix-space-1); margin-block: calc((1lh - var(--uix-icon-sm)) / 2); inline-size: var(--uix-icon-sm); block-size: var(--uix-icon-sm); color: var(--uix-text-muted); transition: transform var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-collapsible__chevron > svg { inline-size: 100%; block-size: 100%; }
+  .uix-collapsible__summary:hover .uix-collapsible__chevron { color: var(--uix-text); }
   .uix-collapsible[open] .uix-collapsible__chevron { transform: rotate(180deg); }
   .uix-collapsible__body { padding: 0 var(--uix-space-5) var(--uix-space-5); }
 }

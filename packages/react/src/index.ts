@@ -46,7 +46,7 @@ export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
 export { Select } from './components/Select.js';
-export type { SelectProps } from './components/Select.js';
+export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 
 export { Checkbox } from './components/Checkbox.js';
 export type { CheckboxProps } from './components/Checkbox.js';
@@ -79,6 +79,12 @@ export type { PeekProps } from './components/Peek.js';
 // Layout
 export { Card, CardLink } from './components/Card.js';
 export type { CardProps, CardLinkProps } from './components/Card.js';
+
+export { DashboardGrid, DashboardGridItem, dashboardGridClassName, dashboardGridItemClassName } from './components/DashboardGrid.js';
+export type {
+  DashboardGridProps, DashboardGridItemProps, DashboardGridColumns, DashboardGridColumnCount,
+  DashboardGridBreakpoint, DashboardGridSpan, DashboardGridGap,
+} from './components/DashboardGrid.js';
 
 export { Breadcrumbs } from './components/Breadcrumbs.js';
 export type { BreadcrumbsProps, BreadcrumbItem } from './components/Breadcrumbs.js';
