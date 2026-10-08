@@ -30,6 +30,9 @@
     --calendar-window-edge: var(--uix-neutral-border);
     --calendar-window-text: var(--uix-text);
     --calendar-marker-ink: var(--uix-text);
+    --calendar-chrome-now: var(--uix-text);
+    --calendar-chrome-ghost: var(--uix-neutral-solid);
+    --calendar-chrome-ghost-surface: var(--uix-neutral-bg);
 
     /* geometry: one head line, then the lanes kept for spans, then the chip rows */
     --calendar-pad: var(--uix-space-1);
@@ -38,6 +41,8 @@
     --calendar-lane: 1.25rem;
     --calendar-chip: 1.25rem;
     --calendar-gap: 0.125rem;
+    --calendar-hour: 3rem;
+    --calendar-gutter: 3.5rem;
 
     display:grid; gap:var(--uix-space-3); min-width:0; color:var(--calendar-chrome-text);
   }
@@ -115,9 +120,9 @@
   .uix-scheduling-calendar__window-name { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
   .uix-scheduling-calendar__window-scope { flex:0 2 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; font-style:italic; }
   .uix-scheduling-calendar__window[data-global] { border-color:var(--calendar-window-ink); border-width:2px; }
-  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="diagonal"] { background-image:repeating-linear-gradient(45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px); }
-  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="cross"] { background-image:repeating-linear-gradient(45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px),repeating-linear-gradient(-45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px); }
-  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="dotted"] { background-image:radial-gradient(circle,var(--calendar-window-ink) 1px,transparent 1.5px); background-size:5px 5px; }
+  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch,.uix-scheduling-calendar__tg-shade)[data-pattern="diagonal"] { background-image:repeating-linear-gradient(45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px); }
+  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch,.uix-scheduling-calendar__tg-shade)[data-pattern="cross"] { background-image:repeating-linear-gradient(45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px),repeating-linear-gradient(-45deg,var(--calendar-window-ink) 0 1px,transparent 1px 6px); }
+  :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch,.uix-scheduling-calendar__tg-shade)[data-pattern="dotted"] { background-image:radial-gradient(circle,var(--calendar-window-ink) 1px,transparent 1.5px); background-size:5px 5px; }
   .uix-scheduling-calendar__swatch[data-pattern] { border-color:var(--calendar-window-edge); background-color:var(--calendar-window-surface); }
   /* "+N" for the spans of this row that got no lane: on the last kept lane, at the row end */
   .uix-scheduling-calendar__rowmore { grid-column:7; justify-self:end; display:inline-flex; align-items:center; margin-top:calc(var(--calendar-pad) + var(--calendar-head) + (var(--uix-scheduling-calendar-lanes,1) - 1) * var(--calendar-lane)); padding:0 var(--uix-space-1); border:1px solid var(--calendar-chrome-line-strong); border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); font-size:var(--uix-text-meta); font-weight:600; font-variant-numeric:tabular-nums; outline-offset:-2px; }
@@ -150,6 +155,56 @@
   .uix-scheduling-calendar__legend > span[data-state]::before { content:""; display:inline-block; width:0.625rem; height:0.625rem; margin-right:var(--uix-space-1); border:1px solid var(--calendar-status-edge-strong); border-radius:var(--uix-radius-xs); vertical-align:middle; }
   .uix-scheduling-calendar__legend > span[data-state="in-progress"]::before { border:0.1875rem solid var(--calendar-status-text); border-radius:50%; width:0; height:0; }
   .uix-scheduling-calendar__legend > span:is([data-state="conflicted"],[data-state="blackout-violation"])::before { border:0; border-radius:0; background:var(--calendar-marker-ink); clip-path:polygon(50% 0,100% 100%,0 100%); }
+
+  /* ── Week / Day time grid (HAR-1509) ─────────────────────────────────────────────────────────
+     Four stacked rows share one column template: the day heads, the window strip, the top lane
+     and the hours. A day column is as tall as its day: --uix-scheduling-calendar-hours is the
+     real length of that day, so a clock-change day is shorter or longer than its neighbours.
+     Items are placed from --uix-scheduling-calendar-offset / -length (real hours) alone. */
+  .uix-scheduling-calendar__timegrid { position:relative; display:grid; min-width:0; overflow-x:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); background:var(--calendar-chrome-surface); }
+  .uix-scheduling-calendar__tg-head,.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__tg-body { display:grid; grid-template-columns:var(--calendar-gutter) repeat(var(--uix-scheduling-calendar-days,7),minmax(6.5rem,1fr)); min-width:calc(var(--calendar-gutter) + var(--uix-scheduling-calendar-days,7) * 6.5rem); }
+  .uix-scheduling-calendar__timegrid[data-view="day"] > :is(.uix-scheduling-calendar__tg-head,.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__tg-body) { grid-template-columns:var(--calendar-gutter) minmax(0,1fr); min-width:0; }
+  .uix-scheduling-calendar__tg-head { background:var(--calendar-chrome-surface-quiet); }
+  .uix-scheduling-calendar__tg-zone { align-self:center; padding:var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); line-height:1.2; text-align:right; overflow-wrap:anywhere; }
+  .uix-scheduling-calendar__tg-dayhead { display:flex; align-items:center; gap:var(--uix-space-1); min-width:0; padding:var(--uix-space-1); border-left:1px solid var(--calendar-chrome-line); font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__date { flex:0 1 auto; width:auto; height:var(--calendar-head); font-weight:600; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__markers { flex:0 1 auto; min-width:0; overflow:hidden; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__more { flex:none; margin-left:auto; }
+  .uix-scheduling-calendar__marker-label { margin-left:var(--calendar-gap); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* the window strip and the top lane: one grid row per lane, a bounded height */
+  .uix-scheduling-calendar__tg-strip { grid-auto-rows:var(--calendar-lane); align-items:center; padding:var(--calendar-gap) 0; border-top:1px solid var(--calendar-chrome-line); }
+  .uix-scheduling-calendar__tg-strip > :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__tg-ghost,.uix-scheduling-calendar__rowmore) { grid-row:calc(var(--uix-scheduling-calendar-lane,0) + 1); align-self:center; height:calc(var(--calendar-lane) - var(--calendar-gap)); margin:0 var(--calendar-pad-inline); }
+  .uix-scheduling-calendar__tg-strip > .uix-scheduling-calendar__rowmore { grid-column:-2 / -1; grid-row:var(--uix-scheduling-calendar-lanes,1); justify-self:end; }
+  :is(.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__window)[data-continues-before] { border-left-style:dashed; border-top-left-radius:0; border-bottom-left-radius:0; }
+  :is(.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__window)[data-continues-after] { border-right-style:dashed; border-top-right-radius:0; border-bottom-right-radius:0; }
+
+  /* the hours */
+  .uix-scheduling-calendar__tg-body { position:relative; grid-template-rows:calc(var(--uix-scheduling-calendar-hours,1) * var(--calendar-hour)); border-top:1px solid var(--calendar-chrome-line); }
+  .uix-scheduling-calendar__tg-gutter { grid-column:1; grid-row:1; position:relative; }
+  .uix-scheduling-calendar__tg-hour { position:absolute; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); right:var(--uix-space-1); padding-top:var(--calendar-gap); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; line-height:1; text-align:right; pointer-events:none; }
+  .uix-scheduling-calendar__tg-hour--inline { right:auto; left:var(--calendar-gap); }
+  .uix-scheduling-calendar__tg-offset { display:block; }
+  /* one painted background draws every hour line of a column: no element per hour */
+  .uix-scheduling-calendar__tg-column { grid-row:1; align-self:start; position:relative; min-width:0; height:calc(var(--uix-scheduling-calendar-hours,1) * var(--calendar-hour)); border-left:1px solid var(--calendar-chrome-line); background-image:repeating-linear-gradient(to bottom,var(--calendar-chrome-line) 0 1px,transparent 1px var(--calendar-hour)); }
+  .uix-scheduling-calendar__tg-item { position:absolute; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); left:calc(var(--uix-scheduling-calendar-lane,0) / var(--uix-scheduling-calendar-lanes,1) * 100%); width:calc(100% / var(--uix-scheduling-calendar-lanes,1) - 2px); height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-hour) - 1px),0.875rem); align-items:flex-start; padding:0 0.125rem; line-height:1rem; }
+  .uix-scheduling-calendar__tg-item > .uix-scheduling-calendar__entry-text { white-space:normal; overflow-wrap:anywhere; max-height:100%; }
+  .uix-scheduling-calendar__tg-item[data-lines="1"] > .uix-scheduling-calendar__entry-text { white-space:nowrap; overflow-wrap:normal; }
+  .uix-scheduling-calendar__tg-item > .uix-scheduling-calendar__markers { height:1rem; }
+  .uix-scheduling-calendar__tg-from { flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; font-style:italic; }
+  /* an item that crosses midnight: two parts with the shared edge left open */
+  .uix-scheduling-calendar__tg-item[data-part="start"] { border-bottom-style:dashed; border-bottom-left-radius:0; border-bottom-right-radius:0; }
+  .uix-scheduling-calendar__tg-item[data-part="continuation"] { border-top-style:dashed; border-top-left-radius:0; border-top-right-radius:0; }
+  :is(.uix-scheduling-calendar__tg-item,.uix-scheduling-calendar__tg-span)[data-movable] { cursor:grab; }
+  /* a pending move: an outline where the item would go; the item itself stays put */
+  .uix-scheduling-calendar__tg-ghost { border:2px dashed var(--calendar-chrome-ghost); border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-ghost-surface); opacity:0.7; pointer-events:none; }
+  .uix-scheduling-calendar__tg-ghost[data-sent] { border-style:dotted; }
+  .uix-scheduling-calendar__tg-column > .uix-scheduling-calendar__tg-ghost { position:absolute; left:0; right:0; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-hour)),0.875rem); }
+  .uix-scheduling-calendar__tg-now { position:absolute; left:0; right:0; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); border-top:2px solid var(--calendar-chrome-now); pointer-events:none; }
+  .uix-scheduling-calendar__tg-now::before { content:""; position:absolute; left:0; top:-0.3125rem; border:0.25rem solid var(--calendar-chrome-now); border-radius:50%; }
+  /* a window that applies to everything also shades its hours, behind the items */
+  .uix-scheduling-calendar__tg-shade[data-pattern] { grid-row:1; background-color:var(--calendar-window-surface); opacity:0.6; pointer-events:none; }
+  .uix-scheduling-calendar__tg-probe { position:absolute; left:0; top:0; width:12ch; height:0; visibility:hidden; font-size:var(--uix-text-meta); pointer-events:none; }
 
   .uix-scheduling-calendar__state { padding:var(--uix-space-8); border:1px dashed var(--calendar-chrome-line-strong); border-radius:var(--uix-radius-lg); text-align:center; }
 }
