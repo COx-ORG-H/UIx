@@ -241,7 +241,17 @@ function DateRangeField(props: RangeCalendarProps) {
   const rangeInvalid = invalid || (!!value.start && !!value.end && value.start > value.end);
   const describedBy = [ariaDescribedBy, labelled && text ? valueId : undefined].filter(Boolean).join(' ') || undefined;
 
-  return <div ref={anchorRef} className={cx('uix-date-range-field', className)}>
+  return <div
+    ref={anchorRef} className={cx('uix-date-range-field', className)}
+    onKeyDown={(event) => {
+      // Escape while the months are open belongs to the field, also in the moment before focus
+      // has moved from the trigger into them.
+      if (event.key !== 'Escape' || !open) return;
+      event.stopPropagation();
+      event.preventDefault();
+      hide();
+    }}
+  >
     <button
       ref={triggerRef} type="button" id={id} disabled={disabled}
       className={cx('uix-input', size === 'sm' && 'uix-input--sm', 'uix-date-range-field__trigger')}
@@ -255,12 +265,6 @@ function DateRangeField(props: RangeCalendarProps) {
     <Popover
       id={popoverId} anchor={anchorRef} placement={placement} className="uix-date-range-field__popover"
       role="dialog" aria-label={label} capHeight closeWhenAnchorHidden
-      onKeyDown={(event) => {
-        if (event.key !== 'Escape') return;
-        event.stopPropagation();
-        event.preventDefault();
-        hide();
-      }}
     >
       {open && <RangeCalendar
         {...props} className="uix-date-range-picker--in-popover" autoFocus

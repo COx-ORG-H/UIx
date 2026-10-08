@@ -189,7 +189,17 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   const describedBy = [ariaDescribedBy, problem ? errorId : undefined].filter(Boolean).join(' ') || undefined;
   const isInvalid = !!invalid || !!problem || ariaInvalid === true || ariaInvalid === 'true';
 
-  return <div ref={anchorRef} className={cx('uix-date-picker', size === 'sm' && 'uix-date-picker--sm', className)} style={style}>
+  return <div
+    ref={anchorRef} className={cx('uix-date-picker', size === 'sm' && 'uix-date-picker--sm', className)} style={style}
+    onKeyDown={(event) => {
+      // Escape while the calendar is open belongs to the field, wherever focus is (a day, the
+      // button, the input): it closes the calendar and does not also close a drawer around it.
+      if (event.key !== 'Escape' || !open) return;
+      event.stopPropagation();
+      event.preventDefault();
+      hide();
+    }}
+  >
     <div className="uix-date-picker__control">
       <input
         // No inputMode: a phone's numeric keypad has no "." or "/" to separate the parts with.
@@ -216,13 +226,6 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
     <Popover
       id={popoverId} anchor={anchorRef} placement={placement} className="uix-date-picker__popover"
       role="dialog" aria-label={labels.calendar} closeWhenAnchorHidden
-      onKeyDown={(event) => {
-        // Escape belongs to the calendar: it closes it, and does not also close a drawer around the field.
-        if (event.key !== 'Escape') return;
-        event.stopPropagation();
-        event.preventDefault();
-        hide();
-      }}
     >
       {open && <MonthCalendar
         value={value} onSelect={choose} initialDate={value && isValidDateKey(value) ? value : todayDate ?? localDateKey()}

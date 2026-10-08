@@ -84,6 +84,9 @@ const detectAdjacentInline = () => {
     const b = a.nextSibling; // a text node (whitespace or not) means the pair is not "glued"
     if (!(b instanceof Element) || a.nextElementSibling !== b) continue;
     if (a.closest('.uix-docs__code, pre, code, svg') || b.closest('svg')) continue;
+    // A <mark> highlights part of a run of text (the typed letters of "Jonas"): it touches
+    // the rest of its word on purpose.
+    if (a.tagName === 'MARK' || b.tagName === 'MARK') continue;
     if (getComputedStyle(a).display !== 'inline' || getComputedStyle(b).display !== 'inline') continue;
     if (!hasText(a) || !hasText(b)) continue;
     const ra = rectsOf(a);

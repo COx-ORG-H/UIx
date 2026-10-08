@@ -636,3 +636,25 @@ test('a press on the calendar button that never becomes a click does not swallow
   assert.equal(v.isOpen(), true, 'it opens');
   v.unmount();
 });
+
+test('Escape on the field itself closes an open calendar and stays inside the field', () => {
+  // The frame between opening and focus moving into the calendar: focus is still on the trigger.
+  const v = mountDate({ value: '2026-11-18' });
+  click(v.toggle());
+  assert.equal(key(v.toggle(), 'Escape'), false);
+  assert.equal(v.isOpen(), false);
+  assert.deepEqual(v.outer, [], 'the surrounding handler did not hear it');
+  assert.equal(key(v.input(), 'Escape'), true, 'with nothing open, Escape is left to what is around the field');
+  assert.deepEqual(v.outer, ['Escape']);
+  v.unmount();
+
+  const outer = [];
+  const view = render(h('div', { onKeyDown: (e) => { if (e.key === 'Escape') outer.push('Escape'); } },
+    h(ui.DateRangePicker, { mode: 'field', value: {}, onChange() {}, locale: 'de', label: 'Period' })));
+  const trigger = view.host.querySelector('.uix-date-range-field__trigger');
+  click(trigger);
+  assert.equal(key(trigger, 'Escape'), false);
+  assert.equal(view.host.querySelector('.uix-date-range-field__popover').hasAttribute(OPEN), false);
+  assert.deepEqual(outer, []);
+  view.unmount();
+});
