@@ -9,8 +9,21 @@ export interface UseVirtualRowsOptions {
   rowHeight: number;
   /** Rows rendered beyond each viewport edge. Default: 6. */
   overscan?: number;
-  /** Render all rows at or below this count. Default: 100. */
+  /**
+   * Render all rows at or below this count: rows are windowed only when
+   * `rows.length > threshold` (so exactly `threshold` rows are still rendered whole).
+   * Default: 100.
+   */
   threshold?: number;
+  /**
+   * Viewport height in pixels to assume until the scroll element has been measured, and
+   * whenever it measures 0 (first render, a hidden tab, a test without layout). With it, a
+   * 5,000-row table mounts with one window of rows; without it every row is rendered until
+   * the first measurement, as before (HAR-1616).
+   */
+  estimatedViewportHeight?: number;
+  /** `false` renders every row with no spacers, whatever the count. Default: `true`. */
+  enabled?: boolean;
 }
 
 export interface UseVirtualRowsResult<T> {
@@ -27,10 +40,12 @@ export interface UseVirtualRowsResult<T> {
 /**
  * Owns scroll/resize observation and exposes the small visible row window.
  * Consumers render padTop/padBottom spacer rows inside their existing tbody.
+ * When the row count shrinks under a large scroll position the window is clamped to the new
+ * count in the same render, so `padTop` never exceeds the list (HAR-1616).
  */
 export function useVirtualRows<T>(
   rows: readonly T[],
-  { rowHeight, overscan = 6, threshold = 100 }: UseVirtualRowsOptions,
+  { rowHeight, overscan = 6, threshold = 100, estimatedViewportHeight = 0, enabled = true }: UseVirtualRowsOptions,
 ): UseVirtualRowsResult<T> {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState({ scrollTop: 0, height: 0 });
@@ -61,12 +76,13 @@ export function useVirtualRows<T>(
     };
   }, []);
 
-  const enabled = viewport.height > 0 && shouldVirtualize(rows.length, threshold);
+  const height = viewport.height > 0 ? viewport.height : Math.max(0, estimatedViewportHeight);
+  const virtualized = enabled && height > 0 && shouldVirtualize(rows.length, threshold);
   const window = useMemo(
-    () => enabled
-      ? virtualWindow(viewport.scrollTop, viewport.height, rowHeight, rows.length, overscan)
+    () => virtualized
+      ? virtualWindow(viewport.scrollTop, height, rowHeight, rows.length, overscan)
       : { start: 0, end: rows.length, padTop: 0, padBottom: 0, total: rows.length * rowHeight },
-    [enabled, overscan, rowHeight, rows.length, viewport.height, viewport.scrollTop],
+    [virtualized, overscan, rowHeight, rows.length, height, viewport.scrollTop],
   );
   const visibleRows = useMemo(() => rows.slice(window.start, window.end), [rows, window.start, window.end]);
 
@@ -77,6 +93,6 @@ export function useVirtualRows<T>(
     padTop: window.padTop,
     padBottom: window.padBottom,
     totalHeight: window.total,
-    virtualized: enabled,
+    virtualized,
   };
 }

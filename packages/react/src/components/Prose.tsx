@@ -17,10 +17,14 @@ export function Prose({ children, className, ...props }: ProseProps) {
   );
 }
 
-export type NoteTone = 'info' | 'success' | 'warning' | 'danger';
+export type NoteTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
-  tone?: NoteTone;
+  /**
+   * `'neutral'` and `undefined` are both the default look. `undefined` is spelled out in the type
+   * so `tone={maybeTone}` also compiles under `exactOptionalPropertyTypes` (HAR-1614).
+   */
+  tone?: NoteTone | undefined;
   icon?: ReactNode;
   children?: ReactNode;
 }
@@ -28,7 +32,7 @@ export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
 /** Callout / note box over `.uix-note`. */
 export function Note({ tone, icon, children, className, ...props }: NoteProps) {
   return (
-    <div className={cx('uix-note', tone && `uix-note--${tone}`, className)} {...props}>
+    <div className={cx('uix-note', tone && tone !== 'neutral' && `uix-note--${tone}`, className)} {...props}>
       {icon != null && <div className="uix-note__icon">{icon}</div>}
       <div className="uix-note__body">{children}</div>
     </div>

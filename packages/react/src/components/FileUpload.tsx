@@ -5,7 +5,8 @@ import type { DragEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { formatFileSize, partitionFiles } from '../file-model.js';
-import type { FileRejection } from '../file-model.js';
+import type { FileRejection, FileSizeFormatter } from '../file-model.js';
+import { useUixLabels } from '../labels-context.js';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
 import { Progress } from './Progress.js';
@@ -104,6 +105,14 @@ export interface FileUploadProps {
   /** Second line of the drop zone, e.g. "PDF or images, up to 20 MB". */
   hint?: ReactNode;
   locale?: string;
+  /** Count sizes in 1024s (1 MB = 1,048,576 bytes) instead of 1000s. Default `1000`. */
+  sizeBase?: 1000 | 1024;
+  /** The product's own size formatter; it replaces `formatFileSize` (and `sizeBase`). */
+  formatSize?: FileSizeFormatter;
+  /**
+   * Words for this instance. Each one defaults to `UixLabelsProvider` `fileUpload`, then to
+   * English, so one provider translates every upload below it (HAR-1630).
+   */
   labels?: Partial<FileUploadLabels>;
   className?: string;
 }
@@ -115,9 +124,10 @@ export interface FileUploadProps {
  */
 export function FileUpload({
   items, onFilesAdded, onRemove, onRetry, onAltChange, accept, maxSize, maxFiles, multiple = true, capture,
-  disabled, hint, locale, labels: labelOverrides, className,
+  disabled, hint, locale, sizeBase, formatSize, labels: labelOverrides, className,
 }: FileUploadProps) {
-  const labels = { ...DEFAULT_FILE_UPLOAD_LABELS, ...labelOverrides };
+  const labels = { ...DEFAULT_FILE_UPLOAD_LABELS, ...useUixLabels().fileUpload, ...labelOverrides };
+  const sizeText = (bytes: number) => (formatSize ? formatSize(bytes, locale) : formatFileSize(bytes, locale, { base: sizeBase }));
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -128,7 +138,7 @@ export function FileUpload({
     if (!list || disabled) return;
     const files = Array.from(list);
     const { accepted, rejected } = partitionFiles(files, { accept, maxSize, maxFiles, existing: items.length });
-    const max = maxSize !== undefined ? formatFileSize(maxSize, locale) : '';
+    const max = maxSize !== undefined ? sizeText(maxSize) : '';
     setMessages(rejected.map(({ file, reason }) => fillLabel(
       reason === 'type' ? labels.wrongType : reason === 'size' ? labels.tooLarge : labels.tooMany,
       { name: file.name, accept: accept ?? '', max: reason === 'count' ? String(maxFiles) : max },
@@ -170,9 +180,13 @@ export function FileUpload({
         />
       </div>
       {messages.length > 0 && (
-        <ul className="uix-file-upload__errors" role="alert">
-          {messages.map((m, i) => <li key={i}>{m}</li>)}
-        </ul>
+        // The alert wraps the list: role="alert" on the <ul> itself replaced its list role and
+        // left the <li>s outside any list (axe `listitem`).
+        <div role="alert">
+          <ul className="uix-file-upload__errors">
+            {messages.map((m, i) => <li key={i}>{m}</li>)}
+          </ul>
+        </div>
       )}
       <span className="uix-visually-hidden" role="status" aria-live="polite">{announce}</span>
       {items.length > 0 && (
@@ -190,7 +204,7 @@ export function FileUpload({
                 <div className="uix-file-upload__body">
                   <span className="uix-file-upload__name">{item.name}</span>
                   <span className="uix-file-upload__meta">
-                    <span>{formatFileSize(item.size, locale)}</span>
+                    <span>{sizeText(item.size)}</span>
                     {item.status !== 'uploading' && <span className="uix-file-upload__status">{statusText}</span>}
                   </span>
                   {item.status === 'uploading' && (

@@ -1,27 +1,16 @@
 import type { HTMLAttributes, LiHTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
-import { fillLabel } from '../fill-label.js';
 import { formatFileSize } from '../file-model.js';
+import type { FileSizeFormatter } from '../file-model.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
-import { Button } from './Button.js';
+import { DEFAULT_ATTACHMENT_LABELS } from '../attachment-labels.js';
+import type { AttachmentLabels } from '../attachment-labels.js';
+import { AttachmentRemoveButton, AttachmentText } from './AttachmentParts.js';
 import { FileIcon } from './FileIcon.js';
 
-export interface AttachmentLabels {
-  /** Remove button. `{name}`. */
-  remove: string;
-  /** Download link name when `download` is set. `{name}`. */
-  download: string;
-  loading: string;
-  forbidden: string;
-}
-
-export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels = {
-  remove: 'Remove {name}',
-  download: 'Download {name}',
-  loading: 'Loading…',
-  forbidden: 'You do not have access to this file.',
-};
+export { DEFAULT_ATTACHMENT_LABELS };
+export type { AttachmentLabels };
 
 export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, 'children'> {
   /** File name as the user should read it (decrypted, if the product stores it encrypted). */
@@ -49,23 +38,37 @@ export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, '
   /** Extra actions at the end of the row. */
   actions?: ReactNode;
   locale?: string;
+  /** Count sizes in 1024s (1 MB = 1,048,576 bytes) instead of 1000s. Default `1000`. */
+  sizeBase?: 1000 | 1024;
+  /** The product's own size formatter; it replaces `formatFileSize` (and `sizeBase`). */
+  formatSize?: FileSizeFormatter;
+  /**
+   * Words for this row. Each one defaults to `UixLabelsProvider` `attachment`, then to English,
+   * so one provider translates every row below it (HAR-1630).
+   */
   labels?: Partial<AttachmentLabels>;
 }
 
 /**
  * One file row (HAR-985; TENSOR C15/B12 `attachments-panel-view.tsx`, MEDx S19/S52): glyph or
- * thumbnail, the name as a link, size and meta, a state slot, and remove. Server-renderable.
+ * thumbnail, the name as a link, size and meta, a state slot, and remove. Server-renderable:
+ * the words that come from `UixLabelsProvider` are rendered by small client parts.
  */
 export function Attachment({
   name, size, type, href, download, renderLink, meta, state, thumbnail, onRemove, status = 'ready', error, actions, locale,
-  labels: labelOverrides, className, ...props
+  sizeBase, formatSize, labels, className, ...props
 }: AttachmentProps) {
-  const labels = { ...DEFAULT_ATTACHMENT_LABELS, ...labelOverrides };
   const linked = href != null && status !== 'loading' && status !== 'forbidden';
   const nameNode = linked
     ? renderUixLink(renderLink, {
-      href, className: 'uix-attachment__name', children: name,
-      ...(download ? { download: typeof download === 'string' ? download : '', 'aria-label': fillLabel(labels.download, { name }) } : {}),
+      href,
+      className: 'uix-attachment__name',
+      // A download link is named "Download {name}": the visible name, plus the translated
+      // sentence for assistive technology in place of it.
+      children: download
+        ? <><span aria-hidden="true">{name}</span><span className="uix-visually-hidden"><AttachmentText label="download" override={labels?.download} name={name} /></span></>
+        : name,
+      ...(download ? { download: typeof download === 'string' ? download : '' } : {}),
     })
     : <span className="uix-attachment__name">{name}</span>;
   return (
@@ -77,21 +80,17 @@ export function Attachment({
           {state != null && <span className="uix-attachment__state">{state}</span>}
         </span>
         <span className="uix-attachment__meta">
-          {size !== undefined && <span className="uix-attachment__size">{formatFileSize(size, locale)}</span>}
+          {size !== undefined && <span className="uix-attachment__size">{formatSize ? formatSize(size, locale) : formatFileSize(size, locale, { base: sizeBase })}</span>}
           {meta != null && <span>{meta}</span>}
-          {status === 'loading' && <span>{labels.loading}</span>}
-          {status === 'forbidden' && <span>{labels.forbidden}</span>}
+          {status === 'loading' && <span><AttachmentText label="loading" override={labels?.loading} name={name} /></span>}
+          {status === 'forbidden' && <span><AttachmentText label="forbidden" override={labels?.forbidden} name={name} /></span>}
         </span>
         {status === 'error' && error != null && <span className="uix-attachment__error" role="alert">{error}</span>}
       </span>
       {(actions != null || onRemove) && (
         <span className="uix-attachment__actions">
           {actions}
-          {onRemove && (
-            <Button type="button" size="xs" variant="ghost" icon aria-label={fillLabel(labels.remove, { name })} onClick={onRemove}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
-            </Button>
-          )}
+          {onRemove && <AttachmentRemoveButton override={labels?.remove} name={name} onRemove={onRemove} />}
         </span>
       )}
     </li>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TENSOR migration gaps harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/tensor-gaps.spec.mjs. Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: var(--uix-space-2); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; gap: var(--uix-space-8); max-width: 60rem; margin: 0 auto; }
+    section { display: grid; gap: var(--uix-space-3); min-width: 0; }
+    section > h2 { font-size: var(--uix-text-h3); }
+    .rail { width: 288px; max-width: 100%; }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

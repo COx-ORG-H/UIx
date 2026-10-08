@@ -14,6 +14,25 @@ export interface UseAnchoredPositionOptions {
   placement?: Placement;
   offset?: number;
   padding?: number;
+  /**
+   * Keep the element inside the viewport on the side it hangs off as well: when it fits neither
+   * above nor below (or left nor right) it slides over the anchor instead of leaving the
+   * viewport. Once the anchor itself has left the viewport the element follows it out; pair
+   * that with `onAnchorHidden` to close it. Default true.
+   */
+  shiftMainAxis?: boolean;
+  /**
+   * Cap the element's height to the viewport minus the padding on both edges, and let it scroll
+   * (`overflow-y: auto`, unless its own CSS already sets an overflow). A `max-height` from the
+   * element's own CSS still applies when it is smaller. Default false.
+   */
+  capHeight?: boolean;
+  /**
+   * Called when the anchor has scrolled completely out of view (outside the viewport or a
+   * clipping ancestor) while `open`. Close the overlay here; `Popover closeWhenAnchorHidden`
+   * is built on it.
+   */
+  onAnchorHidden?: () => void;
 }
 
 type AnchorArg = RefObject<HTMLElement | null> | HTMLElement | null | undefined;
@@ -41,6 +60,19 @@ function supportsAnchoring(): boolean {
   }
   return anchoringSupported;
 }
+
+/**
+ * How close (px) the flush position may come to the viewport limit before the element is
+ * placed with fixed coordinates instead of anchor positioning (HAR-1613).
+ *
+ * An anchor-positioned box is moved with its anchor by the compositor, AFTER its `top` / `left`
+ * were resolved — so no value, not even `max(8px, min(anchor(), …))`, can hold it inside the
+ * viewport while the page scrolls; only the next scroll handler can, one frame late. A box with
+ * fixed coordinates cannot move between two writes at all. So a box that is held at the limit,
+ * or within this band of it, is written as fixed coordinates, and anchoring is used only where
+ * there is room for a frame of scrolling.
+ */
+const ANCHOR_BAND = 64;
 
 let anchorCount = 0;
 const namesOf = (value: string): string[] =>
@@ -88,6 +120,16 @@ interface Anchoring {
 /** Floating elements whose UA inset/margin were already replaced by our fixed box. */
 const prepared = new WeakSet<HTMLElement>();
 
+/** What `capHeight` replaced on the element, to give back when the overlay closes. */
+interface HeightCap {
+  inlineMaxHeight: string;
+  inlineOverflowY: string;
+  /** The element's own CSS max-height, which still applies when it is the smaller one. */
+  ownMaxHeight: string;
+  setOverflow: boolean;
+  written: string;
+}
+
 /**
  * Position a floating element (a native-popover overlay) against an anchor with
  * cross-browser flip/shift — the DOM half of the overlay-position engine (UIX-FIX-02).
@@ -99,17 +141,24 @@ const prepared = new WeakSet<HTMLElement>();
  * `position: fixed` + left/top and follows scroll/resize from JS. While `open`, the side
  * chosen at open is kept until it no longer fits and the other side does, scrolls inside
  * the overlay itself are ignored, and a size change of either element re-places it.
+ * An element that fits on neither side is kept inside the viewport (it covers the anchor).
+ * While it is held there, or within `ANCHOR_BAND` of the limit, it is written as fixed
+ * coordinates even where anchor positioning exists: those cannot drift while the page scrolls,
+ * so it is inside on every frame, not one frame later (HAR-1613).
  * Returns a `reposition` fn for callers that want to nudge it manually (e.g. right when a
  * native popover's `toggle` fires).
  */
 export function useAnchoredPosition(
   anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined,
   floatingRef: RefObject<HTMLElement | null>,
-  { open, placement = 'bottom-start', offset = 6, padding = 8 }: UseAnchoredPositionOptions,
+  { open, placement = 'bottom-start', offset = 6, padding = 8, shiftMainAxis = true, capHeight = false, onAnchorHidden }: UseAnchoredPositionOptions,
 ): () => void {
   // keep latest options in a ref so `reposition`'s identity is stable across renders
-  const opts = useRef({ placement, offset, padding });
-  opts.current = { placement, offset, padding };
+  const opts = useRef({ placement, offset, padding, shiftMainAxis, capHeight });
+  opts.current = { placement, offset, padding, shiftMainAxis, capHeight };
+  const onAnchorHiddenRef = useRef(onAnchorHidden);
+  onAnchorHiddenRef.current = onAnchorHidden;
+  const heightCap = useRef<HeightCap | null>(null);
   /** True between the open effect and its cleanup: only then does a result become sticky. */
   const session = useRef(false);
   /** The side of the current open session: kept while it fits (hysteresis, no flip-flop). */
@@ -141,6 +190,17 @@ export function useAnchoredPosition(
     removeAnchorName(current.anchor, current.name);
   }, [floatingRef]);
 
+  /** Give back the max-height / overflow that `capHeight` wrote. */
+  const uncap = useCallback(() => {
+    const cap = heightCap.current;
+    if (!cap) return;
+    heightCap.current = null;
+    const floating = floatingRef.current;
+    if (!floating) return;
+    floating.style.maxHeight = cap.inlineMaxHeight;
+    if (cap.setOverflow) floating.style.overflowY = cap.inlineOverflowY;
+  }, [floatingRef]);
+
   const reposition = useCallback(() => {
     const anchorEl = resolveAnchor(anchor);
     const floating = floatingRef.current;
@@ -155,14 +215,37 @@ export function useAnchoredPosition(
       prepared.add(floating);
       written.current = '';
     }
+    const { placement: p, offset: o, padding: pad, shiftMainAxis: keepInView, capHeight: cap } = opts.current;
+    if (cap) {
+      // Before measuring: the height that gets placed is the capped one.
+      if (!heightCap.current) {
+        const own = getComputedStyle(floating);
+        const setOverflow = !own.overflowY || own.overflowY === 'visible';
+        heightCap.current = {
+          inlineMaxHeight: s.maxHeight,
+          inlineOverflowY: s.overflowY,
+          ownMaxHeight: own.maxHeight && own.maxHeight !== 'none' ? own.maxHeight : '',
+          setOverflow,
+          written: '',
+        };
+        if (setOverflow) s.overflowY = 'auto';
+      }
+      const room = `${Math.max(0, window.innerHeight - 2 * pad)}px`;
+      const max = heightCap.current.ownMaxHeight ? `min(${room}, ${heightCap.current.ownMaxHeight})` : room;
+      if (max !== heightCap.current.written) {
+        s.maxHeight = max;
+        heightCap.current.written = max;
+      }
+    } else if (heightCap.current) {
+      uncap();
+    }
     const a = anchorEl.getBoundingClientRect();
     const size = { width: floating.offsetWidth, height: floating.offsetHeight };
-    const { placement: p, offset: o, padding: pad } = opts.current;
     const pos = computePosition(
       { x: a.x, y: a.y, width: a.width, height: a.height },
       size,
       { width: window.innerWidth, height: window.innerHeight },
-      { placement: p, offset: o, padding: pad, stickySide: side.current ?? undefined },
+      { placement: p, offset: o, padding: pad, shiftMainAxis: keepInView, stickySide: side.current ?? undefined },
     );
     // A hidden element measures 0 × 0; a pre-open call (a popover's toggle, before its
     // content rendered) is not the open decision either. Neither may become sticky.
@@ -180,7 +263,16 @@ export function useAnchoredPosition(
       written.current = key;
     };
 
-    if (anchoringFailed.current || !supportsAnchoring()) {
+    // Held at the viewport limit, or close enough that one frame of scrolling could carry it
+    // across: fixed coordinates (see ANCHOR_BAND). `mainAxisRange` is null once the anchor has
+    // left the viewport, where the element is meant to follow it out.
+    const limit = pos.mainAxisRange;
+    const nearLimit = limit !== null
+      && (pos.mainAxisNatural < limit[0] + ANCHOR_BAND || pos.mainAxisNatural > limit[1] - ANCHOR_BAND);
+
+    if (anchoringFailed.current || nearLimit || !supportsAnchoring()) {
+      // position-anchor has to go too: with it set, Chromium offsets even a plain px inset.
+      if (anchoring.current) release(false);
       writeFixed(pos);
       return;
     }
@@ -224,7 +316,7 @@ export function useAnchoredPosition(
         writeFixed(pos);
       }
     }
-  }, [anchor, floatingRef, release]);
+  }, [anchor, floatingRef, release, uncap]);
 
   useIsomorphicLayoutEffect(() => {
     if (!open) return;
@@ -259,8 +351,22 @@ export function useAnchoredPosition(
       side.current = null;
       anchoringFailed.current = false;
       release(true);
+      uncap();
     };
-  }, [open, reposition, anchor, floatingRef, release]);
+  }, [open, reposition, anchor, floatingRef, release, uncap]);
+
+  const watchAnchor = open && !!onAnchorHidden;
+  useEffect(() => {
+    const anchorEl = resolveAnchor(anchor);
+    if (!watchAnchor || !anchorEl || typeof IntersectionObserver !== 'function') return;
+    // The implicit root is the viewport, clipped by every overflow ancestor of the anchor.
+    const observer = new IntersectionObserver((entries) => {
+      const latest = entries[entries.length - 1];
+      if (latest && !latest.isIntersecting) onAnchorHiddenRef.current?.();
+    });
+    observer.observe(anchorEl);
+    return () => observer.disconnect();
+  }, [watchAnchor, anchor]);
 
   // Unmount: take our anchor name off an anchor that outlives the overlay.
   useEffect(() => () => release(false), [release]);

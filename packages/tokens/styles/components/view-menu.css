@@ -18,8 +18,13 @@
   }
   .uix-view-menu__row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); font-size: var(--uix-text-body); color: var(--uix-text); cursor: pointer; }
   .uix-view-menu__row + .uix-view-menu__row { margin-top: var(--uix-space-3); }
-  .uix-view-menu .uix-segmented { display: flex; width: 100%; }
-  .uix-view-menu .uix-segmented__option { flex: 1; text-align: center; }
+  /* HAR-1601: three equal options in a 304 px panel are 84 px each, and "Großzügig" did not fit
+     its option: the Segmented's `overflow-wrap: anywhere` then split it after the 8th letter.
+     Here an option is never narrower than its longest word (overflow-wrap: normal makes
+     min-content that word), the padding is tighter, and options that still do not fit in one
+     row wrap as whole options. */
+  .uix-view-menu .uix-segmented { display: flex; flex-wrap: wrap; width: 100%; }
+  .uix-view-menu .uix-segmented__option { flex: 1 1 0; min-width: min-content; padding-inline: var(--uix-space-2); text-align: center; overflow-wrap: normal; hyphens: manual; }
   .uix-view-menu__cols { display: flex; flex-direction: column; margin: 0 calc(-1 * var(--uix-space-1)); padding: 0; list-style: none; }
   .uix-view-menu__footer { border-top: 1px solid var(--uix-border); padding: var(--uix-space-1) 0 0; }
   /* Column rows. Hover paints the WHOLE row (grip, checkbox, name, ⋯ together), never just the label. */
