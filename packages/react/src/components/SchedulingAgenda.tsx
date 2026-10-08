@@ -137,33 +137,52 @@ function AgendaBody({
   /** A row of the long form that holds a control: a row, a window note, or "open day". */
   const holdsControl = (row: FlatRow | undefined) => row !== undefined && (row.kind === 'entry' || row.kind === 'note' || (row.kind === 'hidden' && onShowMore !== undefined));
   const controlAt = (index: number) => scroller.current?.querySelector<HTMLElement>(`[data-flat-index="${index}"] button`) ?? null;
-  // The row a step is waiting for, by its place in the list. It is taken after the render that
-  // mounts the row, and given up when the list changes or the user has gone somewhere else.
-  const landing = useRef<number | null>(null);
+  /** Where focus is, in the tree the agenda is in (a shadow tree has its own). `null`: nothing has it. */
+  const focusIn = (box: HTMLElement): Element | null => {
+    const tree = box.getRootNode() as Document | ShadowRoot;
+    const active = tree.activeElement ?? null;
+    return active === document.body ? null : active;
+  };
+  /** Focus has gone to something outside the agenda (not: was lost because the focused row was unmounted). */
+  const focusIsElsewhere = (box: HTMLElement) => {
+    const active = focusIn(box);
+    if (active) return !box.contains(active);
+    // Nothing in this tree has focus: in a shadow tree, the document says whether something outside has it.
+    const outer = document.activeElement;
+    return box.getRootNode() !== document && outer !== null && outer !== document.body && !outer.contains(box);
+  };
+  const rowHeight = narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW;
+  const scrollToRow = (box: HTMLElement, index: number) => { box.scrollTop = Math.max(0, index * rowHeight - (box.clientHeight - rowHeight) / 2); };
+  // The row a step is waiting for, by its key, so it is still the same row after the list has
+  // changed. The step is taken after the render that mounts the row, and given up when the row
+  // is gone or the user has gone somewhere else.
+  const landing = useRef<{ key: string; index: number } | null>(null);
   const land = () => {
-    const index = landing.current;
-    if (index === null) return;
+    const wanted = landing.current;
+    if (!wanted) return;
     const box = container();
-    const active = typeof document === 'undefined' ? null : document.activeElement;
-    // Focus is on the page only when the row that had it was unmounted by the scroll of this very step.
-    const elsewhere = active !== null && active !== document.body && !box?.contains(active);
-    if (!box || elsewhere || !holdsControl(flatRows[index])) { landing.current = null; return; }
+    const index = flatRows[wanted.index]?.key === wanted.key ? wanted.index : flatRows.findIndex((row) => row.key === wanted.key);
+    if (!box || index === -1 || !holdsControl(flatRows[index]) || focusIsElsewhere(box)) { landing.current = null; return; }
     const target = controlAt(index);
-    if (!target) return;
-    landing.current = null;
-    focusStop(target);
+    if (target) { landing.current = null; focusStop(target); return; }
+    // The row moved with the list: go to where it is now.
+    if (index !== wanted.index) { landing.current = { key: wanted.key, index }; scrollToRow(box, index); }
   };
   useEffect(() => {
     const all = controls();
     stop.current = syncRovingStop(all, stop.current);
     // A window of the long form may hold headings only: then the scroller itself is the tab stop, and the arrow keys scroll it.
     const box = flat ? scroller.current : null;
-    if (box) { if (all.length === 0 || document.activeElement === box) box.tabIndex = 0; else box.removeAttribute('tabindex'); }
+    if (box) { if (all.length === 0 || focusIn(box) === box) box.tabIndex = 0; else box.removeAttribute('tabindex'); }
     land();
   });
   const onFocus = (event: FocusEvent<HTMLDivElement>) => { stop.current = syncRovingStop(controls(), stop.current, event.target as HTMLElement); };
   // Leaving the agenda, or taking the pointer or the wheel to it, ends a step that was still waiting.
-  const onBlur = (event: FocusEvent<HTMLDivElement>) => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) landing.current = null; };
+  const onBlur = (event: FocusEvent<HTMLDivElement>) => {
+    if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) landing.current = null;
+    // The scroller was the tab stop only while no row was mounted: once it lets go of focus, a row is.
+    if (event.target === event.currentTarget && controls().length > 0) event.currentTarget.removeAttribute('tabindex');
+  };
   const dropLanding = () => { landing.current = null; };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const from = event.target as HTMLElement;
@@ -189,9 +208,8 @@ function AgendaBody({
     const mounted = controlAt(target);
     if (mounted) { landing.current = null; focusStop(mounted); return; }
     // Not mounted: bring the row to the middle of the scroller; it takes focus when it is there.
-    const rowHeight = narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW;
-    landing.current = target;
-    box.scrollTop = Math.max(0, target * rowHeight - (box.clientHeight - rowHeight) / 2);
+    landing.current = { key: flatRows[target]!.key, index: target };
+    scrollToRow(box, target);
   };
 
   const note = (overlay: SchedulingCalendarOverlay) => <button type="button" className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>

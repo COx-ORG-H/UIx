@@ -261,6 +261,8 @@ function Emphasis() {
     timed('plain-tentative', ['2026-10-09', '08:00'], ['2026-10-09', '09:00'], 'Plain, tentative', { status: 'tentative' }),
     timed('plain-medium', ['2026-10-09', '10:00'], ['2026-10-09', '11:00'], 'Plain, medium band', { band: 'medium' }),
     timed('partner-medium', ['2026-10-09', '12:00'], ['2026-10-09', '13:00'], 'Partner, medium band', { emphasis: 'highlight', band: 'medium' }),
+    timed('partner-high-tentative', ['2026-10-10', '08:00'], ['2026-10-10', '09:00'], 'Partner, high, tentative', { emphasis: 'highlight', band: 'high', status: 'tentative' }),
+    timed('plain-high', ['2026-10-10', '10:00'], ['2026-10-10', '11:00'], 'Plain, high band', { band: 'high' }),
   ];
   const view = params.get('view');
   if (view === 'agenda') return <SchedulingCalendar {...common} view="agenda" entries={[]} agendaGroups={[{ date: '2026-10-07', rows: entries.slice(0, 3) }, { date: '2026-10-08', rows: entries.slice(3, 6) }, { date: '2026-10-09', rows: entries.slice(6) }]} />;

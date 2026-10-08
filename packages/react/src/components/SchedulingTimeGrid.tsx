@@ -423,8 +423,9 @@ export function SchedulingTimeGrid({
     const index = ring.indexOf(item);
     if (index === -1) return;
     event.preventDefault();
+    const to = event.key === 'Escape' ? null : ring[Math.max(0, Math.min(ring.length - 1, event.key === 'Home' ? 0 : event.key === 'End' ? ring.length - 1 : index + (event.key === 'ArrowDown' ? 1 : -1)))];
     // A move not yet sent does not travel with the focus: leaving the item drops it, and says so.
-    if (ghost?.source === 'keys') { setGhost(null); setAnnouncement(labels.moveCancelled); }
+    if (to !== item && ghost?.source === 'keys') { setGhost(null); setAnnouncement(labels.moveCancelled); }
     if (event.key === 'Escape') {
       event.stopPropagation();
       enteredFrom.current = null;
@@ -433,8 +434,7 @@ export function SchedulingTimeGrid({
       return;
     }
     enteredFrom.current = date;
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? ring.length - 1 : index + (event.key === 'ArrowDown' ? 1 : -1);
-    ring[Math.max(0, Math.min(ring.length - 1, next))]?.focus();
+    to?.focus();
   };
   // An item reached with the pointer takes the tab stop to its day, so Tab comes back to where the user is.
   const onGridFocus = (event: ReactFocusEvent<HTMLDivElement>) => {
@@ -480,7 +480,8 @@ export function SchedulingTimeGrid({
         const moreText = fillLabel(labels.moreSpans, { count: more });
         const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
-        const headName = info ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label ?? fillLabel(labels.dayCount, { count: info.count }) }) : dateText(date, 'day');
+        // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
+        const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}`;
         return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date}>
           <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
             onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>

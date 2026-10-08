@@ -454,7 +454,7 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
     `labels.dayName` (`'{date}, {label}'`). If your labels already say the date, set `dayName: '{label}'`.
   - To put focus back on an item after closing your own panel: `querySelector('[data-item-id="…"]')?.focus()`.
 - **Emphasis.** `entry.emphasis: 'highlight' | 'dim'` sets `data-highlight` / `data-dim` on that item in every
-  view. Highlight is a heavier edge and weight (a ring inside the fill of the `high` band), dim is quieter text;
+  view. Highlight is a heavier edge in the text colour and a heavier weight, dim is quieter text;
   neither changes a hue, the line style of the state, or the band's leading edge. With forced colours a
   highlighted title is underlined and dimmed text is grey.
 - **`<List roving>`**: the items are one tab stop (ArrowUp/ArrowDown, Home, End; Enter or Space activates the

@@ -749,7 +749,7 @@ export function SchedulingCalendar({
         return <button key={`span-${placed.id}`} className="uix-scheduling-calendar__entry uix-scheduling-calendar__span" {...entryProps(entry)} {...continues} style={laneStyle(placed, windowLanes)}>{entryContent(entry, !placed.continuesBefore)}</button>;
       })}
       {hidden > 0 && (onShowMore
-        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenDay} aria-label={moreName} onClick={() => onShowMore(firstHiddenDay, picksGiven ? dayEntries[firstHiddenDay] ?? EMPTY_ENTRIES : entriesOn(firstHiddenDay))}>{moreText}</button>
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={rowDays.includes(firstHiddenDay) ? firstHiddenDay : rowDays[0]} aria-label={moreName} onClick={() => onShowMore(firstHiddenDay, picksGiven ? dayEntries[firstHiddenDay] ?? EMPTY_ENTRIES : entriesOn(firstHiddenDay))}>{moreText}</button>
         : <span className="uix-scheduling-calendar__rowmore"><span aria-hidden="true">{moreText}</span><span className="uix-visually-hidden">{moreName}</span></span>)}
     </div>;
   };

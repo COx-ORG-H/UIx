@@ -146,7 +146,7 @@ for (const view of ['month', 'week', 'agenda']) {
         };
       });
     });
-    expect(report.map((r) => r.id).sort()).toEqual(['partner', 'partner-high', 'partner-medium', 'picked', 'plain-medium', 'plain-tentative', 'rest', 'rest-high', 'rest-tentative']);
+    expect(report.map((r) => r.id).sort()).toEqual(['partner', 'partner-high', 'partner-high-tentative', 'partner-medium', 'picked', 'plain-high', 'plain-medium', 'plain-tentative', 'rest', 'rest-high', 'rest-tentative']);
     expect(report.filter((r) => r.text < 4.5), JSON.stringify(report)).toEqual([]);
     const by = Object.fromEntries(report.map((r) => [r.id, r]));
     expect(by.partner.weight).toBeGreaterThan(by.picked.weight);
@@ -165,9 +165,17 @@ for (const view of ['month', 'week', 'agenda']) {
       expect(edges['partner-medium'].left).toBeGreaterThan(edges.partner.left);
       expect([edges['rest-tentative'].style, edges['rest-tentative'].colour]).toEqual([edges['plain-tentative'].style, edges['plain-tentative'].colour]);
       expect(edges['rest-tentative'].style).toBe('dashed');
-      // On the fill the heavier edge is a ring inside it, so it does not vanish against the cell.
-      expect(edges['partner-high'].shadow).toMatch(/inset/);
-      expect(edges.partner.shadow).toBe('none');
+      // Round the fill the heavier edge is in the text colour, not the fill's: it shows on the cell
+      // and on the fill, and the title keeps its distance from it (no ring inside the chip).
+      expect(edges['partner-high'].top).toBe(2);
+      expect(edges['partner-high'].colour).toBe(edges.partner.colour);
+      expect(edges['partner-high'].colour).not.toBe(edges['plain-high'].colour);
+      expect(edges['partner-high'].shadow).toBe('none');
+      // A highlighted tentative item of the high band still shows its dashed edge: its colour is not the fill's.
+      const fill = await page.locator('[data-item-id="partner-high-tentative"]').evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(edges['partner-high-tentative'].style).toBe('dashed');
+      expect(edges['partner-high-tentative'].colour).not.toBe(fill);
+      expect(edges['partner-high-tentative'].top).toBe(2);
     }
     await settleAnimations(page);
     const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -183,7 +191,7 @@ for (const view of ['month', 'week', 'agenda']) {
       const title = el.querySelector('.uix-scheduling-calendar__title') ?? el;
       return [el.getAttribute('data-item-id'), { line: getComputedStyle(title).textDecorationLine, colour: getComputedStyle(el).color }];
     })));
-    for (const id of ['partner', 'partner-high', 'partner-medium']) expect(look[id].line, `${id} is underlined`).toContain('underline');
+    for (const id of ['partner', 'partner-high', 'partner-medium', 'partner-high-tentative']) expect(look[id].line, `${id} is underlined`).toContain('underline');
     for (const id of ['picked', 'rest', 'plain-medium']) expect(look[id].line, `${id} is not`).not.toContain('underline');
     for (const id of ['rest', 'rest-high', 'rest-tentative']) expect(look[id].colour, `${id} is grey text`).not.toBe(look.picked.colour);
   });
