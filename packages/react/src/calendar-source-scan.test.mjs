@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { packLanes, rankOverflow } from './calendar-model.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const CALENDAR_SOURCES = ['calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx'];
+const CALENDAR_SOURCES = ['calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx'];
 
 /** Raw-HTML sinks and props that take an HTML string. */
 const htmlFindings = (code) => [
@@ -73,8 +73,28 @@ test('AC20: the vocabulary scan finds a known-bad snippet (calibration)', () => 
   assert.deepEqual(vocabularyFindings("const s = 'a \\'freeze\\' here';"), ["a \\'freeze\\' here"], 'escaped quotes stay inside the literal');
 });
 
-for (const file of ['components/SchedulingCalendar.tsx', 'scheduling-calendar-model.ts']) {
+for (const file of ['components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'scheduling-calendar-model.ts']) {
   test(`AC20: ${file} adds no change vocabulary (only the E13-kept enum values remain)`, () => {
     assert.deepEqual(vocabularyFindings(readFileSync(join(here, file), 'utf8')), []);
+  });
+}
+
+/* U3 (HAR-1509), veto V7: the time grid takes its geometry from real instants. A fixed day
+ * length (24 hours, 1,440 minutes, 86,400,000 ms) or a local-clock Date mutator in these
+ * files puts every item after a clock change one hour off. U1's calendar-model.ts is not in
+ * the list: its bracketing searches use a day constant on purpose and are tested there. */
+const GEOMETRY_SOURCES = ['scheduling-calendar-model.ts', 'components/SchedulingTimeGrid.tsx', 'components/SchedulingCalendar.tsx'];
+const fixedDayFindings = (code) => [
+  ...stripComments(code).matchAll(/(?<![\w.])(?:24|1[_,]?440|86[_,]?400[_,]?000)(?![\w.])|\.set(?:Hours|Date|Minutes)\(|\.get(?:Date|Hours|Minutes)\(/g),
+].map((match) => match[0]);
+
+test('U3: the fixed-day scan finds a known-bad snippet (calibration)', () => {
+  assert.deepEqual(fixedDayFindings('const rows = 24; const DAY = 86_400_000; d.setHours(0, 0, 0, 0); x.getDate(); const m = 1440; // 24 in a comment'), ['24', '86_400_000', '.setHours(', '.getDate(', '1440']);
+  assert.deepEqual(fixedDayFindings('const HOUR_MS = 3_600_000; const a = 240; const b = x24; d.getUTCDay(); new Date(v).getTime();'), []);
+});
+
+for (const file of GEOMETRY_SOURCES) {
+  test(`U3: ${file} has no fixed day length and no local-clock Date mutator`, () => {
+    assert.deepEqual(fixedDayFindings(readFileSync(join(here, file), 'utf8')), []);
   });
 }

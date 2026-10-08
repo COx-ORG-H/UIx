@@ -35,6 +35,8 @@ const PAGES = [
   // HAR-1506: the calendar page is the React component's own markup (month, the consumer-owned
   // month and an empty week), with the timeline specimen below it.
   { name: 'docs-scheduling-calendar', path: 'docs/explorer.html#examples-scheduling-calendar' },
+  // HAR-1509: the Week view of the same specimen is the time grid. Captured as that panel only.
+  { name: 'docs-scheduling-calendar-week', path: 'docs/explorer.html#examples-scheduling-calendar', calendarView: 'week', element: '.uix-docs__page [data-calendar-panel="week"]' },
 ];
 
 for (const pg of PAGES) {
@@ -75,6 +77,14 @@ for (const pg of PAGES) {
     if (pg.pickRangeEnd) {
       await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).click();
       await page.locator(`[data-range-date="${pg.pickRangeEnd}"]`).blur();
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+
+    // The calendar specimen starts on Month; its view switch shows the other pre-rendered views.
+    if (pg.calendarView) {
+      await page.locator(`.uix-docs__page [data-calendar-panel="month"] [data-calendar-view="${pg.calendarView}"]`).click();
+      await expect(page.locator(`.uix-docs__page [data-calendar-panel="${pg.calendarView}"]`)).toBeVisible();
+      await page.locator(`.uix-docs__page [data-calendar-panel="${pg.calendarView}"] [data-calendar-view="${pg.calendarView}"]`).blur();
       await page.evaluate(() => window.scrollTo(0, 0));
     }
 

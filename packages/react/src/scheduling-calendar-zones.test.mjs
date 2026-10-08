@@ -10,7 +10,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const suites = ['scheduling-calendar-model.test.mjs', 'scheduling-calendar-dom.test.mjs', 'scheduling-calendar-formatters-dom.test.mjs'];
+const suites = [
+  'scheduling-calendar-model.test.mjs', 'scheduling-calendar-dom.test.mjs', 'scheduling-calendar-formatters-dom.test.mjs',
+  // HAR-1509 (U3): the Week/Day time grid
+  'scheduling-time-grid-model.test.mjs', 'scheduling-time-grid-dom.test.mjs',
+];
 const zones = [['UTC', '0'], ['Europe/Berlin', '-60'], ['America/New_York', '300']];
 
 for (const [zone, offset] of zones) {

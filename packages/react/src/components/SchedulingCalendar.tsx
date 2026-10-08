@@ -4,14 +4,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, cachedDateTimeFormat, startOfMonth, zonedDateKey, zonedTimeOfDay } from '../calendar-model.js';
 import type { CalendarWeekday } from '../calendar-model.js';
-import { itemDaySpan, layoutMonthSpans } from '../scheduling-calendar-model.js';
-import type { MonthSpanGroup, MonthSpanInput, MonthSpanLayout, PlacedMonthSpan } from '../scheduling-calendar-model.js';
+import { TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutMonthSpans } from '../scheduling-calendar-model.js';
+import type { MonthSpanGroup, MonthSpanInput, MonthSpanLayout, MoveProposal, PlacedMonthSpan } from '../scheduling-calendar-model.js';
+import { SchedulingTimeGrid } from './SchedulingTimeGrid.js';
+import type { TimeGridEntryContext } from './SchedulingTimeGrid.js';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { StatusPill } from './StatusPill.js';
 import { fillLabel } from '../fill-label.js';
 
-export type SchedulingCalendarView = 'month' | 'week' | 'agenda';
+/** `day` is one column of the time grid. `week` is the time grid when `timeGrid` is set, else seven day cells. */
+export type SchedulingCalendarView = 'month' | 'week' | 'day' | 'agenda';
 /**
  * @deprecated Use `band`, `status` and `markers` on the entry: they carry no product
  * vocabulary and the consumer supplies every word. The values keep working in 2.x.
@@ -36,9 +39,10 @@ export type SchedulingOverlayPattern = 'diagonal' | 'cross' | 'dotted' | 'solid'
  * Which date text a `formatDate` call is for (TENSOR B1/C9, HAR-1347):
  * `day` names one day (each day cell's accessible name, the week-range title);
  * `weekday` is the short column header (the date is any day of that weekday);
- * `month` is the month-view title (the date is the first of the month).
+ * `month` is the month-view title (the date is the first of the month);
+ * `column` heads one day column of the time grid (weekday and date, e.g. "Wed 07.10").
  */
-export type SchedulingDatePart = 'day' | 'weekday' | 'month';
+export type SchedulingDatePart = 'day' | 'weekday' | 'month' | 'column';
 
 /** A shape or icon with text. The text is always in the accessible name; a marker never relies on colour. */
 export interface SchedulingMarker {
@@ -62,6 +66,10 @@ export interface SchedulingCalendarEntry {
   markers?: SchedulingMarker[];
   /** The complete accessible name, built by the consumer from its own words. Replaces `labels.entry`. */
   accessibleName?: string;
+  /** No time of day. In the time grid the entry is drawn in the top lane. */
+  allDay?: boolean;
+  /** `false` keeps this entry where it is when the grid allows moves (`canMove`). */
+  movable?: boolean;
 }
 
 export interface SchedulingCalendarOverlay {
@@ -116,9 +124,12 @@ export interface SchedulingCalendarLabels {
   /** Also names the agenda's step, which moves by a week. */
   previousWeek?: string;
   nextWeek?: string;
+  previousDay?: string;
+  nextDay?: string;
   viewGroup: string;
   viewMonth: string;
   viewWeek: string;
+  viewDay?: string;
   viewAgenda: string;
   loading: string;
   retry: string;
@@ -145,6 +156,26 @@ export interface SchedulingCalendarLabels {
   states: Record<SchedulingEntryState, string>;
   /** The words for `status`, used in the default accessible name and the agenda. */
   statuses?: Partial<Record<SchedulingStatus, string>>;
+  /** The header of the hour axis: it names the display zone. `{timeZone}` placeholder. */
+  timeZone?: string;
+  /** Names the strip of windows above the time grid. */
+  windows?: string;
+  /** "+N windows" when the strip has more windows than lanes. `{count}` placeholder. */
+  moreWindows?: string;
+  /** Accessible name of that control. `{count}` and `{date}` (the first day with a hidden window). */
+  moreWindowsLabel?: string;
+  /** Names the lane above the hours that holds all-day and long entries. */
+  topLane?: string;
+  /** The cue on the second-day part of an entry that crosses midnight. `{time}` is its start. */
+  continuesFrom?: string;
+  /** Read after an item's name when it can be moved. */
+  moveHint?: string;
+  /** Announced for a pending move. `{start}` and `{end}` placeholders. */
+  moveProposed?: string;
+  /** Announced when a pending move is dropped. */
+  moveCancelled?: string;
+  /** Announced when the time asked for does not exist that day. `{time}` is the time used instead. */
+  gapForward?: string;
 }
 
 export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
@@ -155,9 +186,12 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   nextMonth: 'Next month',
   previousWeek: 'Previous week',
   nextWeek: 'Next week',
+  previousDay: 'Previous day',
+  nextDay: 'Next day',
   viewGroup: 'Calendar view',
   viewMonth: 'Month',
   viewWeek: 'Week',
+  viewDay: 'Day',
   viewAgenda: 'Agenda',
   loading: 'Loading schedule…',
   retry: 'Try again',
@@ -175,6 +209,16 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   dayCount: '{count} entries',
   states: { scheduled: 'Scheduled', conflicted: 'Conflicted', 'in-progress': 'In progress', 'blackout-violation': 'Blackout violation' },
   statuses: { tentative: 'Tentative', committed: 'Scheduled', live: 'In progress', done: 'Done', dead: 'Cancelled' },
+  timeZone: '{timeZone}',
+  windows: 'Windows',
+  moreWindows: '+{count} windows',
+  moreWindowsLabel: '{count} more windows, from {date}',
+  topLane: 'All-day and longer entries',
+  continuesFrom: 'from {time}',
+  moveHint: 'Hold Shift and press an arrow key to move it. Enter confirms, Escape cancels.',
+  moveProposed: 'Move to {start} – {end}. Enter confirms, Escape cancels.',
+  moveCancelled: 'Move cancelled.',
+  gapForward: 'That time does not exist on this day. Moved forward to {time}.',
 };
 
 export interface SchedulingCalendarProps {
@@ -195,8 +239,12 @@ export interface SchedulingCalendarProps {
   /** Called by a click or Enter on a window span. */
   onSelectOverlay?: (overlay: SchedulingCalendarOverlay) => void;
   filter?: (entry: SchedulingCalendarEntry) => boolean;
-  /** Replaces a chip's content. The default is the start time in `timeZone` (24 h) and the title. */
-  renderEntry?: (entry: SchedulingCalendarEntry) => ReactNode;
+  /**
+   * Replaces a chip's content. The default is the start time in `timeZone` (24 h) and the title.
+   * In the time grid the second argument says how many text lines fit in the item (0: show the
+   * markers only); elsewhere it is not passed.
+   */
+  renderEntry?: (entry: SchedulingCalendarEntry, context?: TimeGridEntryContext) => ReactNode;
   locale?: string;
   /** First column of the month and week grids: 0 = Sunday … 6 = Saturday. Defaults to 1 (Monday). */
   weekStartsOn?: CalendarWeekday;
@@ -268,6 +316,32 @@ export interface SchedulingCalendarProps {
   emptyNote?: ReactNode;
   /** Called by a click or Enter on a day number. */
   onSelectDate?: (date: string) => void;
+  /**
+   * Draws `view="week"` as a time grid: seven day columns on an hour axis. `view="day"` is
+   * always a time grid. Default `false`: the week stays seven day cells.
+   */
+  timeGrid?: boolean;
+  /** An instant (ISO 8601). The time grid draws one line at it, in the column of its day. The component keeps no clock. */
+  now?: string;
+  /**
+   * Lets the user ask for a move in the time grid (drag, or Shift and an arrow key, then
+   * Enter). Without it, or without `onProposeMove`, items have no move affordance at all.
+   */
+  canMove?: boolean;
+  /** Minutes a move snaps to. Default 15. */
+  step?: number;
+  /**
+   * Called once per finished gesture with the window the user asks for. The calendar never
+   * moves the item: it draws entries where the props say, so an entry whose props do not
+   * change is back where it was. Return a promise to keep the outline until it settles.
+   */
+  onProposeMove?: (id: string, proposal: MoveProposal) => void | Promise<unknown>;
+  /** An entry running more than this many minutes past its first local midnight goes to the top lane. Default 360. */
+  topLaneCrossMidnightMinutes?: number;
+  /** Rows of the top lane of the time grid. Default 3. */
+  topLaneCap?: number;
+  /** Lanes side by side in one day column of the time grid, at most. Fewer are used when the column is narrow. Default 4. */
+  maxLanes?: number;
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
@@ -281,6 +355,7 @@ const INTL_PARTS: Record<SchedulingDatePart, Intl.DateTimeFormatOptions> = {
   day: { dateStyle: 'full', timeZone: 'UTC' },
   weekday: { weekday: 'short', timeZone: 'UTC' },
   month: { month: 'long', year: 'numeric', timeZone: 'UTC' },
+  column: { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' },
 };
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 const EMPTY_ENTRIES: SchedulingCalendarEntry[] = [];
@@ -293,20 +368,22 @@ function coveredDays(start: string, end: string, timeZone: string) {
   try { return itemDaySpan(start, end, timeZone); } catch { return itemDaySpan(start, start, timeZone); }
 }
 
-function Marker({ marker }: { marker: SchedulingMarker }) {
+function Marker({ marker, showLabel }: { marker: SchedulingMarker; showLabel?: boolean }) {
   const emphasis = marker.emphasis ?? 'neutral';
   return <span className="uix-scheduling-calendar__marker" data-emphasis={emphasis} data-glyph={marker.icon == null ? emphasis : undefined}>
     {marker.icon != null && <span className="uix-scheduling-calendar__marker-icon" aria-hidden="true">{marker.icon}</span>}
-    <span className="uix-visually-hidden">{marker.label}</span>
+    <span className={showLabel ? 'uix-scheduling-calendar__marker-label' : 'uix-visually-hidden'}>{marker.label}</span>
   </span>;
 }
+const renderMarker = (marker: SchedulingMarker, showLabel?: boolean) => <Marker marker={marker} showLabel={showLabel} />;
 
 /** Month/week/agenda calendar for UTC ranges rendered in an explicit IANA time zone. */
 export function SchedulingCalendar({
   entries, anchorDate, timeZone, view: controlledView, onViewChange, onAnchorDateChange,
   onSelectEntry, overlays = EMPTY_OVERLAYS, onSelectOverlay, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, days: dayInfo, dayEntries, spanLayout, windowLaneCap, spanLaneCap,
-  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, loading, error, onRetry, className, labels: labelOverrides,
+  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, timeGrid = false, now, canMove = false, step = 15, onProposeMove,
+  topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4, loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
   const uixLabels = useUixLabels();
   const overrides = { ...uixLabels.schedulingCalendar, ...labelOverrides };
@@ -317,7 +394,7 @@ export function SchedulingCalendar({
     statuses: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.statuses, ...uixLabels.schedulingCalendar?.statuses, ...labelOverrides?.statuses },
   } as Required<SchedulingCalendarLabels> & { statuses: Record<SchedulingStatus, string> };
   const stateLabel = labels.states;
-  const viewLabel = { month: labels.viewMonth, week: labels.viewWeek, agenda: labels.viewAgenda } as const;
+  const viewLabel = { month: labels.viewMonth, week: labels.viewWeek, day: labels.viewDay, agenda: labels.viewAgenda } as const;
   const [internalView, setInternalView] = useState<SchedulingCalendarView>('month');
   const view = controlledView ?? internalView;
   const [activeDate, setActiveDate] = useState(anchorDate);
@@ -338,7 +415,9 @@ export function SchedulingCalendar({
   const weekday = (utcDate(anchorDate).getUTCDay() - weekStartsOn + 7) % 7;
   const weekStart = addCalendarDays(anchorDate, -weekday);
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, index) => addCalendarDays(weekStart, index)), [weekStart]);
-  const days = useMemo(() => view === 'month' ? monthDays.map((day) => day.date) : weekDays, [view, monthDays, weekDays]);
+  const days = useMemo(() => view === 'month' ? monthDays.map((day) => day.date) : view === 'day' ? [anchorDate] : weekDays, [view, monthDays, weekDays, anchorDate]);
+  // The Day view is always a time grid; the Week view is one when the consumer asks.
+  const timeGridView = view === 'day' || (view === 'week' && timeGrid);
 
   // One pass over the entries: single-day ones go to their day (in the order given), the rest are spans.
   const { singles, multiDay, coverage } = useMemo(() => {
@@ -360,7 +439,7 @@ export function SchedulingCalendar({
   const overlayById = useMemo(() => new Map([...overlays].reverse().map((overlay) => [overlay.id, overlay])), [overlays]);
   const layout = useMemo<MonthSpanLayout>(() => {
     if (spanLayout) return spanLayout;
-    if (view === 'agenda') return { placed: [], hiddenByRow: {}, firstHiddenDayByRow: {} };
+    if (view === 'agenda' || timeGridView) return { placed: [], hiddenByRow: {}, firstHiddenDayByRow: {} };
     const inputs: MonthSpanInput[] = [];
     // An id used twice in a group is drawn once (the first), as a repeated React key would be.
     const windowIds = new Set<string>();
@@ -377,7 +456,7 @@ export function SchedulingCalendar({
       inputs.push({ id: entry.id, start: entry.start, end: entry.end, group: 'item' });
     }
     return layoutMonthSpans(inputs, days, { timeZone, laneCap: { window: windowCap, item: spanCap } });
-  }, [spanLayout, view, overlays, multiDay, days, timeZone, windowCap, spanCap]);
+  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap]);
   const placedByRow = useMemo(() => {
     const rows = new Map<number, PlacedMonthSpan[]>();
     for (const placed of layout.placed) { const row = rows.get(placed.weekRow); if (row) row.push(placed); else rows.set(placed.weekRow, [placed]); }
@@ -391,10 +470,10 @@ export function SchedulingCalendar({
   }, [activeDate, days, view]);
 
   const setView = (next: SchedulingCalendarView) => { if (controlledView === undefined) setInternalView(next); onViewChange?.(next); };
-  const movePeriod = (direction: -1 | 1) => onAnchorDateChange?.(view === 'month' ? addCalendarMonths(anchorDate, direction) : addCalendarDays(anchorDate, direction * 7));
+  const movePeriod = (direction: -1 | 1) => onAnchorDateChange?.(view === 'month' ? addCalendarMonths(anchorDate, direction) : addCalendarDays(anchorDate, view === 'day' ? direction : direction * 7));
   // An older `previous` / `next` override still names both views until the per-view names are set.
   const periodLabel = (direction: 'previous' | 'next') => {
-    const key = `${direction}${view === 'month' ? 'Month' : 'Week'}` as 'previousMonth' | 'previousWeek' | 'nextMonth' | 'nextWeek';
+    const key = `${direction}${view === 'month' ? 'Month' : view === 'day' ? 'Day' : 'Week'}` as 'previousMonth' | 'previousWeek' | 'previousDay' | 'nextMonth' | 'nextWeek' | 'nextDay';
     return overrides[key] ?? overrides[direction] ?? labels[key];
   };
   const focusDate = (date: string) => {
@@ -534,8 +613,8 @@ export function SchedulingCalendar({
   return <section className={cx('uix-scheduling-calendar', className)} aria-label={fillLabel(labels.region, { timeZone })}>
     {showHeader && <div className="uix-scheduling-calendar__header">
       <div><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(-1)} disabled={!onAnchorDateChange}>{periodLabel('previous')}</button><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(1)} disabled={!onAnchorDateChange}>{periodLabel('next')}</button></div>
-      <strong>{view === 'month' ? dateText(startOfMonth(anchorDate), 'month') : `${dateText(weekStart, 'day')} – ${dateText(weekDays[weekDays.length - 1]!, 'day')}`}</strong>
-      <div className="uix-segmented" role="group" aria-label={labels.viewGroup}>{(['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{viewLabel[option]}</button>)}</div>
+      <strong>{view === 'month' ? dateText(startOfMonth(anchorDate), 'month') : view === 'day' ? dateText(anchorDate, 'day') : `${dateText(weekStart, 'day')} – ${dateText(weekDays[weekDays.length - 1]!, 'day')}`}</strong>
+      <div className="uix-segmented" role="group" aria-label={labels.viewGroup}>{(timeGrid || view === 'day' ? ['month', 'week', 'day', 'agenda'] as const : ['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{viewLabel[option]}</button>)}</div>
     </div>}
     {notice != null && notice !== false && <div className="uix-scheduling-calendar__notice">{notice}</div>}
     {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
@@ -544,6 +623,15 @@ export function SchedulingCalendar({
         const markers = markersOf(entry);
         return <li key={entry.id}><button type="button" data-item-id={entry.id} data-band={entry.band ?? 'none'} data-status={statusOf(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span>{markers.length > 0 && <span className="uix-scheduling-calendar__markers">{markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}{entry.state ? <StatusPill tone={stateTone(entry.state)}>{stateLabel[entry.state]}</StatusPill> : <span className="uix-scheduling-calendar__status">{stateText(entry)}</span>}</button></li>;
       })}</ol>}</div>
+      : timeGridView ? <SchedulingTimeGrid
+        view={view === 'day' ? 'day' : 'week'} days={days} timeZone={timeZone} entries={visibleEntries} overlays={overlays} dayInfo={dayInfo}
+        labels={labels} gridLabel={fillLabel(labels.grid, { view: viewLabel[view] })} dateText={dateText} formatInstant={formatInstant}
+        entryName={entryName} entryStatus={statusOf} entryMarkers={markersOf} overlayName={overlayName} renderEntry={renderEntry} renderMarker={renderMarker}
+        onSelectEntry={onSelectEntry} onSelectOverlay={onSelectOverlay} onSelectDate={onSelectDate} onShowMore={onShowMore}
+        now={now} canMove={canMove} step={step} onProposeMove={onProposeMove}
+        topLaneCrossMidnightMinutes={topLaneCrossMidnightMinutes} topLaneCap={topLaneCap} windowLaneCap={windowLaneCap ?? DEFAULT_LANE_CAP} maxLanes={maxLanes}
+        emptyNote={emptyNote} nothingToShow={nothingToShow}
+      />
       : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} style={gridStyle} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
         {days.slice(0, 7).map((date) => <div key={`weekday-${date}`} className="uix-scheduling-calendar__weekday" aria-hidden="true">{dateText(date, 'weekday')}</div>)}
         {Array.from({ length: days.length / 7 }, (_, row) => renderWeek(row))}

@@ -5,7 +5,8 @@
 //   npm run build:react   (or: npm run build -w @tensor_1/react)
 //   node packages/react/scripts/render-scheduling-calendar-specimen.mjs
 //
-// The static docs have no React runtime. The first specimen is rendered once per view; the
+// The static docs have no React runtime. The first specimen is rendered once per view (the
+// week and the day as time grids, HAR-1509); the
 // docs script (guide/phase-46-9.js) shows the panel whose view button was pressed, through the
 // `data-calendar-view` / `data-calendar-panel` attributes added here. Every date goes through
 // an injected `formatDate` / `formatInstant` (as a product does), so the markup does not depend
@@ -37,6 +38,7 @@ const formatDate = (date, part) => {
   const [year, month, day] = date.split('-');
   const weekday = WEEKDAYS[new Date(`${date}T00:00:00Z`).getUTCDay()];
   if (part === 'weekday') return weekday.slice(0, 3);
+  if (part === 'column') return `${weekday.slice(0, 3)} ${day}.${month}.`;
   if (part === 'month') return `${MONTHS[Number(month) - 1]} ${year}`;
   return `${weekday} ${day}.${month}.${year}`;
 };
@@ -83,6 +85,8 @@ const ENTRIES = [
   span('s01', ['2026-10-12', '08:00'], ['2026-10-14', '17:00'], 'Data centre move, phase 1', { band: 'medium' }),
   span('s02', ['2026-10-23', '20:00'], ['2026-10-26', '06:00'], 'Batch processing run'),
   span('s03', ['2026-10-07', '23:00'], ['2026-10-08', '02:00'], 'Overnight replication check'),
+  // Thirty hours: a bar over three days in the month, the top lane in the time grid.
+  span('s04', ['2026-10-08', '20:00'], ['2026-10-10', '02:00'], 'Storage migration'),
 ];
 
 const OVERLAYS = [
@@ -114,18 +118,43 @@ const LEGEND = [
 const shared = { timeZone: TZ, anchorDate: '2026-10-07', formatDate, formatInstant, onShowMore: noop, onSelectEntry: noop, onSelectOverlay: noop, onSelectDate: noop, onAnchorDateChange: noop };
 
 /** Marks each view button so the docs script can switch panels. */
-const withViewHooks = (markup) => markup.replace(/(<button type="button" class="uix-segmented__option")([^>]*>)(Month|Week|Agenda)(<\/button>)/g, (_, open, rest, label, close) => `${open} data-calendar-view="${label.toLowerCase()}"${rest}${label}${close}`);
+const withViewHooks = (markup) => markup.replace(/(<button type="button" class="uix-segmented__option")([^>]*>)(Month|Week|Day|Agenda)(<\/button>)/g, (_, open, rest, label, close) => `${open} data-calendar-view="${label.toLowerCase()}"${rest}${label}${close}`);
+
+// What the consumer knows about the days of the week on screen: the time grid shows these in its day heads.
+const WEEK_DAYS = {
+  '2026-10-06': { count: 4, overflowCount: 0, label: 'Tuesday 06.10.2026, 4 items, 1 needs sign-off', markers: [{ ...needsSignOff, label: 'Sign-off' }] },
+  '2026-10-07': { count: 9, overflowCount: 3, label: 'Wednesday 07.10.2026, 9 items' },
+  '2026-10-08': { count: 3, overflowCount: 0, label: 'Thursday 08.10.2026, 3 items' },
+};
 
 function overview() {
   const panel = (view) => withViewHooks(renderToStaticMarkup(h(SchedulingCalendar, {
-    ...shared, view, entries: ENTRIES, overlays: OVERLAYS, maxEntriesPerDay: 3, legend: LEGEND,
+    ...shared, view, timeGrid: true, entries: ENTRIES, overlays: OVERLAYS, maxEntriesPerDay: 3, legend: LEGEND,
+    // The time grid: consumer counts in the day heads and a line at "now" (the component keeps no clock).
+    ...(view === 'week' || view === 'day' ? { days: WEEK_DAYS, now: berlin('2026-10-08', '10:30') } : {}),
     legendCaption: 'Times in Europe/Berlin. A hatched bar is a window; its words say which kind and what it applies to.',
   })));
   return `<div data-calendar-views>`
     + `<div data-calendar-panel="month">${panel('month')}</div>`
     + `<div data-calendar-panel="week" hidden>${panel('week')}</div>`
+    + `<div data-calendar-panel="day" hidden>${panel('day')}</div>`
     + `<div data-calendar-panel="agenda" data-calendar-agenda hidden>${panel('agenda')}</div>`
     + `</div>`;
+}
+
+// 25.10.2026 in Europe/Berlin: the clocks go back at 03:00, so the day has 25 hours and 02:00 comes twice.
+function longDay() {
+  const utc = (time) => `2026-10-25T${time}:00Z`;
+  return renderToStaticMarkup(h(SchedulingCalendar, {
+    ...shared, anchorDate: '2026-10-25', view: 'day', showHeader: false, legend: [],
+    entries: [
+      { id: 'd1', title: 'Backup verification', start: utc('00:15'), end: utc('00:45'), status: 'done' },
+      { id: 'd2', title: 'Time service check', start: utc('01:00'), end: utc('02:00'), band: 'medium' },
+      { id: 'd3', title: 'Report generation', start: utc('02:00'), end: utc('03:30') },
+      { id: 'd4', title: 'Certificate rotation', start: utc('05:00'), end: utc('05:30'), markers: [hasNotes] },
+    ],
+    overlays: [{ id: 'dw', kindLabel: 'Maintenance', label: 'Clock change watch', scopeLabel: 'Time services', start: utc('00:00'), end: utc('03:00'), pattern: 'dotted' }],
+  }));
 }
 
 function controlled() {
@@ -166,8 +195,9 @@ const block = (title, text, markup) => `<h3>${title}</h3><p>${text}</p>${markup}
 /** The generated part of the page, between its two markers. */
 export function renderSchedulingCalendarSpecimen() {
   return START + [
-    block('Month: a calm overview', 'Each item is drawn once. An item on one day is a chip that reads <code>HH:MM title</code>; an item over several days is one bar per week row. Only the <code>high</code> band is filled; <code>medium</code> has a heavier leading edge, and the state is a line style (dashed, dotted, a leading dot, dimmed), never a colour. Windows sit in their own lanes above the chips and never take a chip slot. A week row with more windows than lanes shows “+1” at its end. Every cell keeps the same height. Use the view switch for the week and the agenda.', overview()),
+    block('Month, week and day', 'Each item is drawn once. An item on one day is a chip that reads <code>HH:MM title</code>; an item over several days is one bar per week row. Only the <code>high</code> band is filled; <code>medium</code> has a heavier leading edge, and the state is a line style (dashed, dotted, a leading dot, dimmed), never a colour. Windows sit in their own lanes above the chips and never take a chip slot. A week row with more windows than lanes shows “+1” at its end. Every cell keeps the same height. <strong>Week</strong> and <strong>Day</strong> in the view switch are a time grid: an item sits at its real time, an item that crosses midnight is one item in two joined parts, long and all-day items go to the lane above the hours, windows are one named bar each in the strip above that, and a window that applies to everything also shades its hours. The day heads show the consumer’s count and marker, and the line is “now”. With <code>canMove</code> an item is dragged, or moved with Shift and an arrow key and confirmed with Enter; the calendar then calls <code>onProposeMove</code> and never moves the item itself.', overview()),
     block('Counts and picks owned by the consumer', 'With <code>days</code> and <code>dayEntries</code> the calendar places, ranks, cuts and counts nothing. It draws the chips it is given in the order given, shows each day’s <code>count</code> and markers even when no chip fits, and takes “+N” from <code>overflowCount</code>. The day with 50 items shows three chips and “+47 more”, which calls <code>onShowMore</code> and never expands the cell. The consumer computes the span lanes with <code>layoutMonthSpans</code> and passes the result as <code>spanLayout</code>. Here <code>showHeader</code> is off (the page has its own toolbar) and a <code>notice</code> says the list was cut.', controlled()),
+    block('A day with 25 hours', 'The hour axis comes from real instants. On 25.10.2026 in Europe/Berlin the clocks go back, so the day is 25 rows tall and “02” appears twice, each with its UTC offset. An item at 03:00 sits under “03”, one row lower than on other days. On 29.03.2026 the day has 23 rows and no “02”.', longDay()),
     block('An empty range', 'With <code>emptyNote</code> every day cell is still drawn, and the note sits inside the grid. This week starts on Sunday (<code>weekStartsOn</code>), and the dates use the injected <code>formatDate</code>.', empty()),
   ].join('') + END;
 }
