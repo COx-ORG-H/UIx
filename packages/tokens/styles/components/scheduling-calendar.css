@@ -140,9 +140,9 @@
 
   .uix-scheduling-calendar__empty { grid-column:1 / -1; position:sticky; left:0; padding:var(--uix-space-3); border-right:1px solid var(--calendar-chrome-line); border-bottom:1px solid var(--calendar-chrome-line); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text-quiet); }
 
-  .uix-scheduling-calendar__agenda ol { display:grid; gap:var(--uix-space-2); margin:0; padding:0; list-style:none; }
-  .uix-scheduling-calendar__agenda li>button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); padding:var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-md); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); text-align:left; }
-  .uix-scheduling-calendar__agenda li>button>span:first-child { flex:1 1 auto; display:grid; gap:var(--uix-space-1); min-width:0; } .uix-scheduling-calendar__agenda li>button>span:first-child>span { color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__agenda > ol { display:grid; gap:var(--uix-space-2); margin:0; padding:0; list-style:none; }
+  .uix-scheduling-calendar__agenda > ol > li > button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); padding:var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-md); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); text-align:left; }
+  .uix-scheduling-calendar__agenda > ol > li > button > span:first-child { flex:1 1 auto; display:grid; gap:var(--uix-space-1); min-width:0; } .uix-scheduling-calendar__agenda > ol > li > button > span:first-child > span { color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
   .uix-scheduling-calendar__status { flex:none; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
 
   .uix-scheduling-calendar__legend { display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-2) var(--uix-space-3); font-size:var(--uix-text-meta); color:var(--calendar-chrome-text-quiet); }
@@ -155,6 +155,45 @@
   .uix-scheduling-calendar__legend > span[data-state]::before { content:""; display:inline-block; width:0.625rem; height:0.625rem; margin-right:var(--uix-space-1); border:1px solid var(--calendar-status-edge-strong); border-radius:var(--uix-radius-xs); vertical-align:middle; }
   .uix-scheduling-calendar__legend > span[data-state="in-progress"]::before { border:0.1875rem solid var(--calendar-status-text); border-radius:50%; width:0; height:0; }
   .uix-scheduling-calendar__legend > span:is([data-state="conflicted"],[data-state="blackout-violation"])::before { border:0; border-radius:0; background:var(--calendar-marker-ink); clip-path:polygon(50% 0,100% 100%,0 100%); }
+
+  /* ── Agenda grouped by day (HAR-1520) ─────────────────────────────────────────────────────
+     The consumer builds the groups. A heading per day with its window notes, then the rows.
+     A long agenda is a flat run of fixed-height rows inside its own scroller. */
+  .uix-scheduling-calendar__agenda-group + .uix-scheduling-calendar__agenda-group { margin-top:var(--uix-space-4); }
+  .uix-scheduling-calendar__agenda-head { position:sticky; top:0; display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-1) var(--uix-space-3); padding:var(--uix-space-2); border-bottom:1px solid var(--calendar-chrome-line-strong); background:var(--calendar-chrome-surface-quiet); }
+  .uix-scheduling-calendar__agenda-heading { margin:0; font-size:var(--uix-text-meta); font-weight:600; }
+  .uix-scheduling-calendar__agenda-notes { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); min-width:0; margin:0; padding:0; list-style:none; }
+  .uix-scheduling-calendar__agenda-notes > li { min-width:0; margin:0; }
+  /* a window note is the window's bar from the grids, at rest in a line of text */
+  .uix-scheduling-calendar__agenda-notes .uix-scheduling-calendar__window { height:var(--calendar-lane); max-width:100%; margin:0; }
+  .uix-scheduling-calendar__agenda-rows { margin:0; padding:0; list-style:none; }
+  .uix-scheduling-calendar__agenda-rows > li { margin:0; border-bottom:1px solid var(--calendar-chrome-line); }
+  .uix-scheduling-calendar__agenda-row { display:flex; align-items:baseline; gap:var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
+  .uix-scheduling-calendar__agenda-row:hover { background:var(--calendar-chrome-surface-quiet); }
+  .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { align-self:center; }
+  .uix-scheduling-calendar__agenda-time { flex:none; min-width:6.25rem; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; }
+  /* the title takes the whole row before it wraps; it is never cut short of the row width */
+  .uix-scheduling-calendar__agenda-main { flex:1 1 12rem; display:grid; gap:var(--calendar-gap); min-width:0; overflow-wrap:anywhere; }
+  .uix-scheduling-calendar__agenda-meta { color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { flex:0 1 auto; flex-wrap:wrap; gap:var(--uix-space-1) var(--uix-space-2); font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues { margin:0; padding:var(--uix-space-2) var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
+  button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:left; text-decoration:underline; cursor:pointer; }
+  button.uix-scheduling-calendar__agenda-more:hover { background:var(--calendar-chrome-surface-quiet); }
+  .uix-scheduling-calendar__agenda--virtual { max-height:min(70vh,40rem); overflow-y:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); }
+  .uix-scheduling-calendar__agenda-vrow { display:flex; align-items:center; height:44px; padding:0 var(--uix-space-2); border-bottom:1px solid var(--calendar-chrome-line); overflow:hidden; }
+  .uix-scheduling-calendar__agenda-vrow > * { flex:1 1 auto; min-width:0; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-head { position:static; padding:0; border:0; background:transparent; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { align-items:center; padding:0; white-space:nowrap; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { display:block; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-meta { margin-left:var(--uix-space-2); }
+  .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues) { padding:0; }
+
+  /* ── Month, counts only (HAR-1520): a narrow screen gets the day, its count and its markers ── */
+  .uix-scheduling-calendar__grid[data-density="counts"],.uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__week { grid-template-columns:repeat(7,minmax(2.75rem,1fr)); }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__day { min-height:calc(2 * var(--calendar-pad) + 2 * var(--calendar-head) + var(--uix-scheduling-calendar-lanes,0) * var(--calendar-lane)); }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { flex-direction:column-reverse; align-items:stretch; height:auto; gap:0; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > :is(.uix-scheduling-calendar__count,.uix-scheduling-calendar__markers) { justify-content:flex-end; height:var(--calendar-head); text-align:right; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__weekday { padding-inline:var(--calendar-pad); overflow:hidden; }
 
   /* ── Week / Day time grid (HAR-1509) ─────────────────────────────────────────────────────────
      Four stacked rows share one column template: the day heads, the window strip, the top lane
