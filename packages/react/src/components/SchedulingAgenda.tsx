@@ -4,7 +4,7 @@
  * SchedulingCalendar when the consumer passes `agendaGroups`, and not exported. The consumer
  * builds, orders and counts the groups; this file renders them in the order given and never
  * sorts, groups or counts. */
-import { createElement } from 'react';
+import { createElement, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { addCalendarDays, zonedDateKey, zonedTimeOfDay } from '../calendar-model.js';
 import { itemDaySpan } from '../scheduling-calendar-model.js';
@@ -16,6 +16,10 @@ import type {
 
 /** The height of one row of the virtualised agenda, in px. The stylesheet uses the same number. */
 export const AGENDA_VIRTUAL_ROW = 44;
+/** A scroller this narrow or narrower (px) gets taller rows of three lines: title, time, then markers and status. */
+const AGENDA_NARROW_WIDTH = 576;
+/** The height of one of those rows, in px. The stylesheet uses the same number. */
+const AGENDA_NARROW_ROW = 64;
 /** The height the long agenda is taken to have until its scroller is measured (server render, first paint): the stylesheet's `max-height` of 40rem. */
 const AGENDA_VIRTUAL_VIEWPORT = 640;
 
@@ -48,11 +52,12 @@ type FlatRow =
 
 /** One React key per id, in order: an id that comes again gets a suffix, so a repeated date or id never shares a key. */
 function uniqueKeys(ids: readonly string[]): string[] {
-  const seen = new Map<string, number>();
+  const used = new Set<string>();
   return ids.map((id) => {
-    const times = seen.get(id) ?? 0;
-    seen.set(id, times + 1);
-    return times === 0 ? id : `${id}#${times}`;
+    let key = id;
+    for (let times = 1; used.has(key); times++) key = `${id}#${times}`;
+    used.add(key);
+    return key;
   });
 }
 
@@ -85,7 +90,35 @@ function AgendaBody({
       if ((group.continuesCount ?? 0) > 0) flatRows.push({ kind: 'continues', key: `c-${groupKey}`, group });
     });
   }
-  const virtual = useVirtualRows(flatRows, { rowHeight: AGENDA_VIRTUAL_ROW, threshold: 0, estimatedViewportHeight: AGENDA_VIRTUAL_VIEWPORT });
+  // The long form in a narrow box has taller rows. The width is measured here and the stylesheet
+  // follows `data-narrow`, so the row height the window is computed from is the one drawn.
+  const [narrow, setNarrow] = useState(false);
+  const virtual = useVirtualRows(flatRows, { rowHeight: narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW, threshold: 0, estimatedViewportHeight: AGENDA_VIRTUAL_VIEWPORT });
+  const scroller = virtual.containerRef;
+  useLayoutEffect(() => {
+    const box = scroller.current;
+    if (!box) return;
+    const measure = () => setNarrow(box.clientWidth > 0 && box.clientWidth <= AGENDA_NARROW_WIDTH);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [scroller]);
+  // In the grouped form a day heading sticks to the top with its window notes, however many lines
+  // they take. Each group is told that height, so a row scrolled to by the keyboard stops below it.
+  const grouped = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = grouped.current;
+    if (!box) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const head = entry.target as HTMLElement;
+        head.parentElement?.style.setProperty('--uix-scheduling-calendar-agenda-head', `${Math.ceil(head.getBoundingClientRect().height)}px`);
+      }
+    });
+    box.querySelectorAll(':scope > section > .uix-scheduling-calendar__agenda-head').forEach((head) => observer.observe(head));
+    return () => observer.disconnect();
+  }, [groups]);
 
   const note = (overlay: SchedulingCalendarOverlay) => <button type="button" className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>
     <span className="uix-scheduling-calendar__window-text">
@@ -105,19 +138,24 @@ function AgendaBody({
   // A row under its own day reads as two times of day. One that starts on another day, or runs
   // past the next midnight by more than its start, says both days: "14:00 – 03:00" would not.
   const timeText = (entry: SchedulingCalendarEntry, date: string): ReactNode => {
+    const part = (text: string) => <span className="uix-scheduling-calendar__agenda-time-part">{text}</span>;
+    const dash = <span aria-hidden="true"> – </span>;
     if (entry.allDay) {
+      // An end before the start has no span: the entry is on its start day.
       let span;
-      try { span = itemDaySpan(entry.start, entry.end, timeZone); } catch { return labels.allDay; }
+      try { span = itemDaySpan(entry.start, entry.end, timeZone); } catch { span = itemDaySpan(entry.start, entry.start, timeZone); }
       const last = addCalendarDays(span.end, -1);
-      return span.start === date && last === date ? labels.allDay : <>{dateText(span.start, 'day')}<span aria-hidden="true"> – </span>{dateText(last, 'day')}</>;
+      if (span.start === date && last === date) return labels.allDay;
+      return span.start === last ? part(dateText(last, 'day')) : <>{part(dateText(span.start, 'day'))}{dash}{part(dateText(last, 'day'))}</>;
     }
     const startTime = zonedTimeOfDay(entry.start, timeZone);
     const endTime = zonedTimeOfDay(entry.end, timeZone);
     const endDay = zonedDateKey(entry.end, timeZone);
-    const underItsDay = zonedDateKey(entry.start, timeZone) === date && (endDay === date || (endDay === addCalendarDays(date, 1) && endTime <= startTime));
+    // "Ends within a day" is by the clock: an end on the next day at the start's time of day or later is a day or more on.
+    const underItsDay = zonedDateKey(entry.start, timeZone) === date && (endDay === date || (endDay === addCalendarDays(date, 1) && endTime < startTime));
     return underItsDay
-      ? <>{startTime}<span aria-hidden="true"> – </span>{endTime}</>
-      : <>{formatInstant(entry.start)}<span aria-hidden="true"> – </span>{formatInstant(entry.end)}</>;
+      ? <>{startTime}{dash}{endTime}</>
+      : <>{part(formatInstant(entry.start))}{dash}{part(formatInstant(entry.end))}</>;
   };
 
   const row = (entry: SchedulingCalendarEntry, date: string) => {
@@ -147,7 +185,7 @@ function AgendaBody({
   if (groups.length === 0) return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}><p>{labels.agendaEmpty}</p></div>;
 
   if (flat) {
-    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" role="region" aria-label={labels.agenda}>
+    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" data-narrow={narrow || undefined} role="region" aria-label={labels.agenda}>
       <div className="uix-scheduling-calendar__agenda-window" style={{ paddingTop: virtual.padTop, paddingBottom: virtual.padBottom }}>
         {virtual.rows.map((item) => <div key={item.key} className="uix-scheduling-calendar__agenda-vrow" data-kind={item.kind}>
           {item.kind === 'heading' ? heading(item.group, false) : item.kind === 'note' ? note(item.overlay) : item.kind === 'entry' ? row(item.entry, item.group.date) : item.kind === 'hidden' ? hidden(item.group) : continues(item.group)}
@@ -156,7 +194,7 @@ function AgendaBody({
     </div>;
   }
 
-  return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>
+  return <div ref={grouped} className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>
     {groups.map((group, index) => {
       const rowKeys = uniqueKeys(group.rows.map((entry) => entry.id));
       return <section key={groupKeys[index]} className="uix-scheduling-calendar__agenda-group" data-date={group.date}>

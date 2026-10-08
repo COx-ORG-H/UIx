@@ -169,7 +169,7 @@
   .uix-scheduling-calendar__agenda-rows { margin:0; padding:0; list-style:none; }
   .uix-scheduling-calendar__agenda-rows > li { margin:0; border-bottom:1px solid var(--calendar-chrome-line); }
   /* a row scrolled to by the keyboard stops below the sticky heading, not behind it */
-  .uix-scheduling-calendar__agenda-group :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-more) { scroll-margin-top:3rem; }
+  .uix-scheduling-calendar__agenda-group :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-more) { scroll-margin-top:var(--uix-scheduling-calendar-agenda-head,3rem); }
   .uix-scheduling-calendar__agenda-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
   .uix-scheduling-calendar__agenda-row:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { align-self:center; }
@@ -201,15 +201,16 @@
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker { flex:0 1 auto; min-width:0; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker::before,.uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-icon { flex:none; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { flex:none; }
-  /* a narrow agenda: the title has the whole first line; the time, markers and status share the second */
-  @container uix-scheduling-agenda (max-width:36rem) {
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { display:grid; grid-template-columns:auto auto minmax(0,1fr) auto; grid-template-rows:auto auto; align-content:center; gap:0 var(--uix-space-2); }
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { grid-row:1 / span 2; }
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { grid-column:2 / -1; grid-row:1; min-width:0; }
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-time { grid-column:2; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { grid-column:3; grid-row:2; justify-self:start; max-width:100%; }
-    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { grid-column:4; grid-row:2; }
-  }
+  /* a narrow long agenda (the component measures it): taller rows of three lines — the title, the time, then markers and status */
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-vrow { height:64px; }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:auto auto auto; align-content:center; gap:0 var(--uix-space-2); }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { grid-row:1 / span 3; }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-main { grid-column:2 / -1; grid-row:1; min-width:0; }
+  /* a time that names two days may not fit: each end keeps half the line and is cut on its own, so both stay in sight */
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-time { grid-column:2 / -1; grid-row:2; display:flex; min-width:0; overflow:visible; white-space:pre; }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-time-part { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { grid-column:2; grid-row:3; justify-self:start; max-width:100%; }
+  .uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { grid-column:3; grid-row:3; max-width:50cqi; overflow:hidden; text-overflow:ellipsis; }
   .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues) { padding:0; }
 
   /* ── Month, counts only (HAR-1520): a narrow screen gets the day, its count and its markers ── */
@@ -219,7 +220,7 @@
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1.5rem 1.25rem 1.25rem; align-items:center; gap:0 var(--calendar-gap); }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__date { grid-column:1 / -1; grid-row:1; width:100%; height:1.5rem; }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__day > .uix-scheduling-calendar__date { height:1.5rem; }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__badge { grid-column:1; grid-row:2; min-width:0; overflow:hidden; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__badge { grid-column:1; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__count { grid-column:2; grid-row:2; display:inline-flex; align-items:center; }
   /* a count of any length keeps its own line; the markers have the next one */
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__markers { grid-column:1 / -1; grid-row:3; justify-self:end; max-width:100%; overflow:hidden; }

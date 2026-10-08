@@ -71,9 +71,13 @@ test('AC6: at 375 px a long agenda keeps the title readable beside labelled mark
   const scroll = await pageScroll(page);
   expect(scroll.scroll, 'no page scroll').toBeLessThanOrEqual(scroll.client);
   const agenda = page.locator(`${P}agenda--virtual`);
-  // Every mounted row is one fixed height, whatever it holds.
+  // Every mounted row is one fixed height, whatever it holds: the taller row of a narrow agenda.
+  await expect(agenda).toHaveAttribute('data-narrow', 'true');
   const heights = await agenda.locator(`${P}agenda-vrow`).evaluateAll((rows) => rows.map((row) => row.getBoundingClientRect().height));
-  expect(new Set(heights.map((height) => Math.round(height))), 'one row height').toEqual(new Set([44]));
+  expect(new Set(heights.map((height) => Math.round(height))), 'one row height').toEqual(new Set([64]));
+  // The window of rows is computed from that height: the padding below stands for the rows not mounted.
+  const run = await agenda.evaluate((el, prefix) => ({ scroll: el.scrollHeight, rows: el.querySelectorAll(`${prefix}agenda-vrow`).length }), P);
+  expect(run.scroll, '260 rows, 20 headings and 2 notes of 64 px').toBeGreaterThanOrEqual(282 * 64);
   // The heading row holds the heading, whole; each window has the next row to itself.
   expect(await agenda.locator(`${P}agenda-vrow`).evaluateAll((rows) => rows.slice(0, 4).map((row) => row.dataset.kind))).toEqual(['heading', 'note', 'note', 'entry']);
   const inside = (inner, outer) => inner.top >= outer.top - 0.5 && inner.bottom <= outer.bottom + 0.5 && inner.left >= outer.left - 0.5 && inner.right <= outer.right + 0.5;
@@ -85,6 +89,18 @@ test('AC6: at 375 px a long agenda keeps the title readable beside labelled mark
     const note = agenda.locator(`[data-overlay-id="${id}"]`);
     await expect(note.locator(`${P}window-name`)).toBeVisible();
     expect(inside(await rect(note), await rect(note.locator('xpath=..')))).toBe(true);
+  }
+  // A row whose time names two days, with two markers, and one with no time of day: both ends of the
+  // time are in sight, and the markers are not pushed out by it.
+  for (const id of ['r2', 'r3']) {
+    const row = agenda.locator(`[data-item-id="${id}"]`);
+    const parts = await row.locator(`${P}agenda-time-part`).evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+    expect(parts.length, `${id} names two days`).toBe(2);
+    for (const width of parts) expect(width, `each end of the time of ${id} is in sight`).toBeGreaterThan(60);
+    const markers = await row.locator(`${P}marker`).evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+    for (const width of markers) expect(width, `each marker of ${id} is drawn`).toBeGreaterThanOrEqual(10);
+    expect(inside(await rect(row.locator(`${P}markers`)), await rect(row)), `the markers of ${id} are inside its row`).toBe(true);
+    expect((await rect(row.locator(`${P}agenda-main`))).width, `the title of ${id} has the line`).toBeGreaterThan(250);
   }
   // A row with one labelled marker, and one with two: the title has most of the row.
   for (const id of ['r0', 'r1']) {
@@ -98,8 +114,20 @@ test('AC6: at 375 px a long agenda keeps the title readable beside labelled mark
   }
 });
 
-test('a row focused under a sticky day heading stops below it', async ({ page }) => {
-  await open(page, 'case=agenda&rows=200', { width: 1280, height: 420 });
+test('at 1280 px the long agenda keeps its one-line rows', async ({ page }) => {
+  await open(page, 'case=agenda&rows=260&rich=1');
+  const agenda = page.locator(`${P}agenda--virtual`);
+  await expect(agenda).not.toHaveAttribute('data-narrow', 'true');
+  const heights = await agenda.locator(`${P}agenda-vrow`).evaluateAll((rows) => rows.map((row) => Math.round(row.getBoundingClientRect().height)));
+  expect(new Set(heights)).toEqual(new Set([44]));
+  // The row with two markers and a time that names two days: everything on one line, the markers drawn.
+  const row = agenda.locator('[data-item-id="r2"]');
+  const markers = await row.locator(`${P}marker`).evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+  for (const width of markers) expect(width).toBeGreaterThanOrEqual(10);
+});
+
+for (const [name, query, viewport] of [['one line', 'case=agenda&rows=200', { width: 1280, height: 420 }], ['its window notes on several lines', 'case=agenda&rows=200&rich=1', { width: 375, height: 640 }]]) test(`a row focused under a sticky day heading stops below it: ${name}`, async ({ page }) => {
+  await open(page, query, viewport);
   // Put the sixth row of the first day right under its stuck heading; the fifth is then behind it.
   const rows = page.locator(`${P}agenda-group`).first().locator(`${P}agenda-row`);
   await rows.nth(5).evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - el.closest('section').firstElementChild.getBoundingClientRect().height));

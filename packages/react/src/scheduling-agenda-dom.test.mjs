@@ -251,6 +251,10 @@ test('a row says its days when its times of day would not: another start day, a 
     { id: 'long', title: 'Two days on', start: iso('2026-10-05', '14:00'), end: iso('2026-10-07', '03:00') },
     { id: 'day', title: 'Whole day', start: iso('2026-10-05', '00:00'), end: iso('2026-10-06', '00:00'), allDay: true },
     { id: 'days', title: 'Three whole days', start: iso('2026-10-05', '00:00'), end: iso('2026-10-08', '00:00'), allDay: true },
+    { id: 'full', title: 'A day to the minute', start: iso('2026-10-05', '14:00'), end: iso('2026-10-06', '14:00') },
+    { id: 'other', title: 'A whole day, listed here', start: iso('2026-10-06', '00:00'), end: iso('2026-10-07', '00:00'), allDay: true },
+    { id: 'inverted', title: 'Whole day, end before start', start: iso('2026-10-05', '00:00'), end: iso('2026-10-03', '00:00'), allDay: true },
+    { id: 'inverted-other', title: 'Another day, end before start', start: iso('2026-10-09', '00:00'), end: iso('2026-10-03', '00:00'), allDay: true },
   ];
   for (const virtualizeAbove of [200, 2]) {
     const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-05', rows }], virtualizeAbove }));
@@ -262,12 +266,20 @@ test('a row says its days when its times of day would not: another start day, a 
     assert.match(time('long'), /5 Oct(ober)? 2026 14:00 – .*7 Oct(ober)? 2026 03:00/);
     assert.equal(time('day'), 'All day');
     assert.match(time('days'), /5 Oct(ober)? 2026 – .*7 Oct(ober)? 2026$/);
+    assert.match(time('full'), /5 Oct(ober)? 2026 14:00 – .*6 Oct(ober)? 2026 14:00/, 'a day to the minute is not "14:00 – 14:00"');
+    assert.match(time('other'), /^[^–]*6 Oct(ober)? 2026$/, 'one day, said once');
+    assert.equal(time('inverted'), 'All day', 'an end before the start: the entry is on its start day');
+    assert.match(time('inverted-other'), /^[^–]*9 Oct(ober)? 2026$/);
     unmount();
   }
   const worded = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-05', rows }], labels: { allDay: 'Ganztägig' }, formatInstant: (instant) => `<${instant.slice(0, 16)}>` }));
   assert.equal(worded.host.querySelector(`[data-item-id="day"] ${cls('agenda-time')}`).textContent, 'Ganztägig');
   assert.equal(worded.host.querySelector(`[data-item-id="earlier"] ${cls('agenda-time')}`).textContent, '<2026-10-01T12:00> – <2026-10-07T01:00>', 'the consumer words the instants');
   worded.unmount();
+  // The day the clocks go back has 25 hours: midnight to midnight is not "00:00 – 00:00".
+  const fallBack = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-25', rows: [{ id: 'd', title: 'Whole long day', start: '2026-10-24T22:00:00Z', end: '2026-10-25T23:00:00Z' }] }] }));
+  assert.match(fallBack.host.querySelector(`[data-item-id="d"] ${cls('agenda-time')}`).textContent, /25 Oct(ober)? 2026 00:00 – .*26 Oct(ober)? 2026 00:00/);
+  fallBack.unmount();
 });
 
 test('the name of a row carries its detail line; a consumer name is used as given', () => {
@@ -283,10 +295,10 @@ test('a date or an id given twice is drawn twice, in both forms, with no shared 
   const original = console.error;
   console.error = (...args) => errors.push(args.map(String).join(' '));
   try {
-    const groups = Array.from({ length: 30 }, (_, i) => ({ date: i % 2 ? '2026-10-08' : '2026-10-07', rows: [at('same', '2026-10-07', '08:00', '09:00'), at('same', '2026-10-07', '10:00', '11:00')], annotations: [{ id: 'w', label: 'W', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }, { id: 'w', label: 'W again', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }] }));
+    const groups = Array.from({ length: 30 }, (_, i) => ({ date: i % 2 ? '2026-10-08' : '2026-10-07', rows: [at('same', '2026-10-07', '08:00', '09:00'), at('same', '2026-10-07', '10:00', '11:00'), at('same#1', '2026-10-07', '12:00', '13:00')], annotations: [{ id: 'w', label: 'W', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }, { id: 'w', label: 'W again', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }] }));
     const grouped = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: groups }));
     assert.equal(grouped.host.querySelectorAll(cls('agenda-group')).length, 30);
-    assert.equal(grouped.host.querySelectorAll(cls('agenda-row')).length, 60);
+    assert.equal(grouped.host.querySelectorAll(cls('agenda-row')).length, 90);
     assert.equal(grouped.host.querySelectorAll('[data-overlay-id]').length, 60);
     grouped.unmount();
     const flat = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: groups, virtualizeAbove: 10 }));
@@ -360,6 +372,11 @@ test('AC8: the counts-only month never derives a "+N" from the entries; windows 
   const given = mount(h(ui.SchedulingCalendar, { ...plain, overlays: windows, spanLayout: { placed: [], hiddenByRow: { 1: ['1', '2', 'w3'] }, firstHiddenDayByRow: { 1: '2026-10-05' } } }));
   assert.match(given.host.querySelector(cls('rowmore')).textContent, /\+1/);
   given.unmount();
+  // An id shared by an entry and a window that is drawn in the row: the hidden one is the entry.
+  const shared = mount(h(ui.SchedulingCalendar, { ...plain, entries: [span('w1')], overlays: windows.slice(0, 1), spanLayout: { placed: [{ id: 'w1', group: 'window', weekRow: 1, startCol: 0, endCol: 4, lane: 0, continuesBefore: false, continuesAfter: false }], hiddenByRow: { 1: ['w1'] }, firstHiddenDayByRow: { 1: '2026-10-05' } } }));
+  assert.equal(shared.host.querySelectorAll(cls('window')).length, 1);
+  assert.equal(shared.host.querySelectorAll(cls('rowmore')).length, 0);
+  shared.unmount();
 });
 
 test('monthDensity="counts" leaves the week as it is: cells grow, every chip is drawn', () => {

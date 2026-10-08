@@ -192,9 +192,16 @@ function Agenda() {
       return {
         date,
         annotations: rich && day === 0 ? [payroll, { ...payroll, id: 'audit', label: 'Audit window for the quarter close', scopeLabel: 'Every finance service' }] : undefined,
-        rows: Array.from({ length: Math.min(perDay, many - day * perDay) }, (_, index) => timed(`r${day * perDay + index}`, [date, '08:00'], [date, '09:00'], rich && index < 2 ? 'Firewall rule update for the payment gateway' : `Row ${day * perDay + index + 1}`, rich && index < 2
-          ? { status: 'tentative', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }, ...(index === 1 ? [{ id: 'n', label: 'Second reviewer asked', emphasis: 'neutral' as const }] : [])] }
-          : undefined)),
+        rows: Array.from({ length: Math.min(perDay, many - day * perDay) }, (_, index) => {
+          const id = `r${day * perDay + index}`;
+          const marker = { id: 'm', label: 'Needs sign-off', emphasis: 'warning' as const };
+          const second = { id: 'n', label: 'Second reviewer asked', emphasis: 'neutral' as const };
+          if (!rich || index > 3) return timed(id, [date, '08:00'], [date, '09:00'], `Row ${day * perDay + index + 1}`);
+          // The third runs into a later day and the fourth has no time of day: their time text names days.
+          if (index === 2) return timed(id, [date, '14:00'], [`2026-10-${String(day + 3).padStart(2, '0')}`, '03:00'], 'Storage migration across two nights', { markers: [marker, second] });
+          if (index === 3) return timed(id, [date, '00:00'], [`2026-10-${String(day + 4).padStart(2, '0')}`, '00:00'], 'Maintenance weekend', { allDay: true, markers: [marker] });
+          return timed(id, [date, '08:00'], [date, '09:00'], 'Firewall rule update for the payment gateway', { status: 'tentative', markers: index === 1 ? [marker, second] : [marker] });
+        }),
       };
     }).filter((group) => group.rows.length > 0)
     : [

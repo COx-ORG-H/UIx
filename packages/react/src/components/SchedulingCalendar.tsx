@@ -620,7 +620,9 @@ export function SchedulingCalendar({
     const spanLanes = countsOnly ? 0 : lanesUsed(row, 'item');
     // In the counts-only month the day counts speak for the entries: "+N" is for windows only.
     const hiddenIds = layout.hiddenByRow?.[row] ?? EMPTY_IDS;
-    const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id)).length : hiddenIds.length;
+    // An id that names both an entry and a window drawn in this row is the entry's.
+    const drawnWindows = countsOnly ? new Set((placedByRow.get(row) ?? []).filter((placed) => placed.group === 'window').map((placed) => placed.id)) : undefined;
+    const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id) && !drawnWindows!.has(id)).length : hiddenIds.length;
     const firstHiddenDay = layout.firstHiddenDayByRow?.[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
     const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
