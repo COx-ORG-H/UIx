@@ -156,7 +156,7 @@ ${heartbeat('danger', 'Connection lost')}
 
   // An 'advanced' route: its whole page is the copied component example, so no docs-only class here.
   'examples-rule-builder': `
-<p data-tensor-gaps><strong>Conditions only, AND only, every word translated (React <code>RuleBuilder conditionsOnly combinator="and" allowGroups={false}</code>) — no "Then" block, no all/any choice, no "Add group"</strong></p>
+<p data-tensor-gaps style="margin:var(--uix-space-6) 0 var(--uix-space-3)"><strong>Conditions only, AND only, every word translated (React <code>RuleBuilder conditionsOnly combinator="and" allowGroups={false}</code>) — no "Then" block, no all/any choice, no "Add group"</strong></p>
 <div class="uix-rule-builder" aria-label="Regel-Editor" role="group">
 <fieldset class="uix-rule-builder__group" data-depth="1"><legend class="uix-rule-builder__group-heading"><span>Wenn</span><span class="uix-rule-builder__match">Treffer bei allen (UND)</span></legend>
 <div class="uix-rule-builder__rows">
@@ -166,7 +166,7 @@ ${heartbeat('danger', 'Connection lost')}
 </fieldset>
 <div class="uix-rule-builder__validation"><span>Die Regel ist gültig.</span></div>
 </div>
-<p data-tensor-gaps><strong>Read-only (React <code>RuleBuilder readOnly</code>) — the same builder with its controls disabled and no add, move or remove buttons</strong></p>
+<p data-tensor-gaps style="margin:var(--uix-space-6) 0 var(--uix-space-3)"><strong>Read-only (React <code>RuleBuilder readOnly</code>) — the same builder with its controls disabled and no add, move or remove buttons</strong></p>
 <div class="uix-rule-builder" aria-label="Rule builder, read-only" role="group">
 <fieldset class="uix-rule-builder__group" data-depth="1"><legend class="uix-rule-builder__group-heading"><span>When</span><span class="uix-rule-builder__match">Match all (AND)</span></legend>
 <div class="uix-rule-builder__rows">
