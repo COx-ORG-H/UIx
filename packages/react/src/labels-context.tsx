@@ -10,6 +10,8 @@ import type { TextDiffLabels } from './components/TextDiff.js';
 import type { FilterEditorLabels } from './components/FilterEditor.js';
 import type { SelectLabels } from './components/Select.js';
 import type { RuleBuilderLabels } from './components/RuleBuilder.js';
+import type { FileUploadLabels } from './components/FileUpload.js';
+import type { AttachmentLabels } from './attachment-labels.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -38,6 +40,12 @@ export interface UixLabels {
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;
+  fileUpload?: Partial<FileUploadLabels>;
+  attachment?: Partial<AttachmentLabels>;
+  /** `remove`: the name of a removable chip's × button; `{label}` is the chip text. */
+  chip?: { remove?: string };
+  /** `dismiss`: the name of a dismissible alert's × button. */
+  alert?: { dismiss?: string };
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */

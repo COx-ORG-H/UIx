@@ -136,7 +136,7 @@ export type { FileUploadProps, FileUploadItem, FileUploadLabels, FileUploadStatu
 export { Attachment, AttachmentList, DEFAULT_ATTACHMENT_LABELS } from './components/Attachment.js';
 export type { AttachmentProps, AttachmentListProps, AttachmentLabels } from './components/Attachment.js';
 export { fileKind, fileMatchesAccept, formatFileSize, partitionFiles } from './file-model.js';
-export type { FileRejection, FileRejectionReason } from './file-model.js';
+export type { FileRejection, FileRejectionReason, FileSizeOptions, FileSizeFormatter } from './file-model.js';
 
 // Feedback
 export { Alert } from './components/Alert.js';

@@ -18,18 +18,24 @@
 @layer uix.components {
   /* :not(label) — BrandProfiles has long put this class on its upload label as a hook. */
   .uix-file-upload:not(label) { display: grid; gap: var(--uix-space-3); min-width: 0; }
+  /* HAR-1630: a grid item's automatic minimum is its longest unbreakable word, so an
+     80-character file name (in a row, or in a "not an accepted type" message) widened the whole
+     component past a 288 px rail. One column that may shrink, and text that breaks anywhere. */
+  .uix-file-upload:not(label) { grid-template-columns: minmax(0, 1fr); }
+  .uix-file-upload:not(label) > * { min-width: 0; }
+  .uix-file-upload .uix-dropzone > * { max-width: 100%; }
   .uix-file-upload[data-disabled] .uix-dropzone { opacity: .6; cursor: not-allowed; }
-  .uix-file-upload__hint { font-size: var(--uix-text-meta); }
-  .uix-file-upload__errors { margin: 0; padding-left: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
+  .uix-file-upload__hint { font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
+  .uix-file-upload__errors { margin: 0; padding-left: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
   .uix-file-upload__list { margin: 0; padding: 0; list-style: none; }
   .uix-file-upload__item { align-items: flex-start; }
   .uix-file-upload__item[data-status="error"] { border-color: var(--uix-danger-border); }
   .uix-file-upload__thumb { width: 40px; height: 40px; flex: none; object-fit: cover; border-radius: var(--uix-radius-sm); }
   .uix-file-upload__body { flex: 1; display: grid; gap: var(--uix-space-1); min-width: 0; }
-  .uix-file-upload__name { min-width: 0; overflow-wrap: break-word; font-weight: 500; }
+  .uix-file-upload__name { min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
   .uix-file-upload__meta { display: flex; flex-wrap: wrap; gap: var(--uix-space-1) var(--uix-space-3); color: var(--uix-text-muted); }
   .uix-file-upload__meta > * { white-space: nowrap; }
   .uix-file-upload__item[data-status="done"] .uix-file-upload__status { color: var(--uix-success); }
-  .uix-file-upload__error { color: var(--uix-danger-text); }
+  .uix-file-upload__error { color: var(--uix-danger-text); overflow-wrap: anywhere; }
   .uix-file-upload__actions { display: flex; align-items: center; gap: var(--uix-space-1); flex: none; }
 }
