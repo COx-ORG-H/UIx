@@ -4,7 +4,14 @@
  *     count and no chip, a 3-day span, and `?windows=N` overlapping windows in that week;
  *   - encodings: every band, status, marker emphasis and window pattern once, with a legend
  *     of the same swatches;
- *   - empty: no entries and an `emptyNote`.
+ *   - empty: no entries and an `emptyNote`;
+ *   - timegrid (HAR-1509): the Week time grid — an overnight item, a 30-hour item, an all-day
+ *     item, three overlapping windows, consumer counts, a now-line, and moves that are logged
+ *     and never applied (`?move=0` turns moving off, `?reject=1` answers with a rejection,
+ *     `?date=` picks the week, `?view=day` shows one day, `?empty=1` shows no entries,
+ *     `?caps=1` fills the window strip and the top lane past their caps);
+ *   - dense: 350 events in one week;
+ *   - lanes: five overlapping items in one day, to watch the lane count follow the width.
  * window.__calendar records what each callback was called with. */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -14,9 +21,9 @@ import type {
   SchedulingMarkerEmphasis, SchedulingOverlayPattern, SchedulingStatus,
 } from '../../packages/react/src/index.js';
 
-interface Calls { entries: string[]; overlays: string[]; dates: string[]; more: string[] }
+interface Calls { entries: string[]; overlays: string[]; dates: string[]; more: string[]; moves: Array<{ id: string; start: string; end: string; adjusted: string | null }> }
 declare global { interface Window { __calendar: Calls } }
-const calls: Calls = (window.__calendar = { entries: [], overlays: [], dates: [], more: [] });
+const calls: Calls = (window.__calendar = { entries: [], overlays: [], dates: [], more: [], moves: [] });
 
 const params = new URLSearchParams(location.search);
 const scenario = params.get('case') ?? 'controlled';
@@ -97,7 +104,78 @@ function Empty() {
   return <SchedulingCalendar {...common} entries={[]} emptyNote="Nothing is scheduled this month." />;
 }
 
-const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty };
+// Europe/Berlin wall-clock times as instants: UTC+2 between the two clock changes of 2026, else UTC+1.
+const berlin = (date: string, time: string) => new Date(`${date}T${time}:00${date >= '2026-03-29' && date < '2026-10-25' ? '+02:00' : '+01:00'}`).toISOString();
+const timed = (id: string, [fromDate, from]: [string, string], [toDate, to]: [string, string], title: string, extra: Partial<SchedulingCalendarEntry> = {}): SchedulingCalendarEntry => ({ id, title, start: berlin(fromDate, from), end: berlin(toDate, to), ...extra });
+const proposals = {
+  canMove: params.get('move') !== '0',
+  onProposeMove: (id: string, proposal: { start: string; end: string; adjusted: string | null }) => {
+    calls.moves.push({ id, ...proposal });
+    return params.get('reject') === '1' ? Promise.reject(new Error('refused')) : undefined;
+  },
+};
+
+function TimeGrid() {
+  const date = params.get('date') ?? '2026-10-07';
+  const view = params.get('view') === 'day' ? 'day' : 'week';
+  const entries: SchedulingCalendarEntry[] = params.get('empty') === '1' ? [] : [
+    timed('plain', ['2026-10-07', '09:00'], ['2026-10-07', '10:00'], 'Router firmware'),
+    timed('half', ['2026-10-07', '11:00'], ['2026-10-07', '11:30'], 'Queue drain', { band: 'medium' }),
+    timed('quarter', ['2026-10-07', '12:00'], ['2026-10-07', '12:15'], 'Cache flush', { markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }] }),
+    timed('high', ['2026-10-07', '13:00'], ['2026-10-07', '15:00'], 'Firewall rule update', { band: 'high', status: 'tentative' }),
+    timed('pinned', ['2026-10-08', '09:00'], ['2026-10-08', '10:30'], 'Audit log export', { movable: false, status: 'done' }),
+    timed('evening', ['2026-10-06', '22:00'], ['2026-10-07', '00:00'], 'Index rebuild'),
+    timed('night', ['2026-10-05', '23:00'], ['2026-10-06', '02:00'], 'Overnight replication check'),
+    timed('long', ['2026-10-06', '08:00'], ['2026-10-07', '14:00'], 'Data centre move'),
+    timed('deep', ['2026-10-08', '23:00'], ['2026-10-09', '07:00'], 'Batch processing run'),
+    timed('allday', ['2026-10-09', '00:00'], ['2026-10-10', '00:00'], 'Release day', { allDay: true }),
+    timed('clash-a', ['2026-10-09', '09:00'], ['2026-10-09', '11:00'], 'Kernel patch wave 1'),
+    timed('clash-b', ['2026-10-09', '09:30'], ['2026-10-09', '10:30'], 'Kernel patch wave 2', { status: 'live' }),
+    // The clock-change days of 2026, for ?date=2026-03-29 and ?date=2026-10-25.
+    timed('spring', ['2026-03-29', '03:00'], ['2026-03-29', '04:00'], 'After the gap'),
+    timed('gap', ['2026-03-28', '02:30'], ['2026-03-28', '02:45'], 'Half past two'),
+    timed('autumn', ['2026-10-25', '03:00'], ['2026-10-25', '04:00'], 'After the repeat'),
+    timed('late', ['2026-10-24', '22:00'], ['2026-10-24', '23:00'], 'Late item'),
+    // ?caps=1 fills the top lane past its three rows.
+    ...(params.get('caps') === '1' ? [
+      timed('cap-a', ['2026-10-09', '00:00'], ['2026-10-10', '00:00'], 'Review day', { allDay: true }),
+      timed('cap-b', ['2026-10-09', '00:00'], ['2026-10-10', '00:00'], 'Inventory day', { allDay: true }),
+    ] : []),
+  ];
+  const overlays: SchedulingCalendarOverlay[] = params.get('empty') === '1' ? [] : [
+    { id: 'global', kindLabel: 'Pause', label: 'Quarter close', start: berlin('2026-10-08', '18:00'), end: berlin('2026-10-10', '06:00'), pattern: 'diagonal', global: true },
+    { id: 'scoped', kindLabel: 'Hold', label: 'Payroll lock', scopeLabel: 'Payroll services', start: berlin('2026-10-06', '00:00'), end: berlin('2026-10-08', '00:00'), pattern: 'cross', global: false },
+    { id: 'third', kindLabel: 'Maintenance', label: 'Network core', scopeLabel: 'Network services', start: berlin('2026-10-07', '22:00'), end: berlin('2026-10-09', '06:00'), pattern: 'dotted' },
+    // ?caps=1 adds a window that finds both lanes of the strip taken.
+    ...(params.get('caps') === '1' ? [{ id: 'fourth', kindLabel: 'Hold', label: 'Storage cluster', scopeLabel: 'Storage', start: berlin('2026-10-08', '20:00'), end: berlin('2026-10-09', '04:00'), pattern: 'cross' as const }] : []),
+  ];
+  return <SchedulingCalendar
+    {...common} {...proposals} anchorDate={date} view={view} timeGrid entries={entries} overlays={overlays}
+    now={params.get('now') ?? berlin('2026-10-08', '10:30')}
+    days={params.get('empty') === '1' ? undefined : {
+      '2026-10-07': { count: 6, overflowCount: 2, label: 'Wednesday 7 October 2026, 6 items, 1 needs sign-off', markers: [{ id: 's', label: 'Sign-off', emphasis: 'warning' }] },
+      '2026-10-09': { count: 4, overflowCount: 0, label: 'Friday 9 October 2026, 4 items' },
+    }}
+    onShowMore={(day) => { calls.more.push(day); }}
+    emptyNote="Nothing is scheduled this week."
+  />;
+}
+
+function Dense() {
+  const start = Date.parse('2026-10-05T04:00:00Z');
+  const entries = Array.from({ length: 350 }, (_, index): SchedulingCalendarEntry => {
+    const from = start + (index % 7) * 24 * 3_600_000 + ((index * 37) % 60) * 15 * 60_000;
+    return { id: `e${index}`, title: `Event ${index}`, start: new Date(from).toISOString(), end: new Date(from + (1 + (index % 4)) * 30 * 60_000).toISOString(), band: index % 11 === 0 ? 'high' : 'none' };
+  });
+  return <SchedulingCalendar {...common} {...proposals} view="week" timeGrid entries={entries} onShowMore={(day) => { calls.more.push(day); }} />;
+}
+
+function Lanes() {
+  const entries = ['09:00', '09:10', '09:20', '09:30', '09:40'].map((from, index) => timed(`l${index}`, ['2026-10-07', from], ['2026-10-07', '12:00'], `Parallel item ${index + 1}`, index === 0 ? { markers: [{ id: 'm', label: 'Flagged', emphasis: 'refused' }] } : {}));
+  return <SchedulingCalendar {...common} view={params.get('view') === 'day' ? 'day' : 'week'} timeGrid maxLanes={Number(params.get('max') ?? 4)} entries={entries} onShowMore={(day) => { calls.more.push(day); }} />;
+}
+
+const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes };
 const Case = CASES[scenario] ?? Controlled;
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Case /></StrictMode>);

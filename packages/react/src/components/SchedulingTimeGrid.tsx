@@ -149,7 +149,7 @@ export function SchedulingTimeGrid({
   const moving = canMove && onProposeMove !== undefined;
   const laneOptions = useMemo(() => ({ crossMidnightMinutes: topLaneCrossMidnightMinutes }), [topLaneCrossMidnightMinutes]);
 
-  // Fewer lanes when a lane would be narrower than "HH:MM" plus six characters (the probe is 12ch wide).
+  // Fewer lanes when a lane would be narrower than an item showing "HH:MM" and six title characters (the probe).
   useEffect(() => {
     const root = rootRef.current;
     if (!root || typeof ResizeObserver === 'undefined') return undefined;
@@ -420,7 +420,7 @@ export function SchedulingTimeGrid({
 
     {emptyNote != null && emptyNote !== false && nothingToShow && <div className="uix-scheduling-calendar__empty">{emptyNote}</div>}
     {moving && <p id={hintId} className="uix-visually-hidden">{labels.moveHint}</p>}
-    <span className="uix-scheduling-calendar__tg-probe" aria-hidden="true" />
+    <span className="uix-scheduling-calendar__tg-probe" aria-hidden="true">00:00 abcdef</span>
     <div className="uix-visually-hidden" aria-live="polite">{announcement}</div>
   </div>;
 }
