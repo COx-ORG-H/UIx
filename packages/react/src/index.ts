@@ -332,7 +332,13 @@ export { DEFAULT_SCHEDULING_CALENDAR_LABELS, SchedulingCalendar } from './compon
 export type { SchedulingCalendarLabels,
   SchedulingCalendarProps, SchedulingCalendarView, SchedulingCalendarEntry,
   SchedulingCalendarOverlay, SchedulingDatePart, SchedulingEntryState, SchedulingOverlayKind,
+  SchedulingBand, SchedulingStatus, SchedulingMarker, SchedulingMarkerEmphasis, SchedulingOverlayPattern,
+  SchedulingCalendarDay, SchedulingLegendItem,
 } from './components/SchedulingCalendar.js';
+export { itemDaySpan, layoutMonthSpans, schedulingGridDays } from './scheduling-calendar-model.js';
+export type {
+  LayoutMonthSpansOptions, MonthSpanGroup, MonthSpanInput, MonthSpanLayout, PlacedMonthSpan,
+} from './scheduling-calendar-model.js';
 
 export { DEFAULT_SCHEDULING_TIMELINE_LABELS, SchedulingTimeline } from './components/SchedulingTimeline.js';
 export type {
@@ -349,7 +355,7 @@ export type { DateRangePickerLabels, DateRangePickerProps } from './components/D
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
   isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,
-  toDateKey, zonedDateKey, zonedDateSpan, zonedDayBounds, zonedDaySpan, zonedHourSlots,
+  toDateKey, zonedDateKey, zonedDateSpan, zonedDayBounds, zonedDaySpan, zonedHourSlots, zonedTimeOfDay,
 } from './calendar-model.js';
 export type {
   CalendarDay, CalendarWeekday, DateRangeValue, LaneCluster, LaneInterval, LanePlacement, PackedLanes, PackLanesOptions,

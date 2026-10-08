@@ -86,7 +86,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Reactions | reactions.css | absent | Planned | no | Planned wrapper (presentational). |
 | RelationshipGraph | relationship-graph.css | ✓ `RelationshipGraph` | Beta | no | Bounded deterministic SVG with accessible equivalent list and traversal. |
 | RuleBuilder | rule-builder.css | ✓ `RuleBuilder` | Beta | no | Declarative nested conditions-to-actions editor and model helpers. |
-| SchedulingCalendar | scheduling-calendar.css | ✓ `SchedulingCalendar` | Beta | no | Month/week/agenda schedule with time-zone ranges and overlays. |
+| SchedulingCalendar | scheduling-calendar.css | ✓ `SchedulingCalendar` | Beta | no | Month/week/agenda schedule in one explicit zone: band, status and markers per item, spans drawn once per week row, named windows, consumer-owned counts. |
 | SchedulingTimeline | scheduling-timeline.css | ✓ `SchedulingTimeline` | Beta | no | Lanes of bars on a zoned time axis; stacking with conflict hatching, freeze/maintenance/blackout bands, markers, now line; keyboard and drag move/resize snapped to a step; pure model helpers. Landed with HAR-1364. |
 | Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. Recently landed. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |

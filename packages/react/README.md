@@ -354,6 +354,52 @@ const icons: Record<EntityType, UixIcon> = { incident: SirenIcon, change: GitBra
 - **Accessibility:** decorative unless `label` is set. Never let an icon carry meaning alone; pair it with text.
 - **Bundle size:** each `<Name>Icon` is tree-shaken; one icon adds well under 3 KB minified. `<Icon name>` and `ICON_GLYPHS` load all of them.
 - **A glyph is missing?** Add its Lucide name to `scripts/icon-names.txt`, run `node scripts/generate-icons.mjs <lucide-react dir>` and release. Do not paste an SVG into a product.
+### SchedulingCalendar
+
+A month, week or agenda of UTC ranges in one explicit IANA zone (HAR-1347, HAR-1506). The calendar draws; the
+consumer owns every word, count and ranking.
+
+```tsx
+import { SchedulingCalendar, layoutMonthSpans, schedulingGridDays } from '@tensor_1/react';
+import { TriangleAlertIcon } from '@tensor_1/react/icons';
+
+// The item: one hue dimension (band), one state channel (status), markers with text.
+const entry = {
+  id: 'e1', title: 'Firewall rule update', start: '2026-10-06T08:00:00Z', end: '2026-10-06T09:00:00Z',
+  band: 'high',            // 'none' | 'low' | 'medium' | 'high' — only 'high' is filled
+  status: 'tentative',     // 'tentative' | 'committed' | 'live' | 'done' | 'dead' — line style, never a hue
+  markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning', icon: <TriangleAlertIcon /> }],
+  accessibleName: 'Firewall rule update, high, tentative, 6 October 10:00 to 11:00',
+};
+// A window: neutral, hatched, named, focusable. `global: false` never gets the global treatment.
+const hold = { id: 'w1', label: 'Quarter close', kindLabel: 'Hold', scopeLabel: 'Payroll services', pattern: 'cross',
+  start: '2026-10-04T22:00:00Z', end: '2026-10-09T22:00:00Z' };
+
+// Controlled month: the consumer ranks, cuts and counts; the calendar renders what it is given.
+const grid = schedulingGridDays('2026-10-07', 'month', 1);
+const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, weekStartsOn: 1 }); // lanes in the order given
+<SchedulingCalendar timeZone="Europe/Berlin" anchorDate="2026-10-07" showHeader={false}
+  entries={multiDayEntries} overlays={[hold]} spanLayout={spanLayout}
+  dayEntries={{ '2026-10-07': topThree }}                                        // already ranked and cut
+  days={{ '2026-10-07': { count: 50, overflowCount: 47, label: '50 items' } }}   // "+47 more", never entries.length
+  maxEntriesPerDay={3} onShowMore={(date) => openDay(date)}                      // a controlled day never expands in place
+  onSelectEntry={openItem} onSelectOverlay={openWindow} onSelectDate={openDayView}
+  legend={legendOfWhatIsOnScreen} legendCaption="Times in Europe/Berlin"
+  notice={truncated && <p>Showing the first 2,000 items.</p>} emptyNote="Nothing is scheduled this month." />
+```
+
+- **Drawn once.** An entry or window that covers several days is one bar per week row, in lanes above the chips
+  (`windowLaneCap`, `spanLaneCap`, default 2 each). Windows never take a chip slot. A row with more spans than lanes
+  shows "+N" and calls `onShowMore` with the first day that has a hidden span.
+- **Day membership is end-exclusive in `timeZone`**: 22:00–00:00 is on its start day only.
+- **Fixed geometry.** With `days` / `dayEntries` (or `maxEntriesPerDay` plus `onShowMore`) every cell keeps one
+  height: the head, the lane caps, the chip rows and the "+N" line. A chip reads `HH:MM title` (24 h, in the zone)
+  unless `renderEntry` replaces it.
+- **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
+- **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
+  `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two
+  problem states show a marker with the word for that state.
+
 ### SchedulingTimeline
 
 Lanes of bars on a time axis (HAR-1364; TENSOR's change day/week timeline, rollout Gantt rows and licence-renewal

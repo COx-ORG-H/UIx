@@ -2078,6 +2078,9 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean;
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
+// @public
+export function itemDaySpan(start: string | number | Date, end: string | number | Date, timeZone: string): ZonedDaySpan;
+
 // @public (undocumented)
 export type JsonPrimitive = string | number | boolean | null;
 
@@ -2277,6 +2280,16 @@ export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: T
 
 // @public
 export function layoutLayeredGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], options?: LayeredLayoutOptions): LayeredLayout;
+
+// @public
+export function layoutMonthSpans(spans: readonly MonthSpanInput[], days: readonly string[], options: LayoutMonthSpansOptions): MonthSpanLayout;
+
+// @public (undocumented)
+export interface LayoutMonthSpansOptions {
+    laneCap?: number | Partial<Record<MonthSpanGroup, number>>;
+    timeZone: string;
+    weekStartsOn?: CalendarWeekday;
+}
 
 // @public (undocumented)
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
@@ -2766,6 +2779,26 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     title?: ReactNode;
 }
 
+// @public
+export type MonthSpanGroup = 'window' | 'item';
+
+// @public (undocumented)
+export interface MonthSpanInput {
+    // (undocumented)
+    end: string | number | Date;
+    group?: MonthSpanGroup;
+    // (undocumented)
+    id: string;
+    start: string | number | Date;
+}
+
+// @public (undocumented)
+export interface MonthSpanLayout {
+    firstHiddenDayByRow: Record<number, string>;
+    hiddenByRow: Record<number, string[]>;
+    placed: PlacedMonthSpan[];
+}
+
 // @public (undocumented)
 export function moveRuleNode(group: RuleGroup, id: string, direction: -1 | 1): RuleGroup;
 
@@ -3088,6 +3121,21 @@ export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 
 
 // @public
 export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number;
+
+// @public (undocumented)
+export interface PlacedMonthSpan {
+    continuesAfter: boolean;
+    continuesBefore: boolean;
+    // (undocumented)
+    endCol: number;
+    // (undocumented)
+    group: MonthSpanGroup;
+    // (undocumented)
+    id: string;
+    lane: number;
+    startCol: number;
+    weekRow: number;
+}
 
 // @public (undocumented)
 export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
@@ -3983,20 +4031,39 @@ export interface SaveStatusProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 export type SaveStatusState = 'idle' | 'saving' | 'saved' | 'failed';
 
 // @public
+export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
+
+// @public
 export function SchedulingCalendar(input: SchedulingCalendarProps): react.JSX.Element;
+
+// @public
+export interface SchedulingCalendarDay {
+    count: number;
+    label?: string;
+    // (undocumented)
+    markers?: SchedulingMarker[];
+    overflowCount: number;
+}
 
 // @public (undocumented)
 export interface SchedulingCalendarEntry {
+    accessibleName?: string;
+    // (undocumented)
+    band?: SchedulingBand;
     // (undocumented)
     end: string;
     // (undocumented)
     id: string;
     // (undocumented)
+    markers?: SchedulingMarker[];
+    // (undocumented)
     meta?: string;
     // (undocumented)
     start: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     state?: SchedulingEntryState;
+    // (undocumented)
+    status?: SchedulingStatus;
     // (undocumented)
     title: string;
 }
@@ -4007,7 +4074,7 @@ export interface SchedulingCalendarLabels {
     agenda: string;
     // (undocumented)
     agendaEmpty: string;
-    // (undocumented)
+    dayCount?: string;
     entry: string;
     fewerEntries: string;
     // (undocumented)
@@ -4018,16 +4085,27 @@ export interface SchedulingCalendarLabels {
     loading: string;
     moreEntries: string;
     moreEntriesLabel: string;
-    // (undocumented)
+    moreSpans?: string;
+    moreSpansLabel?: string;
+    // @deprecated (undocumented)
     next: string;
     // (undocumented)
+    nextMonth?: string;
+    // (undocumented)
+    nextWeek?: string;
+    overlay?: string;
+    // @deprecated (undocumented)
     previous: string;
+    // (undocumented)
+    previousMonth?: string;
+    previousWeek?: string;
     // (undocumented)
     region: string;
     // (undocumented)
     retry: string;
     // (undocumented)
     states: Record<SchedulingEntryState, string>;
+    statuses?: Partial<Record<SchedulingStatus, string>>;
     // (undocumented)
     viewAgenda: string;
     // (undocumented)
@@ -4040,14 +4118,18 @@ export interface SchedulingCalendarLabels {
 
 // @public (undocumented)
 export interface SchedulingCalendarOverlay {
+    accessibleName?: string;
     // (undocumented)
     end: string;
+    global?: boolean;
     // (undocumented)
     id: string;
-    // (undocumented)
-    kind: SchedulingOverlayKind;
-    // (undocumented)
+    // @deprecated (undocumented)
+    kind?: SchedulingOverlayKind;
+    kindLabel?: string;
     label: string;
+    pattern?: SchedulingOverlayPattern;
+    scopeLabel?: string;
     // (undocumented)
     start: string;
 }
@@ -4058,7 +4140,9 @@ export interface SchedulingCalendarProps {
     anchorDate: string;
     // (undocumented)
     className?: string;
-    // (undocumented)
+    dayEntries?: Record<string, SchedulingCalendarEntry[]>;
+    days?: Record<string, SchedulingCalendarDay>;
+    emptyNote?: ReactNode;
     entries: SchedulingCalendarEntry[];
     // (undocumented)
     error?: string;
@@ -4068,30 +4152,37 @@ export interface SchedulingCalendarProps {
     formatInstant?: (instant: string) => string;
     // (undocumented)
     labels?: Partial<SchedulingCalendarLabels>;
+    legend?: SchedulingLegendItem[];
+    legendCaption?: ReactNode;
     // (undocumented)
     loading?: boolean;
     // (undocumented)
     locale?: string;
     maxEntriesPerDay?: number;
+    notice?: ReactNode;
     // (undocumented)
     onAnchorDateChange?: (date: string) => void;
     // (undocumented)
     onRetry?: () => void;
-    // (undocumented)
+    onSelectDate?: (date: string) => void;
     onSelectEntry?: (entry: SchedulingCalendarEntry) => void;
+    onSelectOverlay?: (overlay: SchedulingCalendarOverlay) => void;
     onShowMore?: (date: string, entries: SchedulingCalendarEntry[]) => void;
     // (undocumented)
     onViewChange?: (view: SchedulingCalendarView) => void;
     // (undocumented)
     overlays?: SchedulingCalendarOverlay[];
     renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
-    // (undocumented)
     renderEntry?: (entry: SchedulingCalendarEntry) => ReactNode;
+    showHeader?: boolean;
+    spanLaneCap?: number;
+    spanLayout?: MonthSpanLayout;
     // (undocumented)
     timeZone: string;
     // (undocumented)
     view?: SchedulingCalendarView;
     weekStartsOn?: CalendarWeekday;
+    windowLaneCap?: number;
 }
 
 // @public (undocumented)
@@ -4100,11 +4191,49 @@ export type SchedulingCalendarView = 'month' | 'week' | 'agenda';
 // @public
 export type SchedulingDatePart = 'day' | 'weekday' | 'month';
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type SchedulingEntryState = 'scheduled' | 'conflicted' | 'in-progress' | 'blackout-violation';
 
+// @public
+export function schedulingGridDays(anchorDate: string, view: 'month' | 'week', weekStartsOn?: CalendarWeekday): string[];
+
 // @public (undocumented)
+export interface SchedulingLegendItem {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    swatch: {
+        band?: SchedulingBand;
+        status?: SchedulingStatus;
+        pattern?: SchedulingOverlayPattern;
+        icon?: ReactNode;
+    };
+}
+
+// @public
+export interface SchedulingMarker {
+    // (undocumented)
+    emphasis?: SchedulingMarkerEmphasis;
+    icon?: ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+}
+
+// @public (undocumented)
+export type SchedulingMarkerEmphasis = 'refused' | 'warning' | 'neutral';
+
+// @public @deprecated (undocumented)
 export type SchedulingOverlayKind = 'maintenance' | 'blackout';
+
+// @public
+export type SchedulingOverlayPattern = 'diagonal' | 'cross' | 'dotted' | 'solid';
+
+// @public
+export type SchedulingStatus = 'tentative' | 'committed' | 'live' | 'done' | 'dead';
 
 // @public
 export function SchedulingTimeline(input: SchedulingTimelineProps): react.JSX.Element;
@@ -5656,6 +5785,9 @@ export interface ZonedHourSlot {
 
 // @public
 export function zonedHourSlots(dateKey: string, timeZone: string): ZonedHourSlot[];
+
+// @public
+export function zonedTimeOfDay(instant: string | number | Date, timeZone: string): string;
 
 // (No @packageDocumentation comment for this package)
 

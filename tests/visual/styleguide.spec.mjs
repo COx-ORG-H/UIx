@@ -32,6 +32,9 @@ const PAGES = [
   // Select draws its own list (HAR-1572): every state at desktop width and at 320 px.
   { name: 'docs-select', path: 'docs/explorer.html#select' },
   { name: 'docs-select-320', path: 'docs/explorer.html#select', viewport: { width: 320, height: 844 } },
+  // HAR-1506: the calendar page is the React component's own markup (month, the consumer-owned
+  // month and an empty week), with the timeline specimen below it.
+  { name: 'docs-scheduling-calendar', path: 'docs/explorer.html#examples-scheduling-calendar' },
 ];
 
 for (const pg of PAGES) {
