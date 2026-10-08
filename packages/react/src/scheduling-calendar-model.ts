@@ -285,8 +285,11 @@ export function layoutDaySpans(spans: readonly MonthSpanInput[], days: readonly 
   if (days.length === 0) throw new RangeError('layoutDaySpans: days is empty');
   const rowStart = days[0]!;
   const rowEnd = addCalendarDays(days[days.length - 1]!, 1);
+  const seen = new Set<string>();
   const inRow = spans
-    .map((span) => ({ id: span.id, days: itemDaySpan(span.start, span.end, options.timeZone) }))
+    // A repeated id is placed once (the first). A span that ends before it starts covers its start day.
+    .filter((span) => (seen.has(span.id) ? false : (seen.add(span.id), true)))
+    .map((span) => ({ id: span.id, days: itemDaySpan(span.start, instantMs(span.end) < instantMs(span.start) ? span.start : span.end, options.timeZone) }))
     .filter((span) => span.days.start < rowEnd && span.days.end > rowStart)
     .map((span) => {
       const from = span.days.start > rowStart ? span.days.start : rowStart;
@@ -320,7 +323,9 @@ export interface MoveProposal {
  * The window `[start, end)` moved by `minutes` of real time and then by `days` calendar days.
  * A day move keeps the wall-clock start and end (`addZonedDays`), whatever the length of the
  * days in between. Compute it from the original window every time, so that a time falling in
- * a clock-change gap moves forward once, never twice.
+ * a clock-change gap moves forward once, never twice. When a clock change on the target day
+ * would put the wall-clock end at or before the start (a window that sits on the skipped or
+ * repeated hour), the end keeps the real length of the window instead.
  */
 export function proposeMove(span: { start: string | number | Date; end: string | number | Date }, delta: { days?: number; minutes?: number }, timeZone: string): MoveProposal {
   const shift = (delta.minutes ?? 0) * MINUTE_MS;
@@ -329,5 +334,8 @@ export function proposeMove(span: { start: string | number | Date; end: string |
   if (!delta.days) return { start: start.toISOString(), end: end.toISOString(), adjusted: null };
   const movedStart = addZonedDays(start, delta.days, timeZone);
   const movedEnd = addZonedDays(end, delta.days, timeZone);
-  return { start: movedStart.instant.toISOString(), end: movedEnd.instant.toISOString(), adjusted: movedStart.adjusted ?? movedEnd.adjusted };
+  const length = end.getTime() - start.getTime();
+  const collapsed = length > 0 && movedEnd.instant.getTime() <= movedStart.instant.getTime();
+  const proposedEnd = collapsed ? new Date(movedStart.instant.getTime() + length) : movedEnd.instant;
+  return { start: movedStart.instant.toISOString(), end: proposedEnd.toISOString(), adjusted: movedStart.adjusted ?? movedEnd.adjusted };
 }
