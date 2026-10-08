@@ -7,6 +7,7 @@
 import { AnchorHTMLAttributes } from 'react';
 import { AriaAttributes } from 'react';
 import { ButtonHTMLAttributes } from 'react';
+import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
@@ -195,12 +196,17 @@ export interface AvatarGroupProps extends HTMLAttributes<HTMLSpanElement> {
     children?: ReactNode;
 }
 
+// @public
+export type AvatarPresence = 'online' | 'busy' | 'away' | 'offline';
+
 // @public (undocumented)
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     alt?: string;
     children?: ReactNode;
     onlineLabel?: string;
+    presence?: AvatarPresence;
+    presenceLabels?: Partial<Record<AvatarPresence, string>>;
     // (undocumented)
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     // (undocumented)
@@ -806,6 +812,7 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
     inputLabel?: string;
     inputProps?: InputHTMLAttributes<HTMLInputElement>;
+    resultsLabel?: (count: number) => string;
 }
 
 // @public
@@ -980,10 +987,90 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 export type DashboardGridSpan = 1 | 2 | 'full';
 
 // @public
+export type DateInputProblem = 'format' | 'unavailable';
+
+// @public
+export function dateOrder(locale?: string | readonly string[]): DatePart[];
+
+// @public
+export type DatePart = 'day' | 'month' | 'year';
+
+// @public
+export function datePattern(locale?: string | readonly string[]): string;
+
+// @public
+export const DatePicker: react.ForwardRefExoticComponent<DatePickerProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface DatePickerLabels {
+    calendar: string;
+    invalidDate: string;
+    // (undocumented)
+    nextMonth: string;
+    notADate: string;
+    open: string;
+    openSelected: string;
+    // (undocumented)
+    previousMonth: string;
+    unavailable: string;
+}
+
+// @public (undocumented)
+export interface DatePickerProps {
+    // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    formatDate?: (date: string) => string;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    isUnavailable?: (date: string) => boolean;
+    labels?: Partial<DatePickerLabels>;
+    // (undocumented)
+    locale?: string;
+    // (undocumented)
+    max?: string;
+    min?: string;
+    name?: string;
+    onInputProblem?: (problem: DateInputProblem | null) => void;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    // (undocumented)
+    onValueChange: (value: string | null) => void;
+    parseDate?: (text: string) => string | null;
+    placeholder?: string;
+    placement?: Placement;
+    // (undocumented)
+    readOnly?: boolean;
+    // (undocumented)
+    required?: boolean;
+    // (undocumented)
+    size?: 'sm' | 'md';
+    // (undocumented)
+    style?: CSSProperties;
+    today?: string | null;
+    value: string | null;
+    weekStartsOn?: CalendarWeekday;
+}
+
+// @public
 export function DateRangePicker(input: DateRangePickerProps): react.JSX.Element;
 
 // @public
 export interface DateRangePickerLabels {
+    fieldRange: string;
+    fieldStart: string;
     // (undocumented)
     inRange: string;
     // (undocumented)
@@ -992,6 +1079,7 @@ export interface DateRangePickerLabels {
     nextMonth: string;
     // (undocumented)
     noneSelected: string;
+    placeholder: string;
     // (undocumented)
     previous: string;
     // (undocumented)
@@ -1009,9 +1097,15 @@ export interface DateRangePickerLabels {
 // @public (undocumented)
 export interface DateRangePickerProps {
     // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
     className?: string;
     // (undocumented)
     disabled?: boolean;
+    formatDate?: (date: string) => string;
+    id?: string;
     // (undocumented)
     invalid?: boolean;
     // (undocumented)
@@ -1027,17 +1121,22 @@ export interface DateRangePickerProps {
     max?: string;
     // (undocumented)
     min?: string;
+    mode?: 'inline' | 'field';
     // (undocumented)
     months?: number;
     // (undocumented)
     onChange: (value: DateRangeValue) => void;
+    onOpenChange?: (open: boolean) => void;
     // (undocumented)
     onVisibleMonthChange?: (month: string) => void;
+    placement?: Placement;
+    size?: 'sm' | 'md';
     today?: string | null;
     // (undocumented)
     value: DateRangeValue;
     // (undocumented)
     visibleMonth?: string;
+    weekStartsOn?: CalendarWeekday;
 }
 
 // @public (undocumented)
@@ -1046,6 +1145,33 @@ export interface DateRangeValue {
     end?: string;
     // (undocumented)
     start?: string;
+}
+
+// @public
+export const DateTimePicker: react.ForwardRefExoticComponent<DateTimePickerProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface DateTimePickerLabels extends DatePickerLabels {
+    date: string;
+    time: string;
+    timeOf: string;
+    timeZone: string;
+}
+
+// @public (undocumented)
+export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'onValueChange' | 'labels' | 'min' | 'max'> {
+    defaultTime?: string;
+    // (undocumented)
+    labels?: Partial<DateTimePickerLabels>;
+    // (undocumented)
+    max?: string;
+    min?: string;
+    minuteStep?: number;
+    // (undocumented)
+    onValueChange: (value: string | null) => void;
+    timeZone?: string;
+    timeZoneLabel?: string | null;
+    value: string | null;
 }
 
 // @public (undocumented)
@@ -1072,7 +1198,13 @@ export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_DATE_PICKER_LABELS: DatePickerLabels;
+
+// @public (undocumented)
 export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_DATE_TIME_PICKER_LABELS: DateTimePickerLabels;
 
 // @public (undocumented)
 export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
@@ -1090,6 +1222,9 @@ export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels;
 export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels;
 
 // @public (undocumented)
+export const DEFAULT_INLINE_EDIT_LABELS: InlineEditLabels;
+
+// @public (undocumented)
 export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
 
 // @public (undocumented)
@@ -1097,6 +1232,9 @@ export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels;
 
 // @public (undocumented)
 export const DEFAULT_PAGINATION_LABELS: PaginationLabels;
+
+// @public
+export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 
 // @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
@@ -1124,6 +1262,9 @@ export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public (undocumented)
 export const DEFAULT_TEXT_DIFF_LABELS: TextDiffLabels;
+
+// @public (undocumented)
+export const DEFAULT_TREE_LABELS: TreeLabels;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
@@ -1412,11 +1553,15 @@ export interface EntityPickerLabels {
     error: string;
     // (undocumented)
     loading: string;
+    more: string;
     none: string;
     results: string;
+    resultsMore: string;
     // (undocumented)
     retry: string;
     search: string;
+    tooShort: string;
+    typeToSearch: string;
 }
 
 // @public (undocumented)
@@ -1431,17 +1576,23 @@ export interface EntityPickerProps {
     // (undocumented)
     invalid?: boolean;
     label: string;
-    // (undocumented)
     labels?: Partial<EntityPickerLabels>;
     minQueryLength?: number;
     name?: string;
-    onSearch: (query: string) => Promise<readonly SearchSuggestOption[]>;
+    onSearch: (query: string) => Promise<readonly SearchSuggestOption[] | EntityPickerSearchResult>;
     // (undocumented)
     onValueChange: (next: SearchSuggestOption | null) => void;
     // (undocumented)
     placeholder?: string;
     renderValue?: (option: SearchSuggestOption) => ReactNode;
     value: SearchSuggestOption | null;
+}
+
+// @public
+export interface EntityPickerSearchResult {
+    hasMore?: boolean;
+    // (undocumented)
+    options: readonly SearchSuggestOption[];
 }
 
 // @public
@@ -1932,6 +2083,9 @@ export function foldForSearch(text: string): FoldedText;
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
 
 // @public
+export function formatDateKey(value: string, locale?: string | readonly string[]): string;
+
+// @public
 export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
 
 // @public
@@ -2035,6 +2189,55 @@ export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
     placement?: Placement;
 }
 
+// @public
+export function InlineEdit(input: InlineEditProps): react.JSX.Element;
+
+// @public
+export interface InlineEditEditorProps {
+    // (undocumented)
+    cancel: () => void;
+    field: {
+        id: string;
+        'aria-label': string;
+        'aria-describedby': string | undefined;
+        'aria-invalid': true | undefined;
+        disabled: boolean;
+    };
+    // (undocumented)
+    onChange: (next: string) => void;
+    save: () => void;
+    value: string;
+}
+
+// @public
+export interface InlineEditLabels {
+    // (undocumented)
+    cancel: string;
+    edit: string;
+    empty: string;
+    failed: string;
+    // (undocumented)
+    save: string;
+    saved: string;
+    saving: string;
+}
+
+// @public (undocumented)
+export interface InlineEditProps {
+    // (undocumented)
+    className?: string;
+    disabled?: boolean;
+    label: string;
+    labels?: Partial<InlineEditLabels>;
+    multiline?: boolean;
+    onSave: (next: string) => void | Promise<void>;
+    placeholder?: ReactNode;
+    renderEditor?: (props: InlineEditEditorProps) => ReactNode;
+    renderView?: (value: string) => ReactNode;
+    validate?: (next: string) => ReactNode | undefined;
+    value: string;
+}
+
 // @public (undocumented)
 export const Input: react.ForwardRefExoticComponent<InputProps & react.RefAttributes<HTMLInputElement>>;
 
@@ -2087,7 +2290,13 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean;
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
 // @public
+export function isValidDateKey(value: string): boolean;
+
+// @public
 export function itemDaySpan(start: string | number | Date, end: string | number | Date, timeZone: string): ZonedDaySpan;
+
+// @public
+export function joinDateTime(date: string | null, time: string, fallbackTime?: string): string | null;
 
 // @public (undocumented)
 export type JsonPrimitive = string | number | boolean | null;
@@ -3053,6 +3262,9 @@ export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
     summary?: ReactNode;
 }
 
+// @public
+export function parseDateInput(text: string, locale?: string | readonly string[]): string | null;
+
 // @public (undocumented)
 export function parseDateValue(value: Date | number | string): Date | null;
 
@@ -3295,6 +3507,16 @@ export interface PositionResult {
     y: number;
 }
 
+// @public
+export function PresenceDot(input: PresenceDotProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    label?: string | null;
+    // (undocumented)
+    presence: AvatarPresence;
+}
+
 // @public (undocumented)
 export type Primitive = string | number | boolean | null | undefined;
 
@@ -3366,6 +3588,16 @@ export interface ProseProps extends HTMLAttributes<HTMLDivElement> {
 // @public (undocumented)
 export const Radio: react.ForwardRefExoticComponent<RadioProps & react.RefAttributes<HTMLInputElement>>;
 
+// @public
+export const RadioCard: react.ForwardRefExoticComponent<RadioCardProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public (undocumented)
+export interface RadioCardProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'title'> {
+    description?: ReactNode;
+    media?: ReactNode;
+    title: ReactNode;
+}
+
 // @public (undocumented)
 export function RadioGroup(input: RadioGroupProps): react.JSX.Element;
 
@@ -3376,6 +3608,7 @@ export interface RadioGroupProps {
     // (undocumented)
     className?: string;
     label?: ReactNode;
+    variant?: 'list' | 'card';
 }
 
 // @public (undocumented)
@@ -4508,6 +4741,7 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     heading?: string;
     headingAction?: SearchSuggestAction;
     highlight?: string;
+    idle?: ReactNode;
     inputDescribedBy?: string;
     inputId?: string;
     inputRef?: Ref<HTMLInputElement | null>;
@@ -4515,6 +4749,7 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     loading?: boolean;
     loadingLabel?: string;
     name?: string;
+    note?: ReactNode;
     onOpenChange?: (open: boolean) => void;
     onSelect: (id: string, option: SearchSuggestOption) => void;
     onValueChange: (value: string) => void;
@@ -4750,6 +4985,12 @@ export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
     label?: string;
     size?: 'sm' | 'md' | 'lg';
 }
+
+// @public
+export function splitDateTime(value: string | null | undefined): {
+    date: string | null;
+    time: string;
+};
 
 // @public
 export function StarButton(input: StarButtonProps): react.JSX.Element;
@@ -5277,6 +5518,9 @@ export interface TimelineTick {
 // @public
 export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZone: string, weekStartsOn?: number): TimelineTick[];
 
+// @public
+export function timeZoneName(timeZone: string, date: string | null, locale?: string | readonly string[]): string;
+
 // @public (undocumented)
 export function Toast(input: ToastProps): react.JSX.Element;
 
@@ -5470,6 +5714,13 @@ export function traverseRelationshipNode(nodes: RelationshipGraphNode[], current
 export function Tree(input: TreeProps): react.JSX.Element;
 
 // @public
+export interface TreeLabels {
+    error: string;
+    loading: string;
+    retry: string;
+}
+
+// @public
 export interface TreeLike<T> {
     // (undocumented)
     children?: T[];
@@ -5493,6 +5744,7 @@ export interface TreeNavAction {
 export interface TreeNodeData {
     // (undocumented)
     children?: TreeNodeData[];
+    hasChildren?: boolean;
     // (undocumented)
     icon?: ReactNode;
     // (undocumented)
@@ -5504,6 +5756,7 @@ export interface TreeNodeData {
 
 // @public (undocumented)
 export interface TreeNodeProps {
+    busy?: ReadonlySet<string>;
     // (undocumented)
     expanded: Set<string>;
     // (undocumented)
@@ -5531,6 +5784,8 @@ export interface TreeProps extends Omit<HTMLAttributes<HTMLUListElement>, 'onSel
     defaultExpanded?: Set<string>;
     // (undocumented)
     expanded?: Set<string>;
+    labels?: Partial<TreeLabels>;
+    loadChildren?: (node: TreeNodeData) => Promise<TreeNodeData[]>;
     maxHeight?: number;
     // (undocumented)
     nodes: TreeNodeData[];
@@ -5571,9 +5826,10 @@ export interface UixLabels {
     chip?: {
         remove?: string;
     };
-    // (undocumented)
     commandPalette?: {
         input?: string;
+        resultsOne?: string;
+        resultsMany?: string;
     };
     // (undocumented)
     confirmDialog?: {
@@ -5581,15 +5837,23 @@ export interface UixLabels {
         compensation?: string;
     };
     // (undocumented)
+    datePicker?: Partial<DatePickerLabels>;
+    // (undocumented)
     dateRangePicker?: Partial<DateRangePickerLabels>;
+    // (undocumented)
+    dateTimePicker?: Partial<DateTimePickerLabels>;
     // (undocumented)
     drawer?: {
         close?: string;
     };
     // (undocumented)
+    entityPicker?: Partial<EntityPickerLabels>;
+    // (undocumented)
     fileUpload?: Partial<FileUploadLabels>;
     // (undocumented)
     filterEditor?: Partial<FilterEditorLabels>;
+    // (undocumented)
+    inlineEdit?: Partial<InlineEditLabels>;
     // (undocumented)
     modal?: {
         close?: string;
@@ -5628,6 +5892,8 @@ export interface UixLabels {
     toaster?: {
         region?: string;
     };
+    // (undocumented)
+    tree?: Partial<TreeLabels>;
 }
 
 // @public

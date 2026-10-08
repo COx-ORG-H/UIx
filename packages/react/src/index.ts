@@ -37,7 +37,7 @@ export { filterComboboxOptions } from './combobox-model.js';
 
 export { SearchSuggest } from './components/SearchSuggest.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
-export type { EntityPickerProps, EntityPickerLabels } from './components/EntityPicker.js';
+export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';
 export { searchSegments, foldForSearch } from './search-suggest-model.js';
 export type { SearchSegment, FoldedText } from './search-suggest-model.js';
@@ -45,14 +45,17 @@ export type { SearchSegment, FoldedText } from './search-suggest-model.js';
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
+export { InlineEdit, DEFAULT_INLINE_EDIT_LABELS } from './components/InlineEdit.js';
+export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps } from './components/InlineEdit.js';
+
 export { Select } from './components/Select.js';
 export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 
 export { Checkbox } from './components/Checkbox.js';
 export type { CheckboxProps } from './components/Checkbox.js';
 
-export { Radio, RadioGroup } from './components/Radio.js';
-export type { RadioProps, RadioGroupProps } from './components/Radio.js';
+export { Radio, RadioCard, RadioGroup } from './components/Radio.js';
+export type { RadioProps, RadioCardProps, RadioGroupProps } from './components/Radio.js';
 
 export { Switch } from './components/Switch.js';
 export type { SwitchProps } from './components/Switch.js';
@@ -221,8 +224,8 @@ export type { AsyncOperationStatusProps, AsyncOperationState } from './component
 export { Label } from './components/Label.js';
 export type { LabelProps } from './components/Label.js';
 
-export { Avatar, AvatarGroup, UserChip } from './components/Avatar.js';
-export type { AvatarProps, AvatarGroupProps, UserChipProps } from './components/Avatar.js';
+export { Avatar, AvatarGroup, PresenceDot, UserChip, DEFAULT_PRESENCE_LABELS } from './components/Avatar.js';
+export type { AvatarProps, AvatarGroupProps, UserChipProps, AvatarPresence, PresenceDotProps } from './components/Avatar.js';
 
 export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
@@ -283,8 +286,8 @@ export type { InboxProps, InboxListProps, InboxItemProps, InboxDetailProps } fro
 export { Kanban, KanbanColumn, KanbanCard } from './components/Kanban.js';
 export type { KanbanProps, KanbanColumnProps, KanbanCardProps, KanbanMoveDirection } from './components/Kanban.js';
 
-export { Tree } from './components/Tree.js';
-export type { TreeProps, TreeNodeData, TreeNodeProps } from './components/Tree.js';
+export { Tree, DEFAULT_TREE_LABELS } from './components/Tree.js';
+export type { TreeProps, TreeNodeData, TreeNodeProps, TreeLabels } from './components/Tree.js';
 
 // Tree model — framework-agnostic flatten + keyboard-nav helpers (drive plain + virtualized Tree)
 export { flattenTree, treeNav } from './tree-model.js';
@@ -353,6 +356,14 @@ export type { PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineTi
 
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
 export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
+export { DatePicker, DateTimePicker, DEFAULT_DATE_PICKER_LABELS, DEFAULT_DATE_TIME_PICKER_LABELS } from './components/DatePicker.js';
+export type {
+  DateInputProblem, DatePickerLabels, DatePickerProps, DateTimePickerLabels, DateTimePickerProps,
+} from './components/DatePicker.js';
+export {
+  dateOrder, datePattern, formatDateKey, isValidDateKey, joinDateTime, parseDateInput, splitDateTime, timeZoneName,
+} from './date-field-model.js';
+export type { DatePart } from './date-field-model.js';
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
   isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,

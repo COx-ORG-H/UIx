@@ -59,6 +59,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-form-controls",
     "selector": ".uix-dropzone"
   },
+  "date-picker": {
+    "route": "examples-form-controls",
+    "selector": ".uix-date-picker",
+    "container": "[data-date-fields-example]"
+  },
   "date-range-picker": {
     "route": "examples-date-range-picker",
     "selector": ".uix-date-range-picker"
@@ -183,6 +188,11 @@ export const COMPONENT_SPECIMENS = {
   "tooltip": {
     "route": "examples-data-display",
     "selector": ".uix-tooltip"
+  },
+  "inline-edit": {
+    "route": "examples-form-controls",
+    "selector": ".uix-inline-edit",
+    "container": "[data-inline-edit-example]"
   },
   "info-tip": {
     "route": "examples-data-display",

@@ -60,6 +60,17 @@ export interface SearchSuggestProps
   empty?: ReactNode;
   /** Shown instead of the empty state when suggestions could not be loaded. */
   error?: ReactNode;
+  /**
+   * Shown in the open list when there is nothing else to show there: no options, nothing
+   * loading, no error and no empty state. For a search that has not started yet, e.g.
+   * "Type at least 2 characters." (HAR-1648).
+   */
+  idle?: ReactNode;
+  /**
+   * A line under the options that is not an option: arrow keys skip it and it cannot be
+   * chosen. For "More matches. Keep typing to narrow the search." when the results were cut off.
+   */
+  note?: ReactNode;
   /** A keyboard hint shown in the empty, unfocused field, e.g. "/". */
   shortcutHint?: string;
   /** Accessible name of the clear button (default "Clear search"). */
@@ -141,6 +152,8 @@ export function SearchSuggest({
   loading = false,
   loadingLabel,
   empty,
+  idle,
+  note,
   error,
   shortcutHint,
   clearLabel: clearLabelProp,
@@ -186,7 +199,8 @@ export function SearchSuggest({
   const hasText = value.trim().length > 0;
   const showEmpty = hasText && !loading && !error && options.length === 0 && empty != null;
   const showLoading = loading && options.length === 0;
-  const visible = open && (itemCount > 0 || showLoading || showEmpty || error != null);
+  const showIdle = idle != null && itemCount === 0 && !loading && error == null && !showEmpty;
+  const visible = open && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
   const optionId = (index: number) => `${id}-option-${index}`;
 
   useEffect(() => {
@@ -415,6 +429,8 @@ export function SearchSuggest({
         )}
         {error != null && options.length === 0 && !loading && <div className="uix-search-suggest__state">{error}</div>}
         {showEmpty && <div className="uix-search-suggest__state">{empty}</div>}
+        {showIdle && <div className="uix-search-suggest__state">{idle}</div>}
+        {note != null && options.length > 0 && <div className="uix-search-suggest__note">{note}</div>}
       </div>
       <span className="uix-visually-hidden" role="status" aria-live="polite">{status ?? ''}</span>
     </div>

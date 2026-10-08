@@ -8,6 +8,18 @@
 <!-- lesson-skip: 8c831c1 routine CSS layout fixes; each cause shown by measuring the element -->
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
+<!-- lesson-skip: 1dafe90 routine: inputmode="numeric" has no separators on a phone keypad; pinned by a test -->
+<!-- lesson-skip: 74a9cea already recorded: "An a11y scan only sees the states a specimen renders at load" (HAR-1630 paragraph) and settleOverlay under 5ddce2e -->
+<!-- lesson-skip: 17a8271 routine CSS wrap fix; the brief measured the cause -->
+<!-- lesson-skip: 9cbe96d routine: Escape handled on the popover only, not on the field; the CI failure named the handler that heard it -->
+<!-- lesson-skip: 01ccebe same cause as the 3e0ff88 entry (StrictMode runs updaters and cleanups twice); pinned by a test -->
+<!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
+
+### 2026-10-08 · jsdom vs browser · `3e0ff88`
+- **Rule:** when an action replaces the element it was triggered from (a row re-keyed from "error" to "loading"), decide where focus goes and assert `document.activeElement` after it; in a browser focus falls to `<body>`, and a test that only reads the rows' text passes.  **Why:** `Tree` Retry lost focus; jsdom tests checked text only.
+- **Rule:** a `useRef(true)` "mounted" flag cleared in a cleanup must also be set in the effect body. StrictMode runs the cleanup once before the real mount, so the flag stays `false` and every async result is dropped.  **Why:** `InlineEdit` stayed busy after any async save in a StrictMode app.
+- **Rule:** look at a mark of 10 px or less in a `deviceScaleFactor: 4` screenshot before calling it done. The avatar's own `overflow: hidden` had clipped its status dot to a quarter since the first release; a normal-scale golden cannot show it.
+- **Gate:** `tests/a11y/older-gaps.spec.mjs` (a StrictMode harness: focus after Retry, a failed async save, the avatar's computed `overflow`) and the StrictMode case in `inline-edit-dom.test.mjs`.  **Tag:** focus, StrictMode, visual
 
 ### 2026-10-08 · anchored overlays · `5ddce2e`
 - **Rule:** no written inset value keeps a CSS-anchor-positioned box inside the viewport while the page scrolls. The browser moves the box with its anchor *after* it resolved `top` / `left`, so `max(8px, min(anchor(bottom), 248px))` clamps at layout time and then rides out with the scroll; with `position-anchor` set, even a plain `top: 248px` is offset. A box that must not leave the viewport gets fixed coordinates and no `position-anchor`; anchoring is for boxes with room to spare.  **Why:** the first HAR-1613 implementation wrote exactly that clamp. jsdom has no anchor positioning, so every unit test passed.  **Gate:** `tests/a11y/overlay-shift.spec.mjs` scrolls a 384 px panel at 320 × 640 in Chromium, with and without anchor positioning; 9 of its tests failed on the clamp. Model: Opus 5.5.  **Tag:** false-green, overlay-position, test-double-fidelity

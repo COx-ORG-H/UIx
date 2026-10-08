@@ -80,6 +80,7 @@
 @import "components/scheduling-calendar.css";
 @import "components/scheduling-timeline.css";
 @import "components/date-range-picker.css";
+@import "components/date-picker.css";
 @import "components/relationship-graph.css";
 @import "components/match-review.css";
 @import "components/metric-input.css";

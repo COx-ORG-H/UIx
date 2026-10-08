@@ -872,3 +872,113 @@ const v = useVirtualRows(rows, { rowHeight: 44, estimatedViewportHeight: 600, en
 
 The density options no longer break a label inside a word at phone width ("Großzügig"); options
 that do not fit one row wrap as whole options.
+
+### Date fields, InlineEdit and other older gaps (2.36.0)
+
+Older kit issues that TENSOR's triage still found blocking on 2026-10-08. Everything is additive.
+
+#### DatePicker, DateTimePicker, DateRangePicker `mode="field"`
+
+```tsx
+<Field label={t('dueDate')} hint={t('workingDaysOnly')}>
+  <DatePicker value={due} onValueChange={setDue} name="due" locale={locale} weekStartsOn={1}
+    min="2026-11-02" max="2026-12-31" isUnavailable={isWeekend} />
+</Field>
+
+<Field label={t('starts')}>
+  <DateTimePicker value={starts} onValueChange={setStarts} timeZone="Europe/Vienna" minuteStep={15} />
+</Field>
+
+<DateRangePicker mode="field" value={period} onChange={setPeriod} label={t('period')} locale={locale} />
+```
+
+- **`DatePicker`** is a text input that shows the date and reads a typed one, with a button that
+  opens one month in a popover. The value is ISO `YYYY-MM-DD` or `null`; `name` submits it in a
+  hidden input whatever the field shows.
+- **Typing:** read on Enter and when focus leaves. ISO is always accepted; otherwise three numbers
+  in the locale's order (`3.4.2026` is 3 April in German, `3/4/2026` is 4 March in en-US). Text
+  that is not a date, or a date outside `min` / `max` / `isUnavailable`, marks the field invalid,
+  says why, and leaves `value` alone (`onInputProblem` tells a form). Clearing the field sets
+  `null`.
+- **Format:** the locale's numeric date by default. `formatDate` changes what the field writes;
+  pass `parseDate` with it when your format is not three numbers, and a `placeholder` so the
+  message can name the shape.
+- **Calendar keys:** arrows by day and week, Home / End to the ends of the week, PageUp / PageDown
+  by month, with Shift by year. Focus never leaves `min` / `max`; a day refused by `isUnavailable`
+  can take focus and is read out, but cannot be chosen. ArrowDown in the field opens the
+  calendar; Escape closes it, returns focus to the field and does not close a drawer around it.
+- **`DateTimePicker`** adds a time input. The value is `YYYY-MM-DDTHH:mm`, the shape
+  `datetime-local` holds, so it replaces that input without changing what a form submits. The
+  zone the wall clock is in is shown beside the time and is its description: `timeZone` shows
+  that zone's short name on the chosen day (it follows daylight saving), `timeZoneLabel` replaces
+  the text, and without either the viewer's own zone is shown. The value carries no zone.
+- **`DateRangePicker mode="field"`** is a trigger that shows the range and opens the months in a
+  popover; it closes when the range has both ends. `DateRangePicker` also takes `weekStartsOn`.
+- **Words:** `UixLabelsProvider` `datePicker`, `dateTimePicker` and the three new
+  `dateRangePicker` keys (`placeholder`, `fieldStart`, `fieldRange`).
+- **Helpers:** `parseDateInput`, `formatDateKey`, `datePattern`, `dateOrder`, `isValidDateKey`,
+  `splitDateTime`, `joinDateTime`, `timeZoneName`.
+
+#### InlineEdit
+
+```tsx
+<DescriptionItem term={t('title')}>
+  <InlineEdit label={t('title')} value={record.title} onSave={(next) => api.rename(record.id, next)}
+    validate={(next) => (next.trim() ? undefined : t('titleRequired'))} />
+</DescriptionItem>
+```
+
+The value is a button named by the value and "Edit {label}". Activating it swaps in an editor with
+Save and Cancel: Enter saves (Ctrl/⌘+Enter in `multiline`), Escape cancels without reaching a
+drawer around it, and nothing is saved on blur. A promise from `onSave` shows the busy state; a
+rejection keeps the draft and shows the reason. Afterwards focus is back on the value.
+`renderView` and `renderEditor` replace either half (a `Select`, a `DatePicker`); `disabled`
+renders plain text. Words: `labels` or `UixLabelsProvider` `inlineEdit`.
+
+#### RadioCard
+
+```tsx
+<RadioGroup variant="card" label={t('rollout')}>
+  <RadioCard name="rollout" value="team" title={t('oneTeam')} description={t('oneTeamHint')}
+    checked={rollout === 'team'} onChange={() => setRollout('team')} />
+  …
+</RadioGroup>
+```
+
+A native radio inside a card: one tab stop for the group, arrow keys choose, the whole card is
+the target. The choice is a border and a check mark, not colour alone. `media` puts a preview
+above the text. The grid wraps to one column on a phone.
+
+#### Tree loads children on expand
+
+```tsx
+<Tree nodes={roots} loadChildren={(node) => api.org.children(node.id)} />   // roots: { id, label, hasChildren: true }
+```
+
+A node with `hasChildren` and no `children` is expandable. The first time it is expanded
+`loadChildren` runs: the node is `aria-busy` and shows a loading row; a rejection shows an error
+row whose Enter, Space or click retries. Focus follows the row that replaces the one it was on,
+and lands on the node once its children are there. The tree keeps the loaded children; pass them
+back in `nodes` when you own the data. Words: `labels` or `UixLabelsProvider` `tree`.
+
+#### Avatar presence
+
+```tsx
+<Avatar presence="busy" src={user.photo} alt={user.name} />   <PresenceDot presence="away" />
+```
+
+`presence` is `online` (a filled dot), `busy` (a dot with a bar), `away` and `offline` (two
+rings): a shape as well as a colour, and the state in visually hidden text (`presenceLabels`
+translates it). `status` is still `presence="online"`. `PresenceDot` is the dot alone, named by
+its state (`label={null}` makes it decorative). Fixed: the dot was clipped to a quarter by the avatar's round
+mask; an avatar with a dot no longer clips it.
+
+#### EntityPicker and CommandPalette words
+
+- `EntityPicker onSearch` may resolve `{ options, hasMore: true }` when its list was cut off: the
+  list ends with a row that says more match (not an option; arrow keys skip it) and the polite
+  status says so too. Below `minQueryLength` the open list shows "Type at least {count}
+  characters." Both, and every other word, come from `labels` or `UixLabelsProvider`
+  `entityPicker`. `SearchSuggest` has the two slots these use: `idle` and `note`.
+- `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
+  (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
+import { useUixLabels } from '../labels-context.js';
 import { SearchSuggest } from './SearchSuggest.js';
 import type { SearchSuggestOption } from './SearchSuggest.js';
 
@@ -22,6 +23,17 @@ export interface EntityPickerLabels {
   none: string;
   /** Polite count after a search. `{count}`. */
   results: string;
+  /**
+   * The last line of the list when the search found more than it returned (HAR-1648). Not an
+   * option: it cannot be chosen.
+   */
+  more: string;
+  /** Polite count when there are more matches than shown. `{count}` is the number shown. */
+  resultsMore: string;
+  /** Shown in the open list while the query is shorter than `minQueryLength`. `{count}`. */
+  tooShort: string;
+  /** The same when `minQueryLength` is 1. */
+  typeToSearch: string;
 }
 
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels = {
@@ -34,14 +46,29 @@ export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels = {
   change: '{label}: {title}. Change',
   none: 'Choose…',
   results: '{count} results',
+  more: 'More matches. Keep typing to narrow the search.',
+  resultsMore: '{count} results shown, more match. Keep typing to narrow the search.',
+  tooShort: 'Type at least {count} characters.',
+  typeToSearch: 'Type to search.',
 };
+
+/** What `onSearch` may resolve to when it knows its list was cut off. */
+export interface EntityPickerSearchResult {
+  options: readonly SearchSuggestOption[];
+  /** There are more matches than `options` holds: the list ends with the `more` line. */
+  hasMore?: boolean;
+}
 
 export interface EntityPickerProps {
   /** The chosen record, or null. */
   value: SearchSuggestOption | null;
   onValueChange: (next: SearchSuggestOption | null) => void;
-  /** Finds records for the query; a rejection shows the error state with a Retry row. */
-  onSearch: (query: string) => Promise<readonly SearchSuggestOption[]>;
+  /**
+   * Finds records for the query; a rejection shows the error state with a Retry row. Resolve
+   * with the options, or with `{ options, hasMore: true }` when the list was cut off (a page of
+   * 20 out of many): the list then says that more match.
+   */
+  onSearch: (query: string) => Promise<readonly SearchSuggestOption[] | EntityPickerSearchResult>;
   /** The field's name (the visible label usually comes from a surrounding `Field`). */
   label: string;
   /** Id of the control, for `Field htmlFor`/`label for`. */
@@ -49,7 +76,10 @@ export interface EntityPickerProps {
   /** Hidden form value: the chosen record's id. */
   name?: string;
   placeholder?: string;
-  /** Search only from this many characters. Default 0 (an empty query lists suggestions). */
+  /**
+   * Search only from this many characters. Default 0 (an empty query lists suggestions). Below
+   * it the open list shows the `tooShort` hint instead of nothing.
+   */
   minQueryLength?: number;
   /** Debounce before searching, in ms. Default 250. */
   delay?: number;
@@ -59,6 +89,7 @@ export interface EntityPickerProps {
   'aria-describedby'?: string;
   /** How the chosen record shows in the field. Default: title, then the last breadcrumb. */
   renderValue?: (option: SearchSuggestOption) => ReactNode;
+  /** Each word defaults to `UixLabelsProvider` `entityPicker`, then to English. */
   labels?: Partial<EntityPickerLabels>;
   className?: string;
 }
@@ -73,10 +104,11 @@ export function EntityPicker({
   value, onValueChange, onSearch, label, id, name, placeholder, minQueryLength = 0, delay = 250, disabled, invalid,
   'aria-describedby': describedBy, renderValue, labels: labelOverrides, className,
 }: EntityPickerProps) {
-  const labels = { ...DEFAULT_ENTITY_PICKER_LABELS, ...labelOverrides };
+  const labels = { ...DEFAULT_ENTITY_PICKER_LABELS, ...useUixLabels().entityPicker, ...labelOverrides };
   const [editing, setEditing] = useState(value == null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<readonly SearchSuggestOption[]>([]);
+  const [hasMore, setHasMore] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [attempt, setAttempt] = useState(0);
   const latest = useRef(0);
@@ -90,13 +122,19 @@ export function EntityPicker({
   useEffect(() => {
     if (!editing || disabled) return;
     const q = query.trim();
-    if (q.length < minQueryLength) { setStatus('idle'); setResults([]); return; }
+    if (q.length < minQueryLength) { setStatus('idle'); setResults([]); setHasMore(false); return; }
     const run = ++latest.current;
     const timer = window.setTimeout(() => {
       setStatus('loading');
       onSearch(q).then(
-        (found) => { if (run === latest.current) { setResults(found); setStatus('done'); } },
-        () => { if (run === latest.current) { setResults([]); setStatus('error'); } },
+        (found) => {
+          if (run !== latest.current) return;
+          const list = 'options' in found ? found.options : found;
+          setResults(list);
+          setHasMore('options' in found && !!found.hasMore && list.length > 0);
+          setStatus('done');
+        },
+        () => { if (run === latest.current) { setResults([]); setHasMore(false); setStatus('error'); } },
       );
     }, delay);
     return () => window.clearTimeout(timer);
@@ -113,6 +151,7 @@ export function EntityPicker({
   const clear = () => { onValueChange(null); returnFocus.current = true; setEditing(true); };
 
   const hidden = name ? <input type="hidden" name={name} value={value?.id ?? ''} /> : null;
+  const tooShort = !disabled && query.trim().length < minQueryLength;
 
   if (!editing && value) {
     const shown = renderValue?.(value) ?? (
@@ -162,10 +201,12 @@ export function EntityPicker({
         placeholder={placeholder ?? labels.none}
         loading={status === 'loading'}
         loadingLabel={labels.loading}
-        empty={labels.empty}
+        empty={tooShort ? undefined : labels.empty}
+        idle={tooShort ? fillLabel(minQueryLength === 1 ? labels.typeToSearch : labels.tooShort, { count: minQueryLength }) : undefined}
+        note={status === 'done' && hasMore ? labels.more : undefined}
         error={status === 'error' ? labels.error : undefined}
         footer={status === 'error' ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1) } : undefined}
-        status={status === 'done' ? fillLabel(labels.results, { count: results.length }) : undefined}
+        status={status === 'done' ? fillLabel(hasMore ? labels.resultsMore : labels.results, { count: results.length }) : undefined}
         strategy="fixed"
       />
       {hidden}

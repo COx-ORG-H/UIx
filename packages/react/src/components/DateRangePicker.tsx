@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import type { AriaAttributes, KeyboardEvent } from 'react';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, isDateInRange, isDateUnavailable, selectRangeDate, startOfMonth } from '../calendar-model.js';
-import type { DateRangeValue } from '../calendar-model.js';
+import type { CalendarWeekday, DateRangeValue } from '../calendar-model.js';
 import { cx } from '../cx.js';
+import { formatDateKey } from '../date-field-model.js';
+import { CalendarIcon } from '../icons/components.js';
 import { useUixLabels } from '../labels-context.js';
+import type { Placement } from '../overlay-position.js';
+import { localDateKey, useFieldPopover, weekdayNames } from './DateFieldParts.js';
+import { Popover } from './Popover.js';
 
 /**
  * Every word the picker renders or announces (TENSOR RX-125, UIX-13). `{start}` and
@@ -22,6 +27,12 @@ export interface DateRangePickerLabels {
   rangeStart: string;
   rangeEnd: string;
   inRange: string;
+  /** Field mode: what the trigger shows while no range is set. */
+  placeholder: string;
+  /** Field mode: the trigger's text for a start without an end; `{start}`. */
+  fieldStart: string;
+  /** Field mode: the trigger's text for a range; `{start}`, `{end}`. */
+  fieldRange: string;
 }
 
 export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels = {
@@ -35,6 +46,9 @@ export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels = {
   rangeStart: 'start of selected range',
   rangeEnd: 'end of selected range',
   inRange: 'in selected range',
+  placeholder: 'Choose dates',
+  fieldStart: '{start} –',
+  fieldRange: '{start} – {end}',
 };
 
 export interface DateRangePickerProps {
@@ -60,38 +74,51 @@ export interface DateRangePickerProps {
    * clock and zone may differ from the viewer's), or `null` for no today marker.
    */
   today?: string | null;
+  /** First column of each month, in `Date.getUTCDay()` numbering (0 = Sunday). Default 1, Monday. */
+  weekStartsOn?: CalendarWeekday;
+  /**
+   * `'inline'` (default) draws the months in the page. `'field'` draws a form control that
+   * shows the range and opens the same months in a popover (HAR-1383): for forms and filter
+   * bars. It closes once the range has both ends; Escape closes it and returns focus.
+   */
+  mode?: 'inline' | 'field';
+  /** Field mode: how the trigger writes a date. Default: the locale's numeric date. */
+  formatDate?: (date: string) => string;
+  /** Field mode: lands on the trigger, so a `<label htmlFor>` or `<Field>` names it. */
+  id?: string;
+  /** Field mode. */
+  size?: 'sm' | 'md';
+  'aria-describedby'?: string;
+  'aria-invalid'?: AriaAttributes['aria-invalid'];
+  /** Field mode: where the popover opens. Default `'bottom-start'`. */
+  placement?: Placement;
+  /** Field mode. */
+  onOpenChange?: (open: boolean) => void;
 }
 
-/** The viewer's local calendar date as `YYYY-MM-DD` (not UTC: "today" is a local idea). */
-const localDateKey = (now = new Date()) => `${now.getFullYear().toString().padStart(4, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+interface RangeCalendarProps extends Omit<DateRangePickerProps, 'labels'> {
+  words: DateRangePickerLabels;
+  /** Move focus to the active day on mount (the popover just opened). */
+  autoFocus?: boolean;
+}
 const monthLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 const dateLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 
-/**
- * Monday-first short weekday names in `locale` (the grid is Monday-first). 2024-01-01 is
- * a Monday; formatting in UTC keeps each reference day on its own date. UIX-13: these
- * were English literals while the month names were already localised.
- */
-const weekdayNames = (locale?: string) => {
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
-  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(Date.UTC(2024, 0, 1 + i))));
-};
-
-/** Controlled, two-month range picker using the UIx calendar language. */
-export function DateRangePicker({
+/** The months themselves: the whole picker inline, the popover's content in field mode. */
+function RangeCalendar({
   value, onChange, visibleMonth: controlledMonth, onVisibleMonthChange, months = 2,
   min, max, isDateDisabled, locale, label = 'Choose date range', invalid,
-  invalidMessage = 'The selected date range is invalid.', disabled, className, labels: labelOverrides, today,
-}: DateRangePickerProps) {
+  invalidMessage = 'The selected date range is invalid.', disabled, className, words: labels, today,
+  weekStartsOn = 1, autoFocus = false,
+}: RangeCalendarProps) {
   const id = useId();
-  const uixLabels = useUixLabels();
-  const labels: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...uixLabels.dateRangePicker, ...labelOverrides };
-  const weekdays = useMemo(() => weekdayNames(locale), [locale]);
+  // UIX-13: the weekday names follow the locale, like the month names.
+  const weekdays = useMemo(() => weekdayNames(locale, weekStartsOn), [locale, weekStartsOn]);
   const [internalMonth, setInternalMonth] = useState(() => startOfMonth(controlledMonth ?? value.start ?? new Date().toISOString().slice(0, 10)));
   const visibleMonth = startOfMonth(controlledMonth ?? internalMonth);
   const [activeDate, setActiveDate] = useState(value.end ?? value.start ?? visibleMonth);
   const rootRef = useRef<HTMLDivElement>(null);
-  const pendingFocus = useRef(false);
+  const pendingFocus = useRef(autoFocus);
   const count = Math.max(1, Math.min(3, months));
   const calendars = useMemo(() => Array.from({ length: count }, (_, index) => {
     const month = startOfMonth(addCalendarMonths(visibleMonth, index));
@@ -109,7 +136,7 @@ export function DateRangePicker({
 
   useEffect(() => {
     if (!pendingFocus.current) return;
-    rootRef.current?.querySelector<HTMLButtonElement>(`[data-date="${activeDate}"]`)?.focus();
+    rootRef.current?.querySelector<HTMLButtonElement>(`[data-date="${activeDate}"]`)?.focus({ preventScroll: autoFocus });
     pendingFocus.current = false;
   }, [activeDate, visibleMonth]);
 
@@ -134,8 +161,8 @@ export function DateRangePicker({
     if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault();
       const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-      const mondayIndex = (weekday + 6) % 7;
-      focusDate(addCalendarDays(date, event.key === 'Home' ? -mondayIndex : 6 - mondayIndex));
+      const index = (weekday - weekStartsOn + 7) % 7;
+      focusDate(addCalendarDays(date, event.key === 'Home' ? -index : 6 - index));
     } else if (event.key === 'PageUp' || event.key === 'PageDown') {
       event.preventDefault(); focusDate(addCalendarMonths(date, event.key === 'PageUp' ? -1 : 1));
     }
@@ -156,7 +183,7 @@ export function DateRangePicker({
         <h4>{monthLabel(month, locale)}</h4>
         <div className="uix-date-range-picker__weekdays" aria-hidden="true">{weekdays.map((day, index) => <span key={index}>{day}</span>)}</div>
         <div className="uix-date-range-picker__grid" role="group" aria-label={monthLabel(month, locale)}>
-          {Array.from({ length: (new Date(`${month}T00:00:00Z`).getUTCDay() + 6) % 7 }, (_, index) => <span key={`blank-${index}`} aria-hidden="true" />)}
+          {Array.from({ length: (new Date(`${month}T00:00:00Z`).getUTCDay() - weekStartsOn + 7) % 7 }, (_, index) => <span key={`blank-${index}`} aria-hidden="true" />)}
           {days.map((day) => {
             const unavailable = disabled || isDateUnavailable(day.date, { min, max, isDisabled: isDateDisabled });
             const edge = day.date === value.start ? 'start' : day.date === value.end ? 'end' : undefined;
@@ -175,4 +202,78 @@ export function DateRangePicker({
     <p className="uix-date-range-picker__selection" aria-live="polite">{announcement}</p>
     {rangeInvalid && <p className="uix-field__error" role="alert">{invalidMessage}</p>}
   </section>;
+}
+
+/**
+ * Controlled date-range picker using the UIx calendar language: two months inline, or with
+ * `mode="field"` a form control that opens them in a popover.
+ */
+export function DateRangePicker({ labels: labelOverrides, ...props }: DateRangePickerProps) {
+  const uixLabels = useUixLabels();
+  const words: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...uixLabels.dateRangePicker, ...labelOverrides };
+  if (props.mode === 'field') return <DateRangeField {...props} words={words} />;
+  return <RangeCalendar {...props} words={words} />;
+}
+
+function DateRangeField(props: RangeCalendarProps) {
+  const {
+    value, onChange, locale, label = 'Choose date range', invalid, disabled, className, words, formatDate,
+    id: idProp, size = 'md', placement = 'bottom-start', onOpenChange,
+    'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid,
+  } = props;
+  const uid = useId();
+  const id = idProp ?? `${uid}-trigger`;
+  const popoverId = `${uid}-months`;
+  const valueId = `${uid}-value`;
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { open, hide, triggerProps } = useFieldPopover(popoverId, () => triggerRef.current?.focus({ preventScroll: true }), onOpenChange);
+  // A `<label htmlFor>` replaces the trigger's own text as its name; the range is then its description.
+  const [labelled, setLabelled] = useState(false);
+  useEffect(() => { setLabelled((triggerRef.current?.labels?.length ?? 0) > 0); }, [id]);
+
+  const format = (date: string) => formatDate?.(date) ?? formatDateKey(date, locale);
+  const text = !value.start
+    ? null
+    : !value.end
+      ? words.fieldStart.replace('{start}', format(value.start))
+      : words.fieldRange.replace('{start}', format(value.start)).replace('{end}', format(value.end));
+  const rangeInvalid = invalid || (!!value.start && !!value.end && value.start > value.end);
+  const describedBy = [ariaDescribedBy, labelled && text ? valueId : undefined].filter(Boolean).join(' ') || undefined;
+
+  return <div
+    ref={anchorRef} className={cx('uix-date-range-field', className)}
+    onKeyDown={(event) => {
+      // Escape while the months are open belongs to the field, also in the moment before focus
+      // has moved from the trigger into them.
+      if (event.key !== 'Escape' || !open) return;
+      event.stopPropagation();
+      event.preventDefault();
+      hide();
+    }}
+  >
+    <button
+      ref={triggerRef} type="button" id={id} disabled={disabled}
+      className={cx('uix-input', size === 'sm' && 'uix-input--sm', 'uix-date-range-field__trigger')}
+      aria-describedby={describedBy} aria-invalid={rangeInvalid || ariaInvalid === true || ariaInvalid === 'true' || undefined}
+      {...triggerProps}
+    >
+      <span className="uix-date-range-field__icon" aria-hidden="true"><CalendarIcon size="sm" /></span>
+      <span className="uix-visually-hidden">{label}: </span>
+      <span id={valueId} className={cx('uix-date-range-field__value', !text && 'uix-date-range-field__value--empty')}>{text ?? words.placeholder}</span>
+    </button>
+    <Popover
+      id={popoverId} anchor={anchorRef} placement={placement} className="uix-date-range-field__popover"
+      role="dialog" aria-label={label} capHeight closeWhenAnchorHidden
+    >
+      {open && <RangeCalendar
+        {...props} className="uix-date-range-picker--in-popover" autoFocus
+        onChange={(next) => {
+          onChange(next);
+          // Both ends chosen: the field has its answer.
+          if (next.start && next.end) hide();
+        }}
+      />}
+    </Popover>
+  </div>;
 }
