@@ -13,7 +13,12 @@ interface TabsContextValue {
 
 const TabsCtx = createContext<TabsContextValue>({});
 
-export interface TabsProps {
+/**
+ * Besides its own props, `Tabs` takes the HTML attributes of the `role="tablist"` element and
+ * renders them there, in both overflow modes: `aria-label` / `aria-labelledby` to name the
+ * tablist (HAR-1600), `id`, `data-*`. `role` stays `tablist`.
+ */
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'role'> {
   variant?: 'line' | 'enclosed' | 'pill';
   value?: string;
   onChange?: (value: string) => void;
@@ -43,7 +48,10 @@ const Chevron = ({ d }: { d: string }) => (
 /** Scroll offset from the inline start, positive in both writing directions. */
 const inlineOffset = (el: HTMLElement, rtl: boolean) => (rtl ? -el.scrollLeft : el.scrollLeft);
 
-export function Tabs({ variant = 'line', value, onChange, children, className, overflow = 'wrap', activation = 'automatic' }: TabsProps) {
+export function Tabs({
+  variant = 'line', value, onChange, children, className, overflow = 'wrap', activation = 'automatic',
+  onKeyDown: onKeyDownProp, ...listProps
+}: TabsProps) {
   const baseId = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const contextValue = useMemo(() => ({ value, onChange, baseId }), [value, onChange, baseId]);
@@ -120,6 +128,8 @@ export function Tabs({ variant = 'line', value, onChange, children, className, o
   // APG activation: Arrow/Home/End move focus; in automatic mode they also select the
   // newly-focused tab (via its own click handler). Disabled tabs are skipped.
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    onKeyDownProp?.(e);
+    if (e.defaultPrevented) return;
     const items = Array.from(
       listRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)') ?? [],
     );
@@ -143,6 +153,7 @@ export function Tabs({ variant = 'line', value, onChange, children, className, o
 
   const list = (
     <div
+      {...listProps}
       ref={listRef}
       role="tablist"
       className={cx('uix-tabs', `uix-tabs--${variant}`, scroll && 'uix-tabs--scroll', className)}
