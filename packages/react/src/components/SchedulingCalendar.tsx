@@ -462,14 +462,15 @@ export function SchedulingCalendar({
 
   const renderWeek = (row: number) => {
     const rowDays = days.slice(row * 7, row * 7 + 7);
-    // A fixed cell keeps every lane it may ever need; a growing one keeps the lanes this row uses.
-    const windowLanes = fixed ? Math.max(windowLaneCap, lanesUsedAnywhere('window')) : lanesUsed(row, 'window');
-    const spanLanes = fixed ? Math.max(spanLaneCap, lanesUsedAnywhere('item')) : lanesUsed(row, 'item');
+    // The chips of a row start right under the lanes that row uses.
+    const windowLanes = lanesUsed(row, 'window');
+    const spanLanes = lanesUsed(row, 'item');
     const hidden = layout.hiddenByRow[row]?.length ?? 0;
     const firstHiddenDay = layout.firstHiddenDayByRow[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
     const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
-    const style = { ['--uix-scheduling-calendar-lanes' as string]: windowLanes + spanLanes } as CSSProperties;
+    // A row whose spans are all hidden (a cap of 0) still keeps one lane, for its "+N".
+    const style = { ['--uix-scheduling-calendar-lanes' as string]: Math.max(windowLanes + spanLanes, hidden > 0 ? 1 : 0) } as CSSProperties;
     return <div key={rowDays[0]} className="uix-scheduling-calendar__week" style={style}>
       {rowDays.map((date, column) => renderDay(date, row * 7 + column))}
       {(placedByRow.get(row) ?? []).map((placed) => {
@@ -495,7 +496,14 @@ export function SchedulingCalendar({
     </div>;
   };
 
-  const gridStyle = fixed ? { ['--uix-scheduling-calendar-chips' as string]: chipRows } as CSSProperties : undefined;
+  // A fixed cell is as tall as the head, every lane a row may use, the chip rows and the "+N" line.
+  const gridStyle = fixed ? {
+    ['--uix-scheduling-calendar-chips' as string]: chipRows,
+    ['--uix-scheduling-calendar-lane-cap' as string]: Math.max(
+      Math.max(windowLaneCap, lanesUsedAnywhere('window')) + Math.max(spanLaneCap, lanesUsedAnywhere('item')),
+      Object.keys(layout.hiddenByRow).length > 0 ? 1 : 0,
+    ),
+  } as CSSProperties : undefined;
 
   return <section className={cx('uix-scheduling-calendar', className)} aria-label={fillLabel(labels.region, { timeZone })}>
     {showHeader && <div className="uix-scheduling-calendar__header">

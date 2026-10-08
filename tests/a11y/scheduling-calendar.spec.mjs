@@ -196,8 +196,11 @@ test('AC12: the high band fill is 3:1 on the cell and every item text is 4.5:1 o
   expect(plain.map((t) => t.fill)).toEqual([1, 1, 1]);
 });
 
-/** How many pixels of two same-sized screenshots differ by more than `step` grey levels. */
-const differingPixels = (page, a, b, step = 40) => page.evaluate(async ([first, second, threshold]) => {
+/** How many pixels of two screenshots differ by more than `step` grey levels, over the area
+ * both cover (an element at a fractional offset can come out one pixel wider). The step is the
+ * difference between the kit's default border and the surface it sits on, less a margin: a cue
+ * weaker than a hairline border does not count. */
+const differingPixels = (page, a, b, step = 24) => page.evaluate(async ([first, second, threshold]) => {
   const pixels = async (base64) => {
     const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${base64}`)).blob());
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
@@ -206,10 +209,12 @@ const differingPixels = (page, a, b, step = 40) => page.evaluate(async ([first, 
     return { width: bitmap.width, height: bitmap.height, data: ctx.getImageData(0, 0, bitmap.width, bitmap.height).data };
   };
   const [one, two] = [await pixels(first), await pixels(second)];
-  if (one.width !== two.width || one.height !== two.height) return -1;
-  const grey = (data, i) => 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+  if (Math.abs(one.width - two.width) > 1 || Math.abs(one.height - two.height) > 1) return -1;
+  const grey = ({ data, width }, x, y) => { const i = (y * width + x) * 4; return 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]; };
   let count = 0;
-  for (let i = 0; i < one.data.length; i += 4) if (Math.abs(grey(one.data, i) - grey(two.data, i)) > threshold) count++;
+  for (let y = 0; y < Math.min(one.height, two.height); y++) {
+    for (let x = 0; x < Math.min(one.width, two.width); x++) if (Math.abs(grey(one, x, y) - grey(two, x, y)) > threshold) count++;
+  }
   return count;
 }, [a, b, step]);
 const pairs = (items) => items.flatMap((first, index) => items.slice(index + 1).map((second) => [first, second]));
