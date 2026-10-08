@@ -425,9 +425,18 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
     notice={truncated && <p>Showing the first 500 items.</p>} />
   ```
 
-  Above `virtualizeAbove` rows (default 200) only the rows near the viewport are mounted. A row shows its status as
-  words and its markers with their text.
+  Above `virtualizeAbove` rows (default 200) the agenda is one scroller of 44 px rows and only the rows near the
+  viewport are mounted, on the server too; each window note then has a row of its own under the heading. In a box
+  of 576 px or less those rows are 64 px with three lines: the title, the time, then markers and status. A row
+  there holds one line of title, so `renderEntry` content must fit one line. A row shows its status as words and
+  its markers with their text. Its time is two times of day when the entry starts on that day and ends within a
+  day by the clock; otherwise both ends go through `formatInstant` (pass a short form for narrow screens: an end
+  that does not fit its half of the line is cut), and an `allDay` entry reads `labels.allDay` or the days it
+  covers. Crossing `virtualizeAbove` swaps the two forms, which resets focus and scroll inside the agenda. Type
+  the groups with `SchedulingAgendaGroup`.
 - **A narrow month** (`monthDensity="counts"`): a cell is the date, the consumer's `days[date].count` and its markers.
+  No entry is drawn and none is counted: a row's "+N" is for windows over `windowLaneCap` only. The setting does not
+  touch the week.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two

@@ -4088,6 +4088,17 @@ export interface SaveStatusProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 export type SaveStatusState = 'idle' | 'saving' | 'saved' | 'failed';
 
 // @public
+export interface SchedulingAgendaGroup {
+    annotations?: SchedulingCalendarOverlay[];
+    continuesCount?: number;
+    date: string;
+    heading?: ReactNode;
+    hiddenCount?: number;
+    // (undocumented)
+    rows: SchedulingCalendarEntry[];
+}
+
+// @public
 export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
 
 // @public
@@ -4133,6 +4144,7 @@ export interface SchedulingCalendarLabels {
     agenda: string;
     // (undocumented)
     agendaEmpty: string;
+    allDay?: string;
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
@@ -4213,7 +4225,6 @@ export interface SchedulingCalendarOverlay {
 
 // @public (undocumented)
 export interface SchedulingCalendarProps {
-    // Warning: (ae-forgotten-export) The symbol "SchedulingAgendaGroup" needs to be exported by the entry point index.d.ts
     agendaGroups?: SchedulingAgendaGroup[];
     agendaHeadingLevel?: 2 | 3 | 4 | 5 | 6;
     // (undocumented)

@@ -185,12 +185,27 @@ function Lanes() {
 
 function Agenda() {
   const many = Number(params.get('rows') ?? 0);
+  // `rich=1`: the first rows of the long agenda carry labelled markers and its first day two windows.
+  const rich = params.get('rich') === '1';
   const payroll: SchedulingCalendarOverlay = { id: 'payroll', kindLabel: 'Hold', label: 'Payroll lock', scopeLabel: 'Payroll services', start: berlin('2026-10-07', '00:00'), end: berlin('2026-10-08', '00:00'), pattern: 'cross' };
   const groups: SchedulingAgendaGroup[] = many > 0
     ? Array.from({ length: 20 }, (_, day) => {
       const date = `2026-10-${String(day + 1).padStart(2, '0')}`;
       const perDay = Math.ceil(many / 20);
-      return { date, rows: Array.from({ length: Math.min(perDay, many - day * perDay) }, (_, index) => timed(`r${day * perDay + index}`, [date, '08:00'], [date, '09:00'], `Row ${day * perDay + index + 1}`)) };
+      return {
+        date,
+        annotations: rich && day === 0 ? [payroll, { ...payroll, id: 'audit', label: 'Audit window for the quarter close', scopeLabel: 'Every finance service' }] : undefined,
+        rows: Array.from({ length: Math.min(perDay, many - day * perDay) }, (_, index) => {
+          const id = `r${day * perDay + index}`;
+          const marker = { id: 'm', label: 'Needs sign-off', emphasis: 'warning' as const };
+          const second = { id: 'n', label: 'Second reviewer asked', emphasis: 'neutral' as const };
+          if (!rich || index > 3) return timed(id, [date, '08:00'], [date, '09:00'], `Row ${day * perDay + index + 1}`);
+          // The third runs into a later day and the fourth has no time of day: their time text names days.
+          if (index === 2) return timed(id, [date, '14:00'], [`2026-10-${String(day + 3).padStart(2, '0')}`, '03:00'], 'Storage migration across two nights', { markers: [marker, second] });
+          if (index === 3) return timed(id, [date, '00:00'], [`2026-10-${String(day + 4).padStart(2, '0')}`, '00:00'], 'Maintenance weekend', { allDay: true, markers: [marker] });
+          return timed(id, [date, '08:00'], [date, '09:00'], 'Firewall rule update for the payment gateway', { status: 'tentative', markers: index === 1 ? [marker, second] : [marker] });
+        }),
+      };
     }).filter((group) => group.rows.length > 0)
     : [
       { date: '2026-10-07', annotations: [payroll], rows: [
@@ -215,6 +230,7 @@ function Counts() {
       '2026-10-07': { count: 12, overflowCount: 11, label: '12 items, 1 needs sign-off', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }] },
       '2026-10-08': { count: 3, overflowCount: 0, label: '3 items' },
       '2026-10-15': { count: 128, overflowCount: 125, label: '128 items' },
+      '2026-10-22': { count: 128, overflowCount: 125, label: '128 items, 2 marked', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }, { id: 'd', label: 'Declined', emphasis: 'refused' }] },
     }}
     overlays={[{ id: 'w', label: 'Quarter close', kindLabel: 'Hold', start: berlin('2026-10-05', '00:00'), end: berlin('2026-10-10', '00:00'), pattern: 'diagonal', global: true }]}
     onShowMore={(day) => { calls.more.push(day); }}

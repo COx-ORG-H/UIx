@@ -128,14 +128,20 @@ test('AC7: a window is a tab stop with a full name, visible words and no title, 
   expect((await calls(page)).overlays).toEqual(['scoped']);
 });
 
-test('AC14 / AC15: Enter activates a chip, a span and a day number', async ({ page }) => {
+test('AC14 / AC15: Enter activates a chip and a span; Space activates a day number, and Enter goes into the day (HAR-1527)', async ({ page }) => {
   await open(page, 'case=controlled');
   await page.locator('[data-item-id="b0"]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-item-id="span3"]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-calendar-date="2026-10-14"]').focus();
+  // Enter on a day with items moves into them (the keyboard model of HAR-1527) and selects nothing.
   await page.keyboard.press('Enter');
+  expect((await calls(page)).dates).toEqual([]);
+  expect(await page.evaluate(() => document.activeElement.hasAttribute('data-calendar-date'))).toBe(false);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-calendar-date="2026-10-14"]')).toBeFocused();
+  await page.keyboard.press('Space');
   const seen = await calls(page);
   expect(seen.entries).toEqual(['b0', 'span3']);
   expect(seen.dates).toEqual(['2026-10-14']);

@@ -7,6 +7,8 @@ import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createElement as h, act } from 'react';
+import { renderToString } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 
 let dom;
 let createRoot;
@@ -22,13 +24,16 @@ before(async () => {
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   // The virtual-rows hook observes its scroller; jsdom has no ResizeObserver.
   expose('ResizeObserver', class { observe() {} disconnect() {} });
+  // ... and reads its scroll position once per frame.
+  expose('requestAnimationFrame', (callback) => dom.window.requestAnimationFrame(callback));
+  expose('cancelAnimationFrame', (handle) => dom.window.cancelAnimationFrame(handle));
   ({ createRoot } = await import('react-dom/client'));
   ui = await import('../dist/index.js');
 });
 
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT', 'ResizeObserver']) delete globalThis[name];
+  for (const name of ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame']) delete globalThis[name];
 });
 
 const mount = (element) => {
@@ -90,7 +95,7 @@ test('AC2: above virtualizeAbove the agenda is one flat run of rows in its own s
   const agenda = host.querySelector(cls('agenda'));
   assert.ok(agenda.classList.contains('uix-scheduling-calendar__agenda--virtual'));
   assert.equal(agenda.querySelector('ol'), null);
-  // No layout in jsdom, so nothing is windowed: every row is here, in order, with its heading.
+  // No layout in jsdom: the window is the assumed 640 px, which holds these sixteen rows, in order, with their headings.
   assert.deepEqual([...agenda.querySelectorAll(cls('agenda-vrow'))].map((row) => row.getAttribute('data-kind')), ['heading', ...Array(6).fill('entry'), 'hidden', 'heading', ...Array(6).fill('entry'), 'continues']);
   assert.equal(agenda.querySelectorAll('h3').length, 2);
   assert.deepEqual(rowIds(host), rows.map((row) => row.id));
@@ -181,6 +186,136 @@ test('AC10 (R16 AC5): the notice is above the first heading, before the list in 
   unmount();
 });
 
+const long = (count) => [{ date: '2026-10-07', rows: Array.from({ length: count }, (_, i) => at(`r${i}`, '2026-10-07', '08:00', '09:00')) }];
+const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+
+test('AC2: a long agenda is a window of rows before its scroller has been measured, and on the server', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(1000) }));
+  const mounted = host.querySelectorAll(cls('agenda-vrow')).length;
+  assert.ok(mounted > 5 && mounted < 40, `a window of rows, not 1001 (${mounted})`);
+  unmount();
+  const html = renderToString(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(1000) }));
+  const served = html.split('uix-scheduling-calendar__agenda-vrow').length - 1;
+  assert.ok(served > 5 && served < 40, `the server sends a window of rows too (${served})`);
+});
+
+test('AC2: an agenda that grows past virtualizeAbove after it mounted is windowed and follows its scroller', async () => {
+  for (const first of [long(100), []]) {
+    const { host, root, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: first }));
+    assert.equal(host.querySelector(cls('agenda--virtual')), null);
+    act(() => root.render(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(1000) })));
+    const scroller = host.querySelector(cls('agenda--virtual'));
+    assert.ok(scroller, 'the long form');
+    assert.ok(host.querySelectorAll(cls('agenda-vrow')).length < 40);
+    assert.ok(host.querySelector('[data-item-id="r0"]'));
+    // The scroller is being listened to: scrolling it moves the window of rows.
+    Object.defineProperty(scroller, 'clientHeight', { value: 440, configurable: true });
+    scroller.scrollTop = 44 * 500;
+    scroller.dispatchEvent(new window.Event('scroll'));
+    await settle();
+    assert.equal(host.querySelector('[data-item-id="r0"]'), null, 'the first rows are no longer mounted');
+    assert.ok(host.querySelector('[data-item-id="r500"]'), 'the rows at the scroll position are');
+    assert.ok(host.querySelectorAll(cls('agenda-vrow')).length < 40);
+    // ... and back under the threshold it is the semantic list again.
+    act(() => root.render(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(100) })));
+    assert.equal(host.querySelector(cls('agenda--virtual')), null);
+    assert.equal(host.querySelectorAll('ol > li').length, 100);
+    unmount();
+  }
+});
+
+test('AC2: in the long form each window note has a row of its own under the heading', () => {
+  const notes = [1, 2].map((n) => ({ id: `w${n}`, label: `Window ${n}`, kindLabel: 'Hold', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }));
+  const picked = [];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-07', annotations: notes, rows: long(3)[0].rows }], virtualizeAbove: 2, onSelectOverlay: (overlay) => picked.push(overlay.id) }));
+  assert.deepEqual([...host.querySelectorAll(cls('agenda-vrow'))].map((row) => row.getAttribute('data-kind')), ['heading', 'note', 'note', 'entry', 'entry', 'entry']);
+  assert.equal(host.querySelector('[data-kind="heading"]').querySelector(cls('window')), null, 'the heading row holds the heading only');
+  assert.equal(host.querySelectorAll('[data-overlay-id]').length, 2, 'once per window');
+  click(host.querySelector('[data-kind="note"] [data-overlay-id="w2"]'));
+  assert.deepEqual(picked, ['w2']);
+  unmount();
+});
+
+test('the type of a group is exported with the component', () => {
+  const types = readFileSync(new URL('../dist/index.d.ts', import.meta.url), 'utf8');
+  assert.match(types, /\bSchedulingAgendaGroup\b/);
+});
+
+test('a row says its days when its times of day would not: another start day, a long run, no time of day', () => {
+  const iso = (date, time) => new Date(`${date}T${time}:00+02:00`).toISOString();
+  const rows = [
+    at('same', '2026-10-05', '08:00', '09:30'),
+    { id: 'night', title: 'Overnight', start: iso('2026-10-05', '23:00'), end: iso('2026-10-06', '01:00') },
+    { id: 'midnight', title: 'To midnight', start: iso('2026-10-05', '22:00'), end: iso('2026-10-06', '00:00') },
+    { id: 'earlier', title: 'From an earlier day', start: iso('2026-10-01', '14:00'), end: iso('2026-10-07', '03:00') },
+    { id: 'long', title: 'Two days on', start: iso('2026-10-05', '14:00'), end: iso('2026-10-07', '03:00') },
+    { id: 'day', title: 'Whole day', start: iso('2026-10-05', '00:00'), end: iso('2026-10-06', '00:00'), allDay: true },
+    { id: 'days', title: 'Three whole days', start: iso('2026-10-05', '00:00'), end: iso('2026-10-08', '00:00'), allDay: true },
+    { id: 'full', title: 'A day to the minute', start: iso('2026-10-05', '14:00'), end: iso('2026-10-06', '14:00') },
+    { id: 'other', title: 'A whole day, listed here', start: iso('2026-10-06', '00:00'), end: iso('2026-10-07', '00:00'), allDay: true },
+    { id: 'inverted', title: 'Whole day, end before start', start: iso('2026-10-05', '00:00'), end: iso('2026-10-03', '00:00'), allDay: true },
+    { id: 'inverted-other', title: 'Another day, end before start', start: iso('2026-10-09', '00:00'), end: iso('2026-10-03', '00:00'), allDay: true },
+  ];
+  for (const virtualizeAbove of [200, 2]) {
+    const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-05', rows }], virtualizeAbove }));
+    const time = (id) => host.querySelector(`[data-item-id="${id}"] ${cls('agenda-time')}`).textContent;
+    assert.equal(time('same'), '08:00 – 09:30');
+    assert.equal(time('night'), '23:00 – 01:00', 'past midnight by less than a day reads as times');
+    assert.equal(time('midnight'), '22:00 – 00:00');
+    assert.match(time('earlier'), /1 Oct(ober)? 2026 14:00 – .*7 Oct(ober)? 2026 03:00/);
+    assert.match(time('long'), /5 Oct(ober)? 2026 14:00 – .*7 Oct(ober)? 2026 03:00/);
+    assert.equal(time('day'), 'All day');
+    assert.match(time('days'), /5 Oct(ober)? 2026 – .*7 Oct(ober)? 2026$/);
+    assert.match(time('full'), /5 Oct(ober)? 2026 14:00 – .*6 Oct(ober)? 2026 14:00/, 'a day to the minute is not "14:00 – 14:00"');
+    assert.match(time('other'), /^[^–]*6 Oct(ober)? 2026$/, 'one day, said once');
+    assert.equal(time('inverted'), 'All day', 'an end before the start: the entry is on its start day');
+    assert.match(time('inverted-other'), /^[^–]*9 Oct(ober)? 2026$/);
+    unmount();
+  }
+  const worded = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-05', rows }], labels: { allDay: 'Ganztägig' }, formatInstant: (instant) => `<${instant.slice(0, 16)}>` }));
+  assert.equal(worded.host.querySelector(`[data-item-id="day"] ${cls('agenda-time')}`).textContent, 'Ganztägig');
+  assert.equal(worded.host.querySelector(`[data-item-id="earlier"] ${cls('agenda-time')}`).textContent, '<2026-10-01T12:00> – <2026-10-07T01:00>', 'the consumer words the instants');
+  worded.unmount();
+  // The day the clocks go back has 25 hours: midnight to midnight is not "00:00 – 00:00".
+  const fallBack = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-25', rows: [{ id: 'd', title: 'Whole long day', start: '2026-10-24T22:00:00Z', end: '2026-10-25T23:00:00Z' }] }] }));
+  assert.match(fallBack.host.querySelector(`[data-item-id="d"] ${cls('agenda-time')}`).textContent, /25 Oct(ober)? 2026 00:00 – .*26 Oct(ober)? 2026 00:00/);
+  fallBack.unmount();
+});
+
+test('the name of a row carries its detail line; a consumer name is used as given', () => {
+  const rows = [at('a', '2026-10-07', '08:00', '09:00', { meta: 'Site B · Rack 4' }), at('b', '2026-10-07', '10:00', '11:00', { meta: 'Site C', accessibleName: 'Exactly this' })];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [{ date: '2026-10-07', rows }] }));
+  assert.match(host.querySelector('[data-item-id="a"]').getAttribute('aria-label'), /^Item a, .*, Site B · Rack 4$/);
+  assert.equal(host.querySelector('[data-item-id="b"]').getAttribute('aria-label'), 'Exactly this');
+  unmount();
+});
+
+test('a date or an id given twice is drawn twice, in both forms, with no shared key', async () => {
+  const errors = [];
+  const original = console.error;
+  console.error = (...args) => errors.push(args.map(String).join(' '));
+  try {
+    const groups = Array.from({ length: 30 }, (_, i) => ({ date: i % 2 ? '2026-10-08' : '2026-10-07', rows: [at('same', '2026-10-07', '08:00', '09:00'), at('same', '2026-10-07', '10:00', '11:00'), at('same#1', '2026-10-07', '12:00', '13:00')], annotations: [{ id: 'w', label: 'W', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }, { id: 'w', label: 'W again', start: '2026-10-06T22:00:00Z', end: '2026-10-07T22:00:00Z' }] }));
+    const grouped = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: groups }));
+    assert.equal(grouped.host.querySelectorAll(cls('agenda-group')).length, 30);
+    assert.equal(grouped.host.querySelectorAll(cls('agenda-row')).length, 90);
+    assert.equal(grouped.host.querySelectorAll('[data-overlay-id]').length, 60);
+    grouped.unmount();
+    const flat = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: groups, virtualizeAbove: 10 }));
+    const scroller = flat.host.querySelector(cls('agenda--virtual'));
+    const before = flat.host.querySelectorAll(cls('agenda-vrow')).length;
+    Object.defineProperty(scroller, 'clientHeight', { value: 440, configurable: true });
+    for (const top of [44 * 40, 44 * 80, 0]) {
+      scroller.scrollTop = top;
+      scroller.dispatchEvent(new window.Event('scroll'));
+      await settle();
+    }
+    assert.ok(flat.host.querySelectorAll(cls('agenda-vrow')).length <= before, 'no row is left behind by a scroll');
+    flat.unmount();
+  } finally { console.error = original; }
+  assert.deepEqual(errors.filter((line) => /same key|unique "key"/.test(line)), []);
+});
+
 test('an empty agendaGroups list says so', () => {
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: [] }));
   assert.equal(host.querySelector(cls('agenda')).textContent, 'No scheduled entries match the current filters.');
@@ -202,6 +337,7 @@ test('AC8: with monthDensity="counts" every cell shows its count and markers, an
   assert.equal(host.querySelectorAll(cls('day')).length, 42);
   assert.equal(host.querySelectorAll('[data-item-id]').length, 0, 'no chips and no entry bars');
   assert.equal(host.querySelectorAll(cls('more')).length, 0, 'the count says it; no "+N"');
+  assert.equal(host.querySelectorAll(cls('rowmore')).length, 0, 'and no "+N" for the bars it does not draw');
   const cell = host.querySelector('[data-calendar-date="2026-10-07"]').closest(cls('day'));
   assert.match(cell.querySelector(cls('count')).textContent, /^12/);
   assert.match(cell.querySelector(cls('count')).textContent, /12 items, 1 needs sign-off/);
@@ -217,4 +353,40 @@ test('AC8: with monthDensity="counts" every cell shows its count and markers, an
   const week = mount(h(ui.SchedulingCalendar, { ...monthProps, view: 'week' }));
   assert.equal(week.host.querySelector(cls('grid')).hasAttribute('data-density'), false, 'the density is a month setting');
   week.unmount();
+});
+
+test('AC8: the counts-only month never derives a "+N" from the entries; windows over their cap still get one', () => {
+  const span = (id) => ({ id: String(id), title: `Span ${id}`, start: '2026-10-05T08:00:00Z', end: '2026-10-08T16:00:00Z' });
+  const plain = { anchorDate: '2026-10-07', timeZone: BERLIN, locale: 'en-GB', view: 'month', monthDensity: 'counts', entries: [1, 2, 3, 4, 5].map(span) };
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, plain));
+  assert.equal(host.querySelectorAll('[data-item-id]').length, 0);
+  assert.equal(host.querySelectorAll(cls('rowmore')).length, 0, 'five bars are not drawn, and not counted');
+  assert.deepEqual([...new Set([...host.querySelectorAll(cls('week'))].map((week) => week.style.getPropertyValue('--uix-scheduling-calendar-lanes')))], ['0'], 'and keep no lane');
+  unmount();
+  const windows = [1, 2, 3].map((n) => ({ id: `w${n}`, label: `Window ${n}`, start: '2026-10-05T06:00:00Z', end: '2026-10-09T18:00:00Z' }));
+  const capped = mount(h(ui.SchedulingCalendar, { ...plain, overlays: windows, windowLaneCap: 2 }));
+  assert.equal(capped.host.querySelectorAll(cls('window')).length, 2);
+  assert.match(capped.host.querySelector(cls('rowmore')).textContent, /\+1/, 'the third window, and none of the five entries');
+  capped.unmount();
+  // A consumer layout may list entries as hidden; here they are not counted either.
+  const given = mount(h(ui.SchedulingCalendar, { ...plain, overlays: windows, spanLayout: { placed: [], hiddenByRow: { 1: ['1', '2', 'w3'] }, firstHiddenDayByRow: { 1: '2026-10-05' } } }));
+  assert.match(given.host.querySelector(cls('rowmore')).textContent, /\+1/);
+  given.unmount();
+  // An id shared by an entry and a window that is drawn in the row: the hidden one is the entry.
+  const shared = mount(h(ui.SchedulingCalendar, { ...plain, entries: [span('w1')], overlays: windows.slice(0, 1), spanLayout: { placed: [{ id: 'w1', group: 'window', weekRow: 1, startCol: 0, endCol: 4, lane: 0, continuesBefore: false, continuesAfter: false }], hiddenByRow: { 1: ['w1'] }, firstHiddenDayByRow: { 1: '2026-10-05' } } }));
+  assert.equal(shared.host.querySelectorAll(cls('window')).length, 1);
+  assert.equal(shared.host.querySelectorAll(cls('rowmore')).length, 0);
+  shared.unmount();
+});
+
+test('monthDensity="counts" leaves the week as it is: cells grow, every chip is drawn', () => {
+  const entries = Array.from({ length: 14 }, (_, i) => at(`e${i}`, '2026-10-07', '08:00', '09:00'));
+  const props = { anchorDate: '2026-10-07', timeZone: BERLIN, locale: 'en-GB', view: 'week', entries };
+  const counts = mount(h(ui.SchedulingCalendar, { ...props, monthDensity: 'counts' }));
+  const full = mount(h(ui.SchedulingCalendar, props));
+  assert.equal(counts.host.querySelectorAll(cls('entry')).length, 14);
+  assert.equal(counts.host.querySelector(cls('grid')).hasAttribute('data-fixed'), false, 'a growing cell clips nothing');
+  assert.equal(counts.host.querySelector(cls('grid')).outerHTML, full.host.querySelector(cls('grid')).outerHTML, 'the same week as without the setting');
+  counts.unmount();
+  full.unmount();
 });
