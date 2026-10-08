@@ -102,7 +102,8 @@ function findings(css) {
       if (!entry) continue; // geometry
       if (!READERS[entry.dimension].test(selector)) found.push(`${selector}: reads ${name}, a ${entry.dimension} colour`);
       if (entry.dimension === 'band' && /__window|\[data-pattern/.test(selector)) found.push(`${selector}: a window reads the band colour ${name}`);
-      if (entry.dimension !== 'band' && /\[data-band=/.test(selector) && !/\[data-status=/.test(selector)) found.push(`${selector}: a band rule reads ${name}, a ${entry.dimension} colour`);
+      // A band rule may also be a status or an emphasis rule (`[data-band="high"][data-dim]`); alone it reads band colours only.
+      if (entry.dimension !== 'band' && /\[data-band=/.test(selector) && !/\[data-(status|dim|highlight)/.test(selector)) found.push(`${selector}: a band rule reads ${name}, a ${entry.dimension} colour`);
     }
     if (/\[data-band=/.test(selector)) {
       const fills = declarations(body).filter(({ prop }) => prop === 'background' || prop === 'background-color' || prop === 'background-image');
@@ -159,6 +160,23 @@ test('U3 AC19: no window, segment, ghost or now-line rule of the time grid reads
   // The now-line and the ghost are neutral: their names map to no hue.
   const chrome = Object.fromEntries(declarations(rules(source)[0].body).map(({ prop, value }) => [prop, value]));
   for (const name of ['--calendar-chrome-now', '--calendar-chrome-ghost', '--calendar-chrome-ghost-surface']) assert.doesNotMatch(chrome[name], /--uix-(danger|warning|success|info|accent|brand|link|ring)/, name);
+});
+
+test('U6 AC6: emphasis changes weight and quietness, never a hue', () => {
+  const emphasis = rules(source).filter(({ selector }) => /\[data-(highlight|dim)\]/.test(selector));
+  assert.ok(emphasis.length >= 8, `only ${emphasis.length} emphasis rules found`);
+  const map = Object.fromEntries(declarations(rules(source)[0].body).map(({ prop, value }) => [prop, value]));
+  for (const { selector, body } of emphasis) {
+    for (const [, name] of body.matchAll(/var\((--calendar-[a-z0-9-]+)/g)) {
+      const hue = /--uix-(danger|warning|success|info|accent|brand|link|ring)/.test(map[name] ?? '');
+      // The only hue an emphasis rule may read is the band's own, on an item that already has that band.
+      if (hue) assert.match(selector, /\[data-band="high"\]/, `${selector} reads ${name}`);
+    }
+  }
+  // A dimmed item on the filled band gives the fill up: it is never a second, paler fill colour.
+  const dimHigh = emphasis.find(({ selector }) => /\[data-band="high"\]\[data-dim\]/.test(selector));
+  assert.ok(dimHigh, 'a rule for a dimmed high-band item');
+  assert.match(dimHigh.body, /background:var\(--calendar-chrome-surface\)/);
 });
 
 test('only data-band="high" takes a fill; medium is a non-fill cue', () => {

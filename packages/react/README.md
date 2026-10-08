@@ -437,6 +437,29 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
 - **A narrow month** (`monthDensity="counts"`): a cell is the date, the consumer's `days[date].count` and its markers.
   No entry is drawn and none is counted: a row's "+N" is for windows over `windowLaneCap` only. The setting does not
   touch the week.
+- **Keyboard (HAR-1527).** The month grid, the time grid and the agenda are each **one tab stop**; no item is a
+  tab stop of its own.
+  - Month: arrows move between days, Home/End go to the first/last day shown. **Enter** on a day with items moves
+    into them (ArrowUp/ArrowDown, Home, End between them; Enter calls `onSelectEntry`; **Esc** returns to the day).
+    **Space** or a click on the day number calls `onSelectDate`; so does Enter on a day with no items.
+  - Week/Day time grid: the tab stop is a day head (ArrowLeft/ArrowRight between days). Enter goes into the
+    day's items and windows. On an item, Enter selects it, or confirms a pending move (`onProposeMove`); Esc drops
+    a pending move, otherwise returns to the day head.
+  - Agenda (grouped or flat): ArrowUp/ArrowDown, Home and End walk rows, window notes and "open day", also
+    through the rows a long agenda has not mounted yet.
+  - The keys act on the calendar's own items only: a field or link you render inside a cell or an item keeps its
+    keys. A row's "+N" is reached from the day it opens. An item reached with the pointer takes the tab stop to
+    its day. Esc on an item returns to its day and is not passed on; a second Esc reaches a surrounding dialog.
+  - A day button is named with the date and `days[date].label` (the count and the highest signal), through
+    `labels.dayName` (`'{date}, {label}'`). If your labels already say the date, set `dayName: '{label}'`.
+  - To put focus back on an item after closing your own panel: `querySelector('[data-item-id="…"]')?.focus()`.
+- **Emphasis.** `entry.emphasis: 'highlight' | 'dim'` sets `data-highlight` / `data-dim` on that item in every
+  view. Highlight is a heavier edge in the text colour and a heavier weight, dim is quieter text;
+  neither changes a hue, the line style of the state, or the band's leading edge. With forced colours a
+  highlighted title is underlined and dimmed text is grey.
+- **`<List roving>`**: the items are one tab stop (ArrowUp/ArrowDown, Home, End; Enter or Space activates the
+  focused item's `onClick`). A control inside an item keeps its own tab stop and keys. Items may be wrapped or
+  rendered later by a child component.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two

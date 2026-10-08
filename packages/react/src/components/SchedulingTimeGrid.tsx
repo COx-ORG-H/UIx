@@ -5,7 +5,7 @@
  * long as its day), so no day length is written down here. Every move is a proposal handed to
  * the consumer: this file never applies, refuses or cancels one. */
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type { CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { zonedDateKey, zonedHourSlots, zonedTimeOfDay } from '../calendar-model.js';
 import type { ZonedHourSlot } from '../calendar-model.js';
 import { layoutDaySpans, layoutTimeGridDay, placesInTopLane, proposeMove } from '../scheduling-calendar-model.js';
@@ -119,6 +119,8 @@ const GridItem = memo(function GridItem({ entry, segment, column, alone, name, s
   </>;
   const shared = {
     className: 'uix-scheduling-calendar__entry uix-scheduling-calendar__tg-item',
+    'data-highlight': entry.emphasis === 'highlight' || undefined,
+    'data-dim': entry.emphasis === 'dim' || undefined,
     'data-band': entry.band ?? 'none',
     'data-status': status,
     'data-state': entry.state,
@@ -133,6 +135,7 @@ const GridItem = memo(function GridItem({ entry, segment, column, alone, name, s
   if (continuation && !alone) return <div {...shared} data-continuation-of={entry.id} aria-hidden="true">{body}</div>;
   return <button
     type="button"
+    tabIndex={-1}
     {...shared}
     data-item-id={entry.id}
     aria-label={name}
@@ -156,6 +159,12 @@ export function SchedulingTimeGrid({
   const [widthCap, setWidthCap] = useState(Infinity);
   const [ghost, setGhost] = useState<Ghost | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  // Keyboard model (HAR-1527): the grid is one tab stop, on a day head. The arrow keys move
+  // between the day heads, Enter goes into a day's items, ArrowUp and ArrowDown move between
+  // those, and Escape goes back to the day head. No item is a tab stop of its own.
+  const [activeDay, setActiveDay] = useState(days[0]!);
+  const enteredFrom = useRef<string | null>(null);
+  const tabStop = days.includes(activeDay) ? activeDay : days[0]!;
   const moving = canMove && onProposeMove !== undefined;
   const step = Number.isFinite(givenStep) && givenStep > 0 ? givenStep : DEFAULT_STEP;
   const laneOptions = useMemo(() => ({ crossMidnightMinutes: topLaneCrossMidnightMinutes }), [topLaneCrossMidnightMinutes]);
@@ -357,6 +366,83 @@ export function SchedulingTimeGrid({
   useEffect(() => () => { dragRef.current?.stop(); dragRef.current = null; }, []);
 
   const gridColumns = (span: { startCol: number; endCol: number }) => `${span.startCol + 2} / ${span.endCol + 3}`;
+  const headButton = (date: string) => rootRef.current?.querySelector<HTMLElement>(`.uix-scheduling-calendar__tg-dayhead[data-date="${date}"] [data-calendar-date]`) ?? null;
+  /** What Enter on a day head reaches, top to bottom: its windows, its top-lane spans, the items of its column, its "+N" controls. */
+  const dayRing = (date: string): HTMLElement[] => {
+    const root = rootRef.current;
+    const column = days.indexOf(date);
+    if (!root || column === -1) return [];
+    // The hour axis is grid column 1, so day n is column n + 2.
+    const covers = (element: HTMLElement) => {
+      const [from, to] = element.style.gridColumn.split('/').map((part) => Number(part.trim()));
+      return from !== undefined && to !== undefined && from <= column + 2 && column + 2 < to;
+    };
+    const all = (selector: string) => Array.from(root.querySelectorAll<HTMLElement>(selector));
+    return [
+      ...all('.uix-scheduling-calendar__tg-strip > button.uix-scheduling-calendar__window').filter(covers),
+      ...all('.uix-scheduling-calendar__tg-top > button.uix-scheduling-calendar__tg-span').filter(covers),
+      ...all(`[data-tg-column="${date}"] > button[data-item-id]`),
+      ...all(`.uix-scheduling-calendar__tg-dayhead[data-date="${date}"] > button.uix-scheduling-calendar__more`),
+      // "+N windows" opens one day; it is reached from that day.
+      ...all(`.uix-scheduling-calendar__tg-strip > button.uix-scheduling-calendar__rowmore[data-more-date="${date}"]`),
+    ];
+  };
+  /** The day an item was entered from, or, for an item reached with the pointer, the first day it is on. */
+  const dayOfItem = (item: HTMLElement): string | null => {
+    if (enteredFrom.current && dayRing(enteredFrom.current).includes(item)) return enteredFrom.current;
+    const inColumn = item.getAttribute('data-more-date') ?? item.closest('[data-tg-column]')?.getAttribute('data-tg-column') ?? item.closest('[data-date]')?.getAttribute('data-date');
+    if (inColumn) return inColumn;
+    const from = Number(item.style.gridColumn.split('/')[0]);
+    return Number.isFinite(from) ? days[Math.max(0, Math.min(days.length - 1, from - 2))] ?? null : days[days.length - 1] ?? null;
+  };
+  const onHeadKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, date: string) => {
+    const index = days.indexOf(date);
+    const target = event.key === 'ArrowLeft' ? index - 1 : event.key === 'ArrowRight' ? index + 1 : event.key === 'Home' ? 0 : event.key === 'End' ? days.length - 1 : null;
+    if (target !== null) {
+      event.preventDefault();
+      const next = days[Math.max(0, Math.min(days.length - 1, target))]!;
+      setActiveDay(next);
+      headButton(next)?.focus();
+    } else if (event.key === 'Enter') {
+      // A day with nothing in it has nothing to go into: Enter then activates the day head, as Space always does.
+      const [first] = dayRing(date);
+      if (!first) return;
+      event.preventDefault();
+      enteredFrom.current = date;
+      first.focus();
+    }
+  };
+  const onGridKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const item = event.target as HTMLElement;
+    // Shift and an arrow is a move, and belongs to the item.
+    if (event.defaultPrevented || event.shiftKey || item.hasAttribute('data-calendar-date') || !['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape'].includes(event.key)) return;
+    const date = dayOfItem(item);
+    if (!date) return;
+    const ring = dayRing(date);
+    // Only the items of the day: a field or a link the consumer put in an item keeps its own keys.
+    const index = ring.indexOf(item);
+    if (index === -1) return;
+    event.preventDefault();
+    const to = event.key === 'Escape' ? null : ring[Math.max(0, Math.min(ring.length - 1, event.key === 'Home' ? 0 : event.key === 'End' ? ring.length - 1 : index + (event.key === 'ArrowDown' ? 1 : -1)))];
+    // A move not yet sent does not travel with the focus: leaving the item drops it, and says so.
+    if (to !== item && ghost?.source === 'keys') { setGhost(null); setAnnouncement(labels.moveCancelled); }
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      enteredFrom.current = null;
+      setActiveDay(date);
+      headButton(date)?.focus();
+      return;
+    }
+    enteredFrom.current = date;
+    to?.focus();
+  };
+  // An item reached with the pointer takes the tab stop to its day, so Tab comes back to where the user is.
+  const onGridFocus = (event: ReactFocusEvent<HTMLDivElement>) => {
+    const item = event.target as HTMLElement;
+    if (item.hasAttribute('data-calendar-date')) return;
+    const date = dayOfItem(item);
+    if (date && dayRing(date).includes(item)) setActiveDay(date);
+  };
   const nowAt = now === undefined ? null : new Date(now).getTime();
   const nowColumn = nowAt === null || Number.isNaN(nowAt) ? -1 : days.indexOf(zonedDateKey(new Date(nowAt), timeZone));
   const topHiddenOn = (date: string) => top.hidden.filter((id) => { const entry = entryById.get(id); return entry ? layoutDaySpans([entry], [date], { timeZone }).placed.length > 0 : false; });
@@ -381,6 +467,8 @@ export function SchedulingTimeGrid({
     role="group"
     aria-label={gridLabel}
     style={vars({ '--uix-scheduling-calendar-days': days.length, '--uix-scheduling-calendar-hours': maxHours })}
+    onKeyDown={onGridKeyDown}
+    onFocus={onGridFocus}
     onClickCapture={(event) => { if (suppressClick.current) { suppressClick.current = false; event.preventDefault(); event.stopPropagation(); } }}
   >
     <div className="uix-scheduling-calendar__tg-head">
@@ -392,13 +480,15 @@ export function SchedulingTimeGrid({
         const moreText = fillLabel(labels.moreSpans, { count: more });
         const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
-        const headName = info ? info.label ?? `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}` : dateText(date, 'day');
+        // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
+        const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}`;
         return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date}>
-          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} aria-label={dateText(date, 'day')} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
+          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
+            onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
           {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{info.count}</span>}
           {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <span key={marker.id}>{renderMarker(marker, true)}</span>)}</span>}
           {more > 0 && (onShowMore
-            ? <button type="button" className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, hiddenIds.map((id) => entryById.get(id)!).filter(Boolean))}>{moreText}</button>
+            ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, hiddenIds.map((id) => entryById.get(id)!).filter(Boolean))}>{moreText}</button>
             : <span className="uix-scheduling-calendar__more"><span aria-hidden="true">{moreText}</span><span className="uix-visually-hidden">{moreName}</span></span>)}
         </div>;
       })}
@@ -408,7 +498,7 @@ export function SchedulingTimeGrid({
       {strip.placed.map((placed) => {
         const overlay = overlayById.get(placed.id);
         if (!overlay) return null;
-        return <button key={placed.id} type="button" className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} data-kind={overlay.kind}
+        return <button key={placed.id} type="button" tabIndex={-1} className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} data-kind={overlay.kind}
           data-continues-before={placed.continuesBefore || undefined} data-continues-after={placed.continuesAfter || undefined}
           style={{ gridColumn: gridColumns(placed), ...vars({ '--uix-scheduling-calendar-lane': placed.lane }) }} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>
           <span className="uix-scheduling-calendar__window-text">
@@ -419,7 +509,7 @@ export function SchedulingTimeGrid({
         </button>;
       })}
       {moreWindows > 0 && (onShowMore
-        ? <button type="button" className="uix-scheduling-calendar__rowmore" aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
         : <span className="uix-scheduling-calendar__rowmore">{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
     </div>}
 
@@ -429,7 +519,8 @@ export function SchedulingTimeGrid({
         if (!entry) return null;
         const canDrag = movable(entry);
         const markers = entryMarkers(entry);
-        return <button key={placed.id} type="button" className="uix-scheduling-calendar__entry uix-scheduling-calendar__tg-span" data-item-id={entry.id} data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} data-state={entry.state}
+        return <button key={placed.id} type="button" tabIndex={-1} className="uix-scheduling-calendar__entry uix-scheduling-calendar__tg-span" data-item-id={entry.id}
+          data-highlight={entry.emphasis === 'highlight' || undefined} data-dim={entry.emphasis === 'dim' || undefined} data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} data-state={entry.state}
           data-movable={canDrag || undefined} data-continues-before={placed.continuesBefore || undefined} data-continues-after={placed.continuesAfter || undefined}
           style={{ gridColumn: gridColumns(placed), ...vars({ '--uix-scheduling-calendar-lane': placed.lane }) }}
           aria-label={entryName(entry)} aria-describedby={canDrag ? hintId : undefined}

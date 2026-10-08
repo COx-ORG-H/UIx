@@ -1,7 +1,7 @@
 /* The grouped agenda of SchedulingCalendar and the counts-only month in a real browser
  * (HAR-1520, U4): what jsdom cannot measure.
  *   AC2  above 200 rows only the rows near the viewport are mounted, and the last row is still
- *        reached with the keyboard
+ *        reached with the keyboard (the agenda is one tab stop; the arrow keys walk it, HAR-1527)
  *   AC3  Enter on a row activates it
  *   AC6  at 375 px the agenda causes no horizontal page scroll; a long title wraps in the row
  *   AC7  the status of a row is visible text
@@ -31,8 +31,7 @@ const open = async (page, query, viewport = { width: 1280, height: 800 }) => {
 const calls = (page) => page.evaluate(() => window.__calendar);
 const pageScroll = (page) => page.evaluate(() => ({ scroll: document.scrollingElement.scrollWidth, client: document.scrollingElement.clientWidth }));
 
-test('AC2: a 260-row agenda mounts only the rows near the viewport, and Tab still reaches the last row', async ({ page }) => {
-  // 259 key presses, each followed by two frames so the next rows are mounted before the next press.
+test('AC2: a 260-row agenda mounts only the rows near the viewport, and the keyboard still reaches the last row', async ({ page }) => {
   test.setTimeout(120_000);
   await open(page, 'case=agenda&rows=260');
   const agenda = page.locator(`${P}agenda--virtual`);
@@ -43,13 +42,22 @@ test('AC2: a 260-row agenda mounts only the rows near the viewport, and Tab stil
   await expect(agenda.locator('h3').first()).toBeVisible();
   await expect(page.locator('[data-item-id="r259"]')).toHaveCount(0);
 
-  // Tab from the first row to the last: each step may scroll, and the next rows mount as it does.
+  // ArrowDown past the mounted rows: each step that runs out of rows scrolls, and the next rows mount.
   await page.locator('[data-item-id="r0"]').focus();
-  for (let step = 0; step < 259; step++) {
-    await page.keyboard.press('Tab');
-    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  for (let step = 1; step <= 40; step++) {
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator(`[data-item-id="r${step}"]`)).toBeFocused();
   }
+  // End goes to the last row however far away it is, and Home comes back.
+  await page.keyboard.press('End');
   await expect(page.locator('[data-item-id="r259"]')).toBeFocused();
+  await page.keyboard.press('Home');
+  await expect(page.locator('[data-item-id="r0"]')).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(page.locator('[data-item-id="r259"]')).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.locator('[data-item-id="r258"]')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
   expect(await agenda.locator(`${P}agenda-vrow`).count(), 'still a window, not the whole list').toBeLessThan(60);
   await expect(page.locator('[data-item-id="r0"]')).toHaveCount(0);
   await page.keyboard.press('Enter');
@@ -134,8 +142,8 @@ for (const [name, query, viewport] of [['one line', 'case=agenda&rows=200', { wi
   await rows.nth(5).evaluate((el) => el.focus({ preventScroll: true }));
   const before = await rows.nth(4).evaluate((el) => ({ row: el.getBoundingClientRect().top, head: el.closest('section').firstElementChild.getBoundingClientRect().bottom }));
   expect(before.row, 'the fifth row starts behind the heading').toBeLessThan(before.head);
-  // Shift+Tab to it: the browser scrolls it into view, and it must come out from under the heading.
-  await page.keyboard.press('Shift+Tab');
+  // ArrowUp to it (the agenda is one tab stop): the browser scrolls it into view, and it must come out from under the heading.
+  await page.keyboard.press('ArrowUp');
   await expect(rows.nth(4)).toBeFocused();
   const tops = await rows.nth(4).evaluate((el) => ({ row: el.getBoundingClientRect().top, head: el.closest('section').firstElementChild.getBoundingClientRect().bottom }));
   expect(tops.row, 'the row is not behind its heading').toBeGreaterThanOrEqual(tops.head - 0.5);

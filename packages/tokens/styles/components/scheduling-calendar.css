@@ -109,6 +109,24 @@
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-text); }
   .uix-scheduling-calendar__entry[data-band="high"]:focus-visible { outline-color:var(--calendar-band-high-text); }
 
+  /* emphasis (HAR-1527): an item the consumer brings forward or sets back. Weight and
+     quietness only, and it leaves the other channels alone: a highlight is a heavier edge all
+     round in the text colour, also round the fill of the high band (a medium band keeps a
+     thicker leading edge still), a dimmed item is quieter text. The line style of the state
+     stays as it is: on the fill a dashed or dotted edge keeps the colour that shows on the fill.
+     A dimmed item of the filled band gives the fill up and keeps the band on its edge. */
+  .uix-scheduling-calendar__entry[data-highlight] { border-width:2px; border-color:var(--calendar-chrome-text); font-weight:600; }
+  .uix-scheduling-calendar__entry[data-highlight] .uix-scheduling-calendar__title { font-weight:600; }
+  .uix-scheduling-calendar__entry[data-band="medium"][data-highlight] { border-left-width:5px; }
+  .uix-scheduling-calendar__entry[data-dim] { color:var(--calendar-chrome-text-quiet); }
+  .uix-scheduling-calendar__entry[data-dim] .uix-scheduling-calendar__title { font-weight:400; }
+  .uix-scheduling-calendar__entry[data-band="high"][data-dim] { border-color:var(--calendar-band-high-fill); border-left-width:4px; background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text-quiet); }
+  /* in the agendas the heavier edge is the leading one, drawn inside the row so nothing in it moves */
+  :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda > ol > li > button)[data-highlight] { box-shadow:inset 3px 0 0 var(--calendar-chrome-text); font-weight:600; }
+  .uix-scheduling-calendar__agenda-row[data-highlight] .uix-scheduling-calendar__title { font-weight:600; }
+  :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda > ol > li > button)[data-dim] { color:var(--calendar-chrome-text-quiet); }
+  .uix-scheduling-calendar__agenda-row[data-dim] .uix-scheduling-calendar__title,.uix-scheduling-calendar__agenda > ol > li > button[data-dim] strong { font-weight:400; }
+
   /* spans and windows: placed in the week row by the layout, one lane each */
   .uix-scheduling-calendar__span,.uix-scheduling-calendar__window,.uix-scheduling-calendar__rowmore { grid-row:1; align-self:start; height:calc(var(--calendar-lane) - var(--calendar-gap)); margin-top:calc(var(--calendar-pad) + var(--calendar-head) + var(--uix-scheduling-calendar-lane,0) * var(--calendar-lane)); margin-inline:var(--calendar-pad-inline); }
   :is(.uix-scheduling-calendar__span,.uix-scheduling-calendar__window)[data-continues-before] { margin-left:0; border-left-style:dashed; border-top-left-radius:0; border-bottom-left-radius:0; }

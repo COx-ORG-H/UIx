@@ -2,7 +2,7 @@
  * cannot measure.
  *   AC1  a 23-hour and a 25-hour day are drawn as long as they are; an item sits under its hour
  *   AC2 / AC4  a keyboard day move keeps the wall-clock time; a gap hour moves forward, announced
- *   AC3  an item that crosses midnight is one tab stop; dragging its second part moves the whole
+ *   AC3  an item that crosses midnight is one focusable button; dragging its second part moves the whole
  *   AC6  a top-lane span drags by whole days only
  *   AC7  below the minimum lane width fewer lanes are drawn; no label is cut under four characters
  *   AC8  350 events stay under 3,000 elements
@@ -115,7 +115,7 @@ test('AC10 / AC11: a press that does not travel is a click; a drag proposes once
   expect((await calls(page)).moves).toHaveLength(2);
 });
 
-test('AC3: an item that crosses midnight is one tab stop, and dragging its second part moves the whole window', async ({ page }) => {
+test('AC3: an item that crosses midnight is one focusable button, and dragging its second part moves the whole window', async ({ page }) => {
   await open(page, 'case=timegrid');
   const start = page.locator(item('night'));
   const rest = page.locator('[data-continuation-of="night"]');
@@ -344,7 +344,9 @@ test('AC8: a 350-event week stays under 3,000 elements and inside the page', asy
 test('AC12 / AC17: a day header shows the consumer count, its marker with text and "+N", and names itself', async ({ page }) => {
   await open(page, 'case=timegrid');
   const head = page.locator(`${P}tg-dayhead[data-date="2026-10-07"]`);
-  await expect(head).toHaveAccessibleName('Wednesday 7 October 2026, 6 items, 1 needs sign-off');
+  // The name is the date and the label of the consumer (the count and the signal), HAR-1527.
+  await expect(head).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
+  await expect(head.locator(`${P}date`)).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
   await expect(head.locator(`${P}count`)).toHaveText('6');
   await expect(head.locator(`${P}marker-label`)).toBeVisible();
   await expect(head.locator(`${P}date`)).toBeVisible();
@@ -358,7 +360,7 @@ test('AC12 / AC17: a day header shows the consumer count, its marker with text a
   expect((await calls(page)).dates).toEqual(['2026-10-07']);
 });
 
-test('AC13: a window is one named tab stop; only the global one shades the hours; a full strip shows "+N windows"', async ({ page }) => {
+test('AC13: a window is one named button; only the global one shades the hours; a full strip shows "+N windows"', async ({ page }) => {
   await open(page, 'case=timegrid&caps=1');
   const scoped = page.locator('[data-overlay-id="scoped"]');
   await expect(scoped).toHaveCount(1);

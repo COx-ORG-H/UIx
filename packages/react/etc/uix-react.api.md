@@ -2417,6 +2417,7 @@ export interface ListItemProps extends Omit<HTMLAttributes<HTMLDivElement>, 'tit
 export interface ListProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    roving?: boolean;
 }
 
 // @public
@@ -4125,6 +4126,7 @@ export interface SchedulingCalendarEntry {
     allDay?: boolean;
     // (undocumented)
     band?: SchedulingBand;
+    emphasis?: 'highlight' | 'dim';
     // (undocumented)
     end: string;
     // (undocumented)
@@ -4154,6 +4156,7 @@ export interface SchedulingCalendarLabels {
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
+    dayName?: string;
     entry: string;
     fewerEntries: string;
     gapForward?: string;
