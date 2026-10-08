@@ -103,7 +103,7 @@ export interface SchedulingTimelineLabels {
   item: string;
   /** Read after a bar that shares time with another bar of its lane, while `flagOverlaps` is on. */
   conflict: string;
-  /** The hint of a timeline that has both `onMoveItem` and `onResizeItem` (the 2.32 sentence). */
+  /** The hint of a timeline that has both `onMoveItem` and `onResizeItem` (the 2.33 sentence). */
   moveHint: string;
   /** Announced after a move. `{title}`, `{start}`, `{end}`. */
   moved: string;
@@ -264,7 +264,7 @@ type ResolvedLabels = Required<SchedulingTimelineLabels> & { statuses: Record<Sc
 interface LaneRow { kind: 'lane'; key: string; lane: SchedulingTimelineLane; laneIndex: number; groupIndex?: number; placed: PlacedSpan<Item>[]; keys: string[]; subRows: number }
 interface HeadRow { kind: 'head'; key: string; group: SchedulingTimelineGroup; groupIndex: number; collapsed: boolean }
 type Row = LaneRow | HeadRow;
-/** The 2.32 drag: followed on the bar itself, committed on release. */
+/** The 2.33 drag: followed on the bar itself, committed on release. */
 interface StepDrag { id: string; x: number; width: number; delta: number; moved: boolean }
 interface MoveDelta { days: number; minutes: number }
 /** A proposed move on screen: pending from the keyboard, following the pointer, or sent and waiting for the consumer. */
@@ -323,7 +323,8 @@ export function SchedulingTimeline({
   } as ResolvedLabels;
   const id = useId();
   const hintId = `${id}-hint`;
-  const step = stepProp ?? defaultTimelineStep(scale);
+  // A step that is not a positive number would turn a drag into an invalid date: the default is used.
+  const step = stepProp !== undefined && Number.isFinite(stepProp) && stepProp > 0 ? stepProp : defaultTimelineStep(scale);
   const rootRef = useRef<HTMLElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLSpanElement>(null);
@@ -411,7 +412,7 @@ export function SchedulingTimeline({
   const extents = useMemo(() => timelineRowExtents(rows.map((row) => (row.kind === 'head' ? { kind: 'head' as const } : { kind: 'lane' as const, subRows: row.subRows }))), [rows]);
   const whole = extents[extents.length - 1]!;
   const virtual = whole.subRows + whole.heads > virtualizeAbove;
-  // Fixed row heights are what a clip and a virtual window are counted in. A plain 2.32 timeline
+  // Fixed row heights are what a clip and a virtual window are counted in. A plain 2.33 timeline
   // keeps rows that grow with their label: it uses none of the props that need them.
   const fixed = virtual || groups !== undefined || overlays.some((overlay) => overlay.laneIds !== undefined) || markers.some((marker) => marker.laneIds !== undefined);
 
@@ -589,7 +590,7 @@ export function SchedulingTimeline({
     }
   };
 
-  // ── the 2.32 drag (`onMoveItem`): the bar follows the pointer and one call is made on release ──
+  // ── the 2.33 drag (`onMoveItem`): the bar follows the pointer and one call is made on release ──
   const onStepPointerDown = (event: ReactPointerEvent<HTMLButtonElement>, item: Item) => {
     if (event.button !== 0) return;
     const track = (event.currentTarget.closest('.uix-scheduling-timeline__track') as HTMLElement | null);
@@ -687,12 +688,12 @@ export function SchedulingTimeline({
   const stateText = (item: Item) => (item.state ? labels.states[item.state] : item.status ? labels.statuses[item.status] : labels.states.scheduled);
   const itemName = (item: Item, conflict: boolean) => item.accessibleName
     ?? [fillLabel(labels.item, { title: item.title, state: stateText(item), start: fmtInstant(item.start), end: fmtInstant(item.end), conflict: conflict ? labels.conflict : '' }), ...(item.markers ?? []).map((marker) => marker.label)].join(', ');
-  /** An item that uses none of the generic props is a 2.32 item and keeps its 2.32 `data-state`. */
+  /** An item that uses none of the generic props is a 2.33 item and keeps its 2.33 `data-state`. */
   const dataState = (item: Item) => item.state ?? (item.band === undefined && item.status === undefined && item.markers === undefined && item.accessibleName === undefined ? 'scheduled' : undefined);
   const overlayWords = (overlay: SchedulingTimelineOverlay) => [overlay.kindLabel ?? (overlay.kind ? labels.overlays[overlay.kind] : undefined), overlay.label, overlay.scopeLabel].filter(Boolean).join(', ');
   const overlayName = (overlay: SchedulingTimelineOverlay) => overlay.accessibleName
     ?? fillLabel(labels.overlay, { title: overlayWords(overlay), start: fmtInstant(overlay.start), end: fmtInstant(overlay.end) });
-  /** The kinds 2.32 told apart by hue are told apart by pattern. */
+  /** The kinds 2.33 told apart by hue are told apart by pattern. */
   const patternOf = (overlay: SchedulingTimelineOverlay): SchedulingOverlayPattern => overlay.pattern ?? (overlay.kind === undefined || overlay.kind === 'maintenance' ? 'solid' : 'diagonal');
 
   const trackStyle = { minWidth: `calc(${Math.max(ticks.length - 1, 1)} * ${tickWidth ?? TICK_WIDTH[scale]})` } as CSSProperties;

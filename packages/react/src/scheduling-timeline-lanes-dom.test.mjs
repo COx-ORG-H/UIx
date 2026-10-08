@@ -479,6 +479,28 @@ test('AC5: focus stays on a bar the consumer moves after a keyboard proposal, an
   unmount();
 });
 
+test('AC5: step={0} falls back to the default step in every move model, and a custom step is real minutes', () => {
+  const proposals = [];
+  const moves = [];
+  const zero = mount(h(ui.SchedulingTimeline, props({ step: 0, onProposeMove: (id, proposal) => { proposals.push(proposal.start); } })));
+  pointer(bar(zero.host, 'c'), 'pointerdown', 150);
+  pointer(window, 'pointermove', 250);
+  pointer(window, 'pointerup', 250);
+  key(bar(zero.host, 'c'), 'ArrowRight', SHIFT);
+  key(bar(zero.host, 'c'), 'Enter');
+  assert.deepEqual(proposals, [utc(7, '00:00'), utc(6, '01:00')], 'no crash: a day by drag, an hour by key');
+  zero.unmount();
+  const legacy = mount(h(ui.SchedulingTimeline, props({ step: Number.NaN, onMoveItem: (id, next) => moves.push(next.start) })));
+  key(bar(legacy.host, 'c'), 'ArrowRight', SHIFT);
+  assert.deepEqual(moves, [utc(6, '01:00')]);
+  legacy.unmount();
+  const custom = mount(h(ui.SchedulingTimeline, props({ step: 30 * 60_000, onProposeMove: (id, proposal) => { proposals.push(proposal.start); } })));
+  key(bar(custom.host, 'c'), 'ArrowLeft', SHIFT);
+  key(bar(custom.host, 'c'), 'Enter');
+  assert.equal(proposals[2], utc(5, '23:30'));
+  custom.unmount();
+});
+
 test('AC5: on a week axis a step is a calendar day, so a move keeps its wall-clock time across the clock change', () => {
   const proposals = [];
   const berlin = {
@@ -561,7 +583,7 @@ test('AC5: with onResizeItem, Alt+Shift+Arrow moves the end by the step, never u
   only.unmount();
 });
 
-test('do-not: onMoveItem still commits every step and every drop, exactly as in 2.32', () => {
+test('do-not: onMoveItem still commits every step and every drop, exactly as in 2.33', () => {
   const moves = [];
   const selected = [];
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onMoveItem: (id, next) => moves.push([id, next]), onSelectItem: (item) => selected.push(item.id) })));
@@ -578,7 +600,7 @@ test('do-not: onMoveItem still commits every step and every drop, exactly as in 
   assert.equal(host.querySelector(`${P}ghost`), null, 'no pending outline in this mode');
   assert.equal(key(el, 'Enter').defaultPrevented, false);
 
-  // The 2.32 drag: followed on the bar, the bar itself moves, one call on release.
+  // The 2.33 drag: followed on the bar, the bar itself moves, one call on release.
   const dragged = bar(host, 'c');
   pointer(dragged, 'pointerdown', 150);
   pointer(dragged, 'pointermove', 250);
@@ -597,10 +619,10 @@ test('AC6 (R20 AC1 / AC2): a click selects, Enter with nothing pending is left t
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onSelectItem: (item) => selected.push(item), onProposeMove: () => {} })));
   const el = host.querySelector('[data-item-id="d"]');
   assert.equal(el.tagName, 'BUTTON');
-  assert.equal(el.getAttribute('data-timeline-item'), 'd', 'the 2.32 hook is still there');
+  assert.equal(el.getAttribute('data-timeline-item'), 'd', 'the 2.33 hook is still there');
   assert.equal(el.getAttribute('data-band'), 'none');
   assert.equal(el.getAttribute('data-status'), 'committed');
-  assert.equal(el.getAttribute('data-state'), 'scheduled', 'an item with none of the generic props keeps the attribute 2.32 gave it');
+  assert.equal(el.getAttribute('data-state'), 'scheduled', 'an item with none of the generic props keeps the attribute 2.33 gave it');
   click(el);
   assert.equal(selected.length, 1);
   assert.equal(selected[0], items[3], 'the callback gets the item it was given');
@@ -625,7 +647,7 @@ test('AC7 (V13): with flagOverlaps={false} overlapping bars stack without hatchi
   assert.equal(marker.getAttribute('data-glyph'), 'refused', 'a shape, not a colour');
   assert.equal(marker.textContent, 'Shares a database with Schema update');
 
-  // The default is what 2.32 did.
+  // The default is what 2.33 did.
   rerender(h(ui.SchedulingTimeline, props({ items: marked })));
   assert.ok(bar(host, 'a').hasAttribute('data-conflict') && bar(host, 'b').hasAttribute('data-conflict'));
   assert.match(bar(host, 'a').getAttribute('aria-label'), /, overlaps another entry$/);
@@ -759,7 +781,7 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.doesNotMatch(generic.host.innerHTML, /freeze|blackout|violation|conflicted/i, 'not in an attribute either');
   generic.unmount();
 
-  // What a 2.32 consumer passes: `state` on items and `kind` on overlays.
+  // What a 2.33 consumer passes: `state` on items and `kind` on overlays.
   const legacy = mount(h(ui.SchedulingTimeline, props({
     items: [{ ...items[0], state: 'blackout-violation' }, { ...items[2], state: 'in-progress' }, { ...items[3], state: 'conflicted' }],
     overlays: [{ id: 'f', kind: 'freeze', label: 'Q4', start: utc(10, '00:00'), end: utc(12, '00:00') }, { id: 'm', kind: 'maintenance', label: 'Storage', start: utc(6, '00:00'), end: utc(6, '06:00') }],
@@ -772,13 +794,13 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.equal(bar(legacy.host, 'c').querySelector(`${P}item-marker`), null);
   assert.equal(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-kind'), 'freeze');
   assert.ok(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'));
-  assert.notEqual(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'), legacy.host.querySelector('[data-overlay-id="m"]').getAttribute('data-pattern'), 'the kinds 2.32 told apart by hue are told apart by pattern');
+  assert.notEqual(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'), legacy.host.querySelector('[data-overlay-id="m"]').getAttribute('data-pattern'), 'the kinds 2.33 told apart by hue are told apart by pattern');
   assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Change freeze: Q4, 2026-10-10 00:00 – 2026-10-12 00:00/);
   assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Maintenance window: Storage/);
   legacy.unmount();
 });
 
-test('what a 2.32 consumer renders still renders: repeated ids, an inverted item, laneId on overlays and markers, ids that match nothing', () => {
+test('what a 2.33 consumer renders still renders: repeated ids, an inverted item, laneId on overlays and markers, ids that match nothing', () => {
   const odd = [
     { id: 'dup', laneId: 'A', title: 'First', start: utc(5, '08:00'), end: utc(5, '12:00') },
     { id: 'dup', laneId: 'A', title: 'Second', start: utc(5, '10:00'), end: utc(5, '14:00') },
@@ -799,7 +821,7 @@ test('what a 2.32 consumer renders still renders: repeated ids, an inverted item
   const picked = [];
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ items: odd, overlays, markers, onSelectItem: (item) => picked.push(item.title) })));
   const dups = [...host.querySelectorAll('[data-item-id="dup"]')];
-  assert.deepEqual(dups.map((el) => el.textContent), ['First', 'Second', 'Third'], 'a repeated id is drawn each time, as in 2.32');
+  assert.deepEqual(dups.map((el) => el.textContent), ['First', 'Second', 'Third'], 'a repeated id is drawn each time, as in 2.33');
   dups.forEach((el) => click(el));
   assert.deepEqual(picked, ['First', 'Second', 'Third'], 'and each bar selects its own item');
   assert.ok(bar(host, 'inv'), 'an item that ends before it starts is a point at its start');
@@ -848,7 +870,7 @@ test('maxHeight makes the lanes scroll inside the timeline; unset, the page scro
   unmount();
 });
 
-test('the fixed row geometry is used only with the new layout props: a plain 2.32 timeline keeps rows that grow with their label', () => {
+test('the fixed row geometry is used only with the new layout props: a plain 2.33 timeline keeps rows that grow with their label', () => {
   const plain = mount(h(ui.SchedulingTimeline, props({ overlays: [{ id: 'one', kind: 'maintenance', label: 'Ledger only', laneId: 'B', start: utc(7, '00:00'), end: utc(7, '06:00') }] })));
   assert.equal(plain.host.querySelector('section').hasAttribute('data-fixed'), false);
   plain.unmount();

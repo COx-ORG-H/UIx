@@ -3,13 +3,13 @@
  *   - lanes (default): three groups of service lanes in Europe/Berlin, one collapsed with a
  *     consumer summary; packed bars; a window over every row and one over two lanes; sub-ticks;
  *     a notice and a column note; moves that are logged and never applied (`?reject=1` answers
- *     with a rejection, `?move=legacy` passes the 2.32 `onMoveItem` instead, `?move=0` passes
+ *     with a rejection, `?move=legacy` passes the 2.33 `onMoveItem` instead, `?move=0` passes
  *     none, `?resize=1` adds `onResizeItem`, `?flag=1` turns the generic stacking flag on);
  *   - stress: 500 lanes in 40 groups (`?height=` sets `maxHeight`; `?height=none` leaves the
  *     page to scroll);
  *   - hour: the hour axis over 25.10.2026, the 25-hour day;
  *   - empty: no items;
- *   - legacy: only what a 2.32 consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
+ *   - legacy: only what a 2.33 consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
  * window.__timeline records what each callback was called with. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';

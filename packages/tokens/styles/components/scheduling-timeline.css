@@ -136,7 +136,7 @@
   /* the words sit on their own patch of the window colour, so the hatch never runs under them.
      The component puts them at the top of a lane (--uix-timeline-label-top, in row units): the
      first lane of each run of rows the window covers. */
-  .uix-scheduling-timeline__overlay-label { position: absolute; top: calc(var(--uix-timeline-label-top) + var(--timeline-gap)); left: var(--timeline-gap); display: flex; gap: var(--uix-space-1); max-width: calc(100% - 2 * var(--timeline-gap)); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-window-surface); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); line-height: 1.25rem; }
+  .uix-scheduling-timeline__overlay-label { position: absolute; top: calc(var(--uix-timeline-label-top, 0%) + var(--timeline-gap)); left: var(--timeline-gap); display: flex; gap: var(--uix-space-1); max-width: calc(100% - 2 * var(--timeline-gap)); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-window-surface); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); line-height: 1.25rem; }
   .uix-scheduling-timeline__overlay-kind { flex: none; font-weight: 600; }
   .uix-scheduling-timeline__overlay-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .uix-scheduling-timeline__overlay-scope { flex: 0 2 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-style: italic; }

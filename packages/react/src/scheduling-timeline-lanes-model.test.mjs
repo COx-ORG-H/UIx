@@ -75,13 +75,13 @@ test('AC7 (V13): flagOverlaps: false keeps the stacking and flags nothing; the d
   assert.deepEqual(model.layoutLane(spans, range, { flagOverlaps: false }).map((p) => [p.item.id, p.row, p.conflict]), [['a', 0, false], ['b', 1, false], ['c', 0, false]]);
 });
 
-test('what a 2.32 consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
+test('what a 2.33 consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
   const twice = [span('same', 8, 12), span('same', 10, 14)];
   assert.deepEqual(model.layoutLane(twice, range).map((p) => [p.item.id, p.row]), [['same', 0], ['same', 1]], 'a repeated id is placed twice, as before');
   const inverted = [{ id: 'inv', start: iso(T0 + 10 * HOUR), end: iso(T0 + 8 * HOUR) }, span('a', 12, 14)];
   const placed = model.layoutLane(inverted, range);
   assert.deepEqual(placed.map((p) => [p.item.id, p.row, p.width]), [['inv', 0, 0], ['a', 0, placed[1].width]], 'an inverted span is a point at its start');
-  // Equal spans keep the order they were given in (2.32 sorted by start and end only).
+  // Equal spans keep the order they were given in (2.33 sorted by start and end only).
   assert.deepEqual(model.layoutLane([span('z', 8, 12), span('a', 8, 12)], range).map((p) => [p.item.id, p.row]), [['z', 0], ['a', 1]]);
   assert.deepEqual(model.layoutLane([], range), []);
 });

@@ -378,7 +378,7 @@ test('AC5 (PDR-0013): with no onResizeItem Alt+Shift+Arrow does nothing and no h
   await open(page, 'case=lanes&move=legacy');
   await page.locator(item('d')).focus();
   await page.keyboard.press('Alt+Shift+ArrowRight');
-  expect((await calls(page)).moves, 'the 2.32 move prop alone does not resize either').toEqual([]);
+  expect((await calls(page)).moves, 'the 2.33 move prop alone does not resize either').toEqual([]);
   await page.keyboard.press('Shift+ArrowRight');
   expect((await calls(page)).moves).toEqual([{ id: 'd', start: berlin('2026-10-08', '07:00'), end: berlin('2026-10-09', '07:00') }]);
   await expect(page.locator('.uix-scheduling-timeline')).not.toContainText('Alt');
@@ -536,7 +536,7 @@ test('AC10: the now-line and its label are neutral; only band="high" carries the
   for (const value of colours.overlays) expect(value).toBeLessThanOrEqual(12);
   expect(colours.nowChroma).toBeLessThanOrEqual(12);
 
-  // The 2.32 props: states and kinds draw, and none of them is tinted any more.
+  // The 2.33 props: states and kinds draw, and none of them is tinted any more.
   await open(page, 'case=legacy');
   const legacy = await page.evaluate((prefix) => {
     const chroma = (rgb) => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return Math.max(r, g, b) - Math.min(r, g, b); };
@@ -670,7 +670,7 @@ test('at 375 px the timeline scrolls inside its own container and the page does 
   expect(Math.abs(label.left - frame.left)).toBeLessThanOrEqual(2);
 });
 
-test('what a 2.32 consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
+test('what a 2.33 consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
