@@ -3,7 +3,13 @@
  * bar sits on it, which bars in a lane overlap (and so stack and are flagged), and how a
  * keyboard or pointer move snaps. Instants are ISO 8601 strings or epoch milliseconds; the
  * axis is linear in real time, and only labels depend on the time zone.
+ *
+ * HAR-1521: lanes are packed by `packLanes` and nothing else, and the sub-ticks, the offset of
+ * a repeated hour and every other zone question go through `calendar-model.ts`. The row
+ * geometry of the component is in `scheduling-timeline-rows.ts`.
  */
+import { enumerateDateKeys, packLanes, zonedDaySpan, zonedHourSlots } from './calendar-model.js';
+import type { ZonedHourSlot } from './calendar-model.js';
 
 export type TimelineScale = 'hour' | 'day' | 'week' | 'month';
 
@@ -19,6 +25,23 @@ export interface TimelineTick {
   offset: number;
   /** A major tick starts a larger unit (a new day on an hour axis, a new month on a day axis). */
   major: boolean;
+  /**
+   * On an hour axis, the UTC offset (`'+02:00'`) of an hour that occurs twice that day (the
+   * clocks went back), on both occurrences. Not set otherwise.
+   */
+  offsetLabel?: string;
+}
+
+/** A minor tick inside a day: a local hour the consumer asked for. */
+export interface TimelineSubTick {
+  /** Epoch ms of the tick. */
+  at: number;
+  /** Position on the axis, 0–100. */
+  offset: number;
+  /** The local hour (0–23). */
+  hour: number;
+  /** The local hour, two digits (`'06'`). */
+  label: string;
 }
 
 export interface TimelineSpan {
@@ -37,8 +60,13 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
   clippedEnd: boolean;
   /** Sub-row inside the lane, so overlapping bars stack instead of covering each other. */
   row: number;
-  /** Overlaps at least one other bar in the same lane. */
+  /** Overlaps at least one other bar in the same lane. Always `false` with `flagOverlaps: false`. */
   conflict: boolean;
+}
+
+export interface LayoutLaneOptions {
+  /** `false` keeps the stacking and flags nothing: the consumer says what clashes, with a reason. Default `true`. */
+  flagOverlaps?: boolean;
 }
 
 export const HOUR = 3_600_000;
@@ -93,7 +121,44 @@ export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZo
     }
     prev = p;
   }
-  return ticks;
+  if (scale !== 'hour') return ticks;
+  // An hour that occurs twice (the clocks went back) says which one it is.
+  const repeated = new Map(rangeHourSlots(start, end, timeZone).flat().filter((slot) => slot.offsetLabel !== null).map((slot) => [slot.instant.getTime(), slot.offsetLabel!]));
+  return repeated.size === 0 ? ticks : ticks.map((tick) => (repeated.has(tick.at) ? { ...tick, offsetLabel: repeated.get(tick.at)! } : tick));
+}
+
+/** How many days of hour slots a range may ask for: more than any axis that fits a screen. */
+const SLOT_DAY_LIMIT = 400;
+
+/** The hour slots of each local day the range touches, day by day. Empty for an inverted or empty range. */
+function rangeHourSlots(start: number, end: number, timeZone: string): ZonedHourSlot[][] {
+  if (!(end > start)) return [];
+  const { dates } = enumerateDateKeys(zonedDaySpan(new Date(start), new Date(end), timeZone), { limit: SLOT_DAY_LIMIT });
+  return dates.map((date) => zonedHourSlots(date, timeZone));
+}
+
+/**
+ * Minor ticks for a day axis: one per local hour in `hours` (0–23) on every day of the range,
+ * strictly inside it. The instants come from the zone, so on a day the clocks change 06:00 is
+ * still local 06:00; an hour that does not exist that day has no tick, and one that occurs
+ * twice is ticked at its first occurrence.
+ */
+export function timelineSubTicks(range: TimelineRange, hours: readonly number[], timeZone: string): TimelineSubTick[] {
+  const start = toMs(range.start);
+  const end = toMs(range.end);
+  if (!(end > start) || hours.length === 0) return [];
+  const wanted = new Set(hours);
+  const span = end - start;
+  return rangeHourSlots(start, end, timeZone).flatMap((day) => {
+    const ticked = new Set<number>();
+    return day.flatMap((slot) => {
+      const hour = Number(slot.label);
+      const at = slot.instant.getTime();
+      if (!wanted.has(hour) || ticked.has(hour)) return [];
+      ticked.add(hour);
+      return at > start && at < end ? [{ at, offset: ((at - start) / span) * 100, hour, label: slot.label }] : [];
+    });
+  });
 }
 
 /** Position of one span on the axis, clamped to it; null when it is entirely outside. */
@@ -110,30 +175,25 @@ export function placeSpan(span: { start: string; end: string }, range: TimelineR
 }
 
 /**
- * Places a lane's spans: sorted by start, each in the first sub-row where it does not overlap
- * the previous bar, and flagged `conflict` when it overlaps any other span in the lane.
+ * Places a lane's spans: sorted by start, each in the first sub-row where it overlaps no
+ * earlier bar, and flagged `conflict` when it overlaps any other span in the lane (unless
+ * `flagOverlaps` is `false`). The rows come from `packLanes`, uncapped: every bar gets one.
+ * Spans equal in start and end keep the order given. A span that ends before it starts is a
+ * point at its start, and a repeated id is placed each time.
  */
-export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange): PlacedSpan<T>[] {
-  const sorted = [...items].sort((a, b) => toMs(a.start) - toMs(b.start) || toMs(a.end) - toMs(b.end));
-  const rowEnds: number[] = [];
-  const placed: PlacedSpan<T>[] = [];
-  for (const item of sorted) {
-    const pos = placeSpan(item, range);
-    if (!pos) continue;
-    const s = toMs(item.start);
-    let row = rowEnds.findIndex((end) => end <= s);
-    if (row === -1) { row = rowEnds.length; rowEnds.push(0); }
-    rowEnds[row] = Math.max(toMs(item.end), s);
-    placed.push({ item, ...pos, row, conflict: false });
-  }
-  for (let i = 0; i < placed.length; i++) {
-    for (let j = i + 1; j < placed.length; j++) {
-      const a = placed[i]!.item; const b = placed[j]!.item;
-      if (toMs(b.start) >= toMs(a.end)) continue;
-      if (toMs(a.start) < toMs(b.end)) { placed[i]!.conflict = true; placed[j]!.conflict = true; }
-    }
-  }
-  return placed;
+export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange, options: LayoutLaneOptions = {}): PlacedSpan<T>[] {
+  const flag = options.flagOverlaps !== false;
+  const visible = [...items]
+    .sort((a, b) => toMs(a.start) - toMs(b.start) || toMs(a.end) - toMs(b.end))
+    .flatMap((item) => { const pos = placeSpan(item, range); return pos ? [{ item, pos }] : []; });
+  // The packer wants unique ids and an end that is not before the start. The position in the
+  // sorted list is the id, so a repeated or inverted span from a consumer cannot make it throw.
+  const packed = packLanes(visible.map(({ item }, index) => ({ id: String(index), start: toMs(item.start), end: Math.max(toMs(item.end), toMs(item.start)) })), Infinity, { order: 'given' });
+  return visible.map(({ item, pos }, index) => {
+    const placement = packed.lanes[String(index)]!;
+    // In a run of spans that overlap one another, each one overlaps at least one of the others.
+    return { item, ...pos, row: placement.lane ?? 0, conflict: flag && packed.clusters[placement.cluster]!.ids.length > 1 };
+  });
 }
 
 /** Rounds a millisecond offset to the nearest step. */
@@ -151,4 +211,14 @@ export function shiftSpan(span: { start: string; end: string }, delta: number, m
 export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number {
   if (trackWidth <= 0) return 0;
   return snapToStep((px / trackWidth) * (toMs(range.end) - toMs(range.start)), step);
+}
+
+/**
+ * A move step as `proposeMove` takes it: a whole number of `DAY`s is that many calendar days
+ * (the wall-clock time is kept, whatever the length of the days in between); anything else is
+ * real minutes.
+ */
+export function timelineStepDelta(step: number): { days: number; minutes: number } {
+  if (step !== 0 && step % DAY === 0) return { days: step / DAY, minutes: 0 };
+  return { days: 0, minutes: step / 60_000 };
 }
