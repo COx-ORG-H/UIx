@@ -7,12 +7,15 @@
  *   #tabs        HAR-1600  a named tablist, wrap and scroll
  *   #collapsible HAR-1628  compact rows in a card, a remembered section, openRequest
  *   #steps       HAR-1628  steps that hold content
+ * and, in more.tsx: #chips (HAR-1632), #files (HAR-1630), #callouts / #dialogs / #hover
+ * (HAR-1614), #loading (HAR-1606), #view-menu (HAR-1601).
  */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button, Card, CollapsibleSection, Field, Input, Segmented, SegmentedOption, Step, Steps, Tab, TabPanel, Tabs, Textarea,
 } from '../../packages/react/src/index.js';
+import { MoreCases } from './more.js';
 
 declare global { interface Window { __gaps: { density: string; theme: string; view: string } } }
 window.__gaps = { density: 'default', theme: 'system', view: 'list' };
@@ -131,6 +134,7 @@ function Harness() {
       <SegmentedCases />
       <TabsCases />
       <StepsCases />
+      <MoreCases />
       <CollapsibleCases />
     </>
   );
