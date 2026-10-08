@@ -57,7 +57,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | ✓ `Flow` | Beta | no | Also `FlowNode`; presentational graph shell with explicit state text and consumer-owned geometry. |
 | Form | form.css | ✓ `Field` | Stable | no | Also `ToggleRow`; `FormGrid`/`Fieldset` still planned. |
-| Heartbeat | heartbeat.css | absent | Planned | no | Planned wrapper (presentational). |
+| Heartbeat | heartbeat.css | ✓ `Heartbeat` | Beta | no | The pulsing status dot (`live`, `idle`, `warning`, `danger`), decorative unless labelled; also `LiveIndicator` (dot + state text). Landed 2.32.0 (HAR-1606). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 233 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
@@ -70,7 +70,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
 | MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
-| Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). |
+| Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). 2.32.0 (HAR-1629): `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`, `id` / `data-*` on items, Escape on the trigger, capped to the viewport. |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
 | MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. |
@@ -98,7 +98,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | States | states.css | ✓ `EmptyState` | Stable | no | Also rich page/drawer variants, `ErrorState`, `ForbiddenState`, `NotFoundState`, `LoadingState`, `Skeleton`, and `AsyncOperationStatus`. |
 | StatusPill | status-pill.css | ✓ `StatusPill` | Stable | no | `PillTone`, `PillTreatment`. |
 | Stepper | stepper.css | absent | Planned | no | The numeric −/+ stepper (not a wizard; that is `Steps`). `MetricInput` covers bounded numeric entry today. |
-| Steps | steps.css | ✓ `Steps` | Beta | no | Also `Step`; ordered list, state in text (complete/current/upcoming/waiting/error), navigable steps, stacks below 40rem. Landed 2.27.0 (HAR-1362). |
+| Steps | steps.css | ✓ `Steps` | Beta | no | Also `Step`; ordered list, state in text (complete/current/upcoming/waiting/error), navigable steps, stacks below 40rem. Landed 2.27.0 (HAR-1362). 2.32.0 (HAR-1628): `progress={false}` for numbered sections that hold content. |
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |
 | Table | table.css | ✓ `Table` | Stable | no | Family: `TableWrap`, `Th`, `Td`, `Tr`, `BulkBar`, `RowActions`, etc.; `useTable` + `table-engine`. |
 | TableToolbar | table-toolbar.css | ✓ `Chip` | Stable | no | CSS support for Table and the exported `FilterPopover` composition. Also home of `.uix-chip`: React `Chip` (toggle, removable, link, "+ add") and `ChipGroup` landed 2.27.0 (HAR-1360). |

@@ -1,4 +1,5 @@
 import { tagInputMarkup, fileUploadMarkup, selectMarkup, selectStatesMarkup, SELECT_SPECIMENS } from "./form-specimens.js";
+import { TENSOR_GAP_SPECIMENS } from "./tensor-gap-specimens.js";
 /* Generated once from the retired UIx showcase pages. The docs router is now the canonical owner. */
 export const SHOWCASE_PAGES = [
   {
@@ -372,3 +373,14 @@ colorPicker.html = colorPicker.html.replace(' aria-modal="true"', "").replace("n
 colorPicker.html = colorPicker.html.replace('class="uix-color-picker__swatch uix-phase-page__brand-swatch"', 'class="uix-color-picker__swatch" style="background:var(--uix-accent)"').replace('class="uix-color-picker__preview uix-phase-page__brand-preview"', 'class="uix-color-picker__preview" style="background:var(--uix-accent);color:#fff"');
 
 colorPicker.summary = colorPicker.summary.replace("normalized hex input, palettes, focus restoration", "normalized hex input, focus restoration");
+
+// The gaps TENSOR found on 2.31.0 (HAR-1346 follow-ups, 2026-10-08). Each route's block is
+// appended inside its closing </section>, after every earlier specimen, so the first match of
+// each COMPONENT_SPECIMENS selector stays what it was.
+for (const [slug, html] of Object.entries(TENSOR_GAP_SPECIMENS)) {
+  const page = SHOWCASE_PAGES.find((entry) => entry.slug === slug);
+  if (!page) throw new Error(`tensor-gap-specimens.js names a route that does not exist: ${slug}`);
+  const end = page.html.lastIndexOf("</section>");
+  if (end < 0) throw new Error(`${slug} has no closing </section> to append specimens to`);
+  page.html = `${page.html.slice(0, end)}${html}\n${page.html.slice(end)}`;
+}
