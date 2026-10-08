@@ -126,3 +126,64 @@ test('AC1 (agenda): day headings do not stick, and the long form prints its rows
   const box = await long.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
   expect(box.scroll).toBeLessThanOrEqual(box.client + 1);
 });
+
+/* ── SchedulingTimeline on paper ─────────────────────────────────────────────────────────────── */
+const TIMELINE = '../../tests/scheduling-timeline/harness.html';
+const T = '.uix-scheduling-timeline__';
+const openTimelinePrinted = async (page, query) => {
+  await page.setViewportSize({ width: 794, height: 1123 });
+  await page.goto(`${TIMELINE}?${query}`, { waitUntil: 'networkidle' });
+  await expect(page.locator('.uix-scheduling-timeline')).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  await page.emulateMedia({ media: 'print' });
+};
+
+test('AC1 (timeline): no scroller, the axis fits the page, nothing sticks, and every lane and bar is drawn', async ({ page }) => {
+  await openTimelinePrinted(page, 'case=lanes');
+  const scroller = page.locator(`${T}scroller`);
+  expect(await style(scroller, ['overflow-x', 'overflow-y'])).toEqual({ 'overflow-x': 'visible', 'overflow-y': 'visible' });
+  const box = await page.locator(`${T}grid`).evaluate((el) => ({ right: el.getBoundingClientRect().right, page: document.scrollingElement.scrollWidth, view: document.scrollingElement.clientWidth }));
+  expect(box.right, 'the whole axis is inside the page').toBeLessThanOrEqual(794);
+  expect(box.page, 'the page is not wider than the paper').toBeLessThanOrEqual(box.view);
+  for (const part of [`${T}row--axis`, `${T}lane-label`, `${T}group-label`]) expect((await style(page.locator(part).first(), ['position'])).position, `${part} does not stick`).toBe('static');
+  // Every bar is inside its track, and the last tick of the axis is inside the page.
+  const bars = await page.locator(`${T}slot`).evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); const t = el.closest('[class*="__track"]').getBoundingClientRect(); return r.width > 0 && r.left >= t.left - 1 && r.left < t.right; }));
+  expect(bars.length).toBeGreaterThan(3);
+  expect(bars.every(Boolean), 'bars follow the narrower axis').toBe(true);
+  await expect(page.locator(`${T}now`)).toBeHidden();
+  // Every lane name and every window name is drawn.
+  for (const name of await page.locator(`${T}body ${T}lane-name`).all()) await expect(name).toBeVisible();
+  for (const name of await page.locator(`${T}overlay-name`).all()) await expect(name).toBeVisible();
+});
+
+test('AC1 / AC2 (timeline): ink on paper in either theme; the high band, the windows and the grid lines do not depend on a background', async ({ page }) => {
+  await openTimelinePrinted(page, 'case=lanes');
+  expect((await style(page.locator('.uix-scheduling-timeline'), ['color'])).color).toBe(INK);
+  expect((await style(page.locator(`${T}scroller`), ['background-color']))['background-color']).toBe(PAPER);
+  const high = page.locator(`${T}item[data-band="high"]`);
+  expect(await high.count()).toBeGreaterThan(0);
+  for (const bar of await high.all()) {
+    const look = await style(bar, ['background-color', 'border-bottom-color', 'border-bottom-width', 'color']);
+    expect(look['background-color'], 'no fill').toBe(CLEAR);
+    expect(look['border-bottom-color']).toBe(SIGNAL);
+    expect(look['border-bottom-width']).toBe('2px');
+    expect(look.color === INK || look.color === 'rgb(82, 82, 82)', `ink text, got ${look.color}`).toBe(true);
+  }
+  // A window's kind is its edges: one style per pattern.
+  const edges = await page.locator(`${T}overlay[data-pattern]`).evaluateAll((els) => els.map((el) => [el.dataset.pattern, getComputedStyle(el).borderLeftStyle]));
+  const expected = { solid: 'solid', diagonal: 'dashed', cross: 'double', dotted: 'dotted' };
+  expect(edges.length).toBeGreaterThan(0);
+  for (const [pattern, edge] of edges) expect(edge, `a ${pattern} window`).toBe(expected[pattern]);
+  expect(new Set(edges.map(([pattern]) => pattern)).size, 'the specimen has more than one pattern').toBeGreaterThan(1);
+  // A grid line is an edge, not a painted strip.
+  const line = await style(page.locator(`${T}gridline`).first(), ['background-color', 'background-image', 'border-left-width', 'border-left-style']);
+  expect([line['background-color'], line['background-image'], line['border-left-width']]).toEqual([CLEAR, 'none', '1px']);
+});
+
+test('AC1 (timeline): a timeline that scrolls inside itself on screen prints the rows it has mounted without a scroller', async ({ page }) => {
+  await openTimelinePrinted(page, 'case=stress&height=400');
+  const scroller = page.locator(`${T}scroller`);
+  expect(await style(scroller, ['overflow-y', 'max-height'])).toEqual({ 'overflow-y': 'visible', 'max-height': 'none' });
+  const box = await scroller.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+  expect(box.scroll).toBeLessThanOrEqual(box.client + 1);
+});

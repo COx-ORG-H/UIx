@@ -5,20 +5,22 @@
  * tests/a11y/scheduling-print.spec.mjs. */
 import { test, expect } from '@playwright/test';
 
-const HARNESS = '../../tests/scheduling-calendar/harness.html';
+const CALENDAR = '../../tests/scheduling-calendar/harness.html';
+const TIMELINE = '../../tests/scheduling-timeline/harness.html';
 const PAGES = [
-  { name: 'print-scheduling-month', query: 'case=encodings' },
-  { name: 'print-scheduling-month-controlled', query: 'case=controlled&windows=3' },
-  { name: 'print-scheduling-week', query: 'case=timegrid' },
+  { name: 'print-scheduling-month', harness: CALENDAR, query: 'case=encodings', root: '.uix-scheduling-calendar' },
+  { name: 'print-scheduling-month-controlled', harness: CALENDAR, query: 'case=controlled&windows=3', root: '.uix-scheduling-calendar' },
+  { name: 'print-scheduling-week', harness: CALENDAR, query: 'case=timegrid', root: '.uix-scheduling-calendar' },
+  { name: 'print-scheduling-timeline', harness: TIMELINE, query: 'case=lanes', root: '.uix-scheduling-timeline' },
 ];
 
 for (const pg of PAGES) {
   test(pg.name, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'light', 'paper is light: one snapshot');
     await page.setViewportSize({ width: 794, height: 1123 });
-    await page.goto(`${HARNESS}?${pg.query}`, { waitUntil: 'networkidle' });
+    await page.goto(`${pg.harness}?${pg.query}`, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('.uix-scheduling-calendar')).toHaveScreenshot(`${pg.name}.png`, { animations: 'disabled' });
+    await expect(page.locator(pg.root)).toHaveScreenshot(`${pg.name}.png`, { animations: 'disabled' });
   });
 }

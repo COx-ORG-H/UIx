@@ -354,6 +354,8 @@
     /* paper has no fill to rely on: the high band is a heavy edge in the one signal colour, in every state */
     :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:2px; border-color:var(--calendar-band-high-fill); background:none; }
     :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-fill); }
+    /* the leading edge of a highlighted agenda row is a shadow, which may not print: its title is underlined */
+    :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda > ol > li > button)[data-highlight] :is(.uix-scheduling-calendar__title,strong) { text-decoration:underline; }
     /* a window's pattern is a background and may not print: its edge says the same */
     :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="diagonal"] { border-style:dashed; }
     :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="cross"] { border-style:double; border-width:3px; }
