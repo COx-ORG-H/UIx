@@ -617,3 +617,193 @@ The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure
 - **Forms:** a visually hidden `<select data-uix-select-proxy>` holds `name`, `required`, `form`, `multiple` and the value. `ref` points at it, so `FormData`, `form.reset()`, autofill, react-hook-form `register` and `Controller` work as before. `onChange(e)` gets `e.target.value`, and a failed `required` focuses the trigger.
 - **Keyboard:** ↑ ↓ Home End PageUp PageDown and typing move (repeat one letter to cycle). Enter, Space, Tab and Alt+↑ choose. Escape closes and keeps the value. With `multiple`, Space toggles and Delete clears.
 - Plain Select for up to about 12 options, `searchable` for longer lists, `EntityPicker` or `SearchSuggest` for records.
+
+### Gaps from the TENSOR migration (2.32.0)
+
+Found on 2026-10-07/08 while TENSOR moved its hand-built UI onto 2.31.0. Everything is optional
+unless a line says **Behaviour change**.
+
+#### Anchored overlays stay inside the viewport
+
+A `Popover` / `useAnchoredPosition` panel that fits neither above nor below its anchor used to
+leave the viewport (a 384 px panel under a trigger in the middle of a 640 px phone screen got a
+negative `top`). It now slides over the anchor and stays inside the 8 px padding, after a scroll
+and after a resize as well. Once the anchor itself has left the viewport the panel follows it out.
+
+```tsx
+<Popover anchor={triggerRef} capHeight>…</Popover>          // taller than the screen: capped, scrolls inside
+useAnchoredPosition(anchorRef, panelRef, {
+  open,
+  capHeight: true,                 // max-height = viewport − 2 × padding (a smaller own max-height still applies)
+  onAnchorHidden: () => setOpen(false),   // what `Popover closeWhenAnchorHidden` is built on
+  shiftMainAxis: false,            // opt out: the 2.31.0 placement
+});
+computePosition(anchor, size, viewport).mainAxisRange   // [min, max] the top is kept in, or null
+```
+
+With CSS anchor positioning the browser moves a box with its anchor *after* resolving `top`, so
+no value can hold it at the viewport limit while the page scrolls. While a panel is held at the
+limit, or within 64 px of it, the hook writes fixed coordinates instead; they cannot drift.
+
+#### Menu: radio and checkbox items, attributes, Escape on the trigger
+
+```tsx
+<Menu trigger={<Button>Preset</Button>}>
+  <MenuItem id="manage" data-action-id="preset.manage" onSelect={manage}>Manage presets</MenuItem>
+  <MenuSeparator />
+  <MenuRadioGroup label="Dashboard preset" value={preset} onValueChange={setPreset}>
+    <MenuItemRadio value="mine">My queue</MenuItemRadio>
+    <MenuItemRadio value="team">Team</MenuItemRadio>
+  </MenuRadioGroup>
+  <MenuItemCheckbox checked={zebra} onCheckedChange={setZebra}>Alternating rows</MenuItemCheckbox>
+</Menu>
+```
+
+- `MenuItemRadio` / `MenuItemCheckbox` render `menuitemradio` / `menuitemcheckbox` with
+  `aria-checked` and a check column. The menu opens on the checked radio item.
+- A click or Enter follows `closeOnSelect` (radio: `true`, checkbox: `false`); Space changes the
+  state and leaves the menu open.
+- Every item kind forwards `id` and `data-*` to its own element.
+- Escape (and Tab) on the trigger closes a menu that has no item to focus (every item disabled).
+- The menu is capped to the viewport and scrolls.
+
+#### CollapsibleSection and Steps
+
+```tsx
+<CollapsibleSection title="Details" defaultOpen persistKey={`incident:${id}:details`} persistStorage="local">…</CollapsibleSection>
+<CollapsibleSection title="SLA" compact headingLevel={3} lazy openRequest={jumpToSla}>…</CollapsibleSection>
+```
+
+- `defaultOpen` is the starting state; with `persistKey`, what the person chose wins over it. A
+  passed `open` is the same starting state and no longer overrides the remembered state at
+  mount; it still applies when the parent changes it.
+- `persistStorage`: `'session'` (default) or `'local'`.
+- `openRequest` already set at mount is honoured (a deep link), and every request moves focus to
+  the summary. `undefined` and `0` mean "no request yet".
+- `compact`: a quiet row inside a card. `headingLevel`: the title is a real heading and the body a
+  `role="region"` named by it.
+
+```tsx
+<Steps progress={false} headingLevel={2} label="New change">
+  <Step title="What is changing" description="One sentence is enough."><Field …/></Step>
+  <Step title="When"><Field …/></Step>
+</Steps>
+```
+
+`progress={false}` is a numbered list of sections that are all on screen: no state is drawn or
+announced, and each step's children are its content, in a group named by the step title. Without
+it `Steps` is the progress indicator it was.
+
+Also: `DescriptionItem termProps` / `descriptionProps` (attributes for the `<dt>` / `<dd>`), and
+`closeLabel` is optional on `PromptDialog` and `ConfirmDialog`.
+
+#### Tabs: a name for the tablist
+
+```tsx
+<Tabs aria-label="Inbox filters" value={tab} onChange={setTab}>…</Tabs>
+<Tabs aria-labelledby="news-heading" overflow="scroll" …>…</Tabs>
+```
+
+`Tabs` passes HTML attributes to its `role="tablist"` element, in both overflow modes.
+
+#### Segmented: one tab stop, arrow keys, a radiogroup mode
+
+```tsx
+<Segmented aria-label="Row density" value={density} onChange={setDensity}>…</Segmented>
+<Segmented selection="radio" aria-labelledby="theme-label" value={theme} onChange={setTheme}>…</Segmented>
+```
+
+- **Behaviour change:** a `Segmented` is one tab stop (the selected option, or the first enabled
+  one). Arrow Right/Down and Left/Up move and select, wrapping; Home / End jump; Left and Right
+  swap in a right-to-left group. Before, every option was a tab stop and no key was handled.
+- `selection="radio"` renders `radiogroup` / `radio` / `aria-checked` instead of `group` /
+  `aria-pressed`, for a setting with exactly one value.
+
+#### useVirtualRows
+
+```tsx
+const v = useVirtualRows(rows, { rowHeight: 44, estimatedViewportHeight: 600, enabled: rows.length > 0 });
+```
+
+- `estimatedViewportHeight`: the height to assume until the scroller is measured (and whenever it
+  measures 0), so a 5,000-row table mounts with one window, not 5,000 rows.
+- When the row count shrinks under a large `scrollTop`, the window is clamped to the new count in
+  the same render: the spacer is never taller than the list.
+- `enabled: false` returns every row and no spacers. Rows are windowed when
+  `rows.length > threshold` (default 100).
+
+#### RuleBuilder for a flat AND-list
+
+```tsx
+<RuleBuilder value={rule} onChange={setRule} fields={fields} operators={operators}
+  conditionsOnly combinator="and" allowGroups={false} checks={{ emptyGroup: false }} labels={t.ruleBuilder} />
+<RuleBuilder … readOnly />              // the builder, every control disabled
+<RuleBuilder … readOnly="summary" />    // one sentence
+```
+
+- The built-in validation messages are labels (`issueEmptyGroup`, `issueNoActions`,
+  `issueMissingField`, …) and `checks` turns individual checks off.
+- `conditionsOnly`: no "Then" block; `actions` is then optional.
+- `combinator` fixes every group to one value (shown as text, never emits the other);
+  `hideCombinator` removes the control. `allowGroups={false}` hides "Add group".
+- **Behaviour change:** `readOnly` renders the builder with its controls disabled, not a sentence.
+  The sentence is `readOnly="summary"`, and its words are labels.
+- `UixLabelsProvider labels={{ ruleBuilder }}` translates every builder below it.
+
+#### Chip
+
+```tsx
+<Chip ref={chipRef} onClick={openEditor} onRemove={clear}
+  bodyProps={{ 'aria-haspopup': 'dialog', 'aria-expanded': open, 'aria-controls': editorId }}>Status: Open</Chip>
+<Chip href="/incidents" current renderLink={link}>Incidents</Chip>
+```
+
+- The × is named from `UixLabelsProvider` `chip.remove` (`'{label} entfernen'`); `removeLabel`
+  still wins.
+- The ref is the body (the button, link or span that carries the chip's action), also on a
+  removable chip; `bodyProps` puts attributes there.
+- `current` on a link chip: `aria-current="page"` and the filled look.
+
+#### FileUpload and Attachment
+
+- A long unbroken file name no longer widens `FileUpload` past its container.
+- Both read `UixLabelsProvider` (`fileUpload`, `attachment`); a `labels` prop wins per word.
+- `sizeBase={1024}` counts in 1024s, `formatSize` takes the product's formatter, and
+  `formatFileSize(bytes, locale, { base: 1024, units })` does the same outside a component.
+
+#### Alert, Note, StatusPill, PromptDialog, Popover
+
+```tsx
+<Alert ref={errorRef} tone="info" title="…" actions={<Button size="xs" variant="ghost">Details</Button>} onDismiss={hide}>…</Alert>
+<StatusPill size="lg" tone="success" dot>Operational</StatusPill>
+<PromptDialog … multiline destructive error={serverError} />
+<Popover anchor={userRef} openOnHover>…</Popover>
+```
+
+- `Alert`: `onDismiss` + `dismissLabel` (`UixLabelsProvider` `alert.dismiss`), a trailing `actions`
+  slot, a forwarded ref, and a text column that wraps a long title at 320 px.
+- `Note tone={undefined}` and `tone="neutral"` are the default look.
+- `StatusPill size`: `'sm' | 'md' | 'lg'`.
+- `PromptDialog`: `multiline` (a textarea; Ctrl/⌘+Enter submits), `destructive` (a danger submit,
+  `role="alertdialog"`), an `error` slot, `role`. The field takes focus when the dialog opens.
+- `Popover openOnHover`: opens on pointer or focus on its anchor, stays while either is on the
+  anchor or the popover, closes after both left and on Escape.
+
+#### Spinner, Meter, Heartbeat
+
+```tsx
+<Spinner size="sm" label="Uploading" />
+<Meter tone="neutral" value={42} label="Option A, 42% of votes" />
+<LiveIndicator state="live">Live</LiveIndicator>   <Heartbeat state="danger" label="Connection lost" />
+```
+
+- `Spinner size="sm"` is 16 px.
+- `Meter tone="neutral"` (grey) and `tone="accent"` (brand) are fills for a proportion that is not
+  a status; both clear 3:1 against the track in light and dark, and no tone word is spoken.
+- `Heartbeat` is the pulsing dot (`live`, `idle`, `warning`, `danger`), decorative unless it has a
+  `label`; `LiveIndicator` adds the state in text. The ring stops under `prefers-reduced-motion`.
+
+#### ViewMenu
+
+The density options no longer break a label inside a word at phone width ("Großzügig"); options
+that do not fit one row wrap as whole options.

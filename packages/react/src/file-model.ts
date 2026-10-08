@@ -1,12 +1,36 @@
 /** File helpers shared by `FileUpload` and `Attachment` (HAR-984/985). Pure. */
 
-/** "1.2 MB", "340 KB", "12 B" in the locale's number format (base 1000, like file managers). */
-export function formatFileSize(bytes: number, locale?: string): string {
+export interface FileSizeOptions {
+  /**
+   * `1000` (default): decimal, as file managers on macOS and most of the web show sizes
+   * (1 MB = 1,000,000 bytes). `1024`: binary, as Windows and many servers count them
+   * (1 MB = 1,048,576 bytes) — use it when the rest of the product does, so one file never
+   * shows two sizes (HAR-1630).
+   */
+  base?: 1000 | 1024;
+  /**
+   * The five unit labels, bytes first. Default `['B', 'KB', 'MB', 'GB', 'TB']` for both bases;
+   * pass `['B', 'KiB', 'MiB', 'GiB', 'TiB']` to mark base 1024 the IEC way, or localised ones.
+   */
+  units?: readonly [string, string, string, string, string];
+}
+
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
+
+/** A product's own size formatter for `FileUpload` and `Attachment` (`formatSize`). */
+export type FileSizeFormatter = (bytes: number, locale?: string) => string;
+
+/**
+ * "1.2 MB", "340 KB", "12 B" in the locale's number format. Base 1000 unless `options.base`
+ * is 1024.
+ */
+export function formatFileSize(bytes: number, locale?: string, options: FileSizeOptions = {}): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const base = options.base === 1024 ? 1024 : 1000;
+  const units = options.units ?? UNITS;
   let value = bytes;
   let unit = 0;
-  while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit += 1; }
+  while (value >= base && unit < units.length - 1) { value /= base; unit += 1; }
   const digits = unit === 0 || value >= 100 ? 0 : 1;
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: digits, minimumFractionDigits: 0 }).format(value)} ${units[unit]}`;
 }

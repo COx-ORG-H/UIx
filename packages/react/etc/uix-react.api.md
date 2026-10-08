@@ -46,15 +46,18 @@ export function addCalendarMonths(value: string, amount: number): string;
 // @public
 export function addZonedDays(instant: string | Date, days: number, timeZone: string): ZonedDayShift;
 
-// @public (undocumented)
-export function Alert(input: AlertProps): react.JSX.Element;
+// @public
+export const Alert: react.ForwardRefExoticComponent<AlertProps & react.RefAttributes<HTMLDivElement>>;
 
 // @public (undocumented)
 export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    actions?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    dismissLabel?: string;
     // (undocumented)
     icon?: ReactNode;
+    onDismiss?: () => void;
     // (undocumented)
     title?: ReactNode;
     // (undocumented)
@@ -136,7 +139,7 @@ export interface AsyncOperationStatusProps extends Omit<HTMLAttributes<HTMLDivEl
 // @public
 export function Attachment(input: AttachmentProps): react.JSX.Element;
 
-// @public (undocumented)
+// @public
 export interface AttachmentLabels {
     download: string;
     // (undocumented)
@@ -162,8 +165,8 @@ export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, '
     download?: boolean | string;
     // (undocumented)
     error?: ReactNode;
+    formatSize?: FileSizeFormatter;
     href?: string;
-    // (undocumented)
     labels?: Partial<AttachmentLabels>;
     // (undocumented)
     locale?: string;
@@ -173,6 +176,7 @@ export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, '
     // (undocumented)
     renderLink?: UixRenderLink;
     size?: number;
+    sizeBase?: 1000 | 1024;
     state?: ReactNode;
     status?: 'ready' | 'loading' | 'error' | 'forbidden';
     thumbnail?: ReactNode;
@@ -595,7 +599,7 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
 }
 
 // @public
-export function Chip(input: ChipProps): react.JSX.Element;
+export const Chip: react.ForwardRefExoticComponent<ChipProps & react.RefAttributes<HTMLElement>>;
 
 // @public
 export function ChipGroup(input: ChipGroupProps): react.JSX.Element;
@@ -609,8 +613,10 @@ export interface ChipGroupProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public (undocumented)
 export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> {
+    bodyProps?: HTMLAttributes<HTMLElement>;
     children?: ReactNode;
     count?: ReactNode;
+    current?: boolean;
     // (undocumented)
     disabled?: boolean;
     href?: string;
@@ -646,9 +652,13 @@ export function CollapsibleSection(props: CollapsibleSectionProps): react.JSX.El
 export interface CollapsibleSectionProps extends Omit<DetailsHTMLAttributes<HTMLDetailsElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    compact?: boolean;
+    defaultOpen?: boolean;
+    headingLevel?: 2 | 3 | 4 | 5 | 6;
     lazy?: boolean | 'keep';
     openRequest?: number;
     persistKey?: string;
+    persistStorage?: 'session' | 'local';
     // (undocumented)
     summary?: ReactNode;
     // (undocumented)
@@ -856,8 +866,7 @@ export interface ConfirmDialogProps {
     // (undocumented)
     cancelLabel: ReactNode;
     children?: ReactNode;
-    // (undocumented)
-    closeLabel: string;
+    closeLabel?: string;
     compensation?: ReactNode;
     compensationLabel?: string;
     // (undocumented)
@@ -1088,6 +1097,12 @@ export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
 export const DEFAULT_RULE_BUILDER_LABELS: RuleBuilderLabels;
 
 // @public (undocumented)
+export const DEFAULT_RULE_SUMMARY_WORDS: RuleSummaryWords;
+
+// @public
+export const DEFAULT_RULE_VALIDATION_MESSAGES: Record<RuleCheck, string>;
+
+// @public (undocumented)
 export const DEFAULT_SAVE_STATUS_LABELS: SaveStatusLabels;
 
 // @public (undocumented)
@@ -1112,8 +1127,10 @@ export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
 export interface DescriptionItemProps {
     // (undocumented)
     children?: ReactNode;
+    descriptionProps?: HTMLAttributes<HTMLElement>;
     // (undocumented)
     term: ReactNode;
+    termProps?: HTMLAttributes<HTMLElement>;
 }
 
 // @public (undocumented)
@@ -1123,9 +1140,11 @@ export function DescriptionList(input: DescriptionListProps): react.JSX.Element;
 export interface DescriptionListItem {
     // (undocumented)
     description: ReactNode;
+    descriptionProps?: HTMLAttributes<HTMLElement>;
     id?: string;
     // (undocumented)
     term: ReactNode;
+    termProps?: HTMLAttributes<HTMLElement>;
 }
 
 // @public (undocumented)
@@ -1561,6 +1580,15 @@ export interface FileRejection<F = File> {
 export type FileRejectionReason = 'type' | 'size' | 'count';
 
 // @public
+export type FileSizeFormatter = (bytes: number, locale?: string) => string;
+
+// @public
+export interface FileSizeOptions {
+    base?: 1000 | 1024;
+    units?: readonly [string, string, string, string, string];
+}
+
+// @public
 export function FileUpload(input: FileUploadProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1614,9 +1642,9 @@ export interface FileUploadProps {
     className?: string;
     // (undocumented)
     disabled?: boolean;
+    formatSize?: FileSizeFormatter;
     hint?: ReactNode;
     items: readonly FileUploadItem[];
-    // (undocumented)
     labels?: Partial<FileUploadLabels>;
     // (undocumented)
     locale?: string;
@@ -1629,6 +1657,7 @@ export interface FileUploadProps {
     onRemove?: (id: string) => void;
     // (undocumented)
     onRetry?: (id: string) => void;
+    sizeBase?: 1000 | 1024;
 }
 
 // @public (undocumented)
@@ -1895,7 +1924,19 @@ export function foldForSearch(text: string): FoldedText;
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
 
 // @public
-export function formatFileSize(bytes: number, locale?: string): string;
+export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
+
+// @public
+export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface HeartbeatProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    label?: string;
+    state?: HeartbeatState;
+}
+
+// @public (undocumented)
+export type HeartbeatState = 'live' | 'idle' | 'warning' | 'danger';
 
 // @public (undocumented)
 export function hexToRgb(value: string): RgbColor | undefined;
@@ -2353,6 +2394,16 @@ export interface ListProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function LiveIndicator(input: LiveIndicatorProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LiveIndicatorProps extends HTMLAttributes<HTMLSpanElement> {
+    children?: ReactNode;
+    // (undocumented)
+    state?: HeartbeatState;
+}
+
+// @public
 export function LoadingState(input: LoadingStateProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -2551,8 +2602,38 @@ export interface MenuGroupProps {
 // @public (undocumented)
 export function MenuItem(input: MenuItemProps): react.JSX.Element;
 
+// @public
+export interface MenuItemAttributes {
+    // (undocumented)
+    [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
+    // (undocumented)
+    id?: string;
+}
+
+// @public
+export function MenuItemCheckbox(input: MenuItemCheckboxProps): react.JSX.Element;
+
 // @public (undocumented)
-export interface MenuItemProps {
+export interface MenuItemCheckboxProps extends MenuItemAttributes {
+    // (undocumented)
+    checked: boolean;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    closeOnSelect?: boolean;
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    icon?: ReactNode;
+    // (undocumented)
+    onCheckedChange?: (checked: boolean) => void;
+    // (undocumented)
+    shortcut?: ReactNode;
+}
+
+// @public (undocumented)
+export interface MenuItemProps extends MenuItemAttributes {
     // (undocumented)
     children?: ReactNode;
     // (undocumented)
@@ -2568,6 +2649,27 @@ export interface MenuItemProps {
     shortcut?: ReactNode;
     // (undocumented)
     tone?: 'default' | 'danger';
+}
+
+// @public
+export function MenuItemRadio(input: MenuItemRadioProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MenuItemRadioProps extends MenuItemAttributes {
+    checked?: boolean;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    closeOnSelect?: boolean;
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    icon?: ReactNode;
+    onSelect?: () => void;
+    // (undocumented)
+    shortcut?: ReactNode;
+    value: string;
 }
 
 // @public (undocumented)
@@ -2586,6 +2688,20 @@ export interface MenuProps {
     trigger: ReactElement;
 }
 
+// @public
+export function MenuRadioGroup(input: MenuRadioGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MenuRadioGroupProps {
+    'aria-label'?: string;
+    // (undocumented)
+    children?: ReactNode;
+    label?: ReactNode;
+    // (undocumented)
+    onValueChange?: (value: string) => void;
+    value?: string;
+}
+
 // @public (undocumented)
 export function MenuSeparator(): react.JSX.Element;
 
@@ -2599,12 +2715,12 @@ export function Meter(input: MeterProps): react.JSX.Element;
 export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
     label?: string;
     tone?: MeterTone;
-    toneLabels?: Partial<Record<Exclude<MeterTone, 'success'>, string>>;
+    toneLabels?: Partial<Record<Exclude<MeterTone, 'success' | 'neutral' | 'accent'>, string>>;
     value?: number;
 }
 
 // @public
-export type MeterTone = 'success' | 'warning' | 'danger' | 'attention' | 'overdue';
+export type MeterTone = 'success' | 'warning' | 'danger' | 'attention' | 'overdue' | 'neutral' | 'accent';
 
 // @public
 export function MetricInput(input: MetricInputProps): react.JSX.Element;
@@ -2791,12 +2907,11 @@ export interface NoteProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
     // (undocumented)
     icon?: ReactNode;
-    // (undocumented)
-    tone?: NoteTone;
+    tone?: NoteTone | undefined;
 }
 
 // @public (undocumented)
-export type NoteTone = 'info' | 'success' | 'warning' | 'danger';
+export type NoteTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 // @public
 export function NotFoundState(input: AccessStateProps): react.JSX.Element;
@@ -2960,6 +3075,9 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
 }
 
 // @public (undocumented)
+export type PillSize = 'sm' | 'md' | 'lg';
+
+// @public (undocumented)
 export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
 
 // @public (undocumented)
@@ -3078,11 +3196,16 @@ export function Popover(input: PopoverProps): react.JSX.Element;
 // @public (undocumented)
 export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
     anchor?: RefObject<HTMLElement | null> | HTMLElement | null;
+    capHeight?: boolean;
     // (undocumented)
     children?: ReactNode;
     closeWhenAnchorHidden?: boolean;
     offset?: number;
     onAnchorHidden?: () => void;
+    openOnHover?: boolean | {
+        openDelay?: number;
+        closeDelay?: number;
+    };
     placement?: Placement;
     popover?: 'auto' | 'manual';
 }
@@ -3104,6 +3227,7 @@ interface PositionOptions_2 {
     padding?: number;
     placement?: Placement;
     shift?: boolean;
+    shiftMainAxis?: boolean;
     stickySide?: Side;
 }
 export { PositionOptions_2 as PositionOptions }
@@ -3112,6 +3236,9 @@ export { PositionOptions_2 as PositionOptions }
 export interface PositionResult {
     // (undocumented)
     align: Align;
+    available: Size;
+    mainAxisNatural: number;
+    mainAxisRange: [number, number] | null;
     placement: Placement;
     // (undocumented)
     side: Side;
@@ -3140,14 +3267,16 @@ export function PromptDialog(input: PromptDialogProps): react.JSX.Element;
 export interface PromptDialogProps {
     // (undocumented)
     cancelLabel: ReactNode;
-    // (undocumented)
-    closeLabel: string;
+    closeLabel?: string;
     // (undocumented)
     defaultValue?: string;
     // (undocumented)
     description?: ReactNode;
+    destructive?: boolean;
+    error?: ReactNode;
     // (undocumented)
     inputLabel: string;
+    multiline?: boolean | number;
     // (undocumented)
     onCancel: () => void;
     // (undocumented)
@@ -3158,6 +3287,7 @@ export interface PromptDialogProps {
     pending?: boolean;
     // (undocumented)
     placeholder?: string;
+    role?: 'dialog' | 'alertdialog';
     // (undocumented)
     submitLabel: ReactNode;
     // (undocumented)
@@ -3617,11 +3747,27 @@ export interface RuleBuilderLabels {
     // (undocumented)
     all: string;
     // (undocumented)
+    and: string;
+    // (undocumented)
     any: string;
     // (undocumented)
     field: string;
     // (undocumented)
     group: string;
+    // (undocumented)
+    issueDuplicateId: string;
+    // (undocumented)
+    issueEmptyGroup: string;
+    // (undocumented)
+    issueMaxDepth: string;
+    // (undocumented)
+    issueMissingActionType: string;
+    // (undocumented)
+    issueMissingField: string;
+    // (undocumented)
+    issueMissingOperator: string;
+    // (undocumented)
+    issueNoActions: string;
     // (undocumented)
     issuesMany: string;
     // (undocumented)
@@ -3645,6 +3791,8 @@ export interface RuleBuilderLabels {
     // (undocumented)
     operator: string;
     // (undocumented)
+    or: string;
+    // (undocumented)
     region: string;
     // (undocumented)
     remove: string;
@@ -3657,6 +3805,14 @@ export interface RuleBuilderLabels {
     // (undocumented)
     summaryIssuesOne: string;
     // (undocumented)
+    summaryNoActions: string;
+    // (undocumented)
+    summaryNoConditions: string;
+    // (undocumented)
+    summarySentence: string;
+    // (undocumented)
+    summarySentenceConditionsOnly: string;
+    // (undocumented)
     then: string;
     // (undocumented)
     valid: string;
@@ -3668,18 +3824,22 @@ export interface RuleBuilderLabels {
 
 // @public (undocumented)
 export interface RuleBuilderProps {
-    // (undocumented)
-    actions: RuleActionDefinition[];
+    actions?: RuleActionDefinition[];
     // @deprecated (undocumented)
     addActionLabel?: string;
     // @deprecated (undocumented)
     addConditionLabel?: string;
     // @deprecated (undocumented)
     addGroupLabel?: string;
+    allowGroups?: boolean;
+    checks?: Partial<Record<RuleCheck, boolean>>;
     // (undocumented)
     className?: string;
+    combinator?: 'and' | 'or';
+    conditionsOnly?: boolean;
     // (undocumented)
     fields: RuleFieldDefinition[];
+    hideCombinator?: boolean;
     // (undocumented)
     labels?: Partial<RuleBuilderLabels>;
     // (undocumented)
@@ -3688,13 +3848,14 @@ export interface RuleBuilderProps {
     onChange: (value: RuleDefinition) => void;
     // (undocumented)
     operators: RuleOperatorDefinition[];
-    // (undocumented)
-    readOnly?: boolean;
-    // (undocumented)
+    readOnly?: boolean | 'summary';
     validate?: (value: RuleDefinition) => RuleValidationIssue[];
     // (undocumented)
     value: RuleDefinition;
 }
+
+// @public
+export type RuleCheck = 'duplicateId' | 'maxDepth' | 'emptyGroup' | 'missingField' | 'missingOperator' | 'noActions' | 'missingActionType';
 
 // @public (undocumented)
 export interface RuleCondition {
@@ -3753,12 +3914,34 @@ export interface RuleOperatorDefinition {
     requiresValue?: boolean;
 }
 
+// @public
+export interface RuleSummaryWords {
+    // (undocumented)
+    and: string;
+    // (undocumented)
+    noActions: string;
+    // (undocumented)
+    noConditions: string;
+    // (undocumented)
+    or: string;
+    // (undocumented)
+    sentence: string;
+    sentenceConditionsOnly: string;
+}
+
 // @public (undocumented)
 export interface RuleValidationIssue {
+    check?: RuleCheck;
     // (undocumented)
     message: string;
     // (undocumented)
     path: string;
+}
+
+// @public (undocumented)
+export interface RuleValidationOptions {
+    checks?: Partial<Record<RuleCheck, boolean>>;
+    messages?: Partial<Record<RuleCheck, string>>;
 }
 
 // @public (undocumented)
@@ -4282,6 +4465,7 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     // (undocumented)
     children?: ReactNode;
     onChange?: (value: string) => void;
+    selection?: 'toggle' | 'radio';
     value?: string;
 }
 
@@ -4360,6 +4544,9 @@ export function selectRangeDate(current: DateRangeValue, date: string): DateRang
 // @public
 export function serializeView(v: ViewState): string;
 
+// @public
+export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
+
 // @public (undocumented)
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
@@ -4372,7 +4559,7 @@ export function shiftSpan(span: {
     end: string;
 };
 
-// @public (undocumented)
+// @public
 export function shouldVirtualize(count: number, threshold?: number): boolean;
 
 // @public
@@ -4457,8 +4644,7 @@ export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     accent?: boolean;
     label?: string;
-    // (undocumented)
-    size?: 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg';
 }
 
 // @public
@@ -4543,6 +4729,7 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     children?: ReactNode;
     // (undocumented)
     dot?: boolean;
+    size?: PillSize;
     // (undocumented)
     tone?: PillTone;
     treatment?: PillTreatment;
@@ -4570,14 +4757,17 @@ export function stepMetricValue(value: number | null, direction: -1 | 1, options
 
 // @public (undocumented)
 export interface StepProps extends Omit<LiHTMLAttributes<HTMLLIElement>, 'title'> {
+    children?: ReactNode;
     // (undocumented)
     description?: ReactNode;
+    headingLevel?: 2 | 3 | 4 | 5 | 6;
     href?: string;
     index?: number;
     last?: boolean;
     marker?: ReactNode;
     // (undocumented)
     onSelect?: () => void;
+    progress?: boolean;
     // (undocumented)
     renderLink?: UixRenderLink;
     // (undocumented)
@@ -4593,8 +4783,10 @@ export function Steps(input: StepsProps): react.JSX.Element;
 // @public (undocumented)
 export interface StepsProps extends HTMLAttributes<HTMLOListElement> {
     children?: ReactNode;
+    headingLevel?: 2 | 3 | 4 | 5 | 6;
     label?: string;
     orientation?: 'horizontal' | 'vertical';
+    progress?: boolean;
     // (undocumented)
     stateLabels?: Partial<StepStateLabels>;
 }
@@ -4649,6 +4841,8 @@ export function summarizeRule(value: RuleDefinition, labels?: {
     fields?: Record<string, string>;
     operators?: Record<string, string>;
     actions?: Record<string, string>;
+    words?: Partial<RuleSummaryWords>;
+    conditionsOnly?: boolean;
 }): string;
 
 // @public (undocumented)
@@ -4718,8 +4912,8 @@ export interface TabProps extends Omit<HTMLAttributes<HTMLButtonElement>, 'onCha
 // @public (undocumented)
 export function Tabs(input: TabsProps): react.JSX.Element;
 
-// @public (undocumented)
-export interface TabsProps {
+// @public
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'role'> {
     activation?: 'automatic' | 'manual';
     // (undocumented)
     children?: ReactNode;
@@ -5210,13 +5404,21 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 
 // @public
 export interface UixLabels {
+    alert?: {
+        dismiss?: string;
+    };
     // (undocumented)
     appShell?: {
         skipToContent?: string;
         exitFocus?: string;
     };
+    // (undocumented)
+    attachment?: Partial<AttachmentLabels>;
     bulkBar?: {
         region?: string;
+    };
+    chip?: {
+        remove?: string;
     };
     // (undocumented)
     commandPalette?: {
@@ -5234,6 +5436,8 @@ export interface UixLabels {
         close?: string;
     };
     // (undocumented)
+    fileUpload?: Partial<FileUploadLabels>;
+    // (undocumented)
     filterEditor?: Partial<FilterEditorLabels>;
     // (undocumented)
     modal?: {
@@ -5246,6 +5450,8 @@ export interface UixLabels {
         next?: string;
         close?: string;
     };
+    // (undocumented)
+    ruleBuilder?: Partial<RuleBuilderLabels>;
     // (undocumented)
     schedulingCalendar?: Partial<SchedulingCalendarLabels>;
     // (undocumented)
@@ -5309,13 +5515,16 @@ export function useAnchoredPosition(anchor: RefObject<HTMLElement | null> | HTML
 
 // @public (undocumented)
 export interface UseAnchoredPositionOptions {
+    capHeight?: boolean;
     // (undocumented)
     offset?: number;
+    onAnchorHidden?: () => void;
     open: boolean;
     // (undocumented)
     padding?: number;
     // (undocumented)
     placement?: Placement;
+    shiftMainAxis?: boolean;
 }
 
 // @public (undocumented)
@@ -5393,6 +5602,8 @@ export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptio
 
 // @public (undocumented)
 export interface UseVirtualRowsOptions {
+    enabled?: boolean;
+    estimatedViewportHeight?: number;
     overscan?: number;
     rowHeight: number;
     threshold?: number;
@@ -5416,7 +5627,7 @@ export interface UseVirtualRowsResult<T> {
 }
 
 // @public (undocumented)
-export function validateRuleDefinition(value: RuleDefinition, maxDepth?: number): RuleValidationIssue[];
+export function validateRuleDefinition(value: RuleDefinition, maxDepth?: number, options?: RuleValidationOptions): RuleValidationIssue[];
 
 // @public
 export function ViewMenu(input: ViewMenuProps): react.JSX.Element;

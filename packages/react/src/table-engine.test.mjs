@@ -299,6 +299,22 @@ test('virtualWindow: degenerate inputs render everything', () => {
   assert.deepEqual(virtualWindow(0, 500, 50, 0), { start: 0, end: 0, padTop: 0, padBottom: 0, total: 0 });
 });
 
+test('virtualWindow: a scrollTop past the end of a list that shrank is clamped to the list (HAR-1616)', () => {
+  // scrolled to 176,000 px in 5,000 rows of 44 px; the data shrinks to 150 rows (6,600 px)
+  const w = virtualWindow(176000, 600, 44, 150, 6);
+  assert.ok(w.end > w.start, 'rows are rendered');
+  assert.equal(w.end, 150);
+  assert.ok(w.padTop <= 150 * 44, `spacer ${w.padTop} is not larger than the list`);
+  assert.equal(w.padTop + (w.end - w.start) * 44 + w.padBottom, 150 * 44);
+  // it is the window of the last scroll position the shorter list has
+  assert.deepEqual(w, virtualWindow(150 * 44 - 600, 600, 44, 150, 6));
+  // a list shorter than the viewport, and a negative (overscroll) position, start at row 0
+  assert.equal(virtualWindow(9000, 600, 44, 10, 6).start, 0);
+  assert.equal(virtualWindow(-80, 600, 44, 1000, 6).start, 0);
+  // an in-range position is untouched
+  assert.deepEqual(virtualWindow(1000, 500, 50, 1000, 6), { start: 14, end: 36, padTop: 700, padBottom: 48200, total: 50000 });
+});
+
 test('shouldVirtualize: only past the threshold', () => {
   assert.equal(shouldVirtualize(100), false);
   assert.equal(shouldVirtualize(101), true);

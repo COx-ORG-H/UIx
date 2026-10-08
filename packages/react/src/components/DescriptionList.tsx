@@ -27,6 +27,10 @@ export interface DescriptionListItem {
   id?: string;
   term: ReactNode;
   description: ReactNode;
+  /** Attributes for this row's `<dt>` (an `id` to anchor to, `data-*`). */
+  termProps?: HTMLAttributes<HTMLElement>;
+  /** Attributes for this row's `<dd>`. */
+  descriptionProps?: HTMLAttributes<HTMLElement>;
 }
 
 export interface DescriptionListProps extends HTMLAttributes<HTMLDListElement> {
@@ -39,8 +43,8 @@ export function DescriptionList({ items, children, className, ...props }: Descri
     <dl className={cx('uix-dl', className)} {...props}>
       {items?.map((item, i) => (
         <Fragment key={item.id ?? i}>
-          <dt>{item.term}</dt>
-          <dd>{item.description}</dd>
+          <dt {...item.termProps}>{item.term}</dt>
+          <dd {...item.descriptionProps}>{item.description}</dd>
         </Fragment>
       ))}
       {children}
@@ -51,6 +55,13 @@ export function DescriptionList({ items, children, className, ...props }: Descri
 export interface DescriptionItemProps {
   term: ReactNode;
   children?: ReactNode;
+  /**
+   * Attributes for the `<dt>`: an `id` a deep link or `aria-describedby` points at, `data-*`,
+   * a `className` (HAR-1628). The pair has no wrapper element, so this is where they go.
+   */
+  termProps?: HTMLAttributes<HTMLElement>;
+  /** Attributes for the `<dd>`. */
+  descriptionProps?: HTMLAttributes<HTMLElement>;
 }
 
 /**
@@ -58,11 +69,11 @@ export interface DescriptionItemProps {
  * direct grid children of the enclosing `<DescriptionList>` (never wrap it in
  * an element — that breaks the two-column alignment).
  */
-export function DescriptionItem({ term, children }: DescriptionItemProps) {
+export function DescriptionItem({ term, children, termProps, descriptionProps }: DescriptionItemProps) {
   return (
     <>
-      <dt>{term}</dt>
-      <dd>{children}</dd>
+      <dt {...termProps}>{term}</dt>
+      <dd {...descriptionProps}>{children}</dd>
     </>
   );
 }

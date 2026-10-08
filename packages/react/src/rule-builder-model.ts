@@ -1,5 +1,11 @@
 import type { JsonValue } from './json-value.js';
 
+// Not imported from fill-label.ts: this model has no runtime import, so its unit test can load
+// the .ts source directly (Node strips types but does not map './x.js' to './x.ts').
+const fillLabel = (template: string, values: Readonly<Record<string, string | number>>): string =>
+  template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    (Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match));
+
 export interface RuleCondition {
   id: string;
   field: string;
@@ -24,9 +30,36 @@ export interface RuleDefinition {
   then: RuleAction[];
 }
 
+/** The built-in checks of `validateRuleDefinition`; each can be reworded or turned off (HAR-1618). */
+export type RuleCheck =
+  | 'duplicateId' | 'maxDepth' | 'emptyGroup' | 'missingField' | 'missingOperator' | 'noActions' | 'missingActionType';
+
 export interface RuleValidationIssue {
   path: string;
   message: string;
+  /** Which built-in check raised it. Absent on issues from the consumer's own `validate`. */
+  check?: RuleCheck;
+}
+
+/** The built-in messages. `{id}` is the duplicated id, `{max}` the depth limit. */
+export const DEFAULT_RULE_VALIDATION_MESSAGES: Record<RuleCheck, string> = {
+  duplicateId: 'Duplicate id “{id}”.',
+  maxDepth: 'Nesting exceeds {max} levels.',
+  emptyGroup: 'Add at least one condition.',
+  missingField: 'Choose a field.',
+  missingOperator: 'Choose an operator.',
+  noActions: 'Add at least one action.',
+  missingActionType: 'Choose an action.',
+};
+
+export interface RuleValidationOptions {
+  /** Replace individual messages (a translation). */
+  messages?: Partial<Record<RuleCheck, string>>;
+  /**
+   * `false` turns a check off: `{ emptyGroup: false }` for a rule that may have no condition
+   * (a catch-all), `{ noActions: false, missingActionType: false }` for conditions without actions.
+   */
+  checks?: Partial<Record<RuleCheck, boolean>>;
 }
 
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup {
@@ -105,44 +138,89 @@ export function moveRuleNode(group: RuleGroup, id: string, direction: -1 | 1): R
   };
 }
 
-export function validateRuleDefinition(value: RuleDefinition, maxDepth = 3): RuleValidationIssue[] {
+/** Set `combinator` on a group and on every group nested in it. */
+export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup {
+  return {
+    ...group,
+    combinator,
+    conditions: group.conditions.map((node) => (isRuleGroup(node) ? setRuleCombinator(node, combinator) : node)),
+  };
+}
+
+export function validateRuleDefinition(value: RuleDefinition, maxDepth = 3, options: RuleValidationOptions = {}): RuleValidationIssue[] {
   const issues: RuleValidationIssue[] = [];
+  const messages = { ...DEFAULT_RULE_VALIDATION_MESSAGES, ...options.messages };
+  const report = (check: RuleCheck, path: string, values: Record<string, string | number> = {}) => {
+    if (options.checks?.[check] === false) return;
+    issues.push({ path, message: fillLabel(messages[check], values), check });
+  };
   const ids = new Set<string>();
   const visit = (group: RuleGroup, path: string, depth: number) => {
-    if (ids.has(group.id)) issues.push({ path, message: `Duplicate id “${group.id}”.` });
+    if (ids.has(group.id)) report('duplicateId', path, { id: group.id });
     ids.add(group.id);
-    if (depth > maxDepth) issues.push({ path, message: `Nesting exceeds ${maxDepth} levels.` });
-    if (group.conditions.length === 0) issues.push({ path, message: 'Add at least one condition.' });
+    if (depth > maxDepth) report('maxDepth', path, { max: maxDepth });
+    if (group.conditions.length === 0) report('emptyGroup', path);
     group.conditions.forEach((node, index) => {
       const nodePath = `${path}.conditions[${index}]`;
-      if (ids.has(node.id)) issues.push({ path: nodePath, message: `Duplicate id “${node.id}”.` });
+      if (ids.has(node.id)) report('duplicateId', nodePath, { id: node.id });
       if (isRuleGroup(node)) visit(node, nodePath, depth + 1);
       else {
         ids.add(node.id);
-        if (!node.field) issues.push({ path: nodePath, message: 'Choose a field.' });
-        if (!node.operator) issues.push({ path: nodePath, message: 'Choose an operator.' });
+        if (!node.field) report('missingField', nodePath);
+        if (!node.operator) report('missingOperator', nodePath);
       }
     });
   };
   visit(value.when, 'when', 1);
-  if (value.then.length === 0) issues.push({ path: 'then', message: 'Add at least one action.' });
+  if (value.then.length === 0) report('noActions', 'then');
   value.then.forEach((action, index) => {
-    if (ids.has(action.id)) issues.push({ path: `then[${index}]`, message: `Duplicate id “${action.id}”.` });
+    if (ids.has(action.id)) report('duplicateId', `then[${index}]`, { id: action.id });
     ids.add(action.id);
-    if (!action.type) issues.push({ path: `then[${index}]`, message: 'Choose an action.' });
+    if (!action.type) report('missingActionType', `then[${index}]`);
   });
   return issues;
 }
 
+/** The words of the `summarizeRule` sentence. `{conditions}` and `{actions}` are filled in. */
+export interface RuleSummaryWords {
+  sentence: string;
+  /** For a rule with no actions to name (a conditions-only rule). */
+  sentenceConditionsOnly: string;
+  noConditions: string;
+  noActions: string;
+  and: string;
+  or: string;
+}
+
+export const DEFAULT_RULE_SUMMARY_WORDS: RuleSummaryWords = {
+  sentence: 'When {conditions}, then {actions}.',
+  sentenceConditionsOnly: 'When {conditions}.',
+  noConditions: 'no conditions',
+  noActions: 'no actions',
+  and: 'AND',
+  or: 'OR',
+};
+
 export function summarizeRule(
   value: RuleDefinition,
-  labels: { fields?: Record<string, string>; operators?: Record<string, string>; actions?: Record<string, string> } = {},
+  labels: {
+    fields?: Record<string, string>;
+    operators?: Record<string, string>;
+    actions?: Record<string, string>;
+    /** Translate the sentence itself. Default: English. */
+    words?: Partial<RuleSummaryWords>;
+    /** Leave the actions out of the sentence. */
+    conditionsOnly?: boolean;
+  } = {},
 ): string {
+  const words = { ...DEFAULT_RULE_SUMMARY_WORDS, ...labels.words };
   const formatValue = (input: JsonValue | undefined) => input === undefined ? '' : ` ${JSON.stringify(input)}`;
   const formatGroup = (group: RuleGroup): string => group.conditions.map((node) => isRuleGroup(node)
     ? `(${formatGroup(node)})`
     : `${labels.fields?.[node.field] ?? node.field} ${labels.operators?.[node.operator] ?? node.operator}${formatValue(node.value)}`
-  ).join(` ${group.combinator.toUpperCase()} `);
+  ).join(` ${group.combinator === 'or' ? words.or : words.and} `);
+  const conditions = formatGroup(value.when) || words.noConditions;
+  if (labels.conditionsOnly) return fillLabel(words.sentenceConditionsOnly, { conditions });
   const actions = value.then.map((action) => labels.actions?.[action.type] ?? action.type).join(', ');
-  return `When ${formatGroup(value.when) || 'no conditions'}, then ${actions || 'no actions'}.`;
+  return fillLabel(words.sentence, { conditions, actions: actions || words.noActions });
 }

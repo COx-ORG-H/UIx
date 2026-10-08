@@ -136,7 +136,7 @@ export type { FileUploadProps, FileUploadItem, FileUploadLabels, FileUploadStatu
 export { Attachment, AttachmentList, DEFAULT_ATTACHMENT_LABELS } from './components/Attachment.js';
 export type { AttachmentProps, AttachmentListProps, AttachmentLabels } from './components/Attachment.js';
 export { fileKind, fileMatchesAccept, formatFileSize, partitionFiles } from './file-model.js';
-export type { FileRejection, FileRejectionReason } from './file-model.js';
+export type { FileRejection, FileRejectionReason, FileSizeOptions, FileSizeFormatter } from './file-model.js';
 
 // Feedback
 export { Alert } from './components/Alert.js';
@@ -144,6 +144,9 @@ export type { AlertProps, AlertTone } from './components/Alert.js';
 
 export { Spinner } from './components/Spinner.js';
 export type { SpinnerProps } from './components/Spinner.js';
+
+export { Heartbeat, LiveIndicator } from './components/Heartbeat.js';
+export type { HeartbeatProps, HeartbeatState, LiveIndicatorProps } from './components/Heartbeat.js';
 
 export { Toast, Toaster } from './components/Toast.js';
 export type { ToastProps, ToasterProps, ToastTone } from './components/Toast.js';
@@ -171,7 +174,7 @@ export { DEFAULT_PAGINATION_LABELS, Pagination } from './components/Pagination.j
 export type { PaginationLabels, PaginationProps } from './components/Pagination.js';
 
 export { StatusPill } from './components/StatusPill.js';
-export type { StatusPillProps, PillTone, PillTreatment } from './components/StatusPill.js';
+export type { StatusPillProps, PillTone, PillTreatment, PillSize } from './components/StatusPill.js';
 
 export { Progress } from './components/Progress.js';
 export type { ProgressProps } from './components/Progress.js';
@@ -260,8 +263,10 @@ export type { ProseProps, NoteProps, NoteTone } from './components/Prose.js';
 
 export { Popover } from './components/Popover.js';
 
-export { Menu, MenuItem, MenuGroup, MenuSeparator } from './components/Menu.js';
-export type { MenuProps, MenuItemProps, MenuGroupProps } from './components/Menu.js';
+export { Menu, MenuItem, MenuItemRadio, MenuItemCheckbox, MenuRadioGroup, MenuGroup, MenuSeparator } from './components/Menu.js';
+export type {
+  MenuProps, MenuItemProps, MenuItemAttributes, MenuItemRadioProps, MenuItemCheckboxProps, MenuRadioGroupProps, MenuGroupProps,
+} from './components/Menu.js';
 export type { PopoverProps } from './components/Popover.js';
 
 export { CommandPalette, CommandGroup, CommandItem } from './components/CommandPalette.js';
@@ -309,9 +314,13 @@ export type {
 } from './components/RuleBuilder.js';
 export {
   appendRuleNode, findRuleNodeDepth, isRuleGroup, mapRuleGroup, moveRuleNode,
-  removeRuleNode, ruleDepth, summarizeRule, validateRuleDefinition,
+  removeRuleNode, ruleDepth, setRuleCombinator, summarizeRule, validateRuleDefinition,
+  DEFAULT_RULE_VALIDATION_MESSAGES, DEFAULT_RULE_SUMMARY_WORDS,
 } from './rule-builder-model.js';
-export type { RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue } from './rule-builder-model.js';
+export type {
+  RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue,
+  RuleCheck, RuleValidationOptions, RuleSummaryWords,
+} from './rule-builder-model.js';
 
 export { BuilderCanvas, DEFAULT_BUILDER_CANVAS_LABELS } from './components/BuilderCanvas.js';
 export type { BuilderCanvasLabels, BuilderCanvasProps, BuilderCanvasItem, BuilderPaletteItem } from './components/BuilderCanvas.js';

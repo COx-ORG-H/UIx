@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anchored overlay and Menu harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/overlay-shift.spec.mjs and menu.spec.mjs. Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: 0 var(--uix-space-2); background: var(--uix-bg-app); color: var(--uix-text); }
+    /* A page tall enough to put any trigger anywhere in the viewport by scrolling. */
+    .spacer { height: 1400px; }
+    .row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--uix-space-2); }
+    .fixed-panel { width: 304px; height: 384px; box-sizing: border-box; padding: 0; }
+    .fixed-panel > div { height: 100%; display: grid; place-items: center; }
+    .tall-content { height: 1200px; width: 240px; }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

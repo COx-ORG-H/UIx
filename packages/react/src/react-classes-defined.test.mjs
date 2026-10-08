@@ -27,6 +27,7 @@ const HOOKS = new Map([
   ['uix-markdown', 'Markdown root: styled by .uix-prose; .uix-markdown__* children are defined'],
   ['uix-related-links', 'RelatedLinks root: layout comes from its children'],
   ['uix-rule-builder__value', 'structural wrapper; its controls are styled'],
+  ['uix-rule-builder--readonly', 'read-only hook for consumers and tests; the controls themselves carry `disabled`'],
   ['uix-save-status__text', 'SaveStatus live region: inherits the .uix-save-status text styles'],
   ['uix-save-status__retry', 'styled by .uix-btn--link .uix-btn--sm'],
   ['uix-scheduling-calendar__grid--week', 'view hook; the week grid needs no override today'],

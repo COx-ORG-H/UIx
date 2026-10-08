@@ -9,6 +9,14 @@
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
 
+### 2026-10-08 · anchored overlays · `5ddce2e`
+- **Rule:** no written inset value keeps a CSS-anchor-positioned box inside the viewport while the page scrolls. The browser moves the box with its anchor *after* it resolved `top` / `left`, so `max(8px, min(anchor(bottom), 248px))` clamps at layout time and then rides out with the scroll; with `position-anchor` set, even a plain `top: 248px` is offset. A box that must not leave the viewport gets fixed coordinates and no `position-anchor`; anchoring is for boxes with room to spare.  **Why:** the first HAR-1613 implementation wrote exactly that clamp. jsdom has no anchor positioning, so every unit test passed.  **Gate:** `tests/a11y/overlay-shift.spec.mjs` scrolls a 384 px panel at 320 × 640 in Chromium, with and without anchor positioning; 9 of its tests failed on the clamp. Model: Opus 5.5.  **Tag:** false-green, overlay-position, test-double-fidelity
+- **Rule:** script reads an anchor-positioned box's rect one rendering update late after a scroll (the page paints it in place; `getBoundingClientRect` catches up a frame later). Measure such a box two frames after the scroll, and never position anything from that rect inside a scroll handler.
+- **Rule:** `el.getAnimations().length === 0` is also true *before* an enter transition starts. `Popover` holds its first frame with `data-uix-placing` (`transition: none`), one `--uix-lift` off its place, and CI measured a panel there once (top 4 instead of 8). Wait with `settleOverlay()` from `tests/a11y/settle.mjs`: the hold released, nothing animating, no transform left.
+
+### 2026-10-08 · echo events · `cbd5ebc`
+- **Rule:** a handler for an event the browser also fires for the component's *own* DOM writes (`toggle` on `<details>`, `close` on `<dialog>`) must tell an echo from a user action before it persists anything. Compare with what the component last rendered, not with its latest state.  **Why:** `CollapsibleSection` mounted open (`defaultOpen`), the remembered state closed it, and the two `toggle` events that followed were stored as the person's choice: the first one wrote "open" over the remembered "closed". Same family as the stale `close` event of 2026-09-29.  **Gate:** "defaultOpen applies on a first visit…" in `tests/a11y/tensor-gaps.spec.mjs` reloads the page in Chromium and failed before the fix; `collapsible-steps-dom.test.mjs` dispatches the echo in jsdom.  **Tag:** false-green, test-double-fidelity, persistence
+
 ### 2026-10-07 · chart theme · `fb709c3`
 - **Rule:** a theme merged into an ECharts option may only *style* components the consumer's option already has. Any component key in the option (`legend`, `title`, `xAxis`, `dataZoom`, `visualMap` …) makes ECharts draw that component, so a theme default for it must be dropped when the option lacks the key.  **Why:** `uixChartTheme()` carried a styled `legend`, and the docs residence chart, which asks for none, grew a "Residence" legend. Every theme test still passed.  **Gate:** `mergeChartTheme`'s `STYLED_ONLY` list plus a `chart-theme.test.mjs` case. `tests/a11y/chart-theme.spec.mjs` asserts the residence chart has no legend text, and it fails on the old merge.  **Tag:** false-green, echarts
 
@@ -93,6 +101,13 @@ run found it (mission-control, 2026-09-10). Stateful colour pairs need a compute
 page scan. Gate: `npm run test:tokens` evaluates the built CSS and every theme file in cascade
 order and asserts the selected-chip text clears 4.5:1 in both modes. It was watched to fail with
 the old rule restored.
+
+Same cause, 2026-10-08 (HAR-1630): `FileUpload` rendered its rejection messages as
+`<ul role="alert">`, which replaces the list role and leaves every `<li>` outside a list (axe
+`listitem`, serious). It shipped in 2.31.0 unseen, because the list only exists after a file was
+rejected. It was found the day a docs specimen rendered that state at load. A component's error,
+empty and rejected states need a specimen or a harness scan of their own; the gate here is the
+rejected-file test in `tests/a11y/tensor-gaps.spec.mjs`, which runs axe after the rejection.
 
 ## A green Release run can publish nothing
 

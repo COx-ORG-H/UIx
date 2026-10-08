@@ -14,3 +14,14 @@
   .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 40%, transparent); --tone-fg: var(--uix-warning-text); }
   .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger-text); }
 }
+
+/* HAR-1614: the text column takes the free width and may shrink below its longest word, so a
+   long title wraps at 320 px instead of pushing the row wide; actions and the dismiss button
+   keep their size at the end. */
+@layer uix.components {
+  /* anywhere, not break-word: only `anywhere` lowers the min-content width, and with a grid or flex
+     parent that is what decides whether one long word (a file name, a URL) widens the whole alert. */
+  .uix-alert__content { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+  .uix-alert__actions { display: flex; flex: none; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2); }
+  .uix-alert__dismiss { flex: none; align-self: flex-start; margin-block: calc(-1 * var(--uix-space-1) / 2); margin-inline-end: calc(-1 * var(--uix-space-1)); color: var(--uix-text-hushed); }
+}

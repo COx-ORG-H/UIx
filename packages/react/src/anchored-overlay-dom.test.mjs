@@ -17,7 +17,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act, createRef } from 'react';
+import { createElement as h, act, createRef, useRef } from 'react';
 
 let dom;
 let createRoot;
@@ -222,6 +222,98 @@ test('closeWhenAnchorHidden is opt-in and hides the popover when its anchor leav
   assert.equal(document.activeElement, document.body, 'focus let go, not sent to the hidden anchor');
   assert.equal(live(intersections).length, 0, 'observer disconnected on close');
   await view.unmount();
+});
+
+// ── main-axis shift, height cap, onAnchorHidden on the hook (HAR-1613) ───────
+// jsdom's viewport is 1024 × 768 and has no CSS anchor positioning: this is the fixed left/top
+// path. The anchored path and real scrolling are tests/a11y/overlay-shift.spec.mjs.
+test('a popover that fits neither above nor below stays inside the viewport, also after a scroll', async () => {
+  const anchorRef = createRef();
+  const view = await mount(h('div', null,
+    h('button', { ref: anchorRef, type: 'button' }, 'Columns'),
+    h(ui.Popover, { id: 'tall', anchor: anchorRef, popover: 'manual', placement: 'bottom-end' }, 'content'),
+  ));
+  const pop = view.host.querySelector('#tall');
+  // 366 px free above and below, a 500 px panel
+  const layout = stubLayout(anchorRef.current, pop, { anchor: { x: 800, y: 366, width: 96, height: 36 }, size: { width: 304, height: 500 } });
+  const inside = (label) => {
+    const top = parseFloat(pop.style.top);
+    assert.ok(top >= 8, `${label}: top ${top} >= 8`);
+    assert.ok(top + 500 <= 768 - 8, `${label}: bottom ${top + 500} <= 760`);
+  };
+  await openPopover(pop);
+  inside('at open');
+  for (const y of [300, 120, 20, 500, 700]) {
+    layout.anchor = { x: 800, y, width: 96, height: 36 };
+    await scrollOn(document);
+    inside(`anchor at ${y}`);
+  }
+  // The anchor has left the viewport: the panel goes with it instead of staying behind.
+  layout.anchor = { x: 800, y: -80, width: 96, height: 36 };
+  await scrollOn(document);
+  assert.ok(parseFloat(pop.style.top) < 8, 'follows the anchor out');
+  await act(async () => pop.hidePopover());
+  await view.unmount();
+});
+
+test('capHeight caps the popover to the viewport, keeps a smaller own max-height, and gives both back on close', async () => {
+  const anchorRef = createRef();
+  const view = await mount(h('div', null,
+    h('button', { ref: anchorRef, type: 'button' }, 'Open'),
+    h(ui.Popover, { id: 'capped', anchor: anchorRef, popover: 'manual', capHeight: true }, 'content'),
+    h(ui.Popover, { id: 'plain', anchor: anchorRef, popover: 'manual' }, 'content'),
+    h(ui.Popover, { id: 'own', anchor: anchorRef, popover: 'manual', capHeight: true, style: { maxHeight: '320px', overflowY: 'scroll' } }, 'content'),
+  ));
+  const [capped, plain, own] = ['capped', 'plain', 'own'].map((id) => view.host.querySelector(`#${id}`));
+  for (const pop of [capped, plain, own]) stubLayout(anchorRef.current, pop, { anchor: { x: 100, y: 300, width: 80, height: 30 }, size: { width: 200, height: 752 } });
+
+  await openPopover(capped);
+  assert.equal(capped.style.maxHeight, '752px', 'viewport 768 minus 8 px at each edge');
+  assert.equal(capped.style.overflowY, 'auto');
+  assert.equal(capped.style.top, '8px', 'a panel as tall as the room starts at the padding');
+  await act(async () => capped.hidePopover());
+  assert.equal(capped.style.maxHeight, '', 'given back on close');
+  assert.equal(capped.style.overflowY, '');
+
+  await openPopover(plain);
+  assert.equal(plain.style.maxHeight, '', 'off by default');
+  await act(async () => plain.hidePopover());
+
+  await openPopover(own);
+  // written as min(752px, 320px); jsdom's CSSOM folds that to calc(320px)
+  assert.match(own.style.maxHeight, /^(min\(752px, 320px\)|calc\(320px\))$/, 'the smaller of the two applies');
+  assert.equal(own.style.overflowY, 'scroll', 'its own overflow is left alone');
+  await act(async () => own.hidePopover());
+  assert.equal(own.style.maxHeight, '320px');
+  await view.unmount();
+});
+
+test('useAnchoredPosition onAnchorHidden: a consumer that positions with the hook can close on it', async () => {
+  const hidden = [];
+  function Own({ open }) {
+    const anchorRef = useRef(null);
+    const floatingRef = useRef(null);
+    ui.useAnchoredPosition(anchorRef, floatingRef, { open, onAnchorHidden: () => hidden.push('hidden') });
+    return h('div', null,
+      h('button', { ref: anchorRef, type: 'button', id: 'own-anchor' }, 'Anchor'),
+      h('div', { ref: floatingRef, id: 'own-floating' }, 'panel'));
+  }
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(h(Own, { open: false })));
+  assert.equal(live(intersections).length, 0, 'not watched while closed');
+  await act(async () => root.render(h(Own, { open: true })));
+  const [observer] = live(intersections);
+  assert.ok(observer?.targets.has(host.querySelector('#own-anchor')), 'watches the anchor while open');
+  await act(async () => observer.fire(true));
+  assert.deepEqual(hidden, []);
+  await act(async () => observer.fire(false));
+  assert.deepEqual(hidden, ['hidden']);
+  await act(async () => root.render(h(Own, { open: false })));
+  assert.equal(live(intersections).length, 0, 'observer disconnected on close');
+  await act(async () => root.unmount());
+  host.remove();
 });
 
 // ── EmojiPicker ──────────────────────────────────────────────────────────────

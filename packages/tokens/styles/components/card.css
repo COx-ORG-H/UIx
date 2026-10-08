@@ -23,3 +23,14 @@
   .uix-collapsible[open] .uix-collapsible__chevron { transform: rotate(180deg); }
   .uix-collapsible__body { padding: 0 var(--uix-space-5) var(--uix-space-5); }
 }
+
+/* CollapsibleSection `headingLevel` and `compact` (HAR-1628). The heading only adds the outline
+   entry: it looks like the plain title. Compact is a quiet row inside a card: the card draws the
+   box, the row only a rule between itself and the compact row before it. */
+@layer uix.components {
+  .uix-collapsible__heading { margin: 0; font: inherit; color: inherit; }
+  .uix-collapsible--compact { border: 0; border-radius: 0; background: transparent; }
+  .uix-collapsible--compact + .uix-collapsible--compact { border-top: 1px solid var(--uix-border); }
+  .uix-collapsible--compact > .uix-collapsible__summary { padding: var(--uix-space-2) 0; border-radius: var(--uix-radius-sm); }
+  .uix-collapsible--compact > .uix-collapsible__body { padding: 0 0 var(--uix-space-3); }
+}
