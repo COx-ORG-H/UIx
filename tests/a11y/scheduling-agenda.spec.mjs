@@ -61,6 +61,56 @@ test('AC2: at or below 200 rows the agenda is headings with ordered lists, and n
   await expect(page.locator(`${P}agenda--virtual`)).toHaveCount(0);
   await expect(page.locator(`${P}agenda ol > li`)).toHaveCount(200);
   await expect(page.locator(`${P}agenda h3`)).toHaveCount(20);
+  const box = await page.locator(`${P}agenda`).evaluate((el) => ({ overflow: getComputedStyle(el).overflowY, scroll: el.scrollHeight, client: el.clientHeight }));
+  expect(box.overflow, 'the page scrolls it, not a box of its own').toBe('visible');
+  expect(box.scroll).toBeLessThanOrEqual(box.client);
+});
+
+test('AC6: at 375 px a long agenda keeps the title readable beside labelled markers, and a heading with two windows keeps its text', async ({ page }) => {
+  await open(page, 'case=agenda&rows=260&rich=1', { width: 375, height: 812 });
+  const scroll = await pageScroll(page);
+  expect(scroll.scroll, 'no page scroll').toBeLessThanOrEqual(scroll.client);
+  const agenda = page.locator(`${P}agenda--virtual`);
+  // Every mounted row is one fixed height, whatever it holds.
+  const heights = await agenda.locator(`${P}agenda-vrow`).evaluateAll((rows) => rows.map((row) => row.getBoundingClientRect().height));
+  expect(new Set(heights.map((height) => Math.round(height))), 'one row height').toEqual(new Set([44]));
+  // The heading row holds the heading, whole; each window has the next row to itself.
+  expect(await agenda.locator(`${P}agenda-vrow`).evaluateAll((rows) => rows.slice(0, 4).map((row) => row.dataset.kind))).toEqual(['heading', 'note', 'note', 'entry']);
+  const inside = (inner, outer) => inner.top >= outer.top - 0.5 && inner.bottom <= outer.bottom + 0.5 && inner.left >= outer.left - 0.5 && inner.right <= outer.right + 0.5;
+  const rect = (locator) => locator.evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width }; });
+  const headRow = agenda.locator(`${P}agenda-vrow[data-kind="heading"]`).first();
+  expect(inside(await rect(headRow.locator('h3')), await rect(headRow))).toBe(true);
+  await expect(headRow.locator('h3')).toBeVisible();
+  for (const id of ['payroll', 'audit']) {
+    const note = agenda.locator(`[data-overlay-id="${id}"]`);
+    await expect(note.locator(`${P}window-name`)).toBeVisible();
+    expect(inside(await rect(note), await rect(note.locator('xpath=..')))).toBe(true);
+  }
+  // A row with one labelled marker, and one with two: the title has most of the row.
+  for (const id of ['r0', 'r1']) {
+    const row = agenda.locator(`[data-item-id="${id}"]`);
+    const title = await rect(row.locator(`${P}title`));
+    expect(title.width, `the title of ${id} is readable`).toBeGreaterThan(250);
+    for (const part of [`${P}agenda-time`, `${P}status`, `${P}marker >> nth=0`]) {
+      await expect(row.locator(part)).toBeVisible();
+      expect(inside(await rect(row.locator(part)), await rect(row)), `${part} of ${id} is inside its row`).toBe(true);
+    }
+  }
+});
+
+test('a row focused under a sticky day heading stops below it', async ({ page }) => {
+  await open(page, 'case=agenda&rows=200', { width: 1280, height: 420 });
+  // Put the sixth row of the first day right under its stuck heading; the fifth is then behind it.
+  const rows = page.locator(`${P}agenda-group`).first().locator(`${P}agenda-row`);
+  await rows.nth(5).evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - el.closest('section').firstElementChild.getBoundingClientRect().height));
+  await rows.nth(5).evaluate((el) => el.focus({ preventScroll: true }));
+  const before = await rows.nth(4).evaluate((el) => ({ row: el.getBoundingClientRect().top, head: el.closest('section').firstElementChild.getBoundingClientRect().bottom }));
+  expect(before.row, 'the fifth row starts behind the heading').toBeLessThan(before.head);
+  // Shift+Tab to it: the browser scrolls it into view, and it must come out from under the heading.
+  await page.keyboard.press('Shift+Tab');
+  await expect(rows.nth(4)).toBeFocused();
+  const tops = await rows.nth(4).evaluate((el) => ({ row: el.getBoundingClientRect().top, head: el.closest('section').firstElementChild.getBoundingClientRect().bottom }));
+  expect(tops.row, 'the row is not behind its heading').toBeGreaterThanOrEqual(tops.head - 0.5);
 });
 
 test('AC3 / AC7: Enter on a row activates it; its status is visible text and nothing sits only in a title', async ({ page }) => {
@@ -131,6 +181,14 @@ test('AC8: at 375 px the counts-only month shows every day with its count and ma
   const wide = page.locator(`${P}day:has([data-calendar-date="2026-10-15"])`);
   const fit = await wide.evaluate((el, prefix) => { const count = el.querySelector(`${prefix}count > [aria-hidden]`).getBoundingClientRect(); const box = el.getBoundingClientRect(); return count.left >= box.left && count.right <= box.right; }, P);
   expect(fit).toBe(true);
+  // ... and so does one with two markers: the count and the markers stay in the head of the cell, clear of the window lanes.
+  const marked = page.locator(`${P}day:has([data-calendar-date="2026-10-22"])`);
+  await expect(marked.locator(`${P}marker`)).toHaveCount(2);
+  const headFit = await marked.evaluate((el, prefix) => {
+    const head = el.querySelector(`${prefix}dayhead`).getBoundingClientRect();
+    return [...el.querySelectorAll(`${prefix}count > [aria-hidden], ${prefix}marker`)].every((part) => { const r = part.getBoundingClientRect(); return r.width > 0 && r.top >= head.top - 0.5 && r.bottom <= head.bottom + 0.5 && r.left >= head.left - 0.5 && r.right <= head.right + 0.5; });
+  }, P);
+  expect(headFit, 'a three-digit count and two markers fit the head').toBe(true);
   // Every cell has the same height, and the window keeps its name.
   const heights = await page.locator(`${P}day`).evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1);

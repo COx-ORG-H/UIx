@@ -168,6 +168,8 @@
   .uix-scheduling-calendar__agenda-notes .uix-scheduling-calendar__window { height:var(--calendar-lane); max-width:100%; margin:0; }
   .uix-scheduling-calendar__agenda-rows { margin:0; padding:0; list-style:none; }
   .uix-scheduling-calendar__agenda-rows > li { margin:0; border-bottom:1px solid var(--calendar-chrome-line); }
+  /* a row scrolled to by the keyboard stops below the sticky heading, not behind it */
+  .uix-scheduling-calendar__agenda-group :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-more) { scroll-margin-top:3rem; }
   .uix-scheduling-calendar__agenda-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
   .uix-scheduling-calendar__agenda-row:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { align-self:center; }
@@ -179,26 +181,48 @@
   .uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues { margin:0; padding:var(--uix-space-2) var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
   button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:left; text-decoration:underline; cursor:pointer; }
   button.uix-scheduling-calendar__agenda-more:hover { background:var(--calendar-chrome-surface-quiet); }
-  .uix-scheduling-calendar__agenda--virtual { max-height:min(70vh,40rem); overflow-y:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); }
+  .uix-scheduling-calendar__agenda--virtual { container:uix-scheduling-agenda / inline-size; max-height:min(70vh,40rem); overflow-y:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); }
   /* the mounted rows; its padding stands in for the rows above and below them */
   .uix-scheduling-calendar__agenda-window { box-sizing:content-box; min-width:0; }
   .uix-scheduling-calendar__agenda-vrow { display:flex; align-items:center; height:44px; padding:0 var(--uix-space-2); border-bottom:1px solid var(--calendar-chrome-line); overflow:hidden; }
   .uix-scheduling-calendar__agenda-vrow > * { flex:1 1 auto; min-width:0; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-head { position:static; padding:0; border:0; background:transparent; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-head { flex-wrap:nowrap; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-heading { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* a window note has a row of its own here: the bar from the grids, as wide as its words */
+  .uix-scheduling-calendar__agenda-vrow > .uix-scheduling-calendar__window { flex:0 1 auto; align-self:center; height:var(--calendar-lane); margin:0; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { flex-wrap:nowrap; align-items:center; padding:0; white-space:nowrap; }
-  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { display:block; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-time { flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; }
+  /* the title keeps a readable width; the markers give way first, their labels cut with an ellipsis */
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { flex:1 1 10rem; display:block; min-width:10rem; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-meta { margin-left:var(--uix-space-2); }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { flex:0 1 auto; flex-wrap:nowrap; min-width:0; overflow:hidden; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers > span { flex:0 1 auto; display:inline-flex; min-width:0.6875rem; overflow:hidden; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker { flex:0 1 auto; min-width:0; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker::before,.uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-icon { flex:none; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { flex:none; }
+  /* a narrow agenda: the title has the whole first line; the time, markers and status share the second */
+  @container uix-scheduling-agenda (max-width:36rem) {
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { display:grid; grid-template-columns:auto auto minmax(0,1fr) auto; grid-template-rows:auto auto; align-content:center; gap:0 var(--uix-space-2); }
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { grid-row:1 / span 2; }
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { grid-column:2 / -1; grid-row:1; min-width:0; }
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-time { grid-column:2; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { grid-column:3; grid-row:2; justify-self:start; max-width:100%; }
+    .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { grid-column:4; grid-row:2; }
+  }
   .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues) { padding:0; }
 
   /* ── Month, counts only (HAR-1520): a narrow screen gets the day, its count and its markers ── */
-  /* the head of a cell is two lines here, the date over the count; the lanes and the cell height follow from it */
-  .uix-scheduling-calendar__grid[data-density="counts"] { --calendar-head:3rem; }
+  /* the head of a cell is three lines here, the date over the count over the markers; the lanes and the cell height follow from it */
+  .uix-scheduling-calendar__grid[data-density="counts"] { --calendar-head:4rem; }
   .uix-scheduling-calendar__grid[data-density="counts"],.uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__week { grid-template-columns:repeat(7,minmax(2.75rem,1fr)); }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { flex-wrap:wrap-reverse; justify-content:flex-end; align-content:flex-end; gap:0 var(--calendar-gap); }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > * { height:1.5rem; }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__date { flex:1 0 100%; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1.5rem 1.25rem 1.25rem; align-items:center; gap:0 var(--calendar-gap); }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__date { grid-column:1 / -1; grid-row:1; width:100%; height:1.5rem; }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__day > .uix-scheduling-calendar__date { height:1.5rem; }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__count { display:inline-flex; align-items:center; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__badge { grid-column:1; grid-row:2; min-width:0; overflow:hidden; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__count { grid-column:2; grid-row:2; display:inline-flex; align-items:center; }
+  /* a count of any length keeps its own line; the markers have the next one */
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__markers { grid-column:1 / -1; grid-row:3; justify-self:end; max-width:100%; overflow:hidden; }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__weekday { padding-inline:var(--calendar-pad); overflow:hidden; }
 
   /* ── Week / Day time grid (HAR-1509) ─────────────────────────────────────────────────────────

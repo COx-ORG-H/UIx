@@ -184,6 +184,8 @@ export interface SchedulingCalendarLabels {
   topLane?: string;
   /** The cue on the second-day part of an entry that crosses midnight. `{time}` is its start. */
   continuesFrom?: string;
+  /** The time text of an agenda row whose entry has no time of day (`allDay`). */
+  allDay?: string;
   /** Under an agenda day whose rows are not all listed. `{count}` placeholder. */
   hiddenInDay?: string;
   /** Under an agenda day that entries from an earlier day run into. `{count}` placeholder. */
@@ -235,6 +237,7 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   moreWindowsLabel: '{count} more windows, from {date}',
   topLane: 'All-day and longer entries',
   continuesFrom: 'from {time}',
+  allDay: 'All day',
   hiddenInDay: '{count} not shown — open day',
   continuesInDay: 'Continues: {count} listed under an earlier day',
   moveHint: 'Hold Shift and press an arrow key to move it. Enter confirms, Escape cancels.',
@@ -398,6 +401,7 @@ const INTL_PARTS: Record<SchedulingDatePart, Intl.DateTimeFormatOptions> = {
 };
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 const EMPTY_ENTRIES: SchedulingCalendarEntry[] = [];
+const EMPTY_IDS: string[] = [];
 const DEFAULT_LANE_CAP = 2;
 /** Chip rows a fixed-height cell keeps when `maxEntriesPerDay` is not given. */
 const DEFAULT_CHIP_ROWS = 3;
@@ -446,7 +450,9 @@ export function SchedulingCalendar({
   const controlled = picksGiven || dayInfo !== undefined;
   // Every cell keeps one height: nothing in it can grow, because the list is cut and "+N" opens elsewhere.
   // The counts-only month has nothing in a cell that could grow, so its cells are fixed too.
-  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined) || monthDensity === 'counts';
+  // The density is a month setting: the week keeps its chips and its growing cells.
+  const countsOnly = monthDensity === 'counts' && view === 'month';
+  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined) || countsOnly;
   // A cell that grows has room for every span. A fixed one keeps two lanes per group unless told otherwise.
   const windowCap = Math.max(0, windowLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
   const spanCap = Math.max(0, spanLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
@@ -490,13 +496,14 @@ export function SchedulingCalendar({
       windowIds.add(overlay.id);
       inputs.push({ id: overlay.id, start: overlay.start, end: overlay.end, group: 'window' });
     }
-    for (const { entry } of multiDay) {
+    // The counts-only month draws no entry, so none takes a lane or is counted as hidden.
+    for (const { entry } of countsOnly ? [] : multiDay) {
       if (itemIds.has(entry.id)) continue;
       itemIds.add(entry.id);
       inputs.push({ id: entry.id, start: entry.start, end: entry.end, group: 'item' });
     }
     return layoutMonthSpans(inputs, days, { timeZone, laneCap: { window: windowCap, item: spanCap } });
-  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap]);
+  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap, countsOnly]);
   const placedByRow = useMemo(() => {
     const rows = new Map<number, PlacedMonthSpan[]>();
     for (const placed of layout.placed) { const row = rows.get(placed.weekRow); if (row) row.push(placed); else rows.set(placed.weekRow, [placed]); }
@@ -571,7 +578,6 @@ export function SchedulingCalendar({
     && !Object.values(dayInfo ?? {}).some((day) => day.count > 0);
   // A fixed cell holds `maxEntriesPerDay` chips; if the consumer passes a longer list, the cell holds that, so nothing is clipped.
   // The counts-only month has no chip rows at all: a cell is its head and the window lanes.
-  const countsOnly = monthDensity === 'counts' && view === 'month';
   const chipRows = countsOnly ? -1 : Math.max(0, maxEntriesPerDay ?? DEFAULT_CHIP_ROWS, ...Object.values(dayEntries ?? {}).map((list) => list.length));
 
   const renderDay = (date: string, index: number) => {
@@ -612,7 +618,9 @@ export function SchedulingCalendar({
     // The chips of a row start right under the lanes that row uses.
     const windowLanes = lanesUsed(row, 'window');
     const spanLanes = countsOnly ? 0 : lanesUsed(row, 'item');
-    const hidden = layout.hiddenByRow?.[row]?.length ?? 0;
+    // In the counts-only month the day counts speak for the entries: "+N" is for windows only.
+    const hiddenIds = layout.hiddenByRow?.[row] ?? EMPTY_IDS;
+    const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id)).length : hiddenIds.length;
     const firstHiddenDay = layout.firstHiddenDayByRow?.[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
     const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
@@ -662,7 +670,7 @@ export function SchedulingCalendar({
     {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
       : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
       : view === 'agenda' && agendaGroups ? <SchedulingAgenda
-        groups={agendaGroups} timeZone={timeZone} labels={labels} headingLevel={agendaHeadingLevel} virtualizeAbove={virtualizeAbove} dateText={dateText}
+        groups={agendaGroups} timeZone={timeZone} labels={labels} headingLevel={agendaHeadingLevel} virtualizeAbove={virtualizeAbove} dateText={dateText} formatInstant={formatInstant}
         entryName={entryName} entryStatus={statusOf} entryStatusText={stateText} entryMarkers={markersOf} overlayName={overlayName}
         renderEntry={renderEntry} renderMarker={renderMarker} onSelectEntry={onSelectEntry} onSelectOverlay={onSelectOverlay} onShowMore={onShowMore}
       />
