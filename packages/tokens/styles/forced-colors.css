@@ -75,6 +75,10 @@
     .uix-scheduling-timeline__now { background: CanvasText; forced-color-adjust: none; }
     .uix-scheduling-timeline__now-label { background: CanvasText; color: Canvas; forced-color-adjust: none; }
     .uix-scheduling-timeline__gridline:not([data-minor]) { background: GrayText; forced-color-adjust: none; }
+    .uix-scheduling-timeline__gridline[data-minor] { background: repeating-linear-gradient(to bottom, GrayText 0 2px, transparent 2px 6px); forced-color-adjust: none; }
+    /* a solid window has only a fill, and a done bar only a tint and one edge: both get a mark of their own */
+    .uix-scheduling-timeline__overlay[data-pattern="solid"] { background-image: repeating-linear-gradient(to bottom, CanvasText 0 1px, transparent 1px 8px); }
+    .uix-scheduling-timeline__item[data-status="done"] { border-style: solid solid double; border-bottom-width: 3px; }
     .uix-scheduling-timeline__item[data-conflict]::after { background-image: repeating-linear-gradient(135deg, transparent 0 6px, CanvasText 6px 9px); forced-color-adjust: none; }
   }
 }

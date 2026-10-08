@@ -16,8 +16,11 @@ let createRoot;
 let ui;
 
 const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
-/** Layout stand-in: every track is 700 px wide, so a 7-day range is 100 px a day. */
-const TRACK_PX = 700;
+/** Layout stand-in: every track is `trackPx` wide (700 unless a test resizes it), so a 7-day range is 100 px a day. */
+let trackPx = 700;
+/** The stand-in for ResizeObserver: `resizeTo(px)` changes the track width and tells every observer. */
+const observers = new Set();
+const resizeTo = (px) => { trackPx = px; act(() => { for (const observer of [...observers]) observer.callback([], observer); }); };
 
 before(async () => {
   dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true, url: 'http://localhost/' });
@@ -31,15 +34,16 @@ before(async () => {
   const original = dom.window.HTMLElement.prototype.getBoundingClientRect;
   dom.window.HTMLElement.prototype.getBoundingClientRect = function rect() {
     if (!this.classList.contains('uix-scheduling-timeline__track')) return original.call(this);
-    return { left: 0, right: TRACK_PX, top: 0, bottom: 40, width: TRACK_PX, height: 40, x: 0, y: 0, toJSON() {} };
+    return { left: 0, right: trackPx, top: 0, bottom: 40, width: trackPx, height: 40, x: 0, y: 0, toJSON() {} };
   };
+  expose('ResizeObserver', class { constructor(callback) { this.callback = callback; } observe() { observers.add(this); } disconnect() { observers.delete(this); } });
   ({ createRoot } = await import('react-dom/client'));
   ui = await import('../dist/index.js');
 });
 
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'requestAnimationFrame', 'cancelAnimationFrame', 'CSS', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
+  for (const name of ['window', 'document', 'navigator', 'requestAnimationFrame', 'cancelAnimationFrame', 'CSS', 'IS_REACT_ACT_ENVIRONMENT', 'ResizeObserver']) delete globalThis[name];
 });
 
 const mount = (element) => {
@@ -210,20 +214,27 @@ test('AC3: the clip follows rows of different heights and group heads, and skips
   assert.equal(band().tagName, 'SPAN');
   assert.match(host.querySelector('.uix-visually-hidden ul').textContent, /Window, 2026-10-06 00:00 – 2026-10-08 00:00/);
 
-  // Payments collapsed: its one row stands for lane A, so the window is over that row and over D.
+  // Payments collapsed: its one row stands for lane A. It gets a strip under its head, one sub-row
+  // tall, and the window is on that strip (from one head down to one head and one sub-row) and over D.
   rerender(h(ui.SchedulingTimeline, props({ groups: [{ ...groups[0], collapsed: true }, groups[1]], onToggleGroup: () => {}, overlays: overlay(['A', 'D']) })));
-  assert.deepEqual(clipCorners(band()), [[0, 0, 0], [0, 0, 0], [0, 0, 1], [0, 0, 1], [1, 1, 2], [1, 1, 2], [2, 2, 2], [2, 2, 2]]);
+  assert.equal(groupRows(host, 'pay').length, 1, 'still exactly one row for the group');
+  assert.ok(groupRows(host, 'pay')[0].hasAttribute('data-strip'));
+  assert.ok(groupRows(host, 'pay')[0].querySelector(`${P}group-strip`));
+  assert.equal(groupRows(host, 'net')[0].hasAttribute('data-strip'), false, 'an open group has none');
+  assert.deepEqual(clipCorners(band()), [[0, 0, 1], [0, 0, 1], [1, 0, 1], [1, 0, 1], [2, 1, 2], [2, 1, 2], [3, 2, 2], [3, 2, 2]]);
   // Every lane it names is collapsed: it is still there, over the row of that group, and still a button.
   const picked = [];
   rerender(h(ui.SchedulingTimeline, props({ groups: [{ ...groups[0], collapsed: true }, groups[1]], onToggleGroup: () => {}, overlays: overlay(['A', 'B']), onSelectOverlay: (o) => picked.push(o.id) })));
-  assert.deepEqual(clipCorners(band()), [[0, 0, 0], [0, 0, 0], [0, 0, 1], [0, 0, 1]], 'only the summary row of Payments');
+  assert.deepEqual(clipCorners(band()), [[0, 0, 1], [0, 0, 1], [1, 0, 1], [1, 0, 1]], 'only the strip of Payments');
   assert.equal(band().tagName, 'BUTTON', 'reachable and named while its lanes are collapsed');
   assert.match(band().getAttribute('aria-label'), /^Window, /);
   click(band());
   assert.deepEqual(picked, ['w']);
   // A group that is collapsed and holds none of its lanes is not covered.
   rerender(h(ui.SchedulingTimeline, props({ groups: [{ ...groups[0], collapsed: true }, { ...groups[1], collapsed: true }], onToggleGroup: () => {}, overlays: overlay(['A']) })));
-  assert.deepEqual(clipCorners(band()), [[0, 0, 0], [0, 0, 0], [0, 0, 1], [0, 0, 1]]);
+  assert.deepEqual(clipCorners(band()), [[0, 0, 1], [0, 0, 1], [1, 0, 1], [1, 0, 1]]);
+  assert.equal(groupRows(host, 'net')[0].hasAttribute('data-strip'), false, 'no window covers Network, so its row keeps one line');
+  assert.equal(groupRows(host, 'net')[0].querySelector(`${P}group-strip`), null);
   // A lane that is in no row at all (an id that matches nothing) still draws nothing.
   rerender(h(ui.SchedulingTimeline, props({ groups: [{ ...groups[0], collapsed: true }, groups[1]], onToggleGroup: () => {}, overlays: overlay(['nowhere']) })));
   assert.equal(band(), null);
@@ -310,9 +321,11 @@ test('AC4: at or under virtualizeAbove every row is mounted; virtualizeAbove={In
   low.unmount();
 });
 
-test('AC4: one lane with hundreds of stacked bars mounts only the bars near the viewport, and each is still reachable', () => {
+test('AC4: in a virtual timeline a lane with hundreds of stacked bars mounts only the bars near the viewport, and each is still reachable', () => {
   const stacked = Array.from({ length: 400 }, (_, index) => ({ id: `s${index}`, laneId: 'A', title: `Stacked ${index}`, start: utc(5, '00:00'), end: utc(8, '00:00') }));
-  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ lanes: [lanes[0]], items: stacked })));
+  const many = [lanes[0], ...Array.from({ length: 150 }, (_, index) => ({ id: `more-${index}`, label: `Lane ${index}` }))];
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ lanes: many, items: stacked })));
+  assert.ok(host.querySelector(`${P}scroller`).hasAttribute('data-virtual'), '151 lanes');
   assert.equal(laneRow(host, 'A').style.getPropertyValue('--uix-timeline-rows'), '400');
   assert.ok(host.querySelectorAll('[data-item-id]').length <= 150, `${host.querySelectorAll('[data-item-id]').length} bars`);
   act(() => bar(host, 's0').focus());
@@ -598,7 +611,7 @@ test('AC5: with onResizeItem, Alt+Shift+Arrow moves the end by the step, never u
   only.unmount();
 });
 
-test('do-not: onMoveItem still commits every step and every drop, exactly as in 2.34', () => {
+test('do-not: onMoveItem still commits every step and every drop, exactly as before this release', () => {
   const moves = [];
   const selected = [];
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onMoveItem: (id, next) => moves.push([id, next]), onSelectItem: (item) => selected.push(item.id) })));
@@ -615,7 +628,7 @@ test('do-not: onMoveItem still commits every step and every drop, exactly as in 
   assert.equal(host.querySelector(`${P}ghost`), null, 'no pending outline in this mode');
   assert.equal(key(el, 'Enter').defaultPrevented, false);
 
-  // The 2.34 drag: followed on the bar, the bar itself moves, one call on release.
+  // The older drag: followed on the bar, the bar itself moves, one call on release.
   const dragged = bar(host, 'c');
   pointer(dragged, 'pointerdown', 150);
   pointer(dragged, 'pointermove', 250);
@@ -634,10 +647,10 @@ test('AC6 (R20 AC1 / AC2): a click selects, Enter with nothing pending is left t
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onSelectItem: (item) => selected.push(item), onProposeMove: () => {} })));
   const el = host.querySelector('[data-item-id="d"]');
   assert.equal(el.tagName, 'BUTTON');
-  assert.equal(el.getAttribute('data-timeline-item'), 'd', 'the 2.34 hook is still there');
+  assert.equal(el.getAttribute('data-timeline-item'), 'd', 'the older hook is still there');
   assert.equal(el.getAttribute('data-band'), 'none');
   assert.equal(el.getAttribute('data-status'), 'committed');
-  assert.equal(el.getAttribute('data-state'), 'scheduled', 'an item with none of the generic props keeps the attribute 2.34 gave it');
+  assert.equal(el.getAttribute('data-state'), 'scheduled', 'an item with none of the generic props keeps the attribute it always had');
   click(el);
   assert.equal(selected.length, 1);
   assert.equal(selected[0], items[3], 'the callback gets the item it was given');
@@ -662,7 +675,7 @@ test('AC7 (V13): with flagOverlaps={false} overlapping bars stack without hatchi
   assert.equal(marker.getAttribute('data-glyph'), 'refused', 'a shape, not a colour');
   assert.equal(marker.textContent, 'Shares a database with Schema update');
 
-  // The default is what 2.34 did.
+  // The default is what it did before.
   rerender(h(ui.SchedulingTimeline, props({ items: marked })));
   assert.ok(bar(host, 'a').hasAttribute('data-conflict') && bar(host, 'b').hasAttribute('data-conflict'));
   assert.match(bar(host, 'a').getAttribute('aria-label'), /, overlaps another entry$/);
@@ -796,7 +809,7 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.doesNotMatch(generic.host.innerHTML, /freeze|blackout|violation|conflicted/i, 'not in an attribute either');
   generic.unmount();
 
-  // What a 2.34 consumer passes: `state` on items and `kind` on overlays.
+  // What an existing consumer passes: `state` on items and `kind` on overlays.
   const legacy = mount(h(ui.SchedulingTimeline, props({
     items: [{ ...items[0], state: 'blackout-violation' }, { ...items[2], state: 'in-progress' }, { ...items[3], state: 'conflicted' }],
     overlays: [{ id: 'f', kind: 'freeze', label: 'Q4', start: utc(10, '00:00'), end: utc(12, '00:00') }, { id: 'm', kind: 'maintenance', label: 'Storage', start: utc(6, '00:00'), end: utc(6, '06:00') }],
@@ -809,13 +822,13 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.equal(bar(legacy.host, 'c').querySelector(`${P}item-marker`), null);
   assert.equal(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-kind'), 'freeze');
   assert.ok(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'));
-  assert.notEqual(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'), legacy.host.querySelector('[data-overlay-id="m"]').getAttribute('data-pattern'), 'the kinds 2.34 told apart by hue are told apart by pattern');
+  assert.notEqual(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'), legacy.host.querySelector('[data-overlay-id="m"]').getAttribute('data-pattern'), 'the kinds once told apart by hue are told apart by pattern');
   assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Change freeze: Q4, 2026-10-10 00:00 – 2026-10-12 00:00/);
   assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Maintenance window: Storage/);
   legacy.unmount();
 });
 
-test('what a 2.34 consumer renders still renders: repeated ids, an inverted item, laneId on overlays and markers, ids that match nothing', () => {
+test('what an existing consumer renders still renders: repeated ids, an inverted item, laneId on overlays and markers, ids that match nothing', () => {
   const odd = [
     { id: 'dup', laneId: 'A', title: 'First', start: utc(5, '08:00'), end: utc(5, '12:00') },
     { id: 'dup', laneId: 'A', title: 'Second', start: utc(5, '10:00'), end: utc(5, '14:00') },
@@ -836,7 +849,7 @@ test('what a 2.34 consumer renders still renders: repeated ids, an inverted item
   const picked = [];
   const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ items: odd, overlays, markers, onSelectItem: (item) => picked.push(item.title) })));
   const dups = [...host.querySelectorAll('[data-item-id="dup"]')];
-  assert.deepEqual(dups.map((el) => el.textContent), ['First', 'Second', 'Third'], 'a repeated id is drawn each time, as in 2.34');
+  assert.deepEqual(dups.map((el) => el.textContent), ['First', 'Second', 'Third'], 'a repeated id is drawn each time, as before');
   dups.forEach((el) => click(el));
   assert.deepEqual(picked, ['First', 'Second', 'Third'], 'and each bar selects its own item');
   assert.ok(bar(host, 'inv'), 'an item that ends before it starts is a point at its start');
@@ -885,7 +898,7 @@ test('maxHeight makes the lanes scroll inside the timeline; unset, the page scro
   unmount();
 });
 
-test('the fixed row geometry is used only with the new layout props: a plain 2.34 timeline keeps rows that grow with their label', () => {
+test('the fixed row geometry is used only with the new layout props: a plain timeline keeps rows that grow with their label', () => {
   const plain = mount(h(ui.SchedulingTimeline, props({ overlays: [{ id: 'one', kind: 'maintenance', label: 'Ledger only', laneId: 'B', start: utc(7, '00:00'), end: utc(7, '06:00') }] })));
   assert.equal(plain.host.querySelector('section').hasAttribute('data-fixed'), false);
   plain.unmount();
@@ -994,7 +1007,7 @@ test('AC5: while a move is pending a click does not also select; the announcemen
   assert.ok(host.querySelector(`${P}ghost`), 'the move is still pending');
   key(el, 'Enter');
   assert.deepEqual(proposals, [utc(6, '01:00')]);
-  assert.equal(live(host), '', 'nothing still says "Enter confirms" after the move was sent');
+  assert.equal(live(host), 'Requested a move to 2026-10-06 01:00 – 2026-10-06 13:00.', 'the live region says the move was asked for, and no longer what Enter would do');
   click(el);
   assert.deepEqual(selected, ['c'], 'with nothing pending a click selects again');
   key(el, 'ArrowRight', SHIFT);
@@ -1018,5 +1031,90 @@ test('an hour that occurs twice is named with its UTC offset in the default acce
   assert.doesNotMatch(bar(host, 'r').getAttribute('aria-label'), /\+0\d:00/);
   rerender(h(ui.SchedulingTimeline, { ...base, formatInstant: stamp }));
   assert.equal(bar(host, 'r').getAttribute('aria-label'), 'Clock check, Scheduled, 2026-10-25 00:00 to 2026-10-25 01:00');
+  unmount();
+});
+
+/* ── Second review of PR 111 (HAR-1521) ──────────────────────────────────────────────────── */
+
+/** `count` plain lanes, each with a one-hour bar every two hours of the week: no two share time. */
+const dense = (count, bars = 84) => {
+  const many = Array.from({ length: count }, (_, index) => ({ id: `L${index}`, label: `Lane ${index}` }));
+  const start = Date.parse(range.start);
+  return { lanes: many, items: many.flatMap((lane, laneIndex) => Array.from({ length: bars }, (_, n) => ({ id: `${laneIndex}-${n}`, laneId: lane.id, title: `J${n}`, start: new Date(start + 2 * n * 3_600_000).toISOString(), end: new Date(start + (2 * n + 1) * 3_600_000).toISOString() }))) };
+};
+const modeOf = (host) => ({ virtual: host.querySelector(`${P}scroller`).hasAttribute('data-virtual'), fixed: host.querySelector('section').hasAttribute('data-fixed'), lanes: host.querySelectorAll(`${P}row[data-lane-id]`).length, subRows: Number(laneRow(host, 'L0').style.getPropertyValue('--uix-timeline-rows')) });
+
+test('F1: virtual and fixed rows are decided by the lanes and groups passed, never by the width or by how the bars pack', () => {
+  // 60 lanes at 700 px: 24 px is 5.76 hours, so bars two hours apart need three sub-rows a lane. That is 180 sub-rows.
+  const { host, rerender, unmount } = mount(h(ui.SchedulingTimeline, props(dense(60, 24))));
+  assert.deepEqual(modeOf(host), { virtual: false, fixed: false, lanes: 60, subRows: 3 }, '60 rows passed: not virtual, whatever they pack to');
+  // Narrower: more sub-rows, the same mode. Wider: fewer, the same mode.
+  resizeTo(350);
+  assert.deepEqual(modeOf(host), { virtual: false, fixed: false, lanes: 60, subRows: 6 });
+  resizeTo(2800);
+  assert.deepEqual(modeOf(host), { virtual: false, fixed: false, lanes: 60, subRows: 1 });
+  // A track with no width yet (hidden, not laid out): packed by time alone.
+  resizeTo(0);
+  assert.deepEqual(modeOf(host), { virtual: false, fixed: false, lanes: 60, subRows: 1 });
+  resizeTo(700);
+  assert.equal(modeOf(host).subRows, 3);
+  assert.equal(host.querySelector('[data-conflict]'), null, 'and no bar is flagged for being drawn near another');
+  // The threshold is a count of what is passed: 150 lanes are not virtual, 151 are, at any width.
+  for (const [count, virtual] of [[150, false], [151, true]]) {
+    for (const width of [700, 350, 2800]) {
+      trackPx = width;
+      rerender(h(ui.SchedulingTimeline, props(dense(count, 12))));
+      assert.equal(modeOf(host).virtual, virtual, `${count} lanes at ${width} px`);
+    }
+  }
+  trackPx = 700;
+  unmount();
+  // Group heads count too: 140 lanes in 11 groups are 151 rows.
+  const grouped = dense(140, 1);
+  const eleven = Array.from({ length: 11 }, (_, g) => ({ id: `G${g}`, label: `Group ${g}`, laneIds: grouped.lanes.filter((_, index) => index % 11 === g).map((lane) => lane.id) }));
+  const withGroups = mount(h(ui.SchedulingTimeline, props({ ...grouped, items: [], groups: eleven })));
+  assert.equal(withGroups.host.querySelector(`${P}scroller`).hasAttribute('data-virtual'), true);
+  withGroups.rerender(h(ui.SchedulingTimeline, props({ ...grouped, items: [], groups: eleven.slice(0, 10) })));
+  assert.equal(withGroups.host.querySelector(`${P}scroller`).hasAttribute('data-virtual'), false, '140 lanes and 10 heads are 150');
+  withGroups.unmount();
+});
+
+test('F1: a change of tickWidth is measured before paint: the first render after it is already packed for the new width', () => {
+  const data = dense(2);
+  const { host, rerender, unmount } = mount(h(ui.SchedulingTimeline, props({ ...data, tickWidth: '7rem' })));
+  assert.equal(modeOf(host).subRows, 3);
+  // The stand-in track follows the prop, as a real one does; no ResizeObserver callback is delivered.
+  trackPx = 350;
+  rerender(h(ui.SchedulingTimeline, props({ ...data, tickWidth: '3.5rem' })));
+  assert.equal(modeOf(host).subRows, 6, 'packed for 350 px in the render that changed tickWidth');
+  trackPx = 700;
+  rerender(h(ui.SchedulingTimeline, props({ ...data, tickWidth: '7rem' })));
+  assert.equal(modeOf(host).subRows, 3);
+  unmount();
+});
+
+test('F4: when onProposeMove goes away a pending move goes with it: no outline, no hint, and a click selects again', () => {
+  const selected = [];
+  const base = { onSelectItem: (item) => selected.push(item.id) };
+  const { host, rerender, unmount } = mount(h(ui.SchedulingTimeline, props({ ...base, onProposeMove: () => {} })));
+  act(() => bar(host, 'c').focus());
+  key(bar(host, 'c'), 'ArrowRight', SHIFT);
+  assert.ok(host.querySelector(`${P}ghost`));
+  assert.match(live(host), /Enter confirms/);
+  rerender(h(ui.SchedulingTimeline, props(base)));
+  assert.equal(host.querySelector(`${P}ghost`), null, 'the outline is gone');
+  assert.doesNotMatch(live(host), /Enter confirms/);
+  assert.equal(key(bar(host, 'c'), 'Enter').defaultPrevented, false, 'Enter is the click of the button again');
+  click(bar(host, 'c'));
+  assert.deepEqual(selected, ['c'], 'and a click selects');
+  unmount();
+});
+
+test('F9: a move sent by a drop is announced too, through the moveSent label', () => {
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onProposeMove: () => {}, labels: { moveSent: 'Anfrage gesendet: {start} bis {end}' } })));
+  pointer(bar(host, 'c'), 'pointerdown', 150);
+  pointer(window, 'pointermove', 250);
+  pointer(window, 'pointerup', 250);
+  assert.equal(live(host), 'Anfrage gesendet: 2026-10-07 00:00 bis 2026-10-07 12:00');
   unmount();
 });

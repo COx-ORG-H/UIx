@@ -3,17 +3,20 @@
  *   - lanes (default): three groups of service lanes in Europe/Berlin, one collapsed with a
  *     consumer summary; packed bars; a window over every row and one over two lanes; sub-ticks;
  *     a notice and a column note; moves that are logged and never applied (`?reject=1` answers
- *     with a rejection, `?move=legacy` passes the 2.34 `onMoveItem` instead, `?move=0` passes
- *     none, `?resize=1` adds `onResizeItem`, `?flag=1` turns the generic stacking flag on);
+ *     with a rejection, `?move=legacy` passes the older `onMoveItem` instead, `?move=0` passes
+ *     none, `?resize=1` adds `onResizeItem`, `?flag=1` turns the generic stacking flag on,
+ *     `?early=1` adds a window over the first day of the first lane and a long group summary);
  *   - stress: 500 lanes in 40 groups (`?height=` sets `maxHeight`; `?height=none` leaves the
  *     page to scroll; `?state=loading` mounts it loading; `window.__timelineState({ loading,
  *     error })` switches the state, as a consumer that reloads does; `?groups=0` passes 200
  *     plain lanes and none of the new layout props);
  *   - short: four short bars inside one afternoon of a week axis, titles longer than their
- *     bar, and the high band with each status;
+ *     bar, the high band with each status, a `solid` window and one sub-tick;
+ *   - dense: `?lanes=N` plain lanes (default 60) with a one-hour bar every two hours (`?bars=N` of them, default 84: the week), the case
+ *     whose packing depends on the width; `window.__timelineTick('3rem')` sets `tickWidth`;
  *   - hour: the hour axis over 25.10.2026, the 25-hour day;
  *   - empty: no items;
- *   - legacy: only what a 2.34 consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
+ *   - legacy: only what an existing consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
  * window.__timeline records what each callback was called with. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -26,7 +29,7 @@ interface Calls {
   moves: Array<{ id: string; start: string; end: string }>;
   resizes: Array<{ id: string; start: string; end: string }>;
 }
-declare global { interface Window { __timeline: Calls; __timelineState: (state: { loading?: boolean; error?: string }) => void } }
+declare global { interface Window { __timeline: Calls; __timelineState: (state: { loading?: boolean; error?: string }) => void; __timelineTick: (width: string) => void } }
 const calls: Calls = (window.__timeline = { items: [], overlays: [], toggles: [], proposals: [], moves: [], resizes: [] });
 
 const params = new URLSearchParams(location.search);
@@ -87,14 +90,19 @@ const OVERLAYS: SchedulingTimelineOverlay[] = [
 
 function Lanes() {
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set((params.get('collapsed') ?? 'storage').split(',').filter(Boolean)));
+  // A window over the first day of the first lane: on a collapsed group it would sit under a long group label.
+  const early = params.get('early') === '1';
+  const overlays = early ? [...OVERLAYS, { id: 'early', kindLabel: 'Hold', label: 'Month start', start: berlin('2026-10-05', '00:00'), end: berlin('2026-10-06', '00:00'), pattern: 'cross' as const, laneIds: ['pay-api'] }] : OVERLAYS;
   const groups = [
-    { id: 'payments', label: 'Payments', meta: '2 services', laneIds: ['pay-api', 'pay-ledger'], summary: { count: 5 } },
+    { id: 'payments', label: 'Payments', meta: '2 services', laneIds: ['pay-api', 'pay-ledger'], summary: early
+      ? { count: 5, markers: [{ id: 'm1', label: '2 need sign-off', emphasis: 'warning' as const }, { id: 'm2', label: '1 declined by the owner', emphasis: 'refused' as const }] }
+      : { count: 5 } },
     { id: 'network', label: 'Network', laneIds: ['net-core', 'net-edge'], summary: { count: 3 } },
     { id: 'storage', label: 'Storage', laneIds: ['store-object', 'store-backup'], summary: { count: 9, markers: [{ id: 'worst', label: '2 need sign-off', emphasis: 'warning' as const }] } },
   ].map((group) => ({ ...group, collapsed: closed.has(group.id) }));
   return <SchedulingTimeline
     {...common} {...moving()}
-    lanes={LANES} groups={groups} items={ITEMS} overlays={OVERLAYS} range={WEEK} scale="day" subTicks={[6, 12, 18]}
+    lanes={LANES} groups={groups} items={ITEMS} overlays={overlays} range={WEEK} scale="day" subTicks={[6, 12, 18]}
     now={berlin('2026-10-06', '14:00')}
     flagOverlaps={params.get('flag') === '1'}
     renderItem={(item) => `${zonedTimeOfDay(item.start, TZ)} ${item.title}`}
@@ -120,7 +128,7 @@ function Stress() {
   const height = params.get('height') ?? '480px';
   const [state, setState] = useState<{ loading?: boolean; error?: string }>(() => (params.get('state') === 'loading' ? { loading: true } : {}));
   window.__timelineState = setState;
-  // What a 2.34 consumer with many lanes passes: no groups, no windows, the page scrolls.
+  // What an existing consumer with many lanes passes: no groups, no windows, the page scrolls.
   if (params.get('groups') === '0') return <SchedulingTimeline {...common} lanes={lanes.slice(0, 200)} items={items} range={WEEK} loading={state.loading} error={state.error} onRetry={() => setState({})} />;
   return <SchedulingTimeline
     {...common} {...moving()} lanes={lanes} groups={groups} items={items} range={WEEK} flagOverlaps={false} loading={state.loading} error={state.error} onRetry={() => setState({})}
@@ -146,9 +154,26 @@ function Short() {
       bar('b3', 'net-core', ['2026-10-07', '02:00'], ['2026-10-07', '20:00'], 'Marked', { markers: [{ id: 'm', label: 'Needs review', emphasis: 'warning' }] }),
       bar('b4', 'net-core', ['2026-10-08', '02:00'], ['2026-10-08', '20:00'], 'Plain'),
     ]}
-    overlays={[{ id: 'hatch', kindLabel: 'Hold', label: 'Quarter close', start: berlin('2026-10-10', '00:00'), end: berlin('2026-10-12', '00:00'), pattern: 'diagonal' }]}
+    overlays={[
+      { id: 'hatch', kindLabel: 'Hold', label: 'Quarter close', start: berlin('2026-10-10', '00:00'), end: berlin('2026-10-12', '00:00'), pattern: 'diagonal' },
+      { id: 'flat', kindLabel: 'Note', label: 'Audit', start: berlin('2026-10-09', '00:00'), end: berlin('2026-10-10', '00:00'), pattern: 'solid', laneIds: ['pay-api'] },
+    ]}
+    subTicks={[12]}
     now={berlin('2026-10-07', '12:00')}
   />;
+}
+
+function Dense() {
+  const count = Number(params.get('lanes') ?? 60);
+  const lanes = Array.from({ length: count }, (_, index) => ({ id: `lane-${index}`, label: `Lane number ${index} with a long label that wraps over lines` }));
+  const start = Date.parse(WEEK.start);
+  const HOUR = 3_600_000;
+  const items = lanes.flatMap((lane, laneIndex) => Array.from({ length: Number(params.get('bars') ?? 84) }, (_, n): SchedulingTimelineItem => ({
+    id: `${laneIndex}-${n}`, laneId: lane.id, title: `J${n}`, start: new Date(start + 2 * n * HOUR).toISOString(), end: new Date(start + (2 * n + 1) * HOUR).toISOString(),
+  })));
+  const [tick, setTick] = useState<string | undefined>(params.get('tick') ?? undefined);
+  window.__timelineTick = setTick;
+  return <SchedulingTimeline {...common} lanes={lanes} items={items} range={WEEK} tickWidth={tick} />;
 }
 
 function Hour() {
@@ -182,7 +207,7 @@ function Legacy() {
   />;
 }
 
-const CASES: Record<string, () => JSX.Element> = { lanes: Lanes, stress: Stress, short: Short, hour: Hour, empty: Empty, legacy: Legacy };
+const CASES: Record<string, () => JSX.Element> = { lanes: Lanes, stress: Stress, short: Short, dense: Dense, hour: Hour, empty: Empty, legacy: Legacy };
 const Case = CASES[scenario] ?? Lanes;
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Case /></StrictMode>);

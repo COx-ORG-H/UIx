@@ -4402,6 +4402,7 @@ export interface SchedulingTimelineLabels {
     moveHint: string;
     moveKeysHint?: string;
     moveProposed?: string;
+    moveSent?: string;
     // (undocumented)
     now: string;
     overlay?: string;

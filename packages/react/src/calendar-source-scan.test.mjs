@@ -104,8 +104,8 @@ for (const file of GEOMETRY_SOURCES) {
 }
 
 /* U5 (HAR-1521) AC17 / R11 AC5: the same vocabulary scan over SchedulingTimeline and its model.
- * The hits allowed are the 2.34 exports E13 keeps, deprecated and not removed: the three
- * overlay kinds, the reused entry states, their default labels and the 2.34 hint sentence. No
+ * The hits allowed are the older exports E13 keeps, deprecated and not removed: the three
+ * overlay kinds, the reused entry states, their default labels and the older hint sentence. No
  * name, enum value or default label added by U5 may be on this list. */
 const TIMELINE_E13_KEPT = new Set([
   'freeze', 'blackout', 'blackout-violation', 'Change freeze', 'Blackout', 'Blackout violation',
@@ -120,16 +120,16 @@ test('AC17: the timeline vocabulary scan finds a known-bad snippet (calibration)
 });
 
 for (const file of TIMELINE_SOURCES) {
-  test(`AC17 (E13): ${file} adds no change vocabulary (only the E13-kept 2.34 values remain)`, () => {
+  test(`AC17 (E13): ${file} adds no change vocabulary (only the E13-kept older values remain)`, () => {
     assert.deepEqual(vocabularyFindings(readFileSync(join(here, file), 'utf8'), TIMELINE_E13_KEPT), []);
   });
 }
 
-test('AC17 (E13): no new default label of the timeline says "overlap", and the kept ones are those of 2.34', () => {
+test('AC17 (E13): no new default label of the timeline says "overlap", and the kept ones are the older ones', () => {
   const source = stripComments(readFileSync(join(here, 'components/SchedulingTimeline.tsx'), 'utf8'));
   const literals = [...source.matchAll(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g)].map((m) => m[2]);
   assert.ok(literals.length > 50, 'the literals were read');
-  assert.deepEqual(literals.filter((literal) => /overlap/i.test(literal)), [', overlaps another entry'], 'the one 2.34 label, drawn only while flagOverlaps is on');
+  assert.deepEqual(literals.filter((literal) => /overlap/i.test(literal)), [', overlaps another entry'], 'the one older label, drawn only while flagOverlaps is on');
   for (const kept of TIMELINE_E13_KEPT) assert.ok(literals.includes(kept), `${kept} is still in the source (E13: never removed in 2.x)`);
 });
 
@@ -176,7 +176,7 @@ const packerFindings = (code) => {
   return found;
 };
 
-test('AC14: the one-packer scan finds the 2.34 packing loop (calibration)', () => {
+test('AC14: the one-packer scan finds the older packing loop (calibration)', () => {
   const old = `
 import { something } from './calendar-model.js';
 export function layoutLane(items, range) {
@@ -209,16 +209,25 @@ test('AC14 (FG-REC-14): scheduling-timeline-model.ts packs lanes only through pa
   assert.deepEqual(packerFindings(source), []);
   assert.match(stripComments(source), /import \{[^}]*\bpackLanes\b[^}]*\} from '\.\/calendar-model\.js'/, 'the packer is the one from calendar-model.ts');
   assert.match(functionBody(stripComments(source).replace(/\r\n/g, '\n'), 'layoutLane'), /packLanes\([\s\S]*Infinity/, 'uncapped: the timeline shows every bar');
+  // The one loop beside it reads times and writes flags: which spans share time, as before the
+  // shared packer. It chooses no sub-row, so it is not a second packer.
+  const text = stripComments(source).replace(/\r\n/g, '\n');
+  const from = text.indexOf('function sharedTimeFlags');
+  assert.notEqual(from, -1, 'the flag helper is there');
+  const helper = text.slice(from, text.indexOf('\nexport ', from));
+  assert.match(helper, /\bfor\s*\(/, 'calibration: this is the loop the scan lets be');
+  assert.doesNotMatch(helper, /\brows?\b|\blanes?\b|packLanes|\.lane\b|\.row\b/i, 'it names no row and no lane');
+  assert.match(helper, /^function sharedTimeFlags\([^)]*\): boolean\[\]/, 'and returns flags only');
 });
 
 /* U5: zone math only through calendar-model.ts. The timeline's new geometry has no fixed day
- * length and no local-clock Date call. One 2.34 line stays: the exported `DAY` constant that
+ * length and no local-clock Date call. One older line stays: the exported `DAY` constant that
  * the move step of the week and month axes is built from (E13: an export is never removed). */
 const KEPT_DAY_CONSTANT = 'export const DAY = 24 * HOUR;';
 
 test('U5: the timeline fixed-day scan finds a known-bad snippet, and the kept line is there exactly once (calibration)', () => {
   const model = readFileSync(join(here, 'scheduling-timeline-model.ts'), 'utf8');
-  assert.equal(model.split(KEPT_DAY_CONSTANT).length - 1, 1, 'the 2.34 DAY export is there once');
+  assert.equal(model.split(KEPT_DAY_CONSTANT).length - 1, 1, 'the older DAY export is there once');
   assert.deepEqual(fixedDayFindings(`${KEPT_DAY_CONSTANT}\nconst rows = hours / 24;`.replace(KEPT_DAY_CONSTANT, '')), ['24']);
 });
 

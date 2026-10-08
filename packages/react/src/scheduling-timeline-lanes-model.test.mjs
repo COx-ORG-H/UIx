@@ -75,13 +75,13 @@ test('AC7 (V13): flagOverlaps: false keeps the stacking and flags nothing; the d
   assert.deepEqual(model.layoutLane(spans, range, { flagOverlaps: false }).map((p) => [p.item.id, p.row, p.conflict]), [['a', 0, false], ['b', 1, false], ['c', 0, false]]);
 });
 
-test('what a 2.34 consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
+test('what an existing consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
   const twice = [span('same', 8, 12), span('same', 10, 14)];
   assert.deepEqual(model.layoutLane(twice, range).map((p) => [p.item.id, p.row]), [['same', 0], ['same', 1]], 'a repeated id is placed twice, as before');
   const inverted = [{ id: 'inv', start: iso(T0 + 10 * HOUR), end: iso(T0 + 8 * HOUR) }, span('a', 12, 14)];
   const placed = model.layoutLane(inverted, range);
   assert.deepEqual(placed.map((p) => [p.item.id, p.row, p.width]), [['inv', 0, 0], ['a', 0, placed[1].width]], 'an inverted span is a point at its start');
-  // Equal spans keep the order they were given in (2.34 sorted by start and end only).
+  // Equal spans keep the order they were given in (the older sort was by start and end only).
   assert.deepEqual(model.layoutLane([span('z', 8, 12), span('a', 8, 12)], range).map((p) => [p.item.id, p.row]), [['z', 0], ['a', 1]]);
   assert.deepEqual(model.layoutLane([], range), []);
 });
@@ -143,6 +143,10 @@ test('row geometry: where each row starts, as counts of the three row units', ()
     { subRows: 6, lanes: 3, heads: 2 },
   ], 'one more entry than rows: the last is the whole height');
   assert.deepEqual(rows.timelineRowExtents([]), [{ subRows: 0, lanes: 0, heads: 0 }]);
+  // A head with a strip under it (a collapsed group that carries a window) is one head and its sub-rows, and no lane padding.
+  assert.deepEqual(rows.timelineRowExtents([{ kind: 'head', subRows: 1 }, { kind: 'head' }, { kind: 'lane', subRows: 2 }]), [
+    { subRows: 0, lanes: 0, heads: 0 }, { subRows: 1, lanes: 0, heads: 1 }, { subRows: 1, lanes: 0, heads: 2 }, { subRows: 3, lanes: 1, heads: 2 },
+  ]);
 });
 
 test('AC3: the rows an overlay covers are joined into contiguous runs', () => {
@@ -158,6 +162,7 @@ test('AC4: the row window is what the viewport shows plus overscan, never more t
   assert.deepEqual(rows.timelineWindow(offsets, 0, 600, { overscan: 100, cap: 150 }), { start: 0, end: 14 });
   assert.deepEqual(rows.timelineWindow(offsets, 10_000, 10_600, { overscan: 100, cap: 150 }), { start: 198, end: 214 });
   assert.deepEqual(rows.timelineWindow(offsets, 24_900, 25_500, { overscan: 100, cap: 150 }), { start: 496, end: 500 });
+  assert.deepEqual(rows.timelineWindow(offsets, 0, 25_000, { overscan: 100 }), { start: 0, end: 500 }, 'without a cap a viewport as tall as the list is filled');
   const capped = rows.timelineWindow(offsets, 0, 25_000, { overscan: 100, cap: 150 });
   assert.equal(capped.end - capped.start, 150, 'a viewport taller than the cap still mounts no more than the cap');
   assert.equal(capped.start, 0);
@@ -183,14 +188,65 @@ test('AC6: minSpan packs each bar as at least as long as it is drawn, and flags 
   assert.deepEqual(model.layoutLane(cut, range, { minSpan: 0 }).map((p) => p.row), [0, 0]);
 });
 
-test('the flag is the 2.34 one: bars that share time, a point inside a bar, and nothing else', () => {
+/** The flag as the release before computed it, pair by pair, on the raw ends: the reference the model must match. */
+function referenceFlags(spans) {
+  const sorted = [...spans].sort((a, b) => Date.parse(a.start) - Date.parse(b.start) || Date.parse(a.end) - Date.parse(b.end));
+  const flagged = sorted.map(() => false);
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (Date.parse(sorted[j].start) >= Date.parse(sorted[i].end)) continue;
+      if (Date.parse(sorted[i].start) < Date.parse(sorted[j].end)) { flagged[i] = true; flagged[j] = true; }
+    }
+  }
+  return sorted.map((item, index) => [item.id, flagged[index]]);
+}
+
+test('the flag is the one of the release before: named cases, a point, and a span that ends before it starts', () => {
   const flags = (spans) => model.layoutLane(spans, range).map((p) => [p.item.id, p.conflict]);
-  assert.deepEqual(flags([span('point', 8, 8), span('bar', 8, 12)]), [['point', false], ['bar', false]], 'a point at the instant a bar starts');
-  assert.deepEqual(flags([span('bar', 8, 12), span('point', 10, 10)]), [['bar', true], ['point', true]], 'a point inside a bar');
-  assert.deepEqual(flags([span('p1', 8, 8), span('p2', 8, 8)]), [['p1', false], ['p2', false]]);
-  assert.deepEqual(flags([span('a', 8, 12), span('b', 12, 14)]), [['a', false], ['b', false]], 'touching is not sharing');
-  assert.deepEqual(flags([span('long', 0, 20), span('x', 2, 3), span('y', 5, 6)]), [['long', true], ['x', true], ['y', true]]);
-  assert.deepEqual(flags([span('x', 2, 3), span('y', 5, 6), span('z', 5.5, 7)]), [['x', false], ['y', true], ['z', true]]);
+  const cases = {
+    'a point at the instant a bar starts': [span('point', 8, 8), span('bar', 8, 12)],
+    'a point inside a bar': [span('bar', 8, 12), span('point', 10, 10)],
+    'two points at one instant': [span('p1', 8, 8), span('p2', 8, 8)],
+    'touching is not sharing': [span('a', 8, 12), span('b', 12, 14)],
+    'a long bar over two short ones': [span('long', 0, 20), span('x', 2, 3), span('y', 5, 6)],
+    'the third shares with the second only': [span('x', 2, 3), span('y', 5, 6), span('z', 5.5, 7)],
+    // Inverted: it starts at 10 and "ends" at 5. The release before did not flag it inside a bar that starts at 6…
+    'an inverted span whose end is before the other bar starts': [span('bar', 6, 12), span('inverted', 10, 5)],
+    // …and did flag it inside a bar that starts before its end.
+    'an inverted span whose end is after the other bar starts': [span('bar', 2, 12), span('inverted', 10, 5)],
+    'an inverted span first': [span('inverted', 4, 1), span('bar', 4, 9)],
+  };
+  for (const [name, spans] of Object.entries(cases)) assert.deepEqual(flags(spans), referenceFlags(spans), name);
+  // The reference itself says what the comments above say.
+  assert.deepEqual(referenceFlags(cases['an inverted span whose end is before the other bar starts']), [['bar', false], ['inverted', false]]);
+  assert.deepEqual(referenceFlags(cases['an inverted span whose end is after the other bar starts']), [['bar', true], ['inverted', true]]);
+  assert.deepEqual(referenceFlags(cases['a point inside a bar']), [['bar', true], ['point', true]]);
+});
+
+test('the flag matches the release before on 300 generated lanes, with points, inverted spans and any minSpan', () => {
+  const random = seeded(111);
+  for (let lane = 0; lane < 300; lane++) {
+    const spans = Array.from({ length: 2 + Math.floor(random() * 9) }, (_, index) => {
+      const from = Math.floor(random() * 40);
+      const kind = random();
+      // One in six is a point, one in six ends before it starts.
+      const to = kind < 1 / 6 ? from : kind < 2 / 6 ? from - 1 - Math.floor(random() * 6) : from + 1 + Math.floor(random() * 10);
+      return span(`s${index}`, from, to);
+    });
+    const expected = referenceFlags(spans);
+    for (const minSpan of [0, 5.76 * HOUR]) {
+      assert.deepEqual(model.layoutLane(spans, range, { minSpan }).map((p) => [p.item.id, p.conflict]), expected, `lane ${lane}, minSpan ${minSpan}: ${JSON.stringify(spans.map((s) => [s.start.slice(8, 16), s.end.slice(8, 16)]))}`);
+      assert.deepEqual(model.layoutLane(spans, range, { minSpan, flagOverlaps: false }).map((p) => p.conflict), spans.map(() => false));
+    }
+  }
+});
+
+test('what changed in the rows with no options: a point at the instant a bar starts takes a sub-row of its own', () => {
+  // The release before drew the point over the start of the bar (one row). The shared packer gives a
+  // zero-length interval its start instant, so the two do not share a row. Neither is flagged.
+  assert.deepEqual(model.layoutLane([span('point', 8, 8), span('bar', 8, 12)], range).map((p) => [p.item.id, p.row, p.conflict]), [['point', 0, false], ['bar', 1, false]]);
+  // A point at the instant a bar ends still shares its row.
+  assert.deepEqual(model.layoutLane([span('bar', 8, 12), span('point', 12, 12)], range).map((p) => p.row), [0, 0]);
 });
 
 test('timelineRepeatedHourOffset: the UTC offset of an instant in an hour that occurs twice, else null', () => {
@@ -201,4 +257,20 @@ test('timelineRepeatedHourOffset: the UTC offset of an instant in an hour that o
   assert.equal(model.timelineRepeatedHourOffset('2026-10-24T23:30:00Z', 'Europe/Berlin'), null);
   assert.equal(model.timelineRepeatedHourOffset('2026-10-25T00:30:00Z', 'UTC'), null);
   assert.equal(model.timelineRepeatedHourOffset('2026-03-29T01:30:00Z', 'Europe/Berlin'), null);
+});
+
+test('timelineRepeatedHourOffset: a repeat at the end of the day, and a repeat of half an hour', () => {
+  // America/Santiago, 4 April 2026: at 24:00 the clocks go back to 23:00, so the last hour of the day comes twice.
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-05T02:30:00Z', 'America/Santiago'), '-03:00', 'the first 23:30');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-05T03:30:00Z', 'America/Santiago'), '-04:00', 'the second 23:30');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-05T01:30:00Z', 'America/Santiago'), null, '22:30 comes once');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-05T04:30:00Z', 'America/Santiago'), null, '00:30 the next day comes once');
+  // Australia/Lord_Howe, 5 April 2026: at 02:00 the clocks go back half an hour, so 01:30–02:00 comes twice.
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-04T14:45:00Z', 'Australia/Lord_Howe'), '+11:00', 'the first 01:45');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-04T15:15:00Z', 'Australia/Lord_Howe'), '+10:30', 'the second 01:45');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-04T14:15:00Z', 'Australia/Lord_Howe'), null, '01:15 comes once');
+  assert.equal(model.timelineRepeatedHourOffset('2026-04-04T15:45:00Z', 'Australia/Lord_Howe'), null, '02:15 comes once');
+  // A day after a clock change, and a spring day, have none.
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-26T00:30:00Z', 'Europe/Berlin'), null);
+  assert.equal(model.timelineRepeatedHourOffset('2026-03-30T00:30:00Z', 'Europe/Berlin'), null);
 });
