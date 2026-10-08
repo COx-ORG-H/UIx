@@ -1,5 +1,109 @@
 # @tensor_1/react
 
+## 2.32.0
+
+### Minor Changes
+
+- d2e9330: Calendar math in one explicit IANA zone (HAR-1504): pure functions for zoned days, real hour slots, "+1 day", end-exclusive day spans, lane packing and a top-N cut. They use only `Intl`, never the process time zone or a fixed day length, so daylight-saving days have 23 or 25 hours.
+
+  - **Days and slots:** `zonedDayBounds(dateKey, tz)` (the end of a day is the start of the next; a day whose midnight is skipped starts at its first instant) and `zonedHourSlots(dateKey, tz)` (one `{ instant, label, offsetLabel }` per real hour; a repeated hour appears twice, each with its UTC offset).
+  - **"+1 day":** `addZonedDays(instant, n, tz)` keeps the wall-clock time and returns `adjusted: 'gap_forward'` when the time does not exist and moves forward, once.
+  - **Day membership:** `zonedDaySpan(start, end, tz)` is end-exclusive (an entry ending at local 00:00 stays on its last day) and throws a `RangeError` on an inverted or empty interval. `enumerateDateKeys(span, { limit })` returns `{ dates, truncated }` instead of stopping silently.
+  - **Lanes:** `packLanes(intervals, maxLanes, { order: 'start' | 'given' })` assigns first-fit lanes, `null` for what does not fit, with `laneCount` and `overflow` per overlap cluster.
+  - **Top-N:** `rankOverflow(items, compare, n)` → `{ visible, hidden }`.
+  - **Formatters:** `cachedDateTimeFormat(locale, options)` shares one `Intl.DateTimeFormat` per locale and options shape. `zonedDateKey` now goes through it (same signature and result), so a 2,100-entry month builds a few formatters instead of one per call.
+  - **Deprecated, unchanged:** `zonedDateSpan` (end-inclusive, swaps inverted ends) and `enumerateDateSpan` (stops silently at 370). Use `zonedDaySpan` and `enumerateDateKeys`.
+  - **Docs:** a "Calendar model" page with a DST example.
+
+- de741cb: Calm, balanced dark status ramp and a neutral status family (HAR-1562, absorbs HAR-1384).
+
+  - **Dark status values retuned.** Every dark status TEXT token now sits in one lightness band (OKLCH L 74–80 %, chroma ≤ 0.10) near `--uix-text-hushed`; solids are capped at chroma 0.14 and tints are the solid at 12 % alpha. Status text contrast on the dark surface now spans 8.1–9.8:1 (it was 6.8–11.2:1). The dark danger fill is `#BE3A41` (white text 5.4:1), so products no longer need a local dark danger override. `--uix-info` (a fill with white text) is unchanged.
+  - **New tokens (additive):** `--uix-success-text` (light aliases `--uix-success`, dark `#7CC79F`), the neutral status family `--uix-neutral-solid` / `-text` / `-bg` / `-border`, and `--uix-radius-xl: 24px`.
+  - **Components paint status text with the text role:** `.uix-pill--success` / `--sla-ok`, `.uix-alert--success` / `--warning` icons, `.uix-stat__trend--up` and `.uix-sla[data-state="ok"]`.
+  - Light-mode values are unchanged apart from the new tokens.
+
+- a93e0c6: Charts look like UIx with no consumer styling (HAR-1552).
+
+  - **`uixChartTheme()`** (from `@tensor_1/react/chart` and `/chart/preset`): token palette, fonts, a solid hairline grid, axes and the UIx tooltip. `Chart` merges it under your option (your option wins) and re-applies it when `<html>`'s `class` / `data-theme` or the OS scheme changes, without a remount. New prop `theme?: 'uix' | 'none'` (default `'uix'`). Also exported: `mergeChartTheme`, `uixChartTokens` (the resolved analytic roles) and `uixChartAreaGradient`.
+  - **New tokens:** `--uix-chart-grid`, `-axis`, `-reference`, `-zone-warning`, `-zone-danger`, `-forecast-band`, `-event`, `-partial`, `-comparison`, light and dark.
+  - **Palette re-stepped:** `--uix-chart-1..8` keep their hue order and now pass the dataviz palette checks in both modes (lightness band, chroma ≥ 0.10, adjacent CVD ΔE ≥ 8, normal-vision ΔE ≥ 15, ≥ 3:1 on surface and bg-app). Light failed the normal-vision floor before; dark had 7 of 8 slots outside the band.
+  - Docs: a "Chart tokens" foundations page; the styleguide charts consume the same theme (no dashed gridlines).
+
+- 03d49b6: New `DashboardGrid`, the layout grid for dashboard widgets (HAR-1555; unblocks TENSOR HAR-1557).
+
+  - **Spans:** `DashboardGrid.Item` (also exported as `DashboardGridItem`) takes `span={1 | 2 | 'full'}`. Span 2 clamps to the columns there are, and `full` fills the row at every width.
+  - **Columns follow the grid's own width** (a container query), not the viewport: `columns={{ base: 1, sm: 2, lg: 3 }}` with `sm` 36rem, `md` 48rem, `lg` 60rem, `xl` 80rem of grid width. The default is 1 column, 2 from `sm` and 3 from `lg`. `gap` is `sm`, `md` or `lg`.
+  - **Size-aware widgets:** each item is an inline-size container (`uix-dashboard-grid-item`), so a Chart can take its height from the item's width (`height="clamp(160px, 40cqi, 360px)"`) and a card can use container queries. Widgets in one row share a height.
+  - **Plain HTML and custom elements:** the class contract is `.uix-dashboard-grid` (`--cols-N`, `--{sm,md,lg,xl}-cols-N`, `--gap-sm|lg`) with `.uix-dashboard-grid__item` (`--span-2`, `--full`). `dashboardGridClassName` and `dashboardGridItemClassName` return the same classes for an element you render yourself.
+  - **Tokens:** a new `components/dashboard-grid` module.
+
+- 47b2bd5: DateRangePicker and the Calendar day cells now use one shape for every state: hover, range start and end, today and keyboard focus are the same circle, concentric with the cell, and the in-range band is the circle's height and meets the start and end circles with no notches (no band while only a start is picked; RTL mirrors). Focus is a round ring with a surface gap so it stays visible on the accent circle, and forced-colours mode keeps the range (Highlight start/end, underlined in-range days). `DateRangePicker` gains a `today` prop (defaults to the viewer's local date, `null` for none) and marks that day with `aria-current="date"`. The Calendar grid drops its column gap so its range band joins (HAR-1570).
+- 26488b2: `FilterEditor` enum presets (HAR-1505; TENSOR change calendar state scope).
+
+  - **`FilterField.presets`:** named selections (`FilterPreset { id, label, values }`) shown as toggle chips (`aria-pressed`) in a labelled group above the search box and options. Activating one replaces the selection with its values. The preset equal to the selection (as a set) is pressed, and editing the options un-presses it. No native `<select>`.
+  - **`matchFilterPreset(field, value)`** returns that preset. `summarizeFilter` returns its label, using the new optional `preset` summary label (default `'{label}'`, which also accepts `{field}`).
+  - **Labels:** an optional `labels.presets` (default "Presets") names the group. `UixLabelsProvider` gains a `filterEditor` entry for every `FilterEditor` word, and an explicit `labels` prop still wins.
+  - **Tokens:** `.uix-filter-editor__presets` in `components/table-toolbar`.
+
+- 5195924: `SchedulingCalendar`: a shared item API, consumer-owned counts and a calm Month (HAR-1506).
+
+  - **Item API.** An entry takes `band` (`none | low | medium | high`: the only dimension with a hue, and only `high` is filled), `status` (`tentative | committed | live | done | dead`: line style and dimming, never a hue), `markers` (a shape or an icon with text) and `accessibleName`. Every item carries `data-item-id`, `data-band` and `data-status`.
+  - **Consumer-owned counts.** `days` (`{ count, overflowCount, label, markers }` per date) and `dayEntries` (the chips of each day, already ranked and cut). With both, the calendar places, ranks, cuts and counts nothing, "+N" is `overflowCount`, and a day never expands in place. With `days` alone the chips are still the day's `entries`, cut to `maxEntriesPerDay`.
+  - **Spans drawn once.** An entry or window that covers several days is one bar per week row, in lanes above the chips. `layoutMonthSpans(spans, days, { timeZone, weekStartsOn, laneCap })` packs them in the order given and `schedulingGridDays(anchorDate, view, weekStartsOn)` returns the grid it needs; pass the result as `spanLayout`, or let the calendar lay them out. `windowLaneCap` and `spanLaneCap` default to 2 where the cells have a fixed height; where they grow (no `days`, `dayEntries` or `onShowMore`) every span gets a lane. A row with more spans than lanes shows "+N" and calls `onShowMore` with the first day that has a hidden one.
+  - **Windows.** An overlay takes `pattern` (`diagonal | cross | dotted | solid`), `kindLabel`, `scopeLabel`, `global` and `accessibleName`. Windows are neutral, named in visible text, focusable, and call `onSelectOverlay`.
+  - **Page-owned chrome.** `legend` and `legendCaption` (the legend is exactly the items given), `showHeader`, `notice`, `emptyNote`, `onSelectDate`, and per-view `previousMonth` / `nextMonth` / `previousWeek` / `nextWeek` labels.
+  - **Day membership is end-exclusive in `timeZone`** for entries and windows: an entry ending at local midnight stays on its last day, and a window is placed by its zoned days, not its UTC date. `itemDaySpan` and `zonedTimeOfDay` are exported.
+  - **Fixed month geometry.** With `days` / `dayEntries`, or `maxEntriesPerDay` together with `onShowMore`, every cell keeps one height.
+  - **Changed defaults (visible).** A chip reads `HH:MM title` (24 h, in the zone), and a long title is cut at the chip edge without an ellipsis. In the month and week grids entries are no longer tinted by `state`: `conflicted` and `blackout-violation` show a marker with the word for that state instead (the agenda keeps its state pill until it is rebuilt), and "+N more" takes the text colour. The default instant text in accessible names and the agenda is the `day` date text plus the 24-hour time, so a 2,100-entry month builds at most four `Intl.DateTimeFormat` instances.
+  - **Deprecated, unchanged in 2.x:** `entry.state` and `SchedulingEntryState`, `overlay.kind` and `SchedulingOverlayKind` (`kind` is now optional), and the `previous` / `next` labels.
+  - **Tokens:** every colour of `components/scheduling-calendar` goes through one block of `--calendar-*` names at the top of the file. Forced-colours repairs for the high band, marker shapes and window hatches.
+  - **Docs:** the SchedulingCalendar page is rendered from the component by `packages/react/scripts/render-scheduling-calendar-specimen.mjs`; a test fails when the page and the component differ.
+
+- 0fa70fe: `Select` draws its own list instead of opening the browser's dropdown (HAR-1572). It follows the WAI-ARIA select-only combobox pattern, and existing call sites keep working without changes.
+
+  - **Same API:** `<option>`/`<optgroup>` children (including fragments and `.map()`), `value`/`defaultValue`, `onChange(e)` with `e.target.value`, `name`, `required`, `form`, `disabled`, `ref` (still the `HTMLSelectElement`), react-hook-form `register` and `Controller`. A visually hidden native `<select data-uix-select-proxy>` holds the value, so `FormData`, `form.reset()`, autofill and `required` work as before. The `id` moves to the trigger, so `<label htmlFor>` and `Field` still name it.
+  - **Trigger and list:** the trigger is a `<button role="combobox">` with the `.uix-select` look, and long values end in an ellipsis. The list is a top-layer popover placed with `useAnchoredPosition`, so it is never clipped inside a Drawer, a Popover or an `overflow: hidden` cell, and it flips near the edge of the viewport. It is at least as wide as the trigger and at most 320 px tall.
+  - **Keyboard (APG):** ↑ ↓ Home End PageUp PageDown, Alt+↓ / Alt+↑, Enter, Space, Tab, Escape (keeps the value and focus), and typeahead (type several letters, or repeat one letter to cycle). Disabled options and groups are skipped.
+  - **New optional props:** `options` (options and groups as data, with `description`, `icon`, `keywords`), `onValueChange`, `placeholder`, `invalid`, `readOnly`, `searchable` (`'auto'` above 12 options), `loadOptions` (loading, empty and error-with-retry states; stale requests are aborted), `renderOption`, `renderValue`, `placement` and `labels` (also `UixLabelsProvider` `select`). `multiple` gives a `string[]` value, a "+N" with a spoken count, and Delete to clear.
+  - **Phones:** with `(pointer: coarse) and (max-width: 640px)` the list opens as a bottom sheet (`Drawer side="bottom"`) with 44 px rows.
+  - **CSS:** `select.css` styles the trigger, the popup, the form proxy and the states. `.uix-listbox` options now show hover/keyboard focus and the selected value differently (the selected one has a check mark), and there are classes for groups, icons and descriptions. Where `appearance: base-select` is supported, a plain `<select class="uix-select">` gets the same look for its open list; Firefox still shows the operating-system list.
+  - New exported types: `SelectOption`, `SelectGroup`, `SelectLabels`.
+
+- c170f90: Twelve gaps TENSOR found while moving its hand-built UI onto the kit at 2.31.0 (HAR-1346 follow-ups). Everything is optional except the three items marked **Behaviour change**.
+
+  - **Anchored overlays stay inside the viewport (HAR-1613).** A `Popover` / `useAnchoredPosition` panel that fits neither above nor below its anchor slides over it instead of leaving the viewport, also after a scroll or a resize; once the anchor has left the viewport the panel follows it out. New: `Popover capHeight`, and on the hook `capHeight`, `onAnchorHidden`, `shiftMainAxis`; `computePosition` returns `mainAxisNatural`, `mainAxisRange` and `available`. With CSS anchor positioning, a panel held at the viewport limit (or within 64 px of it) is written as fixed coordinates.
+  - **Menu (HAR-1629):** `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`; every item kind forwards `id` and `data-*`; Escape and Tab on the trigger close a menu with no item to focus; the menu is capped to the viewport and scrolls.
+  - **CollapsibleSection (HAR-1628):** `defaultOpen` (a remembered state wins over it, and a passed `open` no longer overrides the remembered state at mount), `persistStorage="local"`, an `openRequest` already set at mount is honoured and every request focuses the summary (`undefined` and `0` mean "no request"), `compact`, `headingLevel`. Fixed: the browser's own `toggle` event at mount could overwrite the remembered state.
+  - **Steps (HAR-1628):** `progress={false}` renders numbered sections that hold content, with no state drawn or announced; `headingLevel`. `DescriptionItem termProps` / `descriptionProps`. `closeLabel` is optional on `PromptDialog` and `ConfirmDialog`.
+  - **Tabs (HAR-1600):** `aria-label`, `aria-labelledby` and other HTML attributes reach the `role="tablist"` element, in both overflow modes.
+  - **Segmented (HAR-1604):** **Behaviour change:** a `Segmented` is one tab stop (the selected option, or the first enabled one); Arrow keys move and select, Home / End jump, Left / Right swap in right-to-left. `selection="radio"` renders `radiogroup` / `radio` / `aria-checked`.
+  - **useVirtualRows (HAR-1616):** `estimatedViewportHeight` (a window instead of every row before the scroller is measured), `enabled`, and a window clamped to the row count in the same render when the data shrinks under a large `scrollTop`. Rows are windowed when `rows.length > threshold`.
+  - **RuleBuilder (HAR-1618):** the built-in validation messages are labels (`issue…`) and `checks` turns individual checks off; `conditionsOnly`; `combinator` (fixed, never emits the other value) and `hideCombinator`; `allowGroups`; `UixLabelsProvider` `ruleBuilder`. **Behaviour change:** `readOnly` renders the builder with its controls disabled instead of an English sentence; the sentence is `readOnly="summary"` and its words are labels. `RuleBuilderLabels` has 13 new keys (the seven `issue…` messages and the six summary words): `labels` stays a `Partial`, but an object typed as the full `RuleBuilderLabels` needs them. New exports: `setRuleCombinator`, `DEFAULT_RULE_VALIDATION_MESSAGES`, `DEFAULT_RULE_SUMMARY_WORDS`, `RuleCheck`, `RuleValidationOptions`, `RuleSummaryWords`.
+  - **Chip (HAR-1632):** the × is named from `UixLabelsProvider` `chip.remove`; the ref and `bodyProps` reach the body button of a removable chip; `current` for link chips (`aria-current="page"` and the filled look). `Chip` and `Alert` are now `forwardRef` components.
+  - **FileUpload and Attachment (HAR-1630):** a long unbroken file name no longer widens `FileUpload`; both read `UixLabelsProvider` (`fileUpload`, `attachment`); `sizeBase={1024}`, `formatSize`, and `formatFileSize(bytes, locale, { base, units })`. Markup: a download link's name "Download {name}" is now visually hidden text inside the link instead of an `aria-label`. Fixed: the rejected-files list had `role="alert"` on the `<ul>`, which removed its list role; the alert is now a wrapper around the list.
+  - **Alert, Note, StatusPill, PromptDialog, Popover (HAR-1614):** `Alert` `onDismiss` / `dismissLabel` / `actions`, a forwarded ref, and a text column that wraps a long title at 320 px; `Note tone` accepts `undefined` and `"neutral"`; `StatusPill size` (`sm`, `md`, `lg`); `PromptDialog` `multiline`, `destructive`, `error`, `role`, and its field now takes focus when the dialog opens; `Popover openOnHover`.
+  - **Spinner, Meter, Heartbeat (HAR-1606):** `Spinner size="sm"` (16 px); `Meter tone="neutral"` and `tone="accent"` (3:1 against the track in light and dark for every theme); new `Heartbeat` and `LiveIndicator`.
+  - **ViewMenu (HAR-1601):** the density options no longer break a label inside a word at phone width; options that do not fit one row wrap as whole options.
+  - **CSS:** additions to `menu.css`, `card.css`, `steps.css`, `segmented.css`, `rule-builder.css`, `file-upload.css`, `alert.css`, `status-pill.css`, `spinner.css`, `meter.css` and `view-menu.css`. No token changes.
+
+- a93a5a0: New `TextDiff`, a two-way diff of two texts (HAR-1368; TENSOR C11 knowledge-article version diff).
+
+  - **Line diff:** a Myers diff. Removed and added lines are paired by similarity, so a renumbered list still lines up, with the changed words marked inside each pair.
+  - **Word diff:** compares prose word by word.
+  - **Views and folding:** split (stacks in narrow containers) or unified. `context` folds long unchanged runs, and focus moves to the first revealed line.
+  - **Not colour alone:** changes are `<del>`/`<ins>` with a −/+ sign and spoken words.
+  - **Large input:** a `maxTokens` limit, and a `maxEdits` budget past which the changed middle shows as one replacement.
+  - **Model:** `diffText`, `diffTokens`, `textDiffRows`, `tokenizeText`.
+  - **Tokens:** a new `components/text-diff` module.
+
+### Patch Changes
+
+- 451dc9e: The `#file-upload` docs specimen now matches the React `FileUpload`: a centred UIx "Choose files" button under the title and hint, instead of a full-width native file input. An empty `.uix-filelist` no longer adds a spacer below the drop zone (HAR-1567).
+- 9a3b00d: `FilterPopover` renders a plain UIx field: the label sits above the control, tied to it with `for`/`id`, 8 px apart, with 16 px before Clear/Apply and 16 px padding all round. It used to wrap the control in `<label class="uix-label">`, the Label tag pill, which drew an accent-tinted band around the field with 1 px under the select. The `.uix-filter-popover .uix-label` rule is gone, and the tag pill rule is now `.uix-label:not(label)`, so a `<label class="uix-label">` left in consumer markup no longer paints the band (use `.uix-field__label` for form labels). A new test fails on any `<label>` with `uix-label` in the React sources, docs, guide and `tables.html` (HAR-1573).
+- 94b3210: CollapsibleSection's chevron is now the UIx `ChevronDown` icon (an inline SVG in a fixed 16 x 16 box centred on the summary row) instead of the text character U+2304, which an OS fallback font drew narrow and distorted and which jumped about 13 px on every toggle. The chevron only rotates, about its own centre, and takes the text colour on summary hover (HAR-1571).
+- 9708b8a: Tag and chip remove "x": one spec for `.uix-tag__remove` and `.uix-chip__remove` (HAR-1569). Both are now a 20 px circle with the Lucide X centred in it, at the pill's trailing end 2 px from the edge, with a concentric 24 px hit area, a round focus ring and a hover tint of the text colour that shows on any pill (it was a 16 px rounded square on the tag, off-centre, with a hover lighter than the tag). The pill height is unchanged. Forced-colours mode outlines the hovered control. `<Chip onRemove>` draws `XIcon` from the UIx icon set, and the docs tag-input specimen uses the Lucide X instead of a text "×". Markup that put a text "×" inside `.uix-tag__remove` should switch to an SVG icon (e.g. `XIcon` from `@tensor_1/react/icons`).
+- e6fbae3: List, Toast and Pipeline: a title and its secondary text now stack with the same result whatever element the markup uses. `.uix-list__title`/`__meta` and `.uix-pipeline__title`/`__description` are block-level, and `.uix-toast__body` is a flex column with a `--uix-space-1` gap, so `<span>`/`<strong>` markup no longer renders as one run-on line with a 0 px gap. The React output is unchanged. The three docs specimens use `<div>`, and `tests/a11y/docs-text-stacks.spec.mjs` measures every explorer route for glued text (HAR-1568).
+
 ## 2.31.0
 
 ### Minor Changes
