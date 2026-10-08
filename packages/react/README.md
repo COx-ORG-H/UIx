@@ -475,27 +475,43 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
 
 ### SchedulingTimeline
 
-Lanes of bars on a time axis (HAR-1364; TENSOR's change day/week timeline, rollout Gantt rows and licence-renewal
-markers). It pairs with `SchedulingCalendar`: same entry states, the same explicit time zone.
+Lanes of bars on a time axis (HAR-1364, HAR-1521): schedules by service, rollout rows, renewal markers. It pairs
+with `SchedulingCalendar`: the same item API (`band`, `status`, `markers`, `accessibleName`), the same explicit
+time zone, the same proposal model for moves.
 
 ```tsx
 <SchedulingTimeline
-  lanes={[{ id: 'net', label: 'Network', meta: '3 changes' }]}
-  items={changes.map((c) => ({ id: c.id, laneId: c.team, title: c.title, start: c.start, end: c.end, state: c.state }))}
-  range={{ start: weekStart, end: weekEnd }} scale="day" timeZone={tz} now={nowIso}
-  overlays={[{ id: 'q4', kind: 'freeze', label: 'Q4 freeze', start, end }]}
-  markers={[{ id: 'r1', label: 'Renewal: Fortinet', at, laneId: 'net' }]}
-  onSelectItem={(item) => openChange(item.id)}
-  onMoveItem={(id, { start, end }) => reschedule(id, start, end)}
+  lanes={services.map((s) => ({ id: s.id, label: s.name }))}
+  groups={[{ id: 'pay', label: 'Payments', laneIds: ['checkout', 'ledger'], collapsed, summary: { count: 7 } }]}
+  onToggleGroup={(id) => toggle(id)}
+  items={rows.map((r) => ({ id: r.id, laneId: r.serviceId, title: r.title, start: r.start, end: r.end, band: r.band, status: r.status, markers: r.markers }))}
+  range={{ start: weekStart, end: weekEnd }} scale="day" subTicks={[6, 12, 18]} timeZone={tz} now={nowIso}
+  overlays={[{ id: 'q4', kindLabel: 'Hold', label: 'Quarter close', pattern: 'diagonal', laneIds: ['ledger'], start, end }]}
+  flagOverlaps={false}
+  onSelectItem={(item) => open(item.id)}
+  onProposeMove={(id, { start, end }) => askToMove(id, start, end)}
+  notice={truncated && 'Showing 500 of 1,240 items.'}
+  columnNotes={{ '2026-10-08': '12 more not shown' }}
 />
 ```
 
-- **Axis:** `scale` is `hour`, `day` (default), `week` or `month`. Ticks fall on wall-clock boundaries in `timeZone` (DST and half-hour zones included). `tickWidth` sets the width of one unit; the axis scrolls inside the component and the lane column stays put.
-- **Bars:** overlapping bars in a lane stack and are hatched (`data-conflict`), so an overlap reads without colour. A bar cut off by the range shows a dashed edge. `renderItem` replaces the bar text. The full title is in the name and the `title` tooltip.
-- **Moving:** with `onMoveItem`, bars move by drag or Shift+←/→ and their end changes with Alt+Shift+←/→. Moves snap to `step` (15 min on an hour axis, 1 h on a day axis, 1 day otherwise), and each move is announced. `movable: false` pins a bar. The component never moves a bar itself; it reports the new start and end and renders what you pass back.
-- **Keyboard:** one tab stop. ←/→ go to the previous or next bar in a lane, ↑/↓ to the nearest bar in the next lane, Home/End to the lane's ends, and Enter selects.
-- **Windows and markers:** `overlays` (`freeze`, `maintenance`, `blackout`; all lanes, or one with `laneId`), `markers` (a point in time) and `now` are drawn behind the bars and listed for screen readers.
-- Pure helpers are exported for tests and server code: `timelineTicks`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`.
+- **Axis:** `scale` is `hour`, `day` (default), `week` or `month`. Ticks fall on wall-clock boundaries in `timeZone` (DST and half-hour zones included). `tickWidth` sets the width of one unit; the axis scrolls inside the component and the lane column stays put. On a `day` axis `subTicks` (local hours) draws minor ticks inside each day; on an `hour` axis an hour that occurs twice (the clocks went back) shows its UTC offset.
+- **Groups:** `groups` puts lanes into collapsible blocks, in the order given; a lane no group names is drawn after them. A collapsed group is one row with `summary.count` and `summary.markers`, which the consumer supplies: the timeline derives no count, and the `groupSummary` label words it (`Items: {count}` by default). That row stands for the lanes it hides, so a window over one of them is drawn on it. With `onToggleGroup` the consumer owns `collapsed`; without it the group opens and closes itself.
+- **Bars:** bars that share time in a lane stack in sub-rows, packed by `packLanes` (never more rows than bars running at once). Only `band="high"` is filled; `status` is a line style; `markers` are shapes or icons with text. `renderItem` replaces the bar text, which is cut at a word: a first word that does not fit is not shown, so no part of a word or of a time is. A bar is at least 24 × 24 px, and bars drawn at that minimum get sub-rows of their own instead of covering each other. The full title is in the name and the `title` tooltip.
+- **Stacking flag:** by default a bar that shares time with another bar of its lane is hatched (`data-conflict`) and its name says so (`labels.conflict`). With `flagOverlaps={false}` the stacking stays and the hatch and the words go: the consumer says what clashes, with a reason, through `markers`.
+- **Windows and markers:** an overlay is one neutral element with a `pattern` and its `kindLabel`, name and `scopeLabel` as text, however many rows there are. `laneIds` limits it to the rows of those lanes (unset: every row). With `onSelectOverlay` each window is a named button; without, windows are listed for screen readers. `markers` (a point in time, optionally with `laneIds`) and `now` are one line each. The now-line is neutral.
+- **Moving:** three models, chosen by the callback.
+  - `onProposeMove(id, { start, end, adjusted })`: drag a bar, or press Shift+←/→ to build a pending move, Enter to send it and Escape to drop it. One call per finished gesture. The timeline never moves the bar: an item whose props do not change is back where it was, so a refused move snaps back. Return a promise to keep the outline until it settles. On a week or month axis a step is a calendar day (the wall-clock time is kept across a clock change).
+  - `onMoveItem(id, { start, end })`: the 2.x model, one call for every key press and every drop.
+  - `onResizeItem(id, { start, end })`: Alt+Shift+←/→ moves the end of a bar. Without it there is no resize and no hint offers one.
+  Moves snap to `step` (15 min on an hour axis, 1 h on a day axis, 1 day otherwise). `movable: false` pins a bar.
+- **Keyboard:** the bars are one tab stop. ←/→ go to the previous or next bar in a lane, ↑/↓ to the nearest bar in the next lane (over group heads), Home/End to the ends of the lane, and Enter selects, or confirms a pending move, never both (a click or Space does nothing while a move is pending).
+- **Long timelines:** above `virtualizeAbove` rows (default 150; sub-rows and group heads together) only the rows near the viewport are mounted, and an arrow key that goes to a bar that is not mounted mounts it, scrolls to it and focuses it. The row of the focused control is never unmounted. `maxHeight` makes the lanes scroll inside the timeline under the axis; without it the page scrolls.
+- **Notice and counts:** `notice` is shown above the axis; `columnNotes` puts a note on the column of a day (`YYYY-MM-DD` in `timeZone`).
+- **Row heights:** with `groups`, `laneIds` or a virtual window every row has a fixed height (a lane is its sub-rows, a group head one line) and a lane label that does not fit is cut with an ellipsis. A timeline that uses none of them keeps rows that grow with their label.
+- **Colour:** every colour is named once at the top of `scheduling-timeline.css` (`--timeline-*`). Forced colours are handled in `forced-colors.css`, as for the calendar.
+- **Deprecated, still working in 2.x:** `item.state` / `SchedulingEntryState`, `overlay.kind` / `SchedulingTimelineOverlayKind` and the `states` / `overlays` labels. A bar with `state` is no longer tinted: the two problem states show a marker with the word for that state, and the kinds are told apart by pattern.
+- Pure helpers are exported for tests and server code: `timelineTicks`, `timelineSubTicks`, `timelineRepeatedHourOffset`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`, `timelineStepDelta`.
 
 ### Calendar model (zoned days, hour slots, lanes)
 

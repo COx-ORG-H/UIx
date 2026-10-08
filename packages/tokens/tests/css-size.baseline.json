@@ -327,9 +327,9 @@
       "brotli": 7068
     },
     "styles/components/scheduling-timeline.css": {
-      "raw": 6285,
-      "gzip": 1561,
-      "brotli": 1335
+      "raw": 22464,
+      "gzip": 5004,
+      "brotli": 4324
     },
     "styles/components/search-suggest.css": {
       "raw": 8514,
@@ -462,9 +462,9 @@
       "brotli": 1846
     },
     "styles/forced-colors.css": {
-      "raw": 4473,
-      "gzip": 1531,
-      "brotli": 1253
+      "raw": 5941,
+      "gzip": 1827,
+      "brotli": 1528
     },
     "styles/motion.css": {
       "raw": 1853,

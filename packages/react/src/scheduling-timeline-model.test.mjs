@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DAY, HOUR, defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, snapToStep, timelineTicks } from './scheduling-timeline-model.ts';
+// The BUILT dist since HAR-1521: the model now imports packLanes from calendar-model. Run `npm run build` first; CI does.
+import { DAY, HOUR, defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, snapToStep, timelineTicks } from '../dist/index.js';
 
 const range = { start: '2026-10-05T00:00:00Z', end: '2026-10-12T00:00:00Z' }; // Mon–Mon, 7 days
 

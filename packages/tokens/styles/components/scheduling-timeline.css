@@ -1,51 +1,219 @@
-/* uix scheduling timeline (React `SchedulingTimeline`, HAR-1364) — lanes of bars on a time
-   axis. Depends only on --uix-* tokens. The lane label column is sticky; the axis scrolls. */
+/* uix scheduling timeline (React `SchedulingTimeline`, HAR-1364, HAR-1521) — lanes of bars on a
+   time axis. Depends only on --uix-* tokens. The lane label column is sticky; the axis scrolls.
+
+   COLOUR MAP. Every colour the timeline paints is named once in the first rule and read from
+   there; no other rule names a --uix-* colour. One name has one meaning:
+     --timeline-band-*    the band, the only dimension that takes a hue (only `high` is filled)
+     --timeline-status-*  the state channel of a bar: line style, weight and dimming, never a hue
+     --timeline-window-*  windows: neutral, told apart by pattern and visible label
+     --timeline-marker-*  markers: a shape or icon with text on a bar, a dashed line on the axis
+     --timeline-chrome-*  rows, lines, the axis, the now-line, the move outline and controls
+   To retune a colour, change its line in the map (HAR-1521; packages/tokens/tests/scheduling-timeline-colours.test.mjs). */
 @layer uix.components {
-  .uix-scheduling-timeline { display: grid; gap: var(--uix-space-3); color: var(--uix-text); min-width: 0; }
-  .uix-scheduling-timeline__scroller { position: relative; overflow-x: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
+  .uix-scheduling-timeline {
+    --timeline-chrome-text: var(--uix-text);
+    --timeline-chrome-text-quiet: var(--uix-text-muted);
+    --timeline-chrome-surface: var(--uix-surface);
+    --timeline-chrome-surface-quiet: var(--uix-bg-subtle);
+    --timeline-chrome-line: var(--uix-border);
+    --timeline-chrome-line-strong: var(--uix-border-strong);
+    --timeline-chrome-now: var(--uix-text);
+    --timeline-chrome-now-text: var(--uix-surface);
+    --timeline-chrome-ghost: var(--uix-text-muted);
+    --timeline-status-surface: var(--uix-surface);
+    --timeline-status-surface-quiet: var(--uix-bg-subtle);
+    --timeline-status-edge: var(--uix-neutral-border);
+    --timeline-status-edge-strong: var(--uix-neutral-solid);
+    --timeline-status-text: var(--uix-text);
+    --timeline-status-text-dim: var(--uix-text-muted);
+    --timeline-band-medium-edge: var(--uix-neutral-solid);
+    --timeline-band-high-fill: var(--uix-danger);
+    --timeline-band-high-text: var(--uix-danger-fg);
+    --timeline-window-surface: var(--uix-neutral-bg);
+    --timeline-window-ink: var(--uix-neutral-solid);
+    --timeline-window-edge: var(--uix-neutral-border);
+    --timeline-window-text: var(--uix-text);
+    --timeline-marker-ink: var(--uix-text);
+    --timeline-marker-line: var(--uix-neutral-solid);
+
+    /* geometry: a lane is its sub-rows plus its padding (the rule under it is inside that); a group
+       head is one line. The component counts row positions in these three lengths (scheduling-timeline-rows.ts). */
+    --timeline-bar-row: 2.25rem;
+    --timeline-bar: 2rem;
+    --timeline-bar-min: 1.5rem;
+    --timeline-lane-pad: calc(2 * var(--uix-space-2));
+    --timeline-head: 2.5rem;
+    --timeline-axis: 2.25rem;
+    --timeline-axis-height: var(--timeline-axis);
+    --timeline-gap: 0.125rem;
+
+    display: grid; gap: var(--uix-space-3); color: var(--timeline-chrome-text); min-width: 0;
+  }
+  .uix-scheduling-timeline__notice { padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--timeline-chrome-line); border-radius: var(--uix-radius-sm); background: var(--timeline-chrome-surface-quiet); font-size: var(--uix-text-meta); }
+  .uix-scheduling-timeline__notice > :first-child { margin-top: 0; }
+  .uix-scheduling-timeline__notice > :last-child { margin-bottom: 0; }
+  .uix-scheduling-timeline__scroller { position: relative; overflow-x: auto; border: 1px solid var(--timeline-chrome-line); border-radius: var(--uix-radius-md); background: var(--timeline-chrome-surface); }
+  /* with `maxHeight` the lanes scroll inside the timeline, under the axis */
+  .uix-scheduling-timeline__scroller[data-scroll-y] { overflow-y: auto; }
   .uix-scheduling-timeline__grid { display: grid; width: max-content; min-width: 100%; }
-  .uix-scheduling-timeline__row { display: flex; border-bottom: 1px solid var(--uix-border); }
+  .uix-scheduling-timeline__grid[data-sub-ticks] { --timeline-axis-height: calc(var(--timeline-axis) + 1rem); }
+  .uix-scheduling-timeline__row { display: flex; border-bottom: 1px solid var(--timeline-chrome-line); }
   .uix-scheduling-timeline__row:last-child { border-bottom: 0; }
   .uix-scheduling-timeline__lane-label {
     position: sticky; left: 0; z-index: var(--uix-z-sticky); flex: 0 0 clamp(7.5rem, 30vw, 12rem); display: grid; align-content: center; gap: var(--uix-space-1);
-    padding: var(--uix-space-2) var(--uix-space-3); border-right: 1px solid var(--uix-border); background: var(--uix-surface); min-width: 0;
+    padding: var(--uix-space-2) var(--uix-space-3); border-right: 1px solid var(--timeline-chrome-line); background: var(--timeline-chrome-surface); min-width: 0;
   }
-  .uix-scheduling-timeline__row--axis .uix-scheduling-timeline__lane-label { background: var(--uix-bg-subtle); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 600; }
   .uix-scheduling-timeline__lane-name { font-weight: 500; overflow-wrap: break-word; hyphens: auto; }
-  .uix-scheduling-timeline__lane-meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-scheduling-timeline__track { position: relative; flex: 1 0 auto; min-height: calc(var(--uix-timeline-rows, 1) * 2.25rem + 2 * var(--uix-space-2)); }
-  .uix-scheduling-timeline__axis { min-height: 2.25rem; background: var(--uix-bg-subtle); }
-  .uix-scheduling-timeline__tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--uix-border); }
-  .uix-scheduling-timeline__tick[data-major] { border-left-color: var(--uix-border-strong); }
-  .uix-scheduling-timeline__tick-label { position: absolute; top: 50%; left: var(--uix-space-1); transform: translateY(-50%); white-space: nowrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-scheduling-timeline__tick[data-major] .uix-scheduling-timeline__tick-label { color: var(--uix-text); font-weight: 600; }
-  .uix-scheduling-timeline__gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--uix-border); }
-  .uix-scheduling-timeline__gridline[data-major] { background: var(--uix-border-strong); }
-  .uix-scheduling-timeline__overlay { position: absolute; top: 0; bottom: 0; background: var(--uix-info-bg); }
-  .uix-scheduling-timeline__overlay[data-kind="freeze"],
-  .uix-scheduling-timeline__overlay[data-kind="blackout"] { background: var(--uix-danger-bg); border-inline: 1px dashed var(--uix-danger-border); }
-  .uix-scheduling-timeline__overlay-label { position: absolute; top: var(--uix-space-1); left: var(--uix-space-1); right: var(--uix-space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text); }
-  .uix-scheduling-timeline__now { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); width: 2px; transform: translateX(-50%); background: var(--uix-danger); }
-  .uix-scheduling-timeline__now-label { position: absolute; top: 0; left: var(--uix-space-1); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--uix-danger); color: var(--uix-danger-fg); font-size: var(--uix-text-eyebrow); white-space: nowrap; }
-  .uix-scheduling-timeline__marker { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); border-left: 2px dashed var(--uix-warning); }
+  .uix-scheduling-timeline__lane-meta { font-size: var(--uix-text-meta); color: var(--timeline-chrome-text-quiet); }
+  .uix-scheduling-timeline__track { position: relative; flex: 1 0 auto; min-height: calc(var(--uix-timeline-rows, 1) * var(--timeline-bar-row) + 2 * var(--uix-space-2)); }
+
+  /* the axis: it stays at the top of a timeline that scrolls inside itself */
+  .uix-scheduling-timeline__row--axis { position: sticky; top: 0; z-index: var(--uix-z-sticky); }
+  .uix-scheduling-timeline__row--axis .uix-scheduling-timeline__lane-label { background: var(--timeline-chrome-surface-quiet); color: var(--timeline-chrome-text-quiet); font-size: var(--uix-text-meta); font-weight: 600; }
+  .uix-scheduling-timeline__axis { min-height: var(--timeline-axis-height); background: var(--timeline-chrome-surface-quiet); }
+  .uix-scheduling-timeline__tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--timeline-chrome-line); }
+  .uix-scheduling-timeline__tick[data-major] { border-left-color: var(--timeline-chrome-line-strong); }
+  .uix-scheduling-timeline__tick-label { position: absolute; top: 50%; left: var(--uix-space-1); transform: translateY(-50%); white-space: nowrap; font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; color: var(--timeline-chrome-text-quiet); }
+  .uix-scheduling-timeline__tick[data-major] .uix-scheduling-timeline__tick-label { color: var(--timeline-chrome-text); font-weight: 600; }
+  /* a repeated hour says which one it is: its UTC offset, under the hour */
+  .uix-scheduling-timeline__tick-offset { display: block; font-size: var(--uix-text-eyebrow); font-weight: 400; line-height: 1; }
+  /* sub-ticks: the day labels take the upper line of a taller axis, the hours the lower one */
+  .uix-scheduling-timeline__grid[data-sub-ticks] .uix-scheduling-timeline__tick:not([data-minor]) > .uix-scheduling-timeline__tick-label { top: var(--uix-space-1); transform: none; }
+  .uix-scheduling-timeline__tick[data-minor] { top: auto; height: 1.25rem; }
+  .uix-scheduling-timeline__tick[data-minor] > .uix-scheduling-timeline__tick-label { top: auto; bottom: var(--timeline-gap); transform: none; font-size: var(--uix-text-eyebrow); }
+
+  /* notes under the axis, one for the column of a day */
+  .uix-scheduling-timeline__row--notes { background: var(--timeline-chrome-surface-quiet); }
+  .uix-scheduling-timeline__row--notes > .uix-scheduling-timeline__lane-label { background: var(--timeline-chrome-surface-quiet); padding-block: 0; }
+  .uix-scheduling-timeline__row--notes > .uix-scheduling-timeline__track { min-height: 1.75rem; }
+  .uix-scheduling-timeline__column-note { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; min-width: 0; padding: 0 var(--uix-space-1); border-left: 1px solid var(--timeline-chrome-line); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); color: var(--timeline-chrome-text); }
+
+  /* the body: the rows, and under them one layer that holds each grid line, window, marker and
+     the now-line once. `isolation` keeps the sticky lane labels under the sticky axis. */
+  .uix-scheduling-timeline__body { position: relative; isolation: isolate; }
+  .uix-scheduling-timeline__layer { position: absolute; inset: 0; display: flex; pointer-events: none; }
+  /* the layer repeats the lane column, unseen, so its track is exactly as wide as the tracks of the rows */
+  .uix-scheduling-timeline__layer > .uix-scheduling-timeline__lane-label { position: static; visibility: hidden; }
+  .uix-scheduling-timeline__layer > .uix-scheduling-timeline__track { min-height: 0; }
+  /* a click on the empty part of a lane reaches the window drawn under it */
+  .uix-scheduling-timeline__body > .uix-scheduling-timeline__row > .uix-scheduling-timeline__track { pointer-events: none; }
+  .uix-scheduling-timeline__spacer { flex: none; }
+  .uix-scheduling-timeline__gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--timeline-chrome-line); }
+  .uix-scheduling-timeline__gridline[data-major] { background: var(--timeline-chrome-line-strong); }
+  .uix-scheduling-timeline__gridline[data-minor] { background: repeating-linear-gradient(to bottom, var(--timeline-chrome-line) 0 2px, transparent 2px 6px); }
+
+  /* Fixed rows. With groups, a window or marker limited to lanes, or a virtual window, every row
+     has the height the component counts with: a lane is its sub-rows, a head is one line, and a
+     label that does not fit is cut. A plain timeline keeps rows that grow with their label. */
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body > .uix-scheduling-timeline__row { height: calc(var(--uix-timeline-rows, 1) * var(--timeline-bar-row) + var(--timeline-lane-pad)); }
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body .uix-scheduling-timeline__lane-label { padding-block: 0; overflow: hidden; }
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body .uix-scheduling-timeline__track { min-height: 0; }
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body :is(.uix-scheduling-timeline__lane-name, .uix-scheduling-timeline__lane-meta) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* a group: one head row over its lanes; collapsed, that row is all there is of the group */
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body > .uix-scheduling-timeline__row--group { position: relative; height: var(--timeline-head); background: var(--timeline-chrome-surface-quiet); }
+  /* A collapsed group is one row that stands for its lanes: it is not lifted over the layer, so a
+     window over one of those lanes (and the grid lines) is drawn on it. The name keeps its own patch. */
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body > .uix-scheduling-timeline__row--summary { position: static; }
+  .uix-scheduling-timeline__group-label { position: sticky; left: 0; z-index: var(--uix-z-sticky); display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0; padding: 0 var(--uix-space-2); background: var(--timeline-chrome-surface-quiet); white-space: nowrap; }
+  .uix-scheduling-timeline__group-toggle { display: inline-flex; align-items: center; gap: var(--uix-space-2); min-height: 1.75rem; padding: 0 var(--uix-space-2); border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+  .uix-scheduling-timeline__group-toggle:hover { background: var(--timeline-chrome-surface); }
+  /* the chevron is two borders, so it survives forced colours; it points down while the group is open */
+  .uix-scheduling-timeline__group-chevron { flex: none; width: 0.5rem; height: 0.5rem; margin-top: -0.1875rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
+  .uix-scheduling-timeline__group-toggle[aria-expanded="false"] > .uix-scheduling-timeline__group-chevron { margin-top: 0; transform: rotate(-45deg); }
+  .uix-scheduling-timeline__group-name { overflow: hidden; text-overflow: ellipsis; }
+  .uix-scheduling-timeline__group-meta { color: var(--timeline-chrome-text-quiet); font-size: var(--uix-text-meta); }
+  .uix-scheduling-timeline__group-summary { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); }
+  .uix-scheduling-timeline__group-count { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* windows: one element each, neutral, told apart by pattern and words */
+  .uix-scheduling-timeline__overlay { position: absolute; top: 0; bottom: 0; display: block; min-width: 0; margin: 0; padding: 0; border: 0; border-inline: 1px solid var(--timeline-window-edge); border-radius: 0; background-color: var(--timeline-window-surface); color: var(--timeline-window-text); font: inherit; text-align: start; }
+  button.uix-scheduling-timeline__overlay { pointer-events: auto; cursor: pointer; }
+  /* the ring is drawn inside: a clip would cut an outline that sits outside the box */
+  button.uix-scheduling-timeline__overlay:focus-visible { outline-offset: -2px; }
+  /* limited to its lanes: the clip is the rows of those lanes, written by the component in row units */
+  :is(.uix-scheduling-timeline__overlay, .uix-scheduling-timeline__marker)[data-scope="lanes"] { clip-path: var(--uix-timeline-clip, none); }
+  .uix-scheduling-timeline__overlay[data-pattern="diagonal"] { background-image: repeating-linear-gradient(45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px); }
+  .uix-scheduling-timeline__overlay[data-pattern="cross"] { background-image: repeating-linear-gradient(45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px); }
+  .uix-scheduling-timeline__overlay[data-pattern="dotted"] { background-image: radial-gradient(circle, var(--timeline-window-ink) 1px, transparent 1.5px); background-size: 5px 5px; }
+  /* the words sit on their own patch of the window colour, so the hatch never runs under them.
+     The component puts them at the top of a lane (--uix-timeline-label-top, in row units): the
+     first lane of each run of rows the window covers. */
+  .uix-scheduling-timeline__overlay-label { position: absolute; top: calc(var(--uix-timeline-label-top, 0%) + var(--timeline-gap)); left: var(--timeline-gap); display: flex; gap: var(--uix-space-1); max-width: calc(100% - 2 * var(--timeline-gap)); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-window-surface); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); line-height: 1.25rem; }
+  .uix-scheduling-timeline__overlay-kind { flex: none; font-weight: 600; }
+  .uix-scheduling-timeline__overlay-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .uix-scheduling-timeline__overlay-scope { flex: 0 2 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+
+  /* now: one neutral line with its word; a point marker: one dashed line */
+  .uix-scheduling-timeline__now { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); width: 2px; transform: translateX(-50%); background: var(--timeline-chrome-now); }
+  .uix-scheduling-timeline__now-label { position: sticky; top: var(--timeline-axis-height); display: block; width: max-content; margin-left: var(--uix-space-1); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-chrome-now); color: var(--timeline-chrome-now-text); font-size: var(--uix-text-eyebrow); line-height: 1.5; white-space: nowrap; }
+  .uix-scheduling-timeline__marker { position: absolute; top: 0; bottom: 0; z-index: var(--uix-z-raised); border-left: 2px dashed var(--timeline-marker-line); }
+
+  /* bars */
   .uix-scheduling-timeline__items { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-  .uix-scheduling-timeline__slot { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * 2.25rem); height: 2rem; min-width: 0.5rem; }
+  /* a bar is never a smaller target than --timeline-bar-min (24px) on either side. The component
+     packs bars as at least that wide (BAR_MIN_REM), so two that are drawn at it never cover each other. */
+  .uix-scheduling-timeline__slot { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: var(--timeline-bar-min); pointer-events: auto; }
+  /* the default look is the `committed` status with no band: a plain outlined bar */
   .uix-scheduling-timeline__item {
-    display: flex; align-items: center; gap: var(--uix-space-2); width: 100%; height: 100%; padding: 0 var(--uix-space-2); overflow: hidden;
-    border: 0; border-left: 3px solid var(--uix-info); border-radius: var(--uix-radius-sm); background: var(--uix-info-bg); color: var(--uix-info-text);
-    font: inherit; font-size: var(--uix-text-meta); text-align: start; white-space: nowrap; cursor: pointer;
+    position: relative; display: flex; align-items: center; gap: var(--uix-space-1); width: 100%; height: 100%; padding: 0 var(--uix-space-2); overflow: hidden;
+    border: 1px solid var(--timeline-status-edge); border-radius: var(--uix-radius-sm); background: var(--timeline-status-surface); color: var(--timeline-status-text);
+    font: inherit; font-size: var(--uix-text-meta); line-height: 1.25rem; text-align: start; cursor: pointer;
   }
-  .uix-scheduling-timeline__item-title { overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-  .uix-scheduling-timeline__item-meta { overflow: hidden; text-overflow: ellipsis; opacity: .85; }
-  .uix-scheduling-timeline__item[data-state="conflicted"], .uix-scheduling-timeline__item[data-state="blackout-violation"] { border-color: var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-danger-text); }
-  .uix-scheduling-timeline__item[data-state="in-progress"] { border-color: var(--uix-success); background: var(--uix-success-bg); color: var(--uix-text); }
-  /* overlap with another bar in the lane: hatched, so it reads without colour */
-  .uix-scheduling-timeline__item[data-conflict] { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, currentColor 20%, transparent) 6px 9px); }
+  /* the text wraps and only its first line shows: a long label is cut at a word, never in one.
+     The empty box in front is a place to break before the first word, so a first word that does
+     not fit goes to the hidden second line too: no part of a word (or of a time) is ever shown. */
+  .uix-scheduling-timeline__item-title { flex: 1 1 auto; min-width: 0; max-height: 1.25rem; overflow: hidden; font-weight: 600; }
+  .uix-scheduling-timeline__item-title::before { content: ""; display: inline-block; }
+  .uix-scheduling-timeline__item-meta { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-scheduling-timeline__item-markers { flex: none; display: inline-flex; align-items: center; gap: var(--timeline-gap); }
+
+  /* status: line style, weight and dimming only */
+  .uix-scheduling-timeline__item[data-status="tentative"] { border-style: dashed; border-color: var(--timeline-status-edge-strong); }
+  .uix-scheduling-timeline__item[data-status="live"] { border-color: var(--timeline-status-edge-strong); }
+  /* the live dot is a border, so it survives forced colours */
+  .uix-scheduling-timeline__item[data-status="live"]::before { content: ""; flex: none; border: 0.1875rem solid currentColor; border-radius: 50%; }
+  .uix-scheduling-timeline__item[data-status="done"] { border-style: none none solid; background: var(--timeline-status-surface-quiet); color: var(--timeline-status-text-dim); }
+  .uix-scheduling-timeline__item[data-status="dead"] { border-style: dotted; border-color: var(--timeline-status-edge-strong); color: var(--timeline-status-text-dim); }
+  .uix-scheduling-timeline__item[data-status="dead"] > .uix-scheduling-timeline__item-title { text-decoration: line-through; }
+
+  /* band: `medium` is a heavier leading edge, `high` is the one fill */
+  .uix-scheduling-timeline__item[data-band="medium"] { border-left: 3px solid var(--timeline-band-medium-edge); }
+  .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-fill); color: var(--timeline-band-high-text); }
+  .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-text); }
+  /* done keeps the fill on the high band (dimming it would cost the text its contrast): its one edge is heavier */
+  .uix-scheduling-timeline__item[data-band="high"][data-status="done"] { border-bottom-width: 3px; }
+
+  /* shares time with another bar of its lane (only while `flagOverlaps` is on): hatched in its own text colour */
+  .uix-scheduling-timeline__item[data-conflict]::after { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(135deg, transparent 0 6px, currentColor 6px 9px); opacity: 0.2; pointer-events: none; }
   .uix-scheduling-timeline__item[data-clipped-start] { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-style: dashed; }
-  .uix-scheduling-timeline__item[data-clipped-end] { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .uix-scheduling-timeline__item[data-clipped-end] { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-style: dashed; }
   .uix-scheduling-timeline__item[data-movable] { cursor: grab; touch-action: none; }
-  .uix-scheduling-timeline__item[data-dragging] { cursor: grabbing; box-shadow: var(--uix-shadow-popover); position: relative; z-index: var(--uix-z-raised); }
-  .uix-scheduling-timeline__item:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; position: relative; z-index: var(--uix-z-raised); }
-  .uix-scheduling-timeline__empty { margin: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
-  .uix-scheduling-timeline__state { padding: var(--uix-space-8); border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-lg); text-align: center; }
+  .uix-scheduling-timeline__item[data-dragging] { cursor: grabbing; box-shadow: var(--uix-shadow-popover); z-index: var(--uix-z-raised); }
+  .uix-scheduling-timeline__item:focus-visible { z-index: var(--uix-z-raised); }
+
+  /* markers on a bar: a shape (or the icon of the consumer) with text; the text is in the accessible name */
+  .uix-scheduling-timeline__item-marker { flex: none; display: inline-flex; align-items: center; color: var(--timeline-marker-ink); }
+  .uix-scheduling-timeline__item .uix-scheduling-timeline__item-marker { color: inherit; }
+  .uix-scheduling-timeline__item-marker-icon { display: inline-flex; width: 0.6875rem; height: 0.6875rem; }
+  .uix-scheduling-timeline__item-marker-icon > svg { width: 100%; height: 100%; }
+  .uix-scheduling-timeline__item-marker-label { margin-left: var(--uix-space-1); }
+  .uix-scheduling-timeline__item-marker[data-glyph]::before { content: ""; width: 0.625rem; height: 0.625rem; background: currentColor; }
+  .uix-scheduling-timeline__item-marker[data-glyph="neutral"]::before { border-radius: 50%; }
+  .uix-scheduling-timeline__item-marker[data-glyph="warning"]::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .uix-scheduling-timeline__item-marker[data-glyph="refused"]::before { clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%); }
+
+  /* a pending move: an outline where the bar would go; the bar itself stays put. Only an edge, at
+     full strength (3:1 on the row in both themes), so what is under it stays readable. */
+  .uix-scheduling-timeline__ghost { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: var(--timeline-bar-min); border: 2px dashed var(--timeline-chrome-ghost); border-radius: var(--uix-radius-sm); pointer-events: none; }
+  .uix-scheduling-timeline__ghost[data-sent] { border-style: dotted; }
+
+  /* the three row units, measured by a virtual timeline to turn a scroll position into rows */
+  .uix-scheduling-timeline__probe { position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
+  .uix-scheduling-timeline__probe > span { display: block; height: var(--timeline-bar-row); }
+  .uix-scheduling-timeline__probe > span:nth-child(2) { height: var(--timeline-lane-pad); }
+  .uix-scheduling-timeline__probe > span:nth-child(3) { height: var(--timeline-head); }
+
+  .uix-scheduling-timeline__empty { margin: 0; color: var(--timeline-chrome-text-quiet); font-size: var(--uix-text-meta); }
+  .uix-scheduling-timeline__state { padding: var(--uix-space-8); border: 1px dashed var(--timeline-chrome-line-strong); border-radius: var(--uix-radius-lg); text-align: center; }
 }

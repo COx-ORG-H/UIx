@@ -67,7 +67,7 @@ test('bars sit by time; overlapping bars stack and are flagged; lanes label thei
   const windows = host.querySelector('.uix-visually-hidden ul');
   assert.match(windows.textContent, /Change freeze: Q4 freeze, 2026-10-10 00:00 – 2026-10-12 00:00/);
   assert.match(windows.textContent, /Licence renewal, 2026-10-08 00:00/);
-  assert.equal(host.querySelectorAll('.uix-scheduling-timeline__overlay').length, 2, 'the band spans both lanes');
+  assert.equal(host.querySelectorAll('.uix-scheduling-timeline__overlay').length, 1, 'one band for the window, over both lanes (HAR-1521: 2.34 drew one per lane)');
   unmount();
 });
 
@@ -91,7 +91,8 @@ test('one tab stop; arrows move between bars and lanes; Home/End', () => {
 
 test('Shift+arrow moves by the step, Alt+Shift+arrow resizes, and the change is announced', () => {
   const moves = [];
-  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onMoveItem: (id, next) => moves.push([id, next]) })));
+  // HAR-1521 (PDR-0013): the end moves only with onResizeItem; 2.34 sent it through onMoveItem.
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ onMoveItem: (id, next) => moves.push([id, next]), onResizeItem: (id, next) => moves.push([id, next]) })));
   bar(host, 'a').focus();
   key(bar(host, 'a'), 'ArrowRight', { shiftKey: true });
   key(bar(host, 'a'), 'ArrowLeft', { shiftKey: true, altKey: true });
