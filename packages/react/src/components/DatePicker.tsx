@@ -126,14 +126,16 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   const format = (date: string) => formatDate?.(date) ?? formatDateKey(date, locale);
   const [text, setText] = useState(() => (value ? format(value) : ''));
   const [problem, setProblemState] = useState<DateInputProblem | null>(null);
+  // The ref is what was last reported, so the callback hears each change once.
+  const reported = useRef<DateInputProblem | null>(null);
   const setProblem = (next: DateInputProblem | null) => {
-    if (next !== problem) onInputProblem?.(next);
+    if (next !== reported.current) { reported.current = next; onInputProblem?.(next); }
     setProblemState(next);
   };
   // A new value (or locale) rewrites the field; a refused draft stays as typed until then.
   useEffect(() => {
     setText(value ? format(value) : '');
-    setProblemState((current) => { if (current) onInputProblem?.(null); return null; });
+    setProblem(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, locale]);
 

@@ -81,6 +81,9 @@ export function useFieldPopover(popoverId: string, restoreFocus: () => void, onO
       // A pointer press outside an open auto popover already closed it (light dismiss); the
       // click that follows must not open it again.
       onPointerDown: () => { pointerWasOpen.current = isOpen(popoverEl()); },
+      // A press that never became a click (dragged off, cancelled) must not decide the next one.
+      onPointerLeave: () => { pointerWasOpen.current = null; },
+      onPointerCancel: () => { pointerWasOpen.current = null; },
       onClick: (event: MouseEvent<HTMLElement>) => {
         if (event.defaultPrevented) return;
         const was = pointerWasOpen.current;

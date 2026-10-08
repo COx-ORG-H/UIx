@@ -18,7 +18,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act, useState } from 'react';
+import { createElement as h, act, useState, StrictMode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 let dom;
@@ -608,4 +608,31 @@ test('DateRangePicker weekStartsOn reorders the grid; the default stays Monday-f
   key(document.activeElement, 'End');
   assert.equal(document.activeElement.dataset.date, '2026-11-21', 'End: the Saturday');
   sunday.unmount();
+});
+
+test('DatePicker under StrictMode reports each input problem once', () => {
+  const problems = [];
+  const view = render(h(StrictMode, null, h(ui.DatePicker, { value: '2026-11-22', onValueChange() {}, locale: 'de', 'aria-label': 'Due', onInputProblem: (problem) => problems.push(problem) })));
+  const input = view.host.querySelector('.uix-date-picker__input');
+  assert.deepEqual(problems, [], 'nothing to report at mount');
+  type(input, 'morgen');
+  blur(input);
+  type(input, '23.11.2026');
+  assert.deepEqual(problems, ['format', null]);
+  view.unmount();
+});
+
+test('a press on the calendar button that never becomes a click does not swallow the next one', () => {
+  const v = mountDate({ value: '2026-11-18' });
+  click(v.toggle());
+  assert.equal(v.isOpen(), true);
+  // pressed while open, then the pointer leaves without a click; the popover is closed elsewhere
+  act(() => { v.toggle().dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true })); });
+  act(() => { v.toggle().dispatchEvent(new window.MouseEvent('pointerout', { bubbles: true, relatedTarget: document.body })); });
+  act(() => { v.popover().hidePopover(); });
+  assert.equal(v.isOpen(), false);
+  // a keyboard activation: a click with no pointerdown before it
+  act(() => { v.toggle().dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })); });
+  assert.equal(v.isOpen(), true, 'it opens');
+  v.unmount();
 });
