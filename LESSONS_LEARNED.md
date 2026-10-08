@@ -11,6 +11,7 @@
 <!-- lesson-skip: 1dafe90 routine: inputmode="numeric" has no separators on a phone keypad; pinned by a test -->
 <!-- lesson-skip: 74a9cea already recorded: "An a11y scan only sees the states a specimen renders at load" (HAR-1630 paragraph) and settleOverlay under 5ddce2e -->
 <!-- lesson-skip: 17a8271 routine CSS wrap fix; the brief measured the cause -->
+<!-- lesson-skip: 01ccebe same cause as the 3e0ff88 entry (StrictMode runs updaters and cleanups twice); pinned by a test -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 
 ### 2026-10-08 · jsdom vs browser · `3e0ff88`
