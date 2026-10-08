@@ -319,8 +319,10 @@ test('AC10 (R25 AC1 / AC4): keys build a pending proposal; Enter sends it once, 
   assert.equal(host.querySelector(cls('tg-ghost')), null);
   key(el, 'Enter');
   assert.deepEqual(calls, [], 'Escape dropped the proposal');
-  const idle = key(el, 'Escape');
-  assert.equal(idle.defaultPrevented, false, 'with nothing pending Escape belongs to the consumer');
+  // With nothing pending, Escape leaves the day's items for its day head (HAR-1527).
+  act(() => el.focus());
+  key(el, 'Escape');
+  assert.equal(document.activeElement.getAttribute('data-calendar-date'), '2026-10-07');
 
   // A drag: 28 px is 35 minutes, snapped to 30 by the 15-minute step; one column right is +1 day.
   pointer(el, 'pointerdown', 250, 440);

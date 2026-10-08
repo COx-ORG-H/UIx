@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import type { FocusEvent, HTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
+import { syncRovingStop } from '../roving.js';
+import type { RovingStop } from '../roving.js';
 
 /**
  * `List` with `roving`: the list is one tab stop. ArrowUp and ArrowDown move between its
@@ -12,18 +14,12 @@ import { cx } from '../cx.js';
 export function RovingList({ children, className, onKeyDown, onFocus, ...props }: HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement>(null);
   // The item that holds the tab stop, and its place, so the stop survives when that item is removed.
-  const stop = useRef<{ node: HTMLElement | null; index: number }>({ node: null, index: 0 });
+  const stop = useRef<RovingStop>({ node: null, index: 0 });
   const items = () => (Array.from(ref.current?.children ?? []) as HTMLElement[]).filter((element) => element.classList.contains('uix-list__item'));
   const sync = (next?: HTMLElement) => {
     const all = items();
-    if (all.length === 0) { stop.current = { node: null, index: 0 }; return; }
-    const kept = stop.current.node && all.includes(stop.current.node) ? stop.current.node : all[Math.min(stop.current.index, all.length - 1)]!;
-    const current = next ?? kept;
-    for (const element of all) {
-      element.tabIndex = element === current ? 0 : -1;
-      if (!element.hasAttribute('role')) element.setAttribute('role', 'listitem');
-    }
-    stop.current = { node: current, index: all.indexOf(current) };
+    for (const element of all) if (!element.hasAttribute('role')) element.setAttribute('role', 'listitem');
+    stop.current = syncRovingStop(all, stop.current, next);
   };
   // After every render: items may have come or gone, and exactly one of them is the tab stop.
   useEffect(() => { sync(); });

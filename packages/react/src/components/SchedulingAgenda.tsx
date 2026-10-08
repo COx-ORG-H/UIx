@@ -4,11 +4,13 @@
  * SchedulingCalendar when the consumer passes `agendaGroups`, and not exported. The consumer
  * builds, orders and counts the groups; this file renders them in the order given and never
  * sorts, groups or counts. */
-import { createElement } from 'react';
-import type { ReactNode } from 'react';
+import { createElement, useEffect, useRef } from 'react';
+import type { FocusEvent, KeyboardEvent, ReactNode } from 'react';
 import { zonedTimeOfDay } from '../calendar-model.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { fillLabel } from '../fill-label.js';
+import { afterNextPaint, syncRovingStop } from '../roving.js';
+import type { RovingStop } from '../roving.js';
 import type {
   SchedulingAgendaGroup, SchedulingCalendarEntry, SchedulingCalendarLabels, SchedulingCalendarOverlay, SchedulingDatePart, SchedulingMarker,
 } from './SchedulingCalendar.js';
@@ -60,6 +62,43 @@ export function SchedulingAgenda({
   }
   const virtual = useVirtualRows(flatRows, { rowHeight: AGENDA_VIRTUAL_ROW, threshold: 0 });
 
+  /* Keyboard model (HAR-1527): the agenda is one tab stop. ArrowUp and ArrowDown move between
+   * its rows and controls in reading order, Home and End go to the first and last. In a long
+   * agenda only the rows near the viewport are mounted, so a step past them scrolls first. */
+  const plainRef = useRef<HTMLDivElement>(null);
+  const stop = useRef<RovingStop>({ node: null, index: 0 });
+  const scroller = () => (flat ? virtual.containerRef.current : null);
+  const container = () => (flat ? virtual.containerRef.current : plainRef.current);
+  const controls = () => Array.from(container()?.querySelectorAll<HTMLElement>('button') ?? []);
+  const focusStop = (target: HTMLElement | undefined) => {
+    if (!target) return;
+    stop.current = syncRovingStop(controls(), stop.current, target);
+    target.focus();
+  };
+  useEffect(() => { stop.current = syncRovingStop(controls(), stop.current); });
+  const onFocus = (event: FocusEvent<HTMLDivElement>) => { stop.current = syncRovingStop(controls(), stop.current, event.target as HTMLElement); };
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const from = event.target as HTMLElement;
+    if (event.defaultPrevented || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !controls().includes(from)) return;
+    event.preventDefault();
+    const box = scroller();
+    if (event.key === 'Home' || event.key === 'End') {
+      const end = event.key === 'End';
+      if (box) box.scrollTop = end ? box.scrollHeight : 0;
+      const land = () => { const all = controls(); focusStop(end ? all[all.length - 1] : all[0]); };
+      if (box) afterNextPaint(land); else land();
+      return;
+    }
+    const step = event.key === 'ArrowDown' ? 1 : -1;
+    const all = controls();
+    const next = all[all.indexOf(from) + step];
+    if (next) { focusStop(next); return; }
+    // The last mounted row of a long agenda: bring the next rows in, then take the step.
+    if (!box) return;
+    box.scrollTop += step * AGENDA_VIRTUAL_ROW * 3;
+    afterNextPaint(() => { const now = controls(); focusStop(now[now.indexOf(from) + step]); });
+  };
+
   const heading = (group: SchedulingAgendaGroup) => <div className="uix-scheduling-calendar__agenda-head">
     {createElement(`h${headingLevel}`, { className: 'uix-scheduling-calendar__agenda-heading' }, group.heading ?? dateText(group.date, 'day'))}
     {group.annotations && group.annotations.length > 0 && <ul className="uix-scheduling-calendar__agenda-notes">
@@ -77,7 +116,7 @@ export function SchedulingAgenda({
 
   const row = (entry: SchedulingCalendarEntry) => {
     const markers = entryMarkers(entry);
-    return <button type="button" className="uix-scheduling-calendar__agenda-row" data-item-id={entry.id} data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)} aria-label={entryName(entry)}>
+    return <button type="button" className="uix-scheduling-calendar__agenda-row" data-item-id={entry.id} data-highlight={entry.emphasis === 'highlight' || undefined} data-dim={entry.emphasis === 'dim' || undefined} data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)} aria-label={entryName(entry)}>
       <span className="uix-scheduling-calendar__swatch" aria-hidden="true" data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} />
       <span className="uix-scheduling-calendar__agenda-time">{entry.allDay ? null : <>{zonedTimeOfDay(entry.start, timeZone)}<span aria-hidden="true"> – </span>{zonedTimeOfDay(entry.end, timeZone)}</>}</span>
       <span className="uix-scheduling-calendar__agenda-main">
@@ -100,7 +139,7 @@ export function SchedulingAgenda({
   if (groups.length === 0) return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}><p>{labels.agendaEmpty}</p></div>;
 
   if (flat) {
-    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" role="region" aria-label={labels.agenda}>
+    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" role="region" aria-label={labels.agenda} onKeyDown={onKeyDown} onFocus={onFocus}>
       <div className="uix-scheduling-calendar__agenda-window" style={{ paddingTop: virtual.padTop, paddingBottom: virtual.padBottom }}>
         {virtual.rows.map((item) => <div key={item.key} className="uix-scheduling-calendar__agenda-vrow" data-kind={item.kind}>
           {item.kind === 'heading' ? heading(item.group) : item.kind === 'entry' ? row(item.entry) : item.kind === 'hidden' ? hidden(item.group) : continues(item.group)}
@@ -109,7 +148,7 @@ export function SchedulingAgenda({
     </div>;
   }
 
-  return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>
+  return <div ref={plainRef} className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda} onKeyDown={onKeyDown} onFocus={onFocus}>
     {groups.map((group) => <section key={group.date} className="uix-scheduling-calendar__agenda-group" data-date={group.date}>
       {heading(group)}
       {group.rows.length > 0 && <ol className="uix-scheduling-calendar__agenda-rows">{group.rows.map((entry) => <li key={entry.id}>{row(entry)}</li>)}</ol>}
