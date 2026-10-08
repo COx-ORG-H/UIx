@@ -319,8 +319,10 @@ test('AC10 (R25 AC1 / AC4): keys build a pending proposal; Enter sends it once, 
   assert.equal(host.querySelector(cls('tg-ghost')), null);
   key(el, 'Enter');
   assert.deepEqual(calls, [], 'Escape dropped the proposal');
-  const idle = key(el, 'Escape');
-  assert.equal(idle.defaultPrevented, false, 'with nothing pending Escape belongs to the consumer');
+  // With nothing pending, Escape leaves the day's items for its day head (HAR-1527).
+  act(() => el.focus());
+  key(el, 'Escape');
+  assert.equal(document.activeElement.getAttribute('data-calendar-date'), '2026-10-07');
 
   // A drag: 28 px is 35 minutes, snapped to 30 by the 15-minute step; one column right is +1 day.
   pointer(el, 'pointerdown', 250, 440);
@@ -441,13 +443,14 @@ test('AC14 (R9 AC5): an empty week still draws seven day columns, with the note'
   unmount();
 });
 
-test('AC17 (R12 AC2): a day header shows the consumer count and the marker with its text; its name is the consumer label', () => {
+test('AC17 (R12 AC2): a day header shows the consumer count and the marker with its text; its name is the date and the consumer label', () => {
   const icon = h('svg', { 'data-test-icon': '' });
-  const days = { '2026-10-07': { count: 6, overflowCount: 0, label: 'Wednesday 7 October, 6 items, 1 needs attention', markers: [{ id: 'm', label: 'Needs attention', emphasis: 'warning', icon }] } };
+  const days = { '2026-10-07': { count: 6, overflowCount: 0, label: '6 items, 1 needs attention', markers: [{ id: 'm', label: 'Needs attention', emphasis: 'warning', icon }] } };
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, days }));
   const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
   assert.equal(head.getAttribute('role'), 'group');
-  assert.equal(head.getAttribute('aria-label'), 'Wednesday 7 October, 6 items, 1 needs attention');
+  // HAR-1527: the label is the count and the signal; the name always starts with the date (labels.dayName).
+  assert.match(head.getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 6 items, 1 needs attention$/);
   assert.equal(head.querySelector(cls('count')).textContent, '6');
   assert.ok(head.querySelector(`${cls('marker')} [data-test-icon]`), 'the icon');
   assert.equal(head.querySelector(cls('marker-label')).textContent, 'Needs attention', 'and the text, visible');

@@ -1,12 +1,21 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { RovingList } from './ListRoving.js';
 
 export interface ListProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
+  /**
+   * Makes the list one tab stop: ArrowUp and ArrowDown move between its `ListItem`s, Home and
+   * End go to the first and last, Enter and Space activate the focused item (its `onClick`).
+   * Focus stays on the same item across re-renders with the same keys. A roving list is a
+   * client component; without `roving` the list stays server-renderable.
+   */
+  roving?: boolean;
 }
 
 /** Bordered, rounded list container over `.uix-list`. */
-export function List({ children, className, ...props }: ListProps) {
+export function List({ children, className, roving, ...props }: ListProps) {
+  if (roving) return <RovingList className={className} {...props}>{children}</RovingList>;
   return (
     <div className={cx('uix-list', className)} {...props}>
       {children}
