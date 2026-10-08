@@ -3951,12 +3951,14 @@ export interface SchedulingCalendarLabels {
     // (undocumented)
     agendaEmpty: string;
     continuesFrom?: string;
+    continuesInDay?: string;
     dayCount?: string;
     entry: string;
     fewerEntries: string;
     gapForward?: string;
     // (undocumented)
     grid: string;
+    hiddenInDay?: string;
     // (undocumented)
     legend: string;
     // (undocumented)
@@ -4028,6 +4030,9 @@ export interface SchedulingCalendarOverlay {
 
 // @public (undocumented)
 export interface SchedulingCalendarProps {
+    // Warning: (ae-forgotten-export) The symbol "SchedulingAgendaGroup" needs to be exported by the entry point index.d.ts
+    agendaGroups?: SchedulingAgendaGroup[];
+    agendaHeadingLevel?: 2 | 3 | 4 | 5 | 6;
     // (undocumented)
     anchorDate: string;
     canMove?: boolean;
@@ -4053,6 +4058,7 @@ export interface SchedulingCalendarProps {
     locale?: string;
     maxEntriesPerDay?: number;
     maxLanes?: number;
+    monthDensity?: 'full' | 'counts';
     notice?: ReactNode;
     now?: string;
     // (undocumented)
@@ -4081,6 +4087,7 @@ export interface SchedulingCalendarProps {
     topLaneCrossMidnightMinutes?: number;
     // (undocumented)
     view?: SchedulingCalendarView;
+    virtualizeAbove?: number;
     weekStartsOn?: CalendarWeekday;
     windowLaneCap?: number;
 }

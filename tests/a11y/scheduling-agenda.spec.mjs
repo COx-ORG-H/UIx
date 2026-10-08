@@ -32,6 +32,8 @@ const calls = (page) => page.evaluate(() => window.__calendar);
 const pageScroll = (page) => page.evaluate(() => ({ scroll: document.scrollingElement.scrollWidth, client: document.scrollingElement.clientWidth }));
 
 test('AC2: a 260-row agenda mounts only the rows near the viewport, and Tab still reaches the last row', async ({ page }) => {
+  // 259 key presses, each followed by two frames so the next rows are mounted before the next press.
+  test.setTimeout(120_000);
   await open(page, 'case=agenda&rows=260');
   const agenda = page.locator(`${P}agenda--virtual`);
   await expect(agenda).toBeVisible();

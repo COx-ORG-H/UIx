@@ -322,9 +322,9 @@
       "brotli": 516
     },
     "styles/components/scheduling-calendar.css": {
-      "raw": 26619,
-      "gzip": 5138,
-      "brotli": 4438
+      "raw": 32702,
+      "gzip": 5941,
+      "brotli": 5152
     },
     "styles/components/scheduling-timeline.css": {
       "raw": 6285,

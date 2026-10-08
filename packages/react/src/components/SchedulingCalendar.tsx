@@ -445,7 +445,8 @@ export function SchedulingCalendar({
   const picksGiven = dayEntries !== undefined;
   const controlled = picksGiven || dayInfo !== undefined;
   // Every cell keeps one height: nothing in it can grow, because the list is cut and "+N" opens elsewhere.
-  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined);
+  // The counts-only month has nothing in a cell that could grow, so its cells are fixed too.
+  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined) || monthDensity === 'counts';
   // A cell that grows has room for every span. A fixed one keeps two lanes per group unless told otherwise.
   const windowCap = Math.max(0, windowLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
   const spanCap = Math.max(0, spanLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));

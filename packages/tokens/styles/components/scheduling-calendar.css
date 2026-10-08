@@ -168,7 +168,7 @@
   .uix-scheduling-calendar__agenda-notes .uix-scheduling-calendar__window { height:var(--calendar-lane); max-width:100%; margin:0; }
   .uix-scheduling-calendar__agenda-rows { margin:0; padding:0; list-style:none; }
   .uix-scheduling-calendar__agenda-rows > li { margin:0; border-bottom:1px solid var(--calendar-chrome-line); }
-  .uix-scheduling-calendar__agenda-row { display:flex; align-items:baseline; gap:var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
+  .uix-scheduling-calendar__agenda-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
   .uix-scheduling-calendar__agenda-row:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { align-self:center; }
   .uix-scheduling-calendar__agenda-time { flex:none; min-width:6.25rem; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; }
@@ -180,19 +180,25 @@
   button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:left; text-decoration:underline; cursor:pointer; }
   button.uix-scheduling-calendar__agenda-more:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda--virtual { max-height:min(70vh,40rem); overflow-y:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); }
+  /* the mounted rows; its padding stands in for the rows above and below them */
+  .uix-scheduling-calendar__agenda-window { box-sizing:content-box; min-width:0; }
   .uix-scheduling-calendar__agenda-vrow { display:flex; align-items:center; height:44px; padding:0 var(--uix-space-2); border-bottom:1px solid var(--calendar-chrome-line); overflow:hidden; }
   .uix-scheduling-calendar__agenda-vrow > * { flex:1 1 auto; min-width:0; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-head { position:static; padding:0; border:0; background:transparent; }
-  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { align-items:center; padding:0; white-space:nowrap; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row { flex-wrap:nowrap; align-items:center; padding:0; white-space:nowrap; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-main { display:block; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-meta { margin-left:var(--uix-space-2); }
   .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues) { padding:0; }
 
   /* ── Month, counts only (HAR-1520): a narrow screen gets the day, its count and its markers ── */
+  /* the head of a cell is two lines here, the date over the count; the lanes and the cell height follow from it */
+  .uix-scheduling-calendar__grid[data-density="counts"] { --calendar-head:3rem; }
   .uix-scheduling-calendar__grid[data-density="counts"],.uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__week { grid-template-columns:repeat(7,minmax(2.75rem,1fr)); }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__day { min-height:calc(2 * var(--calendar-pad) + 2 * var(--calendar-head) + var(--uix-scheduling-calendar-lanes,0) * var(--calendar-lane)); }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { flex-direction:column-reverse; align-items:stretch; height:auto; gap:0; }
-  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > :is(.uix-scheduling-calendar__count,.uix-scheduling-calendar__markers) { justify-content:flex-end; height:var(--calendar-head); text-align:right; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead { flex-wrap:wrap-reverse; justify-content:flex-end; align-content:flex-end; gap:0 var(--calendar-gap); }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > * { height:1.5rem; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__date { flex:1 0 100%; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__day > .uix-scheduling-calendar__date { height:1.5rem; }
+  .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__dayhead > .uix-scheduling-calendar__count { display:inline-flex; align-items:center; }
   .uix-scheduling-calendar__grid[data-density="counts"] .uix-scheduling-calendar__weekday { padding-inline:var(--calendar-pad); overflow:hidden; }
 
   /* ── Week / Day time grid (HAR-1509) ─────────────────────────────────────────────────────────

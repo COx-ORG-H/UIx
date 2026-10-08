@@ -412,6 +412,22 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
     change stays where it was, so a refused move snaps back by construction. `movable: false` pins an entry.
   - Overlapping items share at most `maxLanes` lanes, fewer in a narrow column; the column "+N" is the consumer's
     `days[date].overflowCount`. `renderEntry(entry, { availableLines })` says how many text lines fit.
+- **Agenda grouped by day** (`agendaGroups`, HAR-1520): the consumer builds the day groups and the calendar renders
+  them in order, each under a heading.
+
+  ```tsx
+  <SchedulingCalendar view="agenda" timeZone="Europe/Berlin" anchorDate="2026-10-07" entries={[]} showHeader={false}
+    agendaGroups={[
+      { date: '2026-10-07', annotations: [hold], rows: firstTen, hiddenCount: 4 },   // "4 not shown — open day"
+      { date: '2026-10-08', rows: [], hiddenCount: 12, continuesCount: 2 },           // the heading stays
+    ]}
+    onSelectEntry={openItem} onSelectOverlay={openWindow} onShowMore={openDay}
+    notice={truncated && <p>Showing the first 500 items.</p>} />
+  ```
+
+  Above `virtualizeAbove` rows (default 200) only the rows near the viewport are mounted. A row shows its status as
+  words and its markers with their text.
+- **A narrow month** (`monthDensity="counts"`): a cell is the date, the consumer's `days[date].count` and its markers.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two
