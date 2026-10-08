@@ -13,6 +13,7 @@ import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
 import type { EntityPickerLabels } from './components/EntityPicker.js';
+import type { TreeLabels } from './components/Tree.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -35,6 +36,7 @@ export interface UixLabels {
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;
+  tree?: Partial<TreeLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;

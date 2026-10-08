@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, KeyboardEvent, FocusEvent, MouseEvent, CSSProperties } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { flattenTree, treeNav } from '../tree-model.js';
 import type { FlatNode } from '../tree-model.js';
 import { virtualWindow, shouldVirtualize } from '../table-engine.js';
@@ -20,7 +21,41 @@ export interface TreeNodeData {
   typeaheadLabel?: string;
   icon?: ReactNode;
   children?: TreeNodeData[];
+  /**
+   * The node can be expanded although its `children` are not known yet (HAR-1382). With
+   * `Tree loadChildren`, expanding it loads them; until then it shows a loading row, and an
+   * error row with Retry when the load failed.
+   */
+  hasChildren?: boolean;
 }
+
+/** The words of a tree that loads children on expand (HAR-1382). */
+export interface TreeLabels {
+  /** The row under a node whose children are loading. */
+  loading: string;
+  /** The row under a node whose children could not be loaded. */
+  error: string;
+  /** The action in that row. Enter, Space or a click on the row runs it. */
+  retry: string;
+}
+
+export const DEFAULT_TREE_LABELS: TreeLabels = {
+  loading: 'Loading…',
+  error: 'Could not load.',
+  retry: 'Retry',
+};
+
+/* A node that is waiting for its children gets one synthetic child row, so both render paths
+ * and the keyboard model treat "loading" and "failed" as ordinary rows: arrow keys reach them,
+ * and Enter on the failed row retries. The suffix is plain ASCII on purpose: the ids end up in
+ * attribute selectors, and CSS.escape turns a NUL into U+FFFD, which no longer matches. */
+const LOADING = '::uix-loading';
+const FAILED = '::uix-error';
+const syntheticOf = (id: string): { parent: string; kind: 'loading' | 'error' } | null =>
+  (id.endsWith(LOADING) ? { parent: id.slice(0, -LOADING.length), kind: 'loading' }
+    : id.endsWith(FAILED) ? { parent: id.slice(0, -FAILED.length), kind: 'error' } : null);
+
+const Ring = () => <span className="uix-spinner uix-spinner--sm" aria-hidden="true" />;
 
 export interface TreeNodeProps {
   node: TreeNodeData;
@@ -34,6 +69,8 @@ export interface TreeNodeProps {
   level?: number;
   /** Whether a click on the row itself toggles a branch (see {@link TreeProps.toggleOnRowClick}). */
   rowToggles?: boolean;
+  /** Ids of nodes whose children are loading (`aria-busy`). */
+  busy?: ReadonlySet<string>;
 }
 
 /**
@@ -42,7 +79,7 @@ export interface TreeNodeProps {
  * child list as `role="group"`. The treeitem itself is the focusable element (roving tabindex),
  * so the row is a plain, presentational span (UIX-FIX-04).
  */
-function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1, rowToggles = true }: TreeNodeProps) {
+function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1, rowToggles = true, busy }: TreeNodeProps) {
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const isExpanded = expanded.has(node.id);
 
@@ -51,7 +88,8 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
       role="treeitem"
       aria-level={level}
       aria-expanded={hasChildren ? isExpanded : undefined}
-      aria-selected={selectable ? selected === node.id : undefined}
+      aria-selected={selectable && !syntheticOf(node.id) ? selected === node.id : undefined}
+      aria-busy={busy?.has(node.id) || undefined}
       data-id={node.id}
       tabIndex={tabbableId === node.id ? 0 : -1}
       className="uix-tree__item"
@@ -96,6 +134,7 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
               onFocusNode={onFocusNode}
               level={level + 1}
               rowToggles={rowToggles}
+              busy={busy}
             />
           ))}
         </ul>
@@ -128,18 +167,123 @@ export interface TreeProps extends Omit<HTMLAttributes<HTMLUListElement>, 'onSel
    * where a row click only selects and the chevron toggles. Enter/Space still does both.
    */
   toggleOnRowClick?: boolean;
+  /**
+   * Loads the children of a node that has `hasChildren` and no `children` yet, the first time
+   * it is expanded (HAR-1382; an org chart, a CMDB hierarchy). While it runs the node is
+   * `aria-busy` and shows a loading row; a rejection shows an error row whose Enter, Space or
+   * click retries. The result is kept for the life of the tree; a node that later arrives with
+   * its own `children` uses those.
+   */
+  loadChildren?: (node: TreeNodeData) => Promise<TreeNodeData[]>;
+  /** Words of the loading and error rows. Default: `UixLabelsProvider` `tree`, then English. */
+  labels?: Partial<TreeLabels>;
 }
 
 export function Tree({
-  nodes, expanded: controlledExpanded, defaultExpanded, selected, onToggle, onSelect,
-  virtualize, rowHeight = 32, maxHeight = 384, toggleOnRowClick, className, ...props
+  nodes: nodesProp, expanded: controlledExpanded, defaultExpanded, selected, onToggle, onSelect: onSelectProp,
+  virtualize, rowHeight = 32, maxHeight = 384, toggleOnRowClick, loadChildren, labels: labelOverrides, className, ...props
 }: TreeProps) {
   const [internalExpanded, setInternalExpanded] = useState<Set<string>>(defaultExpanded ?? new Set());
   const expanded = controlledExpanded ?? internalExpanded;
   const rootRef = useRef<HTMLUListElement>(null);
   const [focusedId, setFocusedId] = useState<string | undefined>(undefined);
-  const selectable = selected !== undefined || onSelect != null;
+  const selectable = selected !== undefined || onSelectProp != null;
   const rowToggles = toggleOnRowClick ?? !selectable;
+  const labels = { ...DEFAULT_TREE_LABELS, ...useUixLabels().tree, ...labelOverrides };
+  const treeId = useId();
+
+  // ── children loaded on expand ──
+  const [loaded, setLoaded] = useState<ReadonlyMap<string, TreeNodeData[]>>(() => new Map());
+  const [failed, setFailed] = useState<ReadonlySet<string>>(() => new Set());
+  const [loading, setLoading] = useState<ReadonlySet<string>>(() => new Set());
+  const inFlight = useRef(new Set<string>());
+  const loadRef = useRef(loadChildren);
+  loadRef.current = loadChildren;
+  /** After a synthetic row went away while it had focus: the node to focus instead. */
+  const refocus = useRef<string | null>(null);
+
+  // The tree that is rendered: loaded children merged in, and one synthetic row under every
+  // node that is still waiting for its children (which also makes that node expandable).
+  const nodes = useMemo(() => {
+    const row = (parent: TreeNodeData, kind: 'loading' | 'error'): TreeNodeData => ({
+      id: parent.id + (kind === 'error' ? FAILED : LOADING),
+      typeaheadLabel: '',
+      label: kind === 'error'
+        ? <span className="uix-tree__status uix-tree__status--error">{labels.error} <span className="uix-tree__retry">{labels.retry}</span></span>
+        : <span className="uix-tree__status"><Ring />{labels.loading}</span>,
+    });
+    const decorate = (list: TreeNodeData[]): TreeNodeData[] => list.map((node) => {
+      const known = node.children ?? loaded.get(node.id);
+      if (known) return { ...node, children: decorate(known) };
+      if (!node.hasChildren) return node;
+      return { ...node, children: [row(node, failed.has(node.id) ? 'error' : 'loading')] };
+    });
+    return loadChildren || nodesProp.some(function lazy(n: TreeNodeData): boolean { return !!n.hasChildren || !!n.children?.some(lazy); })
+      ? decorate(nodesProp) : nodesProp;
+  }, [nodesProp, loaded, failed, loadChildren, labels.error, labels.retry, labels.loading]);
+
+  const load = useCallback((node: TreeNodeData) => {
+    const run = loadRef.current;
+    if (!run || inFlight.current.has(node.id)) return;
+    inFlight.current.add(node.id);
+    setFailed((prev) => { if (!prev.has(node.id)) return prev; const next = new Set(prev); next.delete(node.id); return next; });
+    setLoading((prev) => new Set(prev).add(node.id));
+    const settle = (apply: () => void) => {
+      inFlight.current.delete(node.id);
+      // The loading row is about to go away: if it holds focus, the node takes it.
+      const active = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+      if (active?.dataset?.id === node.id + LOADING || active?.dataset?.id === node.id + FAILED) refocus.current = node.id;
+      setLoading((prev) => { const next = new Set(prev); next.delete(node.id); return next; });
+      apply();
+    };
+    run(node).then(
+      (children) => settle(() => setLoaded((prev) => new Map(prev).set(node.id, children))),
+      () => settle(() => setFailed((prev) => new Set(prev).add(node.id))),
+    );
+  }, []);
+
+  // Load every expanded node that is still waiting: covers a click, a key, `defaultExpanded`
+  // and a controlled `expanded` alike.
+  useEffect(() => {
+    if (!loadChildren) return;
+    const visit = (list: TreeNodeData[]) => {
+      for (const node of list) {
+        const known = node.children ?? loaded.get(node.id);
+        if (known) visit(known);
+        else if (node.hasChildren && expanded.has(node.id) && !failed.has(node.id)) load(node);
+      }
+    };
+    visit(nodesProp);
+  }, [nodesProp, expanded, loaded, failed, loadChildren, load]);
+
+  useEffect(() => {
+    const id = refocus.current;
+    if (id == null) return;
+    refocus.current = null;
+    setFocusedId(id);
+    document.querySelector<HTMLElement>(`[data-uix-tree="${CSS.escape(treeId)}"] [role="treeitem"][data-id="${CSS.escape(id)}"]`)?.focus();
+  }, [loaded, failed, treeId]);
+
+  const findNode = (id: string, list: TreeNodeData[] = nodesProp): TreeNodeData | undefined => {
+    for (const node of list) {
+      if (node.id === id) return node;
+      const inside = findNode(id, node.children ?? loaded.get(node.id) ?? []);
+      if (inside) return inside;
+    }
+    return undefined;
+  };
+  // A synthetic row is never the consumer's selection: Enter on the error row retries.
+  const handleSelect = (id: string) => {
+    const synthetic = syntheticOf(id);
+    if (!synthetic) { onSelectProp?.(id); return; }
+    if (synthetic.kind !== 'error') return;
+    const parent = findNode(synthetic.parent);
+    if (!parent) return;
+    refocus.current = null;
+    setFailed((prev) => { const next = new Set(prev); next.delete(parent.id); return next; });
+    load(parent);
+  };
+  const onSelect: ((id: string) => void) | undefined = selectable || loadChildren ? handleSelect : undefined;
 
   const handleToggle = useCallback((id: string) => {
     if (!controlledExpanded) {
@@ -167,7 +311,7 @@ export function Tree({
         flat={flat} rowHeight={rowHeight} maxHeight={maxHeight}
         selectable={selectable} selected={selected} tabbableId={tabbableId}
         onToggle={handleToggle} onSelect={onSelect} focusedId={focusedId} setFocusedId={setFocusedId}
-        rowToggles={rowToggles} className={className} {...props}
+        rowToggles={rowToggles} busy={loading} treeId={treeId} className={className} {...props}
       />
     );
   }
@@ -218,7 +362,7 @@ export function Tree({
   };
 
   return (
-    <ul ref={rootRef} className={cx('uix-tree', className)} role="tree" onKeyDown={onKeyDown} {...props}>
+    <ul ref={rootRef} className={cx('uix-tree', className)} role="tree" data-uix-tree={treeId} onKeyDown={onKeyDown} {...props}>
       {nodes.map((node) => (
         <TreeNode
           key={node.id}
@@ -232,6 +376,7 @@ export function Tree({
           onFocusNode={setFocusedId}
           level={1}
           rowToggles={rowToggles}
+          busy={loading}
         />
       ))}
     </ul>
@@ -250,6 +395,8 @@ interface VirtualTreeViewProps extends Omit<HTMLAttributes<HTMLUListElement>, 'o
   focusedId?: string;
   setFocusedId: (id: string | undefined) => void;
   rowToggles: boolean;
+  busy: ReadonlySet<string>;
+  treeId: string;
 }
 
 /**
@@ -261,7 +408,7 @@ interface VirtualTreeViewProps extends Omit<HTMLAttributes<HTMLUListElement>, 'o
  * moving focus (UIX-FIX-05).
  */
 function VirtualTreeView({
-  flat, rowHeight, maxHeight, selectable, selected, tabbableId, onToggle, onSelect, focusedId, setFocusedId, rowToggles, className, ...props
+  flat, rowHeight, maxHeight, selectable, selected, tabbableId, onToggle, onSelect, focusedId, setFocusedId, rowToggles, busy, treeId, className, ...props
 }: VirtualTreeViewProps) {
   const scrollRef = useRef<HTMLUListElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -320,6 +467,7 @@ function VirtualTreeView({
       ref={scrollRef}
       className={cx('uix-tree', 'uix-tree--virtual', className)}
       role="tree"
+      data-uix-tree={treeId}
       tabIndex={-1}
       style={{ maxHeight, overflow: 'auto' }}
       onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
@@ -343,7 +491,8 @@ function VirtualTreeView({
             aria-setsize={f.setsize}
             aria-posinset={f.posinset}
             aria-expanded={f.hasChildren ? f.isExpanded : undefined}
-            aria-selected={selectable ? selected === f.node.id : undefined}
+            aria-selected={selectable && !syntheticOf(f.node.id) ? selected === f.node.id : undefined}
+            aria-busy={busy.has(f.node.id) || undefined}
             data-id={f.node.id}
             tabIndex={tabbableId === f.node.id || (!windowHasTabbable && i === 0) ? 0 : -1}
             className="uix-tree__item"
