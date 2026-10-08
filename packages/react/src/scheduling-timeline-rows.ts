@@ -10,7 +10,10 @@ export type TimelineRowKind = 'lane' | 'head';
 
 export interface TimelineRowSize {
   kind: TimelineRowKind;
-  /** Sub-rows of a lane (at least 1). Not read for a head. */
+  /**
+   * Sub-rows of a lane (at least 1). For a head, the sub-rows of the strip under it (0 or
+   * unset: none): a collapsed group that carries a window is a head and one such strip.
+   */
   subRows?: number;
 }
 
@@ -30,7 +33,7 @@ export function timelineRowExtents(rows: readonly TimelineRowSize[]): TimelineEx
   for (const row of rows) {
     const above = extents[extents.length - 1]!;
     extents.push(row.kind === 'head'
-      ? { subRows: above.subRows, lanes: above.lanes, heads: above.heads + 1 }
+      ? { subRows: above.subRows + Math.max(0, row.subRows ?? 0), lanes: above.lanes, heads: above.heads + 1 }
       : { subRows: above.subRows + Math.max(1, row.subRows ?? 1), lanes: above.lanes + 1, heads: above.heads });
   }
   return extents;

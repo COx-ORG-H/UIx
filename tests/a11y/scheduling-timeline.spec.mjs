@@ -64,6 +64,10 @@ const rowCount = (page) => page.locator(`${P}row`).count();
 /** Bars that are not the topmost element at their centre or at a corner of the 24 px square around it. */
 const uncovered = (page) => page.locator('[data-item-id]').evaluateAll((els) => els.flatMap((el) => {
   const r = el.getBoundingClientRect();
+  // A point off the screen, or scrolled out of the timeline, hits nothing: only bars in sight are judged.
+  const clip = el.closest('.uix-scheduling-timeline__scroller').getBoundingClientRect();
+  const labels = el.closest('.uix-scheduling-timeline__row').querySelector('.uix-scheduling-timeline__lane-label').getBoundingClientRect();
+  if (r.top < Math.max(0, clip.top) || r.bottom > Math.min(window.innerHeight, clip.bottom) || r.left < labels.right || r.right > Math.min(window.innerWidth, clip.right)) return [];
   const cx = r.left + r.width / 2;
   const cy = r.top + r.height / 2;
   const points = [[cx, cy], [cx - 11, cy - 11], [cx + 11, cy - 11], [cx - 11, cy + 11], [cx + 11, cy + 11]];
@@ -84,6 +88,24 @@ const cutWords = (page) => page.locator('[data-item-id] .uix-scheduling-timeline
     return onTheLine && r.right > clip.right + 0.5 ? [`${text.data}: "${word[0]}"`] : [];
   });
 }));
+/** Pixels of a screen region that differ from its top-left pixel (or, with `from: 'bottom'`, its
+ * bottom-left one) by more than 40 grey levels: what is drawn there. */
+const inkIn = async (page, clip, from = 'top') => {
+  const shot = (await page.screenshot({ clip, animations: 'disabled' })).toString('base64');
+  return page.evaluate(async ([base64, corner]) => {
+    const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${base64}`)).blob());
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+    const grey = (index) => 0.2126 * data[index] + 0.7152 * data[index + 1] + 0.0722 * data[index + 2];
+    const reference = grey(corner === 'bottom' ? (bitmap.height - 1) * bitmap.width * 4 : 0);
+    let count = 0;
+    for (let index = 0; index < data.length; index += 4) if (Math.abs(grey(index) - reference) > 40) count++;
+    return count;
+  }, [shot, from]);
+};
+
 /** WCAG contrast of two computed colours. */
 const contrastOf = (a, b) => {
   const lum = (value) => value.match(/[\d.]+/g).slice(0, 3).map(Number).map((v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
@@ -207,41 +229,88 @@ test('AC3: one element per window; the scoped one is painted and hit only over i
   expect((await calls(page)).items).toEqual(['high']);
 });
 
-test('AC3: collapsing a group moves the clip with the rows; the one row of the group stands for its lanes', async ({ page }) => {
+/** Where one window is hit: over each lane row, and over the head and the strip of each group row. */
+const hitsOf = (page, overlayId) => page.evaluate(([prefix, id]) => {
+  const overlay = document.querySelector(`[data-overlay-id="${id}"]`);
+  const band = overlay.getBoundingClientRect();
+  const x = band.left + band.width / 2;
+  const hit = (y) => document.elementsFromPoint(x, y).includes(overlay);
+  const out = {};
+  for (const row of document.querySelectorAll(`${prefix}body > ${prefix}row`)) {
+    const r = row.getBoundingClientRect();
+    if (row.hasAttribute('data-lane-id')) { out[row.getAttribute('data-lane-id')] = hit(r.top + r.height / 2); continue; }
+    const head = row.querySelector(`${prefix}group-head`).getBoundingClientRect();
+    const strip = row.querySelector(`${prefix}group-strip`)?.getBoundingClientRect();
+    out[`group:${row.getAttribute('data-group-id')}`] = { head: hit(head.top + head.height / 2), strip: strip ? hit(strip.top + strip.height / 2) : null };
+  }
+  return out;
+}, [P, overlayId]);
+
+test('AC3: a window over lanes of a collapsed group is drawn on a strip of the row of that group, where nothing covers it', async ({ page }) => {
   await open(page, 'case=lanes&collapsed=payments');
-  const hit = await page.evaluate((prefix) => {
-    const some = document.querySelector('[data-overlay-id="some"]');
-    const band = some.getBoundingClientRect();
-    return Object.fromEntries([...document.querySelectorAll(`${prefix}row`)].filter((row) => row.hasAttribute('data-lane-id') || row.hasAttribute('data-group-id')).map((row) => {
-      const r = row.getBoundingClientRect();
-      return [row.getAttribute('data-lane-id') ?? `group:${row.getAttribute('data-group-id')}`, document.elementsFromPoint(band.left + band.width * 0.9, r.top + r.height / 2).includes(some)];
-    }));
-  }, P);
-  // Payments is collapsed and holds one of the two lanes the window names: its summary row carries the window.
-  expect(hit).toEqual({ 'group:payments': true, 'group:network': false, 'net-core': false, 'net-edge': true, 'group:storage': false, 'store-object': false, 'store-backup': false });
-  // The words of the window are on that row too, and the window is still one focusable, named element.
+  // Payments is collapsed and holds one of the two lanes the window names: its row has a strip that carries the window.
+  expect(await hitsOf(page, 'some')).toEqual({
+    'group:payments': { head: false, strip: true }, 'group:network': { head: false, strip: null }, 'net-core': false, 'net-edge': true,
+    'group:storage': { head: false, strip: null }, 'store-object': false, 'store-backup': false,
+  });
+  // The words of the window are on that strip, and the window is still one focusable, named element.
   const some = page.locator('[data-overlay-id="some"]');
   await expect(some).toHaveCount(1);
-  const row = await box(page.locator(`${P}row[data-group-id="payments"]`));
+  const strip = await box(page.locator(`${P}row[data-group-id="payments"] ${P}group-strip`));
   const words = await box(some.locator(`${P}overlay-label`).first());
-  expect(words.top).toBeGreaterThanOrEqual(row.top);
-  expect(words.bottom).toBeLessThanOrEqual(row.bottom);
+  expect(words.top).toBeGreaterThanOrEqual(strip.top);
+  expect(words.bottom).toBeLessThanOrEqual(strip.bottom);
+  expect(strip.height, 'a strip is a target of full height').toBeGreaterThanOrEqual(24);
   await some.focus();
   await expect(some).toHaveAccessibleName(/^Maintenance, Storage network, 2 services, /);
   await page.keyboard.press('Enter');
   expect((await calls(page)).overlays).toEqual(['some']);
-  // Every lane it names collapsed (payments and network): still drawn, over the two summary rows.
+  // The group is still exactly one row.
+  await expect(page.locator(`${P}row[data-group-id="payments"]`)).toHaveCount(1);
+  // Every lane it names collapsed (payments and network): still drawn, on the two strips.
   await open(page, 'case=lanes&collapsed=payments,network');
-  await expect(page.locator('[data-overlay-id="some"]')).toHaveCount(1);
-  const both = await page.evaluate((prefix) => {
-    const overlay = document.querySelector('[data-overlay-id="some"]');
+  const both = await hitsOf(page, 'some');
+  expect([both['group:payments'], both['group:network']]).toEqual([{ head: false, strip: true }, { head: false, strip: true }]);
+});
+
+test('AC3: a window on a collapsed group is in sight and clickable at its centre, however long the group label is', async ({ page }) => {
+  // The window covers the first day of the first lane; the label of the collapsed group (name, meta,
+  // count and two markers) is far wider than the lane column and would lie over that day.
+  await open(page, 'case=lanes&collapsed=payments&early=1');
+  const early = page.locator('[data-overlay-id="early"]');
+  await expect(early).toHaveCount(1);
+  const seen = await page.evaluate((prefix) => {
+    const overlay = document.querySelector('[data-overlay-id="early"]');
+    const row = document.querySelector(`${prefix}row[data-group-id="payments"]`);
+    const strip = row.querySelector(`${prefix}group-strip`).getBoundingClientRect();
+    const label = row.querySelector(`${prefix}group-label`).getBoundingClientRect();
     const band = overlay.getBoundingClientRect();
-    return Object.fromEntries([...document.querySelectorAll(`${prefix}row[data-group-id]`)].map((el) => { const r = el.getBoundingClientRect(); return [el.getAttribute('data-group-id'), document.elementsFromPoint(band.left + band.width * 0.9, r.top + r.height / 2).includes(overlay)]; }));
+    const centre = [band.left + band.width / 2, strip.top + strip.height / 2];
+    const corners = [[band.left + 3, strip.top + 3], [band.right - 3, strip.top + 3], [band.left + 3, strip.bottom - 3], [band.right - 3, strip.bottom - 3]];
+    return {
+      labelOverWindowColumns: label.right > band.left && label.left < band.right,
+      labelOverStrip: label.bottom > strip.top + 1,
+      top: document.elementFromPoint(...centre)?.closest('[data-overlay-id]')?.getAttribute('data-overlay-id') ?? null,
+      corners: corners.map(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-overlay-id]')?.getAttribute('data-overlay-id') ?? null),
+      centre,
+    };
   }, P);
-  expect(both).toEqual({ payments: true, network: true, storage: false });
-  // The group name stays readable on its own patch, and its toggle still works with the window under it.
+  expect(seen.labelOverWindowColumns, 'the fixture: the label reaches over the columns of the window').toBe(true);
+  expect(seen.labelOverStrip, 'and it does not reach down into the strip').toBe(false);
+  expect(seen.top, 'the window is the topmost element at its centre').toBe('early');
+  expect(seen.corners).toEqual(['early', 'early', 'early', 'early']);
+  await page.mouse.click(seen.centre[0], seen.centre[1]);
+  expect((await calls(page)).overlays).toEqual(['early']);
+  // The window is painted there: its cross hatch is ink on the strip.
+  expect(await inkIn(page, { x: Math.round(seen.centre[0]) - 20, y: Math.round(seen.centre[1]) - 8, width: 40, height: 16 })).toBeGreaterThanOrEqual(20);
+  // And the toggle still toggles.
   await page.locator(`${P}row[data-group-id="payments"]`).getByRole('button', { name: /Payments/ }).click();
   expect((await calls(page)).toggles).toEqual(['payments']);
+  // A collapsed group no window covers keeps its one line: no strip.
+  await open(page, 'case=lanes&collapsed=network&early=1');
+  await expect(page.locator(`${P}row[data-group-id="network"] ${P}group-strip`)).toHaveCount(1); // the window over every row covers it
+  await open(page, 'case=legacy');
+  await expect(page.locator(`${P}group-strip`)).toHaveCount(0);
 });
 
 for (const height of ['480px', 'none']) {
@@ -388,6 +457,7 @@ test('AC5 / AC6: Enter selects a bar, or confirms its pending move, never both; 
   const sent = await calls(page);
   expect(sent.proposals).toEqual([{ id: 'd', start: berlin('2026-10-08', '08:00'), end: berlin('2026-10-09', '08:00'), adjusted: null }]);
   expect(sent.items, 'Enter confirmed the move and did not select the bar').toEqual(['d']);
+  await expect(page.locator('.uix-scheduling-timeline [role="status"]'), 'the user hears that the move was asked for').toContainText('Requested a move to');
   await expect(page.locator(`${P}ghost`)).toHaveCount(0);
   await expect(bar).toBeFocused();
 
@@ -431,7 +501,7 @@ test('AC5 (PDR-0013): with no onResizeItem Alt+Shift+Arrow does nothing and no h
   await open(page, 'case=lanes&move=legacy');
   await page.locator(item('d')).focus();
   await page.keyboard.press('Alt+Shift+ArrowRight');
-  expect((await calls(page)).moves, 'the 2.34 move prop alone does not resize either').toEqual([]);
+  expect((await calls(page)).moves, 'the older move prop alone does not resize either').toEqual([]);
   await page.keyboard.press('Shift+ArrowRight');
   expect((await calls(page)).moves).toEqual([{ id: 'd', start: berlin('2026-10-08', '07:00'), end: berlin('2026-10-09', '07:00') }]);
   await expect(page.locator('.uix-scheduling-timeline')).not.toContainText('Alt');
@@ -602,7 +672,7 @@ test('AC10: the now-line and its label are neutral; only band="high" carries the
   for (const value of colours.overlays) expect(value).toBeLessThanOrEqual(12);
   expect(colours.nowChroma).toBeLessThanOrEqual(12);
 
-  // The 2.34 props: states and kinds draw, and none of them is tinted any more.
+  // The older props: states and kinds draw, and none of them is tinted any more.
   await open(page, 'case=legacy');
   const legacy = await page.evaluate((prefix) => {
     const chroma = (rgb) => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return Math.max(r, g, b) - Math.min(r, g, b); };
@@ -736,7 +806,7 @@ test('at 375 px the timeline scrolls inside its own container and the page does 
   expect(Math.abs(label.left - frame.left)).toBeLessThanOrEqual(2);
 });
 
-test('what a 2.34 consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
+test('what an existing consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -838,33 +908,17 @@ test('AC4: a focused group toggle keeps its row and its focus when it scrolls ou
   await expect(toggle).toBeFocused();
 });
 
-/** Pixels of a screen region that differ from its top-left pixel by more than 40 grey levels: what is drawn there. */
-const inkIn = async (page, clip) => {
-  const shot = (await page.screenshot({ clip, animations: 'disabled' })).toString('base64');
-  return page.evaluate(async (base64) => {
-    const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${base64}`)).blob());
-    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0);
-    const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    const grey = (index) => 0.2126 * data[index] + 0.7152 * data[index + 1] + 0.0722 * data[index + 2];
-    let count = 0;
-    for (let index = 0; index < data.length; index += 4) if (Math.abs(grey(index) - grey(0)) > 40) count++;
-    return count;
-  }, shot);
-};
-
 for (const mode of ['normal colours', 'forced colours']) {
   test(`AC9 / AC10: the high band, a marker shape, the now-line and the hatch of a window are drawn in ${mode}`, async ({ page }) => {
     if (mode === 'forced colours') await page.emulateMedia({ forcedColors: 'active' });
     await open(page, 'case=short');
     // The high band against no band: in forced colours a fill is stripped, so the edge carries it.
-    const edges = await Promise.all(['b1', 'b4', 'b2'].map((id) => page.locator(item(id)).evaluate((el) => { const st = getComputedStyle(el); return [st.borderTopWidth, st.borderTopStyle, st.borderBottomWidth].join(' '); })));
+    const edges = await Promise.all(['b1', 'b4', 'b2'].map((id) => page.locator(item(id)).evaluate((el) => { const st = getComputedStyle(el); return [st.borderTopWidth, st.borderTopStyle, st.borderBottomWidth, st.borderBottomStyle].join(' '); })));
     if (mode === 'forced colours') {
-      expect(edges[0], 'the high band is a heavier edge than no band').toBe('3px solid 3px');
-      expect(edges[1]).toBe('1px solid 1px');
+      expect(edges[0], 'the high band is a heavier edge than no band').toBe('3px solid 3px solid');
+      expect(edges[1]).toBe('1px solid 1px solid');
+      expect(edges[2], 'done on the high band is not the committed high band').not.toBe(edges[0]);
     }
-    expect(edges[2], 'done on the high band is not the committed high band').not.toBe(edges[0]);
     // A marker shape is painted, not an empty box.
     const glyph = await box(page.locator(`${item('b3')} ${P}item-marker`));
     expect(glyph.width).toBeGreaterThan(6);
@@ -886,28 +940,170 @@ for (const mode of ['normal colours', 'forced colours']) {
   });
 }
 
-test('AC10: the outline of a pending move is at least 3:1 against the row', async ({ page }) => {
-  await open(page, 'case=lanes');
-  await page.locator(item('d')).focus();
+test('AC10: the outline of a pending move reads at 3:1 against the row and against a bar under it, the high band included', async ({ page }) => {
+  await open(page, 'case=short');
+  // b1 is a high-band bar: two steps to the right and the outline lies mostly over the bar itself.
+  const fill = await box(page.locator(item('b1')));
+  // The top 8 px of the bar where the outline will be, counted against the fill 7 px down: nothing yet.
+  const topEdge = { x: Math.round(fill.left) + 30, y: Math.round(fill.top), width: 60, height: 8 };
+  expect(await inkIn(page, topEdge, 'bottom'), 'calibration: without an outline the top of the bar is fill').toBe(0);
+  await page.locator(item('b1')).focus();
+  await page.keyboard.press('Shift+ArrowRight');
   await page.keyboard.press('Shift+ArrowRight');
   const ghost = page.locator(`${P}ghost`);
   await expect(ghost).toHaveCount(1);
   const seen = await ghost.evaluate((el) => {
-    const s = getComputedStyle(el);
-    const row = getComputedStyle(document.querySelector('.uix-scheduling-timeline__scroller')).backgroundColor;
-    // What is painted: the edge colour through the opacity of the element, over the row.
-    const mix = (fg, bg, alpha) => { const f = fg.match(/[\d.]+/g).slice(0, 3).map(Number); const b = bg.match(/[\d.]+/g).slice(0, 3).map(Number); return `rgb(${f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha))).join(', ')})`; };
-    return { edge: mix(s.borderTopColor, row, Number(s.opacity)), row, width: parseFloat(s.borderTopWidth), style: s.borderTopStyle };
+    const edge = getComputedStyle(el);
+    const halo = getComputedStyle(el, '::after');
+    const outer = getComputedStyle(el, '::before');
+    const bar = document.querySelector('[data-item-id="b1"]');
+    return {
+      opacity: edge.opacity, edge: edge.borderTopColor, width: parseFloat(edge.borderTopWidth), style: edge.borderTopStyle,
+      halo: halo.borderTopColor, haloWidth: parseFloat(halo.borderTopWidth), haloStyle: halo.borderTopStyle, outer: outer.borderTopColor, outerStyle: outer.borderTopStyle,
+      row: getComputedStyle(document.querySelector('.uix-scheduling-timeline__scroller')).backgroundColor, high: getComputedStyle(bar).backgroundColor,
+      overBar: (() => { const g = el.getBoundingClientRect(); const b = bar.getBoundingClientRect(); return Math.round(Math.min(g.right, b.right) - Math.max(g.left, b.left)); })(),
+    };
   });
-  expect(contrastOf(seen.edge, seen.row)).toBeGreaterThanOrEqual(3);
-  expect(seen.width).toBeGreaterThanOrEqual(2);
-  expect(seen.style).toBe('dashed');
+  expect(seen.opacity).toBe('1');
+  expect(seen.overBar, 'the fixture: most of the outline is over the bar').toBeGreaterThan(60);
+  expect(contrastOf(seen.edge, seen.row), 'the edge against the row').toBeGreaterThanOrEqual(3);
+  // Over a bar the edge has a second tone beside it: one of the two is 3:1 against any fill.
+  expect(seen.haloStyle).toBe('solid');
+  expect(seen.outerStyle).toBe('solid');
+  expect(seen.haloWidth).toBeGreaterThanOrEqual(1);
+  expect(Math.max(contrastOf(seen.edge, seen.high), contrastOf(seen.halo, seen.high)), 'against the high band').toBeGreaterThanOrEqual(3);
+  expect(Math.max(contrastOf(seen.edge, seen.row), contrastOf(seen.halo, seen.row))).toBeGreaterThanOrEqual(3);
+  // And it is painted: along the top edge of the bar, where the outline now runs, pixels stand out from the fill.
+  const g = await box(ghost);
+  expect(g.left).toBeLessThan(topEdge.x);
+  expect(Math.round(g.top)).toBe(Math.round(fill.top));
+  expect(await inkIn(page, topEdge, 'bottom'), 'the top edge of the outline over the high bar').toBeGreaterThanOrEqual(60);
 });
 
-test('AC10: done on the high band is told apart from committed without a second hue', async ({ page }) => {
+test('AC10: done on the high band is told apart from committed by a line that can be seen, and the bar keeps its height', async ({ page }) => {
   await open(page, 'case=short');
-  const [high, done] = await Promise.all(['b1', 'b2'].map((id) => page.locator(item(id)).evaluate((el) => { const s = getComputedStyle(el); return { background: s.backgroundColor, edges: [s.borderTopStyle, s.borderBottomStyle, s.borderBottomWidth].join(' ') }; })));
-  expect(done.background).toBe(high.background);
-  expect(done.edges).not.toBe(high.edges);
-  expect(done.edges).toBe('none solid 3px');
+  const high = await box(page.locator(item('b1')));
+  const done = await box(page.locator(item('b2')));
+  expect(Math.round(done.height)).toBe(Math.round(high.height));
+  // The last few pixel rows of each bar, under the text and clear of the rounded corners: committed is plain fill, done has a line in it.
+  const lower = (b) => ({ x: Math.round(b.left) + 12, y: Math.round(b.bottom) - 7, width: Math.round(b.width) - 24, height: 6 });
+  expect(await inkIn(page, lower(high)), 'committed: nothing but fill').toBe(0);
+  expect(await inkIn(page, lower(done)), 'done: a line').toBeGreaterThanOrEqual(Math.round(done.width) - 30);
+  // The line is inside the fill: the last pixel row of the bar is still the fill, not the colour of the row.
+  const fills = await page.evaluate(() => ['b1', 'b2'].map((id) => getComputedStyle(document.querySelector(`[data-item-id="${id}"]`)).backgroundColor));
+  expect(fills[1]).toBe(fills[0]);
+  const below = { x: Math.round(done.left) + 20, y: Math.round(done.bottom) - 1, width: 20, height: 3 };
+  expect(await inkIn(page, below), 'the bottom edge of the bar is where the fill ends').toBeGreaterThanOrEqual(20);
+  const sameEdge = { x: Math.round(high.left) + 20, y: Math.round(high.bottom) - 1, width: 20, height: 3 };
+  expect(await inkIn(page, sameEdge)).toBe(await inkIn(page, below));
 });
+
+test('AC9: in forced colours a done bar is a box, a solid window is filled in, and the sub-tick lines are drawn', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await open(page, 'case=short');
+  const edges = await page.locator(item('b2')).evaluate((el) => { const st = getComputedStyle(el); return [st.borderTopStyle, st.borderLeftStyle, st.borderRightStyle, st.borderBottomStyle]; });
+  expect(edges.slice(0, 3)).toEqual(['solid', 'solid', 'solid']);
+  expect(edges[3], 'its bottom edge is the cue that it is done').not.toBe('solid');
+  const flat = await box(page.locator('[data-overlay-id="flat"]'));
+  const lane0 = await box(page.locator(`${lane('pay-api')} ${P}track`));
+  expect(await inkIn(page, { x: Math.round(flat.left) + 30, y: Math.round(lane0.bottom) - 30, width: 40, height: 26 }), 'a solid window has a fill of its own').toBeGreaterThanOrEqual(20);
+  const minor = await box(page.locator(`${P}gridline[data-minor]`).first());
+  expect(await inkIn(page, { x: Math.round(minor.left) - 4, y: Math.round(lane0.top) + 4, width: 9, height: 24 }), 'a sub-tick line').toBeGreaterThanOrEqual(6);
+});
+
+test('F1: whether a timeline is virtual or has fixed rows does not move with its width', async ({ page }) => {
+  test.setTimeout(120_000);
+  // 60 plain lanes with a one-hour bar every two hours: the narrower the track, the more sub-rows a lane needs.
+  const state = () => page.evaluate((prefix) => {
+    const root = document.querySelector('.uix-scheduling-timeline');
+    const rows = [...document.querySelectorAll(`${prefix}body > ${prefix}row[data-lane-id]`)];
+    const name = rows[0].querySelector(`${prefix}lane-name`);
+    return { fixed: root.hasAttribute('data-fixed'), virtual: document.querySelector(`${prefix}scroller`).hasAttribute('data-virtual'), lanes: rows.length, subRows: Number(rows[0].style.getPropertyValue('--uix-timeline-rows')), wraps: getComputedStyle(name).whiteSpace !== 'nowrap' };
+  }, P);
+  await open(page, 'case=dense', { width: 1280, height: 900 });
+  const wide = await state();
+  expect(wide).toMatchObject({ fixed: false, virtual: false, lanes: 60, wraps: true });
+  await page.setViewportSize({ width: 800, height: 900 });
+  await expect.poll(async () => (await state()).subRows, 'narrower: more sub-rows for the same bars').toBeGreaterThan(wide.subRows);
+  const narrow = await state();
+  expect(narrow.subRows * 60, 'the fixture: by sub-rows this is past the default threshold').toBeGreaterThan(150);
+  expect(narrow).toMatchObject({ fixed: false, virtual: false, lanes: 60, wraps: true });
+  expect(await uncovered(page)).toEqual([]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect.poll(async () => (await state()).subRows).toBe(wide.subRows);
+  expect(await state()).toEqual(wide);
+  // The threshold counts what the consumer passes: 151 lanes are virtual at any width, 150 are not.
+  for (const [count, virtual] of [[150, false], [151, true]]) {
+    for (const width of [1280, 800]) {
+      await open(page, `case=dense&lanes=${count}&bars=12`, { width, height: 900 });
+      expect((await state()).virtual, `${count} lanes at ${width} px`).toBe(virtual);
+    }
+  }
+});
+
+for (const count of [60, 200]) {
+  test(`F1: a resize that changes the packing keeps the first lane in view where it was (${count} lanes)`, async ({ page }) => {
+    await open(page, `case=dense&lanes=${count}`, { width: 1280, height: 900 });
+    await page.evaluate(() => window.scrollTo(0, 3000));
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(3000);
+    const first = () => page.evaluate((prefix) => {
+      const rows = [...document.querySelectorAll(`${prefix}body > ${prefix}row[data-lane-id]`)];
+      // The first lane in view: the one the top edge of the viewport cuts, or the first below it.
+      const row = rows.find((el) => el.getBoundingClientRect().bottom > 1);
+      return row ? { id: row.getAttribute('data-lane-id'), top: Math.round(row.getBoundingClientRect().top), subRows: Number(row.style.getPropertyValue('--uix-timeline-rows')) } : { id: null, top: 0, subRows: 0 };
+    }, P);
+    await expect.poll(async () => (await first()).id).not.toBe('lane-0');
+    const before = await first();
+    await page.setViewportSize({ width: 800, height: 900 });
+    await expect.poll(async () => (await first()).subRows, 'the packing changed').toBeGreaterThan(before.subRows);
+    await expect.poll(async () => (await first()).id, 'the same lane is first in view').toBe(before.id);
+    expect(Math.abs((await first()).top - before.top)).toBeLessThanOrEqual(2);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect.poll(async () => (await first()).subRows).toBe(before.subRows);
+    await expect.poll(async () => (await first()).id).toBe(before.id);
+    expect(Math.abs((await first()).top - before.top)).toBeLessThanOrEqual(2);
+  });
+}
+
+test('F1: after tickWidth changes no frame shows bars covering each other', async ({ page }) => {
+  await open(page, 'case=dense&lanes=12&tick=14rem', { width: 1280, height: 900 });
+  expect(await uncovered(page)).toEqual([]);
+  // Watch from inside the page: at the first frame in which the track has its new width, the bars must already be packed for it.
+  const covered = await page.evaluate((prefix) => new Promise((resolve) => {
+    const track = document.querySelector(`${prefix}layer > ${prefix}track`);
+    const before = track.getBoundingClientRect().width;
+    const pairs = () => {
+      let count = 0;
+      for (const list of document.querySelectorAll(`${prefix}items`)) {
+        const boxes = [...list.querySelectorAll('[data-item-id]')].map((el) => el.getBoundingClientRect());
+        for (let a = 0; a < boxes.length; a++) for (let b = a + 1; b < boxes.length; b++) {
+          if (boxes[a].left < boxes[b].right - 0.5 && boxes[b].left < boxes[a].right - 0.5 && boxes[a].top < boxes[b].bottom - 0.5 && boxes[b].top < boxes[a].bottom - 0.5) count++;
+        }
+      }
+      return count;
+    };
+    let frames = 0;
+    const watch = () => {
+      frames++;
+      if (Math.abs(document.querySelector(`${prefix}layer > ${prefix}track`).getBoundingClientRect().width - before) > 1) { resolve({ frames, pairs: pairs() }); return; }
+      if (frames > 120) { resolve({ frames, pairs: -1 }); return; }
+      requestAnimationFrame(watch);
+    };
+    window.__timelineTick('4rem');
+    requestAnimationFrame(watch);
+  }), P);
+  expect(covered.pairs, `seen after ${covered.frames} frame(s)`).toBe(0);
+});
+
+test('F8: a viewport taller than 146 rows is filled, not left blank', async ({ page }) => {
+  await open(page, 'case=stress&groups=0', { width: 1280, height: 9000 });
+  await expect(page.locator(`${P}scroller`)).toHaveAttribute('data-virtual', /.*/);
+  const filled = await page.evaluate((prefix) => {
+    const rows = [...document.querySelectorAll(`${prefix}body > ${prefix}row[data-lane-id]`)];
+    const last = rows[rows.length - 1].getBoundingClientRect();
+    return { rows: rows.length, lastBottom: Math.round(last.bottom), viewport: window.innerHeight };
+  }, P);
+  expect(filled.lastBottom, `${filled.rows} rows mounted`).toBeGreaterThanOrEqual(filled.viewport);
+  expect(filled.rows).toBeLessThan(200);
+});
+
