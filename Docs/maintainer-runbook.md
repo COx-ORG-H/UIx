@@ -123,6 +123,30 @@ CJS `require`, subpath export resolution (`./css`, `./styles`, `./bundle`, `./ta
 theme, `./chart`), and a `tsc --noEmit` type-check. Assumes the packages are built —
 run `npm run build:all` first (CI does).
 
+### React build output — `packages/react/scripts/check-dist.mjs`
+
+Not one of the seven, but every gate that reads `packages/react/dist/` depends on it.
+`tsup.config.ts` holds two configs (per-file ESM, bundled CJS) that tsup runs in parallel
+into the same `dist/`. `clean` is a per-config option: it lists `dist/` and deletes what it
+listed, whenever that config gets there. While the ESM config had `clean: true`, a build
+in which the CJS config wrote first lost all seven `.cjs` bundles and still exited 0
+(2026-10-08; the two steps were 0.3 to 0.5 s apart). So the build is three steps:
+
+```
+node scripts/clean-dist.mjs && tsup && node scripts/check-dist.mjs
+```
+
+`clean-dist.mjs` removes `dist/` once, before tsup starts, and both configs keep
+`clean: false`. `check-dist.mjs` then reads `exports` (plus `main`/`module`/`types`) from
+`packages/react/package.json` and fails when a target is missing or empty. It runs in
+three places: at the end of every build, as `npm run test:dist` in CI's `gates` job, and
+as the package's `prepublishOnly`. The last one matters because the `publish` job builds
+again after the gates, and nothing else looks at that second build.
+
+`packages/react/src/dist-exports.test.mjs` fails if a config gets `clean` back or a build
+script loses a step. Do not build with a bare `npx tsup`: it skips both the clean and the
+check.
+
 ### visual — Playwright VR (read this before running locally)
 
 `test:visual` runs `playwright test tests/visual`: full-page screenshots of representative integrated docs

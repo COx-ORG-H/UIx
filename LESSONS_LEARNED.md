@@ -9,6 +9,12 @@
 <!-- lesson-skip: 601d975 routine flex-wrap fix; nowrap bar is visible in the CSS, reflow gate already exists -->
 <!-- lesson-skip: a7b5224 routine CSS scoping fix; the audit named the cause -->
 
+### 2026-10-08 · react build · `claude/practical-cori-a75459`
+- **Rule:** when two tsup configs (or any two parallel build steps) write to one `outDir`, none of them may `clean` it. Remove the directory once, before the tool starts, and after the build check that every file `package.json` exports is there. A bare `npx tsup` skips both; use `npm run build -w @tensor_1/react`.
+- **Why:** tsup runs the configs of an array under one `Promise.all`, and `clean` is per config: it lists `outDir`, then unlinks what it listed. The ESM config's clean ran 0.3 to 0.5 s before the CJS config wrote its bundles; when that order flipped, all seven `.cjs` files were deleted after the log had printed them, and tsup exited 0. tsup never checks its output.
+- **Gate:** `packages/react/scripts/check-dist.mjs` fails on a missing or empty `exports` target. It ends `npm run build`, runs as `test:dist` in CI's `gates` job, and is the package's `prepublishOnly`, because release.yml publishes a second build that no gate reads. `src/dist-exports.test.mjs` fails if a config gets `clean` back. Seen red on a dist with the old order forced.
+- **Tag:** false-green, build, race, generalizable
+
 ### 2026-10-07 · chart theme · `fb709c3`
 - **Rule:** a theme merged into an ECharts option may only *style* components the consumer's option already has. Any component key in the option (`legend`, `title`, `xAxis`, `dataZoom`, `visualMap` …) makes ECharts draw that component, so a theme default for it must be dropped when the option lacks the key.  **Why:** `uixChartTheme()` carried a styled `legend`, and the docs residence chart, which asks for none, grew a "Residence" legend. Every theme test still passed.  **Gate:** `mergeChartTheme`'s `STYLED_ONLY` list plus a `chart-theme.test.mjs` case. `tests/a11y/chart-theme.spec.mjs` asserts the residence chart has no legend text, and it fails on the old merge.  **Tag:** false-green, echarts
 

@@ -55,10 +55,12 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "node scripts/clean-dist.mjs && tsup && node scripts/check-dist.mjs",
+    "dev": "node scripts/clean-dist.mjs && tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
+    "test:dist": "node scripts/check-dist.mjs",
+    "prepublishOnly": "node scripts/check-dist.mjs",
     "test:performance": "node scripts/table-performance.mjs",
     "size": "node scripts/check-chart-preset-size.mjs"
   },

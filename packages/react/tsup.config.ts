@@ -16,6 +16,14 @@ const external = ['react', 'react/jsx-runtime', 'react-dom', 'echarts', 'echarts
 // mode, so a per-file CJS build emits require("./X.js") pointing at the ESM file
 // (ERR_REQUIRE_ESM). Bundling sidesteps that, and CJS consumers are not RSC, so the
 // per-file directive split is irrelevant for this format.
+//
+// Neither config cleans. tsup runs the configs of an array in parallel and `clean` is
+// per config: it lists outDir, then unlinks what it listed, whenever that config gets
+// there. Both write to dist/, so `clean: true` on the ESM config deleted the CJS bundles
+// in every build where the CJS config had written them first, and tsup still exited 0
+// (about one build in five on Windows, 2026-10-08). dist/ is removed once, before tsup
+// starts, by scripts/clean-dist.mjs (see the build and dev scripts), and
+// scripts/check-dist.mjs fails the build when an `exports` target is missing.
 export default defineConfig([
   {
     entry: ['src/**/*.ts', 'src/**/*.tsx'],
@@ -25,7 +33,7 @@ export default defineConfig([
     external,
     target: 'es2020',
     outDir: 'dist',
-    clean: true,
+    clean: false,
   },
   {
     entry: {
