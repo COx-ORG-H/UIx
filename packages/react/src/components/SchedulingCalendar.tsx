@@ -6,6 +6,7 @@ import { addCalendarDays, addCalendarMonths, buildMonthGrid, cachedDateTimeForma
 import type { CalendarWeekday } from '../calendar-model.js';
 import { TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutMonthSpans } from '../scheduling-calendar-model.js';
 import type { MonthSpanGroup, MonthSpanInput, MonthSpanLayout, MoveProposal, PlacedMonthSpan } from '../scheduling-calendar-model.js';
+import { SchedulingAgenda } from './SchedulingAgenda.js';
 import { SchedulingTimeGrid } from './SchedulingTimeGrid.js';
 import type { TimeGridEntryContext } from './SchedulingTimeGrid.js';
 import { cx } from '../cx.js';
@@ -103,6 +104,21 @@ export interface SchedulingCalendarDay {
   markers?: SchedulingMarker[];
 }
 
+/** One day of the agenda, built by the consumer. The calendar renders the groups and their rows in the order given. */
+export interface SchedulingAgendaGroup {
+  /** The day the group is for (`YYYY-MM-DD`). */
+  date: string;
+  /** Replaces the heading text. Default: the date through `formatDate(date, 'day')`. */
+  heading?: ReactNode;
+  /** Windows that touch the day: one note each beside the heading, never one per row. */
+  annotations?: SchedulingCalendarOverlay[];
+  rows: SchedulingCalendarEntry[];
+  /** Entries of the day that are not in `rows`. Shows "N not shown — open day", which calls `onShowMore`. */
+  hiddenCount?: number;
+  /** Entries that go on into this day and are listed under an earlier one. */
+  continuesCount?: number;
+}
+
 export interface SchedulingLegendItem {
   id: string;
   label: string;
@@ -168,6 +184,12 @@ export interface SchedulingCalendarLabels {
   topLane?: string;
   /** The cue on the second-day part of an entry that crosses midnight. `{time}` is its start. */
   continuesFrom?: string;
+  /** The time text of an agenda row whose entry has no time of day (`allDay`). */
+  allDay?: string;
+  /** Under an agenda day whose rows are not all listed. `{count}` placeholder. */
+  hiddenInDay?: string;
+  /** Under an agenda day that entries from an earlier day run into. `{count}` placeholder. */
+  continuesInDay?: string;
   /** Read after an item's name when it can be moved. */
   moveHint?: string;
   /** Announced for a pending move. `{start}` and `{end}` placeholders. */
@@ -215,6 +237,9 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   moreWindowsLabel: '{count} more windows, from {date}',
   topLane: 'All-day and longer entries',
   continuesFrom: 'from {time}',
+  allDay: 'All day',
+  hiddenInDay: '{count} not shown — open day',
+  continuesInDay: 'Continues: {count} listed under an earlier day',
   moveHint: 'Hold Shift and press an arrow key to move it. Enter confirms, Escape cancels.',
   moveProposed: 'Move to {start} – {end}. Enter confirms, Escape cancels.',
   moveCancelled: 'Move cancelled.',
@@ -317,6 +342,23 @@ export interface SchedulingCalendarProps {
   /** Called by a click or Enter on a day number. */
   onSelectDate?: (date: string) => void;
   /**
+   * The agenda as day groups built by the consumer: which entry is listed under which day,
+   * in which order, and how many are left out. When set, `view="agenda"` renders exactly
+   * these, each day under a heading, and never sorts, groups or counts. Unset keeps the flat
+   * list sorted by start.
+   */
+  agendaGroups?: SchedulingAgendaGroup[];
+  /** The heading level of an agenda day. Default 3. */
+  agendaHeadingLevel?: 2 | 3 | 4 | 5 | 6;
+  /** Above this many agenda rows only the rows near the viewport are mounted. Default 200. */
+  virtualizeAbove?: number;
+  /**
+   * `'counts'` draws each month cell with the consumer's `days[date].count` and markers
+   * only: no chips and no entry bars, and narrower columns, for a narrow screen. Windows keep
+   * their bar and name. Default `'full'`.
+   */
+  monthDensity?: 'full' | 'counts';
+  /**
    * Draws `view="week"` as a time grid: seven day columns on an hour axis. `view="day"` is
    * always a time grid. Default `false`: the week stays seven day cells.
    */
@@ -359,6 +401,7 @@ const INTL_PARTS: Record<SchedulingDatePart, Intl.DateTimeFormatOptions> = {
 };
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 const EMPTY_ENTRIES: SchedulingCalendarEntry[] = [];
+const EMPTY_IDS: string[] = [];
 const DEFAULT_LANE_CAP = 2;
 /** Chip rows a fixed-height cell keeps when `maxEntriesPerDay` is not given. */
 const DEFAULT_CHIP_ROWS = 3;
@@ -382,7 +425,7 @@ export function SchedulingCalendar({
   entries, anchorDate, timeZone, view: controlledView, onViewChange, onAnchorDateChange,
   onSelectEntry, overlays = EMPTY_OVERLAYS, onSelectOverlay, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, days: dayInfo, dayEntries, spanLayout, windowLaneCap, spanLaneCap,
-  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, timeGrid = false, now, canMove = false, step = 15, onProposeMove,
+  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, agendaGroups, agendaHeadingLevel = 3, virtualizeAbove = 200, monthDensity = 'full', timeGrid = false, now, canMove = false, step = 15, onProposeMove,
   topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4, loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
   const uixLabels = useUixLabels();
@@ -406,7 +449,10 @@ export function SchedulingCalendar({
   const picksGiven = dayEntries !== undefined;
   const controlled = picksGiven || dayInfo !== undefined;
   // Every cell keeps one height: nothing in it can grow, because the list is cut and "+N" opens elsewhere.
-  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined);
+  // The counts-only month has nothing in a cell that could grow, so its cells are fixed too.
+  // The density is a month setting: the week keeps its chips and its growing cells.
+  const countsOnly = monthDensity === 'counts' && view === 'month';
+  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined) || countsOnly;
   // A cell that grows has room for every span. A fixed one keeps two lanes per group unless told otherwise.
   const windowCap = Math.max(0, windowLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
   const spanCap = Math.max(0, spanLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
@@ -450,13 +496,14 @@ export function SchedulingCalendar({
       windowIds.add(overlay.id);
       inputs.push({ id: overlay.id, start: overlay.start, end: overlay.end, group: 'window' });
     }
-    for (const { entry } of multiDay) {
+    // The counts-only month draws no entry, so none takes a lane or is counted as hidden.
+    for (const { entry } of countsOnly ? [] : multiDay) {
       if (itemIds.has(entry.id)) continue;
       itemIds.add(entry.id);
       inputs.push({ id: entry.id, start: entry.start, end: entry.end, group: 'item' });
     }
     return layoutMonthSpans(inputs, days, { timeZone, laneCap: { window: windowCap, item: spanCap } });
-  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap]);
+  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap, countsOnly]);
   const placedByRow = useMemo(() => {
     const rows = new Map<number, PlacedMonthSpan[]>();
     for (const placed of layout.placed) { const row = rows.get(placed.weekRow); if (row) row.push(placed); else rows.set(placed.weekRow, [placed]); }
@@ -530,7 +577,8 @@ export function SchedulingCalendar({
     && !Object.values(dayEntries ?? {}).some((list) => list.length > 0)
     && !Object.values(dayInfo ?? {}).some((day) => day.count > 0);
   // A fixed cell holds `maxEntriesPerDay` chips; if the consumer passes a longer list, the cell holds that, so nothing is clipped.
-  const chipRows = Math.max(0, maxEntriesPerDay ?? DEFAULT_CHIP_ROWS, ...Object.values(dayEntries ?? {}).map((list) => list.length));
+  // The counts-only month has no chip rows at all: a cell is its head and the window lanes.
+  const chipRows = countsOnly ? -1 : Math.max(0, maxEntriesPerDay ?? DEFAULT_CHIP_ROWS, ...Object.values(dayEntries ?? {}).map((list) => list.length));
 
   const renderDay = (date: string, index: number) => {
     const info = dayInfo?.[date];
@@ -538,7 +586,7 @@ export function SchedulingCalendar({
     const all = picksGiven ? dayEntries[date] ?? EMPTY_ENTRIES : singles.get(date) ?? EMPTY_ENTRIES;
     const overflowing = !picksGiven && maxEntriesPerDay !== undefined && all.length > maxEntriesPerDay;
     const collapsed = overflowing && (controlled || onShowMore !== undefined || !expandedDates.has(date));
-    const shown = collapsed ? all.slice(0, Math.max(0, maxEntriesPerDay!)) : all;
+    const shown = countsOnly ? EMPTY_ENTRIES : collapsed ? all.slice(0, Math.max(0, maxEntriesPerDay!)) : all;
     // A consumer count always wins; without one the number is what this cell could not show.
     const hiddenCount = info ? info.overflowCount : picksGiven ? 0 : all.length - shown.length;
     const onDay = picksGiven ? all : entriesOn(date);
@@ -556,7 +604,7 @@ export function SchedulingCalendar({
       </div> : dateButton}
       <div className="uix-scheduling-calendar__entries">
         {shown.map((entry) => <button key={entry.id} className="uix-scheduling-calendar__entry" {...entryProps(entry)}>{entryContent(entry)}</button>)}
-        {controlled
+        {countsOnly ? null : controlled
           ? hiddenCount > 0 && (onShowMore
             ? <button type="button" className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, onDay)}>{moreText}</button>
             : <span className="uix-scheduling-calendar__more"><span aria-hidden="true">{moreText}</span><span className="uix-visually-hidden">{moreName}</span></span>)
@@ -569,8 +617,12 @@ export function SchedulingCalendar({
     const rowDays = days.slice(row * 7, row * 7 + 7);
     // The chips of a row start right under the lanes that row uses.
     const windowLanes = lanesUsed(row, 'window');
-    const spanLanes = lanesUsed(row, 'item');
-    const hidden = layout.hiddenByRow?.[row]?.length ?? 0;
+    const spanLanes = countsOnly ? 0 : lanesUsed(row, 'item');
+    // In the counts-only month the day counts speak for the entries: "+N" is for windows only.
+    const hiddenIds = layout.hiddenByRow?.[row] ?? EMPTY_IDS;
+    // An id that names both an entry and a window drawn in this row is the entry's.
+    const drawnWindows = countsOnly ? new Set((placedByRow.get(row) ?? []).filter((placed) => placed.group === 'window').map((placed) => placed.id)) : undefined;
+    const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id) && !drawnWindows!.has(id)).length : hiddenIds.length;
     const firstHiddenDay = layout.firstHiddenDayByRow?.[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
     const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
@@ -592,7 +644,7 @@ export function SchedulingCalendar({
           </button>;
         }
         const entry = entryById.get(placed.id);
-        if (!entry) return null;
+        if (!entry || countsOnly) return null;
         return <button key={`span-${placed.id}`} className="uix-scheduling-calendar__entry uix-scheduling-calendar__span" {...entryProps(entry)} {...continues} style={laneStyle(placed, windowLanes)}>{entryContent(entry, !placed.continuesBefore)}</button>;
       })}
       {hidden > 0 && (onShowMore
@@ -605,7 +657,7 @@ export function SchedulingCalendar({
   const gridStyle = fixed ? {
     ['--uix-scheduling-calendar-chips' as string]: chipRows,
     ['--uix-scheduling-calendar-lane-cap' as string]: Math.max(
-      Math.max(Number.isFinite(windowCap) ? windowCap : 0, lanesUsedAnywhere('window')) + Math.max(Number.isFinite(spanCap) ? spanCap : 0, lanesUsedAnywhere('item')),
+      Math.max(Number.isFinite(windowCap) ? windowCap : 0, lanesUsedAnywhere('window')) + (countsOnly ? 0 : Math.max(Number.isFinite(spanCap) ? spanCap : 0, lanesUsedAnywhere('item'))),
       Object.keys(layout.hiddenByRow ?? {}).length > 0 ? 1 : 0,
     ),
   } as CSSProperties : undefined;
@@ -619,6 +671,11 @@ export function SchedulingCalendar({
     {notice != null && notice !== false && <div className="uix-scheduling-calendar__notice">{notice}</div>}
     {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
       : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
+      : view === 'agenda' && agendaGroups ? <SchedulingAgenda
+        groups={agendaGroups} timeZone={timeZone} labels={labels} headingLevel={agendaHeadingLevel} virtualizeAbove={virtualizeAbove} dateText={dateText} formatInstant={formatInstant}
+        entryName={entryName} entryStatus={statusOf} entryStatusText={stateText} entryMarkers={markersOf} overlayName={overlayName}
+        renderEntry={renderEntry} renderMarker={renderMarker} onSelectEntry={onSelectEntry} onSelectOverlay={onSelectOverlay} onShowMore={onShowMore}
+      />
       : view === 'agenda' ? <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>{visibleEntries.length === 0 ? <p>{labels.agendaEmpty}</p> : <ol>{[...visibleEntries].sort((a, b) => a.start.localeCompare(b.start)).map((entry) => {
         const markers = markersOf(entry);
         return <li key={entry.id}><button type="button" data-item-id={entry.id} data-band={entry.band ?? 'none'} data-status={statusOf(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span>{markers.length > 0 && <span className="uix-scheduling-calendar__markers">{markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}{entry.state ? <StatusPill tone={stateTone(entry.state)}>{stateLabel[entry.state]}</StatusPill> : <span className="uix-scheduling-calendar__status">{stateText(entry)}</span>}</button></li>;
@@ -632,7 +689,7 @@ export function SchedulingCalendar({
         topLaneCrossMidnightMinutes={topLaneCrossMidnightMinutes} topLaneCap={topLaneCap} windowLaneCap={windowLaneCap ?? DEFAULT_LANE_CAP} maxLanes={maxLanes}
         emptyNote={emptyNote} nothingToShow={nothingToShow}
       />
-      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} style={gridStyle} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
+      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} data-density={countsOnly ? 'counts' : undefined} style={gridStyle} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
         {days.slice(0, 7).map((date) => <div key={`weekday-${date}`} className="uix-scheduling-calendar__weekday" aria-hidden="true">{dateText(date, 'weekday')}</div>)}
         {Array.from({ length: days.length / 7 }, (_, row) => renderWeek(row))}
         {emptyNote != null && emptyNote !== false && nothingToShow && <div className="uix-scheduling-calendar__empty">{emptyNote}</div>}
