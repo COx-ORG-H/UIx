@@ -17,7 +17,8 @@ export interface ConfirmDialogProps {
   description?: ReactNode;
   confirmLabel: ReactNode;
   cancelLabel: ReactNode;
-  closeLabel: string;
+  /** Accessible name of the close button. Default: `UixLabelsProvider` `modal.close`, then "Close dialog". */
+  closeLabel?: string;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
   pending?: boolean;
@@ -234,7 +235,8 @@ export interface PromptDialogProps {
   placeholder?: string;
   submitLabel: ReactNode;
   cancelLabel: ReactNode;
-  closeLabel: string;
+  /** Accessible name of the close button. Default: `UixLabelsProvider` `modal.close`, then "Close dialog". */
+  closeLabel?: string;
   onSubmit: (value: string) => void | Promise<void>;
   onCancel: () => void;
   validate?: (value: string) => ReactNode | undefined;

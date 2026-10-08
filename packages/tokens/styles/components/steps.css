@@ -44,3 +44,15 @@
     .uix-steps--horizontal > .uix-step > .uix-step__connector { position: absolute; left: 13px; top: 30px; bottom: 4px; width: 1px; height: auto; min-width: 0; margin: 0; }
   }
 }
+
+/* Steps that hold content (`progress={false}`, HAR-1628): numbered sections, all on screen at
+   once. No state is drawn, so every step reads as body text and its content fills the row. */
+@layer uix.components {
+  .uix-steps--sections { align-items: stretch; }
+  .uix-steps--sections > .uix-step { color: var(--uix-text); padding-bottom: var(--uix-space-6); }
+  .uix-steps--sections > .uix-step:last-child { padding-bottom: 0; }
+  .uix-steps--sections > .uix-step > .uix-step__text { flex: 1 1 0; }
+  .uix-steps--sections .uix-step__title { font-size: var(--uix-text-body); font-weight: 600; }
+  :is(h2, h3, h4, h5, h6).uix-step__title { margin: 0; line-height: inherit; }
+  .uix-step__content { min-width: 0; margin-top: var(--uix-space-3); color: var(--uix-text); font-size: var(--uix-text-body); }
+}
