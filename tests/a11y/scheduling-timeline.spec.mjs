@@ -154,9 +154,20 @@ test('AC3: one element per window; the scoped one is painted and hit only over i
   for (const edge of edges) expect(edge, edge.id).toEqual({ id: edge.id, aboveTop: false, belowTop: true, aboveBottom: true, belowBottom: false });
 
   // Visible words: kind, name and scope; a click in a clear part of the band reaches the consumer.
-  await expect(some.locator(`${P}overlay-kind`)).toBeVisible();
-  await expect(some.locator(`${P}overlay-name`)).toBeVisible();
-  await expect(some.locator(`${P}overlay-scope`)).toHaveText('2 services');
+  // The words are written once in each run of rows, so a bar on one of them does not hide the window's name.
+  await expect(some.locator(`${P}overlay-label`)).toHaveCount(2);
+  await expect(some.locator(`${P}overlay-kind`).last()).toBeVisible();
+  await expect(some.locator(`${P}overlay-name`).last()).toBeVisible();
+  await expect(some.locator(`${P}overlay-scope`).last()).toHaveText('2 services');
+  const words = await page.evaluate((prefix) => {
+    const labels = [...document.querySelectorAll(`[data-overlay-id="some"] ${prefix}overlay-label`)].map((el) => el.getBoundingClientRect());
+    const rows = ['pay-ledger', 'net-edge'].map((id) => document.querySelector(`${prefix}row[data-lane-id="${id}"]`).getBoundingClientRect());
+    const all = document.querySelector(`[data-overlay-id="all"] ${prefix}overlay-label`).getBoundingClientRect();
+    const first = document.querySelector(`${prefix}row[data-lane-id]`).getBoundingClientRect();
+    return { inRows: labels.map((label, index) => label.top >= rows[index].top && label.bottom <= rows[index].bottom), allInFirstLane: all.top >= first.top && all.bottom <= first.bottom };
+  }, P);
+  expect(words.inRows).toEqual([true, true]);
+  expect(words.allInFirstLane, 'the words of a window over every row sit on the first lane, not under a group head').toBe(true);
   await expect(some).toHaveAccessibleName(/^Maintenance, Storage network, 2 services, /);
   await expect(some).not.toHaveAttribute('title', /.*/);
   await some.focus();
@@ -255,10 +266,17 @@ test('AC4: inside a maxHeight the axis stays in view while the lanes scroll', as
   const scroller = page.locator(`${P}scroller`);
   const before = await box(page.locator(`${P}row--axis`));
   await scroller.evaluate((el) => { el.scrollTop = 4000; });
-  await expect(page.locator(lane('lane-0'))).toHaveCount(0);
+  // The rows scrolled away are unmounted, all but the lane that holds the tab stop.
+  await expect(page.locator(lane('lane-3'))).toHaveCount(0);
+  await expect(page.locator(lane('lane-0'))).toHaveCount(1);
   const after = await box(page.locator(`${P}row--axis`));
   expect(Math.abs(after.top - before.top)).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  // The words of the window over every row followed the scroll: they are on a lane in view, under the axis.
+  const words = page.locator(`[data-overlay-id="all"] ${P}overlay-label`);
+  await expect(words).toHaveCount(1);
+  await expect(words).toBeInViewport();
+  expect((await box(words)).top).toBeGreaterThanOrEqual(after.bottom - 1);
 });
 
 test('AC5 / AC6: a press that does not travel is a click; a drag proposes once, on drop, and the bar stays', async ({ page }) => {
@@ -455,9 +473,9 @@ test('AC9: the bars are one tab stop; Tab goes through the windows and group tog
   expect(stops).toEqual(['a']);
   await page.locator(item('a')).focus();
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator(item('c'))).toBeFocused();
-  await page.keyboard.press('ArrowRight');
   await expect(page.locator(item('b'))).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator(item('c'))).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await expect(page.locator(item('high'))).toBeFocused();
   await page.keyboard.press('ArrowDown');
@@ -528,7 +546,7 @@ test('AC10: the now-line and its label are neutral; only band="high" carries the
       marker: chroma(getComputedStyle(document.querySelector(`${prefix}marker`)).borderLeftColor),
     };
   }, P);
-  expect(legacy.bars.map(([state]) => state)).toEqual([null, 'conflicted', 'in-progress', 'blackout-violation']);
+  expect(legacy.bars.map(([state]) => state)).toEqual(['scheduled', 'conflicted', 'in-progress', 'blackout-violation']);
   for (const [state, background, border] of legacy.bars) { expect(background, `${state} background`).toBeLessThanOrEqual(12); expect(border, `${state} border`).toBeLessThanOrEqual(12); }
   expect(legacy.overlays.map(([kind]) => kind)).toEqual(['freeze', 'maintenance']);
   for (const [kind, background] of legacy.overlays) expect(background, kind).toBeLessThanOrEqual(12);

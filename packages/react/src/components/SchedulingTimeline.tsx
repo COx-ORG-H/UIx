@@ -269,7 +269,9 @@ interface StepDrag { id: string; x: number; width: number; delta: number; moved:
 interface MoveDelta { days: number; minutes: number }
 /** A proposed move on screen: pending from the keyboard, following the pointer, or sent and waiting for the consumer. */
 /** Where a window or marker is drawn: over every row, clipped to the rows of some lanes, or inside its one lane. */
-interface Scope { scope: 'all' | 'lanes' | 'lane'; clip?: string; labelTop?: string }
+interface Scope { scope: 'all' | 'lanes' | 'lane'; clip?: string; labelTops: string[] }
+/** A window drawn inside its one lane: its words start at the top of that lane. */
+const IN_LANE: Scope = { scope: 'lane', labelTops: ['0%'] };
 interface Ghost { id: string; delta: MoveDelta; source: 'keys' | 'pointer' | 'sent'; proposal: MoveProposal }
 
 const vars = (values: Record<string, number | string | undefined>): CSSProperties => values as CSSProperties;
@@ -460,13 +462,13 @@ export function SchedulingTimeline({
   const overscan = OVERSCAN_ROWS * units.row;
   const pinned = focusId === undefined ? -1 : rowOfItem.get(focusId) ?? -1;
   // The axis row, the notes row and the pinned row are row elements too: the window leaves room for them.
-  const mounted = useMemo(() => {
-    if (!virtual) return rows.map((_, index) => index);
+  const { mounted, windowStart } = useMemo(() => {
+    if (!virtual) return { mounted: rows.map((_, index) => index), windowStart: 0 };
     const window_ = timelineWindow(offsets, view.top, view.top + view.height, { overscan, cap: Math.max(1, virtualizeAbove - 3) });
     const list: number[] = [];
     for (let index = window_.start; index < window_.end; index++) list.push(index);
     if (pinned !== -1 && (pinned < window_.start || pinned >= window_.end)) { list.push(pinned); list.sort((a, b) => a - b); }
-    return list;
+    return { mounted: list, windowStart: window_.start };
   }, [virtual, rows, offsets, view, overscan, virtualizeAbove, pinned]);
   /** In a virtual timeline a bar is mounted when its sub-row is near the viewport, or it has the tab stop. */
   const barMounted = (rowIndex: number, placed: PlacedSpan<Item>) => {
@@ -696,15 +698,28 @@ export function SchedulingTimeline({
   const trackStyle = { minWidth: `calc(${Math.max(ticks.length - 1, 1)} * ${tickWidth ?? TICK_WIDTH[scale]})` } as CSSProperties;
   const nowPos = now ? placeSpan({ start: now, end: now }, range) : null;
 
-  /** The clip that limits one element to the rows of the lanes it names, and where its label goes. Null: nothing to draw. */
+  /**
+   * Where the words of a window go inside a run of rows `[from, to)`: the top of its first lane.
+   * In a virtual timeline, the first lane of the run that starts inside the viewport, so the
+   * words are on screen wherever the timeline is scrolled; none when the run is out of view.
+   */
+  const labelTopIn = (from: number, to: number): string[] => {
+    for (let r = virtual ? Math.max(from, windowStart) : from; r < to; r++) {
+      if (rows[r]!.kind !== 'lane') continue;
+      if (!virtual) return [extentCss(extents[r]!)];
+      if (offsets[r]! > view.top + view.height + overscan) return [];
+      if (offsets[r]! >= view.top) return [extentCss(extents[r]!)];
+    }
+    return [];
+  };
+  /** The clip that limits one element to the rows of the lanes it names, and where its words go. Null: nothing to draw. */
   const scopeOf = (targets: ReadonlySet<string> | null): Scope | null => {
-    if (targets === null) return { scope: 'all' };
+    if (targets === null) return { scope: 'all', labelTops: labelTopIn(0, rows.length) };
     const runs = timelineRuns(rows.map((row) => row.kind === 'lane' && targets.has(row.lane.id)));
     if (runs.length === 0) return null;
     const clip = `polygon(${runs.map((run) => { const from = extentCss(extents[run.from]!); const to = extentCss(extents[run.to]!); return `0 ${from}, 100% ${from}, 100% ${to}, 0 ${to}`; }).join(', ')})`;
-    // The words go at the top of the first run that is still in view.
-    const visible = virtual ? runs.find((run) => offsets[run.to]! > view.top + units.row) ?? runs[0]! : runs[0]!;
-    return { scope: 'lanes', clip, labelTop: extentCss(extents[visible.from]!) };
+    // The words are written once in each run of rows: a bar may sit on them in one run and not in the next.
+    return { scope: 'lanes', clip, labelTops: runs.flatMap((run) => labelTopIn(run.from, run.to)) };
   };
 
   const renderOverlay = (overlay: SchedulingTimelineOverlay, key: string, scope: Scope | null) => {
@@ -716,13 +731,13 @@ export function SchedulingTimeline({
       'data-pattern': patternOf(overlay),
       'data-kind': overlay.kind,
       'data-scope': scope.scope,
-      style: { left: `${pos.left}%`, width: `${pos.width}%`, ...vars({ '--uix-timeline-clip': scope.clip, '--uix-timeline-label-top': scope.labelTop }) },
+      style: { left: `${pos.left}%`, width: `${pos.width}%`, ...vars({ '--uix-timeline-clip': scope.clip }) },
     };
-    const text = <span className="uix-scheduling-timeline__overlay-label">
+    const text = scope.labelTops.map((top) => <span key={top} className="uix-scheduling-timeline__overlay-label" style={vars({ '--uix-timeline-label-top': top })}>
       {overlay.kindLabel && <span className="uix-scheduling-timeline__overlay-kind">{overlay.kindLabel}</span>}
       <span className="uix-scheduling-timeline__overlay-name">{overlay.label}</span>
       {overlay.scopeLabel && <span className="uix-scheduling-timeline__overlay-scope">{overlay.scopeLabel}</span>}
-    </span>;
+    </span>);
     return onSelectOverlay
       ? <button key={key} type="button" {...shared} aria-label={overlayName(overlay)} onClick={() => onSelectOverlay(overlay)}>{text}</button>
       : <span key={key} {...shared} aria-hidden="true">{text}</span>;
@@ -821,8 +836,8 @@ export function SchedulingTimeline({
           {lane.meta != null && <span className="uix-scheduling-timeline__lane-meta">{lane.meta}</span>}
         </div>
         <div className="uix-scheduling-timeline__track" style={trackStyle}>
-          {overlays.map((overlay, index) => (!inLayer(overlay) && lanesOf(overlay)!.has(lane.id) ? renderOverlay(overlay, overlayKeys[index]!, { scope: 'lane' }) : null))}
-          {markers.map((marker, index) => (!inLayer(marker) && lanesOf(marker)!.has(lane.id) ? renderMarker(marker, markerKeys[index]!, { scope: 'lane' }) : null))}
+          {overlays.map((overlay, index) => (!inLayer(overlay) && lanesOf(overlay)!.has(lane.id) ? renderOverlay(overlay, overlayKeys[index]!, IN_LANE) : null))}
+          {markers.map((marker, index) => (!inLayer(marker) && lanesOf(marker)!.has(lane.id) ? renderMarker(marker, markerKeys[index]!, IN_LANE) : null))}
           <ul className="uix-scheduling-timeline__items" aria-labelledby={row.groupIndex === undefined ? laneLabelId : `${id}-group-${row.groupIndex} ${laneLabelId}`}>
             {renderItems(row, rowIndex)}
           </ul>

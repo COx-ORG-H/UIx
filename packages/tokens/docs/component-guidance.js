@@ -82,7 +82,7 @@ export const COMPONENT_GUIDANCE = {
   'rule-builder': ['Author conditions and resulting actions.', 'Editable condition groups with explicit operators and validation feedback.'],
   'builder-canvas': ['Arrange configurable items in an authoring workspace.', 'A canvas and item controls; keyboard alternatives must accompany pointer operations.'],
   'relationship-graph': ['Inspect how entities are connected.', 'Named nodes and connections with a readable alternative to the visual graph.'],
-  'scheduling-timeline': ['Place work in lanes on a time axis and move it.', 'Bars, windows and markers positioned by time in an explicit zone; the app owns conflict rules and saves the moves it receives.'],
+  'scheduling-timeline': ['Place work in lanes on a time axis and ask to move it.', 'Bars in grouped lanes, windows and markers positioned by time in an explicit zone; the app says what clashes and decides every move it is asked for.'],
   'scheduling-calendar': ['Inspect events against a time grid.', 'Positioned events with dates and times; the app owns timezone and scheduling rules.'],
   'text-diff': ['Compare two versions of a text and see what was added and removed.', 'Changed lines are paired side by side with the changed words marked, or prose is compared word by word; removals and additions are del/ins with a sign and spoken words, never colour alone.'],
   'diff-viewer': ['Compare base, current and incoming configuration and resolve each difference.', 'Grouped entries with every version labelled; each action is named for its entry, and controlSize md follows --uix-control-h for touch-sized controls.'],

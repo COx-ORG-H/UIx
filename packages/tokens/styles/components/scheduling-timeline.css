@@ -123,9 +123,8 @@
   .uix-scheduling-timeline__group-summary { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); }
   .uix-scheduling-timeline__group-count { font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  /* windows: one element each, neutral, told apart by pattern and words. A column flex box, so the
-     words start at the top in a button too (a button centres its content otherwise). */
-  .uix-scheduling-timeline__overlay { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; min-width: 0; margin: 0; padding: 0; border: 0; border-inline: 1px solid var(--timeline-window-edge); border-radius: 0; background-color: var(--timeline-window-surface); color: var(--timeline-window-text); font: inherit; text-align: start; }
+  /* windows: one element each, neutral, told apart by pattern and words */
+  .uix-scheduling-timeline__overlay { position: absolute; top: 0; bottom: 0; display: block; min-width: 0; margin: 0; padding: 0; border: 0; border-inline: 1px solid var(--timeline-window-edge); border-radius: 0; background-color: var(--timeline-window-surface); color: var(--timeline-window-text); font: inherit; text-align: start; }
   button.uix-scheduling-timeline__overlay { pointer-events: auto; cursor: pointer; }
   /* the ring is drawn inside: a clip would cut an outline that sits outside the box */
   button.uix-scheduling-timeline__overlay:focus-visible { outline-offset: -2px; }
@@ -134,10 +133,10 @@
   .uix-scheduling-timeline__overlay[data-pattern="diagonal"] { background-image: repeating-linear-gradient(45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px); }
   .uix-scheduling-timeline__overlay[data-pattern="cross"] { background-image: repeating-linear-gradient(45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, var(--timeline-window-ink) 0 1px, transparent 1px 6px); }
   .uix-scheduling-timeline__overlay[data-pattern="dotted"] { background-image: radial-gradient(circle, var(--timeline-window-ink) 1px, transparent 1.5px); background-size: 5px 5px; }
-  /* the words sit on their own patch of the window colour, so the hatch never runs under them;
-     they start at the first row of the window and stay under the axis while it scrolls */
-  .uix-scheduling-timeline__overlay-label { position: sticky; top: calc(var(--timeline-axis-height) + var(--timeline-gap)); flex: none; display: flex; gap: var(--uix-space-1); width: max-content; max-width: 100%; margin-top: var(--timeline-gap); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-window-surface); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); line-height: 1.25rem; }
-  .uix-scheduling-timeline__overlay[data-scope="lanes"] > .uix-scheduling-timeline__overlay-label { margin-top: calc(var(--uix-timeline-label-top) + var(--timeline-gap)); }
+  /* the words sit on their own patch of the window colour, so the hatch never runs under them.
+     The component puts them at the top of a lane (--uix-timeline-label-top, in row units): the
+     first lane of each run of rows the window covers. */
+  .uix-scheduling-timeline__overlay-label { position: absolute; top: calc(var(--uix-timeline-label-top) + var(--timeline-gap)); left: var(--timeline-gap); display: flex; gap: var(--uix-space-1); max-width: calc(100% - 2 * var(--timeline-gap)); padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); background: var(--timeline-window-surface); overflow: hidden; white-space: nowrap; font-size: var(--uix-text-meta); line-height: 1.25rem; }
   .uix-scheduling-timeline__overlay-kind { flex: none; font-weight: 600; }
   .uix-scheduling-timeline__overlay-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .uix-scheduling-timeline__overlay-scope { flex: 0 2 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-style: italic; }

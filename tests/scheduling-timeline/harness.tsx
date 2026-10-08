@@ -125,7 +125,8 @@ function Stress() {
 function Hour() {
   return <SchedulingTimeline
     {...common} lanes={LANES.slice(0, 2)} scale="hour"
-    range={{ start: berlin('2026-10-25', '00:00'), end: berlin('2026-10-26', '00:00') }}
+    // 00:00 on 25.10.2026 is still UTC+2 and 00:00 on the 26th is UTC+1: 25 hours.
+    range={{ start: '2026-10-24T22:00:00.000Z', end: '2026-10-25T23:00:00.000Z' }}
     items={[bar('h1', 'pay-api', ['2026-10-25', '03:00'], ['2026-10-25', '05:00'], 'After the repeat')]}
   />;
 }
