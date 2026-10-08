@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode, RefObject } from 'react';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
 import { Modal } from './Modal.js';
+import { Textarea } from './Textarea.js';
 import { Popover } from './Popover.js';
 import { fillLabel } from '../fill-label.js';
 import { resolveAnchor } from '../hooks/useAnchoredPosition.js';
@@ -241,38 +242,101 @@ export interface PromptDialogProps {
   onCancel: () => void;
   validate?: (value: string) => ReactNode | undefined;
   pending?: boolean;
+  /**
+   * Ask for a longer answer in a textarea (a reason, a note); a number sets its rows, `true`
+   * is 4. Enter adds a line there, so the form is sent with the submit button or Ctrl/⌘+Enter
+   * (HAR-1614).
+   */
+  multiline?: boolean | number;
+  /**
+   * The answer confirms something that cannot be taken back (a forced import): the submit
+   * button is the danger button and the dialog is an `alertdialog`.
+   */
+  destructive?: boolean;
+  /**
+   * Why the last submit failed, from the server. Shown under the field (`role="alert"`) and
+   * tied to it; the dialog stays open. A message from `validate` takes its place while the
+   * value is invalid.
+   */
+  error?: ReactNode;
+  /** Default: `'alertdialog'` when `destructive`, else `'dialog'`. */
+  role?: 'dialog' | 'alertdialog';
 }
 
-export function PromptDialog({ open, title, description, inputLabel, defaultValue = '', placeholder, submitLabel, cancelLabel, closeLabel, onSubmit, onCancel, validate, pending }: PromptDialogProps) {
+export function PromptDialog({
+  open, title, description, inputLabel, defaultValue = '', placeholder, submitLabel, cancelLabel, closeLabel, onSubmit, onCancel,
+  validate, pending, multiline = false, destructive = false, error: submitError, role,
+}: PromptDialogProps) {
   const inputId = useId();
   const errorId = `${inputId}-error`;
+  const descriptionId = `${inputId}-description`;
+  const formRef = useRef<HTMLFormElement>(null);
+  const fieldRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const [value, setValue] = useState(defaultValue);
-  const [error, setError] = useState<ReactNode>();
+  const [issue, setIssue] = useState<ReactNode>();
+  const error = issue ?? submitError;
+
+  // The answer field takes focus when the dialog opens. React's autoFocus only runs at mount,
+  // when the dialog is still closed, and showModal() then picks the first control it finds, the
+  // header's close button. Modal (the child) has already called showModal() by the time this runs.
+  useEffect(() => {
+    if (open) fieldRef.current?.focus();
+  }, [open]);
 
   useEffect(() => {
     if (open) {
       setValue(defaultValue);
-      setError(undefined);
+      setIssue(undefined);
     }
   }, [defaultValue, open]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const issue = validate?.(value);
-    setError(issue);
-    if (issue == null) void onSubmit(value);
+    const found = validate?.(value);
+    setIssue(found);
+    if (found == null) void onSubmit(value);
+  };
+
+  const field = {
+    id: inputId,
+    value,
+    placeholder,
+    'aria-describedby': error != null ? errorId : undefined,
+    invalid: error != null,
+    ref: fieldRef,
   };
 
   return (
-    <Modal open={open} onClose={onCancel} title={title} closeLabel={closeLabel}>
-      <form className="uix-prompt" onSubmit={handleSubmit}>
-        {description != null && <div>{description}</div>}
+    <Modal
+      open={open}
+      onClose={onCancel}
+      title={title}
+      closeLabel={closeLabel}
+      role={role ?? (destructive ? 'alertdialog' : 'dialog')}
+      aria-describedby={description != null ? descriptionId : undefined}
+    >
+      <form ref={formRef} className="uix-prompt" onSubmit={handleSubmit}>
+        {description != null && <div id={descriptionId}>{description}</div>}
         <label className="uix-field__label" htmlFor={inputId}>{inputLabel}</label>
-        <Input id={inputId} value={value} placeholder={placeholder} aria-describedby={error ? errorId : undefined} invalid={error != null} onChange={(event) => setValue(event.currentTarget.value)} autoFocus />
+        {multiline
+          ? (
+            <Textarea
+              {...field}
+              rows={typeof multiline === 'number' ? multiline : 4}
+              onChange={(event) => setValue(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                  event.preventDefault();
+                  formRef.current?.requestSubmit();
+                }
+              }}
+            />
+          )
+          : <Input {...field} onChange={(event) => setValue(event.currentTarget.value)} />}
         {error != null && <div id={errorId} className="uix-field__error" role="alert">{error}</div>}
         <div className="uix-dialog__footer uix-prompt__actions">
           <Button type="button" onClick={onCancel} disabled={pending}>{cancelLabel}</Button>
-          <Button type="submit" variant="primary" loading={pending}>{submitLabel}</Button>
+          <Button type="submit" variant={destructive ? 'danger' : 'primary'} loading={pending}>{submitLabel}</Button>
         </div>
       </form>
     </Modal>

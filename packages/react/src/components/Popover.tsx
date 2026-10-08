@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, RefObject } from 'react';
 import { cx } from '../cx.js';
-import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
+import { resolveAnchor, useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
@@ -60,6 +60,16 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
    * for content that can be taller than a phone screen. Needs `anchor`. Default `false`.
    */
   capHeight?: boolean;
+  /**
+   * Open while the pointer is over the `anchor` or the anchor has keyboard focus, and close
+   * when both have left the anchor and the popover — a hover card (HAR-1614). The pointer can
+   * travel from the anchor into the popover, and focus can move into it, without closing it;
+   * Escape closes it. Touch does not hover: open it from the anchor's own click there.
+   * `true` waits 300 ms before opening and 150 ms before closing; pass the delays to change
+   * them. Needs `anchor`; `popover` then defaults to `"manual"`, so a hover card does not
+   * dismiss a menu or dialog that is open.
+   */
+  openOnHover?: boolean | { openDelay?: number; closeDelay?: number };
   children?: ReactNode;
 }
 
@@ -69,9 +79,13 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
  * Pass `anchor` to get collision-aware, cross-browser placement (UIX-FIX-02).
  */
 export function Popover({
-  popover = 'auto', anchor, placement = 'bottom-start', offset = 6, closeWhenAnchorHidden = false, onAnchorHidden,
-  capHeight = false, className, children, ...props
+  popover: popoverProp, anchor, placement = 'bottom-start', offset = 6, closeWhenAnchorHidden = false, onAnchorHidden,
+  capHeight = false, openOnHover = false, className, children, ...props
 }: PopoverProps) {
+  const hover = !!openOnHover && !!anchor;
+  const popover = popoverProp ?? (hover ? 'manual' : 'auto');
+  const openDelay = typeof openOnHover === 'object' ? openOnHover.openDelay ?? 300 : 300;
+  const closeDelay = typeof openOnHover === 'object' ? openOnHover.closeDelay ?? 150 : 150;
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
@@ -134,6 +148,59 @@ export function Popover({
       el.removeAttribute(PLACING);
     };
   }, [anchor, reposition]);
+
+  // openOnHover: the anchor and the popover are one hover / focus area.
+  useEffect(() => {
+    const el = ref.current as (HTMLDivElement & { showPopover?: () => void; hidePopover?: () => void }) | null;
+    const anchorEl = resolveAnchor(anchor);
+    if (!hover || !el || !anchorEl) return;
+    let timer: number | undefined;
+    const inside = (node: Element | null): boolean => !!node && (anchorEl.contains(node) || el.contains(node));
+    const stillWanted = (): boolean => {
+      try {
+        return anchorEl.matches(':hover') || el.matches(':hover') || inside(el.ownerDocument.activeElement);
+      } catch { return false; }
+    };
+    const show = (delay: number) => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => { if (!isPopoverOpen(el)) { try { el.showPopover?.(); } catch { /* not connected */ } } }, delay);
+    };
+    const hide = (delay: number) => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (isPopoverOpen(el) && !stillWanted()) { try { el.hidePopover?.(); } catch { /* already closed */ } }
+      }, delay);
+    };
+    const onEnter = (event: Event) => { if ((event as PointerEvent).pointerType !== 'touch') show(openDelay); };
+    const onLeave = (event: Event) => { if ((event as PointerEvent).pointerType !== 'touch') hide(closeDelay); };
+    const onFocusIn = () => show(0);
+    const onFocusOut = (event: Event) => { if (!inside((event as FocusEvent).relatedTarget as Element | null)) hide(closeDelay); };
+    const onKeyDown = (event: Event) => {
+      if ((event as KeyboardEvent).key !== 'Escape' || !isPopoverOpen(el)) return;
+      window.clearTimeout(timer);
+      // Focus that was inside goes back to the anchor; the card must not reopen from that.
+      const hadFocus = el.contains(el.ownerDocument.activeElement);
+      try { el.hidePopover?.(); } catch { /* already closed */ }
+      if (hadFocus) { anchorEl.removeEventListener('focusin', onFocusIn); anchorEl.focus(); anchorEl.addEventListener('focusin', onFocusIn); }
+    };
+    for (const node of [anchorEl, el]) {
+      node.addEventListener('pointerenter', onEnter);
+      node.addEventListener('pointerleave', onLeave);
+      node.addEventListener('focusout', onFocusOut);
+      node.addEventListener('keydown', onKeyDown);
+    }
+    anchorEl.addEventListener('focusin', onFocusIn);
+    return () => {
+      window.clearTimeout(timer);
+      for (const node of [anchorEl, el]) {
+        node.removeEventListener('pointerenter', onEnter);
+        node.removeEventListener('pointerleave', onLeave);
+        node.removeEventListener('focusout', onFocusOut);
+        node.removeEventListener('keydown', onKeyDown);
+      }
+      anchorEl.removeEventListener('focusin', onFocusIn);
+    };
+  }, [hover, anchor, openDelay, closeDelay]);
 
   // Runs right after the anchored-position hook placed it for the new session: let go of the hold.
   useIsomorphicLayoutEffect(() => {

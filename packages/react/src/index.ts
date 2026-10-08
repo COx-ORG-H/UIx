@@ -171,7 +171,7 @@ export { DEFAULT_PAGINATION_LABELS, Pagination } from './components/Pagination.j
 export type { PaginationLabels, PaginationProps } from './components/Pagination.js';
 
 export { StatusPill } from './components/StatusPill.js';
-export type { StatusPillProps, PillTone, PillTreatment } from './components/StatusPill.js';
+export type { StatusPillProps, PillTone, PillTreatment, PillSize } from './components/StatusPill.js';
 
 export { Progress } from './components/Progress.js';
 export type { ProgressProps } from './components/Progress.js';

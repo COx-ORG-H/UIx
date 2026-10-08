@@ -35,3 +35,11 @@
   .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
   .uix-pill--outline.uix-pill--critical { color: var(--uix-danger-text); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
 }
+
+/* Sizes (HAR-1614): sm for dense cells, lg for a page header. The default is unchanged. */
+@layer uix.components {
+  .uix-pill--sm { gap: var(--uix-space-1); padding: 0 var(--uix-space-2); font-size: var(--uix-text-eyebrow); }
+  .uix-pill--sm .uix-pill__dot { width: 6px; height: 6px; }
+  .uix-pill--lg { padding: var(--uix-space-2) var(--uix-space-4); font-size: var(--uix-text-body); }
+  .uix-pill--lg .uix-pill__dot { width: 9px; height: 9px; }
+}
