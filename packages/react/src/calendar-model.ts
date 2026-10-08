@@ -130,6 +130,15 @@ export function zonedDateKey(instant: string | Date, timeZone: string): string {
   return wallKey(wallClock(toInstant(instant), timeZone));
 }
 
+/**
+ * The 24-hour wall-clock time (`HH:MM`) of an instant in `timeZone`. It reads the same
+ * cached formatter as the zone math, so it adds no `Intl.DateTimeFormat` instance.
+ */
+export function zonedTimeOfDay(instant: string | number | Date, timeZone: string): string {
+  const wall = wallClock(toInstant(instant), timeZone);
+  return `${String(wall.hour).padStart(2, '0')}:${String(wall.minute).padStart(2, '0')}`;
+}
+
 /** A date key that names a real calendar date (`2026-13-01` throws; the older helpers roll it over). */
 function checkedDateKey(value: string): string {
   if (toDateKey(fromDateKey(value)) !== value) throw new TypeError(`Invalid ISO date: ${value}`);
