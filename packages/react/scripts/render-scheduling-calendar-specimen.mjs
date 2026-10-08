@@ -127,9 +127,29 @@ const WEEK_DAYS = {
   '2026-10-08': { count: 3, overflowCount: 0, label: 'Thursday 08.10.2026, 3 items' },
 };
 
+// The agenda's groups are the consumer's: here each entry is listed once, under the day it
+// starts, in the order of ENTRIES by start; a window is noted on each day it touches.
+function agendaGroups() {
+  const byDay = new Map();
+  for (const entry of [...ENTRIES].sort((a, b) => a.start.localeCompare(b.start))) {
+    const date = zonedDateKey(entry.start, TZ);
+    if (date < '2026-10-05' || date > '2026-10-09') continue;
+    byDay.set(date, [...(byDay.get(date) ?? []), entry]);
+  }
+  return [...byDay].map(([date, rows]) => ({
+    date,
+    rows: date === '2026-10-07' ? rows.slice(0, 3) : rows,
+    // Wednesday lists three of its nine items; Thursday has two that started on Wednesday.
+    ...(date === '2026-10-07' ? { hiddenCount: 6 } : {}),
+    ...(date === '2026-10-08' ? { continuesCount: 1 } : {}),
+    annotations: OVERLAYS.filter((overlay) => zonedDateKey(overlay.start, TZ) <= date && overlay.end > berlin(date, '00:00')),
+  }));
+}
+
 function overview() {
   const panel = (view) => withViewHooks(renderToStaticMarkup(h(SchedulingCalendar, {
     ...shared, view, timeGrid: true, entries: ENTRIES, overlays: OVERLAYS, maxEntriesPerDay: 3, legend: LEGEND,
+    ...(view === 'agenda' ? { agendaGroups: agendaGroups() } : {}),
     // The time grid: consumer counts in the day heads and a line at "now" (the component keeps no clock).
     ...(view === 'week' || view === 'day' ? { days: WEEK_DAYS, now: berlin('2026-10-08', '10:30') } : {}),
     legendCaption: 'Times in Europe/Berlin. A hatched bar is a window; its words say which kind and what it applies to.',
@@ -183,6 +203,22 @@ function controlled() {
   }));
 }
 
+// A narrow screen: the month as counts and markers only (the consumer picks this below 768 px).
+function countsMonth() {
+  return `<div style="max-width:23.5rem">${renderToStaticMarkup(h(SchedulingCalendar, {
+    ...shared, showHeader: false, monthDensity: 'counts', entries: [], legend: [],
+    overlays: [OVERLAYS[0]],
+    dayEntries: {},
+    days: {
+      '2026-10-06': { count: 4, overflowCount: 4, label: '4 items, 1 needs sign-off', markers: [{ ...needsSignOff, label: '1 needs sign-off' }] },
+      '2026-10-07': { count: 9, overflowCount: 9, label: '9 items' },
+      '2026-10-08': { count: 3, overflowCount: 3, label: '3 items' },
+      '2026-10-15': { count: 12, overflowCount: 12, label: '12 items, 1 declined', markers: [{ ...declined, label: '1 declined' }] },
+      '2026-10-22': { count: 128, overflowCount: 128, label: '128 items' },
+    },
+  }))}</div>`;
+}
+
 function empty() {
   return renderToStaticMarkup(h(SchedulingCalendar, {
     ...shared, anchorDate: '2026-11-18', view: 'week', weekStartsOn: 0, showHeader: false, entries: [],
@@ -195,8 +231,9 @@ const block = (title, text, markup) => `<h3>${title}</h3><p>${text}</p>${markup}
 /** The generated part of the page, between its two markers. */
 export function renderSchedulingCalendarSpecimen() {
   return START + [
-    block('Month, week and day', 'Each item is drawn once. An item on one day is a chip that reads <code>HH:MM title</code>; an item over several days is one bar per week row. Only the <code>high</code> band is filled; <code>medium</code> has a heavier leading edge, and the state is a line style (dashed, dotted, a leading dot, dimmed), never a colour. Windows sit in their own lanes above the chips and never take a chip slot. A week row with more windows than lanes shows “+1” at its end. Every cell keeps the same height. <strong>Week</strong> and <strong>Day</strong> in the view switch are a time grid: an item sits at its real time, an item that crosses midnight is one item in two joined parts, long and all-day items go to the lane above the hours, windows are one named bar each in the strip above that, and a window that applies to everything also shades its hours. The day heads show the consumer’s count and marker, and the line is “now”. With <code>canMove</code> an item is dragged, or moved with Shift and an arrow key and confirmed with Enter; the calendar then calls <code>onProposeMove</code> and never moves the item itself.', overview()),
+    block('Month, week and day', 'Each item is drawn once. An item on one day is a chip that reads <code>HH:MM title</code>; an item over several days is one bar per week row. Only the <code>high</code> band is filled; <code>medium</code> has a heavier leading edge, and the state is a line style (dashed, dotted, a leading dot, dimmed), never a colour. Windows sit in their own lanes above the chips and never take a chip slot. A week row with more windows than lanes shows “+1” at its end. Every cell keeps the same height. <strong>Week</strong> and <strong>Day</strong> in the view switch are a time grid: an item sits at its real time, an item that crosses midnight is one item in two joined parts, long and all-day items go to the lane above the hours, windows are one named bar each in the strip above that, and a window that applies to everything also shades its hours. The day heads show the consumer’s count and marker, and the line is “now”. With <code>canMove</code> an item is dragged, or moved with Shift and an arrow key and confirmed with Enter; the calendar then calls <code>onProposeMove</code> and never moves the item itself. <strong>Agenda</strong> lists the days the consumer built (<code>agendaGroups</code>): a heading per day with one note per window, the rows in the order given, “N not shown — open day” where the consumer left rows out, and each row’s state as words.', overview()),
     block('Counts and picks owned by the consumer', 'With <code>days</code> and <code>dayEntries</code> the calendar places, ranks, cuts and counts nothing. It draws the chips it is given in the order given, shows each day’s <code>count</code> and markers even when no chip fits, and takes “+N” from <code>overflowCount</code>. The day with 50 items shows three chips and “+47 more”, which calls <code>onShowMore</code> and never expands the cell. The consumer computes the span lanes with <code>layoutMonthSpans</code> and passes the result as <code>spanLayout</code>. Here <code>showHeader</code> is off (the page has its own toolbar) and a <code>notice</code> says the list was cut.', controlled()),
+    block('A narrow month: counts only', 'With <code>monthDensity="counts"</code> a month cell shows the consumer’s count and markers and nothing else: no chips and no entry bars, in columns narrow enough for a phone. A window keeps its bar and name.', countsMonth()),
     block('A day with 25 hours', 'The hour axis comes from real instants. On 25.10.2026 in Europe/Berlin the clocks go back, so the day is 25 rows tall and “02” appears twice, each with its UTC offset. An item at 03:00 sits under “03”, one row lower than on other days. On 29.03.2026 the day has 23 rows and no “02”.', longDay()),
     block('An empty range', 'With <code>emptyNote</code> every day cell is still drawn, and the note sits inside the grid. This week starts on Sunday (<code>weekStartsOn</code>), and the dates use the injected <code>formatDate</code>.', empty()),
   ].join('') + END;

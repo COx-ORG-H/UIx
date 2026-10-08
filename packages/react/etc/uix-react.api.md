@@ -4093,6 +4093,17 @@ export interface SaveStatusProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 export type SaveStatusState = 'idle' | 'saving' | 'saved' | 'failed';
 
 // @public
+export interface SchedulingAgendaGroup {
+    annotations?: SchedulingCalendarOverlay[];
+    continuesCount?: number;
+    date: string;
+    heading?: ReactNode;
+    hiddenCount?: number;
+    // (undocumented)
+    rows: SchedulingCalendarEntry[];
+}
+
+// @public
 export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
 
 // @public
@@ -4138,13 +4149,16 @@ export interface SchedulingCalendarLabels {
     agenda: string;
     // (undocumented)
     agendaEmpty: string;
+    allDay?: string;
     continuesFrom?: string;
+    continuesInDay?: string;
     dayCount?: string;
     entry: string;
     fewerEntries: string;
     gapForward?: string;
     // (undocumented)
     grid: string;
+    hiddenInDay?: string;
     // (undocumented)
     legend: string;
     // (undocumented)
@@ -4216,6 +4230,8 @@ export interface SchedulingCalendarOverlay {
 
 // @public (undocumented)
 export interface SchedulingCalendarProps {
+    agendaGroups?: SchedulingAgendaGroup[];
+    agendaHeadingLevel?: 2 | 3 | 4 | 5 | 6;
     // (undocumented)
     anchorDate: string;
     canMove?: boolean;
@@ -4241,6 +4257,7 @@ export interface SchedulingCalendarProps {
     locale?: string;
     maxEntriesPerDay?: number;
     maxLanes?: number;
+    monthDensity?: 'full' | 'counts';
     notice?: ReactNode;
     now?: string;
     // (undocumented)
@@ -4269,6 +4286,7 @@ export interface SchedulingCalendarProps {
     topLaneCrossMidnightMinutes?: number;
     // (undocumented)
     view?: SchedulingCalendarView;
+    virtualizeAbove?: number;
     weekStartsOn?: CalendarWeekday;
     windowLaneCap?: number;
 }

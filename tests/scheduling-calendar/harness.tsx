@@ -11,13 +11,16 @@
  *     `?date=` picks the week, `?view=day` shows one day, `?empty=1` shows no entries,
  *     `?caps=1` fills the window strip and the top lane past their caps);
  *   - dense: 350 events in one week;
- *   - lanes: five overlapping items in one day, to watch the lane count follow the width.
+ *   - lanes: five overlapping items in one day, to watch the lane count follow the width;
+ *   - agenda (HAR-1520): day groups built here, with a window note, a day whose rows are not
+ *     shown, a long title and markers (`?rows=N` makes N rows over 20 days, for virtualisation);
+ *   - counts: the month with `monthDensity="counts"`.
  * window.__calendar records what each callback was called with. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SchedulingCalendar } from '../../packages/react/src/index.js';
 import type {
-  SchedulingBand, SchedulingCalendarEntry, SchedulingCalendarOverlay, SchedulingCalendarProps, SchedulingLegendItem,
+  SchedulingAgendaGroup, SchedulingBand, SchedulingCalendarEntry, SchedulingCalendarOverlay, SchedulingCalendarProps, SchedulingLegendItem,
   SchedulingMarkerEmphasis, SchedulingOverlayPattern, SchedulingStatus,
 } from '../../packages/react/src/index.js';
 
@@ -177,7 +180,61 @@ function Lanes() {
   return <SchedulingCalendar {...common} anchorDate={anchor} onAnchorDateChange={setAnchor} view={params.get('view') === 'day' ? 'day' : 'week'} timeGrid maxLanes={Number(params.get('max') ?? 4)} entries={entries} onShowMore={(day) => { calls.more.push(day); }} />;
 }
 
-const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes };
+function Agenda() {
+  const many = Number(params.get('rows') ?? 0);
+  // `rich=1`: the first rows of the long agenda carry labelled markers and its first day two windows.
+  const rich = params.get('rich') === '1';
+  const payroll: SchedulingCalendarOverlay = { id: 'payroll', kindLabel: 'Hold', label: 'Payroll lock', scopeLabel: 'Payroll services', start: berlin('2026-10-07', '00:00'), end: berlin('2026-10-08', '00:00'), pattern: 'cross' };
+  const groups: SchedulingAgendaGroup[] = many > 0
+    ? Array.from({ length: 20 }, (_, day) => {
+      const date = `2026-10-${String(day + 1).padStart(2, '0')}`;
+      const perDay = Math.ceil(many / 20);
+      return {
+        date,
+        annotations: rich && day === 0 ? [payroll, { ...payroll, id: 'audit', label: 'Audit window for the quarter close', scopeLabel: 'Every finance service' }] : undefined,
+        rows: Array.from({ length: Math.min(perDay, many - day * perDay) }, (_, index) => {
+          const id = `r${day * perDay + index}`;
+          const marker = { id: 'm', label: 'Needs sign-off', emphasis: 'warning' as const };
+          const second = { id: 'n', label: 'Second reviewer asked', emphasis: 'neutral' as const };
+          if (!rich || index > 3) return timed(id, [date, '08:00'], [date, '09:00'], `Row ${day * perDay + index + 1}`);
+          // The third runs into a later day and the fourth has no time of day: their time text names days.
+          if (index === 2) return timed(id, [date, '14:00'], [`2026-10-${String(day + 3).padStart(2, '0')}`, '03:00'], 'Storage migration across two nights', { markers: [marker, second] });
+          if (index === 3) return timed(id, [date, '00:00'], [`2026-10-${String(day + 4).padStart(2, '0')}`, '00:00'], 'Maintenance weekend', { allDay: true, markers: [marker] });
+          return timed(id, [date, '08:00'], [date, '09:00'], 'Firewall rule update for the payment gateway', { status: 'tentative', markers: index === 1 ? [marker, second] : [marker] });
+        }),
+      };
+    }).filter((group) => group.rows.length > 0)
+    : [
+      { date: '2026-10-07', annotations: [payroll], rows: [
+        timed('a1', ['2026-10-07', '08:00'], ['2026-10-07', '09:00'], 'Router firmware', { status: 'live' }),
+        timed('a2', ['2026-10-07', '10:00'], ['2026-10-07', '11:30'], 'Firewall rule update for the payment gateway cluster in the secondary data centre, second attempt after the vendor fix', { band: 'high', status: 'tentative', meta: 'Network · Payments', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }] }),
+        timed('a3', ['2026-10-07', '13:00'], ['2026-10-07', '14:00'], 'Payroll export job', { band: 'medium' }),
+      ] },
+      { date: '2026-10-08', rows: [], hiddenCount: 4 },
+      { date: '2026-10-09', continuesCount: 2, rows: [
+        timed('a4', ['2026-10-09', '09:00'], ['2026-10-09', '10:00'], 'Audit log export', { status: 'done' }),
+        timed('a5', ['2026-10-09', '15:00'], ['2026-10-09', '16:00'], 'Mail relay switch', { status: 'dead', markers: [{ id: 'd', label: 'Declined', emphasis: 'refused' }] }),
+      ] },
+    ];
+  return <SchedulingCalendar {...common} view="agenda" entries={[]} agendaGroups={groups} onShowMore={(day) => { calls.more.push(day); }} notice={<p>Showing the first 500 items in this range.</p>} />;
+}
+
+function Counts() {
+  return <SchedulingCalendar
+    {...common} view="month" monthDensity="counts" showHeader={false} entries={[{ id: 'span', title: 'Three days', start: '2026-10-05T08:00:00Z', end: '2026-10-07T16:00:00Z' }]}
+    dayEntries={{ '2026-10-07': [timed('pick', ['2026-10-07', '08:00'], ['2026-10-07', '09:00'], 'A pick')] }}
+    days={{
+      '2026-10-07': { count: 12, overflowCount: 11, label: '12 items, 1 needs sign-off', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }] },
+      '2026-10-08': { count: 3, overflowCount: 0, label: '3 items' },
+      '2026-10-15': { count: 128, overflowCount: 125, label: '128 items' },
+      '2026-10-22': { count: 128, overflowCount: 125, label: '128 items, 2 marked', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }, { id: 'd', label: 'Declined', emphasis: 'refused' }] },
+    }}
+    overlays={[{ id: 'w', label: 'Quarter close', kindLabel: 'Hold', start: berlin('2026-10-05', '00:00'), end: berlin('2026-10-10', '00:00'), pattern: 'diagonal', global: true }]}
+    onShowMore={(day) => { calls.more.push(day); }}
+  />;
+}
+
+const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes, agenda: Agenda, counts: Counts };
 const Case = CASES[scenario] ?? Controlled;
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Case /></StrictMode>);

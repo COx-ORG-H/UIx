@@ -13,9 +13,9 @@ import { packLanes, rankOverflow } from './calendar-model.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CALENDAR_SOURCES = [
-  'calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx',
-  // HAR-1521 (U5 AC13): the timeline and its model
-  'components/SchedulingTimeline.tsx', 'scheduling-timeline-model.ts',
+  'calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'components/SchedulingAgenda.tsx',
+  // HAR-1521 (U5 AC13): the timeline, its model and its row geometry
+  'components/SchedulingTimeline.tsx', 'scheduling-timeline-model.ts', 'scheduling-timeline-rows.ts',
 ];
 
 /** Raw-HTML sinks and props that take an HTML string. */
@@ -77,7 +77,7 @@ test('AC20: the vocabulary scan finds a known-bad snippet (calibration)', () => 
   assert.deepEqual(vocabularyFindings("const s = 'a \\'freeze\\' here';"), ["a \\'freeze\\' here"], 'escaped quotes stay inside the literal');
 });
 
-for (const file of ['components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'scheduling-calendar-model.ts']) {
+for (const file of ['components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'components/SchedulingAgenda.tsx', 'scheduling-calendar-model.ts']) {
   test(`AC20: ${file} adds no change vocabulary (only the E13-kept enum values remain)`, () => {
     assert.deepEqual(vocabularyFindings(readFileSync(join(here, file), 'utf8')), []);
   });
@@ -111,7 +111,7 @@ const TIMELINE_E13_KEPT = new Set([
   'freeze', 'blackout', 'blackout-violation', 'Change freeze', 'Blackout', 'Blackout violation',
   'Shift and an arrow key moves it; Alt, Shift and an arrow key changes when it ends.',
 ]);
-const TIMELINE_SOURCES = ['components/SchedulingTimeline.tsx', 'scheduling-timeline-model.ts'];
+const TIMELINE_SOURCES = ['components/SchedulingTimeline.tsx', 'scheduling-timeline-model.ts', 'scheduling-timeline-rows.ts'];
 
 test('AC17: the timeline vocabulary scan finds a known-bad snippet (calibration)', () => {
   assert.deepEqual(vocabularyFindings("const overlays = { freeze: 'Change freeze' }; const flagOverlaps = true; const label = 'Risk window';", TIMELINE_E13_KEPT), ['Risk window', 'freeze']);
