@@ -294,17 +294,25 @@ export interface VirtualWindow { start: number; end: number; padTop: number; pad
  * [start, end) plus `overscan` rows on each side; padTop/padBottom are spacer
  * heights (px) so the scrollbar stays correct. Below `threshold` rows, callers
  * should skip virtualization (render all) — see shouldVirtualize.
+ *
+ * `scrollTop` is clamped to what a list of `count` rows can scroll to. A scroll position left
+ * over from a longer list (5,000 rows filtered down to 150 while scrolled far down) then gives
+ * the last rows and a spacer no taller than the list, in the same pass — not an empty window
+ * under a spacer taller than everything, which the browser only corrects scroll by scroll
+ * (HAR-1616).
  */
 export function virtualWindow(
   scrollTop: number, viewportH: number, rowH: number, count: number, overscan = 6,
 ): VirtualWindow {
   if (rowH <= 0 || count <= 0) return { start: 0, end: count, padTop: 0, padBottom: 0, total: 0 };
-  const first = Math.max(0, Math.floor(scrollTop / rowH) - overscan);
+  const top = Math.max(0, Math.min(scrollTop, count * rowH - viewportH));
+  const first = Math.max(0, Math.floor(top / rowH) - overscan);
   const visible = Math.ceil(viewportH / rowH) + overscan * 2;
   const end = Math.min(count, first + visible);
   return { start: first, end, padTop: first * rowH, padBottom: (count - end) * rowH, total: count * rowH };
 }
 
+/** `count > threshold`: a list of exactly `threshold` rows is still rendered whole. */
 export function shouldVirtualize(count: number, threshold = 100): boolean {
   return count > threshold;
 }
