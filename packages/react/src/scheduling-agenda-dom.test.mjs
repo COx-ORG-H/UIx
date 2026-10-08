@@ -199,6 +199,29 @@ test('AC2: a long agenda is a window of rows before its scroller has been measur
   assert.ok(served > 5 && served < 40, `the server sends a window of rows too (${served})`);
 });
 
+test('HAR-1541: while the page prints, the long agenda mounts every row, and windows again afterwards', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(300) }));
+  const rows = () => host.querySelectorAll(cls('agenda-vrow')).length;
+  const windowed = rows();
+  assert.ok(windowed < 40, `a window of rows on the screen (${windowed})`);
+  const scroller = host.querySelector(cls('agenda--virtual'));
+  // The browser lays the page out for paper as soon as the handlers return: the rows are there by then, with no act() to wait for.
+  window.dispatchEvent(new window.Event('beforeprint'));
+  assert.equal(rows(), 301, 'the heading and all 300 rows');
+  assert.equal(host.querySelector(cls('agenda-window')).style.paddingTop, '0px', 'no space kept for rows that are not mounted');
+  assert.equal(host.querySelector(cls('agenda--virtual')), scroller, 'the same element: scroll position and focus are kept');
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  assert.equal(rows(), windowed);
+  // A short agenda does not listen at all.
+  const short = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: long(5) }));
+  const before = short.host.innerHTML;
+  window.dispatchEvent(new window.Event('beforeprint'));
+  assert.equal(short.host.innerHTML, before);
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  short.unmount();
+  unmount();
+});
+
 test('AC2: an agenda that grows past virtualizeAbove after it mounted is windowed and follows its scroller', async () => {
   for (const first of [long(100), []]) {
     const { host, root, unmount } = mount(h(ui.SchedulingCalendar, { ...base, agendaGroups: first }));

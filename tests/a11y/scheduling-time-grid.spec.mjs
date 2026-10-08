@@ -326,7 +326,9 @@ test('AC7: an item too short for a line shows its marker and no text', async ({ 
   await open(page, 'case=timegrid');
   const quarter = page.locator(item('quarter'));
   await quarter.scrollIntoViewIfNeeded();
-  await expect(quarter.locator(`${P}entry-text`)).toHaveCount(0);
+  // Its words are in the markup for paper (HAR-1541) and not drawn on a screen.
+  await expect(quarter.locator(`${P}entry-text`)).toBeHidden();
+  expect(await quarter.evaluate((el) => el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight), 'nothing is cut in the item').toBe(true);
   await expect(quarter.locator(`${P}marker`)).toBeVisible();
   await expect(quarter).toHaveAccessibleName(/Cache flush.*Needs sign-off/);
   expect((await box(quarter)).height).toBeGreaterThanOrEqual(12);
