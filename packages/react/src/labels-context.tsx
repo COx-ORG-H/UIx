@@ -12,6 +12,7 @@ import type { SelectLabels } from './components/Select.js';
 import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
+import type { EntityPickerLabels } from './components/EntityPicker.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -31,7 +32,9 @@ export interface UixLabels {
   appShell?: { skipToContent?: string; exitFocus?: string };
   sidebar?: { expand?: string; collapse?: string };
   searchSuggest?: { clear?: string };
-  commandPalette?: { input?: string };
+  /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
+  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
+  entityPicker?: Partial<EntityPickerLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;

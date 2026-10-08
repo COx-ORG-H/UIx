@@ -37,7 +37,7 @@ export { filterComboboxOptions } from './combobox-model.js';
 
 export { SearchSuggest } from './components/SearchSuggest.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
-export type { EntityPickerProps, EntityPickerLabels } from './components/EntityPicker.js';
+export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';
 export { searchSegments, foldForSearch } from './search-suggest-model.js';
 export type { SearchSegment, FoldedText } from './search-suggest-model.js';
