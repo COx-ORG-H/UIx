@@ -19,7 +19,7 @@ export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
   /** Accessible name — rendered as `aria-label` (an explicit `aria-label` prop wins). */
   label?: string;
   /** TENSOR RX-125 (UIX-04): the spoken tone words; English defaults. */
-  toneLabels?: Partial<Record<SpokenMeterTone, string>>;
+  toneLabels?: Partial<Record<Exclude<MeterTone, 'success' | 'neutral' | 'accent'>, string>>;
 }
 
 /** Spoken tone suffix — the fill colour is the only visual tone cue (UIX-A11Y-4). */

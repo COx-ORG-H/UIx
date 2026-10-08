@@ -1,7 +1,6 @@
 import { useId } from 'react';
 import type { DetailsHTMLAttributes, ReactNode } from 'react';
 import { CollapsibleSummary, collapsibleBodyProps, collapsibleClass } from './CollapsibleParts.js';
-import type { CollapsibleHeadingLevel } from './CollapsibleParts.js';
 import { CollapsibleSectionState } from './CollapsibleSectionState.js';
 
 export interface CollapsibleSectionProps extends Omit<DetailsHTMLAttributes<HTMLDetailsElement>, 'title'> {
@@ -47,7 +46,7 @@ export interface CollapsibleSectionProps extends Omit<DetailsHTMLAttributes<HTML
    * Render the title as a heading of this level, and make the body a `role="region"` named by
    * it. Leave unset for a section that should stay out of the page outline.
    */
-  headingLevel?: CollapsibleHeadingLevel;
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
 }
 
 /**
