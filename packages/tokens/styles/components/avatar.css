@@ -27,3 +27,17 @@
   .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
   .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
 }
+
+/* Presence (HAR-1374): online, busy, away, offline. Each state has its own SHAPE as well as its
+   own colour (a filled dot, a dot with a bar, two rings), and the React components add the state
+   in text. The same four looks serve the dot on an avatar and the standalone .uix-presence. The
+   ring colours are text colours on purpose: the status hues are too light for a 2 px ring
+   (packages/tokens/tests/presence-contrast.test.mjs holds all four to 3:1 on the surface). */
+@layer uix.components {
+  .uix-presence { position: relative; display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--uix-success); }
+  .uix-avatar__status::after, .uix-presence::after { content: ""; position: absolute; left: 20%; right: 20%; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: var(--uix-surface); display: none; }
+  .uix-avatar__status[data-presence="busy"], .uix-presence--busy { background: var(--uix-danger); }
+  .uix-avatar__status[data-presence="busy"]::after, .uix-presence--busy::after { display: block; }
+  .uix-avatar__status[data-presence="away"], .uix-presence--away { background: var(--uix-surface); box-shadow: inset 0 0 0 2px var(--uix-warning-text); }
+  .uix-avatar__status[data-presence="offline"], .uix-presence--offline { background: var(--uix-surface); box-shadow: inset 0 0 0 2px var(--uix-text-muted); }
+}

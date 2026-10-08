@@ -51,8 +51,8 @@ export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './com
 export { Checkbox } from './components/Checkbox.js';
 export type { CheckboxProps } from './components/Checkbox.js';
 
-export { Radio, RadioGroup } from './components/Radio.js';
-export type { RadioProps, RadioGroupProps } from './components/Radio.js';
+export { Radio, RadioCard, RadioGroup } from './components/Radio.js';
+export type { RadioProps, RadioCardProps, RadioGroupProps } from './components/Radio.js';
 
 export { Switch } from './components/Switch.js';
 export type { SwitchProps } from './components/Switch.js';
@@ -221,8 +221,8 @@ export type { AsyncOperationStatusProps, AsyncOperationState } from './component
 export { Label } from './components/Label.js';
 export type { LabelProps } from './components/Label.js';
 
-export { Avatar, AvatarGroup, UserChip } from './components/Avatar.js';
-export type { AvatarProps, AvatarGroupProps, UserChipProps } from './components/Avatar.js';
+export { Avatar, AvatarGroup, PresenceDot, UserChip, DEFAULT_PRESENCE_LABELS } from './components/Avatar.js';
+export type { AvatarProps, AvatarGroupProps, UserChipProps, AvatarPresence, PresenceDotProps } from './components/Avatar.js';
 
 export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
