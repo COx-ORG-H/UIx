@@ -217,9 +217,9 @@
       "brotli": 2193
     },
     "styles/components/list.css": {
-      "raw": 784,
-      "gzip": 353,
-      "brotli": 274
+      "raw": 1061,
+      "gzip": 472,
+      "brotli": 357
     },
     "styles/components/match-review.css": {
       "raw": 1612,
@@ -322,9 +322,9 @@
       "brotli": 516
     },
     "styles/components/scheduling-calendar.css": {
-      "raw": 36477,
-      "gzip": 6485,
-      "brotli": 5618
+      "raw": 38610,
+      "gzip": 6831,
+      "brotli": 5924
     },
     "styles/components/scheduling-timeline.css": {
       "raw": 6285,

@@ -219,6 +219,22 @@ function countsMonth() {
   }))}</div>`;
 }
 
+// One item is picked: the consumer marks the items that belong with it and quietens the rest.
+function emphasised() {
+  return renderToStaticMarkup(h(SchedulingCalendar, {
+    ...shared, anchorDate: '2026-10-07', view: 'week', showHeader: false, legend: [],
+    entries: [
+      item('e-picked', '2026-10-06', '08:00', '09:00', 'Router firmware', { emphasis: 'highlight' }),
+      item('e-partner', '2026-10-07', '10:00', '11:00', 'Firewall rules', { emphasis: 'highlight', band: 'high' }),
+      item('e-partner-2', '2026-10-08', '13:00', '14:00', 'Core switch reload', { emphasis: 'highlight', status: 'tentative' }),
+      item('e-rest', '2026-10-06', '11:00', '12:00', 'Payroll export', { emphasis: 'dim' }),
+      item('e-rest-high', '2026-10-07', '14:00', '15:00', 'Database failover', { emphasis: 'dim', band: 'high' }),
+      item('e-rest-2', '2026-10-09', '09:00', '10:00', 'Audit log export', { emphasis: 'dim', status: 'done' }),
+      item('e-plain', '2026-10-10', '09:00', '10:00', 'Mail relay switch'),
+    ],
+  }));
+}
+
 function empty() {
   return renderToStaticMarkup(h(SchedulingCalendar, {
     ...shared, anchorDate: '2026-11-18', view: 'week', weekStartsOn: 0, showHeader: false, entries: [],
@@ -235,6 +251,7 @@ export function renderSchedulingCalendarSpecimen() {
     block('Counts and picks owned by the consumer', 'With <code>days</code> and <code>dayEntries</code> the calendar places, ranks, cuts and counts nothing. It draws the chips it is given in the order given, shows each day’s <code>count</code> and markers even when no chip fits, and takes “+N” from <code>overflowCount</code>. The day with 50 items shows three chips and “+47 more”, which calls <code>onShowMore</code> and never expands the cell. The consumer computes the span lanes with <code>layoutMonthSpans</code> and passes the result as <code>spanLayout</code>. Here <code>showHeader</code> is off (the page has its own toolbar) and a <code>notice</code> says the list was cut.', controlled()),
     block('A narrow month: counts only', 'With <code>monthDensity="counts"</code> a month cell shows the consumer’s count and markers and nothing else: no chips and no entry bars, in columns narrow enough for a phone. A window keeps its bar and name.', countsMonth()),
     block('A day with 25 hours', 'The hour axis comes from real instants. On 25.10.2026 in Europe/Berlin the clocks go back, so the day is 25 rows tall and “02” appears twice, each with its UTC offset. An item at 03:00 sits under “03”, one row lower than on other days. On 29.03.2026 the day has 23 rows and no “02”.', longDay()),
+    block('Keyboard, and items that stand out', 'Each grid and the agenda is <strong>one tab stop</strong>. In the month the arrow keys move between days, Home and End go to the ends of the grid, and <kbd>Enter</kbd> on a day moves into its items: the arrow keys then move between them, <kbd>Enter</kbd> opens one, and <kbd>Esc</kbd> goes back to the day. <kbd>Space</kbd> on a day opens the day. Week and Day work the same from the day heads; with a move pending, <kbd>Enter</kbd> confirms it and <kbd>Esc</kbd> drops it. In the agenda the arrow keys walk the rows, the window notes and “open day”. A day is announced with the consumer’s <code>days[date].label</code>. An item can carry <code>emphasis</code>: <code>highlight</code> gives it a heavier edge and weight, <code>dim</code> quietens it. Neither changes a hue, so the band and state still read.', emphasised()),
     block('An empty range', 'With <code>emptyNote</code> every day cell is still drawn, and the note sits inside the grid. This week starts on Sunday (<code>weekStartsOn</code>), and the dates use the injected <code>formatDate</code>.', empty()),
   ].join('') + END;
 }
