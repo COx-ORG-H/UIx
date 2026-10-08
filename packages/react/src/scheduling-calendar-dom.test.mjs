@@ -484,6 +484,115 @@ test('AC11 (R19 AC3): with legend set the legend is exactly the given items; uns
   unset.unmount();
 });
 
+/* Consumers that pass only the 2.31 props (found in review of PR #102): nothing they render
+ * today may throw, vanish or reach a callback differently. */
+
+test('old props: an overlay and a multi-day entry may share an id, and a repeated id is drawn once', () => {
+  const entries = [{ id: '1', title: 'Two days', start: '2026-10-07T08:00:00Z', end: '2026-10-08T09:00:00Z' }];
+  const overlays = [
+    { id: '1', label: 'Same id as the entry', start: '2026-10-05T06:00:00Z', end: '2026-10-06T18:00:00Z', kind: 'maintenance' },
+    { id: '1', label: 'Repeated', start: '2026-10-12T06:00:00Z', end: '2026-10-13T18:00:00Z', kind: 'blackout' },
+  ];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, overlays }));
+  assert.equal(items(host, '1').length, 1, 'the entry is drawn');
+  const windows = host.querySelectorAll('[data-overlay-id="1"]');
+  assert.equal(windows.length, 1, 'the first overlay with that id is drawn, the repeat is not');
+  assert.match(windows[0].textContent, /Same id as the entry/);
+  unmount();
+});
+
+test('old props: without onShowMore every overlapping window gets a lane (a growing cell has room)', () => {
+  const overlays = ['a', 'b', 'c', 'd'].map((id) => ({ id, label: `Window ${id}`, start: '2026-10-05T06:00:00Z', end: '2026-10-09T18:00:00Z', kind: 'maintenance' }));
+  const spans = ['x', 'y', 'z'].map((id) => ({ id, title: `Span ${id}`, start: '2026-10-05T08:00:00Z', end: '2026-10-07T16:00:00Z' }));
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: spans, overlays }));
+  assert.equal(host.querySelectorAll('.uix-scheduling-calendar__window').length, 4, 'all four windows');
+  assert.equal(host.querySelectorAll('.uix-scheduling-calendar__span').length, 3, 'all three spans');
+  assert.equal(host.querySelector('.uix-scheduling-calendar__rowmore'), null, 'nothing is hidden behind a control that cannot open');
+  assert.equal(host.querySelector('[data-fixed]'), null);
+  unmount();
+  const capped = mount(h(ui.SchedulingCalendar, { ...base, entries: spans, overlays, windowLaneCap: 1, spanLaneCap: 2 }));
+  assert.equal(capped.host.querySelectorAll('.uix-scheduling-calendar__window').length, 1, 'an explicit cap is kept');
+  assert.equal(capped.host.querySelectorAll('.uix-scheduling-calendar__span').length, 2);
+  assert.equal(capped.host.querySelector('.uix-scheduling-calendar__rowmore > [aria-hidden]').textContent, '+4', 'three windows and one span have no lane');
+  capped.unmount();
+});
+
+test('old props: the word for an entry with no state is states.scheduled, so a translation still applies', () => {
+  const entries = [dayAt('2026-10-07', 6, 60, 'plain'), { ...dayAt('2026-10-07', 8, 60, 'new'), status: 'tentative' }];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, labels: { states: { scheduled: 'Geplant' }, statuses: { tentative: 'Vorläufig' } } }));
+  assert.match(items(host, 'plain')[0].getAttribute('aria-label'), /Item plain, Geplant, /);
+  assert.match(items(host, 'new')[0].getAttribute('aria-label'), /Item new, Vorläufig, /);
+  unmount();
+  const agenda = mount(h(ui.SchedulingCalendar, { ...base, entries, view: 'agenda', labels: { states: { scheduled: 'Geplant' } } }));
+  assert.match(items(agenda.host, 'plain')[0].textContent, /Geplant/);
+  agenda.unmount();
+});
+
+test('old props: onShowMore and renderDayBadge get the day in the order the consumer gave', () => {
+  const calls = [];
+  const badges = [];
+  const multi = { id: 'multi', title: 'Multi', start: '2026-10-06T08:00:00Z', end: '2026-10-08T16:00:00Z' };
+  const entries = [multi, dayAt('2026-10-07', 6, 60, 's1'), dayAt('2026-10-07', 8, 60, 's2')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, {
+    ...base, entries, maxEntriesPerDay: 1, onShowMore: (date, list) => calls.push([date, list.map((e) => e.id)]),
+    renderDayBadge: (date, list) => { if (date === '2026-10-07') badges.push(list.map((e) => e.id)); return null; },
+  }));
+  click(cellOf(host, '2026-10-07').querySelector('.uix-scheduling-calendar__more'));
+  assert.deepEqual(calls, [['2026-10-07', ['multi', 's1', 's2']]], 'input order, not chips first');
+  assert.deepEqual(badges.at(-1), ['multi', 's1', 's2']);
+  unmount();
+});
+
+test('days without dayEntries: the chips are still the entries; the "+N" is the consumer count and nothing expands', () => {
+  const calls = [];
+  const entries = [dayAt('2026-10-07', 6, 60, 'a'), dayAt('2026-10-07', 8, 60, 'b'), dayAt('2026-10-07', 10, 60, 'c'), dayAt('2026-10-08', 6, 60, 'd')];
+  const props = { ...base, entries, maxEntriesPerDay: 2, days: { '2026-10-07': { count: 9, overflowCount: 7 } } };
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...props, onShowMore: (date, list) => calls.push([date, list.length]) }));
+  const cell = cellOf(host, '2026-10-07');
+  assert.deepEqual(chips(cell).map((c) => c.getAttribute('data-item-id')), ['a', 'b'], 'the day shows its entries, cut to the cap');
+  assert.equal(cell.querySelector('.uix-scheduling-calendar__count').textContent.startsWith('9'), true);
+  const more = cell.querySelector('.uix-scheduling-calendar__more');
+  assert.equal(more.textContent, '+7 more', 'the consumer number, not 3 − 2');
+  click(more);
+  assert.deepEqual(calls, [['2026-10-07', 3]]);
+  assert.equal(chips(cell).length, 2);
+  assert.deepEqual(chips(cellOf(host, '2026-10-08')).map((c) => c.getAttribute('data-item-id')), ['d'], 'a day with no count shows its entries too');
+  unmount();
+  const noHandler = mount(h(ui.SchedulingCalendar, props));
+  const plain = cellOf(noHandler.host, '2026-10-07').querySelector('.uix-scheduling-calendar__more');
+  assert.equal(plain.tagName, 'SPAN', 'without onShowMore the count is text, never an in-place toggle');
+  noHandler.unmount();
+});
+
+test('a dayEntries list longer than maxEntriesPerDay makes the fixed cells taller instead of clipping', () => {
+  const picks = [dayAt('2026-10-07', 6, 60, 'a'), dayAt('2026-10-07', 8, 60, 'b'), dayAt('2026-10-07', 10, 60, 'c'), dayAt('2026-10-07', 12, 60, 'd')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: [], maxEntriesPerDay: 2, onShowMore: () => {}, dayEntries: { '2026-10-07': picks } }));
+  assert.equal(host.querySelector('.uix-scheduling-calendar__grid').style.getPropertyValue('--uix-scheduling-calendar-chips'), '4');
+  assert.equal(chips(cellOf(host, '2026-10-07')).length, 4);
+  unmount();
+});
+
+test('a consumer spanLayout with only placed and hiddenByRow renders', () => {
+  const overlays = [windowAt('a', '2026-10-05', '2026-10-09'), windowAt('b', '2026-10-06', '2026-10-08')];
+  const spanLayout = { placed: [{ id: 'b', group: 'window', weekRow: 1, lane: 0, startCol: 1, endCol: 3, continuesBefore: false, continuesAfter: false }], hiddenByRow: { 1: ['a'] } };
+  const calls = [];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: [], overlays, spanLayout, dayEntries: {}, onShowMore: (d) => calls.push(d) }));
+  click(host.querySelector('.uix-scheduling-calendar__rowmore'));
+  assert.deepEqual(calls, ['2026-10-05'], 'with no first hidden day given, the first day of the row');
+  unmount();
+  const bare = mount(h(ui.SchedulingCalendar, { ...base, entries: [], overlays, spanLayout: { placed: spanLayout.placed }, dayEntries: {} }));
+  assert.equal(bare.host.querySelectorAll('.uix-scheduling-calendar__window').length, 1);
+  bare.unmount();
+});
+
+test('the built-in legend is a named group', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: [] }));
+  const legend = host.querySelector('.uix-scheduling-calendar__legend');
+  assert.equal(legend.getAttribute('role'), 'group');
+  assert.equal(legend.getAttribute('aria-label'), 'Schedule state legend');
+  unmount();
+});
+
 test('deprecated state and overlay kind keep working (E13: deprecated, not removed)', () => {
   const entries = [{ ...dayAt('2026-10-07', 6, 60, 'old'), state: 'in-progress' }];
   const overlays = [{ id: 'legacy', label: 'Legacy window', start: '2026-10-05T06:00:00Z', end: '2026-10-06T18:00:00Z', kind: 'maintenance' }];

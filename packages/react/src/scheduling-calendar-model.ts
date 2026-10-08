@@ -36,7 +36,7 @@ export interface PlacedMonthSpan {
 export interface MonthSpanLayout {
   /** One entry per span per week row it got a lane in. Render exactly these; never re-pack. */
   placed: PlacedMonthSpan[];
-  /** Per week row, the ids that got no lane, in input order. */
+  /** Per week row, the ids that got no lane, in input order (windows first). An id may name a window and an item. */
   hiddenByRow: Record<number, string[]>;
   /** Per week row with a hidden span, the first day (`YYYY-MM-DD`) a hidden span covers. */
   firstHiddenDayByRow: Record<number, string>;
@@ -104,11 +104,13 @@ export function layoutMonthSpans(spans: readonly MonthSpanInput[], days: readonl
   const caps = { window: capFor('window'), item: capFor('item') };
   const rows = days.length / 7;
   const gridEnd = addCalendarDays(days[days.length - 1]!, 1);
+  // Ids are unique per group: a window and an item are different things and may share one.
   const seen = new Set<string>();
   const covered = spans.map((span) => {
-    if (seen.has(span.id)) throw new TypeError(`layoutMonthSpans: duplicate id ${span.id}`);
-    seen.add(span.id);
-    return { id: span.id, group: span.group ?? 'item', days: itemDaySpan(span.start, span.end, options.timeZone) };
+    const group = span.group ?? 'item';
+    if (seen.has(`${group} ${span.id}`)) throw new TypeError(`layoutMonthSpans: duplicate ${group} id ${span.id}`);
+    seen.add(`${group} ${span.id}`);
+    return { id: span.id, group, days: itemDaySpan(span.start, span.end, options.timeZone) };
   });
 
   const placed: PlacedMonthSpan[] = [];

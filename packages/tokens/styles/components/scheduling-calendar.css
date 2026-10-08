@@ -101,7 +101,7 @@
   /* band: `medium` is a heavier leading edge, `high` is the one fill */
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="medium"] { border-left:3px solid var(--calendar-band-medium-edge); }
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-color:var(--calendar-band-high-fill); background:var(--calendar-band-high-fill); color:var(--calendar-band-high-text); }
-  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"]) { border-color:var(--calendar-band-high-text); }
+  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-text); }
   .uix-scheduling-calendar__entry[data-band="high"]:focus-visible { outline-color:var(--calendar-band-high-text); }
 
   /* spans and windows: placed in the week row by the layout, one lane each */
