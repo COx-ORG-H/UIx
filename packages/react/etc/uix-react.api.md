@@ -1052,6 +1052,14 @@ export interface DateRangeValue {
 export const DAY: number;
 
 // @public (undocumented)
+export interface DaySpanLayout {
+    firstHiddenDay?: string;
+    hidden: string[];
+    // (undocumented)
+    placed: PlacedDaySpan[];
+}
+
+// @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
 
 // @public (undocumented)
@@ -2276,6 +2284,12 @@ export type LayeredNavigationKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'Arro
 export function layeredNeighbor(layout: LayeredLayout, currentId: string | undefined, key: LayeredNavigationKey): string | undefined;
 
 // @public
+export function layoutDaySpans(spans: readonly MonthSpanInput[], days: readonly string[], options: {
+    timeZone: string;
+    laneCap?: number;
+}): DaySpanLayout;
+
+// @public
 export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange): PlacedSpan<T>[];
 
 // @public
@@ -2293,6 +2307,12 @@ export interface LayoutMonthSpansOptions {
 
 // @public (undocumented)
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
+
+// @public
+export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: string, timeZone: string, options?: {
+    maxLanes?: number;
+    crossMidnightMinutes?: number;
+}): TimeGridDayLayout;
 
 // @public
 export function LicensePositionBar(input: LicensePositionBarProps): react.JSX.Element;
@@ -2799,6 +2819,14 @@ export interface MonthSpanLayout {
     placed: PlacedMonthSpan[];
 }
 
+// @public
+export interface MoveProposal {
+    adjusted: 'gap_forward' | null;
+    // (undocumented)
+    end: string;
+    start: string;
+}
+
 // @public (undocumented)
 export function moveRuleNode(group: RuleGroup, id: string, direction: -1 | 1): RuleGroup;
 
@@ -3123,6 +3151,21 @@ export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 
 export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number;
 
 // @public (undocumented)
+export interface PlacedDaySpan {
+    // (undocumented)
+    continuesAfter: boolean;
+    // (undocumented)
+    continuesBefore: boolean;
+    // (undocumented)
+    endCol: number;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    lane: number;
+    startCol: number;
+}
+
+// @public (undocumented)
 export interface PlacedMonthSpan {
     continuesAfter: boolean;
     continuesBefore: boolean;
@@ -3153,6 +3196,11 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
 
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;
+
+// @public
+export function placesInTopLane(entry: Pick<TimeGridEntryInput, 'start' | 'end' | 'allDay'>, timeZone: string, options?: {
+    crossMidnightMinutes?: number;
+}): boolean;
 
 // @public
 export function placeSpan(span: {
@@ -3295,6 +3343,15 @@ export interface PromptDialogProps {
     // (undocumented)
     validate?: (value: string) => ReactNode | undefined;
 }
+
+// @public
+export function proposeMove(span: {
+    start: string | number | Date;
+    end: string | number | Date;
+}, delta: {
+    days?: number;
+    minutes?: number;
+}, timeZone: string): MoveProposal;
 
 // @public
 export function Prose(input: ProseProps): react.JSX.Element;
@@ -4048,6 +4105,7 @@ export interface SchedulingCalendarDay {
 // @public (undocumented)
 export interface SchedulingCalendarEntry {
     accessibleName?: string;
+    allDay?: boolean;
     // (undocumented)
     band?: SchedulingBand;
     // (undocumented)
@@ -4058,6 +4116,7 @@ export interface SchedulingCalendarEntry {
     markers?: SchedulingMarker[];
     // (undocumented)
     meta?: string;
+    movable?: boolean;
     // (undocumented)
     start: string;
     // @deprecated (undocumented)
@@ -4074,9 +4133,11 @@ export interface SchedulingCalendarLabels {
     agenda: string;
     // (undocumented)
     agendaEmpty: string;
+    continuesFrom?: string;
     dayCount?: string;
     entry: string;
     fewerEntries: string;
+    gapForward?: string;
     // (undocumented)
     grid: string;
     // (undocumented)
@@ -4087,8 +4148,15 @@ export interface SchedulingCalendarLabels {
     moreEntriesLabel: string;
     moreSpans?: string;
     moreSpansLabel?: string;
+    moreWindows?: string;
+    moreWindowsLabel?: string;
+    moveCancelled?: string;
+    moveHint?: string;
+    moveProposed?: string;
     // @deprecated (undocumented)
     next: string;
+    // (undocumented)
+    nextDay?: string;
     // (undocumented)
     nextMonth?: string;
     // (undocumented)
@@ -4096,6 +4164,8 @@ export interface SchedulingCalendarLabels {
     overlay?: string;
     // @deprecated (undocumented)
     previous: string;
+    // (undocumented)
+    previousDay?: string;
     // (undocumented)
     previousMonth?: string;
     previousWeek?: string;
@@ -4106,14 +4176,19 @@ export interface SchedulingCalendarLabels {
     // (undocumented)
     states: Record<SchedulingEntryState, string>;
     statuses?: Partial<Record<SchedulingStatus, string>>;
+    timeZone?: string;
+    topLane?: string;
     // (undocumented)
     viewAgenda: string;
+    // (undocumented)
+    viewDay?: string;
     // (undocumented)
     viewGroup: string;
     // (undocumented)
     viewMonth: string;
     // (undocumented)
     viewWeek: string;
+    windows?: string;
 }
 
 // @public (undocumented)
@@ -4138,6 +4213,7 @@ export interface SchedulingCalendarOverlay {
 export interface SchedulingCalendarProps {
     // (undocumented)
     anchorDate: string;
+    canMove?: boolean;
     // (undocumented)
     className?: string;
     dayEntries?: Record<string, SchedulingCalendarEntry[]>;
@@ -4159,9 +4235,12 @@ export interface SchedulingCalendarProps {
     // (undocumented)
     locale?: string;
     maxEntriesPerDay?: number;
+    maxLanes?: number;
     notice?: ReactNode;
+    now?: string;
     // (undocumented)
     onAnchorDateChange?: (date: string) => void;
+    onProposeMove?: (id: string, proposal: MoveProposal) => void | Promise<unknown>;
     // (undocumented)
     onRetry?: () => void;
     onSelectDate?: (date: string) => void;
@@ -4173,23 +4252,27 @@ export interface SchedulingCalendarProps {
     // (undocumented)
     overlays?: SchedulingCalendarOverlay[];
     renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
-    renderEntry?: (entry: SchedulingCalendarEntry) => ReactNode;
+    renderEntry?: (entry: SchedulingCalendarEntry, context?: TimeGridEntryContext) => ReactNode;
     showHeader?: boolean;
     spanLaneCap?: number;
     spanLayout?: MonthSpanLayout;
+    step?: number;
+    timeGrid?: boolean;
     // (undocumented)
     timeZone: string;
+    topLaneCap?: number;
+    topLaneCrossMidnightMinutes?: number;
     // (undocumented)
     view?: SchedulingCalendarView;
     weekStartsOn?: CalendarWeekday;
     windowLaneCap?: number;
 }
 
-// @public (undocumented)
-export type SchedulingCalendarView = 'month' | 'week' | 'agenda';
+// @public
+export type SchedulingCalendarView = 'month' | 'week' | 'day' | 'agenda';
 
 // @public
-export type SchedulingDatePart = 'day' | 'weekday' | 'month';
+export type SchedulingDatePart = 'day' | 'weekday' | 'month' | 'column';
 
 // @public @deprecated (undocumented)
 export type SchedulingEntryState = 'scheduled' | 'conflicted' | 'in-progress' | 'blackout-violation';
@@ -5077,6 +5160,50 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     sortOrder?: number;
 }
 
+// @public (undocumented)
+export interface TimeGridDayLayout {
+    // (undocumented)
+    date: string;
+    // (undocumented)
+    dayHours: number;
+    dayStart: number;
+    hidden: string[];
+    segments: TimeGridSegment[];
+}
+
+// @public (undocumented)
+export interface TimeGridEntryContext {
+    availableLines: number;
+}
+
+// @public (undocumented)
+export interface TimeGridEntryInput {
+    allDay?: boolean;
+    // (undocumented)
+    end: string | number | Date;
+    // (undocumented)
+    id: string;
+    start: string | number | Date;
+}
+
+// @public
+export type TimeGridPart = 'whole' | 'start' | 'continuation';
+
+// @public (undocumented)
+export interface TimeGridSegment {
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    id: string;
+    lane: number;
+    laneCount: number;
+    lengthHours: number;
+    offsetHours: number;
+    // (undocumented)
+    part: TimeGridPart;
+    start: number;
+}
+
 // @public
 export function Timeline(input: TimelineProps): react.JSX.Element;
 
@@ -5308,6 +5435,9 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
     label?: string;
     placement?: Placement;
 }
+
+// @public
+export const TOP_LANE_CROSS_MIDNIGHT_MINUTES = 360;
 
 // @public (undocumented)
 export function Tr(input: TrProps): react.JSX.Element;

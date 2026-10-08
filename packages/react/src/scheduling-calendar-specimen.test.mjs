@@ -24,8 +24,9 @@ test('the comparison can fail: a changed specimen is not found in the page', () 
 });
 
 test('the specimens are the component: each view once, and no hand-written calendar markup beside them', () => {
-  assert.equal((specimen.match(/data-calendar-panel="/g) ?? []).length, 3);
-  for (const view of ['month', 'week', 'agenda']) assert.match(specimen, new RegExp(`data-calendar-view="${view}"[^>]*aria-pressed="true"`), `${view} panel shows its view pressed`);
+  assert.equal((specimen.match(/data-calendar-panel="/g) ?? []).length, 4);
+  assert.match(specimen, /data-calendar-panel="week" hidden><section[^>]*>[\s\S]*?uix-scheduling-calendar__timegrid/, 'the week panel is the time grid');
+  for (const view of ['month', 'week', 'day', 'agenda']) assert.match(specimen, new RegExp(`data-calendar-view="${view}"[^>]*aria-pressed="true"`), `${view} panel shows its view pressed`);
   const page = JSON.parse(committed.slice(committed.indexOf('"html": ', committed.indexOf('"slug": "examples-scheduling-calendar"')) + 8).split('\n')[0]);
   const outside = page.replace(specimen, '');
   assert.doesNotMatch(outside, /class="uix-scheduling-calendar[_ "]/, 'every calendar on the page comes from the render script');

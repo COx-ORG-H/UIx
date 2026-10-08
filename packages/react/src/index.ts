@@ -332,9 +332,13 @@ export type { SchedulingCalendarLabels,
   SchedulingBand, SchedulingStatus, SchedulingMarker, SchedulingMarkerEmphasis, SchedulingOverlayPattern,
   SchedulingCalendarDay, SchedulingLegendItem,
 } from './components/SchedulingCalendar.js';
-export { itemDaySpan, layoutMonthSpans, schedulingGridDays } from './scheduling-calendar-model.js';
+export type { TimeGridEntryContext } from './components/SchedulingTimeGrid.js';
+export {
+  TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutDaySpans, layoutMonthSpans, layoutTimeGridDay, placesInTopLane, proposeMove, schedulingGridDays,
+} from './scheduling-calendar-model.js';
 export type {
-  LayoutMonthSpansOptions, MonthSpanGroup, MonthSpanInput, MonthSpanLayout, PlacedMonthSpan,
+  DaySpanLayout, LayoutMonthSpansOptions, MonthSpanGroup, MonthSpanInput, MonthSpanLayout, MoveProposal, PlacedDaySpan, PlacedMonthSpan,
+  TimeGridDayLayout, TimeGridEntryInput, TimeGridPart, TimeGridSegment,
 } from './scheduling-calendar-model.js';
 
 export { DEFAULT_SCHEDULING_TIMELINE_LABELS, SchedulingTimeline } from './components/SchedulingTimeline.js';

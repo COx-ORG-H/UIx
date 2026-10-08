@@ -148,6 +148,19 @@ test('the map block is the first rule and names every dimension', () => {
   for (const dimension of DIMENSIONS) assert.ok(names.some((name) => name.startsWith(`--calendar-${dimension}-`)), `no --calendar-${dimension}-* name`);
 });
 
+test('U3 AC19: no window, segment, ghost or now-line rule of the time grid reads a band colour', () => {
+  const mapped = new Map(declarations(rules(source)[0].body).filter(({ prop }) => prop.startsWith('--calendar-band-')).map(({ prop }) => [prop, true]));
+  assert.ok(mapped.size >= 2, 'the map names band colours');
+  const timeGrid = rules(source).filter(({ selector }) => /__tg-|__window|\[data-part=|\[data-pattern/.test(selector));
+  assert.ok(timeGrid.length >= 20, `only ${timeGrid.length} time-grid rules found`);
+  for (const name of ['tg-ghost', 'tg-now', 'tg-shade', 'tg-item', 'tg-span', 'tg-column', 'tg-hour']) assert.ok(timeGrid.some(({ selector }) => selector.includes(`__${name}`)), `no rule for ${name}`);
+  const offenders = timeGrid.filter(({ body }) => [...body.matchAll(/var\((--calendar-band-[a-z0-9-]+)/g)].length > 0).map(({ selector }) => selector);
+  assert.deepEqual(offenders, []);
+  // The now-line and the ghost are neutral: their names map to no hue.
+  const chrome = Object.fromEntries(declarations(rules(source)[0].body).map(({ prop, value }) => [prop, value]));
+  for (const name of ['--calendar-chrome-now', '--calendar-chrome-ghost', '--calendar-chrome-ghost-surface']) assert.doesNotMatch(chrome[name], /--uix-(danger|warning|success|info|accent|brand|link|ring)/, name);
+});
+
 test('only data-band="high" takes a fill; medium is a non-fill cue', () => {
   const band = rules(source).filter(({ selector }) => /\[data-band=/.test(selector));
   const fill = band.filter(({ body }) => declarations(body).some(({ prop }) => prop === 'background' || prop === 'background-color'));

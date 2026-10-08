@@ -395,6 +395,23 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
 - **Fixed geometry.** With `days` / `dayEntries` (or `maxEntriesPerDay` plus `onShowMore`) every cell keeps one
   height: the head, the lane caps, the chip rows and the "+N" line. A chip reads `HH:MM title` (24 h, in the zone)
   unless `renderEntry` replaces it.
+- **Week and Day as a time grid** (`timeGrid`, HAR-1509): day columns on an hour axis.
+
+  ```tsx
+  <SchedulingCalendar view="week" timeGrid timeZone="Europe/Berlin" anchorDate="2026-10-07" showHeader={false}
+    entries={entries} overlays={windows} days={dayCounts} now={serverNow}
+    canMove={userMayMove} step={15}
+    onProposeMove={(id, { start, end, adjusted }) => reschedule(id, start, end)}   // the server decides; the calendar never moves an item
+    onSelectEntry={openItem} onShowMore={openDay} />
+  ```
+
+  - A column is as tall as its day (23, 24 or 25 hours); an item sits at its real time. `view="day"` is one column.
+  - An entry that crosses midnight by up to `topLaneCrossMidnightMinutes` (default 360) is one item in two joined
+    parts; all-day (`allDay`), longer and later-running entries go to the lane above the hours (`placesInTopLane`).
+  - Moves are proposals: drag, or Shift and an arrow key, then Enter (Escape drops it). An entry whose props do not
+    change stays where it was, so a refused move snaps back by construction. `movable: false` pins an entry.
+  - Overlapping items share at most `maxLanes` lanes, fewer in a narrow column; the column "+N" is the consumer's
+    `days[date].overflowCount`. `renderEntry(entry, { availableLines })` says how many text lines fit.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two
