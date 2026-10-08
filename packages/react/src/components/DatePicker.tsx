@@ -23,8 +23,13 @@ export interface DatePickerLabels {
   calendar: string;
   previousMonth: string;
   nextMonth: string;
-  /** Shown when the typed text is not a date; `{pattern}` is the expected shape, e.g. `DD.MM.YYYY`. */
+  /**
+   * Shown when the typed text is not a date; `{pattern}` is the expected shape: the
+   * `placeholder` when one is given, else the locale's (`DD.MM.YYYY`).
+   */
   invalidDate: string;
+  /** The same, when the shape is not known: a custom `parseDate` and no `placeholder`. */
+  notADate: string;
   /** Shown when the typed date is outside `min` / `max` or refused by `isUnavailable`. */
   unavailable: string;
 }
@@ -36,6 +41,7 @@ export const DEFAULT_DATE_PICKER_LABELS: DatePickerLabels = {
   previousMonth: 'Show previous month',
   nextMonth: 'Show next month',
   invalidDate: 'Enter a date as {pattern}.',
+  notADate: 'That is not a date.',
   unavailable: 'That date is not available.',
 };
 
@@ -175,6 +181,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
 
   const todayDate = today === undefined ? localDateKey() : today;
   const pattern = datePattern(locale);
+  // What the message can honestly ask for: the placeholder, or the locale's shape while the
+  // built-in reader is in use. A custom parser with no placeholder has no shape to name.
+  const expected = placeholder ?? (parseDate ? null : pattern);
   const describedBy = [ariaDescribedBy, problem ? errorId : undefined].filter(Boolean).join(' ') || undefined;
   const isInvalid = !!invalid || !!problem || ariaInvalid === true || ariaInvalid === 'true';
 
@@ -199,7 +208,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
     </div>
     {name && <input type="hidden" name={name} value={value ?? ''} disabled={disabled} />}
     {problem && <span id={errorId} className="uix-field__error uix-date-picker__error" role="alert">
-      {problem === 'format' ? fillLabel(labels.invalidDate, { pattern }) : labels.unavailable}
+      {problem !== 'format' ? labels.unavailable : expected ? fillLabel(labels.invalidDate, { pattern: expected }) : labels.notADate}
     </span>}
     <Popover
       id={popoverId} anchor={anchorRef} placement={placement} className="uix-date-picker__popover"

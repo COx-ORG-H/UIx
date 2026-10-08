@@ -355,8 +355,13 @@ test('DatePicker formatDate / parseDate replace the field format', () => {
   assert.deepEqual(v.changes, ['2026-04-03']);
   type(v.input(), '03.04.2026');
   blur(v.input());
-  assert.equal(v.error() !== null, true, 'the custom parser decides');
+  assert.equal(v.error().textContent.trim(), 'That is not a date.', 'the custom parser decides, and no numeric shape is promised');
   v.unmount();
+  const hinted = mountDate({ formatDate, parseDate, placeholder: 'D Mon YYYY' });
+  type(hinted.input(), 'soon');
+  blur(hinted.input());
+  assert.equal(hinted.error().textContent.trim(), 'Enter a date as D Mon YYYY.', 'the placeholder is the shape the message names');
+  hinted.unmount();
 });
 
 test('DatePicker words come from props and from UixLabelsProvider', () => {

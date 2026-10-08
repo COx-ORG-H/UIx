@@ -3,6 +3,8 @@
 @layer uix.components {
   .uix-inline-edit { display: inline-flex; max-width: 100%; min-width: 0; vertical-align: top; }
   .uix-inline-edit--editing { display: flex; }
+  /* A value that cannot be edited is plain text on the same line box as its editable neighbours. */
+  .uix-inline-edit--readonly { align-items: center; min-height: 28px; }
   /* The value IS the button: it looks like text until it is hovered or focused. The negative
      inline margin keeps the text on the column it had as plain text. */
   .uix-inline-edit__view {

@@ -1,5 +1,6 @@
 import { tagInputMarkup, fileUploadMarkup, selectMarkup, selectStatesMarkup, SELECT_SPECIMENS } from "./form-specimens.js";
 import { TENSOR_GAP_SPECIMENS } from "./tensor-gap-specimens.js";
+import { OLDER_GAP_SPECIMENS } from "./older-gap-specimens.js";
 /* Generated once from the retired UIx showcase pages. The docs router is now the canonical owner. */
 export const SHOWCASE_PAGES = [
   {
@@ -377,10 +378,15 @@ colorPicker.summary = colorPicker.summary.replace("normalized hex input, palette
 // The gaps TENSOR found on 2.31.0 (HAR-1346 follow-ups, 2026-10-08). Each route's block is
 // appended inside its closing </section>, after every earlier specimen, so the first match of
 // each COMPONENT_SPECIMENS selector stays what it was.
-for (const [slug, html] of Object.entries(TENSOR_GAP_SPECIMENS)) {
-  const page = SHOWCASE_PAGES.find((entry) => entry.slug === slug);
-  if (!page) throw new Error(`tensor-gap-specimens.js names a route that does not exist: ${slug}`);
-  const end = page.html.lastIndexOf("</section>");
-  if (end < 0) throw new Error(`${slug} has no closing </section> to append specimens to`);
-  page.html = `${page.html.slice(0, end)}${html}\n${page.html.slice(end)}`;
+// After them, the older gaps TENSOR's triage still found blocking (date fields, radio cards,
+// entity-picker hints, presence, the lazy tree): generated from the built React components by
+// packages/react/scripts/render-older-gap-specimens.mjs.
+for (const [source, specimens] of [["tensor-gap-specimens.js", TENSOR_GAP_SPECIMENS], ["older-gap-specimens.js", OLDER_GAP_SPECIMENS]]) {
+  for (const [slug, html] of Object.entries(specimens)) {
+    const page = SHOWCASE_PAGES.find((entry) => entry.slug === slug);
+    if (!page) throw new Error(`${source} names a route that does not exist: ${slug}`);
+    const end = page.html.lastIndexOf("</section>");
+    if (end < 0) throw new Error(`${slug} has no closing </section> to append specimens to`);
+    page.html = `${page.html.slice(0, end)}${html}\n${page.html.slice(end)}`;
+  }
 }

@@ -6,11 +6,13 @@
   .uix-date-picker { display: grid; gap: var(--uix-space-1); width: 100%; min-width: 0; max-width: 11rem; }
   .uix-date-picker__control { position: relative; display: flex; min-width: 0; }
   .uix-date-picker__input { padding-inline-end: calc(var(--uix-control-h) + var(--uix-space-1)); font-variant-numeric: tabular-nums; }
-  .uix-date-picker--sm .uix-date-picker__input { padding-inline-end: 30px; }
+  .uix-date-picker--sm .uix-date-picker__input { padding-inline-end: var(--uix-space-7); }
   .uix-date-picker__toggle {
-    position: absolute; inset-block: 2px; inset-inline-end: 2px; aspect-ratio: 1;
+    /* Half a space step (2 px) inside the field's border, on every side it touches. */
+    --date-picker-inset: calc(var(--uix-space-1) / 2);
+    position: absolute; inset-block: var(--date-picker-inset); inset-inline-end: var(--date-picker-inset); aspect-ratio: 1;
     display: inline-flex; align-items: center; justify-content: center; padding: 0;
-    border: 0; border-radius: calc(var(--uix-radius-md) - 2px); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-date-picker__toggle:hover:not(:disabled),
