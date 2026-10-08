@@ -451,6 +451,14 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
   - To put focus back on an item after closing your own panel: `querySelector('[data-item-id="…"]')?.focus()`.
 - **Emphasis.** `entry.emphasis: 'highlight' | 'dim'` sets `data-highlight` / `data-dim` on that item in every
   view. Highlight is a heavier edge and weight, dim is quieter text; neither changes a hue.
+- **Print (HAR-1541).** The stylesheet has `@media print` rules; add no print CSS of your own. On paper the same
+  markup has no scroller, fits the page width, and keeps a week row or an agenda row on one page. The colours are
+  the `--uix-print-*` tokens (light, whatever theme the screen has). Nothing depends on a background: the `high`
+  band is a heavy edge, each window pattern has an edge style of its own (`solid`, `diagonal` dashed, `cross`
+  double, `dotted` dotted), and the hour lines are drawn as lines. Month chips wrap to show the whole title. The
+  header's buttons, the "now" line and a pending move are not printed; the period title, the zone label and the
+  legend are. Limits: a bar or a time-grid item keeps its on-screen size, so a title longer than its bar is cut;
+  a long agenda prints only the rows it has mounted — raise `virtualizeAbove` before printing to print them all.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two
