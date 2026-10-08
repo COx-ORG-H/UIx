@@ -227,9 +227,9 @@
       "brotli": 2193
     },
     "styles/components/list.css": {
-      "raw": 784,
-      "gzip": 353,
-      "brotli": 274
+      "raw": 1061,
+      "gzip": 472,
+      "brotli": 357
     },
     "styles/components/match-review.css": {
       "raw": 1612,
@@ -332,9 +332,9 @@
       "brotli": 516
     },
     "styles/components/scheduling-calendar.css": {
-      "raw": 26619,
-      "gzip": 5138,
-      "brotli": 4438
+      "raw": 39112,
+      "gzip": 7002,
+      "brotli": 6077
     },
     "styles/components/scheduling-timeline.css": {
       "raw": 6285,
@@ -472,9 +472,9 @@
       "brotli": 1846
     },
     "styles/forced-colors.css": {
-      "raw": 3840,
-      "gzip": 1360,
-      "brotli": 1124
+      "raw": 4473,
+      "gzip": 1531,
+      "brotli": 1253
     },
     "styles/motion.css": {
       "raw": 1853,

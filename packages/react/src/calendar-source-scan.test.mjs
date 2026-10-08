@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { packLanes, rankOverflow } from './calendar-model.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const CALENDAR_SOURCES = ['calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx'];
+const CALENDAR_SOURCES = ['calendar-model.ts', 'scheduling-calendar-model.ts', 'components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'components/SchedulingAgenda.tsx'];
 
 /** Raw-HTML sinks and props that take an HTML string. */
 const htmlFindings = (code) => [
@@ -73,7 +73,7 @@ test('AC20: the vocabulary scan finds a known-bad snippet (calibration)', () => 
   assert.deepEqual(vocabularyFindings("const s = 'a \\'freeze\\' here';"), ["a \\'freeze\\' here"], 'escaped quotes stay inside the literal');
 });
 
-for (const file of ['components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'scheduling-calendar-model.ts']) {
+for (const file of ['components/SchedulingCalendar.tsx', 'components/SchedulingTimeGrid.tsx', 'components/SchedulingAgenda.tsx', 'scheduling-calendar-model.ts']) {
   test(`AC20: ${file} adds no change vocabulary (only the E13-kept enum values remain)`, () => {
     assert.deepEqual(vocabularyFindings(readFileSync(join(here, file), 'utf8')), []);
   });

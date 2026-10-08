@@ -333,7 +333,7 @@ export type { SchedulingCalendarLabels,
   SchedulingCalendarProps, SchedulingCalendarView, SchedulingCalendarEntry,
   SchedulingCalendarOverlay, SchedulingDatePart, SchedulingEntryState, SchedulingOverlayKind,
   SchedulingBand, SchedulingStatus, SchedulingMarker, SchedulingMarkerEmphasis, SchedulingOverlayPattern,
-  SchedulingCalendarDay, SchedulingLegendItem,
+  SchedulingCalendarDay, SchedulingLegendItem, SchedulingAgendaGroup,
 } from './components/SchedulingCalendar.js';
 export type { TimeGridEntryContext } from './components/SchedulingTimeGrid.js';
 export {

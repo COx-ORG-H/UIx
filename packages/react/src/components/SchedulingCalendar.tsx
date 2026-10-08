@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
+import type { CSSProperties, FocusEvent, KeyboardEvent, ReactNode } from 'react';
+import { rovingStep, syncRovingStop } from '../roving.js';
+import type { RovingStop } from '../roving.js';
 import { addCalendarDays, addCalendarMonths, buildMonthGrid, cachedDateTimeFormat, startOfMonth, zonedDateKey, zonedTimeOfDay } from '../calendar-model.js';
 import type { CalendarWeekday } from '../calendar-model.js';
 import { TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutMonthSpans } from '../scheduling-calendar-model.js';
 import type { MonthSpanGroup, MonthSpanInput, MonthSpanLayout, MoveProposal, PlacedMonthSpan } from '../scheduling-calendar-model.js';
+import { SchedulingAgenda } from './SchedulingAgenda.js';
 import { SchedulingTimeGrid } from './SchedulingTimeGrid.js';
 import type { TimeGridEntryContext } from './SchedulingTimeGrid.js';
 import { cx } from '../cx.js';
@@ -70,6 +73,12 @@ export interface SchedulingCalendarEntry {
   allDay?: boolean;
   /** `false` keeps this entry where it is when the grid allows moves (`canMove`). */
   movable?: boolean;
+  /**
+   * Draws the item with more or less weight than its neighbours, for example the partners of
+   * the item the user picked (`'highlight'`) against everything else (`'dim'`). It is a line
+   * weight and a quieter text colour, never a hue.
+   */
+  emphasis?: 'highlight' | 'dim';
 }
 
 export interface SchedulingCalendarOverlay {
@@ -98,9 +107,28 @@ export interface SchedulingCalendarDay {
   count: number;
   /** The "+N" of the cell. 0 shows none. */
   overflowCount: number;
-  /** The accessible text of the count, e.g. "7 items, 2 need review". */
+  /**
+   * The accessible text of the count, e.g. "7 items, 2 need review". The day's button is named
+   * with the date and this text (`labels.dayName`), so a screen reader hears the date, the count
+   * and the highest signal in one go.
+   */
   label?: string;
   markers?: SchedulingMarker[];
+}
+
+/** One day of the agenda, built by the consumer. The calendar renders the groups and their rows in the order given. */
+export interface SchedulingAgendaGroup {
+  /** The day the group is for (`YYYY-MM-DD`). */
+  date: string;
+  /** Replaces the heading text. Default: the date through `formatDate(date, 'day')`. */
+  heading?: ReactNode;
+  /** Windows that touch the day: one note each beside the heading, never one per row. */
+  annotations?: SchedulingCalendarOverlay[];
+  rows: SchedulingCalendarEntry[];
+  /** Entries of the day that are not in `rows`. Shows "N not shown — open day", which calls `onShowMore`. */
+  hiddenCount?: number;
+  /** Entries that go on into this day and are listed under an earlier one. */
+  continuesCount?: number;
 }
 
 export interface SchedulingLegendItem {
@@ -151,6 +179,8 @@ export interface SchedulingCalendarLabels {
   moreSpans?: string;
   /** Accessible name of that control. `{count}` and `{date}` (the first day with a hidden span). */
   moreSpansLabel?: string;
+  /** The name of a day's button when `days[date].label` is given. `{date}` and `{label}` placeholders; use `'{label}'` if your labels already say the date. */
+  dayName?: string;
   /** The accessible text of a day's count when `days[date].label` is not given. `{count}` placeholder. */
   dayCount?: string;
   states: Record<SchedulingEntryState, string>;
@@ -168,6 +198,12 @@ export interface SchedulingCalendarLabels {
   topLane?: string;
   /** The cue on the second-day part of an entry that crosses midnight. `{time}` is its start. */
   continuesFrom?: string;
+  /** The time text of an agenda row whose entry has no time of day (`allDay`). */
+  allDay?: string;
+  /** Under an agenda day whose rows are not all listed. `{count}` placeholder. */
+  hiddenInDay?: string;
+  /** Under an agenda day that entries from an earlier day run into. `{count}` placeholder. */
+  continuesInDay?: string;
   /** Read after an item's name when it can be moved. */
   moveHint?: string;
   /** Announced for a pending move. `{start}` and `{end}` placeholders. */
@@ -206,6 +242,7 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   fewerEntries: 'Show fewer',
   moreSpans: '+{count}',
   moreSpansLabel: '{count} more spanning this week, from {date}',
+  dayName: '{date}, {label}',
   dayCount: '{count} entries',
   states: { scheduled: 'Scheduled', conflicted: 'Conflicted', 'in-progress': 'In progress', 'blackout-violation': 'Blackout violation' },
   statuses: { tentative: 'Tentative', committed: 'Scheduled', live: 'In progress', done: 'Done', dead: 'Cancelled' },
@@ -215,6 +252,9 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   moreWindowsLabel: '{count} more windows, from {date}',
   topLane: 'All-day and longer entries',
   continuesFrom: 'from {time}',
+  allDay: 'All day',
+  hiddenInDay: '{count} not shown — open day',
+  continuesInDay: 'Continues: {count} listed under an earlier day',
   moveHint: 'Hold Shift and press an arrow key to move it. Enter confirms, Escape cancels.',
   moveProposed: 'Move to {start} – {end}. Enter confirms, Escape cancels.',
   moveCancelled: 'Move cancelled.',
@@ -317,6 +357,23 @@ export interface SchedulingCalendarProps {
   /** Called by a click or Enter on a day number. */
   onSelectDate?: (date: string) => void;
   /**
+   * The agenda as day groups built by the consumer: which entry is listed under which day,
+   * in which order, and how many are left out. When set, `view="agenda"` renders exactly
+   * these, each day under a heading, and never sorts, groups or counts. Unset keeps the flat
+   * list sorted by start.
+   */
+  agendaGroups?: SchedulingAgendaGroup[];
+  /** The heading level of an agenda day. Default 3. */
+  agendaHeadingLevel?: 2 | 3 | 4 | 5 | 6;
+  /** Above this many agenda rows only the rows near the viewport are mounted. Default 200. */
+  virtualizeAbove?: number;
+  /**
+   * `'counts'` draws each month cell with the consumer's `days[date].count` and markers
+   * only: no chips and no entry bars, and narrower columns, for a narrow screen. Windows keep
+   * their bar and name. Default `'full'`.
+   */
+  monthDensity?: 'full' | 'counts';
+  /**
    * Draws `view="week"` as a time grid: seven day columns on an hour axis. `view="day"` is
    * always a time grid. Default `false`: the week stays seven day cells.
    */
@@ -359,6 +416,7 @@ const INTL_PARTS: Record<SchedulingDatePart, Intl.DateTimeFormatOptions> = {
 };
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 const EMPTY_ENTRIES: SchedulingCalendarEntry[] = [];
+const EMPTY_IDS: string[] = [];
 const DEFAULT_LANE_CAP = 2;
 /** Chip rows a fixed-height cell keeps when `maxEntriesPerDay` is not given. */
 const DEFAULT_CHIP_ROWS = 3;
@@ -382,7 +440,7 @@ export function SchedulingCalendar({
   entries, anchorDate, timeZone, view: controlledView, onViewChange, onAnchorDateChange,
   onSelectEntry, overlays = EMPTY_OVERLAYS, onSelectOverlay, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, days: dayInfo, dayEntries, spanLayout, windowLaneCap, spanLaneCap,
-  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, timeGrid = false, now, canMove = false, step = 15, onProposeMove,
+  legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, agendaGroups, agendaHeadingLevel = 3, virtualizeAbove = 200, monthDensity = 'full', timeGrid = false, now, canMove = false, step = 15, onProposeMove,
   topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4, loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
   const uixLabels = useUixLabels();
@@ -406,7 +464,10 @@ export function SchedulingCalendar({
   const picksGiven = dayEntries !== undefined;
   const controlled = picksGiven || dayInfo !== undefined;
   // Every cell keeps one height: nothing in it can grow, because the list is cut and "+N" opens elsewhere.
-  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined);
+  // The counts-only month has nothing in a cell that could grow, so its cells are fixed too.
+  // The density is a month setting: the week keeps its chips and its growing cells.
+  const countsOnly = monthDensity === 'counts' && view === 'month';
+  const fixed = controlled || (maxEntriesPerDay !== undefined && onShowMore !== undefined) || countsOnly;
   // A cell that grows has room for every span. A fixed one keeps two lanes per group unless told otherwise.
   const windowCap = Math.max(0, windowLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
   const spanCap = Math.max(0, spanLaneCap ?? (fixed ? DEFAULT_LANE_CAP : Infinity));
@@ -450,13 +511,14 @@ export function SchedulingCalendar({
       windowIds.add(overlay.id);
       inputs.push({ id: overlay.id, start: overlay.start, end: overlay.end, group: 'window' });
     }
-    for (const { entry } of multiDay) {
+    // The counts-only month draws no entry, so none takes a lane or is counted as hidden.
+    for (const { entry } of countsOnly ? [] : multiDay) {
       if (itemIds.has(entry.id)) continue;
       itemIds.add(entry.id);
       inputs.push({ id: entry.id, start: entry.start, end: entry.end, group: 'item' });
     }
     return layoutMonthSpans(inputs, days, { timeZone, laneCap: { window: windowCap, item: spanCap } });
-  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap]);
+  }, [spanLayout, view, timeGridView, overlays, multiDay, days, timeZone, windowCap, spanCap, countsOnly]);
   const placedByRow = useMemo(() => {
     const rows = new Map<number, PlacedMonthSpan[]>();
     for (const placed of layout.placed) { const row = rows.get(placed.weekRow); if (row) row.push(placed); else rows.set(placed.weekRow, [placed]); }
@@ -480,11 +542,93 @@ export function SchedulingCalendar({
     setActiveDate(date);
     requestAnimationFrame(() => gridRef.current?.querySelector<HTMLButtonElement>(`[data-calendar-date="${date}"]`)?.focus());
   };
+  /* Keyboard model (HAR-1527). The grid is one tab stop: the day numbers take focus one at a
+   * time and the arrow keys move between them. Enter on a day goes into that day's items
+   * (its windows, its bars, its chips, its "+N"), ArrowUp and ArrowDown move between those, and
+   * Escape goes back to the day. No item is a tab stop of its own. */
+  const enteredFrom = useRef<string | null>(null);
+  const cellOf = (date: string) => gridRef.current?.querySelector<HTMLElement>(`[data-calendar-date="${date}"]`)?.closest<HTMLElement>('.uix-scheduling-calendar__day') ?? null;
+  /** What Enter on a day reaches, in reading order: the spans over the day, then what is in its cell, then the row's "+N". */
+  const dayRing = (date: string): HTMLElement[] => {
+    const cell = cellOf(date);
+    const week = cell?.parentElement;
+    if (!cell || !week) return [];
+    const column = Array.from(week.children).indexOf(cell) + 1;
+    const covers = (element: HTMLElement) => {
+      const [from, to] = element.style.gridColumn.split('/').map((part) => Number(part.trim()));
+      return from !== undefined && to !== undefined && from <= column && column < to;
+    };
+    const direct = Array.from(week.children) as HTMLElement[];
+    return [
+      ...direct.filter((element) => element.matches('button.uix-scheduling-calendar__window, button.uix-scheduling-calendar__span') && covers(element)),
+      ...Array.from(cell.querySelectorAll<HTMLElement>('.uix-scheduling-calendar__entries button')),
+      // The row's "+N" opens one day; it is reached from that day.
+      ...direct.filter((element) => element.matches('button.uix-scheduling-calendar__rowmore') && element.getAttribute('data-more-date') === date),
+    ];
+  };
+  /** The day an item was entered from, or, for an item reached with the pointer, the first day it is on. */
+  const dayOfItem = (item: HTMLElement): string | null => {
+    if (enteredFrom.current && dayRing(enteredFrom.current).includes(item)) return enteredFrom.current;
+    const week = item.closest<HTMLElement>('.uix-scheduling-calendar__week');
+    const cell = item.closest<HTMLElement>('.uix-scheduling-calendar__day')
+      ?? (week ? (Array.from(week.children) as HTMLElement[])[Number(item.style.gridColumn.split('/')[0]) - 1] ?? null : null);
+    return item.getAttribute('data-more-date') ?? cell?.querySelector('[data-calendar-date]')?.getAttribute('data-calendar-date') ?? null;
+  };
   const onDayKeyDown = (event: KeyboardEvent<HTMLButtonElement>, date: string) => {
     const offset = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[event.key];
     if (offset) { event.preventDefault(); focusDate(addCalendarDays(date, offset)); }
     else if (event.key === 'Home') { event.preventDefault(); focusDate(days[0]!); }
     else if (event.key === 'End') { event.preventDefault(); focusDate(days[days.length - 1]!); }
+    else if (event.key === 'Enter') {
+      // A day with nothing in it has nothing to go into: Enter then activates the day number, as Space always does.
+      const [first] = dayRing(date);
+      if (!first) return;
+      event.preventDefault();
+      enteredFrom.current = date;
+      first.focus();
+    }
+  };
+  const onGridKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const item = event.target as HTMLElement;
+    if (event.defaultPrevented || item.hasAttribute('data-calendar-date') || !['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape'].includes(event.key)) return;
+    const date = dayOfItem(item);
+    if (!date) return;
+    const ring = dayRing(date);
+    // Only the items of the day: a field or a link the consumer put in a cell keeps its own keys.
+    const index = ring.indexOf(item);
+    if (index === -1) return;
+    event.preventDefault();
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      enteredFrom.current = null;
+      setActiveDate(date);
+      gridRef.current?.querySelector<HTMLElement>(`[data-calendar-date="${date}"]`)?.focus();
+      return;
+    }
+    enteredFrom.current = date;
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? ring.length - 1 : index + (event.key === 'ArrowDown' ? 1 : -1);
+    ring[Math.max(0, Math.min(ring.length - 1, next))]?.focus();
+  };
+  // An item reached with the pointer takes the tab stop to its day, so Tab comes back to where the user is.
+  const onGridFocus = (event: FocusEvent<HTMLDivElement>) => {
+    const item = event.target as HTMLElement;
+    if (item.hasAttribute('data-calendar-date')) return;
+    const date = dayOfItem(item);
+    if (date && dayRing(date).includes(item)) setActiveDate(date);
+  };
+  /* The flat agenda (no `agendaGroups`) is one tab stop too: the arrow keys, Home and End walk its rows. */
+  const flatAgendaRef = useRef<HTMLDivElement>(null);
+  const flatAgendaStop = useRef<RovingStop>({ node: null, index: 0 });
+  const flatAgendaRows = () => Array.from(flatAgendaRef.current?.querySelectorAll<HTMLElement>(':scope > ol > li > button') ?? []);
+  useEffect(() => { flatAgendaStop.current = syncRovingStop(flatAgendaRows(), flatAgendaStop.current); });
+  const onFlatAgendaFocus = (event: FocusEvent<HTMLDivElement>) => { flatAgendaStop.current = syncRovingStop(flatAgendaRows(), flatAgendaStop.current, event.target as HTMLElement); };
+  const onFlatAgendaKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented) return;
+    const next = rovingStep(flatAgendaRows(), event.target as HTMLElement, event.key);
+    if (!next) return;
+    event.preventDefault();
+    flatAgendaStop.current = syncRovingStop(flatAgendaRows(), flatAgendaStop.current, next);
+    next.focus();
   };
   /** Every entry on a day, single-day or not, in the order the consumer gave them. */
   const entriesOn = (date: string) => coverage.filter((covered) => date >= covered.start && date < covered.end).map((covered) => covered.entry);
@@ -505,12 +649,16 @@ export function SchedulingCalendar({
     ?? [fillLabel(labels.entry, { title: entry.title, state: stateText(entry), start: formatInstant(entry.start), end: formatInstant(entry.end) }), ...(entry.markers ?? []).map((marker) => marker.label)].join(', ');
   const overlayName = (overlay: SchedulingCalendarOverlay) => overlay.accessibleName
     ?? fillLabel(labels.overlay, { title: [overlay.kindLabel, overlay.label, overlay.scopeLabel].filter(Boolean).join(', '), start: formatInstant(overlay.start), end: formatInstant(overlay.end) });
+  const emphasisOf = (entry: SchedulingCalendarEntry) => ({ 'data-highlight': entry.emphasis === 'highlight' || undefined, 'data-dim': entry.emphasis === 'dim' || undefined });
   const entryProps = (entry: SchedulingCalendarEntry) => ({
     type: 'button' as const,
+    // Reached from its day with Enter, never with Tab.
+    tabIndex: -1,
     'data-item-id': entry.id,
     'data-band': entry.band ?? 'none',
     'data-status': statusOf(entry),
     'data-state': entry.state,
+    ...emphasisOf(entry),
     onClick: () => onSelectEntry?.(entry),
     'aria-label': entryName(entry),
   });
@@ -530,7 +678,8 @@ export function SchedulingCalendar({
     && !Object.values(dayEntries ?? {}).some((list) => list.length > 0)
     && !Object.values(dayInfo ?? {}).some((day) => day.count > 0);
   // A fixed cell holds `maxEntriesPerDay` chips; if the consumer passes a longer list, the cell holds that, so nothing is clipped.
-  const chipRows = Math.max(0, maxEntriesPerDay ?? DEFAULT_CHIP_ROWS, ...Object.values(dayEntries ?? {}).map((list) => list.length));
+  // The counts-only month has no chip rows at all: a cell is its head and the window lanes.
+  const chipRows = countsOnly ? -1 : Math.max(0, maxEntriesPerDay ?? DEFAULT_CHIP_ROWS, ...Object.values(dayEntries ?? {}).map((list) => list.length));
 
   const renderDay = (date: string, index: number) => {
     const info = dayInfo?.[date];
@@ -538,29 +687,29 @@ export function SchedulingCalendar({
     const all = picksGiven ? dayEntries[date] ?? EMPTY_ENTRIES : singles.get(date) ?? EMPTY_ENTRIES;
     const overflowing = !picksGiven && maxEntriesPerDay !== undefined && all.length > maxEntriesPerDay;
     const collapsed = overflowing && (controlled || onShowMore !== undefined || !expandedDates.has(date));
-    const shown = collapsed ? all.slice(0, Math.max(0, maxEntriesPerDay!)) : all;
+    const shown = countsOnly ? EMPTY_ENTRIES : collapsed ? all.slice(0, Math.max(0, maxEntriesPerDay!)) : all;
     // A consumer count always wins; without one the number is what this cell could not show.
     const hiddenCount = info ? info.overflowCount : picksGiven ? 0 : all.length - shown.length;
     const onDay = picksGiven ? all : entriesOn(date);
     const badge = renderDayBadge?.(date, onDay);
     const hasBadge = badge != null && badge !== false;
-    const dateButton = <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={activeDate === date ? 0 : -1} onFocus={() => setActiveDate(date)} onKeyDown={(event) => onDayKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined} aria-label={dateText(date, 'day')}>{Number(date.slice(-2))}</button>;
+    const dateButton = <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={activeDate === date ? 0 : -1} onFocus={() => setActiveDate(date)} onKeyDown={(event) => onDayKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}>{Number(date.slice(-2))}</button>;
     const moreText = fillLabel(labels.moreEntries, { count: hiddenCount });
     const moreName = fillLabel(labels.moreEntriesLabel, { count: hiddenCount, date: dateText(date, 'day') });
     return <div key={date} className="uix-scheduling-calendar__day" data-outside={view === 'month' && !monthDays[index]!.inMonth || undefined}>
       {hasBadge || info ? <div className="uix-scheduling-calendar__dayhead">
         {hasBadge && <span className="uix-scheduling-calendar__badge">{badge}</span>}
-        {info && <span className="uix-scheduling-calendar__count"><span aria-hidden="true">{info.count}</span><span className="uix-visually-hidden">{info.label ?? fillLabel(labels.dayCount, { count: info.count })}</span></span>}
+        {info && <span className="uix-scheduling-calendar__count" aria-hidden={info.label ? true : undefined}><span aria-hidden="true">{info.count}</span><span className="uix-visually-hidden">{info.label ?? fillLabel(labels.dayCount, { count: info.count })}</span></span>}
         {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}
         {dateButton}
       </div> : dateButton}
       <div className="uix-scheduling-calendar__entries">
         {shown.map((entry) => <button key={entry.id} className="uix-scheduling-calendar__entry" {...entryProps(entry)}>{entryContent(entry)}</button>)}
-        {controlled
+        {countsOnly ? null : controlled
           ? hiddenCount > 0 && (onShowMore
-            ? <button type="button" className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, onDay)}>{moreText}</button>
+            ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, onDay)}>{moreText}</button>
             : <span className="uix-scheduling-calendar__more"><span aria-hidden="true">{moreText}</span><span className="uix-visually-hidden">{moreName}</span></span>)
-          : overflowing && <button type="button" className="uix-scheduling-calendar__more" aria-expanded={onShowMore ? undefined : !collapsed} aria-label={collapsed ? moreName : undefined} onClick={() => toggleMore(date, onDay)}>{collapsed ? moreText : labels.fewerEntries}</button>}
+          : overflowing && <button type="button" tabIndex={-1} className="uix-scheduling-calendar__more" aria-expanded={onShowMore ? undefined : !collapsed} aria-label={collapsed ? moreName : undefined} onClick={() => toggleMore(date, onDay)}>{collapsed ? moreText : labels.fewerEntries}</button>}
       </div>
     </div>;
   };
@@ -569,8 +718,12 @@ export function SchedulingCalendar({
     const rowDays = days.slice(row * 7, row * 7 + 7);
     // The chips of a row start right under the lanes that row uses.
     const windowLanes = lanesUsed(row, 'window');
-    const spanLanes = lanesUsed(row, 'item');
-    const hidden = layout.hiddenByRow?.[row]?.length ?? 0;
+    const spanLanes = countsOnly ? 0 : lanesUsed(row, 'item');
+    // In the counts-only month the day counts speak for the entries: "+N" is for windows only.
+    const hiddenIds = layout.hiddenByRow?.[row] ?? EMPTY_IDS;
+    // An id that names both an entry and a window drawn in this row is the entry's.
+    const drawnWindows = countsOnly ? new Set((placedByRow.get(row) ?? []).filter((placed) => placed.group === 'window').map((placed) => placed.id)) : undefined;
+    const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id) && !drawnWindows!.has(id)).length : hiddenIds.length;
     const firstHiddenDay = layout.firstHiddenDayByRow?.[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
     const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
@@ -583,7 +736,7 @@ export function SchedulingCalendar({
         if (placed.group === 'window') {
           const overlay = overlayById.get(placed.id);
           if (!overlay) return null;
-          return <button key={`window-${placed.id}`} type="button" className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} data-kind={overlay.kind} {...continues} style={laneStyle(placed, windowLanes)} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>
+          return <button key={`window-${placed.id}`} type="button" tabIndex={-1} className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} data-kind={overlay.kind} {...continues} style={laneStyle(placed, windowLanes)} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>
             <span className="uix-scheduling-calendar__window-text">
               {overlay.kindLabel && <span className="uix-scheduling-calendar__window-kind">{overlay.kindLabel}</span>}
               <span className="uix-scheduling-calendar__window-name">{overlay.label}</span>
@@ -592,11 +745,11 @@ export function SchedulingCalendar({
           </button>;
         }
         const entry = entryById.get(placed.id);
-        if (!entry) return null;
+        if (!entry || countsOnly) return null;
         return <button key={`span-${placed.id}`} className="uix-scheduling-calendar__entry uix-scheduling-calendar__span" {...entryProps(entry)} {...continues} style={laneStyle(placed, windowLanes)}>{entryContent(entry, !placed.continuesBefore)}</button>;
       })}
       {hidden > 0 && (onShowMore
-        ? <button type="button" className="uix-scheduling-calendar__rowmore" aria-label={moreName} onClick={() => onShowMore(firstHiddenDay, picksGiven ? dayEntries[firstHiddenDay] ?? EMPTY_ENTRIES : entriesOn(firstHiddenDay))}>{moreText}</button>
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={rowDays.includes(firstHiddenDay) ? firstHiddenDay : rowDays[0]} aria-label={moreName} onClick={() => onShowMore(firstHiddenDay, picksGiven ? dayEntries[firstHiddenDay] ?? EMPTY_ENTRIES : entriesOn(firstHiddenDay))}>{moreText}</button>
         : <span className="uix-scheduling-calendar__rowmore"><span aria-hidden="true">{moreText}</span><span className="uix-visually-hidden">{moreName}</span></span>)}
     </div>;
   };
@@ -605,7 +758,7 @@ export function SchedulingCalendar({
   const gridStyle = fixed ? {
     ['--uix-scheduling-calendar-chips' as string]: chipRows,
     ['--uix-scheduling-calendar-lane-cap' as string]: Math.max(
-      Math.max(Number.isFinite(windowCap) ? windowCap : 0, lanesUsedAnywhere('window')) + Math.max(Number.isFinite(spanCap) ? spanCap : 0, lanesUsedAnywhere('item')),
+      Math.max(Number.isFinite(windowCap) ? windowCap : 0, lanesUsedAnywhere('window')) + (countsOnly ? 0 : Math.max(Number.isFinite(spanCap) ? spanCap : 0, lanesUsedAnywhere('item'))),
       Object.keys(layout.hiddenByRow ?? {}).length > 0 ? 1 : 0,
     ),
   } as CSSProperties : undefined;
@@ -619,9 +772,14 @@ export function SchedulingCalendar({
     {notice != null && notice !== false && <div className="uix-scheduling-calendar__notice">{notice}</div>}
     {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
       : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
-      : view === 'agenda' ? <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}>{visibleEntries.length === 0 ? <p>{labels.agendaEmpty}</p> : <ol>{[...visibleEntries].sort((a, b) => a.start.localeCompare(b.start)).map((entry) => {
+      : view === 'agenda' && agendaGroups ? <SchedulingAgenda
+        groups={agendaGroups} timeZone={timeZone} labels={labels} headingLevel={agendaHeadingLevel} virtualizeAbove={virtualizeAbove} dateText={dateText} formatInstant={formatInstant}
+        entryName={entryName} entryStatus={statusOf} entryStatusText={stateText} entryMarkers={markersOf} overlayName={overlayName}
+        renderEntry={renderEntry} renderMarker={renderMarker} onSelectEntry={onSelectEntry} onSelectOverlay={onSelectOverlay} onShowMore={onShowMore}
+      />
+      : view === 'agenda' ? <div ref={flatAgendaRef} className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda} onKeyDown={onFlatAgendaKeyDown} onFocus={onFlatAgendaFocus}>{visibleEntries.length === 0 ? <p>{labels.agendaEmpty}</p> : <ol>{[...visibleEntries].sort((a, b) => a.start.localeCompare(b.start)).map((entry) => {
         const markers = markersOf(entry);
-        return <li key={entry.id}><button type="button" data-item-id={entry.id} data-band={entry.band ?? 'none'} data-status={statusOf(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span>{markers.length > 0 && <span className="uix-scheduling-calendar__markers">{markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}{entry.state ? <StatusPill tone={stateTone(entry.state)}>{stateLabel[entry.state]}</StatusPill> : <span className="uix-scheduling-calendar__status">{stateText(entry)}</span>}</button></li>;
+        return <li key={entry.id}><button type="button" data-item-id={entry.id} data-highlight={entry.emphasis === 'highlight' || undefined} data-dim={entry.emphasis === 'dim' || undefined} data-band={entry.band ?? 'none'} data-status={statusOf(entry)} data-state={entry.state} onClick={() => onSelectEntry?.(entry)}><span><strong>{renderEntry?.(entry) ?? entry.title}</strong><span>{formatInstant(entry.start)} – {formatInstant(entry.end)}</span>{entry.meta && <span>{entry.meta}</span>}</span>{markers.length > 0 && <span className="uix-scheduling-calendar__markers">{markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}{entry.state ? <StatusPill tone={stateTone(entry.state)}>{stateLabel[entry.state]}</StatusPill> : <span className="uix-scheduling-calendar__status">{stateText(entry)}</span>}</button></li>;
       })}</ol>}</div>
       : timeGridView ? <SchedulingTimeGrid
         view={view === 'day' ? 'day' : 'week'} days={days} timeZone={timeZone} entries={visibleEntries} overlays={overlays} dayInfo={dayInfo}
@@ -632,7 +790,7 @@ export function SchedulingCalendar({
         topLaneCrossMidnightMinutes={topLaneCrossMidnightMinutes} topLaneCap={topLaneCap} windowLaneCap={windowLaneCap ?? DEFAULT_LANE_CAP} maxLanes={maxLanes}
         emptyNote={emptyNote} nothingToShow={nothingToShow}
       />
-      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} style={gridStyle} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
+      : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} data-density={countsOnly ? 'counts' : undefined} style={gridStyle} onKeyDown={onGridKeyDown} onFocus={onGridFocus} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>
         {days.slice(0, 7).map((date) => <div key={`weekday-${date}`} className="uix-scheduling-calendar__weekday" aria-hidden="true">{dateText(date, 'weekday')}</div>)}
         {Array.from({ length: days.length / 7 }, (_, row) => renderWeek(row))}
         {emptyNote != null && emptyNote !== false && nothingToShow && <div className="uix-scheduling-calendar__empty">{emptyNote}</div>}
