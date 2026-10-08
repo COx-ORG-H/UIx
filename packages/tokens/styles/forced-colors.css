@@ -54,5 +54,21 @@
     .uix-scheduling-calendar__legend > span:is([data-state="conflicted"], [data-state="blackout-violation"])::before {
       background: CanvasText; forced-color-adjust: none;
     }
+
+    /* scheduling timeline — the same repairs as the calendar: the high band becomes a heavy
+       border, the marker shapes are redrawn in a system colour, and windows opt out so their
+       hatch stays. The now-line, its word, the grid lines and the hatch of a bar that shares
+       time are backgrounds too: without these rules the now-line is a strip of the page colour
+       through the bar text (HAR-1521) */
+    .uix-scheduling-timeline { --timeline-window-ink: CanvasText; }
+    .uix-scheduling-timeline__overlay { forced-color-adjust: none; border-color: CanvasText; background-color: Canvas; color: CanvasText; }
+    .uix-scheduling-timeline__overlay-label { background: Canvas; }
+    button.uix-scheduling-timeline__overlay:focus-visible { outline-color: Highlight; }
+    .uix-scheduling-timeline__item[data-band="high"] { border-width: 3px; }
+    .uix-scheduling-timeline__item-marker[data-glyph]::before { background: CanvasText; forced-color-adjust: none; }
+    .uix-scheduling-timeline__now { background: CanvasText; forced-color-adjust: none; }
+    .uix-scheduling-timeline__now-label { background: CanvasText; color: Canvas; forced-color-adjust: none; }
+    .uix-scheduling-timeline__gridline:not([data-minor]) { background: GrayText; forced-color-adjust: none; }
+    .uix-scheduling-timeline__item[data-conflict]::after { background-image: repeating-linear-gradient(135deg, transparent 0 6px, CanvasText 6px 9px); forced-color-adjust: none; }
   }
 }

@@ -1,5 +1,5 @@
 /* The SchedulingTimeline specimen on the docs page is the React component's own markup
- * (HAR-1521, U5 AC11). It was hand-pasted 2.33 markup: one band per lane, state tints and the
+ * (HAR-1521, U5 AC11). It was hand-pasted 2.34 markup: one band per lane, state tints and the
  * resize hint. This test renders the specimen again from the BUILT dist and fails when the
  * committed page differs, so a change to the component's markup cannot leave the docs behind.
  * The page is shared with the calendar specimens (render-scheduling-calendar-specimen.mjs): the
@@ -58,7 +58,7 @@ test('the script replaces only its own region: every byte outside the two marker
   assert.equal(applySchedulingTimelineSpecimen(changed, `${START}<h3 data-timeline-specimen>Changed</h3>${END}`), changed);
 });
 
-test('the script also takes over the hand-pasted 2.33 specimen: from the marker heading to the end of the timeline section', () => {
+test('the script also takes over the hand-pasted 2.34 specimen: from the marker heading to the end of the timeline section', () => {
   ready();
   const page = pageOf(committed());
   const legacy = '<h3 data-timeline-specimen>Old</h3>\n      <p>Old text.</p>\n      <section class="uix-scheduling-timeline" aria-label="x"><div><section>inner</section></div><span></span></section>';

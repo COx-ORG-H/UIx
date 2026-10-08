@@ -1,6 +1,6 @@
 // Regenerates the SchedulingTimeline specimen on the docs page `examples-scheduling-calendar`
 // (HAR-1521) from the BUILT package, so the styleguide shows exactly the markup the component
-// renders. The specimen used to be pasted 2.33 markup: one band per lane, state tints and the
+// renders. The specimen used to be pasted 2.34 markup: one band per lane, state tints and the
 // resize hint.
 //
 //   npm run build -w @tensor_1/react

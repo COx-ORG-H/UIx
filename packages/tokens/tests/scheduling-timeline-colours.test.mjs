@@ -5,8 +5,8 @@
  *   - a hue is mapped to one dimension only, and that dimension is the band;
  *   - only `data-band="high"` is filled; `medium` is a non-fill cue; `low` and `none` have no rule;
  *   - no rule tints by the deprecated `data-state` or `data-kind` (no state tint, no window hue);
- *   - the now-line and its label are neutral (2.33 painted them with the danger hue).
- * The checker is run against known-bad CSS first (the 2.33 rules among it), so a check that
+ *   - the now-line and its label are neutral (2.34 painted them with the danger hue).
+ * The checker is run against known-bad CSS first (the 2.34 rules among it), so a check that
  * matches nothing cannot pass. Same checker as scheduling-calendar-colours.test.mjs.
  * Run: npm run test:tokens */
 import test from 'node:test';
@@ -119,7 +119,7 @@ function findings(css) {
   return found;
 }
 
-test('the checker finds each kind of violation in known-bad CSS, the 2.33 rules included (calibration)', () => {
+test('the checker finds each kind of violation in known-bad CSS, the 2.34 rules included (calibration)', () => {
   const bad = `
     .uix-scheduling-timeline { --timeline-band-high-fill: var(--uix-danger); --timeline-window-edge: var(--uix-danger-border); --timeline-status-live: var(--uix-success); --timeline-chrome-now: var(--uix-danger); --timeline-chrome-line: var(--uix-border); --timeline-pad: var(--uix-space-1); }
     .uix-scheduling-timeline__overlay { background: var(--timeline-band-high-fill); border-color: var(--uix-warning); color: #fff; }

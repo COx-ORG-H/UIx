@@ -8,7 +8,7 @@
  * a repeated hour and every other zone question go through `calendar-model.ts`. The row
  * geometry of the component is in `scheduling-timeline-rows.ts`.
  */
-import { enumerateDateKeys, packLanes, zonedDaySpan, zonedHourSlots } from './calendar-model.js';
+import { enumerateDateKeys, packLanes, zonedDateKey, zonedDaySpan, zonedHourSlots } from './calendar-model.js';
 import type { ZonedHourSlot } from './calendar-model.js';
 
 /** The unit of one tick of the axis. */
@@ -68,6 +68,12 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
 export interface LayoutLaneOptions {
   /** `false` keeps the stacking and flags nothing: the consumer says what clashes, with a reason. Default `true`. */
   flagOverlaps?: boolean;
+  /**
+   * The time (ms) the narrowest drawn bar covers on this axis. A bar is packed as at least
+   * this long from where it is drawn, so two short bars whose drawn boxes would cover each
+   * other get a sub-row each. It changes the rows only, never the `conflict` flag. Default 0.
+   */
+  minSpan?: number;
 }
 
 export const HOUR = 3_600_000;
@@ -177,23 +183,32 @@ export function placeSpan(span: { start: string; end: string }, range: TimelineR
 
 /**
  * Places a lane's spans: sorted by start, each in the first sub-row where it overlaps no
- * earlier bar, and flagged `conflict` when it overlaps any other span in the lane (unless
- * `flagOverlaps` is `false`). The rows come from `packLanes`, uncapped: every bar gets one.
- * Spans equal in start and end keep the order given. A span that ends before it starts is a
- * point at its start, and a repeated id is placed each time.
+ * earlier bar, and flagged `conflict` when it shares time with any other span in the lane
+ * (unless `flagOverlaps` is `false`). The rows come from `packLanes`, uncapped: every bar gets
+ * one. With `minSpan` a bar is packed as at least that long from where it is drawn, so bars
+ * drawn at their minimum width do not cover each other. Spans equal in start and end keep the
+ * order given. A span that ends before it starts is a point at its start, and a repeated id is
+ * placed each time.
  */
 export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange, options: LayoutLaneOptions = {}): PlacedSpan<T>[] {
   const flag = options.flagOverlaps !== false;
+  const minSpan = Math.max(0, options.minSpan ?? 0);
+  const rangeStart = toMs(range.start);
   const visible = [...items]
     .sort((a, b) => toMs(a.start) - toMs(b.start) || toMs(a.end) - toMs(b.end))
-    .flatMap((item) => { const pos = placeSpan(item, range); return pos ? [{ item, pos }] : []; });
+    .flatMap((item) => { const pos = placeSpan(item, range); const start = toMs(item.start); return pos ? [{ item, pos, start, end: Math.max(toMs(item.end), start) }] : []; });
   // The packer wants unique ids and an end that is not before the start. The position in the
   // sorted list is the id, so a repeated or inverted span from a consumer cannot make it throw.
-  const packed = packLanes(visible.map(({ item }, index) => ({ id: String(index), start: toMs(item.start), end: Math.max(toMs(item.end), toMs(item.start)) })), Infinity, { order: 'given' });
-  return visible.map(({ item, pos }, index) => {
-    const placement = packed.lanes[String(index)]!;
-    // In a run of spans that overlap one another, each one overlaps at least one of the others.
-    return { item, ...pos, row: placement.lane ?? 0, conflict: flag && packed.clusters[placement.cluster]!.ids.length > 1 };
+  // A bar cut off by the start of the range is drawn from there, so its minimum counts from there.
+  const packed = packLanes(visible.map(({ start, end }, index) => ({ id: String(index), start, end: Math.max(end, Math.max(start, rangeStart) + minSpan) })), Infinity, { order: 'given' });
+  // Sharing time is read from the real spans, sorted by start: a span shares time with an
+  // earlier one when it starts before the latest end so far, and with a later one when the
+  // next span starts before it ends. A point at the instant a bar starts shares none with it.
+  let reach = -Infinity;
+  const afterEarlier = visible.map(({ start, end }) => { const shares = start < reach; reach = Math.max(reach, end); return shares; });
+  return visible.map(({ item, pos, end }, index) => {
+    const next = visible[index + 1];
+    return { item, ...pos, row: packed.lanes[String(index)]!.lane ?? 0, conflict: flag && (afterEarlier[index]! || (next !== undefined && next.start < end)) };
   });
 }
 
@@ -212,6 +227,29 @@ export function shiftSpan(span: { start: string; end: string }, delta: number, m
 export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number {
   if (trackWidth <= 0) return 0;
   return snapToStep((px / trackWidth) * (toMs(range.end) - toMs(range.start)), step);
+}
+
+const repeatedHours = new Map<string, Array<{ from: number; to: number; offsetLabel: string }>>();
+const REPEATED_HOURS_CACHE_LIMIT = 512;
+
+/**
+ * The UTC offset (`'+02:00'`) of an instant that falls in a local hour that occurs twice that
+ * day in `timeZone` (the clocks went back), else `null`. A time in such an hour is not a time
+ * until it says which of the two it is.
+ */
+export function timelineRepeatedHourOffset(instant: string | number, timeZone: string): string | null {
+  const at = toMs(instant);
+  const date = zonedDateKey(new Date(at), timeZone);
+  const key = `${timeZone} ${date}`;
+  let hours = repeatedHours.get(key);
+  if (!hours) {
+    const slots = zonedHourSlots(date, timeZone);
+    // A repeated hour runs to the start of the next slot (the last slot of a day is never one).
+    hours = slots.flatMap((slot, index) => (slot.offsetLabel !== null && slots[index + 1] ? [{ from: slot.instant.getTime(), to: slots[index + 1]!.instant.getTime(), offsetLabel: slot.offsetLabel }] : []));
+    if (repeatedHours.size >= REPEATED_HOURS_CACHE_LIMIT) repeatedHours.delete(repeatedHours.keys().next().value!);
+    repeatedHours.set(key, hours);
+  }
+  return hours.find((hour) => at >= hour.from && at < hour.to)?.offsetLabel ?? null;
 }
 
 /**

@@ -2295,6 +2295,7 @@ export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: T
 // @public (undocumented)
 export interface LayoutLaneOptions {
     flagOverlaps?: boolean;
+    minSpan?: number;
 }
 
 // @public
@@ -5299,6 +5300,9 @@ export interface TimelineRange {
     // (undocumented)
     start: string;
 }
+
+// @public
+export function timelineRepeatedHourOffset(instant: string | number, timeZone: string): string | null;
 
 // @public
 export type TimelineScale = 'hour' | 'day' | 'week' | 'month';

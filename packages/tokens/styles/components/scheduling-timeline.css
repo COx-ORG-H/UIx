@@ -19,8 +19,7 @@
     --timeline-chrome-line-strong: var(--uix-border-strong);
     --timeline-chrome-now: var(--uix-text);
     --timeline-chrome-now-text: var(--uix-surface);
-    --timeline-chrome-ghost: var(--uix-neutral-solid);
-    --timeline-chrome-ghost-surface: var(--uix-neutral-bg);
+    --timeline-chrome-ghost: var(--uix-text-muted);
     --timeline-status-surface: var(--uix-surface);
     --timeline-status-surface-quiet: var(--uix-bg-subtle);
     --timeline-status-edge: var(--uix-neutral-border);
@@ -41,6 +40,7 @@
        head is one line. The component counts row positions in these three lengths (scheduling-timeline-rows.ts). */
     --timeline-bar-row: 2.25rem;
     --timeline-bar: 2rem;
+    --timeline-bar-min: 1.5rem;
     --timeline-lane-pad: calc(2 * var(--uix-space-2));
     --timeline-head: 2.5rem;
     --timeline-axis: 2.25rem;
@@ -112,7 +112,10 @@
 
   /* a group: one head row over its lanes; collapsed, that row is all there is of the group */
   .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body > .uix-scheduling-timeline__row--group { position: relative; height: var(--timeline-head); background: var(--timeline-chrome-surface-quiet); }
-  .uix-scheduling-timeline__group-label { position: sticky; left: 0; z-index: var(--uix-z-sticky); display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0; padding: 0 var(--uix-space-2); white-space: nowrap; }
+  /* A collapsed group is one row that stands for its lanes: it is not lifted over the layer, so a
+     window over one of those lanes (and the grid lines) is drawn on it. The name keeps its own patch. */
+  .uix-scheduling-timeline[data-fixed] .uix-scheduling-timeline__body > .uix-scheduling-timeline__row--summary { position: static; }
+  .uix-scheduling-timeline__group-label { position: sticky; left: 0; z-index: var(--uix-z-sticky); display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0; padding: 0 var(--uix-space-2); background: var(--timeline-chrome-surface-quiet); white-space: nowrap; }
   .uix-scheduling-timeline__group-toggle { display: inline-flex; align-items: center; gap: var(--uix-space-2); min-height: 1.75rem; padding: 0 var(--uix-space-2); border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
   .uix-scheduling-timeline__group-toggle:hover { background: var(--timeline-chrome-surface); }
   /* the chevron is two borders, so it survives forced colours; it points down while the group is open */
@@ -148,16 +151,20 @@
 
   /* bars */
   .uix-scheduling-timeline__items { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-  /* a bar is never a smaller target than 1.5rem (24px) on either side */
-  .uix-scheduling-timeline__slot { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: 1.5rem; pointer-events: auto; }
+  /* a bar is never a smaller target than --timeline-bar-min (24px) on either side. The component
+     packs bars as at least that wide (BAR_MIN_REM), so two that are drawn at it never cover each other. */
+  .uix-scheduling-timeline__slot { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: var(--timeline-bar-min); pointer-events: auto; }
   /* the default look is the `committed` status with no band: a plain outlined bar */
   .uix-scheduling-timeline__item {
     position: relative; display: flex; align-items: center; gap: var(--uix-space-1); width: 100%; height: 100%; padding: 0 var(--uix-space-2); overflow: hidden;
     border: 1px solid var(--timeline-status-edge); border-radius: var(--uix-radius-sm); background: var(--timeline-status-surface); color: var(--timeline-status-text);
     font: inherit; font-size: var(--uix-text-meta); line-height: 1.25rem; text-align: start; cursor: pointer;
   }
-  /* the text wraps and only its first line shows: a long label is cut at a word, never in one */
+  /* the text wraps and only its first line shows: a long label is cut at a word, never in one.
+     The empty box in front is a place to break before the first word, so a first word that does
+     not fit goes to the hidden second line too: no part of a word (or of a time) is ever shown. */
   .uix-scheduling-timeline__item-title { flex: 1 1 auto; min-width: 0; max-height: 1.25rem; overflow: hidden; font-weight: 600; }
+  .uix-scheduling-timeline__item-title::before { content: ""; display: inline-block; }
   .uix-scheduling-timeline__item-meta { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-scheduling-timeline__item-markers { flex: none; display: inline-flex; align-items: center; gap: var(--timeline-gap); }
 
@@ -174,6 +181,8 @@
   .uix-scheduling-timeline__item[data-band="medium"] { border-left: 3px solid var(--timeline-band-medium-edge); }
   .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-fill); color: var(--timeline-band-high-text); }
   .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-text); }
+  /* done keeps the fill on the high band (dimming it would cost the text its contrast): its one edge is heavier */
+  .uix-scheduling-timeline__item[data-band="high"][data-status="done"] { border-bottom-width: 3px; }
 
   /* shares time with another bar of its lane (only while `flagOverlaps` is on): hatched in its own text colour */
   .uix-scheduling-timeline__item[data-conflict]::after { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(135deg, transparent 0 6px, currentColor 6px 9px); opacity: 0.2; pointer-events: none; }
@@ -194,8 +203,9 @@
   .uix-scheduling-timeline__item-marker[data-glyph="warning"]::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
   .uix-scheduling-timeline__item-marker[data-glyph="refused"]::before { clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%); }
 
-  /* a pending move: an outline where the bar would go; the bar itself stays put */
-  .uix-scheduling-timeline__ghost { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: 1.5rem; border: 2px dashed var(--timeline-chrome-ghost); border-radius: var(--uix-radius-sm); background: var(--timeline-chrome-ghost-surface); opacity: 0.7; pointer-events: none; }
+  /* a pending move: an outline where the bar would go; the bar itself stays put. Only an edge, at
+     full strength (3:1 on the row in both themes), so what is under it stays readable. */
+  .uix-scheduling-timeline__ghost { position: absolute; top: calc(var(--uix-space-2) + var(--uix-timeline-row, 0) * var(--timeline-bar-row)); height: var(--timeline-bar); min-width: var(--timeline-bar-min); border: 2px dashed var(--timeline-chrome-ghost); border-radius: var(--uix-radius-sm); pointer-events: none; }
   .uix-scheduling-timeline__ghost[data-sent] { border-style: dotted; }
 
   /* the three row units, measured by a virtual timeline to turn a scroll position into rows */

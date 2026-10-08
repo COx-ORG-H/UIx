@@ -104,8 +104,8 @@ for (const file of GEOMETRY_SOURCES) {
 }
 
 /* U5 (HAR-1521) AC17 / R11 AC5: the same vocabulary scan over SchedulingTimeline and its model.
- * The hits allowed are the 2.33 exports E13 keeps, deprecated and not removed: the three
- * overlay kinds, the reused entry states, their default labels and the 2.33 hint sentence. No
+ * The hits allowed are the 2.34 exports E13 keeps, deprecated and not removed: the three
+ * overlay kinds, the reused entry states, their default labels and the 2.34 hint sentence. No
  * name, enum value or default label added by U5 may be on this list. */
 const TIMELINE_E13_KEPT = new Set([
   'freeze', 'blackout', 'blackout-violation', 'Change freeze', 'Blackout', 'Blackout violation',
@@ -120,16 +120,16 @@ test('AC17: the timeline vocabulary scan finds a known-bad snippet (calibration)
 });
 
 for (const file of TIMELINE_SOURCES) {
-  test(`AC17 (E13): ${file} adds no change vocabulary (only the E13-kept 2.33 values remain)`, () => {
+  test(`AC17 (E13): ${file} adds no change vocabulary (only the E13-kept 2.34 values remain)`, () => {
     assert.deepEqual(vocabularyFindings(readFileSync(join(here, file), 'utf8'), TIMELINE_E13_KEPT), []);
   });
 }
 
-test('AC17 (E13): no new default label of the timeline says "overlap", and the kept ones are those of 2.33', () => {
+test('AC17 (E13): no new default label of the timeline says "overlap", and the kept ones are those of 2.34', () => {
   const source = stripComments(readFileSync(join(here, 'components/SchedulingTimeline.tsx'), 'utf8'));
   const literals = [...source.matchAll(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g)].map((m) => m[2]);
   assert.ok(literals.length > 50, 'the literals were read');
-  assert.deepEqual(literals.filter((literal) => /overlap/i.test(literal)), [', overlaps another entry'], 'the one 2.33 label, drawn only while flagOverlaps is on');
+  assert.deepEqual(literals.filter((literal) => /overlap/i.test(literal)), [', overlaps another entry'], 'the one 2.34 label, drawn only while flagOverlaps is on');
   for (const kept of TIMELINE_E13_KEPT) assert.ok(literals.includes(kept), `${kept} is still in the source (E13: never removed in 2.x)`);
 });
 
@@ -176,7 +176,7 @@ const packerFindings = (code) => {
   return found;
 };
 
-test('AC14: the one-packer scan finds the 2.33 packing loop (calibration)', () => {
+test('AC14: the one-packer scan finds the 2.34 packing loop (calibration)', () => {
   const old = `
 import { something } from './calendar-model.js';
 export function layoutLane(items, range) {
@@ -212,18 +212,45 @@ test('AC14 (FG-REC-14): scheduling-timeline-model.ts packs lanes only through pa
 });
 
 /* U5: zone math only through calendar-model.ts. The timeline's new geometry has no fixed day
- * length and no local-clock Date call. One 2.33 line stays: the exported `DAY` constant that
+ * length and no local-clock Date call. One 2.34 line stays: the exported `DAY` constant that
  * the move step of the week and month axes is built from (E13: an export is never removed). */
 const KEPT_DAY_CONSTANT = 'export const DAY = 24 * HOUR;';
 
 test('U5: the timeline fixed-day scan finds a known-bad snippet, and the kept line is there exactly once (calibration)', () => {
   const model = readFileSync(join(here, 'scheduling-timeline-model.ts'), 'utf8');
-  assert.equal(model.split(KEPT_DAY_CONSTANT).length - 1, 1, 'the 2.33 DAY export is there once');
+  assert.equal(model.split(KEPT_DAY_CONSTANT).length - 1, 1, 'the 2.34 DAY export is there once');
   assert.deepEqual(fixedDayFindings(`${KEPT_DAY_CONSTANT}\nconst rows = hours / 24;`.replace(KEPT_DAY_CONSTANT, '')), ['24']);
 });
 
 for (const file of TIMELINE_SOURCES) {
   test(`U5: ${file} has no fixed day length and no local-clock Date call in its geometry`, () => {
     assert.deepEqual(fixedDayFindings(readFileSync(join(here, file), 'utf8').replace(KEPT_DAY_CONSTANT, '')), []);
+  });
+}
+
+/* The kept constant must not come back through its name: `DAY` may be read only where a move
+ * step is worded as days (the default step of the week and month axes, and the conversion of
+ * a step to calendar days), never to place anything on the axis or to count a move. */
+const dayConstantFindings = (file, code) => {
+  const source = stripComments(code).replace(/\r\n/g, '\n').replace(KEPT_DAY_CONSTANT, '');
+  const allowed = file === 'scheduling-timeline-model.ts' ? ['export const defaultTimelineStep', 'export function timelineStepDelta'] : [];
+  const stripped = allowed.reduce((text, name) => {
+    const start = text.indexOf(name);
+    if (start === -1) return text;
+    const next = text.indexOf('\nexport ', start + 1);
+    return text.slice(0, start) + text.slice(next === -1 ? text.length : next);
+  }, source);
+  return [...stripped.matchAll(/(?<![\w.$])DAY(?![\w$])/g)].map((match) => match[0]);
+};
+
+test('U5: the DAY scan finds the constant used by name (calibration)', () => {
+  assert.deepEqual(dayConstantFindings('components/SchedulingTimeline.tsx', "import { DAY, placeSpan } from './m.js';\nconst deltaFor = (ms) => ({ days: ms / DAY });"), ['DAY', 'DAY']);
+  assert.deepEqual(dayConstantFindings('scheduling-timeline-model.ts', `${KEPT_DAY_CONSTANT}\nexport const defaultTimelineStep = (scale) => (scale === 'hour' ? 1 : DAY);\nexport function timelineStepDelta(step) { return step % DAY; }\nexport function placeSpan(a) { return a / DAY; }`), ['DAY']);
+  assert.deepEqual(dayConstantFindings('scheduling-timeline-model.ts', `${KEPT_DAY_CONSTANT}\nexport const defaultTimelineStep = (scale) => DAY;\nexport function timelineStepDelta(step) { return step % DAY; }\nconst WEEKDAY = 1; const x = HOLIDAY;`), []);
+});
+
+for (const file of TIMELINE_SOURCES) {
+  test(`U5: ${file} reads DAY only where a step is worded as days`, () => {
+    assert.deepEqual(dayConstantFindings(file, readFileSync(join(here, file), 'utf8')), []);
   });
 }

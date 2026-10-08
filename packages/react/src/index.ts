@@ -348,7 +348,7 @@ export type {
 } from './components/SchedulingTimeline.js';
 export {
   DAY, HOUR, defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, snapToStep, timelineTicks,
-  timelineStepDelta, timelineSubTicks,
+  timelineRepeatedHourOffset, timelineStepDelta, timelineSubTicks,
 } from './scheduling-timeline-model.js';
 export type { LayoutLaneOptions, PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineSubTick, TimelineTick } from './scheduling-timeline-model.js';
 

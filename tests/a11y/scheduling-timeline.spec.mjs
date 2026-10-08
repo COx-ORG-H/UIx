@@ -61,6 +61,35 @@ const dayWidth = async (page) => {
 };
 const berlin = (date, time) => new Date(`${date}T${time}:00${date >= '2026-03-29' && date < '2026-10-25' ? '+02:00' : '+01:00'}`).toISOString();
 const rowCount = (page) => page.locator(`${P}row`).count();
+/** Bars that are not the topmost element at their centre or at a corner of the 24 px square around it. */
+const uncovered = (page) => page.locator('[data-item-id]').evaluateAll((els) => els.flatMap((el) => {
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const points = [[cx, cy], [cx - 11, cy - 11], [cx + 11, cy - 11], [cx - 11, cy + 11], [cx + 11, cy + 11]];
+  const missed = points.filter(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-item-id]') !== el).length;
+  return missed ? [`${el.getAttribute('data-item-id')}: ${missed} of 5 points covered`] : [];
+}));
+/** Words of a bar title that show on its one line and are cut by its edge. The first word counts. */
+const cutWords = (page) => page.locator('[data-item-id] .uix-scheduling-timeline__item-title').evaluateAll((titles) => titles.flatMap((title) => {
+  const text = title.firstChild;
+  if (!text || text.nodeType !== Node.TEXT_NODE) return [];
+  const clip = title.getBoundingClientRect();
+  return [...text.data.matchAll(/\S+/g)].flatMap((word) => {
+    const range = document.createRange();
+    range.setStart(text, word.index);
+    range.setEnd(text, word.index + word[0].length);
+    const r = range.getBoundingClientRect();
+    const onTheLine = r.top < clip.bottom - 1 && r.bottom > clip.top + 1 && r.left < clip.right - 0.5;
+    return onTheLine && r.right > clip.right + 0.5 ? [`${text.data}: "${word[0]}"`] : [];
+  });
+}));
+/** WCAG contrast of two computed colours. */
+const contrastOf = (a, b) => {
+  const lum = (value) => value.match(/[\d.]+/g).slice(0, 3).map(Number).map((v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
 const axe = async (page, include) => {
   await settleAnimations(page);
   const builder = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']);
@@ -73,7 +102,7 @@ test('AC1: a collapsed group is one summary row with the consumer count and mark
   const storage = page.locator(`${P}row[data-group-id="storage"]`);
   await expect(storage).toHaveCount(1);
   await expect(storage).toHaveClass(/uix-scheduling-timeline__row--summary/);
-  await expect(storage.locator(`${P}group-count`)).toHaveText('9 items');
+  await expect(storage.locator(`${P}group-count`)).toHaveText('Items: 9');
   await expect(storage.locator(`${P}item-marker`)).toBeVisible();
   await expect(storage).toContainText('2 need sign-off');
   await expect(page.locator(lane('store-object'))).toHaveCount(0);
@@ -178,7 +207,7 @@ test('AC3: one element per window; the scoped one is painted and hit only over i
   expect((await calls(page)).items).toEqual(['high']);
 });
 
-test('AC3: collapsing a group moves the clip with the rows', async ({ page }) => {
+test('AC3: collapsing a group moves the clip with the rows; the one row of the group stands for its lanes', async ({ page }) => {
   await open(page, 'case=lanes&collapsed=payments');
   const hit = await page.evaluate((prefix) => {
     const some = document.querySelector('[data-overlay-id="some"]');
@@ -188,7 +217,31 @@ test('AC3: collapsing a group moves the clip with the rows', async ({ page }) =>
       return [row.getAttribute('data-lane-id') ?? `group:${row.getAttribute('data-group-id')}`, document.elementsFromPoint(band.left + band.width * 0.9, r.top + r.height / 2).includes(some)];
     }));
   }, P);
-  expect(hit).toEqual({ 'group:payments': false, 'group:network': false, 'net-core': false, 'net-edge': true, 'group:storage': false, 'store-object': false, 'store-backup': false });
+  // Payments is collapsed and holds one of the two lanes the window names: its summary row carries the window.
+  expect(hit).toEqual({ 'group:payments': true, 'group:network': false, 'net-core': false, 'net-edge': true, 'group:storage': false, 'store-object': false, 'store-backup': false });
+  // The words of the window are on that row too, and the window is still one focusable, named element.
+  const some = page.locator('[data-overlay-id="some"]');
+  await expect(some).toHaveCount(1);
+  const row = await box(page.locator(`${P}row[data-group-id="payments"]`));
+  const words = await box(some.locator(`${P}overlay-label`).first());
+  expect(words.top).toBeGreaterThanOrEqual(row.top);
+  expect(words.bottom).toBeLessThanOrEqual(row.bottom);
+  await some.focus();
+  await expect(some).toHaveAccessibleName(/^Maintenance, Storage network, 2 services, /);
+  await page.keyboard.press('Enter');
+  expect((await calls(page)).overlays).toEqual(['some']);
+  // Every lane it names collapsed (payments and network): still drawn, over the two summary rows.
+  await open(page, 'case=lanes&collapsed=payments,network');
+  await expect(page.locator('[data-overlay-id="some"]')).toHaveCount(1);
+  const both = await page.evaluate((prefix) => {
+    const overlay = document.querySelector('[data-overlay-id="some"]');
+    const band = overlay.getBoundingClientRect();
+    return Object.fromEntries([...document.querySelectorAll(`${prefix}row[data-group-id]`)].map((el) => { const r = el.getBoundingClientRect(); return [el.getAttribute('data-group-id'), document.elementsFromPoint(band.left + band.width * 0.9, r.top + r.height / 2).includes(overlay)]; }));
+  }, P);
+  expect(both).toEqual({ payments: true, network: true, storage: false });
+  // The group name stays readable on its own patch, and its toggle still works with the window under it.
+  await page.locator(`${P}row[data-group-id="payments"]`).getByRole('button', { name: /Payments/ }).click();
+  expect((await calls(page)).toggles).toEqual(['payments']);
 });
 
 for (const height of ['480px', 'none']) {
@@ -378,7 +431,7 @@ test('AC5 (PDR-0013): with no onResizeItem Alt+Shift+Arrow does nothing and no h
   await open(page, 'case=lanes&move=legacy');
   await page.locator(item('d')).focus();
   await page.keyboard.press('Alt+Shift+ArrowRight');
-  expect((await calls(page)).moves, 'the 2.33 move prop alone does not resize either').toEqual([]);
+  expect((await calls(page)).moves, 'the 2.34 move prop alone does not resize either').toEqual([]);
   await page.keyboard.press('Shift+ArrowRight');
   expect((await calls(page)).moves).toEqual([{ id: 'd', start: berlin('2026-10-08', '07:00'), end: berlin('2026-10-09', '07:00') }]);
   await expect(page.locator('.uix-scheduling-timeline')).not.toContainText('Alt');
@@ -424,24 +477,37 @@ test('AC6: every bar is at least a 24 × 24 px target, a zero-length one include
     expect(bar.lines, `${bar.id}: one line of text`).toBeLessThanOrEqual(1);
     expect(bar.titleInside, `${bar.id}: the text box stays inside the bar`).toBe(true);
   }
+  expect(await uncovered(page), 'every bar is hit at its centre and at the corners of a 24 px square around it').toEqual([]);
   await expect(page.locator(item('point'))).toHaveAttribute('data-item-id', 'point');
   await expect(page.locator(item('a'))).toContainText('08:00 Schema update');
-  // No word is cut in the middle: every word of the title that starts on the first line also ends on it.
-  const cut = await page.locator('[data-item-id] .uix-scheduling-timeline__item-title').evaluateAll((titles) => titles.flatMap((title) => {
+  expect(await cutWords(page)).toEqual([]);
+});
+
+test('AC6: short bars drawn at the minimum width do not cover each other, and no word is cut, the first included', async ({ page }) => {
+  await open(page, 'case=short');
+  const rows = await page.locator('[data-item-id^="s"]').evaluateAll((els) => els.map((el) => [el.getAttribute('data-item-id'), el.closest('li').style.getPropertyValue('--uix-timeline-row'), Math.round(el.getBoundingClientRect().width)]));
+  expect(rows.map(([, , width]) => width), 'each is drawn at the minimum width').toEqual([24, 24, 24, 24]);
+  expect(rows[1][1], 'the second starts inside the drawn box of the first: a sub-row of its own').not.toBe(rows[0][1]);
+  expect(new Set(rows.map(([, row]) => row)).size).toBeGreaterThanOrEqual(3);
+  expect(await uncovered(page)).toEqual([]);
+  // A click in the middle of each selects that bar and no other.
+  for (const id of ['s1', 's2', 's3', 's4']) await page.locator(item(id)).click();
+  expect((await calls(page)).items).toEqual(['s1', 's2', 's3', 's4']);
+  await expect(page.locator('[data-conflict]')).toHaveCount(0);
+  // "Firewall rule update for the gateway" in a bar narrower than its first word shows no part of a word;
+  // in a wide bar it shows whole words; "Internationalisation" is whole or not there.
+  expect(await cutWords(page)).toEqual([]);
+  const shown = await page.locator('[data-item-id^="w"] .uix-scheduling-timeline__item-title').evaluateAll((titles) => titles.map((title) => {
     const text = title.firstChild;
-    if (!text || text.nodeType !== Node.TEXT_NODE) return [];
     const clip = title.getBoundingClientRect();
-    const words = [...text.data.matchAll(/\S+/g)];
-    return words.slice(1).flatMap((word) => {
-      const range = document.createRange();
-      range.setStart(text, word.index);
-      range.setEnd(text, word.index + word[0].length);
-      const r = range.getBoundingClientRect();
-      const onFirstLine = r.top < clip.bottom - 1;
-      return onFirstLine && r.right > clip.right + 0.5 ? [`${text.data}: "${word[0]}"`] : [];
-    });
+    return [...text.data.matchAll(/\S+/g)].filter((word) => { const range = document.createRange(); range.setStart(text, word.index); range.setEnd(text, word.index + word[0].length); const r = range.getBoundingClientRect(); return r.top < clip.bottom - 1 && r.bottom > clip.top + 1 && r.right <= clip.right + 0.5; }).map((word) => word[0]).join(' ');
   }));
-  expect(cut).toEqual([]);
+  expect(shown[0], 'the first word does not fit: nothing rather than half of it').toBe('');
+  expect(shown[1]).toMatch(/^Firewall rule( update)?( for)?$/);
+  expect(['', 'Internationalisation']).toContain(shown[2]);
+  // The whole title is still the name and the tooltip.
+  await expect(page.locator(item('w1'))).toHaveAccessibleName(/^Firewall rule update for the gateway, /);
+  await expect(page.locator(item('w1'))).toHaveAttribute('title', 'Firewall rule update for the gateway');
 });
 
 test('AC8: the notice is above the axis, the column note inside its day column, and an empty range keeps its axis and note', async ({ page }) => {
@@ -536,7 +602,7 @@ test('AC10: the now-line and its label are neutral; only band="high" carries the
   for (const value of colours.overlays) expect(value).toBeLessThanOrEqual(12);
   expect(colours.nowChroma).toBeLessThanOrEqual(12);
 
-  // The 2.33 props: states and kinds draw, and none of them is tinted any more.
+  // The 2.34 props: states and kinds draw, and none of them is tinted any more.
   await open(page, 'case=legacy');
   const legacy = await page.evaluate((prefix) => {
     const chroma = (rgb) => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return Math.max(r, g, b) - Math.min(r, g, b); };
@@ -670,7 +736,7 @@ test('at 375 px the timeline scrolls inside its own container and the page does 
   expect(Math.abs(label.left - frame.left)).toBeLessThanOrEqual(2);
 });
 
-test('what a 2.33 consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
+test('what a 2.34 consumer passes renders and still moves on every key press and every drop', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -696,4 +762,152 @@ test('what a 2.33 consumer passes renders and still moves on every key press and
   expect(after.moves[2]).toEqual({ id: 'c', start: berlin('2026-10-09', '08:00'), end: berlin('2026-10-10', '00:00') });
   expect(after.items, 'the click that ends the drag selects nothing').toEqual([]);
   expect(errors).toEqual([]);
+});
+
+/* ── Review of PR 111 ────────────────────────────────────────────────────────────────────── */
+
+const inViewport = (page) => page.evaluate((prefix) => {
+  const rows = [...document.querySelectorAll(`${prefix}body > ${prefix}row[data-lane-id]`)];
+  const seen = rows.filter((row) => { const r = row.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight; });
+  return { mounted: rows.length, inView: seen.length, first: seen[0]?.getAttribute('data-lane-id') ?? null };
+}, P);
+const pageTo = async (page, y) => { await page.evaluate((top) => window.scrollTo(0, top), y); await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(y); };
+
+test('AC4: 200 plain lanes with the page scrolling still follow the scroll after loading, after an error and a retry, and when mounted loading', async ({ page }) => {
+  // What an existing consumer passes: no groups, no windows, no maxHeight. Virtualisation is on by default.
+  await open(page, 'case=stress&groups=0');
+  await expect(page.locator(`${P}scroller`)).toHaveAttribute('data-virtual', /.*/);
+  await pageTo(page, 5000);
+  await expect.poll(async () => (await inViewport(page)).inView, 'before any reload').toBeGreaterThan(8);
+
+  await pageTo(page, 0);
+  await page.evaluate(() => window.__timelineState({ loading: true }));
+  await expect(page.locator(`${P}scroller`)).toHaveCount(0);
+  await page.evaluate(() => window.__timelineState({}));
+  await expect(page.locator(lane('lane-0'))).toBeVisible();
+  await pageTo(page, 5000);
+  await expect.poll(async () => (await inViewport(page)).inView, 'after loading: rows in the viewport, not a blank page').toBeGreaterThan(8);
+  expect((await inViewport(page)).mounted).toBeLessThanOrEqual(150);
+
+  await pageTo(page, 0);
+  await page.evaluate(() => window.__timelineState({ error: 'Could not load.' }));
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.locator(lane('lane-0'))).toBeVisible();
+  await pageTo(page, 5000);
+  await expect.poll(async () => (await inViewport(page)).inView, 'after an error and a retry').toBeGreaterThan(8);
+
+  await open(page, 'case=stress&groups=0&state=loading');
+  await expect(page.locator(`${P}scroller`)).toHaveCount(0);
+  await page.evaluate(() => window.__timelineState({}));
+  await expect(page.locator(lane('lane-0'))).toBeVisible();
+  await pageTo(page, 5000);
+  await expect.poll(async () => (await inViewport(page)).inView, 'mounted while loading').toBeGreaterThan(8);
+  // The keyboard still walks the lanes and brings each into view.
+  await pageTo(page, 0);
+  await page.locator(item('item-0')).focus();
+  for (let step = 0; step < 30; step++) await page.keyboard.press('ArrowDown');
+  await expect(page.locator(`${lane('lane-30')} [data-item-id]`).first()).toBeFocused();
+  await expect(page.locator(`${lane('lane-30')} [data-item-id]`).first()).toBeInViewport();
+});
+
+test('AC4: inside a maxHeight the timeline follows its own scroll after a loading cycle', async ({ page }) => {
+  await open(page, 'case=stress&height=480px');
+  await page.evaluate(() => window.__timelineState({ loading: true }));
+  await page.evaluate(() => window.__timelineState({}));
+  await expect(page.locator(lane('lane-0'))).toBeVisible();
+  await page.locator(`${P}scroller`).evaluate((el) => { el.scrollTop = 6000; });
+  await expect(page.locator(lane('lane-3'))).toHaveCount(0);
+  const seen = await page.evaluate((prefix) => { const s = document.querySelector(`${prefix}scroller`).getBoundingClientRect(); return [...document.querySelectorAll(`${prefix}body > ${prefix}row`)].filter((row) => { const r = row.getBoundingClientRect(); return r.bottom > s.top && r.top < s.bottom; }).length; }, P);
+  expect(seen).toBeGreaterThan(5);
+});
+
+test('AC4: a focused group toggle keeps its row and its focus when it scrolls out of the window', async ({ page }) => {
+  await open(page, 'case=stress&height=480px');
+  const toggle = page.locator(`${P}row[data-group-id="group-0"]`).getByRole('button');
+  await toggle.focus();
+  await expect(toggle).toBeFocused();
+  await page.locator(`${P}scroller`).evaluate((el) => { el.scrollTop = 12000; });
+  await expect(page.locator(lane('lane-3'))).toHaveCount(0);
+  await expect(toggle).toHaveCount(1);
+  await expect(toggle).toBeFocused();
+  expect(await rowCount(page)).toBeLessThanOrEqual(150);
+  // Enter on it still toggles the group it names (this timeline opens and closes its groups itself).
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Enter');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toBeFocused();
+});
+
+/** Pixels of a screen region that differ from its top-left pixel by more than 40 grey levels: what is drawn there. */
+const inkIn = async (page, clip) => {
+  const shot = (await page.screenshot({ clip, animations: 'disabled' })).toString('base64');
+  return page.evaluate(async (base64) => {
+    const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${base64}`)).blob());
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+    const grey = (index) => 0.2126 * data[index] + 0.7152 * data[index + 1] + 0.0722 * data[index + 2];
+    let count = 0;
+    for (let index = 0; index < data.length; index += 4) if (Math.abs(grey(index) - grey(0)) > 40) count++;
+    return count;
+  }, shot);
+};
+
+for (const mode of ['normal colours', 'forced colours']) {
+  test(`AC9 / AC10: the high band, a marker shape, the now-line and the hatch of a window are drawn in ${mode}`, async ({ page }) => {
+    if (mode === 'forced colours') await page.emulateMedia({ forcedColors: 'active' });
+    await open(page, 'case=short');
+    // The high band against no band: in forced colours a fill is stripped, so the edge carries it.
+    const edges = await Promise.all(['b1', 'b4', 'b2'].map((id) => page.locator(item(id)).evaluate((el) => { const st = getComputedStyle(el); return [st.borderTopWidth, st.borderTopStyle, st.borderBottomWidth].join(' '); })));
+    if (mode === 'forced colours') {
+      expect(edges[0], 'the high band is a heavier edge than no band').toBe('3px solid 3px');
+      expect(edges[1]).toBe('1px solid 1px');
+    }
+    expect(edges[2], 'done on the high band is not the committed high band').not.toBe(edges[0]);
+    // A marker shape is painted, not an empty box.
+    const glyph = await box(page.locator(`${item('b3')} ${P}item-marker`));
+    expect(glyph.width).toBeGreaterThan(6);
+    expect(await inkIn(page, { x: Math.floor(glyph.left) - 2, y: Math.floor(glyph.top) - 2, width: Math.ceil(glyph.width) + 4, height: Math.ceil(glyph.height) + 4 }), 'the marker shape').toBeGreaterThanOrEqual(15);
+    // The now-line is a line on an empty lane (the first lane has no bar under it).
+    const now = await box(page.locator(`${P}now`));
+    const lane0 = await box(page.locator(`${lane('pay-api')} ${P}track`));
+    expect(await inkIn(page, { x: Math.round(now.left) - 5, y: Math.round(lane0.bottom) - 14, width: 12, height: 10 }), 'the now-line').toBeGreaterThanOrEqual(10);
+    // And its word is readable: dark and light pixels both, on its patch.
+    const word = await box(page.locator(`${P}now-label`));
+    expect(await inkIn(page, { x: Math.round(word.left), y: Math.round(word.top), width: Math.round(word.width), height: Math.round(word.height) }), 'the word on the now-line').toBeGreaterThanOrEqual(20);
+    // A window keeps its hatch and its edge.
+    const band = await box(page.locator('[data-overlay-id="hatch"]'));
+    expect(await inkIn(page, { x: Math.round(band.left + band.width / 2), y: Math.round(lane0.top) + 6, width: 40, height: 30 }), 'the hatch of the window').toBeGreaterThanOrEqual(40);
+    // The hatch of a bar that shares time (the plain case, where the flag is on by default), past the end of its text.
+    await open(page, 'case=legacy');
+    const hatched = await box(page.locator(item('a')));
+    expect(await inkIn(page, { x: Math.round(hatched.right) - 34, y: Math.round(hatched.top) + 4, width: 28, height: Math.round(hatched.height) - 8 }), 'the hatch of a bar that shares time').toBeGreaterThanOrEqual(20);
+  });
+}
+
+test('AC10: the outline of a pending move is at least 3:1 against the row', async ({ page }) => {
+  await open(page, 'case=lanes');
+  await page.locator(item('d')).focus();
+  await page.keyboard.press('Shift+ArrowRight');
+  const ghost = page.locator(`${P}ghost`);
+  await expect(ghost).toHaveCount(1);
+  const seen = await ghost.evaluate((el) => {
+    const s = getComputedStyle(el);
+    const row = getComputedStyle(document.querySelector('.uix-scheduling-timeline__scroller')).backgroundColor;
+    // What is painted: the edge colour through the opacity of the element, over the row.
+    const mix = (fg, bg, alpha) => { const f = fg.match(/[\d.]+/g).slice(0, 3).map(Number); const b = bg.match(/[\d.]+/g).slice(0, 3).map(Number); return `rgb(${f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha))).join(', ')})`; };
+    return { edge: mix(s.borderTopColor, row, Number(s.opacity)), row, width: parseFloat(s.borderTopWidth), style: s.borderTopStyle };
+  });
+  expect(contrastOf(seen.edge, seen.row)).toBeGreaterThanOrEqual(3);
+  expect(seen.width).toBeGreaterThanOrEqual(2);
+  expect(seen.style).toBe('dashed');
+});
+
+test('AC10: done on the high band is told apart from committed without a second hue', async ({ page }) => {
+  await open(page, 'case=short');
+  const [high, done] = await Promise.all(['b1', 'b2'].map((id) => page.locator(item(id)).evaluate((el) => { const s = getComputedStyle(el); return { background: s.backgroundColor, edges: [s.borderTopStyle, s.borderBottomStyle, s.borderBottomWidth].join(' ') }; })));
+  expect(done.background).toBe(high.background);
+  expect(done.edges).not.toBe(high.edges);
+  expect(done.edges).toBe('none solid 3px');
 });

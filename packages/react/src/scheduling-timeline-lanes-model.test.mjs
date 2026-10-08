@@ -75,13 +75,13 @@ test('AC7 (V13): flagOverlaps: false keeps the stacking and flags nothing; the d
   assert.deepEqual(model.layoutLane(spans, range, { flagOverlaps: false }).map((p) => [p.item.id, p.row, p.conflict]), [['a', 0, false], ['b', 1, false], ['c', 0, false]]);
 });
 
-test('what a 2.33 consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
+test('what a 2.34 consumer passes still lays out: repeated ids, an end before its start, spans equal in time', () => {
   const twice = [span('same', 8, 12), span('same', 10, 14)];
   assert.deepEqual(model.layoutLane(twice, range).map((p) => [p.item.id, p.row]), [['same', 0], ['same', 1]], 'a repeated id is placed twice, as before');
   const inverted = [{ id: 'inv', start: iso(T0 + 10 * HOUR), end: iso(T0 + 8 * HOUR) }, span('a', 12, 14)];
   const placed = model.layoutLane(inverted, range);
   assert.deepEqual(placed.map((p) => [p.item.id, p.row, p.width]), [['inv', 0, 0], ['a', 0, placed[1].width]], 'an inverted span is a point at its start');
-  // Equal spans keep the order they were given in (2.33 sorted by start and end only).
+  // Equal spans keep the order they were given in (2.34 sorted by start and end only).
   assert.deepEqual(model.layoutLane([span('z', 8, 12), span('a', 8, 12)], range).map((p) => [p.item.id, p.row]), [['z', 0], ['a', 1]]);
   assert.deepEqual(model.layoutLane([], range), []);
 });
@@ -165,4 +165,40 @@ test('AC4: the row window is what the viewport shows plus overscan, never more t
   const past = rows.timelineWindow(offsets, 90_000, 90_600, { overscan: 100, cap: 150 });
   assert.ok(past.end === 500 && past.start < 500);
   assert.deepEqual(rows.timelineWindow([0], 0, 600, { overscan: 100, cap: 150 }), { start: 0, end: 0 });
+});
+
+/* ── Review of PR 111 (HAR-1521) ─────────────────────────────────────────────────────────── */
+
+test('AC6: minSpan packs each bar as at least as long as it is drawn, and flags only bars that share time', () => {
+  const short = [span('s1', 9, 10), span('s2', 11, 12), span('s3', 13, 13.5), span('s4', 14, 15), span('s5', 33, 34)];
+  assert.deepEqual(model.layoutLane(short, range).map((p) => p.row), [0, 0, 0, 0, 0], 'by time alone they share a row');
+  const placed = model.layoutLane(short, range, { minSpan: 5.76 * HOUR });
+  assert.deepEqual(placed.map((p) => [p.item.id, p.row]), [['s1', 0], ['s2', 1], ['s3', 2], ['s4', 3], ['s5', 0]]);
+  assert.deepEqual(placed.map((p) => p.conflict), [false, false, false, false, false], 'drawn side by side is not a clash in time');
+  // Bars that do share time are still flagged, whatever the minimum.
+  assert.deepEqual(model.layoutLane([span('a', 8, 12), span('b', 10, 14), span('c', 14, 15)], range, { minSpan: 5.76 * HOUR }).map((p) => [p.item.id, p.row, p.conflict]), [['a', 0, true], ['b', 1, true], ['c', 0, false]]);
+  // A bar cut off at the start of the range is drawn from the start of the range.
+  const cut = [{ id: 'cut', start: iso(T0 - 10 * HOUR), end: iso(T0 + 1 * HOUR) }, span('next', 3, 4)];
+  assert.deepEqual(model.layoutLane(cut, range, { minSpan: 5.76 * HOUR }).map((p) => p.row), [0, 1]);
+  assert.deepEqual(model.layoutLane(cut, range, { minSpan: 0 }).map((p) => p.row), [0, 0]);
+});
+
+test('the flag is the 2.34 one: bars that share time, a point inside a bar, and nothing else', () => {
+  const flags = (spans) => model.layoutLane(spans, range).map((p) => [p.item.id, p.conflict]);
+  assert.deepEqual(flags([span('point', 8, 8), span('bar', 8, 12)]), [['point', false], ['bar', false]], 'a point at the instant a bar starts');
+  assert.deepEqual(flags([span('bar', 8, 12), span('point', 10, 10)]), [['bar', true], ['point', true]], 'a point inside a bar');
+  assert.deepEqual(flags([span('p1', 8, 8), span('p2', 8, 8)]), [['p1', false], ['p2', false]]);
+  assert.deepEqual(flags([span('a', 8, 12), span('b', 12, 14)]), [['a', false], ['b', false]], 'touching is not sharing');
+  assert.deepEqual(flags([span('long', 0, 20), span('x', 2, 3), span('y', 5, 6)]), [['long', true], ['x', true], ['y', true]]);
+  assert.deepEqual(flags([span('x', 2, 3), span('y', 5, 6), span('z', 5.5, 7)]), [['x', false], ['y', true], ['z', true]]);
+});
+
+test('timelineRepeatedHourOffset: the UTC offset of an instant in an hour that occurs twice, else null', () => {
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-25T00:00:00Z', 'Europe/Berlin'), '+02:00');
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-25T00:59:00Z', 'Europe/Berlin'), '+02:00');
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-25T01:30:00Z', 'Europe/Berlin'), '+01:00');
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-25T02:00:00Z', 'Europe/Berlin'), null);
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-24T23:30:00Z', 'Europe/Berlin'), null);
+  assert.equal(model.timelineRepeatedHourOffset('2026-10-25T00:30:00Z', 'UTC'), null);
+  assert.equal(model.timelineRepeatedHourOffset('2026-03-29T01:30:00Z', 'Europe/Berlin'), null);
 });

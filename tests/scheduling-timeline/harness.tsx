@@ -3,13 +3,17 @@
  *   - lanes (default): three groups of service lanes in Europe/Berlin, one collapsed with a
  *     consumer summary; packed bars; a window over every row and one over two lanes; sub-ticks;
  *     a notice and a column note; moves that are logged and never applied (`?reject=1` answers
- *     with a rejection, `?move=legacy` passes the 2.33 `onMoveItem` instead, `?move=0` passes
+ *     with a rejection, `?move=legacy` passes the 2.34 `onMoveItem` instead, `?move=0` passes
  *     none, `?resize=1` adds `onResizeItem`, `?flag=1` turns the generic stacking flag on);
  *   - stress: 500 lanes in 40 groups (`?height=` sets `maxHeight`; `?height=none` leaves the
- *     page to scroll);
+ *     page to scroll; `?state=loading` mounts it loading; `window.__timelineState({ loading,
+ *     error })` switches the state, as a consumer that reloads does; `?groups=0` passes 200
+ *     plain lanes and none of the new layout props);
+ *   - short: four short bars inside one afternoon of a week axis, titles longer than their
+ *     bar, and the high band with each status;
  *   - hour: the hour axis over 25.10.2026, the 25-hour day;
  *   - empty: no items;
- *   - legacy: only what a 2.33 consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
+ *   - legacy: only what a 2.34 consumer passes (`state`, `kind`, `laneId`, `onMoveItem`).
  * window.__timeline records what each callback was called with. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -22,7 +26,7 @@ interface Calls {
   moves: Array<{ id: string; start: string; end: string }>;
   resizes: Array<{ id: string; start: string; end: string }>;
 }
-declare global { interface Window { __timeline: Calls } }
+declare global { interface Window { __timeline: Calls; __timelineState: (state: { loading?: boolean; error?: string }) => void } }
 const calls: Calls = (window.__timeline = { items: [], overlays: [], toggles: [], proposals: [], moves: [], resizes: [] });
 
 const params = new URLSearchParams(location.search);
@@ -114,11 +118,36 @@ function Stress() {
     return index % 7 === 0 ? [first, { ...first, id: `item-${index}-b`, title: `Item ${index} b`, start: berlin(day(index % 5), '12:00') }] : [first];
   });
   const height = params.get('height') ?? '480px';
+  const [state, setState] = useState<{ loading?: boolean; error?: string }>(() => (params.get('state') === 'loading' ? { loading: true } : {}));
+  window.__timelineState = setState;
+  // What a 2.34 consumer with many lanes passes: no groups, no windows, the page scrolls.
+  if (params.get('groups') === '0') return <SchedulingTimeline {...common} lanes={lanes.slice(0, 200)} items={items} range={WEEK} loading={state.loading} error={state.error} onRetry={() => setState({})} />;
   return <SchedulingTimeline
-    {...common} {...moving()} lanes={lanes} groups={groups} items={items} range={WEEK} flagOverlaps={false}
+    {...common} {...moving()} lanes={lanes} groups={groups} items={items} range={WEEK} flagOverlaps={false} loading={state.loading} error={state.error} onRetry={() => setState({})}
     overlays={[{ id: 'all', kindLabel: 'Hold', label: 'Quarter close', start: berlin('2026-10-10', '00:00'), end: berlin('2026-10-12', '00:00'), pattern: 'diagonal' },
       { id: 'some', kindLabel: 'Maintenance', label: 'Storage network', start: berlin('2026-10-07', '00:00'), end: berlin('2026-10-08', '12:00'), pattern: 'dotted', laneIds: ['lane-1', 'lane-2', 'lane-400', 'lane-499'] }]}
     maxHeight={height === 'none' ? undefined : height}
+  />;
+}
+
+function Short() {
+  const hour = (id: string, from: string, to: string, extra: Partial<SchedulingTimelineItem> = {}) => bar(id, 'pay-api', ['2026-10-06', from], ['2026-10-06', to], `Short ${id}`, extra);
+  return <SchedulingTimeline
+    {...common} {...moving()} lanes={LANES.slice(0, 3)} range={WEEK}
+    items={[
+      // One day is 7rem here, so an hour is under 5 px: each of these is drawn at the minimum width.
+      hour('s1', '09:00', '10:00'), hour('s2', '11:00', '12:00'), hour('s3', '13:00', '13:30'), hour('s4', '14:00', '15:00'),
+      // Titles whose first word is wider than the bar, and one that fits a word and not the next.
+      bar('w1', 'pay-ledger', ['2026-10-06', '00:00'], ['2026-10-06', '08:00'], 'Firewall rule update for the gateway'),
+      bar('w2', 'pay-ledger', ['2026-10-07', '00:00'], ['2026-10-07', '22:00'], 'Firewall rule update for the gateway'),
+      bar('w3', 'pay-ledger', ['2026-10-08', '00:00'], ['2026-10-08', '16:00'], 'Internationalisation', { meta: 'm' }),
+      bar('b1', 'net-core', ['2026-10-05', '02:00'], ['2026-10-05', '20:00'], 'High', { band: 'high' }),
+      bar('b2', 'net-core', ['2026-10-06', '02:00'], ['2026-10-06', '20:00'], 'High done', { band: 'high', status: 'done' }),
+      bar('b3', 'net-core', ['2026-10-07', '02:00'], ['2026-10-07', '20:00'], 'Marked', { markers: [{ id: 'm', label: 'Needs review', emphasis: 'warning' }] }),
+      bar('b4', 'net-core', ['2026-10-08', '02:00'], ['2026-10-08', '20:00'], 'Plain'),
+    ]}
+    overlays={[{ id: 'hatch', kindLabel: 'Hold', label: 'Quarter close', start: berlin('2026-10-10', '00:00'), end: berlin('2026-10-12', '00:00'), pattern: 'diagonal' }]}
+    now={berlin('2026-10-07', '12:00')}
   />;
 }
 
@@ -153,7 +182,7 @@ function Legacy() {
   />;
 }
 
-const CASES: Record<string, () => JSX.Element> = { lanes: Lanes, stress: Stress, hour: Hour, empty: Empty, legacy: Legacy };
+const CASES: Record<string, () => JSX.Element> = { lanes: Lanes, stress: Stress, short: Short, hour: Hour, empty: Empty, legacy: Legacy };
 const Case = CASES[scenario] ?? Lanes;
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Case /></StrictMode>);
