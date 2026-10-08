@@ -600,7 +600,7 @@ test('AC6 (R20 AC1 / AC2): a click selects, Enter with nothing pending is left t
   assert.equal(el.getAttribute('data-timeline-item'), 'd', 'the 2.32 hook is still there');
   assert.equal(el.getAttribute('data-band'), 'none');
   assert.equal(el.getAttribute('data-status'), 'committed');
-  assert.equal(el.hasAttribute('data-state'), false);
+  assert.equal(el.getAttribute('data-state'), 'scheduled', 'an item with none of the generic props keeps the attribute 2.32 gave it');
   click(el);
   assert.equal(selected.length, 1);
   assert.equal(selected[0], items[3], 'the callback gets the item it was given');

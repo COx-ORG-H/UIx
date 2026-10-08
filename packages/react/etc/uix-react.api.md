@@ -2290,7 +2290,12 @@ export function layoutDaySpans(spans: readonly MonthSpanInput[], days: readonly 
 }): DaySpanLayout;
 
 // @public
-export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange): PlacedSpan<T>[];
+export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange, options?: LayoutLaneOptions): PlacedSpan<T>[];
+
+// @public (undocumented)
+export interface LayoutLaneOptions {
+    flagOverlaps?: boolean;
+}
 
 // @public
 export function layoutLayeredGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], options?: LayeredLayoutOptions): LayeredLayout;
@@ -4321,49 +4326,75 @@ export type SchedulingStatus = 'tentative' | 'committed' | 'live' | 'done' | 'de
 // @public
 export function SchedulingTimeline(input: SchedulingTimelineProps): react.JSX.Element;
 
+// @public
+export interface SchedulingTimelineGroup {
+    collapsed?: boolean;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: ReactNode;
+    laneIds: string[];
+    meta?: ReactNode;
+    summary?: {
+        count: number;
+        markers?: SchedulingMarker[];
+    };
+}
+
 // @public (undocumented)
 export interface SchedulingTimelineItem {
+    accessibleName?: string;
+    band?: SchedulingBand;
     // (undocumented)
     end: string;
     // (undocumented)
     id: string;
     // (undocumented)
     laneId: string;
+    markers?: SchedulingMarker[];
     // (undocumented)
     meta?: string;
     movable?: boolean;
     start: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     state?: SchedulingEntryState;
+    status?: SchedulingStatus;
     // (undocumented)
     title: string;
 }
 
 // @public (undocumented)
 export interface SchedulingTimelineLabels {
-    // (undocumented)
     conflict: string;
     // (undocumented)
     empty: string;
+    gapForward?: string;
+    groupSummary?: string;
     item: string;
     // (undocumented)
     lanes: string;
     // (undocumented)
     loading: string;
+    moveCancelled?: string;
     moved: string;
-    // (undocumented)
     moveHint: string;
+    moveKeysHint?: string;
+    moveProposed?: string;
     // (undocumented)
     now: string;
-    // (undocumented)
+    overlay?: string;
+    // @deprecated (undocumented)
     overlays: Record<SchedulingTimelineOverlayKind, string>;
+    proposeHint?: string;
     // (undocumented)
     region: string;
     resized: string;
+    resizeHint?: string;
     // (undocumented)
     retry: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     states: Record<SchedulingEntryState, string>;
+    statuses?: Partial<Record<SchedulingStatus, string>>;
     windows: string;
 }
 
@@ -4383,36 +4414,43 @@ export interface SchedulingTimelineMarker {
     id: string;
     // (undocumented)
     label: string;
-    // (undocumented)
     laneId?: string;
+    laneIds?: string[];
 }
 
 // @public (undocumented)
 export interface SchedulingTimelineOverlay {
+    accessibleName?: string;
     // (undocumented)
     end: string;
     // (undocumented)
     id: string;
-    // (undocumented)
-    kind: SchedulingTimelineOverlayKind;
-    // (undocumented)
+    // @deprecated (undocumented)
+    kind?: SchedulingTimelineOverlayKind;
+    kindLabel?: string;
     label: string;
     laneId?: string;
+    laneIds?: string[];
+    pattern?: SchedulingOverlayPattern;
+    scopeLabel?: string;
     // (undocumented)
     start: string;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type SchedulingTimelineOverlayKind = 'freeze' | 'maintenance' | 'blackout';
 
 // @public (undocumented)
 export interface SchedulingTimelineProps {
     // (undocumented)
     className?: string;
+    columnNotes?: Record<string, ReactNode>;
     // (undocumented)
     error?: string;
+    flagOverlaps?: boolean;
     formatInstant?: (instant: string) => string;
     formatTick?: (at: Date, scale: TimelineScale) => string;
+    groups?: SchedulingTimelineGroup[];
     // (undocumented)
     items: SchedulingTimelineItem[];
     // (undocumented)
@@ -4425,8 +4463,15 @@ export interface SchedulingTimelineProps {
     locale?: string;
     // (undocumented)
     markers?: SchedulingTimelineMarker[];
+    maxHeight?: string;
+    notice?: ReactNode;
     now?: string;
     onMoveItem?: (id: string, next: {
+        start: string;
+        end: string;
+    }) => void;
+    onProposeMove?: (id: string, proposal: MoveProposal) => void | Promise<unknown>;
+    onResizeItem?: (id: string, next: {
         start: string;
         end: string;
     }) => void;
@@ -4434,14 +4479,18 @@ export interface SchedulingTimelineProps {
     onRetry?: () => void;
     // (undocumented)
     onSelectItem?: (item: SchedulingTimelineItem) => void;
+    onSelectOverlay?: (overlay: SchedulingTimelineOverlay) => void;
+    onToggleGroup?: (id: string) => void;
     // (undocumented)
     overlays?: SchedulingTimelineOverlay[];
     range: TimelineRange;
     renderItem?: (item: SchedulingTimelineItem) => ReactNode;
     scale?: TimelineScale;
     step?: number;
+    subTicks?: number[];
     tickWidth?: string;
     timeZone: string;
+    virtualizeAbove?: number;
     weekStartsOn?: number;
 }
 
@@ -5233,7 +5282,7 @@ export interface TimelineRange {
     start: string;
 }
 
-// @public
+// @public (undocumented)
 export type TimelineScale = 'hour' | 'day' | 'week' | 'month';
 
 // @public (undocumented)
@@ -5246,11 +5295,29 @@ export interface TimelineSpan {
     start: string;
 }
 
+// @public
+export function timelineStepDelta(step: number): {
+    days: number;
+    minutes: number;
+};
+
+// @public
+export interface TimelineSubTick {
+    at: number;
+    hour: number;
+    label: string;
+    offset: number;
+}
+
+// @public
+export function timelineSubTicks(range: TimelineRange, hours: readonly number[], timeZone: string): TimelineSubTick[];
+
 // @public (undocumented)
 export interface TimelineTick {
     at: number;
     major: boolean;
     offset: number;
+    offsetLabel?: string;
 }
 
 // @public

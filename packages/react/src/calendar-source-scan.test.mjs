@@ -140,7 +140,7 @@ test('AC17 (E13): the kinds, the reused entry state and their default labels are
     const at = within.indexOf(declaration);
     assert.notEqual(at, -1, `${declaration} is in the report`);
     const before = within.slice(0, at).trimEnd().split('\n').pop().trim();
-    return /^\/\/ (?:@public )?@deprecated$/.test(before);
+    return /^\/\/ (?:@public )?@deprecated(?![\w-])/.test(before);
   };
   assert.equal(deprecated('export type SchedulingEntryState ='), true, 'calibration: U2 deprecated this one');
   assert.equal(deprecated('export type SchedulingBand ='), false, 'calibration: a live type is not');
