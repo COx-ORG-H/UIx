@@ -146,3 +146,26 @@ test('proposeMove: minutes are real time, days keep both wall-clock ends, and th
   assert.deepEqual(ui.proposeMove(night, { days: -1, minutes: -15 }, BERLIN), { start: summer('2026-10-06', '22:45'), end: summer('2026-10-07', '01:45'), adjusted: null });
   assert.deepEqual(ui.proposeMove(night, {}, BERLIN), { start: night.start, end: night.end, adjusted: null });
 });
+
+/* Found in review of PR #105. */
+
+test('proposeMove: a day move never returns a window that ends at or before its start', () => {
+  // 02:45–03:15 on 28.03.: on 29.03. 02:45 does not exist (it becomes 03:45) while 03:15 does.
+  const acrossGap = ui.proposeMove({ start: winter('2026-03-28', '02:45'), end: winter('2026-03-28', '03:15') }, { days: 1 }, BERLIN);
+  assert.deepEqual(acrossGap, { start: summer('2026-03-29', '03:45'), end: summer('2026-03-29', '04:15'), adjusted: 'gap_forward' });
+  const toGapEdge = ui.proposeMove({ start: winter('2026-03-28', '02:30'), end: winter('2026-03-28', '03:30') }, { days: 1 }, BERLIN);
+  assert.ok(Date.parse(toGapEdge.end) - Date.parse(toGapEdge.start) === 3_600_000, 'the hour is kept, not collapsed to nothing');
+  // 02:45 (first pass) to 02:15 (second pass) on 25.10. is half an hour; a day later those wall times run backwards.
+  const repeat = { start: '2026-10-25T00:45:00.000Z', end: '2026-10-25T01:15:00.000Z' };
+  const moved = ui.proposeMove(repeat, { days: 1 }, BERLIN);
+  assert.equal(moved.start, winter('2026-10-26', '02:45'));
+  assert.equal(Date.parse(moved.end) - Date.parse(moved.start), 30 * 60_000);
+});
+
+test('layoutDaySpans draws what the month draws: an inverted span on its start day, a repeated id once', () => {
+  const week = ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11'];
+  const inverted = { id: 'inv', start: summer('2026-10-07', '10:00'), end: summer('2026-10-06', '10:00') };
+  const twice = { id: 'dup', start: summer('2026-10-08', '00:00'), end: summer('2026-10-09', '00:00') };
+  const layout = ui.layoutDaySpans([inverted, twice, { ...twice, end: summer('2026-10-11', '00:00') }], week, { timeZone: BERLIN });
+  assert.deepEqual(layout.placed.map((p) => [p.id, p.startCol, p.endCol]), [['inv', 2, 2], ['dup', 3, 3]]);
+});

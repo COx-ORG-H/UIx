@@ -8,6 +8,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
+import * as ui_react from 'react';
 import { createElement as h, act } from 'react';
 
 let dom;
@@ -484,4 +485,141 @@ test('the built-in header offers Day with the time grid, and steps a day at a ti
   const plain = mount(h(ui.SchedulingCalendar, { ...base, timeGrid: false, view: 'month' }));
   assert.deepEqual([...plain.host.querySelectorAll('.uix-segmented__option')].map((option) => option.textContent), ['Month', 'Week', 'Agenda'], 'unchanged without the time grid');
   plain.unmount();
+});
+
+/* Found in review of PR #105. */
+
+test('a midnight-crosser whose first day is off screen is still one named tab stop', () => {
+  const selected = [];
+  const entries = [item('night', '2026-10-07', '23:00', '02:00'), item('sunday', '2026-10-04', '23:30', '01:00')];
+  const day = mount(h(ui.SchedulingCalendar, { ...base, view: 'day', anchorDate: '2026-10-08', entries, onSelectEntry: (entry) => selected.push(entry.id) }));
+  const alone = day.host.querySelectorAll('[data-item-id="night"]');
+  assert.equal(alone.length, 1);
+  assert.equal(alone[0].tagName, 'BUTTON', 'the only part on screen is the control');
+  assert.equal(alone[0].getAttribute('data-part'), 'continuation');
+  assert.equal(alone[0].hasAttribute('aria-hidden'), false);
+  assert.match(alone[0].getAttribute('aria-label'), /Item night/);
+  assert.match(alone[0].textContent, /from 23:00/);
+  assert.match(alone[0].textContent, /Item night/);
+  click(alone[0]);
+  assert.deepEqual(selected, ['night']);
+  day.unmount();
+  // The same in a week: Monday holds the tail of a Sunday-night item; Wednesday's item keeps its two parts.
+  const week = mount(h(ui.SchedulingCalendar, { ...base, entries }));
+  const monday = column(week.host, '2026-10-05').querySelector('[data-item-id="sunday"]');
+  assert.equal(monday.tagName, 'BUTTON');
+  assert.equal(week.host.querySelectorAll('[data-item-id="night"]').length, 1);
+  assert.equal(week.host.querySelector('[data-continuation-of="night"]').getAttribute('aria-hidden'), 'true');
+  week.unmount();
+});
+
+test('input the month tolerates does not throw in the time grid: an inverted all-day entry, repeated ids', () => {
+  const entries = [
+    { id: 'inv', title: 'Inverted', start: summer('2026-10-07', '10:00'), end: summer('2026-10-06', '10:00'), allDay: true },
+    { id: 'dup', title: 'First', start: summer('2026-10-08', '00:00'), end: summer('2026-10-09', '00:00'), allDay: true },
+    { id: 'dup', title: 'Second', start: summer('2026-10-08', '00:00'), end: summer('2026-10-09', '00:00'), allDay: true },
+  ];
+  const overlays = [hold('w', '2026-10-06', '2026-10-07'), hold('w', '2026-10-08', '2026-10-09', { label: 'Repeat' })];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, overlays }));
+  assert.equal(host.querySelectorAll('[data-item-id="inv"]').length, 1);
+  const dup = host.querySelectorAll('[data-item-id="dup"]');
+  assert.equal(dup.length, 1);
+  assert.match(dup[0].textContent, /First/);
+  assert.equal(host.querySelectorAll('[data-overlay-id="w"]').length, 1);
+  unmount();
+});
+
+test('Escape during a drag drops the move, and letting go over the item afterwards is not a click', () => {
+  const calls = [];
+  const selected = [];
+  const entries = [item('a', '2026-10-07', '09:00', '11:00')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, canMove: true, onProposeMove: (id) => calls.push(id), onSelectEntry: (entry) => selected.push(entry.id) }));
+  const el = host.querySelector('[data-item-id="a"]');
+  pointer(el, 'pointerdown', 250, 440);
+  pointer(window, 'pointermove', 250, 470);
+  assert.ok(host.querySelector(cls('tg-ghost')));
+  act(() => { window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); });
+  assert.equal(host.querySelector(cls('tg-ghost')), null, 'the outline goes at once');
+  pointer(window, 'pointermove', 250, 500);
+  assert.equal(host.querySelector(cls('tg-ghost')), null, 'and does not come back while the button is down');
+  pointer(window, 'pointerup', 250, 500);
+  click(el);
+  assert.deepEqual(calls, []);
+  assert.deepEqual(selected, [], 'the release is not an activation');
+  click(el);
+  assert.deepEqual(selected, ['a'], 'the next real click is');
+  unmount();
+});
+
+test('a mouse move with no button down ends a drag whose release was never seen', () => {
+  const calls = [];
+  const entries = [item('a', '2026-10-07', '09:00', '11:00')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, canMove: true, onProposeMove: (id) => calls.push(id) }));
+  const el = host.querySelector('[data-item-id="a"]');
+  pointer(el, 'pointerdown', 250, 440);
+  pointer(window, 'pointermove', 250, 490);
+  const stray = new window.MouseEvent('pointermove', { bubbles: true, clientX: 260, clientY: 500, buttons: 0 });
+  Object.defineProperty(stray, 'pointerId', { value: 1 });
+  Object.defineProperty(stray, 'pointerType', { value: 'mouse' });
+  act(() => { window.dispatchEvent(stray); });
+  assert.equal(host.querySelector(cls('tg-ghost')), null);
+  pointer(window, 'pointerup', 260, 500);
+  assert.deepEqual(calls, [], 'a later, unrelated release proposes nothing');
+  unmount();
+});
+
+test('the outline of a sent move stays at the window asked for, even when the consumer moves the item first', async () => {
+  let settle;
+  const first = item('a', '2026-10-07', '09:00', '10:00');
+  const props = { ...base, canMove: true, onProposeMove: () => new Promise((yes) => { settle = yes; }) };
+  const { host, root, unmount } = mount(h(ui.SchedulingCalendar, { ...props, entries: [first] }));
+  const el = host.querySelector('[data-item-id="a"]');
+  key(el, 'ArrowDown', true);
+  key(el, 'Enter');
+  // The consumer applies the move optimistically while its request is still open.
+  act(() => root.render(h(ui.SchedulingCalendar, { ...props, entries: [item('a', '2026-10-07', '09:15', '10:15')] })));
+  assert.equal(offset(host.querySelector('[data-item-id="a"]')), 9.25);
+  assert.equal(offset(host.querySelector(cls('tg-ghost'))), 9.25, 'the outline is the proposal, not the proposal applied twice');
+  await act(async () => { settle(); await Promise.resolve(); });
+  assert.equal(host.querySelector(cls('tg-ghost')), null);
+  unmount();
+});
+
+test('a pending move is dropped when its entry leaves, and step={0} falls back to the default step', () => {
+  const calls = [];
+  const entries = [item('a', '2026-10-07', '09:00', '10:00')];
+  const props = { ...base, canMove: true, step: 0, onProposeMove: (id, proposal) => calls.push(proposal.start) };
+  const { host, root, unmount } = mount(h(ui.SchedulingCalendar, { ...props, entries }));
+  const el = host.querySelector('[data-item-id="a"]');
+  drag(el, [250, 440], [250, 440 + HOUR_PX]);
+  assert.deepEqual(calls, [summer('2026-10-07', '10:00')], 'no crash, and the hour is still an hour');
+  key(el, 'ArrowDown', true);
+  assert.equal(offset(host.querySelector(cls('tg-ghost'))), 9.25, 'the keyboard step is 15 minutes');
+  act(() => root.render(h(ui.SchedulingCalendar, { ...props, entries: [] })));
+  assert.equal(host.querySelector(cls('tg-ghost')), null);
+  unmount();
+});
+
+test('a day head with consumer numbers and no consumer label still says its count', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, days: { '2026-10-07': { count: 6, overflowCount: 0 } } }));
+  const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
+  assert.match(head.getAttribute('aria-label'), /7 October 2026, 6 entries$/);
+  assert.match(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-08"]`).getAttribute('aria-label'), /8 October 2026$/);
+  unmount();
+});
+
+test('focus follows an item the consumer moves to another day after a keyboard move', () => {
+  function Applied() {
+    const [entries, setEntries] = ui_react.useState([item('a', '2026-10-07', '09:00', '10:00')]);
+    return h(ui.SchedulingCalendar, { ...base, entries, canMove: true, onProposeMove: (id, proposal) => setEntries([{ id, title: 'Item a', start: proposal.start, end: proposal.end }]) });
+  }
+  const { host, unmount } = mount(h(Applied));
+  const el = host.querySelector('[data-item-id="a"]');
+  act(() => el.focus());
+  key(el, 'ArrowRight', true);
+  key(el, 'Enter');
+  const moved = host.querySelector('[data-item-id="a"]');
+  assert.equal(moved.closest('[data-tg-column]').getAttribute('data-tg-column'), '2026-10-08', 'the consumer applied the move');
+  assert.equal(document.activeElement, moved, 'and focus is on the item in its new column');
+  unmount();
 });

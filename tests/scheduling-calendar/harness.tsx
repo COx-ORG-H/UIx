@@ -13,7 +13,7 @@
  *   - dense: 350 events in one week;
  *   - lanes: five overlapping items in one day, to watch the lane count follow the width.
  * window.__calendar records what each callback was called with. */
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SchedulingCalendar } from '../../packages/react/src/index.js';
 import type {
@@ -172,7 +172,9 @@ function Dense() {
 
 function Lanes() {
   const entries = ['09:00', '09:10', '09:20', '09:30', '09:40'].map((from, index) => timed(`l${index}`, ['2026-10-07', from], ['2026-10-07', '12:00'], `Parallel item ${index + 1}`, index === 0 ? { markers: [{ id: 'm', label: 'Flagged', emphasis: 'refused' }] } : {}));
-  return <SchedulingCalendar {...common} view={params.get('view') === 'day' ? 'day' : 'week'} timeGrid maxLanes={Number(params.get('max') ?? 4)} entries={entries} onShowMore={(day) => { calls.more.push(day); }} />;
+  // The period buttons work here, so a test can leave the week and come back.
+  const [anchor, setAnchor] = useState('2026-10-07');
+  return <SchedulingCalendar {...common} anchorDate={anchor} onAnchorDateChange={setAnchor} view={params.get('view') === 'day' ? 'day' : 'week'} timeGrid maxLanes={Number(params.get('max') ?? 4)} entries={entries} onShowMore={(day) => { calls.more.push(day); }} />;
 }
 
 const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes };

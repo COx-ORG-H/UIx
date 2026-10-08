@@ -289,6 +289,39 @@ test('AC7: fewer lanes below the minimum lane width, every label at least four c
   }
 });
 
+test('AC7: the lane count still follows the width after leaving the week and coming back', async ({ page }) => {
+  const drawn = () => page.locator(`${P}tg-body [data-item-id]`).count();
+  await open(page, 'case=lanes', { width: 1600, height: 800 });
+  const before = await drawn();
+  expect(before).toBeGreaterThanOrEqual(2);
+  expect(before).toBeLessThan(4);
+  // The day columns are rebuilt for each week: the width must be measured on the new ones.
+  await page.getByRole('button', { name: 'Next week' }).click();
+  await expect(page.locator(column('2026-10-14'))).toBeVisible();
+  await page.getByRole('button', { name: 'Previous week' }).click();
+  await expect(page.locator(column('2026-10-07'))).toBeVisible();
+  await expect.poll(drawn, 'the cap from the width is not lost').toBe(before);
+  await page.setViewportSize({ width: 900, height: 800 });
+  await expect.poll(drawn, 'and a later resize is still seen').toBeLessThan(before);
+});
+
+test('AC10: Escape during a drag drops the move, and letting go over the item is not a click', async ({ page }) => {
+  await open(page, 'case=timegrid');
+  const high = page.locator(item('high'));
+  await high.scrollIntoViewIfNeeded();
+  const drag = await dragBy(page, high, 0, 20);
+  await expect(page.locator(`${P}tg-ghost`)).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator(`${P}tg-ghost`)).toHaveCount(0);
+  // The pointer is still over the two-hour item when the button comes up.
+  await drag.release();
+  const after = await calls(page);
+  expect(after.moves).toEqual([]);
+  expect(after.entries, 'the release did not open the item').toEqual([]);
+  await high.click({ position: { x: 20, y: 10 } });
+  expect((await calls(page)).entries).toEqual(['high']);
+});
+
 test('AC7: an item too short for a line shows its marker and no text', async ({ page }) => {
   await open(page, 'case=timegrid');
   const quarter = page.locator(item('quarter'));
