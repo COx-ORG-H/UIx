@@ -9,6 +9,7 @@ import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.j
 import type { TextDiffLabels } from './components/TextDiff.js';
 import type { FilterEditorLabels } from './components/FilterEditor.js';
 import type { SelectLabels } from './components/Select.js';
+import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -36,6 +37,7 @@ export interface UixLabels {
   textDiff?: Partial<TextDiffLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
+  ruleBuilder?: Partial<RuleBuilderLabels>;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */

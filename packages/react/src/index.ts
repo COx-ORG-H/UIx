@@ -311,9 +311,13 @@ export type {
 } from './components/RuleBuilder.js';
 export {
   appendRuleNode, findRuleNodeDepth, isRuleGroup, mapRuleGroup, moveRuleNode,
-  removeRuleNode, ruleDepth, summarizeRule, validateRuleDefinition,
+  removeRuleNode, ruleDepth, setRuleCombinator, summarizeRule, validateRuleDefinition,
+  DEFAULT_RULE_VALIDATION_MESSAGES, DEFAULT_RULE_SUMMARY_WORDS,
 } from './rule-builder-model.js';
-export type { RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue } from './rule-builder-model.js';
+export type {
+  RuleCondition, RuleGroup, RuleAction, RuleDefinition, RuleValidationIssue,
+  RuleCheck, RuleValidationOptions, RuleSummaryWords,
+} from './rule-builder-model.js';
 
 export { BuilderCanvas, DEFAULT_BUILDER_CANVAS_LABELS } from './components/BuilderCanvas.js';
 export type { BuilderCanvasLabels, BuilderCanvasProps, BuilderCanvasItem, BuilderPaletteItem } from './components/BuilderCanvas.js';

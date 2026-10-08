@@ -33,7 +33,8 @@ test('RuleBuilder emits a readable JSON-backed summary', () => {
     operators: [{ id: 'gt', label: 'is greater than' }],
     actions: [{ id: 'notify', label: 'Notify' }],
     onChange: noop,
-    readOnly: true,
+    // 'summary' since HAR-1618; `readOnly: true` is now the disabled builder (rule-builder-dom.test.mjs)
+    readOnly: 'summary',
   });
   assert.match(html, /class="uix-rule-builder uix-rule-builder--summary"/);
   assert.match(html, /Amount is greater than 100/);
