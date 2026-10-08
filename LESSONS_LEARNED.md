@@ -116,3 +116,25 @@ The `v2.16.0` tag passed every gate and the Release run went green, yet npm had 
 step treated a missing token as "inert-safe" and exited 0 with a notice. Check the registry, not
 the run colour, after every tag. Gate: the publish step now fails the run when the token is
 missing or blank.
+
+## jsdom passes what a browser, StrictMode and a 4× screenshot do not
+
+Three defects in the 2.34.0 batch (2026-10-08) passed every jsdom test and were found by the
+first run of a real-browser harness (`tests/older-gaps`):
+
+- **Focus on a row that is replaced.** `Tree`'s Retry swaps the error row for the loading row
+  (a different key). In a browser the focused element is removed and focus falls to `<body>`;
+  the jsdom test only checked the rows' text. When an action replaces the element it was
+  triggered from, say where focus goes and assert `document.activeElement` after it.
+- **A "mounted" ref that is only cleared.** `useRef(true)` plus a cleanup that sets `false`
+  is permanently `false` under React StrictMode, which runs each cleanup once before the real
+  mount; `InlineEdit` then dropped the result of every async save and stayed busy. Set the ref
+  in the effect body as well, and keep one StrictMode test per component that awaits a promise.
+- **A small glyph nobody looked at.** The avatar status dot sits on the circle's edge and the
+  avatar's own `overflow: hidden` clipped it to a quarter. It had shipped that way since the
+  first status dot; with a single green dot a quarter-moon still read as "a dot", but the new
+  shapes (a bar, two rings) were unreadable. A 10 px mark needs a zoomed screenshot
+  (`deviceScaleFactor: 4`) before it is called done; the normal-scale golden cannot show it.
+
+Gate: `tests/a11y/older-gaps.spec.mjs` (focus after Retry, a failed save in the StrictMode
+harness, the avatar's computed `overflow`), and the StrictMode case in `inline-edit-dom.test.mjs`.
