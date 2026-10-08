@@ -443,13 +443,14 @@ test('AC14 (R9 AC5): an empty week still draws seven day columns, with the note'
   unmount();
 });
 
-test('AC17 (R12 AC2): a day header shows the consumer count and the marker with its text; its name is the consumer label', () => {
+test('AC17 (R12 AC2): a day header shows the consumer count and the marker with its text; its name is the date and the consumer label', () => {
   const icon = h('svg', { 'data-test-icon': '' });
-  const days = { '2026-10-07': { count: 6, overflowCount: 0, label: 'Wednesday 7 October, 6 items, 1 needs attention', markers: [{ id: 'm', label: 'Needs attention', emphasis: 'warning', icon }] } };
+  const days = { '2026-10-07': { count: 6, overflowCount: 0, label: '6 items, 1 needs attention', markers: [{ id: 'm', label: 'Needs attention', emphasis: 'warning', icon }] } };
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, days }));
   const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
   assert.equal(head.getAttribute('role'), 'group');
-  assert.equal(head.getAttribute('aria-label'), 'Wednesday 7 October, 6 items, 1 needs attention');
+  // HAR-1527: the label is the count and the signal; the name always starts with the date (labels.dayName).
+  assert.match(head.getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 6 items, 1 needs attention$/);
   assert.equal(head.querySelector(cls('count')).textContent, '6');
   assert.ok(head.querySelector(`${cls('marker')} [data-test-icon]`), 'the icon');
   assert.equal(head.querySelector(cls('marker-label')).textContent, 'Needs attention', 'and the text, visible');

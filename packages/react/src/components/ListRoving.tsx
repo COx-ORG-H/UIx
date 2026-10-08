@@ -7,15 +7,17 @@ import { syncRovingStop } from '../roving.js';
 import type { RovingStop } from '../roving.js';
 
 /**
- * `List` with `roving`: the list is one tab stop. ArrowUp and ArrowDown move between its
- * items, Home and End go to the first and last, Enter and Space activate the focused item
- * (its `onClick`). Internal: rendered by `List`, which stays a server component without it.
+ * `List` with `roving`: the items of the list are one tab stop. ArrowUp and ArrowDown move
+ * between them, Home and End go to the first and last, Enter and Space activate the focused
+ * item (its `onClick`). A control inside an item keeps its own tab stop and its own keys.
+ * Internal: rendered by `List`, which stays a server component without it.
  */
 export function RovingList({ children, className, onKeyDown, onFocus, ...props }: HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement>(null);
   // The item that holds the tab stop, and its place, so the stop survives when that item is removed.
   const stop = useRef<RovingStop>({ node: null, index: 0 });
-  const items = () => (Array.from(ref.current?.children ?? []) as HTMLElement[]).filter((element) => element.classList.contains('uix-list__item'));
+  // The items of this list, at any depth (a consumer may wrap them), but not those of a list inside an item.
+  const items = () => Array.from(ref.current?.querySelectorAll<HTMLElement>('.uix-list__item') ?? []).filter((element) => element.closest('.uix-list') === ref.current);
   const sync = (next?: HTMLElement) => {
     const all = items();
     for (const element of all) if (!element.hasAttribute('role')) element.setAttribute('role', 'listitem');
@@ -23,6 +25,14 @@ export function RovingList({ children, className, onKeyDown, onFocus, ...props }
   };
   // After every render: items may have come or gone, and exactly one of them is the tab stop.
   useEffect(() => { sync(); });
+  // Items rendered later by a child of the list (its own state, a suspended part) are seen too.
+  useEffect(() => {
+    const list = ref.current;
+    if (!list || typeof MutationObserver === 'undefined') return;
+    const observer = new MutationObserver(() => sync());
+    observer.observe(list, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
@@ -44,7 +54,9 @@ export function RovingList({ children, className, onKeyDown, onFocus, ...props }
   };
   const handleFocus = (event: FocusEvent<HTMLDivElement>) => {
     onFocus?.(event);
-    const item = items().find((element) => element.contains(event.target as Node));
+    // The stop follows an item that takes focus itself. A control inside an item has its own stop
+    // and does not move this one, so Tab and Shift+Tab pass the same stops.
+    const item = items().find((element) => element === event.target);
     if (item) sync(item);
   };
 

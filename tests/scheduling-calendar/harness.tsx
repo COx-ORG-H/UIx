@@ -21,7 +21,7 @@
  * window.__calendar records what each callback was called with. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { SchedulingCalendar } from '../../packages/react/src/index.js';
+import { List, ListItem, SchedulingCalendar } from '../../packages/react/src/index.js';
 import type {
   SchedulingAgendaGroup, SchedulingBand, SchedulingCalendarEntry, SchedulingCalendarOverlay, SchedulingCalendarProps, SchedulingLegendItem,
   SchedulingMarkerEmphasis, SchedulingOverlayPattern, SchedulingStatus,
@@ -159,7 +159,7 @@ function TimeGrid() {
     {...common} {...proposals} anchorDate={date} view={view} timeGrid entries={entries} overlays={overlays}
     now={params.get('now') ?? berlin('2026-10-08', '10:30')}
     days={params.get('empty') === '1' ? undefined : {
-      '2026-10-07': { count: 6, overflowCount: 2, label: 'Wednesday 7 October 2026, 6 items, 1 needs sign-off', markers: [{ id: 's', label: 'Sign-off', emphasis: 'warning' }] },
+      '2026-10-07': { count: 6, overflowCount: 2, label: '6 items, 1 needs sign-off', markers: [{ id: 's', label: 'Sign-off', emphasis: 'warning' }] },
       '2026-10-09': { count: 4, overflowCount: 0, label: 'Friday 9 October 2026, 4 items' },
     }}
     onShowMore={(day) => { calls.more.push(day); }}
@@ -257,13 +257,30 @@ function Emphasis() {
     timed('rest', ['2026-10-08', '08:00'], ['2026-10-08', '09:00'], 'Dimmed item', { emphasis: 'dim' }),
     timed('rest-high', ['2026-10-08', '10:00'], ['2026-10-08', '11:00'], 'Dimmed, high band', { emphasis: 'dim', band: 'high' }),
     timed('rest-tentative', ['2026-10-08', '12:00'], ['2026-10-08', '13:00'], 'Dimmed, tentative', { emphasis: 'dim', status: 'tentative' }),
+    // The same bands and states with no emphasis, and a highlighted medium band, to compare against.
+    timed('plain-tentative', ['2026-10-09', '08:00'], ['2026-10-09', '09:00'], 'Plain, tentative', { status: 'tentative' }),
+    timed('plain-medium', ['2026-10-09', '10:00'], ['2026-10-09', '11:00'], 'Plain, medium band', { band: 'medium' }),
+    timed('partner-medium', ['2026-10-09', '12:00'], ['2026-10-09', '13:00'], 'Partner, medium band', { emphasis: 'highlight', band: 'medium' }),
+    timed('partner-high-tentative', ['2026-10-10', '08:00'], ['2026-10-10', '09:00'], 'Partner, high, tentative', { emphasis: 'highlight', band: 'high', status: 'tentative' }),
+    timed('plain-high', ['2026-10-10', '10:00'], ['2026-10-10', '11:00'], 'Plain, high band', { band: 'high' }),
   ];
   const view = params.get('view');
-  if (view === 'agenda') return <SchedulingCalendar {...common} view="agenda" entries={[]} agendaGroups={[{ date: '2026-10-07', rows: entries.slice(0, 3) }, { date: '2026-10-08', rows: entries.slice(3) }]} />;
+  if (view === 'agenda') return <SchedulingCalendar {...common} view="agenda" entries={[]} agendaGroups={[{ date: '2026-10-07', rows: entries.slice(0, 3) }, { date: '2026-10-08', rows: entries.slice(3, 6) }, { date: '2026-10-09', rows: entries.slice(6) }]} />;
   return <SchedulingCalendar {...common} view={view === 'week' ? 'week' : 'month'} timeGrid entries={entries} />;
 }
 
-const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes, agenda: Agenda, counts: Counts, keyboard: Keyboard, emphasis: Emphasis };
+/** `List roving` with a control in every item (HAR-1527): the items are one tab stop, each control its own. */
+function RovingListCase() {
+  return <div>
+    <button type="button" data-probe="before">Before</button>
+    <List roving aria-label="Items of the day">
+      {['1', '2', '3', '4'].map((id) => <ListItem key={id} data-id={id} title={`Item ${id}`} trail={<button type="button" data-action={id}>Open {id}</button>} />)}
+    </List>
+    <button type="button" data-probe="after">After</button>
+  </div>;
+}
+
+const CASES: Record<string, () => JSX.Element> = { controlled: Controlled, encodings: Encodings, empty: Empty, timegrid: TimeGrid, dense: Dense, lanes: Lanes, agenda: Agenda, counts: Counts, keyboard: Keyboard, emphasis: Emphasis, list: RovingListCase };
 const Case = CASES[scenario] ?? Controlled;
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Case /></StrictMode>);

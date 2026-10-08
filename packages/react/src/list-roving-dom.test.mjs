@@ -5,7 +5,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, useState } from 'react';
 
 let dom;
 let createRoot;
@@ -19,13 +19,14 @@ before(async () => {
   expose('document', dom.window.document);
   expose('navigator', dom.window.navigator);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
+  expose('MutationObserver', dom.window.MutationObserver);
   ({ createRoot } = await import('react-dom/client'));
   ui = await import('../dist/index.js');
 });
 
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
+  for (const name of ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT', 'MutationObserver']) delete globalThis[name];
 });
 
 const mount = (element) => {
@@ -132,6 +133,49 @@ test('a control inside an item keeps its own keys, and a consumer onKeyDown that
   key(document.activeElement, 'End');
   assert.equal(focused(), 'a', 'the consumer prevented End');
   assert.deepEqual(seen, ['ArrowDown', 'End']);
+  unmount();
+});
+
+test('items rendered by a child of the list, at once or later, are items of the list', async () => {
+  let add;
+  const Rows = () => {
+    const [ids, setIds] = useState(['1', '2']);
+    add = () => setIds((current) => [...current, String(current.length + 1)]);
+    return ids.map((id) => h(ui.ListItem, { key: id, title: `Item ${id}`, 'data-id': id }));
+  };
+  const { host, unmount } = mount(h(ui.List, { roving: true }, h(Rows)));
+  assert.deepEqual(stops(host), ['1']);
+  // Only the child renders: the list itself does not, and still sees the new item.
+  await act(async () => { add(); await new Promise((resolve) => setTimeout(resolve, 0)); });
+  assert.equal(items(host).length, 3);
+  assert.equal(items(host)[2].getAttribute('role'), 'listitem');
+  assert.equal(items(host)[2].tabIndex, -1);
+  assert.deepEqual(stops(host), ['1']);
+  unmount();
+});
+
+test('items inside a wrapper element are items of the list; those of a list inside an item are not', () => {
+  const inner = h(ui.List, { roving: true, 'data-inner': 'yes' }, ['x', 'y'].map((id) => h(ui.ListItem, { key: id, title: `Inner ${id}`, 'data-id': id })));
+  const { host, unmount } = mount(h(ui.List, { roving: true }, h('div', { className: 'group' },
+    h(ui.ListItem, { title: 'Item 1', 'data-id': '1' }), h(ui.ListItem, { title: 'Item 2', 'data-id': '2' }, inner))));
+  const outer = host.querySelector('.uix-list');
+  const mine = (list) => items(host).filter((el) => el.closest('.uix-list') === list);
+  assert.deepEqual(mine(outer).filter((el) => el.tabIndex === 0).map((el) => el.getAttribute('data-id')), ['1'], 'one stop among the wrapped items');
+  assert.deepEqual(mine(host.querySelector('[data-inner]')).filter((el) => el.tabIndex === 0).map((el) => el.getAttribute('data-id')), ['x'], 'the inner list keeps its own');
+  act(() => mine(outer)[0].focus());
+  key(document.activeElement, 'ArrowDown');
+  assert.equal(focused(), '2');
+  key(document.activeElement, 'ArrowDown');
+  assert.equal(focused(), '2', 'the outer keys do not walk into the inner list');
+  unmount();
+});
+
+test('a control inside an item has its own tab stop and does not move the stop of the items', () => {
+  const { host, unmount } = mount(h(ui.List, { roving: true }, ['1', '2', '3', '4'].map((id) => h(ui.ListItem, { key: id, title: `Item ${id}`, 'data-id': id, trail: h('button', { type: 'button', 'data-action': id }, 'Open') }))));
+  act(() => host.querySelector('[data-action="3"]').focus());
+  assert.deepEqual(stops(host), ['1'], 'Shift+Tab from the control passes the same stops as Tab did');
+  act(() => items(host)[2].focus());
+  assert.deepEqual(stops(host), ['3'], 'an item that takes focus itself has the stop');
   unmount();
 });
 

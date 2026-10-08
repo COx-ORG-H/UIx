@@ -4150,6 +4150,7 @@ export interface SchedulingCalendarLabels {
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
+    dayName?: string;
     entry: string;
     fewerEntries: string;
     gapForward?: string;

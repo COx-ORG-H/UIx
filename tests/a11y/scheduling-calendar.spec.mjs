@@ -106,7 +106,7 @@ test('AC6: six overlapping windows change no cell height, take no chip slot and 
   expect((await calls(page)).more).toEqual(['2026-10-05']);
 });
 
-test('AC7: a window is a tab stop with a full name, visible words and no title, and Enter activates it', async ({ page }) => {
+test('AC7: a window is a button with a full name, visible words and no title, and Enter activates it', async ({ page }) => {
   await open(page, 'case=encodings');
   const scoped = page.locator('[data-overlay-id="scoped"]');
   await expect(scoped).toHaveAccessibleName(/^Hold, Payroll lock, Payroll services, .*29 October 2026 07:00 to .*30 October 2026 19:00$/);

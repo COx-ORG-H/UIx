@@ -130,17 +130,238 @@ test('a span is reached from any day it covers, and Escape returns to the day it
   unmount();
 });
 
-test('AC2 (R18 AC2): a day cell is named with the consumer label when there is one', () => {
-  const days = { '2026-10-07': { count: 12, overflowCount: 9, label: 'Wednesday 7 October, 12 items, highest: needs sign-off' }, '2026-10-08': { count: 2, overflowCount: 0 } };
+test('AC2 (R18 AC2): a day cell is named with its date and the consumer label when there is one', () => {
+  const days = { '2026-10-07': { count: 12, overflowCount: 9, label: '12 items, highest: needs sign-off' }, '2026-10-08': { count: 2, overflowCount: 0 } };
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...monthProps, days, dayEntries: {} }));
-  assert.equal(date(host, '2026-10-07').getAttribute('aria-label'), 'Wednesday 7 October, 12 items, highest: needs sign-off');
+  // The label is the count and the signal (as its doc says); the date is never lost from the name.
+  assert.match(date(host, '2026-10-07').getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/);
   assert.equal(date(host, '2026-10-07').closest(cls('dayhead')).querySelector(cls('count')).getAttribute('aria-hidden'), 'true', 'the count is not said twice');
   assert.match(date(host, '2026-10-08').getAttribute('aria-label'), /8 October 2026/, 'without a label, the date');
   assert.equal(date(host, '2026-10-08').closest(cls('dayhead')).querySelector(cls('count')).hasAttribute('aria-hidden'), false);
   unmount();
   const grid = mount(h(ui.SchedulingCalendar, { ...base, view: 'week', timeGrid: true, entries: [], days }));
-  assert.equal(date(grid.host, '2026-10-07').getAttribute('aria-label'), 'Wednesday 7 October, 12 items, highest: needs sign-off');
+  assert.match(date(grid.host, '2026-10-07').getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/);
+  assert.match(date(grid.host, '2026-10-07').closest('[role="group"]').getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/, 'the head group too');
+  assert.match(date(grid.host, '2026-10-08').closest('[role="group"]').getAttribute('aria-label'), /^Thursday,? 8 October 2026, 2 entries$/, 'no label: the date and the count');
   grid.unmount();
+  // A consumer whose labels already say the date words the name itself.
+  for (const view of [{ view: 'month' }, { view: 'week', timeGrid: true }]) {
+    const own = mount(h(ui.SchedulingCalendar, { ...base, ...view, entries: [], dayEntries: {}, days: { '2026-10-07': { count: 1, overflowCount: 0, label: 'Mi 7.10., 1 Eintrag' } }, labels: { dayName: '{label}' } }));
+    assert.equal(date(own.host, '2026-10-07').getAttribute('aria-label'), 'Mi 7.10., 1 Eintrag');
+    own.unmount();
+  }
+  // ... and a day with numbers but no label still says its date in the time grid.
+  const bare = mount(h(ui.SchedulingCalendar, { ...base, view: 'week', timeGrid: true, entries: [], days: { '2026-10-08': { count: 3, overflowCount: 0 } }, labels: { dayName: '{label}' } }));
+  assert.match(date(bare.host, '2026-10-08').closest('[role="group"]').getAttribute('aria-label'), /^Thursday,? 8 October 2026, 3 entries$/);
+  assert.match(date(bare.host, '2026-10-08').getAttribute('aria-label'), /^Thursday,? 8 October 2026$/);
+  bare.unmount();
+});
+
+test('the keys of the grid act on the items of a day only: a field or a link the consumer put in a cell keeps its own', () => {
+  const picked = [];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, {
+    ...monthProps, onSelectDate: (day) => picked.push(day),
+    renderDayBadge: (day) => (day === '2026-10-07' ? h('input', { 'data-probe': 'field', 'aria-label': 'Note' }) : null),
+    renderEntry: (entry) => (entry.id === 'a' ? h('span', null, 'Item a ', h('a', { href: '#x', 'data-probe': 'link' }, 'details')) : entry.title),
+  }));
+  for (const probe of ['field', 'link']) {
+    const inner = host.querySelector(`[data-probe="${probe}"]`);
+    act(() => inner.focus());
+    for (const name of ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape']) {
+      assert.equal(key(inner, name).defaultPrevented, false, `${name} in the ${probe} is left alone`);
+      assert.equal(active(), inner, `${name} in the ${probe} does not move focus`);
+    }
+  }
+  unmount();
+  // The same in the time grid, for a link the consumer renders inside an item.
+  const grid = mount(h(ui.SchedulingCalendar, { ...gridProps, renderEntry: (entry) => (entry.id === 'early' ? h('span', null, 'Item early ', h('a', { href: '#x', 'data-probe': 'link' }, 'details')) : entry.title) }));
+  const link = grid.host.querySelector('[data-probe="link"]');
+  act(() => link.focus());
+  for (const name of ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape']) {
+    assert.equal(key(link, name).defaultPrevented, false, `${name} in a link of the time grid is left alone`);
+    assert.equal(active(), link);
+  }
+  grid.unmount();
+});
+
+test('the "+N" of a week row is reached from the day it opens, not from every day of the row', () => {
+  const picked = [];
+  const bars = [1, 2, 3].map((n) => ({ id: `bar${n}`, title: `Bar ${n}`, start: '2026-10-05T08:00:00+02:00', end: '2026-10-06T16:00:00+02:00' }));
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, showHeader: false, entries: bars, spanLaneCap: 0, onShowMore: () => {}, onSelectDate: (day) => picked.push(day) }));
+  const more = host.querySelector(cls('rowmore'));
+  assert.equal(more.getAttribute('data-more-date'), '2026-10-05');
+  // Saturday has nothing: Enter is left to the day button (which opens the day), and focus stays.
+  const saturday = date(host, '2026-10-10');
+  act(() => saturday.focus());
+  assert.equal(key(saturday, 'Enter').defaultPrevented, false);
+  assert.equal(active(), saturday);
+  // Monday, the day the "+3" opens: Enter goes to it, and Escape comes back to Monday.
+  const monday = date(host, '2026-10-05');
+  act(() => monday.focus());
+  assert.equal(key(monday, 'Enter').defaultPrevented, true);
+  assert.equal(active(), more);
+  key(more, 'Escape');
+  assert.equal(active(), monday);
+  unmount();
+});
+
+test('an item that takes focus without the keyboard brings the tab stop to its day', () => {
+  for (const props of [monthProps, gridProps]) {
+    const { host, unmount } = mount(h(ui.SchedulingCalendar, props));
+    const scope = host.querySelector(`${cls('grid')}, ${cls('timegrid')}`);
+    const target = props === monthProps ? '2026-10-09' : '2026-10-08';
+    assert.equal(tabStops(scope).length, 1);
+    assert.notEqual(idOf(tabStops(scope)[0]), target);
+    act(() => host.querySelector('[data-item-id="other"], [data-item-id="thu"]').focus());
+    assert.deepEqual(tabStops(scope).map(idOf), [target], 'Tab comes back to the day of the item');
+    unmount();
+  }
+});
+
+test('a move not yet sent is dropped, and said to be, when the arrow keys leave the item', () => {
+  const moves = [];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...gridProps, canMove: true, onProposeMove: (id) => moves.push(id) }));
+  const early = host.querySelector('[data-item-id="early"]');
+  act(() => early.focus());
+  key(early, 'ArrowDown', true);
+  assert.ok(host.querySelector(cls('tg-ghost')), 'a pending move');
+  key(early, 'ArrowDown');
+  assert.equal(idOf(active()), 'late');
+  assert.equal(host.querySelector(cls('tg-ghost')), null, 'the move did not stay behind');
+  assert.match(host.querySelector('[aria-live]').textContent, /cancel/i);
+  key(active(), 'Enter');
+  assert.deepEqual(moves, []);
+  unmount();
+  // An arrow that goes nowhere (the last item of the day) leaves the move as it is.
+  const plain = mount(h(ui.SchedulingCalendar, { ...gridProps, days: undefined, canMove: true, onProposeMove: (id) => moves.push(id) }));
+  const late = plain.host.querySelector('[data-item-id="late"]');
+  act(() => late.focus());
+  key(late, 'ArrowDown', true);
+  key(late, 'ArrowDown');
+  assert.equal(active(), late, 'the last item: nowhere to go');
+  assert.ok(plain.host.querySelector(cls('tg-ghost')), 'the move is still pending');
+  key(late, 'Enter');
+  assert.deepEqual(moves, ['late']);
+  plain.unmount();
+});
+
+test('the flat agenda (no agendaGroups) is one tab stop too, walked with the arrow keys, and carries emphasis', () => {
+  const entries = [at('a', '2026-10-07', '08:00', '09:00', { emphasis: 'highlight' }), at('b', '2026-10-07', '10:00', '11:00', { emphasis: 'dim' }), at('c', '2026-10-08', '08:00', '09:00')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, view: 'agenda', showHeader: false, entries }));
+  const agenda = host.querySelector(cls('agenda'));
+  assert.deepEqual(tabStops(agenda).map(idOf), ['a']);
+  act(() => tabStops(agenda)[0].focus());
+  key(active(), 'ArrowDown');
+  assert.equal(idOf(active()), 'b');
+  key(active(), 'End');
+  assert.equal(idOf(active()), 'c');
+  assert.deepEqual(tabStops(agenda).map(idOf), ['c']);
+  key(active(), 'Home');
+  assert.equal(idOf(active()), 'a');
+  assert.equal(host.querySelector('[data-item-id="a"]').hasAttribute('data-highlight'), true);
+  assert.equal(host.querySelector('[data-item-id="b"]').hasAttribute('data-dim'), true);
+  assert.equal(host.querySelector('[data-item-id="c"]').hasAttribute('data-highlight') || host.querySelector('[data-item-id="c"]').hasAttribute('data-dim'), false);
+  unmount();
+});
+
+const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+/** A long agenda: 220 rows on the first day, thirty days with no row, then five rows on the last day. */
+const gappy = () => [
+  { date: '2026-09-01', rows: Array.from({ length: 220 }, (_, i) => at(`r${i}`, '2026-09-01', '08:00', '09:00')) },
+  ...Array.from({ length: 30 }, (_, i) => ({ date: `2026-09-${String(i + 2).padStart(2, '0')}`, rows: [], continuesCount: 1 })),
+  { date: '2026-10-07', rows: Array.from({ length: 5 }, (_, i) => at(`z${i}`, '2026-10-07', '08:00', '09:00')) },
+];
+const scrolled = async (box) => { box.dispatchEvent(new window.Event('scroll')); await settle(); };
+
+test('long agenda: a step is counted in rows, so it crosses a run of headings and lands on the next row', async () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, view: 'agenda', showHeader: false, entries: [], agendaGroups: gappy() }));
+  const box = host.querySelector(cls('agenda--virtual'));
+  Object.defineProperty(box, 'clientHeight', { value: 440, configurable: true });
+  act(() => host.querySelector('[data-item-id="r0"]').focus());
+  key(active(), 'End');
+  await scrolled(box);
+  assert.equal(idOf(active()), 'z4', 'End lands on the last row');
+  for (const id of ['z3', 'z2', 'z1', 'z0']) { key(active(), 'ArrowUp'); assert.equal(idOf(active()), id); }
+  // Above z0 are sixty rows without a control (thirty headings, thirty notes): one press crosses them.
+  key(active(), 'ArrowUp');
+  await scrolled(box);
+  assert.equal(idOf(active()), 'r219');
+  key(active(), 'ArrowDown');
+  await scrolled(box);
+  assert.equal(idOf(active()), 'z0');
+  // At the ends there is nowhere to go, and nothing is left waiting.
+  key(active(), 'End');
+  await scrolled(box);
+  assert.equal(key(active(), 'ArrowDown').defaultPrevented, true);
+  assert.equal(idOf(active()), 'z4');
+  assert.equal(tabStops(box).length, 1);
+  unmount();
+});
+
+test('long agenda: a step still waiting is given up when focus has gone elsewhere', async () => {
+  const outside = document.createElement('button');
+  document.body.append(outside);
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, view: 'agenda', showHeader: false, entries: [], agendaGroups: gappy() }));
+  const box = host.querySelector(cls('agenda--virtual'));
+  Object.defineProperty(box, 'clientHeight', { value: 440, configurable: true });
+  act(() => host.querySelector('[data-item-id="r0"]').focus());
+  key(active(), 'End');
+  // Before the rows arrive, the user leaves.
+  act(() => outside.focus());
+  await scrolled(box);
+  assert.equal(active(), outside, 'focus is not pulled back');
+  box.scrollTop = 0;
+  await scrolled(box);
+  box.scrollTop = 44 * 280;
+  await scrolled(box);
+  assert.ok(host.querySelector('[data-item-id="z4"]'), 'the row that was awaited is mounted now');
+  assert.equal(active(), outside, 'and focus is still where the user put it');
+  unmount();
+  outside.remove();
+});
+
+test('long agenda: a step that is waiting follows its row when the list changes, and is given up when the row is gone', async () => {
+  const groups = gappy();
+  const props = (agendaGroups) => ({ ...base, view: 'agenda', showHeader: false, entries: [], agendaGroups });
+  const { host, root, unmount } = mount(h(ui.SchedulingCalendar, props(groups)));
+  const box = host.querySelector(cls('agenda--virtual'));
+  Object.defineProperty(box, 'clientHeight', { value: 440, configurable: true });
+  act(() => host.querySelector('[data-item-id="r0"]').focus());
+  key(active(), 'End');
+  // Before the scroll is seen, forty rows arrive above the awaited one.
+  const more = [{ date: '2026-08-31', rows: Array.from({ length: 40 }, (_, i) => at(`n${i}`, '2026-08-31', '08:00', '09:00')) }, ...groups];
+  act(() => root.render(h(ui.SchedulingCalendar, props(more))));
+  await scrolled(box);
+  await scrolled(box);
+  assert.equal(idOf(active()), 'z4', 'it lands on the row it was going to, not on whatever now has its old place');
+  // And when the awaited row is removed, nothing is left waiting.
+  key(active(), 'Home');
+  act(() => root.render(h(ui.SchedulingCalendar, props(more.slice(1)))));
+  await scrolled(box);
+  act(() => root.render(h(ui.SchedulingCalendar, props(more))));
+  await scrolled(box);
+  assert.notEqual(idOf(active()), 'n0', 'a row that came back later does not take focus');
+  unmount();
+});
+
+test('long agenda: a window of headings only makes the scroller the tab stop', async () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, view: 'agenda', showHeader: false, entries: [], agendaGroups: gappy() }));
+  const box = host.querySelector(cls('agenda--virtual'));
+  Object.defineProperty(box, 'clientHeight', { value: 220, configurable: true });
+  assert.equal(box.hasAttribute('tabindex'), false, 'rows are mounted: one of them is the stop');
+  box.scrollTop = 44 * 245;
+  await scrolled(box);
+  assert.equal(box.querySelectorAll('button').length, 0, 'only headings and notes in the window');
+  assert.equal(box.tabIndex, 0);
+  // While the scroller has focus it stays the stop; when it lets go and rows are mounted, a row is the only one.
+  act(() => box.focus());
+  box.scrollTop = 0;
+  await scrolled(box);
+  assert.equal(box.tabIndex, 0, 'still focused: still the stop');
+  act(() => box.blur());
+  assert.equal(box.hasAttribute('tabindex'), false);
+  assert.equal(tabStops(box).length, 1);
+  unmount();
 });
 
 const gridProps = {
