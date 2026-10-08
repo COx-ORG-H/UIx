@@ -11,6 +11,7 @@
 import { enumerateDateKeys, packLanes, zonedDaySpan, zonedHourSlots } from './calendar-model.js';
 import type { ZonedHourSlot } from './calendar-model.js';
 
+/** The unit of one tick of the axis. */
 export type TimelineScale = 'hour' | 'day' | 'week' | 'month';
 
 export interface TimelineRange {

@@ -5282,7 +5282,7 @@ export interface TimelineRange {
     start: string;
 }
 
-// @public (undocumented)
+// @public
 export type TimelineScale = 'hour' | 'day' | 'week' | 'month';
 
 // @public (undocumented)
