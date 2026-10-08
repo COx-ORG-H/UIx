@@ -38,5 +38,21 @@
     .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {
       outline: 2px solid Highlight; outline-offset: 1px;
     }
+
+    /* scheduling calendar — the high band is a fill and the marker shapes are backgrounds, both
+       stripped here: the band becomes a heavy border and the shapes are redrawn in a system
+       colour. A window's hatch is a background image, which this mode removes, so windows and
+       their legend swatches opt out and paint every colour from the system palette (HAR-1506) */
+    .uix-scheduling-calendar { --calendar-window-ink: CanvasText; }
+    .uix-scheduling-calendar__window, .uix-scheduling-calendar__swatch[data-pattern] {
+      forced-color-adjust: none; border-color: CanvasText; background-color: Canvas; color: CanvasText;
+    }
+    .uix-scheduling-calendar__window-text { background: Canvas; }
+    .uix-scheduling-calendar__window:focus-visible { outline-color: Highlight; }
+    :is(.uix-scheduling-calendar__entry, .uix-scheduling-calendar__swatch)[data-band="high"] { border-width: 3px; }
+    .uix-scheduling-calendar__marker[data-glyph]::before,
+    .uix-scheduling-calendar__legend > span:is([data-state="conflicted"], [data-state="blackout-violation"])::before {
+      background: CanvasText; forced-color-adjust: none;
+    }
   }
 }

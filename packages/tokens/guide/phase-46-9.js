@@ -45,20 +45,27 @@ $$('.uix-builder-canvas__item-main').forEach((button) => button.addEventListener
   $('[data-properties-heading]').focus();
 }));
 
+// The calendar specimen is the React component rendered once per view (see
+// packages/react/scripts/render-scheduling-calendar-specimen.mjs). Each panel's own switch
+// already shows its view pressed, so a click only swaps panels and keeps focus on the switch.
 $$('[data-calendar-view]').forEach((button) => button.addEventListener('click', () => {
-  const agenda = button.dataset.calendarView === 'agenda';
-  $('[data-calendar-grid]').hidden = agenda;
-  $('[data-calendar-agenda]').hidden = !agenda;
-  $$('[data-calendar-view]').forEach((item) => { if (item === button) item.dataset.selected = ''; else delete item.dataset.selected; item.setAttribute('aria-pressed', String(item === button)); });
+  const view = button.dataset.calendarView;
+  const host = button.closest('[data-calendar-views]');
+  if (!host) return;
+  $$('[data-calendar-panel]', host).forEach((panel) => { panel.hidden = panel.dataset.calendarPanel !== view; });
+  $(`[data-calendar-panel="${view}"] [data-calendar-view="${view}"]`, host)?.focus();
 }));
-const calendarDates = $$('[data-calendar-date]');
-calendarDates.forEach((button, index) => button.addEventListener('keydown', (event) => {
-  const offset = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[event.key];
-  if (!offset) return;
-  event.preventDefault();
-  const next = calendarDates[Math.max(0, Math.min(calendarDates.length - 1, index + offset))];
-  calendarDates.forEach((item) => { item.tabIndex = -1; }); next.tabIndex = 0; next.focus();
-}));
+// Arrow keys move between the day numbers of one grid, as the component does.
+$$('.uix-scheduling-calendar__grid').forEach((grid) => {
+  const calendarDates = $$('[data-calendar-date]', grid);
+  calendarDates.forEach((button, index) => button.addEventListener('keydown', (event) => {
+    const offset = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[event.key];
+    if (!offset) return;
+    event.preventDefault();
+    const next = calendarDates[Math.max(0, Math.min(calendarDates.length - 1, index + offset))];
+    calendarDates.forEach((item) => { item.tabIndex = -1; }); next.tabIndex = 0; next.focus();
+  }));
+});
 
 const monthNames = ['September 2026', 'October 2026'];
 const monthLengths = [30, 31];
