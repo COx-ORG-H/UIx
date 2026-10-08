@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { PaginationLabels } from './components/Pagination.js';
 import type { SchedulingCalendarLabels } from './components/SchedulingCalendar.js';
 import type { DateRangePickerLabels } from './components/DateRangePicker.js';
+import type { DatePickerLabels, DateTimePickerLabels } from './components/DatePicker.js';
 import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.js';
 import type { TextDiffLabels } from './components/TextDiff.js';
 import type { FilterEditorLabels } from './components/FilterEditor.js';
@@ -42,6 +43,8 @@ export interface UixLabels {
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
+  datePicker?: Partial<DatePickerLabels>;
+  dateTimePicker?: Partial<DateTimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
   filterEditor?: Partial<FilterEditorLabels>;

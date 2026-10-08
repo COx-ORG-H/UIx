@@ -352,6 +352,14 @@ export type { PlacedSpan, TimelineRange, TimelineScale, TimelineSpan, TimelineTi
 
 export { DateRangePicker, DEFAULT_DATE_RANGE_PICKER_LABELS } from './components/DateRangePicker.js';
 export type { DateRangePickerLabels, DateRangePickerProps } from './components/DateRangePicker.js';
+export { DatePicker, DateTimePicker, DEFAULT_DATE_PICKER_LABELS, DEFAULT_DATE_TIME_PICKER_LABELS } from './components/DatePicker.js';
+export type {
+  DateInputProblem, DatePickerLabels, DatePickerProps, DateTimePickerLabels, DateTimePickerProps,
+} from './components/DatePicker.js';
+export {
+  dateOrder, datePattern, formatDateKey, isValidDateKey, joinDateTime, parseDateInput, splitDateTime, timeZoneName,
+} from './date-field-model.js';
+export type { DatePart } from './date-field-model.js';
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
   isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,
