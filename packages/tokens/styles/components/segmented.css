@@ -11,6 +11,7 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-segmented__option:hover { color: var(--uix-text); }
-  .uix-segmented__option[aria-pressed="true"] { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
+  /* aria-checked: a `selection="radio"` group (HAR-1604) */
+  .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 }
