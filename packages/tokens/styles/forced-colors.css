@@ -50,6 +50,10 @@
     .uix-scheduling-calendar__window-text { background: Canvas; }
     .uix-scheduling-calendar__window:focus-visible { outline-color: Highlight; }
     :is(.uix-scheduling-calendar__entry, .uix-scheduling-calendar__swatch)[data-band="high"] { border-width: 3px; }
+    /* emphasis (HAR-1527): the ring inside a fill is a shadow, which this mode drops, and a border
+       already says the band. So a highlighted item underlines its title, and a dimmed one is grey text. */
+    :is(.uix-scheduling-calendar__entry, .uix-scheduling-calendar__agenda-row)[data-highlight] .uix-scheduling-calendar__title { text-decoration: underline; }
+    :is(.uix-scheduling-calendar__entry, .uix-scheduling-calendar__agenda-row)[data-dim] { color: GrayText; }
     .uix-scheduling-calendar__marker[data-glyph]::before,
     .uix-scheduling-calendar__legend > span:is([data-state="conflicted"], [data-state="blackout-violation"])::before {
       background: CanvasText; forced-color-adjust: none;

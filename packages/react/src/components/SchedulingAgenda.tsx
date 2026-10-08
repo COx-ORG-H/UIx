@@ -124,61 +124,74 @@ function AgendaBody({
 
   /* Keyboard model (HAR-1527): the agenda is one tab stop. ArrowUp and ArrowDown move between
    * its rows and controls in reading order, Home and End go to the first and last. In a long
-   * agenda only the rows near the viewport are mounted, so a step past them scrolls first. */
+   * agenda only the rows near the viewport are mounted, so a step is counted in rows, not in
+   * mounted elements: the row to land on is scrolled to and takes focus once it is mounted. */
   const stop = useRef<RovingStop>({ node: null, index: 0 });
   const container = () => (flat ? scroller.current : grouped.current);
   const controls = () => Array.from(container()?.querySelectorAll<HTMLElement>('button') ?? []);
-  const focusStop = (target: HTMLElement | undefined) => {
+  const focusStop = (target: HTMLElement | undefined | null) => {
     if (!target) return;
     stop.current = syncRovingStop(controls(), stop.current, target);
     target.focus();
   };
-  // A step that has to wait for rows the scroll brings in. It is taken after the render that
-  // mounts them, not after a guessed delay: `land` runs after every render until it succeeds.
-  const landing = useRef<{ to: 'start' | 'end' } | { from: HTMLElement; step: 1 | -1 } | null>(null);
-  const windowStart = virtual.startIndex;
-  const windowEnd = virtual.startIndex + virtual.rows.length;
+  /** A row of the long form that holds a control: a row, a window note, or "open day". */
+  const holdsControl = (row: FlatRow | undefined) => row !== undefined && (row.kind === 'entry' || row.kind === 'note' || (row.kind === 'hidden' && onShowMore !== undefined));
+  const controlAt = (index: number) => scroller.current?.querySelector<HTMLElement>(`[data-flat-index="${index}"] button`) ?? null;
+  // The row a step is waiting for, by its place in the list. It is taken after the render that
+  // mounts the row, and given up when the list changes or the user has gone somewhere else.
+  const landing = useRef<number | null>(null);
   const land = () => {
-    const wanted = landing.current;
-    if (!wanted) return;
-    const all = controls();
-    if ('to' in wanted) {
-      // The first or last control only counts once the rows at that end are the mounted ones.
-      if (wanted.to === 'start' ? windowStart > 0 : windowEnd < flatRows.length) return;
-      landing.current = null;
-      focusStop(wanted.to === 'start' ? all[0] : all[all.length - 1]);
-      return;
-    }
-    const target = all[all.indexOf(wanted.from) + wanted.step];
-    if (!target) { if (!all.includes(wanted.from)) landing.current = null; return; }
+    const index = landing.current;
+    if (index === null) return;
+    const box = container();
+    const active = typeof document === 'undefined' ? null : document.activeElement;
+    // Focus is on the page only when the row that had it was unmounted by the scroll of this very step.
+    const elsewhere = active !== null && active !== document.body && !box?.contains(active);
+    if (!box || elsewhere || !holdsControl(flatRows[index])) { landing.current = null; return; }
+    const target = controlAt(index);
+    if (!target) return;
     landing.current = null;
     focusStop(target);
   };
-  useEffect(() => { stop.current = syncRovingStop(controls(), stop.current); land(); });
+  useEffect(() => {
+    const all = controls();
+    stop.current = syncRovingStop(all, stop.current);
+    // A window of the long form may hold headings only: then the scroller itself is the tab stop, and the arrow keys scroll it.
+    const box = flat ? scroller.current : null;
+    if (box) { if (all.length === 0 || document.activeElement === box) box.tabIndex = 0; else box.removeAttribute('tabindex'); }
+    land();
+  });
   const onFocus = (event: FocusEvent<HTMLDivElement>) => { stop.current = syncRovingStop(controls(), stop.current, event.target as HTMLElement); };
+  // Leaving the agenda, or taking the pointer or the wheel to it, ends a step that was still waiting.
+  const onBlur = (event: FocusEvent<HTMLDivElement>) => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) landing.current = null; };
+  const dropLanding = () => { landing.current = null; };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const from = event.target as HTMLElement;
     if (event.defaultPrevented || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !controls().includes(from)) return;
     event.preventDefault();
     const box = flat ? scroller.current : null;
-    if (event.key === 'Home' || event.key === 'End') {
-      const end = event.key === 'End';
+    if (!box) {
+      // Every row is mounted: the step is the next control in the document.
       const all = controls();
-      if (!box) { focusStop(end ? all[all.length - 1] : all[0]); return; }
-      landing.current = { to: end ? 'end' : 'start' };
-      box.scrollTop = end ? box.scrollHeight : 0;
-      // Already at that end: no scroll, so no render will come to finish the step.
-      land();
+      const to = event.key === 'Home' ? 0 : event.key === 'End' ? all.length - 1 : all.indexOf(from) + (event.key === 'ArrowDown' ? 1 : -1);
+      focusStop(all[Math.max(0, Math.min(all.length - 1, to))]);
       return;
     }
-    const step = event.key === 'ArrowDown' ? 1 : -1;
-    const all = controls();
-    const next = all[all.indexOf(from) + step];
-    if (next) { landing.current = null; focusStop(next); return; }
-    // The last mounted row of a long agenda: bring the next rows in; the step is taken when they are mounted.
-    if (!box || (step === 1 ? windowEnd >= flatRows.length : windowStart === 0)) return;
-    landing.current = { from, step };
-    box.scrollTop += step * (narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW) * 3;
+    const at = Number(from.closest('[data-flat-index]')?.getAttribute('data-flat-index'));
+    let target = -1;
+    if (event.key === 'Home') target = flatRows.findIndex(holdsControl);
+    else if (event.key === 'End') { for (let index = flatRows.length - 1; index >= 0 && target === -1; index--) if (holdsControl(flatRows[index])) target = index; }
+    else if (Number.isFinite(at)) {
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      for (let index = at + step; index >= 0 && index < flatRows.length && target === -1; index += step) if (holdsControl(flatRows[index])) target = index;
+    }
+    if (target === -1) return;
+    const mounted = controlAt(target);
+    if (mounted) { landing.current = null; focusStop(mounted); return; }
+    // Not mounted: bring the row to the middle of the scroller; it takes focus when it is there.
+    const rowHeight = narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW;
+    landing.current = target;
+    box.scrollTop = Math.max(0, target * rowHeight - (box.clientHeight - rowHeight) / 2);
   };
 
   const note = (overlay: SchedulingCalendarOverlay) => <button type="button" className="uix-scheduling-calendar__window" data-overlay-id={overlay.id} data-pattern={overlay.pattern ?? 'solid'} data-global={overlay.global || undefined} onClick={() => onSelectOverlay?.(overlay)} aria-label={overlayName(overlay)}>
@@ -246,9 +259,9 @@ function AgendaBody({
   if (groups.length === 0) return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}><p>{labels.agendaEmpty}</p></div>;
 
   if (flat) {
-    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" data-narrow={narrow || undefined} role="region" aria-label={labels.agenda} onKeyDown={onKeyDown} onFocus={onFocus}>
+    return <div ref={virtual.containerRef} className="uix-scheduling-calendar__agenda uix-scheduling-calendar__agenda--virtual" data-narrow={narrow || undefined} role="region" aria-label={labels.agenda} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onWheel={dropLanding} onPointerDown={dropLanding}>
       <div className="uix-scheduling-calendar__agenda-window" style={{ paddingTop: virtual.padTop, paddingBottom: virtual.padBottom }}>
-        {virtual.rows.map((item) => <div key={item.key} className="uix-scheduling-calendar__agenda-vrow" data-kind={item.kind}>
+        {virtual.rows.map((item, at) => <div key={item.key} className="uix-scheduling-calendar__agenda-vrow" data-kind={item.kind} data-flat-index={virtual.startIndex + at}>
           {item.kind === 'heading' ? heading(item.group, false) : item.kind === 'note' ? note(item.overlay) : item.kind === 'entry' ? row(item.entry, item.group.date) : item.kind === 'hidden' ? hidden(item.group) : continues(item.group)}
         </div>)}
       </div>

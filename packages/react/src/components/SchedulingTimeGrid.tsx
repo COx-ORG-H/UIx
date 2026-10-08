@@ -5,7 +5,7 @@
  * long as its day), so no day length is written down here. Every move is a proposal handed to
  * the consumer: this file never applies, refuses or cancels one. */
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type { CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { zonedDateKey, zonedHourSlots, zonedTimeOfDay } from '../calendar-model.js';
 import type { ZonedHourSlot } from '../calendar-model.js';
 import { layoutDaySpans, layoutTimeGridDay, placesInTopLane, proposeMove } from '../scheduling-calendar-model.js';
@@ -383,13 +383,14 @@ export function SchedulingTimeGrid({
       ...all('.uix-scheduling-calendar__tg-top > button.uix-scheduling-calendar__tg-span').filter(covers),
       ...all(`[data-tg-column="${date}"] > button[data-item-id]`),
       ...all(`.uix-scheduling-calendar__tg-dayhead[data-date="${date}"] > button.uix-scheduling-calendar__more`),
-      ...all('.uix-scheduling-calendar__tg-strip > button.uix-scheduling-calendar__rowmore'),
+      // "+N windows" opens one day; it is reached from that day.
+      ...all(`.uix-scheduling-calendar__tg-strip > button.uix-scheduling-calendar__rowmore[data-more-date="${date}"]`),
     ];
   };
   /** The day an item was entered from, or, for an item reached with the pointer, the first day it is on. */
   const dayOfItem = (item: HTMLElement): string | null => {
     if (enteredFrom.current && dayRing(enteredFrom.current).includes(item)) return enteredFrom.current;
-    const inColumn = item.closest('[data-tg-column]')?.getAttribute('data-tg-column') ?? item.closest('[data-date]')?.getAttribute('data-date');
+    const inColumn = item.getAttribute('data-more-date') ?? item.closest('[data-tg-column]')?.getAttribute('data-tg-column') ?? item.closest('[data-date]')?.getAttribute('data-date');
     if (inColumn) return inColumn;
     const from = Number(item.style.gridColumn.split('/')[0]);
     return Number.isFinite(from) ? days[Math.max(0, Math.min(days.length - 1, from - 2))] ?? null : days[days.length - 1] ?? null;
@@ -417,7 +418,13 @@ export function SchedulingTimeGrid({
     if (event.defaultPrevented || event.shiftKey || item.hasAttribute('data-calendar-date') || !['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape'].includes(event.key)) return;
     const date = dayOfItem(item);
     if (!date) return;
+    const ring = dayRing(date);
+    // Only the items of the day: a field or a link the consumer put in an item keeps its own keys.
+    const index = ring.indexOf(item);
+    if (index === -1) return;
     event.preventDefault();
+    // A move not yet sent does not travel with the focus: leaving the item drops it, and says so.
+    if (ghost?.source === 'keys') { setGhost(null); setAnnouncement(labels.moveCancelled); }
     if (event.key === 'Escape') {
       event.stopPropagation();
       enteredFrom.current = null;
@@ -426,10 +433,15 @@ export function SchedulingTimeGrid({
       return;
     }
     enteredFrom.current = date;
-    const ring = dayRing(date);
-    const index = ring.indexOf(item);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? ring.length - 1 : index + (event.key === 'ArrowDown' ? 1 : -1);
     ring[Math.max(0, Math.min(ring.length - 1, next))]?.focus();
+  };
+  // An item reached with the pointer takes the tab stop to its day, so Tab comes back to where the user is.
+  const onGridFocus = (event: ReactFocusEvent<HTMLDivElement>) => {
+    const item = event.target as HTMLElement;
+    if (item.hasAttribute('data-calendar-date')) return;
+    const date = dayOfItem(item);
+    if (date && dayRing(date).includes(item)) setActiveDay(date);
   };
   const nowAt = now === undefined ? null : new Date(now).getTime();
   const nowColumn = nowAt === null || Number.isNaN(nowAt) ? -1 : days.indexOf(zonedDateKey(new Date(nowAt), timeZone));
@@ -456,6 +468,7 @@ export function SchedulingTimeGrid({
     aria-label={gridLabel}
     style={vars({ '--uix-scheduling-calendar-days': days.length, '--uix-scheduling-calendar-hours': maxHours })}
     onKeyDown={onGridKeyDown}
+    onFocus={onGridFocus}
     onClickCapture={(event) => { if (suppressClick.current) { suppressClick.current = false; event.preventDefault(); event.stopPropagation(); } }}
   >
     <div className="uix-scheduling-calendar__tg-head">
@@ -467,9 +480,9 @@ export function SchedulingTimeGrid({
         const moreText = fillLabel(labels.moreSpans, { count: more });
         const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
-        const headName = info ? info.label ?? `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}` : dateText(date, 'day');
+        const headName = info ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label ?? fillLabel(labels.dayCount, { count: info.count }) }) : dateText(date, 'day');
         return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date}>
-          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ?? dateText(date, 'day')}
+          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
             onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
           {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{info.count}</span>}
           {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <span key={marker.id}>{renderMarker(marker, true)}</span>)}</span>}
@@ -495,7 +508,7 @@ export function SchedulingTimeGrid({
         </button>;
       })}
       {moreWindows > 0 && (onShowMore
-        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
         : <span className="uix-scheduling-calendar__rowmore">{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
     </div>}
 

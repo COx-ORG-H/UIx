@@ -19,3 +19,11 @@ export function syncRovingStop(all: readonly HTMLElement[], stop: RovingStop, ne
   for (const element of all) element.tabIndex = element === current ? 0 : -1;
   return { node: current, index: all.indexOf(current) };
 }
+
+/** Where ArrowUp, ArrowDown, Home or End goes from `from` in `all`, or `null` for any other key. */
+export function rovingStep(all: readonly HTMLElement[], from: HTMLElement, key: string): HTMLElement | null {
+  const index = all.indexOf(from);
+  if (index === -1) return null;
+  const target = key === 'ArrowDown' ? index + 1 : key === 'ArrowUp' ? index - 1 : key === 'Home' ? 0 : key === 'End' ? all.length - 1 : null;
+  return target === null ? null : all[Math.max(0, Math.min(all.length - 1, target))] ?? null;
+}

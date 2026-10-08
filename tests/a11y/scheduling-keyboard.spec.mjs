@@ -146,7 +146,7 @@ for (const view of ['month', 'week', 'agenda']) {
         };
       });
     });
-    expect(report.map((r) => r.id).sort()).toEqual(['partner', 'partner-high', 'picked', 'rest', 'rest-high', 'rest-tentative']);
+    expect(report.map((r) => r.id).sort()).toEqual(['partner', 'partner-high', 'partner-medium', 'picked', 'plain-medium', 'plain-tentative', 'rest', 'rest-high', 'rest-tentative']);
     expect(report.filter((r) => r.text < 4.5), JSON.stringify(report)).toEqual([]);
     const by = Object.fromEntries(report.map((r) => [r.id, r]));
     expect(by.partner.weight).toBeGreaterThan(by.picked.weight);
@@ -158,12 +158,58 @@ for (const view of ['month', 'week', 'agenda']) {
       expect(by['partner-high'].fillChroma, 'a highlighted high-band item keeps its fill').toBeGreaterThan(60);
       expect(by.partner.border).toBe('2px');
       expect(by.picked.border).toBe('1px');
+      // Emphasis leaves the other channels alone. A highlighted medium band keeps a leading edge
+      // heavier than its other edges; a dimmed tentative item keeps the dashed edge of the state, in its colour.
+      const edges = await page.locator('[data-item-id]').evaluateAll((els) => Object.fromEntries(els.map((el) => { const s = getComputedStyle(el); return [el.getAttribute('data-item-id'), { left: parseFloat(s.borderLeftWidth), top: parseFloat(s.borderTopWidth), style: s.borderTopStyle, colour: s.borderTopColor, shadow: s.boxShadow }]; })));
+      expect(edges['partner-medium'].left, 'medium + highlight: the leading edge stays the heavier one').toBeGreaterThan(edges['partner-medium'].top + 2);
+      expect(edges['partner-medium'].left).toBeGreaterThan(edges.partner.left);
+      expect([edges['rest-tentative'].style, edges['rest-tentative'].colour]).toEqual([edges['plain-tentative'].style, edges['plain-tentative'].colour]);
+      expect(edges['rest-tentative'].style).toBe('dashed');
+      // On the fill the heavier edge is a ring inside it, so it does not vanish against the cell.
+      expect(edges['partner-high'].shadow).toMatch(/inset/);
+      expect(edges.partner.shadow).toBe('none');
     }
     await settleAnimations(page);
     const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([]);
   });
 }
+
+for (const view of ['month', 'week', 'agenda']) {
+  test(`AC6: with forced colours a highlighted item in the ${view} underlines its title and a dimmed one is grey text`, async ({ page }) => {
+    await open(page, `case=emphasis&view=${view}`);
+    await page.emulateMedia({ forcedColors: 'active' });
+    const look = await page.locator('[data-item-id]').evaluateAll((els) => Object.fromEntries(els.map((el) => {
+      const title = el.querySelector('.uix-scheduling-calendar__title') ?? el;
+      return [el.getAttribute('data-item-id'), { line: getComputedStyle(title).textDecorationLine, colour: getComputedStyle(el).color }];
+    })));
+    for (const id of ['partner', 'partner-high', 'partner-medium']) expect(look[id].line, `${id} is underlined`).toContain('underline');
+    for (const id of ['picked', 'rest', 'plain-medium']) expect(look[id].line, `${id} is not`).not.toContain('underline');
+    for (const id of ['rest', 'rest-high', 'rest-tentative']) expect(look[id].colour, `${id} is grey text`).not.toBe(look.picked.colour);
+  });
+}
+
+test('List roving: the items are one tab stop, a control in an item is its own, and Shift+Tab passes the same stops as Tab', async ({ page }) => {
+  await page.goto(`${HARNESS}?case=list`, { waitUntil: 'networkidle' });
+  const where = () => page.evaluate(() => { const el = document.activeElement; return el?.getAttribute('data-probe') ?? el?.getAttribute('data-action') ?? (el?.getAttribute('data-id') ? `item ${el.getAttribute('data-id')}` : el?.tagName); });
+  await page.locator('[data-probe="before"]').focus();
+  const forward = [];
+  for (let i = 0; i < 6; i++) { await page.keyboard.press('Tab'); forward.push(await where()); }
+  expect(forward).toEqual(['item 1', '1', '2', '3', '4', 'after']);
+  const back = [];
+  for (let i = 0; i < 6; i++) { await page.keyboard.press('Shift+Tab'); back.push(await where()); }
+  expect(back).toEqual(['4', '3', '2', '1', 'item 1', 'before']);
+  // The arrow keys move between the items; the tab stop follows the item.
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  expect(await where()).toBe('item 3');
+  await page.keyboard.press('Shift+Tab');
+  expect(await where(), 'Shift+Tab from item 3 goes to the control before it').toBe('2');
+  await settleAnimations(page);
+  const { violations } = await new AxeBuilder({ page }).include('.uix-list').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([]);
+});
 
 for (const width of [1024, 1440]) {
   for (const view of ['month', 'week', 'day', 'agenda']) {

@@ -462,9 +462,9 @@
       "brotli": 1846
     },
     "styles/forced-colors.css": {
-      "raw": 3840,
-      "gzip": 1360,
-      "brotli": 1124
+      "raw": 4317,
+      "gzip": 1495,
+      "brotli": 1237
     },
     "styles/motion.css": {
       "raw": 1853,
