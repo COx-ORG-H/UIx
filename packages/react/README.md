@@ -873,7 +873,7 @@ const v = useVirtualRows(rows, { rowHeight: 44, estimatedViewportHeight: 600, en
 The density options no longer break a label inside a word at phone width ("Großzügig"); options
 that do not fit one row wrap as whole options.
 
-### Date fields, InlineEdit and other older gaps (2.34.0)
+### Date fields, InlineEdit and other older gaps (2.36.0)
 
 Older kit issues that TENSOR's triage still found blocking on 2026-10-08. Everything is additive.
 
