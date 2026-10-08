@@ -13,6 +13,12 @@
   .uix-avatar--xl .uix-avatar__status { width: 14px; height: 14px; right: 1px; bottom: 1px; }
   .uix-avatar--2xl .uix-avatar__status { width: 18px; height: 18px; border-width: 3px; right: 4px; bottom: 4px; }
   .uix-avatar__status { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--uix-surface); background: var(--uix-success); }
+  /* The dot sits on the circle's edge, so the circle must not clip it: it used to, and a quarter
+     of the dot was all that showed (HAR-1374). Only an avatar with a dot stops clipping; its
+     photo and its edit overlay keep the round shape themselves. */
+  .uix-avatar:has(> .uix-avatar__status) { overflow: visible; }
+  .uix-avatar:has(> .uix-avatar__status) > img, .uix-avatar__edit { border-radius: 50%; }
+  .uix-avatar--lg .uix-avatar__status { right: 1px; bottom: 1px; }
   .uix-avatar-group { display: inline-flex; }
   .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: calc(-1 * var(--uix-space-2)); }
   .uix-avatar-group .uix-avatar:first-child { margin-left: 0; }

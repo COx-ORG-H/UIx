@@ -107,7 +107,8 @@ export function InlineEdit({
   /** Where focus goes after the next render: into the editor, or back to the value. */
   const focusNext = useRef<'editor' | 'view' | null>(null);
   const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; }, []);
+  // Set on mount too: StrictMode runs the cleanup once before the real mount.
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   useEffect(() => {
     const target = focusNext.current;

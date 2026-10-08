@@ -11,7 +11,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act, useState } from 'react';
+import { createElement as h, act, useState, StrictMode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 let dom;
@@ -254,6 +254,29 @@ test('labels: the prop, then UixLabelsProvider inlineEdit, then English', () => 
   click(host.querySelector('button.uix-inline-edit__view'));
   assert.deepEqual([...host.querySelectorAll('.uix-inline-edit__actions button')].map((b) => b.textContent), ['Speichern', 'Verwerfen']);
   assert.equal(host.querySelector('.uix-inline-edit__editor').getAttribute('aria-label'), 'Titel bearbeiten');
+  act(() => root.unmount());
+  host.remove();
+});
+
+test('under StrictMode a promise from onSave still settles', async () => {
+  // StrictMode runs every effect cleanup once before the real mount; a "mounted" flag that is
+  // only cleared in the cleanup would then drop the result and leave the field busy for ever.
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  let reject;
+  act(() => root.render(h(StrictMode, null,
+    h(ui.InlineEdit, { label: 'Title', value: 'Payment API latency', onSave: () => new Promise((_, no) => { reject = no; }) }))));
+  click(host.querySelector('button.uix-inline-edit__view'));
+  const input = () => host.querySelector('.uix-inline-edit__editor input');
+  type(input(), 'Checkout latency');
+  key(input(), 'Enter');
+  assert.equal(input().disabled, true, 'busy while the save runs');
+  await act(async () => { reject(new Error('That title is taken.')); await Promise.resolve(); });
+  await flush();
+  assert.equal(input().disabled, false, 'the editor is usable again');
+  assert.equal(host.querySelector('[role="alert"]').textContent, 'That title is taken.');
+  assert.equal(input().value, 'Checkout latency', 'the draft is kept');
   act(() => root.unmount());
   host.remove();
 });

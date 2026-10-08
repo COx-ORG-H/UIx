@@ -140,11 +140,19 @@ test('a failed load shows an error row; Enter on it retries, and it is never sel
   assert.deepEqual(selected, [], 'the consumer is not told about a synthetic row');
   assert.deepEqual(t.rows(), ['Mira Kovač', 'Loading…', 'Jan Novak']);
   assert.equal(t.item('ceo').getAttribute('aria-busy'), 'true');
+  // The error row was replaced while it had focus: focus follows to the loading row…
+  assert.equal(document.activeElement, t.host.querySelectorAll('[role="treeitem"]')[1], 'focus moves to the loading row');
+  assert.equal(document.activeElement.textContent, 'Loading…');
   await settle(() => calls[1].reject(new Error('503')));
+  // …back to the error row when the retry fails too…
+  assert.equal(document.activeElement, t.host.querySelectorAll('[role="treeitem"]')[1], 'focus returns to the error row');
+  assert.match(document.activeElement.textContent, /Could not load/);
   click(t.host.querySelectorAll('[role="treeitem"]')[1]);
   assert.equal(calls.length, 3, 'a click retries too');
   await settle(() => calls[2].resolve(REPORTS));
   assert.deepEqual(t.rows(), ['Mira Kovač', 'Ana Petrović', 'Ben Ali', 'Jan Novak']);
+  // …and to the node once its children are there.
+  assert.equal(document.activeElement, t.item('ceo'), 'focus lands on the node whose children loaded');
   // real nodes are still selected as usual
   click(t.item('coo'));
   assert.deepEqual(selected, ['coo']);

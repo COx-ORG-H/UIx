@@ -228,17 +228,18 @@ export function Tree({
     inFlight.current.add(node.id);
     setFailed((prev) => { if (!prev.has(node.id)) return prev; const next = new Set(prev); next.delete(node.id); return next; });
     setLoading((prev) => new Set(prev).add(node.id));
-    const settle = (apply: () => void) => {
+    const settle = (apply: () => void, focusNext: string) => {
       inFlight.current.delete(node.id);
-      // The loading row is about to go away: if it holds focus, the node takes it.
+      // The loading row is about to go away: if it holds focus, the node takes it (or, after a
+      // failure, the error row, so Retry is one key away again).
       const active = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
-      if (active?.dataset?.id === node.id + LOADING || active?.dataset?.id === node.id + FAILED) refocus.current = node.id;
+      if (active?.dataset?.id === node.id + LOADING || active?.dataset?.id === node.id + FAILED) refocus.current = focusNext;
       setLoading((prev) => { const next = new Set(prev); next.delete(node.id); return next; });
       apply();
     };
     run(node).then(
-      (children) => settle(() => setLoaded((prev) => new Map(prev).set(node.id, children))),
-      () => settle(() => setFailed((prev) => new Set(prev).add(node.id))),
+      (children) => settle(() => setLoaded((prev) => new Map(prev).set(node.id, children)), node.id),
+      () => settle(() => setFailed((prev) => new Set(prev).add(node.id)), node.id + FAILED),
     );
   }, []);
 
@@ -262,7 +263,7 @@ export function Tree({
     refocus.current = null;
     setFocusedId(id);
     document.querySelector<HTMLElement>(`[data-uix-tree="${CSS.escape(treeId)}"] [role="treeitem"][data-id="${CSS.escape(id)}"]`)?.focus();
-  }, [loaded, failed, treeId]);
+  }, [loaded, failed, loading, treeId]);
 
   const findNode = (id: string, list: TreeNodeData[] = nodesProp): TreeNodeData | undefined => {
     for (const node of list) {
@@ -279,7 +280,9 @@ export function Tree({
     if (synthetic.kind !== 'error') return;
     const parent = findNode(synthetic.parent);
     if (!parent) return;
-    refocus.current = null;
+    // Retry swaps the error row for the loading row: focus was on the row that goes away, so
+    // it moves to the one that replaces it (in a browser it would otherwise fall to <body>).
+    refocus.current = parent.id + LOADING;
     setFailed((prev) => { const next = new Set(prev); next.delete(parent.id); return next; });
     load(parent);
   };
