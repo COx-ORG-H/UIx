@@ -63,6 +63,8 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
   row: number;
   /** Overlaps at least one other bar in the same lane. Always `false` with `flagOverlaps: false`. */
   conflict: boolean;
+  /** Where the words of the bar go. Set only with `labelShare`: inside the bar, after its end, or before its start. */
+  label?: 'inside' | 'after' | 'before';
 }
 
 export interface LayoutLaneOptions {
@@ -74,6 +76,15 @@ export interface LayoutLaneOptions {
    * other get a sub-row each. It changes the rows only, never the `conflict` flag. Default 0.
    */
   minSpan?: number;
+  /**
+   * The share of the axis (0 to 1/3) kept for the words of a bar too narrow to hold them: the
+   * layout for paper, where the axis is as wide as the page and no bar can be scrolled to. A bar
+   * at least this wide keeps its words inside. A narrower one gets this much room after its end,
+   * or before its start where the range ends sooner, and is packed with that room, so the words
+   * of one bar never share a place with another bar or its words. Sets `label` on every placed
+   * span. Default 0: off, and no `label`.
+   */
+  labelShare?: number;
 }
 
 export const HOUR = 3_600_000;
@@ -213,16 +224,29 @@ export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: T
   const flag = options.flagOverlaps !== false;
   const minSpan = Math.max(0, options.minSpan ?? 0);
   const rangeStart = toMs(range.start);
+  const rangeEnd = toMs(range.end);
+  const labelSpan = Math.min(Math.max(0, options.labelShare ?? 0), 1 / 3) * Math.max(0, rangeEnd - rangeStart) || 0;
   const visible = [...items]
     .sort((a, b) => toMs(a.start) - toMs(b.start) || toMs(a.end) - toMs(b.end))
     .flatMap((item) => { const pos = placeSpan(item, range); const start = toMs(item.start); const givenEnd = toMs(item.end); return pos ? [{ item, pos, start, givenEnd, end: Math.max(givenEnd, start) }] : []; });
   // The packer wants unique ids and an end that is not before the start. The position in the
   // sorted list is the id, so a repeated or inverted span from a consumer cannot make it throw.
   // A bar cut off by the start of the range is drawn from there, so its minimum counts from there.
-  const packed = packLanes(visible.map(({ start, end }, index) => ({ id: String(index), start, end: Math.max(end, Math.max(start, rangeStart) + minSpan) })), Infinity, { order: 'given' });
+  const boxes = visible.map(({ start, end }) => {
+    const from = Math.max(start, rangeStart);
+    const box = { start, end: Math.max(end, from + minSpan) };
+    if (labelSpan <= 0) return { ...box, label: undefined };
+    // The bar as it is drawn: from `from`, at least the minimum wide, cut at the end of the range.
+    const drawnEnd = Math.max(Math.min(end, rangeEnd), from + minSpan);
+    if (drawnEnd - from >= labelSpan) return { ...box, label: 'inside' as const };
+    if (drawnEnd + labelSpan <= rangeEnd) return { start, end: Math.max(box.end, drawnEnd + labelSpan), label: 'after' as const };
+    // Not as wide as the room and no room after it: with a share of a third or less there is room before it.
+    return { start: Math.min(start, from - labelSpan), end: box.end, label: 'before' as const };
+  });
+  const packed = packLanes(boxes.map(({ start, end }, index) => ({ id: String(index), start, end })), Infinity, { order: 'given' });
   // Sharing time is read from the spans as given, not from the minimum width they are packed at.
   const shares = flag ? sharedTimeFlags(visible) : [];
-  return visible.map(({ item, pos }, index) => ({ item, ...pos, row: packed.lanes[String(index)]!.lane ?? 0, conflict: flag && shares[index]! }));
+  return visible.map(({ item, pos }, index) => ({ item, ...pos, row: packed.lanes[String(index)]!.lane ?? 0, conflict: flag && shares[index]!, ...(boxes[index]!.label ? { label: boxes[index]!.label } : {}) }));
 }
 
 /** Rounds a millisecond offset to the nearest step. */

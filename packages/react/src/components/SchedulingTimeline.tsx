@@ -8,6 +8,7 @@ import type { MoveProposal } from '../scheduling-calendar-model.js';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { usePrinting } from '../hooks/usePrinting.js';
 import { defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, timelineRepeatedHourOffset, timelineStepDelta, timelineSubTicks, timelineTicks } from '../scheduling-timeline-model.js';
 import type { PlacedSpan, TimelineRange, TimelineScale } from '../scheduling-timeline-model.js';
 import { timelineRowExtents, timelineRuns, timelineWindow } from '../scheduling-timeline-rows.js';
@@ -265,6 +266,8 @@ const ESTIMATED_VIEWPORT = 720;
 const OVERSCAN_ROWS = 4;
 /** The narrowest a bar is drawn, in px, where the stylesheet cannot be measured (`--timeline-bar-min`, 1.5rem). */
 const BAR_MIN_FALLBACK = 1.5 * 16;
+/** On paper, the share of the axis kept for the words of a bar too narrow for them. The stylesheet draws them a little narrower (30cqw). */
+const PRINT_LABEL_SHARE = 1 / 3;
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 type Item = SchedulingTimelineItem;
@@ -417,6 +420,10 @@ export function SchedulingTimeline({
     return () => observer?.disconnect();
   }, [layerTrack, scroller, tickWidth, scale, tickCount]);
   const minSpan = Math.max(0, (Date.parse(range.end) - Date.parse(range.start)) * barShare) || 0;
+  // Paper has no scroller and an axis as wide as the page: while the page prints, every row is
+  // mounted and the bars are packed with room for their words beside them.
+  const printing = usePrinting();
+  const labelShare = printing ? PRINT_LABEL_SHARE : 0;
 
   const isCollapsed = (group: SchedulingTimelineGroup) => (onToggleGroup ? !!group.collapsed : selfCollapsed[group.id] ?? !!group.collapsed);
   const collapsedSignature = groups?.map((group) => (isCollapsed(group) ? '1' : '0')).join('') ?? '';
@@ -428,7 +435,7 @@ export function SchedulingTimeline({
   // The rows of the body, top to bottom: a head for each group, then its lanes unless it is collapsed.
   const rows = useMemo<Row[]>(() => {
     const laneRow = (lane: SchedulingTimelineLane, laneIndex: number, groupIndex?: number): LaneRow => {
-      const placed = layoutLane(itemsByLane.get(lane.id) ?? EMPTY_ITEMS, range, { flagOverlaps, minSpan });
+      const placed = layoutLane(itemsByLane.get(lane.id) ?? EMPTY_ITEMS, range, { flagOverlaps, minSpan, labelShare });
       return { kind: 'lane', key: `lane-${laneIndex}`, lane, laneIndex, groupIndex, placed, keys: uniqueKeys(placed.map((p) => p.item.id)), subRows: placed.reduce((max, p) => Math.max(max, p.row + 1), 1) };
     };
     if (!groups) return lanes.map((lane, laneIndex) => laneRow(lane, laneIndex));
@@ -451,7 +458,7 @@ export function SchedulingTimeline({
     // A lane no group names is still drawn, after the groups.
     lanes.forEach((lane, laneIndex) => { if (!used.has(laneIndex)) list.push(laneRow(lane, laneIndex)); });
     return list;
-  }, [lanes, groups, collapsedSignature, itemsByLane, range.start, range.end, flagOverlaps, minSpan]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lanes, groups, collapsedSignature, itemsByLane, range.start, range.end, flagOverlaps, minSpan, labelShare]); // eslint-disable-line react-hooks/exhaustive-deps
   const laneRows = useMemo(() => rows.filter((row): row is LaneRow => row.kind === 'lane'), [rows]);
   // Every bar on screen, in reading order, and the row each id is first found in.
   const { ordered, rowOfItem } = useMemo(() => {
@@ -547,7 +554,7 @@ export function SchedulingTimeline({
   const anchorRow = useMemo(() => (anchorKey === null ? -1 : rows.findIndex((row) => row.key === anchorKey)), [rows, anchorKey]);
   // The window is what the viewport shows plus overscan: a taller viewport mounts more, never less than it shows.
   const { mounted, windowStart } = useMemo(() => {
-    if (!virtual) return { mounted: rows.map((_, index) => index), windowStart: 0 };
+    if (!virtual || printing) return { mounted: rows.map((_, index) => index), windowStart: 0 };
     const window_ = timelineWindow(offsets, view.top, view.top + view.height, { overscan });
     const list: number[] = [];
     for (let index = window_.start; index < window_.end; index++) list.push(index);
@@ -556,7 +563,7 @@ export function SchedulingTimeline({
     }
     list.sort((a, b) => a - b);
     return { mounted: list, windowStart: window_.start };
-  }, [virtual, rows, offsets, view, overscan, pinned, focusedRow, anchorRow]);
+  }, [virtual, printing, rows, offsets, view, overscan, pinned, focusedRow, anchorRow]);
 
   // The packing changed (the track got another width): the rows above the viewport are taller
   // or shorter now. The row that was first in view is put back where it was, in whatever
@@ -581,7 +588,7 @@ export function SchedulingTimeline({
   }, [anchorKey, barShare]); // eslint-disable-line react-hooks/exhaustive-deps
   /** In a virtual timeline a bar is mounted when its sub-row is near the viewport, or it has the tab stop. */
   const barMounted = (rowIndex: number, placed: PlacedSpan<Item>) => {
-    if (!virtual || placed.item.id === focusId) return true;
+    if (!virtual || printing || placed.item.id === focusId) return true;
     const top = offsets[rowIndex]! + placed.row * units.row;
     return top + units.row + units.pad > view.top - overscan && top < view.top + view.height + overscan;
   };
@@ -928,6 +935,7 @@ export function SchedulingTimeline({
           data-conflict={p.conflict || undefined}
           data-clipped-start={p.clippedStart || undefined}
           data-clipped-end={p.clippedEnd || undefined}
+          data-label={p.label}
           data-movable={movable || undefined}
           data-dragging={dragging || undefined}
           tabIndex={focusId === item.id ? 0 : -1}
@@ -951,9 +959,12 @@ export function SchedulingTimeline({
             onSelectItem?.(item);
           }}
         >
-          <span className="uix-scheduling-timeline__item-title">{renderItem?.(item) ?? item.title}</span>
-          {item.meta && <span className="uix-scheduling-timeline__item-meta">{item.meta}</span>}
-          {itemMarkers.length > 0 && <span className="uix-scheduling-timeline__item-markers">{itemMarkers.map((marker) => <ItemMarker key={marker.id} marker={marker} />)}</span>}
+          {/* One box for the words: on a screen it is not there (`display: contents`), on paper it can sit beside a narrow bar. */}
+          <span className="uix-scheduling-timeline__item-label">
+            <span className="uix-scheduling-timeline__item-title">{renderItem?.(item) ?? item.title}</span>
+            {item.meta && <span className="uix-scheduling-timeline__item-meta">{item.meta}</span>}
+            {itemMarkers.length > 0 && <span className="uix-scheduling-timeline__item-markers">{itemMarkers.map((marker) => <ItemMarker key={marker.id} marker={marker} />)}</span>}
+          </span>
         </button>
       </li>
     );
@@ -1014,7 +1025,9 @@ export function SchedulingTimeline({
   }
   if (cursor < rows.length) body.push(spacer(cursor, rows.length));
 
-  const listed = onSelectOverlay ? EMPTY_OVERLAYS : overlays;
+  // The list of windows and markers in words. A window that is a button says its own name to
+  // assistive technology, so its line is hidden from it; on paper every line is printed.
+  const selectable = onSelectOverlay !== undefined;
   return (
     <section
       ref={rootRef}
@@ -1027,11 +1040,11 @@ export function SchedulingTimeline({
       {loading ? <div className="uix-scheduling-timeline__state" role="status">{labels.loading}</div>
         : error ? <div className="uix-scheduling-timeline__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
         : <>
-          {(listed.length > 0 || markers.length > 0) && (
-            <div className="uix-visually-hidden">
+          {(overlays.length > 0 || markers.length > 0) && (
+            <div className="uix-scheduling-timeline__windows" aria-hidden={selectable && markers.length === 0 ? true : undefined}>
               <p id={`${id}-windows`}>{labels.windows}</p>
               <ul aria-labelledby={`${id}-windows`}>
-                {listed.map((o, index) => <li key={overlayKeys[index]}>{o.accessibleName ?? <>{o.kindLabel === undefined && o.kind ? `${labels.overlays[o.kind]}: ${o.label}${o.scopeLabel ? `, ${o.scopeLabel}` : ''}` : overlayWords(o)}, {fmtInstant(o.start)} – {fmtInstant(o.end)}</>}</li>)}
+                {overlays.map((o, index) => <li key={overlayKeys[index]} aria-hidden={selectable ? true : undefined}>{o.accessibleName ?? <>{o.kindLabel === undefined && o.kind ? `${labels.overlays[o.kind]}: ${o.label}${o.scopeLabel ? `, ${o.scopeLabel}` : ''}` : overlayWords(o)}, {fmtInstant(o.start)} – {fmtInstant(o.end)}</>}</li>)}
                 {markers.map((m, index) => <li key={markerKeys[index]}>{m.label}, {fmtInstant(m.at)}</li>)}
               </ul>
             </div>
@@ -1040,7 +1053,7 @@ export function SchedulingTimeline({
             <div className="uix-scheduling-timeline__grid" data-sub-ticks={minorTicks.length > 0 || undefined}>
               <div className="uix-scheduling-timeline__row uix-scheduling-timeline__row--axis" aria-hidden="true">
                 <div className="uix-scheduling-timeline__lane-label">{labels.lanes}</div>
-                <div className="uix-scheduling-timeline__track uix-scheduling-timeline__axis" style={trackStyle}>
+                <div className="uix-scheduling-timeline__track uix-scheduling-timeline__axis" style={{ ...trackStyle, ...vars({ '--uix-timeline-ticks': Math.max(ticks.length - 1, 1) }) }}>
                   {ticks.map((tick) => (
                     <span key={tick.at} className="uix-scheduling-timeline__tick" data-major={tick.major || undefined} style={{ left: `${tick.offset}%` }}>
                       {tick.offset < 100 && <span className="uix-scheduling-timeline__tick-label">{fmtTick(tick.at)}{tick.offsetLabel && <span className="uix-scheduling-timeline__tick-offset">{tick.offsetLabel}</span>}</span>}

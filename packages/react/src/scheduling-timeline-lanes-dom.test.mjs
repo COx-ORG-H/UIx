@@ -212,7 +212,7 @@ test('AC3: the clip follows rows of different heights and group heads, and skips
   assert.deepEqual(clipCorners(band()), [[0, 0, 1], [0, 0, 1], [2, 1, 1], [2, 1, 1], [4, 3, 2], [4, 3, 2], [5, 4, 2], [5, 4, 2]]);
   assert.equal(band().getAttribute('aria-hidden'), 'true', 'without onSelectOverlay the band is decoration; the list names it');
   assert.equal(band().tagName, 'SPAN');
-  assert.match(host.querySelector('.uix-visually-hidden ul').textContent, /Window, 2026-10-06 00:00 – 2026-10-08 00:00/);
+  assert.match(host.querySelector('.uix-scheduling-timeline__windows ul').textContent, /Window, 2026-10-06 00:00 – 2026-10-08 00:00/);
 
   // Payments collapsed: its one row stands for lane A. It gets a strip under its head, one sub-row
   // tall, and the window is on that strip (from one head down to one head and one sub-row) and over D.
@@ -804,7 +804,7 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.equal(bar(generic.host, 'a').hasAttribute('data-state'), false);
   assert.equal(bar(generic.host, 'a').getAttribute('aria-label'), 'Schema update, Tentative, 2026-10-05 08:00 to 2026-10-06 08:00');
   assert.match(bar(generic.host, 'c').getAttribute('aria-label'), /^Report run, In progress, /);
-  assert.match(generic.host.querySelector('.uix-visually-hidden ul').textContent, /Hold, Quarter close, Payments, 2026-10-10 00:00 – 2026-10-12 00:00/);
+  assert.match(generic.host.querySelector('.uix-scheduling-timeline__windows ul').textContent, /Hold, Quarter close, Payments, 2026-10-10 00:00 – 2026-10-12 00:00/);
   assert.doesNotMatch(generic.host.textContent, /freeze|blackout|violation|conflicted/i);
   assert.doesNotMatch(generic.host.innerHTML, /freeze|blackout|violation|conflicted/i, 'not in an attribute either');
   generic.unmount();
@@ -823,8 +823,8 @@ test('AC17 (E13): the generic props carry no kind or state word; the deprecated 
   assert.equal(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-kind'), 'freeze');
   assert.ok(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'));
   assert.notEqual(legacy.host.querySelector('[data-overlay-id="f"]').getAttribute('data-pattern'), legacy.host.querySelector('[data-overlay-id="m"]').getAttribute('data-pattern'), 'the kinds once told apart by hue are told apart by pattern');
-  assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Change freeze: Q4, 2026-10-10 00:00 – 2026-10-12 00:00/);
-  assert.match(legacy.host.querySelector('.uix-visually-hidden ul').textContent, /Maintenance window: Storage/);
+  assert.match(legacy.host.querySelector('.uix-scheduling-timeline__windows ul').textContent, /Change freeze: Q4, 2026-10-10 00:00 – 2026-10-12 00:00/);
+  assert.match(legacy.host.querySelector('.uix-scheduling-timeline__windows ul').textContent, /Maintenance window: Storage/);
   legacy.unmount();
 });
 
@@ -868,7 +868,7 @@ test('what an existing consumer renders still renders: repeated ids, an inverted
   assert.equal(host.querySelector('[data-marker-id="m2"]').closest(`${P}row`).getAttribute('data-lane-id'), 'C');
   assert.equal(host.querySelector('[data-marker-id="m1"]').getAttribute('title'), 'Renewal');
   // The screen-reader list names every window and marker it was given, in the order given.
-  assert.equal(host.querySelectorAll('.uix-visually-hidden ul li').length, overlays.length + markers.length);
+  assert.equal(host.querySelectorAll('.uix-scheduling-timeline__windows ul li').length, overlays.length + markers.length);
   // Lanes with one id twice are two rows, each with the lane's bars.
   unmount();
   const twice = mount(h(ui.SchedulingTimeline, props({ lanes: [lanes[0], lanes[0]] })));
@@ -1117,4 +1117,78 @@ test('F9: a move sent by a drop is announced too, through the moveSent label', (
   pointer(window, 'pointerup', 250);
   assert.equal(live(host), 'Anfrage gesendet: 2026-10-07 00:00 bis 2026-10-07 12:00');
   unmount();
+});
+
+// ── HAR-1541 (U7): while the page prints ─────────────────────────────────────────────────────
+test('HAR-1541: while the page prints a virtual timeline mounts every row and bar, and windows again afterwards', () => {
+  const fixture = stress();
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props(fixture)));
+  const laneRows = () => host.querySelectorAll(`${P}row[data-lane-id]`).length;
+  const windowed = laneRows();
+  assert.ok(windowed < STRESS_LANES, `a window of lanes on the screen (${windowed})`);
+  assert.ok(host.querySelector(`${P}spacer`), 'with room kept for the rest');
+  const scroller = host.querySelector(`${P}scroller`);
+  // The browser lays the page out for paper as soon as the handlers return: the rows are there
+  // by then, before act() has flushed anything (it flushes when its callback returns).
+  act(() => {
+    window.dispatchEvent(new window.Event('beforeprint'));
+    assert.equal(laneRows(), STRESS_LANES, 'every lane, when the handler returns');
+  });
+  assert.equal(laneRows(), STRESS_LANES, 'every lane');
+  assert.equal(host.querySelectorAll(`${P}row[data-group-id]`).length, STRESS_GROUPS, 'every group head');
+  assert.equal(host.querySelector(`${P}spacer`), null, 'no room kept for rows that are not mounted');
+  assert.equal(host.querySelectorAll('[data-item-id]').length, fixture.items.length, 'every bar');
+  assert.equal(host.querySelector(`${P}scroller`), scroller, 'the same scroller element');
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  assert.equal(laneRows(), windowed);
+  unmount();
+});
+
+test('HAR-1541: while the page prints the bars are packed with room for their words, and say where the words go', () => {
+  // Two short bars an hour apart share a sub-row on a screen; on paper the words of the first need the place of the second.
+  const pair = [
+    { id: 'first', laneId: 'A', title: 'First', start: utc(5, '08:00'), end: utc(5, '12:00') },
+    { id: 'second', laneId: 'A', title: 'Second', start: utc(5, '14:00'), end: utc(5, '18:00') },
+    { id: 'long', laneId: 'B', title: 'Long', start: utc(5, '00:00'), end: utc(9, '00:00') },
+    { id: 'late', laneId: 'C', title: 'Late', start: utc(11, '08:00'), end: utc(11, '12:00') },
+  ];
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props({ items: pair })));
+  const bar = (id) => host.querySelector(`[data-item-id="${id}"]`);
+  const subRow = (id) => bar(id).closest(`${P}slot`).style.getPropertyValue('--uix-timeline-row');
+  assert.equal(subRow('first'), subRow('second'), 'one sub-row on a screen');
+  assert.equal(host.querySelector('[data-label]'), null, 'and no word about paper');
+  // The words are in one box in every bar, on a screen too (the stylesheet takes the box away there).
+  for (const id of ['first', 'long']) assert.equal(bar(id).querySelector(`${P}item-label > ${P}item-title`).textContent, pair.find((item) => item.id === id).title);
+  act(() => { window.dispatchEvent(new window.Event('beforeprint')); });
+  assert.notEqual(subRow('first'), subRow('second'), 'a sub-row each on paper');
+  assert.deepEqual(['first', 'second', 'long', 'late'].map((id) => bar(id).getAttribute('data-label')), ['after', 'after', 'inside', 'before']);
+  assert.equal(host.querySelector(`[data-lane-id="A"]`).style.getPropertyValue('--uix-timeline-rows'), '2', 'the lane is as tall as its sub-rows');
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  assert.equal(subRow('first'), subRow('second'));
+  assert.equal(host.querySelector('[data-label]'), null);
+  unmount();
+});
+
+test('HAR-1541: the list of windows and markers is always in the markup for paper; a window that is a button is not said twice', () => {
+  const overlays = [{ id: 'w', label: 'Quarter close', kindLabel: 'Hold', start: utc(10, '00:00'), end: utc(12, '00:00') }];
+  const markers = [{ id: 'm', label: 'Cut-off', at: utc(8, '12:00') }];
+  const list = (host) => host.querySelector(`${P}windows`);
+  const plain = mount(h(ui.SchedulingTimeline, props({ overlays })));
+  assert.equal(list(plain.host).hasAttribute('aria-hidden'), false);
+  assert.match(list(plain.host).querySelector('li').textContent, /Hold, Quarter close, 2026-10-10 00:00 – 2026-10-12 00:00/);
+  assert.equal(list(plain.host).querySelector('li').hasAttribute('aria-hidden'), false);
+  assert.equal(list(plain.host).classList.contains('uix-visually-hidden'), false, 'its own class: the stylesheet shows it on paper');
+  plain.unmount();
+  // Selectable: the window is a button with its own name, so its line is for paper only.
+  const buttons = mount(h(ui.SchedulingTimeline, props({ overlays, onSelectOverlay: () => {} })));
+  assert.equal(list(buttons.host).getAttribute('aria-hidden'), 'true', 'nothing in the list is for assistive technology');
+  assert.match(list(buttons.host).textContent, /Hold, Quarter close/);
+  buttons.unmount();
+  const mixed = mount(h(ui.SchedulingTimeline, props({ overlays, markers, onSelectOverlay: () => {} })));
+  assert.equal(list(mixed.host).hasAttribute('aria-hidden'), false, 'the marker is still said');
+  assert.deepEqual([...list(mixed.host).querySelectorAll('li')].map((li) => li.getAttribute('aria-hidden')), ['true', null]);
+  mixed.unmount();
+  const none = mount(h(ui.SchedulingTimeline, props({})));
+  assert.equal(list(none.host), null);
+  none.unmount();
 });

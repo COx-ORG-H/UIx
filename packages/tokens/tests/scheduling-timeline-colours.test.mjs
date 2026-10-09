@@ -225,7 +225,24 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, nothing s
   const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
   const high = rule(/__item\[data-band="high"\]$/)[0];
   assert.ok(high, 'a print rule for the high band');
-  assert.match(high.body, /background:\s*none/, 'the high band is not a fill on paper');
+  assert.match(high.body, /border-width:\s*3px/, 'the high band has the heaviest edge of all');
+  // ... and no fill: the print map makes its fill the paper and keeps the signal colour for its edge.
+  const paperMap = print.find(({ selector }) => selector === '.uix-scheduling-timeline').body;
+  assert.match(paperMap, /--timeline-band-high-fill:\s*var\(--uix-print-paper\)/);
+  assert.match(paperMap, /--timeline-band-high-edge:\s*var\(--uix-print-danger\)/);
+  assert.equal(print.some(({ selector, body }) => selector !== '.uix-scheduling-timeline' && /--timeline-band-high-fill/.test(body)), false, 'no print rule paints with the fill');
+  // The timeline asks for its surfaces to be printed, so a bar covers what is behind it without background graphics.
+  assert.match(rule(/^:where\(\.uix-scheduling-timeline\)$/)[0]?.body ?? '', /print-color-adjust:\s*exact/);
+  // Room kept for rows that are not mounted takes no paper, and a focus ring belongs to the screen.
+  assert.match(rule(/__spacer$/)[0]?.body ?? '', /display:\s*none/);
+  assert.match(rule(/:focus-visible$/)[0]?.body ?? '', /outline:\s*none/);
+  // The words of a narrow bar sit beside it, on each side the component may name; the list of windows is shown.
+  for (const side of ['after', 'before']) assert.ok(rule(new RegExp(`__item\\[data-label="${side}"\\] > .*__item-label$`))[0], `a place for words ${side} the bar`);
+  assert.match(rule(/__windows$/)[0]?.body ?? '', /position:\s*static/);
+  // On a screen the box for the words is not there, and the list is for a screen reader only.
+  const screen = rules(source).filter((r) => !/@media print\b/.test(r.at));
+  assert.match(screen.find(({ selector }) => /__item-label$/.test(selector))?.body ?? '', /display:\s*contents/);
+  assert.match(screen.find(({ selector }) => /__windows$/.test(selector))?.body ?? '', /clip:\s*rect\(0, 0, 0, 0\)/);
   const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:\s*none ([a-z]+)/)?.[1]);
   assert.deepEqual(edges, ['dashed', 'double', 'dotted']);
   assert.match(rule(/__scroller$/)[0]?.body ?? '', /overflow:\s*visible/);

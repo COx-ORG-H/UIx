@@ -274,3 +274,77 @@ test('timelineRepeatedHourOffset: a repeat at the end of the day, and a repeat o
   assert.equal(model.timelineRepeatedHourOffset('2026-10-26T00:30:00Z', 'Europe/Berlin'), null);
   assert.equal(model.timelineRepeatedHourOffset('2026-03-30T00:30:00Z', 'Europe/Berlin'), null);
 });
+
+// ── HAR-1541 (U7): the layout for paper ──────────────────────────────────────────────────────
+/** The place a placed span takes on the axis with its words, in % of the range: the bar, and the room beside a narrow one. */
+function placeWithWords(p, share) {
+  const room = share * 100;
+  if (p.label === 'after') return [p.left, p.left + p.width + room];
+  if (p.label === 'before') return [p.left - room, p.left + p.width];
+  return [p.left, p.left + p.width];
+}
+
+test('HAR-1541: labelShare gives a narrow bar room for its words, after it or before it, and a wide bar keeps them', () => {
+  const share = 1 / 3;
+  // A week is 168 h: the room is 56 h.
+  const placed = model.layoutLane([span('narrow', 10, 12), span('wide', 20, 100), span('late', 150, 160), span('middle', 60, 70)], range, { labelShare: share });
+  const by = Object.fromEntries(placed.map((p) => [p.item.id, p]));
+  assert.equal(by.narrow.label, 'after');
+  assert.equal(by.wide.label, 'inside', 'a bar at least as wide as the room holds its words');
+  assert.equal(by.late.label, 'before', 'no room after it: the range ends 8 h later');
+  assert.equal(by.middle.label, 'after');
+  // Off by default: no key at all, and the rows of the screen.
+  const plain = model.layoutLane([span('narrow', 10, 12), span('wide', 20, 100)], range);
+  assert.equal(plain.every((p) => !('label' in p)), true);
+  assert.deepEqual(plain.map((p) => p.row), [0, 0]);
+  // With the room, the wide bar starts inside the room of the narrow one: a sub-row each.
+  assert.notEqual(by.narrow.row, by.wide.row);
+});
+
+test('HAR-1541: with labelShare no bar shares a place with another bar or its words, and every word has the room, on 200 generated lanes', () => {
+  const random = seeded(1541);
+  for (const share of [1 / 3, 0.25, 0.9]) {
+    const used = Math.min(share, 1 / 3);
+    for (let lane = 0; lane < 200; lane++) {
+      const spans = Array.from({ length: 1 + Math.floor(random() * 14) }, (_, index) => {
+        const from = Math.floor(random() * 200) - 20;
+        const kind = random();
+        // points, short bars, long bars, and bars cut by either end of the range
+        const length = kind < 0.15 ? 0 : kind < 0.7 ? 1 + Math.floor(random() * 12) : 20 + Math.floor(random() * 120);
+        return span(`s${index}`, from, from + length);
+      });
+      for (const minSpan of [0, 4 * HOUR]) {
+        const placed = model.layoutLane(spans, range, { labelShare: share, minSpan });
+        for (const p of placed) assert.ok(['inside', 'after', 'before'].includes(p.label), `lane ${lane}: ${p.item.id} has a place for its words`);
+        const places = placed.map((p) => {
+          // The bar as drawn: at least the minimum wide.
+          const drawn = { ...p, width: Math.max(p.width, (minSpan / (168 * HOUR)) * 100) };
+          const [from, to] = placeWithWords(drawn, used);
+          if (p.label !== 'inside') {
+            // The words, not the bar: a bar at the very end of the range is drawn past it at its minimum width, as on a screen.
+            const words = p.label === 'after' ? [drawn.left + drawn.width, to] : [from, drawn.left];
+            assert.ok(words[0] >= -1e-6 && words[1] <= 100 + 1e-6, `lane ${lane}: the words of ${p.item.id} (${p.label}) stay on the axis: ${words[0]}..${words[1]}`);
+            assert.ok(drawn.width < used * 100 + 1e-6, `lane ${lane}: ${p.item.id} is narrower than the room`);
+          } else assert.ok(drawn.width >= used * 100 - 1e-6 || p.left + drawn.width > 100, `lane ${lane}: ${p.item.id} is wide enough for its words`);
+          return { id: p.item.id, row: p.row, from, to };
+        });
+        for (const a of places) for (const b of places) {
+          if (a === b || a.row !== b.row) continue;
+          assert.ok(a.to <= b.from + 1e-6 || b.to <= a.from + 1e-6, `lane ${lane}, share ${share}, minSpan ${minSpan}: ${a.id} (${a.from}..${a.to}) and ${b.id} (${b.from}..${b.to}) share sub-row ${a.row}`);
+        }
+      }
+    }
+  }
+});
+
+test('HAR-1541: labelShare changes the rows only: the flag, the positions and the order are those without it', () => {
+  const spans = [span('a', 10, 30), span('b', 20, 22), span('c', 100, 101), span('d', 100, 101)];
+  const screen = model.layoutLane(spans, range);
+  const paper = model.layoutLane(spans, range, { labelShare: 1 / 3 });
+  const strip = ({ row, label, ...rest }) => rest; // eslint-disable-line no-unused-vars
+  assert.deepEqual(paper.map(strip), screen.map(strip));
+  assert.ok(rowsUsed(paper) >= rowsUsed(screen));
+  // A share that is no number, negative, or with a range of no length is off.
+  for (const off of [NaN, -1, 0]) assert.equal(model.layoutLane(spans, range, { labelShare: off }).some((p) => 'label' in p), false);
+  assert.equal(model.layoutLane([span('a', 0, 0)], { start: range.start, end: range.start }, { labelShare: 1 / 3 }).some((p) => 'label' in p), false);
+});

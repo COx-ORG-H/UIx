@@ -64,7 +64,7 @@ test('bars sit by time; overlapping bars stack and are flagged; lanes label thei
   const list = bar(host, 'a').closest('ul');
   assert.equal(document.getElementById(list.getAttribute('aria-labelledby')).textContent, 'Network3 changes');
   assert.equal(host.querySelectorAll('.uix-scheduling-timeline__tick').length, 8, 'a tick per day boundary');
-  const windows = host.querySelector('.uix-visually-hidden ul');
+  const windows = host.querySelector('.uix-scheduling-timeline__windows ul');
   assert.match(windows.textContent, /Change freeze: Q4 freeze, 2026-10-10 00:00 – 2026-10-12 00:00/);
   assert.match(windows.textContent, /Licence renewal, 2026-10-08 00:00/);
   assert.equal(host.querySelectorAll('.uix-scheduling-timeline__overlay').length, 1, 'one band for the window, over both lanes (HAR-1521: one per lane before)');

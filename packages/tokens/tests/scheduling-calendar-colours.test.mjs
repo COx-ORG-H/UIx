@@ -22,7 +22,7 @@ const DIMENSIONS = ['band', 'status', 'window', 'marker', 'chrome'];
 /** Status hues: the tokens a product reads as good / warning / bad / informational, and the brand. */
 const HUE = /^--uix-(?:print-)?(danger|warning|success|info|accent|brand|link|ring)\b/;
 /** `--uix-*` names that are not colours: spacing, radii, the type scale and the component's own runtime knobs. */
-const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|scheduling-calendar-[a-z-]+)$/;
+const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|z-[a-z]+|scheduling-calendar-[a-z-]+)$/;
 /** Which selectors may read a dimension's colours. */
 const READERS = {
   band: /\[data-band=/,
@@ -176,10 +176,26 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, and nothi
   const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
   const high = rule(/\[data-band="high"\]$/)[0];
   assert.ok(high, 'a print rule for the high band');
-  assert.match(high.body, /background:none/, 'the high band is not a fill on paper');
-  assert.match(high.body, /border-width:2px/);
+  assert.match(high.body, /border-width:3px/, 'the high band has the heaviest edge of all');
+  // ... and no fill: the print map makes its fill the paper and keeps the signal colour for its edge.
+  const paperMap = print.find(({ selector }) => selector === '.uix-scheduling-calendar').body;
+  assert.match(paperMap, /--calendar-band-high-fill:\s*var\(--uix-print-paper\)/);
+  assert.match(paperMap, /--calendar-band-high-edge:\s*var\(--uix-print-danger\)/);
+  assert.equal(print.some(({ selector, body }) => selector !== '.uix-scheduling-calendar' && /--calendar-band-high-fill/.test(body)), false, 'no print rule paints with the fill');
+  const screenHigh = rules(source).find((r) => !/@media print\b/.test(r.at) && /\[data-band="high"\]$/.test(r.selector)).body;
+  assert.match(screenHigh, /border-color:var\(--calendar-band-high-edge\); background:var\(--calendar-band-high-fill\)/, 'on a screen the edge and the fill are one colour, by two names');
+  // The calendar asks for its surfaces to be printed, so an item covers what is behind it without background graphics ...
+  assert.match(rule(/^:where\(\.uix-scheduling-calendar\)$/)[0]?.body ?? '', /print-color-adjust:exact/);
+  // ... and what must not be lost if that is refused is an edge: the hour lines, a highlight, a window for everything, a bar that goes on.
+  assert.match(rule(/__tg-column$/)[0]?.body ?? '', /background:none/, 'the hour lines are not the background of a day');
+  assert.match(rule(/__tg-hour::after$/)[0]?.body ?? '', /border-top:1px dotted/);
+  assert.match(rule(/\[data-highlight\]/)[0]?.body ?? '', /text-decoration:underline/);
+  assert.deepEqual(['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-global\\]\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-width:(\d)px/)?.[1]), ['2', '4', '3'], 'a window for everything is one step heavier in each pattern');
+  assert.match(rule(/__window\[data-continues-before\]$/)[0]?.body ?? '', /border-left-style:none/);
+  // A focus ring belongs to the screen.
+  assert.match(rule(/:focus-visible$/)[0]?.body ?? '', /outline:none/);
   // Each window pattern has an edge style of its own; `solid` keeps the plain edge.
-  const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:([a-z]+)/)?.[1]);
+  const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\)\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:([a-z]+)/)?.[1]);
   assert.deepEqual(edges, ['dashed', 'double', 'dotted']);
   for (const scroller of ['__grid', '__timegrid', '__agenda--virtual']) {
     assert.ok(print.some(({ selector, body }) => selectorList(selector).some((part) => part.endsWith(scroller)) && /overflow:visible/.test(body)), `${scroller} does not scroll on paper`);
