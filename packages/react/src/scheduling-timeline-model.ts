@@ -8,7 +8,7 @@
  * a repeated hour and every other zone question go through `calendar-model.ts`. The row
  * geometry of the component is in `scheduling-timeline-rows.ts`.
  */
-import { addCalendarDays, enumerateDateKeys, packLanes, zonedDateKey, zonedDayBounds, zonedDaySpan, zonedHourSlots, zonedTimeOfDay } from './calendar-model.js';
+import { enumerateDateKeys, packLanes, zonedDateKey, zonedDaySpan, zonedHourSlots } from './calendar-model.js';
 import type { ZonedHourSlot } from './calendar-model.js';
 
 /** The unit of one tick of the axis. */
@@ -182,32 +182,13 @@ export function placeSpan(span: { start: string; end: string }, range: TimelineR
 }
 
 /**
- * Which spans share time with another one, exactly as before the lanes moved to the shared
- * packer: pair by pair in start order, on the ends as given (so a span that ends before it
- * starts is judged by its own end). It reads times and writes flags; no sub-row is chosen here.
- */
-function sharedTimeFlags(spans: ReadonlyArray<{ start: number; givenEnd: number }>): boolean[] {
-  const flags = spans.map(() => false);
-  for (let i = 0; i < spans.length; i++) {
-    for (let j = i + 1; j < spans.length; j++) {
-      // Starts only grow from here on: once one is past this end, all the rest are.
-      if (spans[j]!.start >= spans[i]!.givenEnd) break;
-      if (spans[i]!.start < spans[j]!.givenEnd) { flags[i] = true; flags[j] = true; }
-    }
-  }
-  return flags;
-}
-
-/**
  * Places a lane's spans: sorted by start, each in the first sub-row where it overlaps no
  * earlier bar, and flagged `conflict` when it shares time with any other span in the lane
  * (unless `flagOverlaps` is `false`). The rows come from `packLanes`, uncapped: every bar gets
  * one. With `minSpan` a bar is packed as at least that long from where it is drawn, so bars
  * drawn at their minimum width do not cover each other. Spans equal in start and end keep the
  * order given. A span that ends before it starts is a point at its start, and a repeated id is
- * placed each time. One difference from before the shared packer, with no options at all: a
- * point at the instant a bar starts takes a sub-row of its own (it used to be drawn over the
- * start of the bar), because the packer gives a zero-length interval its start instant.
+ * placed each time.
  */
 export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: TimelineRange, options: LayoutLaneOptions = {}): PlacedSpan<T>[] {
   const flag = options.flagOverlaps !== false;
@@ -215,14 +196,20 @@ export function layoutLane<T extends TimelineSpan>(items: readonly T[], range: T
   const rangeStart = toMs(range.start);
   const visible = [...items]
     .sort((a, b) => toMs(a.start) - toMs(b.start) || toMs(a.end) - toMs(b.end))
-    .flatMap((item) => { const pos = placeSpan(item, range); const start = toMs(item.start); const givenEnd = toMs(item.end); return pos ? [{ item, pos, start, givenEnd, end: Math.max(givenEnd, start) }] : []; });
+    .flatMap((item) => { const pos = placeSpan(item, range); const start = toMs(item.start); return pos ? [{ item, pos, start, end: Math.max(toMs(item.end), start) }] : []; });
   // The packer wants unique ids and an end that is not before the start. The position in the
   // sorted list is the id, so a repeated or inverted span from a consumer cannot make it throw.
   // A bar cut off by the start of the range is drawn from there, so its minimum counts from there.
   const packed = packLanes(visible.map(({ start, end }, index) => ({ id: String(index), start, end: Math.max(end, Math.max(start, rangeStart) + minSpan) })), Infinity, { order: 'given' });
-  // Sharing time is read from the spans as given, not from the minimum width they are packed at.
-  const shares = flag ? sharedTimeFlags(visible) : [];
-  return visible.map(({ item, pos }, index) => ({ item, ...pos, row: packed.lanes[String(index)]!.lane ?? 0, conflict: flag && shares[index]! }));
+  // Sharing time is read from the real spans, sorted by start: a span shares time with an
+  // earlier one when it starts before the latest end so far, and with a later one when the
+  // next span starts before it ends. A point at the instant a bar starts shares none with it.
+  let reach = -Infinity;
+  const afterEarlier = visible.map(({ start, end }) => { const shares = start < reach; reach = Math.max(reach, end); return shares; });
+  return visible.map(({ item, pos, end }, index) => {
+    const next = visible[index + 1];
+    return { item, ...pos, row: packed.lanes[String(index)]!.lane ?? 0, conflict: flag && (afterEarlier[index]! || (next !== undefined && next.start < end)) };
+  });
 }
 
 /** Rounds a millisecond offset to the nearest step. */
@@ -242,40 +229,27 @@ export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange,
   return snapToStep((px / trackWidth) * (toMs(range.end) - toMs(range.start)), step);
 }
 
-const MINUTE = 60_000;
-/** The sizes clock changes come in, in minutes: a wall-clock time that occurs twice does so this much apart. */
-const REPEAT_SHIFTS = [30, 60, 90, 120];
-const longDays = new Map<string, boolean>();
-const LONG_DAY_CACHE_LIMIT = 512;
-
-/** A day can hold a wall-clock time twice only when it is longer than a day beside it (the clocks went back in it). */
-function mayRepeat(date: string, timeZone: string): boolean {
-  const key = `${timeZone} ${date}`;
-  let long = longDays.get(key);
-  if (long === undefined) {
-    const length = (day: string) => { const bounds = zonedDayBounds(day, timeZone); return bounds.end.getTime() - bounds.start.getTime(); };
-    long = length(date) > Math.min(length(addCalendarDays(date, -1)), length(addCalendarDays(date, 1)));
-    if (longDays.size >= LONG_DAY_CACHE_LIMIT) longDays.delete(longDays.keys().next().value!);
-    longDays.set(key, long);
-  }
-  return long;
-}
+const repeatedHours = new Map<string, Array<{ from: number; to: number; offsetLabel: string }>>();
+const REPEATED_HOURS_CACHE_LIMIT = 512;
 
 /**
- * The UTC offset (`'+02:00'`) of an instant whose wall-clock time occurs twice that day in
- * `timeZone` (the clocks went back), else `null`. Such a time is not a time until it says which
- * of the two it is. It holds for a repeat at the end of a day and for one of half an hour too.
+ * The UTC offset (`'+02:00'`) of an instant that falls in a local hour that occurs twice that
+ * day in `timeZone` (the clocks went back), else `null`. A time in such an hour is not a time
+ * until it says which of the two it is.
  */
 export function timelineRepeatedHourOffset(instant: string | number, timeZone: string): string | null {
   const at = toMs(instant);
-  if (!mayRepeat(zonedDateKey(new Date(at), timeZone), timeZone)) return null;
-  const wall = (ms: number) => `${zonedDateKey(new Date(ms), timeZone)}T${zonedTimeOfDay(ms, timeZone)}`;
-  const here = wall(at);
-  if (!REPEAT_SHIFTS.some((minutes) => wall(at + minutes * MINUTE) === here || wall(at - minutes * MINUTE) === here)) return null;
-  // The offset is the wall-clock time read as UTC, less the instant, to the minute.
-  const offset = Math.round((Date.parse(`${here}:00Z`) - Math.floor(at / MINUTE) * MINUTE) / MINUTE);
-  const size = Math.abs(offset);
-  return `${offset < 0 ? '-' : '+'}${String(Math.floor(size / 60)).padStart(2, '0')}:${String(size % 60).padStart(2, '0')}`;
+  const date = zonedDateKey(new Date(at), timeZone);
+  const key = `${timeZone} ${date}`;
+  let hours = repeatedHours.get(key);
+  if (!hours) {
+    const slots = zonedHourSlots(date, timeZone);
+    // A repeated hour runs to the start of the next slot (the last slot of a day is never one).
+    hours = slots.flatMap((slot, index) => (slot.offsetLabel !== null && slots[index + 1] ? [{ from: slot.instant.getTime(), to: slots[index + 1]!.instant.getTime(), offsetLabel: slot.offsetLabel }] : []));
+    if (repeatedHours.size >= REPEATED_HOURS_CACHE_LIMIT) repeatedHours.delete(repeatedHours.keys().next().value!);
+    repeatedHours.set(key, hours);
+  }
+  return hours.find((hour) => at >= hour.from && at < hour.to)?.offsetLabel ?? null;
 }
 
 /**
