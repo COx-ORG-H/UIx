@@ -2,7 +2,7 @@
 // `examples-relationship-graph` (ADR-0003) from the BUILT package, so the static
 // styleguide shows exactly what the component renders.
 //
-//   npm run build:react   (or: cd packages/react && npx tsup)
+//   npm run build:react   (or: npm run build -w @tensor_1/react)
 //   node packages/react/scripts/render-relationship-graph-specimen.mjs
 //
 // The static docs have no React runtime, so each node button also gets

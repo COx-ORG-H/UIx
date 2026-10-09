@@ -44,6 +44,9 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - run: npm ci
+      # This is a second build: the gates above tested their own dist, not this one. The react
+      # build ends with scripts/check-dist.mjs, and the package's prepublishOnly runs it again
+      # right before `npm publish`, so a dist with a missing exports target cannot be published.
       - run: npm run build:all
       # build:all's inner react `npm ci` prunes root devDeps (incl. @changesets/cli) —
       # restore them so `npx changeset publish` can resolve the executable.
