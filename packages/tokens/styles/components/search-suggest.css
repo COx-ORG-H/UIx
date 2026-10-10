@@ -92,6 +92,8 @@
   }
   .uix-search-suggest__footer:first-child { margin-top: 0; border-top: 0; border-radius: var(--uix-radius-sm); }
   .uix-search-suggest__footer[data-active] { background: var(--uix-bg-hover); }
+  /* a line under the options that is not an option (HAR-1648): "More matches. Keep typing…" */
+  .uix-search-suggest__note { padding: var(--uix-space-2) var(--uix-space-3); border-top: 1px solid var(--uix-border); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
 
   .uix-search-suggest__state {
     display: flex; align-items: center; justify-content: center; gap: var(--uix-space-2); flex-wrap: wrap;

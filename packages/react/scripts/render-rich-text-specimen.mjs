@@ -1,7 +1,7 @@
 // Regenerates the static specimens on the docs page `examples-rich-text` (RTE-01) from the
 // BUILT package, so the styleguide shows exactly the markup the components render.
 //
-//   npm run build:react   (or: cd packages/react && npx tsup)
+//   npm run build:react   (or: npm run build -w @tensor_1/react)
 //   node packages/react/scripts/render-rich-text-specimen.mjs
 //
 // The static docs have no React runtime. The editor is rendered in its pre-mount state

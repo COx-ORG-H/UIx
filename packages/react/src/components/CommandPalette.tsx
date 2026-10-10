@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
 
 /* Combobox wiring shared across the palette family (UIX-A11Y-1): the root owns the listbox id
@@ -20,6 +21,11 @@ const CmdkContext = createContext<CmdkContextValue | null>(null);
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
   inputLabel?: string;
+  /**
+   * The polite result count for this palette (HAR-1647). Default: `UixLabelsProvider`
+   * `commandPalette.resultsOne` / `resultsMany` (`{count}`), then "1 result" / "3 results".
+   */
+  resultsLabel?: (count: number) => string;
   /** Props for the search input (value/onChange/placeholder wired by the consumer). */
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
   children?: ReactNode;
@@ -31,9 +37,15 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * a combobox over the listbox of `CommandItem`s; spreads override every default, so
  * consumers already passing their own roles/labels keep working.
  */
-export function CommandPalette({ inputProps, children, inputLabel: inputLabelProp, className, ...props }: CommandPaletteProps) {
+export function CommandPalette({ inputProps, children, inputLabel: inputLabelProp, resultsLabel, className, ...props }: CommandPaletteProps) {
   const uixLabels = useUixLabels();
   const inputLabel = inputLabelProp ?? uixLabels.commandPalette?.input ?? 'Command palette';
+  const resultsOne = uixLabels.commandPalette?.resultsOne ?? '{count} result';
+  const resultsMany = uixLabels.commandPalette?.resultsMany ?? '{count} results';
+  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(count === 1 ? resultsOne : resultsMany, { count });
+  // The latest formatter, so a new function identity on every render does not re-announce.
+  const resultsTextRef = useRef(resultsText);
+  resultsTextRef.current = resultsText;
   const listId = useId();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
@@ -49,7 +61,7 @@ export function CommandPalette({ inputProps, children, inputLabel: inputLabelPro
 
   // debounced so a keystroke's worth of item mounts/unmounts announces once
   useEffect(() => {
-    const t = window.setTimeout(() => setAnnounced(`${count} result${count === 1 ? '' : 's'}`), 150);
+    const t = window.setTimeout(() => setAnnounced(resultsTextRef.current(count)), 150);
     return () => clearTimeout(t);
   }, [count]);
 

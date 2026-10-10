@@ -1,0 +1,72 @@
+/* uix date fields — DatePicker, DateTimePicker and the field mode of DateRangePicker (HAR-1383).
+   The day cells are the range picker's (date-range-picker.css); this file adds the field, the
+   popover's one-month calendar and the single selected day. Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* --- DatePicker: a text input with a calendar button inside its trailing edge ------------- */
+  .uix-date-picker { display: grid; gap: var(--uix-space-1); width: 100%; min-width: 0; max-width: 11rem; }
+  .uix-date-picker__control { position: relative; display: flex; min-width: 0; }
+  .uix-date-picker__input { padding-inline-end: calc(var(--uix-control-h) + var(--uix-space-1)); font-variant-numeric: tabular-nums; }
+  .uix-date-picker--sm .uix-date-picker__input { padding-inline-end: var(--uix-space-7); }
+  .uix-date-picker__toggle {
+    /* Half a space step (2 px) inside the field's border, on every side it touches. */
+    --date-picker-inset: calc(var(--uix-space-1) / 2);
+    position: absolute; inset-block: var(--date-picker-inset); inset-inline-end: var(--date-picker-inset); aspect-ratio: 1;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-date-picker__toggle:hover:not(:disabled),
+  .uix-date-picker__toggle[aria-expanded="true"] { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-date-picker__toggle:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 0; }
+  .uix-date-picker__toggle:disabled { cursor: not-allowed; opacity: .55; }
+  .uix-date-picker__error { min-width: 0; overflow-wrap: anywhere; }
+
+  /* --- The calendar in the popover -------------------------------------------------------- */
+  .uix-date-picker__popover { padding: var(--uix-space-3); }
+  .uix-date-picker__calendar { display: grid; gap: var(--uix-space-2); width: 17rem; max-width: calc(100vw - 2 * var(--uix-space-6)); color: var(--uix-text); }
+  .uix-date-picker__nav { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); }
+  .uix-date-picker__month { font-weight: 600; }
+  .uix-date-picker__nav-btn {
+    display: inline-flex; align-items: center; justify-content: center; flex: none; width: 28px; height: 28px; padding: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+  }
+  .uix-date-picker__nav-btn:hover:not([aria-disabled="true"]) { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-date-picker__nav-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  .uix-date-picker__nav-btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+  .uix-date-picker__nav-btn:dir(rtl) svg { transform: scaleX(-1); }
+
+  /* One selected day: the accent circle the range picker gives its two ends. A day that
+     cannot be chosen stays focusable (so it can be read out), hence aria-disabled, not :disabled. */
+  .uix-date-picker__grid button { cursor: pointer; }
+  .uix-date-picker__grid button[data-selected] { color: var(--uix-accent-fg); font-weight: 600; }
+  .uix-date-picker__grid button[data-selected]::after,
+  .uix-date-picker__grid button[data-selected]:hover:not(:disabled)::after { background: var(--uix-accent); }
+  .uix-date-picker__grid button[aria-disabled="true"] { color: var(--uix-text-hushed); text-decoration: line-through; cursor: not-allowed; }
+  .uix-date-picker__grid button[aria-disabled="true"]:not([data-selected]):hover:not(:disabled)::after { background: transparent; }
+
+  /* --- DateTimePicker: the date field, a time input and the zone they are in ---------------- */
+  .uix-date-time-picker { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2); min-width: 0; }
+  .uix-date-time-picker > .uix-date-picker { flex: 1 1 8.5rem; }
+  .uix-date-time-picker__time { flex: 0 1 auto; width: auto; min-width: 6.5rem; font-variant-numeric: tabular-nums; }
+  .uix-date-time-picker__zone { display: inline-flex; align-items: center; min-height: var(--uix-control-h); color: var(--uix-text-muted); font-size: var(--uix-text-meta); white-space: nowrap; }
+  .uix-date-time-picker--sm .uix-date-time-picker__zone { min-height: 28px; }
+
+  /* --- DateRangePicker mode="field": a trigger that shows the range ------------------------- */
+  .uix-date-range-field { display: grid; width: 100%; min-width: 0; max-width: 18rem; }
+  .uix-date-range-field__trigger { display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; text-align: start; cursor: pointer; }
+  .uix-date-range-field__trigger:disabled { cursor: not-allowed; }
+  .uix-date-range-field__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-date-range-field__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .uix-date-range-field__value--empty { color: var(--uix-text-muted); }
+  .uix-date-range-field__popover { padding: 0; }
+  .uix-date-range-picker--in-popover { max-width: min(46rem, calc(100vw - 2 * var(--uix-space-4))); border: 0; background: transparent; }
+  .uix-date-range-picker--in-popover .uix-date-range-picker__months:has(> :only-child) { grid-template-columns: minmax(15rem, 1fr); }
+
+  @media (forced-colors: active) {
+    .uix-date-picker__grid button[data-selected] { forced-color-adjust: none; color: HighlightText; }
+    .uix-date-picker__grid button[data-selected]::after,
+    .uix-date-picker__grid button[data-selected]:hover:not(:disabled)::after { forced-color-adjust: none; background: Highlight; }
+    .uix-date-picker__grid button[aria-disabled="true"] { color: GrayText; }
+    .uix-date-picker__toggle[aria-expanded="true"] { outline: 1px solid Highlight; }
+  }
+}

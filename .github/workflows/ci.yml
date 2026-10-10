@@ -39,6 +39,12 @@ jobs:
       - name: Build all (tokens + themes + styles + react)
         run: npm run build:all
 
+      # tsup exits 0 without looking at what is left in dist/: a config's `clean` once deleted
+      # the CJS bundles the other config had just written. The build runs this check itself;
+      # it is a step of its own so a missing entry is named here, not as ENOENT in a later gate.
+      - name: React dist has every exports target
+        run: npm run test:dist
+
       - name: React behavior tests
         run: npm test -w @tensor_1/react
 

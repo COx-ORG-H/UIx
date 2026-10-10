@@ -27,3 +27,11 @@
   .uix-tree__item[aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
   .uix-tree__item[aria-expanded="false"] > .uix-tree__group { display: none; }
 }
+
+/* Children loaded on expand (HAR-1382): the loading row and the failed row under a node. Both
+   are ordinary tree rows, so the arrow keys reach them; the failed row is the Retry control. */
+@layer uix.components {
+  .uix-tree__status { display: inline-flex; align-items: center; gap: var(--uix-space-2); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-tree__status--error { color: var(--uix-danger-text); }
+  .uix-tree__retry { color: var(--uix-link); text-decoration: underline; text-underline-offset: .15em; }
+}

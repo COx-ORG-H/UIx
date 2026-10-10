@@ -32,7 +32,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | AppShell | app-shell.css | ✓ `AppShell` | Stable | no | `nav` full/rail/hidden tiers, `focus` mode, `mainBleed`. |
 | Attachment | attachment.css | absent | Planned | no | Planned wrapper (presentational). |
 | AuditLog | audit-log.css | absent | Planned | no | Planned wrapper (presentational). |
-| Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. |
+| Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. 2.36.0 (HAR-1374): `presence` (`online`, `busy`, `away`, `offline`: a shape and a colour, the state in text), `PresenceDot`; the dot is no longer clipped by the avatar. |
 | BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
 | Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. |
 | BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
@@ -44,10 +44,11 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
 | DashboardGrid | dashboard-grid.css | ✓ `DashboardGrid` | Beta | no | Layout grid for dashboard widgets: spans 1, 2 (clamped) and `full`; column count follows the grid's own width (container query); each item is an inline-size container so charts size from it. Also `DashboardGridItem` / `DashboardGrid.Item`, `dashboardGridClassName`. Landed with HAR-1555. |
 | Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. |
-| CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. Recently landed. |
+| CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. 2.36.0 (HAR-1647): the result count is a label (`resultsLabel`, provider `commandPalette.resultsOne` / `resultsMany`). |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
-| DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. |
+| DatePicker | date-picker.css | ✓ `DatePicker` | Beta | no | A typed date field with a one-month calendar popover; ISO value, locale or custom format, `min` / `max` / `isUnavailable`, `weekStartsOn`. Also `DateTimePicker` (date and time, the zone shown; the `datetime-local` value shape). Landed 2.36.0 (HAR-1383). |
+| DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. 2.36.0 (HAR-1383): `mode="field"` (a trigger that opens the months in a popover), `weekStartsOn`. |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. Recently landed. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold; also the `DetailPage` record composition. |
 | DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. |
@@ -60,6 +61,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Heartbeat | heartbeat.css | ✓ `Heartbeat` | Beta | no | The pulsing status dot (`live`, `idle`, `warning`, `danger`), decorative unless labelled; also `LiveIndicator` (dot + state text). Landed 2.32.0 (HAR-1606). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 233 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |
+| InlineEdit | inline-edit.css | ✓ `InlineEdit` | Beta | no | A value edited in place: the value is a button, the editor has Save and Cancel, Enter / Escape, pending and error states, focus returns to the value. Custom editors through `renderEditor`. Landed 2.36.0 (HAR-1381). |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
 | Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). |
@@ -82,7 +84,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Popover | popover.css | ✓ `Popover` | Beta | no | Overlay; recently landed. |
 | Progress | progress.css | ✓ `Progress` | Beta | no | Recently landed. |
 | Prose | prose.css | ✓ `Prose` | Stable | no | Also `Note` (`NoteTone`). |
-| Radio | radio.css | ✓ `Radio` | Stable | no | Also `RadioGroup`. |
+| Radio | radio.css | ✓ `Radio` | Stable | no | Also `RadioGroup`. 2.36.0 (HAR-1373): `RadioCard` and `RadioGroup variant="card"` (title, description, media). |
 | Reactions | reactions.css | absent | Planned | no | Planned wrapper (presentational). |
 | RelationshipGraph | relationship-graph.css | ✓ `RelationshipGraph` | Beta | no | Bounded deterministic SVG with accessible equivalent list and traversal. |
 | RuleBuilder | rule-builder.css | ✓ `RuleBuilder` | Beta | no | Declarative nested conditions-to-actions editor and model helpers. |
@@ -108,7 +110,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Timeline | timeline.css | ✓ `Timeline` | Beta | no | Also `TimelineItem`. Recently landed. |
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |
 | Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. |
-| Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. |
+| Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. 2.36.0 (HAR-1382): `hasChildren` and `loadChildren` (children loaded on expand, with a loading row and an error row with Retry). |
 | Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. |
 | UtilityBits | utility-bits.css | n/a | Stable | no | CSS-only utilities (`.uix-stack`/`.uix-cluster` etc.); no standalone wrapper by design. |
 | ViewMenu | view-menu.css | ✓ `ViewMenu` | Beta | no | Controlled density/row/column presentation with its own surface; column rows grip · checkbox · name · ⋯, `onReorder(orderedIds)` (full list), required columns; also `SavedViewMenu` (titled sections, grip · name · overflow rows, `onReorder` within a section). |

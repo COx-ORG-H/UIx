@@ -1,6 +1,6 @@
 {
   "name": "@tensor_1/react",
-  "version": "2.35.0",
+  "version": "2.36.0",
   "description": "Thin React wrappers over the UIx v2 CSS component library.",
   "license": "UNLICENSED",
   "type": "module",
@@ -55,10 +55,12 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "node scripts/clean-dist.mjs && tsup && node scripts/check-dist.mjs",
+    "dev": "node scripts/clean-dist.mjs && tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
+    "test:dist": "node scripts/check-dist.mjs",
+    "prepublishOnly": "node scripts/check-dist.mjs",
     "test:performance": "node scripts/table-performance.mjs",
     "size": "node scripts/check-chart-preset-size.mjs"
   },

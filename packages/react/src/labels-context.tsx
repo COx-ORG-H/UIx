@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { PaginationLabels } from './components/Pagination.js';
 import type { SchedulingCalendarLabels } from './components/SchedulingCalendar.js';
 import type { DateRangePickerLabels } from './components/DateRangePicker.js';
+import type { DatePickerLabels, DateTimePickerLabels } from './components/DatePicker.js';
 import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.js';
 import type { TextDiffLabels } from './components/TextDiff.js';
 import type { FilterEditorLabels } from './components/FilterEditor.js';
@@ -12,6 +13,9 @@ import type { SelectLabels } from './components/Select.js';
 import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
+import type { EntityPickerLabels } from './components/EntityPicker.js';
+import type { TreeLabels } from './components/Tree.js';
+import type { InlineEditLabels } from './components/InlineEdit.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -31,10 +35,16 @@ export interface UixLabels {
   appShell?: { skipToContent?: string; exitFocus?: string };
   sidebar?: { expand?: string; collapse?: string };
   searchSuggest?: { clear?: string };
-  commandPalette?: { input?: string };
+  /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
+  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
+  entityPicker?: Partial<EntityPickerLabels>;
+  tree?: Partial<TreeLabels>;
+  inlineEdit?: Partial<InlineEditLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
+  datePicker?: Partial<DatePickerLabels>;
+  dateTimePicker?: Partial<DateTimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
