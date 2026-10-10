@@ -13,6 +13,7 @@
 <!-- lesson-skip: 17a8271 routine CSS wrap fix; the brief measured the cause -->
 <!-- lesson-skip: 9cbe96d routine: Escape handled on the popover only, not on the field; the CI failure named the handler that heard it -->
 <!-- lesson-skip: 01ccebe same cause as the 3e0ff88 entry (StrictMode runs updaters and cleanups twice); pinned by a test -->
+<!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 
 ### 2026-10-08 · jsdom vs browser · `3e0ff88`
