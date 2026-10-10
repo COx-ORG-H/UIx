@@ -5,6 +5,8 @@
  *   - a hue is mapped to one dimension only, and that dimension is the band;
  *   - a window never reads a band colour or a status hue;
  *   - only `data-band="high"` is filled; `medium` is a non-fill cue; `low` and `none` have no rule.
+ *   - on paper (HAR-1541) the map is written again inside `@media print`, from the print
+ *     tokens only, and names every colour the screen map names: no theme colour reaches paper.
  * The checker is run against known-bad CSS first, so a check that matches nothing cannot pass.
  * Run: npm run test:tokens */
 import test from 'node:test';
@@ -18,7 +20,7 @@ const source = readFileSync(join(here, '../styles/components/scheduling-calendar
 
 const DIMENSIONS = ['band', 'status', 'window', 'marker', 'chrome'];
 /** Status hues: the tokens a product reads as good / warning / bad / informational, and the brand. */
-const HUE = /^--uix-(danger|warning|success|info|accent|brand|link|ring)\b/;
+const HUE = /^--uix-(?:print-)?(danger|warning|success|info|accent|brand|link|ring)\b/;
 /** `--uix-*` names that are not colours: spacing, radii, the type scale and the component's own runtime knobs. */
 const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|scheduling-calendar-[a-z-]+)$/;
 /** Which selectors may read a dimension's colours. */
@@ -30,11 +32,11 @@ const READERS = {
   chrome: /./,
 };
 
-/** Flat list of `{ selector, body }` for every style rule, at any nesting depth. */
+/** Flat list of `{ selector, body, at }` for every style rule, at any nesting depth; `at` is the at-rules around it. */
 function rules(css) {
   const out = [];
   const text = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  const walk = (from, to) => {
+  const walk = (from, to, at = '') => {
     let cursor = from;
     while (cursor < to) {
       const open = text.indexOf('{', cursor);
@@ -43,8 +45,8 @@ function rules(css) {
       let close = open + 1;
       while (depth > 0 && close < to) { if (text[close] === '{') depth++; else if (text[close] === '}') depth--; close++; }
       const selector = text.slice(cursor, open).trim();
-      if (selector.startsWith('@')) walk(open + 1, close - 1);
-      else out.push({ selector, body: text.slice(open + 1, close - 1) });
+      if (selector.startsWith('@')) walk(open + 1, close - 1, `${at} ${selector}`.trim());
+      else out.push({ selector, body: text.slice(open + 1, close - 1), at });
       cursor = close;
     }
   };
@@ -92,7 +94,22 @@ function findings(css) {
   }
   for (const [hue, dimensions] of hueDimensions) if (dimensions.size > 1) found.push(`hue ${hue} is mapped to ${[...dimensions].join(' and ')}`);
 
-  for (const { selector, body } of all.slice(1)) {
+  // On paper the map is written a second time, from the print tokens alone.
+  const isPrintMap = (rule) => /@media print\b/.test(rule.at) && rule.selector === map.selector;
+  for (const rule of all.slice(1).filter(isPrintMap)) {
+    const named = new Set();
+    for (const { prop, value } of declarations(rule.body)) {
+      const token = value.match(/^var\((--uix-[a-z0-9-]+)\)$/)?.[1];
+      if (!prop.startsWith('--calendar-') || !token) { found.push(`print map: ${prop} is not a colour name of the map`); continue; }
+      if (!/^--uix-print-/.test(token)) found.push(`print map: ${prop} reads ${token}, which is not a print token`);
+      const screen = mapped.get(prop);
+      if (!screen) { found.push(`print map: ${prop} is not in the screen map`); continue; }
+      if (HUE.test(token) && screen.dimension !== 'band') found.push(`print map: ${prop}: ${token} is a hue on the ${screen.dimension} dimension`);
+      named.add(prop);
+    }
+    for (const name of mapped.keys()) if (!named.has(name)) found.push(`print map: ${name} keeps its screen colour on paper`);
+  }
+  for (const { selector, body } of all.slice(1).filter((rule) => !isPrintMap(rule))) {
     for (const [, token] of body.matchAll(/var\((--uix-[a-z0-9-]+)/g)) {
       if (!NOT_A_COLOUR.test(token)) found.push(`${selector}: reads ${token} directly, not through the map`);
     }
@@ -139,6 +156,52 @@ test('the checker finds each kind of violation in known-bad CSS (calibration)', 
 });
 
 test('R19 AC2: every calendar colour goes through the map, hue belongs to the band alone, and windows are neutral', () => {
+  assert.deepEqual(findings(source), []);
+});
+
+test('HAR-1541: on paper the map is written again from the print tokens, for every colour of the screen map', () => {
+  const printMaps = rules(source).filter((rule) => /@media print\b/.test(rule.at) && rule.selector === '.uix-scheduling-calendar');
+  assert.equal(printMaps.length, 1, 'one print map');
+  // Calibration: a print map that reads a theme colour, leaves one out, or puts the hue on a window is found.
+  const screen = '.uix-scheduling-calendar { --calendar-chrome-text: var(--uix-text); --calendar-window-edge: var(--uix-neutral-border); --calendar-band-high-fill: var(--uix-danger); }';
+  const bad = findings(`${screen} @media print { .uix-scheduling-calendar { --calendar-chrome-text: var(--uix-text); --calendar-window-edge: var(--uix-print-danger); } }`);
+  assert.ok(bad.some((line) => /--calendar-chrome-text reads --uix-text, which is not a print token/.test(line)), bad.join('\n'));
+  assert.ok(bad.some((line) => /--calendar-window-edge: --uix-print-danger is a hue on the window dimension/.test(line)), bad.join('\n'));
+  assert.ok(bad.some((line) => /--calendar-band-high-fill keeps its screen colour on paper/.test(line)), bad.join('\n'));
+  assert.deepEqual(findings(`${screen} @media print { .uix-scheduling-calendar { --calendar-chrome-text: var(--uix-print-ink); --calendar-window-edge: var(--uix-print-ink-quiet); --calendar-band-high-fill: var(--uix-print-danger); } }`), []);
+});
+
+test('HAR-1541: on paper nothing is told by a fill or a pattern alone, and nothing scrolls', () => {
+  const print = rules(source).filter((rule) => /@media print\b/.test(rule.at));
+  const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
+  const high = rule(/\[data-band="high"\]$/)[0];
+  assert.ok(high, 'a print rule for the high band');
+  // The high band is the heaviest edge. On paper its fill is the paper's, through the map, so the
+  // item covers what is behind it and the print rule writes no fill of its own; the edge has a
+  // name of its own, which nothing on a screen reads.
+  assert.match(high.body, /border-width:3px/);
+  assert.match(high.body, /border-color:var\(--calendar-band-high-edge\)/);
+  assert.doesNotMatch(high.body, /background/, 'the print rule for the high band writes no fill');
+  const printMap = Object.fromEntries(declarations(print.find(({ selector }) => selector === '.uix-scheduling-calendar').body).map(({ prop, value }) => [prop, value]));
+  assert.equal(printMap['--calendar-band-high-fill'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
+  assert.equal(printMap['--calendar-band-high-edge'], 'var(--uix-print-danger)');
+  const screen = rules(source).filter(({ at }) => !/@media print\b/.test(at ?? ''));
+  assert.match(screen.find(({ selector }) => /\[data-band="high"\]$/.test(selector)).body, /border-color:var\(--calendar-band-high-fill\);\s*background:var\(--calendar-band-high-fill\)/, 'on a screen the edge and the fill of the high band are one name, as before');
+  assert.deepEqual(screen.slice(1).filter(({ body }) => body.includes('--calendar-band-high-edge')).map(({ selector }) => selector), [], 'no screen rule reads the edge name');
+  // Every print rule that draws the edge of the high band reads that name: with the fill name it would be paper on paper.
+  const highRules = print.filter(({ selector }) => /\[data-band="high"\]/.test(selector));
+  assert.ok(highRules.length >= 3, `only ${highRules.length} print rules for the high band`);
+  for (const { selector, body } of highRules) assert.doesNotMatch(body, /--calendar-band-high-fill/, selector);
+  assert.ok(highRules.some(({ selector }) => /\[data-dim\]$/.test(selector)), 'a dimmed item of the high band keeps its edge on paper');
+  // A narrow long agenda has a row height of its own on a screen; the print rule names that form too, or it loses to it.
+  assert.ok(print.some(({ selector, body }) => selectorList(selector).some((part) => /__agenda--virtual\[data-narrow\] \.uix-scheduling-calendar__agenda-vrow$/.test(part)) && /height:auto/.test(body)), 'the narrow agenda row is as tall as its text on paper');
+  // Each window pattern has an edge style of its own; `solid` keeps the plain edge.
+  const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:([a-z]+)/)?.[1]);
+  assert.deepEqual(edges, ['dashed', 'double', 'dotted']);
+  for (const scroller of ['__grid', '__timegrid', '__agenda--virtual']) {
+    assert.ok(print.some(({ selector, body }) => selectorList(selector).some((part) => part.endsWith(scroller)) && /overflow:visible/.test(body)), `${scroller} does not scroll on paper`);
+  }
+  // No print rule but the map names a token colour, and none writes a literal (the general check covers both).
   assert.deepEqual(findings(source), []);
 });
 

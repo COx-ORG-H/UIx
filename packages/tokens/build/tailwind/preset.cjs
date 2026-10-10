@@ -97,6 +97,12 @@ module.exports = {
       "uix-scrollbar-track": "var(--uix-scrollbar-track)",
       "uix-scrim": "var(--uix-scrim)",
       "uix-scrim-strong": "var(--uix-scrim-strong)",
+      "uix-print-ink": "var(--uix-print-ink)",
+      "uix-print-ink-quiet": "var(--uix-print-ink-quiet)",
+      "uix-print-paper": "var(--uix-print-paper)",
+      "uix-print-paper-quiet": "var(--uix-print-paper-quiet)",
+      "uix-print-line": "var(--uix-print-line)",
+      "uix-print-danger": "var(--uix-print-danger)",
       },
       borderRadius: {
       "uix-xs": "var(--uix-radius-xs)",

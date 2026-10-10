@@ -6,6 +6,8 @@
  *   - only `data-band="high"` is filled; `medium` is a non-fill cue; `low` and `none` have no rule;
  *   - no rule tints by the deprecated `data-state` or `data-kind` (no state tint, no window hue);
  *   - the now-line and its label are neutral (they used to be painted with the danger hue).
+ *   - on paper (HAR-1541) the map is written again inside `@media print`, from the print
+ *     tokens only, and names every colour the screen map names: no theme colour reaches paper.
  * The checker is run against known-bad CSS first (the older rules among it), so a check that
  * matches nothing cannot pass. Same checker as scheduling-calendar-colours.test.mjs.
  * Run: npm run test:tokens */
@@ -20,7 +22,7 @@ const source = readFileSync(join(here, '../styles/components/scheduling-timeline
 
 const DIMENSIONS = ['band', 'status', 'window', 'marker', 'chrome'];
 /** Status hues: the tokens a product reads as good / warning / bad / informational, and the brand. */
-const HUE = /^--uix-(danger|warning|success|info|accent|brand|link|ring)\b/;
+const HUE = /^--uix-(?:print-)?(danger|warning|success|info|accent|brand|link|ring)\b/;
 /** `--uix-*` names that are not colours: spacing, radii, type, stacking, elevation and the component's own runtime knobs. */
 const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|text-eyebrow|tracking-eyebrow|z-[a-z]+|shadow-[a-z]+|timeline-[a-z-]+)$/;
 /** Which selectors may read a dimension's colours. */
@@ -32,11 +34,11 @@ const READERS = {
   chrome: /./,
 };
 
-/** Flat list of `{ selector, body }` for every style rule, at any nesting depth. */
+/** Flat list of `{ selector, body, at }` for every style rule, at any nesting depth; `at` is the at-rules around it. */
 function rules(css) {
   const out = [];
   const text = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  const walk = (from, to) => {
+  const walk = (from, to, at = '') => {
     let cursor = from;
     while (cursor < to) {
       const open = text.indexOf('{', cursor);
@@ -45,8 +47,8 @@ function rules(css) {
       let close = open + 1;
       while (depth > 0 && close < to) { if (text[close] === '{') depth++; else if (text[close] === '}') depth--; close++; }
       const selector = text.slice(cursor, open).trim();
-      if (selector.startsWith('@')) walk(open + 1, close - 1);
-      else out.push({ selector, body: text.slice(open + 1, close - 1) });
+      if (selector.startsWith('@')) walk(open + 1, close - 1, `${at} ${selector}`.trim());
+      else out.push({ selector, body: text.slice(open + 1, close - 1), at });
       cursor = close;
     }
   };
@@ -94,7 +96,22 @@ function findings(css) {
   }
   for (const [hue, dimensions] of hueDimensions) if (dimensions.size > 1) found.push(`hue ${hue} is mapped to ${[...dimensions].join(' and ')}`);
 
-  for (const { selector, body } of all.slice(1)) {
+  // On paper the map is written a second time, from the print tokens alone.
+  const isPrintMap = (rule) => /@media print\b/.test(rule.at) && rule.selector === map.selector;
+  for (const rule of all.slice(1).filter(isPrintMap)) {
+    const named = new Set();
+    for (const { prop, value } of declarations(rule.body)) {
+      const token = value.match(/^var\((--uix-[a-z0-9-]+)\)$/)?.[1];
+      if (!prop.startsWith('--timeline-') || !token) { found.push(`print map: ${prop} is not a colour name of the map`); continue; }
+      if (!/^--uix-print-/.test(token)) found.push(`print map: ${prop} reads ${token}, which is not a print token`);
+      const screen = mapped.get(prop);
+      if (!screen) { found.push(`print map: ${prop} is not in the screen map`); continue; }
+      if (HUE.test(token) && screen.dimension !== 'band') found.push(`print map: ${prop}: ${token} is a hue on the ${screen.dimension} dimension`);
+      named.add(prop);
+    }
+    for (const name of mapped.keys()) if (!named.has(name)) found.push(`print map: ${name} keeps its screen colour on paper`);
+  }
+  for (const { selector, body } of all.slice(1).filter((rule) => !isPrintMap(rule))) {
     for (const [, token] of body.matchAll(/var\((--uix-[a-z0-9-]+)/g)) {
       if (!NOT_A_COLOUR.test(token)) found.push(`${selector}: reads ${token} directly, not through the map`);
     }
@@ -174,8 +191,10 @@ test('AC10: the check reads every rule of the file, the now-line and its label a
   const atRules = (stripped.match(/@[a-z-]+[^{;]*\{/g) ?? []).length;
   assert.equal(all.length, braces - atRules, 'one walked rule per block that is not an at-rule');
 
-  const now = all.filter(({ selector }) => /__now(?![\w-])/.test(selector));
-  const nowLabel = all.filter(({ selector }) => /__now-label/.test(selector));
+  // On screen: on paper the now-line is not drawn at all (HAR-1541).
+  const screen = all.filter(({ at }) => !/@media print\b/.test(at));
+  const now = screen.filter(({ selector }) => /__now(?![\w-])/.test(selector));
+  const nowLabel = screen.filter(({ selector }) => /__now-label/.test(selector));
   assert.ok(now.length >= 1, 'a rule for the now-line');
   assert.ok(nowLabel.length >= 1, 'a rule for its label');
   const map = Object.fromEntries(declarations(all[0].body).map(({ prop, value }) => [prop, value]));
@@ -187,6 +206,50 @@ test('AC10: the check reads every rule of the file, the now-line and its label a
       assert.doesNotMatch(map[name], /--uix-(danger|warning|success|info|accent|brand|link|ring)/, `${name} is neutral`);
     }
   }
+});
+
+test('HAR-1541: on paper the map is written again from the print tokens, for every colour of the screen map', () => {
+  const printMaps = rules(source).filter((rule) => /@media print\b/.test(rule.at) && rule.selector === '.uix-scheduling-timeline');
+  assert.equal(printMaps.length, 1, 'one print map');
+  // Calibration: a print map that reads a theme colour, leaves one out, or puts the hue on a window is found.
+  const screen = '.uix-scheduling-timeline { --timeline-chrome-text: var(--uix-text); --timeline-window-edge: var(--uix-neutral-border); --timeline-band-high-fill: var(--uix-danger); }';
+  const bad = findings(`${screen} @media print { .uix-scheduling-timeline { --timeline-chrome-text: var(--uix-text); --timeline-window-edge: var(--uix-print-danger); } }`);
+  assert.ok(bad.some((line) => /--timeline-chrome-text reads --uix-text, which is not a print token/.test(line)), bad.join('\n'));
+  assert.ok(bad.some((line) => /--timeline-window-edge: --uix-print-danger is a hue on the window dimension/.test(line)), bad.join('\n'));
+  assert.ok(bad.some((line) => /--timeline-band-high-fill keeps its screen colour on paper/.test(line)), bad.join('\n'));
+  assert.deepEqual(findings(`${screen} @media print { .uix-scheduling-timeline { --timeline-chrome-text: var(--uix-print-ink); --timeline-window-edge: var(--uix-print-ink-quiet); --timeline-band-high-fill: var(--uix-print-danger); } }`), []);
+});
+
+test('HAR-1541: on paper nothing is told by a fill or a pattern alone, nothing scrolls and nothing sticks', () => {
+  const print = rules(source).filter((rule) => /@media print\b/.test(rule.at));
+  const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
+  const high = rule(/__item\[data-band="high"\]$/)[0];
+  assert.ok(high, 'a print rule for the high band');
+  // The high band is a heavy edge. On paper its fill is the paper's, through the map, so the bar
+  // covers the window behind it and the print rule writes no fill of its own; the edge has a name
+  // of its own, which nothing on a screen reads.
+  assert.match(high.body, /border-width:\s*2px/);
+  assert.match(high.body, /border-color:\s*var\(--timeline-band-high-edge\)/);
+  assert.doesNotMatch(high.body, /background/, 'the print rule for the high band writes no fill');
+  const printMap = Object.fromEntries(declarations(print.find(({ selector }) => selector === '.uix-scheduling-timeline').body).map(({ prop, value }) => [prop, value]));
+  assert.equal(printMap['--timeline-band-high-fill'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
+  assert.equal(printMap['--timeline-band-high-edge'], 'var(--uix-print-danger)');
+  const screen = rules(source).filter(({ at }) => !/@media print\b/.test(at ?? ''));
+  assert.match(screen.find(({ selector }) => /__item\[data-band="high"\]$/.test(selector)).body, /border-color:\s*var\(--timeline-band-high-fill\);\s*background:\s*var\(--timeline-band-high-fill\)/, 'on a screen the edge and the fill of the high band are one name, as before');
+  assert.deepEqual(screen.slice(1).filter(({ body }) => body.includes('--timeline-band-high-edge')).map(({ selector }) => selector), [], 'no screen rule reads the edge name');
+  for (const { selector, body } of print.filter(({ selector: s }) => /\[data-band="high"\]/.test(s))) assert.doesNotMatch(body, /--timeline-band-high-fill/, selector);
+  // Done on the high band is a painted line on a screen, in a rule of three attributes. The print
+  // rule that answers it names both attributes too (or it loses), drops the line and keeps an edge cue.
+  const highDone = rule(/__item\[data-band="high"\]\[data-status="done"\]$/)[0];
+  assert.ok(highDone, 'a print rule for done on the high band');
+  assert.match(highDone.body, /background-image:\s*none/);
+  assert.match(highDone.body, /border-style:\s*none none solid/, 'done is the bottom edge alone, as for every done bar');
+  const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:\s*none ([a-z]+)/)?.[1]);
+  assert.deepEqual(edges, ['dashed', 'double', 'dotted']);
+  assert.match(rule(/__scroller$/)[0]?.body ?? '', /overflow:\s*visible/);
+  assert.match(rule(/__row--axis,/)[0]?.body ?? '', /position:\s*static/);
+  for (const line of rule(/__gridline/)) assert.match(line.body, /background:\s*none/, 'a grid line is an edge, not a background');
+  assert.deepEqual(findings(source), []);
 });
 
 test('the map block is the first rule and names every dimension; only band names map to a hue', () => {

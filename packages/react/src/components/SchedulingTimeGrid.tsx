@@ -110,11 +110,15 @@ const GridItem = memo(function GridItem({ entry, segment, column, alone, name, s
     '--uix-scheduling-calendar-lanes': segment.laneCount,
   });
   // A part that stands alone for an item begun on an earlier day says "from HH:MM" where the others say the start time.
-  const text = renderEntry?.(entry, { availableLines: lines })
-    ?? (lines > 0 ? <>{!continuation && <><span className="uix-scheduling-calendar__time">{zonedTimeOfDay(entry.start, timeZone)}</span>{' '}</>}<span className="uix-scheduling-calendar__title">{entry.title}</span></> : null);
+  const custom = renderEntry?.(entry, { availableLines: lines });
+  const text = custom
+    ?? <>{!continuation && <><span className="uix-scheduling-calendar__time">{zonedTimeOfDay(entry.start, timeZone)}</span>{' '}</>}<span className="uix-scheduling-calendar__title">{entry.title}</span></>;
+  // An item too short for one line shows its markers only: its own words are in the markup with
+  // `data-room="none"`, which the stylesheet hides on a screen and shows on paper, where the item may grow.
+  const noRoom = lines === 0 && (custom === undefined || custom === null) ? 'none' : undefined;
   const body = <>
-    {continuation && lines > 0 && <span className="uix-scheduling-calendar__tg-from">{continuesFrom}</span>}
-    {(!continuation || alone) && text != null && text !== false && <span className="uix-scheduling-calendar__entry-text">{text}</span>}
+    {continuation && <span className="uix-scheduling-calendar__tg-from" data-room={lines === 0 ? 'none' : undefined}>{continuesFrom}</span>}
+    {(!continuation || alone) && text != null && text !== false && <span className="uix-scheduling-calendar__entry-text" data-room={noRoom}>{text}</span>}
     {markers.length > 0 && <span className="uix-scheduling-calendar__markers">{markers.map((marker) => <span key={marker.id}>{renderMarker(marker)}</span>)}</span>}
   </>;
   const shared = {
