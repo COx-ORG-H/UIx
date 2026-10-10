@@ -24,7 +24,7 @@
     --calendar-status-text-dim: var(--uix-text-muted);
     --calendar-band-medium-edge: var(--uix-neutral-solid);
     --calendar-band-high-fill: var(--uix-danger);
-    --calendar-band-high-surface: var(--uix-danger);
+    --calendar-band-high-edge: var(--uix-danger); /* read on paper only, where the fill is the paper's */
     --calendar-band-high-text: var(--uix-danger-fg);
     --calendar-window-surface: var(--uix-neutral-bg);
     --calendar-window-ink: var(--uix-neutral-solid);
@@ -106,7 +106,7 @@
 
   /* band: `medium` is a heavier leading edge, `high` is the one fill */
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="medium"] { border-left:3px solid var(--calendar-band-medium-edge); }
-  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-color:var(--calendar-band-high-fill); background:var(--calendar-band-high-surface); color:var(--calendar-band-high-text); }
+  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-color:var(--calendar-band-high-fill); background:var(--calendar-band-high-fill); color:var(--calendar-band-high-text); }
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-text); }
   .uix-scheduling-calendar__entry[data-band="high"]:focus-visible { outline-color:var(--calendar-band-high-text); }
 
@@ -321,8 +321,8 @@
       --calendar-status-text: var(--uix-print-ink);
       --calendar-status-text-dim: var(--uix-print-ink-quiet);
       --calendar-band-medium-edge: var(--uix-print-ink-quiet);
-      --calendar-band-high-fill: var(--uix-print-danger);
-      --calendar-band-high-surface: var(--uix-print-paper);
+      --calendar-band-high-fill: var(--uix-print-paper);
+      --calendar-band-high-edge: var(--uix-print-danger);
       --calendar-band-high-text: var(--uix-print-ink);
       --calendar-window-surface: var(--uix-print-paper);
       --calendar-window-ink: var(--uix-print-ink);
@@ -385,13 +385,15 @@
 
     /* Agenda: the long form mounts every row while the page prints, each as tall as its text */
     .uix-scheduling-calendar__agenda-window { padding:0 !important; }
-    .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow { height:auto; min-height:44px; overflow:visible; }
+    .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow,.uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-vrow { height:auto; min-height:44px; overflow:visible; }
     .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-main,.uix-scheduling-calendar__agenda-time,.uix-scheduling-calendar__agenda-heading,.uix-scheduling-calendar__markers,.uix-scheduling-calendar__markers > span,.uix-scheduling-calendar__marker) { flex-wrap:wrap; overflow:visible; white-space:normal; }
 
     /* Paper has no fill to rely on: the high band is the heaviest edge, in the one signal colour, in every
-       state. Its surface is the paper's (the map above), so it still covers what is behind it. */
-    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:3px; border-color:var(--calendar-band-high-fill); }
-    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-fill); }
+       state. Its fill is the paper's on paper (the map above), so it still covers what is behind it, and its
+       edge has a name of its own there. */
+    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:3px; border-color:var(--calendar-band-high-edge); }
+    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-edge); }
+    .uix-scheduling-calendar__entry[data-band="high"][data-dim] { border-color:var(--calendar-band-high-edge); }
     /* a highlight is a heavier edge, which does not show beside the edge of the high band, and in
        the agendas a shadow, which may not print: on paper its title is underlined as well */
     .uix-scheduling-calendar__entry[data-highlight] .uix-scheduling-calendar__title,:is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda > ol > li > button)[data-highlight] :is(.uix-scheduling-calendar__title,strong) { text-decoration:underline; }

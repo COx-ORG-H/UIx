@@ -29,7 +29,7 @@
     --timeline-status-text-dim: var(--uix-text-muted);
     --timeline-band-medium-edge: var(--uix-neutral-solid);
     --timeline-band-high-fill: var(--uix-danger);
-    --timeline-band-high-surface: var(--uix-danger);
+    --timeline-band-high-edge: var(--uix-danger); /* read on paper only, where the fill is the paper's */
     --timeline-band-high-text: var(--uix-danger-fg);
     --timeline-window-surface: var(--uix-neutral-bg);
     --timeline-window-ink: var(--uix-neutral-solid);
@@ -184,7 +184,7 @@
 
   /* band: `medium` is a heavier leading edge, `high` is the one fill */
   .uix-scheduling-timeline__item[data-band="medium"] { border-left: 3px solid var(--timeline-band-medium-edge); }
-  .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-surface); color: var(--timeline-band-high-text); }
+  .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-fill); color: var(--timeline-band-high-text); }
   .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"]) { border-color: var(--timeline-band-high-text); }
   /* done keeps the whole fill on the high band (dimming it would cost the text its contrast). Its
      cue is a line in the text colour inside the fill, near the bottom: on the edge it would be the
@@ -254,8 +254,8 @@
       --timeline-status-text: var(--uix-print-ink);
       --timeline-status-text-dim: var(--uix-print-ink-quiet);
       --timeline-band-medium-edge: var(--uix-print-ink-quiet);
-      --timeline-band-high-fill: var(--uix-print-danger);
-      --timeline-band-high-surface: var(--uix-print-paper);
+      --timeline-band-high-fill: var(--uix-print-paper);
+      --timeline-band-high-edge: var(--uix-print-danger);
       --timeline-band-high-text: var(--uix-print-ink);
       --timeline-window-surface: var(--uix-print-paper);
       --timeline-window-ink: var(--uix-print-ink-quiet);
@@ -285,9 +285,13 @@
     .uix-scheduling-timeline__gridline[data-major] { background: none; border-left-color: var(--timeline-chrome-line-strong); }
     .uix-scheduling-timeline__gridline[data-minor] { background: none; border-left-style: dashed; }
     /* paper has no fill to rely on: the high band is a heavy edge in the one signal colour, in every state.
-       Its surface is the paper's (the map above), so it still covers what is behind it. */
-    .uix-scheduling-timeline__item[data-band="high"] { border-width: 2px; border-color: var(--timeline-band-high-fill); background-image: none; }
-    .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-fill); }
+       Its fill is the paper's on paper (the map above), so it still covers what is behind it, and its edge
+       has a name of its own there. */
+    .uix-scheduling-timeline__item[data-band="high"] { border-width: 2px; border-color: var(--timeline-band-high-edge); }
+    .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-edge); }
+    /* done on the high band is a line painted inside the fill on a screen: on paper it is the cue of every
+       done bar, the bottom edge alone */
+    .uix-scheduling-timeline__item[data-band="high"][data-status="done"] { border-style: none none solid; background-image: none; }
     /* a window's pattern is a background and may not print: its edges say the same */
     .uix-scheduling-timeline__overlay[data-pattern="diagonal"] { border-style: none dashed; }
     .uix-scheduling-timeline__overlay[data-pattern="cross"] { border-style: none double; border-width: 0 3px; }

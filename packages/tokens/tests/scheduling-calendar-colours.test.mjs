@@ -176,16 +176,25 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, and nothi
   const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
   const high = rule(/\[data-band="high"\]$/)[0];
   assert.ok(high, 'a print rule for the high band');
-  // The high band is the heaviest edge. Its surface is a name of the map, the paper's on paper,
-  // so the item covers what is behind it and the print rule writes no fill of its own.
+  // The high band is the heaviest edge. On paper its fill is the paper's, through the map, so the
+  // item covers what is behind it and the print rule writes no fill of its own; the edge has a
+  // name of its own, which nothing on a screen reads.
   assert.match(high.body, /border-width:3px/);
-  assert.match(high.body, /border-color:var\(--calendar-band-high-fill\)/);
+  assert.match(high.body, /border-color:var\(--calendar-band-high-edge\)/);
   assert.doesNotMatch(high.body, /background/, 'the print rule for the high band writes no fill');
   const printMap = Object.fromEntries(declarations(print.find(({ selector }) => selector === '.uix-scheduling-calendar').body).map(({ prop, value }) => [prop, value]));
-  assert.equal(printMap['--calendar-band-high-surface'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
-  assert.equal(printMap['--calendar-band-high-fill'], 'var(--uix-print-danger)');
-  const screenHigh = rules(source).find(({ at, selector }) => !/@media print\b/.test(at ?? '') && /\[data-band="high"\]$/.test(selector));
-  assert.match(screenHigh.body, /background:var\(--calendar-band-high-surface\)/, 'the fill of the high band is read through the name the print map rewrites');
+  assert.equal(printMap['--calendar-band-high-fill'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
+  assert.equal(printMap['--calendar-band-high-edge'], 'var(--uix-print-danger)');
+  const screen = rules(source).filter(({ at }) => !/@media print\b/.test(at ?? ''));
+  assert.match(screen.find(({ selector }) => /\[data-band="high"\]$/.test(selector)).body, /border-color:var\(--calendar-band-high-fill\);\s*background:var\(--calendar-band-high-fill\)/, 'on a screen the edge and the fill of the high band are one name, as before');
+  assert.deepEqual(screen.slice(1).filter(({ body }) => body.includes('--calendar-band-high-edge')).map(({ selector }) => selector), [], 'no screen rule reads the edge name');
+  // Every print rule that draws the edge of the high band reads that name: with the fill name it would be paper on paper.
+  const highRules = print.filter(({ selector }) => /\[data-band="high"\]/.test(selector));
+  assert.ok(highRules.length >= 3, `only ${highRules.length} print rules for the high band`);
+  for (const { selector, body } of highRules) assert.doesNotMatch(body, /--calendar-band-high-fill/, selector);
+  assert.ok(highRules.some(({ selector }) => /\[data-dim\]$/.test(selector)), 'a dimmed item of the high band keeps its edge on paper');
+  // A narrow long agenda has a row height of its own on a screen; the print rule names that form too, or it loses to it.
+  assert.ok(print.some(({ selector, body }) => selectorList(selector).some((part) => /__agenda--virtual\[data-narrow\] \.uix-scheduling-calendar__agenda-vrow$/.test(part)) && /height:auto/.test(body)), 'the narrow agenda row is as tall as its text on paper');
   // Each window pattern has an edge style of its own; `solid` keeps the plain edge.
   const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:([a-z]+)/)?.[1]);
   assert.deepEqual(edges, ['dashed', 'double', 'dotted']);

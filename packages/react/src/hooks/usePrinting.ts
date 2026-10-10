@@ -10,9 +10,10 @@ import { flushSync } from 'react-dom';
  * paper. The browser lays the page out for print as soon as the `beforeprint` handlers return,
  * so the state is committed inside the event (`flushSync`), not in a later task.
  *
- * It cannot answer in time when `window.print()` is called from inside a React effect: React
- * commits the change after the effect, which is after the page was laid out. A page that prints
- * itself on mount turns windowing off through the component's own prop instead.
+ * It cannot answer in time when `window.print()` is called from inside a React effect or
+ * lifecycle method, on mount or later: React commits the change after the effect, which is
+ * after the page was laid out. A page that prints itself that way turns windowing off through
+ * the component's own prop instead, or calls `print()` from an event handler or a timer.
  */
 export function usePrinting(enabled = true): boolean {
   const [printing, setPrinting] = useState(false);
@@ -26,7 +27,8 @@ export function usePrinting(enabled = true): boolean {
     window.addEventListener('beforeprint', before);
     window.addEventListener('afterprint', after);
     query?.addEventListener?.('change', changed);
-    if (query?.matches) setPrinting(true);
+    // Also when listening starts again: the state may be left over from the last time it listened.
+    setPrinting(Boolean(query?.matches));
     return () => {
       window.removeEventListener('beforeprint', before);
       window.removeEventListener('afterprint', after);
