@@ -176,8 +176,16 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, and nothi
   const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
   const high = rule(/\[data-band="high"\]$/)[0];
   assert.ok(high, 'a print rule for the high band');
-  assert.match(high.body, /background:none/, 'the high band is not a fill on paper');
-  assert.match(high.body, /border-width:2px/);
+  // The high band is the heaviest edge. Its surface is a name of the map, the paper's on paper,
+  // so the item covers what is behind it and the print rule writes no fill of its own.
+  assert.match(high.body, /border-width:3px/);
+  assert.match(high.body, /border-color:var\(--calendar-band-high-fill\)/);
+  assert.doesNotMatch(high.body, /background/, 'the print rule for the high band writes no fill');
+  const printMap = Object.fromEntries(declarations(print.find(({ selector }) => selector === '.uix-scheduling-calendar').body).map(({ prop, value }) => [prop, value]));
+  assert.equal(printMap['--calendar-band-high-surface'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
+  assert.equal(printMap['--calendar-band-high-fill'], 'var(--uix-print-danger)');
+  const screenHigh = rules(source).find(({ at, selector }) => !/@media print\b/.test(at ?? '') && /\[data-band="high"\]$/.test(selector));
+  assert.match(screenHigh.body, /background:var\(--calendar-band-high-surface\)/, 'the fill of the high band is read through the name the print map rewrites');
   // Each window pattern has an edge style of its own; `solid` keeps the plain edge.
   const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:([a-z]+)/)?.[1]);
   assert.deepEqual(edges, ['dashed', 'double', 'dotted']);

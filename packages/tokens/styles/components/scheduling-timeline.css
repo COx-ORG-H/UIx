@@ -29,6 +29,7 @@
     --timeline-status-text-dim: var(--uix-text-muted);
     --timeline-band-medium-edge: var(--uix-neutral-solid);
     --timeline-band-high-fill: var(--uix-danger);
+    --timeline-band-high-surface: var(--uix-danger);
     --timeline-band-high-text: var(--uix-danger-fg);
     --timeline-window-surface: var(--uix-neutral-bg);
     --timeline-window-ink: var(--uix-neutral-solid);
@@ -183,7 +184,7 @@
 
   /* band: `medium` is a heavier leading edge, `high` is the one fill */
   .uix-scheduling-timeline__item[data-band="medium"] { border-left: 3px solid var(--timeline-band-medium-edge); }
-  .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-fill); color: var(--timeline-band-high-text); }
+  .uix-scheduling-timeline__item[data-band="high"] { border-color: var(--timeline-band-high-fill); background: var(--timeline-band-high-surface); color: var(--timeline-band-high-text); }
   .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"]) { border-color: var(--timeline-band-high-text); }
   /* done keeps the whole fill on the high band (dimming it would cost the text its contrast). Its
      cue is a line in the text colour inside the fill, near the bottom: on the edge it would be the
@@ -245,6 +246,7 @@
       --timeline-chrome-now: var(--uix-print-ink);
       --timeline-chrome-now-text: var(--uix-print-paper);
       --timeline-chrome-ghost: var(--uix-print-ink-quiet);
+      --timeline-chrome-ghost-halo: var(--uix-print-paper);
       --timeline-status-surface: var(--uix-print-paper);
       --timeline-status-surface-quiet: var(--uix-print-paper-quiet);
       --timeline-status-edge: var(--uix-print-line);
@@ -253,6 +255,7 @@
       --timeline-status-text-dim: var(--uix-print-ink-quiet);
       --timeline-band-medium-edge: var(--uix-print-ink-quiet);
       --timeline-band-high-fill: var(--uix-print-danger);
+      --timeline-band-high-surface: var(--uix-print-paper);
       --timeline-band-high-text: var(--uix-print-ink);
       --timeline-window-surface: var(--uix-print-paper);
       --timeline-window-ink: var(--uix-print-ink-quiet);
@@ -261,8 +264,9 @@
       --timeline-marker-ink: var(--uix-print-ink);
       --timeline-marker-line: var(--uix-print-ink-quiet);
     }
-    /* the timeline brings its own paper, so it reads when the page around it prints a dark background */
-    :where(.uix-scheduling-timeline) { background: var(--timeline-chrome-surface); }
+    /* The timeline brings its own paper and asks for its surfaces to be printed as they are, so a bar
+       covers the window and the grid lines behind it whether or not the reader prints background graphics. */
+    :where(.uix-scheduling-timeline) { background: var(--timeline-chrome-surface); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     /* nothing scrolls on paper: the lanes are as wide as the page (every position is a share of
        the axis, so the bars follow) and as tall as their rows. `!important` answers the sizes
        the component writes on the elements themselves. */
@@ -280,13 +284,16 @@
     .uix-scheduling-timeline__gridline { width: 0; background: none; border-left: 1px solid var(--timeline-chrome-line); }
     .uix-scheduling-timeline__gridline[data-major] { background: none; border-left-color: var(--timeline-chrome-line-strong); }
     .uix-scheduling-timeline__gridline[data-minor] { background: none; border-left-style: dashed; }
-    /* paper has no fill to rely on: the high band is a heavy edge in the one signal colour, in every state */
-    .uix-scheduling-timeline__item[data-band="high"] { border-width: 2px; border-color: var(--timeline-band-high-fill); background: none; }
+    /* paper has no fill to rely on: the high band is a heavy edge in the one signal colour, in every state.
+       Its surface is the paper's (the map above), so it still covers what is behind it. */
+    .uix-scheduling-timeline__item[data-band="high"] { border-width: 2px; border-color: var(--timeline-band-high-fill); background-image: none; }
     .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-fill); }
     /* a window's pattern is a background and may not print: its edges say the same */
     .uix-scheduling-timeline__overlay[data-pattern="diagonal"] { border-style: none dashed; }
     .uix-scheduling-timeline__overlay[data-pattern="cross"] { border-style: none double; border-width: 0 3px; }
     .uix-scheduling-timeline__overlay[data-pattern="dotted"] { border-style: none dotted; border-width: 0 2px; }
+    /* a note on the column of a day is not cut at the column: on a narrow page a day is narrower than its note */
+    .uix-scheduling-timeline__column-note { overflow: visible; }
     /* a bar too short for all the words of a window gives up the scope first and keeps the name */
     .uix-scheduling-timeline__overlay-name { flex-shrink: 0; }
     /* painted shapes ask to be printed even without background graphics: a marker's glyph and the hatch of bars that share time */

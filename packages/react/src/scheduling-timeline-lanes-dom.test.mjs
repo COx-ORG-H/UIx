@@ -302,6 +302,36 @@ test('AC4 (R15 AC4 / R17 AC2): 500 rows over 40 groups mount at most 150 row ele
   unmount();
 });
 
+test('HAR-1541: while the page prints, a windowed timeline mounts every row and bar, and windows again afterwards', () => {
+  const fixture = stress();
+  const { host, unmount } = mount(h(ui.SchedulingTimeline, props(fixture)));
+  const lanesMounted = () => host.querySelectorAll(`${P}row[data-lane-id]`).length;
+  const bars = () => host.querySelectorAll('[data-item-id]').length;
+  const windowed = { lanes: lanesMounted(), bars: bars() };
+  assert.ok(windowed.lanes < STRESS_LANES, `a window of lanes on the screen (${windowed.lanes})`);
+  const scroller = host.querySelector(`${P}scroller`);
+  const fixed = host.querySelector('section').hasAttribute('data-fixed');
+  // The browser lays the page out for paper as soon as the handlers return: the rows are there by then, with no act() to wait for.
+  window.dispatchEvent(new window.Event('beforeprint'));
+  assert.equal(lanesMounted(), STRESS_LANES, 'every lane');
+  assert.equal(host.querySelectorAll(`${P}row[data-group-id]`).length, STRESS_GROUPS, 'every group head');
+  assert.equal(bars(), fixture.items.length, 'every bar');
+  assert.equal(host.querySelectorAll(`${P}spacer`).length, 0, 'no space kept for rows that are not mounted');
+  assert.equal(host.querySelector(`${P}scroller`), scroller, 'the same element: scroll position and focus are kept');
+  assert.equal(host.querySelector('section').hasAttribute('data-fixed'), fixed, 'the rows keep their height');
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  assert.deepEqual({ lanes: lanesMounted(), bars: bars() }, windowed);
+  assert.ok(host.querySelector(`${P}scroller`).hasAttribute('data-virtual'));
+  unmount();
+  // A timeline that is not windowed does not listen at all.
+  const small = mount(h(ui.SchedulingTimeline, props({ lanes: fixture.lanes.slice(0, 20), items: fixture.items })));
+  const before = small.host.innerHTML;
+  window.dispatchEvent(new window.Event('beforeprint'));
+  assert.equal(small.host.innerHTML, before);
+  act(() => window.dispatchEvent(new window.Event('afterprint')));
+  small.unmount();
+});
+
 test('AC4: at or under virtualizeAbove every row is mounted; virtualizeAbove={Infinity} turns windowing off', () => {
   const fixture = stress();
   const small = mount(h(ui.SchedulingTimeline, props({ lanes: fixture.lanes.slice(0, 120), items: fixture.items })));

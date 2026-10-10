@@ -225,7 +225,16 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, nothing s
   const rule = (pattern) => print.filter(({ selector }) => pattern.test(selector));
   const high = rule(/__item\[data-band="high"\]$/)[0];
   assert.ok(high, 'a print rule for the high band');
-  assert.match(high.body, /background:\s*none/, 'the high band is not a fill on paper');
+  // The high band is a heavy edge. Its surface is a name of the map, the paper's on paper, so the
+  // bar covers the window behind it and the print rule writes no fill of its own.
+  assert.match(high.body, /border-width:\s*2px/);
+  assert.match(high.body, /border-color:\s*var\(--timeline-band-high-fill\)/);
+  assert.doesNotMatch(high.body, /background(-color)?:\s*var/, 'the print rule for the high band writes no fill');
+  const printMap = Object.fromEntries(declarations(print.find(({ selector }) => selector === '.uix-scheduling-timeline').body).map(({ prop, value }) => [prop, value]));
+  assert.equal(printMap['--timeline-band-high-surface'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
+  assert.equal(printMap['--timeline-band-high-fill'], 'var(--uix-print-danger)');
+  const screenHigh = rules(source).find(({ at, selector }) => !/@media print\b/.test(at ?? '') && /__item\[data-band="high"\]$/.test(selector));
+  assert.match(screenHigh.body, /background:\s*var\(--timeline-band-high-surface\)/, 'the fill of the high band is read through the name the print map rewrites');
   const edges = ['diagonal', 'cross', 'dotted'].map((pattern) => rule(new RegExp(`\\[data-pattern="${pattern}"\\]`))[0]?.body.match(/border-style:\s*none ([a-z]+)/)?.[1]);
   assert.deepEqual(edges, ['dashed', 'double', 'dotted']);
   assert.match(rule(/__scroller$/)[0]?.body ?? '', /overflow:\s*visible/);

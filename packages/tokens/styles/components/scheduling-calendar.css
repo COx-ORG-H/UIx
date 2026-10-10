@@ -24,6 +24,7 @@
     --calendar-status-text-dim: var(--uix-text-muted);
     --calendar-band-medium-edge: var(--uix-neutral-solid);
     --calendar-band-high-fill: var(--uix-danger);
+    --calendar-band-high-surface: var(--uix-danger);
     --calendar-band-high-text: var(--uix-danger-fg);
     --calendar-window-surface: var(--uix-neutral-bg);
     --calendar-window-ink: var(--uix-neutral-solid);
@@ -105,7 +106,7 @@
 
   /* band: `medium` is a heavier leading edge, `high` is the one fill */
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="medium"] { border-left:3px solid var(--calendar-band-medium-edge); }
-  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-color:var(--calendar-band-high-fill); background:var(--calendar-band-high-fill); color:var(--calendar-band-high-text); }
+  :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-color:var(--calendar-band-high-fill); background:var(--calendar-band-high-surface); color:var(--calendar-band-high-text); }
   :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-text); }
   .uix-scheduling-calendar__entry[data-band="high"]:focus-visible { outline-color:var(--calendar-band-high-text); }
 
@@ -321,6 +322,7 @@
       --calendar-status-text-dim: var(--uix-print-ink-quiet);
       --calendar-band-medium-edge: var(--uix-print-ink-quiet);
       --calendar-band-high-fill: var(--uix-print-danger);
+      --calendar-band-high-surface: var(--uix-print-paper);
       --calendar-band-high-text: var(--uix-print-ink);
       --calendar-window-surface: var(--uix-print-paper);
       --calendar-window-ink: var(--uix-print-ink);
@@ -369,13 +371,14 @@
     .uix-scheduling-calendar__tg-strip > :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__tg-span),.uix-scheduling-calendar__agenda-notes .uix-scheduling-calendar__window,.uix-scheduling-calendar__agenda-vrow > .uix-scheduling-calendar__window { height:auto; min-height:calc(var(--calendar-lane) - var(--calendar-gap)); white-space:normal; overflow:visible; }
     :is(.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__agenda-notes,.uix-scheduling-calendar__agenda-vrow) :is(.uix-scheduling-calendar__window-text,.uix-scheduling-calendar__window-name,.uix-scheduling-calendar__window-scope,.uix-scheduling-calendar__entry-text) { flex-wrap:wrap; overflow:visible; overflow-wrap:anywhere; }
     /* the hour lines are a background: on paper each hour label draws its own line across the days */
-    .uix-scheduling-calendar__tg-body { isolation:isolate; }
     .uix-scheduling-calendar__tg-column { background:none; }
     .uix-scheduling-calendar__tg-gutter { position:static; }
     .uix-scheduling-calendar__tg-gutter > .uix-scheduling-calendar__tg-hour { left:0; right:0; padding-right:calc(100% - var(--calendar-gutter) + var(--uix-space-1)); }
     .uix-scheduling-calendar__tg-gutter > .uix-scheduling-calendar__tg-hour::after { content:""; position:absolute; top:0; left:var(--calendar-gutter); right:0; border-top:1px dotted var(--calendar-chrome-line); }
-    /* the hours of a window for everything: a quiet tint under the hour lines, and an edge of its own inside the day */
-    .uix-scheduling-calendar__tg-shade[data-pattern] { z-index:-1; margin-inline:3px; border-inline:1px dashed var(--calendar-window-edge); background-color:var(--calendar-chrome-surface-quiet); opacity:1; }
+    /* the hours of a window for everything: a quiet tint under the hour lines, and an edge of its own inside the
+       day. Its clip makes it a layer of its own, painted in the order of the grid: `order` puts it before the
+       hours, so their lines are drawn over it and the items over both. */
+    .uix-scheduling-calendar__tg-shade[data-pattern] { order:-1; margin-inline:var(--uix-space-1); border-inline:1px dashed var(--calendar-window-edge); background-color:var(--calendar-chrome-surface-quiet); opacity:1; }
     /* an item is at least as tall as its time and grows to hold its words; one that starts later lies over the end of it */
     .uix-scheduling-calendar__tg-item { height:auto; min-height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-hour) - 1px),0.875rem); overflow:visible; }
     .uix-scheduling-calendar__tg-item[data-lines] > :is(.uix-scheduling-calendar__entry-text,.uix-scheduling-calendar__tg-from) { display:block; max-height:none; overflow:visible; white-space:normal; overflow-wrap:anywhere; }
@@ -385,8 +388,9 @@
     .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow { height:auto; min-height:44px; overflow:visible; }
     .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-main,.uix-scheduling-calendar__agenda-time,.uix-scheduling-calendar__agenda-heading,.uix-scheduling-calendar__markers,.uix-scheduling-calendar__markers > span,.uix-scheduling-calendar__marker) { flex-wrap:wrap; overflow:visible; white-space:normal; }
 
-    /* Paper has no fill to rely on: the high band is the heaviest edge, in the one signal colour, in every state */
-    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:3px; border-color:var(--calendar-band-high-fill); background:var(--calendar-status-surface); }
+    /* Paper has no fill to rely on: the high band is the heaviest edge, in the one signal colour, in every
+       state. Its surface is the paper's (the map above), so it still covers what is behind it. */
+    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:3px; border-color:var(--calendar-band-high-fill); }
     :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-fill); }
     /* a highlight is a heavier edge, which does not show beside the edge of the high band, and in
        the agendas a shadow, which may not print: on paper its title is underlined as well */

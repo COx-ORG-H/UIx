@@ -3,6 +3,7 @@
  *   AC1  every item and window name is shown, no scroller clips, and a window's kind and the
  *        high band can be told without background graphics (an edge, never a fill or pattern alone)
  *   AC2  the colours are the print tokens, whatever theme the screen has
+ *   and every row of a long agenda or timeline is mounted while the page is laid out for paper
  * The page is A4 at 96 dpi (794 px wide). Snapshots are in tests/visual/scheduling-print.spec.mjs. */
 import { test, expect } from '@playwright/test';
 
@@ -69,18 +70,22 @@ test('AC2: on paper the calendar is ink on paper in either theme, and its contro
   }
 });
 
-test('AC1: the high band is a heavy edge in the signal colour, not a fill, in every state', async ({ page }) => {
+test('AC1: the high band is the heaviest edge, in the signal colour, on the surface of the paper, in every state', async ({ page }) => {
   await openPrinted(page, 'case=encodings');
   const high = page.locator(`${P}entry[data-band="high"]`);
   expect(await high.count()).toBeGreaterThan(0);
   for (const chip of await high.all()) {
     const look = await style(chip, ['background-color', 'background-image', 'color', 'border-bottom-color', 'border-bottom-width']);
-    expect(look['background-color'], 'no fill').toBe(CLEAR);
+    // Not the signal colour as a fill: the surface of the paper, so the chip covers what is behind it.
+    expect(look['background-color'], 'no fill in the signal colour').toBe(PAPER);
     expect(look['background-image']).toBe('none');
     expect(look.color === INK || look.color === 'rgb(82, 82, 82)', `ink text, got ${look.color}`).toBe(true);
     expect(look['border-bottom-color']).toBe(SIGNAL);
-    expect(look['border-bottom-width']).toBe('2px');
+    expect(look['border-bottom-width']).toBe('3px');
   }
+  // No other chip has an edge that heavy.
+  const heavy = await page.locator(`${P}entries > ${P}entry:not([data-band="high"])`).evaluateAll((els) => els.filter((el) => parseFloat(getComputedStyle(el).borderBottomWidth) >= 3).length);
+  expect(heavy).toBe(0);
   // No other band has that edge.
   const others = await page.locator(`${P}entry:not([data-band="high"])`).evaluateAll((els) => els.filter((el) => getComputedStyle(el).borderBottomColor === 'rgb(196, 0, 18)').length);
   expect(others).toBe(0);
@@ -110,21 +115,63 @@ test('AC1 (week time grid): no scroller, seven days on the page, the zone label 
   expect((await page.locator(`${P}tg-zone`).textContent()).trim().length).toBeGreaterThan(0);
   await expect(page.locator(`${P}tg-now`)).toBeHidden();
   const line = await style(page.locator(`${P}tg-gutter > ${P}tg-hour`).nth(3), ['border-top-width', 'border-top-style', 'content'], '::after');
-  expect([line['border-top-width'], line['border-top-style']]).toEqual(['1px', 'solid']);
+  expect([line['border-top-width'], line['border-top-style']]).toEqual(['1px', 'dotted']);
+  // The hours of a window for everything are a tint under those lines, not over them: a strip of the
+  // page along an hour line inside the tint is not the same picture as a strip of plain tint beside it.
+  const shade = page.locator(`${P}tg-shade[data-pattern]`).first();
+  await expect(shade).toBeVisible();
+  const strips = await shade.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const lines = [...document.querySelectorAll('.uix-scheduling-calendar__tg-gutter > .uix-scheduling-calendar__tg-hour')].map((hour) => hour.getBoundingClientRect().top + window.scrollY);
+    const top = box.top + window.scrollY;
+    const y = lines.find((at) => at > top + 8 && at < top + box.height - 12);
+    return y === undefined ? null : { x: Math.round(box.left + box.width / 2 - 12), line: Math.round(y) };
+  });
+  expect(strips, 'an hour line crosses the tint').not.toBeNull();
+  const strip = (y) => page.screenshot({ fullPage: true, clip: { x: strips.x, y, width: 24, height: 3 } });
+  expect((await strip(strips.line - 1)).equals(await strip(strips.line + 6)), 'the hour line is drawn over the tint').toBe(false);
+  expect((await strip(strips.line + 6)).equals(await strip(strips.line + 10)), 'two strips of plain tint are the same picture (calibration)').toBe(true);
   // Every item and every window bar is drawn with its name.
   for (const name of await page.locator(`${P}tg-strip ${P}window-name`).all()) await expect(name).toBeVisible();
   expect(await page.locator(`${P}tg-item`).count()).toBeGreaterThan(0);
   for (const item of await page.locator(`${P}tg-item`).all()) await expect(item).toBeVisible();
 });
 
-test('AC1 (agenda): day headings do not stick, and the long form prints its rows without a scroller', async ({ page }) => {
+test('AC1 (week time grid): an item too short for a line on a screen prints its words, and no item cuts its text', async ({ page }) => {
+  await page.setViewportSize({ width: 794, height: 1123 });
+  await page.goto(`${HARNESS}?case=timegrid`, { waitUntil: 'networkidle' });
+  const quarter = page.locator('[data-item-id="quarter"]');
+  // On a screen the quarter of an hour shows its marker only.
+  await expect(quarter.locator(`${P}entry-text`)).toBeHidden();
+  await page.emulateMedia({ media: 'print' });
+  await expect(quarter.locator(`${P}entry-text`)).toBeVisible();
+  expect((await quarter.locator(`${P}entry-text`).textContent()).trim()).toMatch(/^\d\d:\d\d \S/);
+  // On paper an item is as tall as its words need, so nothing is cut by its own box.
+  expect(await whole(page.locator(`${P}tg-item`)), 'items cut').toEqual([]);
+  expect(await whole(page.locator(`${P}tg-item > ${P}entry-text`)), 'item text cut').toEqual([]);
+});
+
+test('AC1 (agenda): day headings do not stick, and the long form prints every row without a scroller', async ({ page }) => {
   await openPrinted(page, 'case=agenda');
   expect((await style(page.locator(`${P}agenda-head`).first(), ['position'])).position).toBe('static');
-  await openPrinted(page, 'case=agenda&rows=260');
+  // The long form is a window of rows on a screen.
+  await page.emulateMedia({ media: 'screen' });
+  await page.goto(`${HARNESS}?case=agenda&rows=260`, { waitUntil: 'networkidle' });
+  const rows = page.locator(`${P}agenda-vrow:not([data-kind="heading"])`);
+  const windowed = await rows.count();
+  expect(windowed).toBeGreaterThan(0);
+  expect(windowed, 'a window of rows on the screen').toBeLessThan(260);
+  // Laid out for paper, every row is mounted, each as tall as its text, and nothing scrolls.
+  await page.emulateMedia({ media: 'print' });
+  await expect(rows).toHaveCount(260);
   const long = page.locator(`${P}agenda--virtual`);
   expect(await style(long, ['overflow-y', 'max-height'])).toEqual({ 'overflow-y': 'visible', 'max-height': 'none' });
   const box = await long.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
   expect(box.scroll).toBeLessThanOrEqual(box.client + 1);
+  expect(await whole(page.locator(`${P}agenda-vrow`)), 'rows cut').toEqual([]);
+  // Back on the screen it is a window again.
+  await page.emulateMedia({ media: 'screen' });
+  await expect(rows).toHaveCount(windowed);
 });
 
 /* ── SchedulingTimeline on paper ─────────────────────────────────────────────────────────────── */
@@ -163,8 +210,10 @@ test('AC1 / AC2 (timeline): ink on paper in either theme; the high band, the win
   const high = page.locator(`${T}item[data-band="high"]`);
   expect(await high.count()).toBeGreaterThan(0);
   for (const bar of await high.all()) {
-    const look = await style(bar, ['background-color', 'border-bottom-color', 'border-bottom-width', 'color']);
-    expect(look['background-color'], 'no fill').toBe(CLEAR);
+    const look = await style(bar, ['background-color', 'background-image', 'border-bottom-color', 'border-bottom-width', 'color']);
+    // Not the signal colour as a fill: the surface of the paper, so the bar covers the window behind it.
+    expect(look['background-color'], 'no fill in the signal colour').toBe(PAPER);
+    expect(look['background-image']).toBe('none');
     expect(look['border-bottom-color']).toBe(SIGNAL);
     expect(look['border-bottom-width']).toBe('2px');
     expect(look.color === INK || look.color === 'rgb(82, 82, 82)', `ink text, got ${look.color}`).toBe(true);
@@ -180,10 +229,25 @@ test('AC1 / AC2 (timeline): ink on paper in either theme; the high band, the win
   expect([line['background-color'], line['background-image'], line['border-left-width']]).toEqual([CLEAR, 'none', '1px']);
 });
 
-test('AC1 (timeline): a timeline that scrolls inside itself on screen prints the rows it has mounted without a scroller', async ({ page }) => {
-  await openTimelinePrinted(page, 'case=stress&height=400');
+test('AC1 (timeline): a timeline that windows its rows and scrolls inside itself on a screen prints every lane, without a scroller', async ({ page }) => {
+  await page.setViewportSize({ width: 794, height: 1123 });
+  await page.goto(`${TIMELINE}?case=stress&height=400`, { waitUntil: 'networkidle' });
+  const lanes = page.locator(`${T}row[data-lane-id]`);
   const scroller = page.locator(`${T}scroller`);
+  await expect(scroller).toHaveAttribute('data-virtual', /.*/);
+  const windowed = await lanes.count();
+  expect(windowed).toBeGreaterThan(0);
+  expect(windowed, 'a window of lanes on the screen').toBeLessThan(500);
+  // Laid out for paper, all 500 lanes and their bars are mounted and nothing scrolls.
+  await page.emulateMedia({ media: 'print' });
+  await expect(lanes).toHaveCount(500);
+  expect(await page.locator(`${T}spacer`).count(), 'no space kept for rows that are not mounted').toBe(0);
+  expect(await page.locator('[data-item-id]').count()).toBeGreaterThanOrEqual(500);
   expect(await style(scroller, ['overflow-y', 'max-height'])).toEqual({ 'overflow-y': 'visible', 'max-height': 'none' });
   const box = await scroller.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
   expect(box.scroll).toBeLessThanOrEqual(box.client + 1);
+  // Back on the screen it is a window again.
+  await page.emulateMedia({ media: 'screen' });
+  await expect(lanes).toHaveCount(windowed);
+  await expect(scroller).toHaveAttribute('data-virtual', /.*/);
 });

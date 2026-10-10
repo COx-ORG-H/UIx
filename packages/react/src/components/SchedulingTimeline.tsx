@@ -8,6 +8,7 @@ import type { MoveProposal } from '../scheduling-calendar-model.js';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { usePrinting } from '../hooks/usePrinting.js';
 import { defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, timelineRepeatedHourOffset, timelineStepDelta, timelineSubTicks, timelineTicks } from '../scheduling-timeline-model.js';
 import type { PlacedSpan, TimelineRange, TimelineScale } from '../scheduling-timeline-model.js';
 import { timelineRowExtents, timelineRuns, timelineWindow } from '../scheduling-timeline-rows.js';
@@ -486,10 +487,14 @@ export function SchedulingTimeline({
   const extents = useMemo(() => timelineRowExtents(rows.map((row, index) => (row.kind === 'head' ? { kind: 'head' as const, subRows: strips.has(index) ? 1 : 0 } : { kind: 'lane' as const, subRows: row.subRows }))), [rows, strips]);
   // Virtual or not is a count of what the consumer passed. It must not follow the packing: that
   // depends on the width, and a timeline that turned virtual on a resize would change its rows.
-  const virtual = lanes.length + (groups?.length ?? 0) > virtualizeAbove;
+  const windowed = lanes.length + (groups?.length ?? 0) > virtualizeAbove;
+  // Paper has no scroller: while the page prints, every row and every bar is mounted (HAR-1541).
+  const printing = usePrinting(windowed);
+  const virtual = windowed && !printing;
   // Fixed row heights are what a clip and a virtual window are counted in. A plain timeline
-  // keeps rows that grow with their label: it uses none of the props that need them.
-  const fixed = virtual || groups !== undefined || overlays.some((overlay) => overlay.laneIds !== undefined) || markers.some((marker) => marker.laneIds !== undefined);
+  // keeps rows that grow with their label: it uses none of the props that need them. The rows
+  // of a windowed timeline keep their height on paper.
+  const fixed = windowed || groups !== undefined || overlays.some((overlay) => overlay.laneIds !== undefined) || markers.some((marker) => marker.laneIds !== undefined);
 
   // What the viewport shows of the body, in px: read on scroll and resize, only while virtual.
   // Keyed on the scroller element: after `loading` or `error` it is a new one and is bound again.
