@@ -19,6 +19,27 @@ const step = (number, title, body, last) => `<li class="uix-step"><span class="u
 const compactSection = (id, title, meta, body, open) => `<details class="uix-collapsible uix-collapsible--compact"${open ? ' open' : ''}><summary class="uix-collapsible__summary"><h3 class="uix-collapsible__heading"><span id="${id}" class="uix-collapsible__title">${title}</span><span class="uix-collapsible__meta">${meta}</span></h3><span class="uix-collapsible__chevron" aria-hidden="true">${CHEVRON}</span></summary><div class="uix-collapsible__body" role="region" aria-labelledby="${id}">${body}</div></details>`;
 const heartbeat = (state, label) => `<span class="uix-heartbeat${state === 'live' ? '' : ` uix-heartbeat--${state}`}"${label ? ` role="img" aria-label="${label}"` : ' aria-hidden="true"'}><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span>`;
 
+
+// The interactive Stat is the React component's own markup, with fixed ids in place of useId's;
+// packages/react/src/operator-primitives.test.mjs renders each tile again and compares.
+const STAT_CHEVRON = '<span class="uix-stat__chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>';
+const statButton = ({ id, label, value, meta, action, haspopup = 'dialog', pending = false }) => `<button type="button" class="uix-stat uix-stat--compact uix-stat--interactive"${haspopup ? ` aria-haspopup="${haspopup}" aria-expanded="false"` : ''} aria-labelledby="${id}-label ${id}-sep ${id}-value ${id}-action"${meta ? ` aria-describedby="${id}-meta"` : ''}${pending ? ' aria-busy="true" aria-disabled="true"' : ''}><span id="${id}-sep" class="uix-visually-hidden">:</span><span id="${id}-action" class="uix-visually-hidden">, ${action}</span><span class="uix-stat__label"><span id="${id}-label">${label}</span>${haspopup ? STAT_CHEVRON : ''}</span><span class="uix-stat__value" id="${id}-value">${value}</span>${meta ? `<span class="uix-stat__meta" id="${id}-meta">${meta}</span>` : ''}</button>`;
+
+/** The tiles of the stat-row specimen, as the props `Stat` takes: the test renders these. */
+export const STAT_ROW_TILES = [
+  { label: 'Opened', value: '12 Oct' },
+  { id: 'gap-stat-assignee', label: 'Assignee', value: 'Network operations', meta: 'Second line, on call until 18:00 today', action: 'change' },
+  { id: 'gap-stat-priority', label: 'Priority', value: 'P2', meta: 'SLA policy', action: 'change', haspopup: 'menu' },
+  { id: 'gap-stat-category', label: 'Category', value: 'Network', action: 'change' },
+  { label: 'Related', value: '3', href: '#examples-data-display' },
+  { id: 'gap-stat-state', label: 'State', value: 'In progress', meta: 'Saving…', action: 'resolve', haspopup: false, pending: true },
+];
+export const statRowTile = (tile) => (tile.id
+  ? statButton(tile)
+  : tile.href
+    ? `<a href="${tile.href}" class="uix-stat uix-stat--compact uix-stat--interactive uix-stat--link"><span class="uix-stat__label"><span>${tile.label}</span></span><span class="uix-stat__value">${tile.value}</span></a>`
+    : `<div class="uix-stat uix-stat--compact"><div class="uix-stat__label"><span>${tile.label}</span></div><div class="uix-stat__value">${tile.value}</div></div>`);
+
 export const TENSOR_GAP_SPECIMENS = {
   'examples-navigation': `
 <div class="uix-guide__subhead" data-tensor-gaps>Menu radio and checkbox items (React <code>MenuItemRadio</code>, <code>MenuItemCheckbox</code>, <code>MenuRadioGroup</code>) — a check column, so checked and unchecked labels line up</div>
@@ -125,7 +146,11 @@ ${step(3, 'Review', '<p>Check the two parts above, then submit.</p>', true)}
 ${compactSection('gap-sec-details', 'Details', '2 fields', '<dl class="uix-dl"><dt id="gap-setting-zone">Time zone</dt><dd>Europe/Sarajevo</dd><dt>Owner</dt><dd>Service desk</dd></dl>', true)}
 ${compactSection('gap-sec-sla', 'SLA', '2 targets', '<p>Response in 4 h, resolution in 2 days.</p>', false)}
 ${compactSection('gap-sec-links', 'Related records', '1 link', '<p>CHG-1042 blocks this incident.</p>', false)}
-</div></div>`,
+</div></div>
+<div class="uix-guide__subhead" data-tensor-gaps>Stat tiles of unequal content in one row (React <code>Stat</code> with <code>onActivate</code>, <code>href</code>, <code>pending</code>) — a read-only tile, three buttons, a link and a pending tile; the row stretches them to one height and every label and value starts at the same line. The pending tile is busy, dimmed and still takes focus</div>
+<div data-stat-row-example style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:12px;width:100%">
+${STAT_ROW_TILES.map(statRowTile).join('\n')}
+</div>`,
 
   'examples-overlays': `
 <div class="uix-guide__subhead" data-tensor-gaps>Alert with an action and a dismiss button (React <code>Alert actions onDismiss</code>) — the text column wraps, the buttons keep their size</div>

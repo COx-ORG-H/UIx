@@ -198,12 +198,15 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
 - **`Stat tone`** (`warning`, `danger`) draws a toned outline and value; the label stays muted, so the tone never replaces words. `size="compact"` fits dense fact bands.
 - **`Stat onActivate`** makes the whole tile a button that opens an editor (`aria-haspopup="dialog"`). Pass `activateLabel` (e.g. "change") so the name reads "Priority: P1, change", and `expanded` while the editor is open. The ref points at the button, for anchoring a popover.
+- **`Stat pending`** is for a tile whose action is still running (a save, a state change). The button gets `aria-busy="true"` and `aria-disabled="true"`, is dimmed with a progress cursor, and calls neither `onActivate` nor your `onClick` / `onKeyDown` until `pending` is false again. It is never natively `disabled`, so it keeps focus and a screen reader can still read it. Only a tile with `onActivate` has the state; a read-only tile and a link tile ignore the prop.
+- **Tiles in one row line up.** A grid or flex row stretches its tiles to the tallest one. Read-only, button and link tiles all start their label and value at the same offset from the top edge, whatever the height (before 2.37.0 a button tile centred its rows).
 - **`CopyButton`** copies `value`. Name it for what it copies (`label="Copy email"`), pass `copiedLabel`, and pass `failedLabel` so a refused copy is explained rather than silent.
 
 ```tsx
 <Tabs value={tab} onChange={setTab} overflow="scroll">{tabs}</Tabs>
 <Stat label={t('sla')} value={remaining} tone={breached ? 'danger' : 'neutral'} size="compact" />
 <Stat ref={anchor} label={t('priority')} value="P1" onActivate={openEditor} activateLabel={t('change')} expanded={open} size="compact" />
+<Stat label={t('state')} value={state} onActivate={resolve} activateLabel={t('resolve')} haspopup={false} pending={saving} size="compact" />
 <CopyButton value={email} label={t('copyEmail')} copiedLabel={t('copied')} failedLabel={t('copyFailed')} />
 ```
 
