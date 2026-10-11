@@ -16,6 +16,8 @@
 <!-- lesson-skip: 1ff6eca routine: review findings on print CSS (a print rule that lost on specificity, a map name split the wrong way round); found by reading -->
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
+<!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
 
 ### 2026-10-08 · jsdom vs browser · `3e0ff88`
 - **Rule:** when an action replaces the element it was triggered from (a row re-keyed from "error" to "loading"), decide where focus goes and assert `document.activeElement` after it; in a browser focus falls to `<body>`, and a test that only reads the rows' text passes.  **Why:** `Tree` Retry lost focus; jsdom tests checked text only.

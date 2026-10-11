@@ -20,6 +20,9 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme]):not(.dark) { color-scheme: dark; } }
   :root[data-theme="dark"], :root.dark { color-scheme: dark; }
   :root[data-theme="light"] { color-scheme: light; }
+  /* Native checkbox, radio, range and progress take the accent, not the browser's own blue.
+     Inherited from the root, so a consumer's own `accent-color` still wins. */
+  :root { accent-color: var(--uix-accent); }
 
   body {
     font-family: var(--uix-font-sans);

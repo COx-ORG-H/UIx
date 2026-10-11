@@ -7,9 +7,9 @@
       "brotli": 2069
     },
     "styles/base.css": {
-      "raw": 4169,
-      "gzip": 1831,
-      "brotli": 1484
+      "raw": 4387,
+      "gzip": 1921,
+      "brotli": 1567
     },
     "styles/components/alert.css": {
       "raw": 2256,
