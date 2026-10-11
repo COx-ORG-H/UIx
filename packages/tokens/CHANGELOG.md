@@ -1,5 +1,23 @@
 # @tensor_1/tokens
 
+## 2.38.0
+
+### Minor Changes
+
+- c26df37: `Stat`: interactive tiles line up with read-only tiles in a row, and a new `pending` state (HAR-1753).
+
+  - **Fixed: a button tile centred its rows.** A grid or flex row stretches its tiles to the tallest one, and a `<button>` that is taller than its content centres that content. `.uix-stat--interactive` was `display: block`, so in one row of four 95 px compact tiles the label started 13 px from the top on a read-only tile, 16 px on a button tile with a one-line meta and 27 px on a button tile with no meta. The interactive tile is now a flex column: label, value and meta start at the top whatever the height of the tile. The link tile (`href`) is an `<a>` and was not affected.
+  - **Visible change:** an interactive tile that is taller than its content (stretched by its row, or given a height) now has its rows at the top and the spare room below them, like a read-only tile. A tile that is as tall as its content looks the same. A consumer that worked around this with its own `display: flex; flex-direction: column` on the tile can delete that rule.
+  - **New: `Stat pending`.** On a tile with `onActivate` it sets `aria-busy="true"` and `aria-disabled="true"`, and `onActivate`, `onClick` and `onKeyDown` are not called until it ends. The button is never natively `disabled`, so it keeps focus. Read-only and link tiles ignore the prop.
+  - **CSS:** `.uix-stat--interactive[aria-busy="true"]` is dimmed, shows `cursor: progress` and has no hover tint. Plain-HTML consumers set the two ARIA attributes on the button themselves.
+  - No token changes.
+
+### Patch Changes
+
+- cf04a4f: `SearchSuggest`: the matched letters of a result title stand out. `.uix-search-suggest__title` is now weight 400 (was 500), so the 700 of `.uix-search-suggest__match` reads as emphasis against it rather than as a slightly heavier run of the same text.
+
+  **Visible change:** every result title in a `SearchSuggest` list is drawn regular instead of medium, including the list an `EntityPicker` opens and lists with no query (recent items). The value an `EntityPicker` shows once a record is picked (`.uix-entity-picker__title`) stays 500, and the match weight in the context line stays 600. CSS only; no markup or API change.
+
 ## 2.37.0
 
 ### Minor Changes

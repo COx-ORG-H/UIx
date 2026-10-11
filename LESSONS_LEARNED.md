@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
+<!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 662d22b squash-merge of ded3c8f (PR #103); lesson recorded below under ded3c8f (react build, one clean per shared outDir) -->
 <!-- lesson-skip: d3578e7 not a fix from this session; arrived via git fetch of master (HAR-1527 review round, own session owns its lesson call) -->
 <!-- lesson-skip: aadc713 not a fix from this session; arrived via git fetch of master (HAR-1527 review round, own session owns its lesson call) -->
