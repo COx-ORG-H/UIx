@@ -155,7 +155,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "stat-tile": {
     "route": "examples-data-display",
-    "selector": ".uix-stat"
+    "selector": ".uix-stat",
+    "parts": [".uix-stat", "[data-stat-row-example]"]
   },
   "progress": {
     "route": "examples-data-display",

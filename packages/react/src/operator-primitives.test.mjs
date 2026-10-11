@@ -7,6 +7,7 @@ import { createElement as h, createRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { copyText } from './copy-model.ts';
 import { CopyButton, Stat, Tab, TabPanel, Tabs } from '../dist/index.js';
+import { STAT_ROW_TILES, TENSOR_GAP_SPECIMENS, statRowTile } from '../../tokens/docs/tensor-gap-specimens.js';
 
 test('copyText resolves true when the clipboard accepts the value', async () => {
   const written = [];
@@ -76,6 +77,52 @@ test('interactive Stat omits aria-expanded when the prop is not given', () => {
   const html = renderToStaticMarkup(h(Stat, { label: 'Status', value: 'Open', onActivate() {} }));
   assert.doesNotMatch(html, /aria-expanded/);
   assert.doesNotMatch(html, /aria-describedby/);
+});
+
+test('a pending interactive Stat is busy and aria-disabled, never natively disabled (HAR-1753)', () => {
+  const tag = (props) => renderToStaticMarkup(h(Stat, { label: 'State', value: 'Open', onActivate() {}, ...props })).match(/^<button[^>]*>/)[0];
+  const pending = tag({ pending: true, expanded: false });
+  assert.match(pending, /aria-busy="true"/);
+  assert.match(pending, /aria-disabled="true"/);
+  assert.doesNotMatch(pending, /\sdisabled[\s=>]/, 'a disabled button drops out of the tab order and loses focus');
+  assert.doesNotMatch(pending, /tabindex/);
+  // the rest of the button is what it was
+  assert.match(pending, /^<button type="button" class="uix-stat uix-stat--interactive" aria-haspopup="dialog" aria-expanded="false"/);
+  assert.doesNotMatch(tag({}), /aria-busy|aria-disabled/);
+  assert.doesNotMatch(tag({ pending: false }), /aria-busy|aria-disabled/);
+});
+
+test('read-only and link Stats ignore pending, and the prop never reaches the DOM', () => {
+  assert.equal(
+    renderToStaticMarkup(h(Stat, { label: 'Open', value: '12', pending: true })),
+    '<div class="uix-stat"><div class="uix-stat__label"><span>Open</span></div><div class="uix-stat__value">12</div></div>',
+  );
+  const link = renderToStaticMarkup(h(Stat, { label: 'Open', value: '12', href: '/open', pending: true }));
+  assert.match(link, /^<a href="\/open" class="uix-stat uix-stat--interactive uix-stat--link">/);
+  assert.doesNotMatch(link, /aria-busy|aria-disabled|pending/);
+});
+
+test('the docs stat-row specimen is the markup Stat renders: a div, three buttons, a link and a pending tile', () => {
+  const block = TENSOR_GAP_SPECIMENS['examples-data-display'];
+  const row = block.slice(block.indexOf('<div data-stat-row-example'));
+  for (const tile of STAT_ROW_TILES) {
+    const { id, action, ...props } = tile;
+    const rendered = renderToStaticMarkup(h(Stat, {
+      size: 'compact', ...props, ...(id ? { onActivate() {}, activateLabel: action, expanded: tile.haspopup === false ? undefined : false } : null),
+    }));
+    // useId's value differs by React version; the specimen names its ids
+    const reactId = rendered.match(/id="([^"]+)-sep"/)?.[1];
+    const expected = reactId ? rendered.replaceAll(reactId, id) : rendered;
+    assert.equal(statRowTile(tile), expected, `${tile.label} tile`);
+    assert.ok(row.includes(expected), `${tile.label} tile is on the page`);
+  }
+  assert.deepEqual(
+    [...row.matchAll(/<(div|button|a) [^>]*class="uix-stat /g)].map((m) => m[1]),
+    ['div', 'button', 'button', 'button', 'a', 'button'],
+  );
+  assert.equal((row.match(/aria-busy="true" aria-disabled="true"/g) ?? []).length, 1, 'one pending tile');
+  // unequal content: no meta, a one-line meta and a meta long enough to wrap
+  assert.deepEqual(STAT_ROW_TILES.map((t) => (t.meta ?? '').length > 30 ? 'long' : t.meta ? 'short' : 'none'), ['none', 'long', 'short', 'none', 'none', 'short']);
 });
 
 test('Stat forwards its ref (forwardRef) for popover anchoring', () => {

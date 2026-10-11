@@ -34,6 +34,13 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   /** Whether the editor this tile opens is currently open (`aria-expanded`). */
   expanded?: boolean;
   /**
+   * What the tile started is still running (HAR-1753). The button is announced as busy and
+   * unavailable (`aria-busy`, `aria-disabled`) and stays focusable; `onActivate`, `onClick` and
+   * `onKeyDown` are not called until it ends. Only with `onActivate`: a read-only tile and a
+   * link tile ignore it.
+   */
+  pending?: boolean;
+  /**
    * What `onActivate` opens, for `aria-haspopup` (HAR-1350; TENSOR B6). Default `'dialog'`;
    * `'menu'` for a status menu; `false` for an in-place action (no chevron either).
    */
@@ -63,7 +70,7 @@ const Chevron = () => (
  * ref then points at that button, so a popover can anchor to it.
  */
 export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
-  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, trendLabels, haspopup = 'dialog', href, current, renderLink, className, onClick, ...props },
+  { label, value, icon, meta, trend, tone = 'neutral', size = 'hero', onActivate, activateLabel, expanded, trendLabels, haspopup = 'dialog', href, current, renderLink, className, onClick, onKeyDown, pending = false, ...props },
   ref,
 ) {
   const id = useId();
@@ -107,12 +114,12 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
   );
 
   if (linked) {
-    const linkProps = { ...(props as HTMLAttributes<HTMLAnchorElement>), href, className: classes, onClick, 'aria-current': current ? 'page' as const : undefined, children: body };
+    const linkProps = { ...(props as HTMLAttributes<HTMLAnchorElement>), href, className: classes, onClick, onKeyDown, 'aria-current': current ? 'page' as const : undefined, children: body };
     return <>{renderLink ? renderUixLink(renderLink, linkProps) : <a ref={ref as Ref<HTMLAnchorElement>} {...linkProps} />}</>;
   }
 
   if (!interactive) {
-    return <div ref={ref as Ref<HTMLDivElement>} className={classes} onClick={onClick} {...(props as HTMLAttributes<HTMLDivElement>)}>{body}</div>;
+    return <div ref={ref as Ref<HTMLDivElement>} className={classes} onClick={onClick} onKeyDown={onKeyDown} {...(props as HTMLAttributes<HTMLDivElement>)}>{body}</div>;
   }
 
   // Name = "label: value, action"; the meta line is the description, so a long SLA or
@@ -127,10 +134,14 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
       aria-expanded={expanded}
       aria-labelledby={`${id}-label ${id}-sep ${id}-value${activateLabel ? ` ${id}-action` : ''}`}
       aria-describedby={meta != null || trend != null ? `${id}-meta` : undefined}
+      // spread, so a tile that is not pending keeps an aria-busy the consumer set itself
+      {...(pending ? { 'aria-busy': true, 'aria-disabled': true } : null)}
       onClick={(e) => {
+        if (pending) return;
         onClick?.(e);
         if (!e.defaultPrevented) onActivate();
       }}
+      onKeyDown={pending ? undefined : onKeyDown}
     >
       <span id={`${id}-sep`} className="uix-visually-hidden">:</span>
       {activateLabel && <span id={`${id}-action`} className="uix-visually-hidden">, {activateLabel}</span>}

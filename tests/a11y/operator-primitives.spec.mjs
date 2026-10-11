@@ -1,5 +1,7 @@
-/* Tabs overflow="scroll" (with keepMounted), the toned / interactive Stat and CopyButton in a
- * real browser (UIx 2.20.0; the tab overflow closes audit finding UIX-06, owned by RX-125).
+/* Tabs overflow="scroll" (with keepMounted), the toned / interactive / pending Stat and CopyButton
+ * in a real browser (UIx 2.20.0; the tab overflow closes audit finding UIX-06, owned by RX-125).
+ * The stretched row of mixed tiles (HAR-1753) is measured in tests/a11y/stat-row.spec.mjs, which
+ * also runs in Firefox and WebKit.
  *
  * The harness (tests/operator-primitives/harness.tsx) is bundled from source in globalSetup,
  * so this needs only the tokens build. Scrolling, focus, the clipboard and axe only exist
@@ -102,6 +104,40 @@ test('toned tiles draw a toned outline and value, never a toned label', async ({
   expect(seen.warning.border).not.toBe(seen.neutral.border);
   expect(seen.danger.value).not.toBe(seen.neutral.value);
   expect(seen.danger.label).toBe(seen.neutral.label);
+});
+
+test('a pending Stat is busy and unavailable, keeps focus, and does nothing until it ends', async ({ page }) => {
+  const tile = page.locator('#row-compact [data-tile="pending"]');
+  await expect(tile).toHaveAttribute('aria-busy', 'true');
+  await expect(tile).toHaveAttribute('aria-disabled', 'true');
+  await expect(tile).not.toHaveAttribute('disabled', /.*/);
+  const idle = page.locator('#row-compact [data-tile="no-meta"]');
+  const look = (el) => el.evaluate((node) => ({ cursor: getComputedStyle(node).cursor, opacity: Number(getComputedStyle(node).opacity) }));
+  expect(await look(tile)).toEqual({ cursor: 'progress', opacity: expect.any(Number) });
+  expect((await look(tile)).opacity).toBeLessThan((await look(idle)).opacity);
+
+  // a real pointer and real keys: Playwright's own click() waits for an aria-disabled button to be enabled
+  const box = await tile.boundingBox();
+  const surfaceAtRest = await tile.evaluate((node) => getComputedStyle(node).backgroundColor);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  expect(await tile.evaluate((node) => getComputedStyle(node).backgroundColor), 'no hover cue while pending').toBe(surfaceAtRest);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await tile.focus();
+  await expect(tile).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  expect(await page.evaluate(() => window.__op.pending)).toEqual({ activations: 0, clicks: 0, keydowns: 0 });
+
+  // Tab still leaves it: nothing is swallowed
+  await page.keyboard.press('Tab');
+  await expect(tile).not.toBeFocused();
+
+  await page.getByRole('button', { name: 'Finish saving (row-compact)' }).click();
+  await expect(tile).not.toHaveAttribute('aria-busy', /.*/);
+  await expect(tile).not.toHaveAttribute('aria-disabled', /.*/);
+  await tile.focus();
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => window.__op.pending)).toEqual({ activations: 1, clicks: 1, keydowns: 1 });
 });
 
 test('CopyButton writes the value, shows a check and announces "Copied"', async ({ page }) => {

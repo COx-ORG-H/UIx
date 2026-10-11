@@ -5096,6 +5096,7 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
     label: ReactNode;
     meta?: ReactNode;
     onActivate?: () => void;
+    pending?: boolean;
     renderLink?: UixRenderLink;
     size?: 'hero' | 'compact';
     tone?: 'neutral' | 'warning' | 'danger';

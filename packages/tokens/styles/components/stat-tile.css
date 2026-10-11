@@ -23,12 +23,13 @@
   .uix-stat--compact .uix-stat__value { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); margin-top: var(--uix-space-1); }
   .uix-stat--compact .uix-stat__meta { margin-top: var(--uix-space-1); }
 
-  /* interactive — the whole tile is a <button> that opens an editor */
+  /* interactive — the whole tile is a <button> that opens an editor. A flex column, not a
+     block: a <button> stretched by its row centres block content (HAR-1753). */
   .uix-stat--interactive {
-    display: block; width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer;
+    display: flex; flex-direction: column; width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-stat--interactive:hover { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); }
+  .uix-stat--interactive:hover:where(:not([aria-busy="true"])) { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); }
   .uix-stat--interactive.uix-stat--warning:hover { border-color: var(--uix-warning-border); }
   .uix-stat--interactive.uix-stat--danger:hover { border-color: var(--uix-danger-border); }
   .uix-stat--interactive:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
@@ -36,6 +37,8 @@
   .uix-stat__chevron { display: inline-flex; flex: none; margin-inline-start: auto; color: var(--uix-text-muted); }
   .uix-stat__label .uix-stat__chevron svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-stat--interactive[aria-expanded="true"] .uix-stat__chevron svg { transform: rotate(180deg); }
+  /* pending — aria-busy with aria-disabled, never :disabled, so the button keeps focus */
+  .uix-stat--interactive[aria-busy="true"] { cursor: progress; opacity: .6; }
   /* link — the whole tile is an <a> to a filtered list or a record (HAR-1350) */
   .uix-stat--link { text-decoration: none; }
   /* current: the ring outline only; a brand tint would drop the muted label below AA */

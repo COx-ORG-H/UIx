@@ -22,6 +22,10 @@
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
 
+### 2026-10-11 · one component, three elements · `2b69af6`
+- **Rule:** a component that is a `<div>`, a `<button>` or an `<a>` depending on its props has to be measured with all three side by side in one stretched row. A block `<button>` taller than its content centres that content; a `<div>` and an `<a>` do not. Give the button form `display: flex; flex-direction: column` (or grid).  **Why:** the interactive `Stat` put its label 3 to 14 px lower than a read-only tile in the same row (HAR-1753). Every specimen and harness showed tiles of their own content height, where the three forms look the same.  **Gate:** `tests/a11y/stat-row.spec.mjs` stretches div, button and link tiles of unequal content in a grid row and a flex row and compares the label and value offsets (62 px against 13 px on the old CSS). It also runs in Firefox and WebKit in CI's cross-browser job.  **Tag:** false-green, layout, test-double-fidelity
+- **Rule:** a specimen whose height depends on its width (an `auto-fit` grid, wrapping text) needs `width: 100%` when it is a `parts` entry of a component reference. The preview stage is a wrapping column flexbox, and it sizes such an item's height before it stretches the width.  **Why:** the stat row came out 540 px tall instead of 217 px, with 274 px tiles, and `tests/docs/verify-components.mjs` passed, because it checks that a specimen is visible and not its size.  **Gate:** none; look at the reference page.  **Tag:** false-green, docs
+
 
 ### 2026-10-08 · jsdom vs browser · `3e0ff88`
 - **Rule:** when an action replaces the element it was triggered from (a row re-keyed from "error" to "loading"), decide where focus goes and assert `document.activeElement` after it; in a browser focus falls to `<body>`, and a test that only reads the rows' text passes.  **Why:** `Tree` Retry lost focus; jsdom tests checked text only.
