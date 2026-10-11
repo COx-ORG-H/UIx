@@ -62,7 +62,7 @@
   .uix-search-suggest__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-search-suggest__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
   .uix-search-suggest__title {
-    font-size: var(--uix-text-body); font-weight: 500; line-height: 1.35;
+    font-size: var(--uix-text-body); font-weight: 400; line-height: 1.35;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
