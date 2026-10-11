@@ -1,5 +1,9 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 662d22b squash-merge of ded3c8f (PR #103); lesson recorded below under ded3c8f (react build, one clean per shared outDir) -->
+<!-- lesson-skip: d3578e7 not a fix from this session; arrived via git fetch of master (HAR-1527 review round, own session owns its lesson call) -->
+<!-- lesson-skip: aadc713 not a fix from this session; arrived via git fetch of master (HAR-1527 review round, own session owns its lesson call) -->
+<!-- lesson-skip: 2ac6bea not a fix from this session; arrived via git fetch of master (HAR-1520 review round, own session owns its lesson call) -->
 <!-- lesson-skip: 597cd33 rebased copy of fb709c3 (lesson recorded below under fb709c3) -->
 <!-- lesson-skip: 5bee362 rebased copy of 069a9ec (already skipped: routine docs contrast fix) -->
 <!-- lesson-skip: 069a9ec routine: docs contrast badge ignored alpha; caught by eyeballing the golden -->
