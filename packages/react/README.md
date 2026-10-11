@@ -460,6 +460,18 @@ const spanLayout = layoutMonthSpans(spansInSalienceOrder, grid, { timeZone, week
 - **`<List roving>`**: the items are one tab stop (ArrowUp/ArrowDown, Home, End; Enter or Space activates the
   focused item's `onClick`). A control inside an item keeps its own tab stop and keys. Items may be wrapped or
   rendered later by a child component.
+- **Print (HAR-1541).** The stylesheet has `@media print` rules; add no print CSS of your own. On paper the same
+  markup has no scroller, fits the page width, and keeps a week row or an agenda row on one page. The colours are
+  the `--uix-print-*` tokens (light, whatever theme the screen has). Nothing depends on a background: the `high`
+  band is a heavy edge on a paper surface (on paper `--calendar-band-high-fill` is the paper's and the edge reads
+  the new `--calendar-band-high-edge`; no screen rule reads it), each window pattern has an edge style of its own (`solid`, `diagonal` dashed, `cross`
+  double, `dotted` dotted), and the hour lines are drawn as lines. Month chips wrap to show the whole title, and
+  a time-grid item is at least as tall as its time and grows to hold its words (one too short for a line on a
+  screen prints them too). The header's buttons, the "now" line and a pending move are not printed; the period
+  title, the zone label and the legend are. A long agenda mounts every row while the page prints (`beforeprint`,
+  or print media) and is a window of rows again afterwards. One limit: `window.print()` called from inside a
+  React effect, on mount or later, runs before those rows are there. Such a page calls it from an event handler
+  or a timer, or passes `virtualizeAbove={Infinity}`.
 - **Colour.** Every calendar colour is named once at the top of `scheduling-calendar.css` (`--calendar-*`).
 - **Deprecated, still working in 2.x:** `entry.state` / `SchedulingEntryState`, `overlay.kind` /
   `SchedulingOverlayKind` and the `previous` / `next` labels. An entry with `state` is no longer tinted: the two
@@ -502,6 +514,7 @@ time zone, the same proposal model for moves.
 - **Notice and counts:** `notice` is shown above the axis; `columnNotes` puts a note on the column of a day (`YYYY-MM-DD` in `timeZone`).
 - **Row heights:** with `groups`, `laneIds` or a virtual window every row has a fixed height (a lane is its sub-rows, a group head one line) and a lane label that does not fit is cut with an ellipsis. A timeline that uses none of them keeps rows that grow with their label.
 - **Colour:** every colour is named once at the top of `scheduling-timeline.css` (`--timeline-*`). Forced colours are handled in `forced-colors.css`, as for the calendar.
+- **Print (HAR-1541).** The stylesheet has `@media print` rules; add no print CSS of your own. On paper the timeline has no scroller and nothing sticks: the axis is fitted to the page width and the bars follow (every position is a share of the axis), and a lane stays on one page. The colours are the `--uix-print-*` tokens (light, whatever theme the screen has). Nothing depends on a background: the `high` band is a heavy edge on a paper surface (on paper `--timeline-band-high-fill` is the paper's and the edge reads the new `--timeline-band-high-edge`; no screen rule reads it), each window pattern has an edge style of its own, and the grid lines are drawn as lines. A note on the column of a day is not cut at its column (notes on neighbouring days can meet on a narrow page). The "now" line and a pending move are not printed. A timeline over `virtualizeAbove` rows mounts every row and bar while the page prints and windows again afterwards; a page that calls `window.print()` from inside a React effect calls it from an event handler or a timer, or passes `virtualizeAbove={Infinity}`. Limits: a bar keeps its share of the axis, so on a narrow page a short bar shows its time and not its title (the title is still the bar's name); and the bars are packed into sub-rows for the width the timeline had on the screen, so print from a window about as wide as the page when bars are short and close together.
 - **Deprecated, still working in 2.x:** `item.state` / `SchedulingEntryState`, `overlay.kind` / `SchedulingTimelineOverlayKind` and the `states` / `overlays` labels. A bar with `state` is no longer tinted: the two problem states show a marker with the word for that state, and the kinds are told apart by pattern.
 - Pure helpers are exported for tests and server code: `timelineTicks`, `timelineSubTicks`, `timelineRepeatedHourOffset`, `placeSpan`, `layoutLane`, `shiftSpan`, `snapToStep`, `pixelsToMs`, `defaultTimelineStep`, `timelineStepDelta`.
 

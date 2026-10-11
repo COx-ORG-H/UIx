@@ -1,0 +1,15 @@
+---
+"@tensor_1/tokens": minor
+"@tensor_1/react": minor
+---
+
+Print styles for `SchedulingCalendar` and `SchedulingTimeline` (HAR-1541). The same components print: a consumer adds no print CSS of its own and no print-only markup. No public API change.
+
+- **Nothing scrolls on paper.** Under `@media print` the month grid, the time grid, the agenda and the timeline have no scroller and fit the page width (the timeline's axis is fitted to the page and its bars follow); a week row, an agenda row and a lane stay on one page; sticky headings, the timeline's axis and its lane names do not stick.
+- **Paper is light.** New theme-invariant tokens `--uix-print-ink`, `--uix-print-ink-quiet`, `--uix-print-paper`, `--uix-print-paper-quiet`, `--uix-print-line` and `--uix-print-danger`; each component's colour map is written again from them inside `@media print`, so a dark screen theme does not reach the page.
+- **Nothing depends on a background** (browsers drop them unless the reader asks for background graphics): the `high` band is a heavy edge in the signal colour on the paper's own surface, never a fill; each window pattern has an edge style of its own (`solid`, `diagonal` dashed, `cross` double, `dotted` dotted); hour lines and the timeline's grid lines are drawn as lines; marker glyphs and the hatch of bars that share time ask to be printed (`print-color-adjust: exact`). A highlighted agenda row underlines its title.
+- **Text in full where the layout allows.** Month chips wrap to show the whole title and their day cell grows. A time-grid item is at least as tall as its time and grows to hold its words; one too short for a line, which shows only its markers on a screen, prints its words too (they are in the markup with `data-room="none"`, hidden on a screen). A timeline bar keeps its share of the axis, so on a narrow page a short bar shows its time and not its title, and the bars are packed into sub-rows for the width they had on the screen.
+- **An item covers what is behind it.** Both components ask for their surfaces to be printed as they are (`print-color-adjust: exact`), so a chip or a bar hides the window, the hour line or the grid line behind it. A browser may refuse, which is why no meaning rests on a surface.
+- **One new name in each colour map:** `--calendar-band-high-edge` and `--timeline-band-high-edge`, the edge of the `high` band on paper, where `--calendar-band-high-fill` / `--timeline-band-high-fill` is the paper's. No screen rule reads the new name: on a screen the edge and the fill are still the fill name, so a stylesheet that overrides it looks as before.
+- **Left out on paper:** the header's buttons and view switch, the "now" line, and a move not yet sent. The period title, the zone label and the legend print.
+- **Every row prints.** A long agenda and a timeline over `virtualizeAbove` rows mount every row while the page prints (`beforeprint`, or print media) and are a window of rows again afterwards. `window.print()` called from inside a React effect, on mount or later, runs before those rows are there: such a page calls it from an event handler or a timer, or passes `virtualizeAbove={Infinity}`.

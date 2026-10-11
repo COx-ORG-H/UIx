@@ -238,7 +238,10 @@ test('AC7 (R14 AC2): the consumer is told how many lines fit, and a marker on th
   withRender.unmount();
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries }));
   const tiny = host.querySelector('[data-item-id="quarter"]');
-  assert.equal(tiny.querySelector(cls('entry-text')), null, 'no text where no line fits: never a cut-off label');
+  // No line fits: the words are in the markup for paper, marked so the stylesheet hides them on a screen (never a cut-off label).
+  assert.equal(tiny.querySelector(cls('entry-text')).getAttribute('data-room'), 'none');
+  assert.equal(tiny.querySelector(cls('entry-text')).textContent, '08:00 Item quarter');
+  assert.equal(host.querySelector(`[data-item-id="half"] ${cls('entry-text')}`).hasAttribute('data-room'), false, 'an item with room is not marked');
   assert.equal(tiny.querySelector(cls('marker')).getAttribute('data-emphasis'), 'warning', 'the marker stays');
   assert.match(tiny.getAttribute('aria-label'), /Item quarter.*Flagged/, 'and the name is complete');
   for (const id of ['half', 'threequarter', 'hour', 'two']) {

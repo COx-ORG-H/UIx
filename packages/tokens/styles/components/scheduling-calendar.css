@@ -24,6 +24,7 @@
     --calendar-status-text-dim: var(--uix-text-muted);
     --calendar-band-medium-edge: var(--uix-neutral-solid);
     --calendar-band-high-fill: var(--uix-danger);
+    --calendar-band-high-edge: var(--uix-danger); /* read on paper only, where the fill is the paper's */
     --calendar-band-high-text: var(--uix-danger-fg);
     --calendar-window-surface: var(--uix-neutral-bg);
     --calendar-window-ink: var(--uix-neutral-solid);
@@ -280,6 +281,8 @@
   .uix-scheduling-calendar__tg-item > .uix-scheduling-calendar__entry-text { white-space:normal; overflow-wrap:anywhere; max-height:100%; }
   .uix-scheduling-calendar__tg-item[data-lines="1"] > .uix-scheduling-calendar__entry-text { white-space:nowrap; overflow-wrap:normal; }
   .uix-scheduling-calendar__tg-item > .uix-scheduling-calendar__markers { height:1rem; }
+  /* an item too short for a line shows its markers only; its words are in the markup for paper (HAR-1541) */
+  .uix-scheduling-calendar__tg-item > [data-room="none"] { display:none; }
   .uix-scheduling-calendar__tg-from { flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; font-style:italic; }
   /* an item that crosses midnight: two parts with the shared edge left open */
   .uix-scheduling-calendar__tg-item[data-part="start"] { border-bottom-style:dashed; border-bottom-left-radius:0; border-bottom-right-radius:0; }
@@ -298,4 +301,115 @@
   .uix-scheduling-calendar__tg-probe { position:absolute; left:0; top:0; height:0; padding:0 0.125rem; border:0 solid transparent; border-width:0 1px; visibility:hidden; overflow:hidden; white-space:nowrap; font-size:var(--uix-text-meta); pointer-events:none; }
 
   .uix-scheduling-calendar__state { padding:var(--uix-space-8); border:1px dashed var(--calendar-chrome-line-strong); border-radius:var(--uix-radius-lg); text-align:center; }
+  /* ── Print (HAR-1541) ────────────────────────────────────────────────────────────────────────
+     The same markup on paper. Nothing scrolls or is cut, and the colours are the paper's (light,
+     whatever theme the screen has). The calendar asks the browser to print its surfaces as they
+     are; a browser may refuse, so no meaning rests on a fill or a pattern: each is an edge too.
+     The first rule is the colour map again. */
+  @media print {
+    .uix-scheduling-calendar {
+      --calendar-chrome-text: var(--uix-print-ink);
+      --calendar-chrome-text-quiet: var(--uix-print-ink-quiet);
+      --calendar-chrome-surface: var(--uix-print-paper);
+      --calendar-chrome-surface-quiet: var(--uix-print-paper-quiet);
+      --calendar-chrome-line: var(--uix-print-line);
+      --calendar-chrome-line-strong: var(--uix-print-ink-quiet);
+      --calendar-status-surface: var(--uix-print-paper);
+      --calendar-status-surface-quiet: var(--uix-print-paper-quiet);
+      --calendar-status-edge: var(--uix-print-line);
+      --calendar-status-edge-strong: var(--uix-print-ink-quiet);
+      --calendar-status-text: var(--uix-print-ink);
+      --calendar-status-text-dim: var(--uix-print-ink-quiet);
+      --calendar-band-medium-edge: var(--uix-print-ink-quiet);
+      --calendar-band-high-fill: var(--uix-print-paper);
+      --calendar-band-high-edge: var(--uix-print-danger);
+      --calendar-band-high-text: var(--uix-print-ink);
+      --calendar-window-surface: var(--uix-print-paper);
+      --calendar-window-ink: var(--uix-print-ink);
+      --calendar-window-edge: var(--uix-print-ink-quiet);
+      --calendar-window-text: var(--uix-print-ink);
+      --calendar-marker-ink: var(--uix-print-ink);
+      --calendar-chrome-now: var(--uix-print-ink);
+      --calendar-chrome-ghost: var(--uix-print-line);
+      --calendar-chrome-ghost-surface: var(--uix-print-paper);
+    }
+    /* The calendar brings its own paper and asks for its surfaces to be printed as they are, so
+       an item covers what is behind it whether or not the reader prints background graphics. */
+    :where(.uix-scheduling-calendar) { background:var(--calendar-chrome-surface); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    /* a focus ring belongs to the screen */
+    .uix-scheduling-calendar :focus-visible { outline:none; }
+    /* nothing scrolls on paper: a grid is as wide as the page and as tall as what it holds */
+    .uix-scheduling-calendar__grid,.uix-scheduling-calendar__timegrid,.uix-scheduling-calendar__agenda--virtual { overflow:visible; max-height:none; }
+    .uix-scheduling-calendar__grid,.uix-scheduling-calendar__week { grid-template-columns:repeat(7,minmax(0,1fr)); }
+    .uix-scheduling-calendar__tg-head,.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__tg-body { grid-template-columns:var(--calendar-gutter) repeat(var(--uix-scheduling-calendar-days,7),minmax(0,1fr)); min-width:0; }
+    /* controls do nothing on paper; the period title, the zone label and the legend stay */
+    .uix-scheduling-calendar__header :is(button,.uix-segmented) { display:none; }
+    /* the line for "now" and a move not yet sent belong to the moment, not to the page */
+    .uix-scheduling-calendar__tg-now,.uix-scheduling-calendar__tg-ghost { display:none; }
+    /* a week row, an agenda row, the legend, and a time grid that fits a page stay on one page;
+       a heading stays with what it heads */
+    .uix-scheduling-calendar__week,.uix-scheduling-calendar__agenda-rows > li,.uix-scheduling-calendar__agenda-vrow,.uix-scheduling-calendar__tg-head,.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__timegrid,.uix-scheduling-calendar__legend { break-inside:avoid; }
+    .uix-scheduling-calendar__header,.uix-scheduling-calendar__agenda-vrow[data-kind="heading"] { break-after:avoid; }
+    .uix-scheduling-calendar__agenda-head { position:static; break-after:avoid; }
+    .uix-scheduling-calendar__empty { position:static; }
+
+    /* Month: a week is as tall as the page allows for six of them, and grows with what it holds */
+    .uix-scheduling-calendar__day { min-height:clamp(4.5rem,calc((100vh - 10rem) / 6),8rem); }
+    .uix-scheduling-calendar__grid[data-fixed] .uix-scheduling-calendar__week { height:auto; }
+    .uix-scheduling-calendar__grid[data-fixed] .uix-scheduling-calendar__day { overflow:visible; }
+    /* a chip holds its whole title, and a day badge its whole text */
+    .uix-scheduling-calendar__entries > .uix-scheduling-calendar__entry { height:auto; min-height:var(--calendar-chip); white-space:normal; overflow:visible; }
+    .uix-scheduling-calendar__entries > .uix-scheduling-calendar__entry > .uix-scheduling-calendar__entry-text { overflow:visible; overflow-wrap:anywhere; }
+    .uix-scheduling-calendar__badge { overflow:visible; white-space:normal; }
+
+    /* Time grid: an hour is as tall as the page allows for the whole day, between a readable
+       hour and the hour of the screen. Every position is counted in hours, so the items follow. */
+    .uix-scheduling-calendar__timegrid { --calendar-hour:clamp(1.25rem,calc((100vh - 21rem) / var(--uix-scheduling-calendar-hours,24)),3rem); margin-bottom:var(--uix-space-8); }
+    .uix-scheduling-calendar__tg-dayhead,.uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__markers { overflow:visible; flex-wrap:wrap; }
+    /* the lanes over the days grow with the words of a window or of an item with no time of day */
+    .uix-scheduling-calendar__tg-strip { grid-auto-rows:minmax(var(--calendar-lane),auto); }
+    .uix-scheduling-calendar__tg-strip > :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__tg-span),.uix-scheduling-calendar__agenda-notes .uix-scheduling-calendar__window,.uix-scheduling-calendar__agenda-vrow > .uix-scheduling-calendar__window { height:auto; min-height:calc(var(--calendar-lane) - var(--calendar-gap)); white-space:normal; overflow:visible; }
+    :is(.uix-scheduling-calendar__tg-strip,.uix-scheduling-calendar__agenda-notes,.uix-scheduling-calendar__agenda-vrow) :is(.uix-scheduling-calendar__window-text,.uix-scheduling-calendar__window-name,.uix-scheduling-calendar__window-scope,.uix-scheduling-calendar__entry-text) { flex-wrap:wrap; overflow:visible; overflow-wrap:anywhere; }
+    /* the hour lines are a background: on paper each hour label draws its own line across the days */
+    .uix-scheduling-calendar__tg-column { background:none; }
+    .uix-scheduling-calendar__tg-gutter { position:static; }
+    .uix-scheduling-calendar__tg-gutter > .uix-scheduling-calendar__tg-hour { left:0; right:0; padding-right:calc(100% - var(--calendar-gutter) + var(--uix-space-1)); }
+    .uix-scheduling-calendar__tg-gutter > .uix-scheduling-calendar__tg-hour::after { content:""; position:absolute; top:0; left:var(--calendar-gutter); right:0; border-top:1px dotted var(--calendar-chrome-line); }
+    /* the hours of a window for everything: a quiet tint under the hour lines, and an edge of its own inside the
+       day. Its clip makes it a layer of its own, painted in the order of the grid: `order` puts it before the
+       hours, so their lines are drawn over it and the items over both. */
+    .uix-scheduling-calendar__tg-shade[data-pattern] { order:-1; margin-inline:var(--uix-space-1); border-inline:1px dashed var(--calendar-window-edge); background-color:var(--calendar-chrome-surface-quiet); opacity:1; }
+    /* an item is at least as tall as its time and grows to hold its words; one that starts later lies over the end of it */
+    .uix-scheduling-calendar__tg-item { height:auto; min-height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-hour) - 1px),0.875rem); overflow:visible; }
+    .uix-scheduling-calendar__tg-item[data-lines] > :is(.uix-scheduling-calendar__entry-text,.uix-scheduling-calendar__tg-from) { display:block; max-height:none; overflow:visible; white-space:normal; overflow-wrap:anywhere; }
+
+    /* Agenda: the long form mounts every row while the page prints, each as tall as its text */
+    .uix-scheduling-calendar__agenda-window { padding:0 !important; }
+    .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow,.uix-scheduling-calendar__agenda--virtual[data-narrow] .uix-scheduling-calendar__agenda-vrow { height:auto; min-height:44px; overflow:visible; }
+    .uix-scheduling-calendar__agenda--virtual .uix-scheduling-calendar__agenda-vrow :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-main,.uix-scheduling-calendar__agenda-time,.uix-scheduling-calendar__agenda-heading,.uix-scheduling-calendar__markers,.uix-scheduling-calendar__markers > span,.uix-scheduling-calendar__marker) { flex-wrap:wrap; overflow:visible; white-space:normal; }
+
+    /* Paper has no fill to rely on: the high band is the heaviest edge, in the one signal colour, in every
+       state. Its fill is the paper's on paper (the map above), so it still covers what is behind it, and its
+       edge has a name of its own there. */
+    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"] { border-width:3px; border-color:var(--calendar-band-high-edge); }
+    :is(.uix-scheduling-calendar__entry,.uix-scheduling-calendar__swatch)[data-band="high"]:is([data-status="tentative"],[data-status="dead"],[data-status="done"]) { border-color:var(--calendar-band-high-edge); }
+    .uix-scheduling-calendar__entry[data-band="high"][data-dim] { border-color:var(--calendar-band-high-edge); }
+    /* a highlight is a heavier edge, which does not show beside the edge of the high band, and in
+       the agendas a shadow, which may not print: on paper its title is underlined as well */
+    .uix-scheduling-calendar__entry[data-highlight] .uix-scheduling-calendar__title,:is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda > ol > li > button)[data-highlight] :is(.uix-scheduling-calendar__title,strong) { text-decoration:underline; }
+    /* a window's pattern is a background and may not print: its edge says the same */
+    :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="diagonal"] { border-style:dashed; }
+    :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="cross"] { border-style:double; border-width:3px; }
+    :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__swatch)[data-pattern="dotted"] { border-style:dotted; border-width:2px; }
+    /* a window for everything keeps its heavier edge in each pattern */
+    .uix-scheduling-calendar__window[data-global][data-pattern="diagonal"] { border-width:2px; }
+    .uix-scheduling-calendar__window[data-global][data-pattern="cross"] { border-width:4px; }
+    .uix-scheduling-calendar__window[data-global][data-pattern="dotted"] { border-width:3px; }
+    /* a window that goes on past the row is open at that end, whatever its pattern */
+    .uix-scheduling-calendar__window[data-continues-before] { border-left-style:none; }
+    .uix-scheduling-calendar__window[data-continues-after] { border-right-style:none; }
+    /* a bar too short for all its words gives up the scope first and keeps the name */
+    .uix-scheduling-calendar__window-name { flex-shrink:0; }
+    .uix-scheduling-calendar__window-scope { flex-shrink:1; }
+  }
 }

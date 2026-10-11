@@ -9,6 +9,7 @@ import type { FocusEvent, KeyboardEvent, ReactNode } from 'react';
 import { addCalendarDays, zonedDateKey, zonedTimeOfDay } from '../calendar-model.js';
 import { itemDaySpan } from '../scheduling-calendar-model.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
+import { usePrinting } from '../hooks/usePrinting.js';
 import { fillLabel } from '../fill-label.js';
 import { syncRovingStop } from '../roving.js';
 import type { RovingStop } from '../roving.js';
@@ -95,7 +96,9 @@ function AgendaBody({
   // The long form in a narrow box has taller rows. The width is measured here and the stylesheet
   // follows `data-narrow`, so the row height the window is computed from is the one drawn.
   const [narrow, setNarrow] = useState(false);
-  const virtual = useVirtualRows(flatRows, { rowHeight: narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW, threshold: 0, estimatedViewportHeight: AGENDA_VIRTUAL_VIEWPORT });
+  // Paper has no scroller: while the page prints, every row is mounted.
+  const printing = usePrinting(flat);
+  const virtual = useVirtualRows(flatRows, { rowHeight: narrow ? AGENDA_NARROW_ROW : AGENDA_VIRTUAL_ROW, threshold: 0, estimatedViewportHeight: AGENDA_VIRTUAL_VIEWPORT, enabled: !printing });
   const scroller = virtual.containerRef;
   useLayoutEffect(() => {
     const box = scroller.current;

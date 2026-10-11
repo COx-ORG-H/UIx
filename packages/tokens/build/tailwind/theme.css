@@ -94,6 +94,12 @@
   --color-uix-scrollbar-track: var(--uix-scrollbar-track);
   --color-uix-scrim: var(--uix-scrim);
   --color-uix-scrim-strong: var(--uix-scrim-strong);
+  --color-uix-print-ink: var(--uix-print-ink);
+  --color-uix-print-ink-quiet: var(--uix-print-ink-quiet);
+  --color-uix-print-paper: var(--uix-print-paper);
+  --color-uix-print-paper-quiet: var(--uix-print-paper-quiet);
+  --color-uix-print-line: var(--uix-print-line);
+  --color-uix-print-danger: var(--uix-print-danger);
 
   --radius-uix-xs: var(--uix-radius-xs);
   --radius-uix-sm: var(--uix-radius-sm);

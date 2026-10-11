@@ -29,6 +29,7 @@
     --timeline-status-text-dim: var(--uix-text-muted);
     --timeline-band-medium-edge: var(--uix-neutral-solid);
     --timeline-band-high-fill: var(--uix-danger);
+    --timeline-band-high-edge: var(--uix-danger); /* read on paper only, where the fill is the paper's */
     --timeline-band-high-text: var(--uix-danger-fg);
     --timeline-window-surface: var(--uix-neutral-bg);
     --timeline-window-ink: var(--uix-neutral-solid);
@@ -229,4 +230,77 @@
 
   .uix-scheduling-timeline__empty { margin: 0; color: var(--timeline-chrome-text-quiet); font-size: var(--uix-text-meta); }
   .uix-scheduling-timeline__state { padding: var(--uix-space-8); border: 1px dashed var(--timeline-chrome-line-strong); border-radius: var(--uix-radius-lg); text-align: center; }
+  /* ── Print (HAR-1541) ────────────────────────────────────────────────────────────────────────
+     The same markup on paper: nothing scrolls or sticks, the axis is as wide as the page, the
+     colours are the paper's (light, whatever theme the screen has), and nothing depends on a
+     background, which a browser drops unless the reader asks for background graphics. The first
+     rule is the colour map again. */
+  @media print {
+    .uix-scheduling-timeline {
+      --timeline-chrome-text: var(--uix-print-ink);
+      --timeline-chrome-text-quiet: var(--uix-print-ink-quiet);
+      --timeline-chrome-surface: var(--uix-print-paper);
+      --timeline-chrome-surface-quiet: var(--uix-print-paper-quiet);
+      --timeline-chrome-line: var(--uix-print-line);
+      --timeline-chrome-line-strong: var(--uix-print-ink-quiet);
+      --timeline-chrome-now: var(--uix-print-ink);
+      --timeline-chrome-now-text: var(--uix-print-paper);
+      --timeline-chrome-ghost: var(--uix-print-ink-quiet);
+      --timeline-chrome-ghost-halo: var(--uix-print-paper);
+      --timeline-status-surface: var(--uix-print-paper);
+      --timeline-status-surface-quiet: var(--uix-print-paper-quiet);
+      --timeline-status-edge: var(--uix-print-line);
+      --timeline-status-edge-strong: var(--uix-print-ink-quiet);
+      --timeline-status-text: var(--uix-print-ink);
+      --timeline-status-text-dim: var(--uix-print-ink-quiet);
+      --timeline-band-medium-edge: var(--uix-print-ink-quiet);
+      --timeline-band-high-fill: var(--uix-print-paper);
+      --timeline-band-high-edge: var(--uix-print-danger);
+      --timeline-band-high-text: var(--uix-print-ink);
+      --timeline-window-surface: var(--uix-print-paper);
+      --timeline-window-ink: var(--uix-print-ink-quiet);
+      --timeline-window-edge: var(--uix-print-ink-quiet);
+      --timeline-window-text: var(--uix-print-ink);
+      --timeline-marker-ink: var(--uix-print-ink);
+      --timeline-marker-line: var(--uix-print-ink-quiet);
+    }
+    /* The timeline brings its own paper and asks for its surfaces to be printed as they are, so a bar
+       covers the window and the grid lines behind it whether or not the reader prints background graphics. */
+    :where(.uix-scheduling-timeline) { background: var(--timeline-chrome-surface); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    /* nothing scrolls on paper: the lanes are as wide as the page (every position is a share of
+       the axis, so the bars follow) and as tall as their rows. `!important` answers the sizes
+       the component writes on the elements themselves. */
+    .uix-scheduling-timeline__scroller { overflow: visible !important; max-height: none !important; }
+    .uix-scheduling-timeline__grid { width: 100%; min-width: 0; }
+    .uix-scheduling-timeline__track { flex: 1 1 0; min-width: 0 !important; }
+    /* nothing sticks: the axis, the lane names and the group heads stay where they are in the flow */
+    .uix-scheduling-timeline__row--axis,.uix-scheduling-timeline__lane-label,.uix-scheduling-timeline__group-label,.uix-scheduling-timeline__now-label { position: static; }
+    /* a lane and a group head stay on one page; a group head stays with its first lane */
+    .uix-scheduling-timeline__row { break-inside: avoid; }
+    .uix-scheduling-timeline__row--group,.uix-scheduling-timeline__row--axis { break-after: avoid; }
+    /* the line for "now" and a move not yet sent belong to the moment, not to the page */
+    .uix-scheduling-timeline__now,.uix-scheduling-timeline__ghost { display: none; }
+    /* the grid lines are backgrounds: on paper each is an edge */
+    .uix-scheduling-timeline__gridline { width: 0; background: none; border-left: 1px solid var(--timeline-chrome-line); }
+    .uix-scheduling-timeline__gridline[data-major] { background: none; border-left-color: var(--timeline-chrome-line-strong); }
+    .uix-scheduling-timeline__gridline[data-minor] { background: none; border-left-style: dashed; }
+    /* paper has no fill to rely on: the high band is a heavy edge in the one signal colour, in every state.
+       Its fill is the paper's on paper (the map above), so it still covers what is behind it, and its edge
+       has a name of its own there. */
+    .uix-scheduling-timeline__item[data-band="high"] { border-width: 2px; border-color: var(--timeline-band-high-edge); }
+    .uix-scheduling-timeline__item[data-band="high"]:is([data-status="tentative"], [data-status="dead"], [data-status="done"]) { border-color: var(--timeline-band-high-edge); }
+    /* done on the high band is a line painted inside the fill on a screen: on paper it is the cue of every
+       done bar, the bottom edge alone */
+    .uix-scheduling-timeline__item[data-band="high"][data-status="done"] { border-style: none none solid; background-image: none; }
+    /* a window's pattern is a background and may not print: its edges say the same */
+    .uix-scheduling-timeline__overlay[data-pattern="diagonal"] { border-style: none dashed; }
+    .uix-scheduling-timeline__overlay[data-pattern="cross"] { border-style: none double; border-width: 0 3px; }
+    .uix-scheduling-timeline__overlay[data-pattern="dotted"] { border-style: none dotted; border-width: 0 2px; }
+    /* a note on the column of a day is not cut at the column: on a narrow page a day is narrower than its note */
+    .uix-scheduling-timeline__column-note { overflow: visible; }
+    /* a bar too short for all the words of a window gives up the scope first and keeps the name */
+    .uix-scheduling-timeline__overlay-name { flex-shrink: 0; }
+    /* painted shapes ask to be printed even without background graphics: a marker's glyph and the hatch of bars that share time */
+    .uix-scheduling-timeline__item-marker[data-glyph]::before,.uix-scheduling-timeline__item[data-conflict]::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 }
