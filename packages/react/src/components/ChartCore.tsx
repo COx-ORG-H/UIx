@@ -217,6 +217,8 @@ export function ChartCore({
       return [name, handler] as const;
     });
     return () => {
+      // the init effect's cleanup may have disposed the instance first (unmount, StrictMode)
+      if (chart.isDisposed()) return;
       for (const [name, handler] of bound) chart.off(name, handler);
     };
   }, [engine, hasEmpty, eventNames]);
@@ -227,7 +229,7 @@ export function ChartCore({
     chart.group = group;
     engine.connect?.(group);
     return () => {
-      chart.group = '';
+      if (!chart.isDisposed()) chart.group = '';
     };
   }, [engine, hasEmpty, group]);
 

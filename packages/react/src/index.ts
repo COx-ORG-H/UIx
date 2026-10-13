@@ -188,6 +188,23 @@ export type { MeterProps, MeterTone } from './components/Meter.js';
 export { Stat } from './components/Stat.js';
 export type { StatProps, StatTrend } from './components/Stat.js';
 
+export { Bullet, DEFAULT_INSIGHT_CARD_LABELS, InsightCard } from './components/InsightCard.js';
+export type {
+  BulletProps,
+  InsightCardLabels,
+  InsightCardProps,
+  InsightComparison,
+  InsightCoverage,
+  InsightKpi,
+  InsightStatus,
+  InsightStatusTone,
+  InsightTarget,
+} from './components/InsightCard.js';
+
+// Chart statistics (HAR-1554): pure, so servers can compute what the chart draws.
+export { linearFit, normalQuantile, predictionBand, quantiles, studentTQuantile } from './chart-stats.js';
+export type { ChartStatPoint, LinearFit, PredictionBandPoint } from './chart-stats.js';
+
 export { Chip, ChipGroup } from './components/Chip.js';
 export type { ChipProps, ChipGroupProps } from './components/Chip.js';
 

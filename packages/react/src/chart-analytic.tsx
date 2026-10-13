@@ -72,7 +72,7 @@ export {
   thresholdMarks,
 } from './chart-analytic-model.js';
 export { CHART_PANELS_LAYOUT, DEFAULT_CHART_PANELS_LABELS, chartPanelsModel, niceCeil } from './chart-panels-model.js';
-export { DEFAULT_CORRELATION_SCATTER_LABELS, SCATTER_HIT_SIZE, correlationScatterModel } from './correlation-scatter-model.js';
+export { DEFAULT_CORRELATION_SCATTER_LABELS, SCATTER_HIT_SIZE, correlationScatterModel, formatCorrelation } from './correlation-scatter-model.js';
 export { linearFit, normalQuantile, predictionBand, quantiles, studentTQuantile } from './chart-stats.js';
 export type { ChartTokenSource, UixChartTokens } from './chart-theme.js';
 export type {

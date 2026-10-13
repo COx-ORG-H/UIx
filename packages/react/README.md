@@ -676,6 +676,53 @@ A two-way diff of two texts (HAR-1368; TENSOR's knowledge-article version diff).
 - **Long texts:** `context` keeps that many unchanged lines around each change. Longer runs fold behind "Show n unchanged lines", and focus moves to the first revealed line. Over `maxTokens` (20 000) a note replaces the diff. Past `maxEdits` (2 000) the changed middle shows as one replacement instead of stalling.
 - Pure model for tests and servers: `diffText`, `diffTokens`, `textDiffRows`, `tokenizeText`.
 
+### Decision-grade charts: `chart/analytic`, `ChartPanels`, `CorrelationScatter`, `InsightCard`
+
+Charts that answer a decision (HAR-1553, HAR-1554, HAR-1556). The product computes the data — series, thresholds, events, forecasts with bounds, coverage — and writes the words; UIx draws. `@tensor_1/react/chart/analytic` is its own tree-shaken ECharts build (≤ 185 kB Brotli).
+
+```tsx
+import { ChartPanels, CorrelationScatter } from '@tensor_1/react/chart/analytic';
+import { InsightCard } from '@tensor_1/react';
+
+<InsightCard
+  eyebrow="Delivery health · last 15 days"
+  headline="Review is the bottleneck: 18.7 h, over budget for 3 days"
+  sowhat="Cap work in Review at 8 or add a reviewer this week."
+  status={{ tone: 'warning', label: 'Over budget' }}
+  kpis={[{ value: '18.7 h', label: 'Residence in Review',
+           comparison: { text: '↑ 3.7 h over the 15 h budget', tone: 'negative' },
+           target: { actual: 18.7, target: 15, ranges: [[0, 10], [10, 15], [15, 24]] } }]}
+  coverage={{ covered: 412, total: 431, note: 'items timed', partialPeriod: 'Today is partial.' }}
+  actions={<Link href="/review?state=waiting">Open the 10 items waiting in Review</Link>}
+  layout="split"
+  aside={<CorrelationScatter points={points} xLabel="Items in Review" yLabel="Residence (h)"
+                             breakpoint={{ x: 9, label: 'Knee ≈ 9 items' }} ariaLabel="…" />}
+>
+  <ChartPanels
+    x={{ type: 'category', values: days }}
+    partialLast
+    events={[{ at: 'Sep 1', kind: 'Release', label: 'Release freeze starts' }]}
+    panels={[
+      { id: 'residence', title: 'Residence', unit: 'h', kind: 'line',
+        series: [{ id: 'review', label: 'Review', values: review }],
+        thresholds: [{ value: 15, kind: 'budget', tone: 'warning', label: '15 h budget', badSide: 'above' }],
+        forecast: { from: 'Today', level: 0.8, method: 'linear', points: projection },
+        comparison: { label: 'Previous 15 days', values: previous } },
+      { id: 'wip', title: 'Work in Review', unit: 'items', kind: 'bar', series: [{ id: 'wip', label: 'Items', values: wip }] },
+    ]}
+    ariaLabel="Residence and work in Review, daily for 15 days"
+  />
+</InsightCard>
+```
+
+- **One axis, never two.** A panel has one unit and one y axis; two measures of different scale go on two panels on the same x axis, read with one crosshair and one tooltip that lists every panel at the hovered x. `group` links the crosshair across cards.
+- **Only a projection is dashed.** A threshold is a solid reference line labelled in the right gutter with its bad side shaded; the first point past it is ringed and named ("Crossed Sep 2"). The previous period is a thin solid ghost. Events sit in a lane of pins above the plot, which owns their tooltip and click (`onEventClick`, else the event's `href`), with unlabeled lines through every panel. `partialLast` shades the still-filling period.
+- **Honest correlation.** `CorrelationScatter` shows r and n with "association, not cause", refuses a trend below `minPoints` (default 8) and gives every point a 26 px hit target.
+- **Words.** Every word is a label: `labels` on `ChartPanels` (`DEFAULT_CHART_PANELS_LABELS`, including `formatX` / `formatValue`), on `CorrelationScatter` (`DEFAULT_CORRELATION_SCATTER_LABELS`) and on `InsightCard` (`DEFAULT_INSIGHT_CARD_LABELS`).
+- **Text alternatives.** One hidden table per panel (with lower, upper, threshold and event columns when given) and one for the scatter; `ariaLabel` is required.
+- **Building blocks.** The overlay helpers (`thresholdMarks`, `eventMarks`, `forecastSeries`, `comparisonSeries`, `partialPeriod`, `crossingPoints`, `combineMarks`) return option fragments for a hand-built `Chart` option; `chartPanelsModel` and `correlationScatterModel` are the pure models the components draw. `linearFit`, `quantiles` and `predictionBand` are on the root entry, so a server computes the same fit the chart draws.
+- `Chart`'s `option` may be a function of the theme's chart tokens; it is re-run when the theme flips, so colours you pass from `uixChartTokens` follow light and dark.
+
 ### DashboardGrid
 
 The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure layout: drag-and-drop, persistence and widget chrome stay in the product. Server-renderable.

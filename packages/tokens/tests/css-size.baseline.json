@@ -72,9 +72,9 @@
       "brotli": 930
     },
     "styles/components/chart.css": {
-      "raw": 5615,
-      "gzip": 1523,
-      "brotli": 1266
+      "raw": 5938,
+      "gzip": 1620,
+      "brotli": 1343
     },
     "styles/components/checkbox.css": {
       "raw": 1637,
@@ -195,6 +195,11 @@
       "raw": 3296,
       "gzip": 1091,
       "brotli": 876
+    },
+    "styles/components/insight-card.css": {
+      "raw": 5375,
+      "gzip": 1505,
+      "brotli": 1276
     },
     "styles/components/kanban.css": {
       "raw": 1617,

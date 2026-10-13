@@ -262,7 +262,7 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
         marks = combineMarks(
           panel.thresholds?.length ? thresholdMarks(panel.thresholds, { tokens, extent: [min, max] }) : null,
           eventFragment,
-          spec.partialLast && lastActual != null ? partialPeriod(lastActual, { tokens, from: previousActual, labels }) : null,
+          spec.partialLast && lastActual != null ? partialWash(partialPeriod(lastActual, { tokens, from: previousActual, labels }), panelIndex === 0) : null,
           ...crossings,
         );
       }
@@ -299,7 +299,8 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
           ...marks,
         });
       }
-      if (panel.series.length > 1) legend.push({ label: s.label, color, swatch: panel.kind === 'bar' ? 'block' : 'line' });
+      // a series needs a legend entry when its panel holds more than one line: other series, the ghost or a projection
+      if (panel.series.length > 1 || panel.comparison || panel.forecast) legend.push({ label: s.label, color, swatch: panel.kind === 'bar' ? 'block' : 'line' });
     });
 
     if (panel.comparison) {
@@ -344,6 +345,13 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
   };
 
   return { option, height: cursor, legend, tables, categories, seriesPanel, laneSeriesId };
+}
+
+/** The partial-period wash; only the top panel names it, so the word is said once. */
+function partialWash(marks: ChartMarks, labelled: boolean): ChartMarks {
+  if (labelled || !marks.markArea?.data) return marks;
+  const data = (marks.markArea.data as unknown as [Record<string, unknown>, Record<string, unknown>][]).map(([from, to]) => [{ ...from, label: { show: false } }, to]);
+  return { markArea: { ...marks.markArea, data: data as unknown as NonNullable<ChartMarks['markArea']>['data'] } };
 }
 
 function panelTable(spec: ChartPanelsSpec, panel: ChartPanel, categories: ChartX[], events: ChartEvent[], labels: ChartPanelsLabels): ChartPanelsTable {

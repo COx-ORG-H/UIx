@@ -2,6 +2,8 @@
    Requires window.echarts (loaded on demand by guide/app.js). */
 
 import { mergeChartTheme, uixChartAreaGradient, uixChartTheme, uixChartTokens } from './chart-theme.js';
+import { chartPanelsModel, correlationScatterModel } from './chart-analytic.js';
+import { ANALYTIC_EXAMPLE, DELIVERY_PANELS, DELIVERY_SCATTER } from './insight-examples.js';
 
 const instances = new Map();
 const observers = new Map();
@@ -12,7 +14,7 @@ const OPTIONS = {
   residence: (k) => ({
     animationDuration: 320,
     tooltip: { trigger: 'axis', valueFormatter: (value) => `${value}h` },
-    grid: { top: 10, right: 18, bottom: 25, left: 12, containLabel: true },
+    grid: { top: 10, right: 76, bottom: 25, left: 12, containLabel: true },
     xAxis: {
       type: 'category',
       boundaryGap: false,
@@ -32,12 +34,12 @@ const OPTIONS = {
       lineStyle: { width: 2 },
       itemStyle: { borderColor: k.surface, borderWidth: 2 },
       areaStyle: { color: uixChartAreaGradient(k.palette[0]) },
-      // a threshold is the one dashed line on the plot; neutral reference ink, not a status hue
+      // a threshold is a SOLID reference line (dashes mean projection), labelled in the right gutter
       markLine: {
         silent: true,
         symbol: 'none',
-        label: { formatter: '15h budget', position: 'insideEndTop', color: k.reference, fontSize: 11 },
-        lineStyle: { color: k.reference, width: 1, type: 'dashed' },
+        label: { formatter: '15h budget', position: 'end', color: k.textMuted, fontSize: 11 },
+        lineStyle: { color: k.reference, width: 1, type: 'solid' },
         data: [{ yAxis: 15 }],
       },
       emphasis: { focus: 'series', lineStyle: { width: 3 } },
@@ -88,8 +90,30 @@ const OPTIONS = {
   }),
 };
 
+/* Decision-grade examples (HAR-1553/1554/1556): the shipped ChartPanels / CorrelationScatter models
+   (guide/chart-analytic.js is generated from the React source) over guide/insight-examples.js, the
+   same data the React harness renders. Each returns { option, height?, statsText? }. */
+const MODELS = {
+  analytic: (k) => chartPanelsModel(ANALYTIC_EXAMPLE, k),
+  'delivery-panels': (k) => chartPanelsModel(DELIVERY_PANELS, k),
+  'delivery-scatter': (k) => ({ height: 280, ...correlationScatterModel(DELIVERY_SCATTER, k) }),
+};
+
+/** A model example: size the element from the model and fill its stats caption, then theme the option. */
+const modelOptionFor = (type, el) => {
+  const model = MODELS[type](uixChartTokens(el));
+  if (model.height) el.style.height = `${model.height}px`;
+  if (model.statsText) {
+    document.querySelectorAll(`[data-uix-chart-stats="${type}"]`).forEach((caption) => { caption.textContent = model.statsText; });
+  }
+  return mergeChartTheme(uixChartTheme(el), model.option);
+};
+
+const knownType = (type) => Boolean(OPTIONS[type] || MODELS[type]);
+
 /** The themed option for one example, read from the element's own computed tokens. */
 const optionFor = (type, el) => {
+  if (MODELS[type]) return modelOptionFor(type, el);
   const style = getComputedStyle(el);
   const status = Object.fromEntries(['success', 'attention', 'warning', 'danger']
     .map((tone) => [tone, style.getPropertyValue(`--uix-${tone}-solid`).trim()]));
@@ -102,7 +126,8 @@ export const initCharts = () => {
   document.querySelectorAll('[data-uix-chart]').forEach((el) => {
     if (instances.has(el)) return;
     const type = el.dataset.uixChart;
-    if (!OPTIONS[type]) return;
+    if (!knownType(type)) return;
+    if (MODELS[type]) el.style.height = `${MODELS[type](uixChartTokens(el)).height ?? 280}px`;
     const chart = ec.init(el, null, { renderer: 'svg' });
     chart.setOption(optionFor(type, el));
     instances.set(el, chart);
@@ -137,6 +162,6 @@ export const refreshCharts = () => {
       return;
     }
     const type = el.dataset.uixChart;
-    if (OPTIONS[type]) chart.setOption(optionFor(type, el), { notMerge: true });
+    if (knownType(type)) chart.setOption(optionFor(type, el), { notMerge: true });
   });
 };

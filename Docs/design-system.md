@@ -153,6 +153,7 @@ this is what keeps UIx stack-neutral). Current set:
 UIx is **presentational and stack-neutral**. Business logic, data-fetching, and domain concepts stay in the
 **consumer**, composed from UIx primitives:
 
+- Decision-grade insights → UIx `InsightCard` over `ChartPanels` / `CorrelationScatter` (`@tensor_1/react/chart/analytic`): the product computes the data (series, thresholds, events, forecasts, coverage) and writes the words; UIx draws. Never a dual y-axis: different units go on separate panels.
 - Data-coupled widgets (tRPC/query-driven dashboards) → build in the product, render with UIx `Card`/`Stat`/`Chart`,
   laid out on UIx `DashboardGrid` (the generic layout half; drag-and-drop and persistence stay in the product).
 - Workflow/compliance components (e.g. an approval `ConfirmAction` carrying audit/RBAC metadata) → product owns

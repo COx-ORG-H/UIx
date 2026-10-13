@@ -37,8 +37,14 @@ export interface CorrelationScatterLabels {
 
 const defaultNumber = new Intl.NumberFormat('en', { maximumFractionDigits: 2 });
 
+/** r to two decimals, truncated toward zero so an imperfect fit never reads "r = 1.00". */
+export function formatCorrelation(r: number): string {
+  const shown = Math.abs(r) < 1 ? Math.trunc(r * 100) / 100 : Math.sign(r);
+  return shown.toFixed(2);
+}
+
 export const DEFAULT_CORRELATION_SCATTER_LABELS: CorrelationScatterLabels = {
-  stats: ({ r, n }) => `${r == null ? '' : `r = ${defaultNumber.format(r)} · `}n = ${n} · association, not cause`,
+  stats: ({ r, n }) => `${r == null ? '' : `r = ${formatCorrelation(r)} · `}n = ${n} · association, not cause`,
   notEnough: (n, min) => `Not enough data (n = ${n} of ${min})`,
   percentile: (p) => `p${p}`,
   trend: 'Trend',
@@ -73,8 +79,8 @@ export interface CorrelationScatterModel {
   hitSeriesId: string;
 }
 
-/** Hit target for every point, in px: the accessible minimum (WCAG 2.5.8), bigger than the 9 px dot. */
-export const SCATTER_HIT_SIZE = 24;
+/** Hit target for every point, in px: above the 24 px accessible minimum (WCAG 2.5.8) with the 2 px gap around it. */
+export const SCATTER_HIT_SIZE = 26;
 const DOT_SIZE = 9;
 
 const escapeHtml = (text: string) =>
@@ -114,6 +120,7 @@ export function correlationScatterModel(
       color: p.emphasis === 'danger' ? tokens.danger : p.emphasis === 'warning' ? tokens.warning : tokens.palette[0],
       borderColor: tokens.surface,
       borderWidth: 2,
+      opacity: 1,
     },
   }));
 

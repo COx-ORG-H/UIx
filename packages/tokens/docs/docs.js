@@ -105,7 +105,7 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Dashboard grid', 'Tooltip', 'Info tip', 'States', 'Relative time'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
@@ -120,6 +120,7 @@ export const SHOWCASE_SECTION_MAP = {
   'form-controls': 'examples-form-controls',
   navigation: 'examples-navigation',
   'data-display': 'examples-data-display',
+  'insight-charts': 'examples-insight-charts',
   overlays: 'examples-overlays',
   'crm-itsm': 'examples-crm-itsm',
   'workflows-pipelines': 'examples-workflows-pipelines',
@@ -150,7 +151,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
-  'dashboard-grid', 'heartbeat', 'inline-edit', 'date-picker',
+  'dashboard-grid', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -228,6 +229,7 @@ export const exampleRouteFor = (item) => {
     'diff-viewer': 'examples-diff-viewer',
     'text-diff': 'examples-text-diff',
     'dashboard-grid': 'examples-dashboard-grid',
+    'insight-card': 'examples-insight-charts',
     'license-position-bar': 'examples-metrics',
     'match-review': 'examples-match-review',
     'metric-input': 'examples-metrics',
@@ -598,13 +600,21 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 
   chart: () => `${pageHeader('Components', 'Chart', 'Chart provides reusable analytical card chrome around a consumer-owned renderer, with first-class metrics, legends, annotations, freshness, loading, empty, and accessible table states.', ['@tensor_1/react/chart', 'renderer optional', 'Mission Control ready'])}
     ${section('anatomy', 'Anatomy', `<table class="uix-docs__token-table"><thead><tr><th>Part</th><th>Purpose</th></tr></thead><tbody><tr><td>Header</td><td>Eyebrow, title, subtitle, primary metric, delta, and optional action.</td></tr><tr><td>Plot</td><td>A stable renderer slot for ECharts or another chart engine.</td></tr><tr><td>Legend</td><td>Named color, line, dashed-line, or threshold keys outside the plot.</td></tr><tr><td>Annotation</td><td>A concise explanation of an operationally meaningful change.</td></tr><tr><td>Footer</td><td>Source, freshness, time range, or other provenance.</td></tr><tr><td>Data table</td><td>The equivalent values for screen readers and non-visual inspection.</td></tr></tbody></table>`)}
-    ${section('css-example', 'CSS and HTML', `${demo(`<article class="uix-chart"><header class="uix-chart__header"><div class="uix-chart__heading"><span class="uix-chart__eyebrow">Delivery health</span><h3 class="uix-chart__title">Checkpoint residence</h3><p class="uix-chart__subtitle">Median hours by checkpoint · last 14 days</p></div><div class="uix-chart__metric"><strong>18.4h</strong><span class="uix-chart__delta uix-chart__delta--good">↓ 12%</span></div></header><div class="uix-chart__tick-strip" role="img" aria-label="Checkpoint residence improved across fourteen daily samples"><span style="--uix-chart-value:42%"></span><span style="--uix-chart-value:58%"></span><span style="--uix-chart-value:50%"></span><span style="--uix-chart-value:71%"></span><span style="--uix-chart-value:64%"></span><span style="--uix-chart-value:82%"></span><span style="--uix-chart-value:76%"></span><span style="--uix-chart-value:91%"></span></div><footer class="uix-chart__footer"><span>Mission Control telemetry</span><span>Updated 2m ago</span></footer></article>`, `<article class="uix-chart">
-  <header class="uix-chart__header">…metric and context…</header>
+    ${section('css-example', 'CSS and HTML', `${demo(`<article class="uix-chart" data-testid="chart-css-demo"><header class="uix-chart__header"><div class="uix-chart__heading"><div class="uix-chart__eyebrow">Delivery health</div><h3 class="uix-chart__title">Checkpoint residence</h3><p class="uix-chart__subtitle">Median hours in Review · last 8 days</p></div><div class="uix-chart__metric"><div class="uix-chart__metric-value">18.4h</div><div class="uix-chart__metric-label">today</div><div class="uix-chart__delta" data-tone="negative">↑ 3.4h over budget</div></div></header><div class="uix-chart__plot"><div class="uix-chart-ticks" style="--tick-count:8" role="img" aria-label="Residence in Review rose on each of the last eight days, from 8.2 to 18.4 hours"><span class="uix-chart-tick" style="--tick-value:.42"></span><span class="uix-chart-tick" style="--tick-value:.48"></span><span class="uix-chart-tick" style="--tick-value:.5"></span><span class="uix-chart-tick" style="--tick-value:.58"></span><span class="uix-chart-tick" style="--tick-value:.64"></span><span class="uix-chart-tick" data-state="warning" style="--tick-value:.79"></span><span class="uix-chart-tick" data-state="warning" style="--tick-value:.86"></span><span class="uix-chart-tick" data-state="warning" data-current style="--tick-value:.92"></span></div></div><footer class="uix-chart__footer"><ul class="uix-legend"><li class="uix-legend__item"><span class="uix-legend__swatch" aria-hidden="true"></span>Within budget</li><li class="uix-legend__item" style="--legend-color:var(--uix-warning)"><span class="uix-legend__swatch" aria-hidden="true"></span>Over the 15h budget</li></ul><span class="uix-chart__source">Pipeline events · updated 2m ago</span></footer></article>`, `<article class="uix-chart">
+  <header class="uix-chart__header">
+    <div class="uix-chart__heading">…eyebrow, title, subtitle…</div>
+    <div class="uix-chart__metric">
+      <div class="uix-chart__metric-value">18.4h</div>
+      <div class="uix-chart__delta" data-tone="negative">↑ 3.4h over budget</div>
+    </div>
+  </header>
   <div class="uix-chart__plot" data-uix-chart="residence"></div>
-  <div class="uix-chart__legend">…</div>
-  <footer class="uix-chart__footer">…source and freshness…</footer>
-  <table class="uix-chart__table uix-visually-hidden">…equivalent values…</table>
-</article>`)}`)}
+  <footer class="uix-chart__footer">
+    <ul class="uix-legend">…</ul>
+    <span class="uix-chart__source">…source and freshness…</span>
+  </footer>
+  <table class="uix-visually-hidden">…equivalent values…</table>
+</article>`)}<p>Decision-grade overlays (limits, events, projections, the previous period, a partial period), aligned panels, a correlation scatter and the <code>InsightCard</code> are on <a href="#examples-insight-charts">Decision-grade charts</a>, from <code>@tensor_1/react/chart/analytic</code>.</p>`)}
     ${section('react-api', 'React composition', `${codeBlock(`import { Chart, ChartLegend, ChartLegendItem, ChartMetric } from "@tensor_1/react/chart";
 
 <Chart
