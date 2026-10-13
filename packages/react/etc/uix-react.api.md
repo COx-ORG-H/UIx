@@ -5742,15 +5742,12 @@ export function ToggleRow(input: ToggleRowProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ToggleRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-    // (undocumented)
-    accessibleLabel: string;
+    accessibleLabel?: string;
     // (undocumented)
     checked: boolean;
-    // (undocumented)
     description?: ReactNode;
     // (undocumented)
     disabled?: boolean;
-    // (undocumented)
     label: ReactNode;
     // (undocumented)
     onCheckedChange: (checked: boolean) => void;
