@@ -25,6 +25,13 @@ const loadCharts = () => {
   return chartsPromise;
 };
 
+/* Offline (or with the CDN blocked) the chart engine cannot load: the chart areas stay empty
+   and the page says so in the console, instead of throwing an unhandled rejection. */
+const chartsUnavailable = (error) => {
+  chartsPromise = undefined;
+  console.warn('[uix docs] charts unavailable:', error?.message ?? error);
+};
+
 /* ----------------------------------------------------------------------------
  * Pure helpers (tested in app.test.js)
  * --------------------------------------------------------------------------*/
@@ -403,7 +410,7 @@ export const initShowcase = (options = {}) => {
       localStorage.setItem(KEY, next);
       paintToggle();
       buildTokenReference();
-      void loadCharts().then((charts) => charts?.refreshCharts());
+      void loadCharts().then((charts) => charts?.refreshCharts()).catch(chartsUnavailable);
       return;
     }
     const copyBtn = e.target.closest('[data-uix-copy]');
@@ -1355,7 +1362,7 @@ export const initShowcase = (options = {}) => {
     enhanceInfoTips();
     const firstChart = document.querySelector('[data-uix-chart]');
     if (firstChart) {
-      const initialize = () => void loadCharts().then((charts) => charts?.initCharts());
+      const initialize = () => void loadCharts().then((charts) => charts?.initCharts()).catch(chartsUnavailable);
       if (typeof IntersectionObserver === 'undefined') initialize();
       else {
         const observer = new IntersectionObserver((entries) => {
