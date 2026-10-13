@@ -371,7 +371,8 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
       gridIndex,
       min,
       max,
-      splitNumber: 2,
+      // three ticks (min, half way, max): a short panel never prints a crowded extra max label
+      interval: (max - min) / 2,
       name: panel.unit ? `${panel.title} (${panel.unit})` : panel.title,
       nameLocation: "end",
       nameGap: 8,
