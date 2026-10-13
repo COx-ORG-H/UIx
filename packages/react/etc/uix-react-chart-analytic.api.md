@@ -24,7 +24,7 @@ export const CHART_PANELS_LAYOUT: {
     readonly top: 8;
     readonly lane: 14;
     readonly laneGap: 10;
-    readonly title: 22;
+    readonly title: 28;
     readonly panelHeight: 112;
     readonly panelGap: 14;
     readonly axisBand: 30;
