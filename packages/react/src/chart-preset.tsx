@@ -37,4 +37,4 @@ export function Chart(props: ChartProps) {
 export { ChartLegend, ChartLegendItem, ChartMetric, DEFAULT_CHART_LABELS, uixChartPalette } from './components/ChartCore.js';
 export { mergeChartTheme, uixChartAreaGradient, uixChartTheme, uixChartTokens } from './chart-theme.js';
 export type { ChartTokenSource, UixChartTokens } from './chart-theme.js';
-export type { ChartLabels, ChartLegendItemProps, ChartLegendProps, ChartMetricProps, ChartProps, ChartTableRow } from './components/ChartCore.js';
+export type { ChartEventHandler, ChartLabels, ChartLegendItemProps, ChartLegendProps, ChartMetricProps, ChartOption, ChartProps, ChartTable, ChartTableRow } from './components/ChartCore.js';

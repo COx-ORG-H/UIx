@@ -28,6 +28,11 @@
       "import": "./dist/chart.js",
       "require": "./dist/chart.cjs"
     },
+    "./chart/analytic": {
+      "types": "./dist/chart-analytic.d.ts",
+      "import": "./dist/chart-analytic.js",
+      "require": "./dist/chart-analytic.cjs"
+    },
     "./chart/preset": {
       "types": "./dist/chart-preset.d.ts",
       "import": "./dist/chart-preset.js",
