@@ -182,6 +182,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-chart"
   },
+  "insight-card": {
+    "route": "examples-insight-charts",
+    "selector": ".uix-insight"
+  },
   "dashboard-grid": {
     "route": "examples-dashboard-grid",
     "selector": ".uix-dashboard-grid"

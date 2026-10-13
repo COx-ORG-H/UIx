@@ -479,6 +479,14 @@ export interface BulkBarProps extends HTMLAttributes<HTMLDivElement> {
     selectedLabel?: (count: number) => ReactNode;
 }
 
+// @public
+export function Bullet(input: BulletProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BulletProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'>, InsightTarget {
+    label: string;
+}
+
 // @public (undocumented)
 export const Button: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
 
@@ -592,6 +600,14 @@ export function CellStrong(input: HTMLAttributes<HTMLSpanElement>): react.JSX.El
 
 // @public
 export function CellSub(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
+
+// @public
+export interface ChartStatPoint {
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
 
 // @public (undocumented)
 export const Checkbox: react.ForwardRefExoticComponent<CheckboxProps & react.RefAttributes<HTMLInputElement>>;
@@ -1223,6 +1239,9 @@ export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels;
 
 // @public (undocumented)
 export const DEFAULT_INLINE_EDIT_LABELS: InlineEditLabels;
+
+// @public (undocumented)
+export const DEFAULT_INSIGHT_CARD_LABELS: InsightCardLabels;
 
 // @public (undocumented)
 export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
@@ -2274,6 +2293,100 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 }
 
 // @public (undocumented)
+export function InsightCard(input: InsightCardProps): react.JSX.Element;
+
+// @public
+export interface InsightCardLabels {
+    bullet: (actual: string, target: string) => string;
+    coverage: (covered: number, total: number, percent: number, note: ReactNode) => ReactNode;
+    // (undocumented)
+    formatNumber: (value: number) => string;
+    // (undocumented)
+    kpis: string;
+    // (undocumented)
+    source: string;
+    // (undocumented)
+    updated: string;
+}
+
+// @public (undocumented)
+export interface InsightCardProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    actions?: ReactNode;
+    // (undocumented)
+    aside?: ReactNode;
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    coverage?: InsightCoverage;
+    // (undocumented)
+    eyebrow?: ReactNode;
+    headingLevel?: 2 | 3 | 4;
+    headline: ReactNode;
+    // (undocumented)
+    kpis?: InsightKpi[];
+    // (undocumented)
+    labels?: Partial<InsightCardLabels>;
+    layout?: 'stack' | 'split';
+    // (undocumented)
+    source?: ReactNode;
+    sowhat?: ReactNode;
+    // (undocumented)
+    status?: InsightStatus;
+    // (undocumented)
+    updated?: ReactNode;
+    variant?: 'card' | 'plain';
+}
+
+// @public (undocumented)
+export interface InsightComparison {
+    // (undocumented)
+    text: ReactNode;
+    tone?: 'neutral' | 'positive' | 'negative' | 'warning';
+}
+
+// @public (undocumented)
+export interface InsightCoverage {
+    // (undocumented)
+    covered: number;
+    note: ReactNode;
+    partialPeriod?: ReactNode;
+    // (undocumented)
+    total: number;
+}
+
+// @public (undocumented)
+export interface InsightKpi {
+    // (undocumented)
+    comparison?: InsightComparison;
+    // (undocumented)
+    label: ReactNode;
+    // (undocumented)
+    target?: InsightTarget;
+    // (undocumented)
+    value: ReactNode;
+}
+
+// @public (undocumented)
+export interface InsightStatus {
+    label: string;
+    // (undocumented)
+    tone: InsightStatusTone;
+}
+
+// @public (undocumented)
+export type InsightStatusTone = 'ok' | 'warning' | 'critical' | 'unknown';
+
+// @public (undocumented)
+export interface InsightTarget {
+    // (undocumented)
+    actual: number;
+    max?: number;
+    ranges?: [number, number][];
+    // (undocumented)
+    target: number;
+}
+
+// @public (undocumented)
 export function isDateInRange(date: string, value: DateRangeValue): boolean;
 
 // @public (undocumented)
@@ -2603,6 +2716,22 @@ export interface LightboxProps {
     // (undocumented)
     open: boolean;
 }
+
+// @public
+export interface LinearFit {
+    // (undocumented)
+    intercept: number;
+    n: number;
+    r: number | null;
+    residualStdError: number;
+    // (undocumented)
+    slope: number;
+    sxx: number;
+    xMean: number;
+}
+
+// @public
+export function linearFit(points: readonly ChartStatPoint[]): LinearFit | null;
 
 // @public
 export function List(input: ListProps): react.JSX.Element;
@@ -3143,6 +3272,9 @@ export function nextSortDir(current: SortDir | 'none' | undefined): SortDir | 'n
 export function normalizeHex(value: string): string | undefined;
 
 // @public
+export function normalQuantile(p: number): number;
+
+// @public
 export function Note(input: NoteProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -3514,6 +3646,21 @@ export interface PositionResult {
 }
 
 // @public
+export function predictionBand(fit: LinearFit, xs: readonly number[], level?: number): PredictionBandPoint[];
+
+// @public
+export interface PredictionBandPoint {
+    // (undocumented)
+    lower: number;
+    // (undocumented)
+    upper: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
 export function PresenceDot(input: PresenceDotProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -3590,6 +3737,9 @@ export interface ProseProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public
+export function quantiles(values: readonly number[], ps: readonly number[]): (number | null)[];
 
 // @public (undocumented)
 export const Radio: react.ForwardRefExoticComponent<RadioProps & react.RefAttributes<HTMLInputElement>>;
@@ -5204,6 +5354,9 @@ export interface StepStateLabels {
     // (undocumented)
     waiting: string;
 }
+
+// @public
+export function studentTQuantile(p: number, df: number): number;
 
 // @public (undocumented)
 export function SubNavItem(input: SubNavItemProps): react.JSX.Element;

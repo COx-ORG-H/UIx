@@ -15,6 +15,9 @@ import { ReactNode } from 'react';
 export function Chart(props: ChartProps): react.JSX.Element;
 
 // @public
+export type ChartEventHandler = (params: unknown) => void;
+
+// @public
 export interface ChartLabels {
     chart: string;
     dataTableSuffix: string;
@@ -58,6 +61,9 @@ export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
     value: ReactNode;
 }
 
+// @public
+export type ChartOption = EChartsOption | ((tokens: UixChartTokens) => EChartsOption);
+
 // @public (undocumented)
 export interface ChartProps {
     // (undocumented)
@@ -68,6 +74,7 @@ export interface ChartProps {
     empty?: ReactNode;
     // (undocumented)
     footer?: ReactNode;
+    group?: string;
     // (undocumented)
     header?: ReactNode;
     // (undocumented)
@@ -77,10 +84,10 @@ export interface ChartProps {
     labels?: Partial<ChartLabels>;
     // (undocumented)
     loading?: boolean;
+    onEvents?: Record<string, ChartEventHandler>;
     // (undocumented)
     onReady?: (chart: ECharts) => void;
-    // (undocumented)
-    option: EChartsOption;
+    option: ChartOption;
     // (undocumented)
     style?: CSSProperties;
     // (undocumented)
@@ -89,9 +96,20 @@ export interface ChartProps {
     tableData?: ChartTableRow[];
     // (undocumented)
     tableHeaders?: string[];
+    tables?: ChartTable[];
     theme?: 'uix' | 'none';
     // (undocumented)
     title?: string;
+}
+
+// @public
+export interface ChartTable {
+    // (undocumented)
+    caption: string;
+    // (undocumented)
+    headers: string[];
+    // (undocumented)
+    rows: ChartTableRow[];
 }
 
 // @public (undocumented)
@@ -137,6 +155,8 @@ export interface UixChartTokens {
     // (undocumented)
     comparison: string;
     // (undocumented)
+    danger: string;
+    // (undocumented)
     event: string;
     // (undocumented)
     fontMono: string;
@@ -160,6 +180,7 @@ export interface UixChartTokens {
     text: string;
     // (undocumented)
     textMuted: string;
+    warning: string;
     // (undocumented)
     zoneDanger: string;
     // (undocumented)

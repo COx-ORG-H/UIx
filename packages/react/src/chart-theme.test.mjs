@@ -109,6 +109,6 @@ test('the styleguide examples keep no hand-rolled styling helpers', () => {
     assert.equal(src.includes(helper), false, `guide/charts.js still defines ${helper}`);
   }
   assert.match(src, /mergeChartTheme\(uixChartTheme\(el\)/);
-  // the only dashed stroke left is the threshold markLine
-  assert.equal((src.match(/type: 'dashed'/g) ?? []).length, 1);
+  // no dashed stroke at all: dashes mean projection (HAR-1553), and a threshold is a solid reference line
+  assert.equal((src.match(/type: 'dashed'/g) ?? []).length, 0);
 });

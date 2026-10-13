@@ -26,6 +26,8 @@ export function uixChartTokens(source) {
     event: t('chart-event'),
     partial: t('chart-partial'),
     comparison: t('chart-comparison'),
+    warning: t('warning'),
+    danger: t('danger'),
     surface: t('surface'),
     text: t('text'),
     textMuted: t('text-muted'),

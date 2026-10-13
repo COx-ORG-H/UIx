@@ -59,6 +59,9 @@
     color: var(--uix-text-muted); font-size: var(--uix-text-meta);
   }
   .uix-chart__source { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* CorrelationScatter (HAR-1554): the stats caption always says "association, not cause". */
+  .uix-chart__stats { margin: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; }
+  .uix-chart__insufficient { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   .uix-legend { display: flex; flex-wrap: wrap; gap: var(--uix-space-2) var(--uix-space-4); margin: 0; padding: 0; list-style: none; }
   .uix-legend__item { display: inline-flex; align-items: center; gap: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
   .uix-legend__swatch { width: 10px; height: 10px; flex: none; border-radius: var(--uix-radius-xs); background: var(--legend-color, var(--uix-chart-1)); }

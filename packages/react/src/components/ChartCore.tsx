@@ -4,11 +4,27 @@ import { useEffect, useId, useRef } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import type { ECharts, EChartsOption } from 'echarts';
 import { cx } from '../cx.js';
-import { mergeChartTheme, uixChartTheme } from '../chart-theme.js';
+import { mergeChartTheme, uixChartTheme, uixChartTokens } from '../chart-theme.js';
+import type { UixChartTokens } from '../chart-theme.js';
 
 export interface ChartEngine {
   init(element: HTMLElement, theme?: string | null, options?: { renderer?: 'svg' | 'canvas' }): ECharts;
+  /** Optional: links charts that share a `group` (one crosshair and tooltip across cards). */
+  connect?(group: string): void;
 }
+
+/** An option, or a function that builds it from the chart tokens of the current theme (re-run on a theme flip). */
+export type ChartOption = EChartsOption | ((tokens: UixChartTokens) => EChartsOption);
+
+/** A further text alternative: one visually hidden table (ChartPanels gives one per panel). */
+export interface ChartTable {
+  caption: string;
+  headers: string[];
+  rows: ChartTableRow[];
+}
+
+/** An ECharts event handler; `params` is ECharts' event object. */
+export type ChartEventHandler = (params: unknown) => void;
 
 function readToken(name: string): string {
   if (typeof getComputedStyle === 'undefined') return '';
@@ -21,8 +37,9 @@ export function uixChartPalette(): string[] {
 
 /** The option ECharts receives: the consumer's, over the UIx theme read from the chart's own element
     (so a scoped `.dark` subtree themes its charts too). */
-function themed(option: EChartsOption, theme: 'uix' | 'none', element: Element): EChartsOption {
-  return theme === 'none' ? option : mergeChartTheme(uixChartTheme(element), option);
+function themed(option: ChartOption, theme: 'uix' | 'none', element: Element): EChartsOption {
+  const resolved = typeof option === 'function' ? option(uixChartTokens(element)) : option;
+  return theme === 'none' ? resolved : mergeChartTheme(uixChartTheme(element), resolved);
 }
 
 /** Merge `animation: false` when the user prefers reduced motion. Only called from effects (client-side),
@@ -58,7 +75,8 @@ export const DEFAULT_CHART_LABELS: ChartLabels = {
 };
 
 export interface ChartProps {
-  option: EChartsOption;
+  /** The ECharts option, or a function of the theme's chart tokens (re-run when the theme flips). */
+  option: ChartOption;
   title?: string;
   subtitle?: string;
   height?: string | number;
@@ -80,6 +98,12 @@ export interface ChartProps {
    * grid and the UIx tooltip — and re-applies it when the page theme changes. `'none'` renders `option` as is.
    */
   theme?: 'uix' | 'none';
+  /** Charts with the same group share one crosshair and tooltip (`echarts.connect`). */
+  group?: string;
+  /** ECharts event handlers by event name (`click` for drill-down). */
+  onEvents?: Record<string, ChartEventHandler>;
+  /** Further hidden data tables (after `tableData`), each named in the chart's description. */
+  tables?: ChartTable[];
 }
 
 interface ChartCoreProps extends ChartProps {
@@ -106,16 +130,21 @@ export function ChartCore({
   empty,
   labels: labelOverrides,
   theme = 'uix',
+  group,
+  onEvents,
+  tables,
 }: ChartCoreProps) {
   const labels: ChartLabels = { ...DEFAULT_CHART_LABELS, ...labelOverrides };
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ECharts | null>(null);
-  const appliedOptionRef = useRef<EChartsOption | null>(null);
+  const appliedOptionRef = useRef<ChartOption | null>(null);
+  const onEventsRef = useRef(onEvents);
+  onEventsRef.current = onEvents;
   const latestOptionRef = useRef(option);
   const onReadyRef = useRef(onReady);
   const tableId = useId();
   const hasEmpty = empty != null;
-  const hasTextAlternative = Boolean(ariaLabel || title || tableData?.length);
+  const hasTextAlternative = Boolean(ariaLabel || title || tableData?.length || tables?.length);
   const hasTextAlternativeRef = useRef(hasTextAlternative);
   const themeRef = useRef(theme);
   latestOptionRef.current = option;
@@ -177,6 +206,33 @@ export function ChartCore({
     };
   }, [engine, hasEmpty]);
 
+  // handlers are re-bound when the set of event names changes; each call reads the latest handler
+  const eventNames = Object.keys(onEvents ?? {}).sort().join('|');
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !eventNames) return;
+    const bound = eventNames.split('|').map((name) => {
+      const handler = (params: unknown) => onEventsRef.current?.[name]?.(params);
+      chart.on(name, handler);
+      return [name, handler] as const;
+    });
+    return () => {
+      // the init effect's cleanup may have disposed the instance first (unmount, StrictMode)
+      if (chart.isDisposed()) return;
+      for (const [name, handler] of bound) chart.off(name, handler);
+    };
+  }, [engine, hasEmpty, eventNames]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !group) return;
+    chart.group = group;
+    engine.connect?.(group);
+    return () => {
+      if (!chart.isDisposed()) chart.group = '';
+    };
+  }, [engine, hasEmpty, group]);
+
   useEffect(() => {
     const chart = chartRef.current;
     const element = containerRef.current;
@@ -188,6 +244,8 @@ export function ChartCore({
   const heightValue = typeof height === 'number' ? `${height}px` : height;
   const effectiveAriaLabel = ariaLabel ?? title ?? labels.chart;
   const hasTable = Boolean(tableData?.length && tableHeaders?.length);
+  const extraTables = (tables ?? []).filter((table) => table.headers.length && table.rows.length);
+  const describedBy = [hasTable ? tableId : null, ...extraTables.map((_, index) => `${tableId}-${index}`)].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={cx('uix-chart', className)} style={style}>
@@ -211,7 +269,7 @@ export function ChartCore({
             style={{ height: heightValue }}
             role="img"
             aria-label={effectiveAriaLabel}
-            aria-describedby={hasTable ? tableId : undefined}
+            aria-describedby={describedBy}
           />
         </div>
       )}
@@ -225,6 +283,16 @@ export function ChartCore({
           </tbody>
         </table>
       ) : null}
+      {extraTables.map((table, index) => (
+        <table key={index} id={`${tableId}-${index}`} className="uix-visually-hidden" aria-label={table.caption}>
+          <thead><tr>{table.headers.map((label) => <th key={label} scope="col">{label}</th>)}</tr></thead>
+          <tbody>
+            {table.rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>{table.headers.map((label) => <td key={label}>{row[label]}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      ))}
       {footer != null && <div className="uix-chart__footer">{footer}</div>}
     </div>
   );

@@ -1,0 +1,73 @@
+/* uix insight card (HAR-1556) — a card whose headline is the answer: status (text + icon), KPIs with a
+   comparison and a bullet against target, the chart, an optional aside (a scatter), coverage, source and
+   one action. The card is an inline-size container: `data-layout="split"` puts the aside beside the
+   chart from 60rem (960 px) of CARD width, and stacks below that. Tones are neutral-first: only a
+   warning or a critical status takes a hue, and it always carries its label and icon. */
+@layer uix.components {
+  .uix-insight {
+    container: uix-insight / inline-size;
+    display: flex; flex-direction: column; gap: var(--uix-space-4);
+    min-width: 0; padding: var(--uix-space-5);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface); color: var(--uix-text);
+  }
+  /* Inside another frame (a dashboard widget): no border, surface or outer padding of its own. */
+  .uix-insight--plain { padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .uix-insight__header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--uix-space-2) var(--uix-space-4); min-width: 0; }
+  .uix-insight__heading { flex: 1 1 18rem; min-width: 0; }
+  .uix-insight__eyebrow {
+    margin-bottom: var(--uix-space-1); color: var(--uix-text-muted);
+    font-size: var(--uix-text-eyebrow); font-weight: 600; letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
+  }
+  .uix-insight__headline { margin: 0; color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .uix-insight__sowhat { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-body); line-height: 1.5; overflow-wrap: anywhere; }
+  .uix-insight__status {
+    display: inline-flex; flex: none; align-items: center; gap: var(--uix-space-1);
+    padding: var(--uix-space-1) var(--uix-space-2); line-height: 1; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600; white-space: nowrap;
+  }
+  .uix-insight__status[data-tone="warning"] { border-color: var(--uix-warning-border); color: var(--uix-warning-text); }
+  .uix-insight__status[data-tone="critical"] { border-color: var(--uix-danger-border); color: var(--uix-danger-text); }
+
+  .uix-insight__kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: var(--uix-space-3) var(--uix-space-5); margin: 0;
+  }
+  .uix-insight__kpi { display: flex; flex-direction: column; gap: var(--uix-space-1); min-width: 0; }
+  .uix-insight__kpi dd { margin: 0; }
+  .uix-insight__kpi-label { order: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-insight__kpi-value { order: -1; color: var(--uix-text); font-size: var(--uix-text-h2); font-weight: 600; line-height: 1.15; letter-spacing: var(--uix-tracking-tight); }
+  .uix-insight__kpi-comparison { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600; }
+  .uix-insight__kpi-comparison[data-tone="positive"] { color: var(--uix-success); }
+  .uix-insight__kpi-comparison[data-tone="negative"] { color: var(--uix-danger-text); }
+  .uix-insight__kpi-comparison[data-tone="warning"] { color: var(--uix-warning-text); }
+  .uix-insight__kpi-target { padding-top: var(--uix-space-1); }
+
+  .uix-insight__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-4); min-width: 0; }
+  .uix-insight__main, .uix-insight__aside { min-width: 0; }
+  .uix-insight__body > * > .uix-chart { padding: 0; border: 0; box-shadow: none; background: transparent; }
+  @container uix-insight (min-width: 60rem) {
+    .uix-insight[data-layout="split"] .uix-insight__body:has(> .uix-insight__aside) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  }
+
+  .uix-insight__footer {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--uix-space-3) var(--uix-space-4);
+    padding-top: var(--uix-space-3); border-top: 1px solid var(--uix-border);
+  }
+  .uix-insight__meta { display: flex; flex: 1 1 16rem; flex-direction: column; gap: var(--uix-space-1); min-width: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-insight__coverage, .uix-insight__source { display: flex; flex-wrap: wrap; gap: 0 var(--uix-space-3); margin: 0; overflow-wrap: anywhere; }
+  .uix-insight__partial { color: var(--uix-text-hushed); }
+  .uix-insight__actions { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); }
+
+  /* Bullet (Few): bands in neutral steps, the actual as a dark bar, the target as a tick. */
+  .uix-bullet { position: relative; width: 100%; min-width: 6rem; height: 12px; border-radius: var(--uix-radius-xs); background: var(--uix-bg-subtle); }
+  .uix-bullet__range { position: absolute; top: 0; bottom: 0; background: var(--uix-bg-active); }
+  .uix-bullet__range[data-band="1"] { background: var(--uix-bg-hover); }
+  .uix-bullet__range[data-band="2"] { background: var(--uix-bg-subtle); }
+  .uix-bullet__bar { position: absolute; top: 4px; left: 0; height: 4px; border-radius: var(--uix-radius-xs); background: var(--uix-text); }
+  .uix-bullet__target { position: absolute; top: 0; bottom: 0; width: 2px; translate: -50% 0; background: var(--uix-text); }
+  @media (forced-colors: active) {
+    .uix-bullet { border: 1px solid CanvasText; }
+    .uix-bullet__bar, .uix-bullet__target { background: CanvasText; }
+  }
+}

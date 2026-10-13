@@ -167,7 +167,7 @@ test('showcase-only compositions are explicit and never presented as CSS exports
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 105);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 106);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -198,7 +198,7 @@ test('specialized component references open their closest integrated example', (
 });
 
 test('all migrated showcase routes resolve and remain uniquely addressable', () => {
-  assert.equal(SHOWCASE_PAGES.length, 28);
+  assert.equal(SHOWCASE_PAGES.length, 29);
   assert.equal(new Set(SHOWCASE_PAGES.map((page) => page.slug)).size, SHOWCASE_PAGES.length);
   assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'advanced').length, 13);
   assert.equal(SHOWCASE_PAGES.filter((page) => page.source === 'workspace').length, 1);
@@ -258,7 +258,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 86);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 87);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });
@@ -271,4 +271,18 @@ test('docs prose list rules never reach kit lists', () => {
   const bare = selectors.filter((s) => /^\.uix-docs__page\s+(ul|ol|li(\s*\+\s*li)?)$/.test(s));
   assert.deepEqual(bare, [], 'scope prose list rules to docs-authored lists (see the :where(:not(...)) rule)');
   assert.ok(selectors.some((s) => s.includes('[class*="uix-"]:not([class*="uix-docs"]) *') && s.endsWith('> li + li')), 'the scoped prose li + li rule exists');
+});
+
+test('the #chart CSS demo uses only classes the built CSS defines (HAR-1556)', () => {
+  // The demo once used uix-chart__tick-strip, uix-chart__delta--good and uix-chart__legend, none of
+  // which exist: the plot rendered empty and the value ran into its delta.
+  const source = readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8');
+  const start = source.indexOf('data-testid="chart-css-demo"');
+  assert.ok(start > 0, 'the #chart page has its CSS demo');
+  const demo = source.slice(source.lastIndexOf('<article', start), source.indexOf('</article>', start));
+  const built = readFileSync(resolve(docsDirectory, '../build/css/styles.css'), 'utf8');
+  const defined = new Set([...built.matchAll(/\.([a-zA-Z_][\w-]*)/g)].map((match) => match[1]));
+  const used = [...new Set([...demo.matchAll(/class="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)))];
+  assert.ok(used.length > 10, `checked ${used.length} classes`);
+  assert.deepEqual(used.filter((name) => name.startsWith('uix-') && !defined.has(name)), []);
 });

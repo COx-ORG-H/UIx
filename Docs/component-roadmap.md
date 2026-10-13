@@ -43,6 +43,8 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Checkbox | checkbox.css | ✓ `Checkbox` | Stable | no | Form primitive. |
 | ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
 | DashboardGrid | dashboard-grid.css | ✓ `DashboardGrid` | Beta | no | Layout grid for dashboard widgets: spans 1, 2 (clamped) and `full`; column count follows the grid's own width (container query); each item is an inline-size container so charts size from it. Also `DashboardGridItem` / `DashboardGrid.Item`, `dashboardGridClassName`. Landed with HAR-1555. |
+| InsightCard | insight-card.css | ✓ `InsightCard`, `Bullet` | Beta | no | Decision card: answer headline, so-what, status word + icon, KPIs with comparison and a bullet against target, chart body with an optional aside (split from 60rem of card width), coverage, source, one action |
+| ChartPanels / CorrelationScatter | chart.css | ✓ `@tensor_1/react/chart/analytic` | Beta | no | Aligned panels on one axis with one crosshair (no dual axes), overlays for thresholds, events, projections, the previous period, a partial period and crossings; a scatter with OLS trend, r, n, percentiles and a breaking point |
 | Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. 2.36.0 (HAR-1647): the result count is a label (`resultsLabel`, provider `commandPalette.resultsOne` / `resultsMany`). |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |

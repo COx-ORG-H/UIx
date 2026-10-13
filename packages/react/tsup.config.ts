@@ -40,6 +40,7 @@ export default defineConfig([
       index: 'src/index.ts',
       chart: 'src/chart.ts',
       'chart-preset': 'src/chart-preset.tsx',
+      'chart-analytic': 'src/chart-analytic.tsx',
       'rich-text': 'src/rich-text.ts',
       markdown: 'src/markdown.ts',
       emoji: 'src/emoji.ts',

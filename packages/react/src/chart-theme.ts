@@ -34,6 +34,9 @@ export interface UixChartTokens {
   event: string;
   partial: string;
   comparison: string;
+  /** Status hues for an emphasised mark (a point that breaches); never a series colour. */
+  warning: string;
+  danger: string;
   surface: string;
   text: string;
   textMuted: string;
@@ -59,6 +62,8 @@ export function uixChartTokens(source?: ChartTokenSource): UixChartTokens {
     event: t('chart-event'),
     partial: t('chart-partial'),
     comparison: t('chart-comparison'),
+    warning: t('warning'),
+    danger: t('danger'),
     surface: t('surface'),
     text: t('text'),
     textMuted: t('text-muted'),
