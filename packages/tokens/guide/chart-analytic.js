@@ -278,7 +278,7 @@ var CHART_PANELS_LAYOUT = {
   top: 8,
   lane: 14,
   laneGap: 10,
-  title: 22,
+  title: 28,
   panelHeight: 112,
   panelGap: 14,
   axisBand: 30,
@@ -328,6 +328,9 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
         show: showLabels,
         hideOverlap: true,
         showMaxLabel: true,
+        // the first and last labels align inward, so neither runs into the y-axis labels or the gutter
+        alignMinLabel: "left",
+        alignMaxLabel: "right",
         formatter: (value) => labels.formatX(value)
       },
       axisLine: { show: true },
@@ -375,7 +378,7 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
       interval: (max - min) / 2,
       name: panel.unit ? `${panel.title} (${panel.unit})` : panel.title,
       nameLocation: "end",
-      nameGap: 8,
+      nameGap: 14,
       nameTextStyle: { align: "left", padding: [0, 0, 0, -L.left + 4], color: tokens.text, fontFamily: tokens.fontSans, fontSize: 12, fontWeight: 600, width: 320, overflow: "truncate" },
       axisLabel: { formatter: (value) => labels.formatValue(value, panel.unit === "%" ? "%" : void 0) }
     });

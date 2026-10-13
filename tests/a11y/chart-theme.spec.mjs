@@ -86,7 +86,7 @@ test('flipping data-theme recolours the mounted chart without a remount', async 
   expect(await page.evaluate(() => document.querySelector('#plain svg')?.dataset.mark)).toBe('kept');
 });
 
-test('docs chart examples: gridlines are solid, only the threshold is dashed', async ({ page }, testInfo) => {
+test('docs chart examples: gridlines and the budget line are solid; nothing is dashed (dashes mean projection, HAR-1553)', async ({ page }, testInfo) => {
   await page.addInitScript((t) => { try { localStorage.setItem('uix-theme', t); } catch {} }, testInfo.project.name);
   await page.goto('docs/explorer.html#examples-data-display', { waitUntil: 'networkidle' });
   await expect(page.locator('[data-uix-chart] svg path').first()).toBeAttached({ timeout: 15_000 });
@@ -99,9 +99,9 @@ test('docs chart examples: gridlines are solid, only the threshold is dashed', a
   const gridLines = all.filter((s) => s.stroke === grid);
   expect(gridLines.length).toBeGreaterThan(2);
   expect(gridLines.every((s) => s.dash === 'none')).toBe(true);
-  const dashed = all.filter((s) => s.dash !== 'none');
-  expect(dashed.length).toBeGreaterThan(0);
-  expect(dashed.every((s) => s.stroke === reference), JSON.stringify(dashed)).toBe(true);
+  // the 15h budget is a solid reference line with its label in the gutter; no example here projects
+  expect(all.some((s) => s.stroke === reference && s.dash === 'none'), 'the budget line in reference ink').toBe(true);
+  expect(all.filter((s) => s.dash !== 'none'), 'no dashed stroke').toEqual([]);
   // the theme styles a legend but never adds one: the residence chart asks for none
   const residenceText = await page.locator('[data-uix-chart="residence"] svg text').allTextContents();
   expect(residenceText).not.toContain('Residence');

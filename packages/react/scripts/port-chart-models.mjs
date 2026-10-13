@@ -15,6 +15,8 @@ export const PORT_TARGET = resolve(packageRoot, '../tokens/guide/chart-analytic.
 export async function portChartModels() {
   const result = await build({
     entryPoints: [resolve(packageRoot, 'src/chart-analytic-guide.ts')],
+    // path comments in the output are relative to this, so the result is the same from any cwd
+    absWorkingDir: packageRoot,
     bundle: true,
     write: false,
     format: 'esm',
