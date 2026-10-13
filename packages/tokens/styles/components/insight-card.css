@@ -21,7 +21,7 @@
   .uix-insight__sowhat { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-body); line-height: 1.5; overflow-wrap: anywhere; }
   .uix-insight__status {
     display: inline-flex; flex: none; align-items: center; gap: var(--uix-space-1);
-    padding: 2px var(--uix-space-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    padding: var(--uix-space-1) var(--uix-space-2); line-height: 1; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
     color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600; white-space: nowrap;
   }
   .uix-insight__status[data-tone="warning"] { border-color: var(--uix-warning-border); color: var(--uix-warning-text); }
@@ -63,7 +63,7 @@
   .uix-bullet__range[data-band="1"] { background: var(--uix-bg-hover); }
   .uix-bullet__range[data-band="2"] { background: var(--uix-bg-subtle); }
   .uix-bullet__bar { position: absolute; top: 4px; left: 0; height: 4px; border-radius: var(--uix-radius-xs); background: var(--uix-text); }
-  .uix-bullet__target { position: absolute; top: 1px; bottom: 1px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--uix-text); }
+  .uix-bullet__target { position: absolute; top: 0; bottom: 0; width: 2px; translate: -50% 0; background: var(--uix-text); }
   @media (forced-colors: active) {
     .uix-bullet { border: 1px solid CanvasText; }
     .uix-bullet__bar, .uix-bullet__target { background: CanvasText; }
