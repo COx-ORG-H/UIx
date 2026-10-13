@@ -2334,6 +2334,7 @@ export interface InsightCardProps extends Omit<HTMLAttributes<HTMLElement>, 'tit
     status?: InsightStatus;
     // (undocumented)
     updated?: ReactNode;
+    variant?: 'card' | 'plain';
 }
 
 // @public (undocumented)

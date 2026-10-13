@@ -11,6 +11,8 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
     background: var(--uix-surface); color: var(--uix-text);
   }
+  /* Inside another frame (a dashboard widget): no border, surface or outer padding of its own. */
+  .uix-insight--plain { padding: 0; border: 0; border-radius: 0; background: transparent; }
   .uix-insight__header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--uix-space-2) var(--uix-space-4); min-width: 0; }
   .uix-insight__heading { flex: 1 1 18rem; min-width: 0; }
   .uix-insight__eyebrow {

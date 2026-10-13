@@ -90,6 +90,11 @@ test('every word the card writes can be replaced (German)', () => {
   assert.equal(/\b(Source|Updated|Key figures|against a target)\b/.test(html), false, 'no English left');
 });
 
+test('variant="plain" drops the card chrome for a card inside another frame', () => {
+  assert.match(renderToStaticMarkup(h(ui.InsightCard, { headline: 'A', variant: 'plain' })), /^<article class="uix-insight uix-insight--plain" data-layout="stack">/);
+  assert.ok(defined.has('uix-insight--plain'));
+});
+
 test('optional parts are absent when not given; an empty card is just its headline', () => {
   const html = renderToStaticMarkup(h(ui.InsightCard, { headline: 'No data yet' }));
   assert.equal(html, '<article class="uix-insight" data-layout="stack"><header class="uix-insight__header"><div class="uix-insight__heading"><h3 class="uix-insight__headline">No data yet</h3></div></header></article>');

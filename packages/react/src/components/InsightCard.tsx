@@ -86,6 +86,11 @@ export interface InsightCardProps extends Omit<HTMLAttributes<HTMLElement>, 'tit
   updated?: ReactNode;
   /** `split` puts the aside on the right when the card is ≥ 60rem (960 px) wide; below, it stacks. */
   layout?: 'stack' | 'split';
+  /**
+   * `card` (default) draws its own border and surface. `plain` draws none, for a card that sits
+   * inside another frame (a dashboard widget), so there is no card inside a card.
+   */
+  variant?: 'card' | 'plain';
   aside?: ReactNode;
   /** The headline's heading level. Default 3. */
   headingLevel?: 2 | 3 | 4;
@@ -111,6 +116,7 @@ export function InsightCard({
   source,
   updated,
   layout = 'stack',
+  variant = 'card',
   aside,
   headingLevel = 3,
   labels: labelOverrides,
@@ -124,7 +130,7 @@ export function InsightCard({
   const percent = coverage && coverage.total > 0 ? Math.round((coverage.covered / coverage.total) * 100) : null;
   const hasFooter = coverage != null || source != null || updated != null || actions != null;
   return (
-    <article className={cx('uix-insight', className)} data-layout={layout} {...props}>
+    <article className={cx('uix-insight', variant === 'plain' && 'uix-insight--plain', className)} data-layout={layout} {...props}>
       <header className="uix-insight__header">
         <div className="uix-insight__heading">
           {eyebrow != null ? <div className="uix-insight__eyebrow">{eyebrow}</div> : null}
