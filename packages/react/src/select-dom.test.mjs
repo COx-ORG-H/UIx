@@ -3,7 +3,7 @@
  * proxy (onChange(e), FormData, reset, required), multi-select, outside writes and async states.
  * Layout, placement, focus in the top layer and the phone sheet are in tests/a11y/select.spec.mjs.
  * Renders the BUILT dist — run `npm run build` first; CI does. */
-import test, { before, after } from 'node:test';
+import test, { before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createElement as h, Fragment, act, useState, createRef } from 'react';
@@ -302,10 +302,25 @@ test('searchable: the filter field becomes the combobox and announces the count'
   unmount();
 });
 
+// Node's mock clock drives the 200 ms search debounce and the 20 ms loader below. Real sleeps
+// raced them: the loader's timer is only set a microtask after the debounce fires, so one stall
+// of a loaded host let the test's sleep win (seen on Node 24 runners). React's act and scheduler
+// run on setImmediate and microtasks, which stay real; `advance` drains them before the tick (a
+// loader starts a microtask after `load()`) and after it (the answer lands in a microtask).
+const drain = () => new Promise((r) => setImmediate(r));
+const advance = (ms) => act(async () => {
+  await drain();
+  mock.timers.tick(ms);
+  await drain();
+});
+
 test('async: loading, then options; empty; error with retry; a stale request is aborted', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const queries = [];
   const signals = [];
   let mode = 'ok';
   const loadOptions = (query, signal) => {
+    queries.push(query);
     signals.push(signal);
     return new Promise((resolve, reject) => setTimeout(() => {
       if (mode === 'fail') reject(new Error('down'));
@@ -313,41 +328,56 @@ test('async: loading, then options; empty; error with retry; a stale request is 
     }, 20));
   };
   const { host, unmount } = mount(h(ui.Select, { 'aria-label': 'Owner', loadOptions, searchable: true, options: [{ value: 'u9', label: 'Zed' }], defaultValue: 'u9' }));
-  assert.equal(trig(host).textContent, 'Zed', 'the selected option from `options` labels the trigger before a load');
-  click(trig(host));
-  await settle(5);
-  assert.match(host.querySelector('.uix-select__state').textContent, /Loading/);
-  await settle(40);
-  assert.deepEqual(opts(host).map((o) => o.textContent), ['Ada', 'Ben']);
-  const input = host.querySelector('input[role="combobox"]');
-  const typeIt = (text) => act(() => {
-    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, text);
-    input.dispatchEvent(new window.Event('input', { bubbles: true }));
-  });
-  typeIt('a');
-  await settle(220);
-  typeIt('ad');
-  await settle(220);
-  assert.equal(signals.at(-2).aborted, true, 'the older request is aborted');
-  await settle(40);
-  assert.deepEqual(opts(host).map((o) => o.textContent), ['Ada ad', 'Ben']);
-  mode = 'none';
-  typeIt('zz');
-  await settle(260);
-  assert.equal(host.querySelector('.uix-select__state').textContent, 'No matching options');
-  mode = 'fail';
-  typeIt('zzz');
-  await settle(260);
-  const state = host.querySelector('.uix-select__state');
-  assert.match(state.textContent, /Could not load/);
-  assert.equal(state.getAttribute('role'), 'alert');
-  mode = 'ok';
-  click(state.querySelector('button'));
-  await settle(40);
-  assert.equal(opts(host).length, 2, 'Retry loads again');
-  key(input, 'Escape');
-  assert.equal(signals.at(-1).aborted || true, true);
-  unmount();
+  try {
+    assert.equal(trig(host).textContent, 'Zed', 'the selected option from `options` labels the trigger before a load');
+    click(trig(host));
+    await advance(0);
+    assert.deepEqual(queries, [''], 'opening loads at once, without the debounce');
+    assert.match(host.querySelector('.uix-select__state').textContent, /Loading/);
+    await advance(20);
+    assert.deepEqual(opts(host).map((o) => o.textContent), ['Ada', 'Ben']);
+    const input = host.querySelector('input[role="combobox"]');
+    const typeIt = (text) => act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, text);
+      input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    typeIt('a');
+    await advance(199);
+    assert.deepEqual(queries, [''], 'a query waits out the 200 ms debounce');
+    await advance(1);
+    assert.deepEqual(queries, ['', 'a']);
+    typeIt('ad');
+    assert.equal(signals.at(-1).aborted, true, 'a new query aborts the request in flight at once');
+    await advance(20);
+    assert.ok(!opts(host).some((o) => o.textContent === 'Ada a'), 'the aborted answer is dropped');
+    await advance(180);
+    assert.deepEqual(queries, ['', 'a', 'ad']);
+    await advance(20);
+    assert.deepEqual(opts(host).map((o) => o.textContent), ['Ada ad', 'Ben']);
+    mode = 'none';
+    typeIt('zz');
+    await advance(200);
+    await advance(20);
+    assert.equal(host.querySelector('.uix-select__state').textContent, 'No matching options');
+    mode = 'fail';
+    typeIt('zzz');
+    await advance(200);
+    await advance(20);
+    const state = host.querySelector('.uix-select__state');
+    assert.match(state.textContent, /Could not load/);
+    assert.equal(state.getAttribute('role'), 'alert');
+    mode = 'ok';
+    click(state.querySelector('button'));
+    await advance(20);
+    assert.equal(opts(host).length, 2, 'Retry loads again');
+    typeIt('b');
+    await advance(200);
+    key(input, 'Escape');
+    assert.equal(signals.at(-1).aborted, true, 'closing the list aborts the request in flight');
+  } finally {
+    unmount();
+    mock.timers.reset();
+  }
 });
 
 test('readOnly does not open; disabled disables the trigger and the proxy', () => {
