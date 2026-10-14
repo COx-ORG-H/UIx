@@ -382,28 +382,39 @@ export function findCrossings(values: readonly (number | null)[], threshold: Pic
   return out;
 }
 
-/** A ringed point at each first crossing, labelled "Crossed <x>" above it. */
+/**
+ * A ringed point at each first crossing. Only the latest carries a visible "Crossed <x>" label (it is
+ * the one a headline's "since" names); earlier crossings show theirs on hover, so a series that
+ * crosses repeatedly never stacks colliding labels along the line.
+ */
 export function crossingPoints(
   values: readonly (number | null)[],
   threshold: ChartThreshold,
   options: { x: readonly ChartX[]; tokens: UixChartTokens; labels?: Partial<ChartAnalyticLabels> },
 ): ChartMarks {
   const labels = { ...DEFAULT_ANALYTIC_LABELS, ...options.labels };
-  const data: MarkPointData = findCrossings(values, threshold).map((index) => ({
-    name: labels.crossed(labels.formatX(options.x[index])),
-    coord: [options.x[index], values[index] as number],
-    symbol: 'circle',
-    symbolSize: 10,
-    itemStyle: { color: options.tokens.surface, borderColor: options.tokens.text, borderWidth: 2 },
-    label: {
-      show: true,
-      position: 'top',
-      distance: 8,
-      formatter: labels.crossed(labels.formatX(options.x[index])),
-      color: options.tokens.text,
-      fontFamily: options.tokens.fontSans,
-      fontSize: 11,
-    },
-  }));
+  const crossings = findCrossings(values, threshold);
+  const label = (text: string, show: boolean) => ({
+    show,
+    position: 'top' as const,
+    distance: 8,
+    formatter: text,
+    color: options.tokens.text,
+    fontFamily: options.tokens.fontSans,
+    fontSize: 11,
+  });
+  const data: MarkPointData = crossings.map((index, i) => {
+    const text = labels.crossed(labels.formatX(options.x[index]));
+    const latest = i === crossings.length - 1;
+    return {
+      name: text,
+      coord: [options.x[index], values[index] as number],
+      symbol: 'circle',
+      symbolSize: 10,
+      itemStyle: { color: options.tokens.surface, borderColor: options.tokens.text, borderWidth: 2 },
+      label: label(text, latest),
+      ...(latest ? {} : { emphasis: { label: label(text, true) } }),
+    };
+  });
   return data.length ? { markPoint: { animation: false, data } } : {};
 }
