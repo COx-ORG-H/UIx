@@ -210,6 +210,8 @@ function Agenda() {
     : [
       { date: '2026-10-07', annotations: [payroll], rows: [
         timed('a1', ['2026-10-07', '08:00'], ['2026-10-07', '09:00'], 'Router firmware', { status: 'live' }),
+        // `longmarker=1` (TENSOR HAR-1519): a marker label longer than a phone is wide.
+        ...(params.get('longmarker') === '1' ? [timed('a0', ['2026-10-07', '07:00'], ['2026-10-07', '07:30'], 'Rebuild the payroll indexes', { markers: [{ id: 'f', label: 'Inside freeze Payroll run freeze: a written acknowledgement is required to move it', emphasis: 'warning' as const }, { id: 'g', label: 'Dependency conflicts not checked', emphasis: 'neutral' as const }] })] : []),
         timed('a2', ['2026-10-07', '10:00'], ['2026-10-07', '11:30'], 'Firewall rule update for the payment gateway cluster in the secondary data centre, second attempt after the vendor fix', { band: 'high', status: 'tentative', meta: 'Network · Payments', markers: [{ id: 'm', label: 'Needs sign-off', emphasis: 'warning' }] }),
         timed('a3', ['2026-10-07', '13:00'], ['2026-10-07', '14:00'], 'Payroll export job', { band: 'medium' }),
       ] },

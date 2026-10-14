@@ -122,6 +122,28 @@ test('AC6: at 375 px a long agenda keeps the title readable beside labelled mark
   }
 });
 
+test('at 375 px a marker label longer than the phone wraps inside its row; the calendar stays inside the page (TENSOR HAR-1519)', async ({ page }) => {
+  await open(page, 'case=agenda&longmarker=1', { width: 375, height: 812 });
+  const scroll = await pageScroll(page);
+  expect(scroll.scroll, 'no page scroll').toBeLessThanOrEqual(scroll.client);
+  const root = await page.locator('.uix-scheduling-calendar').evaluate((el) => ({ width: el.getBoundingClientRect().width, scroll: el.scrollWidth, parent: el.parentElement.getBoundingClientRect().width }));
+  expect(root.width, 'the calendar is no wider than its container').toBeLessThanOrEqual(root.parent + 0.5);
+  const agenda = await page.locator(`${P}agenda`).evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(agenda.scroll, 'the agenda does not scroll sideways').toBeLessThanOrEqual(agenda.client);
+  const row = page.locator('[data-item-id="a0"]');
+  const inside = await row.evaluate((el, prefix) => {
+    const r = el.getBoundingClientRect();
+    return [...el.querySelectorAll(`${prefix}marker`)].map((m) => {
+      const b = m.getBoundingClientRect();
+      return { right: b.right <= r.right + 0.5, lines: m.querySelector(`${prefix}marker-label`) ? Math.round(m.getBoundingClientRect().height) : 0 };
+    });
+  }, P);
+  for (const m of inside) expect(m.right, 'each marker is inside its row').toBe(true);
+  // The long one wraps instead of being cut: it is taller than one line.
+  expect(inside[0].lines, 'the long marker label wraps').toBeGreaterThan(20);
+  await expect(row.locator(`${P}marker-label`).first()).toContainText('required to move it');
+});
+
 test('at 1280 px the long agenda keeps its one-line rows', async ({ page }) => {
   await open(page, 'case=agenda&rows=260&rich=1');
   const agenda = page.locator(`${P}agenda--virtual`);
