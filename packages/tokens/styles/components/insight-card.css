@@ -45,7 +45,8 @@
 
   .uix-insight__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-4); min-width: 0; }
   .uix-insight__main, .uix-insight__aside { min-width: 0; }
-  .uix-insight__body > * > .uix-chart { padding: 0; border: 0; box-shadow: none; background: transparent; }
+  /* Frameless at zero padding: clip with a margin, so a glyph's ink survives but a resizing chart cannot scroll the page. */
+  .uix-insight__body > * > .uix-chart { padding: 0; border: 0; box-shadow: none; background: transparent; overflow: clip; overflow-clip-margin: var(--uix-space-1); }
   @container uix-insight (min-width: 60rem) {
     .uix-insight[data-layout="split"] .uix-insight__body:has(> .uix-insight__aside) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
   }

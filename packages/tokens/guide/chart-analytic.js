@@ -243,22 +243,29 @@ function findCrossings(values, threshold) {
 }
 function crossingPoints(values, threshold, options) {
   const labels = { ...DEFAULT_ANALYTIC_LABELS, ...options.labels };
-  const data = findCrossings(values, threshold).map((index) => ({
-    name: labels.crossed(labels.formatX(options.x[index])),
-    coord: [options.x[index], values[index]],
-    symbol: "circle",
-    symbolSize: 10,
-    itemStyle: { color: options.tokens.surface, borderColor: options.tokens.text, borderWidth: 2 },
-    label: {
-      show: true,
-      position: "top",
-      distance: 8,
-      formatter: labels.crossed(labels.formatX(options.x[index])),
-      color: options.tokens.text,
-      fontFamily: options.tokens.fontSans,
-      fontSize: 11
-    }
-  }));
+  const crossings = findCrossings(values, threshold);
+  const label = (text, show) => ({
+    show,
+    position: "top",
+    distance: 8,
+    formatter: text,
+    color: options.tokens.text,
+    fontFamily: options.tokens.fontSans,
+    fontSize: 11
+  });
+  const data = crossings.map((index, i) => {
+    const text = labels.crossed(labels.formatX(options.x[index]));
+    const latest = i === crossings.length - 1;
+    return {
+      name: text,
+      coord: [options.x[index], values[index]],
+      symbol: "circle",
+      symbolSize: 10,
+      itemStyle: { color: options.tokens.surface, borderColor: options.tokens.text, borderWidth: 2 },
+      label: label(text, latest),
+      ...latest ? {} : { emphasis: { label: label(text, true) } }
+    };
+  });
   return data.length ? { markPoint: { animation: false, data } } : {};
 }
 

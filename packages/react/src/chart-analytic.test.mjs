@@ -117,6 +117,10 @@ test('findCrossings / crossingPoints: only the first point of each run on the ba
   assert.deepEqual(model.findCrossings([20, 10, 5], { value: 8, kind: 'floor' }), [2]);
   const marks = model.crossingPoints([10, 16, 12, 18], limit, { x: ['a', 'b', 'c', 'd'], tokens, labels: { crossed: (x) => `Überschritten ${x}` } });
   assert.deepEqual(marks.markPoint.data.map((d) => d.label.formatter), ['Überschritten b', 'Überschritten d']);
+  // Only the latest crossing is labelled on the line; earlier ones reveal theirs on hover.
+  assert.deepEqual(marks.markPoint.data.map((d) => d.label.show), [false, true]);
+  assert.equal(marks.markPoint.data[0].emphasis.label.show, true);
+  assert.equal(marks.markPoint.data[1].emphasis, undefined);
 });
 
 // ── panels (C3) ────────────────────────────────────────────────────────────────────────────────
