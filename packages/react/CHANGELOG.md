@@ -1,5 +1,17 @@
 # @tensor_1/react
 
+## 2.40.0
+
+### Minor Changes
+
+- 977d413: `ToggleRow`: the visible label is now a real `<label>` for the switch, so clicking the words flips it and the label names it; the description is the switch's `aria-describedby`. `accessibleLabel` is optional and only needed when the label is not text (HAR-1607).
+
+### Patch Changes
+
+- 75f8cd3: Threshold crossings: every crossing keeps its ring, but only the latest carries a visible "Crossed <x>" label; earlier ones show theirs on hover. A series that crosses its limit repeatedly no longer stacks colliding labels along the line.
+
+  InsightCard: a chart embedded in the card no longer clips the first glyph of its title and footer (the frameless chart clips with a 4 px `overflow-clip-margin` instead of a hard edge).
+
 ## 2.39.0
 
 ### Minor Changes
