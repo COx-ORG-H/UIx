@@ -203,6 +203,39 @@ function Placement() {
   );
 }
 
+/** `@` mentions (TENSOR HAR-1599): an async people source, "zz" finds nobody, "fail" fails. */
+const PEOPLE = [
+  { id: 'u-anna', label: 'Anna Schmidt', description: 'Service desk' },
+  { id: 'u-andre', label: 'André Bauer', description: 'Network team' },
+  { id: 'u-ben', label: 'Ben Okafor', description: 'Change manager' },
+];
+const searchPeople = async (query: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  if (query === 'fail') throw new Error('offline');
+  const q = query.toLowerCase();
+  return PEOPLE.filter((p) => p.label.toLowerCase().split(/\s+/).some((part) => part.startsWith(q)));
+};
+
+function Mentions() {
+  const [value, setValue] = useState('Ask @[Ben Okafor](mention:u-ben) first.');
+  return (
+    <section>
+      <h2>Mentions</h2>
+      <RichTextEditor
+        id="mention"
+        value={value}
+        onChange={(md) => { log('mention')(md); setValue(md); }}
+        features="comment"
+        variant="composer"
+        aria-label="Comment with mentions"
+        onMentionSearch={searchPeople}
+      />
+      <pre data-testid="mention-value">{value}</pre>
+      <Markdown resolveMention={(id, stored) => (id === 'u-ben' ? 'Ben O.' : stored)}>{value}</Markdown>
+    </section>
+  );
+}
+
 function Viewer() {
   return (
     <section>
@@ -227,6 +260,7 @@ createRoot(document.getElementById('root')!).render(
     <Template />
     <Reactions />
     <Placement />
+    <Mentions />
     <Viewer />
   </StrictMode>,
 );

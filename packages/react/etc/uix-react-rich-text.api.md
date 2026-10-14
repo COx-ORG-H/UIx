@@ -29,6 +29,38 @@ export interface EmojiPickerLabels {
 }
 
 // @public
+export function findMentions(markdown: string): Array<{
+    id: string;
+    label: string;
+}>;
+
+// @public
+export function formatMention(mention: {
+    id: string;
+    label: string;
+}): string | null;
+
+// @public
+export function isMentionId(id: string): boolean;
+
+// @public
+export const MENTION_SCHEME = "mention:";
+
+// @public
+export interface MentionCandidate {
+    description?: string;
+    id: string;
+    label: string;
+}
+
+// @public
+export function readMention(text: string): {
+    id: string;
+    label: string;
+    length: number;
+} | null;
+
+// @public
 export function RichTextEditor(props: RichTextEditorProps): react.JSX.Element;
 
 // @public
@@ -68,6 +100,7 @@ export interface RichTextEditorProps {
     // (undocumented)
     onBlur?: () => void;
     onChange: (markdown: string) => void;
+    onMentionSearch?: (query: string) => Promise<ReadonlyArray<MentionCandidate>> | ReadonlyArray<MentionCandidate>;
     onSubmitShortcut?: () => void;
     onUploadImage?: (file: File) => Promise<{
         src: string;
@@ -130,6 +163,10 @@ export interface RichTextLabels {
     // (undocumented)
     linkRemove: string;
     linkUrl: string;
+    mentionEmpty: string;
+    mentionFailed: string;
+    mentionSearching: string;
+    mentionSuggestions: string;
     // (undocumented)
     orderedList: string;
     // (undocumented)

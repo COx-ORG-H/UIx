@@ -13,3 +13,5 @@ export type { RoundTripOptions } from './rich-text/round-trip.js';
 export type { EmojiLocale } from './emoji-model.js';
 export type { EmojiPickerLabels } from './components/EmojiPicker.js';
 export { emojiImageFileName } from './emoji-image.js';
+export type { MentionCandidate } from './rich-text/mention.js';
+export { findMentions, formatMention, readMention, isMentionId, MENTION_SCHEME } from './markdown-model.js';

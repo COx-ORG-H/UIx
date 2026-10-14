@@ -2,5 +2,7 @@
 // Server-component safe: no hooks, no client directive, no Tiptap.
 export { Markdown, defaultMarkdownIsSafeUrl } from './components/Markdown.js';
 export type { MarkdownProps } from './components/Markdown.js';
-export { parseMarkdown, parseInline, plainText } from './markdown-model.js';
+export {
+  parseMarkdown, parseInline, plainText, findMentions, formatMention, readMention, isMentionId, MENTION_SCHEME,
+} from './markdown-model.js';
 export type { MarkdownBlock, MarkdownInline, MarkdownList, MarkdownListItem, TableAlign } from './markdown-model.js';

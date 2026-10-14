@@ -466,3 +466,104 @@ test('images: a paste that also carries text (Excel, Word) is a text paste — n
   assert.equal(statusOf(off.host).textContent, '');
   await off.unmount();
 });
+
+// ── @ mentions (TENSOR HAR-1599) ───────────────────────────────────────────────
+// The keyboard path in a real browser: tests/a11y/rich-text-mentions.spec.mjs.
+
+const PEOPLE = [
+  { id: 'u-anna', label: 'Anna Schmidt', description: 'Service desk' },
+  { id: 'u-andre', label: 'André Bauer' },
+  { id: 'not a storable id', label: 'Dropped' },
+];
+const mentionList = (host) => host.querySelector('[data-mention-list]');
+
+test('mentions: typing @an lists what the source answered for "an"; Enter inserts the token', async () => {
+  const asked = [];
+  const changes = [];
+  function Host() {
+    const [value, setValue] = useState('Hello');
+    return h(RichTextEditor, {
+      value,
+      onChange: (md) => { changes.push(md); setValue(md); },
+      features: 'comment',
+      'aria-label': 'Comment',
+      onMentionSearch: async (q) => { asked.push(q); return PEOPLE.filter((p) => p.label.toLowerCase().startsWith(q)); },
+    });
+  }
+  const view = await mount(h(Host));
+  const editor = editorOf(view.host);
+  await act(async () => { editor.chain().focus('end').insertContent(' @an').run(); });
+  await settle();
+  assert.equal(asked.at(-1), 'an');
+  const list = mentionList(view.host);
+  assert.equal(list.getAttribute('role'), 'listbox');
+  assert.equal(list.getAttribute('aria-label'), 'People');
+  assert.deepEqual([...list.querySelectorAll('[role="option"]')].map((o) => o.dataset.mentionId), ['u-anna', 'u-andre']);
+  assert.equal(editor.view.dom.getAttribute('aria-controls'), list.id);
+  assert.equal(editor.view.dom.getAttribute('aria-activedescendant'), `${list.id}-0`);
+  await keydown(editor.view.dom, 'ArrowDown');
+  await settle();
+  assert.equal(editor.view.dom.getAttribute('aria-activedescendant'), `${list.id}-1`);
+  await keydown(editor.view.dom, 'Enter');
+  await settle();
+  assert.equal(changes.at(-1), 'Hello @[André Bauer](mention:u-andre) ');
+  assert.equal(mentionList(view.host), null);
+  assert.equal(view.host.querySelector('.ProseMirror .uix-mention')?.dataset.mentionId, 'u-andre');
+  await view.unmount();
+});
+
+test('mentions: loading, nobody found and a failed source are a status, not an empty listbox', async () => {
+  let release;
+  const sources = {
+    slow: () => new Promise((resolve) => { release = () => resolve([]); }),
+    none: async () => [],
+    fail: async () => { throw new Error('offline'); },
+  };
+  for (const [name, search] of Object.entries(sources)) {
+    const view = await mount(h(RichTextEditor, { value: '', onChange() {}, 'aria-label': 'Comment', onMentionSearch: search }));
+    const editor = editorOf(view.host);
+    await act(async () => { editor.chain().focus('end').insertContent('@zz').run(); });
+    await settle();
+    const list = mentionList(view.host);
+    assert.equal(list?.getAttribute('role'), 'status', name);
+    assert.equal(editor.view.dom.getAttribute('aria-activedescendant'), null, `${name}: no option to point at`);
+    const expected = { slow: ['loading', 'Searching…'], none: ['empty', 'No matching people'], fail: ['error', 'People could not be loaded.'] }[name];
+    assert.deepEqual([list.dataset.state, list.textContent], expected, name);
+    // Enter with no choice inserts no mention.
+    await keydown(editor.view.dom, 'Enter');
+    await settle();
+    assert.equal(view.host.querySelector('.ProseMirror .uix-mention'), null, name);
+    if (name === 'slow') release();
+    await view.unmount();
+  }
+});
+
+test('mentions: Escape closes the list and keeps the typed text; a stale answer never reopens it', async () => {
+  let release;
+  const view = await mount(h(RichTextEditor, {
+    value: '', onChange() {}, 'aria-label': 'Comment',
+    onMentionSearch: () => new Promise((resolve) => { release = () => resolve(PEOPLE); }),
+  }));
+  const editor = editorOf(view.host);
+  await act(async () => { editor.chain().focus('end').insertContent('@an').run(); });
+  await settle();
+  await keydown(editor.view.dom, 'Escape');
+  await settle();
+  assert.equal(mentionList(view.host), null);
+  await act(async () => { release(); });
+  await settle();
+  assert.equal(mentionList(view.host), null, 'the answer to a dismissed query does not reopen the list');
+  assert.equal(editor.getText(), '@an');
+  await view.unmount();
+});
+
+test('mentions: without onMentionSearch, @ is ordinary text and no list ever opens', async () => {
+  const view = await mount(h(RichTextEditor, { value: '', onChange() {}, 'aria-label': 'Comment' }));
+  const editor = editorOf(view.host);
+  assert.ok(!editor.extensionManager.extensions.some((ext) => ext.name === 'uixMentionSuggestion'));
+  await act(async () => { editor.chain().focus('end').insertContent('@an').run(); });
+  await settle();
+  assert.equal(mentionList(view.host), null);
+  assert.equal(editor.getText(), '@an');
+  await view.unmount();
+});

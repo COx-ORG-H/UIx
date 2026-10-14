@@ -12,6 +12,21 @@ import * as react from 'react';
 export const defaultMarkdownIsSafeUrl: typeof defaultIsSafeUrl;
 
 // @public
+export function findMentions(markdown: string): Array<{
+    id: string;
+    label: string;
+}>;
+
+// @public
+export function formatMention(mention: {
+    id: string;
+    label: string;
+}): string | null;
+
+// @public
+export function isMentionId(id: string): boolean;
+
+// @public
 export function Markdown(input: MarkdownProps): react.JSX.Element | null;
 
 // @public (undocumented)
@@ -65,6 +80,12 @@ export type MarkdownInline = {
     src: string;
     alt: string;
     title?: string;
+}
+/** `@[Display name](mention:<id>)` — a person mentioned by id; `label` is the stored name. */
+| {
+    type: 'mention';
+    id: string;
+    label: string;
 } | {
     type: 'br';
 };
@@ -97,7 +118,11 @@ export interface MarkdownProps {
     headingOffset?: number;
     isSafeUrl?: (url: string) => boolean;
     resolveImageSrc?: (src: string) => string | null;
+    resolveMention?: (id: string, storedLabel: string) => string | undefined;
 }
+
+// @public
+export const MENTION_SCHEME = "mention:";
 
 // @public
 export function parseInline(text: string, depth?: number): MarkdownInline[];
@@ -107,6 +132,13 @@ export function parseMarkdown(source: string): MarkdownBlock[];
 
 // @public
 export function plainText(nodes: ReadonlyArray<MarkdownInline>): string;
+
+// @public
+export function readMention(text: string): {
+    id: string;
+    label: string;
+    length: number;
+} | null;
 
 // @public (undocumented)
 export type TableAlign = 'left' | 'center' | 'right' | null;

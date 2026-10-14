@@ -25,11 +25,18 @@ export interface MarkdownProps {
    * (`#` → `<h3>` by default, as in TENSOR's original renderer). Capped at `<h6>`.
    */
   headingOffset?: number;
+  /**
+   * The name to show for a mention (`@[Name](mention:<id>)`), e.g. the person's current
+   * or masked name. Return `undefined` to show the name stored in the text. Without it
+   * every mention shows its stored name.
+   */
+  resolveMention?: (id: string, storedLabel: string) => string | undefined;
 }
 
 interface Policy {
   isSafeUrl: (url: string) => boolean;
   resolveImageSrc?: (src: string) => string | null;
+  resolveMention?: (id: string, storedLabel: string) => string | undefined;
 }
 
 const isExternal = (href: string): boolean => /^https?:/i.test(href.trim());
@@ -61,6 +68,15 @@ function renderInlines(nodes: ReadonlyArray<MarkdownInline>, policy: Policy): Re
           >
             {children}
           </a>
+        );
+      }
+      case 'mention': {
+        // Never a link: a mention names a person; the product decides where people live.
+        const name = policy.resolveMention?.(node.id, node.label) ?? node.label;
+        return (
+          <span key={i} className="uix-mention" data-mention-id={node.id}>
+            @{name}
+          </span>
         );
       }
       case 'image': {
@@ -165,13 +181,16 @@ function renderBlock(block: MarkdownBlock, policy: Policy, headingOffset: number
  * Supports headings, paragraphs (single newline = line break), bold, italic,
  * strikethrough, inline and fenced code, links and bare http(s) URLs, blockquotes,
  * horizontal rules, nested bulleted/numbered lists, read-only task lists, GFM tables
- * (in a keyboard-scrollable wrapper) and images gated by `resolveImageSrc`.
+ * (in a keyboard-scrollable wrapper), images gated by `resolveImageSrc` and mentions
+ * (`@[Name](mention:<id>)`, drawn as `.uix-mention`, named by `resolveMention`).
  * Server-component safe.
  */
-export function Markdown({ children, className, isSafeUrl = defaultMarkdownIsSafeUrl, resolveImageSrc, headingOffset = 2 }: MarkdownProps) {
+export function Markdown({
+  children, className, isSafeUrl = defaultMarkdownIsSafeUrl, resolveImageSrc, headingOffset = 2, resolveMention,
+}: MarkdownProps) {
   const source = typeof children === 'string' ? children : '';
   if (source.trim() === '') return null;
-  const policy: Policy = { isSafeUrl, resolveImageSrc };
+  const policy: Policy = { isSafeUrl, resolveImageSrc, resolveMention };
   const blocks = parseMarkdown(source);
   return (
     <div className={cx('uix-prose', 'uix-markdown', className)} data-component="markdown">

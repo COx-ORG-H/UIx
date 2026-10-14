@@ -103,6 +103,23 @@ hidden input), ARIA props, `variant` (`field` / `composer`, which renders in `Co
 work in every preset; the toolbar is one tab stop with arrow-key navigation and scrolls sideways on narrow screens.
 `RichTextEditorFallback` takes the same props and renders a plain textarea, for loading and error-boundary states.
 
+**Mentions (`onMentionSearch`).** Pass `onMentionSearch(query)` and typing `@` opens a "People" list of the
+candidates it answers (`{ id, label, description? }`, at most 20, ids of letters, digits and `_ . -` only). The
+product owns the query and who may be mentioned; UIx never fetches. Arrow keys move, Enter or Tab picks, Escape closes
+and keeps the typed text; while the answer is pending, empty or failed the list is a status line
+(`mentionSearching`, `mentionEmpty`, `mentionFailed`), never an empty listbox. A pick becomes one token (selected and
+deleted as a unit) drawn with `.uix-mention`, stored as `@[Name](mention:<id>)` with `[`, `]` and `\` in the name
+escaped. The token is part of the schema in every editor, so stored mentions survive load → edit → save byte-exact; it
+is never a link, so `isSafeUrl` neither sees nor drops it. `Markdown` draws the same token and takes
+`resolveMention(id, storedName)` for a current or masked name. `findMentions(markdown)`, `formatMention`,
+`readMention` and `isMentionId` (from `@tensor_1/react/markdown` and `/rich-text`) read and write the form on a
+server; code spans and blocks hold no mentions.
+
+```tsx
+<RichTextEditor value={md} onChange={setMd} onMentionSearch={(q) => api.people.search(q)} labels={{ mentionSuggestions: t('people') }} />
+<Markdown resolveMention={(id, stored) => nameOf(id) ?? stored}>{md}</Markdown>
+```
+
 **No network access.** The editor, picker and reaction bar make no requests. `@tiptap/extension-emoji` is configured
 with a list stripped of its CDN `fallbackImage` URLs and GitHub image emoji (`forceFallbackImages: false`), and the
 emoji dataset is a bundled dynamic-import chunk. A jsdom egress test guards this.
@@ -180,6 +197,7 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 ### Conversations, save feedback and kept tabs
 
 - **`Comment variant="system"`** marks a product event, such as a status change, apart from people. It has no speech bubble and a `systemLabel` byline (default "System").
+- **`Comment avatar={false}`** drops the avatar column (`.uix-comment--bare`), for a comment on a rail that already marks each row, such as a system event in a timeline.
 - **`Comment replyTo`** quotes the answered message above the body. Its label comes from `replyToLabel` (default "In reply to"). Mentions in a body use the `.uix-mention` class.
 - **`SaveStatus`** shows `idle`, `saving`, `saved` or `failed` for inline edits and autosave. It offers `onRetry` when a save fails, and every string comes from `labels`. The status text sits in a polite live region that stays mounted while idle, so keep one `SaveStatus` mounted and change its `state`. Mounting it only when a save starts means the first announcement is lost.
 - **`TabPanel keepMounted`** keeps an inactive panel in the DOM, `hidden` and out of the tab order, so switching back keeps its state and data. It is off by default.
