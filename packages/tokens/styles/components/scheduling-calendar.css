@@ -45,7 +45,9 @@
     --calendar-hour: 3rem;
     --calendar-gutter: 3.5rem;
 
-    display:grid; gap:var(--uix-space-3); min-width:0; color:var(--calendar-chrome-text);
+    /* one column that never grows past its container: a child's minimum (a long marker, a 7-day grid)
+       scrolls or wraps inside the calendar instead of widening it (TENSOR HAR-1519) */
+    display:grid; grid-template-columns:minmax(0,1fr); gap:var(--uix-space-3); min-width:0; color:var(--calendar-chrome-text);
   }
   .uix-scheduling-calendar__header { display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); flex-wrap:wrap; }
   .uix-scheduling-calendar__notice { padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); background:var(--calendar-chrome-surface-quiet); font-size:var(--uix-text-meta); }
@@ -196,7 +198,11 @@
   /* the title takes the whole row before it wraps; it is never cut short of the row width */
   .uix-scheduling-calendar__agenda-main { flex:1 1 12rem; display:grid; gap:var(--calendar-gap); min-width:0; overflow-wrap:anywhere; }
   .uix-scheduling-calendar__agenda-meta { color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
-  .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { flex:0 1 auto; flex-wrap:wrap; gap:var(--uix-space-1) var(--uix-space-2); font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { flex:0 1 auto; flex-wrap:wrap; min-width:0; gap:var(--uix-space-1) var(--uix-space-2); font-size:var(--uix-text-meta); }
+  /* a full-width agenda row has room to say a marker whole: its label wraps instead of setting the row's width (TENSOR HAR-1519) */
+  .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers > * { min-width:0; }
+  .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker { flex:0 1 auto; min-width:0; }
+  .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-label { white-space:normal; overflow-wrap:break-word; }
   .uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues { margin:0; padding:var(--uix-space-2) var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
   button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:left; text-decoration:underline; cursor:pointer; }
   button.uix-scheduling-calendar__agenda-more:hover { background:var(--calendar-chrome-surface-quiet); }
@@ -218,6 +224,7 @@
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers { flex:0 1 auto; flex-wrap:nowrap; min-width:0; overflow:hidden; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__markers > span { flex:0 1 auto; display:inline-flex; min-width:0.6875rem; overflow:hidden; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker { flex:0 1 auto; min-width:0; }
+  .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-label { white-space:nowrap; overflow-wrap:normal; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker::before,.uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-icon { flex:none; }
   .uix-scheduling-calendar__agenda-vrow .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__status { flex:none; }
   /* a narrow long agenda (the component measures it): taller rows of three lines — the title, the time, then markers and status */
