@@ -231,3 +231,41 @@ test('segmented fieldset stays inside a composer narrower than its longest words
     expect(o.clipped, `"${o.label}" is clipped inside its option`).toBeLessThanOrEqual(0);
   }
 });
+
+/* A five-way view switcher with German single-word labels (TENSOR HAR-1519, the change
+ * calendar at 375 px). The group is narrower than one row of its options: options move to a
+ * second row, and no option breaks inside its word ("Mona / t" was the defect). Each option's
+ * label must render on one line, and the group must stay inside its container. */
+test('segmented options wrap as whole words, never inside one, in a narrow container', async ({ page }, testInfo) => {
+  await open(page, testInfo, 'docs/explorer.html#examples-crm-itsm');
+  const host = page.locator('.uix-composer').first();
+  await expect(host, 'no composer on the crm-itsm example').toBeVisible();
+  const seen = await host.evaluate((el) => {
+    el.innerHTML = `<div role="group" aria-label="Ansicht" class="uix-segmented">
+      ${['Monat', 'Woche', 'Tag', 'Agenda', 'Zeitleiste'].map((w, i) => `<button type="button" class="uix-segmented__option" aria-pressed="${i === 1}">${w}</button>`).join('')}
+    </div>`;
+    el.style.inlineSize = '230px';
+    const seg = el.querySelector('.uix-segmented');
+    const options = Array.from(seg.querySelectorAll('.uix-segmented__option'));
+    const lineHeight = parseFloat(getComputedStyle(options[0]).lineHeight) || 16;
+    const box = el.getBoundingClientRect();
+    const s = seg.getBoundingClientRect();
+    return {
+      rows: new Set(options.map((o) => Math.round(o.getBoundingClientRect().top))).size,
+      pastEdge: Math.round(s.right - box.right),
+      options: options.map((o) => {
+        const range = document.createRange();
+        range.selectNodeContents(o);
+        const lines = new Set(Array.from(range.getClientRects()).map((r) => Math.round(r.top))).size;
+        return { label: o.textContent.trim(), lines, clipped: o.scrollWidth - o.clientWidth, lineHeight };
+      }),
+    };
+  });
+  console.log(`narrow segmented: ${seen.rows} rows, ${seen.pastEdge} px past the edge, ${JSON.stringify(seen.options)}`);
+  expect(seen.rows, 'the options did not move to a second row').toBeGreaterThan(1);
+  expect(seen.pastEdge, 'the group runs past its container').toBeLessThanOrEqual(0);
+  for (const o of seen.options) {
+    expect(o.lines, `"${o.label}" breaks inside its word`).toBe(1);
+    expect(o.clipped, `"${o.label}" is clipped`).toBeLessThanOrEqual(0);
+  }
+});

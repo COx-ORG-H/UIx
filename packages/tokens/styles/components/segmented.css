@@ -2,12 +2,16 @@
 @layer uix.components {
   /* min-inline-size: 0 + max-inline-size: 100% — a <fieldset> defaults to min-inline-size:
      min-content, so a segmented control on one could never be narrower than its longest words
-     and ran past its container at 320 px (WCAG 1.4.10). The options wrap instead. */
-  .uix-segmented { display: inline-flex; min-inline-size: 0; max-inline-size: 100%; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
+     and ran past its container at 320 px (WCAG 1.4.10). The options wrap instead: onto a new
+     row first, then inside an option at a space, and inside a word only when that one word is
+     wider than the whole container (break-word, not anywhere). Before, an option broke inside a word
+     as soon as its row was tight (TENSOR HAR-1519: "Monat" read "Mona / t" in the calendar view switcher at 375 px, the
+     class HAR-1601 fixed for the ViewMenu alone). */
+  .uix-segmented { display: inline-flex; flex-wrap: wrap; min-inline-size: 0; max-inline-size: 100%; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
   .uix-segmented__option {
     border: 0; background: transparent; color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); font-weight: 500;
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: calc(var(--uix-radius-md) - 3px); cursor: pointer;
-    white-space: normal; overflow-wrap: anywhere;
+    min-inline-size: 0; white-space: normal; overflow-wrap: break-word; hyphens: manual;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-segmented__option:hover { color: var(--uix-text); }
