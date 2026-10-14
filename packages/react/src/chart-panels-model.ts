@@ -319,7 +319,8 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
       const fromIndex = spec.x.values.findIndex((x) => sameX(x, panel.forecast!.from));
       const fromValue = fromIndex >= 0 ? primary.values[fromIndex] ?? null : null;
       const colorIndex = primary.colorIndex ?? 0;
-      const fc = forecastSeries(panel.forecast, { name: primary.label, colorIndex, tokens, labels, fromValue, ...axes, idPrefix: `${panel.id}:forecast` });
+      // The legend names the projection; an in-plot label would only collide with threshold labels.
+      const fc = forecastSeries(panel.forecast, { name: primary.label, colorIndex, tokens, labels, fromValue, ...axes, idPrefix: `${panel.id}:forecast`, regionLabel: false });
       for (const s of fc) seriesPanel[String(s.id)] = panel.id;
       series.push(...fc);
       if (!legend.some((item) => item.swatch === 'dash')) {

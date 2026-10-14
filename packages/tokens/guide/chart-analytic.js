@@ -183,7 +183,7 @@ function forecastSeries(forecast, options) {
       symbol: "none",
       animation: false,
       z: 3,
-      ...last ? {
+      ...last && options.regionLabel !== false ? {
         markArea: markAreaBase([[
           {
             xAxis: forecast.from,
@@ -453,7 +453,7 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
       const fromIndex = spec.x.values.findIndex((x) => sameX(x, panel.forecast.from));
       const fromValue = fromIndex >= 0 ? primary.values[fromIndex] ?? null : null;
       const colorIndex = primary.colorIndex ?? 0;
-      const fc = forecastSeries(panel.forecast, { name: primary.label, colorIndex, tokens, labels, fromValue, ...axes, idPrefix: `${panel.id}:forecast` });
+      const fc = forecastSeries(panel.forecast, { name: primary.label, colorIndex, tokens, labels, fromValue, ...axes, idPrefix: `${panel.id}:forecast`, regionLabel: false });
       for (const s of fc) seriesPanel[String(s.id)] = panel.id;
       series.push(...fc);
       if (!legend.some((item) => item.swatch === "dash")) {
