@@ -17,7 +17,48 @@ export type MarkdownInline =
   | { type: 'del'; children: MarkdownInline[] }
   | { type: 'link'; href: string; title?: string; children: MarkdownInline[]; bare?: boolean }
   | { type: 'image'; src: string; alt: string; title?: string }
+  /** `@[Display name](mention:<id>)` — a person mentioned by id; `label` is the stored name. */
+  | { type: 'mention'; id: string; label: string }
   | { type: 'br' };
+
+// ── mentions ───────────────────────────────────────────────────────────────────
+
+/**
+ * The one stored form of a mention: `@[Display name](mention:<id>)`. The id is the
+ * product's (a user id); the name is what the author saw, kept so the text still reads
+ * without the product. `[`, `]` and `\` in the name are backslash-escaped. Ids are
+ * limited to letters, digits and `_ . -`, so a mention can never carry a URL.
+ */
+export const MENTION_SCHEME = 'mention:';
+const MENTION_ID = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/;
+const MENTION_RE = /^@\[((?:\\[\\[\]]|[^\\[\]\n]){1,200})\]\(mention:([A-Za-z0-9][A-Za-z0-9_.-]{0,127})\)/;
+
+/** A mention's stored name, normalized: one line, single spaces, at most 200 characters. */
+const cleanMentionLabel = (label: string): string => label.replace(/\s+/gu, ' ').trim().slice(0, 200);
+
+/** True when `id` can be stored in a mention. */
+export function isMentionId(id: string): boolean {
+  return MENTION_ID.test(id);
+}
+
+/** The markdown for one mention, or `null` when the id cannot be stored or the name is empty. */
+export function formatMention(mention: { id: string; label: string }): string | null {
+  const label = cleanMentionLabel(mention.label);
+  if (!isMentionId(mention.id) || !label) return null;
+  return `@[${label.replace(/[\\[\]]/g, (ch) => `\\${ch}`)}](${MENTION_SCHEME}${mention.id})`;
+}
+
+/**
+ * The mention at the start of `text`, with the number of characters it spans, or `null`.
+ * Used by the viewer, the editor and products that read stored text on the server.
+ */
+export function readMention(text: string): { id: string; label: string; length: number } | null {
+  const match = MENTION_RE.exec(text);
+  if (!match) return null;
+  const label = cleanMentionLabel(match[1]!.replace(/\\([\\[\]])/g, '$1'));
+  return label ? { id: match[2]!, label, length: match[0].length } : null;
+}
+
 
 export type TableAlign = 'left' | 'center' | 'right' | null;
 
@@ -188,6 +229,14 @@ export function parseInline(text: string, depth = 0): MarkdownInline[] {
       i += run.length;
       continue;
     }
+    if (ch === '@' && text[i + 1] === '[') {
+      const mention = readMention(rest);
+      if (mention) {
+        out.push({ type: 'mention', id: mention.id, label: mention.label });
+        i += mention.length;
+        continue;
+      }
+    }
     if (ch === '!' && text[i + 1] === '[') {
       const end = findBracketEnd(text, i + 1);
       const dest = end > 0 ? readDestination(text, end + 1) : null;
@@ -286,9 +335,50 @@ export function plainText(nodes: ReadonlyArray<MarkdownInline>): string {
       case 'code': return n.value;
       case 'br': return ' ';
       case 'image': return n.alt;
+      case 'mention': return `@${n.label}`;
       default: return plainText(n.children);
     }
   }).join('');
+}
+
+const collectMentions = (nodes: ReadonlyArray<MarkdownInline>, out: Array<{ id: string; label: string }>): void => {
+  for (const n of nodes) {
+    if (n.type === 'mention') out.push({ id: n.id, label: n.label });
+    else if ('children' in n) collectMentions(n.children, out);
+  }
+};
+
+/**
+ * Every mention in a markdown text, in reading order (an id may repeat). Code spans and
+ * code blocks hold no mentions. For products that act on mentions when text is saved.
+ */
+export function findMentions(markdown: string): Array<{ id: string; label: string }> {
+  const out: Array<{ id: string; label: string }> = [];
+  const walkList = (list: MarkdownList): void => {
+    for (const item of list.items) {
+      collectMentions(item.children, out);
+      item.lists.forEach(walkList);
+    }
+  };
+  for (const block of parseMarkdown(markdown)) {
+    switch (block.type) {
+      case 'paragraph':
+      case 'heading':
+      case 'quote':
+        collectMentions(block.children, out);
+        break;
+      case 'list':
+        walkList(block);
+        break;
+      case 'table':
+        block.head.forEach((cell) => collectMentions(cell, out));
+        block.rows.forEach((row) => row.forEach((cell) => collectMentions(cell, out)));
+        break;
+      default:
+        break;
+    }
+  }
+  return out;
 }
 
 // ── blocks ─────────────────────────────────────────────────────────────────────

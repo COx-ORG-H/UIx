@@ -28,6 +28,7 @@ import { Image } from '@tiptap/extension-image';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Marked } from 'marked';
 import { defaultIsSafeUrl } from '../url-policy.js';
+import { Mention } from './mention.js';
 
 /** Link policy used when the consumer passes none: http(s), mailto and same-app paths. */
 export { defaultIsSafeUrl };
@@ -117,6 +118,8 @@ export function createSchemaExtensions(options: SchemaExtensionOptions = {}): An
     UixTaskItem.configure({ nested: true }),
     TableKit.configure({ table: { resizable: false } }),
     options.image ?? Image.configure({ inline: true, allowBase64: false }),
+    // HAR-1599: `@[Name](mention:<id>)` is one token in every editor and headless pipeline.
+    Mention,
   ];
 }
 

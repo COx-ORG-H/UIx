@@ -19,7 +19,10 @@ export function Comments({ children, className, ...props }: CommentsProps) {
 }
 
 export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
-  /** Usually an `<Avatar />` (the grid reserves the leading column). */
+  /**
+   * Usually an `<Avatar />` (the grid reserves the leading column). `false` drops the
+   * column, for a comment that sits on a rail which already marks each row (a timeline).
+   */
   avatar?: ReactNode;
   author?: ReactNode;
   meta?: ReactNode;
@@ -50,13 +53,14 @@ export function Comment({
   const system = variant === 'system';
   // A system event names the system as its actor, so it is never mistaken for a person.
   const byline = author ?? (system ? systemLabel : undefined);
+  const bare = avatar === false;
   return (
     <div
-      className={cx('uix-comment', system && 'uix-comment--system', className)}
+      className={cx('uix-comment', system && 'uix-comment--system', bare && 'uix-comment--bare', className)}
       data-variant={system ? 'system' : undefined}
       {...props}
     >
-      {avatar ?? <span aria-hidden="true" />}
+      {bare ? null : (avatar ?? <span aria-hidden="true" />)}
       <div className="uix-comment__body">
         {(byline != null || meta != null) && (
           <div className="uix-comment__meta">

@@ -155,6 +155,15 @@
   .uix-rich-text__suggest-emoji { font-size: var(--uix-text-h3); line-height: 1; }
   .uix-rich-text__suggest-name { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); }
 
+  /* @ people list: name over an optional detail line; a status note when there is no choice. */
+  .uix-rich-text__suggest-item--person { flex-direction: column; align-items: flex-start; gap: 0; }
+  .uix-rich-text__suggest-label { overflow-wrap: anywhere; }
+  .uix-rich-text__suggest-detail { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-rich-text__suggest-item[aria-selected="true"] .uix-rich-text__suggest-detail { color: inherit; }
+  .uix-rich-text__suggest-note { padding: var(--uix-space-1) var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* A mention is one token: never typed into (it may wrap, so a long name fits 320 px). */
+  .uix-rich-text__content .uix-mention { cursor: default; overflow-wrap: anywhere; }
+
   @media (prefers-reduced-motion: reduce) {
     .uix-rich-text, .uix-rich-text__tool { transition: none; }
   }

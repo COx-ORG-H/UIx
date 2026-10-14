@@ -97,9 +97,9 @@
       "brotli": 629
     },
     "styles/components/comments.css": {
-      "raw": 3148,
-      "gzip": 1055,
-      "brotli": 853
+      "raw": 3304,
+      "gzip": 1120,
+      "brotli": 910
     },
     "styles/components/contact-card.css": {
       "raw": 928,
@@ -322,9 +322,9 @@
       "brotli": 1629
     },
     "styles/components/rich-text.css": {
-      "raw": 11377,
-      "gzip": 2881,
-      "brotli": 2457
+      "raw": 12188,
+      "gzip": 3053,
+      "brotli": 2607
     },
     "styles/components/rule-builder.css": {
       "raw": 2283,

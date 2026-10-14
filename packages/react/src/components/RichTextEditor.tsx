@@ -26,6 +26,8 @@ import {
   createMarked, createSchemaExtensions, defaultIsSafeUrl, patchManager, readMarkdown, writeMarkdown,
 } from '../rich-text/pipeline.js';
 import type { MarkdownSource } from '../rich-text/pipeline.js';
+import type { MentionCandidate } from '../rich-text/mention.js';
+import { isMentionId } from '../markdown-model.js';
 import { Composer, ComposerBar } from './Composer.js';
 import { EditorIcon } from './EditorIcons.js';
 import type { EditorIconName } from './EditorIcons.js';
@@ -75,6 +77,14 @@ export interface RichTextLabels {
   emoji: string;
   /** Accessible name of the `:shortcode` suggestion list. */
   emojiSuggestions: string;
+  /** Accessible name of the `@` people list. */
+  mentionSuggestions: string;
+  /** Shown while `onMentionSearch` has not answered. */
+  mentionSearching: string;
+  /** Shown when `onMentionSearch` found nobody. */
+  mentionEmpty: string;
+  /** Shown when `onMentionSearch` failed. */
+  mentionFailed: string;
   undo: string;
   redo: string;
   /** Toggle to markdown source. */
@@ -117,6 +127,10 @@ export const DEFAULT_RICH_TEXT_LABELS: RichTextLabels = {
   imagesUnsupported: "Images can't be added here.",
   emoji: 'Emoji',
   emojiSuggestions: 'Emoji suggestions',
+  mentionSuggestions: 'People',
+  mentionSearching: 'Searching…',
+  mentionEmpty: 'No matching people',
+  mentionFailed: 'People could not be loaded.',
   undo: 'Undo',
   redo: 'Redo',
   sourceMode: 'Show markdown',
@@ -153,6 +167,13 @@ export interface RichTextEditorProps {
   onSubmitShortcut?: () => void;
   /** Emoji button and `:shortcode` suggestions. Default `true`. */
   emoji?: boolean;
+  /**
+   * People for the `@` list: called with the text typed after `@` (possibly empty) and
+   * answering the candidates to offer. The product owns the query and who may be
+   * mentioned; UIx never fetches. A picked person is inserted as one token, stored as
+   * `@[Name](mention:<id>)`. Without it, typing `@` does nothing special.
+   */
+  onMentionSearch?: (query: string) => Promise<ReadonlyArray<MentionCandidate>> | ReadonlyArray<MentionCandidate>;
   /**
    * Same-origin folder of fallback emoji PNGs for devices without a colour emoji font
    * (e.g. `/static/emoji`). Emoji the device cannot draw show as
@@ -235,6 +256,25 @@ type SuggestBridge = {
   keyDown: (props: SuggestionKeyDownProps) => boolean;
 };
 
+const mentionSuggestionKey = new PluginKey('uixMentionSuggestion');
+
+interface MentionState {
+  query: string;
+  status: 'loading' | 'ready' | 'error';
+  items: ReadonlyArray<MentionCandidate>;
+  command: (item: MentionCandidate) => void;
+  rect: DOMRect | null;
+}
+
+type MentionBridge = {
+  update: (props: SuggestionProps<MentionCandidate, MentionCandidate> | null) => void;
+  keyDown: (props: SuggestionKeyDownProps) => boolean;
+};
+
+/** The candidates a product answered, minus any that could not be stored as a mention. */
+const usableCandidates = (items: ReadonlyArray<MentionCandidate>): MentionCandidate[] =>
+  items.filter((c) => isMentionId(c.id) && c.label.trim() !== '').slice(0, 20);
+
 const htmlAttr = (value: string | boolean | undefined): string | undefined =>
   value === undefined || value === false || value === '' ? undefined : String(value);
 
@@ -312,8 +352,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
     value, onChange, features = 'full', headingLevels = [1, 2, 3], onUploadImage, isSafeUrl = defaultIsSafeUrl,
     resolveImageSrc, onSubmitShortcut, emoji = true, maxLength, placeholder, disabled = false, readOnly = false,
     labels: labelOverrides, emojiPickerLabels, emojiLocale, id, name, variant = 'field', toolbarEnd, minRows,
-    className, onBlur, emojiImageBaseUrl, imagesUnavailableReason,
+    className, onBlur, emojiImageBaseUrl, imagesUnavailableReason, onMentionSearch,
   } = props;
+  const mentionsOn = typeof onMentionSearch === 'function';
   const emojiBase = useMemo(() => normalizeEmojiImageBaseUrl(emojiImageBaseUrl), [emojiImageBaseUrl]);
   const renderEmoji = useEmojiRenderer(emojiImageBaseUrl);
   const labels = useMemo(() => ({ ...DEFAULT_RICH_TEXT_LABELS, ...labelOverrides }), [labelOverrides]);
@@ -321,6 +362,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   const counterId = `${uid}-counter`;
   const statusId = `${uid}-status`;
   const suggestId = `${uid}-emoji`;
+  const mentionId = `${uid}-people`;
   const linkPopoverId = `${uid}-link`;
 
   const controls = PRESETS[features];
@@ -328,9 +370,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
     controls.has(control) && (control !== 'emoji' || emoji) && (control !== 'image' || !!onUploadImage);
 
   // Latest props for callbacks that the editor captured at creation.
-  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder, imagesOn: false, imagesOffText: '' });
+  const latest = useRef({ onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, onMentionSearch, placeholder, imagesOn: false, imagesOffText: '' });
   latest.current = {
-    onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, placeholder,
+    onChange, onSubmitShortcut, onBlur, isSafeUrl, resolveImageSrc, onUploadImage, onMentionSearch, placeholder,
     imagesOn: controls.has('image') && !!onUploadImage,
     imagesOffText: imagesUnavailableReason?.trim() || labels.imagesUnsupported,
   };
@@ -377,6 +419,59 @@ export function RichTextEditor(props: RichTextEditorProps) {
       }
       if (event.key === 'Escape') {
         setSuggest(null);
+        return true;
+      }
+      return false;
+    },
+  };
+
+  // `@` people list (HAR-1599): the product answers; a newer query wins over a slower old one.
+  const [mention, setMention] = useState<MentionState | null>(null);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const mentionState = useRef({ mention, mentionIndex });
+  mentionState.current = { mention, mentionIndex };
+  const mentionSeq = useRef(0);
+  const mentionBridge = useRef<MentionBridge>({ update: () => {}, keyDown: () => false });
+  mentionBridge.current = {
+    update: (p) => {
+      const seq = ++mentionSeq.current;
+      const search = latest.current.onMentionSearch;
+      if (!p || !search) { setMention(null); return; }
+      const rect = p.clientRect?.() ?? null;
+      const base = { query: p.query, command: p.command, rect };
+      setMention((prev) => ({ ...base, status: 'loading', items: prev?.query && p.query.startsWith(prev.query) ? prev.items : [] }));
+      setMentionIndex(0);
+      Promise.resolve()
+        .then(() => search(p.query))
+        .then(
+          (found) => {
+            if (seq !== mentionSeq.current) return;
+            setMention({ ...base, status: 'ready', items: usableCandidates(found ?? []) });
+          },
+          () => {
+            if (seq !== mentionSeq.current) return;
+            setMention({ ...base, status: 'error', items: [] });
+          },
+        );
+    },
+    keyDown: ({ event }) => {
+      const { mention: open, mentionIndex: index } = mentionState.current;
+      if (!open) return false;
+      if (event.key === 'Escape') {
+        mentionSeq.current += 1;
+        setMention(null);
+        return true;
+      }
+      const picks = open.status === 'ready' ? open.items : [];
+      if (picks.length === 0) return false;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const delta = event.key === 'ArrowDown' ? 1 : -1;
+        setMentionIndex((index + delta + picks.length) % picks.length);
+        return true;
+      }
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        const item = picks[Math.min(index, picks.length - 1)];
+        if (item) open.command(item);
         return true;
       }
       return false;
@@ -511,6 +606,32 @@ export function RichTextEditor(props: RichTextEditorProps) {
       },
     });
 
+    // HAR-1599 — `@` opens the people list; the pick becomes one mention token and a space.
+    const mentionSuggest = Extension.create({
+      name: 'uixMentionSuggestion',
+      addProseMirrorPlugins() {
+        return [Suggestion<MentionCandidate, MentionCandidate>({
+          editor: this.editor,
+          char: '@',
+          pluginKey: mentionSuggestionKey,
+          items: () => [],
+          command: ({ editor: ed, range, props: item }) => {
+            ed.chain().focus().insertContentAt(range, [
+              { type: 'mention', attrs: { id: item.id, label: item.label.replace(/\s+/gu, ' ').trim() } },
+              { type: 'text', text: ' ' },
+            ]).run();
+          },
+          allow: ({ state, range }) => !state.doc.resolve(range.from).parent.type.spec.code,
+          render: () => ({
+            onStart: (p) => mentionBridge.current.update(p),
+            onUpdate: (p) => mentionBridge.current.update(p),
+            onExit: () => mentionBridge.current.update(null),
+            onKeyDown: (p) => mentionBridge.current.keyDown(p),
+          }),
+        })];
+      },
+    });
+
     return [
       ...createSchemaExtensions({
         headingLevels: headingKey.split(',').map(Number) as RichTextHeadingLevel[],
@@ -522,8 +643,9 @@ export function RichTextEditor(props: RichTextEditorProps) {
       shortcuts,
       ...(emoji ? [unicodeEmoji] : []),
       ...(emojiBase ? [emojiImages] : []),
+      ...(mentionsOn ? [mentionSuggest] : []),
     ];
-  }, [headingKey, emoji, emojiBase]);
+  }, [headingKey, emoji, emojiBase, mentionsOn]);
 
   const managerOf = (ed: Editor) => {
     const manager = (ed as Editor & { markdown?: Parameters<typeof patchManager>[0] }).markdown
@@ -616,6 +738,10 @@ export function RichTextEditor(props: RichTextEditorProps) {
   const describedBy = [props['aria-describedby'], maxLength !== undefined ? counterId : undefined, status ? statusId : undefined]
     .filter(Boolean).join(' ') || undefined;
   const suggestOpen = !!suggest && mode === 'rich';
+  const mentionOpen = !suggestOpen && !!mention && mode === 'rich';
+  const mentionActive = mentionOpen && mention?.status === 'ready' && mention.items.length > 0
+    ? `${mentionId}-${Math.min(mentionIndex, mention.items.length - 1)}`
+    : undefined;
   const rows = minRows ?? (variant === 'composer' ? 3 : 4);
 
   useEffect(() => {
@@ -634,16 +760,16 @@ export function RichTextEditor(props: RichTextEditorProps) {
           'aria-required': htmlAttr(props['aria-required']),
           'aria-disabled': htmlAttr(disabled),
           'aria-readonly': htmlAttr(readOnly),
-          'aria-autocomplete': emoji ? 'list' : undefined,
-          'aria-controls': suggestOpen ? suggestId : undefined,
-          'aria-activedescendant': suggestOpen ? `${suggestId}-${suggestIndex}` : undefined,
+          'aria-autocomplete': emoji || mentionsOn ? 'list' : undefined,
+          'aria-controls': suggestOpen ? suggestId : mentionOpen ? mentionId : undefined,
+          'aria-activedescendant': suggestOpen ? `${suggestId}-${suggestIndex}` : mentionActive,
           class: 'uix-rich-text__content uix-prose',
           style: `min-height: calc(${rows} * 1lh + 2 * var(--uix-space-3))`,
         }).filter(([, v]) => v !== undefined)) as Record<string, string>,
       },
     });
   }, [editor, mode, id, props['aria-label'], props['aria-labelledby'], describedBy, invalid, props['aria-required'],
-    disabled, readOnly, emoji, suggestOpen, suggestId, suggestIndex, rows]);
+    disabled, readOnly, emoji, suggestOpen, suggestId, suggestIndex, rows, mentionsOn, mentionOpen, mentionId, mentionActive]);
 
   // Toolbar state, recomputed on transactions only.
   const state = useEditorState({
@@ -1011,6 +1137,15 @@ export function RichTextEditor(props: RichTextEditorProps) {
           renderEmoji={renderEmoji}
         />
       ) : null}
+      {mentionOpen && mention ? (
+        <MentionSuggestions
+          id={mentionId}
+          labels={labels}
+          state={mention}
+          active={Math.min(mentionIndex, Math.max(mention.items.length - 1, 0))}
+          onPick={(item) => mention.command(item)}
+        />
+      ) : null}
     </div>
   );
 
@@ -1072,10 +1207,9 @@ interface EmojiSuggestionsProps {
   renderEmoji: (emoji: string) => ReactNode;
 }
 
-function EmojiSuggestions({ id, label, items, query, active, rect, onPick, renderEmoji }: EmojiSuggestionsProps) {
-  const listRef = useRef<HTMLDivElement>(null);
+/** Places a suggestion list under the caret, inside the viewport. */
+function useCaretPosition(listRef: { current: HTMLDivElement | null }, rect: DOMRect | null, size: unknown) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-
   useEffect(() => {
     const el = listRef.current;
     if (!el || !rect || typeof window === 'undefined') return;
@@ -1087,7 +1221,83 @@ function EmojiSuggestions({ id, label, items, query, active, rect, onPick, rende
       { placement: 'bottom-start', offset: 4, padding: 8 },
     );
     setPos({ x: result.x, y: result.y });
-  }, [rect, items.length]);
+  }, [listRef, rect, size]);
+  return pos;
+}
+
+interface MentionSuggestionsProps {
+  id: string;
+  labels: RichTextLabels;
+  state: MentionState;
+  active: number;
+  onPick: (item: MentionCandidate) => void;
+}
+
+/**
+ * The `@` people list. While the product has not answered, found nobody or failed, it
+ * is a status line (not an empty listbox), so assistive tech hears why there is no choice.
+ */
+function MentionSuggestions({ id, labels, state, active, onPick }: MentionSuggestionsProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const items = state.status === 'ready' ? state.items : [];
+  const pos = useCaretPosition(listRef, state.rect, `${state.status}:${items.length}`);
+  useEffect(() => {
+    document.getElementById(`${id}-${active}`)?.scrollIntoView?.({ block: 'nearest' });
+  }, [active, id]);
+  const style = { left: pos?.x ?? -9999, top: pos?.y ?? -9999 };
+
+  if (items.length === 0) {
+    const note = state.status === 'loading'
+      ? labels.mentionSearching
+      : state.status === 'error' ? labels.mentionFailed : labels.mentionEmpty;
+    return (
+      <div
+        ref={listRef}
+        id={id}
+        role="status"
+        aria-label={labels.mentionSuggestions}
+        className="uix-rich-text__suggest"
+        data-mention-list=""
+        data-state={state.status === 'ready' ? 'empty' : state.status}
+        style={style}
+      >
+        <div className="uix-rich-text__suggest-note">{note}</div>
+      </div>
+    );
+  }
+  return (
+    <div
+      ref={listRef}
+      id={id}
+      role="listbox"
+      aria-label={labels.mentionSuggestions}
+      aria-busy={state.status === 'loading' || undefined}
+      className="uix-rich-text__suggest"
+      data-mention-list=""
+      data-state="ready"
+      style={style}
+    >
+      {items.map((item, i) => (
+        <div
+          key={item.id}
+          id={`${id}-${i}`}
+          role="option"
+          aria-selected={i === active}
+          className="uix-rich-text__suggest-item uix-rich-text__suggest-item--person"
+          data-mention-id={item.id}
+          onMouseDown={(event) => { event.preventDefault(); onPick(item); }}
+        >
+          <span className="uix-rich-text__suggest-label">{item.label}</span>
+          {item.description ? <span className="uix-rich-text__suggest-detail">{item.description}</span> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmojiSuggestions({ id, label, items, query, active, rect, onPick, renderEmoji }: EmojiSuggestionsProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const pos = useCaretPosition(listRef, rect, items.length);
 
   useEffect(() => {
     document.getElementById(`${id}-${active}`)?.scrollIntoView?.({ block: 'nearest' });
