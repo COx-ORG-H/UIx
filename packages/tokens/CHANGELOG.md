@@ -1,5 +1,13 @@
 # @tensor_1/tokens
 
+## 2.40.0
+
+### Patch Changes
+
+- 75f8cd3: Threshold crossings: every crossing keeps its ring, but only the latest carries a visible "Crossed <x>" label; earlier ones show theirs on hover. A series that crosses its limit repeatedly no longer stacks colliding labels along the line.
+
+  InsightCard: a chart embedded in the card no longer clips the first glyph of its title and footer (the frameless chart clips with a 4 px `overflow-clip-margin` instead of a hard edge).
+
 ## 2.39.0
 
 ### Minor Changes
