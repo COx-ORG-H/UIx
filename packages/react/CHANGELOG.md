@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.40.2
+
+### Patch Changes
+
+- Versioned with `@tensor_1/tokens` 2.40.2 (the Segmented and SchedulingCalendar narrow-width fixes are CSS); no change in the React package itself.
+
 ## 2.40.1
 
 ### Patch Changes
