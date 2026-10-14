@@ -507,6 +507,7 @@ export function forecastSeries(forecast: ChartForecast, options: {
     xAxisIndex?: number;
     yAxisIndex?: number;
     idPrefix?: string;
+    regionLabel?: boolean;
 }): LineSeriesOption[];
 
 // @public

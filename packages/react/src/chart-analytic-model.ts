@@ -235,7 +235,9 @@ export function eventMarks(
 /**
  * A forecast as three series: a hidden lower bound, the band stacked on it (upper − lower) in
  * `--uix-chart-forecast-band`, and the dashed centre line in the series colour, starting at `from`.
- * The centre carries a light "Projection" wash from `from` to the last point.
+ * The centre carries a "Projection" label over the projected stretch, unless `regionLabel` is
+ * false — ChartPanels turns it off, because its legend already names the dashed line and, in a
+ * narrow panel, the label collides with a threshold's gutter label.
  */
 export function forecastSeries(
   forecast: ChartForecast,
@@ -249,6 +251,8 @@ export function forecastSeries(
     xAxisIndex?: number;
     yAxisIndex?: number;
     idPrefix?: string;
+    /** Label the projected stretch "Projection" inside the plot (default true). */
+    regionLabel?: boolean;
   },
 ): LineSeriesOption[] {
   const labels = { ...DEFAULT_ANALYTIC_LABELS, ...options.labels };
@@ -302,7 +306,7 @@ export function forecastSeries(
       symbol: 'none',
       animation: false,
       z: 3,
-      ...(last
+      ...(last && options.regionLabel !== false
         ? {
             markArea: markAreaBase([[
               {

@@ -195,6 +195,15 @@ test('panels: each panel has a hidden table with lower, upper, threshold and eve
   assert.deepEqual(wip.headers, ['Period', 'WIP', 'Event']);
 });
 
+test('panels: the projection is named by the legend, never by a label inside a narrow plot', () => {
+  const m = panels.chartPanelsModel(spec, tokens);
+  const centres = m.option.series.filter((s) => String(s.id).endsWith(':forecast-centre'));
+  assert.ok(centres.length > 0);
+  for (const c of centres) assert.equal(c.markArea, undefined);
+  const alone = model.forecastSeries({ from: 'W6', level: 0.8, points: [{ x: 'W7', y: 20, lower: 18, upper: 22 }] }, { name: 'Review', tokens, fromValue: 18.7 });
+  assert.equal(alone[2].markArea.data[0][0].label.formatter, 'Projection', 'a standalone chart keeps it');
+});
+
 test('panels: the legend names every role by shape — series lines, the ghost, the projection dash and the range block', () => {
   const m = panels.chartPanelsModel(spec, tokens);
   assert.deepEqual(m.legend.map((i) => [i.label, i.swatch]), [
