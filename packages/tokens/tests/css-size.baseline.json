@@ -197,9 +197,9 @@
       "brotli": 876
     },
     "styles/components/insight-card.css": {
-      "raw": 5573,
-      "gzip": 1569,
-      "brotli": 1313
+      "raw": 5786,
+      "gzip": 1683,
+      "brotli": 1398
     },
     "styles/components/kanban.css": {
       "raw": 1617,
