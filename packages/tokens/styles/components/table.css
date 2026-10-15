@@ -53,18 +53,29 @@
   .uix-table__pin svg { width: 15px; height: 15px; }
   .uix-table__pin[data-on] svg { fill: currentColor; }
 
-  /* frozen first column (opt-in via .uix-table--pinned-col) */
+  /* frozen first column (opt-in via .uix-table--pinned-col) and frozen trailing actions column
+     (opt-in via .uix-table--pinned-actions: the row's quick action — peek, kebab — stays on
+     screen while the wrap scrolls sideways). The header cell keeps its sticky top, so it sticks
+     on both axes and sits above the pinned body cells that scroll under it. */
   .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
-  .uix-table--pinned-col thead th:first-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
-  .uix-table--pinned-col tbody tr td:first-child { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table--pinned-col tbody tr:nth-child(even) td:first-child { background: var(--uix-row-alt); }
+  .uix-table--pinned-actions th:last-child, .uix-table--pinned-actions td:last-child { position: sticky; right: 0; z-index: var(--uix-z-raised); box-shadow: -1px 0 0 var(--uix-border); }
+  .uix-table--pinned-col thead th:first-child, .uix-table--pinned-actions thead th:last-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
+  /* A pinned cell paints its row's state itself and must be opaque, or the cells scrolling
+     under it show through. The dark pinned/selected tints are translucent, so they are layered
+     over the surface the row sits on rather than painted bare. */
+  .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table--pinned-col tbody tr:nth-child(even) td:first-child, .uix-table--pinned-actions tbody tr:nth-child(even) td:last-child { background: var(--uix-row-alt); }
+  /* same specificity as the even-row rule above and the state rules below, so the order decides:
+     an :nth-child(even) here outranked hover, pinned and selected on every even row */
   .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
-  .uix-table--pinned-col.uix-table--no-zebra tbody tr:nth-child(even) td:first-child { background: var(--uix-row); }
-  .uix-table--pinned-col tbody tr[data-pinned] td:first-child { background: var(--uix-row-pinned-bg); }
-  .uix-table--pinned-col tbody tr[data-selected] td:first-child { background: var(--uix-row-selected-bg); }
-  .uix-table--pinned-col tbody tr:hover td:first-child { background: var(--uix-bg-hover); }
+  .uix-table--pinned-actions.uix-table--no-zebra tbody tr td:last-child { background: var(--uix-row); }
+  .uix-table--pinned-col tbody tr[data-pinned] td:first-child, .uix-table--pinned-actions tbody tr[data-pinned] td:last-child { background: linear-gradient(var(--uix-row-pinned-bg), var(--uix-row-pinned-bg)) var(--uix-surface); }
+  .uix-table--pinned-col tbody tr[data-selected] td:first-child, .uix-table--pinned-actions tbody tr[data-selected] td:last-child { background: linear-gradient(var(--uix-row-selected-bg), var(--uix-row-selected-bg)) var(--uix-surface); }
+  .uix-table--pinned-col tbody tr:hover td:first-child, .uix-table--pinned-actions tbody tr:hover td:last-child { background: var(--uix-bg-hover); }
+  /* an expanded row's full-width detail cell is both first and last child: keep its own tint */
+  .uix-table--pinned-col tbody tr.uix-table__detail > td, .uix-table--pinned-actions tbody tr.uix-table__detail > td { background: var(--uix-bg-subtle); }
   @media (prefers-reduced-motion: reduce) {
-    .uix-table tbody tr, .uix-table--pinned-col tbody tr td:first-child { transition: none; }
+    .uix-table tbody tr, .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { transition: none; }
   }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
