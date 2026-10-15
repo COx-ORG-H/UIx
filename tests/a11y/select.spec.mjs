@@ -257,6 +257,33 @@ test('searchable: the filter field takes focus, narrows the list, Enter chooses,
   expect(await focusedId(page)).toBe('s-search');
 });
 
+test('searchable: no moment after a keystroke shows the narrowed list without an active option; Enter right after typing chooses', async ({ page }) => {
+  // The active option used to be pulled back into the narrowed list by a passive effect, a task
+  // after the render that narrowed it. In between, the field named no option: a screen reader
+  // heard it drop on every keystroke, an Enter there closed the list without choosing, and the
+  // one-shot read in the test above caught it under CI load (2026-10-14, 2026-10-15).
+  await page.locator('#s-search').click();
+  const input = popupOf(page, 's-search').locator('input[role="combobox"]');
+  await expect(input).toBeFocused();
+  // A MutationObserver callback runs at the first microtask checkpoint after a commit, so it
+  // sees every state the page can see between tasks.
+  await page.evaluate(() => {
+    const field = document.activeElement;
+    const popup = field.closest('[data-uix-select-popup]');
+    const gaps = (window.__gaps = []);
+    new MutationObserver(() => {
+      if (field.getAttribute('aria-expanded') !== 'true') return; // closed: nothing is active
+      const rows = popup.querySelectorAll('[role="option"]').length;
+      const ref = field.getAttribute('aria-activedescendant');
+      if (rows && !(ref && popup.querySelector(`[id="${ref}"][role="option"]`))) gaps.push(`"${field.value}": ${rows} rows, active ${ref}`);
+    }).observe(popup, { subtree: true, childList: true, attributes: true, attributeFilter: ['aria-activedescendant', 'aria-expanded'] });
+  });
+  await page.keyboard.type('queue 2');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#s-search')).toHaveText('Queue 20');
+  expect(await page.evaluate(() => window.__gaps)).toEqual([]);
+});
+
 test('async: loading, options, a stale request is aborted, error with retry, empty', async ({ page }) => {
   await page.locator('#owner').click();
   const popup = popupOf(page, 'owner');
