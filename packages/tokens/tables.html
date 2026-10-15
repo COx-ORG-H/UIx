@@ -444,7 +444,7 @@
       <!-- ===================== COLUMN MANAGEMENT ===================== -->
       <section id="columns" class="uix-guide__section">
         <h2>Column management</h2>
-        <p class="lead">Give users control over what they see and they engage more and tire less. The consolidated <strong>View menu</strong> holds density, zebra, freeze and per-column show / hide / reorder. Drag a header's right edge to resize. All of it persists per user per surface, with one reset.</p>
+        <p class="lead">Give users control over what they see and they engage more and tire less. The consolidated <strong>View menu</strong> holds density, zebra, freeze (the first column, and the row-actions column so its quick actions stay on screen while the table scrolls sideways) and per-column show / hide / reorder. Drag a header's right edge to resize. All of it persists per user per surface, with one reset.</p>
 
         <div data-grid id="grid-columns" data-chrome="view" data-features="sort,actions,resize,freeze" data-rows="8"></div>
 
@@ -602,7 +602,7 @@
           <thead><tr><th>Width</th><th>Pattern</th><th>What happens</th></tr></thead>
           <tbody>
             <tr><td>Desktop (≥ ~880px)</td><td>Full table</td><td>All columns; sticky header; hover actions.</td></tr>
-            <tr><td>Tablet (~560–880px)</td><td>Priority columns + freeze &amp; scroll</td><td><code>data-priority="low"</code> columns drop; identifier freezes; the rest scroll horizontally.</td></tr>
+            <tr><td>Tablet (~560–880px)</td><td>Priority columns + freeze &amp; scroll</td><td><code>data-priority="low"</code> columns drop; the identifier and the row-actions column freeze (<code>.uix-table--pinned-col</code>, <code>.uix-table--pinned-actions</code>); the rest scroll horizontally between them.</td></tr>
             <tr><td>Phone (&lt; ~560px)</td><td>Card transform</td><td>Each row becomes a card — identifier as title, remaining fields as label : value. No horizontal scroll.</td></tr>
           </tbody>
         </table>
@@ -887,7 +887,7 @@
       const data = ALL.slice(0, nRows).map(r => Object.assign({}, r));
 
       const state = {
-        density: 'standard', zebra: true, freeze: false,
+        density: 'standard', zebra: true, freeze: false, freezeActions: false,
         widths: {},                    // keyboard-resized column widths, survive re-renders (UIX-A11Y-5)
         hidden: new Set(isItsm ? ['nis2'] : []),
         order: baseOrder.slice(),
@@ -1199,6 +1199,7 @@
         table.dataset.density = state.density;
         table.classList.toggle('uix-table--no-zebra', !state.zebra);
         table.classList.toggle('uix-table--pinned-col', state.freeze);
+        table.classList.toggle('uix-table--pinned-actions', feat.has('actions') && state.freezeActions);
         if (feat.has('peek')) table.closest('.uix-table-wrap').parentElement.setAttribute('data-uix-rowpeek', '');
         renderHead(); renderBody(); renderFoot(); renderBulk(); syncSelectAll();
         updateExternalStatus(id, state, processed().length, visibleCols().length);
@@ -1288,6 +1289,11 @@
           const fr = el(`<label class="uix-view-menu__row"><span>Freeze first column</span><span class="uix-switch"><input type="checkbox" ${state.freeze ? 'checked' : ''}><span class="uix-switch__track"></span></span></label>`);
           fr.querySelector('input').addEventListener('change', e => { state.freeze = e.target.checked; render(); });
           g2.append(fr);
+          if (feat.has('actions')) {
+            const fa = el(`<label class="uix-view-menu__row"><span>Freeze actions column</span><span class="uix-switch"><input type="checkbox" ${state.freezeActions ? 'checked' : ''}><span class="uix-switch__track"></span></span></label>`);
+            fa.querySelector('input').addEventListener('change', e => { state.freezeActions = e.target.checked; render(); });
+            g2.append(fa);
+          }
         }
         p.append(g2);
         // columns
@@ -1312,7 +1318,7 @@
         fillCols();
         g3.append(list);
         const reset = el('<button class="uix-btn uix-btn--ghost uix-btn--sm" type="button" style="margin-top:8px;width:100%">Reset to default</button>');
-        reset.addEventListener('click', () => { state.order = baseOrder.slice(); state.hidden = new Set(isItsm ? ['nis2'] : []); state.density = 'standard'; state.zebra = true; state.freeze = false; render(); toast('View reset'); });
+        reset.addEventListener('click', () => { state.order = baseOrder.slice(); state.hidden = new Set(isItsm ? ['nis2'] : []); state.density = 'standard'; state.zebra = true; state.freeze = false; state.freezeActions = false; render(); toast('View reset'); });
         g3.append(reset); p.append(g3);
         return p;
       }
@@ -1432,6 +1438,7 @@
           table.classList.toggle('uix-table--cards', w < 560);
           table.classList.toggle('uix-table--priority', w >= 560 && w < 880);
           table.classList.toggle('uix-table--pinned-col', w >= 560 && w < 880 ? true : state.freeze);
+          table.classList.toggle('uix-table--pinned-actions', feat.has('actions') && (w >= 560 && w < 880 ? true : state.freezeActions));
           updateExternalStatus(id, state, processed().length, visibleCols().length, w);
         });
         ro.observe(frame);
@@ -1447,6 +1454,7 @@
           if (k === 'density') state.density = v;
           else if (k === 'zebra') state.zebra = v;
           else if (k === 'freeze') state.freeze = v;
+          else if (k === 'freezeActions') state.freezeActions = v;
           else if (k === 'role') state.role = v;
           else if (k === 'locale') state.locale = v;
           else if (k === 'flagged') { state.flagged = v; }

@@ -5418,6 +5418,7 @@ export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
     // (undocumented)
     density?: TableDensity;
     fixed?: boolean;
+    pinnedActions?: boolean;
     // (undocumented)
     pinnedCol?: boolean;
     // (undocumented)

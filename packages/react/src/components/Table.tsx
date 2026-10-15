@@ -35,6 +35,12 @@ export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
   density?: TableDensity;
   zebra?: boolean;
   pinnedCol?: boolean;
+  /**
+   * Freeze the last column at the right edge while the wrap scrolls sideways, so a trailing
+   * row-actions column (peek, kebab) stays one click away. Pin the row's state with
+   * `Tr selected` / `Tr pinned`: the frozen cell repaints those, not a consumer's own row class.
+   */
+  pinnedActions?: boolean;
   /** table-layout: fixed — required for reliable column widths + primary-column truncation */
   fixed?: boolean;
   rowPeek?: boolean;
@@ -45,6 +51,7 @@ export function Table({
   density = 'standard',
   zebra = true,
   pinnedCol,
+  pinnedActions,
   fixed,
   rowPeek,
   v2,
@@ -58,6 +65,7 @@ export function Table({
         'uix-table',
         !zebra && 'uix-table--no-zebra',
         pinnedCol && 'uix-table--pinned-col',
+        pinnedActions && 'uix-table--pinned-actions',
         fixed && 'uix-table--fixed',
         className,
       )}
