@@ -24,9 +24,14 @@ import { cx } from '../cx.js';
  *
  * Below 22rem of its own width (a phone, a side rail, a narrow column) each label
  * sits above its value and both take the full width (HAR-2032), so a long label
- * never squeezes the value. The list is an inline-size container for this: in a
- * box sized by its content (a flex row, a `max-content` popover) it is 12rem
- * wide, and stacked, unless you size it (`flex: 1`, a width).
+ * never squeezes the value. A `DetailLayout` side column always stacks.
+ *
+ * The list is an inline-size container for this, so its content no longer sizes
+ * it: in a box sized by its content (a flex row, a `Popover` or hover card, a
+ * `max-content` tooltip, an auto-layout table cell, inline-block, a float) it is
+ * 12rem wide, and stacked, unless you size it (`flex: 1`, a width). And an
+ * unnamed `@container` query or a `cqi` unit inside a value now measures the
+ * list: name the container you mean (`@container/card`).
  */
 export interface DescriptionListItem {
   /** Stable identity for the row; falls back to the list index when omitted. */

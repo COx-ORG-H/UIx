@@ -127,9 +127,9 @@
       "brotli": 1195
     },
     "styles/components/description-list.css": {
-      "raw": 1908,
-      "gzip": 946,
-      "brotli": 801
+      "raw": 2146,
+      "gzip": 1051,
+      "brotli": 878
     },
     "styles/components/detail-layout.css": {
       "raw": 1410,

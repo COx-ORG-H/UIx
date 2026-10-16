@@ -30,7 +30,7 @@ const open = async (page, testInfo, viewport) => {
 const pairs = (page, id) => page.locator(`dl#${id}`).evaluate((dl) => {
   const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
   const list = box(dl);
-  const dts = [...dl.querySelectorAll(':scope > dt')];
+  const dts = [...dl.querySelectorAll(':scope > dt, :scope > div > dt')];
   return { list, rows: dts.map((dt) => ({ term: dt.textContent, dt: box(dt), dd: box(dt.nextElementSibling) })) };
 });
 
@@ -74,6 +74,13 @@ test('a 20rem side rail stacks at desktop width; a wide card keeps one label col
   await open(page, testInfo);
   expectStacked(await pairs(page, 'rail'), 'side rail');
   expectSideBySide(await pairs(page, 'wide'), 'wide card');
+});
+
+test('the threshold is the list’s own 22rem; pairs in display:contents wrappers stack too', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  expectStacked(await pairs(page, 'at-21'), '21rem list');
+  expectSideBySide(await pairs(page, 'at-23'), '23rem list');
+  expectStacked(await pairs(page, 'wrapped'), 'wrapped pairs');
 });
 
 test('a list sized by its content (a flex item) is not collapsed by the containment', async ({ page }, testInfo) => {

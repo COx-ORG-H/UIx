@@ -5,7 +5,9 @@
  *     from its children's minimum width: a long label used to push the page sideways there;
  *   - #rail: a 20rem side-rail card, narrow at any viewport;
  *   - #wide: a 40rem card;
- *   - #flex: a list beside an avatar in a flex row, a box sized by its content. */
+ *   - #flex: a list beside an avatar in a flex row, a box sized by its content;
+ *   - #at-21 / #at-23: lists of exactly 21rem and 23rem, either side of the 22rem threshold;
+ *   - #wrapped: plain `.uix-dl` markup with each pair in a display:contents <div>, 20rem wide. */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Avatar, Card, DescriptionList } from '../../packages/react/src/index.js';
@@ -42,6 +44,16 @@ function Harness() {
         <div style={{ width: '40rem', maxWidth: '100%' }}>
           <Card><DescriptionList id="wide" items={ITEMS} /></Card>
         </div>
+      </section>
+      <section>
+        <h2>Schwelle</h2>
+        <DescriptionList id="at-21" items={ITEMS.slice(0, 2)} style={{ width: '21rem', maxWidth: '100%' }} />
+        <DescriptionList id="at-23" items={ITEMS.slice(0, 2)} style={{ width: '23rem', maxWidth: '100%' }} />
+        <dl id="wrapped" className="uix-dl" style={{ width: '20rem', maxWidth: '100%' }}>
+          {ITEMS.slice(0, 2).map((item) => (
+            <div key={item.term} style={{ display: 'contents' }}><dt>{item.term}</dt><dd>{item.description}</dd></div>
+          ))}
+        </dl>
       </section>
       <section>
         <h2>Neben einem Avatar</h2>

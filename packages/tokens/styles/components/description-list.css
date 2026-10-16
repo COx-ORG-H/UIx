@@ -20,8 +20,10 @@
      ("Neue Tickets pro Person und Stunde") can no longer squeeze the value to a letter per
      line or push it off a 320 px screen (TENSOR HAR-1651). The label is pulled toward its own
      value, so the gap inside a pair (4 px) is smaller than the gap between pairs (12 px). */
+  /* Pairs may sit in display:contents <div>s, which HTML allows. The pull assumes the default
+     12 px row gap: shrink the list's row-gap below 8 px and a stacked label touches its value. */
   @container uix-dl (max-width: 22rem) {
-    .uix-dl > dt, .uix-dl > dd { grid-column: 1 / -1; }
-    .uix-dl > dt { margin-bottom: calc(-1 * var(--uix-space-2)); overflow-wrap: anywhere; }
+    .uix-dl > :is(dt, dd), .uix-dl > div > :is(dt, dd) { grid-column: 1 / -1; }
+    .uix-dl > dt, .uix-dl > div > dt { margin-bottom: calc(-1 * var(--uix-space-2)); overflow-wrap: anywhere; }
   }
 }
