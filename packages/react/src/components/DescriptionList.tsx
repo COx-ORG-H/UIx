@@ -21,6 +21,12 @@ import { cx } from '../cx.js';
  * Use `items` for data-driven lists (the common case) or the `DescriptionItem`
  * compound child for hand-authored content. Both render `<dt>`/`<dd>` pairs as
  * direct children of the grid `<dl>`, so they align into the same columns.
+ *
+ * Below 22rem of its own width (a phone, a side rail, a narrow column) each label
+ * sits above its value and both take the full width (HAR-2032), so a long label
+ * never squeezes the value. The list is an inline-size container for this: in a
+ * box sized by its content (a flex row, a `max-content` popover) it is 12rem
+ * wide, and stacked, unless you size it (`flex: 1`, a width).
  */
 export interface DescriptionListItem {
   /** Stable identity for the row; falls back to the list index when omitted. */

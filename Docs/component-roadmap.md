@@ -51,7 +51,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
 | DatePicker | date-picker.css | ✓ `DatePicker` | Beta | no | A typed date field with a one-month calendar popover; ISO value, locale or custom format, `min` / `max` / `isUnavailable`, `weekStartsOn`. Also `DateTimePicker` (date and time, the zone shown; the `datetime-local` value shape). Landed 2.36.0 (HAR-1383). |
 | DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. 2.36.0 (HAR-1383): `mode="field"` (a trigger that opens the months in a popover), `weekStartsOn`. |
-| DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. Recently landed. |
+| DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. HAR-2032: below 22rem of its own width (container query) each label sits above its value. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold; also the `DetailPage` record composition. |
 | DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. |
 | TextDiff | text-diff.css | ✓ `TextDiff` | Beta | no | Two-way text diff by line (changed lines paired, words marked) or by word for prose; split (stacks when narrow) or unified; folds unchanged runs; `diffText` / `textDiffRows` model. Landed with HAR-1368. |
