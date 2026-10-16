@@ -664,8 +664,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     return () => doc.removeEventListener('pointerdown', onDown, true);
   }, [showing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* A filter or a new load can leave the active index past the end: pull it back. */
-  useEffect(() => {
+  /* A filter or a new load can leave the active index past the end: pull it back. A layout
+   * effect, so the fix lands in the same task as the render that broke it: a passive effect runs
+   * a task later, and an Enter (or a screen reader) in between found the list with no active
+   * option, and Enter closed it without choosing. */
+  useIsomorphicLayoutEffect(() => {
     if (!open) return;
     if (active >= entries.length || (active < 0 && entries.length)) setActive(entries.length ? (selectedIndexIn(entries) >= 0 ? selectedIndexIn(entries) : firstEnabled(entries)) : -1);
   }, [open, entries.length, query]); // eslint-disable-line react-hooks/exhaustive-deps
