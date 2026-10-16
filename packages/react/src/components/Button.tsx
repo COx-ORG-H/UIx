@@ -8,11 +8,12 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 /** `xs` is 24 px: the smallest hit area WCAG 2.5.8 allows, for dense tool rows (HAR-1348). */
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
-const buttonClasses = (variant: ButtonVariant, size: ButtonSize, icon: boolean, className?: string) => cx(
+const buttonClasses = (variant: ButtonVariant, size: ButtonSize, icon: boolean, wrap: boolean, className?: string) => cx(
   'uix-btn',
   `uix-btn--${variant}`,
   size !== 'md' && `uix-btn--${size}`,
   icon && 'uix-btn--icon',
+  wrap && !icon && 'uix-btn--wrap',
   className,
 );
 
@@ -21,6 +22,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   icon?: boolean;
   loading?: boolean;
+  /**
+   * Let a long label wrap onto more lines: the size becomes a minimum height instead of a fixed
+   * one (HAR-1813, WCAG 1.4.10 reflow). For human-language labels on public or narrow screens;
+   * dense staff rows keep the one-line default. Ignored with `icon`.
+   */
+  wrap?: boolean;
   children?: ReactNode;
 }
 
@@ -30,7 +37,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading = false, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading = false, wrap = false, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -44,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={buttonClasses(variant, size, icon, className)}
+        className={buttonClasses(variant, size, icon, wrap, className)}
         // Only explicit `disabled` removes native semantics; `loading` keeps the button
         // focusable and announced as busy, with a click guard instead (UIX-A11Y-3).
         disabled={disabled}
@@ -67,6 +74,8 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
   size?: ButtonSize;
   /** Icon-only link: square, and needs `aria-label`. */
   icon?: boolean;
+  /** Let a long label wrap (see `ButtonProps.wrap`, HAR-1813). Ignored with `icon`. */
+  wrap?: boolean;
   /**
    * Renders the link without `href`, with `aria-disabled="true"`, so it is announced
    * as an unavailable link and cannot be followed or focused.
@@ -81,8 +90,8 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
  * A link that looks like a `Button` (HAR-1348; TENSOR A4/B5, MOTUS C-3). Use it when the
  * action navigates; use `Button` when it acts in place.
  */
-export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, disabled = false, renderLink, className, children, onClick, ...props }: ButtonLinkProps) {
-  const classes = buttonClasses(variant, size, icon, className);
+export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, wrap = false, disabled = false, renderLink, className, children, onClick, ...props }: ButtonLinkProps) {
+  const classes = buttonClasses(variant, size, icon, wrap, className);
   if (disabled) {
     return <a {...props} className={classes} role="link" aria-disabled="true">{children}</a>;
   }

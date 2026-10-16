@@ -16,6 +16,13 @@ export interface MetricInputProps {
   label: string;
   invalid?: boolean;
   errorMessage?: string;
+  /**
+   * A required value (HAR-1819): the label shows the same marker as `Field`, and the input
+   * gets native `required` and `aria-required="true"`.
+   */
+  required?: boolean;
+  /** Guidance under the control (a range, a unit rule), tied to the input by `aria-describedby`. */
+  hint?: string;
   disabled?: boolean;
   readOnly?: boolean;
   parse?: (input: string) => number | null;
@@ -28,13 +35,17 @@ const defaultMetricFormat = (input: number | null) => input == null ? '' : Strin
 
 /** Accessible numeric recipe composed from Input and the UIx stepper controls. */
 export function MetricInput({
-  value, onValueChange, min, max, step = 1, unit, label, invalid, errorMessage,
+  value, onValueChange, min, max, step = 1, unit, label, invalid, errorMessage, required, hint,
   disabled, readOnly, parse = parseMetricValue, format = defaultMetricFormat,
   className, id: providedId,
 }: MetricInputProps) {
   const generatedId = useId();
   const id = providedId ?? generatedId;
   const errorId = `${id}-error`;
+  const hintId = `${id}-hint`;
+  const showError = Boolean(invalid && errorMessage);
+  // The hint stays and the error joins it: both are read with the input (HAR-1819).
+  const describedBy = [hint ? hintId : null, showError ? errorId : null].filter(Boolean).join(' ') || undefined;
   const [text, setText] = useState(() => format(value));
 
   useEffect(() => setText(format(value)), [value, format]);
@@ -67,7 +78,7 @@ export function MetricInput({
 
   return (
     <div className={cx('uix-metric-input', invalid && 'uix-metric-input--invalid', className)}>
-      <label className="uix-field__label" htmlFor={id}>{label}</label>
+      <label className="uix-field__label" htmlFor={id} data-required={required || undefined}>{label}</label>
       <div className="uix-metric-input__control">
         <Input
           id={id}
@@ -80,7 +91,9 @@ export function MetricInput({
           aria-valuenow={value ?? undefined}
           aria-valuemin={min}
           aria-valuemax={max}
-          aria-describedby={invalid && errorMessage ? errorId : undefined}
+          aria-describedby={describedBy}
+          required={required}
+          aria-required={required || undefined}
           invalid={invalid}
           disabled={disabled}
           readOnly={readOnly}
@@ -92,7 +105,8 @@ export function MetricInput({
         </span>
       </div>
       {unit && <span className="uix-visually-hidden">Unit: {unit}</span>}
-      {invalid && errorMessage && <span id={errorId} className="uix-field__error">{errorMessage}</span>}
+      {hint && <span id={hintId} className="uix-field__hint">{hint}</span>}
+      {showError && <span id={errorId} className="uix-field__error">{errorMessage}</span>}
     </div>
   );
 }

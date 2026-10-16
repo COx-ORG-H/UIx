@@ -1,6 +1,8 @@
 /* uix detail layout — two-column record (main + side meta). Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-detail { display: grid; grid-template-columns: 1fr 280px; gap: var(--uix-space-5); align-items: start; }
+  /* No side column: the main column takes the whole width instead of leaving 280 px empty (HAR-1814). */
+  .uix-detail:not(:has(> .uix-detail__side)) { grid-template-columns: minmax(0, 1fr); }
   .uix-detail__main { min-width: 0; display: flex; flex-direction: column; gap: var(--uix-space-4); }
   .uix-detail__side { display: flex; flex-direction: column; gap: var(--uix-space-4); }
   .uix-detail-page { display: flex; flex-direction: column; gap: var(--uix-space-5); }
