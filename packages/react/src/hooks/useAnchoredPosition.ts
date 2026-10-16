@@ -97,10 +97,28 @@ function translationOf(el: HTMLElement): { x: number; y: number } {
   if (!t || t === 'none' || typeof DOMMatrixReadOnly === 'undefined') return { x: 0, y: 0 };
   try {
     const m = new DOMMatrixReadOnly(t);
-    return { x: m.m41, y: m.m42 };
+    // In the element's CSS pixels; on screen they are scaled by its zoom.
+    const z = zoomOf(el);
+    return { x: m.m41 * z, y: m.m42 * z };
   } catch {
     return { x: 0, y: 0 };
   }
+}
+
+/**
+ * The element's effective CSS `zoom` (HAR-1798): `currentCSSZoom` where the engine has it, else 1.
+ *
+ * Under `html { zoom: 2 }` (how a page emulates 200 % reflow) `getBoundingClientRect()` and the
+ * viewport size are in zoomed, on-screen pixels, while the `top` / `left` / `max-height` written
+ * on the element, its offsetWidth and its transform are in its own unzoomed CSS pixels, which the
+ * browser multiplies by the zoom. The placement is computed on screen and divided back on write;
+ * without that, an overlay opened low on the page landed at twice its offset, off-screen.
+ * Browser zoom (Ctrl +) changes the CSS pixel itself and leaves this at 1.
+ * @internal Also used by components that size an overlay from its anchor (Select).
+ */
+export function zoomOf(el: HTMLElement): number {
+  const z = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom;
+  return typeof z === 'number' && Number.isFinite(z) && z > 0 ? z : 1;
 }
 
 const signed = (n: number): string => `${n < 0 ? '-' : '+'} ${Math.round(Math.abs(n) * 100) / 100}px`;
@@ -108,7 +126,7 @@ const signed = (n: number): string => `${n < 0 ? '-' : '+'} ${Math.round(Math.ab
 interface Anchoring {
   anchor: HTMLElement;
   name: string;
-  /** The anchor edges the floating element hangs off, and its offset from each. */
+  /** The anchor edges the floating element hangs off, and its offset from each (on-screen px). */
   yEdge: 'top' | 'bottom';
   xEdge: 'left' | 'right';
   dy: number;
@@ -182,8 +200,9 @@ export function useAnchoredPosition(
       if (keepPlace && current.anchor.isConnected) {
         // e.g. while the exit fade runs: stay put instead of dropping to a static position
         const a = current.anchor.getBoundingClientRect();
-        s.top = `${Math.round((current.yEdge === 'bottom' ? a.bottom : a.top) + current.dy)}px`;
-        s.left = `${Math.round((current.xEdge === 'right' ? a.right : a.left) + current.dx)}px`;
+        const z = zoomOf(floating);
+        s.top = `${Math.round(((current.yEdge === 'bottom' ? a.bottom : a.top) + current.dy) / z)}px`;
+        s.left = `${Math.round(((current.xEdge === 'right' ? a.right : a.left) + current.dx) / z)}px`;
       }
       s.removeProperty('position-anchor');
     }
@@ -216,6 +235,9 @@ export function useAnchoredPosition(
       written.current = '';
     }
     const { placement: p, offset: o, padding: pad, shiftMainAxis: keepInView, capHeight: cap } = opts.current;
+    // Everything below is placed in on-screen pixels; CSS values are divided by the zoom on write.
+    // A floating element that is not rendered yet reports no zoom (1); the anchor shares its context.
+    const zoom = floating.getClientRects().length > 0 ? zoomOf(floating) : zoomOf(anchorEl);
     if (cap) {
       // Before measuring: the height that gets placed is the capped one.
       if (!heightCap.current) {
@@ -230,7 +252,7 @@ export function useAnchoredPosition(
         };
         if (setOverflow) s.overflowY = 'auto';
       }
-      const room = `${Math.max(0, window.innerHeight - 2 * pad)}px`;
+      const room = `${Math.max(0, (window.innerHeight - 2 * pad * zoom) / zoom)}px`;
       const max = heightCap.current.ownMaxHeight ? `min(${room}, ${heightCap.current.ownMaxHeight})` : room;
       if (max !== heightCap.current.written) {
         s.maxHeight = max;
@@ -240,12 +262,12 @@ export function useAnchoredPosition(
       uncap();
     }
     const a = anchorEl.getBoundingClientRect();
-    const size = { width: floating.offsetWidth, height: floating.offsetHeight };
+    const size = { width: floating.offsetWidth * zoom, height: floating.offsetHeight * zoom };
     const pos = computePosition(
       { x: a.x, y: a.y, width: a.width, height: a.height },
       size,
       { width: window.innerWidth, height: window.innerHeight },
-      { placement: p, offset: o, padding: pad, shiftMainAxis: keepInView, stickySide: side.current ?? undefined },
+      { placement: p, offset: o * zoom, padding: pad * zoom, shiftMainAxis: keepInView, stickySide: side.current ?? undefined },
     );
     // A hidden element measures 0 × 0; a pre-open call (a popover's toggle, before its
     // content rendered) is not the open decision either. Neither may become sticky.
@@ -254,8 +276,8 @@ export function useAnchoredPosition(
     if (floating.dataset.placement !== pos.placement) floating.dataset.placement = pos.placement;
 
     const writeFixed = (at: PositionResult) => {
-      const left = `${Math.round(at.x)}px`;
-      const top = `${Math.round(at.y)}px`;
+      const left = `${Math.round(at.x / zoom)}px`;
+      const top = `${Math.round(at.y / zoom)}px`;
       const key = `fixed ${left} ${top}`;
       if (key === written.current) return;
       s.left = left;
@@ -291,8 +313,8 @@ export function useAnchoredPosition(
     current.dy = pos.y - (current.yEdge === 'bottom' ? a.bottom : a.top);
     current.dx = pos.x - (current.xEdge === 'right' ? a.right : a.left);
     // round() lands on the same whole pixel as the fixed path's Math.round.
-    const top = `round(anchor(${current.yEdge}) ${signed(current.dy)}, 1px)`;
-    const left = `round(anchor(${current.xEdge}) ${signed(current.dx)}, 1px)`;
+    const top = `round(anchor(${current.yEdge}) ${signed(current.dy / zoom)}, 1px)`;
+    const left = `round(anchor(${current.xEdge}) ${signed(current.dx / zoom)}, 1px)`;
     const key = `anchored ${top} ${left}`;
     if (key !== written.current) {
       s.top = top;

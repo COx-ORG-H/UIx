@@ -24,6 +24,9 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
+  /* Its own ring, drawn inside: the global outset ring is cut off by the sidebar's
+     overflow-x: hidden (HAR-1814). */
+  .uix-navitem:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
   /* active uses --uix-link (the brightened-on-dark accent) not raw --uix-accent: the deep accent
      fails AA as text on the brand-muted tint in dark; link reads legibly in both themes. */
   .uix-navitem[aria-current="page"] { background: var(--uix-brand-muted); color: var(--uix-link); font-weight: 500; }

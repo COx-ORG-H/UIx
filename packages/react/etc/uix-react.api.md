@@ -517,6 +517,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     size?: ButtonSize;
     // (undocumented)
     variant?: ButtonVariant;
+    wrap?: boolean;
 }
 
 // @public (undocumented)
@@ -531,6 +532,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     size?: ButtonSize;
     // (undocumented)
     variant?: ButtonVariant;
+    wrap?: boolean;
 }
 
 // @public
@@ -1732,6 +1734,7 @@ export interface FieldProps {
     required?: boolean;
     // (undocumented)
     success?: string;
+    warning?: string;
 }
 
 // @public
@@ -2290,6 +2293,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     size?: 'sm' | 'md';
     // (undocumented)
     valid?: boolean;
+    warning?: boolean;
 }
 
 // @public (undocumented)
@@ -3100,6 +3104,7 @@ export interface MetricInputProps {
     errorMessage?: string;
     // (undocumented)
     format?: (value: number | null) => string;
+    hint?: string;
     // (undocumented)
     id?: string;
     // (undocumented)
@@ -3116,6 +3121,7 @@ export interface MetricInputProps {
     parse?: (input: string) => number | null;
     // (undocumented)
     readOnly?: boolean;
+    required?: boolean;
     // (undocumented)
     step?: number;
     // (undocumented)

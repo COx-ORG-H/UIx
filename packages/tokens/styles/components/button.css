@@ -38,6 +38,20 @@
   .uix-btn--icon.uix-btn--sm { width: 28px; }
   .uix-btn--icon.uix-btn--lg { width: 44px; }
 
+  /* A label that may wrap (HAR-1813, WCAG 1.4.10). The size sets a floor instead of a fixed
+     height, so a long human-language label breaks onto a second line in a narrow or zoomed
+     column instead of pushing it wider. Opt-in (`wrap` on Button / ButtonLink): dense staff
+     rows keep one line. Never on an icon-only button, which keeps its square. */
+  .uix-btn--wrap:not(.uix-btn--icon) {
+    height: auto; min-height: var(--uix-control-h); max-width: 100%;
+    padding-block: var(--uix-space-2); white-space: normal; line-height: 1.25;
+    text-align: center; text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .uix-btn--wrap.uix-btn--xs:not(.uix-btn--icon) { min-height: 24px; padding-block: var(--uix-space-1); }
+  .uix-btn--wrap.uix-btn--sm:not(.uix-btn--icon) { min-height: 28px; padding-block: var(--uix-space-1); }
+  .uix-btn--wrap.uix-btn--lg:not(.uix-btn--icon) { min-height: 44px; }
+  .uix-btn--wrap.uix-btn--link { min-height: 0; padding-block: 0; }
+
   .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
   /* The label is hidden (color: transparent), so the ring cannot inherit
      currentColor from the button; each variant names its own foreground.

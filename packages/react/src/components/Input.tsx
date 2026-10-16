@@ -6,15 +6,21 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   size?: 'sm' | 'md';
   invalid?: boolean;
   valid?: boolean;
+  /**
+   * "Check this": a value the reader should confirm, not an error, e.g. one an assistant filled
+   * in (HAR-1814). Draws the warning border; `invalid` wins when both are set.
+   */
+  warning?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ size = 'md', invalid, valid, className, ...props }, ref) => (
+  ({ size = 'md', invalid, valid, warning, className, ...props }, ref) => (
     <input
       ref={ref}
       className={cx('uix-input', size === 'sm' && 'uix-input--sm', className)}
       aria-invalid={invalid || undefined}
       data-valid={valid || undefined}
+      data-warning={warning || undefined}
       {...props}
     />
   ),

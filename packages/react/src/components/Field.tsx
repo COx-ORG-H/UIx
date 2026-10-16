@@ -8,6 +8,12 @@ export interface FieldProps {
   label?: string;
   hint?: string;
   error?: string;
+  /**
+   * A value to check, not an error (HAR-1814): shown under the control in the warning colour,
+   * announced politely, and marks the control `data-warning`. `error` wins over it; it wins
+   * over `success` and `hint`.
+   */
+  warning?: string;
   success?: string;
   required?: boolean;
   /**
@@ -23,10 +29,10 @@ export interface FieldProps {
   htmlFor?: string;
 }
 
-export function Field({ label, hint, error, success, required, help, helpLabel, children, className, htmlFor }: FieldProps) {
+export function Field({ label, hint, error, warning, success, required, help, helpLabel, children, className, htmlFor }: FieldProps) {
   const uid = useId();
   const msgId = `${uid}-msg`;
-  const describedBy = (error || success || hint) ? msgId : undefined;
+  const describedBy = (error || warning || success || hint) ? msgId : undefined;
 
   // Wire the message to the control for assistive tech: aria-describedby (so it's announced) and
   // aria-invalid on error. Done when children is a single element (the common one-control case);
@@ -43,6 +49,7 @@ export function Field({ label, hint, error, success, required, help, helpLabel, 
           .filter(Boolean).join(' ') || undefined,
         'aria-invalid': error ? true : (children.props as Record<string, unknown>)['aria-invalid'],
         'aria-required': (children.props as Record<string, unknown>)['aria-required'] ?? (required || undefined),
+        'data-warning': (children.props as Record<string, unknown>)['data-warning'] ?? ((warning && !error) || undefined),
       })
     : children;
 
@@ -65,10 +72,12 @@ export function Field({ label, hint, error, success, required, help, helpLabel, 
       {control}
       {/* Always rendered with a reserved min-height so an error appearing never shifts the layout.
           role="alert" announces the error the moment it's inserted, role="status" the success
-          (polite, so it doesn't interrupt); error > success > hint. */}
+          (polite, so it doesn't interrupt), as is a warning; error > warning > success > hint. */}
       <div className="uix-field__msg" id={msgId}>
         {error ? (
           <span className="uix-field__error" role="alert">{error}</span>
+        ) : warning ? (
+          <span className="uix-field__warning" role="status">{warning}</span>
         ) : success ? (
           <span className="uix-field__success" role="status">{success}</span>
         ) : hint ? (

@@ -122,8 +122,11 @@
   .uix-content-list { margin: 0; padding: 0; list-style: none; }
   .uix-content-list__item { min-height: 68px; padding: var(--uix-space-3) 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
   .uix-content-list__item:last-child { border-bottom: 0; }
-  .uix-content-list__title { margin: 0; font-weight: 600; }
-  .uix-content-list__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
+  /* One long unbroken word (a German compound, a file name) breaks inside the row instead of
+     widening the page (HAR-1811). */
+  .uix-content-list__item > div { min-width: 0; }
+  .uix-content-list__title { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .uix-content-list__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); min-width: 0; overflow-wrap: anywhere; }
 
   /* ── resource grid ─────────────────────────────────────────────────────────── */
   .uix-resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--uix-space-2); }

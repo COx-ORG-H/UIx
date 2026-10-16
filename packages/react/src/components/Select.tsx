@@ -7,7 +7,7 @@ import type {
 } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
-import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
+import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -619,9 +619,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     if (!popup || !trigger) return;
     const isOpen = () => { try { return popup.matches(':popover-open'); } catch { return false; } };
     if (showing) {
+      // The trigger's box is in on-screen pixels; the popup's width and height are its own CSS
+      // pixels, which a CSS zoom scales again (HAR-1798: under html { zoom: 2 } the list was twice
+      // as wide as its trigger and ran off the right edge).
+      // From the trigger: a popup that is not shown yet reports no zoom (1).
+      const zoom = zoomOf(trigger);
       const r = trigger.getBoundingClientRect();
-      const room = Math.max(r.top, window.innerHeight - r.bottom) - OFFSET - EDGE;
-      popup.style.minWidth = `${Math.round(r.width)}px`;
+      const room = Math.max(r.top, window.innerHeight - r.bottom) / zoom - OFFSET - EDGE;
+      popup.style.minWidth = `${Math.round(r.width / zoom)}px`;
       popup.style.maxHeight = `${Math.max(96, Math.min(MAX_HEIGHT, Math.floor(room)))}px`;
       try { if (!isOpen()) popup.showPopover(); } catch { /* no Popover API: `hidden` drives it */ }
       if (isSearchable) searchRef.current?.focus({ preventScroll: true });

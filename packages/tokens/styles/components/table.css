@@ -26,7 +26,9 @@
      plain-text th — inherited font/colour, no chrome — with an inset overlay so the whole
      cell stays the click target (the sticky th is its containing block). The sort arrow and
      ordinal stay as th pseudo-content so they never pollute the button's accessible name. */
-  .uix-th__sortbtn { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
+  /* letter-spacing and text-transform too: the UA button style resets them, so a sortable
+     header lost the eyebrow tracking and case its neighbours keep (HAR-1814). */
+  .uix-th__sortbtn { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
   .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
@@ -112,7 +114,8 @@
     width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
     opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-table tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
+  /* :focus-within as well: a keyboard user on the id link sees the arrow too (HAR-1814). */
+  .uix-table tbody tr:hover .uix-id-cell__arrow, .uix-table tbody tr:focus-within .uix-id-cell__arrow { opacity: 1; }
 
   /* ── selection column + select-all ────────────────────────────────────────────── */
   .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: 44px; padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
@@ -135,7 +138,8 @@
   .uix-table__actions { width: 84px; text-align: right; white-space: nowrap; }
   .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-rowact svg { width: 16px; height: 16px; display: block; }
-  .uix-table tbody tr:hover .uix-rowact, .uix-rowact:focus-visible, .uix-rowact[aria-expanded="true"] { opacity: 1; }
+  /* A row the keyboard is in shows its actions, as a hovered one does (HAR-1814). */
+  .uix-table tbody tr:hover .uix-rowact, .uix-table tbody tr:focus-within .uix-rowact, .uix-rowact:focus-visible, .uix-rowact[aria-expanded="true"] { opacity: 1; }
   .uix-rowact:hover { background: var(--uix-bg-active); color: var(--uix-text); }
 
   /* ── expandable inline row ─────────────────────────────────────────────────────── */
