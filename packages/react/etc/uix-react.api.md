@@ -563,6 +563,33 @@ export interface CalendarDay {
 // @public
 export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+// @public
+export function canvasItemLimits(item: DashboardCanvasItem): {
+    readonly minW: number;
+    readonly maxW: number;
+    readonly minH: number;
+    readonly maxH: number;
+};
+
+// @public
+export function canvasItemsOverlap(a: DashboardCanvasPlacement & {
+    readonly id: string;
+}, b: DashboardCanvasPlacement & {
+    readonly id: string;
+}): boolean;
+
+// @public
+export function canvasMoveTarget(item: DashboardCanvasItem, direction: DashboardCanvasDirection): DashboardCanvasPlacement | null;
+
+// @public
+export function canvasReadingOrder<T extends DashboardCanvasItem>(items: readonly T[]): T[];
+
+// @public
+export function canvasResizeTarget(item: DashboardCanvasItem, change: DashboardCanvasResize): DashboardCanvasPlacement | null;
+
+// @public
+export function canvasRowCount(items: readonly DashboardCanvasItem[]): number;
+
 // @public (undocumented)
 export function Card(input: CardProps): react.JSX.Element;
 
@@ -660,6 +687,9 @@ export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> 
     renderLink?: UixRenderLink;
     variant?: 'default' | 'add';
 }
+
+// @public
+export function clampCanvasItem<T extends DashboardCanvasItem>(item: T): T;
 
 // @public (undocumented)
 export function clampMetricValue(value: number, min?: number, max?: number): number;
@@ -866,6 +896,9 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function compactCanvas<T extends DashboardCanvasItem>(items: readonly T[]): T[];
+
+// @public
 export function Composer(input: ComposerProps): react.JSX.Element;
 
 // @public
@@ -967,6 +1000,81 @@ export function createToastStore(): ToastStore;
 
 // @public (undocumented)
 export function cx(...args: (string | false | null | undefined | 0)[]): string;
+
+// @public
+export const DASHBOARD_CANVAS_COLUMNS = 12;
+
+// @public
+export function DashboardCanvas<T extends DashboardCanvasItem>(input: DashboardCanvasProps<T>): react.JSX.Element;
+
+// @public
+export interface DashboardCanvasChange {
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly kind: 'move' | 'resize';
+    // (undocumented)
+    readonly source: 'pointer' | 'keyboard';
+}
+
+// @public
+export type DashboardCanvasDirection = 'up' | 'down' | 'left' | 'right';
+
+// @public
+export type DashboardCanvasGap = 'sm' | 'md' | 'lg';
+
+// @public (undocumented)
+export interface DashboardCanvasItem {
+    readonly col: number;
+    readonly h: number;
+    readonly id: string;
+    readonly maxH?: number;
+    readonly maxW?: number;
+    readonly minH?: number;
+    readonly minW?: number;
+    readonly row: number;
+    readonly w: number;
+}
+
+// @public
+export interface DashboardCanvasLabels {
+    atEdge: string;
+    cancelled: string;
+    instructions: string;
+    move: string;
+    moved: string;
+    region: string;
+    resize: string;
+    resized: string;
+}
+
+// @public
+export interface DashboardCanvasPlacement {
+    // (undocumented)
+    readonly col: number;
+    // (undocumented)
+    readonly h: number;
+    // (undocumented)
+    readonly row: number;
+    // (undocumented)
+    readonly w: number;
+}
+
+// @public (undocumented)
+export interface DashboardCanvasProps<T extends DashboardCanvasItem> extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'children'> {
+    editable?: boolean;
+    gap?: DashboardCanvasGap;
+    itemLabel?: (item: T) => string;
+    items: readonly T[];
+    // (undocumented)
+    labels?: Partial<DashboardCanvasLabels>;
+    onLayoutChange?: (items: T[], change: DashboardCanvasChange) => void;
+    renderItem: (item: T) => ReactNode;
+    rowHeight?: string;
+}
+
+// @public
+export type DashboardCanvasResize = 'wider' | 'narrower' | 'taller' | 'shorter';
 
 // @public
 export const DashboardGrid: react.ForwardRefExoticComponent<DashboardGridProps & react.RefAttributes<HTMLDivElement>> & {
@@ -1218,6 +1326,9 @@ export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
 
 // @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_DASHBOARD_CANVAS_LABELS: DashboardCanvasLabels;
 
 // @public (undocumented)
 export const DEFAULT_DATE_PICKER_LABELS: DatePickerLabels;
@@ -3196,6 +3307,9 @@ export interface MonthSpanLayout {
 }
 
 // @public
+export function moveCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, direction: DashboardCanvasDirection): T[];
+
+// @public
 export interface MoveProposal {
     adjusted: 'gap_forward' | null;
     // (undocumented)
@@ -3298,6 +3412,9 @@ export interface NewsLeadProps extends Omit<HTMLAttributes<HTMLElement>, 'title'
 
 // @public
 export function nextSortDir(current: SortDir | 'none' | undefined): SortDir | 'none';
+
+// @public
+export function normalizeCanvas<T extends DashboardCanvasItem>(items: readonly T[]): T[];
 
 // @public (undocumented)
 export function normalizeHex(value: string): string | undefined;
@@ -3531,6 +3648,9 @@ export type PipelineStageState = 'pending' | 'waiting' | 'active' | 'current' | 
 
 // @public
 export function pixelsToMs(px: number, trackWidth: number, range: TimelineRange, step: number): number;
+
+// @public
+export function placeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, placement: Partial<DashboardCanvasPlacement>): T[];
 
 // @public (undocumented)
 export interface PlacedDaySpan {
@@ -4107,6 +4227,9 @@ export const renderPlainLink: UixRenderLink;
 
 // @public
 export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
+
+// @public
+export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, change: DashboardCanvasResize): T[];
 
 // @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;

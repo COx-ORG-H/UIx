@@ -1,0 +1,104 @@
+/* DashboardCanvas (TENSOR HAR-1823): a free dashboard layout. Twelve equal columns, rows of one
+   fixed height, and every item at its own place and size in grid units, set by the component as
+   custom properties on the item:
+     --uix-dashboard-canvas-col / -row-start   first column / row, 1-based
+     --uix-dashboard-canvas-w / -h             width in columns / height in rows
+     --uix-dashboard-canvas-order              its position in reading order (row, then column)
+
+   Below 36rem of the canvas's own width (a container query, so a canvas beside an open sidebar
+   collapses sooner) it is one column in reading order, each item as tall as its rows, and the
+   edit handles step aside: the product's item menu is the way to arrange it there.
+
+   Edit mode (--editing) gives each item a move handle (top right) and a resize handle (bottom
+   right corner) and outlines the cells. While a handle is dragged, a dashed preview shows where
+   the item will land. */
+@layer uix.components {
+  .uix-dashboard-canvas {
+    --uix-dashboard-canvas-row: 5rem;
+    --dashboard-canvas-gap: var(--uix-space-4);
+    container: uix-dashboard-canvas / inline-size;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: var(--uix-dashboard-canvas-row);
+    /* 11 column gaps sit between the 12 tracks; capping each at 1/12 of the width keeps a very
+       narrow canvas from being pushed wider than its box by the gaps alone. */
+    column-gap: min(var(--dashboard-canvas-gap), calc(100% / 12));
+    row-gap: var(--dashboard-canvas-gap);
+    min-width: 0;
+  }
+  .uix-dashboard-canvas--gap-sm { --dashboard-canvas-gap: var(--uix-space-3); }
+  .uix-dashboard-canvas--gap-lg { --dashboard-canvas-gap: var(--uix-space-6); }
+
+  .uix-dashboard-canvas__item,
+  .uix-dashboard-canvas__preview {
+    grid-column: var(--uix-dashboard-canvas-col, 1) / span var(--uix-dashboard-canvas-w, 12);
+    grid-row: var(--uix-dashboard-canvas-row-start, auto) / span var(--uix-dashboard-canvas-h, 1);
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* The item is the container its content sizes against; its last child takes the spare height. */
+  .uix-dashboard-canvas__item {
+    container: uix-dashboard-canvas-item / inline-size;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .uix-dashboard-canvas__item > :not(.uix-dashboard-canvas__handle) { min-height: 0; }
+  .uix-dashboard-canvas__item > :not(.uix-dashboard-canvas__handle):last-of-type { flex-grow: 1; }
+
+  /* ── Edit mode ─────────────────────────────────────────────────────────────── */
+  .uix-dashboard-canvas--editing .uix-dashboard-canvas__item {
+    outline: 1px dashed var(--uix-border-strong);
+    outline-offset: 2px;
+    border-radius: var(--uix-radius-md);
+  }
+  .uix-dashboard-canvas__item--dragging { opacity: 0.5; }
+
+  .uix-dashboard-canvas__handle {
+    position: absolute;
+    z-index: var(--uix-z-raised);
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--uix-space-6);
+    block-size: var(--uix-space-6);
+    padding: 0;
+    border: 1px solid var(--uix-border);
+    border-radius: var(--uix-radius-sm);
+    background: var(--uix-surface);
+    color: var(--uix-text-muted);
+    touch-action: none;
+  }
+  .uix-dashboard-canvas__handle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-dashboard-canvas__handle:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-dashboard-canvas__handle > svg { inline-size: var(--uix-space-4); block-size: var(--uix-space-4); }
+  .uix-dashboard-canvas__move { inset-block-start: var(--uix-space-1); inset-inline-end: var(--uix-space-1); cursor: grab; }
+  .uix-dashboard-canvas--dragging .uix-dashboard-canvas__move { cursor: grabbing; }
+  .uix-dashboard-canvas__resize { inset-block-end: var(--uix-space-1); inset-inline-end: var(--uix-space-1); cursor: nwse-resize; }
+
+  .uix-dashboard-canvas__preview {
+    border: 2px dashed var(--uix-accent);
+    border-radius: var(--uix-radius-md);
+    background: var(--uix-brand-muted);
+    pointer-events: none;
+  }
+
+  /* ── Narrow: one column in reading order ───────────────────────────────────── */
+  @container uix-dashboard-canvas (max-width: 35.99rem) {
+    .uix-dashboard-canvas { grid-auto-rows: auto; }
+    .uix-dashboard-canvas__item {
+      grid-column: 1 / -1;
+      grid-row: auto;
+      order: var(--uix-dashboard-canvas-order, 0);
+      /* As tall as its rows on the wide canvas, gaps included. */
+      min-block-size: calc(var(--uix-dashboard-canvas-h, 1) * var(--uix-dashboard-canvas-row) + (var(--uix-dashboard-canvas-h, 1) - 1) * var(--dashboard-canvas-gap));
+    }
+    .uix-dashboard-canvas__handle,
+    .uix-dashboard-canvas__preview { display: none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .uix-dashboard-canvas__item { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  }
+}

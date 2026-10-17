@@ -151,7 +151,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
-  'dashboard-grid', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card',
+  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -229,6 +229,7 @@ export const exampleRouteFor = (item) => {
     'diff-viewer': 'examples-diff-viewer',
     'text-diff': 'examples-text-diff',
     'dashboard-grid': 'examples-dashboard-grid',
+    'dashboard-canvas': 'examples-dashboard-canvas',
     'insight-card': 'examples-insight-charts',
     'license-position-bar': 'examples-metrics',
     'match-review': 'examples-match-review',
