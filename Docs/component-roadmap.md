@@ -56,7 +56,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. |
 | TextDiff | text-diff.css | ✓ `TextDiff` | Beta | no | Two-way text diff by line (changed lines paired, words marked) or by word for prose; split (stacks when narrow) or unified; folds unchanged runs; `diffText` / `textDiffRows` model. Landed with HAR-1368. |
 | EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. |
-| Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. |
+| Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. HAR-2029: `dirty` asks "Discard changes?" (anchored, focus on Keep editing) on Escape, ×, backdrop and `DialogClose`; `pending` blocks them. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | ✓ `Flow` | Beta | no | Also `FlowNode`; presentational graph shell with explicit state text and consumer-owned geometry. |
 | Form | form.css | ✓ `Field` | Stable | no | Also `ToggleRow`; `FormGrid`/`Fieldset` still planned. |
@@ -77,7 +77,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). 2.32.0 (HAR-1629): `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`, `id` / `data-*` on items, Escape on the trigger, capped to the viewport. |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
 | MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
-| Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. |
+| Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. HAR-2029: `dirty` / `pending` as on Drawer, and `DialogClose`. |
 | NotificationCenter | notification-center.css | absent | Planned | no | Planned wrapper (presentational). |
 | PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
 | Pagination | pagination.css | ✓ `Pagination` | Stable | no | Data-display control. |

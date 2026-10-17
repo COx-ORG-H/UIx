@@ -1402,6 +1402,12 @@ export interface DetailPageTab {
     label: ReactNode;
 }
 
+// @public
+export const DialogClose: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
+
+// @public (undocumented)
+export type DialogCloseProps = ButtonProps;
+
 // @public (undocumented)
 export interface DiffEntry {
     // (undocumented)
@@ -1524,6 +1530,14 @@ export interface DiffViewerProps {
     resolutions?: Record<string, DiffResolution>;
 }
 
+// @public
+export interface DiscardPromptLabels {
+    description: string;
+    discard: string;
+    keepEditing: string;
+    title: string;
+}
+
 // @public (undocumented)
 export function Drawer(input: DrawerProps): react.JSX.Element;
 
@@ -1532,6 +1546,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
     // (undocumented)
     children?: ReactNode;
     closeLabel?: string;
+    dirty?: boolean;
+    discardLabels?: Partial<DiscardPromptLabels>;
     dismissOnBackdrop?: boolean;
     // (undocumented)
     footer?: ReactNode;
@@ -1539,6 +1555,7 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
     onClose?: () => void;
     // (undocumented)
     open: boolean;
+    pending?: boolean;
     side?: 'end' | 'start' | 'bottom';
     // (undocumented)
     title?: ReactNode;
@@ -3138,12 +3155,15 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     // (undocumented)
     children?: ReactNode;
     closeLabel?: string;
+    dirty?: boolean;
+    discardLabels?: Partial<DiscardPromptLabels>;
     // (undocumented)
     footer?: ReactNode;
     // (undocumented)
     onClose?: () => void;
     // (undocumented)
     open: boolean;
+    pending?: boolean;
     // (undocumented)
     role?: 'dialog' | 'alertdialog';
     // (undocumented)
@@ -6072,6 +6092,7 @@ export interface UixLabels {
     dateRangePicker?: Partial<DateRangePickerLabels>;
     // (undocumented)
     dateTimePicker?: Partial<DateTimePickerLabels>;
+    discardPrompt?: Partial<DiscardPromptLabels>;
     // (undocumented)
     drawer?: {
         close?: string;
@@ -6174,8 +6195,8 @@ export interface UseAnchoredPositionOptions {
     shiftMainAxis?: boolean;
 }
 
-// @public (undocumented)
-export function useDialog(open: boolean, onClose?: () => void): React.RefObject<HTMLDialogElement>;
+// @public
+export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement>;
 
 // @public
 export function UserChip(input: UserChipProps): react.JSX.Element;
