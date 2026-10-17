@@ -73,7 +73,7 @@ for (const [button, id] of [['open-drawer', 'drawer'], ['open-modal', 'modal']])
     await expect(nameField(page, id)).toBeFocused();
     // Closed, the step is not laid out at all: a [popover] whose class sets `display` used to stay
     // an invisible fixed box at the viewport's top-left that took clicks.
-    await expect.poll(() => page.locator('[data-uix-discard-prompt]').evaluate((el) => getComputedStyle(el).display)).toBe('none');
+    await expect.poll(() => page.locator(`dialog#${id} [data-uix-discard-prompt]`).evaluate((el) => getComputedStyle(el).display)).toBe('none');
     await expect(dialog).toHaveJSProperty('open', true);
     expect((await closes(page))[id]).toBe(0);
   });
