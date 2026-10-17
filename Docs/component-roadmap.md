@@ -79,6 +79,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. HAR-2029: `dirty` / `pending` as on Drawer, and `DialogClose`. |
 | NotificationCenter | notification-center.css | absent | Planned | no | Planned wrapper (presentational). |
+| OrgChart | org-chart.css | ✓ `OrgChart` | Beta | no | Reporting lines as a top-down chart of person cards (photo or initials, name, title, team, location, direct-report count as the expand control); `loadChildren` on expand with loading and retry rows, `revealId` for search, leaf rows stacked, zoom / Fit / pan, an indented list below 48rem of its own width; WAI-ARIA tree keys that follow the picture. `OrgChartNode`, `OrgChartLabels`. Landed with HAR-1807. |
 | PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
 | Pagination | pagination.css | ✓ `Pagination` | Stable | no | Data-display control. |
 | Peek | peek.css | ✓ `Peek` | Stable | no | Side-peek overlay. |

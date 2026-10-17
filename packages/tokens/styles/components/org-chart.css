@@ -1,0 +1,191 @@
+/* uix org chart — reporting lines as a top-down chart of person cards (HAR-1807).
+   A WAI-ARIA tree (role=tree / treeitem / group) like .uix-tree: the ARIA state lives on the
+   <li class="uix-org-chart__item">, so selection, focus and expansion all key off the item.
+
+   Two layouts from one markup, picked by the chart's OWN width (a container query, so a side
+   panel narrows it as well as a phone does):
+   - chart (48rem and wider): managers above their reports, joined by connector lines drawn
+     with pseudo-elements; a row whose people have no reports of their own is stacked in a
+     column with a rail on its left, so a team of eight does not need eight card widths;
+   - list (narrower): an indented vertical tree with guide lines. The zoom toolbar steps aside.
+   The component reads --org-chart-layout to pick the matching keyboard model. */
+@layer uix.components {
+  .uix-org-chart {
+    --org-chart-card-width: 15rem;
+    --org-chart-rise: var(--uix-space-7);        /* vertical room between a card and its reports' row */
+    --org-chart-spread: var(--uix-space-3);      /* room between neighbouring subtrees */
+    --org-chart-indent: var(--uix-space-6);      /* stacked rows and the list layout */
+    --org-chart-tick: calc(var(--uix-space-3) + 22px); /* card padding + half the 44px avatar: where a tick meets a card */
+    /* The lines carry the reporting relationship: 3:1 against the frame in both themes (WCAG 1.4.11). */
+    --org-chart-line: var(--uix-neutral-solid);
+    container: uix-org-chart / inline-size;
+    display: flex; flex-direction: column; gap: var(--uix-space-2); min-width: 0;
+  }
+  .uix-org-chart__toolbar { display: flex; align-items: center; justify-content: flex-end; gap: var(--uix-space-1); }
+  .uix-org-chart__level { min-width: 4.5rem; font-variant-numeric: tabular-nums; }
+  .uix-org-chart__viewport {
+    --org-chart-layout: chart;
+    position: relative; overflow: auto; overscroll-behavior: contain;
+    max-height: var(--org-chart-max-height, 70vh);
+    padding: var(--uix-space-5);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-bg-subtle);
+    cursor: grab;
+  }
+  .uix-org-chart__viewport[data-panning] { cursor: grabbing; user-select: none; }
+  /* Centres a chart narrower than the viewport; a wider one scrolls from its left edge. */
+  .uix-org-chart__canvas { display: flex; justify-content: center; width: max-content; min-width: 100%; }
+  .uix-org-chart__tree { zoom: var(--org-chart-zoom, 1); }
+  .uix-org-chart__tree, .uix-org-chart__group { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; }
+  .uix-org-chart__tree { gap: var(--uix-space-6); }
+
+  .uix-org-chart__item { position: relative; display: flex; flex-direction: column; align-items: center; outline: none; padding: 0 var(--org-chart-spread); cursor: default; }
+  .uix-org-chart__tree > .uix-org-chart__item { padding: 0; }
+
+  /* ── connectors (chart layout) ──
+     The group draws the stem down from its manager; each report draws its half of the
+     horizontal rule plus the drop to its own card. The outer halves of the first and last
+     report stay blank, and an only report keeps just the drop. */
+  .uix-org-chart__group { position: relative; padding-top: calc(var(--org-chart-rise) / 2); }
+  .uix-org-chart__group::before {
+    content: ""; position: absolute; top: 0; left: 50%; height: calc(var(--org-chart-rise) / 2);
+    border-left: 1px solid var(--org-chart-line);
+  }
+  .uix-org-chart__group > .uix-org-chart__item { padding-top: calc(var(--org-chart-rise) / 2); }
+  .uix-org-chart__group > .uix-org-chart__item::before,
+  .uix-org-chart__group > .uix-org-chart__item::after {
+    content: ""; position: absolute; top: 0; width: 50%; height: calc(var(--org-chart-rise) / 2);
+    border-top: 1px solid var(--org-chart-line);
+  }
+  .uix-org-chart__group > .uix-org-chart__item::before { right: 50%; }
+  .uix-org-chart__group > .uix-org-chart__item::after { left: 50%; border-left: 1px solid var(--org-chart-line); }
+  .uix-org-chart__group > .uix-org-chart__item:first-child::before,
+  .uix-org-chart__group > .uix-org-chart__item:last-child::after { border-top: 0; }
+
+  /* A row of people without reports, stacked: the stem leaves the manager's card near its left
+     edge, a rail runs down beside the column, and a tick meets each card at its avatar. */
+  .uix-org-chart__group[data-stack] { flex-direction: column; align-items: stretch; width: var(--org-chart-card-width); }
+  .uix-org-chart__group[data-stack]::before { left: calc(var(--org-chart-indent) / 2); }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item { padding: var(--uix-space-2) 0 0 var(--org-chart-indent); align-items: stretch; }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child { padding-top: 0; }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item::before {
+    right: auto; left: calc(var(--org-chart-indent) / 2); width: 0; height: auto; bottom: 0;
+    border-top: 0; border-left: 1px solid var(--org-chart-line);
+  }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item:last-child::before { bottom: auto; height: calc(var(--uix-space-2) + var(--org-chart-tick)); }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child:last-child::before { height: var(--org-chart-tick); }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item::after {
+    left: calc(var(--org-chart-indent) / 2); width: calc(var(--org-chart-indent) / 2); height: 0;
+    top: calc(var(--uix-space-2) + var(--org-chart-tick)); border-left: 0; border-top: 1px solid var(--org-chart-line);
+  }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child::after { top: var(--org-chart-tick); }
+  .uix-org-chart__group[data-stack] > .uix-org-chart__item:last-child::after { border-top: 1px solid var(--org-chart-line); }
+  .uix-org-chart__group[data-stack] .uix-org-chart__node { width: 100%; }
+
+  /* ── the person card ── */
+  .uix-org-chart__node {
+    position: relative; box-sizing: border-box; width: var(--org-chart-card-width);
+    display: flex; align-items: flex-start; gap: var(--uix-space-3);
+    padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-4);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm);
+    text-align: left; cursor: pointer;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-org-chart__item > .uix-org-chart__node:hover { border-color: var(--uix-border-strong); }
+  .uix-org-chart__item[aria-selected="true"] > .uix-org-chart__node {
+    border-color: var(--uix-accent); box-shadow: 0 0 0 1px var(--uix-accent);
+    background: color-mix(in srgb, var(--uix-accent) 7%, var(--uix-surface));
+  }
+  /* The ring is drawn at 2 px on screen whatever the zoom. */
+  .uix-org-chart__item:focus-visible > .uix-org-chart__node,
+  .uix-org-chart__item:focus-visible > .uix-org-chart__status {
+    outline: calc(2px / var(--org-chart-zoom, 1)) solid var(--uix-ring); outline-offset: calc(2px / var(--org-chart-zoom, 1));
+  }
+  .uix-org-chart__node .uix-avatar { margin-top: 0; }
+  .uix-org-chart__body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: var(--uix-space-1); }
+  .uix-org-chart__desc { display: flex; flex-direction: column; gap: var(--uix-space-1); min-width: 0; }
+  .uix-org-chart__name, .uix-org-chart__title {
+    overflow: hidden; overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  }
+  .uix-org-chart__name { font-size: var(--uix-text-body); line-height: var(--uix-leading-body); font-weight: 600; }
+  .uix-org-chart__title { font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); color: var(--uix-text-muted); }
+  .uix-org-chart__meta { display: flex; flex-direction: column; font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); color: var(--uix-text-hushed); min-width: 0; }
+  .uix-org-chart__meta > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-org-chart__badge {
+    align-self: flex-start; padding: 0 var(--uix-space-2); border-radius: var(--uix-radius-pill);
+    font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow); font-weight: 600;
+    background: color-mix(in srgb, var(--uix-accent) 14%, transparent); color: var(--uix-accent-text);
+  }
+
+  /* The report count, which is also the expand control: it sits on the card's bottom edge,
+     where the connector to the reports leaves. */
+  .uix-org-chart__toggle {
+    position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--uix-space-1); min-height: 24px; min-width: 24px;
+    padding: 0 var(--uix-space-2); border: 1px solid var(--org-chart-line); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface); color: var(--uix-text-muted); font: inherit; font-size: var(--uix-text-meta);
+    font-variant-numeric: tabular-nums; cursor: pointer; z-index: var(--uix-z-raised);
+  }
+  .uix-org-chart__toggle:hover { color: var(--uix-text); border-color: var(--uix-accent); }
+  .uix-org-chart__toggle svg { width: 12px; height: 12px; transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-org-chart__item[aria-expanded="false"] > .uix-org-chart__node .uix-org-chart__toggle svg { transform: rotate(-90deg); }
+
+  /* Reports that are loading, or failed to load: one status row in the reports' place. */
+  .uix-org-chart__status {
+    display: inline-flex; align-items: center; gap: var(--uix-space-2); white-space: nowrap;
+    padding: var(--uix-space-1) var(--uix-space-3); border: 1px dashed var(--org-chart-line); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface); color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+  }
+  .uix-org-chart__status--error { color: var(--uix-danger-text); border-color: var(--uix-danger-border); cursor: pointer; }
+  .uix-org-chart__retry { color: var(--uix-link); text-decoration: underline; text-underline-offset: .15em; }
+}
+
+/* ── list layout: below 48rem of chart width ── */
+@layer uix.components {
+  @container uix-org-chart (max-width: 47.99rem) {
+    .uix-org-chart__toolbar { display: none; }
+    .uix-org-chart__viewport { --org-chart-layout: list; max-height: none; overflow: visible; padding: 0; border: 0; background: none; cursor: auto; }
+    .uix-org-chart__canvas { display: block; width: auto; min-width: 0; }
+    .uix-org-chart__tree { --org-chart-zoom: 1; zoom: 1; }
+    /* Past the fourth level the indent stops growing, so deep names keep their room at 320 px. */
+    .uix-org-chart__group .uix-org-chart__group .uix-org-chart__group .uix-org-chart__group { --org-chart-indent: var(--uix-space-3); }
+    .uix-org-chart__tree, .uix-org-chart__group, .uix-org-chart__group[data-stack] { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: auto; }
+    .uix-org-chart__item, .uix-org-chart__tree > .uix-org-chart__item { align-items: stretch; padding: 0; }
+    .uix-org-chart__tree > .uix-org-chart__item + .uix-org-chart__item { margin-top: var(--uix-space-2); }
+    .uix-org-chart__node, .uix-org-chart__group[data-stack] .uix-org-chart__node { width: 100%; padding-bottom: var(--uix-space-3); }
+    .uix-org-chart__group, .uix-org-chart__group[data-stack] { padding: 0 0 0 var(--org-chart-indent); }
+    .uix-org-chart__group::before { display: none; }
+    /* Guide lines: a rail per report from its top (or the manager above) to its tick. */
+    .uix-org-chart__group > .uix-org-chart__item,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child { padding: var(--uix-space-2) 0 0; }
+    .uix-org-chart__group > .uix-org-chart__item::before,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item::before {
+      right: auto; left: calc(var(--org-chart-indent) / -2); top: 0; bottom: 0; width: 0; height: auto;
+      border-top: 0; border-left: 1px solid var(--org-chart-line);
+    }
+    .uix-org-chart__group > .uix-org-chart__item:last-child::before,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item:last-child::before,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child:last-child::before { bottom: auto; height: calc(var(--uix-space-2) + var(--org-chart-tick)); }
+    .uix-org-chart__group > .uix-org-chart__item::after,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item::after,
+    .uix-org-chart__group[data-stack] > .uix-org-chart__item:first-child::after {
+      left: calc(var(--org-chart-indent) / -2); width: calc(var(--org-chart-indent) / 2); height: 0;
+      top: calc(var(--uix-space-2) + var(--org-chart-tick)); border-left: 0; border-top: 1px solid var(--org-chart-line);
+    }
+    .uix-org-chart__group > .uix-org-chart__item:last-child::after { border-top: 1px solid var(--org-chart-line); }
+    /* The report count moves to the end of the row; on a touch screen it is a full-size target. */
+    .uix-org-chart__toggle { position: static; transform: none; align-self: center; flex: none; }
+    .uix-org-chart__status { align-self: flex-start; }
+    /* A loading or error row is shorter than a card: its tick meets the row's middle. */
+    .uix-org-chart__group > .uix-org-chart__item--status::after { top: calc(var(--uix-space-2) + var(--uix-space-3)); }
+    .uix-org-chart__group > .uix-org-chart__item--status:last-child::before { height: calc(var(--uix-space-2) + var(--uix-space-3)); }
+  }
+  @container uix-org-chart (max-width: 47.99rem) {
+    @media (pointer: coarse) {
+      .uix-org-chart__toggle { min-height: 44px; min-width: 44px; }
+    }
+  }
+}

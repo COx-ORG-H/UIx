@@ -80,5 +80,8 @@
     .uix-scheduling-timeline__overlay[data-pattern="solid"] { background-image: repeating-linear-gradient(to bottom, CanvasText 0 1px, transparent 1px 8px); }
     .uix-scheduling-timeline__item[data-status="done"] { border-style: solid solid double; border-bottom-width: 3px; }
     .uix-scheduling-timeline__item[data-conflict]::after { background-image: repeating-linear-gradient(135deg, transparent 0 6px, CanvasText 6px 9px); forced-color-adjust: none; }
+
+    /* org chart (HAR-1807) — the chosen person is a tint and a box-shadow only: a thick edge instead */
+    .uix-org-chart__item[aria-selected="true"] > .uix-org-chart__node { border: 3px solid Highlight; }
   }
 }

@@ -179,6 +179,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-tree"
   },
+  "org-chart": {
+    "route": "examples-org-chart",
+    "selector": ".uix-org-chart"
+  },
   "calendar": {
     "route": "examples-data-display",
     "selector": ".uix-calendar"
