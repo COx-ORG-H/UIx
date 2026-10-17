@@ -271,6 +271,11 @@
       "gzip": 490,
       "brotli": 386
     },
+    "styles/components/org-chart.css": {
+      "raw": 12870,
+      "gzip": 3052,
+      "brotli": 2582
+    },
     "styles/components/page-header.css": {
       "raw": 1367,
       "gzip": 546,
