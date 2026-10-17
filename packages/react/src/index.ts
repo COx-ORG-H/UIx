@@ -214,8 +214,8 @@ export type { ChartStatPoint, LinearFit, PredictionBandPoint } from './chart-sta
 export { Chip, ChipGroup } from './components/Chip.js';
 export type { ChipProps, ChipGroupProps } from './components/Chip.js';
 
-export { Kbd, KbdCombo } from './components/Kbd.js';
-export type { KbdProps, KbdComboProps, KbdPlatform } from './components/Kbd.js';
+export { Kbd, KbdCombo, ariaKeyShortcuts } from './components/Kbd.js';
+export type { KbdProps, KbdComboProps, KbdPlatform, KeyShortcut } from './components/Kbd.js';
 
 export { Steps, Step, DEFAULT_STEP_STATE_LABELS } from './components/Steps.js';
 export type { StepsProps, StepProps, StepState, StepStateLabels } from './components/Steps.js';

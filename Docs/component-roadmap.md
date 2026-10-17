@@ -36,7 +36,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
 | Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. |
 | BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
-| Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). |
+| Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). HAR-2031: `shortcut` shows the keys in a hover / focus hint and sets `aria-keyshortcuts`. |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Card | card.css | ✓ `Card` | Stable | no | Layout container; also `CardLink` and `CollapsibleSection`. |
 | Chart | chart.css | ✓ `Chart` (`@tensor_1/react/chart`) | Beta | no | Optional ECharts adapter with accessible data table, analytical card states, metric, and legend chrome; lean preset also available. |
@@ -66,7 +66,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | InlineEdit | inline-edit.css | ✓ `InlineEdit` | Beta | no | A value edited in place: the value is a button, the editor has Save and Cancel, Enter / Escape, pending and error states, focus returns to the value. Custom editors through `renderEditor`. Landed 2.36.0 (HAR-1381). |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |
-| Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). |
+| Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). HAR-2031: `KeyShortcut`, `ariaKeyShortcuts`. |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
 | LicensePositionBar | license-position-bar.css | ✓ `LicensePositionBar` | Beta | no | Meter + status recipe with explicit over-entitlement state. |
 | Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
@@ -74,7 +74,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
 | MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
-| Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). 2.32.0 (HAR-1629): `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`, `id` / `data-*` on items, Escape on the trigger, capped to the viewport. |
+| Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). 2.32.0 (HAR-1629): `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`, `id` / `data-*` on items, Escape on the trigger, capped to the viewport. HAR-2031: a key-name `shortcut` renders `KbdCombo` and sets `aria-keyshortcuts`. |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |
 | MetricInput | metric-input.css | ✓ `MetricInput` | Beta | no | Formatted numeric input with unit and bounded step controls. |
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. HAR-2029: `dirty` / `pending` as on Drawer, and `DialogClose`. |
@@ -111,7 +111,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |
 | Timeline | timeline.css | ✓ `Timeline` | Beta | no | Also `TimelineItem`. Recently landed. |
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |
-| Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. |
+| Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. HAR-2031: `shortcut` (keys in the bubble, `aria-keyshortcuts` on the trigger). |
 | Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. 2.36.0 (HAR-1382): `hasChildren` and `loadChildren` (children loaded on expand, with a loading row and an error row with Retry). |
 | Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. |
 | UtilityBits | utility-bits.css | n/a | Stable | no | CSS-only utilities (`.uix-stack`/`.uix-cluster` etc.); no standalone wrapper by design. |

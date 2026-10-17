@@ -3,6 +3,8 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'reac
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { ShortcutHint } from './ShortcutHint.js';
+import type { KeyShortcut } from './Kbd.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
 /** `xs` is 24 px: the smallest hit area WCAG 2.5.8 allows, for dense tool rows (HAR-1348). */
@@ -28,6 +30,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * dense staff rows keep the one-line default. Ignored with `icon`.
    */
   wrap?: boolean;
+  /**
+   * The button's keyboard shortcut, in `KbdCombo` key names: `['A']`, `['Mod', 'Enter']`
+   * (HAR-2031). Hover or focus shows the keys in a hint above the button (an icon button's
+   * `aria-label` before them), and the button gets `aria-keyshortcuts` for the viewer's platform
+   * (⌘ / Meta on Apple, Ctrl / Control elsewhere), unless you pass `aria-keyshortcuts` yourself.
+   * Inside a `Tooltip` the Tooltip shows the keys in its own bubble. The kit only shows the
+   * shortcut: the product binds the key.
+   */
+  shortcut?: KeyShortcut;
   children?: ReactNode;
 }
 
@@ -37,7 +48,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading = false, wrap = false, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading = false, wrap = false, shortcut, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -62,6 +73,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
+        {shortcut && shortcut.length > 0 && (
+          <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} ownsAria={props['aria-keyshortcuts'] === undefined} />
+        )}
       </button>
     );
   },
