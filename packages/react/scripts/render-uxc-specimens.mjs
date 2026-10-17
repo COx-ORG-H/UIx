@@ -17,7 +17,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const SPECIMEN_MODULE = join(here, '../../tokens/docs/uxc-specimens.js');
 
 const OPEN = 'data-specimen-popover-open';
-const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT'];
+const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'MutationObserver', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT'];
 
 const caption = (text) => `<div class="uix-guide__subhead" data-uxc>${text}</div>`;
 
@@ -45,6 +45,7 @@ export async function renderUxcSpecimens() {
   expose('requestAnimationFrame', window.requestAnimationFrame.bind(window));
   expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   expose('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('MutationObserver', window.MutationObserver);
   expose('HTMLElement', window.HTMLElement);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   // jsdom has no top layer: a popover is "open" while it carries OPEN, a dialog while it has [open].
@@ -127,24 +128,29 @@ export async function renderUxcSpecimens() {
     ].join('\n');
 
     // ── Shortcuts (HAR-2031): a Button's hint, a Tooltip with keys, menu rows with keys ─────
-    // The page has no React to open a hint on hover: each bubble is shown open, beside its control.
+    // The page has no React to open a hint on hover: a copy of each bubble is shown open, beside
+    // its control. A Button's hint is portalled to <body>: the newest one is the last there.
     const showOpen = (bubble, style) => {
-      bubble.removeAttribute('popover');
-      bubble.removeAttribute(OPEN);
-      bubble.setAttribute('style', style);
-      return stable(bubble.outerHTML);
+      const copy = bubble.cloneNode(true);
+      copy.removeAttribute('popover');
+      copy.removeAttribute(OPEN);
+      copy.setAttribute('style', style);
+      return stable(copy.outerHTML);
     };
+    const OPEN_STYLE = 'position:static;display:inline-block;opacity:1;margin:0';
+    const lastHint = () => [...window.document.body.querySelectorAll(':scope > .uix-tooltip__bubble--hint')].pop();
     const assign = mount(h(ui.Button, { shortcut: ['A'] }, 'Assign'));
-    const assignHint = showOpen(assign.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
-    assign.querySelector('.uix-tooltip__bubble').remove();
+    const assignHint = showOpen(lastHint(), OPEN_STYLE);
     const palette = mount(h(ui.Button, { icon: true, variant: 'ghost', 'aria-label': 'Search', shortcut: ['Mod', 'K'] },
       h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' },
         h('circle', { cx: 11, cy: 11, r: 8 }), h('path', { d: 'm21 21-4.3-4.3' }))));
-    const paletteHint = showOpen(palette.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
-    palette.querySelector('.uix-tooltip__bubble').remove();
+    const paletteHint = showOpen(lastHint(), OPEN_STYLE);
     const tip = mount(h(ui.Tooltip, { label: 'Keyboard shortcuts', shortcut: ['Shift', '?'] }, h('a', { href: '#kbd' }, 'Shortcuts')));
-    const tipBubble = showOpen(tip.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
-    tip.querySelector('.uix-tooltip__bubble').remove();
+    const tipBubble = showOpen(tip.querySelector('.uix-tooltip__bubble'), OPEN_STYLE);
+    // The page shows the copy; the closed original would duplicate its id.
+    const tipCopy = tip.cloneNode(true);
+    tipCopy.querySelector('.uix-tooltip__bubble').remove();
+    const tipHtml = stable(tipCopy.innerHTML);
     const rows = mount(h('div', { className: 'uix-menu', role: 'menu', 'aria-label': 'Incident actions', style: { width: '240px' } },
       h(ui.MenuItem, { shortcut: ['A'] }, 'Assign to me'),
       h(ui.MenuItem, { shortcut: ['R'] }, 'Resolve'),
@@ -158,7 +164,7 @@ export async function renderUxcSpecimens() {
       '<div data-shortcut-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
       `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}</div>`,
       `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}</div>`,
-      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${tipBubble}${html(tip)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${tipBubble}${tipHtml}</div>`,
       html(rows),
       '</div>',
     ].join('\n');

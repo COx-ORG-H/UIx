@@ -34,7 +34,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * The button's keyboard shortcut, in `KbdCombo` key names: `['A']`, `['Mod', 'Enter']`
    * (HAR-2031). Hover or focus shows the keys in a hint above the button (an icon button's
    * `aria-label` before them), and the button gets `aria-keyshortcuts` for the viewer's platform
-   * (⌘ / Meta on Apple, Ctrl / Control elsewhere). The kit only shows it: the product binds the key.
+   * (⌘ / Meta on Apple, Ctrl / Control elsewhere), unless you pass `aria-keyshortcuts` yourself.
+   * Inside a `Tooltip` the Tooltip shows the keys in its own bubble. The kit only shows the
+   * shortcut: the product binds the key.
    */
   shortcut?: KeyShortcut;
   children?: ReactNode;
@@ -71,7 +73,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
-        {shortcut && shortcut.length > 0 && <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} />}
+        {shortcut && shortcut.length > 0 && (
+          <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} ownsAria={props['aria-keyshortcuts'] === undefined} />
+        )}
       </button>
     );
   },

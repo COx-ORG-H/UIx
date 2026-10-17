@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 
@@ -23,6 +23,11 @@ const KEYS: Record<string, { mac: [string, string]; other: [string, string] }> =
   Alt: { mac: ['⌥', 'Option'], other: ['Alt', 'Alt'] },
   Enter: { mac: ['↵', 'Enter'], other: ['Enter', 'Enter'] },
   Escape: { mac: ['Esc', 'Escape'], other: ['Esc', 'Escape'] },
+  Esc: { mac: ['Esc', 'Escape'], other: ['Esc', 'Escape'] },
+  Delete: { mac: ['Del', 'Delete'], other: ['Del', 'Delete'] },
+  Del: { mac: ['Del', 'Delete'], other: ['Del', 'Delete'] },
+  Space: { mac: ['Space', 'Space'], other: ['Space', 'Space'] },
+  ' ': { mac: ['Space', 'Space'], other: ['Space', 'Space'] },
   Backspace: { mac: ['⌫', 'Backspace'], other: ['Backspace', 'Backspace'] },
   Tab: { mac: ['⇥', 'Tab'], other: ['Tab', 'Tab'] },
   ArrowUp: { mac: ['↑', 'Up arrow'], other: ['↑', 'Up arrow'] },
@@ -37,10 +42,16 @@ const detectPlatform = (): KbdPlatform => {
   return /mac|iphone|ipad|ipod/i.test(nav.userAgentData?.platform ?? navigator.platform ?? '') ? 'mac' : 'other';
 };
 
-/** The platform for glyphs and `aria-keyshortcuts`: `platform` when given, else detected after mount (`other` on the server). */
+const noSubscription = () => () => {};
+const serverPlatform = (): KbdPlatform => 'other';
+
+/**
+ * The platform for glyphs and `aria-keyshortcuts`: `platform` when given, else the browser's. The
+ * server and the hydrating render use `other`; a component mounted later (a menu row on open)
+ * reads the platform at once, so it never flashes Ctrl before ⌘.
+ */
 export function useKbdPlatform(platform?: KbdPlatform): KbdPlatform {
-  const [detected, setDetected] = useState<KbdPlatform>('other');
-  useEffect(() => { if (!platform) setDetected(detectPlatform()); }, [platform]);
+  const detected = useSyncExternalStore(noSubscription, detectPlatform, serverPlatform);
   return platform ?? detected;
 }
 
@@ -50,15 +61,17 @@ export function useKbdPlatform(platform?: KbdPlatform): KbdPlatform {
  */
 export type KeyShortcut = readonly string[];
 
-/** KbdCombo's key names that `aria-keyshortcuts` (UI Events key values) spells differently. */
+/**
+ * KbdCombo's key names (the table above) that `aria-keyshortcuts` spells differently: UI Events
+ * key values, `Space` for the space bar and `Plus` for `+`, the separator.
+ */
 const ARIA_KEYS: Record<string, { mac: string; other: string }> = {
   Mod: { mac: 'Meta', other: 'Control' },
   Ctrl: { mac: 'Control', other: 'Control' },
-  Cmd: { mac: 'Meta', other: 'Meta' },
-  Option: { mac: 'Alt', other: 'Alt' },
   Esc: { mac: 'Escape', other: 'Escape' },
   Del: { mac: 'Delete', other: 'Delete' },
   ' ': { mac: 'Space', other: 'Space' },
+  '+': { mac: 'Plus', other: 'Plus' },
 };
 
 /**

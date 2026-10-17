@@ -1,10 +1,11 @@
-/* Keyboard shortcuts where people act (HAR-2031; TENSOR audit UXC-03, D-09): a Button's
- * tooltip, a Tooltip and a Menu item show the key with Kbd and set `aria-keyshortcuts`, so ~65
- * registered shortcuts are no longer discoverable only through the "?" sheet.
+/* Keyboard shortcuts where people act (HAR-2031; TENSOR audit UXC-03, D-09): a Button's hint, a
+ * Tooltip and a Menu row show the key with Kbd and set `aria-keyshortcuts`, so ~65 registered
+ * shortcuts are no longer discoverable only through the "?" sheet.
  *
  * Measured on a React harness (tests/shortcut/harness.tsx), in both themes, with a Windows and a
- * macOS platform (⌘ vs Ctrl, Meta vs Control). The Button's hint renders INSIDE the button, so
- * the test also checks that a ButtonGroup and a full-width button keep their geometry.
+ * macOS platform (⌘ vs Ctrl, Meta vs Control). A Button's hint leaves only an empty marker in the
+ * button and portals its bubble, so the test also checks the button's text, name and geometry
+ * stay as they were, and that focus a menu sends back after a mouse choice opens no hint.
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -23,65 +24,86 @@ const open = async (page, testInfo, platform = 'Win32') => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', testInfo.project.name);
   await expect(page.locator('#assign')).toBeVisible();
 };
+/** The Button hint that is open right now (each Button portals its own bubble). */
+const openHint = (page) => page.locator('.uix-tooltip__bubble--hint:popover-open');
 
-test('Button: aria-keyshortcuts, per platform', async ({ page }, testInfo) => {
+test('Button: aria-keyshortcuts per platform; its own aria-keyshortcuts wins', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await expect(page.locator('#assign')).toHaveAttribute('aria-keyshortcuts', 'A');
   await expect(page.locator('#search')).toHaveAttribute('aria-keyshortcuts', 'Control+K');
   await expect(page.locator('#full')).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+  await expect(page.locator('#save-both')).toHaveAttribute('aria-keyshortcuts', 'Control+S Meta+S');
 });
 
 test('Button: on macOS Mod is Meta and the hint shows ⌘', async ({ page }, testInfo) => {
   await open(page, testInfo, 'MacIntel');
   await expect(page.locator('#search')).toHaveAttribute('aria-keyshortcuts', 'Meta+K');
   await page.locator('#search').hover();
-  const bubble = page.locator('#search .uix-tooltip__bubble');
-  await expect(bubble).toBeVisible();
-  await expect(bubble).toContainText('⌘');
+  await expect(openHint(page)).toBeVisible();
+  await expect(openHint(page)).toContainText('⌘');
 });
 
-test('Button: hovering shows the key next to the button; leaving and Escape hide it', async ({ page }, testInfo) => {
+test('Button: hover shows the key above the button; leaving and Escape hide it; keyboard focus shows it', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const button = page.locator('#assign');
-  const bubble = button.locator('.uix-tooltip__bubble');
-  await expect(bubble).toBeHidden();
+  await expect(openHint(page)).toHaveCount(0);
   await button.hover();
-  await expect(bubble).toBeVisible();
-  await expect(bubble.locator('kbd')).toHaveText('A');
-  await settleOverlay(bubble);
-  const [b, t] = [await button.boundingBox(), await bubble.boundingBox()];
+  await expect(openHint(page)).toBeVisible();
+  await expect(openHint(page).locator('kbd')).toHaveText('A');
+  await settleOverlay(openHint(page));
+  const [b, t] = [await button.boundingBox(), await openHint(page).boundingBox()];
   expect(t.y + t.height, 'the hint sits above the button').toBeLessThanOrEqual(b.y);
   await page.keyboard.press('Escape');
-  await expect(bubble).toBeHidden();
-  // Keyboard focus shows it too.
+  await expect(openHint(page)).toHaveCount(0);
+  await page.mouse.move(0, 0);
+  // Keyboard focus (focus-visible) shows it; moving on hides it.
   await page.locator('#plain-c').focus();
-  await page.keyboard.press('Tab');
   await page.keyboard.press('Shift+Tab');
-  await button.focus();
-  await expect(bubble).toBeVisible();
-  await page.locator('#plain-a').focus();
-  await expect(bubble).toBeHidden();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(button).toBeFocused();
+  await expect(openHint(page)).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(openHint(page)).toHaveCount(0);
 });
 
-test('Button: the hint is not part of the name, and a click on it is not a click on the button', async ({ page }, testInfo) => {
+test('Button: focus a menu sends back after a mouse choice opens no hint', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const button = page.locator('#assign');
-  await button.hover();
-  const bubble = button.locator('.uix-tooltip__bubble');
-  await expect(bubble).toBeVisible();
+  const trigger = page.locator('#record-menu');
+  await trigger.click();
+  await page.getByRole('menuitem', { name: /Assign to me/ }).click();
+  await expect(trigger).toBeFocused();
+  await page.waitForTimeout(300);
+  await expect(openHint(page)).toHaveCount(0);
+});
+
+test('Button: the hint changes neither the name nor the text, and a click on it activates nothing', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  expect(await page.locator('#assign').evaluate((el) => el.textContent)).toBe('Assign');
+  expect(await page.locator('#send').evaluate((el) => el.textContent)).toBe('Send');
+  await page.locator('#assign').hover();
+  await expect(openHint(page)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Assign', exact: true }).first()).toHaveAttribute('id', 'assign');
-  const icon = page.locator('#search');
-  await icon.hover();
-  await expect(icon.locator('.uix-tooltip__bubble')).toContainText('Search');
-  await expect(page.getByRole('button', { name: 'Search', exact: true })).toHaveAttribute('id', 'search');
-  // Click the bubble itself.
-  await button.hover();
-  await expect(bubble).toBeVisible();
-  await settleOverlay(bubble);
-  await bubble.click();
+  await settleOverlay(openHint(page));
+  await openHint(page).click();
   expect(await page.evaluate(() => window.__shortcut.assign ?? 0)).toBe(0);
-  await button.click();
+  await page.locator('#assign').click();
   expect(await page.evaluate(() => window.__shortcut.assign ?? 0)).toBe(1);
+  // A submit button: a click on its hint submits nothing. (Leave the first hint's grace period first.)
+  await page.mouse.move(0, 0);
+  await expect(openHint(page)).toHaveCount(0);
+  await page.locator('#send').hover();
+  await expect(openHint(page)).toBeVisible();
+  await settleOverlay(openHint(page));
+  await openHint(page).click();
+  expect(await page.evaluate(() => window.__shortcut.submit ?? 0)).toBe(0);
+  // The icon button's hint carries its name.
+  await page.mouse.move(0, 0);
+  await expect(openHint(page)).toHaveCount(0);
+  await page.locator('#search').hover();
+  await expect(openHint(page)).toContainText('Search');
 });
 
 test('Button: a shortcut changes no geometry (ButtonGroup corners, full width)', async ({ page }, testInfo) => {
@@ -102,7 +124,7 @@ test('Button: a shortcut changes no geometry (ButtonGroup corners, full width)',
   expect(Math.abs(shapes.full - shapes.column)).toBeLessThan(1);
 });
 
-test('Tooltip: the bubble shows the label and the keys; the trigger gets aria-keyshortcuts', async ({ page }, testInfo) => {
+test('Tooltip: label and keys in its bubble; around a Button with a shortcut there is one bubble', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const trigger = page.locator('#tip-trigger');
   await expect(trigger).toHaveAttribute('aria-keyshortcuts', 'Shift+?');
@@ -111,6 +133,14 @@ test('Tooltip: the bubble shows the label and the keys; the trigger gets aria-ke
   await expect(bubble).toBeVisible();
   await expect(bubble.locator('kbd')).toHaveText(['Shift', '?']);
   await expect(trigger).toHaveAccessibleDescription(/Keyboard shortcuts.*Shift\+\?/);
+  await page.mouse.move(0, 0);
+  const watch = page.locator('#watch');
+  await expect(watch).toHaveAttribute('aria-keyshortcuts', 'W');
+  await watch.hover();
+  const watchTip = page.getByRole('tooltip', { name: /Watch this record/ });
+  await expect(watchTip).toBeVisible();
+  await expect(watchTip.locator('kbd')).toHaveText('W');
+  await expect(openHint(page), 'the Button steps aside for the Tooltip').toHaveCount(0);
 });
 
 test('Menu: items show their keys and expose aria-keyshortcuts; a node shortcut still renders as given', async ({ page }, testInfo) => {
@@ -132,14 +162,14 @@ test('Menu: items show their keys and expose aria-keyshortcuts; a node shortcut 
 test('axe: hint, tooltip and menu open', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await page.locator('#assign').hover();
-  await settleOverlay(page.locator('#assign .uix-tooltip__bubble'));
-  let results = await new AxeBuilder({ page }).include('#root').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  await settleOverlay(openHint(page));
+  let results = await new AxeBuilder({ page }).include('body').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(results.passes.length).toBeGreaterThan(0);
   let gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
   await page.locator('#record-menu').click();
   await settleOverlay(page.getByRole('menu'));
-  results = await new AxeBuilder({ page }).include('#root').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  results = await new AxeBuilder({ page }).include('body').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
 });

@@ -5,7 +5,7 @@ import type { ReactNode, ReactElement, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
-import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
@@ -22,7 +22,9 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
   /**
    * The trigger's keyboard shortcut, in `KbdCombo` key names, e.g. `['Mod', 'K']` (HAR-2031):
    * shown with `Kbd` after the text, and set as the trigger's `aria-keyshortcuts` for the
-   * viewer's platform. The kit only shows it: the product binds the key.
+   * viewer's platform. Default: the `shortcut` of a `Button` child, so a Tooltip around a Button
+   * with a shortcut shows one bubble with the label and the keys. The kit only shows it: the
+   * product binds the key.
    */
   shortcut?: KeyShortcut;
   children?: ReactNode;
@@ -43,7 +45,9 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const [open, setOpen] = useState(false);
   const id = useId();
   const platform = useKbdPlatform();
-  const keys = shortcut && shortcut.length > 0 ? shortcut : null;
+  const childShortcut = isValidElement(children) ? (children.props as { shortcut?: unknown }).shortcut : undefined;
+  const own = shortcut ?? (isKeyShortcut(childShortcut) ? childShortcut : undefined);
+  const keys = own && own.length > 0 ? own : null;
   const keyshortcuts = keys ? ariaKeyShortcuts(keys, platform) : undefined;
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });

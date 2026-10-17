@@ -33,6 +33,7 @@ before(async () => {
   expose('getComputedStyle', dom.window.getComputedStyle.bind(dom.window));
   expose('requestAnimationFrame', dom.window.requestAnimationFrame.bind(dom.window));
   expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('MutationObserver', dom.window.MutationObserver);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   const el = dom.window.HTMLElement.prototype;
   el.showPopover = function showPopover() { this.setAttribute('data-open', ''); };
@@ -47,7 +48,7 @@ before(async () => {
 
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
+  for (const name of ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'MutationObserver', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
 });
 
 const mount = (element) => {
@@ -64,54 +65,83 @@ test('ariaKeyShortcuts spells keys as aria-keyshortcuts wants them, per platform
   assert.equal(ui.ariaKeyShortcuts(['a'], 'other'), 'A');
   assert.equal(ui.ariaKeyShortcuts(['Shift', '?'], 'other'), 'Shift+?');
   assert.equal(ui.ariaKeyShortcuts(['Ctrl', 'Alt', 'Del'], 'mac'), 'Control+Alt+Delete');
-  assert.equal(ui.ariaKeyShortcuts(['Option', ' '], 'mac'), 'Alt+Space');
+  assert.equal(ui.ariaKeyShortcuts(['Shift', ' '], 'mac'), 'Shift+Space');
+  assert.equal(ui.ariaKeyShortcuts(['Mod', '+'], 'other'), 'Control+Plus');
   assert.equal(ui.ariaKeyShortcuts(['Esc'], 'other'), 'Escape');
 });
 
-test('Button shortcut: aria-keyshortcuts per platform, the hint inside the button, aria-hidden', () => {
+const hint = () => document.body.querySelector(':scope > .uix-tooltip__bubble--hint');
+
+test('Button shortcut: aria-keyshortcuts per platform; only an empty marker in the button, the bubble portalled', () => {
   platform = 'Win32';
   const win = mount(h(ui.Button, { shortcut: ['Mod', 'Enter'] }, 'Save'));
   const button = win.host.querySelector('button');
   assert.equal(win.host.children.length, 1, 'no wrapper and no sibling');
+  assert.equal(button.textContent, 'Save', 'the button text is unchanged');
   assert.equal(button.getAttribute('aria-keyshortcuts'), 'Control+Enter');
-  const hint = button.lastElementChild;
-  assert.ok(hint.classList.contains('uix-tooltip__bubble'));
-  assert.equal(hint.getAttribute('aria-hidden'), 'true');
-  assert.equal(hint.getAttribute('popover'), 'manual');
-  assert.deepEqual([...hint.querySelectorAll('kbd')].map((k) => k.textContent), ['Ctrl', 'Enter']);
+  const marker = button.lastElementChild;
+  assert.equal(marker.hasAttribute('hidden'), true);
+  assert.equal(marker.textContent, '');
+  const bubble = hint();
+  assert.ok(bubble, 'the bubble is portalled to <body>');
+  assert.equal(bubble.getAttribute('aria-hidden'), 'true');
+  assert.equal(bubble.getAttribute('popover'), 'manual');
+  assert.deepEqual([...bubble.querySelectorAll('kbd')].map((k) => k.textContent), ['Ctrl', 'Enter']);
   win.unmount();
+  assert.equal(hint(), null, 'and goes with the button');
 
   platform = 'MacIntel';
   const mac = mount(h(ui.Button, { icon: true, 'aria-label': 'Search', shortcut: ['Mod', 'K'] }, h('svg')));
-  const macButton = mac.host.querySelector('button');
-  assert.equal(macButton.getAttribute('aria-keyshortcuts'), 'Meta+K');
-  assert.match(macButton.lastElementChild.textContent, /^Search/, 'an icon button\'s name leads the hint');
-  assert.ok(macButton.lastElementChild.textContent.includes('⌘'));
+  assert.equal(mac.host.querySelector('button').getAttribute('aria-keyshortcuts'), 'Meta+K');
+  assert.match(hint().textContent, /^Search/, 'an icon button\'s name leads the hint');
+  assert.ok(hint().textContent.includes('⌘'));
   mac.unmount();
   platform = 'Win32';
 });
 
-test('Button shortcut: hover and focus show the hint, Escape hides it; a click on it is not a click on the button', () => {
+test('Button shortcut: hover shows the hint, Escape hides it; a click on it is not a click on the button', () => {
   let clicks = 0;
   const { host, unmount } = mount(h(ui.Button, { shortcut: ['A'], onClick: () => { clicks += 1; } }, 'Assign'));
   const button = host.querySelector('button');
-  const hint = button.querySelector('.uix-tooltip__bubble');
   act(() => { button.dispatchEvent(new window.MouseEvent('mouseenter')); });
-  assert.ok(hint.hasAttribute('data-open'));
+  assert.ok(hint().hasAttribute('data-open'));
   act(() => { document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
-  assert.ok(!hint.hasAttribute('data-open'));
-  act(() => { button.dispatchEvent(new window.FocusEvent('focus')); });
-  assert.ok(hint.hasAttribute('data-open'));
-  act(() => { hint.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })); });
-  assert.equal(clicks, 0);
+  assert.ok(!hint().hasAttribute('data-open'));
+  act(() => { hint().dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })); });
+  assert.equal(clicks, 0, 'React does not carry the portal\'s click to the button');
   act(() => { button.click(); });
   assert.equal(clicks, 1);
   unmount();
 });
 
-test('Button without shortcut renders exactly as before (server markup has no hint)', () => {
+test('Button shortcut: an aria-keyshortcuts of its own stays; removing the shortcut removes only ours', () => {
+  const both = mount(h(ui.Button, { shortcut: ['Mod', 'S'], 'aria-keyshortcuts': 'Control+S Meta+S' }, 'Save'));
+  assert.equal(both.host.querySelector('button').getAttribute('aria-keyshortcuts'), 'Control+S Meta+S');
+  both.unmount();
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  act(() => root.render(h(ui.Button, { shortcut: ['A'] }, 'Assign')));
+  assert.equal(host.querySelector('button').getAttribute('aria-keyshortcuts'), 'A');
+  act(() => root.render(h(ui.Button, null, 'Assign')));
+  assert.equal(host.querySelector('button').hasAttribute('aria-keyshortcuts'), false);
+  act(() => root.unmount());
+  host.remove();
+});
+
+test('Button without shortcut renders exactly as before; with one the server renders only the marker', () => {
   assert.equal(renderToStaticMarkup(h(ui.Button, null, 'Save')), '<button class="uix-btn uix-btn--secondary">Save</button>');
   assert.equal(renderToStaticMarkup(h(ui.Button, { shortcut: [] }, 'Save')), '<button class="uix-btn uix-btn--secondary">Save</button>');
+  assert.equal(renderToStaticMarkup(h(ui.Button, { shortcut: ['A'] }, 'Save')), '<button class="uix-btn uix-btn--secondary">Save<span hidden="" data-uix-shortcut-hint=""></span></button>');
+});
+
+test('Tooltip around a Button with a shortcut: one bubble, the Tooltip\'s, with the keys', () => {
+  const { host, unmount } = mount(h(ui.Tooltip, { label: 'Watch this record' }, h(ui.Button, { icon: true, 'aria-label': 'Watch', shortcut: ['W'] }, h('svg'))));
+  const button = host.querySelector('button');
+  assert.equal(button.getAttribute('aria-keyshortcuts'), 'W');
+  assert.equal(hint(), null, 'the Button\'s own hint steps aside');
+  assert.deepEqual([...host.querySelectorAll('[role="tooltip"] .uix-tooltip__shortcut kbd')].map((k) => k.textContent), ['W']);
+  unmount();
 });
 
 test('Tooltip shortcut: the keys after the text, aria-keyshortcuts on the trigger', () => {
