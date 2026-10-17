@@ -1,12 +1,20 @@
 "use client";
 
-import { createContext, forwardRef, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import { createContext, forwardRef, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react';
 import { Button } from './Button.js';
 import type { ButtonProps } from './Button.js';
 import { Popover } from './Popover.js';
 import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
+/** A light-dismiss popover is open: the browser closes it on Escape, before any dialog. */
+const anyAutoPopoverOpen = (): boolean => {
+  try { return !!document.querySelector('[popover]:not([popover="manual"]):popover-open'); } catch { return false; }
+};
 
 /** The words of the "Discard changes?" step a `dirty` Drawer or Modal asks before it closes (HAR-2029). */
 export interface DiscardPromptLabels {
@@ -45,13 +53,16 @@ export type DialogCloseProps = ButtonProps;
  */
 export const DialogClose = forwardRef<HTMLButtonElement, DialogCloseProps>(({ onClick, type = 'button', ...props }, ref) => {
   const dialog = useContext(DialogCloseContext);
+  const pending = !!dialog?.pending;
   return (
     <Button
       ref={ref}
       type={type}
       {...props}
-      aria-disabled={dialog?.pending || props['aria-disabled'] || undefined}
+      {...(pending ? { 'aria-disabled': true } : {})}
       onClick={(event) => {
+        // While a save is in flight it does nothing, the consumer's own onClick included.
+        if (pending) { event.preventDefault(); return; }
         onClick?.(event);
         if (event.defaultPrevented) return;
         dialog?.requestClose(event.currentTarget);
@@ -93,9 +104,16 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
   const uixLabels = useUixLabels();
   const labels: DiscardPromptLabels = { ...DEFAULT_DISCARD_LABELS, ...uixLabels.discardPrompt, ...labelsProp };
   const panelId = `${useId()}-discard`;
-  const [prompt, setPrompt] = useState<Prompt | null>(null);
+  const [prompt, setPromptState] = useState<Prompt | null>(null);
   const latest = useRef({ open, onClose, dirty, pending, prompt });
-  latest.current = { open, onClose, dirty, pending, prompt };
+  useIsomorphicLayoutEffect(() => {
+    latest.current = { ...latest.current, open, onClose, dirty, pending };
+  });
+  /** The step, also kept in `latest` at once: events of the same task must see it. */
+  const setPrompt = useCallback((next: Prompt | null) => {
+    latest.current.prompt = next;
+    setPromptState(next);
+  }, []);
   const guarded = () => !!latest.current.onClose && (latest.current.dirty || latest.current.pending);
 
   const requestClose = useCallback((anchor?: HTMLElement | null) => {
@@ -104,77 +122,119 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
     if (!isDirty) { close(); return; }
     const active = document.activeElement;
     setPrompt({ anchor: anchor ?? closeRef.current, returnTo: active instanceof HTMLElement ? active : null });
-  }, [closeRef]);
+  }, [closeRef, setPrompt]);
 
-  // A guarded dialog the browser closed by force: reopen it, then ask (or, while pending, just stay).
-  const ref = useDialog(open, onClose, () => {
-    if (!guarded()) return false;
-    requestClose();
-    return true;
-  });
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  /** Where "keep editing" last sent focus, and whether a close request already backed out of the step. */
+  const backOut = useRef<{ focus: HTMLElement | null; forced: boolean }>({ focus: null, forced: false });
 
   /**
-   * Close the step and put focus back where it was. A click does not focus a button in Safari,
-   * so when focus was not inside the dialog it goes to the control that asked.
+   * Close the step and put focus back where it was. Focus that was on the dialog itself (a
+   * backdrop press) or outside it (a click does not focus a button in Safari) goes to the
+   * control that asked.
    */
   const keepEditing = useCallback(() => {
     const asked = latest.current.prompt;
     setPrompt(null);
     const target = asked?.returnTo;
-    const back = target && target.isConnected && ref.current?.contains(target) ? target : (asked?.anchor ?? closeRef.current);
+    const dialog = dialogRef.current;
+    const back = target && target !== dialog && target.isConnected && dialog?.contains(target) ? target : (asked?.anchor ?? closeRef.current);
+    backOut.current.focus = back ?? null;
     back?.focus();
-  }, [ref, closeRef]);
+  }, [closeRef, setPrompt]);
+
+  // A guarded dialog the browser closed by force reopens. It asks, or, when it was already
+  // asking (the step would now sit behind the reopened dialog), it goes back to the form.
+  const ref = useDialog(open, onClose, () => {
+    if (!guarded()) return false;
+    if (backOut.current.forced) {
+      // The close request that forced this already backed out of the step: back to the form,
+      // with focus where it was before the reopen moved it.
+      backOut.current.forced = false;
+      const field = backOut.current.focus;
+      queueMicrotask(() => field?.focus());
+    } else if (latest.current.prompt) keepEditing();
+    else requestClose();
+    return true;
+  });
+  dialogRef.current = ref.current;
 
   const discard = useCallback(() => {
     setPrompt(null);
     latest.current.onClose?.();
-  }, []);
+  }, [setPrompt]);
 
-  // A fresh open never starts in the step, and the question is moot once the input is clean or saving.
-  useEffect(() => { if (!open || !dirty || pending) setPrompt(null); }, [open, dirty, pending]);
+  // A fresh open never starts in the step, and the question is moot once the input is clean or
+  // saving. Focus that was in the step goes back to the form rather than to <body>.
+  useEffect(() => {
+    if (open && dirty && !pending) return;
+    if (!latest.current.prompt) return;
+    if (open && document.getElementById(panelId)?.contains(document.activeElement)) keepEditing();
+    else setPrompt(null);
+  }, [open, dirty, pending, panelId, keepEditing, setPrompt]);
 
   useEffect(() => {
     const el = ref.current;
+    dialogRef.current = el;
     if (!el || !open) return;
+    /** An event of a dialog nested inside this one (a ConfirmDialog in the drawer's JSX) is not ours. */
+    const ours = (event: Event) => (event.target as Element | null)?.closest?.('dialog') === el;
     const onCancel = (event: Event) => {
       if (!guarded()) return;
       event.preventDefault();
-      requestClose();
+      // Asked to close while asking: back out of the step. When the request cannot be cancelled
+      // the browser closes the dialog next, and the reopen must not ask again.
+      if (latest.current.prompt) {
+        keepEditing();
+        backOut.current.forced = !event.cancelable;
+      } else requestClose();
     };
     // While the step is open, a press anywhere else in the dialog (or on its backdrop) means
     // "keep editing", and only that: it is not also the click it would have been, so a second
-    // click on the × or the backdrop does not ask again. The press is caught when it starts:
-    // by the time its click arrives, the focus it moved has already closed the step.
+    // click on the × or the backdrop does not ask again. The press is caught when it starts (by
+    // its click, the focus it moved has already closed the step), and only its own click is
+    // swallowed: a press that ends in no click (a right click, a scroll, a drag) leaves nothing.
     const outside = (event: Event) => !document.getElementById(panelId)?.contains(event.target as Node);
-    let swallow = false;
+    let swallow: EventTarget | null = null;
+    const forget = () => { swallow = null; };
     const onPointerDownCapture = (event: Event) => {
-      swallow = !!latest.current.prompt && outside(event);
+      swallow = latest.current.prompt && ours(event) && outside(event) ? event.target : null;
       if (swallow) setPrompt(null);
     };
+    const onPointerUpCapture = () => { window.setTimeout(forget, 0); };
     const onClickCapture = (event: MouseEvent) => {
-      if (!swallow && !(latest.current.prompt && outside(event))) return;
-      swallow = false;
+      const pressed = swallow != null && swallow === event.target;
+      swallow = null;
+      if (!pressed && !(latest.current.prompt && ours(event) && outside(event))) return;
       event.preventDefault();
       event.stopPropagation();
       setPrompt(null);
     };
-    const onKeyDownCapture = () => { swallow = false; };
     el.addEventListener('cancel', onCancel);
     el.addEventListener('pointerdown', onPointerDownCapture, true);
+    el.addEventListener('pointerup', onPointerUpCapture, true);
+    el.addEventListener('pointercancel', forget, true);
+    el.addEventListener('contextmenu', forget, true);
     el.addEventListener('click', onClickCapture, true);
-    el.addEventListener('keydown', onKeyDownCapture, true);
+    el.addEventListener('keydown', forget, true);
     return () => {
       el.removeEventListener('cancel', onCancel);
       el.removeEventListener('pointerdown', onPointerDownCapture, true);
+      el.removeEventListener('pointerup', onPointerUpCapture, true);
+      el.removeEventListener('pointercancel', forget, true);
+      el.removeEventListener('contextmenu', forget, true);
       el.removeEventListener('click', onClickCapture, true);
-      el.removeEventListener('keydown', onKeyDownCapture, true);
+      el.removeEventListener('keydown', forget, true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, ref, requestClose, panelId]);
+  }, [open, ref, requestClose, keepEditing, setPrompt, panelId]);
 
   /** The dialog's keydown: Escape, after the controls inside had theirs. */
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDialogElement>) => {
     if (event.key !== 'Escape' || event.defaultPrevented) return;
+    // A dialog nested in this one closes itself, and an open light-dismiss popover is closed by
+    // the browser first: cancelling the keydown would take Escape from both.
+    if ((event.target as Element).closest('dialog') !== event.currentTarget || anyAutoPopoverOpen()) return;
     if (latest.current.prompt) { event.preventDefault(); keepEditing(); return; }
     if (!guarded()) return;
     event.preventDefault();
@@ -238,6 +298,9 @@ function DiscardPrompt({ id, prompt, labels, onKeepEditing, onDismiss, onDiscard
       aria-describedby={`${id}-body`}
       className="uix-popconfirm"
       data-uix-discard-prompt=""
+      // A press on the step's text focuses the step, not the dialog behind it (which would read
+      // as focus leaving the step and dismiss it).
+      tabIndex={-1}
       onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) => {
         if (event.key !== 'Escape') return;
         event.preventDefault();

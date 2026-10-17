@@ -75,10 +75,10 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
     let locked = true;
     const handleClose = () => {
       if (el.open) return;
-      // Still meant to be open (a guarded form): show it again, keeping the scroll lock.
+      // Still meant to be open (a guarded form): show it again, keeping the scroll lock. If it
+      // cannot be shown again, it closes after all, lock and onClose included.
       if (keepOpenRef.current?.()) {
-        try { el.showModal(); } catch { /* disconnected */ }
-        return;
+        try { el.showModal(); return; } catch { /* disconnected: fall through */ }
       }
       if (locked) { locked = false; unlockBodyScroll(); }
       onCloseRef.current?.();

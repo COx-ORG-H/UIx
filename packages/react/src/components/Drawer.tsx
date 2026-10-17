@@ -23,7 +23,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
    * The drawer holds input that is not saved (HAR-2029), e.g. react-hook-form's
    * `formState.isDirty`. Escape, the close button, a backdrop click and a `DialogClose` then open
    * an anchored "Discard changes?" step with focus on "Keep editing" instead of calling `onClose`;
-   * "Discard" calls it. A clean drawer closes at once.
+   * "Discard" calls it. A clean drawer closes at once. A `<form method="dialog">` submit counts
+   * as a way out too: save with your own handler instead.
    */
   dirty?: boolean;
   /** A save is in flight: Escape, the close button, a backdrop click and a `DialogClose` do nothing. */

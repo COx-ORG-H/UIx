@@ -115,9 +115,12 @@ for (const [button, id] of [['open-drawer', 'drawer'], ['open-modal', 'modal']])
   test(`${id}: Escape again and again never closes a dirty dialog`, async ({ page }) => {
     const dialog = await openDialog(page, button, id);
     await nameField(page, id).fill('Incident created v2');
+    // Count real closes: a dialog that closed and reopened would still read open=true.
+    await dialog.evaluate((d) => { window.__closeEvents = 0; d.addEventListener('close', () => { window.__closeEvents += 1; }); });
     // No click or typing between the presses: no user activation for the browser's close watcher.
     for (let i = 0; i < 6; i += 1) await page.keyboard.press('Escape');
     await expect(dialog).toHaveJSProperty('open', true);
+    expect(await page.evaluate(() => window.__closeEvents), 'the dialog never closed, not even to reopen').toBe(0);
     expect((await closes(page))[id]).toBe(0);
     await expect(nameField(page, id)).toHaveValue('Incident created v2');
   });
@@ -167,6 +170,71 @@ test('drawer: Escape on an open Select closes its list, not the drawer, and does
   await expect(page.getByRole('listbox')).toBeHidden();
   await expect(prompt(page)).toHaveCount(0);
   await expect(dialog).toHaveJSProperty('open', true);
+});
+
+test('drawer: a Modal nested in a dirty drawer closes on Escape, and its first click counts', async ({ page }) => {
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await nameField(page, 'drawer').fill('Incident created v2');
+  await dialog.locator('#open-inner').click();
+  const inner = page.locator('dialog#inner');
+  await expect(inner).toHaveJSProperty('open', true);
+  await page.keyboard.press('Escape');
+  await expect(inner).toHaveJSProperty('open', false);
+  await expect(prompt(page)).toHaveCount(0);
+  await dialog.locator('#open-inner').click();
+  await expect(inner).toHaveJSProperty('open', true);
+  await inner.locator('#inner-ok').click();
+  await expect(inner).toHaveJSProperty('open', false);
+  expect(await page.evaluate(() => window.__discard.innerOk)).toBe(1);
+  await expect(dialog).toHaveJSProperty('open', true);
+});
+
+test('drawer: Escape closes an open popover first, and does not ask', async ({ page }) => {
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await nameField(page, 'drawer').fill('Incident created v2');
+  await dialog.locator('#help-trigger').click();
+  const help = page.locator('#help-pop');
+  await expect.poll(() => help.evaluate((el) => el.matches(':popover-open'))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => help.evaluate((el) => el.matches(':popover-open'))).toBe(false);
+  await expect(prompt(page)).toHaveCount(0);
+  // The next Escape is the drawer's: it asks.
+  await page.keyboard.press('Escape');
+  await expect(prompt(page)).toBeVisible();
+});
+
+test('drawer: a click on the step\'s own text keeps it open', async ({ page }) => {
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await nameField(page, 'drawer').fill('Incident created v2');
+  await page.keyboard.press('Escape');
+  const step = prompt(page);
+  await expect(step).toBeVisible();
+  await settleOverlay(step);
+  await step.locator('.uix-popconfirm__title').click();
+  await expect(step).toBeVisible();
+  await page.getByRole('button', { name: 'Keep editing' }).click();
+  await expect(step).toBeHidden();
+  await expect(dialog).toHaveJSProperty('open', true);
+});
+
+test('drawer: a close request while it asks backs out of the step; the next one asks again', async ({ page }) => {
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await nameField(page, 'drawer').fill('Incident created v2');
+  await page.keyboard.press('Escape');
+  await expect(prompt(page)).toBeVisible();
+  // requestClose() makes the close request a back gesture makes. A script's request is always
+  // cancellable, so the forced close that follows an uncancellable one (a second gesture with no
+  // user activation) is covered in discard-prompt-dom.test.mjs.
+  const supported = await dialog.evaluate((d) => typeof d.requestClose === 'function');
+  test.skip(!supported, 'HTMLDialogElement.requestClose() is not in this browser');
+  await dialog.evaluate((d) => d.requestClose());
+  await expect(prompt(page)).toBeHidden();
+  await expect(nameField(page, 'drawer')).toBeFocused();
+  await dialog.evaluate((d) => d.requestClose());
+  await expect(prompt(page)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Keep editing' })).toBeFocused();
+  await expect(dialog).toHaveJSProperty('open', true);
+  expect((await closes(page)).drawer).toBe(0);
 });
 
 test('axe: the open discard step', async ({ page }) => {

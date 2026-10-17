@@ -179,6 +179,40 @@ for (const [name, Component, closeName] of [['Drawer', () => ui.Drawer, 'Close d
   });
 }
 
+test('pending — DialogClose runs nothing, not even its own onClick; loading still sets aria-disabled', () => {
+  let clicks = 0;
+  const { host, unmount } = mount(h(ui.Drawer, { open: true, onClose: () => {}, pending: true, title: 'Edit',
+    footer: h(ui.DialogClose, { onClick: () => { clicks += 1; } }, 'Cancel') }, h('input')));
+  click(buttonNamed(host, 'Cancel'));
+  assert.equal(clicks, 0);
+  unmount();
+  const idle = mount(h(ui.Drawer, { open: true, onClose: () => {}, title: 'Edit', footer: h(ui.DialogClose, { loading: true }, 'Cancel') }, h('input')));
+  assert.equal(buttonNamed(idle.host, 'Cancel').getAttribute('aria-disabled'), 'true', 'Button loading keeps its aria-disabled');
+  idle.unmount();
+});
+
+test('Escape from a dialog nested in a dirty drawer is that dialog’s, not the drawer’s', () => {
+  const onClose = counter();
+  const { host, unmount } = mount(h(ui.Drawer, { open: true, onClose, dirty: true, title: 'Edit' },
+    h('input'), h(ui.Modal, { open: true, onClose: () => {}, title: 'Inner' }, h('button', { id: 'inner-ok' }, 'OK'))));
+  const event = escape(host.querySelector('#inner-ok'));
+  assert.equal(asking(host), false, 'the drawer does not ask');
+  assert.equal(event.defaultPrevented, false, 'the inner dialog keeps its Escape');
+  unmount();
+});
+
+test('a forced close while the step is open backs out of the step', () => {
+  const onClose = counter();
+  const { host, dialog, unmount } = mount(h(ui.Drawer, { open: true, onClose, dirty: true, title: 'Edit' }, h('input')));
+  escape(dialog);
+  assert.equal(asking(host), true);
+  act(() => { dialog.close(); });
+  assert.equal(dialog.hasAttribute('open'), true, 'it reopened');
+  assert.equal(asking(host), false, 'and is back in the form, not behind a hidden step');
+  assert.equal(onClose.calls, 0);
+  unmount();
+});
+
 test('Drawer: dirty — a backdrop click asks; dismissOnBackdrop={false} still ignores it', () => {
   const onClose = counter();
   const drawer = mount(h(ui.Drawer, { open: true, onClose, dirty: true, title: 'Edit' }, h('input')));
