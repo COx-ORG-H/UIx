@@ -4927,6 +4927,39 @@ export interface SchedulingTimelineProps {
 }
 
 // @public
+export function SearchBar(input: SearchBarProps): react.JSX.Element;
+
+// @public
+export interface SearchBarLabels {
+    clear: string;
+    submit: string;
+}
+
+// @public (undocumented)
+export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onSubmit' | 'onChange' | 'defaultValue'> {
+    // (undocumented)
+    autoFocus?: boolean;
+    // (undocumented)
+    defaultValue?: string;
+    // (undocumented)
+    disabled?: boolean;
+    inputId?: string;
+    // (undocumented)
+    inputRef?: Ref<HTMLInputElement>;
+    label: string;
+    labels?: Partial<SearchBarLabels>;
+    name?: string;
+    onClear?: () => void;
+    onSubmit?: (value: string) => void;
+    onValueChange?: (value: string) => void;
+    // (undocumented)
+    placeholder?: string;
+    size?: 'md' | 'lg';
+    submitButton?: boolean;
+    value?: string;
+}
+
+// @public
 export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
 
 // @public
@@ -6122,6 +6155,7 @@ export interface UixLabels {
     schedulingCalendar?: Partial<SchedulingCalendarLabels>;
     // (undocumented)
     schedulingTimeline?: Partial<SchedulingTimelineLabels>;
+    searchBar?: Partial<SearchBarLabels>;
     // (undocumented)
     searchSuggest?: {
         clear?: string;

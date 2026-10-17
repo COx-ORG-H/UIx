@@ -11,6 +11,7 @@ export const COMPONENT_GUIDANCE = {
   segmented: ['Choose among a few closely related modes.', 'A compact group with one visibly selected segment.'],
   arrival: ['Show where a link or a search result landed.', 'The target is tinted for about two seconds and fades; with reduced motion it is outlined instead.'],
   combobox: ['Search a longer list before choosing a value.', 'A searchable dropdown that filters choices and displays the chosen label.'],
+  'search-bar': ['Search a page, a portal or a list for text, with one look everywhere.', 'A labelled search field with a magnifier, a clear button while there is text, Enter to search and Escape to clear; md for a header or toolbar, lg (44 px) for a public page.'],
   'search-suggest': ['Find one item among many and jump to it, such as a setting, a page or a record.', 'A search field with a list of results underneath; each row shows the name, where it lives and a line of context, and Enter opens the first one.'],
   'tag-input': ['Enter several short labels.', 'A wrapping list of removable labels and a field for the next value.'],
   'file-upload': ['Choose files to attach to a record.', 'A drop zone with a centred Choose files button and a list of chosen files; transfer is an application responsibility.'],

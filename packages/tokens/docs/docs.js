@@ -103,7 +103,7 @@ const NAV_ITEMS = [
 ];
 
 export const COMPONENT_GROUPS = {
-  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
+  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
@@ -112,7 +112,7 @@ export const COMPONENT_GROUPS = {
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Utility bits'],
 };
 
-export const COMPOSITE_PATTERNS = ['Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown'];
+export const COMPOSITE_PATTERNS = ['Search bar', 'Nav favourites', 'Filter popover', 'Saved view menu', 'Relative time', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Composer', 'Markdown'];
 
 export const SHOWCASE_SECTION_MAP = {
   foundations: 'examples-foundations',
@@ -146,7 +146,7 @@ export const REACT_COMPONENT_SLUGS = [
   'confirm-dialog', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
   'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
   'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
-  'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph', 'search-suggest',
+  'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph', 'search-bar', 'search-suggest',
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',

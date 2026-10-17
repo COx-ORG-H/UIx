@@ -34,5 +34,14 @@ test('every state named in a caption is on the page', () => {
   assert.match(overlays, />Keep editing<\/button>/);
   assert.match(overlays, /uix-btn--danger[^>]*>Discard<\/button>/);
   assert.doesNotMatch(overlays, / popover="manual"[^>]*data-uix-discard-prompt/);
+  // search bar: a lg field with text, its clear button and Search; an empty md field
+  const forms = specimens['examples-form-controls'];
+  assert.match(forms, /data-search-bar-example/);
+  assert.equal((forms.match(/role="search"/g) ?? []).length, 2);
+  assert.match(forms, /class="uix-searchbar"/);
+  assert.match(forms, /class="uix-searchbar uix-searchbar--md"/);
+  assert.match(forms, /value="Printer"/);
+  assert.match(forms, /class="uix-searchbar__clear" aria-label="Clear search"/);
+  assert.match(forms, />Search<\/button>/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

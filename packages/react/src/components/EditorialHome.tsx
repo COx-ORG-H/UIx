@@ -21,7 +21,7 @@ export interface PageIntroProps extends Omit<HTMLAttributes<HTMLElement>, 'title
   lede?: ReactNode;
   /** Label shown above the search well. */
   searchLabel?: ReactNode;
-  /** The search well itself (form + `.uix-searchbar` markup, or `SearchBar`-style composition). */
+  /** The search well itself: a `SearchBar size="lg"` (HAR-2030), or `.uix-searchbar` markup. */
   search?: ReactNode;
   /** Shortcut buttons; rendered inside the `.uix-shortcut-grid` full-width row. */
   shortcuts?: ReactNode;

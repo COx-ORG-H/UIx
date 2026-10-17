@@ -17,6 +17,7 @@ import type { EntityPickerLabels } from './components/EntityPicker.js';
 import type { TreeLabels } from './components/Tree.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
+import type { SearchBarLabels } from './components/SearchBar.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -38,6 +39,8 @@ export interface UixLabels {
   appShell?: { skipToContent?: string; exitFocus?: string };
   sidebar?: { expand?: string; collapse?: string };
   searchSuggest?: { clear?: string };
+  /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
+  searchBar?: Partial<SearchBarLabels>;
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;

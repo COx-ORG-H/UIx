@@ -43,6 +43,10 @@ export const COMPONENT_SPECIMENS = {
     "anchor": "#rs-type",
     "container": "[data-uix-richselect]"
   },
+  "search-bar": {
+    "route": "examples-form-controls",
+    "selector": "[data-search-bar-example]"
+  },
   "search-suggest": {
     "route": "examples-form-controls",
     "selector": ".uix-search-suggest"
