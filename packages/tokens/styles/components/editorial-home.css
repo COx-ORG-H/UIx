@@ -23,6 +23,28 @@
   .uix-searchbar__wrap { position: relative; }
   .uix-searchbar__wrap > svg { position: absolute; top: 50%; left: 14px; z-index: var(--uix-z-raised); width: 17px; height: 17px; color: var(--uix-text-hushed); transform: translateY(-50%); pointer-events: none; }
 
+  /* React SearchBar (HAR-2030). Without a submit button the field takes the whole row (an
+     empty auto track would still leave the column gap). The clear button sits inside the
+     field's end, and the browser's own search clear (×) is not drawn beside it. */
+  .uix-searchbar > :only-child { grid-column: 1 / -1; }
+  .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input::-webkit-search-cancel-button,
+  .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+  .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input { padding-right: 44px; }
+  .uix-searchbar__clear {
+    position: absolute; top: 50%; right: 8px; z-index: var(--uix-z-raised); transform: translateY(-50%);
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+  }
+  .uix-searchbar__clear svg { width: 14px; height: 14px; }
+  .uix-searchbar__clear:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-searchbar__clear:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  /* md: a control-height field for a header or a toolbar (the bare contract is the 44 px public size) */
+  .uix-searchbar--md .uix-input, .uix-searchbar--md .uix-btn { min-height: 0; }
+  .uix-searchbar--md .uix-input { padding-left: 36px; }
+  .uix-searchbar--md .uix-searchbar__wrap > svg { left: 12px; width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-searchbar--md .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input { padding-right: 36px; }
+  .uix-searchbar--md .uix-searchbar__clear { right: 6px; width: 24px; height: 24px; }
+
   /* The grid fits ITSELF rather than counting columns: a fixed count is only safe for label
      lengths you already know, and `1fr` takes an auto minimum, so nowrap button labels push
      the track past the viewport (LD-11: 382 px of content at 320 px on the German portal).
@@ -181,6 +203,8 @@
     .uix-notice__position { flex: 1; }
 
     .uix-searchbar { grid-template-columns: 1fr; }
+    /* a header or toolbar field keeps its button beside it */
+    .uix-searchbar--md { grid-template-columns: minmax(0, 1fr) auto; }
 
     .uix-page-intro { margin-top: var(--uix-space-5); gap: var(--uix-space-5); }
     /* auto-fit already narrows the tracks; only the touch target grows here. Re-pinning a

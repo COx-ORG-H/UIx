@@ -36,6 +36,9 @@ export type { ComboboxProps, ComboboxOption } from './components/Combobox.js';
 export { filterComboboxOptions } from './combobox-model.js';
 
 export { SearchSuggest } from './components/SearchSuggest.js';
+// One search field look and behaviour over .uix-searchbar (HAR-2030)
+export { SearchBar } from './components/SearchBar.js';
+export type { SearchBarProps, SearchBarLabels } from './components/SearchBar.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
 export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';

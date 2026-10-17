@@ -113,8 +113,22 @@ export async function renderUxcSpecimens() {
       `<div data-discard-prompt-example class="uix-drawer" style="position:relative;display:flex;flex-direction:column;transform:none;height:auto;max-height:none;width:min(420px,100%);margin:0;border:1px solid var(--uix-border);border-radius:var(--uix-radius-md)">${html(drawerEl)}</div>`,
     ].join('\n');
 
+    // ── SearchBar (HAR-2030): the public 44 px field with text and a submit button, and the
+    // header field, empty ───────────────────────────────────────────────────────────────────
+    const portalSearch = mount(h(ui.SearchBar, {
+      size: 'lg', submitButton: true, label: 'Search services', placeholder: 'What do you need?', value: 'Printer', onValueChange: noop,
+    }));
+    const headerSearch = mount(h(ui.SearchBar, { label: 'Search the portal', placeholder: 'Search' }));
+    const searchBar = [
+      caption('Search bar (React <code>SearchBar</code>, <code>.uix-searchbar</code>) — one search field everywhere: a magnifier, a clear button while there is text, Enter searches, Escape clears; <code>lg</code> is the 44 px public field with a submit button, <code>md</code> the header and toolbar field'),
+      '<div data-search-bar-example class="uix-stack" style="--gap:16px;max-width:36rem">',
+      html(portalSearch), html(headerSearch),
+      '</div>',
+    ].join('\n');
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return {
+      'examples-form-controls': searchBar,
       'examples-overlays': [descriptionList, discard].join('\n'),
     };
   } finally {
