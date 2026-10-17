@@ -1,11 +1,12 @@
 "use client";
 
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
-import { useDialog } from '../hooks/useDialog.js';
 import { backdropDismiss } from '../hooks/backdropDismiss.js';
+import { useGuardedDialog } from './DiscardPrompt.js';
+import type { DiscardPromptLabels } from './DiscardPrompt.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -19,9 +20,21 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   open: boolean;
   onClose?: () => void;
   /**
+   * The drawer holds input that is not saved (HAR-2029), e.g. react-hook-form's
+   * `formState.isDirty`. Escape, the close button, a backdrop click and a `DialogClose` then open
+   * an anchored "Discard changes?" step with focus on "Keep editing" instead of calling `onClose`;
+   * "Discard" calls it. A clean drawer closes at once. A `<form method="dialog">` submit counts
+   * as a way out too: save with your own handler instead.
+   */
+  dirty?: boolean;
+  /** A save is in flight: Escape, the close button, a backdrop click and a `DialogClose` do nothing. */
+  pending?: boolean;
+  /** The words of the discard step. Default: `UixLabelsProvider` `discardPrompt`, then English. */
+  discardLabels?: Partial<DiscardPromptLabels>;
+  /**
    * A click on the dimmed backdrop calls `onClose`, like Escape and the close button
-   * (TENSOR HAR-547). Pass `false` on a drawer that holds unsaved form input, so a stray click
-   * can't discard it; Escape and the close button still close. Default `true`.
+   * (TENSOR HAR-547), or asks first when the drawer is `dirty`. `false` ignores backdrop clicks
+   * altogether. Default `true`.
    */
   dismissOnBackdrop?: boolean;
   /**
@@ -34,37 +47,56 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   footer?: ReactNode;
 }
 
-export function Drawer({ open, onClose, dismissOnBackdrop = true, side = 'end', title, children, footer, closeLabel: closeLabelProp, className, onClick, ...rest }: DrawerProps) {
+export function Drawer({
+  open, onClose, dirty = false, pending = false, discardLabels, dismissOnBackdrop = true, side = 'end', title, children, footer,
+  closeLabel: closeLabelProp, className, onClick, onKeyDown, ...rest
+}: DrawerProps) {
   const uixLabels = useUixLabels();
   const closeLabel = closeLabelProp ?? uixLabels.drawer?.close ?? 'Close drawer';
-  const ref = useDialog(open, onClose);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const guard = useGuardedDialog({ open, onClose, dirty, pending, labels: discardLabels, closeRef });
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it. The
   // inherit resets neutralize the base h2 heading font/tracking/leading so it renders exactly
   // like the old <div> (UIX-A11Y-1).
   const titleId = useId();
 
   return (
-    <dialog ref={ref} className={cx('uix-drawer', side !== 'end' && `uix-drawer--${side}`, className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick, dismissOnBackdrop)}>
-      {(title != null || onClose) && (
-        <div className="uix-drawer__header">
-          {title && (
-            <h2 id={titleId} style={{ fontWeight: 600, fontSize: 'var(--uix-text-h3)', fontFamily: 'inherit', letterSpacing: 'inherit', lineHeight: 'inherit' }}>
-              {title}
-            </h2>
+    <dialog
+      ref={guard.ref}
+      className={cx('uix-drawer', side !== 'end' && `uix-drawer--${side}`, className)}
+      aria-labelledby={title ? titleId : undefined}
+      {...rest}
+      onClick={backdropDismiss(onClose && (() => guard.requestClose()), onClick, dismissOnBackdrop)}
+      onKeyDown={(event) => { onKeyDown?.(event); guard.onKeyDown(event); }}
+    >
+      {guard.provide(
+        <>
+          {(title != null || onClose) && (
+            <div className="uix-drawer__header">
+              {title && (
+                <h2 id={titleId} style={{ fontWeight: 600, fontSize: 'var(--uix-text-h3)', fontFamily: 'inherit', letterSpacing: 'inherit', lineHeight: 'inherit' }}>
+                  {title}
+                </h2>
+              )}
+              {onClose && (
+                <button
+                  ref={closeRef}
+                  type="button"
+                  className="uix-drawer__close"
+                  onClick={() => guard.requestClose()}
+                  aria-label={closeLabel}
+                  aria-disabled={pending || undefined}
+                >
+                  <CloseIcon />
+                </button>
+              )}
+            </div>
           )}
-          {onClose && (
-            <button
-              style={{ marginLeft: 'auto', border: 0, background: 'transparent', color: 'var(--uix-text-muted)', cursor: 'pointer', width: 30, height: 30, display: 'grid', placeItems: 'center', borderRadius: 'var(--uix-radius-sm)' }}
-              onClick={onClose}
-              aria-label={closeLabel}
-            >
-              <CloseIcon />
-            </button>
-          )}
-        </div>
+          {children != null && <div className="uix-drawer__body">{children}</div>}
+          {footer != null && <div className="uix-drawer__footer">{footer}</div>}
+        </>,
       )}
-      {children != null && <div className="uix-drawer__body">{children}</div>}
-      {footer != null && <div className="uix-drawer__footer">{footer}</div>}
+      {guard.prompt}
     </dialog>
   );
 }

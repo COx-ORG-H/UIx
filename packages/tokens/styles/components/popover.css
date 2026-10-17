@@ -13,6 +13,11 @@
   [popover].uix-popover[data-placement^="left"] { --popover-from: translateX(var(--uix-lift)); }
   [popover].uix-popover[data-placement^="right"] { --popover-from: translateX(calc(-1 * var(--uix-lift))); }
   [popover].uix-popover:popover-open { opacity: 1; transform: none; }
+  /* A closed popover is display:none by the UA stylesheet only, so a component that sets its
+     own display (.uix-popconfirm, .uix-filter-popover: grid) stayed laid out while closed: an
+     invisible fixed box at the viewport's top-left that took clicks (HAR-2029). The display
+     transition above still keeps it painted while it fades out. */
+  [popover].uix-popover:not(:popover-open) { display: none; }
   @starting-style { [popover].uix-popover:popover-open { opacity: 0; transform: var(--popover-from); } }
   [popover].uix-popover[data-uix-placing]:popover-open { opacity: 0; transform: var(--popover-from); transition: none; }
 }

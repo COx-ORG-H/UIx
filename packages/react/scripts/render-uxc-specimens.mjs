@@ -16,7 +16,8 @@ import { createElement as h, act } from 'react';
 const here = dirname(fileURLToPath(import.meta.url));
 export const SPECIMEN_MODULE = join(here, '../../tokens/docs/uxc-specimens.js');
 
-const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'IS_REACT_ACT_ENVIRONMENT'];
+const OPEN = 'data-specimen-popover-open';
+const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT'];
 
 const caption = (text) => `<div class="uix-guide__subhead" data-uxc>${text}</div>`;
 
@@ -44,7 +45,19 @@ export async function renderUxcSpecimens() {
   expose('requestAnimationFrame', window.requestAnimationFrame.bind(window));
   expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   expose('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('HTMLElement', window.HTMLElement);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
+  // jsdom has no top layer: a popover is "open" while it carries OPEN, a dialog while it has [open].
+  const toggle = (target, newState) => { const event = new window.Event('toggle'); event.newState = newState; target.dispatchEvent(event); };
+  window.HTMLElement.prototype.showPopover = function showPopover() { if (this.hasAttribute(OPEN)) return; this.setAttribute(OPEN, ''); toggle(this, 'open'); };
+  window.HTMLElement.prototype.hidePopover = function hidePopover() { if (!this.hasAttribute(OPEN)) return; this.removeAttribute(OPEN); toggle(this, 'closed'); };
+  const matches = window.Element.prototype.matches;
+  window.Element.prototype.matches = function patched(selector) {
+    return selector === ':popover-open' ? this.hasAttribute(OPEN) : matches.call(this, selector);
+  };
+  const dialog = window.HTMLDialogElement.prototype;
+  dialog.showModal = function showModal() { this.setAttribute('open', ''); };
+  dialog.close = function close() { this.removeAttribute('open'); };
 
   try {
     const { createRoot } = await import('react-dom/client');
@@ -79,9 +92,30 @@ export async function renderUxcSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── Drawer dirty: the "Discard changes?" step (HAR-2029) ───────────────────────
+    // A form drawer with a changed field, after Escape: the step under the ×, focus on Keep editing.
+    const noop = () => {};
+    const drawerHost = mount(h(ui.Drawer, {
+      open: true, onClose: noop, dirty: true, title: 'Edit notification template',
+      footer: [h(ui.Button, { key: 'save', variant: 'primary' }, 'Save'), h(ui.DialogClose, { key: 'cancel' }, 'Cancel')],
+    }, h(ui.Field, { label: 'Template name' }, h(ui.Input, { defaultValue: 'Incident created (v2)' }))));
+    const drawerEl = drawerHost.querySelector('dialog');
+    act(() => { drawerEl.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); });
+    const step = drawerEl.querySelector('[data-uix-discard-prompt]');
+    if (!step?.hasAttribute(OPEN)) throw new Error('the dirty drawer did not open its discard step on Escape');
+    // The static page cannot show a modal or a popover: the drawer becomes a framed panel and the
+    // step sits where the browser places it, under the ×.
+    step.removeAttribute('popover');
+    step.removeAttribute(OPEN);
+    step.setAttribute('style', 'position:absolute;top:56px;right:12px;margin:0');
+    const discard = [
+      caption('Drawer and Modal <code>dirty</code> (React <code>Drawer dirty</code>, <code>Modal dirty</code>, <code>DialogClose</code>) — Escape, the ×, a backdrop click or Cancel on a form with unsaved input asks first, with focus on Keep editing; <code>pending</code> makes them do nothing; a clean form closes at once'),
+      `<div data-discard-prompt-example class="uix-drawer" style="position:relative;display:flex;flex-direction:column;transform:none;height:auto;max-height:none;width:min(420px,100%);margin:0;border:1px solid var(--uix-border);border-radius:var(--uix-radius-md)">${html(drawerEl)}</div>`,
+    ].join('\n');
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return {
-      'examples-overlays': descriptionList,
+      'examples-overlays': [descriptionList, discard].join('\n'),
     };
   } finally {
     dom.window.close();

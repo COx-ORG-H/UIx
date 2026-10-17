@@ -33,4 +33,8 @@
   .uix-drawer__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
   .uix-drawer__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
   .uix-drawer__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
+  /* the React close button (it was inline styles until HAR-2029 gave it a pending state) */
+  .uix-drawer__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  /* `pending` (HAR-2029): a save is in flight, so the close button does nothing and says so */
+  .uix-drawer__close[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
 }

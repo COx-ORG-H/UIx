@@ -16,6 +16,7 @@ import type { AttachmentLabels } from './attachment-labels.js';
 import type { EntityPickerLabels } from './components/EntityPicker.js';
 import type { TreeLabels } from './components/Tree.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
+import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -29,6 +30,8 @@ import type { InlineEditLabels } from './components/InlineEdit.js';
 export interface UixLabels {
   modal?: { close?: string };
   drawer?: { close?: string };
+  /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
+  discardPrompt?: Partial<DiscardPromptLabels>;
   peek?: { previous?: string; next?: string; close?: string };
   toast?: { dismiss?: string };
   toaster?: { region?: string };

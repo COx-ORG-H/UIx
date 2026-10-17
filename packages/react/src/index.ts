@@ -72,6 +72,9 @@ export type { ConfirmDialogProps, PopconfirmProps, PromptDialogProps } from './c
 
 export { Drawer } from './components/Drawer.js';
 export type { DrawerProps } from './components/Drawer.js';
+// The discard step of a dirty Drawer or Modal, and the Cancel that goes through it (HAR-2029)
+export { DialogClose } from './components/DiscardPrompt.js';
+export type { DialogCloseProps, DiscardPromptLabels } from './components/DiscardPrompt.js';
 
 export { Peek } from './components/Peek.js';
 

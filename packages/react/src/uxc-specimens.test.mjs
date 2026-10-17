@@ -27,5 +27,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(overlays, /data-dl-narrow-example lang="de" class="uix-card" style="width:20rem/);
   assert.match(overlays, /data-dl-wide-example/);
   assert.equal((overlays.match(/<dt>Neue Tickets pro Person und Stunde<\/dt>/g) ?? []).length, 2);
+  // discard step: a dirty drawer after Escape, the step with both choices, Cancel is a DialogClose
+  assert.match(overlays, /data-discard-prompt-example class="uix-drawer"/);
+  assert.match(overlays, /role="alertdialog"[^>]*data-uix-discard-prompt/);
+  assert.match(overlays, />Discard changes\?</);
+  assert.match(overlays, />Keep editing<\/button>/);
+  assert.match(overlays, /uix-btn--danger[^>]*>Discard<\/button>/);
+  assert.doesNotMatch(overlays, / popover="manual"[^>]*data-uix-discard-prompt/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

@@ -225,7 +225,7 @@ export const COMPONENT_SPECIMENS = {
   "drawer": {
     "route": "examples-overlays",
     "selector": ".uix-drawer",
-    "parts": ["[data-uix-open=\"#demo-drawer\"]", "#demo-drawer"]
+    "parts": ["[data-uix-open=\"#demo-drawer\"]", "#demo-drawer", "[data-discard-prompt-example]"]
   },
   "popover": {
     "route": "examples-overlays",

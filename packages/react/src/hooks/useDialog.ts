@@ -42,10 +42,17 @@ function unlockBodyScroll() {
   }
 }
 
-export function useDialog(open: boolean, onClose?: () => void): React.RefObject<HTMLDialogElement> {
+/**
+ * `keepOpen` is asked when the browser closed the dialog on its own (Escape or a close request
+ * nobody cancelled, a `method="dialog"` form). Returning `true` reopens it instead of calling
+ * `onClose`: a form dialog with unsaved input or a save in flight (HAR-2029).
+ */
+export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement> {
   const ref = useRef<HTMLDialogElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const keepOpenRef = useRef(keepOpen);
+  keepOpenRef.current = keepOpen;
 
   useEffect(() => {
     const el = ref.current;
@@ -68,6 +75,11 @@ export function useDialog(open: boolean, onClose?: () => void): React.RefObject<
     let locked = true;
     const handleClose = () => {
       if (el.open) return;
+      // Still meant to be open (a guarded form): show it again, keeping the scroll lock. If it
+      // cannot be shown again, it closes after all, lock and onClose included.
+      if (keepOpenRef.current?.()) {
+        try { el.showModal(); return; } catch { /* disconnected: fall through */ }
+      }
       if (locked) { locked = false; unlockBodyScroll(); }
       onCloseRef.current?.();
     };

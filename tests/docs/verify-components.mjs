@@ -65,7 +65,7 @@ try {
     ['modal', '[data-uix-open="#demo-modal"]', '.uix-dialog'],
     ['confirm-dialog', '[data-uix-open="#demo-confirm"]', '#demo-confirm'],
     ['prompt-dialog', '[data-uix-open="#demo-prompt"]', '#demo-prompt'],
-    ['drawer', '[data-uix-open="#demo-drawer"]', '.uix-drawer'],
+    ['drawer', '[data-uix-open="#demo-drawer"]', '#demo-drawer'],
     ['peek', '[data-uix-open-peek]', '.uix-peek'],
     ['popover', '[popovertarget="demo-pop"]', '.uix-popover'],
     ['lightbox', '[data-uix-lightbox]', '.uix-lightbox'],
