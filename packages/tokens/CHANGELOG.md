@@ -1,5 +1,52 @@
 # @tensor_1/tokens
 
+## 2.42.0
+
+### Minor Changes
+
+- 986d0d4: **`Drawer` and `Modal` ask before throwing away unsaved input** (HAR-2029, TENSOR audit UXC-01). New props `dirty` and `pending`:
+
+  - `dirty` (e.g. react-hook-form's `formState.isDirty`): Escape, the close button, a backdrop click (Drawer) and a `DialogClose` open an anchored "Discard changes?" step with focus on "Keep editing". Keep editing returns focus to where it was; Discard calls `onClose`. A clean dialog closes at once, as before.
+  - `pending` (a save in flight): none of them does anything; the close button is `aria-disabled`.
+  - **`DialogClose`**: a `Button` for the footer's Cancel that goes through the same guard (the step opens against it).
+  - Words: a new `UixLabelsProvider` group `discardPrompt` (`title`, `description`, `keepEditing`, `discard`), or `discardLabels` on one dialog.
+  - Escape is taken on the dialog's keydown after the controls inside it (an open Select still closes its list first), so repeated Escape presses never close a dirty dialog, whatever the browser's close-watcher rules. If the browser still closes a guarded dialog by force, it reopens and asks.
+  - `useDialog(open, onClose, keepOpen?)`: the optional `keepOpen` is asked before a native close is passed on.
+  - The Drawer's close button is now styled by `.uix-drawer__close` (it had inline styles); `.uix-drawer__close` and `.uix-dialog__close` are dimmed while `aria-disabled`.
+
+  Products that passed `dismissOnBackdrop={false}` to keep a form drawer open can pass `dirty` instead and drop it.
+
+- f79cd4f: **`.uix-dl` / `DescriptionList` stack when narrow** (HAR-2032, TENSOR audit UXC-04): below 22rem of the list's own width each label sits above its value and both take the full width, so a long label ("Neue Tickets pro Person und Stunde") no longer squeezes the value to a letter per line or pushes it off a 320 px screen. It is a container query on the list itself, so a 20rem side rail stacks at desktop width too, and a wide card keeps its label column. Products that stacked the list with a local override (TENSOR's `STACK_ON_A_PHONE`, HAR-1651) can delete it.
+
+  Where it stacks now: a phone card, a 20rem side rail, and always in a `DetailLayout` side column (280 px, which leaves the list about 230 px). A peek or drawer (about 380 px of list) keeps its label column.
+
+  The list is an inline-size container for this, so its content no longer sizes it:
+
+  - In a box sized by its content it is now **12rem wide, and stacked**, where it used to be as wide as its content: a flex row, the kit `Popover` or a hover card, a rich `Tooltip` (`max-content`), an auto-layout table cell, `inline-block`, a float, a column flexbox that does not stretch its children (`align-items: center`), a grid track sized by content. Give the list `flex: 1` or a width there.
+  - Its minimum width is 12rem too, where it used to be its longest label plus a gap, so a long label no longer pushes a phone page sideways through a parent grid with `auto` tracks.
+  - Inside a value, an unnamed `@container` query or a `cqi` / `cqw` unit (Tailwind v4's `@sm:` variants) now measures the list, not the container outside it. Name the container you mean (`@container/card`, Tailwind `@sm/card:`).
+  - Label/value pairs wrapped in `display: contents` `<div>`s stack too. The stacked label is pulled 8 px toward its value, which assumes the default 12 px row gap.
+
+- b683e6a: Five gaps MOTUS and TENSOR worked around locally:
+
+  - **`Button` / `ButtonLink` `wrap`** (HAR-1813): a long label may wrap. The size becomes a minimum height (`.uix-btn--wrap`), so a human-language label breaks onto a second line in a narrow or 200 %-zoomed column instead of widening it (WCAG 1.4.10). Opt-in; icon-only buttons keep their square and every other button is unchanged.
+  - **Anchored overlays under CSS `zoom`** (HAR-1798): `useAnchoredPosition` (Select, Popover, Popconfirm, Tooltip, menus) places in on-screen pixels and divides by the effective zoom when it writes, and `Select` sizes its list from the trigger the same way. Under `html { zoom: 2 }` a list opened low on the page used to land at twice its offset, below the viewport, and twice as wide as its trigger.
+  - **`ContentList` titles and meta** (HAR-1811) break an unbroken word (`overflow-wrap: anywhere`) instead of widening the page at 320 px.
+  - **`MetricInput` `required` and `hint`** (HAR-1819): the same required marker as `Field`, native `required` and `aria-required` on the input, and a hint under the control in its `aria-describedby`; an `errorMessage` joins the hint.
+  - **HAR-1814**: a table row the keyboard is in shows its row actions and id-cell arrow (`:focus-within`, as on hover); a sortable header keeps its neighbours' letter-spacing and case; `DetailLayout` without a side gives the main column the full width; `NavItem` draws its own inset focus ring, which a Sidebar's `overflow-x: hidden` no longer clips; and `Input warning` / `Field warning` add a "check this" state (warning border, a polite message; an error still wins).
+
+- 6e71c6f: **`SearchBar`** (HAR-2030, TENSOR audit UXC-02): one search field look and behaviour over the `.uix-searchbar` contract, so no product hand-builds a search box. `label` names the field and its `search` landmark (visually hidden; the field shows `placeholder`); `value` / `defaultValue` with `onValueChange`; `onSubmit` on Enter or the optional submit button (`submitButton`); `onClear` after the clear button or Escape emptied the field (focus stays in the field; an empty field lets Escape through, so it still closes a dialog); `size` `md` (default, header and toolbar) or `lg` (44 px, public pages); `submitVariant`; `inputDescribedBy`; `landmark={false}` for a field that filters a list or table (by default it is a `search` landmark, so do not wrap it in a `<search>` of your own). It is not a `<form>`: Enter never submits a surrounding form. Words: `labels` or a new `UixLabelsProvider` group `searchBar` (`clear`, `submit`).
+
+  `.uix-searchbar` gains the parts it needs: `.uix-searchbar__clear` (inside the field's end; where it is present the browser's own search × is not drawn, so hand-built markup keeps it), `.uix-searchbar--md` (keeps its submit button beside it on a phone), and a field with no submit button now takes the whole row (it used to stop 8 px short, at the empty button column's gap).
+
+- 5ce9bc8: **Keyboard shortcuts where people act** (HAR-2031, TENSOR audit UXC-03): a `shortcut` prop in `KbdCombo` key names (`['A']`, `['Mod', 'K']`) on
+
+  - **`Button`**: hover or keyboard focus shows the keys in a hint above the button (an icon button's `aria-label` before them), and the button gets `aria-keyshortcuts` unless it has its own. The button holds only an empty hidden marker; the hint is portalled after mount (into the nearest `<dialog>`, else `<body>`), so the button's text, name, layout and selectors are unchanged: a `ButtonGroup`'s corners and a full-width button keep their geometry, and `toHaveText('Save')` still holds. Focus a menu or dialog sends back after a mouse choice opens no hint. `Button` stays server-renderable.
+  - **`Tooltip`**: the keys follow the text in the bubble, and the trigger gets `aria-keyshortcuts`. Around a `Button` with a `shortcut` it takes that shortcut, so there is one bubble with the label and the keys.
+  - **`MenuItem`, `MenuItemRadio`, `MenuItemCheckbox`**: key names render with `KbdCombo` at the row's end and set the row's `aria-keyshortcuts`; any other node renders as given, as before. An array of strings now counts as key names (`['⌘', 'K']` passed as a node would render as two keys).
+
+  `Mod` is ⌘ / `Meta` on Apple and Ctrl / `Control` elsewhere (the server and the hydrating render use the non-Apple form; a menu row mounted later reads the platform at once). KbdCombo now also names `Esc`, `Del` / `Delete` and `Space`; `+` is spoken and written as `Plus` in `aria-keyshortcuts`. New exports: `ariaKeyShortcuts(keys, platform)` for a control the kit does not render, and the `KeyShortcut` type. The kit only shows a shortcut; the product binds the key. In a tooltip bubble the keys are drawn as outlines in the bubble's own colour.
+
 ## 2.41.0
 
 ### Minor Changes
