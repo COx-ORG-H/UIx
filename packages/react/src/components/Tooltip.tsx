@@ -5,6 +5,8 @@ import type { ReactNode, ReactElement, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
+import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import type { KeyShortcut } from './Kbd.js';
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
   /** Tooltip text. Pass this or `content`. */
@@ -17,6 +19,12 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
   content?: ReactNode;
   /** Preferred placement. Default `'top'`. */
   placement?: Placement;
+  /**
+   * The trigger's keyboard shortcut, in `KbdCombo` key names, e.g. `['Mod', 'K']` (HAR-2031):
+   * shown with `Kbd` after the text, and set as the trigger's `aria-keyshortcuts` for the
+   * viewer's platform. The kit only shows it: the product binds the key.
+   */
+  shortcut?: KeyShortcut;
   children?: ReactNode;
 }
 
@@ -28,12 +36,15 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
  * (document-level, per WCAG 1.4.13), and hoverable: the bubble stays open while
  * the pointer is over it (UIX-A11Y-1).
  */
-export function Tooltip({ label, content, placement = 'top', className, children, ...props }: TooltipProps) {
+export function Tooltip({ label, content, placement = 'top', shortcut, className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | null>(null);
   const [open, setOpen] = useState(false);
   const id = useId();
+  const platform = useKbdPlatform();
+  const keys = shortcut && shortcut.length > 0 ? shortcut : null;
+  const keyshortcuts = keys ? ariaKeyShortcuts(keys, platform) : undefined;
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
@@ -87,6 +98,7 @@ export function Tooltip({ label, content, placement = 'top', className, children
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
         'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], id]
           .filter(Boolean).join(' '),
+        ...(keyshortcuts ? { 'aria-keyshortcuts': keyshortcuts } : {}),
       })
     : children;
 
@@ -95,6 +107,7 @@ export function Tooltip({ label, content, placement = 'top', className, children
       ref={triggerRef}
       className={cx('uix-tooltip', className)}
       aria-describedby={single ? undefined : id}
+      aria-keyshortcuts={single ? undefined : keyshortcuts}
       tabIndex={single ? undefined : 0}
       onMouseEnter={show}
       onMouseLeave={scheduleHide}
@@ -114,6 +127,7 @@ export function Tooltip({ label, content, placement = 'top', className, children
         {...bubbleAttr}
       >
         {content ?? label}
+        {keys && <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>}
       </span>
     </span>
   );

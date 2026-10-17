@@ -452,9 +452,9 @@
       "brotli": 764
     },
     "styles/components/tooltip.css": {
-      "raw": 2530,
-      "gzip": 1021,
-      "brotli": 844
+      "raw": 3195,
+      "gzip": 1265,
+      "brotli": 1058
     },
     "styles/components/tree.css": {
       "raw": 2982,

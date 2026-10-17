@@ -21,6 +21,13 @@
   .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-left: 1.1em; }
   .uix-tooltip__bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: var(--uix-space-1); }
   .uix-tooltip__bubble:popover-open { opacity: 1; }
+  /* A shortcut in the bubble (HAR-2031: Tooltip `shortcut`, Button `shortcut`): after the text,
+     the keys drawn as outlines in the bubble's own colour, so they keep its contrast in both
+     themes. A Button's hint bubble is one line: the name of an icon button, then the keys. */
+  .uix-tooltip__shortcut { display: inline-flex; vertical-align: middle; margin-inline-start: var(--uix-space-2); }
+  .uix-tooltip__shortcut:first-child { margin-inline-start: 0; }
+  .uix-tooltip__shortcut .uix-kbd { color: inherit; background: transparent; border-color: color-mix(in srgb, currentColor 45%, transparent); }
+  .uix-tooltip__bubble--hint { white-space: nowrap; }
   @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; } }
 
   /* legacy CSS-only tooltip — clipped by overflow ancestors; superseded by .uix-tooltip__bubble */

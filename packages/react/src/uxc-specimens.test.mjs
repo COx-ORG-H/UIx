@@ -43,5 +43,15 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /value="Printer"/);
   assert.match(forms, /class="uix-searchbar__clear" aria-label="Clear search"/);
   assert.match(forms, />Search<\/button>/);
+  // shortcuts: the hint bubbles shown open, the keys, aria-keyshortcuts on the controls and rows
+  const navigation = specimens['examples-navigation'];
+  assert.match(navigation, /data-shortcut-example/);
+  assert.match(navigation, /aria-keyshortcuts="A"/);
+  assert.match(navigation, /aria-keyshortcuts="Control\+K"/);
+  assert.match(navigation, /aria-keyshortcuts="Shift\+\?"/);
+  assert.match(navigation, /aria-keyshortcuts="Control\+D"/);
+  assert.match(navigation, /aria-keyshortcuts="Delete"/);
+  assert.equal((navigation.match(/class="uix-tooltip__shortcut"/g) ?? []).length, 3);
+  assert.doesNotMatch(navigation, /popover="manual"[^>]*uix-tooltip__bubble|uix-tooltip__bubble[^>]*popover="manual"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

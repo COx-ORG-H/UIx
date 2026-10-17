@@ -126,8 +126,46 @@ export async function renderUxcSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── Shortcuts (HAR-2031): a Button's hint, a Tooltip with keys, menu rows with keys ─────
+    // The page has no React to open a hint on hover: each bubble is shown open, beside its control.
+    const showOpen = (bubble, style) => {
+      bubble.removeAttribute('popover');
+      bubble.removeAttribute(OPEN);
+      bubble.setAttribute('style', style);
+      return stable(bubble.outerHTML);
+    };
+    const assign = mount(h(ui.Button, { shortcut: ['A'] }, 'Assign'));
+    const assignHint = showOpen(assign.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
+    assign.querySelector('.uix-tooltip__bubble').remove();
+    const palette = mount(h(ui.Button, { icon: true, variant: 'ghost', 'aria-label': 'Search', shortcut: ['Mod', 'K'] },
+      h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' },
+        h('circle', { cx: 11, cy: 11, r: 8 }), h('path', { d: 'm21 21-4.3-4.3' }))));
+    const paletteHint = showOpen(palette.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
+    palette.querySelector('.uix-tooltip__bubble').remove();
+    const tip = mount(h(ui.Tooltip, { label: 'Keyboard shortcuts', shortcut: ['Shift', '?'] }, h('a', { href: '#kbd' }, 'Shortcuts')));
+    const tipBubble = showOpen(tip.querySelector('.uix-tooltip__bubble'), 'position:static;display:inline-block;opacity:1;margin:0');
+    tip.querySelector('.uix-tooltip__bubble').remove();
+    const rows = mount(h('div', { className: 'uix-menu', role: 'menu', 'aria-label': 'Incident actions', style: { width: '240px' } },
+      h(ui.MenuItem, { shortcut: ['A'] }, 'Assign to me'),
+      h(ui.MenuItem, { shortcut: ['R'] }, 'Resolve'),
+      h(ui.MenuItem, { shortcut: ['Mod', 'D'] }, 'Duplicate'),
+      h(ui.MenuItemCheckbox, { checked: true, shortcut: ['Shift', 'W'] }, 'Watch'),
+      h(ui.MenuSeparator),
+      h(ui.MenuItem, { shortcut: ['Del'], tone: 'danger' }, 'Delete')));
+    rows.querySelector('[role^="menuitem"]').setAttribute('tabindex', '0');
+    const shortcuts = [
+      caption('Shortcuts where people act (React <code>Button shortcut</code>, <code>Tooltip shortcut</code>, <code>MenuItem shortcut</code>) — the key in the hover and focus hint and at the end of a menu row, and <code>aria-keyshortcuts</code> on the control; ⌘ / Meta on Apple, Ctrl / Control elsewhere (shown here for Windows and Linux)'),
+      '<div data-shortcut-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${tipBubble}${html(tip)}</div>`,
+      html(rows),
+      '</div>',
+    ].join('\n');
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return {
+      'examples-navigation': shortcuts,
       'examples-form-controls': searchBar,
       'examples-overlays': [descriptionList, discard].join('\n'),
     };

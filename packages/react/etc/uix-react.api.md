@@ -113,6 +113,9 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     topbar?: ReactNode;
 }
 
+// @public
+export function ariaKeyShortcuts(keys: KeyShortcut, platform: KbdPlatform): string;
+
 // @public (undocumented)
 export type AsyncOperationState = 'queued' | 'running' | 'complete' | 'failed';
 
@@ -528,6 +531,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     icon?: boolean;
     // (undocumented)
     loading?: boolean;
+    shortcut?: KeyShortcut;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
@@ -2503,6 +2507,9 @@ export interface KbdProps extends HTMLAttributes<HTMLElement> {
 }
 
 // @public
+export type KeyShortcut = readonly string[];
+
+// @public
 export function Label(input: LabelProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -3014,8 +3021,7 @@ export interface MenuItemCheckboxProps extends MenuItemAttributes {
     icon?: ReactNode;
     // (undocumented)
     onCheckedChange?: (checked: boolean) => void;
-    // (undocumented)
-    shortcut?: ReactNode;
+    shortcut?: KeyShortcut | ReactNode;
 }
 
 // @public (undocumented)
@@ -3032,7 +3038,7 @@ export interface MenuItemProps extends MenuItemAttributes {
     onSelect?: () => void;
     // (undocumented)
     renderLink?: UixRenderLink;
-    shortcut?: ReactNode;
+    shortcut?: KeyShortcut | ReactNode;
     // (undocumented)
     tone?: 'default' | 'danger';
 }
@@ -3053,8 +3059,7 @@ export interface MenuItemRadioProps extends MenuItemAttributes {
     // (undocumented)
     icon?: ReactNode;
     onSelect?: () => void;
-    // (undocumented)
-    shortcut?: ReactNode;
+    shortcut?: KeyShortcut | ReactNode;
     value: string;
 }
 
@@ -5985,6 +5990,7 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
     content?: ReactNode;
     label?: string;
     placement?: Placement;
+    shortcut?: KeyShortcut;
 }
 
 // @public

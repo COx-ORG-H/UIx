@@ -37,6 +37,43 @@ const detectPlatform = (): KbdPlatform => {
   return /mac|iphone|ipad|ipod/i.test(nav.userAgentData?.platform ?? navigator.platform ?? '') ? 'mac' : 'other';
 };
 
+/** The platform for glyphs and `aria-keyshortcuts`: `platform` when given, else detected after mount (`other` on the server). */
+export function useKbdPlatform(platform?: KbdPlatform): KbdPlatform {
+  const [detected, setDetected] = useState<KbdPlatform>('other');
+  useEffect(() => { if (!platform) setDetected(detectPlatform()); }, [platform]);
+  return platform ?? detected;
+}
+
+/**
+ * A keyboard shortcut (HAR-2031): the keys pressed together, in `KbdCombo`'s names, e.g.
+ * `['Mod', 'K']`, `['Shift', '?']` or `['A']`. `Mod` is ⌘ on Apple and Ctrl elsewhere.
+ */
+export type KeyShortcut = readonly string[];
+
+/** KbdCombo's key names that `aria-keyshortcuts` (UI Events key values) spells differently. */
+const ARIA_KEYS: Record<string, { mac: string; other: string }> = {
+  Mod: { mac: 'Meta', other: 'Control' },
+  Ctrl: { mac: 'Control', other: 'Control' },
+  Cmd: { mac: 'Meta', other: 'Meta' },
+  Option: { mac: 'Alt', other: 'Alt' },
+  Esc: { mac: 'Escape', other: 'Escape' },
+  Del: { mac: 'Delete', other: 'Delete' },
+  ' ': { mac: 'Space', other: 'Space' },
+};
+
+/**
+ * The `aria-keyshortcuts` value of a shortcut on a platform (HAR-2031): `['Mod', 'K']` is
+ * `Meta+K` on Apple and `Control+K` elsewhere; a single letter is upper-cased (`['a']` is `A`).
+ * For a control the kit does not render.
+ */
+export function ariaKeyShortcuts(keys: KeyShortcut, platform: KbdPlatform): string {
+  return keys.map((key) => ARIA_KEYS[key]?.[platform] ?? (key.length === 1 ? key.toUpperCase() : key)).join('+');
+}
+
+/** A `shortcut` prop that is key names rather than a node (HAR-2031). */
+export const isKeyShortcut = (value: unknown): value is KeyShortcut =>
+  Array.isArray(value) && value.length > 0 && value.every((key) => typeof key === 'string');
+
 export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /**
    * Keys in order, e.g. `['Mod', 'K']`. `Mod` is ⌘ on Apple and Ctrl elsewhere; `Shift`,
@@ -54,9 +91,7 @@ export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'ch
  * glyphs. The platform is resolved at display time, after mount, so server and client agree.
  */
 export function KbdCombo({ keys, platform, keyLabels, className, ...props }: KbdComboProps) {
-  const [detected, setDetected] = useState<KbdPlatform>('other');
-  useEffect(() => { if (!platform) setDetected(detectPlatform()); }, [platform]);
-  const active = platform ?? detected;
+  const active = useKbdPlatform(platform);
   const parts = keys.map((key) => {
     const known = KEYS[key]?.[active];
     return { glyph: known?.[0] ?? key, spoken: keyLabels?.[key] ?? known?.[1] ?? key };

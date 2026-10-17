@@ -8,6 +8,22 @@ import { CheckIcon } from '../icons/components.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
+import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import type { KeyShortcut } from './Kbd.js';
+
+/**
+ * A menu row's `shortcut`: key names render as `KbdCombo` and give the row `aria-keyshortcuts`
+ * for the viewer's platform (HAR-2031); any other node renders as given.
+ */
+function useRowShortcut(shortcut: ReactNode | KeyShortcut) {
+  const platform = useKbdPlatform();
+  if (shortcut == null) return { node: null, aria: {} };
+  if (!isKeyShortcut(shortcut)) return { node: <span className="uix-menu__shortcut">{shortcut}</span>, aria: {} };
+  return {
+    node: <span className="uix-menu__shortcut"><KbdCombo keys={[...shortcut]} platform={platform} /></span>,
+    aria: { 'aria-keyshortcuts': ariaKeyShortcuts(shortcut, platform) },
+  };
+}
 
 interface MenuContextValue { close: (refocus: boolean) => void }
 const MenuContext = createContext<MenuContextValue | null>(null);
@@ -181,8 +197,12 @@ export interface MenuItemProps extends MenuItemAttributes {
   href?: string;
   renderLink?: UixRenderLink;
   icon?: ReactNode;
-  /** Shortcut hint at the end of the row, e.g. `<KbdCombo keys={['Mod', 'D']} />`. */
-  shortcut?: ReactNode;
+  /**
+   * The row's keyboard shortcut, at its end. Key names (`['Mod', 'D']`, `['A']`) render with
+   * `KbdCombo` and set the row's `aria-keyshortcuts` for the viewer's platform (HAR-2031); any
+   * other node renders as given.
+   */
+  shortcut?: KeyShortcut | ReactNode;
   tone?: 'default' | 'danger';
   disabled?: boolean;
   className?: string;
@@ -192,19 +212,21 @@ export function MenuItem({ children, onSelect, href, renderLink, icon, shortcut,
   const menu = useContext(MenuContext);
   const classes = cx('uix-menu__item', tone === 'danger' && 'uix-menu__item--danger', className);
   const attributes = itemAttributes(rest);
+  const keys = useRowShortcut(shortcut);
   const body = (
     <>
       {icon != null && <span className="uix-menu__icon" aria-hidden="true">{icon}</span>}
       <span className="uix-menu__text">{children}</span>
-      {shortcut != null && <span className="uix-menu__shortcut">{shortcut}</span>}
+      {keys.node}
     </>
   );
   if (href != null && !disabled) {
-    return <>{renderUixLink(renderLink, { ...attributes, href, role: 'menuitem', tabIndex: -1, className: classes, onClick: () => menu?.close(false), children: body })}</>;
+    return <>{renderUixLink(renderLink, { ...attributes, ...keys.aria, href, role: 'menuitem', tabIndex: -1, className: classes, onClick: () => menu?.close(false), children: body })}</>;
   }
   return (
     <button
       {...attributes}
+      {...keys.aria}
       type="button"
       role="menuitem"
       tabIndex={-1}
@@ -224,7 +246,7 @@ export function MenuItem({ children, onSelect, href, renderLink, icon, shortcut,
 interface CheckableItemProps extends MenuItemAttributes {
   children?: ReactNode;
   icon?: ReactNode;
-  shortcut?: ReactNode;
+  shortcut?: KeyShortcut | ReactNode;
   disabled?: boolean;
   className?: string;
 }
@@ -234,9 +256,11 @@ function CheckableItem({
   role, checked, onToggle, closeOnSelect, children, icon, shortcut, disabled, className, ...rest
 }: CheckableItemProps & { role: 'menuitemradio' | 'menuitemcheckbox'; checked: boolean; onToggle: () => void; closeOnSelect: boolean }) {
   const menu = useContext(MenuContext);
+  const keys = useRowShortcut(shortcut);
   return (
     <button
       {...itemAttributes(rest)}
+      {...keys.aria}
       type="button"
       role={role}
       aria-checked={checked}
@@ -259,7 +283,7 @@ function CheckableItem({
       <span className="uix-menu__check" aria-hidden="true">{checked && <CheckIcon />}</span>
       {icon != null && <span className="uix-menu__icon" aria-hidden="true">{icon}</span>}
       <span className="uix-menu__text">{children}</span>
-      {shortcut != null && <span className="uix-menu__shortcut">{shortcut}</span>}
+      {keys.node}
     </button>
   );
 }
@@ -299,7 +323,8 @@ export interface MenuItemRadioProps extends MenuItemAttributes {
   closeOnSelect?: boolean;
   children?: ReactNode;
   icon?: ReactNode;
-  shortcut?: ReactNode;
+  /** Key names (`['Shift', 'W']`) or a node; see `MenuItemProps.shortcut`. */
+  shortcut?: KeyShortcut | ReactNode;
   disabled?: boolean;
   className?: string;
 }
@@ -325,7 +350,8 @@ export interface MenuItemCheckboxProps extends MenuItemAttributes {
   closeOnSelect?: boolean;
   children?: ReactNode;
   icon?: ReactNode;
-  shortcut?: ReactNode;
+  /** Key names (`['Shift', 'W']`) or a node; see `MenuItemProps.shortcut`. */
+  shortcut?: KeyShortcut | ReactNode;
   disabled?: boolean;
   className?: string;
 }
