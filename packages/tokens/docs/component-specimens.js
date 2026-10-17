@@ -142,7 +142,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "description-list": {
     "route": "examples-overlays",
-    "selector": ".uix-dl"
+    "selector": ".uix-dl",
+    "parts": [".uix-dl", "[data-dl-narrow-example]"]
   },
   "status-pill": {
     "route": "examples-data-display",

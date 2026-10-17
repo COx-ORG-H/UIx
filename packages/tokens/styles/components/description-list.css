@@ -1,7 +1,29 @@
 /* uix description / key-value list — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--uix-space-3) var(--uix-space-6); }
+  /* The list is its own inline-size container, so it stacks by ITS width, not the viewport's
+     (HAR-2032): a list in a phone card, a 320 px side rail or a narrow column gets the same
+     treatment. Inline-size containment replaces the list's content width with
+     contain-intrinsic-inline-size, both where a box is sized by its content (a flex row, a
+     max-content popover) and where a parent sizes from its children's minimum (a grid with
+     auto tracks). 0 would collapse the list in a flex row; a wide value would push a phone
+     page sideways. 12rem is neither: it fits a card on a 280 px screen, and a list in a flex
+     row is 12rem wide (stacked) unless you size it (`flex: 1`, a width). */
+  .uix-dl {
+    display: grid; grid-template-columns: max-content 1fr; gap: var(--uix-space-3) var(--uix-space-6);
+    container: uix-dl / inline-size; contain-intrinsic-inline-size: 12rem; min-width: 0;
+  }
   .uix-dl dt { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   /* min-width:0 + anywhere: a long unbroken value (URL, id, hash) wraps instead of widening the grid (HAR-1353) */
   .uix-dl dd { color: var(--uix-text); font-size: var(--uix-text-body); margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+  /* Narrow: each label sits above its value and both take the full width, so a long label
+     ("Neue Tickets pro Person und Stunde") can no longer squeeze the value to a letter per
+     line or push it off a 320 px screen (TENSOR HAR-1651). The label is pulled toward its own
+     value, so the gap inside a pair (4 px) is smaller than the gap between pairs (12 px). */
+  /* Pairs may sit in display:contents <div>s, which HTML allows. The pull assumes the default
+     12 px row gap: shrink the list's row-gap below 8 px and a stacked label touches its value. */
+  @container uix-dl (max-width: 22rem) {
+    .uix-dl > :is(dt, dd), .uix-dl > div > :is(dt, dd) { grid-column: 1 / -1; }
+    .uix-dl > dt, .uix-dl > div > dt { margin-bottom: calc(-1 * var(--uix-space-2)); overflow-wrap: anywhere; }
+  }
 }
