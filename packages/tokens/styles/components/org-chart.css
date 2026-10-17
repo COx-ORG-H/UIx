@@ -16,7 +16,8 @@
     --org-chart-spread: var(--uix-space-3);      /* room between neighbouring subtrees */
     --org-chart-indent: var(--uix-space-6);      /* stacked rows and the list layout */
     --org-chart-tick: calc(var(--uix-space-3) + 22px); /* card padding + half the 44px avatar: where a tick meets a card */
-    --org-chart-line: var(--uix-border-strong);
+    /* The lines carry the reporting relationship: 3:1 against the frame in both themes (WCAG 1.4.11). */
+    --org-chart-line: var(--uix-neutral-solid);
     container: uix-org-chart / inline-size;
     display: flex; flex-direction: column; gap: var(--uix-space-2); min-width: 0;
   }
@@ -96,8 +97,11 @@
     border-color: var(--uix-accent); box-shadow: 0 0 0 1px var(--uix-accent);
     background: color-mix(in srgb, var(--uix-accent) 7%, var(--uix-surface));
   }
+  /* The ring is drawn at 2 px on screen whatever the zoom. */
   .uix-org-chart__item:focus-visible > .uix-org-chart__node,
-  .uix-org-chart__item:focus-visible > .uix-org-chart__status { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-org-chart__item:focus-visible > .uix-org-chart__status {
+    outline: calc(2px / var(--org-chart-zoom, 1)) solid var(--uix-ring); outline-offset: calc(2px / var(--org-chart-zoom, 1));
+  }
   .uix-org-chart__node .uix-avatar { margin-top: 0; }
   .uix-org-chart__body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: var(--uix-space-1); }
   .uix-org-chart__desc { display: flex; flex-direction: column; gap: var(--uix-space-1); min-width: 0; }
@@ -119,7 +123,7 @@
      where the connector to the reports leaves. */
   .uix-org-chart__toggle {
     position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%);
-    display: inline-flex; align-items: center; gap: var(--uix-space-1); min-height: 22px;
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--uix-space-1); min-height: 24px; min-width: 24px;
     padding: 0 var(--uix-space-2); border: 1px solid var(--org-chart-line); border-radius: var(--uix-radius-pill);
     background: var(--uix-surface); color: var(--uix-text-muted); font: inherit; font-size: var(--uix-text-meta);
     font-variant-numeric: tabular-nums; cursor: pointer; z-index: var(--uix-z-raised);
@@ -144,7 +148,9 @@
     .uix-org-chart__toolbar { display: none; }
     .uix-org-chart__viewport { --org-chart-layout: list; max-height: none; overflow: visible; padding: 0; border: 0; background: none; cursor: auto; }
     .uix-org-chart__canvas { display: block; width: auto; min-width: 0; }
-    .uix-org-chart__tree { zoom: 1; }
+    .uix-org-chart__tree { --org-chart-zoom: 1; zoom: 1; }
+    /* Past the fourth level the indent stops growing, so deep names keep their room at 320 px. */
+    .uix-org-chart__group .uix-org-chart__group .uix-org-chart__group .uix-org-chart__group { --org-chart-indent: var(--uix-space-3); }
     .uix-org-chart__tree, .uix-org-chart__group, .uix-org-chart__group[data-stack] { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: auto; }
     .uix-org-chart__item, .uix-org-chart__tree > .uix-org-chart__item { align-items: stretch; padding: 0; }
     .uix-org-chart__tree > .uix-org-chart__item + .uix-org-chart__item { margin-top: var(--uix-space-2); }
@@ -170,8 +176,16 @@
       top: calc(var(--uix-space-2) + var(--org-chart-tick)); border-left: 0; border-top: 1px solid var(--org-chart-line);
     }
     .uix-org-chart__group > .uix-org-chart__item:last-child::after { border-top: 1px solid var(--org-chart-line); }
-    /* The report count moves to the end of the row. */
+    /* The report count moves to the end of the row; on a touch screen it is a full-size target. */
     .uix-org-chart__toggle { position: static; transform: none; align-self: center; flex: none; }
-    .uix-org-chart__status { margin-top: var(--uix-space-2); align-self: flex-start; }
+    .uix-org-chart__status { align-self: flex-start; }
+    /* A loading or error row is shorter than a card: its tick meets the row's middle. */
+    .uix-org-chart__group > .uix-org-chart__item--status::after { top: calc(var(--uix-space-2) + var(--uix-space-3)); }
+    .uix-org-chart__group > .uix-org-chart__item--status:last-child::before { height: calc(var(--uix-space-2) + var(--uix-space-3)); }
+  }
+  @container uix-org-chart (max-width: 47.99rem) {
+    @media (pointer: coarse) {
+      .uix-org-chart__toggle { min-height: 44px; min-width: 44px; }
+    }
   }
 }

@@ -85,12 +85,14 @@ test('renders a WAI-ARIA tree of person cards with one tab stop', () => {
   assert.equal(t.item('cio').getAttribute('aria-setsize'), '2');
   assert.equal(t.item('cfo').getAttribute('aria-posinset'), '2');
   assert.equal(t.item('cfo').getAttribute('aria-expanded'), null, 'no reports, no aria-expanded');
-  assert.equal(t.item('cio').getAttribute('aria-expanded'), 'false', 'reports not loaded yet are still expandable');
+  assert.equal(t.item('cio').getAttribute('aria-expanded'), null, 'a count with nothing to load them is not expandable');
+  t.render({ loadChildren: () => new Promise(() => {}) });
+  assert.equal(t.item('cio').getAttribute('aria-expanded'), 'false', 'with a loader, reports not loaded yet are expandable');
   // the name labels the item; title, team, location and the report count describe it
   const name = document.getElementById(ceo.getAttribute('aria-labelledby'));
   assert.equal(name.textContent, 'Mira Kovač');
   const desc = document.getElementById(ceo.getAttribute('aria-describedby')).textContent;
-  for (const part of ['Vorstandsvorsitzende', 'Vorstand', 'München', '2 direct reports']) assert.ok(desc.includes(part), desc);
+  for (const part of ['Vorstandsvorsitzende', 'Vorstand', 'München', '2 direct reports', 'Sie']) assert.ok(desc.includes(part), desc);
   assert.equal(ceo.querySelector('.uix-org-chart__badge').textContent, 'Sie');
   assert.equal(ceo.querySelector('.uix-avatar').textContent, 'MK');
   assert.equal(t.item('cfo').querySelector('.uix-avatar img').getAttribute('src'), '/avatars/3.png');
@@ -99,6 +101,20 @@ test('renders a WAI-ARIA tree of person cards with one tab stop', () => {
   assert.equal(t.item('cfo').querySelector('.uix-org-chart__toggle'), null);
   assert.equal(t.host.querySelectorAll('[role="treeitem"][tabindex="0"]').length, 1);
   assert.equal(ceo.getAttribute('tabindex'), '0');
+  t.unmount();
+});
+
+test('the tree has a translatable default name, and ids with spaces stay valid references', () => {
+  const t = mount({ nodes: [{ id: 'a b"c', name: 'Space Person', title: 'Lead' }], 'aria-label': undefined });
+  assert.equal(t.host.querySelector('[role="tree"]').getAttribute('aria-label'), 'Org chart');
+  const item = t.host.querySelector('[role="treeitem"]');
+  for (const attr of ['aria-labelledby', 'aria-describedby']) {
+    const ref = item.getAttribute(attr);
+    assert.match(ref, /^[A-Za-z0-9_-]+$/, `${attr} is one IDREF`);
+    assert.ok(document.getElementById(ref), `${attr} resolves`);
+  }
+  t.render({ labels: { chart: 'Organigramm' } });
+  assert.equal(t.host.querySelector('[role="tree"]').getAttribute('aria-label'), 'Organigramm');
   t.unmount();
 });
 
@@ -121,6 +137,7 @@ test('loads reports on expand, stacks a row without reports, and retries a faile
   const failed = t.item('cio::uix-error');
   assert.ok(failed, 'the failed load is a row the keyboard reaches');
   assert.ok(failed.textContent.includes('Could not load.'));
+  assert.equal(t.host.querySelector('[role="status"]').textContent, 'Could not load.', 'the failure is announced');
   t.key('cio::uix-error', 'Enter');
   assert.equal(d.calls.length, 3, 'Enter on the error row retries');
   assert.ok(t.item('cio::uix-loading'));
@@ -132,6 +149,42 @@ test('loads reports on expand, stacks a row without reports, and retries a faile
   t.click(t.item('cio').querySelector('.uix-org-chart__toggle'));
   t.click(t.item('cio').querySelector('.uix-org-chart__toggle'));
   assert.equal(d.calls.length, 3);
+  t.unmount();
+});
+
+test('focus that waits on the loading row moves on to the first report; the known count wins', async () => {
+  const d = deferred();
+  const t = mount({ loadChildren: d.load, nodes: [{ ...CEO, reportCount: 5 }] });
+  act(() => t.item('ceo').focus());
+  t.key('ceo', 'ArrowDown');
+  t.key('ceo', 'ArrowDown');
+  assert.equal(document.activeElement, t.item('ceo::uix-loading'));
+  await act(async () => { d.calls[0].resolve(HEADS); });
+  assert.equal(document.activeElement, t.item('cio'), 'the first report, as the key asked');
+  const desc = document.getElementById(t.item('ceo').getAttribute('aria-describedby')).textContent;
+  assert.ok(desc.includes('2 direct reports'), 'the reports that arrived, not the stale count of 5');
+  assert.equal(t.item('ceo').querySelector('.uix-org-chart__toggle').textContent, '2');
+  t.unmount();
+});
+
+test("a click in the space of a manager's subtree opens nobody", () => {
+  const selected = [];
+  const t = mount({ nodes: [{ ...CEO, children: HEADS }], defaultExpanded: new Set(['ceo']), onSelect: (id) => selected.push(id) });
+  t.click(t.item('ceo').querySelector(':scope > [role="group"]'));
+  t.click(t.item('ceo'));
+  assert.deepEqual(selected, []);
+  t.click(t.item('ceo').querySelector(':scope > .uix-org-chart__node'));
+  assert.deepEqual(selected, ['ceo']);
+  t.unmount();
+});
+
+test('a controlled collapse while a report has focus gives focus to the nearest open manager', () => {
+  const t = mount({ nodes: [{ ...CEO, children: [{ ...HEADS[0], children: STAFF }, HEADS[1]] }], expanded: new Set(['ceo', 'cio']) });
+  act(() => t.item('s2').focus());
+  t.key('s2', 'ArrowUp');
+  assert.equal(document.activeElement, t.item('s1'));
+  t.render({ expanded: new Set(['ceo']) });
+  assert.equal(document.activeElement, t.item('cio'));
   t.unmount();
 });
 
@@ -198,6 +251,14 @@ test('chart keyboard: ↓ expands then enters, ↑ manager, ← → same level, 
   assert.equal(focused(), 'o1');
   t.key('o1', 'ArrowLeft');
   assert.equal(focused(), 's3', '← reaches the last person of the neighbouring team');
+  t.key('s3', 'ArrowUp');
+  t.key('s2', 'ArrowUp');
+  assert.equal(focused(), 's1');
+  t.key('s1', 'ArrowRight');
+  assert.equal(focused(), 'o1', '→ from a stacked column jumps past it, to the next column');
+  t.key('o1', 'ArrowLeft');
+  t.key('s3', 'p');
+  assert.equal(focused(), 'o1', 'a letter jumps to the next person whose name starts with it (Paul Kern)');
   t.key('s3', 'Home');
   assert.equal(focused(), 'ceo');
   t.key('ceo', 'End');
@@ -239,14 +300,18 @@ test('revealId waits for the lazily loaded reporting line, then focuses the pers
 
 test('zoom: the buttons step, reset and stop at the ends', () => {
   const t = mount({ defaultZoom: 0.3 });
-  const tree = t.host.querySelector('[role="tree"]');
-  const zoom = () => tree.style.getPropertyValue('--org-chart-zoom');
+  const canvas = t.host.querySelector('.uix-org-chart__canvas');
+  const zoom = () => canvas.style.getPropertyValue('--org-chart-zoom');
   const button = (name) => [...t.host.querySelectorAll('.uix-org-chart__toolbar button')].find((b) => b.getAttribute('aria-label')?.startsWith(name) || b.textContent === name);
-  assert.equal(t.host.querySelector('[role="toolbar"]').getAttribute('aria-label'), 'Zoom');
+  assert.equal(t.host.querySelector('.uix-org-chart__toolbar').getAttribute('role'), 'group');
+  assert.equal(t.host.querySelector('.uix-org-chart__toolbar').getAttribute('aria-label'), 'Zoom');
   assert.equal(zoom(), '0.3');
   t.click(button('Zoom out'));
   assert.equal(zoom(), '0.25');
-  assert.equal(button('Zoom out').disabled, true);
+  assert.equal(button('Zoom out').getAttribute('aria-disabled'), 'true', 'aria-disabled: the focused button keeps focus');
+  assert.equal(button('Zoom out').disabled, false);
+  t.click(button('Zoom out'));
+  assert.equal(zoom(), '0.25');
   t.click(button('Zoom in'));
   assert.equal(zoom(), '0.33');
   const reset = button('33%');
@@ -261,14 +326,14 @@ test('zoom: the buttons step, reset and stop at the ends', () => {
 
 test('every word is translatable, by prop or by UixLabelsProvider', async () => {
   const de = {
-    loading: 'Wird geladen…', error: 'Konnte nicht geladen werden.', retry: 'Erneut versuchen',
+    chart: 'Organigramm', loading: 'Wird geladen…', error: 'Konnte nicht geladen werden.', retry: 'Erneut versuchen',
     reportsOne: '{count} direkt unterstellte Person', reportsMany: '{count} direkt unterstellte Personen',
     expand: 'Mitarbeitende zeigen', collapse: 'Mitarbeitende ausblenden', toolbar: 'Zoom',
     zoomIn: 'Vergrößern', zoomOut: 'Verkleinern', fit: 'Einpassen', zoomLevel: '{percent} %',
     resetZoom: '{percent}, auf 100 % zurücksetzen',
   };
-  const html = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { orgChart: de } }, h(ui.OrgChart, { nodes: [CEO, { ...HEADS[0], reportCount: 1 }], 'aria-label': 'Organigramm' })));
-  for (const word of ['2 direkt unterstellte Personen', '1 direkt unterstellte Person', 'Mitarbeitende zeigen', 'Vergrößern', 'Verkleinern', 'Einpassen', '100 %', '100 %, auf 100 % zurücksetzen']) {
+  const html = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { orgChart: de } }, h(ui.OrgChart, { nodes: [CEO, { ...HEADS[0], reportCount: 1 }], loadChildren: () => new Promise(() => {}) })));
+  for (const word of ['aria-label="Organigramm"', '2 direkt unterstellte Personen', '1 direkt unterstellte Person', 'Mitarbeitende zeigen', 'Vergrößern', 'Verkleinern', 'Einpassen', '100 %', '100 %, auf 100 % zurücksetzen']) {
     assert.ok(html.includes(word), `renders "${word}"`);
   }
   for (const english of ['direct report', 'Show reports', 'Zoom in', 'Fit<']) assert.ok(!html.includes(english), `no "${english}"`);

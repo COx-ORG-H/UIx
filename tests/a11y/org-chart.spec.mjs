@@ -92,7 +92,7 @@ test('zoom: steps scale the chart, Fit fits its width into the frame, the level 
   const room = () => page.locator('#wide .uix-org-chart__viewport').evaluate((v) => { const cs = getComputedStyle(v); return v.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); });
   const full = await width();
   expect(full, 'seven teams are wider than the frame').toBeGreaterThan(await room());
-  const toolbar = page.getByRole('toolbar', { name: 'Zoom' }).first();
+  const toolbar = page.getByRole('group', { name: 'Zoom' }).first();
   await toolbar.getByRole('button', { name: 'Zoom out' }).click();
   await expect(toolbar.getByRole('button', { name: /^90%/ })).toBeVisible();
   expect(Math.abs((await width()) / full - 0.9)).toBeLessThanOrEqual(0.01);
@@ -104,6 +104,59 @@ test('zoom: steps scale the chart, Fit fits its width into the frame, the level 
   await expect(toolbar.getByRole('button', { name: /^100%/ })).toBeVisible();
   expect(Math.abs((await width()) - full)).toBeLessThanOrEqual(1);
   console.log(`[org-chart] ${testInfo.project.name} zoom ${JSON.stringify({ full: Math.round(full), fitted: Math.round(fitted), room: Math.round(await room()) })}`);
+});
+
+test('opening a manager keeps their card where it was; a zoom keeps the point at the centre', async ({ page }) => {
+  await expand(page, '#wide', 'cio');
+  const viewport = page.locator('#wide .uix-org-chart__viewport');
+  // scroll so the Finance head sits off-centre, then open them: their two teams widen the row
+  await viewport.evaluate((v) => { v.scrollLeft = Math.max(0, v.scrollWidth - v.clientWidth); });
+  const before = await card(page, '#wide', 'cfo').boundingBox();
+  const widthBefore = await page.locator('#wide .uix-org-chart__tree').evaluate((t) => t.getBoundingClientRect().width);
+  await expand(page, '#wide', 'cfo');
+  expect(await page.locator('#wide .uix-org-chart__tree').evaluate((t) => t.getBoundingClientRect().width)).toBeGreaterThan(widthBefore + 50);
+  const after = await card(page, '#wide', 'cfo').boundingBox();
+  expect(Math.abs(after.x - before.x), 'the opened card stays put sideways').toBeLessThanOrEqual(2);
+  expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(2);
+  // zoom: the chart point under the frame's centre stays there
+  const centre = () => viewport.evaluate((v) => {
+    const frame = v.getBoundingClientRect();
+    const x = frame.left + v.clientWidth / 2;
+    const y = frame.top + v.clientHeight / 2;
+    const tree = v.querySelector('.uix-org-chart__tree').getBoundingClientRect();
+    return { fx: (x - tree.left) / tree.width, fy: (y - tree.top) / tree.height };
+  });
+  const c0 = await centre();
+  await page.getByRole('group', { name: 'Zoom' }).first().getByRole('button', { name: 'Zoom out' }).click();
+  await expect(page.getByRole('group', { name: 'Zoom' }).first().getByRole('button', { name: /^90%/ })).toBeVisible();
+  const c1 = await centre();
+  expect(Math.abs(c1.fx - c0.fx)).toBeLessThanOrEqual(0.02);
+});
+
+test('a press in the space between reports opens nobody', async ({ page }) => {
+  await expand(page, '#wide', 'cio');
+  const group = item(page, '#wide', 'ceo').locator(':scope > [role="group"]');
+  const box = await group.boundingBox();
+  // the row's top edge, between the connector and the reports' cards
+  await page.mouse.click(box.x + 4, box.y + 4);
+  await expect(page.getByTestId('wide-selected')).toHaveText('');
+});
+
+test('the connector lines and the report count stand out from the frame (3:1)', async ({ page }) => {
+  const ratio = await page.locator('#wide .uix-org-chart__viewport').evaluate((v) => {
+    const parse = (c) => { const m = c.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 }; };
+    const lum = ({ r, g, b }) => {
+      const ch = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+      return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+    };
+    const bg = parse(getComputedStyle(v).backgroundColor);
+    const toggle = v.querySelector('.uix-org-chart__toggle');
+    const line = parse(getComputedStyle(toggle).borderTopColor);
+    const mixed = { r: line.r * line.a + bg.r * (1 - line.a), g: line.g * line.a + bg.g * (1 - line.a), b: line.b * line.a + bg.b * (1 - line.a) };
+    const [hi, lo] = [lum(mixed), lum(bg)].sort((a, b) => b - a);
+    return (hi + 0.05) / (lo + 0.05);
+  });
+  expect(ratio).toBeGreaterThanOrEqual(3);
 });
 
 test('dragging the background pans the frame', async ({ page }) => {
@@ -122,7 +175,7 @@ test('dragging the background pans the frame', async ({ page }) => {
 });
 
 test('keyboard: one tab stop, arrows follow the picture, Enter opens, Space toggles, a visible ring', async ({ page }) => {
-  await page.getByRole('toolbar', { name: 'Zoom' }).first().getByRole('button', { name: 'Fit' }).focus();
+  await page.getByRole('group', { name: 'Zoom' }).first().getByRole('button', { name: 'Fit' }).focus();
   await page.keyboard.press('Tab');
   expect(await focusedId(page)).toBe('ceo');
   const ring = await card(page, '#wide', 'ceo').evaluate((el) => getComputedStyle(el).outlineStyle);

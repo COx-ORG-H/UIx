@@ -3353,6 +3353,7 @@ export const orgChartInitials: (name: string) => string;
 
 // @public
 export interface OrgChartLabels {
+    chart: string;
     collapse: string;
     error: string;
     expand: string;

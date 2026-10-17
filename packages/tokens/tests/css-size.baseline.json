@@ -272,9 +272,9 @@
       "brotli": 386
     },
     "styles/components/org-chart.css": {
-      "raw": 12870,
-      "gzip": 3052,
-      "brotli": 2582
+      "raw": 13926,
+      "gzip": 3351,
+      "brotli": 2818
     },
     "styles/components/page-header.css": {
       "raw": 1367,
@@ -482,9 +482,9 @@
       "brotli": 1846
     },
     "styles/forced-colors.css": {
-      "raw": 6500,
-      "gzip": 1968,
-      "brotli": 1653
+      "raw": 6711,
+      "gzip": 2048,
+      "brotli": 1721
     },
     "styles/motion.css": {
       "raw": 1853,
