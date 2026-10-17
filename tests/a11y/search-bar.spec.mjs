@@ -122,6 +122,12 @@ test('at 320 px the portal search fits, with a German label, and nothing scrolls
     return [...root.querySelectorAll('input, .uix-btn')].every((el) => { const b = el.getBoundingClientRect(); return b.left >= r.left - 0.5 && b.right <= r.right + 0.5 && b.width > 40; });
   });
   expect(fits).toBe(true);
+  // An md field keeps its button beside it; the lg portal field may stack its button below.
+  const row = await page.locator('#toolbar').evaluate((root) => {
+    const [input, button] = [root.querySelector('input').getBoundingClientRect(), root.querySelector('.uix-btn').getBoundingClientRect()];
+    return { sameRow: Math.abs(input.top - button.top) < 8, inside: button.right <= root.getBoundingClientRect().right + 0.5 };
+  });
+  expect(row).toEqual({ sameRow: true, inside: true });
 });
 
 test('axe: every search field, with text', async ({ page }, testInfo) => {

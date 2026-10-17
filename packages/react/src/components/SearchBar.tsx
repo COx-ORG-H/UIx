@@ -1,10 +1,11 @@
 "use client";
 
-import { useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, Ref } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { Button } from './Button.js';
+import type { ButtonVariant } from './Button.js';
 
 /** The words of a `SearchBar` (HAR-2030); the field's own name is its `label`. */
 export interface SearchBarLabels {
@@ -36,6 +37,16 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
   size?: 'md' | 'lg';
   /** A submit button after the field, with `labels.submit`. Enter submits either way. */
   submitButton?: boolean;
+  /** The submit button's variant. Default `primary`. */
+  submitVariant?: ButtonVariant;
+  /**
+   * A `search` landmark named by `label` (default). Pass `false` for a field that filters a list
+   * or a table, where one more landmark per toolbar would crowd the landmark list. Never wrap it
+   * in a `<search>` or `role="search"` of your own: that nests two landmarks.
+   */
+  landmark?: boolean;
+  /** Ids of elements that describe the field (a hint, a result count), as its `aria-describedby`. */
+  inputDescribedBy?: string;
   /** The words. Default: `UixLabelsProvider` `searchBar`, then English. */
   labels?: Partial<SearchBarLabels>;
   /** The field's `name`. */
@@ -67,11 +78,14 @@ const ClearIcon = () => (
  * `search` landmark named by `label`.
  *
  * It is not a `<form>`, so it can sit inside one: Enter calls `onSubmit` and never submits a
- * surrounding form. For suggestions while typing, use `SearchSuggest`.
+ * surrounding form. For suggestions while typing, use `SearchSuggest`. Inside an overlay that
+ * takes Escape itself before the field (a ConfirmPopover, the table's view menu), Escape closes
+ * the overlay rather than clearing the text.
  */
 export function SearchBar({
   label, value: valueProp, defaultValue = '', onValueChange, onSubmit, onClear, placeholder, size = 'md',
-  submitButton = false, labels: labelsProp, name, inputId, inputRef, autoFocus, disabled, className, ...props
+  submitButton = false, submitVariant = 'primary', landmark = true, inputDescribedBy, labels: labelsProp, name, inputId, inputRef,
+  autoFocus, disabled, className, ...props
 }: SearchBarProps) {
   const uixLabels = useUixLabels();
   const labels: SearchBarLabels = { ...DEFAULT_SEARCH_BAR_LABELS, ...uixLabels.searchBar, ...labelsProp };
@@ -82,8 +96,9 @@ export function SearchBar({
   const [own, setOwn] = useState(defaultValue);
   const value = valueProp ?? own;
 
+  // Kept in step even while controlled, so a switch to uncontrolled keeps the last text.
   const change = (next: string) => {
-    if (valueProp === undefined) setOwn(next);
+    setOwn(next);
     onValueChange?.(next);
   };
   const clear = () => {
@@ -92,7 +107,10 @@ export function SearchBar({
     onClear?.();
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+    // An IME's Enter or Escape commits or cancels the composition. Safari sends the committing
+    // Enter after compositionend with keyCode 229, so isComposing alone is not enough.
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Enter') {
       // Never the surrounding form's submit.
       event.preventDefault();
       onSubmit?.(value);
@@ -103,16 +121,17 @@ export function SearchBar({
       clear();
     }
   };
-  const setField = (node: HTMLInputElement | null) => {
+  // Stable, so a consumer's callback ref is not detached and reattached on every keystroke.
+  const setField = useCallback((node: HTMLInputElement | null) => {
     field.current = node;
     if (typeof inputRef === 'function') inputRef(node);
     else if (inputRef) (inputRef as { current: HTMLInputElement | null }).current = node;
-  };
+  }, [inputRef]);
 
   return (
     <div
-      role="search"
-      aria-labelledby={labelId}
+      role={landmark ? 'search' : undefined}
+      aria-labelledby={landmark ? labelId : undefined}
       className={cx('uix-searchbar', size === 'md' && 'uix-searchbar--md', className)}
       {...props}
     >
@@ -129,6 +148,7 @@ export function SearchBar({
           placeholder={placeholder}
           autoComplete="off"
           enterKeyHint="search"
+          aria-describedby={inputDescribedBy}
           autoFocus={autoFocus}
           disabled={disabled}
           onChange={(event) => change(event.currentTarget.value)}
@@ -148,7 +168,7 @@ export function SearchBar({
         )}
       </div>
       {submitButton && (
-        <Button type="button" variant="primary" size={size === 'lg' ? 'lg' : 'md'} disabled={disabled} onClick={() => onSubmit?.(value)}>
+        <Button type="button" variant={submitVariant} size={size === 'lg' ? 'lg' : 'md'} disabled={disabled} onClick={() => onSubmit?.(value)}>
           {labels.submit}
         </Button>
       )}

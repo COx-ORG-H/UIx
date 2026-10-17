@@ -3,7 +3,8 @@
  *   - #portal: size lg with a submit button (the public portal search, 44 px);
  *   - #header: size md, no button (a header or toolbar search), uncontrolled;
  *   - #in-form: inside a <form> whose submit must never fire from the field's Enter;
- *   - #in-drawer: inside a Drawer, where Escape on an empty field closes the drawer. */
+ *   - #in-drawer: inside a Drawer, where Escape on an empty field closes the drawer;
+ *   - #toolbar: size md with a submit button, which stays beside the field on a phone. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, Drawer, SearchBar } from '../../packages/react/src/index.js';
@@ -37,6 +38,10 @@ function Harness() {
       <section>
         <h2>Kopfzeile</h2>
         <SearchBar id="header" label="Portal durchsuchen" placeholder="Suchen" onSubmit={(value) => log('header').submits.push(value)} />
+      </section>
+      <section>
+        <h2>Werkzeugleiste</h2>
+        <SearchBar id="toolbar" label="Vorlagen filtern" landmark={false} submitButton submitVariant="outline" labels={{ submit: 'Filtern' }} />
       </section>
       <section>
         <h2>In einem Formular</h2>

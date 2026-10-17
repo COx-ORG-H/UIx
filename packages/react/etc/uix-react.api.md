@@ -4943,11 +4943,13 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     defaultValue?: string;
     // (undocumented)
     disabled?: boolean;
+    inputDescribedBy?: string;
     inputId?: string;
     // (undocumented)
     inputRef?: Ref<HTMLInputElement>;
     label: string;
     labels?: Partial<SearchBarLabels>;
+    landmark?: boolean;
     name?: string;
     onClear?: () => void;
     onSubmit?: (value: string) => void;
@@ -4956,6 +4958,7 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     placeholder?: string;
     size?: 'md' | 'lg';
     submitButton?: boolean;
+    submitVariant?: ButtonVariant;
     value?: string;
 }
 

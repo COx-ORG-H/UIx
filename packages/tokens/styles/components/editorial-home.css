@@ -27,8 +27,8 @@
      empty auto track would still leave the column gap). The clear button sits inside the
      field's end, and the browser's own search clear (×) is not drawn beside it. */
   .uix-searchbar > :only-child { grid-column: 1 / -1; }
-  .uix-searchbar__wrap > .uix-input::-webkit-search-cancel-button,
-  .uix-searchbar__wrap > .uix-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+  .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input::-webkit-search-cancel-button,
+  .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
   .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input { padding-right: 44px; }
   .uix-searchbar__clear {
     position: absolute; top: 50%; right: 8px; z-index: var(--uix-z-raised); transform: translateY(-50%);
@@ -203,6 +203,8 @@
     .uix-notice__position { flex: 1; }
 
     .uix-searchbar { grid-template-columns: 1fr; }
+    /* a header or toolbar field keeps its button beside it */
+    .uix-searchbar--md { grid-template-columns: minmax(0, 1fr) auto; }
 
     .uix-page-intro { margin-top: var(--uix-space-5); gap: var(--uix-space-5); }
     /* auto-fit already narrows the tracks; only the touch target grows here. Re-pinning a

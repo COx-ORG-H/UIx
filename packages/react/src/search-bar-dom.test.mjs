@@ -121,6 +121,51 @@ test('Enter inside a form does not submit the form', () => {
   unmount();
 });
 
+test('an IME Enter (Safari: keyCode 229 after compositionend) neither submits nor clears', () => {
+  const submits = [];
+  const { host, unmount } = mount(h(ui.SearchBar, { label: 'Search', defaultValue: 'にほん', onSubmit: (v) => submits.push(v) }));
+  const input = host.querySelector('input');
+  const ime = new window.KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, bubbles: true, cancelable: true });
+  act(() => { input.dispatchEvent(ime); });
+  assert.deepEqual(submits, []);
+  assert.equal(ime.defaultPrevented, false);
+  unmount();
+});
+
+test('landmark={false}, inputDescribedBy, submitVariant; a callback inputRef is attached once', () => {
+  const calls = [];
+  const ref = (node) => calls.push(node ? 'node' : 'null');
+  function Field() {
+    const [value, setValue] = useState('');
+    return h(ui.SearchBar, { label: 'Filter rows', landmark: false, inputDescribedBy: 'count', submitButton: true, submitVariant: 'outline', inputRef: ref, value, onValueChange: setValue });
+  }
+  const { host, unmount } = mount(h(Field));
+  const root = host.firstElementChild;
+  assert.equal(root.hasAttribute('role'), false);
+  assert.equal(root.hasAttribute('aria-labelledby'), false);
+  assert.equal(host.querySelector('input').getAttribute('aria-describedby'), 'count');
+  assert.ok(host.querySelector('.uix-btn').classList.contains('uix-btn--outline'));
+  type(host.querySelector('input'), 'a');
+  type(host.querySelector('input'), 'ab');
+  assert.deepEqual(calls, ['node'], 'no detach and reattach per keystroke');
+  unmount();
+});
+
+test('controlled to uncontrolled keeps the last text', () => {
+  function Switch() {
+    const [value, setValue] = useState('');
+    const [controlled, setControlled] = useState(true);
+    globalThis.__release = () => setControlled(false);
+    return h(ui.SearchBar, { label: 'Search', defaultValue: 'initial', value: controlled ? value : undefined, onValueChange: setValue });
+  }
+  const { host, unmount } = mount(h(Switch));
+  type(host.querySelector('input'), 'typed');
+  act(() => globalThis.__release());
+  assert.equal(host.querySelector('input').value, 'typed');
+  delete globalThis.__release;
+  unmount();
+});
+
 test('words: UixLabelsProvider searchBar, an explicit labels prop wins; disabled shows no clear', () => {
   const tree = h(ui.UixLabelsProvider, { labels: { searchBar: { clear: 'Suche leeren', submit: 'Suchen' } } },
     h(ui.SearchBar, { label: 'Suche', submitButton: true, defaultValue: 'a', labels: { submit: 'Los' } }));
