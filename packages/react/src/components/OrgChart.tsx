@@ -131,13 +131,25 @@ export const orgChartZoomStep = (zoom: number, dir: 1 | -1): number => {
   return [...ZOOM_STEPS].reverse().find((s) => s < zoom - 0.001) ?? MIN_ZOOM;
 };
 
-/** "Mira Kovač" → "MK"; one word → its first letter. */
+/**
+ * "Mira Kovač" → "MK"; one word → its first letter. Bracketed parts ("(extern)", "[TST]") and
+ * a title ending in a full stop ("Dr.", "Prof.") are not part of the initials, so
+ * "Dr. Anna-Maria Koenig" → "AK" and "Tenant Admin (dev)" → "TA". The first letter of a word
+ * is its first letter in any script, never a quote or a hyphen in front of it.
+ */
 export const orgChartInitials = (name: string): string => {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return '';
-  const first = words[0] as string;
-  const last = words.length > 1 ? (words[words.length - 1] as string) : '';
-  return (Array.from(first)[0] ?? '').concat(last ? (Array.from(last)[0] ?? '') : '').toUpperCase();
+  const letterOf = (word: string) => /\p{L}/u.exec(word)?.[0] ?? '';
+  const words = name
+    .replace(/[([{][^)\]}]*[)\]}]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter((word) => letterOf(word) !== '');
+  const named = words.length > 1 ? words.filter((word, i) => !(word.endsWith('.') && i < words.length - 1)) : words;
+  const parts = named.length > 0 ? named : words;
+  if (parts.length === 0) return '';
+  const first = letterOf(parts[0] as string);
+  const last = parts.length > 1 ? letterOf(parts[parts.length - 1] as string) : '';
+  return `${first}${last}`.toLocaleUpperCase();
 };
 
 /* A person waiting for their reports gets one synthetic row in their place, so the arrow keys
