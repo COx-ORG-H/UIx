@@ -325,6 +325,9 @@ export type { KanbanProps, KanbanColumnProps, KanbanCardProps, KanbanMoveDirecti
 export { Tree, DEFAULT_TREE_LABELS } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps, TreeLabels } from './components/Tree.js';
 
+export { OrgChart, DEFAULT_ORG_CHART_LABELS, orgChartInitials, orgChartZoomStep } from './components/OrgChart.js';
+export type { OrgChartProps, OrgChartNode, OrgChartLabels } from './components/OrgChart.js';
+
 // Tree model — framework-agnostic flatten + keyboard-nav helpers (drive plain + virtualized Tree)
 export { flattenTree, treeNav } from './tree-model.js';
 export type { FlatNode, TreeLike, TreeNavAction } from './tree-model.js';

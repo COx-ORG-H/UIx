@@ -15,6 +15,7 @@ import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
 import type { EntityPickerLabels } from './components/EntityPicker.js';
 import type { TreeLabels } from './components/Tree.js';
+import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
@@ -45,6 +46,8 @@ export interface UixLabels {
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;
   tree?: Partial<TreeLabels>;
+  /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */
+  orgChart?: Partial<OrgChartLabels>;
   inlineEdit?: Partial<InlineEditLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;

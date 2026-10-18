@@ -1367,6 +1367,9 @@ export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
 export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels;
 
 // @public (undocumented)
+export const DEFAULT_ORG_CHART_LABELS: OrgChartLabels;
+
+// @public (undocumented)
 export const DEFAULT_PAGINATION_LABELS: PaginationLabels;
 
 // @public
@@ -3458,6 +3461,69 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+
+// @public
+export function OrgChart(input: OrgChartProps): react.JSX.Element;
+
+// @public
+export const orgChartInitials: (name: string) => string;
+
+// @public
+export interface OrgChartLabels {
+    chart: string;
+    collapse: string;
+    error: string;
+    expand: string;
+    fit: string;
+    loading: string;
+    reportsMany: string;
+    reportsOne: string;
+    resetZoom: string;
+    retry: string;
+    toolbar: string;
+    // (undocumented)
+    zoomIn: string;
+    zoomLevel: string;
+    // (undocumented)
+    zoomOut: string;
+}
+
+// @public
+export interface OrgChartNode {
+    badge?: string;
+    children?: OrgChartNode[];
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    initials?: string;
+    // (undocumented)
+    location?: string;
+    name: string;
+    photo?: string;
+    reportCount?: number;
+    // (undocumented)
+    team?: string;
+    title?: string;
+}
+
+// @public (undocumented)
+export interface OrgChartProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onSelect' | 'onToggle' | 'children'> {
+    defaultExpanded?: ReadonlySet<string>;
+    defaultZoom?: number | 'fit';
+    expanded?: ReadonlySet<string>;
+    labels?: Partial<OrgChartLabels>;
+    loadChildren?: (node: OrgChartNode) => Promise<OrgChartNode[]>;
+    nodes: OrgChartNode[];
+    onReveal?: (id: string) => void;
+    onSelect?: (id: string) => void;
+    onToggle?: (id: string, expanded: boolean) => void;
+    revealId?: string | null;
+    selected?: string | null;
+    stackLeaves?: boolean;
+}
+
+// @public
+export const orgChartZoomStep: (zoom: number, dir: 1 | -1) => number;
 
 // @public (undocumented)
 export interface PackedLanes {
@@ -6274,6 +6340,7 @@ export interface UixLabels {
     modal?: {
         close?: string;
     };
+    orgChart?: Partial<OrgChartLabels>;
     pagination?: Partial<PaginationLabels>;
     // (undocumented)
     peek?: {

@@ -762,6 +762,30 @@ The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure
 - Refs reach the grid and item `<div>`s, and other props pass through. For an element you render yourself (a drag-and-drop library's sortable node, a server template), use `dashboardGridClassName(columns, gap)` and `dashboardGridItemClassName(span)`.
 - Plain HTML: `.uix-dashboard-grid` with `--cols-N` / `--{sm,md,lg,xl}-cols-N` and `--gap-sm|lg`, items `.uix-dashboard-grid__item` with `--span-2` / `--full`. Every direct child of the grid is a cell.
 
+### OrgChart
+
+Reporting lines as a top-down chart (HAR-1807; TENSOR's People directory). Managers sit above their direct reports, joined by lines; each person is a card with photo or initials, name, title, team, location and the number of direct reports, which is also the control that shows or hides them. Data fetching stays in the product: the chart asks for a person's reports through `loadChildren` the first time they are opened.
+
+```tsx
+<OrgChart
+  aria-label="Organisation"
+  nodes={roots}                       // OrgChartNode[]: { id, name, title?, team?, location?, photo?, badge?, reportCount?, children? }
+  loadChildren={(node) => api.reports(node.id)}
+  expanded={expanded} onToggle={(id, open) => setExpanded(next(expanded, id, open))}
+  selected={personId} onSelect={openPerson}
+  revealId={searchHit} onReveal={() => setSearchHit(null)}
+/>
+```
+
+- **Lazy reports:** a person with `reportCount > 0` and no `children` is expandable; on expand a loading row stands in for the reports, and a rejection shows an error row whose Enter, Space or click retries. Results are kept for the life of the chart. Expanding through a controlled `expanded` (a whole reporting line at once) loads each level as it appears.
+- **Search:** set `expanded` to the person's reporting line and `revealId` to the person; once their card exists the chart scrolls it into view, focuses it and calls `onReveal`. Set `revealId` back to null there, so the same person can be revealed again.
+- **Stacked rows:** a row of people without reports of their own is a column under their manager (`stackLeaves`, default true), so a team of eight takes one card width.
+- **Frame:** zoom out / in (25–150 %, around the frame's centre), Fit (the chart's width into the frame), the level button resets to 100 %; drag the background to pan (mouse and pen; touch scrolls). Opening a manager keeps their card where it was while their reports appear. Until the reader moves the view, a chart wider than the frame stays centred on its top, and `defaultZoom={'fit'}` keeps fitting as reports load. `--org-chart-max-height` (default 70vh) caps the frame. The root is an inline-size container: give it a width (a block, or `flex: 1` in a flex row).
+- **Narrow:** below 48rem of the chart's **own** width (a container query: a side panel counts as much as a phone) it is an indented vertical tree with guide lines; the toolbar steps aside.
+- **Keyboard:** one tab stop (roving tabindex). In the chart ↑ is the manager, ↓ the first report (↓ on a closed manager opens them first), ← → the previous and next person on the same level across teams; in a stacked column ↑ ↓ move along it. In the list the tree keys apply (↑ ↓ visible order, → open / first report, ← close / manager). From a stacked column, ← → go to the next column. Home / End, a letter jumps to the next visible person whose name starts with it, Enter opens the person (`onSelect`), Space shows or hides their reports. A failed load is announced.
+- **Words:** `labels` or `UixLabelsProvider` `orgChart` (`DEFAULT_ORG_CHART_LABELS`): the tree's default name (`chart`), loading, error, retry, `reportsOne` / `reportsMany` (`{count}`), expand / collapse, the toolbar and its buttons, `zoomLevel` / `resetZoom` (`{percent}`).
+- Plain HTML: `.uix-org-chart` > `__toolbar`, `__viewport` > `__canvas` > `ul.__tree[role=tree]` > `li.__item[role=treeitem]` > `.__node` (+ `ul.__group[role=group]`, `[data-stack]` for a column). The ARIA state on the item drives the styling.
+
 ### Select draws its own list
 
 `Select` (HAR-1572) no longer opens the browser's dropdown. It is the WAI-ARIA select-only combobox: a `<button role="combobox">` trigger and a UIx-drawn listbox in the top layer (a bottom sheet on phones). The props did not change, so existing call sites keep working:
