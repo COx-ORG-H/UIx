@@ -38,7 +38,7 @@ const measure = (page, section) => page.locator(`${section} .uix-dashboard-canva
   const tracks = cs.gridTemplateColumns.split(' ').map(parseFloat).filter(Number.isFinite);
   const colGap = (box.width - tracks.reduce((sum, t) => sum + t, 0)) / (tracks.length - 1);
   const rowGap = parseFloat(cs.rowGap);
-  // The row height token, in px (narrow canvases have auto rows, so read the token itself).
+  // The row height token, in px.
   const token = cs.getPropertyValue('--uix-dashboard-canvas-row').trim();
   const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
   const row = token.endsWith('rem') ? parseFloat(token) * rootPx : parseFloat(token);
@@ -130,8 +130,15 @@ for (const viewport of [1280, 375, 320]) {
     const order = Object.entries(m.items).sort((a, b) => a[1].y - b[1].y).map(([id]) => id);
     expect(order).toEqual(['needs-you', 'updates', 'sla', 'trend']);
     for (const box of Object.values(m.items)) expect(Math.abs(box.w - m.width)).toBeLessThanOrEqual(1);
-    // Each keeps the height of its rows on the wide canvas.
-    expect(Math.round(m.items['needs-you'].h)).toBeGreaterThanOrEqual(Math.round(3 * m.row + 2 * m.rowGap) - 1);
+    // Each keeps the height of its rows on the wide canvas, and starts below the one before it.
+    const rows = { 'needs-you': 3, updates: 3, sla: 2, trend: 2 };
+    for (const [id, h] of Object.entries(rows)) {
+      expect(Math.abs(m.items[id].h - (h * m.row + (h - 1) * m.rowGap)), `${id} h`).toBeLessThanOrEqual(1);
+    }
+    for (let i = 1; i < order.length; i += 1) {
+      const above = m.items[order[i - 1]];
+      expect(m.items[order[i]].y, `${order[i]} below ${order[i - 1]}`).toBeGreaterThanOrEqual(above.y + above.h + m.rowGap - 1);
+    }
     expect(m.overflow).toBeLessThanOrEqual(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
     if (viewport < 600) {

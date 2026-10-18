@@ -85,14 +85,15 @@
   }
 
   /* ── Narrow: one column in reading order ───────────────────────────────────── */
+  /* A container query styles the container's descendants, never the container itself, so the
+     canvas keeps its fixed rows here: each item spans as many of them as it has on the wide
+     canvas, which makes it exactly as tall as there, gaps included, and the next item starts
+     below it. */
   @container uix-dashboard-canvas (max-width: 35.99rem) {
-    .uix-dashboard-canvas { grid-auto-rows: auto; }
     .uix-dashboard-canvas__item {
       grid-column: 1 / -1;
-      grid-row: auto;
+      grid-row: auto / span var(--uix-dashboard-canvas-h, 1);
       order: var(--uix-dashboard-canvas-order, 0);
-      /* As tall as its rows on the wide canvas, gaps included. */
-      min-block-size: calc(var(--uix-dashboard-canvas-h, 1) * var(--uix-dashboard-canvas-row) + (var(--uix-dashboard-canvas-h, 1) - 1) * var(--dashboard-canvas-gap));
     }
     .uix-dashboard-canvas__handle,
     .uix-dashboard-canvas__preview { display: none; }
