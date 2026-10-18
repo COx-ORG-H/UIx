@@ -4,9 +4,9 @@ import { useId, useRef } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
-import { backdropDismiss } from '../hooks/backdropDismiss.js';
+import { isBackdropClick } from '../hooks/backdropDismiss.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
-import type { DiscardPromptLabels } from './DiscardPrompt.js';
+import type { DialogCloseEvent, DiscardPromptLabels } from './DiscardPrompt.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -18,7 +18,11 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
   closeLabel?: string;
   open: boolean;
-  onClose?: () => void;
+  /**
+   * Close the drawer. Gets the click that asked (the close button, the backdrop, a `DialogClose`,
+   * "Discard"); nothing when the browser closed it (Escape, `<form method="dialog">`).
+   */
+  onClose?: (event?: DialogCloseEvent) => void;
   /**
    * The drawer holds input that is not saved (HAR-2029), e.g. react-hook-form's
    * `formState.isDirty`. Escape, the close button, a backdrop click and a `DialogClose` then open
@@ -66,7 +70,10 @@ export function Drawer({
       className={cx('uix-drawer', side !== 'end' && `uix-drawer--${side}`, className)}
       aria-labelledby={title ? titleId : undefined}
       {...rest}
-      onClick={backdropDismiss(onClose && (() => guard.requestClose()), onClick, dismissOnBackdrop)}
+      onClick={(event) => {
+        onClick?.(event);
+        if (dismissOnBackdrop && onClose && isBackdropClick(event)) guard.requestClose(null, event);
+      }}
       onKeyDown={(event) => { onKeyDown?.(event); guard.onKeyDown(event); }}
     >
       {guard.provide(
@@ -83,7 +90,7 @@ export function Drawer({
                   ref={closeRef}
                   type="button"
                   className="uix-drawer__close"
-                  onClick={() => guard.requestClose()}
+                  onClick={(event) => guard.requestClose(event.currentTarget, event)}
                   aria-label={closeLabel}
                   aria-disabled={pending || undefined}
                 >

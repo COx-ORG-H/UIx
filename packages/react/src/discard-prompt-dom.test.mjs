@@ -248,3 +248,32 @@ test('words: UixLabelsProvider discardPrompt, an explicit discardLabels wins', (
   assert.ok(!/Discard|Keep editing/.test(text));
   unmount();
 });
+
+// 2.43.1 — the close request's click reaches `onClose`, as the close button passed it before
+// 2.42: TENSOR's ConfirmAction tells a person's close (an event) from the browser closing the
+// dialog (no argument) and stopped cancelling on the ×. Escape on a clean dialog stays native.
+for (const [name, Component, closeName] of [['Drawer', () => ui.Drawer, 'Close drawer'], ['Modal', () => ui.Modal, 'Close dialog']]) {
+  test(`${name}: onClose gets the click from the ×, a DialogClose and "Discard"`, () => {
+    const got = [];
+    const onClose = (event) => { got.push(event?.type ?? 'none'); };
+    const form = (props) => h(Component(), { open: true, title: 'Edit', footer: h(ui.DialogClose, null, 'Cancel'), onClose, ...props }, h('input'));
+    const { host, rerender, unmount } = mount(form());
+    click(buttonNamed(host, closeName));
+    click(buttonNamed(host, 'Cancel'));
+    assert.deepEqual(got, ['click', 'click']);
+    rerender(form({ dirty: true }));
+    click(buttonNamed(host, closeName));
+    assert.equal(asking(host), true);
+    click(buttonNamed(host, 'Discard'));
+    assert.deepEqual(got, ['click', 'click', 'click'], '"Discard" hands its click on');
+    unmount();
+  });
+}
+
+test('Drawer: a backdrop click hands its event to onClose', () => {
+  const got = [];
+  const { dialog, unmount } = mount(h(ui.Drawer, { open: true, title: 'Edit', onClose: (event) => got.push(event?.type ?? 'none') }, h('input')));
+  click(dialog, { clientX: 10, clientY: 10 });
+  assert.deepEqual(got, ['click']);
+  unmount();
+});
