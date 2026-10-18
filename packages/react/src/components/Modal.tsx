@@ -5,7 +5,7 @@ import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
-import type { DiscardPromptLabels } from './DiscardPrompt.js';
+import type { DialogCloseEvent, DiscardPromptLabels } from './DiscardPrompt.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -15,7 +15,11 @@ const CloseIcon = () => (
 
 export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
   open: boolean;
-  onClose?: () => void;
+  /**
+   * Close the dialog. Gets the click that asked (the close button, a `DialogClose`, "Discard");
+   * nothing when the browser closed it (Escape, `<form method="dialog">`).
+   */
+  onClose?: (event?: DialogCloseEvent) => void;
   /**
    * The dialog holds input that is not saved (HAR-2029). Escape, the close button and a
    * `DialogClose` then open an anchored "Discard changes?" step with focus on "Keep editing"
@@ -66,7 +70,7 @@ export function Modal({
                   ref={closeRef}
                   type="button"
                   className="uix-dialog__close"
-                  onClick={() => guard.requestClose()}
+                  onClick={(event) => guard.requestClose(event.currentTarget, event)}
                   aria-label={closeLabel}
                   aria-disabled={pending || undefined}
                 >

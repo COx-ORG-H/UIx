@@ -345,6 +345,16 @@ test('every word is translatable, by prop or by UixLabelsProvider', async () => 
   assert.equal(ui.orgChartInitials('Ana-Maria  de la Cruz'), 'AC');
   assert.equal(ui.orgChartInitials('Élodie'), 'É');
   assert.equal(ui.orgChartInitials('  '), '');
+  // 2.43.1: brackets and titles are not initials
+  assert.equal(ui.orgChartInitials('Tenant Admin (dev)'), 'TA');
+  assert.equal(ui.orgChartInitials('[TST] Sofia Rossi (acme)'), 'SR');
+  assert.equal(ui.orgChartInitials('Dr. Anna-Maria Koenig'), 'AK');
+  assert.equal(ui.orgChartInitials('Prof. Dr. Jörg Weiß'), 'JW');
+  assert.equal(ui.orgChartInitials('Hans J. Meier'), 'HM');
+  assert.equal(ui.orgChartInitials('Dr. Koenig'), 'K');
+  assert.equal(ui.orgChartInitials('"Lena" Vogt'), 'LV');
+  assert.equal(ui.orgChartInitials('Elif Yılmaz'), 'EY');
+  assert.equal(ui.orgChartInitials('(extern)'), '');
 });
 
 test('renders on the server', () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, forwardRef, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import type { FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react';
+import type { FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { Button } from './Button.js';
 import type { ButtonProps } from './Button.js';
 import { Popover } from './Popover.js';
@@ -35,9 +35,16 @@ const DEFAULT_DISCARD_LABELS: DiscardPromptLabels = {
   discard: 'Discard',
 };
 
+/**
+ * What asked a `Drawer` or `Modal` to close, handed to its `onClose`: the click on the close
+ * button, a `DialogClose`, the drawer's backdrop or "Discard". Absent when the browser closed the
+ * dialog itself (Escape on a clean dialog, a `<form method="dialog">`), as before 2.42.
+ */
+export type DialogCloseEvent = SyntheticEvent | Event;
+
 interface DialogCloseContextValue {
   /** Close the way the × does: at once when clean, ask when dirty, nothing while pending. */
-  requestClose: (anchor?: HTMLElement | null) => void;
+  requestClose: (anchor?: HTMLElement | null, event?: DialogCloseEvent) => void;
   pending: boolean;
 }
 
@@ -65,7 +72,7 @@ export const DialogClose = forwardRef<HTMLButtonElement, DialogCloseProps>(({ on
         if (pending) { event.preventDefault(); return; }
         onClick?.(event);
         if (event.defaultPrevented) return;
-        dialog?.requestClose(event.currentTarget);
+        dialog?.requestClose(event.currentTarget, event);
       }}
     />
   );
@@ -81,7 +88,7 @@ interface Prompt {
 
 export interface GuardedDialogOptions {
   open: boolean;
-  onClose?: () => void;
+  onClose?: (event?: DialogCloseEvent) => void;
   dirty?: boolean;
   pending?: boolean;
   labels?: Partial<DiscardPromptLabels>;
@@ -116,10 +123,13 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
   }, []);
   const guarded = () => !!latest.current.onClose && (latest.current.dirty || latest.current.pending);
 
-  const requestClose = useCallback((anchor?: HTMLElement | null) => {
+  const requestClose = useCallback((anchor?: HTMLElement | null, event?: DialogCloseEvent) => {
     const { open: isOpen, onClose: close, dirty: isDirty, pending: isPending, prompt: asking } = latest.current;
     if (!isOpen || !close || isPending || asking) return;
-    if (!isDirty) { close(); return; }
+    // The click goes along, as the close button's own onClick passed it before 2.42: a consumer
+    // tells a person's close request from the browser closing the dialog by it (TENSOR's
+    // ConfirmAction ignores an argument-less close while the dialog is still open).
+    if (!isDirty) { close(event); return; }
     const active = document.activeElement;
     setPrompt({ anchor: anchor ?? closeRef.current, returnTo: active instanceof HTMLElement ? active : null });
   }, [closeRef, setPrompt]);
@@ -159,9 +169,9 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
   });
   dialogRef.current = ref.current;
 
-  const discard = useCallback(() => {
+  const discard = useCallback((event?: DialogCloseEvent) => {
     setPrompt(null);
-    latest.current.onClose?.();
+    latest.current.onClose?.(event);
   }, [setPrompt]);
 
   // A fresh open never starts in the step, and the question is moot once the input is clean or
@@ -267,7 +277,7 @@ interface DiscardPromptProps {
   onKeepEditing: () => void;
   /** Focus left the step for another control: close it and leave focus there. */
   onDismiss: () => void;
-  onDiscard: () => void;
+  onDiscard: (event?: DialogCloseEvent) => void;
 }
 
 /** The anchored step: the look of `Popconfirm`, focus on "Keep editing", Escape keeps editing. */

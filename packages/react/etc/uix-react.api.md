@@ -19,6 +19,7 @@ import { ReactNode } from 'react';
 import { Ref } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
+import { SyntheticEvent } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
 import { TextareaHTMLAttributes } from 'react';
@@ -1412,6 +1413,9 @@ export interface DetailPageTab {
 // @public
 export const DialogClose: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
 
+// @public
+export type DialogCloseEvent = SyntheticEvent | Event;
+
 // @public (undocumented)
 export type DialogCloseProps = ButtonProps;
 
@@ -1558,8 +1562,7 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
     dismissOnBackdrop?: boolean;
     // (undocumented)
     footer?: ReactNode;
-    // (undocumented)
-    onClose?: () => void;
+    onClose?: (event?: DialogCloseEvent) => void;
     // (undocumented)
     open: boolean;
     pending?: boolean;
@@ -3167,8 +3170,7 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     discardLabels?: Partial<DiscardPromptLabels>;
     // (undocumented)
     footer?: ReactNode;
-    // (undocumented)
-    onClose?: () => void;
+    onClose?: (event?: DialogCloseEvent) => void;
     // (undocumented)
     open: boolean;
     pending?: boolean;
