@@ -94,6 +94,19 @@ export type {
   DashboardGridProps, DashboardGridItemProps, DashboardGridColumns, DashboardGridColumnCount,
   DashboardGridBreakpoint, DashboardGridSpan, DashboardGridGap,
 } from './components/DashboardGrid.js';
+// TENSOR HAR-1823 — DashboardCanvas: a free 12-column dashboard layout with drag, resize and a keyboard path
+export { DashboardCanvas, DEFAULT_DASHBOARD_CANVAS_LABELS } from './components/DashboardCanvas.js';
+export type {
+  DashboardCanvasProps, DashboardCanvasLabels, DashboardCanvasGap, DashboardCanvasChange,
+} from './components/DashboardCanvas.js';
+export {
+  DASHBOARD_CANVAS_COLUMNS, canvasItemLimits, clampCanvasItem, canvasItemsOverlap, canvasReadingOrder,
+  canvasRowCount, normalizeCanvas, placeCanvasItem, canvasMoveTarget, canvasResizeTarget,
+  moveCanvasItem, resizeCanvasItem, compactCanvas,
+} from './dashboard-canvas-model.js';
+export type {
+  DashboardCanvasItem, DashboardCanvasDirection, DashboardCanvasResize, DashboardCanvasPlacement,
+} from './dashboard-canvas-model.js';
 
 export { Breadcrumbs } from './components/Breadcrumbs.js';
 export type { BreadcrumbsProps, BreadcrumbItem } from './components/Breadcrumbs.js';

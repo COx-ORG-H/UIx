@@ -111,6 +111,11 @@
       "gzip": 262,
       "brotli": 211
     },
+    "styles/components/dashboard-canvas.css": {
+      "raw": 5140,
+      "gzip": 1587,
+      "brotli": 1354
+    },
     "styles/components/dashboard-grid.css": {
       "raw": 5174,
       "gzip": 1397,

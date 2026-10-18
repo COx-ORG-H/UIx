@@ -47,6 +47,7 @@
 @import "components/states.css";
 @import "components/chart.css";
 @import "components/dashboard-grid.css";
+@import "components/dashboard-canvas.css";
 @import "components/insight-card.css";
 @import "components/alert.css";
 @import "components/toast.css";
