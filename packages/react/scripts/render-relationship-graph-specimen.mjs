@@ -57,7 +57,8 @@ const edges = [
   edge('san', 'db', 'depends_on'),
 ];
 
-const props = { layout: 'layered', rootId: 'svc', nodes, edges, height: '28rem', selectedId: 'db' };
+// TENSOR HAR-2501 — the map controls: an icon cluster in the corner, every item in view.
+const props = { layout: 'layered', rootId: 'svc', nodes, edges, height: '28rem', selectedId: 'db', controls: 'compact', initialView: 'fit' };
 let markup = renderToStaticMarkup(h(RelationshipGraph, props));
 
 const layout = layoutLayeredGraph(nodes, edges, { rootId: 'svc' });
@@ -71,7 +72,7 @@ for (const item of layout.items) {
   markup = markup.replace(`data-node-id="${item.id}"`, () => `data-node-id="${item.id}" ${attrs}`);
 }
 
-const section = `${START}<h3>Layered layout</h3><p>Columns are hops from the root. Shared nodes are drawn once, the storage → database back edge is a marked cycle, the 12-host fan-out is a cluster, and supplier edges keep their labels. Tab into the map, then use the arrow keys.</p><div data-layered-specimen>${markup}</div>${END}`;
+const section = `${START}<h3>Layered layout</h3><p>Columns are hops from the root. Shared nodes are drawn once, the storage → database back edge is a marked cycle, the 12-host fan-out is a cluster, and supplier edges keep their labels. The icon cluster in the corner zooms, fits, resets and opens full screen; drag to move, Ctrl/⌘ + scroll to zoom. Tab into the map, then use the arrow keys.</p><div data-layered-specimen>${markup}</div>${END}`;
 
 const source = readFileSync(target, 'utf8');
 const pages = source.match(/"slug": "examples-relationship-graph"[\s\S]*?"html": ("(?:[^"\\]|\\.)*")/);

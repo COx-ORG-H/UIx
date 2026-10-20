@@ -4097,11 +4097,14 @@ export interface RelationshipGraphLabels {
     // (undocumented)
     emptyTitle: string;
     // (undocumented)
+    exitFullscreen: string;
+    // (undocumented)
     expandCluster: string;
     // (undocumented)
     expandNeighbors: string;
     // (undocumented)
     fit: string;
+    fullscreen: string;
     // (undocumented)
     graph: string;
     // (undocumented)
@@ -4118,6 +4121,7 @@ export interface RelationshipGraphLabels {
     listHeading: string;
     // (undocumented)
     loading: string;
+    navigationHint: (modifier: string) => string;
     // (undocumented)
     noConnections: string;
     // (undocumented)
@@ -4144,6 +4148,7 @@ export interface RelationshipGraphLabels {
     roleDescription: string;
     // (undocumented)
     up: string;
+    viewportKeyboardHint: string;
     // (undocumented)
     zoomIn: string;
     // (undocumented)
@@ -4186,6 +4191,7 @@ export interface RelationshipGraphProps {
     conflictedEdgeIds?: ReadonlySet<string>;
     // (undocumented)
     conflictedNodeIds?: ReadonlySet<string>;
+    controls?: 'full' | 'compact' | 'none';
     // (undocumented)
     density?: 'compact' | 'standard';
     dimmedNodeIds?: ReadonlySet<string>;
@@ -4201,6 +4207,7 @@ export interface RelationshipGraphProps {
     highlightedEdgeIds?: ReadonlySet<string>;
     // (undocumented)
     highlightedNodeIds?: ReadonlySet<string>;
+    initialView?: 'readable' | 'fit';
     // (undocumented)
     labels?: Partial<RelationshipGraphLabels>;
     layout?: 'radial' | 'layered';

@@ -49,6 +49,15 @@ Add an opt-in `layout="layered"` mode. It stays internal and adds no dependency,
 - **Equivalent list.** `showList` defaults to `true` in both modes. A consumer may turn it off **only** when it renders a complete equivalent (every node, its relations and state) in the same labelled region.
 - **CSS.** New elements under `.uix-relationship-graph--layered` use existing tokens only; there is no contract change. The viewport height is `--uix-relationship-graph-height`.
 
+### Amendment 2026-10-20 — map controls (TENSOR HAR-2501)
+
+TENSOR's CI impact view showed the eight bordered text buttons and a 75 % first view in a short canvas, and an operator review called it amateur: four of the eight buttons pan, a keyboard fallback promoted to the primary control, and most CIs started off screen. Two opt-in props now cover what a map is expected to do, and the defaults above are unchanged:
+
+- `controls="compact"`: an icon cluster in the map's corner with tooltips; the map itself is focusable and takes arrows (pan), `+`/`−` (zoom), `0` (reset) and Escape (leave full screen); a full-screen state that covers the page. A plain wheel still scrolls the page — the rule above holds — but now says how to zoom; only in full screen, where there is no page to scroll, does a plain wheel zoom. `controls="none"` hides every control (TENSOR HAR-1639 item 4).
+- `initialView="fit"`: every item in view on load, down to the 40 % minimum. The 75 % floor stays the default because it protects reading; `fit` is for a consumer that also offers full screen, where the same view is readable.
+
+The minimap stays out (see Revisit triggers).
+
 ## Alternatives considered
 
 - **`@xyflow/react` 12.11.6** (59.9 KB min+gz, bundlephobia 2026-09-16). Strong pan/zoom and HTML nodes. However, its keyboard model moves nodes with arrow keys (an editing interaction, wrong for a read-only map), it needs a separate layout engine, and it would be UIx's first runtime graph dependency.

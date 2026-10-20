@@ -192,6 +192,12 @@ Rules the component cannot enforce for you:
 - **Dimming is not a signal.** `dimmedNodeIds` must be accompanied by text that says what is dimmed and why.
 - **Localise everything.** Every visible and announced string comes from `labels`; the English defaults live in `DEFAULT_RELATIONSHIP_GRAPH_LABELS`.
 
+**Map controls (`controls`, `initialView`).** The default `controls="full"` is the labelled toolbar above the map. `controls="compact"` is the map convention: an icon cluster in the map's bottom-right corner (zoom in, zoom out, fit, reset, full screen, each with a tooltip) and the zoom level beside it; drag pans, Ctrl/⌘ + wheel or a pinch zooms around the pointer, and a plain wheel keeps scrolling the page and briefly says how to zoom. The map itself takes keyboard focus: arrow keys pan (on an item they still move between items), `+` and `−` zoom, `0` resets and Escape leaves full screen. Full screen covers the page (the page behind does not scroll) and there a plain wheel zooms. `controls="none"` draws nothing; drag, pinch and Ctrl/⌘ + wheel still work. `initialView="fit"` opens with every item in view (down to the 40 % minimum) instead of the 75 % readability floor, and Reset returns to it.
+
+```tsx
+<RelationshipGraph layout="layered" controls="compact" initialView="fit" height="clamp(24rem, 62vh, 44rem)" … />
+```
+
 Radial mode still shortens long labels to fit its ring, but every node carries its full label in a `<title>`, and the `viewBox` grows to contain every node, including nodes you position yourself. Use `layout="layered"` when the labels matter more than the ring.
 
 ### Conversations, save feedback and kept tabs

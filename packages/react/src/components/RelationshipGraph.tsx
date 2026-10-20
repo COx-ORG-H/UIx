@@ -33,6 +33,13 @@ export interface RelationshipGraphLabels {
   fit: string;
   reset: string;
   zoomLevel: (percent: number) => string;
+  /** Layered `controls="compact"`: the full-screen toggle, entering and leaving. */
+  fullscreen: string;
+  exitFullscreen: string;
+  /** Layered `controls="compact"`: how to move the map; `modifier` is "Ctrl" or "⌘" for the viewer's platform. */
+  navigationHint: (modifier: string) => string;
+  /** Layered `controls="compact"`: the map's keyboard, read when the map itself has focus. */
+  viewportKeyboardHint: string;
   bounded: (shown: number, omitted: number) => string;
   graphSummary: (nodes: number, edges: number) => string;
   relationship: string;
@@ -75,6 +82,10 @@ export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels = {
   fit: 'Fit',
   reset: 'Reset view',
   zoomLevel: (percent) => `Zoom ${percent}%`,
+  fullscreen: 'Full screen',
+  exitFullscreen: 'Exit full screen',
+  navigationHint: (modifier) => `Drag to move · ${modifier} + scroll to zoom`,
+  viewportKeyboardHint: 'Arrow keys move the map, + and − zoom, 0 resets the view, Escape leaves full screen.',
   bounded: (shown, omitted) => `Showing ${shown} nodes; ${omitted} outside this bounded neighborhood.`,
   graphSummary: (nodes, edges) => `Graph with ${nodes} nodes and ${edges} relationships`,
   relationship: 'Relationship',
@@ -140,6 +151,21 @@ export interface RelationshipGraphProps {
   showList?: boolean;
   /** Layered: CSS length for the viewport height. */
   height?: string;
+  /**
+   * Layered: the view controls. `full` (default) is the labelled toolbar above the map.
+   * `compact` is a map-style icon cluster in the map's corner (+, −, fit, reset, full screen,
+   * each with a tooltip) with the zoom level beside it; the map itself takes keyboard focus
+   * (arrows pan, + and − zoom, 0 resets, Escape leaves full screen), a plain wheel scrolls the
+   * page and says how to zoom, and Ctrl/⌘ + wheel or a pinch zooms (a plain wheel too, in full
+   * screen). `none` draws no controls: drag, pinch and Ctrl/⌘ + wheel still work.
+   */
+  controls?: 'full' | 'compact' | 'none';
+  /**
+   * Layered: the first view, and the one Reset returns to. `readable` (default) fits the graph
+   * but never below 75 %, starting at the top-left when it does not fit (ADR-0003). `fit` shows
+   * every item on load, down to the minimum zoom.
+   */
+  initialView?: 'readable' | 'fit';
   /** Layered: controlled roving focus. */
   focusId?: string;
   onFocusChange?: (id: string) => void;

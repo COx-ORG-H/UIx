@@ -548,6 +548,7 @@ export const ICON_GLYPHS: {
     readonly 'rows-4': IconNode;
     readonly save: IconNode;
     readonly scale: IconNode;
+    readonly scan: IconNode;
     readonly 'scan-barcode': IconNode;
     readonly 'scan-search': IconNode;
     readonly 'scroll-text': IconNode;
@@ -853,6 +854,9 @@ export const ScaleIcon: UixIcon;
 
 // @public (undocumented)
 export const ScanBarcodeIcon: UixIcon;
+
+// @public (undocumented)
+export const ScanIcon: UixIcon;
 
 // @public (undocumented)
 export const ScanSearchIcon: UixIcon;
