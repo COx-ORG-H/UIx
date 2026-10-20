@@ -133,6 +133,32 @@ Reconciling TENSOR's current `apps/web/lib/list-surfaces/column-widths.ts` onto 
 nearest tier — the quantization is deliberate (products stop hand-picking px). Because truncation is a cell
 class, the `<col>` sizes the column while `.uix-col--truncate` on the body `<td>`s clips the text.
 
+### Canvases — one interaction contract
+
+Every surface the reader pans or zooms (a relationship graph, a topology, an org chart, a map, a
+chart with zoom) behaves the same way, so nobody learns a canvas twice:
+
+- **Drag pans.** The cursor says so (`grab` / `grabbing`).
+- **Ctrl/⌘ + wheel, or a pinch, zooms at the cursor. A plain wheel scrolls the page**, and the
+  first plain wheel over the canvas shows a short hint saying which key zooms. In full screen the
+  page cannot scroll, so a plain wheel zooms there.
+- **One icon cluster** in a corner, each icon with a tooltip: zoom in, zoom out, fit, reset, full
+  screen (and leave full screen). Never a row of text buttons; never pan buttons on screen.
+- **Everything in view on load** (fit) when the content is larger than the canvas; never smaller
+  than a readable minimum.
+- **Full screen** fills the viewport, locks the page's scroll and leaves on Escape.
+- **Keyboard on the focused canvas:** arrows pan, + and − zoom, 0 resets, Escape leaves full
+  screen; the canvas's accessible description says so. These are shortcuts, not visible controls.
+- **The canvas takes the width it is given** and a viewport-relative height (for example
+  `clamp(22rem, 62vh, 44rem)`); a list or table of the same data sits below it, never beside it
+  in a narrow column.
+
+`RelationshipGraph` implements this with `controls="compact"` and `initialView="fit"` (2.45,
+ADR-0003 amendment; pinned by `src/relationship-graph-map-controls.test.mjs`). Other canvases
+move to it when they are next touched; until then the contract is prose for them. Why: TENSOR's
+CI dependency view shipped eight text buttons above a 22rem canvas and closed as done twice
+(TENSOR HAR-2501, HAR-2502).
+
 ## React component catalog (`@tensor_1/react`)
 
 Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pure presentation, zero app deps —
