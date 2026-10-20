@@ -144,8 +144,9 @@ chart with zoom) behaves the same way, so nobody learns a canvas twice:
   page cannot scroll, so a plain wheel zooms there.
 - **One icon cluster** in a corner, each icon with a tooltip: zoom in, zoom out, fit, reset, full
   screen (and leave full screen). Never a row of text buttons; never pan buttons on screen.
-- **Everything in view on load** (fit) when the content is larger than the canvas; never smaller
-  than a readable minimum.
+- **Everything in view on load when it fits at a readable size** (75 %); otherwise the canvas opens
+  on its focal node at that size and the fit icon shows everything. Text is never zoomed away to
+  make a large graph "fit" (120 nodes fitted into 734 px read at 47 %).
 - **Full screen** fills the viewport, locks the page's scroll and leaves on Escape.
 - **Keyboard on the focused canvas:** arrows pan, + and − zoom, 0 resets, Escape leaves full
   screen; the canvas's accessible description says so. These are shortcuts, not visible controls.
@@ -153,9 +154,9 @@ chart with zoom) behaves the same way, so nobody learns a canvas twice:
   `clamp(22rem, 62vh, 44rem)`); a list or table of the same data sits below it, never beside it
   in a narrow column.
 
-`RelationshipGraph` implements this with `controls="compact"` and `initialView="fit"` (2.45,
+`RelationshipGraph` implements this with `controls="compact"` and its default `initialView="readable"` (2.45,
 ADR-0003 amendment; pinned by `src/relationship-graph-map-controls.test.mjs`). Other canvases
-move to it when they are next touched; until then the contract is prose for them. Why: TENSOR's
+move to it when they are next touched (`initialView="fit"` stays for a small, known graph); until then the contract is prose for them. Why: TENSOR's
 CI dependency view shipped eight text buttons above a 22rem canvas and closed as done twice
 (TENSOR HAR-2501, HAR-2502).
 
