@@ -177,6 +177,7 @@ export const Rows3Icon = /* @__PURE__ */ createIcon('Rows3Icon', g.glyphRows3);
 export const Rows4Icon = /* @__PURE__ */ createIcon('Rows4Icon', g.glyphRows4);
 export const SaveIcon = /* @__PURE__ */ createIcon('SaveIcon', g.glyphSave);
 export const ScaleIcon = /* @__PURE__ */ createIcon('ScaleIcon', g.glyphScale);
+export const ScanIcon = /* @__PURE__ */ createIcon('ScanIcon', g.glyphScan);
 export const ScanBarcodeIcon = /* @__PURE__ */ createIcon('ScanBarcodeIcon', g.glyphScanBarcode);
 export const ScanSearchIcon = /* @__PURE__ */ createIcon('ScanSearchIcon', g.glyphScanSearch);
 export const ScrollTextIcon = /* @__PURE__ */ createIcon('ScrollTextIcon', g.glyphScrollText);

@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { boundRelationshipGraph, layeredNeighbor, layoutLayeredGraph } from '../relationship-graph-model.js';
 import type { LayeredItem, LayeredLayout, LayeredNavigationKey, RoutedEdge } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
+import { Maximize2Icon, Minimize2Icon, MinusIcon, PlusIcon, RotateCcwIcon, ScanIcon } from '../icons/components.js';
+import { useKbdPlatform } from './Kbd.js';
 import type { ResolvedRelationshipGraphProps } from './RelationshipGraph.js';
 import { EquivalentRelationshipList } from './RelationshipGraphList.js';
+import { Tooltip } from './Tooltip.js';
 
 const EMPTY_IDS: ReadonlySet<string> = new Set<string>();
 const MIN_ZOOM = 0.4;
@@ -16,6 +19,8 @@ const READABLE_ZOOM = 0.75;
 const ZOOM_STEP = 1.2;
 const PAN_STEP = 64;
 const FOCUS_MARGIN = 24;
+/** How long the "Ctrl + scroll to zoom" hint stays after a plain wheel over the map. */
+const HINT_MS = 1600;
 const NAV_KEYS: readonly string[] = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
 
 interface View { x: number; y: number; zoom: number }
@@ -46,9 +51,11 @@ export function LayeredRelationshipGraph({
   highlightedEdgeIds = EMPTY_IDS, conflictedEdgeIds = EMPTY_IDS, legend = [], className, labels,
   rootId, renderNode, nodeAriaLabel, renderCluster, clusterThreshold, expandedClusterIds,
   onToggleCluster, dimmedNodeIds = EMPTY_IDS, edgeLabels = 'auto', showList = true, height,
-  focusId, onFocusChange,
+  focusId, onFocusChange, controls = 'full', initialView: initialViewMode = 'readable',
 }: ResolvedRelationshipGraphProps) {
   const hintId = useId();
+  const viewportHintId = useId();
+  const compact = controls === 'compact';
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
   const [localExpanded, setLocalExpanded] = useState<ReadonlySet<string>>(EMPTY_IDS);
   const expanded = expandedClusterIds ?? localExpanded;
@@ -62,20 +69,36 @@ export function LayeredRelationshipGraph({
     [bounded, rootId, clusterThreshold, expanded, density],
   );
   const itemById = useMemo(() => new Map(layout.items.map((item) => [item.id, item])), [layout]);
+  // The first view, and the one Reset (and `0`) returns to.
+  const startView = useCallback(
+    (forLayout: LayeredLayout, forSize: Size): View =>
+      initialViewMode === 'fit' ? fitView(forLayout, forSize) : initialView(forLayout, forSize),
+    [initialViewMode],
+  );
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLButtonElement>());
+  const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   const [view, setView] = useState<View>({ x: 0, y: 0, zoom: 1 });
   const [animate, setAnimate] = useState(false);
   const [localFocus, setLocalFocus] = useState<string | undefined>(undefined);
   const [hoverId, setHoverId] = useState<string | undefined>(undefined);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [wheelHint, setWheelHint] = useState(false);
   const viewRef = useRef(view);
   viewRef.current = view;
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
+  const fullscreenRef = useRef(fullscreen);
+  fullscreenRef.current = fullscreen;
+  const compactRef = useRef(compact);
+  compactRef.current = compact;
   const pendingFocus = useRef<string | undefined>(undefined);
   const initialisedFor = useRef<string | undefined>(undefined);
+  const refitOnResize = useRef(false);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const modifier = useKbdPlatform() === 'mac' ? '⌘' : 'Ctrl';
 
   const rootItemId = layout.rootId !== undefined ? layout.itemOf[layout.rootId] : layout.items[0]?.id;
   const requestedFocus = focusId !== undefined ? (layout.itemOf[focusId] ?? focusId) : localFocus;
@@ -104,8 +127,27 @@ export function LayeredRelationshipGraph({
     const key = `${layout.rootId ?? ''}`;
     if (initialisedFor.current === key) return;
     initialisedFor.current = key;
-    setView(initialView(layout, size));
-  }, [layout, size]);
+    setView(startView(layout, size));
+  }, [layout, size, startView]);
+
+  // Entering or leaving full screen resizes the viewport: show the start view at the new size.
+  useEffect(() => {
+    if (!refitOnResize.current || size.width === 0) return;
+    refitOnResize.current = false;
+    setAnimate(false);
+    setView(startView(layoutRef.current, size));
+  }, [size, startView]);
+
+  // Full screen covers the page, so the page behind it must not scroll.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => { root.style.overflow = previous; };
+  }, [fullscreen]);
+
+  useEffect(() => () => clearTimeout(hintTimer.current), []);
 
   const moveView = useCallback((next: View, smooth: boolean) => {
     setAnimate(smooth);
@@ -165,12 +207,21 @@ export function LayeredRelationshipGraph({
     });
   }, [controlledKey, controlledTarget, controlledPresent, ensureVisible]);
 
-  // Ctrl/⌘ + wheel zooms around the pointer; a plain wheel scrolls the page.
+  // Ctrl/⌘ + wheel zooms around the pointer; a plain wheel scrolls the page (in full
+  // screen there is no page to scroll, so it zooms). With the compact controls, a plain
+  // wheel over the map says how to zoom instead of doing nothing visible.
   useEffect(() => {
     const element = viewportRef.current;
     if (!element) return;
     const onWheel = (event: WheelEvent) => {
-      if (!event.ctrlKey && !event.metaKey) return;
+      if (!event.ctrlKey && !event.metaKey && !fullscreenRef.current) {
+        if (compactRef.current) {
+          setWheelHint(true);
+          clearTimeout(hintTimer.current);
+          hintTimer.current = setTimeout(() => setWheelHint(false), HINT_MS);
+        }
+        return;
+      }
       event.preventDefault();
       const rect = element.getBoundingClientRect();
       const px = event.clientX - rect.left;
@@ -234,6 +285,32 @@ export function LayeredRelationshipGraph({
     moveView({ zoom, x: cx0 - (cx0 - current.x) * ratio, y: cy0 - (cy0 - current.y) * ratio }, true);
   };
   const panBy = (dx: number, dy: number) => moveView({ ...viewRef.current, x: viewRef.current.x + dx, y: viewRef.current.y + dy }, true);
+  const resetView = () => moveView(startView(layout, size), true);
+
+  const toggleFullscreen = () => {
+    const next = !fullscreenRef.current;
+    refitOnResize.current = true;
+    setFullscreen(next);
+    // Entering puts the keyboard on the map; leaving returns it to the toggle (WCAG 2.4.3).
+    requestAnimationFrame(() => (next ? viewportRef.current : fullscreenButtonRef.current)?.focus({ preventScroll: true }));
+  };
+
+  // The compact map's keyboard. Arrow keys pan only when the map itself has focus (a
+  // focused item's arrows move between items); + − 0 and Escape work from anywhere in it.
+  const onViewportKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!compact || event.altKey || event.ctrlKey || event.metaKey) return;
+    const onMap = event.target === event.currentTarget;
+    if (onMap && event.key === 'ArrowLeft') panBy(PAN_STEP, 0);
+    else if (onMap && event.key === 'ArrowRight') panBy(-PAN_STEP, 0);
+    else if (onMap && event.key === 'ArrowUp') panBy(0, PAN_STEP);
+    else if (onMap && event.key === 'ArrowDown') panBy(0, -PAN_STEP);
+    else if (event.key === '+' || event.key === '=') zoomBy(ZOOM_STEP);
+    else if (event.key === '-' || event.key === '_') zoomBy(1 / ZOOM_STEP);
+    else if (event.key === '0') resetView();
+    else if (event.key === 'Escape' && fullscreen) toggleFullscreen();
+    else return;
+    event.preventDefault();
+  };
 
   const toggleCluster = (clusterId: string, focusAfter: string) => {
     const isExpanded = expanded.has(clusterId);
@@ -294,21 +371,47 @@ export function LayeredRelationshipGraph({
     height: layout.height,
     transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
   };
+  const zoomPercent = Math.round(view.zoom * 100);
 
-  return <section className={cx('uix-relationship-graph', 'uix-relationship-graph--layered', density === 'compact' && 'uix-relationship-graph--compact', className)} aria-label={labels.graph}>
-    <div className="uix-relationship-graph__toolbar" role="group" aria-label={labels.controls}>
+  // One icon control of the compact cluster: a named button, its words in a tooltip.
+  const control = (
+    label: string,
+    icon: ReactNode,
+    onClick: () => void,
+    { disabled = false, keys, ref }: { disabled?: boolean; keys?: readonly string[]; ref?: typeof fullscreenButtonRef } = {},
+  ) => (
+    <Tooltip label={label} placement="top" {...(keys ? { shortcut: keys } : {})}>
+      <button ref={ref} type="button" className="uix-relationship-graph__control" aria-label={label} onClick={onClick} disabled={disabled}>
+        {icon}
+      </button>
+    </Tooltip>
+  );
+
+  return <section
+    className={cx(
+      'uix-relationship-graph',
+      'uix-relationship-graph--layered',
+      compact && 'uix-relationship-graph--map',
+      fullscreen && 'uix-relationship-graph--fullscreen',
+      density === 'compact' && 'uix-relationship-graph--compact',
+      className,
+    )}
+    aria-label={labels.graph}
+  >
+    {controls === 'full' && <div className="uix-relationship-graph__toolbar" role="group" aria-label={labels.controls}>
       <button type="button" onClick={() => zoomBy(ZOOM_STEP)} disabled={view.zoom >= MAX_ZOOM}>{labels.zoomIn}</button>
       <button type="button" onClick={() => zoomBy(1 / ZOOM_STEP)} disabled={view.zoom <= MIN_ZOOM}>{labels.zoomOut}</button>
       <button type="button" onClick={() => moveView(fitView(layout, size), true)}>{labels.fit}</button>
-      <button type="button" onClick={() => moveView(initialView(layout, size), true)}>{labels.reset}</button>
+      <button type="button" onClick={resetView}>{labels.reset}</button>
       <button type="button" onClick={() => panBy(PAN_STEP, 0)} aria-label={labels.panLeft}>{labels.left}</button>
       <button type="button" onClick={() => panBy(0, PAN_STEP)} aria-label={labels.panUp}>{labels.up}</button>
       <button type="button" onClick={() => panBy(0, -PAN_STEP)} aria-label={labels.panDown}>{labels.down}</button>
       <button type="button" onClick={() => panBy(-PAN_STEP, 0)} aria-label={labels.panRight}>{labels.right}</button>
-      <span aria-live="polite">{labels.zoomLevel(Math.round(view.zoom * 100))}</span>
-    </div>
+      <span aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
+    </div>}
     {bounded.omittedNodeCount > 0 && <p className="uix-relationship-graph__bounded" role="status">{labels.bounded(bounded.nodes.length, bounded.omittedNodeCount)}</p>}
     <p id={hintId} className="uix-visually-hidden">{labels.keyboardHint}</p>
+    {compact && <p id={viewportHintId} className="uix-visually-hidden">{labels.viewportKeyboardHint}</p>}
     <div
       ref={viewportRef}
       className="uix-relationship-graph__viewport"
@@ -317,6 +420,15 @@ export function LayeredRelationshipGraph({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
+      {...(compact
+        ? {
+            tabIndex: 0,
+            role: 'group',
+            'aria-label': labels.graph,
+            'aria-describedby': viewportHintId,
+            onKeyDown: onViewportKeyDown,
+          }
+        : {})}
     >
       <div className="uix-relationship-graph__stage" style={stageStyle} data-animate={animate || undefined} onTransitionEnd={() => setAnimate(false)}>
         <svg className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
@@ -407,6 +519,25 @@ export function LayeredRelationshipGraph({
           >{labels.collapseCluster(group.members.length, group.type)}</button>;
         })}
       </div>
+      {compact && <>
+        <p className="uix-relationship-graph__hint" aria-hidden="true">{labels.navigationHint(modifier)}</p>
+        {wheelHint && <p className="uix-relationship-graph__toast" role="status">{labels.navigationHint(modifier)}</p>}
+        <div className="uix-relationship-graph__controls" role="group" aria-label={labels.controls}>
+          <span className="uix-relationship-graph__zoom-level" aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
+          <div className="uix-relationship-graph__control-cluster">
+            {control(labels.zoomIn, <PlusIcon aria-hidden="true" />, () => zoomBy(ZOOM_STEP), { disabled: view.zoom >= MAX_ZOOM, keys: ['+'] })}
+            {control(labels.zoomOut, <MinusIcon aria-hidden="true" />, () => zoomBy(1 / ZOOM_STEP), { disabled: view.zoom <= MIN_ZOOM, keys: ['−'] })}
+            {control(labels.fit, <ScanIcon aria-hidden="true" />, () => moveView(fitView(layout, size), true))}
+            {control(labels.reset, <RotateCcwIcon aria-hidden="true" />, resetView, { keys: ['0'] })}
+            {control(
+              fullscreen ? labels.exitFullscreen : labels.fullscreen,
+              fullscreen ? <Minimize2Icon aria-hidden="true" /> : <Maximize2Icon aria-hidden="true" />,
+              toggleFullscreen,
+              { ref: fullscreenButtonRef, ...(fullscreen ? { keys: ['Esc'] } : {}) },
+            )}
+          </div>
+        </div>
+      </>}
     </div>
     {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id}>{entry.label}</li>)}</ul>}
     {showList && <EquivalentRelationshipList

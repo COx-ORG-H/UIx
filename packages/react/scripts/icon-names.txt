@@ -177,6 +177,7 @@ Rows3
 Rows4
 Save
 Scale
+Scan
 ScanBarcode
 ScanSearch
 ScrollText

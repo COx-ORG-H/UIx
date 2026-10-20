@@ -717,6 +717,10 @@
       "component": "ScaleIcon",
       "glyph": "scale"
     },
+    "Scan": {
+      "component": "ScanIcon",
+      "glyph": "scan"
+    },
     "ScanBarcode": {
       "component": "ScanBarcodeIcon",
       "glyph": "scan-barcode"
