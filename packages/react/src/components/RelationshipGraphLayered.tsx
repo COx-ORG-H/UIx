@@ -520,21 +520,25 @@ export function LayeredRelationshipGraph({
         })}
       </div>
       {compact && <>
-        <p className="uix-relationship-graph__hint" aria-hidden="true">{labels.navigationHint(modifier)}</p>
         {wheelHint && <p className="uix-relationship-graph__toast" role="status">{labels.navigationHint(modifier)}</p>}
-        <div className="uix-relationship-graph__controls" role="group" aria-label={labels.controls}>
-          <span className="uix-relationship-graph__zoom-level" aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
-          <div className="uix-relationship-graph__control-cluster">
-            {control(labels.zoomIn, <PlusIcon aria-hidden="true" />, () => zoomBy(ZOOM_STEP), { disabled: view.zoom >= MAX_ZOOM, keys: ['+'] })}
-            {control(labels.zoomOut, <MinusIcon aria-hidden="true" />, () => zoomBy(1 / ZOOM_STEP), { disabled: view.zoom <= MIN_ZOOM, keys: ['−'] })}
-            {control(labels.fit, <ScanIcon aria-hidden="true" />, () => moveView(fitView(layout, size), true))}
-            {control(labels.reset, <RotateCcwIcon aria-hidden="true" />, resetView, { keys: ['0'] })}
-            {control(
-              fullscreen ? labels.exitFullscreen : labels.fullscreen,
-              fullscreen ? <Minimize2Icon aria-hidden="true" /> : <Maximize2Icon aria-hidden="true" />,
-              toggleFullscreen,
-              { ref: fullscreenButtonRef, ...(fullscreen ? { keys: ['Esc'] } : {}) },
-            )}
+        {/* One row along the map's bottom edge: the hint takes only the room the controls
+            leave, so the three never overlap at any map width (TENSOR HAR-2512). */}
+        <div className="uix-relationship-graph__footer">
+          <p className="uix-relationship-graph__hint" aria-hidden="true">{labels.navigationHint(modifier)}</p>
+          <div className="uix-relationship-graph__controls" role="group" aria-label={labels.controls}>
+            <span className="uix-relationship-graph__zoom-level" aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
+            <div className="uix-relationship-graph__control-cluster">
+              {control(labels.zoomIn, <PlusIcon aria-hidden="true" />, () => zoomBy(ZOOM_STEP), { disabled: view.zoom >= MAX_ZOOM, keys: ['+'] })}
+              {control(labels.zoomOut, <MinusIcon aria-hidden="true" />, () => zoomBy(1 / ZOOM_STEP), { disabled: view.zoom <= MIN_ZOOM, keys: ['−'] })}
+              {control(labels.fit, <ScanIcon aria-hidden="true" />, () => moveView(fitView(layout, size), true))}
+              {control(labels.reset, <RotateCcwIcon aria-hidden="true" />, resetView, { keys: ['0'] })}
+              {control(
+                fullscreen ? labels.exitFullscreen : labels.fullscreen,
+                fullscreen ? <Minimize2Icon aria-hidden="true" /> : <Maximize2Icon aria-hidden="true" />,
+                toggleFullscreen,
+                { ref: fullscreenButtonRef, ...(fullscreen ? { keys: ['Esc'] } : {}) },
+              )}
+            </div>
           </div>
         </div>
       </>}

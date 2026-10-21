@@ -270,17 +270,105 @@ test('viewer renders every corpus fixture as expected', async ({ page }) => {
   await expect(page.locator('article[data-fixture="task list"] input').first()).toBeDisabled();
 });
 
-test('narrow screens: the toolbar scrolls, the page does not', async ({ page }) => {
+/** Every tool of the editor around `#id`, the toolbar, its groups and the field, measured. */
+const toolbarGeometry = (page, id) => page.locator(`#${id}`).evaluate((surface) => {
+  const field = surface.closest('.uix-rich-text');
+  const toolbar = field.querySelector('.uix-rich-text__toolbar');
+  const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
+  return {
+    field: { ...box(field), scroll: field.scrollWidth, client: field.clientWidth },
+    toolbar: { ...box(toolbar), scroll: toolbar.scrollWidth, client: toolbar.clientWidth },
+    tools: [...toolbar.querySelectorAll('.uix-rich-text__tool')].map((el) => ({ name: el.getAttribute('aria-label'), ...box(el) })),
+    groups: [...toolbar.querySelectorAll('.uix-rich-text__group')].map((el) => ({ ...box(el), border: parseFloat(getComputedStyle(el).borderLeftWidth) })),
+    page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  };
+});
+
+/** The toolbar wraps inside its field: no sideways scroll anywhere, every tool whole and apart. */
+function expectToolbarWraps(g, label) {
+  expect.soft(g.page, `${label}: no sideways page scroll`).toBeLessThanOrEqual(0);
+  expect.soft(g.field.scroll, `${label}: the field does not scroll sideways`).toBe(g.field.client);
+  expect.soft(g.toolbar.scroll, `${label}: the toolbar does not scroll sideways`).toBe(g.toolbar.client);
+  for (const tool of g.tools) {
+    expect.soft(tool.left >= g.toolbar.left - 0.5 && tool.right <= g.toolbar.right + 0.5, `${label}: ${tool.name} inside the toolbar`).toBe(true);
+    expect.soft(tool.right, `${label}: ${tool.name} inside the field`).toBeLessThanOrEqual(g.field.right + 0.5);
+  }
+  for (let i = 0; i < g.tools.length; i += 1) for (let j = i + 1; j < g.tools.length; j += 1) {
+    const a = g.tools[i], b = g.tools[j];
+    const overlap = Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5;
+    expect.soft(overlap, `${label}: ${a.name} and ${b.name} overlap`).toBe(false);
+  }
+  // A group that starts a row draws its separator just outside the toolbar's clip edge.
+  for (const group of g.groups.filter((gr) => gr.left < g.toolbar.left + 0.5)) {
+    expect.soft(group.left + group.border, `${label}: no separator at the start of a row`).toBeLessThanOrEqual(g.toolbar.left + 0.5);
+  }
+}
+
+test('narrow screens: the toolbar wraps inside the field, the page does not scroll', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
+  const g = await toolbarGeometry(page, 'field');
+  expect(new Set(g.tools.map((tool) => Math.round(tool.top))).size, 'the tools take more than one row').toBeGreaterThan(1);
+  expectToolbarWraps(g, '360 px');
+  // The last tool is reachable by keyboard and on screen.
   const toolbar = page.getByRole('toolbar').first();
-  const { scroll, client } = await toolbar.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
-  expect(scroll).toBeGreaterThan(client);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  // Keyboard focus keeps the focused tool in view.
   await toolbar.getByRole('button').first().focus();
   await page.keyboard.press('End');
   const box = await toolbar.getByRole('button', { name: /^Show markdown/ }).boundingBox();
   expect(box.x + box.width).toBeLessThanOrEqual(360);
+});
+
+// ── TENSOR's agent incident form at 320 px (HAR-2511) ──────────────────────────
+/* The description field's toolbar was one row with `overflow-x: auto`: 21 tools in a 236 px box,
+   about two thirds of them behind a sideways scroll inside the field. And the placeholder floated
+   with no height, so a long German one ran out of the editor over the help line below it. */
+test('320 px incident form: the toolbar wraps inside the 238 px field, every tool whole and apart', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.locator('#incident').scrollIntoViewIfNeeded();
+  const g = await toolbarGeometry(page, 'incident-empty');
+  expect(Math.round(g.field.right - g.field.left)).toBe(238);
+  expect(g.tools.length).toBeGreaterThanOrEqual(18);
+  expectToolbarWraps(g, '320 px incident');
+  for (const width of [320, 360, 375, 390, 414]) {
+    await page.setViewportSize({ width, height: 800 });
+    expectToolbarWraps(await toolbarGeometry(page, 'field'), `${width} px field`);
+    for (const id of ['note', 'update', 'reply', 'template', 'mention']) expectToolbarWraps(await toolbarGeometry(page, id), `${width} px ${id}`);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const wide = await toolbarGeometry(page, 'field');
+  expect(new Set(wide.tools.map((tool) => Math.round(tool.top))).size, 'one row of tools on a wide screen').toBe(1);
+  expectToolbarWraps(wide, '1280 px field');
+});
+
+test('320 px incident form: a long placeholder grows the editor and the caret starts its first line', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.locator('#incident').scrollIntoViewIfNeeded();
+  const m = await page.locator('#incident-empty').evaluate((content) => {
+    const field = content.closest('.uix-rich-text');
+    const empty = content.querySelector('p.is-editor-empty');
+    const cs = getComputedStyle(content);
+    const breakAt = empty.querySelector('br').getBoundingClientRect();
+    const c = content.getBoundingClientRect();
+    return {
+      placeholder: parseFloat(getComputedStyle(empty, '::before').height),
+      lineHeight: parseFloat(getComputedStyle(empty).lineHeight),
+      content: { top: c.top, left: c.left, bottom: c.bottom, scroll: content.scrollHeight, client: content.clientHeight },
+      padding: { top: parseFloat(cs.paddingTop), left: parseFloat(cs.paddingLeft), bottom: parseFloat(cs.paddingBottom) },
+      caret: { left: breakAt.left, top: breakAt.top },
+      fieldBottom: field.getBoundingClientRect().bottom,
+      help: document.getElementById('incident-help').getBoundingClientRect().top,
+    };
+  });
+  expect(m.placeholder, 'the placeholder wraps onto several lines at this width').toBeGreaterThan(2 * m.lineHeight);
+  expect(m.content.scroll, 'nothing runs out of the editor').toBeLessThanOrEqual(m.content.client + 1);
+  expect(m.content.bottom, 'the editor holds the whole placeholder').toBeGreaterThanOrEqual(m.content.top + m.padding.top + m.placeholder + m.padding.bottom - 1);
+  expect(m.fieldBottom, 'the help line stays below the field').toBeLessThanOrEqual(m.help);
+  expect(Math.abs(m.caret.left - (m.content.left + m.padding.left)), 'the caret starts the first line').toBeLessThanOrEqual(2);
+  expect(m.caret.top - m.content.top, 'the caret is on the first line').toBeLessThan(m.padding.top + m.lineHeight);
+  // Typing replaces the placeholder; the editor keeps its text inside.
+  await page.locator('#incident-empty').click();
+  await page.keyboard.type('Lohn-App');
+  await expect.poll(async () => (await changes(page, 'incident')).at(-1) ?? '').toBe('Lohn-App');
+  await expect(page.locator('#incident-empty p.is-editor-empty')).toHaveCount(0);
 });
 
 test('focus rings are visible on tools, chips and picker cells', async ({ page }) => {
@@ -343,7 +431,7 @@ for (const width of [320, 360, 375, 390, 414]) {
     const post = await composer.getByRole('button', { name: 'Post update' }).boundingBox();
     expect(post.x).toBeGreaterThanOrEqual(0);
     expect(post.x + post.width).toBeLessThanOrEqual(width);
-    // The image tool is reachable: in view, or in the toolbar's own sideways scroll.
+    // The image tool is reachable and on screen: the tool row wraps (HAR-2511).
     const tool = composer.getByRole('button', { name: 'Image', exact: true });
     await tool.scrollIntoViewIfNeeded();
     const box = await tool.boundingBox();
@@ -380,7 +468,7 @@ for (const width of [1280, 768, 375, 320]) {
       const row = bar.querySelector(':scope > .uix-rich-text__toolbar');
       const cs = getComputedStyle(bar);
       const inner = bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      // Bring each tool into view (scrolling the row, as a user would), then hit-test its centre.
+      // Bring each tool into view, then hit-test its centre.
       const tools = [...row.querySelectorAll('.uix-rich-text__tool')];
       const misses = [];
       for (const tool of tools) {

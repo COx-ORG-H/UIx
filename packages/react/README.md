@@ -100,7 +100,7 @@ default label `imagesUnsupported`, "Images can't be added here."; a paste that a
 `labels` (every string, placeholders `{count}` `{max}`), `emojiPickerLabels`, `emojiLocale`, `id`, `name` (adds a
 hidden input), ARIA props, `variant` (`field` / `composer`, which renders in `Composer` with the toolbar in `ComposerBar`),
 `toolbarEnd`, `minRows`, `className`, `onBlur`. Markdown shortcuts (`## `, `- `, `1. `, `[ ] `, `> `, triple backtick)
-work in every preset; the toolbar is one tab stop with arrow-key navigation and scrolls sideways on narrow screens.
+work in every preset; the toolbar is one tab stop with arrow-key navigation and wraps its groups onto more rows on narrow screens.
 `RichTextEditorFallback` takes the same props and renders a plain textarea, for loading and error-boundary states.
 
 **Mentions (`onMentionSearch`).** Pass `onMentionSearch(query)` and typing `@` opens a "People" list of the

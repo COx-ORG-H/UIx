@@ -57,15 +57,23 @@
   /* Map controls (controls="compact", TENSOR HAR-2501): an icon cluster in the map's corner,
      the map itself focusable, and a full-screen state that covers the page. */
   .uix-relationship-graph--map .uix-relationship-graph__viewport:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
-  .uix-relationship-graph__controls { position:absolute; right:var(--uix-space-3); bottom:var(--uix-space-3); z-index:var(--uix-z-raised, 1); display:flex; align-items:center; gap:var(--uix-space-2); }
-  .uix-relationship-graph__control-cluster { display:flex; padding:var(--uix-space-1); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); box-shadow:var(--uix-shadow-sm); }
+  /* The hint, the zoom level and the cluster share one row along the map's bottom edge (TENSOR
+     HAR-2512: positioned apart, "Zoom 75 %" was drawn over the hint on a 500–600 px map). The hint
+     takes only the room the controls leave: it ellipsises, then hides; then the zoom level gives
+     way; the cluster always stays. The row lets the pointer through to the map. */
+  .uix-relationship-graph__footer { position:absolute; right:var(--uix-space-3); bottom:var(--uix-space-3); left:var(--uix-space-3); z-index:var(--uix-z-raised, 1); display:flex; align-items:center; justify-content:flex-end; gap:var(--uix-space-3); container:uix-relationship-graph-footer / inline-size; pointer-events:none; }
+  .uix-relationship-graph__controls { display:flex; flex:0 1 auto; align-items:center; gap:var(--uix-space-2); min-width:0; pointer-events:auto; }
+  .uix-relationship-graph__control-cluster { display:flex; flex:none; padding:var(--uix-space-1); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); box-shadow:var(--uix-shadow-sm); }
   .uix-relationship-graph__control { display:inline-grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:var(--uix-radius-sm); background:transparent; color:var(--uix-text-muted); cursor:pointer; }
   .uix-relationship-graph__control:hover:not(:disabled) { background:var(--uix-bg-hover); color:var(--uix-text); }
   .uix-relationship-graph__control:focus-visible { outline:2px solid var(--uix-ring); outline-offset:1px; }
   .uix-relationship-graph__control:disabled { opacity:.45; cursor:not-allowed; }
   .uix-relationship-graph__control svg { width:16px; height:16px; }
-  .uix-relationship-graph__zoom-level { padding:0 var(--uix-space-1); border-radius:var(--uix-radius-sm); background:color-mix(in srgb, var(--uix-bg-subtle) 85%, transparent); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .uix-relationship-graph__hint { position:absolute; left:var(--uix-space-3); bottom:var(--uix-space-3); z-index:var(--uix-z-raised, 1); max-width:calc(100% - 15rem); margin:0; overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; pointer-events:none; }
+  .uix-relationship-graph__zoom-level { flex:0 1 auto; min-width:0; overflow:hidden; padding:0 var(--uix-space-1); border-radius:var(--uix-radius-sm); background:color-mix(in srgb, var(--uix-bg-subtle) 85%, transparent); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; white-space:nowrap; text-overflow:ellipsis; }
+  .uix-relationship-graph__hint { flex:1 1 0; min-width:0; margin:0; overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
+  /* A hint cut to a few words says nothing, so it goes; on the narrowest map so does the zoom level. */
+  @container uix-relationship-graph-footer (max-width:24rem) { .uix-relationship-graph__hint { display:none; } }
+  @container uix-relationship-graph-footer (max-width:17rem) { .uix-relationship-graph__zoom-level { display:none; } }
   .uix-relationship-graph__toast { position:absolute; top:var(--uix-space-3); left:50%; z-index:var(--uix-z-toast, 3); max-width:calc(100% - 2 * var(--uix-space-3)); margin:0; padding:var(--uix-space-1) var(--uix-space-3); border-radius:var(--uix-radius-sm); background:var(--uix-text); color:var(--uix-surface); font-size:var(--uix-text-meta); transform:translateX(-50%); pointer-events:none; }
   .uix-relationship-graph--fullscreen { position:fixed; inset:0; z-index:var(--uix-z-overlay, 1000); display:flex; flex-direction:column; padding:var(--uix-space-4); background:var(--uix-bg-app, var(--uix-surface)); }
   .uix-relationship-graph--fullscreen .uix-relationship-graph__viewport { flex:1; min-height:0; height:auto; }

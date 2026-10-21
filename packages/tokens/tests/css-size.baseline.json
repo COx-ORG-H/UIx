@@ -327,14 +327,14 @@
       "brotli": 1134
     },
     "styles/components/relationship-graph.css": {
-      "raw": 11672,
-      "gzip": 2422,
-      "brotli": 2049
+      "raw": 12612,
+      "gzip": 2748,
+      "brotli": 2353
     },
     "styles/components/rich-text.css": {
-      "raw": 12188,
-      "gzip": 3053,
-      "brotli": 2607
+      "raw": 13156,
+      "gzip": 3402,
+      "brotli": 2907
     },
     "styles/components/rule-builder.css": {
       "raw": 2283,

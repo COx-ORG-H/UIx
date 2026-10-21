@@ -250,6 +250,28 @@ function Viewer() {
   );
 }
 
+/** TENSOR's agent "Störung erfassen" form at 320 px (HAR-2511): the description field is ~238 px
+ *  wide and empty, with a long German placeholder and a help line right under it. */
+const LONG_PLACEHOLDER = 'z. B. Seit 09:00 zeigt die Lohn-App allen in der Finanzabteilung eine Zeitüberschreitung. Ein Neustart des Browsers hat nicht geholfen.';
+function Incident() {
+  const [empty, setEmpty] = useState('');
+  return (
+    <section id="incident" style={{ width: '238px', maxWidth: '100%' }}>
+      <h2 id="incident-label">Was ist passiert?</h2>
+      <RichTextEditor
+        id="incident-empty"
+        value={empty}
+        onChange={(md) => { log('incident')(md); setEmpty(md); }}
+        aria-labelledby="incident-label"
+        placeholder={LONG_PLACEHOLDER}
+        onUploadImage={async (file) => ({ src: `/images/${file.name}`, alt: file.name })}
+        resolveImageSrc={resolveImageSrc}
+      />
+      <p id="incident-help">Bilder werden beim Speichern hinzugefügt.</p>
+    </section>
+  );
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <h1>Rich text harness</h1>
@@ -262,5 +284,6 @@ createRoot(document.getElementById('root')!).render(
     <Placement />
     <Mentions />
     <Viewer />
+    <Incident />
   </StrictMode>,
 );
