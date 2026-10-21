@@ -19,6 +19,8 @@
     body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
     main { display: grid; gap: var(--uix-space-6); }
     section { display: grid; gap: var(--uix-space-3); min-width: 0; }
+    /* A long heading in a wider fallback font (the Linux runner) must not widen the page. */
+    h1, h2 { overflow-wrap: anywhere; }
     /* The spec sets each frame's width: the map is as wide as its frame. */
     .frame { max-width: 100%; }
   </style>

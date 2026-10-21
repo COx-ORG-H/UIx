@@ -58,7 +58,7 @@ function Map({ id, german }: { id: string; german?: boolean }) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <h1>RelationshipGraph map harness</h1>
+    <h1>Map controls</h1>
     <Map id="de" german />
     <Map id="en" />
   </StrictMode>,
