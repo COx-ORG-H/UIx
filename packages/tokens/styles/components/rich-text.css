@@ -1,5 +1,5 @@
-/* uix rich-text editor — markdown editing surface (.uix-prose), a roving-tabindex toolbar that
-   scrolls sideways on narrow screens, source mode, counter/status footer, link popover and the
+/* uix rich-text editor — markdown editing surface (.uix-prose), a roving-tabindex toolbar whose
+   groups wrap on narrow screens, source mode, counter/status footer, link popover and the
    :shortcode emoji list. Composes with .uix-composer for comment boxes. Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-rich-text {
@@ -17,16 +17,22 @@
   .uix-rich-text--fallback { border: 0; background: transparent; }
   .uix-rich-text--fallback:focus-within { box-shadow: none; }
 
-  /* toolbar — one row; scrolls instead of wrapping so a narrow screen never loses a control */
+  /* toolbar — the groups wrap onto more rows, so a narrow field shows every control and never
+     scrolls sideways (a collection wraps; TENSOR HAR-2511: at 320 px two thirds of the tools hid
+     behind a scroll inside the field). Each group draws its separator on its left edge, 1px
+     outside the toolbar's left padding edge for a group that starts a row, where the clip hides it. */
   .uix-rich-text__toolbar {
-    display: flex; align-items: center; gap: var(--uix-space-1); min-width: 0;
-    padding: var(--uix-space-1) var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
-    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin;
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1); min-width: 0;
+    padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) 0; border-bottom: 1px solid var(--uix-border);
+    overflow-x: clip;
     /* size to the container, never to the row of tools (keeps grid/flex parents from widening) */
     contain: inline-size;
   }
-  .uix-rich-text__group { display: flex; align-items: center; gap: var(--uix-space-0); flex: none; }
-  .uix-rich-text__group + .uix-rich-text__group { padding-left: var(--uix-space-1); border-left: 1px solid var(--uix-border); }
+  /* A group wider than the whole row (a very narrow field) wraps its own tools. */
+  .uix-rich-text__group {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-0); flex: 0 1 auto; min-width: 0;
+    margin-left: -1px; padding-left: var(--uix-space-1); border-left: 1px solid var(--uix-border);
+  }
   .uix-rich-text__group--end { margin-left: auto; }
   .uix-rich-text__tool {
     display: inline-flex; align-items: center; justify-content: center; flex: none;
@@ -75,8 +81,12 @@
   .uix-rich-text__content h1 { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
   .uix-rich-text__content h2 { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
   .uix-rich-text__content h3 { font-size: var(--uix-text-body); line-height: var(--uix-leading-body); }
+  /* The placeholder floats full width with no width of its own, so the caret stays at the start
+     of its first line; it keeps its height, so a long placeholder grows the editor instead of
+     running over what follows the field (TENSOR HAR-2511). */
   .uix-rich-text__content .is-editor-empty:first-child::before {
-    content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--uix-text-muted);
+    content: attr(data-placeholder); float: left; width: 100%; margin-right: -100%;
+    pointer-events: none; color: var(--uix-text-muted);
   }
   .uix-rich-text__content a { cursor: text; }
   /* the glyph stays in the text for editing and copying; its fallback image is drawn beside it */
@@ -123,11 +133,16 @@
   /* composer variant — the composer draws the box; the toolbar joins the action bar */
   .uix-rich-text--composer { border-radius: var(--uix-radius-md); }
   .uix-rich-text--composer.uix-rich-text:focus-within { box-shadow: 0 0 0 3px var(--uix-brand-muted); }
-  /* the tool row scrolls and keeps five tools; the counter and toolbarEnd wrap below it first (a
-     toggle + submit on one row left the tools 0 px on a phone, TENSOR HAR-1125) */
+  /* the tool row asks for one row of tools and keeps at least five; the counter and toolbarEnd wrap
+     below it first, then the row wraps its groups (a toggle + submit on one row left the tools 0 px
+     on a phone, TENSOR HAR-1125; tools wrapped five to a row beside a submit, HAR-2511). Its start
+     margin keeps the first tool flush with the bar: a group's left padding and separator sit in it. */
   .uix-rich-text--composer .uix-rich-text__bar { flex-wrap: wrap; align-items: center; justify-content: flex-start; min-width: 0; }
-  .uix-rich-text--composer .uix-rich-text__toolbar { flex: 1 1 0; min-width: min(5 * 32px, 100%); padding: 0; border-bottom: 0; }
-  .uix-rich-text--composer .uix-rich-text__group--end { margin-left: 0; }
+  .uix-rich-text--composer .uix-rich-text__toolbar {
+    flex: 1 1 auto; min-width: min(5 * 32px + var(--uix-space-1), 100%); margin-left: calc(-1 * var(--uix-space-1));
+    padding: 0; border-bottom: 0; contain: none;
+  }
+  .uix-rich-text--composer .uix-rich-text__group--end { margin-left: -1px; }
   .uix-rich-text--composer .uix-rich-text__counter,
   .uix-rich-text--composer .uix-rich-text__status { flex: none; margin-right: 0; }
   .uix-rich-text--composer .uix-rich-text__bar > :last-child:not(.uix-rich-text__toolbar) { margin-left: auto; }

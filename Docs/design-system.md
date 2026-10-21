@@ -144,6 +144,9 @@ chart with zoom) behaves the same way, so nobody learns a canvas twice:
   page cannot scroll, so a plain wheel zooms there.
 - **One icon cluster** in a corner, each icon with a tooltip: zoom in, zoom out, fit, reset, full
   screen (and leave full screen). Never a row of text buttons; never pan buttons on screen.
+- **The hint, the zoom level and the cluster share one row** along the bottom edge and never
+  overlap. As the canvas narrows the hint gives way first (ellipsis, then hidden), then the zoom
+  level; the cluster always stays (TENSOR HAR-2512).
 - **Everything in view on load when it fits at a readable size** (75 %); otherwise the canvas opens
   on its focal node at that size and the fit icon shows everything. Text is never zoomed away to
   make a large graph "fit" (120 nodes fitted into 734 px read at 47 %).
