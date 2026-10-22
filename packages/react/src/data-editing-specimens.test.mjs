@@ -34,6 +34,12 @@ test('every state named in a caption is on the page', () => {
   assert.deepEqual([...nav.matchAll(/class="uix-cmdk__group"[^>]*>([^<]+)</g)].map((m) => m[1]), ['Pages', 'Actions']);
   assert.match(nav, /aria-activedescendant="(dex-[^"]+)"[\s\S]*id="\1" role="option" class="uix-cmdk__item" data-active="true"/);
   assert.match(nav, /<mark class="uix-cmdk__mark">Re<\/mark>ports/);
+  // sortable list: three rows, Move up disabled on the first and Move down on the last
+  const formsSortable = specimens['examples-form-controls'];
+  assert.match(formsSortable, /data-sortable-list-example[\s\S]*<ul class="uix-sortable" aria-label="Approval steps">/);
+  assert.equal((formsSortable.match(/class="uix-sortable__row"/g) ?? []).length, 3);
+  assert.match(formsSortable, /aria-label="Move Review the request up" disabled=""/);
+  assert.match(formsSortable, /aria-label="Move Notify the requester down" disabled=""/);
   // inline edit as a record field: an object value, the icon trigger, a read-only reason, a failed save
   const forms = specimens['examples-form-controls'];
   assert.match(forms, /data-inline-edit-record-example/);

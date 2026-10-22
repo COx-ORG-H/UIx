@@ -1448,6 +1448,9 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
 export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 
 // @public (undocumented)
+export const DEFAULT_SORTABLE_LIST_LABELS: SortableListLabels;
+
+// @public (undocumented)
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public (undocumented)
@@ -3480,6 +3483,7 @@ export function NavFavourites(input: NavFavouritesProps): react.JSX.Element;
 export interface NavFavouritesLabels {
     readonly empty: string;
     readonly heading: string;
+    readonly moved?: string;
     // (undocumented)
     readonly moveDown: string;
     // (undocumented)
@@ -3901,6 +3905,9 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
     // (undocumented)
     width: number;
 }
+
+// @public
+export function placeId(ids: readonly string[], id: string, index: number): readonly string[];
 
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;
@@ -5576,6 +5583,42 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 export const snapToStep: (ms: number, step: number) => number;
 
 // @public
+export function SortableList<T>(input: SortableListProps<T>): react.JSX.Element;
+
+// @public
+export interface SortableListItemContext {
+    // (undocumented)
+    count: number;
+    dragging: boolean;
+    // (undocumented)
+    index: number;
+}
+
+// @public
+export interface SortableListLabels {
+    grip: string;
+    moved: string;
+    // (undocumented)
+    moveDown: string;
+    // (undocumented)
+    moveUp: string;
+}
+
+// @public (undocumented)
+export interface SortableListProps<T> extends Omit<HTMLAttributes<HTMLUListElement>, 'children' | 'onChange'> {
+    disabled?: boolean;
+    // (undocumented)
+    getId: (item: T) => string;
+    getLabel?: (item: T) => string;
+    // (undocumented)
+    items: readonly T[];
+    labels?: Partial<SortableListLabels>;
+    onReorder: (orderedIds: string[]) => void;
+    // (undocumented)
+    renderItem: (item: T, context: SortableListItemContext) => ReactNode;
+}
+
+// @public
 export type SortDir = 'ascending' | 'descending';
 
 // @public (undocumented)
@@ -6525,6 +6568,7 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    sortableList?: Partial<SortableListLabels>;
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;
     // (undocumented)

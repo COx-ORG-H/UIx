@@ -49,6 +49,10 @@ export type { SearchSegment, FoldedText } from './search-suggest-model.js';
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
+// A list the person reorders, with the reorder model shared by ViewMenu / SavedViewMenu / NavFavourites (HAR-1375)
+export { SortableList, DEFAULT_SORTABLE_LIST_LABELS } from './components/SortableList.js';
+export type { SortableListProps, SortableListLabels, SortableListItemContext } from './components/SortableList.js';
+export { placeId } from './reorder.js';
 export { InlineEdit, DEFAULT_INLINE_EDIT_LABELS } from './components/InlineEdit.js';
 export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps, InlineEditErrorContext, InlineEditState } from './components/InlineEdit.js';
 

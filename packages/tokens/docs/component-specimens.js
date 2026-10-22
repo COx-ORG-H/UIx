@@ -80,6 +80,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-metrics",
     "selector": ".uix-metric-input"
   },
+  "sortable-list": {
+    "route": "examples-form-controls",
+    "selector": ".uix-sortable",
+    "container": "[data-sortable-list-example]"
+  },
   "form": {
     "route": "examples-form-controls",
     "selector": ".uix-form-grid"

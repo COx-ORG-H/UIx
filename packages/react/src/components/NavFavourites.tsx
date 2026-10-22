@@ -2,6 +2,8 @@
 
 import { memo, type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { cx } from '../cx.js';
+import { fillLabel } from '../fill-label.js';
+import { placeId } from '../reorder.js';
 
 const ChevronDownIcon = () => (
   <svg
@@ -75,6 +77,11 @@ export interface NavFavouritesLabels {
   readonly remove: string;
   /** Per-row overflow-trigger accessible-name template with `{label}`. Defaults to "{label} favourite options". */
   readonly options?: string;
+  /**
+   * Polite announcement after a move: `{label}`, `{position}`, `{count}`. Defaults to
+   * "{label} moved to position {position} of {count}" (it was English only before HAR-1375).
+   */
+  readonly moved?: string;
 }
 
 export interface NavFavouritesProps {
@@ -159,15 +166,14 @@ export function NavFavourites({
     const idx = order.indexOf(id);
     const next = idx + dir;
     if (idx < 0 || next < 0 || next >= order.length) return;
-    const reordered = [...order];
-    const [it] = reordered.splice(idx, 1);
-    if (it === undefined) return;
-    reordered.splice(next, 0, it);
+    // The shared reorder model (HAR-1375), the same as SortableList, ViewMenu and SavedViewMenu.
+    const reordered = placeId(order, id, next);
+    if (reordered === order) return;
     focusAfterRef.current = id; // keep focus on the moved row's control
     const moved = items.find((i) => i.id === id);
-    if (moved) setAnnouncement(`${moved.label} moved to position ${next + 1} of ${order.length}`);
-    onReorder(reordered);
-  }, [onReorder, order]);
+    if (moved) setAnnouncement(fillLabel(labels.moved ?? '{label} moved to position {position} of {count}', { label: moved.label, position: next + 1, count: order.length }));
+    onReorder([...reordered]);
+  }, [onReorder, order, items, labels.moved]);
 
   const remove = useCallback((id: string) => {
     const idx = order.indexOf(id);

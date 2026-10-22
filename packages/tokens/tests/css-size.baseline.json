@@ -386,6 +386,11 @@
       "gzip": 469,
       "brotli": 382
     },
+    "styles/components/sortable-list.css": {
+      "raw": 3112,
+      "gzip": 1155,
+      "brotli": 943
+    },
     "styles/components/spinner.css": {
       "raw": 1102,
       "gzip": 564,

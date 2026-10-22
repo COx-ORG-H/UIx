@@ -35,6 +35,10 @@ const HOOKS = new Map([
   ['uix-empty--danger', 'ErrorState tone hook; the tone is on .uix-empty__icon--danger'],
   ['uix-empty--warning', 'ForbiddenState tone hook; the tone is on .uix-empty__icon--warning'],
   ['uix-tree--virtual', 'virtualised-tree hook for tests and consumers'],
+  ['uix-segmented-nav', 'Segmented selection="link" <nav> (HAR-1380): the pill is the ul.uix-segmented inside; a hook for consumers'],
+  ['uix-filter-editor__tags', 'FilterEditor tags field (HAR-1832): styled by .uix-taginput; a hook for tests'],
+  ['uix-sortable__move--up', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
+  ['uix-sortable__move--down', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
 ]);
 
 const cssFiles = [];

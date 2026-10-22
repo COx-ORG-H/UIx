@@ -42,6 +42,17 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── SortableList (HAR-1375): grip, content, Move up / Move down; the ends disabled ───────────
+  ({ ui, mount, html }) => {
+    const steps = [{ id: 'review', title: 'Review the request' }, { id: 'approve', title: 'Get approval' }, { id: 'notify', title: 'Notify the requester' }];
+    const list = mount(h(ui.SortableList, { 'aria-label': 'Approval steps', items: steps, getId: (s) => s.id, getLabel: (s) => s.title, renderItem: (s) => s.title, onReorder() {} }));
+    return {
+      'examples-form-controls': [
+        caption('Sortable list (React <code>SortableList</code>, <code>.uix-sortable</code>, HAR-1375) — drag a row by its grip, or use Move up / Move down, which are always there; Alt+↑ / Alt+↓ move the focused row and a status line says where it went'),
+        `<div data-sortable-list-example style="max-width:32rem">${html(list)}</div>`,
+      ].join('\n'),
+    };
+  },
   // ── CommandPalette items mode (HAR-1378): grouped, filtered, an active option ────────────────
   ({ ui, mount, html }) => {
     const icon = (d) => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d }));

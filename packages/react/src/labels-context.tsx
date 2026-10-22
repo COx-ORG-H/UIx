@@ -20,6 +20,7 @@ import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { LightboxLabels } from './components/Lightbox.js';
+import type { SortableListLabels } from './components/SortableList.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -55,6 +56,8 @@ export interface UixLabels {
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */
   orgChart?: Partial<OrgChartLabels>;
   inlineEdit?: Partial<InlineEditLabels>;
+  /** `SortableList` (HAR-1375): the grip, Move up / Move down, the move announcement. */
+  sortableList?: Partial<SortableListLabels>;
   confirmDialog?: { typeToConfirm?: string; compensation?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
