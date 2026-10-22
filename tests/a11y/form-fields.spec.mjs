@@ -116,3 +116,107 @@ test.describe('CheckboxGroup (HAR-1799)', () => {
     await axe(page, '#checkbox-group');
   });
 });
+
+test.describe('PasswordInput and OtpInput (HAR-1376)', () => {
+  test('the toggle reveals and hides; a click keeps focus in the field; the keyboard reaches it', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    const field = page.getByLabel('Password', { exact: true });
+    const toggle = page.locator('#password ~ .uix-input-group__action');
+    await expect(field).toHaveAttribute('type', 'password');
+    await expect(toggle).toHaveAccessibleName('Show password');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(field).toHaveAccessibleDescription('At least 12 characters.');
+    await field.click();
+    await toggle.click();
+    await expect(field).toHaveAttribute('type', 'text');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(toggle).toHaveAccessibleName('Show password'); // the pressed state carries the meaning
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('password');
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement?.className)).toBe('uix-input-group__action');
+    await page.keyboard.press('Space');
+    await expect(field).toHaveAttribute('type', 'password');
+    await expect(page.locator('#password-lg ~ .uix-input-group__action')).toHaveAccessibleName('Prikaži lozinku');
+    await expect(page.locator('#password-off ~ .uix-input-group__action')).toBeDisabled();
+  });
+
+  test('submitting the form hides a revealed password first and posts the value', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    await page.locator('#password ~ .uix-input-group__action').click();
+    await expect(page.locator('#password')).toHaveAttribute('type', 'text');
+    await page.locator('#sign-in-submit').click();
+    await expect(page.locator('#password')).toHaveAttribute('type', 'password');
+    expect(await page.evaluate(() => window.__posted.signIn)).toContain('password=correct horse battery');
+  });
+
+  test('the toggle sits inside the field end and the text never runs under it (md and lg)', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    for (const id of ['password', 'password-lg']) {
+      const geo = await page.locator(`#${id}`).evaluate((input) => {
+        const button = input.parentElement.querySelector('.uix-input-group__action');
+        const i = input.getBoundingClientRect();
+        const b = button.getBoundingClientRect();
+        return { i: { top: i.top, bottom: i.bottom, right: i.right, height: i.height }, b: { left: b.left, right: b.right, top: b.top, bottom: b.bottom, width: b.width, height: b.height }, padRight: parseFloat(getComputedStyle(input).paddingRight) };
+      });
+      expect(geo.b.width).toBe(geo.b.height);
+      expect(geo.b.height).toBe(geo.i.height - 8);
+      expect(geo.b.height).toBeGreaterThanOrEqual(24);
+      expect(geo.b.right).toBe(geo.i.right - 4);
+      expect(geo.i.right - geo.padRight).toBeLessThanOrEqual(geo.b.left);
+    }
+  });
+
+  test('OtpInput: one named input; typing fills the cells; paste keeps only digits; complete once; Backspace', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    const otp = page.getByLabel('Verification code');
+    await expect(otp).toHaveCount(1);
+    await expect(otp).toHaveAttribute('autocomplete', 'one-time-code');
+    await expect(otp).toHaveAttribute('inputmode', 'numeric');
+    await expect(otp).toHaveAccessibleDescription('Enter the 6 digits from your authenticator app.');
+    await otp.focus();
+    await page.keyboard.type('12a3');
+    await expect(otp).toHaveValue('123');
+    const cells = page.locator('#otp ~ .uix-otp__cell');
+    await expect(cells).toHaveCount(6);
+    await expect(cells.nth(2)).toHaveText('3');
+    await expect(cells.nth(3)).toHaveAttribute('data-active', 'true');
+    await page.keyboard.press('Backspace');
+    await expect(otp).toHaveValue('12');
+    await page.keyboard.type('3456789');
+    await expect(otp).toHaveValue('123456');
+    await expect.poll(() => page.evaluate(() => window.__completed)).toEqual(['123456']);
+    // a code with spaces and a dash, pasted into an emptied field
+    await otp.fill('');
+    await page.evaluate(() => {
+      const input = document.getElementById('otp');
+      const data = new DataTransfer();
+      data.setData('text/plain', ' 000-000 ');
+      input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    });
+    await expect(otp).toHaveValue('000000');
+    await expect.poll(() => page.evaluate(() => window.__completed)).toEqual(['123456', '000000']);
+    await expect(page.getByRole('alert')).toHaveText('That code is not valid. Try the newest one.');
+    await expect(otp).toHaveAttribute('aria-invalid', 'true');
+    const danger = await page.evaluate(() => { const p = document.createElement('i'); p.style.color = 'var(--uix-danger)'; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; });
+    // polled: the border colour eases in over --uix-dur-fast
+    await expect.poll(() => cells.first().evaluate((el) => getComputedStyle(el).borderTopColor)).toBe(danger);
+    await axe(page, '#sign-in');
+  });
+
+  test('OtpInput alphanumeric upper-cases; cells fit a 320 px phone without sideways scroll', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    await page.getByLabel('Recovery code').focus();
+    await page.keyboard.type('ab12-cd34');
+    await expect(page.getByLabel('Recovery code')).toHaveValue('AB12CD34');
+    await page.setViewportSize({ width: 320, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    const widths = await page.locator('#otp-alpha ~ .uix-otp__cell').evaluateAll((cells) => cells.map((c) => c.getBoundingClientRect().width));
+    for (const w of widths) expect(w).toBeGreaterThanOrEqual(24);
+    await expect(page.getByLabel('Code (disabled)')).toBeDisabled();
+  });
+
+  test('axe: the sign-in section at rest', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    await axe(page, '#sign-in');
+  });
+});

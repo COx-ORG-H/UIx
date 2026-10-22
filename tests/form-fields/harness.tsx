@@ -4,11 +4,13 @@
  * (the screenshots of the visual check use it).
  *   - #sizes: Input, Select, Textarea, InputGroup and Button at sm / md / lg, in one row each.
  *   - #checkbox-group: CheckboxGroup in a card (3 columns, long German and Bosnian tags, error when none
- *     is ticked) and a disabled group. */
+ *     is ticked) and a disabled group.
+ *   - #sign-in: PasswordInput (md, lg, disabled) in a form, OtpInput numeric with an error on 000000,
+ *     an 8-character alphanumeric one and a disabled one. window.__posted / __completed record results. */
 import { StrictMode, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Checkbox, CheckboxGroup, Field, Input, InputGroup, Select, Textarea } from '../../packages/react/src/index.js';
+import { Button, Checkbox, CheckboxGroup, Field, Input, InputGroup, OtpInput, PasswordInput, Select, Textarea } from '../../packages/react/src/index.js';
 
 const Search = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
@@ -66,7 +68,49 @@ function Tags() {
   );
 }
 
-const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags };
+declare global {
+  interface Window { __posted: Record<string, string[]>; __completed: string[] }
+}
+window.__posted = {};
+window.__completed = [];
+
+function SignIn() {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | undefined>();
+  return (
+    <section id="sign-in" aria-label="Sign in" style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '24rem' }}>
+      <form
+        id="sign-in-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          window.__posted.signIn = [...new FormData(event.currentTarget).entries()].map(([k, v]) => `${k}=${String(v)}`);
+        }}
+        style={{ display: 'grid', gap: 'var(--uix-space-2)' }}
+      >
+        <Field label="Email"><Input id="email" name="email" type="email" autoComplete="username" defaultValue="ada@example.com" /></Field>
+        <Field label="Password" hint="At least 12 characters." required>
+          <PasswordInput id="password" name="password" autoComplete="current-password" defaultValue="correct horse battery" />
+        </Field>
+        <Field label="Lozinka (lg)">
+          <PasswordInput id="password-lg" size="lg" autoComplete="new-password" labels={{ show: 'Prikaži lozinku' }} />
+        </Field>
+        <Field label="Disabled password"><PasswordInput id="password-off" disabled defaultValue="secret" /></Field>
+        <Button type="submit" id="sign-in-submit" variant="primary">Sign in</Button>
+      </form>
+      <Field label="Verification code" hint="Enter the 6 digits from your authenticator app." error={error}>
+        <OtpInput
+          id="otp" name="otp" value={code} groupSize={3}
+          onValueChange={(next) => { setCode(next); setError(undefined); }}
+          onComplete={(done) => { window.__completed.push(done); if (done === '000000') setError('That code is not valid. Try the newest one.'); }}
+        />
+      </Field>
+      <Field label="Recovery code"><OtpInput id="otp-alpha" mode="alphanumeric" length={8} groupSize={4} /></Field>
+      <Field label="Code (disabled)"><OtpInput id="otp-off" disabled defaultValue="12" /></Field>
+    </section>
+  );
+}
+
+const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn };
 
 function App() {
   const only = new URLSearchParams(location.search).get('only');

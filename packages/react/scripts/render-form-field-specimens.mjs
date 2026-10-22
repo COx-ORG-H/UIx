@@ -78,6 +78,24 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── PasswordInput and OtpInput (HAR-1376): a sign-in step with the password revealed, and a
+    // half-typed verification code ──────────────────────────────────────────────────────────────
+    const password = mount(h(ui.Field, { label: 'Password', hint: 'At least 12 characters.', required: true },
+      h(ui.PasswordInput, { id: 'ff-password', name: 'password', autoComplete: 'current-password', defaultValue: 'correct horse battery', defaultRevealed: true })));
+    const passwordLg = mount(h(ui.Field, { label: 'New password' },
+      h(ui.PasswordInput, { id: 'ff-password-lg', size: 'lg', autoComplete: 'new-password' })));
+    const otp = mount(h(ui.Field, { label: 'Verification code', hint: 'Enter the 6 digits from your authenticator app.' },
+      h(ui.OtpInput, { id: 'ff-otp', name: 'otp', groupSize: 3, defaultValue: '204' })));
+    const otpError = mount(h(ui.Field, { label: 'Recovery code', error: 'That code was already used.' },
+      h(ui.OtpInput, { id: 'ff-otp-recovery', mode: 'alphanumeric', length: 8, groupSize: 4, defaultValue: 'K7Q2M9XD' })));
+    blocks.push([
+      caption('Password and one-time code (React <code>PasswordInput</code>, <code>OtpInput</code>, <code>InputGroup trailingAction</code>) — the reveal toggle is a pressed-state button inside the field, shown here pressed, and a click on it keeps the caret in the field; the code is ONE input drawn as cells, so autofill, paste and screen readers see one field'),
+      '<div data-sign-in-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div class="uix-stack" style="flex:1 1 18rem;max-width:24rem">${html(password)}${html(passwordLg)}</div>`,
+      `<div class="uix-stack" style="flex:1 1 18rem;max-width:24rem">${html(otp)}${html(otpError)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return { 'examples-form-controls': blocks.join('\n') };
   } finally {

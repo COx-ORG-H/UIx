@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { PasswordInputLabels } from './components/PasswordInput.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -61,6 +62,8 @@ export interface UixLabels {
   ruleBuilder?: Partial<RuleBuilderLabels>;
   fileUpload?: Partial<FileUploadLabels>;
   attachment?: Partial<AttachmentLabels>;
+  /** `PasswordInput` (HAR-1376): the reveal toggle's name. */
+  passwordInput?: Partial<PasswordInputLabels>;
   /** `remove`: the name of a removable chip's × button; `{label}` is the chip text. */
   chip?: { remove?: string };
   /** `dismiss`: the name of a dismissible alert's × button. */

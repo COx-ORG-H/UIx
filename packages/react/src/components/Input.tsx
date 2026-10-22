@@ -35,6 +35,12 @@ export interface InputGroupProps {
   children: ReactNode;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
+  /**
+   * A control at the end of the field, inside its border: a reveal toggle, a clear or a copy
+   * button (HAR-1376). Give it the class `uix-input-group__action` (an icon button sized to the
+   * field) and an accessible name. It takes the place of `trailingIcon`.
+   */
+  trailingAction?: ReactNode;
   className?: string;
   /** Injected by `<Field>` when it wraps the group; forwarded onto the child control. */
   id?: string;
@@ -50,7 +56,7 @@ export interface InputGroupProps {
  * the extra div (UIX-A11Y-3).
  */
 export function InputGroup({
-  children, leadingIcon, trailingIcon, className,
+  children, leadingIcon, trailingIcon, trailingAction, className,
   id, 'aria-describedby': describedBy, 'aria-invalid': invalid, 'aria-required': required,
 }: InputGroupProps) {
   const control = isValidElement(children) && (id ?? describedBy ?? invalid ?? required) != null
@@ -66,13 +72,14 @@ export function InputGroup({
       className={cx(
         'uix-input-group',
         leadingIcon && 'uix-input-group--has-leading',
-        trailingIcon && 'uix-input-group--has-trailing',
+        (trailingIcon || trailingAction) && 'uix-input-group--has-trailing',
+        trailingAction && 'uix-input-group--has-action',
         className,
       )}
     >
       {leadingIcon && <span className="uix-input-group__icon" aria-hidden="true">{leadingIcon}</span>}
       {control}
-      {trailingIcon && <span className="uix-input-group__icon uix-input-group__icon--trailing" aria-hidden="true">{trailingIcon}</span>}
+      {trailingAction ?? (trailingIcon && <span className="uix-input-group__icon uix-input-group__icon--trailing" aria-hidden="true">{trailingIcon}</span>)}
     </div>
   );
 }

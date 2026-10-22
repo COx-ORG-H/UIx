@@ -1392,6 +1392,9 @@ export const DEFAULT_ORG_CHART_LABELS: OrgChartLabels;
 // @public (undocumented)
 export const DEFAULT_PAGINATION_LABELS: PaginationLabels;
 
+// @public (undocumented)
+export const DEFAULT_PASSWORD_INPUT_LABELS: PasswordInputLabels;
+
 // @public
 export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 
@@ -2438,6 +2441,7 @@ export interface InputGroupProps {
     id?: string;
     // (undocumented)
     leadingIcon?: ReactNode;
+    trailingAction?: ReactNode;
     // (undocumented)
     trailingIcon?: ReactNode;
 }
@@ -3545,6 +3549,29 @@ export interface OrgChartProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onS
 // @public
 export const orgChartZoomStep: (zoom: number, dir: 1 | -1) => number;
 
+// @public
+export const OtpInput: react.ForwardRefExoticComponent<OtpInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public (undocumented)
+export interface OtpInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'size' | 'maxLength' | 'pattern' | 'inputMode'> {
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    defaultValue?: string;
+    groupSize?: number;
+    // (undocumented)
+    invalid?: boolean;
+    length?: number;
+    mode?: 'numeric' | 'alphanumeric';
+    onComplete?: (code: string) => void;
+    onValueChange?: (value: string) => void;
+    // (undocumented)
+    style?: CSSProperties;
+    value?: string;
+}
+
 // @public (undocumented)
 export interface PackedLanes {
     // (undocumented)
@@ -3660,6 +3687,24 @@ export function partitionFiles<F extends {
     accepted: F[];
     rejected: FileRejection<F>[];
 };
+
+// @public
+export const PasswordInput: react.ForwardRefExoticComponent<PasswordInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface PasswordInputLabels {
+    show: string;
+}
+
+// @public (undocumented)
+export interface PasswordInputProps extends Omit<InputProps, 'type'> {
+    defaultRevealed?: boolean;
+    groupClassName?: string;
+    labels?: Partial<PasswordInputLabels>;
+    // (undocumented)
+    onRevealedChange?: (revealed: boolean) => void;
+    revealed?: boolean;
+}
 
 // @public (undocumented)
 export function Peek(input: PeekProps): react.JSX.Element;
@@ -6369,6 +6414,7 @@ export interface UixLabels {
     };
     orgChart?: Partial<OrgChartLabels>;
     pagination?: Partial<PaginationLabels>;
+    passwordInput?: Partial<PasswordInputLabels>;
     // (undocumented)
     peek?: {
         previous?: string;

@@ -1128,3 +1128,29 @@ so it is announced with each box, and the field's message slot below (`hint`, or
 `role="alert"`, tied to the group with `aria-describedby`). `columns` is a ceiling: no column is
 narrower than 10rem, so a phone gets one. `disabled` disables every box; `required` draws the
 marker (which boxes must be ticked is your rule).
+
+#### PasswordInput and OtpInput
+
+```tsx
+<Field label={t('password')} error={errors.password}>
+  <PasswordInput name="password" autoComplete="current-password" />
+</Field>
+<Field label={t('code')} hint={t('codeHint')} error={errors.code}>
+  <OtpInput name="code" length={6} groupSize={3} onComplete={(code) => verify(code)} />
+</Field>
+```
+
+`PasswordInput` is an `Input type="password"` with a reveal toggle inside its end: a button with
+`aria-pressed` whose name stays "Show password" (`labels.show`, or `UixLabelsProvider`
+`passwordInput`). A pointer press keeps the caret in the field; Tab reaches the toggle. When the
+form submits, a revealed password is hidden first, so the browser still offers to save it.
+`revealed` / `defaultRevealed` / `onRevealedChange`, `size`, and every `Input` prop pass through.
+
+`OtpInput` is ONE input (`inputMode="numeric"`, `autoComplete="one-time-code"`, `pattern`,
+`maxLength`) drawn as `length` cells, so the phone's code autofill, password managers and screen
+readers see one field. Typing or pasting "123 456" keeps the characters; `onComplete(code)` runs
+once each time the code fills. `mode="alphanumeric"` takes letters (upper-cased); `groupSize`
+draws a gap; `aria-invalid` (from `Field error`) turns the cells red.
+
+`InputGroup` gains `trailingAction`: a real control inside the field's end (class
+`uix-input-group__action`, square, the field's height less 4 px a side), which both use.

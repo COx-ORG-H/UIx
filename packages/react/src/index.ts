@@ -30,6 +30,10 @@ export type { UixLinkProps, UixRenderLink } from './link.js';
 
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
+export { PasswordInput, DEFAULT_PASSWORD_INPUT_LABELS } from './components/PasswordInput.js';
+export type { PasswordInputProps, PasswordInputLabels } from './components/PasswordInput.js';
+export { OtpInput } from './components/OtpInput.js';
+export type { OtpInputProps } from './components/OtpInput.js';
 
 export { Combobox } from './components/Combobox.js';
 export type { ComboboxProps, ComboboxOption } from './components/Combobox.js';

@@ -31,5 +31,14 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /<span class="uix-field__hint">Shown on the book’s public page\.<\/span>/);
   assert.match(forms, /data-invalid="true"/);
   assert.match(forms, /role="alert">Choose at least one audience\.<\/span>/);
+  // PasswordInput (revealed: a text input, the toggle pressed) and OtpInput (one input, cells, an error)
+  assert.match(forms, /data-sign-in-example/);
+  assert.match(forms, /<input[^>]*id="ff-password"[^>]*type="text"/);
+  assert.match(forms, /class="uix-input-group__action" aria-label="Show password" aria-pressed="true"/);
+  assert.match(forms, /class="uix-input uix-input--lg"[^>]*id="ff-password-lg"|id="ff-password-lg"[^>]*class="uix-input uix-input--lg"/);
+  assert.equal((forms.match(/class="uix-otp__input"/g) ?? []).length, 2);
+  assert.equal((forms.match(/class="uix-otp__cell"/g) ?? []).length, 14);
+  assert.match(forms, /autoComplete="one-time-code"|autocomplete="one-time-code"/);
+  assert.match(forms, /role="alert">That code was already used\.<\/span>/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });
