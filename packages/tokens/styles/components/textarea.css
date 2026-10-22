@@ -5,7 +5,7 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
     line-height: var(--uix-leading-body);
-    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-textarea::placeholder { color: var(--uix-text-muted); }
   .uix-textarea:hover { border-color: var(--uix-border-strong); }

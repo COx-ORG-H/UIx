@@ -9,6 +9,7 @@ export { useVirtualRows } from './hooks/useVirtualRows.js';
 export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVirtualRows.js';
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
+export { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';

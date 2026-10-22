@@ -28,7 +28,7 @@
   .uix-radio-card {
     position: relative; display: flex; flex-direction: column; gap: var(--uix-space-3); min-width: 0; padding: var(--uix-space-4);
     border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-lg); background: var(--uix-surface); color: var(--uix-text); cursor: pointer;
-    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-radio-card > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-radio-card:hover { border-color: var(--uix-text-muted); }

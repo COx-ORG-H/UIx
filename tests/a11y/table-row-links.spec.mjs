@@ -70,8 +70,13 @@ test('row and pinned cell ease their background; none under reduced motion', asy
     expect(Number.parseFloat(t.duration)).toBeGreaterThan(0.01);
   }
 
+  // table.css turns the row tint off under reduced motion (transition: none). The motion layer
+  // narrows every transition to fades and colours there (HAR-2578), so the property list is that
+  // list, but every duration is the 0s that `none` set: nothing eases.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const loc of [row, pinned]) {
-    expect((await transition(loc)).property).toBe('none');
+    const t = await transition(loc);
+    expect(t.property).not.toContain('transform');
+    for (const d of t.duration.split(',')) expect(Number.parseFloat(d)).toBe(0);
   }
 });

@@ -31,7 +31,7 @@ test('Spinner size="sm": a class for the 16 px ring, the same status role and an
 test('Meter tone="neutral" and "accent": the fill carries the tone, and nothing is spoken for it', () => {
   for (const tone of ['neutral', 'accent']) {
     const html = renderToStaticMarkup(h(ui.Meter, { value: 42, tone, label: 'Option A' }));
-    assert.match(html, new RegExp(`<div class="uix-meter__fill" style="width:42%" data-tone="${tone}"></div>`));
+    assert.match(html, new RegExp(`<div class="uix-meter__fill" style="--val:0.42" data-tone="${tone}"></div>`));
     assert.match(html, /role="meter" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100" aria-label="Option A"/);
     assert.doesNotMatch(html, /aria-valuetext/, `${tone} is not a status: the number is all there is to say`);
   }

@@ -36,12 +36,17 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
   /** Accessible name for the close button (default "Close dialog"). */
   closeLabel?: string;
   role?: 'dialog' | 'alertdialog';
+  /**
+   * Open and close with no animation (`[data-uix-instant]`). For a keyboard-initiated or
+   * many-times-a-day dialog. A `CommandPalette` inside sets this on its own.
+   */
+  instant?: boolean;
 }
 
 /** A modal `<dialog>`; the ref reaches it (HAR-1831). */
 export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
   open, onClose, dirty = false, pending = false, discardLabels, title, children, footer, className, closeLabel: closeLabelProp,
-  role = 'dialog', onKeyDown, ...rest
+  role = 'dialog', instant = false, onKeyDown, ...rest
 }, ref) {
   const uixLabels = useUixLabels();
   const closeLabel = closeLabelProp ?? uixLabels.modal?.close ?? 'Close dialog';
@@ -59,6 +64,7 @@ export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
       className={cx('uix-dialog', className)}
       role={role}
       aria-labelledby={title != null ? titleId : undefined}
+      data-uix-instant={instant ? '' : undefined}
       {...rest}
       onKeyDown={(event) => { onKeyDown?.(event); guard.onKeyDown(event); }}
     >

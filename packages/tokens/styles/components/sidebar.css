@@ -40,11 +40,16 @@
   .uix-navitem[aria-current="page"] .uix-navitem__desc { color: var(--uix-text-hushed); }
   /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
   .uix-navitem[aria-current="page"] .uix-navitem__badge { color: var(--uix-text-hushed); }
-  .uix-navitem__star { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navitem__star { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; border-radius: var(--uix-radius-xs); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   /* invisible halo → 24px effective target with zero visual change (UIX-A11Y-2) */
   .uix-navitem__star::before { content: ""; position: absolute; inset: -1px; }
   .uix-navitem__star svg { width: 15px; height: 15px; }
-  .uix-navitem:hover .uix-navitem__star, .uix-navitem:focus-within .uix-navitem__star, .uix-navitem__star:focus-visible { opacity: 1; }
+  /* Hidden until hover only where hover exists; a touch screen always shows the star. */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-navitem__star { opacity: 0; }
+    .uix-navitem:hover .uix-navitem__star { opacity: 1; }
+  }
+  .uix-navitem:focus-within .uix-navitem__star, .uix-navitem__star:focus-visible { opacity: 1; }
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
@@ -64,9 +69,12 @@
     margin-left: auto; display: inline-flex; height: 20px; width: 20px; flex-shrink: 0;
     align-items: center; justify-content: center; border: 0; border-radius: calc(var(--uix-radius-xs) / 2);
     background: transparent; cursor: pointer; color: var(--uix-text-muted);
-    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-favourites__row:hover .uix-favourites__menu-trigger,
+  @media (hover: hover) and (pointer: fine) {
+    .uix-favourites__menu-trigger { opacity: 0; }
+    .uix-favourites__row:hover .uix-favourites__menu-trigger { opacity: 1; }
+  }
   .uix-favourites__row:focus-within .uix-favourites__menu-trigger,
   .uix-favourites__menu-trigger[aria-expanded="true"] { opacity: 1; }
   .uix-favourites__backdrop { position: fixed; inset: 0; cursor: default; background: transparent; z-index: calc(var(--uix-z-tooltip) + 10); }
@@ -91,12 +99,12 @@
   .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
   .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
-  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--uix-dur) var(--uix-ease-out); }
+  /* A nav group opens and closes instantly: it is toggled many times a day, and grid tracks never
+     animate. The chevron still turns, so the change is visible. */
+  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
-  /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree
-     (UIX-A11Y-2); the transition delays hiding until the row collapse finishes, and
-     visibility snaps back to visible instantly on expand, so nothing visibly glitches. */
-  .uix-navgroup__panel > div { overflow: hidden; visibility: visible; transition: visibility var(--uix-dur) var(--uix-ease-out); }
+  /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree (UIX-A11Y-2) */
+  .uix-navgroup__panel > div { overflow: hidden; visibility: visible; }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; }
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
