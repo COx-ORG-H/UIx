@@ -13,7 +13,8 @@
   .uix-empty__icon--warning { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
   .uix-stack--compact { gap: var(--uix-space-2); }
 
-  .uix-skeleton { background: linear-gradient(90deg, var(--uix-bg-subtle) 25%, var(--uix-bg-hover) 50%, var(--uix-bg-subtle) 75%); background-size: 200% 100%; animation: uix-shimmer 1.4s linear infinite; border-radius: var(--uix-radius-sm); }
+  .uix-skeleton { background: linear-gradient(90deg, var(--uix-bg-subtle) 25%, var(--uix-bg-hover) 50%, var(--uix-bg-subtle) 75%); background-size: 200% 100%; animation: uix-shimmer var(--uix-loop-shimmer) linear infinite; border-radius: var(--uix-radius-sm); }
+  @media (prefers-reduced-motion: reduce) { .uix-skeleton { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
   .uix-skeleton--text { height: 12px; border-radius: var(--uix-radius-pill); }
   .uix-skeleton--circle { border-radius: 50%; }
   .uix-operation { display: grid; gap: var(--uix-space-3); padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }

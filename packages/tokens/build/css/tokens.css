@@ -116,6 +116,18 @@
     --uix-dur: 160ms;
     --uix-dur-slow: 240ms;
     --uix-dur-slower: 320ms;
+    --uix-dur-exit-fast: 80ms;
+    --uix-dur-exit: 110ms;
+    --uix-dur-exit-slow: 160ms;
+    --uix-dur-highlight: 2400ms;
+    --uix-delay-tooltip: 400ms;
+    --uix-delay-tooltip-skip: 300ms;
+    --uix-loop-spin: 600ms;
+    --uix-loop-progress: 1200ms;
+    --uix-loop-shimmer: 1400ms;
+    --uix-loop-ping: 1600ms;
+    --uix-loop-blink: 1100ms;
+    --uix-loop-pulse: 2000ms;
     --uix-lift: 4px;
     --uix-z-raised: 1;
     --uix-z-sticky: 3;

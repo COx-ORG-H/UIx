@@ -3418,6 +3418,7 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     discardLabels?: Partial<DiscardPromptLabels>;
     // (undocumented)
     footer?: ReactNode;
+    instant?: boolean;
     onClose?: (event?: DialogCloseEvent) => void;
     // (undocumented)
     open: boolean;
@@ -4015,6 +4016,9 @@ export interface PredictionBandPoint {
     // (undocumented)
     y: number;
 }
+
+// @public
+export function prefersReducedMotion(): boolean;
 
 // @public
 export function PresenceDot(input: PresenceDotProps): react.JSX.Element;
@@ -6596,6 +6600,9 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
     name?: ReactNode;
     sub?: ReactNode;
 }
+
+// @public
+export function useReducedMotion(): boolean;
 
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;

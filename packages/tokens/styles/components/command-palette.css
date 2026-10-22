@@ -12,7 +12,7 @@
   .uix-cmdk__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
   /* items mode moves the active row with the pointer, so a hover tint there would mark a second row */
-  @media (hover: hover) { .uix-cmdk:not([data-items]) .uix-cmdk__item:hover { background: var(--uix-bg-hover); } }
+  @media (hover: hover) and (pointer: fine) { .uix-cmdk:not([data-items]) .uix-cmdk__item:hover { background: var(--uix-bg-hover); } }
   .uix-cmdk__item .uix-kbd { margin-left: auto; }
   /* items mode (HAR-1378): label + description, matched text, the shortcut at the end, empty state */
   .uix-cmdk__icon { display: inline-flex; flex: none; }

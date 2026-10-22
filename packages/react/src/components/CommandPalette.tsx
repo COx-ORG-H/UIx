@@ -23,6 +23,9 @@ interface CmdkContextValue {
 }
 const CmdkContext = createContext<CmdkContextValue | null>(null);
 
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
   inputLabel?: string;
@@ -75,6 +78,10 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * Modal/Popover and wire search + keyboard selection in the consumer. The input is
  * a combobox over the listbox of `CommandItem`s; spreads override every default, so
  * consumers already passing their own roles/labels keep working.
+ *
+ * ⌘K is keyboard-initiated and used many times a day, so the palette marks the dialog or
+ * popover it sits in `[data-uix-instant]`: it opens and closes with no animation, without the
+ * consumer knowing the attribute (or the older `data-uix-cmdk-dialog`).
  */
 export function CommandPalette(props: CommandPaletteProps) {
   if (props.items) return <CommandPaletteItems {...props} items={props.items} />;
@@ -96,6 +103,15 @@ function CommandPaletteChildren({
   const resultsTextRef = useRef(resultsText);
   resultsTextRef.current = resultsText;
   const listId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Before the overlay's own open effect runs (a child's layout effect runs first), so the first
+  // open is already instant. Leaves an attribute the consumer set (Modal `instant`) alone.
+  useIsomorphicLayoutEffect(() => {
+    const overlay = rootRef.current?.closest<HTMLElement>('dialog, [popover]');
+    if (!overlay || overlay.hasAttribute('data-uix-instant')) return;
+    overlay.setAttribute('data-uix-instant', '');
+    return () => overlay.removeAttribute('data-uix-instant');
+  }, []);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [announced, setAnnounced] = useState('');
@@ -118,7 +134,7 @@ function CommandPaletteChildren({
 
   return (
     <CmdkContext.Provider value={ctx}>
-      <div className={cx('uix-cmdk', className)} {...props}>
+      <div ref={rootRef} className={cx('uix-cmdk', className)} {...props}>
         <input
           className="uix-cmdk__input"
           role="combobox"
@@ -378,6 +394,8 @@ function CommandPaletteItems({
       ref={ref}
       className="uix-dialog uix-cmdk-dialog"
       data-uix-cmdk-dialog=""
+      // the motion contract (HAR-2578): a keyboard surface opens and closes with no animation
+      data-uix-instant=""
       aria-label={inputLabel}
       // a click on the backdrop (the dialog box itself, outside the palette) closes it
       onClick={(event) => { if (event.target === event.currentTarget) onOpenChange?.(false); }}
