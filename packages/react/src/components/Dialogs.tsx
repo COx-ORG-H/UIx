@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, FormEvent, ReactNode, RefObject } from 'react';
 import { cx } from '../cx.js';
 import { Button } from './Button.js';
@@ -13,9 +13,6 @@ import { resolveAnchor } from '../hooks/useAnchoredPosition.js';
 import { isTopLayer, pushLayer } from '../overlay-stack.js';
 import type { Placement } from '../overlay-position.js';
 import { useUixLabels } from '../labels-context.js';
-
-// useLayoutEffect warns during SSR; fall back to useEffect on the server.
-const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Attributes for a dialog's confirm button (HAR-1831): `data-*` (TENSOR puts `data-action-id`
@@ -274,7 +271,9 @@ export function Popconfirm({
   const hasTitle = title != null;
   const nameBy = labelledBy ?? (hasTitle ? 'title' : 'confirm');
 
-  useIsomorphicLayoutEffect(() => {
+  // A passive effect, after the Popover's own: it listens for `toggle` to place itself, also when
+  // the step mounts open.
+  useEffect(() => {
     const panel = document.getElementById(panelId);
     if (!panel) return undefined;
     const shown = () => { try { return panel.matches(':popover-open'); } catch { return false; } };

@@ -99,6 +99,21 @@ test('Tabs wrap: the selected tab keeps its cue on an upper row (line underline,
   expect(cue.pillShadow).not.toBe('none');
 });
 
+test('Tabs motion: the underline slides after a pointer choice, moves at once from the keyboard and with reduced motion', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const duration = () => page.locator('#tabs-line-wide [role="tab"][aria-selected="true"]')
+    .evaluate((tab) => parseFloat(getComputedStyle(tab, '::after').transitionDuration));
+  await page.locator('#tabs-line-wide').getByRole('tab', { name: 'Prüfpfad' }).click();
+  expect(await duration(), 'a pointer choice keeps the short slide').toBeGreaterThan(0.05);
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('#tabs-line-wide').getByRole('tab', { name: 'Regulatorische Meldungen' })).toHaveAttribute('aria-selected', 'true');
+  expect(await duration(), 'arrow keys: no animation').toBeLessThan(0.01);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.mouse.click(5, 5);
+  await page.locator('#tabs-line-wide').getByRole('tab', { name: 'Übersicht' }).click();
+  expect(await duration(), 'reduced motion: none').toBeLessThan(0.01);
+});
+
 test('Tabs in a form: a click and the arrow keys switch tabs and never submit the form', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const preview = page.getByRole('tab', { name: 'Vorschau' });
@@ -137,6 +152,13 @@ test('Tree: each treeitem is named by its own row, not by its expanded subtree',
   await expect(tree.getByRole('treeitem', { name: /Alice Lovelace/ }), 'only Alice matches, not her manager').toHaveCount(1);
   await expect(tree.getByRole('treeitem', { name: /Cleo/ })).toHaveCount(1);
   await expect(tree.getByRole('treeitem', { name: 'Mira Kovač', exact: true }), 'the rich row is named by ariaLabel').toHaveCount(1);
+  // Each level is indented past its parent (the `.uix-tree ul` reset used to win: every row at x 0).
+  const lefts = await tree.locator('.uix-tree__label').evaluateAll((labels) => labels.map((l) => Math.round(l.getBoundingClientRect().left)));
+  const [grace, alice, bob, cleo, mira] = lefts;
+  expect(alice).toBeGreaterThan(grace + 8);
+  expect(bob).toBe(alice);
+  expect(cleo).toBeGreaterThan(bob + 8);
+  expect(mira).toBe(grace);
 });
 
 test('useVirtualRows measureRows: the window and spacers follow the rows\' real height', async ({ page }, testInfo) => {
