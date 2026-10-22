@@ -23,6 +23,7 @@ import {
   REACT_COMPONENT_SLUGS,
   exampleRouteFor,
   getPage,
+  pageContent,
 } from './docs.js';
 import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
 
@@ -286,3 +287,31 @@ test('the #chart CSS demo uses only classes the built CSS defines (HAR-1556)', (
   assert.ok(used.length > 10, `checked ${used.length} classes`);
   assert.deepEqual(used.filter((name) => name.startsWith('uix-') && !defined.has(name)), []);
 });
+
+test('the status colour policy is a Foundations page with its rules, matrix and both queues (HAR-1564)', () => {
+  assert.equal(getPage('status-colour'), 'status-colour');
+  assert.match(readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8'), /\{ name: 'Status colour', slug: 'status-colour', group: 'Foundations'/);
+  const html = pageContent('status-colour');
+  assert.equal((html.match(/<ol data-status-rules>(.*?)<\/ol>/s)[1].match(/<li>/g) ?? []).length, 10);
+  assert.equal((html.match(/data-status-matrix[^>]*>.*?<tbody>(.*?)<\/tbody>/s)[1].match(/<tr>/g) ?? []).length, 10);
+  const rowsOf = (kind) => html.match(new RegExp(`data-status-queue="${kind}">.*?<tbody>(.*?)</tbody>`, 's'))[1].split('</tr>').filter((r) => r.includes('<td>'));
+  // a filled hued pill: soft treatment (no --dot / --outline modifier) of any tone but neutral
+  const filled = (row) => [...row.matchAll(/class="uix-pill uix-pill--([a-z0-9-]+)"/g)].map((m) => m[1]).filter((tone) => tone !== 'neutral' && tone !== 'muted');
+  const dont = rowsOf('dont');
+  const policy = rowsOf('do');
+  assert.equal(dont.length, 6);
+  assert.equal(policy.length, 6);
+  assert.ok(dont.every((row) => filled(row).length >= 2), 'the don\u2019t queue colours every row');
+  assert.ok(policy.every((row) => filled(row).length <= 1), 'at most one filled hued pill per row');
+  assert.ok(policy.filter((row) => filled(row).length > 0).length / policy.length <= 0.3, 'filled hues on no more than 30% of the rows');
+  const family = { progress: 'blue', info: 'blue', p4: 'blue', warning: 'amber', attention: 'amber', p2: 'amber', p3: 'amber', 'sla-at-risk': 'amber', danger: 'red', critical: 'red', overdue: 'red', p1: 'red', 'sla-breached': 'red', success: 'green', 'sla-ok': 'green' };
+  const hues = new Set(policy.flatMap((row) => [...row.matchAll(/class="uix-pill uix-pill--([a-z0-9-]+)/g)].map((m) => family[m[1]]).filter(Boolean)));
+  assert.ok(hues.size <= 3, `at most three hues: ${[...hues]}`);
+});
+
+test('the status-colour policy is linked from Status pill, Alert, Stat, SchedulingCalendar and SchedulingTimeline', () => {
+  for (const slug of ['status-pill', 'alert', 'stat-tile', 'scheduling-calendar', 'scheduling-timeline']) {
+    assert.match(pageContent(slug), /<a href="#status-colour">status colour policy<\/a>/, slug);
+  }
+});
+
