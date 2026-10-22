@@ -34,6 +34,11 @@
        the tone; the label beside it carries the meaning, the dot stays as a shape (HAR-1563) */
     .uix-pill__dot, .uix-stat__value::before { forced-color-adjust: none; background: CanvasText; }
 
+    /* masked glyphs (HAR-1576) paint a background through the mask: redraw it in the text colour,
+       and the active sort arrow in the selection colour */
+    .uix-glyph, .uix-table th[data-sort]::after, button.uix-select::after { forced-color-adjust: none; background: CanvasText; opacity: 1; }
+    .uix-table th[aria-sort]:not([aria-sort="none"])::after { background: Highlight; }
+
     /* tag / chip remove — the hover circle is a background tint only (HAR-1569); the icon is
        currentColor, so it already takes ButtonText */
     .uix-tag__remove:hover, .uix-chip__remove:hover { outline: 1px solid Highlight; outline-offset: -1px; }

@@ -177,9 +177,9 @@
       "brotli": 408
     },
     "styles/components/icon.css": {
-      "raw": 1634,
-      "gzip": 675,
-      "brotli": 538
+      "raw": 3846,
+      "gzip": 1269,
+      "brotli": 1068
     },
     "styles/components/inbox.css": {
       "raw": 1791,
@@ -262,9 +262,9 @@
       "brotli": 402
     },
     "styles/components/metric-input.css": {
-      "raw": 1387,
-      "gzip": 532,
-      "brotli": 441
+      "raw": 1629,
+      "gzip": 632,
+      "brotli": 530
     },
     "styles/components/modal.css": {
       "raw": 3993,
@@ -287,9 +287,9 @@
       "brotli": 447
     },
     "styles/components/pagination.css": {
-      "raw": 1389,
-      "gzip": 563,
-      "brotli": 453
+      "raw": 1554,
+      "gzip": 626,
+      "brotli": 516
     },
     "styles/components/peek.css": {
       "raw": 3983,
@@ -367,9 +367,9 @@
       "brotli": 717
     },
     "styles/components/select.css": {
-      "raw": 8546,
-      "gzip": 2366,
-      "brotli": 1972
+      "raw": 9724,
+      "gzip": 2610,
+      "brotli": 2195
     },
     "styles/components/sidebar.css": {
       "raw": 10132,
@@ -412,9 +412,9 @@
       "brotli": 405
     },
     "styles/components/steps.css": {
-      "raw": 4579,
-      "gzip": 1285,
-      "brotli": 1055
+      "raw": 4726,
+      "gzip": 1339,
+      "brotli": 1099
     },
     "styles/components/switch.css": {
       "raw": 1198,
@@ -427,9 +427,9 @@
       "brotli": 1349
     },
     "styles/components/table.css": {
-      "raw": 18971,
-      "gzip": 4539,
-      "brotli": 3915
+      "raw": 21004,
+      "gzip": 4950,
+      "brotli": 4252
     },
     "styles/components/tabs.css": {
       "raw": 4577,
@@ -457,9 +457,9 @@
       "brotli": 384
     },
     "styles/components/toast.css": {
-      "raw": 2793,
-      "gzip": 926,
-      "brotli": 764
+      "raw": 3134,
+      "gzip": 1031,
+      "brotli": 854
     },
     "styles/components/tooltip.css": {
       "raw": 3195,
@@ -482,14 +482,14 @@
       "brotli": 455
     },
     "styles/components/view-menu.css": {
-      "raw": 7703,
-      "gzip": 2234,
-      "brotli": 1846
+      "raw": 7979,
+      "gzip": 2320,
+      "brotli": 1923
     },
     "styles/forced-colors.css": {
-      "raw": 7010,
-      "gzip": 2149,
-      "brotli": 1803
+      "raw": 7398,
+      "gzip": 2272,
+      "brotli": 1915
     },
     "styles/motion.css": {
       "raw": 1853,

@@ -20,3 +20,17 @@
   .uix-icon-grid__item { display: grid; justify-items: center; gap: var(--uix-space-2); padding: var(--uix-space-3) var(--uix-space-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface); color: var(--uix-text); }
   .uix-icon-grid__item code { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: break-word; text-align: center; }
 }
+
+/* Glyphs for plain CSS (HAR-1576): an icon where markup cannot hold an <svg> (generated content, a
+   CMS field), drawn from the icon set through a mask in currentColor, so it takes the text colour and
+   the theme. <span class="uix-glyph uix-glyph--x" aria-hidden="true"></span>. Never a text character:
+   a typed × or › has the font's shape and baseline, not the icon set's.
+   scripts/glyph-mask.mjs prints each url; src/glyph-masks.test.mjs checks them against the glyphs. */
+@layer uix.components {
+  .uix-glyph { display: inline-block; flex: none; width: var(--uix-icon-sm); height: var(--uix-icon-sm); vertical-align: middle; background: currentColor; -webkit-mask: var(--glyph) center / contain no-repeat; mask: var(--glyph) center / contain no-repeat; }
+  .uix-glyph--chevron-down { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+  .uix-glyph--arrow-up { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E"); }
+  .uix-glyph--arrow-down { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E"); }
+  .uix-glyph--arrow-up-down { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-4 4-4-4'/%3E%3Cpath d='M17 20V4'/%3E%3Cpath d='m3 8 4-4 4 4'/%3E%3Cpath d='M7 4v16'/%3E%3C/svg%3E"); }
+  .uix-glyph--x { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E"); }
+}

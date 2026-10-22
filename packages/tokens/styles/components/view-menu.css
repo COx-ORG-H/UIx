@@ -73,5 +73,8 @@
   .uix-saved-views__actions:has([aria-expanded="true"]) { opacity: 1; }
   .uix-saved-views__pin { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer; }
   .uix-saved-views__pin:is(:hover, :focus-visible), .uix-saved-views__pin[data-on] { color: var(--uix-warning-text); background: var(--uix-bg-hover); }
+  /* the pin is the icon set's Star (HAR-1576): an outline, filled while pinned, so the state is a shape too */
+  .uix-saved-views__pin > .uix-icon { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-saved-views__pin[data-on] > .uix-icon { fill: currentColor; }
   .uix-saved-views__footer { border-top: 1px solid var(--uix-border); margin-top: var(--uix-space-1); padding: var(--uix-space-2); }
 }

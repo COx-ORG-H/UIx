@@ -3,6 +3,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon } from '../icons/components.js';
 
 function getPageNumbers(page: number, total: number): (number | 'ellipsis')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -106,23 +107,23 @@ export function Pagination({
     const linked = firstHref != null || previousHref != null || nextHref != null;
     controls = (
       <>
-        {(onFirst || firstHref != null) && render({ key: 'first', content: '«', label: labels.first, disabled: !hasPrevious, href: linked ? firstHref ?? '' : undefined, onClick: onFirst })}
-        {render({ key: 'prev', content: '‹', label: labels.previous, disabled: !hasPrevious, href: linked ? previousHref ?? '' : undefined, onClick: onPrevious })}
+        {(onFirst || firstHref != null) && render({ key: 'first', content: <ChevronsLeftIcon />, label: labels.first, disabled: !hasPrevious, href: linked ? firstHref ?? '' : undefined, onClick: onFirst })}
+        {render({ key: 'prev', content: <ChevronLeftIcon />, label: labels.previous, disabled: !hasPrevious, href: linked ? previousHref ?? '' : undefined, onClick: onPrevious })}
         {summary != null && <span className="uix-pagination__summary">{summary}</span>}
-        {render({ key: 'next', content: '›', label: labels.next, disabled: !hasNext, href: linked ? nextHref ?? '' : undefined, onClick: onNext })}
+        {render({ key: 'next', content: <ChevronRightIcon />, label: labels.next, disabled: !hasNext, href: linked ? nextHref ?? '' : undefined, onClick: onNext })}
       </>
     );
   } else {
     const go = (target: number) => (hrefFor ? { href: hrefFor(target) } : { onClick: () => onChange?.(target) });
     controls = (
       <>
-        {render({ key: 'prev', content: '‹', label: labels.previous, disabled: page <= 1, ...go(page - 1) })}
+        {render({ key: 'prev', content: <ChevronLeftIcon />, label: labels.previous, disabled: page <= 1, ...go(page - 1) })}
         {getPageNumbers(page, pageCount).map((p, i) =>
           p === 'ellipsis'
             ? <span key={`e${i}`} className="uix-pagination__ellipsis">…</span>
             : render({ key: `p${p}`, content: p, current: p === page, ...go(p) }),
         )}
-        {render({ key: 'next', content: '›', label: labels.next, disabled: page >= pageCount, ...go(page + 1) })}
+        {render({ key: 'next', content: <ChevronRightIcon />, label: labels.next, disabled: page >= pageCount, ...go(page + 1) })}
       </>
     );
   }

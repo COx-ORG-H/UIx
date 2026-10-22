@@ -1160,3 +1160,18 @@ the subtle background and `--uix-space-4` padding (`padding="sm"`: `--uix-space-
 in a `Card`, which brings a second shadow, card padding and card semantics. `tone="surface"` is for a well on
 a panel that is already subtle. It lays out nothing; give it a `role="group"` and a name when the preview needs
 one.
+
+#### Icons, not text glyphs (HAR-1576)
+
+Toast, Pagination, MetricInput, SavedViewMenu and Steps draw the icon set (`XIcon`, the chevrons, `PlusIcon`
+/ `MinusIcon`, `StarIcon`) where they drew `× ‹ › « + − ★ !`. The table sort arrows and the `Select` trigger's
+chevron are the icon set's glyphs through a CSS mask in `currentColor`, so they follow the theme; plain CSS gets
+the same through `.uix-glyph`:
+
+```html
+<span class="uix-glyph uix-glyph--chevron-down" aria-hidden="true"></span>
+```
+
+`node packages/react/scripts/glyph-icons.mjs` is the guard (it runs in `npm test`): a glyph as the whole content
+of a button, a link or an icon slot, or in a CSS `content:`, fails with its file and line. Text that only looks
+like an icon (a Kbd legend, a diff sign) goes in `glyph-icons.allow.json` with a reason.
