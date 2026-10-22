@@ -91,7 +91,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "sidebar": {
     "route": "examples-navigation",
-    "selector": ".uix-sidebar"
+    "selector": ".uix-sidebar",
+    "parts": [".uix-sidebar", "[data-sidebar-account-example]"]
   },
   "breadcrumbs": {
     "route": "examples-navigation",

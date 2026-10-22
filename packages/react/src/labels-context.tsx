@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { AccountMenuLabels } from './components/AccountMenu.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -37,7 +38,13 @@ export interface UixLabels {
   peek?: { previous?: string; next?: string; close?: string };
   toast?: { dismiss?: string };
   toaster?: { region?: string };
-  appShell?: { skipToContent?: string; exitFocus?: string };
+  /**
+   * `openNav`: the phone-tier button that opens the navigation drawer; `navigation`: that
+   * drawer's title (HAR-1371).
+   */
+  appShell?: { skipToContent?: string; exitFocus?: string; openNav?: string; navigation?: string };
+  /** `AccountMenu` (HAR-1371): the menu's name. */
+  accountMenu?: Partial<AccountMenuLabels>;
   sidebar?: { expand?: string; collapse?: string };
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */

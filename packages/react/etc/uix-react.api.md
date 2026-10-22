@@ -39,6 +39,38 @@ export interface AccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, '
     variant?: StateVariant;
 }
 
+// @public
+export function accountInitials(name: string): string;
+
+// @public
+export function AccountMenu(input: AccountMenuProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AccountMenuLabels {
+    menu: string;
+}
+
+// @public (undocumented)
+export interface AccountMenuProps {
+    // (undocumented)
+    className?: string;
+    collapsed?: boolean;
+    items?: ReactNode;
+    // (undocumented)
+    labels?: Partial<AccountMenuLabels>;
+    placement?: Placement;
+    // (undocumented)
+    user: AccountMenuUser;
+}
+
+// @public (undocumented)
+export interface AccountMenuUser {
+    avatar?: string | ReactNode;
+    name: string;
+    status?: AvatarPresence;
+    sub?: ReactNode;
+}
+
 // @public (undocumented)
 export function addCalendarDays(value: string, amount: number): string;
 
@@ -101,13 +133,20 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
     collapsed?: boolean;
+    defaultNav?: ShellNav;
     exitFocusLabel?: ReactNode;
     focus?: boolean;
     layout?: 'frame' | 'viewport';
     mainBleed?: boolean;
     mainId?: string;
     nav?: ShellNav;
+    navHotkey?: string;
+    navigationLabel?: ReactNode;
+    navTierStorageKey?: string;
     onExitFocus?: () => void;
+    onNavChange?: (nav: ShellNav) => void;
+    openNavLabel?: string;
+    phoneNav?: 'drawer';
     // (undocumented)
     sidebar?: ReactNode;
     skipToContentLabel?: ReactNode;
@@ -1321,6 +1360,9 @@ export interface DaySpanLayout {
     // (undocumented)
     placed: PlacedDaySpan[];
 }
+
+// @public (undocumented)
+export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
 
 // @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
@@ -5400,6 +5442,7 @@ export function Sidebar(input: SidebarProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface SidebarProps extends HTMLAttributes<HTMLElement> {
+    actions?: ReactNode;
     // (undocumented)
     brand?: ReactNode;
     // (undocumented)
@@ -5410,12 +5453,22 @@ export interface SidebarProps extends HTMLAttributes<HTMLElement> {
     collapseLabel?: string;
     // (undocumented)
     expandLabel?: string;
+    footer?: ReactNode;
     // (undocumented)
     nav?: 'full' | 'rail';
     // (undocumented)
     onToggle?: () => void;
+    search?: SidebarSearch;
     // (undocumented)
     toggleIcon?: ReactNode;
+}
+
+// @public
+export interface SidebarSearch {
+    label: ReactNode;
+    // (undocumented)
+    onActivate: () => void;
+    shortcut?: KeyShortcut;
 }
 
 // @public (undocumented)
@@ -6324,13 +6377,15 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 
 // @public
 export interface UixLabels {
+    accountMenu?: Partial<AccountMenuLabels>;
     alert?: {
         dismiss?: string;
     };
-    // (undocumented)
     appShell?: {
         skipToContent?: string;
         exitFocus?: string;
+        openNav?: string;
+        navigation?: string;
     };
     // (undocumented)
     attachment?: Partial<AttachmentLabels>;

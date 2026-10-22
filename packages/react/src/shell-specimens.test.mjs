@@ -42,6 +42,16 @@ test('staff presets (HAR-1815): DetailPage staff, a compact h3 section head, tab
   assert.equal((work.match(/<span class="uix-cell-sub uix-cell-sub--tabular">INV /g) ?? []).length, 2);
 });
 
+test('Sidebar actions, search and AccountMenu (HAR-1371): a full sidebar and a rail', () => {
+  const nav = specimens['examples-navigation'];
+  assert.match(nav, /data-sidebar-account-example/);
+  assert.equal((nav.match(/<button type="button" class="uix-sidebar__search" aria-keyshortcuts="Control\+K">/g) ?? []).length, 2);
+  assert.match(nav, /<div class="uix-sidebar__actions"><button[^>]*aria-label="Switch to dark mode"/);
+  assert.match(nav, /<div class="uix-sidebar__foot"><button type="button" class="uix-account-menu"[^>]*aria-haspopup="menu"/);
+  assert.match(nav, /class="uix-account-menu uix-account-menu--collapsed"/);
+  assert.match(nav, /<nav class="uix-sidebar" data-collapsed="true" data-nav="rail"/);
+});
+
 test('no React-generated id reaches the page', () => {
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

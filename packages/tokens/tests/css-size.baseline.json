@@ -17,9 +17,9 @@
       "brotli": 771
     },
     "styles/components/app-shell.css": {
-      "raw": 5859,
-      "gzip": 1848,
-      "brotli": 1536
+      "raw": 7112,
+      "gzip": 2151,
+      "brotli": 1797
     },
     "styles/components/arrival.css": {
       "raw": 1478,
@@ -372,9 +372,9 @@
       "brotli": 2182
     },
     "styles/components/sidebar.css": {
-      "raw": 10304,
-      "gzip": 2673,
-      "brotli": 2246
+      "raw": 14069,
+      "gzip": 3306,
+      "brotli": 2809
     },
     "styles/components/sla.css": {
       "raw": 516,

@@ -143,3 +143,52 @@
   .uix-sidebar[data-nav="rail"] .uix-navitem { justify-content: center; align-items: center; padding: 0; gap: 0; }
   .uix-sidebar[data-nav="rail"] .uix-sidebar__head { justify-content: center; padding-inline: 0; }
 }
+
+/* Head actions, the search row, the foot and AccountMenu (HAR-1371). Hover tints only where the
+   device can hover; nothing here moves, so a rail switch is instant. */
+@layer uix.components {
+  .uix-sidebar__head .uix-sidebar__brand { flex: 1 1 auto; }
+  .uix-sidebar__actions { display: flex; align-items: center; gap: var(--uix-space-1); flex: none; }
+
+  .uix-sidebar__search {
+    display: flex; align-items: center; gap: var(--uix-space-2); width: 100%; min-height: 32px; margin-block-end: var(--uix-space-1);
+    padding: 0 var(--uix-space-2) 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text-muted); font: inherit; font-size: var(--uix-text-body); text-align: start; cursor: pointer;
+  }
+  .uix-sidebar__search:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-sidebar__search-icon { width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex: none; }
+  .uix-sidebar__search-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-sidebar__search-keys { flex: none; }
+
+  .uix-sidebar__foot { margin-block-start: auto; padding-block-start: var(--uix-space-2); border-block-start: 1px solid var(--uix-border); }
+
+  .uix-account-menu {
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; min-height: 44px; padding: var(--uix-space-1) var(--uix-space-2);
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text); font: inherit; text-align: start; cursor: pointer;
+  }
+  .uix-account-menu:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  .uix-account-menu[aria-expanded="true"] { background: var(--uix-bg-active); }
+  .uix-account-menu__avatar { flex: none; }
+  .uix-account-menu__text { display: grid; flex: 1 1 auto; min-width: 0; }
+  .uix-account-menu__name { font-size: var(--uix-text-body); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the second line is hushed, not muted: muted dips under 4.5:1 on the hover and open tints */
+  .uix-account-menu__sub { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-account-menu__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex: none; color: var(--uix-text-muted); }
+
+  @media (hover: hover) {
+    .uix-sidebar__search:hover { border-color: var(--uix-border-strong); color: var(--uix-text-hushed); }
+    .uix-account-menu:hover { background: var(--uix-bg-hover); }
+  }
+
+  /* the rail: the search row and the account trigger become centred icon buttons; their words
+     stay as the accessible name (the clip pattern the nav labels use) */
+  :is(.uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"]) .uix-sidebar__actions,
+  :is(.uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"]) .uix-sidebar__search-keys,
+  .uix-account-menu--collapsed .uix-account-menu__chevron { display: none; }
+  :is(.uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"]) .uix-sidebar__search { justify-content: center; min-height: 36px; padding: 0; }
+  :is(.uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"]) .uix-sidebar__search-label,
+  .uix-account-menu--collapsed .uix-account-menu__text {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  .uix-account-menu--collapsed { justify-content: center; padding-inline: 0; }
+}

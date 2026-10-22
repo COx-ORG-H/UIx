@@ -1213,3 +1213,31 @@ like an icon (a Kbd legend, a diff sign) goes in `glyph-icons.allow.json` with a
 - `DetailPage variant="staff"`: h2 / 1.15 title, un-underlined hushed back link, eyebrow metric labels over
   regular tabular h3 values.
 - `SectionHead size="compact"` (15 px / 1.3 / 600) and `as="h3"`; `CellSub tabular`.
+
+#### Sidebar actions and search, AccountMenu, the rail hotkey and the phone nav tier (HAR-1371)
+
+```tsx
+const [nav, setNav] = useState<ShellNav>('full');
+<AppShell layout="viewport" navHotkey="[" navTierStorageKey="staff-nav" onNavChange={setNav} phoneNav="drawer"
+  sidebar={(
+    <Sidebar brand={brand} nav={nav === 'rail' ? 'rail' : 'full'}
+      actions={<><ModeToggle /><Menu trigger={<Button icon size="sm" variant="ghost" aria-label={t('tools')}><EllipsisIcon /></Button>}>…</Menu></>}
+      search={{ label: t('search'), shortcut: ['Mod', 'K'], onActivate: openPalette }}
+      footer={<AccountMenu collapsed={nav === 'rail'} user={{ name, sub: email, status: 'online' }} items={<>
+        <MenuItem href="/profile">{t('profile')}</MenuItem>
+        <MenuItem onSelect={signOut} tone="danger">{t('signOut')}</MenuItem>
+      </>} />}>
+      {navItems}
+    </Sidebar>
+  )}>
+  {page}
+</AppShell>
+```
+
+- `Sidebar actions` sit beside the brand (hidden in the rail); `search` is a row that opens your search and shows
+  its keys (it does not bind them: your command palette listens); `footer` is pinned to the bottom.
+- `AccountMenu`: avatar (photo, your node, or initials), name and a second line as a `Menu` trigger;
+  `collapsed` in the rail.
+- `navHotkey` switches full ↔ rail instantly, never while typing; `navTierStorageKey` remembers the tier before
+  the first paint and reports it through `onNavChange`.
+- `phoneNav="drawer"`: at 40rem and under, a menu button opens the sidebar in a start-side `Drawer`.

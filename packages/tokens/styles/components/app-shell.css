@@ -77,3 +77,22 @@
     .uix-shell--viewport > .uix-shell__main { padding: var(--uix-space-5) var(--uix-space-4) var(--uix-space-6); }
   }
 }
+
+/* The phone nav tier (HAR-1371, AppShell phoneNav="drawer"): at 40rem and under, the sidebar
+   column goes and a menu button opens the sidebar in a start-side drawer. The switch is a
+   breakpoint, not an animation; the drawer brings the kit's own enter and exit. */
+@layer uix.components {
+  .uix-shell__nav-button { display: none; }
+  .uix-shell__phone-bar { display: none; }
+  /* the sidebar fills its column, so a Sidebar footer (the AccountMenu) sits at the bottom */
+  .uix-shell__sidebar > .uix-sidebar { min-height: 100%; }
+  .uix-shell__nav-drawer .uix-sidebar { width: auto; min-height: 100%; padding: 0; background: transparent; }
+  .uix-shell__nav-drawer-body { display: flex; flex-direction: column; min-height: 100%; }
+  @media (max-width: 40rem) {
+    .uix-shell[data-phone-nav], .uix-shell[data-phone-nav][data-nav] { grid-template-columns: minmax(0, 1fr); }
+    .uix-shell[data-phone-nav] > .uix-shell__sidebar { display: none; }
+    .uix-shell[data-phone-nav] > :is(.uix-shell__topbar, .uix-shell__main) { grid-column: 1; }
+    .uix-shell[data-phone-nav] .uix-shell__nav-button { display: inline-flex; flex: none; }
+    .uix-shell[data-phone-nav] .uix-shell__phone-bar { display: flex; margin-block-end: var(--uix-space-3); }
+  }
+}

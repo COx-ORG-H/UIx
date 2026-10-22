@@ -101,6 +101,26 @@ export async function renderShellSpecimens() {
       `<div data-shell-viewport-example>${html(staffShell).replace(/<main\b/, '<div').replace(/<\/main>/, '</div>')}</div>`,
     ].join('\n'));
 
+    // ── Sidebar actions + search, AccountMenu in the foot, the rail (HAR-1371) ─────────────
+    const moonIcon = navIcon('M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z');
+    const staffSidebar = (rail) => h(ui.Sidebar, {
+      brand: 'Biblioteka', nav: rail ? 'rail' : 'full', 'aria-label': rail ? 'Staff navigation, rail' : 'Staff navigation', style: { height: '26rem' },
+      actions: h(ui.Button, { size: 'sm', variant: 'ghost', icon: true, 'aria-label': 'Switch to dark mode' }, moonIcon),
+      search: { label: 'Search', shortcut: ['Mod', 'K'], onActivate: () => {} },
+      footer: h(ui.AccountMenu, { collapsed: rail, user: { name: 'Dževad Hodžić', sub: 'dzevad.hodzic@biblioteka.ba', status: 'online' } }),
+    },
+    h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M3 12l9-9 9 9M5 10v10h14V10'), active: true }, 'Overview'),
+    h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20') }, 'Catalogue'));
+    const fullSidebar = mount(staffSidebar(false));
+    const railSidebar = mount(staffSidebar(true));
+    add('examples-navigation', [
+      caption('Sidebar head actions, search row and account menu (React <code>Sidebar actions search footer</code>, <code>AccountMenu</code>) — a mode toggle beside the brand, a search row that shows its shortcut, and the signed-in person in the foot; in the rail each keeps its name as an icon button. <code>AppShell navHotkey="["</code> switches the rail at once and <code>navTierStorageKey</code> remembers it; <code>phoneNav="drawer"</code> moves the sidebar into a start-side drawer at 40rem and under'),
+      '<div data-sidebar-account-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="width:var(--uix-sidebar-w);border:1px solid var(--uix-border);border-radius:var(--uix-radius-md);overflow:hidden">${html(fullSidebar)}</div>`,
+      `<div style="border:1px solid var(--uix-border);border-radius:var(--uix-radius-md);overflow:hidden">${html(railSidebar)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     const record = mount(h(ui.DetailPage, {
       variant: 'staff', back: { href: '#examples-workspace', label: 'Sve posudbe' }, eyebrow: 'Posudba', title: 'L-2026-0412',
       subtitle: 'Na zadnjem čitanju, rok vraćanja za tri dana.',

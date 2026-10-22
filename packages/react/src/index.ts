@@ -143,7 +143,10 @@ export { AppShell } from './components/AppShell.js';
 export type { AppShellProps, ShellNav } from './components/AppShell.js';
 
 export { Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem } from './components/Sidebar.js';
-export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
+export type { SidebarProps, SidebarSearch, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
+// The signed-in person's menu for the sidebar foot (HAR-1371)
+export { AccountMenu, DEFAULT_ACCOUNT_MENU_LABELS, accountInitials } from './components/AccountMenu.js';
+export type { AccountMenuProps, AccountMenuUser, AccountMenuLabels } from './components/AccountMenu.js';
 
 export { StarButton } from './components/StarButton.js';
 export type { StarButtonProps } from './components/StarButton.js';
