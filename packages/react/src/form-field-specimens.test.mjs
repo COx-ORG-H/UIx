@@ -60,6 +60,11 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /aria-label="Remove Zeitgeschichte-und-Gesellschaftswissenschaften"/);
   assert.match(forms, /class="uix-field__warning uix-taginput__message" role="status">Network is already added\.<\/span>/);
   assert.match(forms, /<input[^>]*name="labels"[^>]*value="vpn"|<input[^>]*value="vpn"[^>]*name="labels"/);
+  // SearchSuggest freeText: no magnifier, the typed value, the list open with both rows
+  assert.match(forms, /data-free-text-example/);
+  assert.match(forms, /class="uix-search-suggest uix-search-suggest--free-text"/);
+  assert.match(forms, /value="Dell EMC"/);
+  assert.match(forms, /enterkeyhint="done"/i);
   // FilterPopover date: a DatePicker showing the German date, no native date input
   const data = specimens['examples-data-display'];
   assert.match(data, /data-filter-date-example/);

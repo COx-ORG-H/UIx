@@ -5307,6 +5307,7 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     empty?: ReactNode;
     error?: ReactNode;
     footer?: SearchSuggestAction;
+    freeText?: boolean;
     heading?: string;
     headingAction?: SearchSuggestAction;
     highlight?: string;
@@ -5320,7 +5321,7 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     name?: string;
     note?: ReactNode;
     onOpenChange?: (open: boolean) => void;
-    onSelect: (id: string, option: SearchSuggestOption) => void;
+    onSelect?: (id: string, option: SearchSuggestOption) => void;
     onValueChange: (value: string) => void;
     open?: boolean;
     options: readonly SearchSuggestOption[];

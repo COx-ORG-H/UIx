@@ -39,8 +39,19 @@ export interface SearchSuggestProps
   onValueChange: (value: string) => void;
   /** The suggestions to show, best first. The consumer filters; this component only renders. */
   options: readonly SearchSuggestOption[];
-  /** Called when a row is chosen by click or Enter. The list closes afterwards. */
-  onSelect: (id: string, option: SearchSuggestOption) => void;
+  /**
+   * Called when a row is chosen by click or Enter. The list closes afterwards. Optional with
+   * `freeText`, where choosing a row also puts its title in the field.
+   */
+  onSelect?: (id: string, option: SearchSuggestOption) => void;
+  /**
+   * A text field with suggestions, not a search (HAR-2465): the value is the text. Enter keeps
+   * what was typed and never submits the surrounding form; no row is picked unless the person
+   * moves to it (ArrowDown / ArrowUp, then Enter) or clicks it, and then its title replaces the
+   * text (`onValueChange`) without submitting either. Blur, Tab and Escape keep the text; while
+   * `loading`, Enter does nothing. No magnifier is drawn.
+   */
+  freeText?: boolean;
   /** Accessible name of the field (there is no visible label; the placeholder is not a label). */
   label: string;
   placeholder?: string;
@@ -143,6 +154,7 @@ export function SearchSuggest({
   onValueChange,
   options,
   onSelect,
+  freeText = false,
   label,
   placeholder,
   highlight,
@@ -211,8 +223,11 @@ export function SearchSuggest({
 
   const choose = (index: number) => {
     const option = options[index];
-    if (option) onSelect(option.id, option);
-    else if (footer && index === options.length) footer.onSelect();
+    if (option) {
+      // free text: the row's title becomes the value
+      if (freeText && option.title !== value) onValueChange(option.title);
+      onSelect?.(option.id, option);
+    } else if (footer && index === options.length) footer.onSelect();
     else return;
     setOpen(false);
     setActive(-1);
@@ -249,6 +264,13 @@ export function SearchSuggest({
         return;
       case 'Enter':
         if (visible && active >= 0) { event.preventDefault(); choose(active); return; }
+        if (freeText) {
+          // The text is the value: Enter keeps it, closes the list and never submits the form,
+          // also while suggestions load.
+          event.preventDefault();
+          if (open) setOpen(false);
+          return;
+        }
         // Only a row the user can see: after Escape closed the list, Enter must not act on it.
         if (visible && hasText && options.length) { event.preventDefault(); choose(0); }
         return;
@@ -258,7 +280,8 @@ export function SearchSuggest({
           event.stopPropagation();
           setOpen(false);
           setActive(-1);
-        } else if (value) {
+        } else if (value && !freeText) {
+          // A search clears on the second Escape; free text is a value and stays.
           event.preventDefault();
           event.stopPropagation();
           onValueChange('');
@@ -303,13 +326,13 @@ export function SearchSuggest({
   return (
     <div
       ref={rootRef}
-      className={cx('uix-search-suggest', size === 'lg' && 'uix-search-suggest--lg', className)}
+      className={cx('uix-search-suggest', size === 'lg' && 'uix-search-suggest--lg', freeText && 'uix-search-suggest--free-text', className)}
       data-open={visible || undefined}
       onBlur={handleBlur}
       {...props}
     >
       <div ref={fieldBoxRef} className="uix-search-suggest__field">
-        <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>
+        {!freeText && <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>}
         <input
           ref={fieldRef}
           id={inputId}
@@ -325,7 +348,7 @@ export function SearchSuggest({
           aria-busy={loading || undefined}
           autoComplete="off"
           spellCheck={false}
-          enterKeyHint="search"
+          enterKeyHint={freeText ? 'done' : 'search'}
           name={name}
           value={value}
           placeholder={placeholder}

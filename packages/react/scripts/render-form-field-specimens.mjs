@@ -164,6 +164,17 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── SearchSuggest freeText (HAR-2465): a value field with suggestions, open on a typed name ──
+    const makers = [{ id: 'dell', title: 'Dell' }, { id: 'dell-tech', title: 'Dell Technologies' }];
+    const freeText = mount(h('div', { className: 'uix-field' },
+      h('label', { className: 'uix-field__label', htmlFor: 'ff-maker' }, 'Manufacturer'),
+      h(ui.SearchSuggest, { freeText: true, inputId: 'ff-maker', label: 'Manufacturer', value: 'Dell EMC', onValueChange: noop, options: makers, highlight: 'Dell' })));
+    act(() => { freeText.querySelector('input').focus(); });
+    blocks.push([
+      caption('Free text with suggestions (React <code>SearchSuggest freeText</code>) — the value is the text: Enter keeps “Dell EMC” and never submits the form, a row replaces the text only when it is chosen (ArrowDown then Enter, or a click), and blur, Tab and Escape keep what was typed'),
+      `<div data-free-text-example style="max-width:24rem;min-height:9rem">${html(freeText)}</div>`,
+    ].join('\n'));
+
     // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
     const dataBlocks = [];
     const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },

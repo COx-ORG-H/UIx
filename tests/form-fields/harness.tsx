@@ -14,13 +14,14 @@
  *   - #combobox: Combobox with groups, a disabled option and 27 more, plain, in a modal Drawer, in a
  *     Popover with overflow:hidden and in an overflow:hidden table cell.
  *   - #tag-input: TagInput with suggestions, maxTags, validate and a long German tag in a form (window.__posted.tags),
- *     a disabled one and one in a modal Drawer. */
+ *     a disabled one and one in a modal Drawer.
+ *   - #free-text: SearchSuggest freeText (manufacturer) in a form; window.__submits counts submissions. */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button, Checkbox, CheckboxGroup, Combobox, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
-  Select, TagInput, Textarea, TimePicker, UixLabelsProvider,
+  SearchSuggest, Select, TagInput, Textarea, TimePicker, UixLabelsProvider,
 } from '../../packages/react/src/index.js';
 
 const Search = () => (
@@ -234,8 +235,30 @@ function Tagging() {
   );
 }
 
+declare global {
+  interface Window { __submits: number }
+}
+window.__submits = 0;
+const MAKERS = ['Dell', 'Dell Technologies', 'HP', 'Hewlett Packard Enterprise', 'Lenovo', 'Apple', 'Cisco'];
+
+function FreeText() {
+  const [maker, setMaker] = useState('');
+  const options = maker.trim() ? MAKERS.filter((m) => m.toLowerCase().includes(maker.trim().toLowerCase())).map((m) => ({ id: m, title: m })) : [];
+  return (
+    <section id="free-text" aria-label="Free text">
+      <form id="device-form" onSubmit={(event) => { event.preventDefault(); window.__submits += 1; window.__posted.device = [...new FormData(event.currentTarget).entries()].map(([k, v]) => `${k}=${String(v)}`); }}
+        style={{ display: 'grid', gap: 'var(--uix-space-2)', maxWidth: '24rem' }}>
+        <label className="uix-field__label" htmlFor="maker">Manufacturer</label>
+        <SearchSuggest freeText inputId="maker" name="maker" label="Manufacturer" value={maker} onValueChange={setMaker} options={options} strategy="fixed" />
+        <Button type="submit" id="device-submit">Save device</Button>
+      </form>
+    </section>
+  );
+}
+
 const SECTIONS: Record<string, () => ReactNode> = {
   sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate, combobox: Comboboxes, 'tag-input': Tagging,
+  'free-text': FreeText,
 };
 
 function App() {

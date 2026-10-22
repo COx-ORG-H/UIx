@@ -1245,3 +1245,18 @@ ArrowRight move between chips and back; Backspace or Delete removes the focused 
 with the tags; the field is the only tab stop. Each change is announced politely. Inside `Field` the
 text input gets the label, hint and error; `name` submits one value per tag. Words: `labels` or
 `UixLabelsProvider` `tagInput`.
+
+#### SearchSuggest freeText (HAR-2465)
+
+```tsx
+<label className="uix-field__label" htmlFor="maker">{t('manufacturer')}</label>
+<SearchSuggest freeText inputId="maker" name="manufacturer" label={t('manufacturer')}
+  value={maker} onValueChange={setMaker} options={spellings} loading={loading} />
+```
+
+A text field with suggestions: the value is the text. Enter keeps what was typed and never submits
+the surrounding form (also while `loading`); no row is picked unless the person moves to it
+(ArrowDown / ArrowUp, then Enter) or clicks it, and then its title replaces the text through
+`onValueChange`, again without submitting. Blur, Tab and Escape keep the text (a second Escape does
+not clear it). No magnifier is drawn. `onSelect` is optional. Without `freeText` the search mode is
+unchanged. Decision: `Docs/adr/0004-search-suggest-free-text.md`.

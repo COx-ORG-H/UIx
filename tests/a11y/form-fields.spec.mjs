@@ -489,3 +489,32 @@ test.describe('TagInput (HAR-1377)', () => {
     await axe(page, '#tag-input');
   });
 });
+
+test.describe('SearchSuggest freeText (HAR-2465)', () => {
+  test('Enter keeps the typed text and never submits; ArrowDown + Enter takes a suggestion without submitting; the button still submits', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'free-text');
+    const field = page.locator('#maker');
+    await field.click();
+    await page.keyboard.type('Dell EMC');
+    await page.keyboard.press('Enter');
+    await expect(field).toHaveValue('Dell EMC');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await expect(page.getByRole('option', { name: 'Dell Technologies' })).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(field).toHaveValue('Dell Technologies');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(field).toHaveValue('Dell Technologies');
+    await page.keyboard.press('Tab');
+    await expect(field).toHaveValue('Dell Technologies');
+    expect(await page.evaluate(() => window.__submits), 'no Enter submitted the form').toBe(0);
+    await page.locator('#device-submit').click();
+    expect(await page.evaluate(() => window.__posted.device)).toEqual(['maker=Dell Technologies']);
+    await axe(page, '#free-text');
+  });
+});
