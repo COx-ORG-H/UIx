@@ -441,6 +441,10 @@ body[data-docs-menu-open] { overflow: hidden; }
   .uix-docs__pager { grid-template-columns: 1fr; }
   .uix-docs__pager a:last-child { text-align: left; }
   .uix-docs__token-table, .uix-docs__api-table { display: block; overflow-x: auto; white-space: nowrap; }
+  /* prose tables (the Motion page) wrap their sentences; a cell keeps a readable minimum width */
+  .uix-docs__token-table--prose { white-space: normal; }
+  .uix-docs__token-table--prose td, .uix-docs__token-table--prose th { min-width: 9rem; }
+  .uix-docs__token-table--prose code { white-space: nowrap; }
   .uix-docs__demo-stage { padding: var(--uix-space-5); }
 }
 
@@ -506,6 +510,8 @@ body[data-docs-menu-open] { overflow: hidden; }
 /* Motion page specimens (Foundations → Motion). The panel enters at --uix-dur and leaves at
    --uix-dur-exit: the closed rule carries the exit duration, so closing runs faster than opening. */
 .uix-docs__motion-specimens { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--uix-space-5); width: 100%; align-items: start; }
+.uix-docs__motion-specimens .uix-btn { justify-self: start; align-self: start; }
+.uix-docs__token-table--prose + p { margin-top: var(--uix-space-4); }
 .uix-docs__motion-panel {
   padding: var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
   background: var(--uix-surface-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed);
