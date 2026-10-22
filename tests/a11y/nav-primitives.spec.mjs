@@ -101,8 +101,14 @@ test('Tabs wrap: the selected tab keeps its cue on an upper row (line underline,
 
 test('Tabs motion: the underline slides after a pointer choice, moves at once from the keyboard and with reduced motion', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const duration = () => page.locator('#tabs-line-wide [role="tab"][aria-selected="true"]')
-    .evaluate((tab) => parseFloat(getComputedStyle(tab, '::after').transitionDuration));
+  /** How long the underline's transform is animated (0 when it is not in the transition list). */
+  const duration = () => page.locator('#tabs-line-wide [role="tab"][aria-selected="true"]').evaluate((tab) => {
+    const style = getComputedStyle(tab, '::after');
+    const props = style.transitionProperty.split(',').map((p) => p.trim());
+    const times = style.transitionDuration.split(',').map((t) => parseFloat(t));
+    const i = props.findIndex((p) => p === 'transform' || p === 'all');
+    return i < 0 ? 0 : times[i % times.length];
+  });
   await page.locator('#tabs-line-wide').getByRole('tab', { name: 'Prüfpfad' }).click();
   expect(await duration(), 'a pointer choice keeps the short slide').toBeGreaterThan(0.05);
   await page.keyboard.press('ArrowLeft');
@@ -111,7 +117,7 @@ test('Tabs motion: the underline slides after a pointer choice, moves at once fr
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.mouse.click(5, 5);
   await page.locator('#tabs-line-wide').getByRole('tab', { name: 'Übersicht' }).click();
-  expect(await duration(), 'reduced motion: none').toBeLessThan(0.01);
+  expect(await duration(), 'reduced motion: the underline does not travel').toBeLessThan(0.01);
 });
 
 test('Tabs in a form: a click and the arrow keys switch tabs and never submit the form', async ({ page }, testInfo) => {
