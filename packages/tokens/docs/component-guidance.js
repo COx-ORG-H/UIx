@@ -9,6 +9,7 @@ export const COMPONENT_GUIDANCE = {
   switch: ['Turn a setting on or off.', 'A binary state indicator; explain whether changes apply immediately or require Save.'],
   slider: ['Choose an approximate numeric value within a bounded range.', 'A track and thumb; provide an exact value or an input when precision matters.'],
   segmented: ['Choose among a few closely related modes.', 'A compact group with one visibly selected segment.'],
+  'busy-region': ['Keep a list or table on screen while it is fetched again after a filter, sort, page or saved-view change.', 'The content stays, dims, and an indeterminate bar runs along the top; the region is aria-busy. Nothing shows for the first 300 ms, so a quick refetch is invisible, and once shown it stays half a second. Skeletons are for a first load only. TableWrap refreshing does the same for a table.'],
   arrival: ['Show where a link or a search result landed.', 'The target is tinted for about two seconds and fades; with reduced motion it is outlined instead.'],
   combobox: ['Search a longer list before choosing a value.', 'A searchable dropdown that filters choices and displays the chosen label.'],
   'search-bar': ['Search a page, a portal or a list for text, with one look everywhere.', 'A labelled search field with a magnifier, a clear button while there is text, Enter to search and Escape to clear; md for a header or toolbar, lg (44 px) for a public page.'],

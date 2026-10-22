@@ -96,7 +96,8 @@ test('Comments container still exposes the thread as a polite log', () => {
 
 test('SaveStatus renders each state with its own label and hook', () => {
   for (const [state, label] of [['saving', 'Saving…'], ['saved', 'Saved'], ['failed', 'Could not save']]) {
-    const html = render(h(SaveStatus, { state }));
+    // delay 0: every state at once (the default waits 300 ms before "Saving…", HAR-2580)
+    const html = render(h(SaveStatus, { state, delay: 0 }));
     assert.match(html, new RegExp(`data-state="${state}"`), `${state} needs a stable hook`);
     assert.ok(html.includes(label), `${state} must say "${label}"; got ${html}`);
   }
@@ -153,7 +154,7 @@ test('SaveStatus announces idle → saving → saved through the SAME live regio
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
-  const show = (state) => act(() => { root.render(h(SaveStatus, { state })); });
+  const show = (state) => act(() => { root.render(h(SaveStatus, { state, delay: 0 })); });
 
   show('idle');
   const region = host.querySelector('[aria-live="polite"]');

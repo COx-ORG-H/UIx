@@ -52,20 +52,46 @@
   .uix-btn--wrap.uix-btn--lg:not(.uix-btn--icon) { min-height: 44px; }
   .uix-btn--wrap.uix-btn--link { min-height: 0; padding-block: 0; }
 
-  .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
+  /* Pending (React `loading`, HAR-2580): the button stops taking presses at once but looks the
+     same for the first 300 ms; a fast action shows nothing new. It keeps full colour while it
+     works (a spinner, never a greyed-out control), which overrides the aria-disabled dim. */
+  .uix-btn[data-pending], .uix-btn:has(> [data-uix-btn-busy]) { opacity: 1; pointer-events: none; cursor: progress; }
+
+  /* The spinner: `data-loading` (plain markup, shows at once) or React's delayed busy marker. */
+  .uix-btn:has(> [data-uix-btn-busy]), .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
   /* The label is hidden (color: transparent), so the ring cannot inherit
      currentColor from the button; each variant names its own foreground.
      TENSOR RX-125 (UIX-01): the ring was on-accent for every variant, so a
      loading secondary/outline/ghost button rendered blank. */
-  .uix-btn[data-loading]::after {
+  .uix-btn:has(> [data-uix-btn-busy])::after, .uix-btn[data-loading]::after {
     content: ""; position: absolute; width: 1em; height: 1em;
     border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
     color: var(--uix-text); animation: uix-spin var(--uix-loop-spin) linear infinite;
   }
-  @media (prefers-reduced-motion: reduce) { .uix-btn[data-loading]::after { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
-  .uix-btn--primary[data-loading]::after { color: var(--uix-accent-fg); }
-  .uix-btn--danger[data-loading]::after { color: var(--uix-danger-fg); }
-  .uix-btn--link[data-loading]::after { color: var(--uix-link); }
+  @media (prefers-reduced-motion: reduce) { .uix-btn:has(> [data-uix-btn-busy])::after, .uix-btn[data-loading]::after { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
+  .uix-btn--primary:has(> [data-uix-btn-busy])::after, .uix-btn--primary[data-loading]::after { color: var(--uix-accent-fg); }
+  .uix-btn--danger:has(> [data-uix-btn-busy])::after, .uix-btn--danger[data-loading]::after { color: var(--uix-danger-fg); }
+  .uix-btn--link:has(> [data-uix-btn-busy])::after, .uix-btn--link[data-loading]::after { color: var(--uix-link); }
+  /* The result face hides with the label while the spinner shows. */
+  .uix-btn:has(> [data-uix-btn-busy]) .uix-btn__result { visibility: hidden; }
+
+  /* Result (React `result`, HAR-2581): the label and both result wordings share one grid cell,
+     so the button is always as wide as the widest and nothing beside it moves. A result
+     crossfades in over the label (opacity only), holds, and fades back. Text and icon carry
+     the meaning; colour only tints the icon. */
+  .uix-btn__face { display: inline-grid; justify-items: center; align-items: center; }
+  .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: .5em; transition: opacity var(--uix-dur) var(--uix-ease-out); }
+  .uix-btn__result { opacity: 0; transition-duration: var(--uix-dur-fast); }
+  .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; transition-duration: var(--uix-dur-fast); }
+  .uix-btn__face[data-result="success"] > [data-kind="success"],
+  .uix-btn__face[data-result="error"] > [data-kind="error"] { opacity: 1; transition-duration: var(--uix-dur); }
+  .uix-btn--secondary .uix-btn__result[data-kind="success"] svg,
+  .uix-btn--outline .uix-btn__result[data-kind="success"] svg,
+  .uix-btn--ghost .uix-btn__result[data-kind="success"] svg { color: var(--uix-success-text); }
+  .uix-btn--secondary .uix-btn__result[data-kind="error"] svg,
+  .uix-btn--outline .uix-btn__result[data-kind="error"] svg,
+  .uix-btn--ghost .uix-btn__result[data-kind="error"] svg { color: var(--uix-danger-text); }
+  .uix-btn--wrap .uix-btn__face > * { white-space: normal; }
 
   /* attached group */
   .uix-btn-group { display: inline-flex; }
