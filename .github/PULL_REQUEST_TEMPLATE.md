@@ -44,6 +44,14 @@ or `packages/tokens/scripts/`?
 
 **"major + ADR" is non-negotiable:** these are the changes that cannot be undone without breaking a shipped consumer.
 
+## Motion
+
+- [ ] **Motion:** tokens only, exit faster than enter, reduced-motion branch, hover gated; docs specimen shows the motion.
+      (`check-motion.mjs` in `test:contract` enforces tokens, no ease-in, no layout animation, reduced-motion branches for
+      loops and movement, and hover gating; exit timing is on you. See docs → Foundations → Motion. Attach a frame pair
+      or a short recording of any changed transition, in both themes and with reduced motion.)
+- [ ] This PR changes no motion.
+
 ## Sign-off
 
 - [ ] Gates are green (`test:parity` + `test:contract`).

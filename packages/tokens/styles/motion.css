@@ -1,12 +1,23 @@
-/* uix motion — shared keyframes, enter/exit helpers, and the reduced-motion guard.
-   Components reference these tokens/keyframes; overlays pair the helpers with @starting-style. */
+/* uix motion — shared keyframes, enter/exit helpers, the instant-surface rule and the reduced-motion policy.
+   Components reference these tokens/keyframes; overlays pair the helpers with @starting-style.
+   The contract (docs → Foundations → Motion) is checked by packages/tokens/scripts/check-motion.mjs. */
 
-/* Reduced-motion guard — UNLAYERED so its !important beats every component transition. */
+/* Reduced-motion policy — UNLAYERED. `prefers-reduced-motion: reduce` removes MOVEMENT, not feedback:
+   - Transitions keep only fades and colour changes. Transform, translate, scale, rotate and any layout
+     glide drop out of every transition list, so a popover or drawer still fades but no longer travels.
+     allow-discrete keeps display/overlay exits painted while their fade runs.
+   - Keyframe animations end at once (we cannot tell a product's keyframes from a fade). UIx's own
+     still-working indicators (Spinner, Button loading, skeleton, indeterminate progress, SaveStatus,
+     a running flow node, Heartbeat) opt back in from their component layer with a slow opacity pulse
+     (`uix-pulse`, --uix-loop-pulse) declared !important — a layered !important beats this unlayered one —
+     so the status stays visibly alive instead of freezing. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
+    transition-property: opacity, color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, visibility, overlay, display !important;
+    transition-behavior: allow-discrete !important;
+    /* motion-allow: ends product keyframes at once while still firing animationend (a 0s duration is skipped by some engines' event paths) */
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
     scroll-behavior: auto !important;
   }
 }
@@ -21,15 +32,27 @@
 @keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
 @keyframes uix-spin { to { transform: rotate(1turn); } }
 @keyframes uix-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* The reduced-motion stand-in for every looping indicator: no movement, a slow breath of opacity. */
+@keyframes uix-pulse { 50% { opacity: .35; } }
 
 @layer uix.motion {
   .uix-anim-fade { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out); }
   .uix-anim-pop  { animation: uix-pop-in var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-anim-up   { animation: uix-slide-in-up var(--uix-dur) var(--uix-ease-out); }
+  @media (prefers-reduced-motion: reduce) {
+    /* the entrance helpers keep their fade and lose their travel */
+    .uix-anim-fade, .uix-anim-pop, .uix-anim-up { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+  }
 
-  /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover. */
-  .uix-lift-hover { transition: transform var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out); }
+  /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover.
+     The shadow steps; only the lift animates (box-shadow is never animated). */
+  .uix-lift-hover { transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   @media (hover: hover) and (pointer: fine) {
     .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
   }
+
+  /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces (the command palette, an overlay opened
+     from the keyboard) open and close with no animation — the frequency budget is "none". Overlays set
+     [data-uix-instant] themselves (Modal `instant`, CommandPalette, keyboard-opened menus and selects). */
+  [data-uix-instant], [data-uix-instant]::backdrop { transition: none !important; animation: none !important; }
 }
