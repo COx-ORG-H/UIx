@@ -60,8 +60,9 @@
   .uix-btn[data-loading]::after {
     content: ""; position: absolute; width: 1em; height: 1em;
     border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
-    color: var(--uix-text); animation: uix-spin .6s linear infinite;
+    color: var(--uix-text); animation: uix-spin var(--uix-loop-spin) linear infinite;
   }
+  @media (prefers-reduced-motion: reduce) { .uix-btn[data-loading]::after { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
   .uix-btn--primary[data-loading]::after { color: var(--uix-accent-fg); }
   .uix-btn--danger[data-loading]::after { color: var(--uix-danger-fg); }
   .uix-btn--link[data-loading]::after { color: var(--uix-link); }

@@ -40,10 +40,12 @@ test("grip and overflow are quiet until the row is hovered, focused or its menu 
   // .75 is the floor, not a taste: the muted grip on the panel surface drops under WCAG 1.4.11's 3:1
   // non-text contrast below it (3.19:1 light, 4.45:1 dark at .75; 1.89:1 / 2.41:1 at .45).
   assert.match(ruleBody(css, ":is(.uix-saved-views__grip, .uix-saved-views__actions)"), /opacity: \.75/);
-  const reveal = css.match(/([^{}]+)\{ opacity: 1; \}/)?.[1] ?? "";
-  for (const cue of [":hover", ":focus-within", "[data-dragging]", ':has([aria-expanded="true"])']) {
+  const reveal = css.match(/(\.uix-saved-views__row:is\([^{}]+)\{ opacity: 1; \}/)?.[1] ?? "";
+  for (const cue of [":focus-within", "[data-dragging]", ':has([aria-expanded="true"])']) {
     assert.ok(reveal.includes(cue), `revealed on ${cue}`);
   }
+  // hover reveals only where hover exists (check-motion hover-ungated, HAR-2578)
+  assert.match(css, /@media \(hover: hover\) and \(pointer: fine\) \{ \.uix-saved-views__row:hover :is\(\.uix-saved-views__grip, \.uix-saved-views__actions\) \{ opacity: 1; \} \}/);
 });
 
 test("names truncate instead of widening the menu", () => {

@@ -67,7 +67,7 @@
   .uix-node--active, .uix-node--running { box-shadow: var(--uix-shadow-sm), 0 0 0 3px var(--tone-bg); }
 
   /* running node spins its icon */
-  .uix-node--running .uix-node__icon svg { animation: uix-flow-spin 1s linear infinite; }
+  .uix-node--running .uix-node__icon svg { animation: uix-flow-spin var(--uix-loop-spin) linear infinite; }
 
   /* ---- decision / diamond ---- */
   .uix-node--decision {
@@ -175,8 +175,7 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text);
     font-size: var(--uix-text-meta); cursor: grab; box-shadow: var(--uix-shadow-sm);
-    transition: box-shadow var(--uix-dur-fast) var(--uix-ease-out),
-                transform var(--uix-dur-fast) var(--uix-ease-out);
+    transition: transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-flow__chip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted); flex: none; }
   .uix-flow__chip:active { cursor: grabbing; }
@@ -210,7 +209,8 @@
   @keyframes uix-flow-march { to { stroke-dashoffset: -18; } }
 
   @media (prefers-reduced-motion: reduce) {
-    .uix-node--running .uix-node__icon svg,
+    /* a running node keeps showing it runs: the icon breathes instead of turning */
+    .uix-node--running .uix-node__icon svg { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
     .uix-flow:hover .uix-flow__edge,
     .uix-flow:focus-within .uix-flow__edge { animation: none; }
   }
