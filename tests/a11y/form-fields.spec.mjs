@@ -290,10 +290,46 @@ test.describe('TimePicker (HAR-1835)', () => {
     await expect(page.getByLabel('Closes at')).toBeFocused();
   });
 
+  test('a DateTimePicker in a Field: the time is named "<label>, time", without an aria-hidden "*", and follows the label (HAR-2432)', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    // the harness's Field draws its "*" with CSS; an aria-hidden marker inside the label must not count either
+    // ... and a label whose text arrives late (a translation loading) renames the time (HAR-2432)
+    await page.locator('label[for="due"]').evaluate((label) => {
+      label.firstChild.nodeValue = 'Geplanter Beginn';
+      const star = document.createElement('span'); star.setAttribute('aria-hidden', 'true'); star.textContent = ' *'; label.append(star);
+    });
+    await expect(page.getByRole('textbox', { name: 'Geplanter Beginn, time', exact: true })).toBeVisible();
+  });
+
   test('320 px: the fields fit; axe closed', async ({ page }, testInfo) => {
     await open(page, testInfo, 'times');
     await page.setViewportSize({ width: 320, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     await axe(page, '#times');
+  });
+});
+
+test.describe('FilterPopover date (HAR-2432)', () => {
+  test('the filter is the kit DatePicker: its calendar opens inside the filter popover, a day applies as YYYY-MM-DD', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'filter-date');
+    await page.locator('#filter-date-trigger').click();
+    const filter = page.locator('#filter-date-popover');
+    await expect(filter).toBeVisible();
+    await expect(filter.locator('input[type="date"]')).toHaveCount(0);
+    const field = filter.getByRole('textbox', { name: 'Created on or after' });
+    await expect(field).toHaveAttribute('placeholder', 'DD.MM.YYYY');
+    await field.fill('22.11.2026');
+    await page.keyboard.press('Enter');
+    await filter.getByRole('button', { name: /^Change date/ }).click();
+    const calendar = page.getByRole('dialog', { name: 'Calendar' });
+    await expect(calendar).toBeVisible();
+    await expect(filter, 'the nested calendar keeps the filter open').toBeVisible();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(calendar).toBeHidden();
+    await expect(field).toHaveValue('23.11.2026');
+    await axe(page, '#filter-date-popover');
+    await filter.getByRole('button', { name: 'Apply' }).click();
+    expect(await page.evaluate(() => window.__filter.applied)).toEqual(['2026-11-23']);
   });
 });

@@ -5,6 +5,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent, ReactNode } fro
 import { cx } from '../cx.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
+import { DatePicker } from './DatePicker.js';
 import { EditorIcon } from './EditorIcons.js';
 import { Input } from './Input.js';
 import { Popover } from './Popover.js';
@@ -375,7 +376,10 @@ export function FilterPopover({ label, type = 'text', value, onValueChange, opti
         <label className="uix-field__label" htmlFor={controlId}>{label}</label>
         {type === 'select' || type === 'enum' || type === 'boolean'
           ? <select id={controlId} className="uix-select" value={value} onChange={(event) => onValueChange(event.currentTarget.value)}>{options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
-          : <Input id={controlId} type={type} value={value} placeholder={placeholder} onChange={(event) => onValueChange(event.currentTarget.value)} />}
+          : type === 'date'
+            // The kit's date field, not the browser's (HAR-2432); the value stays YYYY-MM-DD ('' for none).
+            ? <DatePicker id={controlId} value={value || null} placeholder={placeholder} onValueChange={(next) => onValueChange(next ?? '')} />
+            : <Input id={controlId} type={type} value={value} placeholder={placeholder} onChange={(event) => onValueChange(event.currentTarget.value)} />}
       </div>
       <div className="uix-filter-popover__actions"><Button type="button" onClick={onClear}>{clearLabel}</Button><Button type="button" variant="primary" onClick={onApply}>{applyLabel}</Button></div>
     </div>

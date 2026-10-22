@@ -71,10 +71,27 @@ export interface UixLabels {
   chip?: { remove?: string };
   /** `dismiss`: the name of a dismissible alert's × button. */
   alert?: { dismiss?: string };
+  /** Not words: the date format of every date field (HAR-2432). See {@link UixDateFormat}. */
+  dateFormat?: UixDateFormat;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */
   bulkBar?: { region?: string };
+}
+
+/**
+ * One date format for every date field below the provider (HAR-2432): `DatePicker`,
+ * `DateTimePicker`, `DateRangePicker` and `TimePicker` (its `locale`). Each field's own prop wins.
+ */
+export interface UixDateFormat {
+  /** The locale of the field's text, month and weekday names, and the clock. */
+  locale?: string;
+  /** How a field writes a `YYYY-MM-DD` date, e.g. `(d) => d.split('-').reverse().join('.')`. */
+  formatDate?: (date: string) => string;
+  /** Read typed text into `YYYY-MM-DD`, or `null` when it is not a date. Pass it with `formatDate`. */
+  parseDate?: (text: string) => string | null;
+  /** The date field's placeholder, e.g. `TT.MM.JJJJ`. */
+  placeholder?: string;
 }
 
 const UixLabelsContext = createContext<UixLabels>({});

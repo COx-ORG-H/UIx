@@ -22,7 +22,7 @@ export type { ButtonProps, ButtonGroupProps, ButtonLinkProps, ButtonSize, Button
 
 // Kit chrome strings for a subtree (HAR-1358)
 export { UixLabelsProvider, useUixLabels } from './labels-context.js';
-export type { UixLabels, UixLabelsProviderProps } from './labels-context.js';
+export type { UixDateFormat, UixLabels, UixLabelsProviderProps } from './labels-context.js';
 
 // Link adapter — one renderLink callback for every component that can render a link (HAR-1348)
 export { renderPlainLink } from './link.js';

@@ -33,6 +33,13 @@ export interface DateRangePickerLabels {
   fieldStart: string;
   /** Field mode: the trigger's text for a range; `{start}`, `{end}`. */
   fieldRange: string;
+  /**
+   * The picker's name: the heading of the inline months, the field's hidden name and its popover's
+   * `aria-label` (HAR-2432). The `label` prop wins.
+   */
+  label: string;
+  /** Shown when the range is invalid (an end before the start, or `invalid`). The `invalidMessage` prop wins. */
+  invalidMessage: string;
 }
 
 export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels = {
@@ -49,6 +56,8 @@ export const DEFAULT_DATE_RANGE_PICKER_LABELS: DateRangePickerLabels = {
   placeholder: 'Choose dates',
   fieldStart: '{start} –',
   fieldRange: '{start} – {end}',
+  label: 'Choose date range',
+  invalidMessage: 'The selected date range is invalid.',
 };
 
 export interface DateRangePickerProps {
@@ -60,9 +69,12 @@ export interface DateRangePickerProps {
   min?: string;
   max?: string;
   isDateDisabled?: (date: string) => boolean;
+  /** Default: `UixLabelsProvider` `dateFormat.locale`, then the viewer's. */
   locale?: string;
+  /** Default: `labels.label` ("Choose date range"). */
   label?: string;
   invalid?: boolean;
+  /** Default: `labels.invalidMessage`. */
   invalidMessage?: string;
   disabled?: boolean;
   className?: string;
@@ -82,7 +94,7 @@ export interface DateRangePickerProps {
    * bars. It closes once the range has both ends; Escape closes it and returns focus.
    */
   mode?: 'inline' | 'field';
-  /** Field mode: how the trigger writes a date. Default: the locale's numeric date. */
+  /** Field mode: how the trigger writes a date. Default: `UixLabelsProvider` `dateFormat.formatDate`, then the locale's numeric date. */
   formatDate?: (date: string) => string;
   /** Field mode: lands on the trigger, so a `<label htmlFor>` or `<Field>` names it. */
   id?: string;
@@ -107,11 +119,13 @@ const dateLabel = (date: string, locale?: string) => new Intl.DateTimeFormat(loc
 /** The months themselves: the whole picker inline, the popover's content in field mode. */
 function RangeCalendar({
   value, onChange, visibleMonth: controlledMonth, onVisibleMonthChange, months = 2,
-  min, max, isDateDisabled, locale, label = 'Choose date range', invalid,
-  invalidMessage = 'The selected date range is invalid.', disabled, className, words: labels, today,
+  min, max, isDateDisabled, locale, label: labelProp, invalid,
+  invalidMessage: invalidMessageProp, disabled, className, words: labels, today,
   weekStartsOn = 1, autoFocus = false,
 }: RangeCalendarProps) {
   const id = useId();
+  const label = labelProp ?? labels.label;
+  const invalidMessage = invalidMessageProp ?? labels.invalidMessage;
   // UIX-13: the weekday names follow the locale, like the month names.
   const weekdays = useMemo(() => weekdayNames(locale, weekStartsOn), [locale, weekStartsOn]);
   const [internalMonth, setInternalMonth] = useState(() => startOfMonth(controlledMonth ?? value.start ?? new Date().toISOString().slice(0, 10)));
@@ -208,20 +222,23 @@ function RangeCalendar({
  * Controlled date-range picker using the UIx calendar language: two months inline, or with
  * `mode="field"` a form control that opens them in a popover.
  */
-export function DateRangePicker({ labels: labelOverrides, ...props }: DateRangePickerProps) {
+export function DateRangePicker({ labels: labelOverrides, ...rest }: DateRangePickerProps) {
   const uixLabels = useUixLabels();
   const words: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...uixLabels.dateRangePicker, ...labelOverrides };
+  // The app-wide date format (HAR-2432): UixLabelsProvider `dateFormat`; a prop still wins.
+  const props = { ...rest, locale: rest.locale ?? uixLabels.dateFormat?.locale, formatDate: rest.formatDate ?? uixLabels.dateFormat?.formatDate };
   if (props.mode === 'field') return <DateRangeField {...props} words={words} />;
   return <RangeCalendar {...props} words={words} />;
 }
 
 function DateRangeField(props: RangeCalendarProps) {
   const {
-    value, onChange, locale, label = 'Choose date range', invalid, disabled, className, words, formatDate,
+    value, onChange, locale, label: labelProp, invalid, disabled, className, words, formatDate,
     id: idProp, size = 'md', placement = 'bottom-start', onOpenChange,
     'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid,
   } = props;
   const uid = useId();
+  const label = labelProp ?? words.label;
   const id = idProp ?? `${uid}-trigger`;
   const popoverId = `${uid}-months`;
   const valueId = `${uid}-value`;

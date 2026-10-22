@@ -48,5 +48,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /role="alert">Choose 18:00 or earlier\.<\/span>/);
   assert.match(forms, /class="uix-date-time-picker"[\s\S]*uix-time-picker__input[^>]*value="14:30"/);
   assert.doesNotMatch(forms, /type="time"/);
+  // FilterPopover date: a DatePicker showing the German date, no native date input
+  const data = specimens['examples-data-display'];
+  assert.match(data, /data-filter-date-example/);
+  assert.match(data, /class="uix-filter-popover uix-popover"/);
+  assert.match(data, /uix-date-picker__input"[^>]*value="22\.11\.2026"/);
+  assert.doesNotMatch(data, /<input[^>]*type="date"/);
+  assert.match(data, /aria-label="Datum ändern, Sonntag, 22. November 2026"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

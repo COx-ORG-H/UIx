@@ -53,7 +53,10 @@ export interface TimePickerProps {
   /** First and last time that can be chosen (`HH:mm`, inclusive). */
   min?: string;
   max?: string;
-  /** The locale that writes the time: 14:30 in `de`, 2:30 PM in `en-US`. Default: the viewer's. */
+  /**
+   * The locale that writes the time: 14:30 in `de`, 2:30 PM in `en-US`. Default: `UixLabelsProvider`
+   * `dateFormat.locale`, then the viewer's.
+   */
   locale?: string;
   /** `true` writes 2:30 PM, `false` 14:30, whatever the locale. */
   hour12?: boolean;
@@ -93,7 +96,7 @@ export interface TimePickerProps {
  * The value is `HH:mm`, what `<input type="time">` holds.
  */
 export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function TimePicker({
-  value, onValueChange, minuteStep = 15, min, max, locale, hour12, placeholder, size = 'md', disabled, readOnly, required,
+  value, onValueChange, minuteStep = 15, min, max, locale: localeProp, hour12, placeholder, size = 'md', disabled, readOnly, required,
   invalid, name, id: idProp, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy,
   'aria-invalid': ariaInvalid, 'aria-required': ariaRequired, placement = 'bottom-start', onInputProblem, onOpenChange,
   labels: labelOverrides, className, style,
@@ -103,7 +106,10 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   const popoverId = `${uid}-times`;
   const listId = `${uid}-list`;
   const errorId = `${uid}-error`;
-  const labels: TimePickerLabels = { ...DEFAULT_TIME_PICKER_LABELS, ...useUixLabels().timePicker, ...labelOverrides };
+  const uixLabels = useUixLabels();
+  const labels: TimePickerLabels = { ...DEFAULT_TIME_PICKER_LABELS, ...uixLabels.timePicker, ...labelOverrides };
+  // the app-wide locale of the date fields (UixLabelsProvider `dateFormat`); a prop still wins
+  const locale = localeProp ?? uixLabels.dateFormat?.locale;
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);

@@ -120,8 +120,19 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
+    const dataBlocks = [];
+    const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },
+      h(ui.FilterPopover, { label: 'Erstellt ab', type: 'date', value: '2026-11-22', onValueChange: noop, applyLabel: 'Anwenden', clearLabel: 'Zurücksetzen', onApply: noop, onClear: noop })));
+    // The page shows the filter as the popover's content; the app owns the popover itself.
+    filterDate.querySelector('.uix-filter-popover').classList.add('uix-popover');
+    dataBlocks.push([
+      caption('Filter popover on a date (React <code>FilterPopover type="date"</code>) — the kit’s <code>DatePicker</code>, never the browser’s date input; the value stays <code>YYYY-MM-DD</code>, and <code>UixLabelsProvider dateFormat</code> sets the format of every date field at once (German here)'),
+      `<div data-filter-date-example lang="de" style="width:18rem;max-width:100%">${html(filterDate)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
-    return { 'examples-form-controls': blocks.join('\n') };
+    return { 'examples-form-controls': blocks.join('\n'), 'examples-data-display': dataBlocks.join('\n') };
   } finally {
     dom.window.close();
     for (const [name, descriptor] of saved) {

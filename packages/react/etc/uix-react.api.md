@@ -1223,6 +1223,8 @@ export interface DateRangePickerLabels {
     fieldStart: string;
     // (undocumented)
     inRange: string;
+    invalidMessage: string;
+    label: string;
     // (undocumented)
     next: string;
     // (undocumented)
@@ -1258,14 +1260,11 @@ export interface DateRangePickerProps {
     id?: string;
     // (undocumented)
     invalid?: boolean;
-    // (undocumented)
     invalidMessage?: string;
     // (undocumented)
     isDateDisabled?: (date: string) => boolean;
-    // (undocumented)
     label?: string;
     labels?: Partial<DateRangePickerLabels>;
-    // (undocumented)
     locale?: string;
     // (undocumented)
     max?: string;
@@ -6452,6 +6451,14 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 // @public
+export interface UixDateFormat {
+    formatDate?: (date: string) => string;
+    locale?: string;
+    parseDate?: (text: string) => string | null;
+    placeholder?: string;
+}
+
+// @public
 export interface UixLabels {
     alert?: {
         dismiss?: string;
@@ -6479,6 +6486,7 @@ export interface UixLabels {
         typeToConfirm?: string;
         compensation?: string;
     };
+    dateFormat?: UixDateFormat;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
     // (undocumented)

@@ -1173,3 +1173,22 @@ to the field. Text that is not a time, or one before `min` / after `max`, marks 
 says why. `name` submits `HH:mm` through a hidden input. Words: `labels` or `UixLabelsProvider`
 `timePicker`. `DateTimePicker` now uses it for its time (no native `type="time"` is left);
 `minuteStep` defaults to 15 there and only steps the keys and the list, any typed minute is kept.
+
+#### Date fields without call-site workarounds (HAR-2432)
+
+```tsx
+<UixLabelsProvider labels={{
+  dateFormat: { locale: 'de', formatDate: toDDMMYYYY, parseDate: fromDDMMYYYY, placeholder: 'TT.MM.JJJJ' },
+  dateRangePicker: { label: t('chooseRange'), invalidMessage: t('rangeInvalid') },
+}}>
+```
+
+- `dateFormat` sets `locale`, `formatDate`, `parseDate` and `placeholder` for every `DatePicker`,
+  `DateTimePicker`, `DateRangePicker` (and the `locale` of `TimePicker`) below the provider; a prop
+  on one field still wins.
+- `FilterPopover type="date"` renders the kit `DatePicker`; the value stays `YYYY-MM-DD` (`''` for
+  none).
+- `DateRangePickerLabels` has `label` and `invalidMessage`, so no English default is left outside
+  the labels group; the props still win.
+- `DateTimePicker` names its time from the label's accessible text (an `aria-hidden` "*" is left
+  out) and follows the label when its text changes after mount.

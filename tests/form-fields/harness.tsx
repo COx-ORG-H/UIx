@@ -8,12 +8,15 @@
  *   - #sign-in: PasswordInput (md, lg, disabled) in a form, OtpInput numeric with an error on 000000,
  *     an 8-character alphanumeric one and a disabled one. window.__posted / __completed record results.
  *   - #times: TimePicker (de with min/max and a 30-minute step, en-US, disabled), DateTimePicker (de)
- *     and a TimePicker inside a modal Drawer. */
-import { StrictMode, useState } from 'react';
+ *     and a TimePicker inside a modal Drawer.
+ *   - #filter-date: FilterPopover type="date" in a Popover, with a provider dateFormat (de).
+ *     window.__filter.applied records each Apply. */
+import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, CheckboxGroup, DateTimePicker, Drawer, Field, Input, InputGroup, OtpInput, PasswordInput, Select, Textarea, TimePicker,
+  Button, Checkbox, CheckboxGroup, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
+  Select, Textarea, TimePicker, UixLabelsProvider,
 } from '../../packages/react/src/index.js';
 
 const Search = () => (
@@ -140,7 +143,30 @@ function Times() {
   );
 }
 
-const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times };
+declare global {
+  interface Window { __filter: { applied: string[] } }
+}
+window.__filter = { applied: [] };
+
+function FilterDate() {
+  const [value, setValue] = useState('');
+  const anchor = useRef<HTMLButtonElement>(null);
+  return (
+    <section id="filter-date" aria-label="Filter by date">
+      <UixLabelsProvider labels={{ dateFormat: { locale: 'de' } }}>
+        <button ref={anchor} id="filter-date-trigger" className="uix-btn uix-btn--secondary" type="button" popoverTarget="filter-date-popover">Created</button>
+        <Popover id="filter-date-popover" anchor={anchor} style={{ width: '18rem' }}>
+          <FilterPopover
+            label="Created on or after" type="date" value={value} onValueChange={setValue}
+            applyLabel="Apply" clearLabel="Clear" onApply={() => window.__filter.applied.push(value)} onClear={() => setValue('')}
+          />
+        </Popover>
+      </UixLabelsProvider>
+    </section>
+  );
+}
+
+const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate };
 
 function App() {
   const only = new URLSearchParams(location.search).get('only');
