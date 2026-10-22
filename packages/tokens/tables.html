@@ -743,6 +743,20 @@
     const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
     const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // The kit Select's markup and keyboard model, shared with the docs (HAR-1575: no browser
+    // dropdown anywhere in UIx). Loaded once; the controls that use it fill in when it arrives.
+    const selectKit = import('./docs/form-specimens.js');
+    /** A kit Select in `host`; `onPick(value)` runs when the person chooses another option. */
+    let selectSeq = 0;
+    const mountSelect = (host, spec, onPick) => selectKit.then(({ selectMarkup, initSelectSpecimens }) => {
+      const id = `${spec.id}-${++selectSeq}`;
+      host.insertAdjacentHTML('afterbegin', selectMarkup({ size: 'sm', ...spec, id }));
+      initSelectSpecimens(host);
+      const trigger = host.querySelector(`#${CSS.escape(id)}`);
+      trigger.style.width = 'auto';
+      trigger.nextElementSibling.addEventListener('change', (event) => onPick(event.target.value));
+      return trigger;
+    });
 
     /* ---------------- icons (Lucide-style, currentColor) ---------------- */
     const svg = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -1248,16 +1262,17 @@
       }
       function buildSavedViews() {
         const wrap = el('<div style="display:inline-flex;gap:6px;align-items:center"></div>');
-        const sel = el('<select class="uix-input uix-input--sm" aria-label="Saved view" style="width:auto"><option value="all">All incidents</option><option value="open">My open</option><option value="dora">DORA-relevant</option><option value="breached">SLA breached</option></select>');
-        sel.addEventListener('change', () => {
+        mountSelect(wrap, {
+          id: 'tbl-saved-view', ariaLabel: 'Saved view', value: ['all'],
+          items: [{ value: 'all', label: 'All incidents' }, { value: 'open', label: 'My open' }, { value: 'dora', label: 'DORA-relevant' }, { value: 'breached', label: 'SLA breached' }],
+        }, (view) => {
           state.filters.status = new Set(); state.filters.priority = new Set(); state.query = '';
-          if (sel.value === 'open') state.filters.status = new Set(['open', 'inprogress']);
-          if (sel.value === 'dora') { state.flagged = true; state.query = ''; data.forEach(()=>{}); state.filters.status = new Set(['open','inprogress','onhold']); }
-          if (sel.value === 'breached') state.filters.status = new Set(['open', 'inprogress']);
+          if (view === 'open') state.filters.status = new Set(['open', 'inprogress']);
+          if (view === 'dora') { state.flagged = true; state.query = ''; data.forEach(()=>{}); state.filters.status = new Set(['open','inprogress','onhold']); }
+          if (view === 'breached') state.filters.status = new Set(['open', 'inprogress']);
           state.page = 1; render();
           announce(resultMsg()); // (UIX-A11Y-5)
         });
-        wrap.append(sel);
         const save = el(`<button class="uix-btn uix-btn--ghost uix-btn--sm" type="button" aria-label="Save current view" data-uix-tip="Save current view">${I.plus}</button>`);
         save.addEventListener('click', () => toast('View saved'));
         wrap.append(save);
@@ -1401,21 +1416,29 @@
         const row = data.find(r => r.id === rid);
         cell.dataset.editing = '1';
         const prev = cell.innerHTML;
-        let ctrl;
-        if (field === 'priority') { ctrl = el('<select class="uix-input uix-input--sm" style="width:auto"></select>'); ['P1', 'P2', 'P3', 'P4'].forEach(p => { const o = el(`<option ${row.priority === p ? 'selected' : ''}>${p}</option>`); ctrl.append(o); }); }
-        else { ctrl = el('<select class="uix-input uix-input--sm" style="width:auto"></select>'); ctrl.append(el('<option value="">Unassigned</option>')); PEOPLE.forEach(p => { const o = el(`<option ${row.assignee === p.n ? 'selected' : ''}>${esc(p.n)}</option>`); ctrl.append(o); }); }
-        cell.innerHTML = ''; cell.append(ctrl); ctrl.focus();
-        const commit = () => {
-          if (field === 'priority') row.priority = ctrl.value;
-          else { row.assignee = ctrl.value || null; const p = PEOPLE.find(x => x.n === ctrl.value); row.assigneeI = p ? p.i : null; }
+        // The kit Select (HAR-1575): it opens on the current value; choosing commits, Escape (with
+        // the list closed) or leaving the cell puts the value back.
+        const items = field === 'priority'
+          ? ['P1', 'P2', 'P3', 'P4'].map((p) => ({ value: p, label: p }))
+          : [{ value: '', label: 'Unassigned' }, ...PEOPLE.map((p) => ({ value: p.n, label: p.n }))];
+        const current = field === 'priority' ? row.priority : (row.assignee || '');
+        cell.innerHTML = '';
+        const revert = () => { if (cell.dataset.editing) { delete cell.dataset.editing; cell.innerHTML = prev; } };
+        const commit = (value) => {
+          if (field === 'priority') row.priority = value;
+          else { row.assignee = value || null; const p = PEOPLE.find(x => x.n === value); row.assigneeI = p ? p.i : null; }
           delete cell.dataset.editing; render();
           // flash the saved check on the freshly rendered cell
           const fresh = root.querySelector(`[data-edit="${field}"][data-id="${rid}"]`);
           if (fresh) { fresh.setAttribute('data-saved', '1'); setTimeout(() => fresh.removeAttribute('data-saved'), 1200); }
         };
-        ctrl.addEventListener('change', commit);
-        ctrl.addEventListener('blur', () => { if (cell.dataset.editing) { delete cell.dataset.editing; cell.innerHTML = prev; } });
-        ctrl.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); commit(); } if (ev.key === 'Escape') { delete cell.dataset.editing; cell.innerHTML = prev; } });
+        mountSelect(cell, { id: `tbl-edit-${field}`, ariaLabel: field === 'priority' ? 'Priority' : 'Assignee', value: [current], items }, commit).then((trigger) => {
+          trigger.focus();
+          trigger.click();
+          // an Escape that closed the list is the list's (it prevents the default); the next one leaves the cell
+          trigger.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !ev.defaultPrevented) revert(); });
+          trigger.addEventListener('blur', ev => { if (!trigger.parentElement?.querySelector('[data-uix-select-popup]')?.contains(ev.relatedTarget)) revert(); });
+        });
       }
 
       function openRowMenu(trigger, rid) {

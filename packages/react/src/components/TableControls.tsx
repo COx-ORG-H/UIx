@@ -10,6 +10,7 @@ import { EditorIcon } from './EditorIcons.js';
 import { Input } from './Input.js';
 import { Popover } from './Popover.js';
 import { Segmented, SegmentedOption } from './Segmented.js';
+import { Select } from './Select.js';
 import { Switch } from './Switch.js';
 
 export interface ViewMenuColumn {
@@ -375,7 +376,8 @@ export function FilterPopover({ label, type = 'text', value, onValueChange, opti
       <div className="uix-field">
         <label className="uix-field__label" htmlFor={controlId}>{label}</label>
         {type === 'select' || type === 'enum' || type === 'boolean'
-          ? <select id={controlId} className="uix-select" value={value} onChange={(event) => onValueChange(event.currentTarget.value)}>{options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+          // The kit's own list, never the browser's (HAR-1575).
+          ? <Select id={controlId} value={value} options={options ?? []} onValueChange={(next) => onValueChange(next as string)} />
           : type === 'date'
             // The kit's date field, not the browser's (HAR-2432); the value stays YYYY-MM-DD ('' for none).
             ? <DatePicker id={controlId} value={value || null} placeholder={placeholder} onValueChange={(next) => onValueChange(next ?? '')} />

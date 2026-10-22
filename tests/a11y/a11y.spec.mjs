@@ -68,5 +68,37 @@ for (const pg of PAGES) {
       .map((v) => `[${v.impact}] ${v.id}: ${v.help}\n    ${v.nodes.map((n) => n.target.join(' ')).join('\n    ')}`)
       .join('\n');
     expect(gated, `${gated.length} serious/critical violation(s) on ${pg.name} [${theme}]:\n${summary}`).toEqual([]);
+    // No browser dropdown anywhere in UIx (HAR-1575): only the kit Select's hidden form proxy.
+    expect(await visibleNativeSelects(page), `native <select> on ${pg.name} [${theme}]`).toEqual([]);
   });
 }
+
+/** Visible native selects that are not the kit Select's form proxy, as "id or text" strings. */
+const visibleNativeSelects = (page) => page.evaluate(() => [...document.querySelectorAll('select:not([data-uix-select-proxy])')]
+  .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; })
+  .map((el) => el.id || el.getAttribute('aria-label') || el.textContent.trim().slice(0, 40)));
+
+// The runtime half of the native-select gate (HAR-1575; the static half is
+// packages/react/src/no-native-select.test.mjs): every route of the explorer (each component
+// reference, each composition, each guide page) in this theme project. No axe here, so one page
+// walks all of them.
+test('no visible native select on any explorer route', async ({ page }, testInfo) => {
+  test.setTimeout(240_000);
+  const theme = testInfo.project.name;
+  await page.addInitScript((t) => {
+    try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
+  }, theme);
+  await page.goto('docs/explorer.html#all-components', { waitUntil: 'networkidle' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+  // every page the nav lists (guides, references) and every card of the catalogue
+  const routes = await page.evaluate(() => [...new Set([...document.querySelectorAll('[data-uix-docs-nav] a.uix-docs__navlink, a.uix-docs__component-card')].map((a) => a.getAttribute('href')).filter((h) => h?.startsWith('#')).map((h) => h.slice(1)))]);
+  for (const slug of SHOWCASE_PAGES.map((p) => p.slug)) if (!routes.includes(slug)) routes.push(slug);
+  expect(routes.length, 'the walk found the catalogue').toBeGreaterThan(100);
+  const found = [];
+  for (const slug of routes) {
+    await page.evaluate((s) => { location.hash = s; }, slug);
+    await page.waitForFunction((s) => location.hash === `#${s}` && document.querySelector('[data-docs-page]')?.children.length > 0, slug);
+    for (const hit of await visibleNativeSelects(page)) found.push(`#${slug}: ${hit}`);
+  }
+  expect(found, `native <select> in the explorer [${theme}]`).toEqual([]);
+});

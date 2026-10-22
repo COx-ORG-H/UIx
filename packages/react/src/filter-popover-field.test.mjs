@@ -21,8 +21,9 @@ const render = (props) => {
 };
 
 for (const [name, props, tag] of [
-  ['select', { type: 'select', options: [{ value: '', label: 'Any status' }, { value: 'open', label: 'Open' }] }, 'SELECT'],
-  ['enum', { type: 'enum', options: [{ value: 'a', label: 'A' }] }, 'SELECT'],
+  // the kit Select (HAR-1575): a <button role="combobox"> is the control the label names
+  ['select', { type: 'select', options: [{ value: '', label: 'Any status' }, { value: 'open', label: 'Open' }] }, 'BUTTON'],
+  ['enum', { type: 'enum', options: [{ value: 'a', label: 'A' }] }, 'BUTTON'],
   ['text', { type: 'text', placeholder: 'Contains…' }, 'INPUT'],
 ]) {
   test(`FilterPopover (${name}) labels its control through a .uix-field, never .uix-label`, () => {
@@ -32,7 +33,8 @@ for (const [name, props, tag] of [
     assert.ok(field, 'the control sits in a .uix-field');
     const label = field.querySelector(':scope > label.uix-field__label');
     assert.equal(label?.textContent, 'Status');
-    const control = field.querySelector(':scope > :is(select, input)');
+    const control = field.querySelector(':scope > :is(button.uix-select, input)');
+    assert.equal(field.querySelector('select:not([data-uix-select-proxy])'), null, 'no native select');
     assert.equal(control?.tagName, tag);
     assert.ok(control.id, 'the control has an id');
     assert.equal(label.getAttribute('for'), control.id, 'label[for] is the control id');

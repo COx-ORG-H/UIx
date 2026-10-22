@@ -226,7 +226,7 @@ type AsyncState = { status: 'idle' | 'loading' | 'ready' | 'error'; items: Selec
  * A select that draws its own list (HAR-1572): the WAI-ARIA APG select-only combobox — focus
  * stays on the trigger, `aria-activedescendant` marks the active option — in a top-layer popover
  * placed with `useAnchoredPosition`, or a bottom sheet on a phone. A visually hidden native
- * `<select>` carries `name`, `required`, `form`, `multiple` and the value, so `<option>` children,
+ * select element (the form proxy) carries `name`, `required`, `form`, `multiple` and the value, so `<option>` children,
  * `onChange(e)` with `e.target.value`, FormData, `form.reset()`, `ref` and react-hook-form keep
  * working; `ref` points at that select.
  */

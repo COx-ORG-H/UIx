@@ -202,7 +202,7 @@ export const initSelectSpecimens = (root) => {
       o.setAttribute('aria-selected', String(on));
       o.querySelector('.uix-listbox__check').innerHTML = on ? SELECT_CHECK : '';
     };
-    const render = () => {
+    const render = (notify = true) => {
       const on = selected();
       const value = trigger.querySelector('.uix-select__value');
       trigger.toggleAttribute('data-placeholder', !on.length);
@@ -215,7 +215,14 @@ export const initSelectSpecimens = (root) => {
       trigger.querySelector('.uix-select__more')?.remove();
       if (multiple && on.length > 1) trigger.insertAdjacentHTML('beforeend', `<span class="uix-select__more"><span aria-hidden="true">+${on.length - 1}</span><span class="uix-visually-hidden">, ${on.length} selected</span></span>`);
       const values = on.map(valueOf);
+      const before = JSON.stringify([...proxy.options].filter((p) => p.selected).map((p) => p.value));
       [...proxy.options].forEach((p) => { p.selected = values.includes(p.value); });
+      // Like the React Select, a changed value fires input + change on the form proxy, so page
+      // scripts (tables.html) can listen to it as to a native select (HAR-1575).
+      if (notify && before !== JSON.stringify(values)) {
+        proxy.dispatchEvent(new Event('input', { bubbles: true }));
+        proxy.dispatchEvent(new Event('change', { bubbles: true }));
+      }
       const count = popup.querySelector('.uix-select__toolbar span');
       if (count) count.textContent = `${on.length} selected`;
     };

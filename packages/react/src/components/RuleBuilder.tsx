@@ -10,6 +10,7 @@ import {
 import type { RuleAction, RuleCheck, RuleCondition, RuleDefinition, RuleGroup, RuleValidationIssue } from '../rule-builder-model.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { Select } from './Select.js';
 
 export interface RuleValueEditorProps {
   condition: RuleCondition;
@@ -227,9 +228,9 @@ function RuleGroupEditor({ group, depth, root, fields, operators, maxDepth, disa
       {!hideCombinator && (combinator
         ? <span className="uix-rule-builder__match">{labels.match} {combinator === 'or' ? labels.any : labels.all}</span>
         : <label>{labels.match}
-          <select className="uix-select uix-select--sm" value={group.combinator} disabled={disabled} onChange={(event) => updateNode(group.id, (node) => ({ ...(node as RuleGroup), combinator: event.currentTarget.value as 'and' | 'or' }))}>
-            <option value="and">{labels.all}</option><option value="or">{labels.any}</option>
-          </select>
+          <Select size="sm" value={group.combinator} disabled={disabled}
+            options={[{ value: 'and', label: labels.all }, { value: 'or', label: labels.any }]}
+            onValueChange={(next) => updateNode(group.id, (node) => ({ ...(node as RuleGroup), combinator: next as 'and' | 'or' }))} />
         </label>)}
     </legend>
     <div className="uix-rule-builder__rows">
@@ -269,8 +270,10 @@ function ConditionRow({ labels, condition, fields, operators, disabled, onChange
     onChange({ ...condition, field: id, operator: nextOperator?.id ?? '' });
   };
   return <div className="uix-rule-builder__condition">
-    <label><span className="uix-visually-hidden">{labels.field}</span><select className="uix-select" value={condition.field} onChange={(event) => setField(event.currentTarget.value)} disabled={disabled}>{fields.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
-    <label><span className="uix-visually-hidden">{labels.operator}</span><select className="uix-select" value={condition.operator} onChange={(event) => onChange({ ...condition, operator: event.currentTarget.value })} disabled={disabled}>{availableOperators.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+    <label><span className="uix-visually-hidden">{labels.field}</span><Select value={condition.field} disabled={disabled}
+      options={fields.map((item) => ({ value: item.id, label: item.label }))} onValueChange={(next) => setField(next as string)} /></label>
+    <label><span className="uix-visually-hidden">{labels.operator}</span><Select value={condition.operator} disabled={disabled}
+      options={availableOperators.map((item) => ({ value: item.id, label: item.label }))} onValueChange={(next) => onChange({ ...condition, operator: next as string })} /></label>
     {operator?.requiresValue !== false && <div className="uix-rule-builder__value">
       {field?.renderValueEditor?.({ condition, onChange: (value) => onChange({ ...condition, value }), disabled }) ?? <input className="uix-input" value={typeof condition.value === 'string' || typeof condition.value === 'number' ? condition.value : condition.value == null ? '' : JSON.stringify(condition.value)} onChange={(event) => onChange({ ...condition, value: event.currentTarget.value })} disabled={disabled} aria-label={fillLabel(labels.valueFor, { field: field?.label ?? labels.itemCondition })} />}
     </div>}
@@ -341,7 +344,9 @@ export function RuleBuilder({
       {value.then.map((action, index) => {
         const definition = actions.find((item) => item.id === action.type);
         return <div className="uix-rule-builder__action" key={action.id}>
-          <select className="uix-select" value={action.type} disabled={disabled} onChange={(event) => updateActions(value.then.map((item) => item.id === action.id ? { ...item, type: event.currentTarget.value } : item))} aria-label={labels.actionType}>{actions.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
+          <Select value={action.type} disabled={disabled} aria-label={labels.actionType}
+            options={actions.map((item) => ({ value: item.id, label: item.label }))}
+            onValueChange={(next) => updateActions(value.then.map((item) => item.id === action.id ? { ...item, type: next as string } : item))} />
           {definition?.renderParameters?.(action, (parameters) => updateActions(value.then.map((item) => item.id === action.id ? { ...item, parameters } : item)), disabled)}
           {!disabled && <RowControls labels={labels} label={labels.itemAction} first={index === 0} last={index === value.then.length - 1} disabled={false}
             onUp={() => { const next = [...value.then]; [next[index - 1], next[index]] = [next[index]!, next[index - 1]!]; updateActions(next); }}
