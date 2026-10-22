@@ -14,6 +14,7 @@
 @import "components/search-suggest.css";
 @import "components/tag-input.css";
 @import "components/form.css";
+@import "components/inline-edit.css";
 @import "components/app-shell.css";
 @import "components/sidebar.css";
 @import "components/breadcrumbs.css";

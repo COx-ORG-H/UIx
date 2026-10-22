@@ -192,9 +192,9 @@
       "brotli": 959
     },
     "styles/components/inline-edit.css": {
-      "raw": 2146,
-      "gzip": 824,
-      "brotli": 666
+      "raw": 3760,
+      "gzip": 1222,
+      "brotli": 1017
     },
     "styles/components/input.css": {
       "raw": 3794,

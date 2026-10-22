@@ -17,7 +17,7 @@ import { createElement as h, act } from 'react';
 const here = dirname(fileURLToPath(import.meta.url));
 export const SPECIMEN_MODULE = join(here, '../../tokens/docs/data-editing-specimens.js');
 
-const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'MutationObserver', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT'];
+const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'MutationObserver', 'HTMLElement', 'HTMLInputElement', 'HTMLTextAreaElement', 'Node', 'IS_REACT_ACT_ENVIRONMENT'];
 
 const caption = (text) => `<div class="uix-guide__subhead" data-data-editing>${text}</div>`;
 
@@ -42,6 +42,44 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── InlineEdit as a record field (HAR-1833): an object value, an icon trigger, a read-only
+  //    reason, and a failed save with Try again ─────────────────────────────────────────────
+  ({ ui, mount, html, window }) => {
+    const failing = mount(h(ui.InlineEdit, {
+      label: 'Title', value: 'Printer offline',
+      onSave: () => Promise.reject(new Error('The server did not answer in time.')),
+      renderError: (_error, { message, retry }) => h('span', { className: 'uix-cluster', style: { alignItems: 'center' } },
+        h('span', null, message), h(ui.Button, { size: 'sm', variant: 'link', onClick: retry }, 'Try again')),
+    }));
+    // Open the editor, type, and fail the save, so the page shows the error state.
+    act(() => failing.querySelector('button.uix-inline-edit__view').dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+    const input = failing.querySelector('input');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, 'Printer offline on the 3rd floor');
+      input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    return {
+      deferred: async () => {
+        await act(async () => {
+          input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          for (let i = 0; i < 5; i += 1) await Promise.resolve();
+        });
+        const row = (term, field) => h(ui.DescriptionItem, { term }, field);
+        const record = mount(h(ui.DescriptionList, null,
+          row('Owner', h(ui.InlineEdit, { label: 'Owner', value: { id: 'u2', name: 'Jonas Weber' }, renderView: (v) => v.name, equals: (a, b) => a?.id === b?.id, commit: 'change', onSave() {} })),
+          row('Ticket', h(ui.InlineEdit, { label: 'Ticket', value: 'INC-20417', trigger: 'icon', renderView: (v) => h('a', { className: 'uix-link', href: '#inline-edit-ticket' }, v), onSave() {} })),
+          row('Source', h(ui.InlineEdit, { label: 'Source', value: 'Imported from ServiceNow', readOnlyReason: 'Set by the integration.', onSave() {} })),
+          row('Title', h('span', { 'data-failing': '' }))));
+        const markup = html(record).replace('<span data-failing=""></span>', html(failing));
+        return {
+          'examples-form-controls': [
+            caption('Inline edit as a record field (React <code>InlineEdit</code>, HAR-1833) — an object value shown by <code>renderView</code>; <code>trigger="icon"</code> when the value is itself a link, the pencil named only "Edit Ticket"; a <code>readOnlyReason</code> instead of an edit control; a failed save keeps the draft, with Try again from <code>renderError</code>'),
+            `<div data-inline-edit-record-example style="max-width:40rem">${markup}</div>`,
+          ].join('\n'),
+        };
+      },
+    };
+  },
 ];
 
 /**
@@ -62,6 +100,9 @@ export async function renderDataEditingSpecimens() {
   expose('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
   expose('MutationObserver', window.MutationObserver);
   expose('HTMLElement', window.HTMLElement);
+  expose('HTMLInputElement', window.HTMLInputElement);
+  expose('HTMLTextAreaElement', window.HTMLTextAreaElement);
+  expose('Node', window.Node);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   const dialog = window.HTMLDialogElement.prototype;
   dialog.showModal = function showModal() { this.setAttribute('open', ''); };
@@ -90,7 +131,10 @@ export async function renderDataEditingSpecimens() {
 
     const byRoute = {};
     for (const build of BUILDERS) {
-      for (const [route, markup] of Object.entries(build({ ui, mount, html, window }))) {
+      let blocks = build({ ui, mount, html, window });
+      // A builder that has to wait (a save that fails) returns `deferred`.
+      if (typeof blocks.deferred === 'function') blocks = await blocks.deferred();
+      for (const [route, markup] of Object.entries(blocks)) {
         byRoute[route] = byRoute[route] ? `${byRoute[route]}\n${markup}` : markup;
       }
     }

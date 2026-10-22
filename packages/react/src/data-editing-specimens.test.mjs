@@ -28,5 +28,13 @@ test('every state named in a caption is on the page', () => {
   assert.equal((nav.match(/<nav class="uix-segmented-nav" aria-label="/g) ?? []).length, 2);
   assert.equal((nav.match(/ aria-current="page">/g) ?? []).length, 2);
   assert.match(nav, /<a lang="de" href="#lang-de" hreflang="de" class="uix-segmented__option" aria-current="page">DE<\/a>/);
+  // inline edit as a record field: an object value, the icon trigger, a read-only reason, a failed save
+  const forms = specimens['examples-form-controls'];
+  assert.match(forms, /data-inline-edit-record-example/);
+  assert.match(forms, /<span class="uix-inline-edit__value">Jonas Weber<\/span>/);
+  assert.match(forms, /<button type="button" class="uix-inline-edit__trigger" aria-label="Edit Ticket">/);
+  assert.match(forms, /aria-describedby="dex-\d+-reason">Imported from ServiceNow<\/span><span id="dex-\d+-reason" class="uix-inline-edit__reason">/);
+  assert.match(forms, /role="alert"><span class="uix-cluster"[^>]*><span>The server did not answer in time\.<\/span><button[^>]*>Try again<\/button>/);
+  assert.match(forms, /value="Printer offline on the 3rd floor" aria-invalid="true"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

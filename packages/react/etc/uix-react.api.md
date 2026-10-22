@@ -2352,10 +2352,10 @@ export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
 }
 
 // @public
-export function InlineEdit(input: InlineEditProps): react.JSX.Element;
+export function InlineEdit<T = string>(input: InlineEditProps<T>): react.JSX.Element;
 
 // @public
-export interface InlineEditEditorProps {
+export interface InlineEditEditorProps<T = string> {
     // (undocumented)
     cancel: () => void;
     field: {
@@ -2364,11 +2364,19 @@ export interface InlineEditEditorProps {
         'aria-describedby': string | undefined;
         'aria-invalid': true | undefined;
         disabled: boolean;
+        readOnly: boolean;
     };
-    // (undocumented)
-    onChange: (next: string) => void;
-    save: () => void;
-    value: string;
+    onChange: (next: T) => void;
+    save: (next?: T) => void;
+    value: T;
+}
+
+// @public
+export interface InlineEditErrorContext<T = string> {
+    cancel: () => void;
+    draft: T;
+    message: ReactNode;
+    retry: () => void;
 }
 
 // @public
@@ -2378,6 +2386,7 @@ export interface InlineEditLabels {
     edit: string;
     empty: string;
     failed: string;
+    readOnly: string;
     // (undocumented)
     save: string;
     saved: string;
@@ -2385,20 +2394,34 @@ export interface InlineEditLabels {
 }
 
 // @public (undocumented)
-export interface InlineEditProps {
+export interface InlineEditProps<T = string> {
     // (undocumented)
     className?: string;
+    commit?: 'explicit' | 'blur' | 'change';
     disabled?: boolean;
+    draft?: T;
+    editing?: boolean;
+    equals?: (a: T, b: T) => boolean;
+    isEmpty?: (value: T) => boolean;
     label: string;
     labels?: Partial<InlineEditLabels>;
     multiline?: boolean;
-    onSave: (next: string) => void | Promise<void>;
+    onDraftChange?: (draft: T) => void;
+    onEditingChange?: (editing: boolean) => void;
+    onSave: (next: T) => void | Promise<unknown>;
+    onStateChange?: (state: InlineEditState) => void;
     placeholder?: ReactNode;
-    renderEditor?: (props: InlineEditEditorProps) => ReactNode;
-    renderView?: (value: string) => ReactNode;
-    validate?: (next: string) => ReactNode | undefined;
-    value: string;
+    readOnlyReason?: ReactNode;
+    renderEditor?: (props: InlineEditEditorProps<T>) => ReactNode;
+    renderError?: (error: unknown, context: InlineEditErrorContext<T>) => ReactNode;
+    renderView?: (value: T) => ReactNode;
+    trigger?: 'value' | 'icon';
+    validate?: (next: T) => ReactNode | undefined;
+    value: T;
 }
+
+// @public
+export type InlineEditState = 'idle' | 'editing' | 'saving' | 'saved' | 'error';
 
 // @public (undocumented)
 export const Input: react.ForwardRefExoticComponent<InputProps & react.RefAttributes<HTMLInputElement>>;
