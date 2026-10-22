@@ -139,6 +139,13 @@ export async function renderUxcSpecimens() {
     };
     const OPEN_STYLE = 'position:static;display:inline-block;opacity:1;margin:0';
     const lastHint = () => [...window.document.body.querySelectorAll(':scope > .uix-tooltip__bubble--hint')].pop();
+    // A Button's spoken keys, its description, are portalled with its hint (HAR-2416): shown beside it.
+    const spoken = (host) => {
+      const control = host.querySelector('button, a');
+      return (control.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
+        .map((id) => window.document.getElementById(id)).filter((el) => el && !host.contains(el))
+        .map((el) => stable(el.outerHTML)).join('');
+    };
     const assign = mount(h(ui.Button, { shortcut: ['A'] }, 'Assign'));
     const assignHint = showOpen(lastHint(), OPEN_STYLE);
     const palette = mount(h(ui.Button, { icon: true, variant: 'ghost', 'aria-label': 'Search', shortcut: ['Mod', 'K'] },
@@ -160,10 +167,10 @@ export async function renderUxcSpecimens() {
       h(ui.MenuItem, { shortcut: ['Del'], tone: 'danger' }, 'Delete')));
     rows.querySelector('[role^="menuitem"]').setAttribute('tabindex', '0');
     const shortcuts = [
-      caption('Shortcuts where people act (React <code>Button shortcut</code>, <code>Tooltip shortcut</code>, <code>MenuItem shortcut</code>) — the key in the hover and focus hint and at the end of a menu row, and <code>aria-keyshortcuts</code> on the control; ⌘ / Meta on Apple, Ctrl / Control elsewhere (shown here for Windows and Linux)'),
+      caption('Shortcuts where people act (React <code>Button shortcut</code>, <code>ButtonLink shortcut</code>, <code>Tooltip shortcut</code>, <code>MenuItem shortcut</code>) — the key in the hover and focus hint and at the end of a menu row; screen readers hear a button\'s or tooltip\'s keys once, as its description, and a menu row\'s from its text and <code>aria-keyshortcuts</code>; ⌘ / Command on Apple, Ctrl / Control elsewhere (shown here for Windows and Linux)'),
       '<div data-shortcut-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
-      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}</div>`,
-      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}${spoken(assign)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}${spoken(palette)}</div>`,
       `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${tipBubble}${tipHtml}</div>`,
       html(rows),
       '</div>',

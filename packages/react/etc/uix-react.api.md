@@ -517,6 +517,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     href: string;
     icon?: boolean;
     renderLink?: UixRenderLink;
+    shortcut?: KeyShortcut;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)

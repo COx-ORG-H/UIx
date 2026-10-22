@@ -33,10 +33,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /**
    * The button's keyboard shortcut, in `KbdCombo` key names: `['A']`, `['Mod', 'Enter']`
    * (HAR-2031). Hover or focus shows the keys in a hint above the button (an icon button's
-   * `aria-label` before them), and the button gets `aria-keyshortcuts` for the viewer's platform
-   * (⌘ / Meta on Apple, Ctrl / Control elsewhere), unless you pass `aria-keyshortcuts` yourself.
-   * Inside a `Tooltip` the Tooltip shows the keys in its own bubble. The kit only shows the
-   * shortcut: the product binds the key.
+   * `aria-label` before them; ⌘ on Apple, Ctrl elsewhere). Screen readers hear the keys once, as
+   * the button's description after any `aria-describedby` of yours ("Control+Enter"), the same
+   * rule as a `Tooltip` with a shortcut (HAR-2416). Inside a `Tooltip` the Tooltip shows and says
+   * the keys. An `aria-keyshortcuts` you pass is kept as it is. The kit only shows the shortcut:
+   * the product binds the key.
    */
   shortcut?: KeyShortcut;
   children?: ReactNode;
@@ -74,7 +75,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {children}
         {shortcut && shortcut.length > 0 && (
-          <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} ownsAria={props['aria-keyshortcuts'] === undefined} />
+          <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} />
         )}
       </button>
     );
@@ -97,6 +98,12 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
   disabled?: boolean;
   /** Your router's link (`(p) => <NextLink {...p} />`); default a plain `<a>`. */
   renderLink?: UixRenderLink;
+  /**
+   * The link's keyboard shortcut, as on `Button` (HAR-2416): hover or keyboard focus shows the
+   * keys in a hint above it, and screen readers hear them once as its description. Not shown
+   * while `disabled`. The kit only shows the shortcut: the product binds the key.
+   */
+  shortcut?: KeyShortcut;
   children?: ReactNode;
 }
 
@@ -104,12 +111,15 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
  * A link that looks like a `Button` (HAR-1348; TENSOR A4/B5, MOTUS C-3). Use it when the
  * action navigates; use `Button` when it acts in place.
  */
-export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, wrap = false, disabled = false, renderLink, className, children, onClick, ...props }: ButtonLinkProps) {
+export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, wrap = false, disabled = false, renderLink, shortcut, className, children, onClick, ...props }: ButtonLinkProps) {
   const classes = buttonClasses(variant, size, icon, wrap, className);
   if (disabled) {
     return <a {...props} className={classes} role="link" aria-disabled="true">{children}</a>;
   }
-  return <>{renderUixLink(renderLink, { ...props, href, onClick, className: classes, children })}</>;
+  const content = shortcut && shortcut.length > 0
+    ? <>{children}<ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} /></>
+    : children;
+  return <>{renderUixLink(renderLink, { ...props, href, onClick, className: classes, children: content })}</>;
 }
 
 export interface ButtonGroupProps {

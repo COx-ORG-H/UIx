@@ -5,7 +5,7 @@ import type { ReactNode, ReactElement, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
-import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, isKeyShortcut, spokenKeys, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
@@ -24,10 +24,11 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
   placement?: Placement;
   /**
    * The trigger's keyboard shortcut, in `KbdCombo` key names, e.g. `['Mod', 'K']` (HAR-2031):
-   * shown with `Kbd` after the text, and set as the trigger's `aria-keyshortcuts` for the
-   * viewer's platform. Default: the `shortcut` of a `Button` child, so a Tooltip around a Button
-   * with a shortcut shows one bubble with the label and the keys. The kit only shows it: the
-   * product binds the key.
+   * shown with `Kbd` after the text. Screen readers hear it once, in the trigger's description
+   * after the text ("Keyboard shortcuts, Shift+?"), the same rule as a `Button` with `shortcut`
+   * (HAR-2416). Default: the `shortcut` of a `Button` child, so a Tooltip around a Button with a
+   * shortcut shows one bubble with the label and the keys. The kit only shows it: the product
+   * binds the key.
    */
   shortcut?: KeyShortcut;
   children?: ReactNode;
@@ -51,7 +52,6 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const childShortcut = isValidElement(children) ? (children.props as { shortcut?: unknown }).shortcut : undefined;
   const own = shortcut ?? (isKeyShortcut(childShortcut) ? childShortcut : undefined);
   const keys = own && own.length > 0 ? own : null;
-  const keyshortcuts = keys ? ariaKeyShortcuts(keys, platform) : undefined;
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
@@ -108,12 +108,16 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   // the control itself; existing describedby values are preserved (same merge as Field —
   // UIX-A11Y-1). Non-element children (plain text/icon) keep it on the wrapper, which becomes
   // focusable so the tooltip is keyboard-reachable.
+  // With keys, the description is the text and the spoken keys, each by id: a closed bubble is
+  // hidden, and a description taken from a hidden element also reads its aria-hidden glyphs
+  // ("Shift+? Shift ?"). The keys are said once (HAR-2416).
+  const text = content ?? label;
+  const description = keys ? [text != null ? `${id}-text` : null, `${id}-keys`].filter(Boolean).join(' ') : id;
   const single = isValidElement(children);
   const child = single
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
-        'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], id]
+        'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], description]
           .filter(Boolean).join(' '),
-        ...(keyshortcuts ? { 'aria-keyshortcuts': keyshortcuts } : {}),
       })
     : children;
 
@@ -121,8 +125,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     <span
       ref={triggerRef}
       className={cx('uix-tooltip', className)}
-      aria-describedby={single ? undefined : id}
-      aria-keyshortcuts={single ? undefined : keyshortcuts}
+      aria-describedby={single ? undefined : description}
       tabIndex={single ? undefined : 0}
       onMouseEnter={show}
       onMouseLeave={scheduleHide}
@@ -140,8 +143,15 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
         onMouseLeave={scheduleHide}
         {...bubbleAttr}
       >
-        {content ?? label}
-        {keys && <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>}
+        {keys ? (
+          <>
+            {text != null && <span id={`${id}-text`}>{text}</span>}
+            <span className="uix-tooltip__shortcut">
+              <span id={`${id}-keys`} className="uix-visually-hidden">{spokenKeys(keys, platform)}</span>
+              <KbdCombo keys={[...keys]} platform={platform} aria-hidden="true" />
+            </span>
+          </>
+        ) : text}
       </span>
     </span>
   );

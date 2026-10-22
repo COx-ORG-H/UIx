@@ -1,6 +1,8 @@
 /* Keyboard shortcuts where people act (HAR-2031; TENSOR audit UXC-03, D-09): a Button's hint, a
- * Tooltip and a Menu row show the key with Kbd and set `aria-keyshortcuts`, so ~65 registered
- * shortcuts are no longer discoverable only through the "?" sheet.
+ * Tooltip and a Menu row show the key with Kbd, so ~65 registered shortcuts are no longer
+ * discoverable only through the "?" sheet. A Button, a ButtonLink and a Tooltip follow one
+ * screen-reader rule (HAR-2416): the keys are said once, as the control's description, and the kit
+ * sets no `aria-keyshortcuts` beside it; Menu rows set `aria-keyshortcuts`.
  *
  * Measured on a React harness (tests/shortcut/harness.tsx), in both themes, with a Windows and a
  * macOS platform (⌘ vs Ctrl, Meta vs Control). A Button's hint leaves only an empty marker in the
@@ -27,17 +29,23 @@ const open = async (page, testInfo, platform = 'Win32') => {
 /** The Button hint that is open right now (each Button portals its own bubble). */
 const openHint = (page) => page.locator('.uix-tooltip__bubble--hint:popover-open');
 
-test('Button: aria-keyshortcuts per platform; its own aria-keyshortcuts wins', async ({ page }, testInfo) => {
+test('Button: the keys are its description, said once; its own aria-keyshortcuts stays', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  await expect(page.locator('#assign')).toHaveAttribute('aria-keyshortcuts', 'A');
-  await expect(page.locator('#search')).toHaveAttribute('aria-keyshortcuts', 'Control+K');
-  await expect(page.locator('#full')).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+  await expect(page.locator('#assign')).toHaveAccessibleDescription('A');
+  await expect(page.locator('#search')).toHaveAccessibleDescription('Control+K');
+  await expect(page.locator('#search')).toHaveAccessibleName('Search');
+  await expect(page.locator('#full')).toHaveAccessibleDescription('Control+Enter');
+  for (const id of ['assign', 'search', 'full']) await expect(page.locator(`#${id}`)).not.toHaveAttribute('aria-keyshortcuts', /./);
   await expect(page.locator('#save-both')).toHaveAttribute('aria-keyshortcuts', 'Control+S Meta+S');
+  // Shown or not, the description is the same: the hint's glyphs are never read.
+  await page.locator('#assign').hover();
+  await expect(openHint(page)).toBeVisible();
+  await expect(page.locator('#assign')).toHaveAccessibleDescription('A');
 });
 
 test('Button: on macOS Mod is Meta and the hint shows ⌘', async ({ page }, testInfo) => {
   await open(page, testInfo, 'MacIntel');
-  await expect(page.locator('#search')).toHaveAttribute('aria-keyshortcuts', 'Meta+K');
+  await expect(page.locator('#search')).toHaveAccessibleDescription('Command+K');
   await page.locator('#search').hover();
   await expect(openHint(page)).toBeVisible();
   await expect(openHint(page)).toContainText('⌘');
@@ -127,20 +135,47 @@ test('Button: a shortcut changes no geometry (ButtonGroup corners, full width)',
 test('Tooltip: label and keys in its bubble; around a Button with a shortcut there is one bubble', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const trigger = page.locator('#tip-trigger');
-  await expect(trigger).toHaveAttribute('aria-keyshortcuts', 'Shift+?');
+  await expect(trigger).not.toHaveAttribute('aria-keyshortcuts', /./);
+  await expect(trigger).toHaveAccessibleDescription('Keyboard shortcuts Shift+?');
   await trigger.hover();
   const bubble = page.getByRole('tooltip', { name: /Keyboard shortcuts/ });
   await expect(bubble).toBeVisible();
   await expect(bubble.locator('kbd')).toHaveText(['Shift', '?']);
-  await expect(trigger).toHaveAccessibleDescription(/Keyboard shortcuts.*Shift\+\?/);
+  await expect(trigger).toHaveAccessibleDescription('Keyboard shortcuts Shift+?');
   await page.mouse.move(0, 0);
   const watch = page.locator('#watch');
-  await expect(watch).toHaveAttribute('aria-keyshortcuts', 'W');
+  await expect(watch).not.toHaveAttribute('aria-keyshortcuts', /./);
+  await expect(watch).toHaveAccessibleDescription('Watch this record W');
   await watch.hover();
   const watchTip = page.getByRole('tooltip', { name: /Watch this record/ });
   await expect(watchTip).toBeVisible();
   await expect(watchTip.locator('kbd')).toHaveText('W');
   await expect(openHint(page), 'the Button steps aside for the Tooltip').toHaveCount(0);
+});
+
+test('ButtonLink: a shortcut shows the same hint above the link and is said once as its description', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const link = page.locator('#new-link');
+  await expect(link).toHaveAccessibleName('New incident');
+  await expect(link).toHaveAccessibleDescription('N');
+  await expect(link).not.toHaveAttribute('aria-keyshortcuts', /./);
+  expect(await link.evaluate((el) => el.textContent)).toBe('New incident');
+  await link.hover();
+  await expect(openHint(page)).toBeVisible();
+  await expect(openHint(page).locator('kbd')).toHaveText('N');
+  await settleOverlay(openHint(page));
+  const [l, t] = [await link.boundingBox(), await openHint(page).boundingBox()];
+  expect(t.y + t.height, 'the hint sits above the link').toBeLessThanOrEqual(l.y);
+  await page.keyboard.press('Escape');
+  await expect(openHint(page)).toHaveCount(0);
+  await expect(page).not.toHaveURL(/#new$/);
+  // An icon link: its name leads the hint; keyboard focus shows it.
+  await page.mouse.move(0, 0);
+  await page.locator('#new-link').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#new-icon')).toBeFocused();
+  await expect(openHint(page)).toContainText('Import');
+  await expect(page.locator('#new-icon')).toHaveAccessibleDescription('Control+I');
 });
 
 test('Menu: items show their keys and expose aria-keyshortcuts; a node shortcut still renders as given', async ({ page }, testInfo) => {

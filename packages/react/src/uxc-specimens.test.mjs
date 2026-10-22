@@ -43,12 +43,17 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /value="Printer"/);
   assert.match(forms, /class="uix-searchbar__clear" aria-label="Clear search"/);
   assert.match(forms, />Search<\/button>/);
-  // shortcuts: the hint bubbles shown open, the keys, aria-keyshortcuts on the controls and rows
+  // shortcuts: the hint bubbles shown open, the keys; a button's and the tooltip's keys are its
+  // description (HAR-2416), the menu rows carry aria-keyshortcuts
   const navigation = specimens['examples-navigation'];
   assert.match(navigation, /data-shortcut-example/);
-  assert.match(navigation, /aria-keyshortcuts="A"/);
-  assert.match(navigation, /aria-keyshortcuts="Control\+K"/);
-  assert.match(navigation, /aria-keyshortcuts="Shift\+\?"/);
+  for (const keys of ['A', 'Control\\+K']) {
+    const [, id] = navigation.match(new RegExp(`<span id="([^"]+)" hidden="">${keys}</span>`)) ?? [];
+    assert.ok(id, `the spoken ${keys} is in the specimen`);
+    assert.match(navigation, new RegExp(`<button[^>]*aria-describedby="${id}"`));
+  }
+  assert.match(navigation, /<span id="[^"]+-keys" class="uix-visually-hidden">Shift\+\?<\/span>/);
+  assert.doesNotMatch(navigation, /<button class="uix-btn[^>]*aria-keyshortcuts|<a href="#kbd"[^>]*aria-keyshortcuts/);
   assert.match(navigation, /aria-keyshortcuts="Control\+D"/);
   assert.match(navigation, /aria-keyshortcuts="Delete"/);
   assert.equal((navigation.match(/class="uix-tooltip__shortcut"/g) ?? []).length, 3);
