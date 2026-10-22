@@ -116,15 +116,16 @@ test('toggling only rotates the chevron; its centre never moves, even mid-transi
   expect(Math.abs(opened.box.y - closed.box.y)).toBeLessThanOrEqual(0.01);
 });
 
-test('under reduced motion the chevron transition is <= 0.001 ms', async ({ page }, testInfo) => {
+// Reduced motion removes movement and keeps colour fades (motion.css, HAR-2578): the chevron's
+// turn drops out of its transition, so it flips at once; its hover colour may still fade.
+test('under reduced motion the chevron turns at once', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await open(page, testInfo);
-  const ms = await page.locator(`${SECTION} .uix-collapsible__chevron`).evaluate((el) => {
-    const parse = (s) => (s.endsWith('ms') ? parseFloat(s) : parseFloat(s) * 1000);
-    return getComputedStyle(el).transitionDuration.split(',').map((d) => parse(d.trim()));
-  });
-  expect(ms.length).toBeGreaterThan(0);
-  for (const d of ms) expect(d).toBeLessThanOrEqual(0.001);
+  const properties = await page.locator(`${SECTION} .uix-collapsible__chevron`).evaluate((el) =>
+    getComputedStyle(el).transitionProperty.split(',').map((p) => p.trim()));
+  expect(properties).not.toContain('transform');
+  expect(properties).not.toContain('rotate');
+  expect(properties).not.toContain('all');
 });
 
 test('hovering the summary turns the chevron from muted to the text colour', async ({ page }, testInfo) => {

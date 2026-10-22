@@ -164,10 +164,12 @@ Scale (size / leading): `display 40/1.05` · `data-hero 34/1.1` · `h2 24/1.15` 
 
 ### Motion (v1 preserved + extended — see §5.9)
 Easing: `--uix-ease-out cubic-bezier(.23,1,.32,1)` (default, entrances) · `--uix-ease-out-strong cubic-bezier(.2,0,0,1)`
-· **`--uix-ease-in cubic-bezier(.4,0,1,1)` (new — exits)** · **`--uix-ease-in-out cubic-bezier(.4,0,.2,1)` (new — moves)**
+· `--uix-ease-in cubic-bezier(.4,0,1,1)` (kept for compatibility; **not** for exits — corrected 2026-10-22, see §5.9) · **`--uix-ease-in-out cubic-bezier(.77,0,.175,1)` (new — moves; the shipped value, corrected 2026-10-22 from an unshipped `.4,0,.2,1`)**
 · **`--uix-ease-spring cubic-bezier(.34,1.56,.64,1)` (new — subtle overshoot, used sparingly)**.
 Duration: `--uix-dur-fast 120ms` (micro: hover/press) · `--uix-dur 160ms` (standard) ·
 **`--uix-dur-slow 240ms` (new — overlays/drawers)** · **`--uix-dur-slower 320ms` (new — large surfaces)**.
+Exit, delay and loop durations (added 2026-10-22, HAR-2578): `--uix-dur-exit-fast 80ms` · `--uix-dur-exit 110ms` · `--uix-dur-exit-slow 160ms` ·
+`--uix-delay-tooltip 400ms` · `--uix-delay-tooltip-skip 300ms` · `--uix-loop-spin|progress|shimmer|ping|blink|pulse` · `--uix-dur-highlight 2400ms`.
 Transform offset: **`--uix-lift 4px` (new — subtle rise/slide for popovers)**. Respects `prefers-reduced-motion`.
 
 ### Layout dims
@@ -294,39 +296,46 @@ These behaviors span multiple components and share **one implementation each** (
   in the guide; projects pull additional lucide glyphs as needed.
 
 ### 5.9 Motion & micro-interactions (closes a v1 gap)
+> **Canonical since 2026-10-22:** the docs Foundations → Motion page and `packages/tokens/scripts/check-motion.mjs`
+> (HAR-2578). This section was corrected to match; where they differ, the docs page wins.
+
 Motion is **purposeful, subtle, and fast** — it guides attention, signals state and spatial relationships
 (where things come from / go to), and confirms actions; it is never decorative-only and never blocks input.
 Defaults err toward restraint. v1 shipped almost no motion; v2 treats it as a first-class layer.
 
 **Principles**
 - Animate to *explain* a change (enter/exit, expand/collapse, move) — not to entertain.
-- Entrances **decelerate** (`--uix-ease-out`); exits are **faster** and **accelerate** (`--uix-ease-in`,
-  ~0.7× the enter duration) so dismissals feel snappy.
+- Entrances **decelerate** (`--uix-ease-out`); exits are **faster** (`--uix-dur-exit-*`, about two-thirds of the
+  enter) and still ease-out — **never `--uix-ease-in`**: an accelerating curve on something the user watches reads
+  as lag. *(Corrected 2026-10-22, HAR-2578; this line used to prescribe ease-in for exits.)*
 - Respect spatial origin — menus grow from their trigger, drawers from their edge; one thing moves at a time.
 - Reserve `--uix-ease-spring` overshoot for small confirmations (a toggle, a star) — never for layout.
 
 **Per-interaction choreography**
-- **Hover/press:** bg/border/color transition `--uix-dur-fast` `--uix-ease-out`; buttons press to `scale(.98)`.
-- **Focus:** ring appears in ≤120ms (or instant); never animates layout.
-- **Disclosure** (accordion, sidebar sub-items): height + opacity, `--uix-dur` `--uix-ease-out`.
-- **Popover / dropdown / tooltip:** fade + `scale(.96→1)` + `--uix-lift` translate from the trigger,
-  `--uix-dur-fast`; built on the **native Popover API + `@starting-style` + `transition-behavior: allow-discrete`** (no JS for enter/exit).
-- **Modal `<dialog>`:** backdrop fade + content fade/rise, `--uix-dur-slow`; `@starting-style` entry, allow-discrete exit.
-- **Drawer / side-peek:** slide from edge + backdrop fade, `--uix-dur-slow`; `--uix-ease-out` in / `--uix-ease-in` out (Vaul-like).
-- **Toast:** slide + fade in from the edge, stack, swipe / auto-dismiss.
+- **Hover/press:** bg/border/color transition `--uix-dur-fast` `--uix-ease-out`; buttons press to `scale(.97)`; movement and reveal on hover sit inside `@media (hover: hover) and (pointer: fine)`.
+- **Focus:** the ring appears instantly; never animates layout. Keyboard-opened overlays and the command palette open with no animation.
+- **Disclosure** (accordion, sidebar sub-items): ≤ 200 ms on transform/opacity, never height or grid tracks; a nav group
+  toggled many times a day opens instantly (only its chevron turns).
+- **Popover / dropdown / tooltip:** fade + `scale(.95→1)` growing from the trigger (`transform-origin` at the anchor, never
+  `scale(0)`), `--uix-dur` in and `--uix-dur-exit` out; tooltips open after `--uix-delay-tooltip`, then neighbours open at once; built on the **native Popover API + `@starting-style` + `transition-behavior: allow-discrete`** (no JS for enter/exit).
+- **Modal `<dialog>`:** backdrop fade + content fade/rise, `--uix-dur-slow` in and `--uix-dur-exit-slow` out; `@starting-style` entry,
+  allow-discrete exit. A keyboard-opened dialog and the command palette open instantly (`[data-uix-instant]`).
+- **Drawer / side-peek:** slide from edge + backdrop fade; `--uix-dur-slow` in, `--uix-dur-exit-slow` out, `--uix-ease-out` both ways.
+- **Toast:** slide + fade in from the edge on transitions (interruptible), neighbours glide when one leaves, swipe / auto-dismiss.
 - **Tabs:** active indicator slides between tabs (`--uix-ease-out`).
 - **Table:** row hover tint; subtle highlight pulse on insert/update; pinned-row lift; reorder via the
   **View Transitions API** where supported (graceful fade fallback).
-- **Loading:** skeleton shimmer and spinners are the *only* sanctioned continuous/looping animations.
+- **Loading:** skeleton shimmer, spinners and indeterminate progress are the *only* sanctioned looping animations; each has a
+  `--uix-loop-*` duration and a reduced-motion pulse.
 - **Optional accents:** KPI count-up and value crossfades — off by default, opt-in per project.
 
-**Mechanics (build-free):** prefer CSS `transition` + `@keyframes`; use modern CSS — `@starting-style`,
+**Mechanics (build-free):** prefer CSS `transition` (interruptible) over `@keyframes` for anything that can re-trigger; use modern CSS — `@starting-style`,
 `transition-behavior: allow-discrete`, the Popover API, `<dialog>`, and the View Transitions API — as
 **progressive enhancement** so enter/exit work without JS. `app.js` only covers what CSS can't (focus trap,
 peek ↑/↓ navigation, toast queue, persistence).
 
-**Accessibility (mandatory):** under `prefers-reduced-motion: reduce`, drop transforms/slides and fall back to
-instant or opacity-only while keeping essential feedback. Implementation will lean on the
+**Accessibility (mandatory):** under `prefers-reduced-motion: reduce`, drop transforms/slides and layout glide, keep opacity and
+colour fades, and turn looping indicators into a slow opacity pulse rather than freezing them (`motion.css`). Implementation will lean on the
 `emil-design-eng` / `interaction-design` skills for final polish.
 
 > **Review ask:** trim anything not worth building (YAGNI) or add anything missing before we plan.

@@ -132,3 +132,25 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
   notification-center, sla, heartbeat, media and lightbox. In addition, calendar, file-upload,
   slider and tag-input remain Planned; those need real behaviour, not just a class wrapper. Kbd, Steps and
   Menu gained wrappers in 2.27.0 (the UIx reuse remediation, HAR-1346).
+
+## Motion and feedback kit
+
+The motion contract (tokens, the `check-motion.mjs` gate, the reduced-motion and hover policy, overlay
+timing) landed in HAR-2578, work package 1 of the motion rollout. The canonical vocabulary is the docs
+Foundations → Motion page; the plan is TENSOR `Docs/plans/2026-10-22-motion-and-micro-interactions.md`.
+These primitives are **Planned** in work package 2 (the feedback kit). Until each ships, the Motion page
+marks it *coming*.
+
+| Primitive | Answers | Planned shape |
+|---|---|---|
+| Delayed-pending hook | Is it working? | Drives `Spinner` / `Button loading` / `LoadingState` / `SaveStatus`: show after 300 ms, hold at least 500 ms. |
+| `Button` success / error state | Did it work? | Label/icon crossfade in place, held 1–2 s, announced through `aria-live`. |
+| `BusyRegion` + DataTable `refreshing` | Is it working? | Keep previous rows, dim, top indeterminate bar, `aria-busy`. |
+| Optimistic helper | Did it register? | `useOptimistic`-style, with a visible rollback that says what was restored. |
+| `ChangeHighlight` / `.uix-changed` | What changed? | A tint on the changed row or field that fades over 1–1.5 s; a steady outline under reduced motion. Sibling of `.uix-arrival`. |
+| List enter / exit / reorder (FLIP) | Where did it go? | Opacity plus ≤ 8 px travel; exit collapses on transform before the gap closes. |
+| `Count` | What changed? | One tick on change, never a loop; no tweened numbers in dense tables. |
+| `SuccessState` / receipt | Did it work? (a rare peak) | One success mark, then “what happens next”. |
+| Disclosure expand (`CollapsibleSection`) | Where did it go? | ≤ 200 ms on transform/opacity, never height. |
+| Sliding tab indicator | Where did it go? | The active indicator moves between tabs, ≤ 200 ms. |
+| Drag affordances | Did it register? | Lift on grab, drop target and line, settle ≤ 200 ms, with a keyboard alternative. |

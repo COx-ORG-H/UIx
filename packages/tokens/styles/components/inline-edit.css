@@ -19,7 +19,8 @@
   .uix-inline-edit__placeholder { color: var(--uix-text-muted); }
   /* 75% at rest keeps the pencil above 3:1 (the same floor as the view menu's quiet controls). */
   .uix-inline-edit__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); opacity: .75; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-inline-edit__view:is(:hover, :focus-visible) .uix-inline-edit__icon { opacity: 1; }
+  .uix-inline-edit__view:focus-visible .uix-inline-edit__icon { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) { .uix-inline-edit__view:hover .uix-inline-edit__icon { opacity: 1; } }
   .uix-inline-edit__editor { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2); flex: 1; min-width: 0; }
   .uix-inline-edit__control { flex: 1 1 12rem; min-width: 0; }
   .uix-inline-edit__control > * { width: 100%; }

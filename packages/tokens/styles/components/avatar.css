@@ -30,7 +30,8 @@
   .uix-avatar--editable { cursor: pointer; }
   .uix-avatar__edit { position: absolute; inset: 0; display: grid; place-items: center; background: var(--uix-scrim); color: var(--uix-text-reverse); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-avatar__edit svg { width: 45%; height: 45%; }
-  .uix-avatar--editable:hover .uix-avatar__edit, .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
+  .uix-avatar--editable:focus-visible .uix-avatar__edit { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) { .uix-avatar--editable:hover .uix-avatar__edit { opacity: 1; } }
   .uix-avatar--empty { background: var(--uix-bg-subtle); border: 1.5px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
 }
 

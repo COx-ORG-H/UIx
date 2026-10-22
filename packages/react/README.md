@@ -256,6 +256,24 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 
 Ships **ESM + CJS + types**, with per-file `"use client"` so it's safe under React Server Components. Part of the **[UIx v2 styleguide](https://github.com/COx-ORG-H/UIx)**.
 
+### Motion: reduced motion, instant dialogs
+
+The motion contract lives on the docs Foundations → Motion page and is checked by `check-motion.mjs`. Under
+`prefers-reduced-motion: reduce` the stylesheets drop movement and keep fades, and the loading indicators pulse
+instead of freezing. Motion that your JavaScript drives (a swipe, a scripted scroll, a pan or zoom) reads the same
+preference with `useReducedMotion()` (or `prefersReducedMotion()` in an event handler) and lands on the end state.
+
+`Modal instant` opens and closes with no animation, for a keyboard-initiated or many-times-a-day dialog.
+`CommandPalette` marks the dialog or popover it sits in itself, so a palette in a plain `Modal` is instant without
+`data-uix-cmdk-dialog`. `Meter` and `Progress` move on `transform` (they set `--val`, 0–1).
+
+```tsx
+const reduce = useReducedMotion();
+graph.fitView({ animate: !reduce });
+
+<Modal open={open} onClose={close} aria-label="Command palette"><CommandPalette>…</CommandPalette></Modal>
+```
+
 ### Drawer closes on a backdrop click
 
 `Drawer` closes on a click on the dimmed backdrop, as well as on Escape and its close button, and calls the same

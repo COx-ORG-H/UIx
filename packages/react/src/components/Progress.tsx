@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react';
+import type { CSSProperties, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
 export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
@@ -26,7 +26,7 @@ export function Progress({ value = 0, max = 100, indeterminate, label, className
       className={cx('uix-progress', indeterminate && 'uix-progress--indeterminate', className)}
       {...props}
     >
-      <div className="uix-progress__bar" style={indeterminate ? undefined : { width: `${pct}%` }} />
+      <div className="uix-progress__bar" style={indeterminate ? undefined : ({ '--val': pct / 100 } as CSSProperties)} />
     </div>
   );
 }
