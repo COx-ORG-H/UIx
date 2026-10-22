@@ -1165,3 +1165,25 @@ phone. Without them the markup is unchanged.
 <EventRow weekday="Wed" month="Oct" day="22" year="2026" time="18:00" dateTime="2026-10-22T18:00+02:00"
   title={<Link href="/program/42">Book launch</Link>} meta="National library" media={<img src={cover} alt="" />} />
 ```
+
+#### PrintLayout
+
+`PrintLayout` is a print document frame for the browser's own print (`window.print()`): `size`
+`A4` (default) or `A5`, `orientation`, a `header` and a `footer` that repeat on every printed page
+(it renders a layout `<table>`: Chromium repeats a real `<thead>` / `<tfoot>`, not a CSS table of
+divs), "page / pages" in the bottom-right margin (`pageNumbers`), and ink-on-paper tokens for
+everything inside, also as a paper preview on screen in the dark theme. While it is on the page,
+printing shows only the documents (`isolate`, default): the app shell, toolbars and toasts are
+left out and scroll boxes cannot cut the document. `singlePage` keeps a poster or a one-page
+readout in one piece; when its content does not fit, the preview is outlined and
+`onOverflowChange(true)` is called. `PrintSignature` is a signature line with place and date and
+an optional stamp box (never split across pages); `PrintPageBreak` starts a new page. Utilities:
+`.uix-print-keep`, `.uix-print-hide`, `.uix-print-only`.
+
+```tsx
+<PrintLayout header={<PracticeHeader />} footer={<DoctorFooter />}>
+  <h1>{t('findings')}</h1>
+  <DescriptionList items={patient} />
+  <PrintSignature placeAndDate={placeAndDate} name={doctor} stamp />
+</PrintLayout>
+```

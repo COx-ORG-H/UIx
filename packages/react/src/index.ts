@@ -159,6 +159,9 @@ export type { CodeDisplayProps, CodeDisplayLabels } from './components/CodeDispl
 // A person at a glance with mailto/tel actions and an erased state (HAR-1379)
 export { ContactCard, DEFAULT_CONTACT_CARD_LABELS, telHref } from './components/ContactCard.js';
 export type { ContactCardProps, ContactCardLabels, ContactCardState } from './components/ContactCard.js';
+// A print document frame: A4 / A5 pages, repeating header and footer, signature (HAR-986)
+export { PrintLayout, PrintSignature, PrintPageBreak, DEFAULT_PRINT_LAYOUT_LABELS } from './components/PrintLayout.js';
+export type { PrintLayoutProps, PrintSignatureProps, PrintLayoutLabels, PrintPageSize } from './components/PrintLayout.js';
 
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';

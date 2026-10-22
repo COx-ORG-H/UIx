@@ -1,0 +1,176 @@
+/* uix print layout (HAR-986, HAR-1252) — React PrintLayout, PrintSignature, PrintPageBreak.
+   A document frame for the browser's own print: A4 or A5 named pages with the paper's margins,
+   a header and a footer that repeat on every page (a CSS table's header and footer groups, which
+   the browser repeats per page and which take their own room, so they never sit on the content),
+   "page / pages" in the bottom-right page margin, and black-on-white tokens inside the frame.
+
+   On screen the frame is a paper preview: true size where there is room, the page's width at
+   most, ink on paper in both themes (what you see is what prints).
+   Units: mm and pt are the paper's own units; they are not --uix-* scale values. */
+@layer uix.components {
+  /* ── the paper ─────────────────────────────────────────────────────────────── */
+  @page uix-print-a4 { size: A4 portrait; margin: 16mm 16mm 18mm; @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: var(--uix-print-ink-quiet); } }
+  @page uix-print-a4-landscape { size: A4 landscape; margin: 14mm 16mm 16mm; @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: var(--uix-print-ink-quiet); } }
+  @page uix-print-a5 { size: A5 portrait; margin: 10mm 10mm 12mm; @bottom-right { content: counter(page) " / " counter(pages); font-size: 7pt; color: var(--uix-print-ink-quiet); } }
+  @page uix-print-a5-landscape { size: A5 landscape; margin: 10mm 12mm 12mm; @bottom-right { content: counter(page) " / " counter(pages); font-size: 7pt; color: var(--uix-print-ink-quiet); } }
+  @page uix-print-a4-plain { size: A4 portrait; margin: 16mm 16mm 18mm; }
+  @page uix-print-a4-landscape-plain { size: A4 landscape; margin: 14mm 16mm 16mm; }
+  @page uix-print-a5-plain { size: A5 portrait; margin: 10mm 10mm 12mm; }
+  @page uix-print-a5-landscape-plain { size: A5 landscape; margin: 10mm 12mm 12mm; }
+
+  .uix-print-layout {
+    /* the page box and its margins, for the screen preview (the same as the @page rules) */
+    --print-width: 210mm; --print-height: 297mm; --print-margin: 16mm 16mm 18mm;
+    /* everything inside reads ink on paper, in both themes, on screen and on paper */
+    --uix-text: var(--uix-print-ink);
+    --uix-text-muted: var(--uix-print-ink-quiet);
+    --uix-text-hushed: var(--uix-print-ink-quiet);
+    --uix-surface: var(--uix-print-paper);
+    --uix-surface-2: var(--uix-print-paper);
+    --uix-surface-3: var(--uix-print-paper-quiet);
+    --uix-bg-app: var(--uix-print-paper);
+    --uix-bg-subtle: var(--uix-print-paper-quiet);
+    --uix-bg-hover: var(--uix-print-paper-quiet);
+    --uix-border: var(--uix-print-line);
+    --uix-border-strong: var(--uix-print-ink-quiet);
+    --uix-link: var(--uix-print-ink);
+    --uix-accent-text: var(--uix-print-ink);
+    --uix-row: var(--uix-print-paper);
+    --uix-row-alt: var(--uix-print-paper-quiet);
+    --uix-row-selected-bg: var(--uix-print-paper-quiet);
+    --uix-row-pinned-bg: var(--uix-print-paper-quiet);
+    color-scheme: light;
+    box-sizing: border-box;
+    width: var(--print-width);
+    max-width: 100%;
+    margin-inline: auto;
+    background: var(--uix-print-paper);
+    color: var(--uix-print-ink);
+    box-shadow: var(--uix-shadow-md);
+    border: 1px solid var(--uix-print-line);
+  }
+  /* The dark theme's tints are dark: on the paper they read as quiet paper with ink text, so a
+     pill or a callout inside the document prints in black and white instead of a dark slab. */
+  :root:where(.dark,[data-theme="dark"]) .uix-print-layout {
+    --uix-brand-muted: var(--uix-print-paper-quiet);
+    --uix-neutral-bg: var(--uix-print-paper-quiet); --uix-neutral-text: var(--uix-print-ink); --uix-neutral-border: var(--uix-print-line);
+    --uix-info-bg: var(--uix-print-paper-quiet); --uix-info-text: var(--uix-print-ink);
+    --uix-success-bg: var(--uix-print-paper-quiet); --uix-success-text: var(--uix-print-ink);
+    --uix-warning-bg: var(--uix-print-paper-quiet); --uix-warning-text: var(--uix-print-ink); --uix-warning-border: var(--uix-print-line);
+    --uix-danger-bg: var(--uix-print-paper-quiet); --uix-danger-text: var(--uix-print-danger); --uix-danger-border: var(--uix-print-danger);
+    --uix-attention-bg: var(--uix-print-paper-quiet); --uix-attention-text: var(--uix-print-ink);
+    --uix-amber-bg: var(--uix-print-paper-quiet); --uix-amber-text: var(--uix-print-ink);
+    --uix-overdue-bg: var(--uix-print-paper-quiet); --uix-overdue-text: var(--uix-print-ink);
+    --uix-sev-4-bg: var(--uix-print-paper-quiet); --uix-sev-4-text: var(--uix-print-ink);
+    --uix-sev-5-bg: var(--uix-print-paper-quiet); --uix-sev-5-text: var(--uix-print-ink);
+  }
+  .uix-print-layout[data-size="A4"][data-orientation="landscape"] { --print-width: 297mm; --print-height: 210mm; --print-margin: 14mm 16mm 16mm; }
+  .uix-print-layout[data-size="A5"] { --print-width: 148mm; --print-height: 210mm; --print-margin: 10mm 10mm 12mm; }
+  .uix-print-layout[data-size="A5"][data-orientation="landscape"] { --print-width: 210mm; --print-height: 148mm; --print-margin: 10mm 12mm 12mm; }
+  .uix-print-layout + .uix-print-layout { margin-top: var(--uix-space-6); }
+
+  /* The page is a <table> for print's sake (a repeated thead and tfoot); on screen it is a column. */
+  .uix-print-layout__page {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--uix-space-4);
+    width: 100%;
+    min-height: var(--print-height);
+    padding: var(--print-margin);
+    border-spacing: 0;
+    font-size: var(--uix-text-body);
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+  /* zero specificity, so the part classes below (and the print rules) win over this reset */
+  :where(.uix-print-layout__page > thead, .uix-print-layout__page > tbody, .uix-print-layout__page > tfoot, .uix-print-layout__page > * > tr, .uix-print-layout__page > * > tr > td) { display: block; padding: 0; }
+  .uix-print-layout__main { flex: 1 0 auto; }
+  /* on a narrow screen the preview keeps the page's proportion but not its size */
+  @media (max-width: 860px) {
+    .uix-print-layout__page { min-height: 0; padding: var(--uix-space-4); }
+  }
+  .uix-print-layout__bar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--uix-space-2) var(--uix-space-4); }
+  .uix-print-layout__header .uix-print-layout__bar { padding-bottom: var(--uix-space-3); border-bottom: 1px solid var(--uix-print-ink); }
+  .uix-print-layout__body { display: flex; flex-direction: column; gap: var(--uix-space-4); min-width: 0; }
+  .uix-print-layout__footer { color: var(--uix-print-ink-quiet); font-size: var(--uix-text-meta); }
+  .uix-print-layout__footer .uix-print-layout__bar { padding-top: var(--uix-space-2); border-top: 1px solid var(--uix-print-line); }
+
+  /* one page and no more: the preview is one page tall; content that does not fit is outlined */
+  .uix-print-layout[data-single-page] .uix-print-layout__page { height: var(--print-height); overflow: hidden; }
+  .uix-print-layout[data-overflowing] { outline: 2px dashed var(--uix-danger); outline-offset: 2px; }
+
+  /* ── signature ─────────────────────────────────────────────────────────────── */
+  .uix-print-signature { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: flex-end; gap: var(--uix-space-4) var(--uix-space-6); margin-top: var(--uix-space-6); break-inside: avoid; }
+  .uix-print-signature__place { margin-right: auto; }
+  .uix-print-signature__field { display: grid; gap: var(--uix-space-1); width: min(70mm, 100%); text-align: center; }
+  .uix-print-signature__line { height: 14mm; border-bottom: 1px solid var(--uix-print-ink); }
+  .uix-print-signature__caption { color: var(--uix-print-ink-quiet); font-size: var(--uix-text-meta); }
+  .uix-print-signature__name { font-weight: 600; }
+  .uix-print-signature__stamp { display: grid; place-items: center; width: 34mm; height: 34mm; border: 1px dashed var(--uix-print-line); border-radius: 50%; color: var(--uix-print-ink-quiet); font-size: var(--uix-text-meta); }
+
+  /* ── page breaks and helpers ───────────────────────────────────────────────── */
+  .uix-print-break { height: 0; margin-block: var(--uix-space-3); border-top: 1px dashed var(--uix-print-line); }
+  .uix-print-keep { break-inside: avoid; }
+  .uix-print-only { display: none; }
+
+  @media print {
+    .uix-print-hide { display: none !important; }
+    .uix-print-only { display: revert; }
+
+    /* Only the documents print: every element that neither is nor holds a print layout goes,
+       and the ones that hold it (the app shell, its scrolling main) become plain flow, so a
+       scroll box cannot cut the document to one page. */
+    :root:has(.uix-print-layout[data-isolate]) body :not(:has(.uix-print-layout[data-isolate]), .uix-print-layout[data-isolate], .uix-print-layout[data-isolate] *) { display: none !important; }
+    :root:has(.uix-print-layout[data-isolate]) body :has(.uix-print-layout[data-isolate]) {
+      display: block !important; position: static !important; overflow: visible !important;
+      height: auto !important; min-height: 0 !important; max-height: none !important;
+      margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important;
+      box-shadow: none !important; transform: none !important;
+    }
+    /* the sheet is paper whatever the screen theme was, also with background graphics on */
+    :root:has(.uix-print-layout[data-isolate]) { color-scheme: light; background: var(--uix-print-paper) !important; }
+    :root:has(.uix-print-layout[data-isolate]) body { margin: 0; padding: 0; background: none !important; }
+
+    .uix-print-layout {
+      display: block; width: 100%; max-width: none; margin: 0;
+      border: 0; box-shadow: none; outline: none;
+      font-size: 10pt; line-height: 1.45;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .uix-print-layout + .uix-print-layout { margin: 0; break-before: page; }
+    .uix-print-layout[data-page="uix-print-a4"] { page: uix-print-a4; }
+    .uix-print-layout[data-page="uix-print-a4-landscape"] { page: uix-print-a4-landscape; }
+    .uix-print-layout[data-page="uix-print-a5"] { page: uix-print-a5; }
+    .uix-print-layout[data-page="uix-print-a5-landscape"] { page: uix-print-a5-landscape; }
+    .uix-print-layout[data-page="uix-print-a4-plain"] { page: uix-print-a4-plain; }
+    .uix-print-layout[data-page="uix-print-a4-landscape-plain"] { page: uix-print-a4-landscape-plain; }
+    .uix-print-layout[data-page="uix-print-a5-plain"] { page: uix-print-a5-plain; }
+    .uix-print-layout[data-page="uix-print-a5-landscape-plain"] { page: uix-print-a5-landscape-plain; }
+    .uix-print-layout[data-size="A5"] { font-size: 9pt; }
+    /* dense rows on paper: the compact row height for tables inside */
+    .uix-print-layout { --uix-row-h: var(--uix-row-h-compact); }
+
+    /* the page is a table again, and the browser repeats its thead and tfoot on every page */
+    .uix-print-layout__page { display: table; table-layout: fixed; min-height: 0; padding: 0; }
+    :where(.uix-print-layout__page > thead, .uix-print-layout__page > tbody, .uix-print-layout__page > tfoot, .uix-print-layout__page > * > tr, .uix-print-layout__page > * > tr > td) { display: revert; }
+    .uix-print-layout__body { display: table-cell; }
+    .uix-print-layout__body > * + * { margin-top: var(--uix-space-4); }
+    /* space between the bars and the body, on every page */
+    .uix-print-layout__header .uix-print-layout__bar { margin-bottom: 5mm; }
+    .uix-print-layout__footer .uix-print-layout__bar { margin-top: 5mm; }
+
+    /* one page: nothing repeats, nothing is cut, the frame stays in one piece */
+    .uix-print-layout[data-single-page] { display: block; break-inside: avoid; }
+    .uix-print-layout[data-single-page] .uix-print-layout__page { display: flex; height: auto; overflow: visible; }
+    .uix-print-layout[data-single-page] :where(.uix-print-layout__page > thead, .uix-print-layout__page > tbody, .uix-print-layout__page > tfoot, .uix-print-layout__page > * > tr, .uix-print-layout__page > * > tr > td) { display: block; }
+    .uix-print-layout[data-single-page] .uix-print-layout__body { display: flex; }
+    .uix-print-layout[data-single-page] .uix-print-layout__body > * + * { margin-top: 0; }
+
+    /* tables, lists and figures inside keep their rows whole; focus rings belong to the screen */
+    .uix-print-layout__body :is(tr, li, figure, .uix-card) { break-inside: avoid; }
+    .uix-print-layout__body thead { display: table-header-group; }
+    .uix-print-layout :focus, .uix-print-layout :focus-visible { outline: none; }
+    .uix-print-break { height: 0; margin: 0; border: 0; break-after: page; }
+  }
+}

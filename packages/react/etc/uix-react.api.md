@@ -1450,6 +1450,9 @@ export const DEFAULT_PAGINATION_LABELS: PaginationLabels;
 export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 
 // @public (undocumented)
+export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels;
+
+// @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
 
 // @public (undocumented)
@@ -3975,6 +3978,46 @@ export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
 
 // @public (undocumented)
 export type Primitive = string | number | boolean | null | undefined;
+
+// @public
+export function PrintLayout(input: PrintLayoutProps): react.JSX.Element;
+
+// @public
+export interface PrintLayoutLabels {
+    signature: string;
+    stamp: string;
+}
+
+// @public (undocumented)
+export interface PrintLayoutProps extends HTMLAttributes<HTMLDivElement> {
+    footer?: ReactNode;
+    header?: ReactNode;
+    isolate?: boolean;
+    onOverflowChange?: (overflowing: boolean) => void;
+    orientation?: 'portrait' | 'landscape';
+    pageNumbers?: boolean;
+    singlePage?: boolean;
+    size?: PrintPageSize;
+}
+
+// @public
+export function PrintPageBreak(input: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
+
+// @public (undocumented)
+export type PrintPageSize = 'A4' | 'A5';
+
+// @public
+export function PrintSignature(input: PrintSignatureProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PrintSignatureProps extends HTMLAttributes<HTMLDivElement> {
+    label?: ReactNode;
+    // (undocumented)
+    labels?: Partial<PrintLayoutLabels>;
+    name?: ReactNode;
+    placeAndDate?: ReactNode;
+    stamp?: boolean;
+}
 
 // @public (undocumented)
 export function Progress(input: ProgressProps): react.JSX.Element;
@@ -6502,6 +6545,7 @@ export interface UixLabels {
         next?: string;
         close?: string;
     };
+    printLayout?: Partial<PrintLayoutLabels>;
     qrCode?: Partial<QrCodeLabels>;
     // (undocumented)
     ruleBuilder?: Partial<RuleBuilderLabels>;

@@ -44,5 +44,13 @@ test('every state named in a caption is on the page', () => {
   assert.match(home, /<time class="uix-event-date" datetime="2026-10-22T18:00\+02:00"><span class="uix-event-date__weekday">Wed/);
   assert.match(home, /class="uix-event-row uix-event-row--media"/);
   assert.match(home, /<span class="uix-event-date__time">09:30<\/span>/);
+  // print layout: an A5 single page, not isolating the docs page, with header, footer and signature
+  const prose = specimens['examples-prose'];
+  assert.match(prose, /data-print-layout-example/);
+  assert.match(prose, /class="uix-print-layout" data-size="A5" data-orientation="portrait" data-page="uix-print-a5-plain" data-single-page=""/);
+  assert.doesNotMatch(prose, /data-isolate/);
+  assert.match(prose, /<thead class="uix-print-layout__header">/);
+  assert.match(prose, /<tfoot class="uix-print-layout__footer">/);
+  assert.match(prose, /class="uix-print-signature__stamp"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

@@ -311,6 +311,11 @@
       "gzip": 929,
       "brotli": 744
     },
+    "styles/components/print-layout.css": {
+      "raw": 13043,
+      "gzip": 2969,
+      "brotli": 2544
+    },
     "styles/components/progress.css": {
       "raw": 1059,
       "gzip": 477,

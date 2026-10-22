@@ -294,6 +294,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-code-display"
   },
+  "print-layout": {
+    "route": "examples-prose",
+    "selector": ".uix-print-layout"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"

@@ -22,6 +22,7 @@ import type { SearchBarLabels } from './components/SearchBar.js';
 import type { QrCodeLabels } from './components/QrCode.js';
 import type { CodeDisplayLabels } from './components/CodeDisplay.js';
 import type { ContactCardLabels } from './components/ContactCard.js';
+import type { PrintLayoutLabels } from './components/PrintLayout.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -51,6 +52,8 @@ export interface UixLabels {
   codeDisplay?: Partial<CodeDisplayLabels>;
   /** `ContactCard` (HAR-1379): the Email / Call actions and the erased and unavailable states. */
   contactCard?: Partial<ContactCardLabels>;
+  /** `PrintSignature` (HAR-986): the captions of the signature line and the stamp box. */
+  printLayout?: Partial<PrintLayoutLabels>;
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;

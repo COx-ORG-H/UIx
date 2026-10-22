@@ -3,13 +3,15 @@
  *   - qr: QrCode at its smallest documented size (2 px per module), large, at H, in a card, too long;
  *   - events: EventRow plain, with weekday / year / time, with a thumbnail, long Bosnian titles, in a card;
  *   - contact: ContactCard active with avatar, purged, unavailable, long Bosnian name and address in a narrow column, bare;
+ *   - print: an app shell around a PrintLayout A4 findings document over several pages and an A5 poster with a QR
+ *     code; &overfull=1 adds a one-page layout whose content does not fit;
  *   - code: CodeDisplay live with copy, in its last minute, expired, lg in a card, a 16-character voucher, beside a form;
  */
 import { StrictMode } from 'react';
 import type * as React from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, EventRow, Field, Input, QrCode } from '../../packages/react/src/index.js';
+import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, DescriptionList, EventRow, Field, Input, PrintLayout, PrintSignature, QrCode } from '../../packages/react/src/index.js';
 
 const CAMPAIGN = 'https://shopx.example/kampanja/ljetna-akcija-2026?trgovina=SA-0042';
 
@@ -137,7 +139,57 @@ function EventsCase() {
   );
 }
 
+// a findings document over several A4 pages, an A5 poster, and (with &overfull=1) a poster that does not fit
+const PATIENTS = Array.from({ length: 70 }, (_, i) => ({ time: `${String(7 + Math.floor(i / 6)).padStart(2, '0')}:${String((i % 6) * 10).padStart(2, '0')}`, name: `Pacijent ${i + 1} — Đurđević-Šehić`, reason: i % 3 === 0 ? 'Kontrolni pregled nakon terapije' : 'Prvi pregled' }));
+
+declare global { interface Window { __printOverflow: Record<string, boolean> } }
+
+function PrintCase() {
+  const overfull = new URLSearchParams(location.search).has('overfull');
+  window.__printOverflow ??= {};
+  return (
+    <div className="uix-shell" style={{ height: '100vh' }}>
+      <aside className="uix-shell__sidebar"><nav aria-label="Glavni meni" style={{ padding: 'var(--uix-space-4)' }}>Ordinacija</nav></aside>
+      <header className="uix-shell__topbar">Dom zdravlja Centar</header>
+      <main className="uix-shell__main">
+        <div id="print-toolbar" className="uix-cluster" style={{ marginBottom: 'var(--uix-space-4)' }}>
+          <Button variant="primary" onClick={() => window.print()}>Štampaj</Button>
+        </div>
+        <PrintLayout
+          id="nalaz"
+          header={<><div><strong>Dom zdravlja Centar</strong><div><a href="https://dom-zdravlja.example/">dom-zdravlja.example</a> · Titova 12, Sarajevo</div></div><div>Nalaz i mišljenje</div></>}
+          footer={<span>dr. Amra Hadžić, spec. pedijatrije · <a href="https://dom-zdravlja.example/kontakt">kontakt</a></span>}
+        >
+          <h1 style={{ margin: 0 }}>Nalaz i mišljenje</h1>
+          <DescriptionList items={[
+            { term: 'Pacijent', description: 'Lejla Mehmedbašić' },
+            { term: 'Datum rođenja', description: '14. 3. 2019.' },
+            { term: 'Datum pregleda', description: '22. 10. 2026.' },
+          ]} />
+          <table className="uix-table">
+            <thead><tr><th>Vrijeme</th><th>Pacijent</th><th>Razlog</th></tr></thead>
+            <tbody>{PATIENTS.map((row) => <tr key={row.name}><td>{row.time}</td><td>{row.name}</td><td>{row.reason}</td></tr>)}</tbody>
+          </table>
+          <PrintSignature placeAndDate="Sarajevo, 22. 10. 2026." name="dr. Amra Hadžić, spec. pedijatrije" stamp labels={{ signature: 'Potpis ljekara', stamp: 'Pečat' }} />
+        </PrintLayout>
+        <PrintLayout id="poster" size="A5" singlePage onOverflowChange={(value) => { window.__printOverflow.poster = value; }}>
+          <h1 style={{ margin: 0, textAlign: 'center' }}>Ljetna akcija</h1>
+          <p style={{ textAlign: 'center' }}>Skenirajte kod i pogledajte pravila akcije.</p>
+          <div style={{ display: 'grid', placeItems: 'center' }}>
+            <QrCode value="https://shopx.example/kampanja/ljetna-akcija-2026?uloga=blagajna" label="QR kod: pravila ljetne akcije" errorCorrection="Q" size="60mm" />
+          </div>
+          <p style={{ textAlign: 'center' }}>Prodavnica SA-0042 · blagajna</p>
+        </PrintLayout>
+        {overfull && <PrintLayout id="overfull" size="A5" singlePage onOverflowChange={(value) => { window.__printOverflow.overfull = value; }}>
+          {Array.from({ length: 40 }, (_, i) => <p key={i}>Red {i + 1}: sedmični pregled prodaje po kasama i smjenama.</p>)}
+        </PrintLayout>}
+      </main>
+    </div>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  print: () => <PrintCase />,
   events: () => <EventsCase />,
   contact: () => <ContactCase />,
   qr: () => <QrCase />,
