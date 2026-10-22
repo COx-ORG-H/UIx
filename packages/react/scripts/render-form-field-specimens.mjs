@@ -175,6 +175,22 @@ export async function renderFormFieldSpecimens() {
       `<div data-free-text-example style="max-width:24rem;min-height:9rem">${html(freeText)}</div>`,
     ].join('\n'));
 
+    // ── EntityPicker (HAR-1834): an empty required picker with its error, and a search the person
+    // may not run (no Retry). The failure arrives async: wait for it. ───────────────────────────
+    const approver = mount(h(ui.Field, { label: 'Approver', htmlFor: 'ff-approver', error: 'Choose an approver.', required: true },
+      h(ui.EntityPicker, { id: 'ff-approver', label: 'Approver', value: null, onValueChange: noop, onSearch: async () => [], invalid: true })));
+    const noAccess = mount(h(ui.Field, { label: 'Person', htmlFor: 'ff-no-access' },
+      h(ui.EntityPicker, { id: 'ff-no-access', label: 'Person', value: null, onValueChange: noop, delay: 0, onSearch: () => Promise.reject({ retryable: false }) })));
+    act(() => { noAccess.querySelector('input').focus(); });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    blocks.push([
+      caption('Entity picker states (React <code>EntityPicker</code>) — an empty required picker marked invalid with its error, and a search the person may not run: <code>onSearch</code> rejected with <code>{ retryable: false }</code>, so the list says why and offers no Retry; a visible label names the field'),
+      '<div data-entity-picker-states-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 16rem;max-width:22rem">${html(approver)}</div>`,
+      `<div style="flex:1 1 16rem;max-width:22rem;min-height:8rem">${html(noAccess)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
     const dataBlocks = [];
     const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },

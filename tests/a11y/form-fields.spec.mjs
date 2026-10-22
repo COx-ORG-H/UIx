@@ -518,3 +518,43 @@ test.describe('SearchSuggest freeText (HAR-2465)', () => {
     await axe(page, '#free-text');
   });
 });
+
+test.describe('EntityPicker and SearchSuggest gaps (HAR-1834)', () => {
+  test('the Field label names the field; invalid and disabled while empty; a forbidden search has no Retry', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'pickers');
+    const owner = page.locator('#owner');
+    await expect(owner).toHaveAccessibleName('Owner');
+    expect(await owner.getAttribute('aria-label')).toBeNull();
+    await expect(page.locator('#approver')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#approver')).toHaveAccessibleDescription('Choose an approver.');
+    await expect(page.locator('#locked')).toBeDisabled();
+    await page.locator('#forbidden').focus();
+    const popup = page.locator('.uix-search-suggest:has(#forbidden) .uix-search-suggest__popup');
+    await expect(popup).toContainText('You need identity:user:read to search people.');
+    await expect(popup.getByRole('option')).toHaveCount(0);
+    await axe(page, '#pickers');
+  });
+
+  test('a slow search keeps the last rows and shows the spinner only after 300 ms; clear starts over with focus', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'pickers');
+    const owner = page.locator('#owner');
+    await owner.focus();
+    await page.keyboard.type('a');
+    await expect(page.getByRole('option')).toHaveCount(3);
+    await page.evaluate(() => { window.__search.delay = 900; });
+    await page.keyboard.type('da');
+    await expect(owner).toHaveAttribute('aria-busy', 'true');
+    await expect(page.getByRole('option'), 'the last answer stays in view').toHaveCount(3);
+    const spinner = page.locator('.uix-search-suggest:has(#owner) .uix-search-suggest__spinner');
+    expect(await spinner.count(), 'no spinner at once').toBe(0);
+    await expect(spinner).toBeVisible({ timeout: 2000 });
+    await expect(page.getByRole('option')).toHaveCount(2, { timeout: 3000 });
+    await expect(spinner).toHaveCount(0);
+    await page.evaluate(() => { window.__search.delay = 0; });
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Clear Ada Lovelace' }).click();
+    await expect(owner).toBeFocused();
+    await expect(owner).toHaveValue('');
+  });
+});

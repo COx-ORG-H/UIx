@@ -1750,6 +1750,7 @@ export interface EntityPickerLabels {
     empty: string;
     // (undocumented)
     error: string;
+    forbidden: string;
     // (undocumented)
     loading: string;
     more: string;
@@ -1766,6 +1767,7 @@ export interface EntityPickerLabels {
 // @public (undocumented)
 export interface EntityPickerProps {
     'aria-describedby'?: string;
+    'aria-labelledby'?: string;
     // (undocumented)
     className?: string;
     delay?: number;
@@ -1774,6 +1776,7 @@ export interface EntityPickerProps {
     id?: string;
     // (undocumented)
     invalid?: boolean;
+    isRetryable?: (error: unknown) => boolean;
     label: string;
     labels?: Partial<EntityPickerLabels>;
     minQueryLength?: number;
@@ -1785,6 +1788,13 @@ export interface EntityPickerProps {
     placeholder?: string;
     renderValue?: (option: SearchSuggestOption) => ReactNode;
     value: SearchSuggestOption | null;
+}
+
+// @public
+export interface EntityPickerSearchError {
+    message?: string;
+    // (undocumented)
+    retryable: false;
 }
 
 // @public
@@ -5304,6 +5314,7 @@ export interface SearchSuggestOption {
 export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'onSelect' | 'title' | 'defaultValue'> {
     autoFocus?: boolean;
     clearLabel?: string;
+    disabled?: boolean;
     empty?: ReactNode;
     error?: ReactNode;
     footer?: SearchSuggestAction;
@@ -5314,7 +5325,9 @@ export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>,
     idle?: ReactNode;
     inputDescribedBy?: string;
     inputId?: string;
+    inputLabelledBy?: string;
     inputRef?: Ref<HTMLInputElement | null>;
+    invalid?: boolean;
     label: string;
     loading?: boolean;
     loadingLabel?: string;

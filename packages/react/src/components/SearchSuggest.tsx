@@ -110,6 +110,15 @@ export interface SearchSuggestProps
   inputId?: string;
   /** `aria-describedby` of the input (hint and error text from a `Field`). */
   inputDescribedBy?: string;
+  /**
+   * Ids of the visible label(s) that name the input (HAR-1834). With them, or with a
+   * `<label for={inputId}>`, the input gets no `aria-label`, so the visible label is its name.
+   */
+  inputLabelledBy?: string;
+  /** The field cannot be typed in and the list never opens (HAR-1834). */
+  disabled?: boolean;
+  /** Marks the input `aria-invalid` (an empty required field with an error, HAR-1834). */
+  invalid?: boolean;
 }
 
 const SearchIcon = () => (
@@ -141,6 +150,21 @@ const keepFocus = (event: MouseEvent) => event.preventDefault();
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
+/**
+ * `active`, but only once it has lasted `delay` ms: a wait shorter than that shows no spinner, so
+ * a fast answer does not flash one (the 300 ms rule). A local stand-in for the kit's
+ * delayed-pending helper (PR #160); swap it for that once it lands.
+ */
+function useShownAfter(active: boolean, delay = 300): boolean {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!active) { setShown(false); return undefined; }
+    const timer = setTimeout(() => setShown(true), delay);
+    return () => clearTimeout(timer);
+  }, [active, delay]);
+  return active && shown;
+}
 
 /**
  * A search field with a suggestion list underneath: the "search and jump" pattern of Windows
@@ -179,6 +203,9 @@ export function SearchSuggest({
   name,
   inputId,
   inputDescribedBy,
+  inputLabelledBy,
+  disabled = false,
+  invalid = false,
   className,
   onBlur,
   ...props
@@ -200,6 +227,11 @@ export function SearchSuggest({
   };
   const [focused, setFocused] = useState(false);
   const [activeState, setActive] = useState(-1);
+  // The spinner (and the list's loading row) wait 300 ms; aria-busy and the Enter guard do not.
+  const showSpinner = useShownAfter(loading);
+  // A <label for> names the input: then no aria-label overrides it (HAR-1834).
+  const [labelled, setLabelled] = useState(false);
+  useEffect(() => { setLabelled((fieldRef.current?.labels?.length ?? 0) > 0); });
 
   const itemCount = options.length + (footer ? 1 : 0);
   // Clamp during render: when options shrink without a keystroke (a fetch resolving), the stale
@@ -210,9 +242,9 @@ export function SearchSuggest({
 
   const hasText = value.trim().length > 0;
   const showEmpty = hasText && !loading && !error && options.length === 0 && empty != null;
-  const showLoading = loading && options.length === 0;
+  const showLoading = showSpinner && options.length === 0;
   const showIdle = idle != null && itemCount === 0 && !loading && error == null && !showEmpty;
-  const visible = open && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
+  const visible = open && !disabled && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
   const optionId = (index: number) => `${id}-option-${index}`;
 
   useEffect(() => {
@@ -271,6 +303,8 @@ export function SearchSuggest({
           if (open) setOpen(false);
           return;
         }
+        // While a search runs the rows are the last answer's: Enter neither picks one nor submits.
+        if (loading) { event.preventDefault(); return; }
         // Only a row the user can see: after Escape closed the list, Enter must not act on it.
         if (visible && hasText && options.length) { event.preventDefault(); choose(0); }
         return;
@@ -340,7 +374,10 @@ export function SearchSuggest({
           className="uix-input uix-search-suggest__input"
           type="text"
           role="combobox"
-          aria-label={label}
+          aria-label={inputLabelledBy || labelled ? undefined : label}
+          aria-labelledby={inputLabelledBy}
+          aria-invalid={invalid || undefined}
+          disabled={disabled}
           aria-autocomplete="list"
           aria-expanded={visible}
           aria-controls={listboxId}
@@ -363,13 +400,13 @@ export function SearchSuggest({
           onKeyDown={handleKeyDown}
         />
         <span className="uix-search-suggest__trail">
-          {loading && <Spinner className="uix-search-suggest__spinner" label={loadingLabel} />}
-          {!loading && value && (
+          {showSpinner && <Spinner className="uix-search-suggest__spinner" label={loadingLabel} />}
+          {!showSpinner && value && !disabled && (
             <button type="button" className="uix-search-suggest__clear" aria-label={clearLabel} onMouseDown={keepFocus} onClick={clear}>
               <ClearIcon />
             </button>
           )}
-          {!loading && !value && !focused && shortcutHint && <kbd className="uix-kbd" aria-hidden="true">{shortcutHint}</kbd>}
+          {!showSpinner && !value && !focused && shortcutHint && <kbd className="uix-kbd" aria-hidden="true">{shortcutHint}</kbd>}
         </span>
       </div>
 

@@ -15,12 +15,14 @@
  *     Popover with overflow:hidden and in an overflow:hidden table cell.
  *   - #tag-input: TagInput with suggestions, maxTags, validate and a long German tag in a form (window.__posted.tags),
  *     a disabled one and one in a modal Drawer.
- *   - #free-text: SearchSuggest freeText (manufacturer) in a form; window.__submits counts submissions. */
+ *   - #free-text: SearchSuggest freeText (manufacturer) in a form; window.__submits counts submissions.
+ *   - #pickers: EntityPicker labelled by its Field, invalid while empty, a forbidden search, disabled;
+ *     window.__search.delay sets how long a search takes. */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, CheckboxGroup, Combobox, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
+  Button, Checkbox, CheckboxGroup, Combobox, DateTimePicker, Drawer, EntityPicker, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
   SearchSuggest, Select, TagInput, Textarea, TimePicker, UixLabelsProvider,
 } from '../../packages/react/src/index.js';
 
@@ -256,9 +258,37 @@ function FreeText() {
   );
 }
 
+declare global {
+  interface Window { __search: { delay: number } }
+}
+window.__search = { delay: 50 };
+const STAFF = [{ id: 'u1', title: 'Ada Lovelace', meta: ['IT'] }, { id: 'u2', title: 'Ben Ali', meta: ['Facilities'] }, { id: 'u3', title: 'Ada Yonath', meta: ['Labs'] }];
+const findStaff = (q: string) => new Promise<typeof STAFF>((resolve) => {
+  setTimeout(() => resolve(STAFF.filter((p) => p.title.toLowerCase().includes(q.toLowerCase()))), window.__search.delay);
+});
+
+function Pickers() {
+  const [owner, setOwner] = useState<(typeof STAFF)[number] | null>(null);
+  const [locked, setLocked] = useState<(typeof STAFF)[number] | null>(null);
+  const [approver, setApprover] = useState<(typeof STAFF)[number] | null>(null);
+  return (
+    <section id="pickers" aria-label="Pickers" style={{ display: 'grid', gap: 'var(--uix-space-2)', maxWidth: '26rem' }}>
+      <Field label="Owner" htmlFor="owner"><EntityPicker id="owner" label="Owner" value={owner} onValueChange={setOwner} onSearch={findStaff} delay={0} /></Field>
+      <Field label="Approver" htmlFor="approver" error="Choose an approver." required>
+        <EntityPicker id="approver" label="Approver" value={approver} onValueChange={setApprover} onSearch={findStaff} invalid />
+      </Field>
+      <Field label="Person (no access)" htmlFor="forbidden">
+        <EntityPicker id="forbidden" label="Person" value={null} onValueChange={() => {}} delay={0}
+          onSearch={() => Promise.reject({ retryable: false, message: 'You need identity:user:read to search people.' })} />
+      </Field>
+      <Field label="Locked owner" htmlFor="locked"><EntityPicker id="locked" label="Locked owner" value={locked} onValueChange={setLocked} onSearch={findStaff} disabled /></Field>
+    </section>
+  );
+}
+
 const SECTIONS: Record<string, () => ReactNode> = {
   sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate, combobox: Comboboxes, 'tag-input': Tagging,
-  'free-text': FreeText,
+  'free-text': FreeText, pickers: Pickers,
 };
 
 function App() {

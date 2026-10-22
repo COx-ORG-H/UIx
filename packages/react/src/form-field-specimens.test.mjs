@@ -65,6 +65,11 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /class="uix-search-suggest uix-search-suggest--free-text"/);
   assert.match(forms, /value="Dell EMC"/);
   assert.match(forms, /enterkeyhint="done"/i);
+  // EntityPicker: invalid while empty; the forbidden words with no Retry row
+  assert.match(forms, /data-entity-picker-states-example/);
+  assert.match(forms, /id="ff-approver"[^>]*aria-invalid="true"|aria-invalid="true"[^>]*id="ff-approver"/);
+  assert.match(forms, /You do not have access to search these records\./);
+  assert.doesNotMatch(forms.slice(forms.indexOf('data-entity-picker-states-example')), /Try again/);
   // FilterPopover date: a DatePicker showing the German date, no native date input
   const data = specimens['examples-data-display'];
   assert.match(data, /data-filter-date-example/);

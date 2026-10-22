@@ -1260,3 +1260,15 @@ the surrounding form (also while `loading`); no row is picked unless the person 
 `onValueChange`, again without submitting. Blur, Tab and Escape keep the text (a second Escape does
 not clear it). No magnifier is drawn. `onSelect` is optional. Without `freeText` the search mode is
 unchanged. Decision: `Docs/adr/0004-search-suggest-free-text.md`.
+
+#### EntityPicker and SearchSuggest gaps (HAR-1834)
+
+- A failure Retry cannot fix: reject `onSearch` with `{ retryable: false, message? }`, or pass
+  `isRetryable(error)`. The list shows the message (or `labels.forbidden`) and no Retry row.
+- `SearchSuggest` takes `disabled` and `invalid`; `EntityPicker` forwards them, so an empty disabled
+  picker cannot be typed in and an empty required one with an error is announced invalid.
+- Clear starts a new search: the old query and rows are gone and the field has focus.
+- A visible label names the field: with a `<label for>` (a `Field`) or `aria-labelledby`
+  (`EntityPicker`) / `inputLabelledBy` (`SearchSuggest`), no `aria-label` overrides it.
+- While the next query loads the last rows stay in view (`aria-busy` at once), and the spinner waits
+  300 ms, so a fast answer shows none; Enter during a search picks nothing and submits nothing.
