@@ -1241,3 +1241,22 @@ const [nav, setNav] = useState<ShellNav>('full');
 - `navHotkey` switches full ↔ rail instantly, never while typing; `navTierStorageKey` remembers the tier before
   the first paint and reports it through `onNavChange`.
 - `phoneNav="drawer"`: at 40rem and under, a menu button opens the sidebar in a start-side `Drawer`.
+
+#### Display preferences: theme, contrast, text size, motion, density (HAR-1372)
+
+```tsx
+// app/layout.tsx: before the stylesheets, so nothing flashes
+<head><script dangerouslySetInnerHTML={{ __html: displayPreferencesScript('staff-display') }} /></head>
+
+// a settings page, or a dialog from AccountMenu
+<DisplayPreferences storageKey="staff-display" />
+// the header
+<ThemeSwitcher storageKey="staff-display" display="icons" />
+// your own control
+const { preferences, setPreference, resolvedTheme } = useDisplayPreferences({ storageKey: 'staff-display' });
+```
+
+The tokens read five attributes on `<html>`: `data-theme` (light / dark), `data-contrast="more"`,
+`data-text-scale="sm|lg|xl"`, `data-motion="reduce"` and `data-density="compact|comfortable"`. A choice applies
+at once (transitions are suspended for that frame), is stored, and `system` follows the OS. The head script and the
+hook read the same key and the same defaults; pass both the same. `useReducedMotion` honours `data-motion`.

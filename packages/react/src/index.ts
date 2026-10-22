@@ -10,6 +10,19 @@ export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVir
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
 export { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion.js';
+// Display preferences: theme, contrast, text size, motion, density (HAR-1372)
+export { DisplayPreferences, ThemeSwitcher, useDisplayPreferences, DEFAULT_DISPLAY_PREFERENCES_LABELS } from './components/DisplayPreferences.js';
+export type {
+  DisplayPreferencesProps, DisplayPreferencesLabels, ThemeSwitcherProps, UseDisplayPreferencesOptions, UseDisplayPreferencesResult,
+} from './components/DisplayPreferences.js';
+export {
+  DEFAULT_DISPLAY_PREFERENCES, DISPLAY_PREFERENCES_STORAGE_KEY, DISPLAY_PREFERENCE_OPTIONS, applyDisplayAttributes, displayPreferencesScript,
+  parseDisplayPreferences, readSystemDisplayPreferences, resolveDisplayAttributes,
+} from './display-preferences-model.js';
+export type {
+  ContrastPreference, DensityPreference, DisplayAttributes, DisplayPreferenceValues, MotionPreference, SystemDisplayPreferences,
+  TextScalePreference, ThemePreference,
+} from './display-preferences-model.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';

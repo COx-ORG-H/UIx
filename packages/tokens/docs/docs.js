@@ -103,7 +103,7 @@ const NAV_ITEMS = [
 ];
 
 export const COMPONENT_GROUPS = {
-  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
+  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
@@ -144,7 +144,7 @@ export const REACT_COMPONENT_SLUGS = [
   'alert', 'app-shell', 'async-operation-status', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card',
   'chart', 'checkbox', 'collapsible-section', 'color-picker', 'command-palette', 'comments', 'composer',
   'confirm-dialog', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
-  'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
+  'display-preferences', 'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
   'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
   'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph', 'search-bar', 'search-suggest',
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',

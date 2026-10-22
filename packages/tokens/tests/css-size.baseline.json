@@ -57,9 +57,9 @@
       "brotli": 524
     },
     "styles/components/button.css": {
-      "raw": 5109,
-      "gzip": 1585,
-      "brotli": 1312
+      "raw": 5437,
+      "gzip": 1659,
+      "brotli": 1383
     },
     "styles/components/calendar.css": {
       "raw": 3635,
@@ -146,6 +146,11 @@
       "gzip": 730,
       "brotli": 609
     },
+    "styles/components/display-preferences.css": {
+      "raw": 2704,
+      "gzip": 1067,
+      "brotli": 871
+    },
     "styles/components/drawer.css": {
       "raw": 3030,
       "gzip": 1030,
@@ -162,9 +167,9 @@
       "brotli": 932
     },
     "styles/components/flow.css": {
-      "raw": 12370,
-      "gzip": 3226,
-      "brotli": 2763
+      "raw": 12832,
+      "gzip": 3365,
+      "brotli": 2874
     },
     "styles/components/form.css": {
       "raw": 1993,
@@ -172,9 +177,9 @@
       "brotli": 578
     },
     "styles/components/heartbeat.css": {
-      "raw": 1556,
-      "gzip": 595,
-      "brotli": 486
+      "raw": 1992,
+      "gzip": 687,
+      "brotli": 587
     },
     "styles/components/icon.css": {
       "raw": 3846,
@@ -307,9 +312,9 @@
       "brotli": 744
     },
     "styles/components/progress.css": {
-      "raw": 1742,
-      "gzip": 729,
-      "brotli": 601
+      "raw": 2106,
+      "gzip": 817,
+      "brotli": 682
     },
     "styles/components/prose.css": {
       "raw": 4221,
@@ -342,9 +347,9 @@
       "brotli": 506
     },
     "styles/components/save-status.css": {
-      "raw": 1498,
-      "gzip": 650,
-      "brotli": 533
+      "raw": 1857,
+      "gzip": 730,
+      "brotli": 609
     },
     "styles/components/scheduling-calendar.css": {
       "raw": 51654,
@@ -387,9 +392,9 @@
       "brotli": 382
     },
     "styles/components/spinner.css": {
-      "raw": 1102,
-      "gzip": 564,
-      "brotli": 463
+      "raw": 1413,
+      "gzip": 641,
+      "brotli": 509
     },
     "styles/components/stat-tile.css": {
       "raw": 5750,
@@ -397,9 +402,9 @@
       "brotli": 1581
     },
     "styles/components/states.css": {
-      "raw": 2230,
-      "gzip": 806,
-      "brotli": 670
+      "raw": 2542,
+      "gzip": 889,
+      "brotli": 748
     },
     "styles/components/status-pill.css": {
       "raw": 5713,
@@ -492,9 +497,9 @@
       "brotli": 1915
     },
     "styles/motion.css": {
-      "raw": 3926,
-      "gzip": 1638,
-      "brotli": 1343
+      "raw": 5106,
+      "gzip": 1869,
+      "brotli": 1531
     },
     "styles/utilities.css": {
       "raw": 1310,

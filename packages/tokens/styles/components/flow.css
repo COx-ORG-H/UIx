@@ -225,3 +225,8 @@
     .uix-flow--linear .uix-flow__connector { flex-basis: 38px; }
   }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same pulse */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-node--running .uix-node__icon svg { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
+}

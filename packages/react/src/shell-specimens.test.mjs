@@ -52,6 +52,19 @@ test('Sidebar actions, search and AccountMenu (HAR-1371): a full sidebar and a r
   assert.match(nav, /<nav class="uix-sidebar" data-collapsed="true" data-nav="rail"/);
 });
 
+test('DisplayPreferences and ThemeSwitcher (HAR-1372): five named radio groups, the defaults checked', () => {
+  const forms = specimens['examples-form-controls'];
+  assert.match(forms, /<div class="uix-display-prefs" style="max-width: 30rem;">/);
+  assert.equal((forms.match(/<div role="radiogroup" class="uix-segmented" aria-labelledby="shell-\d+-(theme|contrast|textScale|motion|density)"/g) ?? []).length, 5);
+  const panel = forms.slice(forms.indexOf('<div class="uix-display-prefs"'), forms.indexOf('data-theme-switcher-example'));
+  // one checked option per group: System, System, Default, System, Standard
+  assert.deepEqual([...panel.matchAll(/aria-checked="true" tabindex="0">(?:<svg.*?<\/svg><span>)?([A-Za-z]+)/g)].map((m) => m[1]), ['System', 'System', 'Default', 'System', 'Standard']);
+  assert.match(forms, /data-theme-switcher-example/);
+  assert.match(forms, /<div role="radiogroup" class="uix-segmented uix-theme-switcher" aria-label="Theme">/);
+  assert.match(forms, /role="radio" class="uix-segmented__option" aria-checked="true" tabindex="0" aria-label="Dark">/);
+  assert.doesNotMatch(forms, /data-uix-switching/);
+});
+
 test('no React-generated id reaches the page', () => {
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

@@ -123,6 +123,9 @@ export interface AppliedBrandProfileSnapshot {
 export function applyBrandProfile(profile: BrandProfile, target?: HTMLElement | null): AppliedBrandProfileSnapshot | undefined;
 
 // @public
+export function applyDisplayAttributes(root: Element, attributes: DisplayAttributes): void;
+
+// @public
 export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
 
 // @public (undocumented)
@@ -1023,6 +1026,9 @@ export interface ContentListProps extends HTMLAttributes<HTMLUListElement> {
 }
 
 // @public (undocumented)
+export type ContrastPreference = 'standard' | 'more' | 'system';
+
+// @public (undocumented)
 export function contrastRatio(background: string, foreground: string): number | undefined;
 
 // @public
@@ -1392,6 +1398,12 @@ export const DEFAULT_DATE_TIME_PICKER_LABELS: DateTimePickerLabels;
 export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
 
 // @public (undocumented)
+export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferenceValues;
+
+// @public (undocumented)
+export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels;
+
+// @public (undocumented)
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
 
 // @public (undocumented)
@@ -1456,6 +1468,9 @@ export const DEFAULT_TREE_LABELS: TreeLabels;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
+
+// @public (undocumented)
+export type DensityPreference = 'compact' | 'standard' | 'comfortable';
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -1707,6 +1722,106 @@ export interface DiscardPromptLabels {
     discard: string;
     keepEditing: string;
     title: string;
+}
+
+// @public (undocumented)
+export const DISPLAY_PREFERENCE_OPTIONS: {
+    readonly theme: readonly ["light", "dark", "system"];
+    readonly contrast: readonly ["standard", "more", "system"];
+    readonly textScale: readonly ["sm", "md", "lg", "xl"];
+    readonly motion: readonly ["system", "reduce"];
+    readonly density: readonly ["compact", "standard", "comfortable"];
+};
+
+// @public
+export const DISPLAY_PREFERENCES_STORAGE_KEY = "uix-display-preferences";
+
+// @public
+export interface DisplayAttributes {
+    // (undocumented)
+    'data-contrast'?: 'more';
+    // (undocumented)
+    'data-density'?: 'compact' | 'comfortable';
+    // (undocumented)
+    'data-motion'?: 'reduce';
+    // (undocumented)
+    'data-text-scale'?: 'sm' | 'lg' | 'xl';
+    // (undocumented)
+    'data-theme': 'light' | 'dark';
+}
+
+// @public
+export function DisplayPreferences(input: DisplayPreferencesProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface DisplayPreferencesLabels {
+    // (undocumented)
+    contrast: string;
+    // (undocumented)
+    contrastMore: string;
+    // (undocumented)
+    contrastStandard: string;
+    // (undocumented)
+    dark: string;
+    // (undocumented)
+    density: string;
+    // (undocumented)
+    densityComfortable: string;
+    // (undocumented)
+    densityCompact: string;
+    // (undocumented)
+    densityStandard: string;
+    // (undocumented)
+    light: string;
+    // (undocumented)
+    motion: string;
+    // (undocumented)
+    motionReduce: string;
+    // (undocumented)
+    motionSystem: string;
+    // (undocumented)
+    system: string;
+    // (undocumented)
+    textDefault: string;
+    // (undocumented)
+    textLarge: string;
+    // (undocumented)
+    textLarger: string;
+    // (undocumented)
+    textScale: string;
+    // (undocumented)
+    textSmall: string;
+    // (undocumented)
+    theme: string;
+}
+
+// @public (undocumented)
+export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    // (undocumented)
+    labels?: Partial<DisplayPreferencesLabels>;
+    // (undocumented)
+    onValueChange?: (value: DisplayPreferenceValues) => void;
+    settings?: readonly (keyof DisplayPreferenceValues)[];
+    // (undocumented)
+    storageKey?: string;
+    value?: DisplayPreferenceValues;
+}
+
+// @public
+export function displayPreferencesScript(storageKey?: string, defaults?: DisplayPreferenceValues): string;
+
+// @public (undocumented)
+export interface DisplayPreferenceValues {
+    // (undocumented)
+    contrast: ContrastPreference;
+    // (undocumented)
+    density: DensityPreference;
+    // (undocumented)
+    motion: MotionPreference;
+    // (undocumented)
+    textScale: TextScalePreference;
+    // (undocumented)
+    theme: ThemePreference;
 }
 
 // @public (undocumented)
@@ -3372,6 +3487,9 @@ export interface MonthSpanLayout {
     placed: PlacedMonthSpan[];
 }
 
+// @public (undocumented)
+export type MotionPreference = 'system' | 'reduce';
+
 // @public
 export function moveCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, direction: DashboardCanvasDirection): T[];
 
@@ -3683,6 +3801,9 @@ export function parseDateInput(text: string, locale?: string | readonly string[]
 
 // @public (undocumented)
 export function parseDateValue(value: Date | number | string): Date | null;
+
+// @public
+export function parseDisplayPreferences(raw: string | null | undefined, defaults?: DisplayPreferenceValues): DisplayPreferenceValues;
 
 // @public (undocumented)
 export function parseMetricValue(value: string): number | null;
@@ -4064,6 +4185,9 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
 };
 
 // @public
+export function readSystemDisplayPreferences(): SystemDisplayPreferences;
+
+// @public
 export interface Rect {
     // (undocumented)
     height: number;
@@ -4370,6 +4494,9 @@ export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 
 // @public
 export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, change: DashboardCanvasResize): T[];
+
+// @public
+export function resolveDisplayAttributes(prefs: DisplayPreferenceValues, system: SystemDisplayPreferences): DisplayAttributes;
 
 // @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
@@ -5746,6 +5873,14 @@ export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
     label?: ReactNode;
 }
 
+// @public
+export interface SystemDisplayPreferences {
+    // (undocumented)
+    dark: boolean;
+    // (undocumented)
+    moreContrast: boolean;
+}
+
 // @public (undocumented)
 export function Tab(input: TabProps): react.JSX.Element;
 
@@ -5957,7 +6092,27 @@ export interface TextDiffSegment {
 export type TextFilterOperator = 'contains' | 'not-contains' | 'is' | 'is-not' | 'starts-with';
 
 // @public (undocumented)
+export type TextScalePreference = 'sm' | 'md' | 'lg' | 'xl';
+
+// @public (undocumented)
 export function Th(input: ThProps): react.JSX.Element;
+
+// @public (undocumented)
+export type ThemePreference = 'light' | 'dark' | 'system';
+
+// @public
+export function ThemeSwitcher(input: ThemeSwitcherProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ThemeSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    display?: 'labels' | 'icons';
+    // (undocumented)
+    labels?: Partial<DisplayPreferencesLabels>;
+    // (undocumented)
+    onValueChange?: (value: ThemePreference) => void;
+    storageKey?: string;
+    value?: ThemePreference;
+}
 
 // @public (undocumented)
 export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
@@ -6412,6 +6567,7 @@ export interface UixLabels {
     // (undocumented)
     dateTimePicker?: Partial<DateTimePickerLabels>;
     discardPrompt?: Partial<DiscardPromptLabels>;
+    displayPreferences?: Partial<DisplayPreferencesLabels>;
     // (undocumented)
     drawer?: {
         close?: string;
@@ -6518,6 +6674,26 @@ export interface UseAnchoredPositionOptions {
 
 // @public
 export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement>;
+
+// @public
+export function useDisplayPreferences(input?: UseDisplayPreferencesOptions): UseDisplayPreferencesResult;
+
+// @public (undocumented)
+export interface UseDisplayPreferencesOptions {
+    apply?: boolean;
+    defaults?: Partial<DisplayPreferenceValues>;
+    storageKey?: string;
+}
+
+// @public (undocumented)
+export interface UseDisplayPreferencesResult {
+    preferences: DisplayPreferenceValues;
+    resolvedTheme: 'light' | 'dark';
+    // (undocumented)
+    setPreference: <K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => void;
+    // (undocumented)
+    setPreferences: (next: DisplayPreferenceValues) => void;
+}
 
 // @public
 export function UserChip(input: UserChipProps): react.JSX.Element;

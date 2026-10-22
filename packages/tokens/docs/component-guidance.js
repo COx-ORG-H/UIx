@@ -8,6 +8,7 @@ export const COMPONENT_GUIDANCE = {
   radio: ['Choose exactly one option from a visible group.', 'One selected option in a named, mutually exclusive group.'],
   switch: ['Turn a setting on or off.', 'A binary state indicator; explain whether changes apply immediately or require Save.'],
   slider: ['Choose an approximate numeric value within a bounded range.', 'A track and thumb; provide an exact value or an input when precision matters.'],
+  'display-preferences': ['Let people choose the theme, contrast, text size, motion and density the product is shown in.', 'Five labelled radio groups (or the theme alone, ThemeSwitcher) that apply at once, are remembered, and follow the system where a person leaves the choice to it; a script in the document head applies them before the first paint.'],
   segmented: ['Choose among a few closely related modes.', 'A compact group with one visibly selected segment.'],
   arrival: ['Show where a link or a search result landed.', 'The target is tinted for about two seconds and fades; with reduced motion it is outlined instead.'],
   combobox: ['Search a longer list before choosing a value.', 'A searchable dropdown that filters choices and displays the chosen label.'],

@@ -137,6 +137,17 @@ export async function renderShellSpecimens() {
       `<div data-detail-staff-example>${html(record)}</div>`,
     ].join('\n'));
 
+    // ── DisplayPreferences + ThemeSwitcher (HAR-1372) ──────────────────────────────────────
+    // Controlled with the defaults, so rendering the page writes nothing to <html>.
+    const prefs = mount(h(ui.DisplayPreferences, { value: ui.DEFAULT_DISPLAY_PREFERENCES, onValueChange: () => {}, style: { maxWidth: '30rem' } }));
+    const themeSwitcher = mount(h(ui.ThemeSwitcher, { value: 'system', onValueChange: () => {} }));
+    const themeIcons = mount(h(ui.ThemeSwitcher, { value: 'dark', onValueChange: () => {}, display: 'icons' }));
+    add('examples-form-controls', [
+      caption('Display preferences (React <code>DisplayPreferences</code>, <code>ThemeSwitcher</code>, <code>useDisplayPreferences</code>, <code>displayPreferencesScript</code>) — theme, contrast, text size, motion and density as labelled radio groups; a change applies at once (no fade between themes) and is remembered; <code>system</code> follows the OS. The tokens read <code>data-theme</code>, <code>data-contrast</code>, <code>data-text-scale</code>, <code>data-motion</code> and <code>data-density</code> on <code>&lt;html&gt;</code>, and the script in the head sets them before the first paint'),
+      html(prefs),
+      `<div data-theme-switcher-example class="uix-cluster" style="--gap:16px">${html(themeSwitcher)}${html(themeIcons)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return out;
   } finally {

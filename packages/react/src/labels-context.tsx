@@ -20,6 +20,7 @@ import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
+import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -43,6 +44,8 @@ export interface UixLabels {
    * drawer's title (HAR-1371).
    */
   appShell?: { skipToContent?: string; exitFocus?: string; openNav?: string; navigation?: string };
+  /** `ThemeSwitcher` and `DisplayPreferences` (HAR-1372): the setting names and their choices. */
+  displayPreferences?: Partial<DisplayPreferencesLabels>;
   /** `AccountMenu` (HAR-1371): the menu's name. */
   accountMenu?: Partial<AccountMenuLabels>;
   sidebar?: { expand?: string; collapse?: string };

@@ -73,3 +73,8 @@
   .uix-btn-group .uix-btn:first-child { border-top-left-radius: var(--uix-radius-md); border-bottom-left-radius: var(--uix-radius-md); }
   .uix-btn-group .uix-btn:last-child { border-radius: 0 var(--uix-radius-md) var(--uix-radius-md) 0; border-right-width: 1px; }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same pulse */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-btn[data-loading]::after { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
+}
