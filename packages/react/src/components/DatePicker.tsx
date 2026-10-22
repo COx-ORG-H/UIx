@@ -194,7 +194,10 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
     onKeyDown={(event) => {
       // Escape while the calendar is open belongs to the field, wherever focus is (a day, the
       // button, the input): it closes the calendar and does not also close a drawer around it.
-      if (event.key !== 'Escape' || !open) return;
+      // The popover's own state counts too: one opened from the keyboard shows at once (no enter
+      // motion, HAR-2578), so Escape can arrive before the async `toggle` event updated `open`.
+      const shown = open || !!document.getElementById(popoverId)?.matches(':popover-open');
+      if (event.key !== 'Escape' || !shown) return;
       event.stopPropagation();
       event.preventDefault();
       hide();

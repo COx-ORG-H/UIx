@@ -245,8 +245,11 @@ function DateRangeField(props: RangeCalendarProps) {
     ref={anchorRef} className={cx('uix-date-range-field', className)}
     onKeyDown={(event) => {
       // Escape while the months are open belongs to the field, also in the moment before focus
-      // has moved from the trigger into them.
-      if (event.key !== 'Escape' || !open) return;
+      // has moved from the trigger into them, and before the async `toggle` event has updated
+      // `open`: a popover opened from the keyboard shows at once (no enter motion, HAR-2578), so
+      // the next key can arrive first. The popover's own state is the truth.
+      const shown = open || !!document.getElementById(popoverId)?.matches(':popover-open');
+      if (event.key !== 'Escape' || !shown) return;
       event.stopPropagation();
       event.preventDefault();
       hide();
