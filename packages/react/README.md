@@ -1187,3 +1187,21 @@ an optional stamp box (never split across pages); `PrintPageBreak` starts a new 
   <PrintSignature placeAndDate={placeAndDate} name={doctor} stamp />
 </PrintLayout>
 ```
+
+#### QrScanner
+
+`QrScanner` is a camera viewfinder for a decoder you supply: `decode(frame)` gets
+`{ imageData, video }` (frames at most `maxFrameSize` px on the long side, every `interval` ms)
+and returns the text it read; the kit ships no decoder and makes no network request.
+`onResult(value)` is called once per new text (the same text again within `repeatAfter` ms is
+not repeated), and a status message says it once. Before the browser's prompt the scanner shows
+your `explainer` and a start button (with `autoStart`, a camera the browser already allows starts
+at once); after a refusal it says how to allow the camera again; it says so when the browser has
+no camera API, no camera is found, or the camera sends no picture. `manualEntry` is rendered in
+every state. A hint appears after `hintAfter` ms of frames without a code; a torch toggle appears
+when the camera has one. The camera stops on Stop, on unmount and while the page is hidden.
+
+```tsx
+<QrScanner decode={({ imageData }) => wasmDecoder.read(imageData)} onResult={redeem}
+  explainer={<p>{t('cameraWhy')}</p>} manualEntry={<VoucherCodeField />} />
+```

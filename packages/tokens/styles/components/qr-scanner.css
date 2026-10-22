@@ -1,0 +1,61 @@
+/* uix QR scanner (HAR-1254) — React QrScanner: a camera viewfinder with an explainer before the
+   browser's prompt, plain states for blocked / unsupported / no camera / no picture, and the
+   manual entry always below it. The frame is 4:3 while the camera runs; in every other state it
+   is a padded panel that grows with its text, so nothing is cut at 320 px.
+   No decorative scanning line: the target is still, and a read is answered once (the target
+   turns to the success colour for a moment; a status message says what was read). */
+@layer uix.components {
+  .uix-qr-scanner { display: grid; gap: var(--uix-space-3); width: 100%; max-width: 32rem; min-width: 0; }
+
+  .uix-qr-scanner__frame {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 12rem;
+    overflow: hidden;
+    border: 1px solid var(--uix-border);
+    border-radius: var(--uix-radius-lg);
+    background: var(--uix-bg-subtle);
+  }
+  .uix-qr-scanner[data-status="scanning"] .uix-qr-scanner__frame { aspect-ratio: 4 / 3; min-height: 0; background: var(--uix-print-ink); border-color: transparent; }
+  .uix-qr-scanner__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .uix-qr-scanner__video[hidden] { display: none; }
+
+  /* the aiming square: four corners, still */
+  .uix-qr-scanner__target {
+    --target-ink: var(--uix-print-paper);
+    position: relative;
+    width: min(62%, 16rem);
+    aspect-ratio: 1;
+    border-radius: var(--uix-radius-md);
+    background:
+      linear-gradient(var(--target-ink), var(--target-ink)) top left / 24px 3px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) top left / 3px 24px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) top right / 24px 3px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) top right / 3px 24px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) bottom left / 24px 3px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) bottom left / 3px 24px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) bottom right / 24px 3px no-repeat,
+      linear-gradient(var(--target-ink), var(--target-ink)) bottom right / 3px 24px no-repeat;
+    box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--uix-print-ink) 35%, transparent);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  /* did it work: the corners turn green and settle in, once */
+  .uix-qr-scanner__frame[data-read] .uix-qr-scanner__target { --target-ink: var(--uix-success-solid); transform: scale(.96); }
+
+  .uix-qr-scanner__panel { display: grid; justify-items: start; gap: var(--uix-space-3); width: 100%; padding: var(--uix-space-5); }
+  .uix-qr-scanner__title { margin: 0; font-weight: 600; font-size: var(--uix-text-h3); }
+  .uix-qr-scanner__body { margin: 0; color: var(--uix-text-muted); }
+  .uix-qr-scanner[data-status="denied"] .uix-qr-scanner__title { color: var(--uix-danger-text); }
+  .uix-qr-scanner__explainer { color: var(--uix-text); max-width: 60ch; }
+
+  .uix-qr-scanner__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
+  .uix-qr-scanner__message { flex: 1 1 12rem; margin: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-qr-scanner__message[data-hint] { color: var(--uix-warning-text); }
+  .uix-qr-scanner__manual { padding-top: var(--uix-space-3); border-top: 1px solid var(--uix-border); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uix-qr-scanner__target { transition: none; }
+    .uix-qr-scanner__frame[data-read] .uix-qr-scanner__target { transform: none; }
+  }
+}

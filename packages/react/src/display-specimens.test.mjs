@@ -52,5 +52,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(prose, /<thead class="uix-print-layout__header">/);
   assert.match(prose, /<tfoot class="uix-print-layout__footer">/);
   assert.match(prose, /class="uix-print-signature__stamp"/);
+  // QR scanner: idle with the explainer and start button, blocked with retry, unsupported; the manual field in each
+  const forms = specimens['examples-form-controls'];
+  assert.match(forms, /data-qr-scanner-example/);
+  assert.match(forms, /data-status="idle"[\s\S]*?The picture never leaves this device[\s\S]*?Use the camera/);
+  assert.match(forms, /data-status="denied"[\s\S]*?The camera is blocked[\s\S]*?Try again/);
+  assert.match(forms, /data-status="unsupported"[\s\S]*?This browser cannot use the camera here/);
+  assert.equal((forms.match(/class="uix-qr-scanner__manual"/g) ?? []).length, 3);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

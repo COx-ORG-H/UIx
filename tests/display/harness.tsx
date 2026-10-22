@@ -5,13 +5,14 @@
  *   - contact: ContactCard active with avatar, purged, unavailable, long Bosnian name and address in a narrow column, bare;
  *   - print: an app shell around a PrintLayout A4 findings document over several pages and an A5 poster with a QR
  *     code; &overfull=1 adds a one-page layout whose content does not fit;
+ *   - scanner: QrScanner in a card with a stub decoder; &camera=real (Chromium's fake device) | denied | missing | none | asking;
  *   - code: CodeDisplay live with copy, in its last minute, expired, lg in a card, a 16-character voucher, beside a form;
  */
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import type * as React from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, DescriptionList, EventRow, Field, Input, PrintLayout, PrintSignature, QrCode } from '../../packages/react/src/index.js';
+import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, DescriptionList, EventRow, Field, Input, PrintLayout, PrintSignature, QrCode, QrScanner } from '../../packages/react/src/index.js';
 
 const CAMPAIGN = 'https://shopx.example/kampanja/ljetna-akcija-2026?trgovina=SA-0042';
 
@@ -161,6 +162,7 @@ function PrintCase() {
           footer={<span>dr. Amra Hadžić, spec. pedijatrije · <a href="https://dom-zdravlja.example/kontakt">kontakt</a></span>}
         >
           <h1 style={{ margin: 0 }}>Nalaz i mišljenje</h1>
+          <p style={{ margin: 0 }}>Elektronska kopija: <a href="https://dom-zdravlja.example/nalaz">dom-zdravlja.example/nalaz</a></p>
           <DescriptionList items={[
             { term: 'Pacijent', description: 'Lejla Mehmedbašić' },
             { term: 'Datum rođenja', description: '14. 3. 2019.' },
@@ -188,7 +190,56 @@ function PrintCase() {
   );
 }
 
+// QrScanner with the camera the query asks for: real (Chromium's fake device), denied, none, missing (NotFoundError), dark (no frames)
+declare global { interface Window { __scanner: { results: string[]; statuses: string[]; frames: number } } }
+
+function ScannerCase() {
+  const camera = new URLSearchParams(location.search).get('camera') ?? 'real';
+  window.__scanner ??= { results: [], statuses: [], frames: 0 };
+  if (camera !== 'real' && !(window as unknown as { __stubbed?: boolean }).__stubbed) {
+    (window as unknown as { __stubbed?: boolean }).__stubbed = true;
+    const reject = (name: string) => () => Promise.reject(Object.assign(new Error(name), { name }));
+    if (camera === 'none') Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: undefined });
+    else if (camera === 'denied') Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: reject('NotAllowedError') } });
+    else if (camera === 'missing') Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: reject('NotFoundError') } });
+    else if (camera === 'asking') Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: () => new Promise(() => {}) } });
+    Object.defineProperty(navigator, 'permissions', { configurable: true, value: undefined });
+  }
+  const [code, setCode] = useState('');
+  return (
+    <>
+      <h1>Skeniranje vaučera</h1>
+      <Card title="Blagajna 2" style={{ maxWidth: '32rem' }}>
+        <QrScanner
+          id="scanner"
+          autoStart={false}
+          frameTimeout={camera === 'dark' ? 500 : 5000}
+          decode={(frame) => {
+            window.__scanner.frames += 1;
+            // a stub decoder: it reads "the code" from the fourth real frame on
+            return frame.imageData.width > 0 && window.__scanner.frames >= 4 ? 'VOUCHER-0042' : null;
+          }}
+          onResult={(value) => { window.__scanner.results.push(value); setCode(value); }}
+          onStatusChange={(status) => window.__scanner.statuses.push(status)}
+          explainer={<p style={{ margin: 0 }}>Kamera čita kod s vaučera. Slika ne napušta ovaj uređaj.</p>}
+          manualEntry={<Field label="Kod vaučera"><Input id="manual-code" value={code} onChange={(event) => setCode(event.currentTarget.value)} /></Field>}
+          labels={{
+            start: 'Uključi kameru', stop: 'Isključi kameru', retry: 'Pokušaj ponovo', torch: 'Svjetlo',
+            deniedTitle: 'Kamera je blokirana', deniedBody: 'Dozvolite kameru za ovu stranicu u postavkama preglednika, pa pokušajte ponovo. Kod možete i upisati.',
+            unsupportedTitle: 'Ovaj preglednik ovdje ne može koristiti kameru', unsupportedBody: 'Upišite kod ili otvorite stranicu u novijem pregledniku preko sigurne veze.',
+            noCameraTitle: 'Kamera nije dostupna', noCameraBody: 'Priključite kameru ili zatvorite aplikaciju koja je koristi. Kod možete i upisati.',
+            noFrameTitle: 'Kamera ne šalje sliku', noFrameBody: 'Provjerite da ništa ne prekriva objektiv, pa pokušajte ponovo.',
+            asking: 'Dozvolite kameru u upitu preglednika.', scanning: 'Usmjerite kameru na kod.', unreadable: 'Još ništa. Držite kod mirno, uz dobro svjetlo.',
+            viewfinder: 'Tražilo kamere', read: 'Pročitano: {value}',
+          }}
+        />
+      </Card>
+    </>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  scanner: () => <ScannerCase />,
   print: () => <PrintCase />,
   events: () => <EventsCase />,
   contact: () => <ContactCase />,

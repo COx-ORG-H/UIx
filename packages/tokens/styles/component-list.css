@@ -28,6 +28,7 @@
 @import "components/qr-code.css";
 @import "components/code-display.css";
 @import "components/print-layout.css";
+@import "components/qr-scanner.css";
 @import "components/card.css";
 @import "components/stat-tile.css";
 @import "components/status-pill.css";

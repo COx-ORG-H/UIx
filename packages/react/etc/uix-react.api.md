@@ -1453,6 +1453,9 @@ export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels;
 
 // @public (undocumented)
+export const DEFAULT_QR_SCANNER_LABELS: QrScannerLabels;
+
+// @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
 
 // @public (undocumented)
@@ -4138,6 +4141,62 @@ export interface QrMatrix {
 export function qrPath(matrix: QrMatrix, margin?: number): string;
 
 // @public
+export function QrScanner(input: QrScannerProps): react.JSX.Element;
+
+// @public
+export type QrScannerDecoder = (frame: QrScannerFrame) => string | null | undefined | Promise<string | null | undefined>;
+
+// @public
+export interface QrScannerFrame {
+    imageData: ImageData;
+    video: HTMLVideoElement;
+}
+
+// @public
+export interface QrScannerLabels {
+    asking: string;
+    deniedBody: string;
+    deniedTitle: string;
+    // (undocumented)
+    noCameraBody: string;
+    noCameraTitle: string;
+    // (undocumented)
+    noFrameBody: string;
+    noFrameTitle: string;
+    read: string;
+    retry: string;
+    scanning: string;
+    start: string;
+    stop: string;
+    torch: string;
+    unreadable: string;
+    // (undocumented)
+    unsupportedBody: string;
+    unsupportedTitle: string;
+    viewfinder: string;
+}
+
+// @public (undocumented)
+export interface QrScannerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onError'> {
+    autoStart?: boolean;
+    decode: QrScannerDecoder;
+    explainer?: ReactNode;
+    facingMode?: 'environment' | 'user';
+    frameTimeout?: number;
+    hintAfter?: number;
+    interval?: number;
+    labels?: Partial<QrScannerLabels>;
+    manualEntry?: ReactNode;
+    maxFrameSize?: number;
+    onResult: (value: string) => void;
+    onStatusChange?: (status: QrScannerStatus) => void;
+    repeatAfter?: number;
+}
+
+// @public
+export type QrScannerStatus = 'idle' | 'asking' | 'scanning' | 'denied' | 'unsupported' | 'no-camera' | 'no-frame';
+
+// @public
 export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number): number | undefined;
 
 // @public
@@ -6547,6 +6606,7 @@ export interface UixLabels {
     };
     printLayout?: Partial<PrintLayoutLabels>;
     qrCode?: Partial<QrCodeLabels>;
+    qrScanner?: Partial<QrScannerLabels>;
     // (undocumented)
     ruleBuilder?: Partial<RuleBuilderLabels>;
     // (undocumented)

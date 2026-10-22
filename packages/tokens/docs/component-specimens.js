@@ -298,6 +298,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-prose",
     "selector": ".uix-print-layout"
   },
+  "qr-scanner": {
+    "route": "examples-form-controls",
+    "selector": ".uix-qr-scanner"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"

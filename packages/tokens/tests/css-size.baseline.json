@@ -331,6 +331,11 @@
       "gzip": 571,
       "brotli": 457
     },
+    "styles/components/qr-scanner.css": {
+      "raw": 3710,
+      "gzip": 1221,
+      "brotli": 1037
+    },
     "styles/components/radio.css": {
       "raw": 4143,
       "gzip": 1210,
