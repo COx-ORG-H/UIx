@@ -81,6 +81,11 @@
       "gzip": 626,
       "brotli": 488
     },
+    "styles/components/code-display.css": {
+      "raw": 2330,
+      "gzip": 860,
+      "brotli": 690
+    },
     "styles/components/color-picker.css": {
       "raw": 2409,
       "gzip": 667,

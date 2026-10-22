@@ -153,6 +153,9 @@ export { QrCode } from './components/QrCode.js';
 export type { QrCodeProps, QrCodeLabels } from './components/QrCode.js';
 export { encodeQr, qrPath, qrDataCapacity, qrVersionFor, QrCapacityError } from './qr-model.js';
 export type { QrMatrix, QrErrorCorrection, QrEncodeOptions } from './qr-model.js';
+// A one-time code shown large, spelled out, with an optional expiry countdown (HAR-1253)
+export { CodeDisplay, DEFAULT_CODE_DISPLAY_LABELS, codeGroups, formatCountdown } from './components/CodeDisplay.js';
+export type { CodeDisplayProps, CodeDisplayLabels } from './components/CodeDisplay.js';
 
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';

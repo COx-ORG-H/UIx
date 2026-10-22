@@ -23,5 +23,12 @@ test('every state named in a caption is on the page', () => {
   assert.equal((data.match(/class="uix-qr-code"/g) ?? []).length, 3);
   assert.match(data, /width="90px"/);
   assert.match(data, /data-error-correction="H"/);
+  // code display: live with copy at 9:42, the last minute, expired without copy, a large voucher
+  assert.match(data, /data-code-display-example/);
+  assert.match(data, /data-state="live"[\s\S]*?Expires in 9:42/);
+  assert.match(data, /data-state="soon"[\s\S]*?Expires in 0:45/);
+  assert.match(data, /data-state="expired"[\s\S]*?Expired\. Ask for a new code\./);
+  assert.equal((data.match(/uix-copy-button/g) ?? []).length, 1);
+  assert.match(data, /uix-code-display uix-code-display--lg/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

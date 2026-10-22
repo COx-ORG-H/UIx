@@ -1124,3 +1124,17 @@ on light. The encoder is the kit's own (`encodeQr`, `qrPath`), with no runtime d
 ```tsx
 <QrCode value={campaignUrl} label={t('qrOpensCampaign')} errorCorrection="Q" size="40mm" />
 ```
+
+#### CodeDisplay
+
+`CodeDisplay` shows a one-time code large enough to read across a counter: monospace groups
+(`groupSize`, or the code's own spaces and hyphens), a visible `label`, and a screen-reader
+spelling character by character (`spell` for a spelling alphabet or to tell O from 0).
+`expiresAt` adds a countdown that is never a live region: a screen reader hears "{time} left"
+once at `warnBefore` seconds (60) and "expired" once, and `onExpire` runs once. An expired code
+is struck through and says so in words; `copyable` adds a `CopyButton` while the code is live.
+The product makes the code and enforces its expiry.
+
+```tsx
+<CodeDisplay code={pairing.code} label={t('pairingCode')} expiresAt={pairing.expiresAt} copyable onExpire={refresh} />
+```

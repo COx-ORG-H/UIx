@@ -706,6 +706,37 @@ export function classifyLayeredEdges(nodes: RelationshipGraphNode[], edges: Rela
 export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string;
 
 // @public
+export function CodeDisplay(input: CodeDisplayProps): react.JSX.Element;
+
+// @public
+export interface CodeDisplayLabels {
+    copied: string;
+    copy: string;
+    copyFailed: string;
+    expired: string;
+    expiresIn: string;
+    expiresSoon: string;
+}
+
+// @public (undocumented)
+export interface CodeDisplayProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    code: string;
+    copyable?: boolean;
+    expiresAt?: string | number | Date;
+    groupSize?: number | readonly number[];
+    label: ReactNode;
+    labels?: Partial<CodeDisplayLabels>;
+    onExpire?: () => void;
+    separator?: string;
+    size?: 'md' | 'lg';
+    spell?: (character: string) => string;
+    warnBefore?: number;
+}
+
+// @public
+export function codeGroups(code: string, groupSize?: number | readonly number[]): string[];
+
+// @public
 export function CollapsibleSection(props: CollapsibleSectionProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1325,6 +1356,9 @@ export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
 
 // @public (undocumented)
 export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
+
+// @public (undocumented)
+export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 
 // @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
@@ -2245,6 +2279,9 @@ export function foldForSearch(text: string): FoldedText;
 
 // @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
+
+// @public
+export function formatCountdown(seconds: number): string;
 
 // @public
 export function formatDateKey(value: string, locale?: string | readonly string[]): string;
@@ -6376,6 +6413,7 @@ export interface UixLabels {
     chip?: {
         remove?: string;
     };
+    codeDisplay?: Partial<CodeDisplayLabels>;
     commandPalette?: {
         input?: string;
         resultsOne?: string;

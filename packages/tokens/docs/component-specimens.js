@@ -290,6 +290,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-qr-code"
   },
+  "code-display": {
+    "route": "examples-data-display",
+    "selector": ".uix-code-display"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"

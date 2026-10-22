@@ -20,6 +20,7 @@ import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { QrCodeLabels } from './components/QrCode.js';
+import type { CodeDisplayLabels } from './components/CodeDisplay.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -45,6 +46,8 @@ export interface UixLabels {
   searchBar?: Partial<SearchBarLabels>;
   /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
   qrCode?: Partial<QrCodeLabels>;
+  /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
+  codeDisplay?: Partial<CodeDisplayLabels>;
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;
