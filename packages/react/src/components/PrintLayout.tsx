@@ -83,6 +83,9 @@ export function PrintLayout({
     return () => { observer.disconnect(); if (frame) cancelAnimationFrame(frame); };
   }, [singlePage, children, header, footer]);
 
+  // The page is a real table, for layout only: Chromium repeats a thead and a tfoot on every
+  // printed page, and a CSS table built of divs it does not (measured, HAR-986). On screen the
+  // stylesheet lays it out as a column.
   const page = `uix-print-${size.toLowerCase()}${orientation === 'landscape' ? '-landscape' : ''}${pageNumbers && !singlePage ? '' : '-plain'}`;
   return (
     <div
@@ -95,9 +98,6 @@ export function PrintLayout({
       data-isolate={isolate ? '' : undefined}
       {...props}
     >
-      {/* A real table, for layout only: Chromium repeats a <thead> and a <tfoot> on every printed
-          page, and a CSS table built of divs it does not (measured, HAR-986). On screen the
-          stylesheet lays it out as a column. */}
       <table className="uix-print-layout__page" role="presentation">
         {header != null && <thead className="uix-print-layout__header"><tr><td><div className="uix-print-layout__bar">{header}</div></td></tr></thead>}
         <tbody className="uix-print-layout__main"><tr><td className="uix-print-layout__body">{children}</td></tr></tbody>

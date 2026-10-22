@@ -58,7 +58,7 @@ test('on screen: true paper sizes, ink on paper in both themes', async ({ page }
   expect(cell).toBe('rgb(10, 10, 10)');
 });
 
-test('print media: only the documents remain, as tables whose header and footer repeat', async ({ page }, testInfo) => {
+test('print media: only the documents remain, each a table whose header and footer repeat', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await page.emulateMedia({ media: 'print' });
   const shown = await page.evaluate(() => ({
@@ -66,7 +66,7 @@ test('print media: only the documents remain, as tables whose header and footer 
     topbar: getComputedStyle(document.querySelector('.uix-shell__topbar')).display,
     toolbar: getComputedStyle(document.getElementById('print-toolbar')).display,
     main: getComputedStyle(document.querySelector('.uix-shell__main')).overflow,
-    frame: getComputedStyle(document.getElementById('nalaz')).display,
+    frame: getComputedStyle(document.querySelector('#nalaz .uix-print-layout__page')).display,
     header: getComputedStyle(document.querySelector('#nalaz .uix-print-layout__header')).display,
     footer: getComputedStyle(document.querySelector('#nalaz .uix-print-layout__footer')).display,
     page: getComputedStyle(document.getElementById('poster')).page,
@@ -83,9 +83,13 @@ test('PDF: A4 pages then an A5 poster page, header and footer on every A4 page',
   expect(pdf.pages.length, JSON.stringify(pdf.pages)).toBe(a4.length + a5.length);
   expect(a4.length, 'the findings run over several A4 pages').toBeGreaterThanOrEqual(2);
   expect(a5.length, 'the poster is one A5 page').toBe(1);
+  // Chromium writes a link's URI more than once per annotation; a link that is drawn once (in
+  // the body) says how many times, so the header and footer links must appear that many times per page.
   const count = (uri) => pdf.uris.filter((value) => value === uri).length;
-  expect(count('https://dom-zdravlja.example/'), 'the header on every A4 page').toBe(a4.length);
-  expect(count('https://dom-zdravlja.example/kontakt'), 'the footer on every A4 page').toBe(a4.length);
+  const once = count('https://dom-zdravlja.example/nalaz');
+  expect(once).toBeGreaterThan(0);
+  expect(count('https://dom-zdravlja.example/') / once, 'the header on every A4 page').toBe(a4.length);
+  expect(count('https://dom-zdravlja.example/kontakt') / once, 'the footer on every A4 page').toBe(a4.length);
 });
 
 test('the poster’s QR code scans with print media', async ({ page }, testInfo) => {
