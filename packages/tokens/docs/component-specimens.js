@@ -86,7 +86,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "app-shell": {
     "route": "examples-navigation",
-    "selector": ".uix-shell"
+    "selector": ".uix-shell",
+    "parts": [".uix-shell", "[data-shell-viewport-example]"]
   },
   "sidebar": {
     "route": "examples-navigation",
@@ -114,7 +115,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "page-header": {
     "route": "examples-navigation",
-    "selector": ".uix-page-header"
+    "selector": ".uix-page-header",
+    "parts": [".uix-page-header", "[data-shell-viewport-example] .uix-page-header--display"]
   },
   "command-palette": {
     "route": "examples-navigation",
@@ -439,7 +441,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "detail-page": {
     "route": "examples-workspace",
-    "selector": ".uix-detail-page"
+    "selector": ".uix-detail-page",
+    "parts": [".uix-detail-page", "[data-detail-staff-example]"]
   },
   "related-links": {
     "route": "examples-workspace",

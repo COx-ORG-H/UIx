@@ -1175,3 +1175,23 @@ the same through `.uix-glyph`:
 `node packages/react/scripts/glyph-icons.mjs` is the guard (it runs in `npm test`): a glyph as the whole content
 of a button, a link or an icon slot, or in a CSS `content:`, fails with its file and line. Text that only looks
 like an icon (a Kbd legend, a diff sign) goes in `glyph-icons.allow.json` with a reason.
+
+#### The staff shell: full viewport and the type presets (HAR-1815)
+
+```tsx
+<AppShell layout="viewport" sidebar={<StaffNav />}>
+  <PageHeader size="display" eyebrow={t('today')} title={t('overview')} subtitle={t('overviewLead')} actions={actions} />
+</AppShell>
+<DetailPage variant="staff" back={{ href: '/loans', label: t('allLoans') }} title={loan.code} metrics={metrics}>
+  <Card><SectionHead size="compact" as="h3" title={t('copies')} /><Table>…<CellSub tabular>{copy.inventory}</CellSub>…</Table></Card>
+</DetailPage>
+```
+
+- `AppShell layout="viewport"`: no frame, `100dvh`, no top-bar row (a `topbar` sits at the top of the main
+  column), staff padding (`space-7 space-6 space-6`, `space-8` at the sides from 80rem), and below 40rem one
+  column with the sidebar hidden. `layout="frame"` is the default and the old look.
+- `PageHeader size="display"`: 40 px heading-font title, bold hushed eyebrow, body-size hushed subtitle (42rem),
+  actions on the bottom line.
+- `DetailPage variant="staff"`: h2 / 1.15 title, un-underlined hushed back link, eyebrow metric labels over
+  regular tabular h3 values.
+- `SectionHead size="compact"` (15 px / 1.3 / 600) and `as="h3"`; `CellSub tabular`.

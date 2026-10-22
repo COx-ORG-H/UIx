@@ -229,9 +229,17 @@ export function CellStrong({ children, className, ...props }: HTMLAttributes<HTM
   return <span className={cx('uix-cell-strong', className)} {...props}>{children}</span>;
 }
 
+export interface CellSubProps extends HTMLAttributes<HTMLSpanElement> {
+  /**
+   * Tabular numerals (HAR-1815): for a read-back code, a reference or a time, so digits line up
+   * down the column and a 1 is as wide as an 8.
+   */
+  tabular?: boolean;
+}
+
 /** Secondary line under a primary cell value (muted, meta size). */
-export function CellSub({ children, className, ...props }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cx('uix-cell-sub', className)} {...props}>{children}</span>;
+export function CellSub({ tabular, children, className, ...props }: CellSubProps) {
+  return <span className={cx('uix-cell-sub', tabular && 'uix-cell-sub--tabular', className)} {...props}>{children}</span>;
 }
 
 /* ── search highlight ─────────────────────────────────────────────────────────── */

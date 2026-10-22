@@ -186,7 +186,7 @@ export {
 } from './components/Table.js';
 export type {
   TableWrapProps, TableProps, ThProps, TdProps, TrProps, TableDensity, SortDirection,
-  BulkBarProps, RowActionsProps, RowActionProps, ExpandToggleProps, MarkProps, HighlightedProps,
+  BulkBarProps, RowActionsProps, RowActionProps, ExpandToggleProps, MarkProps, HighlightedProps, CellSubProps,
 } from './components/Table.js';
 
 // Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection

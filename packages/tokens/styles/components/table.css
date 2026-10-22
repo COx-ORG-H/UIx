@@ -102,6 +102,8 @@
   /* ── cell content vocabulary — a fixed set of renderers keeps tables consistent ── */
   .uix-cell-strong { font-weight: 600; }
   .uix-cell-sub { display: block; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* read-back codes, references and times: digits line up down the column (HAR-1815) */
+  .uix-cell-sub--tabular { font-variant-numeric: tabular-nums; }
   .uix-cell-mono { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); }
 
   /* ── id cell — the canonical row click-through (row → peek, ↗ → full record) ───── */

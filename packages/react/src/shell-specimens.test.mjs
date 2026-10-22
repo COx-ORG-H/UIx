@@ -28,6 +28,20 @@ test('Inset (HAR-1818): two wells in a card body, the first a named group, the s
   assert.match(data, /<div class="uix-inset uix-inset--sm"><code>/);
 });
 
+test('AppShell viewport (HAR-1815): a frameless shell with a display page header, and no second main landmark', () => {
+  const nav = specimens['examples-navigation'];
+  assert.match(nav, /<div data-shell-viewport-example><div class="uix-shell uix-shell--viewport" style="height: 30rem;"/);
+  assert.doesNotMatch(nav, /<main\b/, 'the docs page keeps one main landmark');
+  assert.match(nav, /<header class="uix-page-header uix-page-header--display"><div class="uix-page-header__titles"><div class="uix-page-header__eyebrow">Danas<\/div><h2 class="uix-page-header__title">Pregled<\/h2>/);
+});
+
+test('staff presets (HAR-1815): DetailPage staff, a compact h3 section head, tabular read-back codes', () => {
+  const work = specimens['examples-workspace'];
+  assert.match(work, /<section class="uix-detail-page uix-detail-page--staff">/);
+  assert.match(work, /<div class="uix-section-head uix-section-head--compact"><h3 class="uix-section-title">Primjerci<\/h3><\/div>/);
+  assert.equal((work.match(/<span class="uix-cell-sub uix-cell-sub--tabular">INV /g) ?? []).length, 2);
+});
+
 test('no React-generated id reaches the page', () => {
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

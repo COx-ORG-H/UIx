@@ -420,8 +420,10 @@ for (const [source, specimens] of [
   for (const [slug, html] of Object.entries(specimens)) {
     const page = SHOWCASE_PAGES.find((entry) => entry.slug === slug);
     if (!page) throw new Error(`${source} names a route that does not exist: ${slug}`);
-    const end = page.html.lastIndexOf("</section>");
-    if (end < 0) throw new Error(`${slug} has no closing </section> to append specimens to`);
+    // inside the route's closing </section>, or at the end of a route that has none
+    // (examples-workspace is a whole app shell)
+    const close = page.html.lastIndexOf("</section>");
+    const end = close < 0 ? page.html.length : close;
     page.html = `${page.html.slice(0, end)}${html}\n${page.html.slice(end)}`;
   }
 }

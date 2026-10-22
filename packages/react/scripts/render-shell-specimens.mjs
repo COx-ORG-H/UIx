@@ -83,6 +83,40 @@ export async function renderShellSpecimens() {
       `<div data-card-inset-example>${html(preview)}</div>`,
     ].join('\n'));
 
+    // ── AppShell layout="viewport" + the staff type presets (HAR-1815) ──────────────────────
+    // The page cannot give a specimen the whole viewport: the shell is held at 30rem here.
+    const navIcon = (d) => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d }));
+    const staffShell = mount(h(ui.AppShell, {
+      layout: 'viewport', mainId: 'shell-viewport-main', style: { height: '30rem' }, 'aria-label': 'Staff shell specimen',
+      sidebar: h(ui.Sidebar, { brand: 'Biblioteka', 'aria-label': 'Staff navigation' },
+        h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M3 12l9-9 9 9M5 10v10h14V10'), active: true }, 'Pregled'),
+        h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20') }, 'Katalog'),
+        h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-.01') }, 'Članovi')),
+    },
+    h(ui.PageHeader, { size: 'display', as: 'h2', eyebrow: 'Danas', title: 'Pregled', subtitle: 'Posudbe, rezervacije i zakašnjenja za ovu podružnicu.', actions: h(ui.Button, { variant: 'primary' }, 'Nova posudba') }),
+    h('p', null, 'The viewport shell has no frame and no top-bar row; the sidebar and the main column run the full height.')));
+    add('examples-navigation', [
+      caption('App shell, full viewport (React <code>AppShell layout="viewport"</code>, <code>.uix-shell--viewport</code>) — an application’s shell: no frame, <code>100dvh</code> (held at 30rem on this page), no top-bar row, the staff main padding (wider on a wide screen), and below 40rem one column with the sidebar hidden for the phone nav tier. The title is the display preset of <code>PageHeader</code>'),
+      // a page has one main landmark, the docs' own: the specimen's <main> is shown as a div
+      `<div data-shell-viewport-example>${html(staffShell).replace(/<main\b/, '<div').replace(/<\/main>/, '</div>')}</div>`,
+    ].join('\n'));
+
+    const record = mount(h(ui.DetailPage, {
+      variant: 'staff', back: { href: '#examples-workspace', label: 'Sve posudbe' }, eyebrow: 'Posudba', title: 'L-2026-0412',
+      subtitle: 'Na zadnjem čitanju, rok vraćanja za tri dana.',
+      metrics: [{ id: 'due', label: 'Rok', value: '25.10.2026' }, { id: 'renewals', label: 'Produženja', value: '1 / 2' }, { id: 'fee', label: 'Zakasnina', value: '0,00 KM' }],
+    }, h(ui.Card, null,
+      h(ui.SectionHead, { size: 'compact', as: 'h3', title: 'Primjerci' }),
+      h(ui.Table, { 'aria-label': 'Primjerci' },
+        h('thead', null, h('tr', null, h(ui.Th, null, 'Naslov'), h(ui.Th, null, 'Status'))),
+        h('tbody', null,
+          h('tr', null, h('td', null, h(ui.CellStrong, null, 'Na Drini ćuprija'), h(ui.CellSub, { tabular: true }, 'INV 0041-1187')), h('td', null, 'Posuđeno')),
+          h('tr', null, h('td', null, h(ui.CellStrong, null, 'Derviš i smrt'), h(ui.CellSub, { tabular: true }, 'INV 0007-0310')), h('td', null, 'Posuđeno')))))));
+    add('examples-workspace', [
+      caption('Staff record page (React <code>DetailPage variant="staff"</code>, <code>.uix-detail-page--staff</code>) — the title at h2 / 1.15, the back link an inline hushed link without an underline, each metric an eyebrow over a regular, tabular h3 value; inside, a compact section head (<code>SectionHead size="compact"</code>, 15 px / 1.3 / 600) and read-back codes in tabular numerals (<code>CellSub tabular</code>)'),
+      `<div data-detail-staff-example>${html(record)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return out;
   } finally {

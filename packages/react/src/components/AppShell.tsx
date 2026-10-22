@@ -8,6 +8,14 @@ import { useUixLabels } from '../labels-context.js';
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
 export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * `frame` (default) is the bordered, rounded box the docs show a shell in. `viewport` is an
+   * application's shell (HAR-1815): no frame, the full dynamic viewport height (`100dvh`), no fixed
+   * top-bar row (the sidebar and main both run the full height; a `topbar`, if given, sits at the
+   * top of the main column), main padding that widens on wide screens, and below 40rem one column
+   * with the sidebar hidden, for the phone nav tier.
+   */
+  layout?: 'frame' | 'viewport';
   /** Sidebar width tier: 'full' (default) → 'rail' (icon only) → 'hidden' (0). */
   nav?: ShellNav;
   /** Back-compat alias for nav="rail". Ignored when `nav` is set. */
@@ -34,6 +42,7 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function AppShell({
+  layout = 'frame',
   nav,
   collapsed,
   focus,
@@ -64,7 +73,7 @@ export function AppShell({
 
   return (
     <div
-      className={cx('uix-shell', className)}
+      className={cx('uix-shell', layout === 'viewport' && 'uix-shell--viewport', className)}
       data-nav={navState !== 'full' ? navState : undefined}
       data-collapsed={collapsed && nav == null ? '' : undefined}
       data-focus={focus || undefined}

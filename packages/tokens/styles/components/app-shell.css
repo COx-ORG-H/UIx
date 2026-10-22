@@ -57,3 +57,23 @@
      the gutter. Pair with a frozen identifier column for horizontal scroll. */
   .uix-shell__main--bleed { padding: 0; }
 }
+
+/* Full-viewport mode (HAR-1815): an application's shell, not a framed demo. No border or radius,
+   the dynamic viewport height, and no fixed top-bar row: the sidebar runs the full height, and a
+   topbar, if there is one, takes the height it needs at the top of the main column. Main gets the
+   staff padding (space-7 / space-6 / space-6) and space-8 at the sides on a wide screen. Below
+   40rem the shell is one column and the sidebar is hidden: the phone nav tier takes over. */
+@layer uix.components {
+  .uix-shell--viewport { height: 100dvh; min-height: 0; border: 0; border-radius: 0; grid-template-rows: auto minmax(0, 1fr); }
+  .uix-shell--viewport > .uix-shell__topbar { grid-row: 1; padding-block: var(--uix-space-3); }
+  .uix-shell--viewport > .uix-shell__main { grid-row: 2; padding: var(--uix-space-7) var(--uix-space-6) var(--uix-space-6); }
+  .uix-shell--viewport:not(:has(> .uix-shell__topbar)) > .uix-shell__main { grid-row: 1 / 3; }
+  .uix-shell--viewport > .uix-shell__main.uix-shell__main--bleed { padding: 0; }
+  @media (min-width: 80rem) { .uix-shell--viewport > .uix-shell__main:not(.uix-shell__main--bleed) { padding-inline: var(--uix-space-8); } }
+  @media (max-width: 40rem) {
+    .uix-shell--viewport, .uix-shell--viewport[data-nav] { grid-template-columns: minmax(0, 1fr); }
+    .uix-shell--viewport > .uix-shell__sidebar { display: none; }
+    .uix-shell--viewport > :is(.uix-shell__topbar, .uix-shell__main) { grid-column: 1; }
+    .uix-shell--viewport > .uix-shell__main { padding: var(--uix-space-5) var(--uix-space-4) var(--uix-space-6); }
+  }
+}

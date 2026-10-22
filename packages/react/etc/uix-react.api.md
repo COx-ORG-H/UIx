@@ -103,6 +103,7 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     collapsed?: boolean;
     exitFocusLabel?: ReactNode;
     focus?: boolean;
+    layout?: 'frame' | 'viewport';
     mainBleed?: boolean;
     mainId?: string;
     nav?: ShellNav;
@@ -633,7 +634,12 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
 export function CellStrong(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
 
 // @public
-export function CellSub(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
+export function CellSub(input: CellSubProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CellSubProps extends HTMLAttributes<HTMLSpanElement> {
+    tabular?: boolean;
+}
 
 // @public
 export interface ChartStatPoint {
@@ -1507,6 +1513,7 @@ export interface DetailPageProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     tabsLabel?: string;
     // (undocumented)
     title: ReactNode;
+    variant?: 'default' | 'staff';
 }
 
 // @public (undocumented)
@@ -3566,6 +3573,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     eyebrow?: ReactNode;
     help?: string | null;
     helpLabel?: string;
+    size?: 'default' | 'display';
     subtitle?: ReactNode;
     // (undocumented)
     title: ReactNode;
@@ -5247,8 +5255,10 @@ export function SectionHead(input: SectionHeadProps): react.JSX.Element;
 // @public (undocumented)
 export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     action?: ReactNode;
+    as?: 'h2' | 'h3';
     help?: string | null;
     helpLabel?: string;
+    size?: 'default' | 'compact';
     // (undocumented)
     title: ReactNode;
     titleId?: string;
