@@ -130,7 +130,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "card": {
     "route": "examples-data-display",
-    "selector": ".uix-card"
+    "selector": ".uix-card",
+    "parts": [".uix-card", "[data-card-inset-example]"]
   },
   "table": {
     "route": "examples-data-display",

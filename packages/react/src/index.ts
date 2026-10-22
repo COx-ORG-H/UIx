@@ -86,8 +86,8 @@ export type { LightboxProps, LightboxItem, LightboxLabels } from './components/L
 export type { PeekProps } from './components/Peek.js';
 
 // Layout
-export { Card, CardLink } from './components/Card.js';
-export type { CardProps, CardLinkProps } from './components/Card.js';
+export { Card, CardLink, Inset } from './components/Card.js';
+export type { CardProps, CardLinkProps, InsetProps } from './components/Card.js';
 
 export { DashboardGrid, DashboardGridItem, dashboardGridClassName, dashboardGridItemClassName } from './components/DashboardGrid.js';
 export type {

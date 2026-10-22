@@ -1145,3 +1145,18 @@ hover tint of interactive tiles now applies only where the device can hover (`@m
 ```tsx
 <Stat label={t('overdue')} value={4} href="/loans?overdue" renderLink={toRoute} />  // › at rest
 ```
+
+#### Inset: a well inside a card body (HAR-1818)
+
+```tsx
+<Card title={t('current')}>
+  <Inset role="group" aria-label={t('headerPreview')}><BrandBar brand={brand} /></Inset>
+  <Inset padding="sm"><code>{css}</code></Inset>
+</Card>
+```
+
+`Inset` (`.uix-inset`) frames a preview or a specimen inside a card body: a hairline border, the md radius,
+the subtle background and `--uix-space-4` padding (`padding="sm"`: `--uix-space-3`). Use it instead of a `Card`
+in a `Card`, which brings a second shadow, card padding and card semantics. `tone="surface"` is for a well on
+a panel that is already subtle. It lays out nothing; give it a `role="group"` and a name when the preview needs
+one.

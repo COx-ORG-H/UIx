@@ -31,7 +31,7 @@ export const COMPONENT_GUIDANCE = {
   'command-palette': ['Find commands or destinations with the keyboard.', 'A search field and grouped results; applications supply commands and their handlers.'],
   menu: ['Offer a compact list of related actions.', 'Labeled menu items, separators and explicit destructive-action styling.'],
   'nav-favourites': ['Keep frequently used destinations close at hand.', 'Starred navigation entries appear in a favorites group; storage policy belongs to the app.'],
-  card: ['Group a related piece of content.', 'A surface with optional header, body and footer aligned to the system spacing.'],
+  card: ['Group a related piece of content.', 'A surface with optional header, body and footer aligned to the system spacing. Frame a preview or a specimen inside the body with an Inset (a bordered, sunken well), never with a card in a card.'],
   table: ['Compare many records across the same fields.', 'Aligned headers and cells; sorting, filtering and pagination must match the data source.'],
   'table-toolbar': ['Place collection actions and filters above a table.', 'A consistent area for search, selection actions and view controls.'],
   'filter-popover': ['Edit one bounded filter without leaving a collection.', 'A labeled control with explicit Apply and Clear actions; the application owns query state and serialization.'],

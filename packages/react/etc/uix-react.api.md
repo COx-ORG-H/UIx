@@ -2434,6 +2434,17 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     warning?: boolean;
 }
 
+// @public
+export function Inset(input: InsetProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface InsetProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    padding?: 'sm' | 'md';
+    tone?: 'sunken' | 'surface';
+}
+
 // @public (undocumented)
 export function InsightCard(input: InsightCardProps): react.JSX.Element;
 
