@@ -6,23 +6,24 @@
   .uix-arrival {
     border-radius: var(--uix-radius-md);
     scroll-margin-block: var(--uix-space-10);
-    animation: uix-arrival 2.4s var(--uix-ease-out) both;
+    animation: uix-arrival var(--uix-dur-highlight) var(--uix-ease-out) both;
   }
   @keyframes uix-arrival {
-    0%, 40% { background-color: var(--uix-brand-muted); box-shadow: 0 0 0 var(--uix-space-2) var(--uix-brand-muted); }
-    100% { background-color: transparent; box-shadow: 0 0 0 var(--uix-space-2) transparent; }
+    /* the outline carries the tint past the element's edge; only its colour fades */
+    0%, 40% { background-color: var(--uix-brand-muted); outline: var(--uix-space-2) solid var(--uix-brand-muted); outline-offset: 0; }
+    100% { background-color: transparent; outline: var(--uix-space-2) solid transparent; outline-offset: 0; }
   }
 
-  /* no fade: a steady outline for two seconds, then nothing */
+  /* no fade: a steady outline for the highlight time, then nothing */
   @keyframes uix-arrival-static {
     0% { outline: 2px solid var(--uix-ring); outline-offset: var(--uix-space-1); }
     100% { outline: 2px solid transparent; outline-offset: var(--uix-space-1); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .uix-arrival { animation: uix-arrival-static 2s step-end both; }
+    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both; }
   }
 
   @media (forced-colors: active) {
-    .uix-arrival { animation: uix-arrival-static 2s step-end both; }
+    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both; }
   }
 }

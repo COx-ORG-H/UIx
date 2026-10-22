@@ -90,7 +90,7 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm);
     text-align: left; cursor: pointer;
-    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-org-chart__item > .uix-org-chart__node:hover { border-color: var(--uix-border-strong); }
   .uix-org-chart__item[aria-selected="true"] > .uix-org-chart__node {

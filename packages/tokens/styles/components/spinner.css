@@ -1,6 +1,8 @@
 /* uix spinner + progress overlay — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-spinner { width: 20px; height: 20px; border: 2px solid var(--uix-border-strong); border-right-color: transparent; border-radius: 50%; display: inline-block; animation: uix-spin .6s linear infinite; }
+  .uix-spinner { width: 20px; height: 20px; border: 2px solid var(--uix-border-strong); border-right-color: transparent; border-radius: 50%; display: inline-block; animation: uix-spin var(--uix-loop-spin) linear infinite; }
+  /* reduced motion: the ring stops turning and breathes instead, so "still working" survives */
+  @media (prefers-reduced-motion: reduce) { .uix-spinner { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
   .uix-spinner--accent { border-color: var(--uix-accent); border-right-color: transparent; }
   .uix-spinner--lg { width: 32px; height: 32px; border-width: 3px; }
   /* HAR-1606: inline, beside a file name or inside a 24 px toggle; the 2 px stroke is kept. */

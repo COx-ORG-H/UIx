@@ -455,7 +455,7 @@ test.describe('Loading and progress', () => {
     }
   });
 
-  test('Heartbeat: decorative beside its text, named when alone, and the ring stops under reduced motion', async ({ page }, testInfo) => {
+  test('Heartbeat: decorative beside its text, named when alone, and the ring gives way to a pulse under reduced motion', async ({ page }, testInfo) => {
     await open(page, testInfo);
     await expect(page.locator('#live .uix-heartbeat')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.getByRole('img', { name: 'Connection lost' })).toBeVisible();
@@ -469,8 +469,10 @@ test.describe('Loading and progress', () => {
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.reload({ waitUntil: 'networkidle' });
-    await expect.poll(async () => (await ping('#live')).running, { message: 'under prefers-reduced-motion nothing keeps pulsing' }).toBe(0);
+    await expect.poll(async () => (await ping('#live')).running, { message: 'under prefers-reduced-motion the growing ring stops' }).toBe(0);
     await expect(page.locator('#live .uix-heartbeat__dot')).toBeVisible();
+    // ...and the dot breathes instead, so "live" is still visible without movement (HAR-2578)
+    expect(await page.locator('#live .uix-heartbeat__dot').evaluate((el) => el.getAnimations().map((a) => a.animationName))).toEqual(['uix-pulse']);
     expect(await axe(page, '#loading')).toEqual([]);
   });
 });

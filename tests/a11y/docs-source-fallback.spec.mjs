@@ -39,6 +39,10 @@ const computedStyles = async (page, url, { bundle }) => {
     message: bundle ? 'the built bundle is loaded' : 'the authored-source fallback is loaded',
   }).toContainEqual(expect.stringMatching(bundle ? /\/build\/css\/styles\.css$/ : /\/styles\/main\.css$/));
   await settleAnimations(page);
+  // Under reduced motion the looping indicators (spinner, skeleton, heartbeat) keep a slow opacity
+  // pulse instead of freezing (HAR-2578); hold every animation at its first frame so both passes
+  // read the same opacity.
+  await page.evaluate(() => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = 0; }));
   return page.evaluate((limit) => {
     const all = [...document.querySelectorAll('body *')];
     const stride = Math.ceil(all.length / limit);

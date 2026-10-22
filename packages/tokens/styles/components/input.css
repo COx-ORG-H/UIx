@@ -20,7 +20,7 @@
     height: var(--uix-control-h); width: 100%;
     padding: 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
-    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-input::placeholder { color: var(--uix-text-muted); }
   .uix-input:hover { border-color: var(--uix-border-strong); }
