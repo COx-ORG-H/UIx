@@ -25,6 +25,7 @@
 @import "components/page-header.css";
 @import "components/kbd.css";
 @import "components/copy-button.css";
+@import "components/qr-code.css";
 @import "components/card.css";
 @import "components/stat-tile.css";
 @import "components/status-pill.css";

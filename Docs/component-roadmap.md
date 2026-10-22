@@ -48,6 +48,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. 2.36.0 (HAR-1647): the result count is a label (`resultsLabel`, provider `commandPalette.resultsOne` / `resultsMany`). |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
+| QrCode | qr-code.css | ✓ `QrCode` | Beta | no | A scannable, print-safe SVG QR code from the kit's own encoder (`encodeQr`: byte mode / UTF-8, L/M/Q/H, versions 1-40, penalty-scored masks); four-module quiet zone; ink on paper in every theme, in print and in forced colours; decoded back in tests. Landed with HAR-1251. |
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
 | DatePicker | date-picker.css | ✓ `DatePicker` | Beta | no | A typed date field with a one-month calendar popover; ISO value, locale or custom format, `min` / `max` / `isUnavailable`, `weekStartsOn`. Also `DateTimePicker` (date and time, the zone shown; the `datetime-local` value shape). Landed 2.36.0 (HAR-1383). |
 | DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. 2.36.0 (HAR-1383): `mode="field"` (a trigger that opens the months in a popover), `weekStartsOn`. |

@@ -286,6 +286,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-composer"
   },
+  "qr-code": {
+    "route": "examples-data-display",
+    "selector": ".uix-qr-code"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"

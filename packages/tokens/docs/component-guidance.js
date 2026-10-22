@@ -78,6 +78,7 @@ export const COMPONENT_GUIDANCE = {
   'collapsible-section': ['Progressively disclose secondary content.', 'A native disclosure keeps its summary visible and toggles its body with keyboard and pointer input.'],
   comments: ['Read a discussion attached to a record.', 'An author, timestamp and body for each contribution, with associated actions.'],
   composer: ['Draft a comment or message.', 'An editing area with composition actions; submission and persistence belong to the app.'],
+  'qr-code': ['Let a phone open a link or read a code from a screen or paper: a poster, a voucher, a pairing slip.', 'A square of dark modules on light paper with a quiet margin, the same in every theme and in print; name it for where it leads.'],
   'contact-card': ['Summarize a person and their key contact actions.', 'Identity, role, relevant metrics and contact affordances in one compact surface.'],
   attachment: ['List files already associated with a record.', 'File identity, size and file actions; use File upload to select new files.'],
   'audit-log': ['Inspect who changed a record and when.', 'Chronological actor/action/time rows; the application supplies authoritative audit events.'],

@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { QrCodeLabels } from './components/QrCode.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -42,6 +43,8 @@ export interface UixLabels {
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
   searchBar?: Partial<SearchBarLabels>;
+  /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
+  qrCode?: Partial<QrCodeLabels>;
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;

@@ -1109,3 +1109,18 @@ mask; an avatar with a dot no longer clips it.
   `entityPicker`. `SearchSuggest` has the two slots these use: `idle` and `note`.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
+
+### Codes, contacts and paper (batch 5)
+
+#### QrCode
+
+`QrCode` draws `value` as a scannable SVG QR code with the standard four-module quiet zone.
+Name it for where it leads (`label`), pick `errorCorrection` (`M` by default; `Q` or `H` for a
+poster that may be creased or partly covered) and a `size`: CSS pixels, or a length such as
+`'32mm'` on paper. Keep at least 2 px per module on a screen and 0.4 mm per module on paper.
+The symbol is ink on paper in light, dark, print and forced colours, because scanners read dark
+on light. The encoder is the kit's own (`encodeQr`, `qrPath`), with no runtime dependency.
+
+```tsx
+<QrCode value={campaignUrl} label={t('qrOpensCampaign')} errorCorrection="Q" size="40mm" />
+```

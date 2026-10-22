@@ -19,6 +19,7 @@ import { ReactNode } from 'react';
 import { Ref } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
+import { SVGAttributes } from 'react';
 import { SyntheticEvent } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -1698,6 +1699,9 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     title?: ReactNode;
     variant?: StateVariant;
 }
+
+// @public
+export function encodeQr(text: string, options?: QrEncodeOptions): QrMatrix;
 
 // @public
 export function EntityPicker(input: EntityPickerProps): react.JSX.Element;
@@ -3956,6 +3960,62 @@ export interface ProseProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public
+export class QrCapacityError extends Error {
+    constructor(bytes: number, errorCorrection: QrErrorCorrection);
+    // (undocumented)
+    readonly bytes: number;
+    // (undocumented)
+    readonly errorCorrection: QrErrorCorrection;
+}
+
+// @public
+export function QrCode(input: QrCodeProps): react.JSX.Element;
+
+// @public
+export interface QrCodeLabels {
+    tooLong: string;
+}
+
+// @public (undocumented)
+export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'children' | 'width' | 'height' | 'viewBox'> {
+    errorCorrection?: QrErrorCorrection;
+    label: string;
+    labels?: Partial<QrCodeLabels>;
+    minVersion?: number;
+    size?: number | string;
+    value: string;
+}
+
+// @public
+export function qrDataCapacity(version: number, errorCorrection: QrErrorCorrection): number;
+
+// @public (undocumented)
+export interface QrEncodeOptions {
+    errorCorrection?: QrErrorCorrection;
+    mask?: number;
+    minVersion?: number;
+}
+
+// @public
+export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
+
+// @public (undocumented)
+export interface QrMatrix {
+    // (undocumented)
+    errorCorrection: QrErrorCorrection;
+    mask: number;
+    modules: boolean[][];
+    size: number;
+    version: number;
+}
+
+// @public
+export function qrPath(matrix: QrMatrix, margin?: number): string;
+
+// @public
+export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number): number | undefined;
 
 // @public
 export function quantiles(values: readonly number[], ps: readonly number[]): (number | null)[];
@@ -6357,6 +6417,7 @@ export interface UixLabels {
         next?: string;
         close?: string;
     };
+    qrCode?: Partial<QrCodeLabels>;
     // (undocumented)
     ruleBuilder?: Partial<RuleBuilderLabels>;
     // (undocumented)
