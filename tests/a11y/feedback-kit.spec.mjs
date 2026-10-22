@@ -126,7 +126,7 @@ test('BusyRegion and TableWrap refreshing keep the rows; aria-busy at once, dim 
   await expect(region.locator('.uix-busy-region__content')).toHaveCSS('opacity', '1');
 });
 
-test('reduced motion: the bar is a full, breathing bar instead of a sweep', async ({ page }) => {
+test('reduced motion: the bar is a full, pulsing bar instead of a sweep', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.getByTestId('refetch').click();
   await page.clock.runFor(350);
@@ -134,7 +134,7 @@ test('reduced motion: the bar is a full, breathing bar instead of a sweep', asyn
     const before = getComputedStyle(el, '::before');
     return { animation: before.animationName, duration: parseFloat(before.animationDuration), iterations: before.animationIterationCount, width: Math.round(parseFloat(before.width)), barWidth: Math.round(el.getBoundingClientRect().width), transform: before.transform };
   });
-  expect(bar.animation).toBe('uix-busy-breathe');
+  expect(bar.animation).toBe('uix-pulse');
   // the kit's reduced-motion policy ends keyframes at once; the bar must opt back in and keep breathing
   expect(bar.duration).toBeGreaterThan(1);
   expect(bar.iterations).toBe('infinite');

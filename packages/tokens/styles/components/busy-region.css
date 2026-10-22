@@ -6,32 +6,31 @@
    tokens. */
 @layer uix.components {
   .uix-busy-region { position: relative; }
-  .uix-busy-region__content { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-busy-region__content { transition: opacity var(--uix-dur-exit) var(--uix-ease-out); }
   .uix-busy-region:has(> .uix-busy-bar[data-shown]) > .uix-busy-region__content { opacity: .6; transition-duration: var(--uix-dur); }
 
   .uix-busy-bar {
     position: absolute; inset-block-start: 0; inset-inline: 0; z-index: var(--uix-z-sticky);
     display: block; height: 2px; overflow: hidden; pointer-events: none;
-    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+    opacity: 0; transition: opacity var(--uix-dur-exit) var(--uix-ease-out);
   }
   .uix-busy-bar[data-shown] { opacity: 1; transition-duration: var(--uix-dur); }
   .uix-busy-bar::before {
     content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 40%;
     background: var(--uix-accent); transform: translateX(-100%);
   }
-  /* constant motion is linear (§2.4); one sweep is four of the slowest steps (~1.3 s) */
-  .uix-busy-bar[data-shown]::before { animation: uix-busy-sweep calc(var(--uix-dur-slower) * 4) linear infinite; }
+  /* constant motion is linear (§2.4) */
+  .uix-busy-bar[data-shown]::before { animation: uix-busy-sweep var(--uix-loop-progress) linear infinite; }
   @keyframes uix-busy-sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
   /* right to left: the stripe starts at the right (inline-start) edge and sweeps leftwards */
   @keyframes uix-busy-sweep-rtl { from { transform: translateX(100%); } to { transform: translateX(-250%); } }
   .uix-busy-bar[data-shown]:dir(rtl)::before { animation-name: uix-busy-sweep-rtl; }
 
-  /* Reduced motion: no sweep; the full bar breathes, so "still working" survives (§2.7). */
-  @keyframes uix-busy-breathe { from { opacity: .35; } to { opacity: 1; } }
+  /* Reduced motion: no sweep; the full bar pulses (the kit's uix-pulse), so "still working" survives (§2.7). */
   @media (prefers-reduced-motion: reduce) {
     .uix-busy-bar::before { width: 100%; transform: none; }
     /* !important: the kit's reduced-motion policy ends keyframes at once; a still-working signal opts back in */
-    .uix-busy-bar[data-shown]::before, .uix-busy-bar[data-shown]:dir(rtl)::before { animation: uix-busy-breathe calc(var(--uix-dur-slower) * 4) var(--uix-ease-in-out) infinite alternate !important; }
+    .uix-busy-bar[data-shown]::before, .uix-busy-bar[data-shown]:dir(rtl)::before { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
   }
   @media (forced-colors: active) {
     .uix-busy-bar::before { background: Highlight; }
@@ -43,6 +42,6 @@
      The rows dim; the header stays. */
   .uix-table-wrap > .uix-busy-bar { position: sticky; inset-inline-start: 0; height: 0; overflow-x: clip; overflow-y: visible; z-index: calc(var(--uix-z-sticky) + 1); }
   .uix-table-wrap > .uix-busy-bar::before { inset-block: 0 auto; height: 2px; }
-  .uix-table-wrap > .uix-table > tbody { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table-wrap > .uix-table > tbody { transition: opacity var(--uix-dur-exit) var(--uix-ease-out); }
   .uix-table-wrap:has(> .uix-busy-bar[data-shown]) > .uix-table > tbody { opacity: .6; transition-duration: var(--uix-dur); }
 }

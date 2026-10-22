@@ -81,8 +81,8 @@
      the meaning; colour only tints the icon. */
   .uix-btn__face { display: inline-grid; justify-items: center; align-items: center; }
   .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: .5em; transition: opacity var(--uix-dur) var(--uix-ease-out); }
-  .uix-btn__result { opacity: 0; transition-duration: var(--uix-dur-fast); }
-  .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; transition-duration: var(--uix-dur-fast); }
+  .uix-btn__result { opacity: 0; transition-duration: var(--uix-dur-exit); }
+  .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; transition-duration: var(--uix-dur-exit-fast); }
   .uix-btn__face[data-result="success"] > [data-kind="success"],
   .uix-btn__face[data-result="error"] > [data-kind="error"] { opacity: 1; transition-duration: var(--uix-dur); }
   .uix-btn--secondary .uix-btn__result[data-kind="success"] svg,
