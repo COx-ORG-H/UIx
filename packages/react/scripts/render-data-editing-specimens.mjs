@@ -42,6 +42,26 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── CommandPalette items mode (HAR-1378): grouped, filtered, an active option ────────────────
+  ({ ui, mount, html }) => {
+    const icon = (d) => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d }));
+    const palette = mount(h(ui.CommandPalette, {
+      inputLabel: 'Commands', placeholder: 'Search commands and pages…', query: 're', onQueryChange() {},
+      items: [
+        { id: 'new', label: 'Create incident', group: 'Actions', shortcut: ['Mod', 'I'], icon: icon('M12 5v14M5 12h14') },
+        { id: 'assign', label: 'Assign to me', group: 'Actions', shortcut: ['A'], icon: icon('M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8') },
+        { id: 'reports', label: 'Reports', group: 'Pages', description: 'Monthly reports and exports', href: '#reports' },
+        { id: 'requests', label: 'Service requests', group: 'Pages', description: 'Requests › Open', href: '#requests' },
+        { id: 'resolve', label: 'Resolve incident', group: 'Actions', keywords: ['close'] },
+      ],
+    }));
+    return {
+      'examples-navigation': [
+        caption('Command palette with items (React <code>CommandPalette items</code>, HAR-1378) — the palette filters (case and diacritics folded, best match first), groups, marks the match, and keeps one option active for ↑ / ↓ and Enter through <code>aria-activedescendant</code>; <code>open</code> hosts it in its own dialog'),
+        `<div data-command-palette-items-example>${html(palette)}</div>`,
+      ].join('\n'),
+    };
+  },
   // ── FilterEditor kinds (HAR-1832): free-text tags, and a date with a condition ───────────────
   ({ ui, mount, html }) => {
     const none = () => {};

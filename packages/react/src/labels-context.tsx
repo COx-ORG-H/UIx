@@ -45,8 +45,11 @@ export interface UixLabels {
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
   searchBar?: Partial<SearchBarLabels>;
-  /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
-  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
+  /**
+   * `resultsOne` / `resultsMany`: the polite result count; `{count}`. Items mode (HAR-1378):
+   * `empty` when nothing matches, `recent` the heading of the recent items.
+   */
+  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string; empty?: string; recent?: string };
   entityPicker?: Partial<EntityPickerLabels>;
   tree?: Partial<TreeLabels>;
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */

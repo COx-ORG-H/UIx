@@ -28,6 +28,12 @@ test('every state named in a caption is on the page', () => {
   assert.equal((nav.match(/<nav class="uix-segmented-nav" aria-label="/g) ?? []).length, 2);
   assert.equal((nav.match(/ aria-current="page">/g) ?? []).length, 2);
   assert.match(nav, /<a lang="de" href="#lang-de" hreflang="de" class="uix-segmented__option" aria-current="page">DE<\/a>/);
+  // command palette items: two groups, the best match first and active, marks on the matches
+  assert.match(nav, /data-command-palette-items-example/);
+  assert.match(nav, /<div class="uix-cmdk" data-items="">/);
+  assert.deepEqual([...nav.matchAll(/class="uix-cmdk__group"[^>]*>([^<]+)</g)].map((m) => m[1]), ['Pages', 'Actions']);
+  assert.match(nav, /aria-activedescendant="(dex-[^"]+)"[\s\S]*id="\1" role="option" class="uix-cmdk__item" data-active="true"/);
+  assert.match(nav, /<mark class="uix-cmdk__mark">Re<\/mark>ports/);
   // inline edit as a record field: an object value, the icon trigger, a read-only reason, a failed save
   const forms = specimens['examples-form-controls'];
   assert.match(forms, /data-inline-edit-record-example/);

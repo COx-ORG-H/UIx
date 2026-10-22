@@ -28,7 +28,7 @@ export const COMPONENT_GUIDANCE = {
   steps: ['Show progress through a sequence.', 'Completed, current and upcoming steps remain distinguishable by more than color.'],
   stepper: ['Adjust a numeric value in small increments.', 'A value between decrement and increment controls; enforce bounds in application behavior.'],
   'page-header': ['Introduce a page and its primary task.', 'A title, supporting context and a consistent place for page actions.'],
-  'command-palette': ['Find commands or destinations with the keyboard.', 'A search field and grouped results; applications supply commands and their handlers.'],
+  'command-palette': ['Find commands or destinations with the keyboard.', 'A search field and grouped results; applications supply commands and their handlers. Given the items, it filters them (case and diacritics folded, best match first), keeps one active for the arrow keys and Enter, lists recent ones first, and can host itself in a dialog that opens at once.'],
   menu: ['Offer a compact list of related actions.', 'Labeled menu items, separators and explicit destructive-action styling.'],
   'nav-favourites': ['Keep frequently used destinations close at hand.', 'Starred navigation entries appear in a favorites group; storage policy belongs to the app.'],
   card: ['Group a related piece of content.', 'A surface with optional header, body and footer aligned to the system spacing.'],

@@ -317,6 +317,9 @@ export type {
   CommandGroupProps,
   CommandItemProps,
 } from './components/CommandPalette.js';
+// Items mode (HAR-1378): the palette filters, groups and runs commands itself
+export { filterCommandItems, groupCommandItems } from './command-palette-model.js';
+export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette-model.js';
 
 // ITSM capability
 export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';

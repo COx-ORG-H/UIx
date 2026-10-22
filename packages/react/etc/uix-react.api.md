@@ -859,14 +859,50 @@ export interface CommandItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
-export function CommandPalette(input: CommandPaletteProps): react.JSX.Element;
+export function CommandPalette(props: CommandPaletteProps): react.JSX.Element;
+
+// @public
+export interface CommandPaletteGroup {
+    // (undocumented)
+    items: CommandPaletteItem[];
+    label: string | undefined;
+}
+
+// @public
+export interface CommandPaletteItem {
+    description?: string;
+    disabled?: boolean;
+    group?: string;
+    href?: string;
+    icon?: ReactNode;
+    id: string;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    onSelect?: () => void;
+    shortcut?: readonly string[];
+}
 
 // @public (undocumented)
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    emptyLabel?: ReactNode;
+    filter?: (items: readonly CommandPaletteItem[], query: string) => CommandPaletteItem[];
     inputLabel?: string;
     inputProps?: InputHTMLAttributes<HTMLInputElement>;
+    items?: readonly CommandPaletteItem[];
+    limit?: number;
+    onItemSelect?: (item: CommandPaletteItem) => void;
+    onNavigate?: (href: string, item: CommandPaletteItem) => void;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    onQueryChange?: (query: string) => void;
+    open?: boolean;
+    placeholder?: string;
+    query?: string;
+    recent?: readonly CommandPaletteItem[];
+    recentLabel?: string;
     resultsLabel?: (count: number) => string;
 }
 
@@ -2008,6 +2044,9 @@ export interface FilterChoice {
 export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
 
 // @public
+export function filterCommandItems(items: readonly CommandPaletteItem[], query: string): CommandPaletteItem[];
+
+// @public
 export function FilteredEmptyState(props: EmptyStateProps): react.JSX.Element;
 
 // @public
@@ -2283,6 +2322,9 @@ export function formatDateKey(value: string, locale?: string | readonly string[]
 
 // @public
 export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
+
+// @public
+export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
 
 // @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
@@ -6421,6 +6463,8 @@ export interface UixLabels {
         input?: string;
         resultsOne?: string;
         resultsMany?: string;
+        empty?: string;
+        recent?: string;
     };
     // (undocumented)
     confirmDialog?: {
