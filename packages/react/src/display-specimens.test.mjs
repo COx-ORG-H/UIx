@@ -59,5 +59,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /data-status="denied"[\s\S]*?The camera is blocked[\s\S]*?Try again/);
   assert.match(forms, /data-status="unsupported"[\s\S]*?This browser cannot use the camera here/);
   assert.equal((forms.match(/class="uix-qr-scanner__manual"/g) ?? []).length, 3);
+  // resource day: three columns; a booking, time off, bookable slots, and no free slot before 09:00 for the third
+  const calendar = specimens['examples-scheduling-calendar'];
+  assert.match(calendar, /data-resource-day-example/);
+  assert.equal((calendar.match(/class="uix-scheduling-calendar__rs-column"/g) ?? []).length, 3);
+  assert.match(calendar, /aria-label="Dr\. Amra Hadžić, 09:00 – 09:30, Booked, Lejla M\."/);
+  assert.match(calendar, /data-kind="off"/);
+  assert.doesNotMatch(calendar, /Dr\. Selma Đurđević, 08:[0-9]{2} – [0-9:]+, Free/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

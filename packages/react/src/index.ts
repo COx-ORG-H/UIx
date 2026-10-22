@@ -392,6 +392,10 @@ export type { SchedulingCalendarLabels,
   SchedulingBand, SchedulingStatus, SchedulingMarker, SchedulingMarkerEmphasis, SchedulingOverlayPattern,
   SchedulingCalendarDay, SchedulingLegendItem, SchedulingAgendaGroup,
 } from './components/SchedulingCalendar.js';
+// The day view by resource: one column per practitioner, truthful free / booked / off (HAR-983)
+export type { SchedulingSlotSelection } from './components/SchedulingResourceDay.js';
+export { resourceDaySlots, layoutResourceColumn, resourceDayGaps } from './scheduling-resource-model.js';
+export type { SchedulingResource, SchedulingResourceSpan, SchedulingAvailabilityKind, ResourceDaySlot, ResourceDaySlotOptions, ResourceDayItem } from './scheduling-resource-model.js';
 export type { TimeGridEntryContext } from './components/SchedulingTimeGrid.js';
 export {
   TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutDaySpans, layoutMonthSpans, layoutTimeGridDay, placesInTopLane, proposeMove, schedulingGridDays,

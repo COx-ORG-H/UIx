@@ -1,5 +1,5 @@
 // Regenerates packages/tokens/docs/display-specimens.js: the docs specimens for the display
-// components of batch 5 (QrCode HAR-1251, CodeDisplay HAR-1253, ContactCard HAR-1379, EventRow HAR-1370, PrintLayout HAR-986, QrScanner HAR-1254), from the BUILT package, so the styleguide shows
+// components of batch 5 (QrCode HAR-1251, CodeDisplay HAR-1253, ContactCard HAR-1379, EventRow HAR-1370, PrintLayout HAR-986, QrScanner HAR-1254, the resource day HAR-983), from the BUILT package, so the styleguide shows
 // exactly the markup the components render (the precedent is render-uxc-specimens.mjs).
 //
 //   npm run build:react   (or: npm run build -w @tensor_1/react)
@@ -163,6 +163,32 @@ export async function renderDisplaySpecimens() {
       '<div data-qr-scanner-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
       `<div style="width:20rem;max-width:100%">${html(idle)}</div>`, `<div style="width:20rem;max-width:100%">${html(denied)}</div>`, `<div style="width:20rem;max-width:100%">${html(unsupported)}</div>`,
       '</div>',
+    ].join('\n'));
+
+    // ── SchedulingCalendar resource day (HAR-983): three practitioners, free / booked / off and no schedule ──
+    const day = '2026-10-22';
+    const at = (time) => new Date(`${day}T${time}:00+02:00`).toISOString();
+    const people = [
+      { id: 'p1', label: 'Dr. Amra Hadžić', description: 'Paediatrics' },
+      { id: 'p2', label: 'Dr. Edin Kovačević', description: 'General practice' },
+      { id: 'p3', label: 'Dr. Selma Đurđević', description: 'Paediatrics' },
+    ];
+    const spans = [
+      { id: 'a1', resourceId: 'p1', start: at('08:00'), end: at('09:00'), kind: 'free' },
+      { id: 'a2', resourceId: 'p1', start: at('09:00'), end: at('09:30'), kind: 'booked', label: 'Lejla M.' },
+      { id: 'a3', resourceId: 'p1', start: at('09:30'), end: at('10:00'), kind: 'free' },
+      { id: 'b1', resourceId: 'p2', start: at('08:00'), end: at('08:30'), kind: 'booked', label: 'Kenan S.' },
+      { id: 'b2', resourceId: 'p2', start: at('08:30'), end: at('09:30'), kind: 'free' },
+      { id: 'b3', resourceId: 'p2', start: at('09:30'), end: at('10:00'), kind: 'off', label: 'Break' },
+      { id: 'c1', resourceId: 'p3', start: at('09:00'), end: at('10:00'), kind: 'free' },
+    ];
+    const resourceDay = mount(h(ui.SchedulingCalendar, {
+      entries: [], anchorDate: day, timeZone: 'Europe/Sarajevo', view: 'day', showHeader: false, legend: [],
+      resources: people, resourceSpans: spans, dayStart: '08:00', dayEnd: '10:00', resourceLayout: 'columns', onSelectSlot: () => {},
+    }));
+    add('examples-scheduling-calendar', [
+      caption('Day view by resource (React <code>SchedulingCalendar view="day" resources</code>) — one column per practitioner on a slot axis in the tenant’s zone; free spans are cut into bookable slots, bookings and time off stay whole, and time no span covers is hatched “no schedule”, never free. One tab stop; arrows move between slots and practitioners; below 480 px it is a list'),
+      `<div data-resource-day-example style="max-width:48rem">${html(resourceDay)}</div>`,
     ].join('\n'));
 
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }

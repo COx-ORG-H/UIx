@@ -1223,3 +1223,22 @@ when the camera has one. The camera stops on Stop, on unmount and while the page
 <QrScanner decode={({ imageData }) => wasmDecoder.read(imageData)} onResult={redeem}
   explainer={<p>{t('cameraWhy')}</p>} manualEntry={<VoucherCodeField />} />
 ```
+
+#### SchedulingCalendar: the day by resource
+
+`view="day"` with `resources` draws one column per resource (a practitioner, a room) on a slot
+axis in `timeZone`: `resourceSpans` are the free, booked and off stretches the server composed;
+a free span is cut into bookable slots of `slotMinutes` (15), a booking and time off stay whole,
+and a time no span covers is hatched "no schedule" (never free; nothing is inferred). `dayStart`
+/ `dayEnd` set the axis (07:00–19:00). `onSelectSlot` gets `{ resourceId, start, end, kind, span }`
+for a click, Enter or Space on a slot or a booking; `selectedSlot` marks one. The view is one tab
+stop: arrows move between slots and resources, Home / End to a column's ends. The gutter and the
+heads stay in view while the grid scrolls. `loading` shows skeletons on the first load and dims
+what is on screen on a refetch. Below `resourceListBelow` (480 px of its own width) the day is a
+list, one resource after another (`resourceLayout` fixes either).
+
+```tsx
+<SchedulingCalendar view="day" anchorDate={day} timeZone={tenantZone} entries={[]}
+  resources={practitioners} resourceSpans={spans} slotMinutes={15} dayStart="07:30" dayEnd="17:00"
+  onSelectSlot={openSlotPopover} selectedSlot={open && { resourceId: open.resourceId, start: open.start }} loading={isFetching} />
+```

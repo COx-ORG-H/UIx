@@ -2872,6 +2872,9 @@ export interface LayoutMonthSpansOptions {
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
 
 // @public
+export function layoutResourceColumn(spans: readonly SchedulingResourceSpan[], slots: readonly ResourceDaySlot[]): ResourceDayItem[];
+
+// @public
 export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: string, timeZone: string, options?: {
     maxLanes?: number;
     crossMidnightMinutes?: number;
@@ -4553,6 +4556,52 @@ export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, change: DashboardCanvasResize): T[];
 
 // @public
+export function resourceDayGaps(items: readonly ResourceDayItem[], slots: readonly ResourceDaySlot[]): Array<{
+    start: number;
+    end: number;
+}>;
+
+// @public
+export interface ResourceDayItem {
+    // (undocumented)
+    continuesAfter: boolean;
+    continuesBefore: boolean;
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    // (undocumented)
+    lane: number;
+    // (undocumented)
+    lanes: number;
+    length: number;
+    offset: number;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: number;
+}
+
+// @public
+export interface ResourceDaySlot {
+    // (undocumented)
+    end: number;
+    label: string;
+    start: number;
+}
+
+// @public (undocumented)
+export interface ResourceDaySlotOptions {
+    dayEnd?: string;
+    dayStart?: string;
+    slotMinutes?: number;
+}
+
+// @public
+export function resourceDaySlots(date: string, timeZone: string, options?: ResourceDaySlotOptions): ResourceDaySlot[];
+
+// @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -4964,6 +5013,9 @@ export interface SchedulingAgendaGroup {
 }
 
 // @public
+export type SchedulingAvailabilityKind = 'free' | 'booked' | 'off';
+
+// @public
 export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
 
 // @public
@@ -5011,6 +5063,7 @@ export interface SchedulingCalendarLabels {
     // (undocumented)
     agendaEmpty: string;
     allDay?: string;
+    availability?: Partial<Record<SchedulingAvailabilityKind, string>>;
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
@@ -5042,6 +5095,8 @@ export interface SchedulingCalendarLabels {
     nextMonth?: string;
     // (undocumented)
     nextWeek?: string;
+    noResources?: string;
+    noSchedule?: string;
     overlay?: string;
     // @deprecated (undocumented)
     previous: string;
@@ -5052,8 +5107,11 @@ export interface SchedulingCalendarLabels {
     previousWeek?: string;
     // (undocumented)
     region: string;
+    resourceGrid?: string;
+    resourceHint?: string;
     // (undocumented)
     retry: string;
+    slotName?: string;
     // (undocumented)
     states: Record<SchedulingEntryState, string>;
     statuses?: Partial<Record<SchedulingStatus, string>>;
@@ -5099,8 +5157,10 @@ export interface SchedulingCalendarProps {
     canMove?: boolean;
     // (undocumented)
     className?: string;
+    dayEnd?: string;
     dayEntries?: Record<string, SchedulingCalendarEntry[]>;
     days?: Record<string, SchedulingCalendarDay>;
+    dayStart?: string;
     emptyNote?: ReactNode;
     entries: SchedulingCalendarEntry[];
     // (undocumented)
@@ -5113,7 +5173,6 @@ export interface SchedulingCalendarProps {
     labels?: Partial<SchedulingCalendarLabels>;
     legend?: SchedulingLegendItem[];
     legendCaption?: ReactNode;
-    // (undocumented)
     loading?: boolean;
     // (undocumented)
     locale?: string;
@@ -5130,6 +5189,7 @@ export interface SchedulingCalendarProps {
     onSelectDate?: (date: string) => void;
     onSelectEntry?: (entry: SchedulingCalendarEntry) => void;
     onSelectOverlay?: (overlay: SchedulingCalendarOverlay) => void;
+    onSelectSlot?: (slot: SchedulingSlotSelection) => void;
     onShowMore?: (date: string, entries: SchedulingCalendarEntry[]) => void;
     // (undocumented)
     onViewChange?: (view: SchedulingCalendarView) => void;
@@ -5137,7 +5197,16 @@ export interface SchedulingCalendarProps {
     overlays?: SchedulingCalendarOverlay[];
     renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
     renderEntry?: (entry: SchedulingCalendarEntry, context?: TimeGridEntryContext) => ReactNode;
+    resourceLayout?: 'auto' | 'columns' | 'list';
+    resourceListBelow?: number;
+    resources?: SchedulingResource[];
+    resourceSpans?: SchedulingResourceSpan[];
+    selectedSlot?: {
+        resourceId: string;
+        start: string;
+    };
     showHeader?: boolean;
+    slotMinutes?: number;
     spanLaneCap?: number;
     spanLayout?: MonthSpanLayout;
     step?: number;
@@ -5199,6 +5268,42 @@ export type SchedulingOverlayKind = 'maintenance' | 'blackout';
 
 // @public
 export type SchedulingOverlayPattern = 'diagonal' | 'cross' | 'dotted' | 'solid';
+
+// @public
+export interface SchedulingResource {
+    description?: string;
+    // (undocumented)
+    id: string;
+    label: string;
+}
+
+// @public
+export interface SchedulingResourceSpan {
+    accessibleName?: string;
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    label?: string;
+    // (undocumented)
+    resourceId: string;
+    start: string;
+}
+
+// @public
+export interface SchedulingSlotSelection {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    kind: Exclude<SchedulingAvailabilityKind, 'off'>;
+    // (undocumented)
+    resourceId: string;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: string;
+}
 
 // @public
 export type SchedulingStatus = 'tentative' | 'committed' | 'live' | 'done' | 'dead';
