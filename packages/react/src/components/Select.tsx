@@ -62,7 +62,8 @@ const DEFAULT_LABELS: SelectLabels = {
 const fill = (template: string, count: number): string => template.replace('{count}', String(count));
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
-  size?: 'sm' | 'md';
+  /** `sm` 28 px, `md` 36 px (default), `lg` 44 px, the public touch-target size (HAR-1812). */
+  size?: 'sm' | 'md' | 'lg';
   /** The options as data, instead of `<option>` / `<optgroup>` children. */
   options?: readonly (SelectOption | SelectGroup)[];
   /**
@@ -816,7 +817,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         ref={triggerRef}
         type="button"
         role="combobox"
-        className={cx('uix-select', size === 'sm' && 'uix-select--sm', className)}
+        className={cx('uix-select', size !== 'md' && `uix-select--${size}`, className)}
         style={style}
         disabled={disabled}
         aria-label={ariaLabel}

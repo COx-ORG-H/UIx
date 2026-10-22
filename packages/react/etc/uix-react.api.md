@@ -2427,8 +2427,7 @@ export interface InputGroupProps {
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
     // (undocumented)
     invalid?: boolean;
-    // (undocumented)
-    size?: 'sm' | 'md';
+    size?: 'sm' | 'md' | 'lg';
     // (undocumented)
     valid?: boolean;
     warning?: boolean;
@@ -5339,8 +5338,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
     }) => ReactNode;
     renderValue?: (selected: readonly SelectOption[]) => ReactNode;
     searchable?: boolean | 'auto';
-    // (undocumented)
-    size?: 'sm' | 'md';
+    size?: 'sm' | 'md' | 'lg';
 }
 
 // @public (undocumented)
@@ -5763,6 +5761,7 @@ export const Textarea: react.ForwardRefExoticComponent<TextareaProps & react.Ref
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     // (undocumented)
     invalid?: boolean;
+    size?: 'md' | 'lg';
 }
 
 // @public

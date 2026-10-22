@@ -3,7 +3,11 @@ import type { AriaAttributes, InputHTMLAttributes, ReactElement, ReactNode } fro
 import { cx } from '../cx.js';
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  size?: 'sm' | 'md';
+  /**
+   * `sm` 28 px, `md` 36 px (default), `lg` 44 px: the touch-target floor of a public page, the
+   * same height as `Button size="lg"` (HAR-1812).
+   */
+  size?: 'sm' | 'md' | 'lg';
   invalid?: boolean;
   valid?: boolean;
   /**
@@ -17,7 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ size = 'md', invalid, valid, warning, className, ...props }, ref) => (
     <input
       ref={ref}
-      className={cx('uix-input', size === 'sm' && 'uix-input--sm', className)}
+      className={cx('uix-input', size !== 'md' && `uix-input--${size}`, className)}
       aria-invalid={invalid || undefined}
       data-valid={valid || undefined}
       data-warning={warning || undefined}

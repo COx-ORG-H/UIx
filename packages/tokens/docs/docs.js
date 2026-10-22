@@ -4,7 +4,7 @@ import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
 import { initShowcase, disposeShowcase } from '../guide/app.js';
 import { initAdvancedShowcase } from '../guide/phase-46-9.js';
 import { COMPONENT_SPECIMENS } from './component-specimens.js';
-import { initFormSpecimens } from './form-specimens.js';
+import { initFormSpecimens, selectMarkup } from './form-specimens.js';
 import { COMPONENT_GUIDANCE as COMPONENT_INTENT } from './component-guidance.js';
 
 export const slugify = (name) =>
@@ -560,6 +560,10 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 
 <input class="uix-input" aria-invalid="true" aria-describedby="cost-error">
 <span class="uix-field__error" id="cost-error">Enter a valid cost center.</span>`, { column: true }))}
+    ${section('sizes', 'Sizes', `<p>Input, Select and Textarea take the same sizes as Button: <code>sm</code> 28 px for dense tool rows, <code>md</code> 36 px by default, and <code>lg</code> 44 px, the touch-target floor of a public page (WCAG 2.5.5). Use one size for a whole form, so every control and its button share a height. Textarea <code>lg</code> takes the larger type and padding and still grows.</p>${demo(`<div class="uix-stack" style="width:min(100%,420px)" data-size-lg-example><div class="uix-field"><label class="uix-field__label" for="lg-name" data-required>Full name</label><input id="lg-name" class="uix-input uix-input--lg" autocomplete="name" required></div><div class="uix-field"><label class="uix-field__label" for="lg-topic">Topic</label>${selectMarkup({ id: 'lg-topic', name: 'topic', size: 'lg', value: ['loan'], items: [{ value: 'loan', label: 'Borrowing a book' }, { value: 'room', label: 'Booking a reading room' }, { value: 'other', label: 'Something else' }] })}</div><div class="uix-field"><label class="uix-field__label" for="lg-msg">Message</label><textarea id="lg-msg" class="uix-textarea uix-textarea--lg" rows="3"></textarea></div><button class="uix-btn uix-btn--primary uix-btn--lg" type="button">Send</button></div>`, `<Field label="Full name" required><Input size="lg" autoComplete="name" /></Field>
+<Field label="Topic"><Select size="lg" options={topics} defaultValue="loan" /></Field>
+<Field label="Message"><Textarea size="lg" rows={3} /></Field>
+<Button size="lg" variant="primary" type="submit">Send</Button>`, { language: 'tsx' })}${demo(`<div class="uix-stack" style="width:min(100%,420px)" data-size-scale-example><input class="uix-input uix-input--sm" aria-label="Small" placeholder="sm · 28 px"><input class="uix-input" aria-label="Medium" placeholder="md · 36 px"><input class="uix-input uix-input--lg" aria-label="Large" placeholder="lg · 44 px"><div class="uix-input-group uix-input-group--has-leading"><span class="uix-input-group__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span><input class="uix-input uix-input--lg" aria-label="Search the catalogue" placeholder="InputGroup at lg"></div></div>`)}`)}
     ${section('guidance', 'Usage guidance', `${compare('Keep the label visible, reserve the message slot, and explain how to recover from invalid input.', 'Use placeholder text as the only label or show validation only in a page-level banner.')}<p>Prefer native input types and autocomplete tokens. For prefix, suffix, and icons, use the input-group pattern without removing the programmatic label.</p>`)}
     ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Associate every message with the control through <code>aria-describedby</code>.</li><li>Set <code>aria-invalid="true"</code> only after validation has run.</li><li>Move focus to the first invalid field after a failed submit; keep typed values intact.</li><li>A required marker supplements—not replaces—the required programmatic state.</li></ul>`)}`,
 

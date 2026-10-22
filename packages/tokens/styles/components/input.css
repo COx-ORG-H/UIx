@@ -30,6 +30,8 @@
   .uix-input[aria-invalid="true"] { border-color: var(--uix-danger); }
   .uix-input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
   .uix-input--sm { height: 28px; font-size: var(--uix-text-meta); }
+  /* lg: 44 px, the touch-target floor of a public page, as tall as .uix-btn--lg (HAR-1812) */
+  .uix-input--lg { height: 44px; padding: 0 var(--uix-space-4); font-size: var(--uix-text-h3); }
 
   /* leading/trailing adornments */
   .uix-input-group { position: relative; display: flex; align-items: center; }
@@ -45,4 +47,9 @@
   .uix-input[data-warning]:not([aria-invalid="true"]):focus { box-shadow: 0 0 0 3px var(--uix-warning-bg); }
   .uix-input-group--has-trailing .uix-input { padding-right: 38px; }
   .uix-input-group__icon--trailing { left: auto; right: 10px; }
+  /* lg: the icons move in with the field's wider padding, and the text clears them */
+  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon { left: 14px; }
+  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon--trailing { left: auto; right: 14px; }
+  .uix-input-group--has-leading > .uix-input--lg { padding-left: 44px; }
+  .uix-input-group--has-trailing > .uix-input--lg { padding-right: 44px; }
 }
