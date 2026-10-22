@@ -359,6 +359,7 @@ export interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, 'chi
     // (undocumented)
     label: string;
     // (undocumented)
+    renderLink?: UixRenderLink;
     separator?: ReactNode;
 }
 

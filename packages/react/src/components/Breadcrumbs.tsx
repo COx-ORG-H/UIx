@@ -1,5 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { Fragment } from 'react';
+import { renderUixLink } from '../link.js';
+import type { UixRenderLink } from '../link.js';
 
 export interface BreadcrumbItem {
   id?: string;
@@ -12,10 +14,16 @@ export interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, 'chi
   items: readonly BreadcrumbItem[];
   label: string;
   separator?: ReactNode;
+  /**
+   * Renders each item's link with your router (HAR-1385): `renderLink={(p) => <NextLink {...p} />}`
+   * keeps client navigation and prefetch, and a locale-aware link adds the locale prefix. The
+   * same `UixRenderLink` adapter as `ButtonLink`, `Stat`, `Pagination` and `Steps`. Default: `<a>`.
+   */
+  renderLink?: UixRenderLink;
 }
 
-/** Framework-neutral breadcrumb navigation. Route adapters can replace anchors at the application seam. */
-export function Breadcrumbs({ items, label, separator = '/', className, ...props }: BreadcrumbsProps) {
+/** Framework-neutral breadcrumb navigation; `renderLink` renders the links with the app's router. */
+export function Breadcrumbs({ items, label, separator = '/', renderLink, className, ...props }: BreadcrumbsProps) {
   return (
     <nav aria-label={label} className={className} {...props}>
       <ol className="uix-breadcrumbs">
@@ -26,7 +34,7 @@ export function Breadcrumbs({ items, label, separator = '/', className, ...props
               {index > 0 && <li className="uix-breadcrumbs__sep" aria-hidden="true">{separator}</li>}
               <li>
                 {item.href && !current
-                  ? <a href={item.href}>{item.label}</a>
+                  ? renderUixLink(renderLink, { href: item.href, children: item.label })
                   : <span aria-current={current ? 'page' : undefined}>{item.label}</span>}
               </li>
             </Fragment>

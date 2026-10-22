@@ -34,7 +34,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | AuditLog | audit-log.css | absent | Planned | no | Planned wrapper (presentational). |
 | Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. 2.36.0 (HAR-1374): `presence` (`online`, `busy`, `away`, `offline`: a shape and a colour, the state in text), `PresenceDot`; the dot is no longer clipped by the avatar. |
 | BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
-| Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. |
+| Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. HAR-1385: `renderLink` renders the links with the app's router (the shared `UixRenderLink` adapter); a long unbroken title wraps. |
 | BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
 | Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). HAR-2031: `shortcut` shows the keys in a hover / focus hint and sets `aria-keyshortcuts`. |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |

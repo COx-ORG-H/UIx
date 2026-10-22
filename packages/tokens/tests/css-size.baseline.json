@@ -47,9 +47,9 @@
       "brotli": 534
     },
     "styles/components/breadcrumbs.css": {
-      "raw": 766,
-      "gzip": 409,
-      "brotli": 300
+      "raw": 953,
+      "gzip": 496,
+      "brotli": 370
     },
     "styles/components/builder-canvas.css": {
       "raw": 2479,
