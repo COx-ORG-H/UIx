@@ -56,10 +56,15 @@
       "gzip": 642,
       "brotli": 524
     },
+    "styles/components/busy-region.css": {
+      "raw": 3302,
+      "gzip": 1259,
+      "brotli": 1049
+    },
     "styles/components/button.css": {
-      "raw": 5109,
-      "gzip": 1585,
-      "brotli": 1312
+      "raw": 7769,
+      "gzip": 2267,
+      "brotli": 1883
     },
     "styles/components/calendar.css": {
       "raw": 3635,

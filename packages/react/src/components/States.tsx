@@ -1,5 +1,7 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { DelayedRender } from './DelayedRender.js';
+import { PENDING_DELAY_MS } from '../motion-timing.js';
 
 // ── EmptyState ─────────────────────────────────────────────────────────
 
@@ -120,10 +122,21 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
   density?: 'compact' | 'comfortable';
   /** Announced loading text (default "Loading"). */
   label?: string;
+  /**
+   * Show the skeleton only after it has been mounted this long: `true` is 300 ms, a number is
+   * milliseconds (HAR-2580). A first load that answers sooner goes straight to the content.
+   * Skeletons are for a first load; a refetch keeps its rows in a `BusyRegion`.
+   */
+  delay?: boolean | number;
 }
 
 /** A stack of skeleton rows for list/section loading. `role="status"`. */
-export function LoadingState({ rows = 3, density = 'comfortable', label, className, ...props }: LoadingStateProps) {
+export function LoadingState({ delay, ...props }: LoadingStateProps) {
+  if (delay === undefined || delay === false || delay === 0) return <SkeletonRows {...props} />;
+  return <DelayedRender delay={delay === true ? PENDING_DELAY_MS : delay}><SkeletonRows {...props} /></DelayedRender>;
+}
+
+function SkeletonRows({ rows = 3, density = 'comfortable', label, className, ...props }: Omit<LoadingStateProps, 'delay'>) {
   return (
     // no aria-busy: busy=true tells AT the region isn't ready and suppresses the announcement (UIX-A11Y-4)
     <div className={cx('uix-stack', density === 'compact' && 'uix-stack--compact', className)} role="status" {...props}>
