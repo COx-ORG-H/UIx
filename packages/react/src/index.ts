@@ -271,8 +271,8 @@ export type { SaveStatusProps, SaveStatusLabels, SaveStatusState } from './compo
 export { Composer, ComposerBar } from './components/Composer.js';
 export type { ComposerProps, ComposerBarProps } from './components/Composer.js';
 
-export { Segmented, SegmentedOption } from './components/Segmented.js';
-export type { SegmentedProps, SegmentedOptionProps } from './components/Segmented.js';
+export { Segmented, SegmentedOption, LocaleSwitcher } from './components/Segmented.js';
+export type { SegmentedProps, SegmentedOptionProps, LocaleSwitcherProps, LocaleSwitcherLocale } from './components/Segmented.js';
 
 export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableControls.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries

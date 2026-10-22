@@ -8,7 +8,7 @@ export const COMPONENT_GUIDANCE = {
   radio: ['Choose exactly one option from a visible group.', 'One selected option in a named, mutually exclusive group.'],
   switch: ['Turn a setting on or off.', 'A binary state indicator; explain whether changes apply immediately or require Save.'],
   slider: ['Choose an approximate numeric value within a bounded range.', 'A track and thumb; provide an exact value or an input when precision matters.'],
-  segmented: ['Choose among a few closely related modes.', 'A compact group with one visibly selected segment.'],
+  segmented: ['Choose among a few closely related modes, or switch the page language.', 'A compact group with one visibly selected segment; in link mode (a language switcher) a named navigation of links with the current page lifted.'],
   arrival: ['Show where a link or a search result landed.', 'The target is tinted for about two seconds and fades; with reduced motion it is outlined instead.'],
   combobox: ['Search a longer list before choosing a value.', 'A searchable dropdown that filters choices and displays the chosen label.'],
   'search-bar': ['Search a page, a portal or a list for text, with one look everywhere.', 'A labelled search field with a magnifier, a clear button while there is text, Enter to search and Escape to clear; md for a header or toolbar, lg (44 px) for a public page.'],

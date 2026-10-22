@@ -93,7 +93,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | RuleBuilder | rule-builder.css | ✓ `RuleBuilder` | Beta | no | Declarative nested conditions-to-actions editor and model helpers. |
 | SchedulingCalendar | scheduling-calendar.css | ✓ `SchedulingCalendar` | Beta | no | Month/week/agenda schedule in one explicit zone: band, status and markers per item, spans drawn once per week row, named windows, consumer-owned counts. |
 | SchedulingTimeline | scheduling-timeline.css | ✓ `SchedulingTimeline` | Beta | no | Lanes of bars on a zoned time axis in collapsible groups; sub-rows packed by `packLanes`; one neutral, patterned window per overlay, limited to its lanes; proposal-based moves (`onProposeMove`), step commits (`onMoveItem`), resize only with `onResizeItem`; virtualised rows; sub-ticks; pure model helpers. Landed with HAR-1364, service lanes with HAR-1521. |
-| Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. Recently landed. |
+| Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. HAR-1380: `selection="link"` (a named nav of links, `aria-current="page"`) and the `LocaleSwitcher` convenience. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
 | Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also controlled `NavGroup`, rail mode, `SidebarSection`, `NavItem`, and `SubNavItem`. |
 | Sla | sla.css | absent | Planned | no | Planned wrapper (presentational). |

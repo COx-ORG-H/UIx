@@ -2941,6 +2941,24 @@ export interface MarkProps extends HTMLAttributes<HTMLElement> {
 export interface MatchBulkResult {
     // (undocumented)
     failed?: number;
+// @public
+export function LocaleSwitcher(input: LocaleSwitcherProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LocaleSwitcherLocale {
+    code: string;
+    href: string;
+    label: ReactNode;
+}
+
+// @public (undocumented)
+export interface LocaleSwitcherProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'onChange'> {
+    current: string;
+    label: string;
+    locales: readonly LocaleSwitcherLocale[];
+    renderLink?: UixRenderLink;
+}
+
     // (undocumented)
     succeeded: number;
 }
@@ -5271,13 +5289,16 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     // (undocumented)
     children?: ReactNode;
     onChange?: (value: string) => void;
-    selection?: 'toggle' | 'radio';
+    renderLink?: UixRenderLink;
+    selection?: 'toggle' | 'radio' | 'link';
     value?: string;
 }
 
 // @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
+    href?: string;
+    hrefLang?: string;
 // @public (undocumented)
 export type SelectAllState = 'none' | 'some' | 'all';
 
