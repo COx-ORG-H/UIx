@@ -37,7 +37,7 @@
     display: flex; flex-direction: column; width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-stat--interactive:hover:where(:not([aria-busy="true"])) { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); }
+  @media (hover: hover) { .uix-stat--interactive:hover:where(:not([aria-busy="true"])) { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); } }
   .uix-stat--interactive:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-stat--interactive[aria-expanded="true"] { border-color: var(--uix-ring); }
   .uix-stat__chevron { display: inline-flex; flex: none; margin-inline-start: auto; color: var(--uix-text-muted); }
@@ -47,6 +47,12 @@
   .uix-stat--interactive[aria-busy="true"] { cursor: progress; opacity: .6; }
   /* link — the whole tile is an <a> to a filtered list or a record (HAR-1350) */
   .uix-stat--link { text-decoration: none; }
+  /* resting affordance (HAR-1803): a tile that goes somewhere looks it before it is touched, since
+     a tablet has no hover. A link carries a trailing chevron in its label row; an in-place action
+     (no popup, so no chevron) underlines its value. Both are shapes, never colour alone. */
+  .uix-stat__go { display: inline-flex; flex: none; margin-inline-start: auto; color: var(--uix-text-muted); }
+  .uix-stat__label .uix-stat__go svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-stat--action .uix-stat__value { text-decoration: underline dotted var(--uix-text-muted); text-decoration-thickness: 1px; text-underline-offset: .2em; }
   /* current: the ring outline only; a brand tint would drop the muted label below AA */
   .uix-stat--link[aria-current="page"] { border-color: var(--uix-ring); box-shadow: inset 0 0 0 1px var(--uix-ring); }
   @media (prefers-reduced-motion: reduce) { .uix-stat--interactive, .uix-stat__label .uix-stat__chevron svg { transition: none; } }

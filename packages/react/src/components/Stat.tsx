@@ -3,6 +3,7 @@ import type { ReactNode, HTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { ChevronRightIcon } from '../icons/components.js';
 
 export interface StatTrend {
   /** Which way the figure moved: the arrow, and the spoken "up" / "down". */
@@ -58,7 +59,8 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   /**
    * Makes the whole tile a link (HAR-1350; TENSOR B7, MOTUS B-A7). Server-renderable, unlike
    * `onActivate`. Ignored when `onActivate` is set. The forwarded ref reaches the `<a>` only
-   * without `renderLink`.
+   * without `renderLink`. A trailing chevron in the label row marks the tile as a link at rest,
+   * since a touch screen has no hover (HAR-1803).
    */
   href?: string;
   /** The link tile is the current page (`aria-current="page"`). */
@@ -74,6 +76,9 @@ const Chevron = () => (
     </svg>
   </span>
 );
+
+/** The link tile's resting cue (HAR-1803): a shape, not a colour, and there before any hover. */
+const Go = () => <span className="uix-stat__go" aria-hidden="true"><ChevronRightIcon /></span>;
 
 /**
  * KPI / stat tile over `.uix-stat`. With `onActivate` the tile is a button; the forwarded
@@ -92,6 +97,8 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     size === 'compact' && 'uix-stat--compact',
     (interactive || linked) && 'uix-stat--interactive',
     linked && 'uix-stat--link',
+    // an in-place action has no chevron: its value is underlined at rest instead (HAR-1803)
+    interactive && haspopup === false && 'uix-stat--action',
     className,
   );
 
@@ -103,6 +110,7 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
         <span id={interactive ? `${id}-label` : undefined}>{label}</span>
         {icon}
         {interactive && haspopup !== false && <Chevron />}
+        {linked && <Go />}
       </Row>
       <Row className="uix-stat__value" id={interactive ? `${id}-value` : undefined}>{value}</Row>
       {(meta != null || trend != null) && (

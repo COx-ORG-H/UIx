@@ -392,9 +392,9 @@
       "brotli": 359
     },
     "styles/components/stat-tile.css": {
-      "raw": 5060,
-      "gzip": 1663,
-      "brotli": 1394
+      "raw": 5744,
+      "gzip": 1868,
+      "brotli": 1578
     },
     "styles/components/states.css": {
       "raw": 2060,

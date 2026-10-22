@@ -1133,3 +1133,15 @@ mask; an avatar with a dot no longer clips it.
 - `Alert`: the borders are a 24 % hairline of the tone (**changed:** 30 to 40 %); the warning icon is the text
   role, at least 3:1 on its tint in both themes.
 
+#### A Stat link tile looks like a link at rest (HAR-1803)
+
+A tablet has no hover, so a tile that leads somewhere has to show it before it is touched. A link tile
+(`href`) draws a trailing chevron (`ChevronRightIcon`) in its label row; a tile that opens a dialog or menu
+keeps its down chevron; an in-place action tile (`onActivate` with `haspopup={false}`, class
+`.uix-stat--action`) underlines its value with a dotted line. All three are shapes, so they read without
+colour and in forced-colours mode, and none depends on hover. A plain figure tile is unchanged. The
+hover tint of interactive tiles now applies only where the device can hover (`@media (hover: hover)`).
+
+```tsx
+<Stat label={t('overdue')} value={4} href="/loans?overdue" renderLink={toRoute} />  // › at rest
+```
