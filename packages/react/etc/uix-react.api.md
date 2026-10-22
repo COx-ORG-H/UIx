@@ -1435,6 +1435,9 @@ export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public (undocumented)
+export const DEFAULT_TAG_INPUT_LABELS: TagInputLabels;
+
+// @public (undocumented)
 export const DEFAULT_TEXT_DIFF_LABELS: TextDiffLabels;
 
 // @public (undocumented)
@@ -5846,6 +5849,51 @@ export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChang
     variant?: 'line' | 'enclosed' | 'pill';
 }
 
+// @public
+export function TagInput(input: TagInputProps): react.JSX.Element;
+
+// @public
+export interface TagInputLabels {
+    added: string;
+    duplicate: string;
+    max: string;
+    remove: string;
+    removed: string;
+    suggestions: string;
+}
+
+// @public (undocumented)
+export interface TagInputProps {
+    // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    labels?: Partial<TagInputLabels>;
+    maxTags?: number;
+    name?: string;
+    // (undocumented)
+    onValueChange: (value: string[]) => void;
+    // (undocumented)
+    placeholder?: string;
+    separators?: readonly string[];
+    suggestions?: readonly string[];
+    validate?: (tag: string, value: readonly string[]) => string | null | undefined;
+    value: readonly string[];
+}
+
 // @public (undocumented)
 export function Td(input: TdProps): react.JSX.Element;
 
@@ -6556,6 +6604,7 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    tagInput?: Partial<TagInputLabels>;
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;
     timePicker?: Partial<TimePickerLabels>;

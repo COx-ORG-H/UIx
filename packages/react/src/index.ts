@@ -35,6 +35,8 @@ export { PasswordInput, DEFAULT_PASSWORD_INPUT_LABELS } from './components/Passw
 export type { PasswordInputProps, PasswordInputLabels } from './components/PasswordInput.js';
 export { OtpInput } from './components/OtpInput.js';
 export type { OtpInputProps } from './components/OtpInput.js';
+export { TagInput, DEFAULT_TAG_INPUT_LABELS } from './components/TagInput.js';
+export type { TagInputProps, TagInputLabels } from './components/TagInput.js';
 
 export { Combobox } from './components/Combobox.js';
 export type { ComboboxProps, ComboboxOption, ComboboxGroup } from './components/Combobox.js';

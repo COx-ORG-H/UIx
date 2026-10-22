@@ -145,6 +145,25 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── TagInput (HAR-1377): chips with a long German tag, and a duplicate refused with its reason ──
+    const tagField = (props) => mount(h(ui.Field, { label: props.label, hint: props.hint },
+      h(ui.TagInput, { value: props.value, onValueChange: noop, id: props.id, name: 'labels', placeholder: 'Add a label', suggestions: ['Network', 'Hardware', 'Access'] })));
+    const tagsPlain = tagField({ label: 'Labels', hint: 'Enter or a comma adds a label.', id: 'ff-tags-plain', value: ['network', 'vpn', 'Zeitgeschichte-und-Gesellschaftswissenschaften'] });
+    const tagsRefused = tagField({ label: 'Labels (a duplicate)', id: 'ff-tags-dup', value: ['network', 'access'] });
+    const dupInput = tagsRefused.querySelector('input.uix-taginput__field');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(dupInput, 'Network');
+      dupInput.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    act(() => { dupInput.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })); });
+    blocks.push([
+      caption('Tag input (React <code>TagInput</code>, <code>.uix-taginput</code>) — Enter or a comma adds a tag, a paste of “a, b, c” adds three; a duplicate, a <code>validate</code> refusal or one past <code>maxTags</code> keeps the text and says why; Backspace in the empty field reaches the last chip, arrows move between chips, Delete removes; suggestions open in a top-layer list'),
+      '<div data-tag-input-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(tagsPlain)}</div>`,
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(tagsRefused)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
     const dataBlocks = [];
     const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },

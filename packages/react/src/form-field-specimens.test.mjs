@@ -55,6 +55,11 @@ test('every state named in a caption is on the page', () => {
   assert.equal((forms.match(/role="group" class="uix-listbox__group"/g) ?? []).length >= 2, true);
   assert.match(forms, /aria-disabled="true"[^>]*>[\s\S]{0,200}Monitor \(out of stock\)/);
   assert.match(forms, /aria-selected="true"[^>]*>[\s\S]{0,120}Office suite[\s\S]{0,120}uix-listbox__check" aria-hidden="true"><svg/);
+  // TagInput: three chips (a long German one) with their × names; a duplicate refused with its reason
+  assert.match(forms, /data-tag-input-example/);
+  assert.match(forms, /aria-label="Remove Zeitgeschichte-und-Gesellschaftswissenschaften"/);
+  assert.match(forms, /class="uix-field__warning uix-taginput__message" role="status">Network is already added\.<\/span>/);
+  assert.match(forms, /<input[^>]*name="labels"[^>]*value="vpn"|<input[^>]*value="vpn"[^>]*name="labels"/);
   // FilterPopover date: a DatePicker showing the German date, no native date input
   const data = specimens['examples-data-display'];
   assert.match(data, /data-filter-date-example/);

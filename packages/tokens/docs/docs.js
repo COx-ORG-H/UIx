@@ -151,7 +151,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
-  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart', 'combobox',
+  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart', 'combobox', 'tag-input',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -273,7 +273,7 @@ const renderComponentReference = (item) => {
 
 const COMPONENT_DETAILS = {
   'color-picker': ['Choose an exact color for a brand, label or visual property. Keep semantic status colors tied to the theme rather than arbitrary user selections.', 'Open the swatch, edit a six-digit hex value or the HSV controls. Expect a normalized hex value, an updated swatch and contrast feedback. Escape closes the picker and returns focus. Your application stores the chosen value; contrast feedback is advisory, not a validation gate.'],
-  'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. The app owns the allowed vocabulary, maximum count and saved array.'],
+  'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter or a comma to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. In React, TagInput does this with suggestions, validate, maxTags, the keyboard between the field and the chips, and one hidden form value per tag; the app owns the allowed vocabulary and the saved array.'],
   'file-upload': ['Let people choose attachments with a centred UIx button inside a drop zone. Show selected filenames before starting a transfer.', 'Choose files to see a local selection list. No bytes are uploaded by this documentation example. The app owns size/type validation, transfer progress, cancellation, server validation and retry. File selection alone is not upload success.'],
 };
 

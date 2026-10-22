@@ -21,6 +21,7 @@ import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { PasswordInputLabels } from './components/PasswordInput.js';
 import type { TimePickerLabels } from './components/TimePicker.js';
+import type { TagInputLabels } from './components/TagInput.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -65,6 +66,8 @@ export interface UixLabels {
   ruleBuilder?: Partial<RuleBuilderLabels>;
   fileUpload?: Partial<FileUploadLabels>;
   attachment?: Partial<AttachmentLabels>;
+  /** `TagInput` (HAR-1377): the chips' × names, the announcements and the refusals. */
+  tagInput?: Partial<TagInputLabels>;
   /** `PasswordInput` (HAR-1376): the reveal toggle's name. */
   passwordInput?: Partial<PasswordInputLabels>;
   /** `remove`: the name of a removable chip's × button; `{label}` is the chip text. */

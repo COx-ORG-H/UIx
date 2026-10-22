@@ -12,13 +12,15 @@
  *   - #filter-date: FilterPopover type="date" in a Popover, with a provider dateFormat (de).
  *     window.__filter.applied records each Apply.
  *   - #combobox: Combobox with groups, a disabled option and 27 more, plain, in a modal Drawer, in a
- *     Popover with overflow:hidden and in an overflow:hidden table cell. */
+ *     Popover with overflow:hidden and in an overflow:hidden table cell.
+ *   - #tag-input: TagInput with suggestions, maxTags, validate and a long German tag in a form (window.__posted.tags),
+ *     a disabled one and one in a modal Drawer. */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button, Checkbox, CheckboxGroup, Combobox, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
-  Select, Textarea, TimePicker, UixLabelsProvider,
+  Select, TagInput, Textarea, TimePicker, UixLabelsProvider,
 } from '../../packages/react/src/index.js';
 
 const Search = () => (
@@ -207,8 +209,33 @@ function Comboboxes() {
   );
 }
 
+function Tagging() {
+  const [labels, setLabels] = useState<string[]>(['network', 'Zeitgeschichte-und-Gesellschaftswissenschaften', 'vpn']);
+  const [drawerTags, setDrawerTags] = useState<string[]>([]);
+  const [drawer, setDrawer] = useState(false);
+  const suggestions = ['Network', 'Hardware', 'Access', 'Email', 'Printing', 'Mobile devices', 'Identity', 'Backup', 'Licensing'];
+  return (
+    <section id="tag-input" aria-label="Tag input" style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '30rem' }}>
+      <form id="tags-form" onSubmit={(event) => { event.preventDefault(); window.__posted.tags = new FormData(event.currentTarget).getAll('labels').map(String); }}>
+        <Field label="Labels" hint="Enter or a comma adds a label.">
+          <TagInput id="tags" name="labels" value={labels} onValueChange={setLabels} suggestions={suggestions} maxTags={8}
+            validate={(tag) => (tag.length > 48 ? 'Use at most 48 characters.' : null)} placeholder="Add a label" />
+        </Field>
+        <Button type="submit" id="tags-submit">Save</Button>
+      </form>
+      <Field label="Disabled tags"><TagInput id="tags-off" value={['archive']} onValueChange={() => {}} disabled /></Field>
+      <div>
+        <Button id="tags-open-drawer" onClick={() => setDrawer(true)}>Tag in a drawer</Button>
+        <Drawer open={drawer} onClose={() => setDrawer(false)} title="Tag the asset">
+          <Field label="Asset labels"><TagInput id="tags-drawer" value={drawerTags} onValueChange={setDrawerTags} suggestions={suggestions} /></Field>
+        </Drawer>
+      </div>
+    </section>
+  );
+}
+
 const SECTIONS: Record<string, () => ReactNode> = {
-  sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate, combobox: Comboboxes,
+  sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate, combobox: Comboboxes, 'tag-input': Tagging,
 };
 
 function App() {

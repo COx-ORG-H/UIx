@@ -1227,3 +1227,21 @@ groups (`{ label, options, disabled }`, rendered as `role="group"`); the no-matc
 listbox; the chosen option has a check mark. New: `aria-labelledby` (replaces `label` as the name),
 `aria-describedby`, `aria-invalid` and `inputId` land on the input; `placement`;
 `filterComboboxItems`.
+
+#### TagInput
+
+```tsx
+<Field label={t('labels')} hint={t('labelsHint')}>
+  <TagInput name="labels" value={labels} onValueChange={setLabels} suggestions={known} maxTags={10}
+    validate={(tag) => (tag.length > 40 ? t('tooLong') : null)} />
+</Field>
+```
+
+Type and press Enter or a comma to add a chip; a paste of "a, b, c" adds three. A duplicate (ignoring
+case and accents), a `validate` refusal or one past `maxTags` keeps the text and says why under the
+field. Suggestions (those not added yet) open in a top-layer list once the person types or presses
+ArrowDown; Enter adds the active one. Backspace in the empty field reaches the last chip; ArrowLeft /
+ArrowRight move between chips and back; Backspace or Delete removes the focused chip and focus stays
+with the tags; the field is the only tab stop. Each change is announced politely. Inside `Field` the
+text input gets the label, hint and error; `name` submits one value per tag. Words: `labels` or
+`UixLabelsProvider` `tagInput`.

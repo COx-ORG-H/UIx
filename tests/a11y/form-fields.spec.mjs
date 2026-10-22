@@ -406,3 +406,86 @@ test.describe('Combobox at parity with Select (HAR-1588)', () => {
     await axe(page, '#combobox');
   });
 });
+
+test.describe('TagInput (HAR-1377)', () => {
+  const chips = (page, id) => page.locator(`#${id}`).locator('xpath=..').locator('.uix-tag').allTextContents();
+
+  test('type, Enter, comma, a suggestion, a refusal; submit posts each tag', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'tag-input');
+    const field = page.getByRole('combobox', { name: 'Labels' });
+    await expect(field).toHaveAccessibleDescription('Enter or a comma adds a label.');
+    await field.click();
+    await page.keyboard.type('printer');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('mfa,');
+    await page.keyboard.type('acc');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    expect(await chips(page, 'tags')).toEqual(['network', 'Zeitgeschichte-und-Gesellschaftswissenschaften', 'vpn', 'printer', 'mfa', 'Access']);
+    await page.keyboard.type('VPN');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.uix-taginput__message')).toHaveText('VPN is already added.');
+    await expect(field).toHaveValue('VPN');
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    await page.locator('#tags-submit').click();
+    expect(await page.evaluate(() => window.__posted.tags)).toEqual(['network', 'Zeitgeschichte-und-Gesellschaftswissenschaften', 'vpn', 'printer', 'mfa', 'Access']);
+  });
+
+  test('keyboard between the field and the chips: Backspace, arrows, Delete; one tab stop', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'tag-input');
+    const field = page.locator('#tags');
+    await field.focus();
+    await page.keyboard.press('Backspace');
+    await expect(page.getByRole('button', { name: 'Remove vpn' })).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('button', { name: /^Remove Zeitgeschichte/ })).toBeFocused();
+    await page.keyboard.press('Delete');
+    await expect(page.getByRole('button', { name: 'Remove network' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(field).toBeFocused();
+    expect(await chips(page, 'tags')).toEqual(['network', 'vpn']);
+    // Tab leaves the whole field: the × buttons are not tab stops
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#tags-submit')).toBeFocused();
+  });
+
+  test('a long tag wraps inside the field at 320 px; the suggestion list is on top in a modal Drawer', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'tag-input');
+    await page.setViewportSize({ width: 320, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    const fits = await page.locator('#tags').evaluate((input) => {
+      const box = input.parentElement.getBoundingClientRect();
+      return [...input.parentElement.querySelectorAll('.uix-tag')].every((t) => t.getBoundingClientRect().right <= box.right + 0.5);
+    });
+    expect(fits).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('#tags-open-drawer').click();
+    await page.locator('#tags-drawer').click();
+    await page.keyboard.press('ArrowDown'); // the list opens on typing or ArrowDown, never on focus alone
+    const option = page.getByRole('option', { name: 'Hardware' });
+    await expect(option).toBeVisible();
+    const onTop = await option.evaluate((el) => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)); });
+    expect(onTop).toBe(true);
+    await option.click();
+    await expect(page.locator('#tags-drawer')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Tag the asset' }), 'Escape closed the list, not the drawer').toBeVisible();
+  });
+
+  test('axe: at rest, with suggestions open and with a refusal', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'tag-input');
+    await axe(page, '#tag-input');
+    await page.locator('#tags').focus();
+    await page.keyboard.type('a');
+    await expect(page.locator('#tags')).toHaveAttribute('aria-expanded', 'true');
+    await axe(page, '#tag-input');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type('network');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.uix-taginput__message')).toBeVisible();
+    await axe(page, '#tag-input');
+  });
+});
