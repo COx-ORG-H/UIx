@@ -120,6 +120,10 @@
     --uix-dur-exit: 110ms;
     --uix-dur-exit-slow: 160ms;
     --uix-dur-highlight: 2400ms;
+    --uix-dur-change: 1200ms;
+    --uix-delay-pending: 300ms;
+    --uix-hold-pending: 500ms;
+    --uix-hold-result: 1500ms;
     --uix-delay-tooltip: 400ms;
     --uix-delay-tooltip-skip: 300ms;
     --uix-loop-spin: 600ms;

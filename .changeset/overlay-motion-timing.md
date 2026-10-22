@@ -5,6 +5,8 @@
 
 Overlay timing (HAR-2578, motion rollout work package 1, part B), on the tokens part A added.
 
+- **New tokens (additive) for the feedback kit:** `--uix-dur-change` (1200 ms, a change tint on the row or field that changed), `--uix-delay-pending` (300 ms before a pending indicator shows), `--uix-hold-pending` (500 ms it then stays at least), `--uix-hold-result` (1500 ms an in-place result holds).
+
 - **Exits are faster than enters.** Modal, Drawer and Peek enter at `--uix-dur-slow` (240 ms) and leave at `--uix-dur-exit-slow` (160 ms); popovers, menus, Select and tooltips enter at `--uix-dur-fast` (120 ms) and leave at `--uix-dur-exit-fast` (80 ms). Every exit is ease-out. The closed state's rule carries the exit duration, the open state's the enter.
 - **Popovers, menus, Select and SearchSuggest grow from their trigger:** `scale(.95)` plus opacity about the anchor point. `useAnchoredPosition` writes that point as `--uix-anchor-origin` on the overlay (`transform-origin: var(--uix-anchor-origin)`); the old `--uix-lift` slide away from the anchor is gone. Its placement check now accounts for a scale about that origin.
 - **Keyboard-opened overlays do not animate.** A Modal, Drawer, Peek, Popover, Menu or Select opened or closed right after a key press (Enter on a button, ↓ on a menu trigger, Escape) carries `[data-uix-key-opened]`, which `motion.css` treats like `[data-uix-instant]`.
