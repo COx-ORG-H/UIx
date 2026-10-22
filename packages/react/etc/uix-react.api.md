@@ -1861,12 +1861,17 @@ export function EventRow(input: EventRowProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface EventRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    dateTime?: string;
     day: ReactNode;
+    media?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
     month: ReactNode;
+    time?: ReactNode;
     // (undocumented)
     title: ReactNode;
+    weekday?: ReactNode;
+    year?: ReactNode;
 }
 
 // @public

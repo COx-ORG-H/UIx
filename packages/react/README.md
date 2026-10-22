@@ -1153,3 +1153,15 @@ name and says the details are unavailable. Words: `labels` or `UixLabelsProvider
 <ContactCard name={p.name} role={p.role} avatar={<Avatar size="lg" src={p.photo} alt="" />} email={p.email} phone={p.phone}
   state={p.erasedAt ? 'purged' : 'active'} href={`/people/${p.id}`} renderLink={(props) => <Link {...props} />} />
 ```
+
+#### EventRow slots
+
+`EventRow` takes `weekday`, `year` and `time` in its date tile (the tile widens to its longest
+line), `dateTime` to make the tile a `<time>` with a machine-readable date, and `media` for a
+thumbnail at the row's end: an `<img>` drawn 4:3 and cropped to fill, moved under the text on a
+phone. Without them the markup is unchanged.
+
+```tsx
+<EventRow weekday="Wed" month="Oct" day="22" year="2026" time="18:00" dateTime="2026-10-22T18:00+02:00"
+  title={<Link href="/program/42">Book launch</Link>} meta="National library" media={<img src={cover} alt="" />} />
+```

@@ -38,5 +38,11 @@ test('every state named in a caption is on the page', () => {
   assert.match(crm, /data-state="purged"[\s\S]*?Removed contact[\s\S]*?Personal data erased/);
   assert.doesNotMatch(crm, /Edin|edin@/);
   assert.match(crm, /data-state="unavailable"[\s\S]*?Contact details unavailable/);
+  // event rows: a plain one, one with every new slot and a thumbnail, one with a time only
+  const home = specimens['examples-editorial-home'];
+  assert.match(home, /data-event-row-example/);
+  assert.match(home, /<time class="uix-event-date" datetime="2026-10-22T18:00\+02:00"><span class="uix-event-date__weekday">Wed/);
+  assert.match(home, /class="uix-event-row uix-event-row--media"/);
+  assert.match(home, /<span class="uix-event-date__time">09:30<\/span>/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

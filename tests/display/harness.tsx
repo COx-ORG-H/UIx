@@ -1,6 +1,7 @@
 /* Live harness for the display components, bundled by build.mjs from source. `?case=` picks one
  * section; each section renders the component in the states and containers its spec measures.
  *   - qr: QrCode at its smallest documented size (2 px per module), large, at H, in a card, too long;
+ *   - events: EventRow plain, with weekday / year / time, with a thumbnail, long Bosnian titles, in a card;
  *   - contact: ContactCard active with avatar, purged, unavailable, long Bosnian name and address in a narrow column, bare;
  *   - code: CodeDisplay live with copy, in its last minute, expired, lg in a card, a 16-character voucher, beside a form;
  */
@@ -8,7 +9,7 @@ import { StrictMode } from 'react';
 import type * as React from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, Field, Input, QrCode } from '../../packages/react/src/index.js';
+import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, EventRow, Field, Input, QrCode } from '../../packages/react/src/index.js';
 
 const CAMPAIGN = 'https://shopx.example/kampanja/ljetna-akcija-2026?trgovina=SA-0042';
 
@@ -112,7 +113,32 @@ function ContactCase() {
   );
 }
 
+// an offline thumbnail: a gradient SVG as a data URI
+const COVER = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="#1447e6"/><stop offset="1" stop-color="#047857"/></linearGradient></defs><rect width="160" height="120" fill="url(#g)"/></svg>')}`;
+
+function EventsCase() {
+  return (
+    <>
+      <h1>Program</h1>
+      <section>
+        <h2>Događaji</h2>
+        <Card title="Oktobar" style={{ maxWidth: '40rem' }}>
+          <div id="events">
+            <EventRow id="event-plain" month="Okt" day="22" title="Sastanak čitalačkog kluba" meta="Čitaonica, prvi sprat" />
+            <EventRow id="event-full" weekday="Sri" month="Okt" day="22" year="2026" time="18:00" dateTime="2026-10-22T18:00+02:00"
+              title={<a href="#promocija">Promocija knjige „Đulići i uvehli“ uz razgovor s autoricom i čitanje odlomaka</a>} meta="Narodna i univerzitetska biblioteka · ulaz slobodan"
+              media={<img src={COVER} alt="" />} />
+            <EventRow id="event-time" month="Nov" day="3" time="09:30" title="Radionica: digitalni katalog" meta="Sala 2" />
+            <EventRow id="event-media" month="Dec" day="31" year="2026" title="Novogodišnji koncert" media={<img src={COVER} alt="" />} />
+          </div>
+        </Card>
+      </section>
+    </>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  events: () => <EventsCase />,
   contact: () => <ContactCase />,
   qr: () => <QrCase />,
   code: () => <CodeCase />,
