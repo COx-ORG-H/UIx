@@ -90,7 +90,7 @@
     display: grid; place-items: center; flex: 1 1 0; min-width: 24px; height: 44px;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
     color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; font-variant-numeric: tabular-nums;
-    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out);
+    /* no transition: the active cell moves on every keystroke, and typing gets no animation */
   }
   .uix-otp__cell[data-active] { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   /* the caret of the cell being typed into: a static bar (typing is frequent, so it does not blink) */
