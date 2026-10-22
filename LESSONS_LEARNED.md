@@ -164,3 +164,4 @@ The `v2.16.0` tag passed every gate and the Release run went green, yet npm had 
 step treated a missing token as "inert-safe" and exited 0 with a notice. Check the registry, not
 the run colour, after every tag. Gate: the publish step now fails the run when the token is
 missing or blank.
+<!-- lesson-skip: 6afa2d2 timing polish caught by frame review, not a reusable trap -->
