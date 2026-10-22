@@ -3673,10 +3673,10 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
 export type PillSize = 'sm' | 'md' | 'lg';
 
 // @public (undocumented)
-export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
+export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'progress' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
 
-// @public (undocumented)
-export type PillTreatment = 'filled' | 'outline';
+// @public
+export type PillTreatment = 'soft' | 'filled' | 'dot' | 'outline';
 
 // @public
 export function Pipeline(input: PipelineProps): react.JSX.Element;
@@ -5526,10 +5526,10 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
 
 // @public (undocumented)
 export interface StatTrend {
-    // (undocumented)
     direction: 'up' | 'down';
     // (undocumented)
     label: ReactNode;
+    sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
 // @public (undocumented)
@@ -5539,7 +5539,6 @@ export function StatusPill(input: StatusPillProps): react.JSX.Element;
 export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
     dot?: boolean;
     size?: PillSize;
     // (undocumented)

@@ -6,17 +6,25 @@
   .uix-stat__label svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-stat__value { display: block; font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); overflow-wrap: anywhere; }
   .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); overflow-wrap: anywhere; }
-  .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); }
+  /* the chip is neutral unless the product says what the change means (HAR-1563): a rise can be
+     bad (breached SLAs) and a fall good (open incidents), so direction never picks the colour */
+  .uix-stat__trend { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 600; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-pill); color: var(--uix-neutral-text); background: var(--uix-neutral-bg); }
   /* direction glyph inside the chip (UIX-A11Y-4) — sized to sit on the text baseline row */
   .uix-stat__trend svg { width: 10px; height: 10px; flex: none; }
-  .uix-stat__trend--up { color: var(--uix-success-text); background: var(--uix-success-bg); }
-  .uix-stat__trend--down { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
+  /* the direction classes name the arrow, not a colour; their figures are tabular so deltas line up across tiles */
+  .uix-stat__trend:is(.uix-stat__trend--up, .uix-stat__trend--down) { font-variant-numeric: tabular-nums; }
+  .uix-stat__trend--positive { color: var(--uix-success-text); background: var(--uix-success-bg); }
+  .uix-stat__trend--negative { color: var(--uix-danger-text); background: var(--uix-danger-bg); }
 
-  /* tones — an outlined tile whose value carries the tone; the label keeps its muted colour */
-  .uix-stat--warning { border-color: var(--uix-warning-border); }
-  .uix-stat--warning .uix-stat__value { color: var(--uix-warning-text); }
-  .uix-stat--danger { border-color: var(--uix-danger-border); }
-  .uix-stat--danger .uix-stat__value { color: var(--uix-danger-text); }
+  /* tones (HAR-1563) — the value carries the tone and a dot of its solid leads it; the border stays
+     neutral and the label keeps its muted colour, so a row of tiles has one quiet frame */
+  .uix-stat--warning { --stat-tone-text: var(--uix-warning-text); --stat-tone-solid: var(--uix-warning-solid); }
+  .uix-stat--danger { --stat-tone-text: var(--uix-danger-text); --stat-tone-solid: var(--uix-danger-solid); }
+  .uix-stat:is(.uix-stat--warning, .uix-stat--danger) .uix-stat__value { color: var(--stat-tone-text); }
+  .uix-stat:is(.uix-stat--warning, .uix-stat--danger) .uix-stat__value::before {
+    content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-inline-end: var(--uix-space-2); vertical-align: middle; background: var(--stat-tone-solid);
+  }
 
   /* compact — for dense fact bands */
   .uix-stat--compact { padding: var(--uix-space-3) var(--uix-space-4); }
@@ -30,8 +38,6 @@
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-stat--interactive:hover:where(:not([aria-busy="true"])) { background: var(--uix-bg-hover); border-color: var(--uix-border-strong); }
-  .uix-stat--interactive.uix-stat--warning:hover { border-color: var(--uix-warning-border); }
-  .uix-stat--interactive.uix-stat--danger:hover { border-color: var(--uix-danger-border); }
   .uix-stat--interactive:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-stat--interactive[aria-expanded="true"] { border-color: var(--uix-ring); }
   .uix-stat__chevron { display: inline-flex; flex: none; margin-inline-start: auto; color: var(--uix-text-muted); }

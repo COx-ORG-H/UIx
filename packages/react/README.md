@@ -220,7 +220,7 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
-- **`Stat tone`** (`warning`, `danger`) draws a toned outline and value; the label stays muted, so the tone never replaces words. `size="compact"` fits dense fact bands.
+- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.46). `size="compact"` fits dense fact bands.
 - **`Stat onActivate`** makes the whole tile a button that opens an editor (`aria-haspopup="dialog"`). Pass `activateLabel` (e.g. "change") so the name reads "Priority: P1, change", and `expanded` while the editor is open. The ref points at the button, for anchoring a popover.
 - **`Stat pending`** is for a tile whose action is still running (a save, a state change). The button gets `aria-busy="true"` and `aria-disabled="true"`, is dimmed with a progress cursor, and calls neither `onActivate` nor your `onClick` / `onKeyDown` until `pending` is false again. It is never natively `disabled`, so it keeps focus and a screen reader can still read it. Only a tile with `onActivate` has the state; a read-only tile and a link tile ignore the prop.
 - **Tiles in one row line up.** A grid or flex row stretches its tiles to the tallest one. Read-only, button and link tiles all start their label and value at the same offset from the top edge, whatever the height (before 2.38.0 a button tile centred its rows).
@@ -1109,3 +1109,27 @@ mask; an avatar with a dot no longer clips it.
   `entityPicker`. `SearchSuggest` has the two slots these use: `idle` and `note`.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
+
+### Calm status colour, the app shell and display preferences (2.46)
+
+#### StatusPill treatments, Stat sentiment, quiet Alert (HAR-1563)
+
+```tsx
+<StatusPill tone="danger" treatment="dot">Breached</StatusPill>       // a table cell
+<StatusPill tone="progress">In progress</StatusPill>                  // the record's header (soft, the default)
+<StatusPill tone="warning" treatment="outline">Due in 2h</StatusPill> // a flag among other chrome
+<Stat label="Breached SLAs" value={7} trend={{ direction: 'up', label: '2', sentiment: 'negative' }} />
+```
+
+- `StatusPill treatment`: `'soft'` (default, the tinted wash; `'filled'` is its old name and still works), `'dot'`
+  (no fill, a neutral label, the tone only in the dot: for tables) and `'outline'` (a neutral hairline, a hushed
+  label and the dot; only `critical` keeps a toned border). `dot` and `outline` always draw the dot. **Changed:**
+  `outline` used to colour the label and a 40 % border in the tone's hue.
+- `StatusPill tone="progress"`: in flight, the same blue as `info`.
+- `Stat trend.sentiment`: `'positive'` (green), `'negative'` (red) or `'neutral'` (grey, the default). **Changed:** the
+  chip used to be green for `up` and red for `down`, so a rise in breached SLAs showed green. Pass the sentiment the
+  change has for your metric.
+- `Stat tone`: the border stays neutral and a dot leads the toned value (**changed:** the border was toned).
+- `Alert`: the borders are a 24 % hairline of the tone (**changed:** 30 to 40 %); the warning icon is the text
+  role, at least 3:1 on its tint in both themes.
+
