@@ -302,9 +302,9 @@
       "brotli": 1273
     },
     "styles/components/popover.css": {
-      "raw": 2524,
-      "gzip": 929,
-      "brotli": 744
+      "raw": 2856,
+      "gzip": 1032,
+      "brotli": 831
     },
     "styles/components/progress.css": {
       "raw": 1059,

@@ -49,7 +49,8 @@ export interface UixLabels {
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */
   orgChart?: Partial<OrgChartLabels>;
   inlineEdit?: Partial<InlineEditLabels>;
-  confirmDialog?: { typeToConfirm?: string; compensation?: string };
+  /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
+  confirmDialog?: { typeToConfirm?: string; compensation?: string; typeToConfirmMismatch?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
   datePicker?: Partial<DatePickerLabels>;

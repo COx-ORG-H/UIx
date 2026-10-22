@@ -176,11 +176,32 @@ export async function renderUxcSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── Popconfirm with a required reason (HAR-1831) ─────────────────────────────────────────
+    // Rendered last, so the ids above keep their numbers. The step is shown where the browser
+    // places it, under the button that asked; Reject waits for the reason.
+    const rejectAnchor = window.document.createElement('button');
+    window.document.body.append(rejectAnchor);
+    const reasonHost = mount(h(ui.Popconfirm, {
+      open: true, anchor: rejectAnchor, destructive: true, confirmDisabled: true,
+      title: 'Reject this change?', description: 'The requester sees your reason.',
+      confirmLabel: 'Reject', cancelLabel: 'Cancel', onConfirm: noop, onCancel: noop,
+    }, h(ui.Field, { label: 'Reason' }, h(ui.Textarea, { rows: 3, placeholder: 'Why is it rejected?' }))));
+    const reasonStep = reasonHost.querySelector('.uix-popconfirm');
+    if (!reasonStep?.hasAttribute(OPEN)) throw new Error('the Popconfirm did not open');
+    reasonStep.removeAttribute('popover');
+    reasonStep.removeAttribute(OPEN);
+    reasonStep.setAttribute('style', 'position:static;margin:0;opacity:1;transform:none');
+    const reason = [
+      caption('Popconfirm with content (React <code>Popconfirm</code> <code>children</code>, <code>confirmDisabled</code>) — a required reason inside the step: the field has focus when it opens, Reject stays disabled until it is filled, and a destructive step is an <code>alertdialog</code>'),
+      `<div data-popconfirm-reason-example class="uix-stack" style="--gap:8px;align-items:flex-start"><button type="button" class="uix-btn uix-btn--danger">Reject</button>${stable(reasonStep.outerHTML)}</div>`,
+    ].join('\n');
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
+    rejectAnchor.remove();
     return {
       'examples-navigation': shortcuts,
       'examples-form-controls': searchBar,
-      'examples-overlays': [descriptionList, discard].join('\n'),
+      'examples-overlays': [descriptionList, discard, reason].join('\n'),
     };
   } finally {
     dom.window.close();
