@@ -201,6 +201,18 @@ export function SearchSuggest({
   const showLoading = loading && options.length === 0;
   const showIdle = idle != null && itemCount === 0 && !loading && error == null && !showEmpty;
   const visible = open && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
+  // The list enters once per opening (HAR-2578). While the user types it can hide and show again
+  // between result sets; once it has hidden inside an opening, [data-settled] lets it reappear in
+  // place instead of replaying the enter motion on every keystroke. Set on the hide, never on the
+  // first show: a focus is a discrete event, and React would flush the effect before the first
+  // style pass, cancelling the very enter it should let through.
+  const [settled, setSettled] = useState(false);
+  const wasVisible = useRef(false);
+  useEffect(() => {
+    if (!open) setSettled(false);
+    else if (!visible && wasVisible.current) setSettled(true);
+    wasVisible.current = visible;
+  }, [open, visible]);
   const optionId = (index: number) => `${id}-option-${index}`;
 
   useEffect(() => {
@@ -350,7 +362,7 @@ export function SearchSuggest({
         </span>
       </div>
 
-      <div ref={popupRef} className="uix-search-suggest__popup" data-strategy={floating ? 'fixed' : undefined} hidden={!visible}>
+      <div ref={popupRef} className="uix-search-suggest__popup" data-strategy={floating ? 'fixed' : undefined} data-settled={settled ? '' : undefined} hidden={!visible}>
         {heading && options.length > 0 && (
           <div className="uix-search-suggest__header">
             <span className="uix-search-suggest__heading" id={headingId}>{heading}</span>

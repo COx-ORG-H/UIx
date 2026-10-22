@@ -135,13 +135,13 @@
     padding: var(--uix-space-2) var(--uix-space-3); margin-bottom: var(--uix-space-3);
     border: 1px solid var(--uix-accent); border-radius: var(--uix-radius-md);
     background: var(--uix-brand-muted); color: var(--uix-text);
-    animation: uix-bulkbar-in var(--uix-dur) var(--uix-ease-out);
+    /* enters from @starting-style on a transition (interruptible), not a keyframe (HAR-2578) */
+    transition: opacity var(--uix-dur) var(--uix-ease-out), transform var(--uix-dur) var(--uix-ease-out);
   }
+  @starting-style { .uix-bulkbar:not([hidden]) { opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))); } }
   .uix-bulkbar[hidden] { display: none; }
   .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent); font-variant-numeric: tabular-nums; }
   .uix-bulkbar__spacer { flex: 1; }
-  @keyframes uix-bulkbar-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .uix-bulkbar { animation: none; } }
 
   /* ── row hover actions + kebab ─────────────────────────────────────────────────── */
   .uix-table__actions { width: 84px; text-align: right; white-space: nowrap; }

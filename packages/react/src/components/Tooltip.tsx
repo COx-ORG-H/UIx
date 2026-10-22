@@ -7,6 +7,13 @@ import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
+import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
+
+/* The delay group (HAR-2578). A tooltip waits --uix-delay-tooltip before it opens on hover, so a
+ * pointer passing over a toolbar does not flash a bubble per button. Once one has been shown, its
+ * neighbours open at once: while any is open, and for --uix-delay-tooltip-skip after the last one
+ * closed. Shared by every Tooltip on the page. */
+const group = { open: 0, lastClosed: -Infinity };
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
   /** Tooltip text. Pass this or `content`. */
@@ -42,6 +49,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | null>(null);
+  const openTimer = useRef<number | null>(null);
+  const shown = useRef(false);
   const [open, setOpen] = useState(false);
   const id = useId();
   const platform = useKbdPlatform();
@@ -52,19 +61,44 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
+  useEffect(() => { watchInputModality(); }, []);
+
   const cancelClose = () => {
     if (closeTimer.current != null) { clearTimeout(closeTimer.current); closeTimer.current = null; }
   };
-  const show = () => {
-    cancelClose();
+  const cancelOpen = () => {
+    if (openTimer.current != null) { clearTimeout(openTimer.current); openTimer.current = null; }
+  };
+  /** `instant`: inside the delay group — no fade either. */
+  const reveal = (instant: boolean) => {
+    cancelOpen();
     const b = bubbleRef.current;
-    if (b && !b.matches(':popover-open')) { try { b.showPopover(); } catch { /* already open */ } }
+    if (b && !b.matches(':popover-open')) {
+      b.toggleAttribute('data-uix-instant', instant);
+      markKeyOpened(b);
+      try { b.showPopover(); } catch { /* already open */ }
+    }
+    if (!shown.current) { shown.current = true; group.open += 1; }
     setOpen(true);
+  };
+  /** Keyboard focus opens at once; a pointer waits the delay unless the group is warm. */
+  const show = (via: 'pointer' | 'focus') => {
+    cancelClose();
+    if (shown.current) return;
+    const warm = group.open > 0 || performance.now() - group.lastClosed < tokenMs('--uix-delay-tooltip-skip', 300);
+    if (via === 'focus' || warm) { reveal(via === 'pointer'); return; }
+    if (openTimer.current == null) openTimer.current = window.setTimeout(() => reveal(false), tokenMs('--uix-delay-tooltip', 400));
   };
   const hide = () => {
     cancelClose();
+    cancelOpen();
     const b = bubbleRef.current;
-    if (b && b.matches(':popover-open')) { try { b.hidePopover(); } catch { /* already closed */ } }
+    if (b && b.matches(':popover-open')) {
+      // The bubble that leaves fades out unless the next one will open inside the group.
+      b.removeAttribute('data-uix-instant');
+      try { b.hidePopover(); } catch { /* already closed */ }
+    }
+    if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
     setOpen(false);
   };
   // Small close delay so the pointer can cross the offset gap into the bubble (1.4.13 hoverable);
@@ -86,6 +120,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   // hide the top-layer bubble if the trigger unmounts while shown
   useEffect(() => () => {
     if (closeTimer.current != null) clearTimeout(closeTimer.current);
+    if (openTimer.current != null) clearTimeout(openTimer.current);
+    if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) { try { b.hidePopover(); } catch { /* noop */ } }
   }, []);
@@ -113,9 +149,9 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
       aria-describedby={single ? undefined : id}
       aria-keyshortcuts={single ? undefined : keyshortcuts}
       tabIndex={single ? undefined : 0}
-      onMouseEnter={show}
+      onMouseEnter={() => show('pointer')}
       onMouseLeave={scheduleHide}
-      onFocus={show}
+      onFocus={() => show('focus')}
       onBlur={hide}
       onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
       {...props}

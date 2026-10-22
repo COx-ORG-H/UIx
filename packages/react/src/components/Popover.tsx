@@ -5,6 +5,7 @@ import type { ReactNode, HTMLAttributes, RefObject } from 'react';
 import { cx } from '../cx.js';
 import { resolveAnchor, useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
+import { markKeyOpened, watchInputModality } from '../motion.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -107,6 +108,17 @@ export function Popover({
       el.hidePopover();
     } : undefined,
   });
+
+  // A popover opened or closed from the keyboard (a menu on ↓ or Enter, Escape) does it instantly:
+  // motion.css treats [data-uix-key-opened] like [data-uix-instant].
+  useEffect(() => {
+    watchInputModality();
+    const el = ref.current;
+    if (!el) return;
+    const mark = () => markKeyOpened(el);
+    el.addEventListener('beforetoggle', mark);
+    return () => el.removeEventListener('beforetoggle', mark);
+  }, []);
 
   useEffect(() => {
     const el = ref.current;

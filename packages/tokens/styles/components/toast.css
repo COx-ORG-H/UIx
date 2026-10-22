@@ -4,15 +4,18 @@
   .uix-toast {
     display: flex; gap: var(--uix-space-3); align-items: flex-start; padding: var(--uix-space-3) var(--uix-space-4); border-radius: var(--uix-radius-md);
     background: var(--uix-surface-2); border: 1px solid var(--uix-border); box-shadow: var(--uix-shadow-popover);
-    animation: uix-slide-in-right var(--uix-dur-slow) var(--uix-ease-out);
+    /* Transitions, not keyframes, so a toast that is updated or re-shown mid-exit turns around
+       instead of restarting (HAR-2578). Enters from the toaster's edge at --uix-dur-slow; leaves the
+       same way at --uix-dur-exit (faster, still ease-out). `translate` is the swipe offset the React
+       Toast writes while a finger drags it; the Toaster glides the neighbours when one leaves. */
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), transform var(--uix-dur-slow) var(--uix-ease-out),
+                translate var(--uix-dur) var(--uix-ease-out);
+    touch-action: pan-y;
   }
-  .uix-toast[data-leaving] { animation: uix-toast-out var(--uix-dur-exit) var(--uix-ease-out) forwards; }
-  @media (prefers-reduced-motion: reduce) {
-    .uix-toast { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
-    .uix-toast[data-leaving] { animation: uix-toast-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
-  }
-  @keyframes uix-toast-fade-out { to { opacity: 0; } }
-  @keyframes uix-toast-out { to { opacity: 0; transform: translateX(16px); } }
+  @starting-style { .uix-toast { opacity: 0; transform: var(--uix-toast-from, translateX(var(--uix-space-4))); } }
+  .uix-toast[data-leaving] { opacity: 0; transform: var(--uix-toast-from, translateX(var(--uix-space-4))); pointer-events: none; transition-duration: var(--uix-dur-exit); }
+  /* while dragged the toast follows the finger; on release it snaps back or flies out */
+  .uix-toast[data-swiping] { transition: none; user-select: none; }
   .uix-toast__icon { flex: none; margin-top: 1px; }
   .uix-toast__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-toast__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--uix-space-1); }
@@ -37,6 +40,10 @@
   .uix-toast__action:focus-visible, .uix-toast__close:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
   .uix-toast__spinner { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-toaster[data-position^="top"] { top: var(--uix-space-4); bottom: auto; }
+  /* a toast enters from, and leaves toward, the toaster's own edge */
+  .uix-toaster[data-position$="start"] { --uix-toast-from: translateX(calc(-1 * var(--uix-space-4))); }
+  .uix-toaster[data-position="bottom-center"] { --uix-toast-from: translateY(var(--uix-space-4)); }
+  .uix-toaster[data-position="top-center"] { --uix-toast-from: translateY(calc(-1 * var(--uix-space-4))); }
   .uix-toaster[data-position$="start"] { left: var(--uix-space-4); right: auto; }
   .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
 }

@@ -535,8 +535,8 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
   /* exit: about two-thirds of the enter, still ease-out — never ease-in */
   transition-duration: var(--uix-dur-exit);
 }`, 'css')}${table(['Token', 'Value', 'Use'], [
-      ['<code>--uix-dur-fast</code> / <code>--uix-dur-exit-fast</code>', '120 / 80 ms', 'Press, hover and state feedback'],
-      ['<code>--uix-dur</code> / <code>--uix-dur-exit</code>', '160 / 110 ms', 'Popovers, menus, select, toasts'],
+      ['<code>--uix-dur-fast</code> / <code>--uix-dur-exit-fast</code>', '120 / 80 ms', 'Press, hover and state feedback; popovers, menus, select and tooltips'],
+      ['<code>--uix-dur</code> / <code>--uix-dur-exit</code>', '160 / 110 ms', 'The bulk bar, a toast stack’s glide, a toast’s exit (it enters at <code>--uix-dur-slow</code>)'],
       ['<code>--uix-dur-slow</code> / <code>--uix-dur-exit-slow</code>', '240 / 160 ms', 'Modal, drawer, side peek'],
       ['<code>--uix-dur-slower</code>', '320 ms', 'Large surfaces only; routine UI stays ≤ 300 ms'],
       ['<code>--uix-delay-tooltip</code> / <code>--uix-delay-tooltip-skip</code>', '400 / 300 ms', 'Tooltip hover delay; a neighbour hovered inside the skip window opens at once'],

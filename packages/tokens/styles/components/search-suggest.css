@@ -32,9 +32,13 @@
     display: flex; flex-direction: column; max-height: min(28rem, 70vh); overflow-y: auto; overscroll-behavior: contain;
     padding: var(--uix-space-1); background: var(--uix-surface-2); border: 1px solid var(--uix-border);
     border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover);
-    animation: uix-search-suggest-in var(--uix-dur-fast) var(--uix-ease-out);
+    /* Enters once per opening, growing from the field (a transition from @starting-style, not a
+       keyframe): the React SearchSuggest sets [data-settled] after the first show, so a list that
+       hides and reappears while the user types comes back in place (HAR-2578). */
+    transform-origin: var(--uix-anchor-origin, top center);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
-  @keyframes uix-search-suggest-in { from { opacity: 0; transform: translateY(-4px); } }
+  @starting-style { .uix-search-suggest__popup:not([hidden], [data-settled]) { opacity: 0; transform: scale(.95); } }
 
   .uix-search-suggest__header {
     display: flex; align-items: baseline; justify-content: space-between; gap: var(--uix-space-3);
@@ -105,10 +109,6 @@
   @media (max-width: 640px) {
     .uix-search-suggest__popup:not([hidden]) { max-height: 60vh; }
     .uix-search-suggest__option { min-height: 44px; padding-block: var(--uix-space-3); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .uix-search-suggest__popup:not([hidden]) { animation: none; }
   }
 
   @media (forced-colors: active) {

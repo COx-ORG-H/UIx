@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from 'react';
+import { markKeyOpened, watchInputModality } from '../motion.js';
 
 /* Page scroll lock, shared across every open dialog (Modal / Drawer / Peek). A native
  * <dialog> shown with showModal() makes the background inert but still lets it SCROLL
@@ -54,13 +55,16 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
   const keepOpenRef = useRef(keepOpen);
   keepOpenRef.current = keepOpen;
 
+  useEffect(() => { watchInputModality(); }, []);
+
   useEffect(() => {
     const el = ref.current;
+    // A dialog opened or closed from the keyboard does it instantly (motion.css [data-uix-key-opened]).
     if (!el || !open) {
-      if (el && el.open) el.close();
+      if (el && el.open) { markKeyOpened(el); el.close(); }
       return;
     }
-    if (!el.open) el.showModal();
+    if (!el.open) { markKeyOpened(el); el.showModal(); }
     lockBodyScroll();
     /* A native close (Esc → cancel → close, or a method="dialog" form) bypasses React state, so
      * without this listener the scroll lock leaked whenever the consumer forgot onClose
@@ -83,9 +87,13 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
       if (locked) { locked = false; unlockBodyScroll(); }
       onCloseRef.current?.();
     };
+    // Escape closes natively: the cancel event comes first, while the dialog is still open.
+    const handleCancel = () => markKeyOpened(el);
     el.addEventListener('close', handleClose);
+    el.addEventListener('cancel', handleCancel);
     return () => {
       el.removeEventListener('close', handleClose);
+      el.removeEventListener('cancel', handleCancel);
       if (locked) { locked = false; unlockBodyScroll(); }
       if (el.open) el.close();
     };

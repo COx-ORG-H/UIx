@@ -6024,7 +6024,7 @@ export function Toast(input: ToastProps): react.JSX.Element;
 export const toast: ToastApi;
 
 // @public
-export const TOAST_LEAVE_MS = 200;
+export const TOAST_LEAVE_MS = 110;
 
 // @public (undocumented)
 export interface ToastAction {

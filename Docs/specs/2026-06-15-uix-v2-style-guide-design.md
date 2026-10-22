@@ -317,7 +317,7 @@ Defaults err toward restraint. v1 shipped almost no motion; v2 treats it as a fi
 - **Disclosure** (accordion, sidebar sub-items): ≤ 200 ms on transform/opacity, never height or grid tracks; a nav group
   toggled many times a day opens instantly (only its chevron turns).
 - **Popover / dropdown / tooltip:** fade + `scale(.95→1)` growing from the trigger (`transform-origin` at the anchor, never
-  `scale(0)`), `--uix-dur` in and `--uix-dur-exit` out; tooltips open after `--uix-delay-tooltip`, then neighbours open at once; built on the **native Popover API + `@starting-style` + `transition-behavior: allow-discrete`** (no JS for enter/exit).
+  `scale(0)`), `--uix-dur-fast` in and `--uix-dur-exit-fast` out; tooltips open after `--uix-delay-tooltip`, then neighbours open at once; built on the **native Popover API + `@starting-style` + `transition-behavior: allow-discrete`** (no JS for enter/exit).
 - **Modal `<dialog>`:** backdrop fade + content fade/rise, `--uix-dur-slow` in and `--uix-dur-exit-slow` out; `@starting-style` entry,
   allow-discrete exit. A keyboard-opened dialog and the command palette open instantly (`[data-uix-instant]`).
 - **Drawer / side-peek:** slide from edge + backdrop fade; `--uix-dur-slow` in, `--uix-dur-exit-slow` out, `--uix-ease-out` both ways.
