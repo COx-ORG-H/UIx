@@ -19,7 +19,7 @@ export function BusyRegion({ busy, className, children, ...props }: BusyRegionPr
   return (
     <div className={cx('uix-busy-region', className)} aria-busy={busy || undefined} {...props}>
       <BusyBar busy={busy} />
-      {children}
+      <div className="uix-busy-region__content">{children}</div>
     </div>
   );
 }

@@ -49,7 +49,8 @@ export interface ButtonFeedbackProps {
  * never re-created and keeps focus. With a `result` it also stacks the label and the result
  * words in one grid cell, so the button is always as wide as the widest of them, and
  * announces the result through a polite status region portalled to the body (inside the
- * button it would become part of the button's name).
+ * button it would become part of the button's name), or to the nearest dialog, since a modal
+ * dialog makes the body inert. An icon-only button shows the mark alone; the words are spoken.
  */
 export function ButtonFeedback({ loading, loadingDelay, result, resultLabels, children }: ButtonFeedbackProps) {
   const busy = useDelayedPending(loading, { delay: loadingDelay });
@@ -82,19 +83,24 @@ export function ButtonFeedback({ loading, loadingDelay, result, resultLabels, ch
     return () => clearTimeout(timer);
   }, [shown]);
 
+  // The status region goes to the nearest <dialog>, else the body: a modal dialog makes
+  // everything outside it inert, and an inert live region is never announced (as ShortcutHint).
+  const markerRef = useRef<HTMLSpanElement>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const withResult = result !== undefined;
-  useEffect(() => { if (withResult) setPortalTarget(document.body); }, [withResult]);
+  useEffect(() => {
+    if (withResult) setPortalTarget(markerRef.current?.closest('dialog') ?? document.body);
+  }, [withResult]);
 
-  const marker = <span hidden data-uix-btn-busy={busy || undefined} />;
+  const marker = <span ref={markerRef} hidden data-uix-btn-busy={busy || undefined} />;
   if (!withResult) return <>{marker}{children}</>;
   return (
     <>
       {marker}
       <span className="uix-btn__face" data-result={shown?.kind}>
         <span className="uix-btn__label">{children}</span>
-        <span className="uix-btn__result" data-kind="success" aria-hidden="true"><SuccessGlyph />{text.success}</span>
-        <span className="uix-btn__result" data-kind="error" aria-hidden="true"><ErrorGlyph />{text.error}</span>
+        <span className="uix-btn__result" data-kind="success" aria-hidden="true"><SuccessGlyph /><span className="uix-btn__result-text">{text.success}</span></span>
+        <span className="uix-btn__result" data-kind="error" aria-hidden="true"><ErrorGlyph /><span className="uix-btn__result-text">{text.error}</span></span>
       </span>
       {portalTarget && createPortal(
         <span role="status" className="uix-visually-hidden">{shown ? text[shown.kind] : ''}</span>,

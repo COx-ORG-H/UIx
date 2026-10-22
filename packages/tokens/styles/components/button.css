@@ -55,7 +55,7 @@
   /* Pending (React `loading`, HAR-2580): the button stops taking presses at once but looks the
      same for the first 300 ms; a fast action shows nothing new. It keeps full colour while it
      works (a spinner, never a greyed-out control), which overrides the aria-disabled dim. */
-  .uix-btn[data-pending], .uix-btn:has(> [data-uix-btn-busy]) { opacity: 1; pointer-events: none; cursor: progress; }
+  .uix-btn[data-pending], .uix-btn:has(> [data-uix-btn-busy]) { opacity: 1; pointer-events: none; }
 
   /* The spinner: `data-loading` (plain markup, shows at once) or React's delayed busy marker. */
   .uix-btn:has(> [data-uix-btn-busy]), .uix-btn[data-loading] { color: transparent !important; position: relative; pointer-events: none; }
@@ -92,6 +92,9 @@
   .uix-btn--outline .uix-btn__result[data-kind="error"] svg,
   .uix-btn--ghost .uix-btn__result[data-kind="error"] svg { color: var(--uix-danger-text); }
   .uix-btn--wrap .uix-btn__face > * { white-space: normal; }
+  .uix-btn--xs .uix-btn__face > * { gap: .25em; }
+  /* An icon-only button keeps its square: the result is the mark alone (the words are spoken). */
+  .uix-btn--icon .uix-btn__result-text { display: none; }
 
   /* attached group */
   .uix-btn-group { display: inline-flex; }

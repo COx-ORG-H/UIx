@@ -56,7 +56,6 @@ test('Button loading: blocked at once, quiet for 300 ms, then a full-colour spin
   await page.clock.runFor(150);
   expect(await spinner(save), 'no spinner after 300 ms').toBe(true);
   await expect(save).toHaveCSS('opacity', '1');
-  await expect(save).toHaveCSS('cursor', 'progress');
 
   await page.clock.runFor(900);
   await expect(save.locator('.uix-btn__face')).toHaveAttribute('data-result', 'success');
@@ -107,7 +106,8 @@ test('BusyRegion and TableWrap refreshing keep the rows; aria-busy at once, dim 
 
   await page.clock.runFor(150);
   await expect(region.locator('.uix-busy-bar')).toHaveCSS('opacity', '1');
-  await expect(region.locator('ul')).toHaveCSS('opacity', '0.6');
+  await expect(region.locator('.uix-busy-region__content')).toHaveCSS('opacity', '0.6');
+  await expect(region.locator('ul'), 'the children keep their own opacity and transitions').toHaveCSS('opacity', '1');
   await expect(table.locator('tbody')).toHaveCSS('opacity', '0.6');
   await expect(table.locator('thead')).toHaveCSS('opacity', '1');
   const bar = await table.locator('.uix-busy-bar').evaluate((el) => {
@@ -123,7 +123,7 @@ test('BusyRegion and TableWrap refreshing keep the rows; aria-busy at once, dim 
   await page.clock.runFor(1000);
   await expect(region).not.toHaveAttribute('aria-busy', /./);
   await expect(firstRow).toContainText('INC-0421');
-  await expect(region.locator('ul')).toHaveCSS('opacity', '1');
+  await expect(region.locator('.uix-busy-region__content')).toHaveCSS('opacity', '1');
 });
 
 test('reduced motion: the bar is a full, breathing bar instead of a sweep', async ({ page }) => {
@@ -132,9 +132,12 @@ test('reduced motion: the bar is a full, breathing bar instead of a sweep', asyn
   await page.clock.runFor(350);
   const bar = await page.getByTestId('region').locator('.uix-busy-bar').evaluate((el) => {
     const before = getComputedStyle(el, '::before');
-    return { animation: before.animationName, width: Math.round(parseFloat(before.width)), barWidth: Math.round(el.getBoundingClientRect().width), transform: before.transform };
+    return { animation: before.animationName, duration: parseFloat(before.animationDuration), iterations: before.animationIterationCount, width: Math.round(parseFloat(before.width)), barWidth: Math.round(el.getBoundingClientRect().width), transform: before.transform };
   });
   expect(bar.animation).toBe('uix-busy-breathe');
+  // the kit's reduced-motion policy ends keyframes at once; the bar must opt back in and keep breathing
+  expect(bar.duration).toBeGreaterThan(1);
+  expect(bar.iterations).toBe('infinite');
   expect(bar.width).toBe(bar.barWidth);
   expect(bar.transform).toBe('none');
 });
@@ -188,6 +191,37 @@ test('axe: no serious or critical violations at rest, mid-spinner, on a result a
   await expect(page.locator('[data-frozen] .uix-busy-bar[data-shown]')).toHaveCount(2);
   await page.clock.resume();
   expect(await axe(page)).toEqual([]);
+});
+
+test('in a modal the result is announced inside the dialog; an icon button shows the mark alone', async ({ page }) => {
+  await page.getByTestId('open-dialog').click();
+  const dialog = page.locator('dialog[open]');
+  await expect(dialog).toBeVisible();
+  await dialog.getByTestId('dialog-save').click();
+  await page.clock.runFor(1300);
+  await expect(dialog.getByTestId('dialog-save').locator('.uix-btn__face')).toHaveAttribute('data-result', 'success');
+  // the body is inert behind a modal: the region must live in the dialog
+  await expect(dialog.locator(':scope > [role="status"], [role="status"]').filter({ hasText: 'Saved' })).toHaveCount(1);
+  await page.keyboard.press('Escape');
+
+  const pin = page.getByTestId('pin');
+  const box = await pin.boundingBox();
+  await pin.click();
+  await page.clock.runFor(1300);
+  await expect(pin.locator('.uix-btn__face')).toHaveAttribute('data-result', 'success');
+  await expect(pin.locator('[data-kind="success"] .uix-btn__result-text')).toBeHidden();
+  const after = await pin.boundingBox();
+  expect([after.width, after.height]).toEqual([box.width, box.height]);
+  await expect(pin).toHaveAccessibleName('Pin view');
+  await expect(page.locator('body > [role="status"]').filter({ hasText: 'Pinned' })).toHaveCount(1);
+});
+
+test('right to left: the bar sweeps from the right edge leftwards', async ({ page }) => {
+  await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+  await page.getByTestId('refetch').click();
+  await page.clock.runFor(350);
+  const name = await page.getByTestId('region').locator('.uix-busy-bar').evaluate((el) => getComputedStyle(el, '::before').animationName);
+  expect(name).toBe('uix-busy-sweep-rtl');
 });
 
 test('320 px: nothing scrolls sideways, and the result keeps the button inside the row', async ({ page }) => {

@@ -175,6 +175,17 @@ test('Button result: never on the first render; after an action it crossfades, a
   await unmount();
 });
 
+test('Button result inside a dialog announces from the dialog, not the inert body', async () => {
+  clock();
+  const { host, render, unmount } = mount();
+  const tree = (result) => h('dialog', { open: true }, h(ui.Button, { result }, 'Save'));
+  await render(tree(null));
+  await render(tree('success'));
+  const dialog = host.querySelector('dialog');
+  assert.equal(dialog.querySelector(':scope > [role="status"]')?.textContent, 'Done');
+  await unmount();
+});
+
 test('Button result labels come from UixLabelsProvider buttonResult', async () => {
   clock();
   const { render, unmount } = mount();

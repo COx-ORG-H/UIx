@@ -6,12 +6,14 @@
  *     neighbours whose positions the spec measures.
  *   - #save-status: an autosaving field with SaveStatus.
  *   - #busy: a BusyRegion list and a refreshing TableWrap; Refetch keeps the rows.
- *   - #loaders: Spinner delay and LoadingState delay, mounted while a load runs. */
+ *   - #loaders: Spinner delay and LoadingState delay, mounted while a load runs.
+ *   - #dialog: a Save with `result` inside a Modal (its announcement must reach into the modal),
+ *     and an icon-only button with `result` (the mark alone, inside its square). */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  BusyRegion, Button, LoadingState, SaveStatus, Spinner, Table, TableWrap, Td, Th, Tr,
+  BusyRegion, Button, LoadingState, Modal, SaveStatus, Spinner, Table, TableWrap, Td, Th, Tr,
 } from '../../packages/react/src/index.js';
 import type { ButtonResult, SaveStatusState } from '../../packages/react/src/index.js';
 
@@ -142,6 +144,31 @@ function LoadersSection() {
   );
 }
 
+const StarGlyph = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z" /></svg>
+);
+
+function DialogSection() {
+  const [open, setOpen] = useState(false);
+  const save = useAction();
+  const pin = useAction();
+  return (
+    <section id="dialog" aria-labelledby="dialog-h">
+      <h2 id="dialog-h">Inside a dialog, and icon-only</h2>
+      <div className="uix-cluster">
+        <Button data-testid="open-dialog" onClick={() => setOpen(true)}>Edit template</Button>
+        <Button icon variant="ghost" aria-label="Pin view" data-testid="pin" loading={pin.loading} result={pin.result}
+          resultLabels={{ success: 'Pinned', error: 'Not pinned' }} onClick={pin.run}><StarGlyph /></Button>
+      </div>
+      <Modal open={open} onClose={() => setOpen(false)} title="Edit template"
+        footer={<Button variant="primary" data-testid="dialog-save" loading={save.loading} result={save.result}
+          resultLabels={{ success: 'Saved', error: 'Couldn’t save' }} onClick={save.run}>Save</Button>}>
+        <p>Incident created (v2)</p>
+      </Modal>
+    </section>
+  );
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LatencyPicker />
@@ -149,5 +176,6 @@ createRoot(document.getElementById('root')!).render(
     <SaveStatusSection />
     <BusySection />
     <LoadersSection />
+    <DialogSection />
   </StrictMode>,
 );
