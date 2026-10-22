@@ -135,6 +135,12 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
   }, [closeRef, setPrompt]);
 
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  /**
+   * A light-dismiss popover closed in this task. WebKit hands one Escape both to an open popover
+   * and to the dialog around it (`cancel`), where Chromium and Firefox give it to the popover
+   * only: that `cancel` is the popover's (HAR-2417, found by running the discard spec in WebKit).
+   */
+  const lightDismissed = useRef(false);
   /** Where "keep editing" last sent focus, and whether a close request already backed out of the step. */
   const backOut = useRef<{ focus: HTMLElement | null; forced: boolean }>({ focus: null, forced: false });
 
@@ -156,6 +162,8 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
   // A guarded dialog the browser closed by force reopens. It asks, or, when it was already
   // asking (the step would now sit behind the reopened dialog), it goes back to the form.
   const ref = useDialog(open, onClose, () => {
+    // The popover's Escape closed the dialog by force (WebKit, no cancellable cancel): undo that.
+    if (lightDismissed.current) return true;
     if (!guarded()) return false;
     if (backOut.current.forced) {
       // The close request that forced this already backed out of the step: back to the form,
@@ -189,7 +197,16 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
     if (!el || !open) return;
     /** An event of a dialog nested inside this one (a ConfirmDialog in the drawer's JSX) is not ours. */
     const ours = (event: Event) => (event.target as Element | null)?.closest?.('dialog') === el;
+    const onBeforeToggle = (event: Event) => {
+      // Only a light-dismiss popover: a <dialog> fires `beforetoggle` too, and a manual popover
+      // is never closed by Escape.
+      const kind = (event.target as Element).getAttribute?.('popover');
+      if ((event as Event & { newState?: string }).newState !== 'closed' || kind == null || kind === 'manual') return;
+      lightDismissed.current = true;
+      window.setTimeout(() => { lightDismissed.current = false; }, 0);
+    };
     const onCancel = (event: Event) => {
+      if (lightDismissed.current) { event.preventDefault(); return; }
       if (!guarded()) return;
       event.preventDefault();
       // Asked to close while asking: back out of the step. When the request cannot be cancelled
@@ -221,6 +238,8 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
       setPrompt(null);
     };
     el.addEventListener('cancel', onCancel);
+    // `beforetoggle` does not bubble; the capture phase still passes the document.
+    document.addEventListener('beforetoggle', onBeforeToggle, true);
     el.addEventListener('pointerdown', onPointerDownCapture, true);
     el.addEventListener('pointerup', onPointerUpCapture, true);
     el.addEventListener('pointercancel', forget, true);
@@ -229,6 +248,7 @@ export function useGuardedDialog({ open, onClose, dirty = false, pending = false
     el.addEventListener('keydown', forget, true);
     return () => {
       el.removeEventListener('cancel', onCancel);
+      document.removeEventListener('beforetoggle', onBeforeToggle, true);
       el.removeEventListener('pointerdown', onPointerDownCapture, true);
       el.removeEventListener('pointerup', onPointerUpCapture, true);
       el.removeEventListener('pointercancel', forget, true);

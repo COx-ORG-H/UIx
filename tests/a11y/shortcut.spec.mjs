@@ -15,15 +15,17 @@ import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/shortcut/harness.html';
 const GATED = new Set(['serious', 'critical']);
+/** The theme of a project: `light` / `dark`, and light in the cross-browser projects (HAR-2417). */
+const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'light');
 
 const open = async (page, testInfo, platform = 'Win32') => {
   await page.addInitScript(([t, p]) => {
     try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
     Object.defineProperty(navigator, 'platform', { get: () => p });
     Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: p === 'MacIntel' ? 'macOS' : 'Windows' }) });
-  }, [testInfo.project.name, platform]);
+  }, [themeOf(testInfo), platform]);
   await page.goto(HARNESS, { waitUntil: 'networkidle' });
-  await expect(page.locator('html')).toHaveAttribute('data-theme', testInfo.project.name);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', themeOf(testInfo));
   await expect(page.locator('#assign')).toBeVisible();
 };
 /** The Button hint that is open right now (each Button portals its own bubble). */
@@ -169,10 +171,11 @@ test('ButtonLink: a shortcut shows the same hint above the link and is said once
   await page.keyboard.press('Escape');
   await expect(openHint(page)).toHaveCount(0);
   await expect(page).not.toHaveURL(/#new$/);
-  // An icon link: its name leads the hint; keyboard focus shows it.
+  // An icon link: its name leads the hint; keyboard focus shows it. (Safari's Tab skips links by
+  // default, so focus arrives the way a keyboard user's skip link or shortcut would send it.)
   await page.mouse.move(0, 0);
-  await page.locator('#new-link').focus();
-  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift');
+  await page.locator('#new-icon').focus();
   await expect(page.locator('#new-icon')).toBeFocused();
   await expect(openHint(page)).toContainText('Import');
   await expect(page.locator('#new-icon')).toHaveAccessibleDescription('Control+I');

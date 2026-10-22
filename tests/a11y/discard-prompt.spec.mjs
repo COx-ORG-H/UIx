@@ -16,13 +16,15 @@ import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/discard-prompt/harness.html';
 const GATED = new Set(['serious', 'critical']);
+/** The theme of a project: `light` / `dark`, and light in the cross-browser projects (HAR-2417). */
+const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'light');
 
 test.beforeEach(async ({ page }, testInfo) => {
   await page.addInitScript((t) => {
     try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
-  }, testInfo.project.name);
+  }, themeOf(testInfo));
   await page.goto(HARNESS, { waitUntil: 'networkidle' });
-  await expect(page.locator('html')).toHaveAttribute('data-theme', testInfo.project.name);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', themeOf(testInfo));
   await expect(page.locator('#open-drawer')).toBeVisible();
 });
 
@@ -187,6 +189,22 @@ test('drawer: a Modal nested in a dirty drawer closes on Escape, and its first c
   await expect(inner).toHaveJSProperty('open', false);
   expect(await page.evaluate(() => window.__discard.innerOk)).toBe(1);
   await expect(dialog).toHaveJSProperty('open', true);
+});
+
+test('drawer: clean, Escape closes an open popover and leaves the drawer open', async ({ page }) => {
+  // WebKit handed this Escape to the drawer as well (a `cancel` after the popover closed): the
+  // clean drawer closed with its popover (HAR-2417, found by running this spec in WebKit).
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await dialog.locator('#help-trigger').click();
+  const help = page.locator('#help-pop');
+  await expect.poll(() => help.evaluate((el) => el.matches(':popover-open'))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => help.evaluate((el) => el.matches(':popover-open'))).toBe(false);
+  await page.waitForTimeout(100);
+  await expect(dialog).toHaveJSProperty('open', true);
+  expect((await closes(page)).drawer).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveJSProperty('open', false);
 });
 
 test('drawer: Escape closes an open popover first, and does not ask', async ({ page }) => {
