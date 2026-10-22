@@ -10,6 +10,9 @@ export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVir
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
 export { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion.js';
+export { useDelayedPending } from './hooks/useDelayedPending.js';
+export type { DelayedPendingOptions } from './hooks/useDelayedPending.js';
+export { PENDING_DELAY_MS, PENDING_MIN_VISIBLE_MS, RESULT_HOLD_MS } from './motion-timing.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';
@@ -284,6 +287,10 @@ export type { AvatarProps, AvatarGroupProps, UserChipProps, AvatarPresence, Pres
 export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
 export { SaveStatus, DEFAULT_SAVE_STATUS_LABELS } from './components/SaveStatus.js';
+export { BusyRegion } from './components/BusyRegion.js';
+export type { BusyRegionProps } from './components/BusyRegion.js';
+export { DEFAULT_BUTTON_RESULT_LABELS } from './components/ButtonFeedback.js';
+export type { ButtonResult, ButtonResultLabels } from './components/ButtonFeedback.js';
 export type { SaveStatusProps, SaveStatusLabels, SaveStatusState } from './components/SaveStatus.js';
 
 export { Composer, ComposerBar } from './components/Composer.js';

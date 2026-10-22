@@ -492,6 +492,16 @@ export interface BulletProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'
     label: string;
 }
 
+// @public
+export function BusyRegion(input: BusyRegionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BusyRegionProps extends HTMLAttributes<HTMLDivElement> {
+    busy: boolean;
+    // (undocumented)
+    children?: ReactNode;
+}
+
 // @public (undocumented)
 export const Button: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
 
@@ -531,14 +541,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     children?: ReactNode;
     // (undocumented)
     icon?: boolean;
-    // (undocumented)
     loading?: boolean;
+    loadingDelay?: number;
+    result?: ButtonResult | null;
+    resultLabels?: Partial<ButtonResultLabels>;
     shortcut?: KeyShortcut;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
     variant?: ButtonVariant;
     wrap?: boolean;
+}
+
+// @public (undocumented)
+export type ButtonResult = 'success' | 'error';
+
+// @public
+export interface ButtonResultLabels {
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    success: string;
 }
 
 // @public
@@ -1393,6 +1416,9 @@ export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
 export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
 
 // @public (undocumented)
+export const DEFAULT_BUTTON_RESULT_LABELS: ButtonResultLabels;
+
+// @public (undocumented)
 export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 
 // @public (undocumented)
@@ -1487,6 +1513,12 @@ export const DEFAULT_TREE_LABELS: TreeLabels;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
+
+// @public (undocumented)
+export interface DelayedPendingOptions {
+    delay?: number;
+    minVisible?: number;
+}
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -3030,6 +3062,7 @@ export function LoadingState(input: LoadingStateProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
+    delay?: boolean | number;
     // (undocumented)
     density?: 'compact' | 'comfortable';
     label?: string;
@@ -3781,6 +3814,12 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
     // (undocumented)
     title?: ReactNode;
 }
+
+// @public
+export const PENDING_DELAY_MS = 300;
+
+// @public
+export const PENDING_MIN_VISIBLE_MS = 500;
 
 // @public (undocumented)
 export type PillSize = 'sm' | 'md' | 'lg';
@@ -4655,6 +4694,9 @@ export interface ResourceGridProps extends HTMLAttributes<HTMLDivElement> {
 // @public (undocumented)
 export function restoreBrandProfile(snapshot: AppliedBrandProfileSnapshot, target?: HTMLElement | null): void;
 
+// @public
+export const RESULT_HOLD_MS = 1500;
+
 // @public (undocumented)
 export interface RgbColor {
     // (undocumented)
@@ -5040,6 +5082,7 @@ export interface SaveStatusLabels {
 
 // @public (undocumented)
 export interface SaveStatusProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    delay?: number;
     // (undocumented)
     labels?: Partial<SaveStatusLabels>;
     onRetry?: () => void;
@@ -5853,6 +5896,7 @@ export function Spinner(input: SpinnerProps): react.JSX.Element;
 export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     accent?: boolean;
+    delay?: boolean | number;
     label?: string;
     size?: 'sm' | 'md' | 'lg';
 }
@@ -6107,6 +6151,7 @@ export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
     announcement?: string;
     // (undocumented)
     children?: ReactNode;
+    refreshing?: boolean;
 }
 
 // @public
@@ -6721,6 +6766,7 @@ export interface UixLabels {
     bulkBar?: {
         region?: string;
     };
+    buttonResult?: Partial<ButtonResultLabels>;
     chip?: {
         remove?: string;
     };
@@ -6849,6 +6895,9 @@ export interface UseAnchoredPositionOptions {
     placement?: Placement;
     shiftMainAxis?: boolean;
 }
+
+// @public
+export function useDelayedPending(pending: boolean, input?: DelayedPendingOptions): boolean;
 
 // @public
 export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement>;

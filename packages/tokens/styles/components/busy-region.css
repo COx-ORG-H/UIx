@@ -1,0 +1,47 @@
+/* uix busy region — keep what is on screen while it is fetched again (HAR-2582, motion
+   standard §2.5). A refetch dims the content under an indeterminate bar along the top instead
+   of swapping it for skeletons, so nothing the person was looking at vanishes. The React
+   BusyBar sets [data-shown] after 300 ms and holds it 500 ms; the parent reads it with :has(),
+   so `BusyRegion` and `TableWrap refreshing` stay server components. Depends only on --uix-*
+   tokens. */
+@layer uix.components {
+  .uix-busy-region { position: relative; }
+  .uix-busy-region__content { transition: opacity var(--uix-dur-exit) var(--uix-ease-out); }
+  .uix-busy-region:has(> .uix-busy-bar[data-shown]) > .uix-busy-region__content { opacity: .6; transition-duration: var(--uix-dur); }
+
+  .uix-busy-bar {
+    position: absolute; inset-block-start: 0; inset-inline: 0; z-index: var(--uix-z-sticky);
+    display: block; height: 2px; overflow: hidden; pointer-events: none;
+    opacity: 0; transition: opacity var(--uix-dur-exit) var(--uix-ease-out);
+  }
+  .uix-busy-bar[data-shown] { opacity: 1; transition-duration: var(--uix-dur); }
+  .uix-busy-bar::before {
+    content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 40%;
+    background: var(--uix-accent); transform: translateX(-100%);
+  }
+  /* constant motion is linear (§2.4) */
+  .uix-busy-bar[data-shown]::before { animation: uix-busy-sweep var(--uix-loop-progress) linear infinite; }
+  @keyframes uix-busy-sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+  /* right to left: the stripe starts at the right (inline-start) edge and sweeps leftwards */
+  @keyframes uix-busy-sweep-rtl { from { transform: translateX(100%); } to { transform: translateX(-250%); } }
+  .uix-busy-bar[data-shown]:dir(rtl)::before { animation-name: uix-busy-sweep-rtl; }
+
+  /* Reduced motion: no sweep; the full bar pulses (the kit's uix-pulse), so "still working" survives (§2.7). */
+  @media (prefers-reduced-motion: reduce) {
+    .uix-busy-bar::before { width: 100%; transform: none; }
+    /* !important: the kit's reduced-motion policy ends keyframes at once; a still-working signal opts back in */
+    .uix-busy-bar[data-shown]::before, .uix-busy-bar[data-shown]:dir(rtl)::before { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
+  }
+  @media (forced-colors: active) {
+    .uix-busy-bar::before { background: Highlight; }
+  }
+
+  /* A refreshing table: the bar sticks to the top of the scrolling wrap (over the sticky
+     header) and takes no room: it is 0 tall and draws its 2 px stripe below its own edge. It
+     clips sideways only (overflow-x: clip), so the sweep never widens the wrap's scroll area.
+     The rows dim; the header stays. */
+  .uix-table-wrap > .uix-busy-bar { position: sticky; inset-inline-start: 0; height: 0; overflow-x: clip; overflow-y: visible; z-index: calc(var(--uix-z-sticky) + 1); }
+  .uix-table-wrap > .uix-busy-bar::before { inset-block: 0 auto; height: 2px; }
+  .uix-table-wrap > .uix-table > tbody { transition: opacity var(--uix-dur-exit) var(--uix-ease-out); }
+  .uix-table-wrap:has(> .uix-busy-bar[data-shown]) > .uix-table > tbody { opacity: .6; transition-duration: var(--uix-dur); }
+}
