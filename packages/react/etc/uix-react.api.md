@@ -1119,6 +1119,18 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 // @public
 export type DashboardGridSpan = 1 | 2 | 'full';
 
+// @public (undocumented)
+export const DATE_FILTER_OPERATORS: readonly DateFilterOperator[];
+
+// @public
+export function dateFilterBounds(value: FilterValue | undefined): {
+    from?: string;
+    until?: string;
+};
+
+// @public
+export type DateFilterOperator = 'on' | 'before' | 'after' | 'between';
+
 // @public
 export type DateInputProblem = 'format' | 'unavailable';
 
@@ -2003,6 +2015,8 @@ export function FilterEditor(input: FilterEditorProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface FilterEditorLabels {
+    addTag?: string;
+    addTagHint?: string;
     and: string;
     // (undocumented)
     any: string;
@@ -2010,6 +2024,8 @@ export interface FilterEditorLabels {
     apply: string;
     // (undocumented)
     clear: string;
+    date?: string;
+    dateOperators?: Partial<Record<DateFilterOperator, string>>;
     // (undocumented)
     from: string;
     // (undocumented)
@@ -2049,8 +2065,7 @@ export interface FilterEditorProps {
     field: FilterField;
     // (undocumented)
     labels?: Partial<FilterEditorLabels>;
-    // (undocumented)
-    onApply: () => void;
+    onApply: (value: FilterValue) => void;
     // (undocumented)
     onClear: () => void;
     // (undocumented)
@@ -2062,6 +2077,7 @@ export interface FilterEditorProps {
 
 // @public (undocumented)
 export interface FilterField {
+    dateOperators?: readonly DateFilterOperator[];
     // (undocumented)
     falseLabel?: string;
     // (undocumented)
@@ -2073,6 +2089,7 @@ export interface FilterField {
     operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
     options?: readonly FilterChoice[];
     presets?: readonly FilterPreset[];
+    resolveLabels?: (ids: readonly string[]) => Promise<readonly FilterChoice[]>;
     trueLabel?: string;
     unit?: string;
 }
@@ -2129,10 +2146,15 @@ export interface FilterPreset {
 
 // @public (undocumented)
 export interface FilterSummaryLabels {
+    // (undocumented)
+    after?: string;
+    // (undocumented)
+    before?: string;
     from: string;
     more: string;
     // (undocumented)
     no: string;
+    on?: string;
     // (undocumented)
     operators: Record<TextFilterOperator | NumberFilterOperator, string>;
     preset?: string;
@@ -2159,12 +2181,24 @@ export type FilterValue = {
     kind: 'date-range';
     from?: string;
     to?: string;
+}
+/** A date with a condition (HAR-1832); `YYYY-MM-DD`. A saved `between` stays `between`, even of one day. */
+| {
+    kind: 'date';
+    operator: DateFilterOperator;
+    from?: string;
+    to?: string;
 } | {
     kind: 'boolean';
     value?: boolean;
 } | {
     kind: 'reference';
     values: FilterChoice[];
+}
+/** Free-text values typed in as tags (HAR-1832), e.g. several hostnames; matched by the product. */
+| {
+    kind: 'tags';
+    values: string[];
 };
 
 // @public (undocumented)
@@ -2568,6 +2602,9 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
+
+// @public
+export const isUnresolvedChoice: (choice: FilterChoice) => boolean;
 
 // @public
 export function isValidDateKey(value: string): boolean;
@@ -4363,6 +4400,9 @@ export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 
 // @public
 export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, change: DashboardCanvasResize): T[];
+
+// @public
+export function resolveFilterLabels(field: FilterField, value: FilterValue | undefined): Promise<FilterValue | undefined>;
 
 // @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;

@@ -11,14 +11,24 @@ export interface FilterChoice {
 
 export type TextFilterOperator = 'contains' | 'not-contains' | 'is' | 'is-not' | 'starts-with';
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+/**
+ * A date condition (HAR-1832). `on`, `before` and `after` take one day in `from`; `between` takes
+ * `from` and `to`, both inclusive. "Before" excludes the day and "after" starts the next day:
+ * `dateFilterBounds` turns each into the half-open range a query needs.
+ */
+export type DateFilterOperator = 'on' | 'before' | 'after' | 'between';
 
 export type FilterValue =
   | { kind: 'enum'; values: string[] }
   | { kind: 'text'; operator: TextFilterOperator; text: string }
   | { kind: 'number'; operator: NumberFilterOperator; value?: number; to?: number }
   | { kind: 'date-range'; from?: string; to?: string }
+  /** A date with a condition (HAR-1832); `YYYY-MM-DD`. A saved `between` stays `between`, even of one day. */
+  | { kind: 'date'; operator: DateFilterOperator; from?: string; to?: string }
   | { kind: 'boolean'; value?: boolean }
-  | { kind: 'reference'; values: FilterChoice[] };
+  | { kind: 'reference'; values: FilterChoice[] }
+  /** Free-text values typed in as tags (HAR-1832), e.g. several hostnames; matched by the product. */
+  | { kind: 'tags'; values: string[] };
 
 export type FilterValueKind = FilterValue['kind'];
 
@@ -42,8 +52,15 @@ export interface FilterField {
   options?: readonly FilterChoice[];
   /** `reference`: finds records to pick; rejected promises show the error state. */
   onSearch?: (query: string) => Promise<readonly FilterChoice[]>;
+  /**
+   * `reference`: labels for chosen ids that arrived without one (a saved view restores ids).
+   * The editor asks once for every id whose label is missing or equal to the id.
+   */
+  resolveLabels?: (ids: readonly string[]) => Promise<readonly FilterChoice[]>;
   /** `text` / `number`: the operators offered, in order. Default: all of the kind. */
   operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
+  /** `date`: the conditions offered, in order. Default: on, before, after, between. */
+  dateOperators?: readonly DateFilterOperator[];
   /** `number`: a unit shown after the value, e.g. "days". */
   unit?: string;
   /** `boolean`: words for true and false, e.g. Escalated / Not escalated. Default from labels. */
@@ -71,6 +88,10 @@ export interface FilterSummaryLabels {
   more: string;
   /** An `enum` value equal to a preset: `{label}` (the preset), `{field}`. Default `{label}`. */
   preset?: string;
+  /** `date` conditions (HAR-1832), `{date}`. Default "{date}", "before {date}", "after {date}". */
+  on?: string;
+  before?: string;
+  after?: string;
 }
 
 export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
@@ -85,10 +106,14 @@ export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
   until: 'until {to}',
   more: '{first} +{count}',
   preset: '{label}',
+  on: '{date}',
+  before: 'before {date}',
+  after: 'after {date}',
 };
 
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[] = ['contains', 'not-contains', 'is', 'is-not', 'starts-with'];
 export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[] = ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'between'];
+export const DATE_FILTER_OPERATORS: readonly DateFilterOperator[] = ['on', 'before', 'after', 'between'];
 
 /** The empty value for a field kind (what Clear resets to). */
 export function emptyFilterValue(kind: FilterValueKind): FilterValue {
@@ -97,8 +122,10 @@ export function emptyFilterValue(kind: FilterValueKind): FilterValue {
     case 'text': return { kind, operator: 'contains', text: '' };
     case 'number': return { kind, operator: 'eq' };
     case 'date-range': return { kind };
+    case 'date': return { kind, operator: 'on' };
     case 'boolean': return { kind };
     case 'reference': return { kind, values: [] };
+    case 'tags': return { kind, values: [] };
   }
 }
 
@@ -106,12 +133,57 @@ export function emptyFilterValue(kind: FilterValueKind): FilterValue {
 export function isFilterEmpty(value: FilterValue | undefined): boolean {
   if (!value) return true;
   switch (value.kind) {
-    case 'enum': case 'reference': return value.values.length === 0;
+    case 'enum': case 'reference': case 'tags': return value.values.length === 0;
     case 'text': return value.text.trim() === '';
     case 'number': return value.value === undefined || (value.operator === 'between' && value.to === undefined);
     case 'date-range': return !value.from && !value.to;
+    case 'date': return !value.from || (value.operator === 'between' && !value.to);
     case 'boolean': return value.value === undefined;
   }
+}
+
+/** `YYYY-MM-DD` plus `days`, in the calendar (no time zone involved). */
+function addDays(date: string, days: number): string {
+  const [y, m, d] = date.split('-').map(Number);
+  const next = new Date(Date.UTC(y, m - 1, d + days));
+  return next.toISOString().slice(0, 10);
+}
+
+/**
+ * The half-open range a `date` filter means, for a query (HAR-1832): `{ from }` is the first day
+ * included, `{ until }` the first day NOT included, either may be missing. "On 5 Oct" is
+ * `[5 Oct, 6 Oct)`, "before 5 Oct" is `[…, 5 Oct)`, "after 5 Oct" is `[6 Oct, …)`, "between 1 and
+ * 5 Oct" is `[1 Oct, 6 Oct)`. A `date-range` value reads as `between` with optional ends. Empty
+ * values give `{}`.
+ */
+export function dateFilterBounds(value: FilterValue | undefined): { from?: string; until?: string } {
+  if (value?.kind === 'date-range') {
+    return { ...(value.from ? { from: value.from } : {}), ...(value.to ? { until: addDays(value.to, 1) } : {}) };
+  }
+  if (value?.kind !== 'date' || isFilterEmpty(value)) return {};
+  const day = value.from!;
+  switch (value.operator) {
+    case 'on': return { from: day, until: addDays(day, 1) };
+    case 'before': return { until: day };
+    case 'after': return { from: addDays(day, 1) };
+    case 'between': return { from: day, until: addDays(value.to!, 1) };
+  }
+}
+
+/** True for a chosen reference whose label is missing or only repeats its id (restored from an id). */
+export const isUnresolvedChoice = (choice: FilterChoice): boolean => !choice.label || choice.label === choice.value;
+
+/**
+ * Fills in the labels of a `reference` value restored from ids (HAR-1832), with
+ * `field.resolveLabels`. Other values, and values whose labels are all known, come back as they
+ * are. Ids the resolver does not return keep the label they had.
+ */
+export async function resolveFilterLabels(field: FilterField, value: FilterValue | undefined): Promise<FilterValue | undefined> {
+  if (value?.kind !== 'reference' || !field.resolveLabels) return value;
+  const missing = value.values.filter(isUnresolvedChoice).map((v) => v.value);
+  if (missing.length === 0) return value;
+  const resolved = new Map((await field.resolveLabels(missing)).map((c) => [c.value, c.label]));
+  return { kind: 'reference', values: value.values.map((v) => (resolved.has(v.value) ? { value: v.value, label: resolved.get(v.value)! } : v)) };
 }
 
 /**
@@ -142,7 +214,7 @@ export interface SummarizeFilterOptions {
 
 /**
  * One line for the filter chip, e.g. "State: Open, Pending", "Priority ≥ 2", "Created:
- * 01.10.2026 – 05.10.2026", "Escalated: Yes". An enum value equal to one of `field.presets`
+ * 01.10.2026 – 05.10.2026", "Created: before 05.10.2026", "Host: db-01, db-02 +1", "Escalated: Yes". An enum value equal to one of `field.presets`
  * gives that preset's label (the `preset` label). Empty values give an empty string.
  */
 export function summarizeFilter(field: FilterField, value: FilterValue | undefined, options: SummarizeFilterOptions = {}): string {
@@ -162,12 +234,18 @@ export function summarizeFilter(field: FilterField, value: FilterValue | undefin
       return `${field.label}: ${list(value.values.map((v) => byValue.get(v) ?? v))}`;
     }
     case 'reference': return `${field.label}: ${list(value.values.map((v) => v.label))}`;
+    case 'tags': return `${field.label}: ${list(value.values)}`;
     case 'text': return `${field.label} ${labels.operators[value.operator]} “${value.text.trim()}”`;
     case 'number': return value.operator === 'between'
       ? `${field.label}: ${fill(labels.range, { from: num(value.value!), to: num(value.to!) })}`
       : `${field.label} ${labels.operators[value.operator]} ${num(value.value!)}`;
     case 'date-range': return `${field.label}: ${value.from && value.to ? fill(labels.range, { from: date(value.from), to: date(value.to) })
       : value.from ? fill(labels.from, { from: date(value.from) }) : fill(labels.until, { to: date(value.to!) })}`;
+    case 'date': {
+      if (value.operator === 'between') return `${field.label}: ${fill(labels.range, { from: date(value.from!), to: date(value.to!) })}`;
+      const template = labels[value.operator] ?? DEFAULT_FILTER_SUMMARY_LABELS[value.operator]!;
+      return `${field.label}: ${fill(template, { date: date(value.from!) })}`;
+    }
     case 'boolean': return `${field.label}: ${value.value ? field.trueLabel ?? labels.yes : field.falseLabel ?? labels.no}`;
   }
 }

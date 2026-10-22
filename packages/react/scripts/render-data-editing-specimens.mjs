@@ -42,6 +42,20 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── FilterEditor kinds (HAR-1832): free-text tags, and a date with a condition ───────────────
+  ({ ui, mount, html }) => {
+    const none = () => {};
+    const tags = mount(h(ui.FilterEditor, { field: { id: 'host', label: 'Host', kind: 'tags' }, value: { kind: 'tags', values: ['db-prod-eu-central-01', 'web-01'] }, onValueChange: none, onApply: none, onClear: none }));
+    const date = mount(h(ui.FilterEditor, { field: { id: 'created', label: 'Created', kind: 'date' }, value: { kind: 'date', operator: 'before', from: '2026-10-05' }, onValueChange: none, onApply: none, onClear: none }));
+    return {
+      'examples-data-display': [
+        caption('Filter editor: tags and dates (React <code>FilterEditor</code>, HAR-1832) — free-text values typed as tags (Enter or a comma adds one, × or Backspace removes it); a date with on / before / after / between, kept as chosen when a saved view comes back; Enter applies from any field'),
+        '<div data-filter-editor-kinds-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+        html(tags), html(date),
+        '</div>',
+      ].join('\n'),
+    };
+  },
   // ── InlineEdit as a record field (HAR-1833): an object value, an icon trigger, a read-only
   //    reason, and a failed save with Try again ─────────────────────────────────────────────
   ({ ui, mount, html, window }) => {

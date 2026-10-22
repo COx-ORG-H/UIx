@@ -60,7 +60,7 @@
 /* FilterEditor (React, HAR-1365): typed filter content inside .uix-filter-popover */
 @layer uix.components {
   .uix-filter-editor { width: min(22rem, calc(100vw - 4rem)); min-width: 0; gap: var(--uix-space-3); }
-  .uix-filter-editor[data-kind="number"] .uix-filter-editor__row > .uix-select { flex-basis: 100%; }
+  .uix-filter-editor:is([data-kind="number"], [data-kind="date"]) .uix-filter-editor__row > .uix-select { flex-basis: 100%; }
   .uix-filter-editor__label { font-weight: 600; color: var(--uix-text); }
   .uix-filter-editor__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
   .uix-filter-editor__row > .uix-input, .uix-filter-editor__row > .uix-select { flex: 1 1 8rem; min-width: 0; }

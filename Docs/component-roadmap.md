@@ -106,7 +106,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Steps | steps.css | ✓ `Steps` | Beta | no | Also `Step`; ordered list, state in text (complete/current/upcoming/waiting/error), navigable steps, stacks below 40rem. Landed 2.27.0 (HAR-1362). 2.32.0 (HAR-1628): `progress={false}` for numbered sections that hold content. |
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |
 | Table | table.css | ✓ `Table` | Stable | no | Family: `TableWrap`, `Th`, `Td`, `Tr`, `BulkBar`, `RowActions`, etc.; `useTable` + `table-engine`. |
-| TableToolbar | table-toolbar.css | ✓ `Chip` | Stable | no | CSS support for Table and the exported `FilterPopover` composition. Also home of `.uix-chip`: React `Chip` (toggle, removable, link, "+ add") and `ChipGroup` landed 2.27.0 (HAR-1360). |
+| TableToolbar | table-toolbar.css | ✓ `Chip` | Stable | no | CSS support for Table and the exported `FilterPopover` composition. Also home of `.uix-chip`: React `Chip` (toggle, removable, link, "+ add") and `ChipGroup` landed 2.27.0 (HAR-1360). `FilterEditor` (HAR-1365) gained `tags` and `date` (on / before / after / between) kinds, `resolveLabels` for restored reference ids and Enter-applies in every kind in HAR-1832. |
 | Tabs | tabs.css | ✓ `Tabs` | Stable | no | Also `Tab`. |
 | TagInput | tag-input.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |

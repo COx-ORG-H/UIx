@@ -36,5 +36,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /aria-describedby="dex-\d+-reason">Imported from ServiceNow<\/span><span id="dex-\d+-reason" class="uix-inline-edit__reason">/);
   assert.match(forms, /role="alert"><span class="uix-cluster"[^>]*><span>The server did not answer in time\.<\/span><button[^>]*>Try again<\/button>/);
   assert.match(forms, /value="Printer offline on the 3rd floor" aria-invalid="true"/);
+  // filter editor kinds: two tags with remove buttons and a field; a "before" date with one input
+  const data = specimens['examples-data-display'];
+  assert.match(data, /data-filter-editor-kinds-example/);
+  assert.equal((data.match(/<span class="uix-tag">/g) ?? []).length, 2);
+  assert.match(data, /class="uix-taginput__field" aria-label="Add a value"/);
+  assert.match(data, /data-kind="date"/);
+  assert.equal((data.split('data-kind="date"')[1].match(/type="date"/g) ?? []).length, 1);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });
