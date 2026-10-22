@@ -537,6 +537,10 @@ const theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches
   ? "dark"
   : "light");
 document.documentElement.dataset.theme = theme;`, 'js')}`)}
+    ${section('display-preferences', 'Theme, contrast, text size, motion and density', `<p>The same root attributes carry the rest of a person's display choices: <code>data-contrast="more"</code> (stronger secondary text and hairlines), <code>data-text-scale="sm|lg|xl"</code>, <code>data-motion="reduce"</code> and <code>data-density="compact|comfortable"</code>. In React, <code>&lt;DisplayPreferences&gt;</code> and <code>&lt;ThemeSwitcher&gt;</code> write and remember them, and <code>displayPreferencesScript()</code> in the document head applies them before the first paint (<a href="#display-preferences">Display preferences</a>).</p>${codeBlock(`<head>
+  <script>{displayPreferencesScript("staff-display")}</script>
+</head>
+<ThemeSwitcher storageKey="staff-display" display="icons" />`, 'tsx')}`)}
     ${section('brand', 'Brand a product', `<p>Override only the write slots. Accent, links, rings, and muted brand surfaces re-chain automatically.</p>${codeBlock(`:root {
   --uix-brand: #16a34a;
   --uix-brand-fg: #ffffff;
