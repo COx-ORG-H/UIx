@@ -6,7 +6,12 @@
     background: var(--uix-surface-2); border: 1px solid var(--uix-border); box-shadow: var(--uix-shadow-popover);
     animation: uix-slide-in-right var(--uix-dur-slow) var(--uix-ease-out);
   }
-  .uix-toast[data-leaving] { animation: uix-toast-out var(--uix-dur) var(--uix-ease-in) forwards; }
+  .uix-toast[data-leaving] { animation: uix-toast-out var(--uix-dur-exit) var(--uix-ease-out) forwards; }
+  @media (prefers-reduced-motion: reduce) {
+    .uix-toast { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    .uix-toast[data-leaving] { animation: uix-toast-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
+  }
+  @keyframes uix-toast-fade-out { to { opacity: 0; } }
   @keyframes uix-toast-out { to { opacity: 0; transform: translateX(16px); } }
   .uix-toast__icon { flex: none; margin-top: 1px; }
   .uix-toast__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }

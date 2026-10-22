@@ -52,9 +52,14 @@
   .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
   .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
 
-  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  /* :focus-visible reveal mirrors .uix-rowact so keyboard users can find the pin (UIX-A11Y-2) */
-  .uix-table tbody tr:hover .uix-table__pin, .uix-table__pin:focus-visible, .uix-table__pin[data-on] { opacity: 1; }
+  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  /* Hidden until hover only where hover exists; a touch screen always shows the pin. The
+     :focus-visible reveal mirrors .uix-rowact so keyboard users can find it (UIX-A11Y-2). */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-table__pin { opacity: 0; }
+    .uix-table tbody tr:hover .uix-table__pin { opacity: 1; }
+  }
+  .uix-table__pin:focus-visible, .uix-table__pin[data-on] { opacity: 1; }
   .uix-table__pin:hover { background: var(--uix-bg-active); color: var(--uix-text); }
   .uix-table__pin[data-on] { color: var(--uix-accent); }
   .uix-table__pin svg { width: 15px; height: 15px; }
@@ -119,10 +124,14 @@
   .uix-id-cell__btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
   .uix-id-cell__arrow {
     width: var(--uix-icon-sm); height: var(--uix-icon-sm); flex-shrink: 0; color: var(--uix-text-muted);
-    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+    transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
   }
   /* :focus-within as well: a keyboard user on the id link sees the arrow too (HAR-1814). */
-  .uix-table tbody tr:hover .uix-id-cell__arrow, .uix-table tbody tr:focus-within .uix-id-cell__arrow { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-id-cell__arrow { opacity: 0; }
+    .uix-table tbody tr:hover .uix-id-cell__arrow { opacity: 1; }
+  }
+  .uix-table tbody tr:focus-within .uix-id-cell__arrow { opacity: 1; }
 
   /* ── selection column + select-all ────────────────────────────────────────────── */
   .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: 44px; padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
@@ -143,10 +152,15 @@
 
   /* ── row hover actions + kebab ─────────────────────────────────────────────────── */
   .uix-table__actions { width: 84px; text-align: right; white-space: nowrap; }
-  .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-rowact svg { width: 16px; height: 16px; display: block; }
-  /* A row the keyboard is in shows its actions, as a hovered one does (HAR-1814). */
-  .uix-table tbody tr:hover .uix-rowact, .uix-table tbody tr:focus-within .uix-rowact, .uix-rowact:focus-visible, .uix-rowact[aria-expanded="true"] { opacity: 1; }
+  /* Row actions hide until hover only where hover exists: on a touch screen they stay visible, so
+     hover is never the only way to reach them. A row the keyboard is in shows them too (HAR-1814). */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-rowact { opacity: 0; }
+    .uix-table tbody tr:hover .uix-rowact { opacity: 1; }
+  }
+  .uix-table tbody tr:focus-within .uix-rowact, .uix-rowact:focus-visible, .uix-rowact[aria-expanded="true"] { opacity: 1; }
   .uix-rowact:hover { background: var(--uix-bg-active); color: var(--uix-text); }
 
   /* ── expandable inline row ─────────────────────────────────────────────────────── */
@@ -162,10 +176,13 @@
   @media (prefers-reduced-motion: reduce) { .uix-table__expand svg { transition: none; } }
 
   /* ── inline cell edit ──────────────────────────────────────────────────────────── */
-  .uix-cell-edit { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: text; border-radius: var(--uix-radius-sm); padding: var(--uix-space-1) var(--uix-space-2); margin: calc(-1 * var(--uix-space-1)) calc(-1 * var(--uix-space-2)); transition: background-color var(--uix-dur-fast) var(--uix-ease-out), box-shadow var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-cell-edit { display: inline-flex; align-items: center; gap: var(--uix-space-2); cursor: text; border-radius: var(--uix-radius-sm); padding: var(--uix-space-1) var(--uix-space-2); margin: calc(-1 * var(--uix-space-1)) calc(-1 * var(--uix-space-2)); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-cell-edit:hover { background: var(--uix-bg-active); }
-  .uix-cell-edit__pencil { width: 13px; height: 13px; color: var(--uix-text-muted); opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table tbody tr:hover .uix-cell-edit__pencil { opacity: 1; }
+  .uix-cell-edit__pencil { width: 13px; height: 13px; color: var(--uix-text-muted); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-cell-edit__pencil { opacity: 0; }
+    .uix-table tbody tr:hover .uix-cell-edit__pencil { opacity: 1; }
+  }
   .uix-cell-edit[data-editing] { background: var(--uix-surface); box-shadow: 0 0 0 2px var(--uix-ring); cursor: default; }
   .uix-cell-edit__ok { color: var(--uix-success); width: 14px; height: 14px; opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-cell-edit[data-saved] .uix-cell-edit__ok { opacity: 1; }

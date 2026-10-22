@@ -508,14 +508,76 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('preview', 'Theme-safe composition', `${demo(`<div class="uix-stack"><div class="uix-alert uix-alert--info"><div><div class="uix-alert__title">Semantic by construction</div><div class="uix-alert__body">This surface follows both theme and brand overrides.</div></div></div><div class="uix-cluster"><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Primary action completed">Primary action</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Secondary action completed">Secondary</button></div></div>`, `<div class="uix-alert uix-alert--info">…</div>
 <button class="uix-btn uix-btn--primary">Primary action</button>`, { column: true })}`)}`,
 
-  motion: () => `${pageHeader('Foundations', 'Motion', 'Purposeful, subtle motion explains change without delaying work. Entrances decelerate, exits accelerate, and non-essential movement yields to user preference.', ['4 duration tokens', '4 easing tokens', 'reduced-motion aware'])}
-    ${section('tokens', 'Duration and easing', `${codeBlock(`.surface {
-  transition:
-    transform var(--uix-dur) var(--uix-ease-out),
-    opacity var(--uix-dur-fast) var(--uix-ease-in);
-}`, 'css')}<table class="uix-docs__token-table"><thead><tr><th>Contract</th><th>Use</th></tr></thead><tbody><tr><td><code>--uix-dur-fast</code> / <code>--uix-dur</code></td><td>Micro feedback and standard transitions</td></tr><tr><td><code>--uix-dur-slow</code> / <code>--uix-dur-slower</code></td><td>Overlays and large surfaces</td></tr><tr><td><code>--uix-ease-out</code></td><td>Entrances</td></tr><tr><td><code>--uix-ease-in</code></td><td>Exits</td></tr><tr><td><code>--uix-ease-in-out</code></td><td>Movement already on screen</td></tr><tr><td><code>--uix-ease-spring</code></td><td>Rare, non-critical emphasis</td></tr></tbody></table>`)}
-    ${section('reduced-motion', 'Respect reduced motion', `<p>UIx’s motion layer removes non-essential animation when <code>prefers-reduced-motion: reduce</code> is active. Product-specific animation must honor the same preference and preserve the final state without relying on movement to explain it.</p>${compare('Use motion to connect cause and effect, orient spatial change, or confirm a completed action.', 'Animate routine navigation, loop decoration indefinitely, or make progress wait for a transition.')}`)}
-    ${section('showcase', 'Motion specimens', `<p><a class="uix-btn uix-btn--primary" href="#examples-motion">Open the interactive motion examples</a></p>`)}`,
+  motion: () => {
+    const table = (head, rows) => `<table class="uix-docs__token-table uix-docs__token-table--prose"><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    const coming = '<span class="uix-pill uix-pill--neutral">coming</span>';
+    return `${pageHeader('Foundations', 'Motion', 'Motion earns its place by answering a question the user has right now. Entrances decelerate, exits are faster and never accelerate, and reduced motion removes movement but keeps feedback.', ['routine UI ≤ 300 ms', 'tokens only', 'gated by check-motion'])}
+    ${section('purpose', 'Motion answers a question', `<p>Every animation answers one of four questions, or it does not ship:</p><ol><li><strong>Did it register?</strong> Press feedback, focus, the toggle moving.</li><li><strong>Is it working?</strong> Pending state, progress.</li><li><strong>Did it work?</strong> Success or failure in place; a toast for an outcome out of view.</li><li><strong>What changed, and where did it go?</strong> A value-changed highlight, an insert or removal, a panel opening from its trigger.</li></ol><p>Beyond those, motion may orient a spatial change (a drawer comes from the edge it returns to) or mark a genuine peak in an occasional journey. “It looks nicer” is never a purpose on a surface used daily.</p>`)}
+    ${section('frequency', 'Frequency sets the budget', table(['How often the person does it', 'Motion budget'], [
+      ['Keyboard-initiated, or 100+ times a day (command palette, list keyboard navigation, shortcuts, typing)', '<strong>None.</strong> Instant.'],
+      ['Tens of times a day (row hover, tab switch, triage, assign, status change)', 'State feedback only: ≤ 150 ms, no travel, no flourish.'],
+      ['Occasional (dialogs, drawers, toasts, saves, bulk actions)', 'Standard: 150–250 ms enter.'],
+      ['Rare (request submitted, first run, a milestone)', 'A modest moment of delight; never blocks, never repeats, never gamified.'],
+    ]))}
+    ${section('latency', 'Timing and latency ladder', `${table(['Time since input', 'What the user must see'], [
+      ['≤ 100 ms', 'Acknowledgement: pressed state, toggle moved, the field accepted the keystroke.'],
+      ['100–300 ms', 'Nothing new. A spinner that would flash for 150 ms is noise.'],
+      ['> 300 ms', 'A pending indicator in place (Button <code>loading</code>, a busy region), shown for at least ~500 ms once it appears so it does not flicker.'],
+      ['> 1 s', 'The pending indicator says what is happening; long lists keep their previous rows.'],
+      ['> 10 s', 'Determinate progress, the current step, and a way to leave while it continues in the background with a notification.'],
+    ])}<p>Interactive responses target ≤ 400 ms at p75 (the Doherty threshold). Never add delay to look thorough.</p>`)}
+    ${section('tokens', 'Tokens', `${codeBlock(`.surface {
+  /* enter: strong ease-out at the enter duration */
+  transition: opacity var(--uix-dur) var(--uix-ease-out),
+              transform var(--uix-dur) var(--uix-ease-out);
+}
+.surface[data-leaving] {
+  /* exit: about two-thirds of the enter, still ease-out — never ease-in */
+  transition-duration: var(--uix-dur-exit);
+}`, 'css')}${table(['Token', 'Value', 'Use'], [
+      ['<code>--uix-dur-fast</code> / <code>--uix-dur-exit-fast</code>', '120 / 80 ms', 'Press, hover and state feedback'],
+      ['<code>--uix-dur</code> / <code>--uix-dur-exit</code>', '160 / 110 ms', 'Popovers, menus, select, toasts'],
+      ['<code>--uix-dur-slow</code> / <code>--uix-dur-exit-slow</code>', '240 / 160 ms', 'Modal, drawer, side peek'],
+      ['<code>--uix-dur-slower</code>', '320 ms', 'Large surfaces only; routine UI stays ≤ 300 ms'],
+      ['<code>--uix-delay-tooltip</code> / <code>--uix-delay-tooltip-skip</code>', '400 / 300 ms', 'Tooltip hover delay; a neighbour hovered inside the skip window opens at once'],
+      ['<code>--uix-loop-spin</code>, <code>--uix-loop-progress</code>, <code>--uix-loop-shimmer</code>, <code>--uix-loop-ping</code>, <code>--uix-loop-blink</code>', '600 / 1200 / 1400 / 1600 / 1100 ms', 'One cycle of a looping indicator'],
+      ['<code>--uix-loop-pulse</code>', '2000 ms', 'The reduced-motion opacity pulse that replaces every loop'],
+      ['<code>--uix-dur-highlight</code>', '2400 ms', 'An arrival or change tint fading back; a held signal, not movement'],
+      ['<code>--uix-ease-out</code> / <code>--uix-ease-out-strong</code>', '', 'Entrances and exits'],
+      ['<code>--uix-ease-in-out</code>', 'cubic-bezier(.77,0,.175,1)', 'Movement already on screen'],
+      ['<code>--uix-ease-spring</code>', '', 'A small confirmation (a check, a star); never layout, never staff-UI bounce'],
+      ['<code>--uix-ease-in</code>', '', 'Kept for compatibility. Do not use: an accelerating curve on something the user watches reads as lag.'],
+    ])}`)}
+    ${section('mechanics', 'Mechanics', `<ul><li><strong>Tokens only.</strong> Durations and easings come from <code>--uix-dur-*</code>, <code>--uix-delay-*</code>, <code>--uix-loop-*</code> and <code>--uix-ease-*</code>; no raw times in CSS or JS.</li><li><strong>Easing.</strong> Enter with a strong ease-out. Move on screen with ease-in-out. Exit faster than the enter (about two-thirds) and never with ease-in. Constant motion (indeterminate progress) is linear or in-out. No bounce in staff UI.</li><li><strong>Properties.</strong> Animate <code>transform</code> and <code>opacity</code> (and <code>filter</code> / <code>clip-path</code> when needed). Never <code>width</code>, <code>height</code>, <code>grid-template-*</code>, <code>top</code>/<code>left</code>, <code>margin</code>, <code>padding</code> or <code>box-shadow</code>, and never <code>transition: all</code>. A shadow steps; a meter slides on <code>transform</code>.</li><li><strong>Interruptible.</strong> Anything that can re-trigger quickly (toasts, suggestions, the bulk bar, a row highlight) uses transitions or <code>@starting-style</code>, not keyframes that restart from zero. Nothing animates on a page’s first render.</li><li><strong>Origin.</strong> Popovers, menus and tooltips grow from their trigger (<code>transform-origin</code>), from <code>scale(.95)</code> plus opacity, never <code>scale(0)</code>. Modals stay centred.</li><li><strong>Tooltips.</strong> Open after a delay; then neighbours open instantly (a delay group). Keyboard focus opens at once.</li><li><strong>Hover.</strong> Movement and reveal-on-hover sit inside <code>@media (hover: hover) and (pointer: fine)</code>; hover is never the only path to an action. Row actions stay visible on a touch screen.</li><li><strong>Instant surfaces.</strong> An overlay opened from the keyboard, and the command palette, open and close with no animation: set <code>[data-uix-instant]</code> (React: <code>Modal instant</code>; <code>CommandPalette</code> sets it itself).</li><li><strong>Concurrency.</strong> At most two or three things move on a screen at once, and one salient signal per region.</li></ul>`)}
+    ${section('continuity', 'Never make a change invisible', `<ul><li><strong>Keep previous data while refetching.</strong> A filter, sort, page or saved-view change keeps the rows, dims them, shows an indeterminate bar and sets <code>aria-busy</code>. A skeleton is for first load only.</li><li><strong>An in-place update carries three cues:</strong> a signal (the highlight), the location (on the row or field that changed) and the description (the new text, and where useful who changed it).</li><li><strong>Never re-sort under the pointer.</strong> A live re-sort waits, or animates and says so.</li><li><strong>Items leave visibly.</strong> A handled row fades and collapses before the list closes the gap; neighbours glide, they do not jump.</li></ul>`)}
+    ${section('optimism', 'Optimism, honesty and recovery', `<ul><li><strong>Optimistic</strong> only for reversible, high-success, personal actions: star, pin, reaction, mark read, density, reordering your own saved views. On failure, roll back visibly and say what was restored.</li><li><strong>Pessimistic</strong> (Button <code>loading</code>, then confirm) for anything the server can refuse or an auditor reads: state transitions, assignment, approvals, priority changes, deletes. A pill that flips and flips back teaches people the UI lies.</li><li>Every mutation confirms its outcome, and every failure offers a way to recover.</li></ul>`)}
+    ${section('state-changes', 'Which motion for which state change', `${table(['State change', 'UIx primitive', 'Motion'], [
+      ['Press', '<code>.uix-btn:active</code>', 'scale .97, ≤ 120 ms'],
+      ['Mutation pending', `<code>Button loading</code>; delayed-pending hook ${coming}`, 'spinner after 300 ms, held at least 500 ms'],
+      ['Mutation succeeded or failed in place', `<code>Button</code> success/error state ${coming}; <code>SaveStatus</code>`, 'label/icon crossfade, held 1–2 s, <code>aria-live</code>'],
+      ['Outcome out of view, or undoable', '<code>Toast</code> with an action', 'enter from the edge, exit faster, pause on hover/focus/hidden tab'],
+      ['Region refetching', `<code>BusyRegion</code>, DataTable <code>refreshing</code> ${coming}`, 'dim plus a top indeterminate bar, <code>aria-busy</code>'],
+      ['Value or row changed (live update, after a transition)', `<code>ChangeHighlight</code> ${coming}; <code>.uix-arrival</code> for a landing target`, 'tint fades over 1–1.5 s; a steady outline under reduced motion'],
+      ['Item inserted, removed or reordered', `list enter, exit-collapse, FLIP ${coming}`, 'opacity plus ≤ 8 px travel; collapse on transform'],
+      ['Counter or badge changed', `<code>Count</code> ${coming}`, 'one tick on change, never a loop; no tweened numbers in dense tables'],
+      ['Disclosure, tab change', `<code>CollapsibleSection</code> expand, sliding tab indicator ${coming}`, '≤ 200 ms'],
+      ['Drag', `lift, drop target, drop line, settle ${coming}`, 'lift shadow on grab, settle ≤ 200 ms, keyboard alternative'],
+      ['Copy', '<code>CopyButton</code>', 'icon → check for 1.5 s, <code>aria-live</code>'],
+      ['A peak in a rare journey (request submitted)', `<code>SuccessState</code> ${coming}`, 'one success mark, then “what happens next”'],
+    ])}<p>Primitives marked <em>coming</em> are being built in the feedback kit; until they ship, use the nearest existing primitive and keep its motion inside this contract.</p>`)}
+    ${section('reduced-motion', 'Reduced motion removes movement, not feedback', `<p>Under <code>prefers-reduced-motion: reduce</code>, UIx’s motion layer drops transform, translate, scale and layout glide from every transition and keeps opacity and colour fades, so a popover still fades in but no longer travels. Looping “still working” indicators — Spinner, Button loading, skeleton, indeterminate progress, SaveStatus, a running flow node, Heartbeat — slow to a gentle opacity pulse instead of freezing, so the status survives. Focus rings appear instantly, and motion is never the only signal: a change also changes text or an icon.</p><p>Motion that JavaScript drives (a swipe that follows the pointer, a scripted scroll, a pan or zoom) reads the same preference with <code>useReducedMotion()</code> and lands on the end state.</p>${codeBlock(`import { useReducedMotion } from "@tensor_1/react";
+
+const reduce = useReducedMotion();
+graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in place, keep a loading indicator visibly alive, and land on the final state.', 'Freeze a spinner, hide a change behind movement, or keep sliding a panel when the user asked for less motion.')}`)}
+    ${section('gate', 'How the contract is enforced', `<p><code>npm run test:contract</code> runs <code>check-motion.mjs</code> over every UIx stylesheet and the React source. It fails on a raw time value, <code>transition: all</code>, an ease-in curve, an animated layout property, an infinite or moving animation with no <code>prefers-reduced-motion</code> rule for its selector, and a <code>:hover</code> that moves or reveals outside <code>@media (hover: hover) and (pointer: fine)</code>. <code>tests/a11y/motion-policy.spec.mjs</code> checks the reduced-motion behaviour and the instant surfaces in a real browser.</p>`)}
+    ${section('specimens', 'Specimens', `${demo(`<div class="uix-docs__motion-specimens">
+  <div class="uix-stack uix-stack--compact"><strong>Enter, then a faster exit</strong><button class="uix-btn uix-btn--secondary uix-btn--sm" type="button" data-motion-toggle="motion-panel" aria-expanded="false" aria-controls="motion-panel">Show panel</button><div class="uix-docs__motion-panel" id="motion-panel" data-open="false"><span>Enters in 160 ms (<code>--uix-dur</code>), leaves in 110 ms (<code>--uix-dur-exit</code>).</span></div></div>
+  <div class="uix-stack uix-stack--compact"><strong>Looping indicators</strong><div class="uix-cluster"><span class="uix-spinner" role="status" aria-label="Loading"></span><button class="uix-btn uix-btn--primary uix-btn--sm" type="button" data-loading aria-label="Saving" disabled>Saving</button><span class="uix-heartbeat" aria-hidden="true"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span></div><div class="uix-progress uix-progress--indeterminate" role="progressbar" aria-label="Importing"><div class="uix-progress__bar"></div></div><div class="uix-skeleton uix-skeleton--text"></div></div>
+  <div class="uix-stack uix-stack--compact"><strong>A value that moves on transform</strong><div class="uix-meter" role="meter" aria-label="Capacity" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35" data-motion-meter><div class="uix-meter__fill" style="--val:.35"></div></div><button class="uix-btn uix-btn--secondary uix-btn--sm" type="button" data-motion-meter-step>Change value</button></div>
+  <div class="uix-stack uix-stack--compact"><strong>Hover lift (fine pointers only)</strong><a class="uix-card uix-card--interactive" href="#motion"><div class="uix-card__body">An interactive card</div></a></div>
+</div>`, `<div class="uix-progress uix-progress--indeterminate"><div class="uix-progress__bar"></div></div>
+<div class="uix-meter"><div class="uix-meter__fill" style="--val:.35"></div></div>`, { column: true })}<p>Turn on reduced motion in the operating system (or emulate it in DevTools): the panel fades without sliding, the loops breathe instead of turning, and the card no longer lifts. <a href="#examples-motion">Open the motion examples →</a></p>`)}`;
+  },
 
   'icons-assets': () => `${pageHeader('Foundations', 'Icons & assets', 'UIx uses a restrained Lucide icon set plus explicit patterns for emoji, avatars, product imagery, attachments, and zoomable media.', ['Lucide SVG', '16 / 20 / 24 px', 'alternative text required'])}
     ${section('icons', 'Icons', `<p>Render Lucide glyphs as inline SVG using <code>currentColor</code>, a stroke width of 2, and round caps. Use the shared small, medium, and large icon sizes instead of drawing product-local glyphs.</p>${codeBlock(`<button class="uix-btn uix-btn--icon" type="button" aria-label="Search">
@@ -788,6 +850,25 @@ const showToast = (message) => {
   toastTimer = setTimeout(() => { toast.hidden = true; }, 1800);
 };
 
+/* Motion page specimens: a panel that enters at --uix-dur and leaves at --uix-dur-exit, and a meter
+   that slides on transform (docs → Foundations → Motion). */
+const toggleMotionPanel = (button) => {
+  const panel = document.getElementById(button.getAttribute('aria-controls'));
+  if (!panel) return;
+  const open = panel.dataset.open !== 'true';
+  panel.dataset.open = String(open);
+  button.setAttribute('aria-expanded', String(open));
+  button.textContent = open ? 'Hide panel' : 'Show panel';
+};
+const stepMotionMeter = (button) => {
+  const meter = button.closest('.uix-stack')?.querySelector('[data-motion-meter]');
+  const fill = meter?.querySelector('.uix-meter__fill');
+  if (!fill) return;
+  const next = (Number(meter.getAttribute('aria-valuenow')) + 30) % 100 || 10;
+  meter.setAttribute('aria-valuenow', String(next));
+  fill.style.setProperty('--val', String(next / 100));
+};
+
 const copyCode = async (button) => {
   const target = document.getElementById(button.dataset.copyTarget);
   if (!target) return;
@@ -906,6 +987,8 @@ if (typeof document !== 'undefined') {
       const wasOpen = closeMobileMenu();
       if (wasOpen) document.querySelector('[data-docs-menu]')?.focus();
     } else if (target.closest('[data-demo-action]')) showToast(target.closest('[data-demo-action]').dataset.demoAction);
+    else if (target.closest('[data-motion-toggle]')) toggleMotionPanel(target.closest('[data-motion-toggle]'));
+    else if (target.closest('[data-motion-meter-step]')) stepMotionMeter(target.closest('[data-motion-meter-step]'));
     else if (target.closest('[data-toc-link]')) {
       event.preventDefault();
       document.getElementById(target.closest('[data-toc-link]').hash.slice(1))?.scrollIntoView();

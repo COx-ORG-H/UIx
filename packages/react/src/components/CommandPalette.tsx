@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
@@ -17,6 +17,9 @@ interface CmdkContextValue {
   registerItem: () => () => void;
 }
 const CmdkContext = createContext<CmdkContextValue | null>(null);
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
@@ -36,6 +39,10 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * Modal/Popover and wire search + keyboard selection in the consumer. The input is
  * a combobox over the listbox of `CommandItem`s; spreads override every default, so
  * consumers already passing their own roles/labels keep working.
+ *
+ * ⌘K is keyboard-initiated and used many times a day, so the palette marks the dialog or
+ * popover it sits in `[data-uix-instant]`: it opens and closes with no animation, without the
+ * consumer knowing the attribute (or the older `data-uix-cmdk-dialog`).
  */
 export function CommandPalette({ inputProps, children, inputLabel: inputLabelProp, resultsLabel, className, ...props }: CommandPaletteProps) {
   const uixLabels = useUixLabels();
@@ -47,6 +54,15 @@ export function CommandPalette({ inputProps, children, inputLabel: inputLabelPro
   const resultsTextRef = useRef(resultsText);
   resultsTextRef.current = resultsText;
   const listId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Before the overlay's own open effect runs (a child's layout effect runs first), so the first
+  // open is already instant. Leaves an attribute the consumer set (Modal `instant`) alone.
+  useIsomorphicLayoutEffect(() => {
+    const overlay = rootRef.current?.closest<HTMLElement>('dialog, [popover]');
+    if (!overlay || overlay.hasAttribute('data-uix-instant')) return;
+    overlay.setAttribute('data-uix-instant', '');
+    return () => overlay.removeAttribute('data-uix-instant');
+  }, []);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [announced, setAnnounced] = useState('');
@@ -69,7 +85,7 @@ export function CommandPalette({ inputProps, children, inputLabel: inputLabelPro
 
   return (
     <CmdkContext.Provider value={ctx}>
-      <div className={cx('uix-cmdk', className)} {...props}>
+      <div ref={rootRef} className={cx('uix-cmdk', className)} {...props}>
         <input
           className="uix-cmdk__input"
           role="combobox"

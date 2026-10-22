@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react';
+import type { CSSProperties, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 
 /**
@@ -49,7 +49,8 @@ export function Meter({ value = 0, tone, label, toneLabels, className, ...props 
     >
       <div
         className="uix-meter__fill"
-        style={{ width: `${pct}%` }}
+        // --val slides the fill on transform (meter.css); width never animates
+        style={{ '--val': pct / 100 } as CSSProperties}
         {...(tone && tone !== 'success' ? { 'data-tone': tone } : {})}
       />
     </div>
