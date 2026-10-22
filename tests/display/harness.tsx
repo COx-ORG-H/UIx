@@ -1,13 +1,14 @@
 /* Live harness for the display components, bundled by build.mjs from source. `?case=` picks one
  * section; each section renders the component in the states and containers its spec measures.
  *   - qr: QrCode at its smallest documented size (2 px per module), large, at H, in a card, too long;
+ *   - contact: ContactCard active with avatar, purged, unavailable, long Bosnian name and address in a narrow column, bare;
  *   - code: CodeDisplay live with copy, in its last minute, expired, lg in a card, a 16-character voucher, beside a form;
  */
 import { StrictMode } from 'react';
 import type * as React from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Card, CodeDisplay, Field, Input, QrCode } from '../../packages/react/src/index.js';
+import { Avatar, Button, ButtonLink, Card, CodeDisplay, ContactCard, Field, Input, QrCode } from '../../packages/react/src/index.js';
 
 const CAMPAIGN = 'https://shopx.example/kampanja/ljetna-akcija-2026?trgovina=SA-0042';
 
@@ -80,7 +81,39 @@ function CodeCase() {
   );
 }
 
+const CONTACT_LABELS = { email: 'E-pošta', emailName: 'E-pošta: {name}', call: 'Pozovi', callName: 'Pozovi: {name}', purgedName: 'Uklonjen kontakt', purged: 'Lični podaci obrisani', unavailable: 'Kontakt podaci nisu dostupni' };
+
+function ContactCase() {
+  return (
+    <>
+      <h1>Kontakti</h1>
+      <section>
+        <h2>Kartice</h2>
+        <div id="contact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15rem, 1fr))', gap: 'var(--uix-space-4)' }}>
+          <ContactCard id="contact-active" name="Amra Hadžić" role="Voditeljica ordinacije · Dom zdravlja Centar" avatar={<Avatar size="lg">AH</Avatar>} email="amra.hadzic@dom-zdravlja.example" phone="+387 61 234 567" href="#amra" labels={CONTACT_LABELS} />
+          <ContactCard id="contact-purged" name="Edin Kovačević" role="Pacijent" email="edin@example.com" state="purged" labels={CONTACT_LABELS} />
+          <ContactCard id="contact-unavailable" name="Selma Đurđević" role="Dobavljač" email="selma@example.com" phone="+387 33 111 222" state="unavailable" labels={CONTACT_LABELS} />
+        </div>
+      </section>
+      <section>
+        <h2>Uska kolona</h2>
+        <div id="contact-narrow" style={{ width: '15rem', maxWidth: '100%' }}>
+          <ContactCard id="contact-long" name="Dr. med. Nermina Mehmedbašić-Hadžiahmetović" role="Specijalistica fizikalne medicine i rehabilitacije" email="nermina.mehmedbasic-hadziahmetovic@kantonalna-bolnica-zenica.example" phone="+387 32 405 133" labels={CONTACT_LABELS}
+            actions={<ButtonLink href="#karton" size="sm">Karton</ButtonLink>} />
+        </div>
+      </section>
+      <section>
+        <h2>Bez okvira, u kartici</h2>
+        <Card title="Odgovorna osoba" style={{ maxWidth: '22rem' }}>
+          <ContactCard id="contact-bare" bare name="Haris Dizdarević" role="Administrator" email="haris@example.com" labels={CONTACT_LABELS} />
+        </Card>
+      </section>
+    </>
+  );
+}
+
 const CASES: Record<string, () => ReactNode> = {
+  contact: () => <ContactCase />,
   qr: () => <QrCase />,
   code: () => <CodeCase />,
 };

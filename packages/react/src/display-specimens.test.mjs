@@ -30,5 +30,13 @@ test('every state named in a caption is on the page', () => {
   assert.match(data, /data-state="expired"[\s\S]*?Expired\. Ask for a new code\./);
   assert.equal((data.match(/uix-copy-button/g) ?? []).length, 1);
   assert.match(data, /uix-code-display uix-code-display--lg/);
+  // contact card: reachable with mailto/tel, erased without any link or personal data, unavailable
+  const crm = specimens['examples-crm-itsm'];
+  assert.match(crm, /data-contact-card-example/);
+  assert.match(crm, /href="mailto:amra\.hadzic@dom-zdravlja\.example"/);
+  assert.match(crm, /href="tel:\+38761234567"/);
+  assert.match(crm, /data-state="purged"[\s\S]*?Removed contact[\s\S]*?Personal data erased/);
+  assert.doesNotMatch(crm, /Edin|edin@/);
+  assert.match(crm, /data-state="unavailable"[\s\S]*?Contact details unavailable/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

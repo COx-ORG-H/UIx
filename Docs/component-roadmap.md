@@ -50,7 +50,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
 | QrCode | qr-code.css | ✓ `QrCode` | Beta | no | A scannable, print-safe SVG QR code from the kit's own encoder (`encodeQr`: byte mode / UTF-8, L/M/Q/H, versions 1-40, penalty-scored masks); four-module quiet zone; ink on paper in every theme, in print and in forced colours; decoded back in tests. Landed with HAR-1251. |
 | CodeDisplay | code-display.css | ✓ `CodeDisplay` | Beta | no | A one-time code in large monospace groups (`groupSize`, `separator`, `size` md / lg), spelled character by character to a screen reader (`spell`); `expiresAt` adds a countdown that warns in its last minute (`warnBefore`) and ends in an expired state said in words; `copyable` adds a `CopyButton` while live. Landed with HAR-1253. |
-| ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
+| ContactCard | contact-card.css | ✓ `ContactCard` | Beta | no | Name (optionally a quiet link), role, avatar, the address and number as text, Email / Call as `mailto:` / `tel:` `ButtonLink`s named for the person, extra `actions` and `stats`; `state` `purged` (placeholder, no data, no actions) or `unavailable` (name only); `bare` inside another surface. Landed with HAR-1379. |
 | DatePicker | date-picker.css | ✓ `DatePicker` | Beta | no | A typed date field with a one-month calendar popover; ISO value, locale or custom format, `min` / `max` / `isUnavailable`, `weekStartsOn`. Also `DateTimePicker` (date and time, the zone shown; the `datetime-local` value shape). Landed 2.36.0 (HAR-1383). |
 | DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. 2.36.0 (HAR-1383): `mode="field"` (a trigger that opens the months in a popover), `weekStartsOn`. |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. HAR-2032: below 22rem of its own width (container query) each label sits above its value. |
@@ -126,7 +126,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
   `RelatedLinks`, `ToggleRow`, `CollapsibleSection`, dialog, table-control, and detail-page React exports have no
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
-- The **10 currently-planned presentational wrappers** are stepper, reactions, attachment, audit-log,
-  notification-center, sla, heartbeat, media, lightbox, and contact-card. In addition, calendar, file-upload,
+- The **9 currently-planned presentational wrappers** are stepper, reactions, attachment, audit-log,
+  notification-center, sla, heartbeat, media and lightbox. In addition, calendar, file-upload,
   slider and tag-input remain Planned; those need real behaviour, not just a class wrapper. Kbd, Steps and
   Menu gained wrappers in 2.27.0 (the UIx reuse remediation, HAR-1346).

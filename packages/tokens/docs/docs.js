@@ -152,7 +152,7 @@ export const REACT_COMPONENT_SLUGS = [
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
   'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart',
-  'qr-code', 'code-display',
+  'qr-code', 'code-display', 'contact-card',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

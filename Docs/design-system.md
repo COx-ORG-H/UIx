@@ -205,7 +205,7 @@ Kanban, and CommandPalette are **already wrapped** — they are not in this list
 
 - **Presentational (easy wrap):** breadcrumbs, kbd, steps, stepper, reactions,
   attachment, audit-log, notification-center, sla, heartbeat, media, lightbox,
-  contact-card, view-menu
+  view-menu
 - **Interactive (need real logic, not just a wrapper):** combobox, calendar, file-upload, slider, tag-input,
   menu, form (FormGrid/Fieldset)
 - **CSS-only (no wrapper by design):** table-toolbar, utility-bits, typography

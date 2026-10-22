@@ -156,6 +156,9 @@ export type { QrMatrix, QrErrorCorrection, QrEncodeOptions } from './qr-model.js
 // A one-time code shown large, spelled out, with an optional expiry countdown (HAR-1253)
 export { CodeDisplay, DEFAULT_CODE_DISPLAY_LABELS, codeGroups, formatCountdown } from './components/CodeDisplay.js';
 export type { CodeDisplayProps, CodeDisplayLabels } from './components/CodeDisplay.js';
+// A person at a glance with mailto/tel actions and an erased state (HAR-1379)
+export { ContactCard, DEFAULT_CONTACT_CARD_LABELS, telHref } from './components/ContactCard.js';
+export type { ContactCardProps, ContactCardLabels, ContactCardState } from './components/ContactCard.js';
 
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';

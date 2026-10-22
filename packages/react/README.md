@@ -1138,3 +1138,18 @@ The product makes the code and enforces its expiry.
 ```tsx
 <CodeDisplay code={pairing.code} label={t('pairingCode')} expiresAt={pairing.expiresAt} copyable onExpire={refresh} />
 ```
+
+#### ContactCard
+
+`ContactCard` renders `.uix-contact` in a card (`bare` for a peek, a popover or a card body that
+already has padding): avatar, `name` (a quiet link with `href` / `renderLink`), `role`, the
+`email` and `phone` as selectable text, and Email / Call as `mailto:` / `tel:` `ButtonLink`s
+named for the person ("Email Amra Hadžić"), then your own `actions` and `stats`.
+`state="purged"` (the person's data was erased) shows a neutral placeholder and nothing that
+reaches anyone, even when stale props still carry an address; `state="unavailable"` keeps the
+name and says the details are unavailable. Words: `labels` or `UixLabelsProvider` `contactCard`.
+
+```tsx
+<ContactCard name={p.name} role={p.role} avatar={<Avatar size="lg" src={p.photo} alt="" />} email={p.email} phone={p.phone}
+  state={p.erasedAt ? 'purged' : 'active'} href={`/people/${p.id}`} renderLink={(props) => <Link {...props} />} />
+```

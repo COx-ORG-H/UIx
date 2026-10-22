@@ -990,6 +990,41 @@ export interface ConfirmDialogProps {
 }
 
 // @public
+export function ContactCard(input: ContactCardProps): react.JSX.Element;
+
+// @public
+export interface ContactCardLabels {
+    call: string;
+    callName: string;
+    email: string;
+    emailName: string;
+    purged: string;
+    purgedName: string;
+    unavailable: string;
+}
+
+// @public (undocumented)
+export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'> {
+    actions?: ReactNode;
+    avatar?: ReactNode;
+    bare?: boolean;
+    email?: string;
+    href?: string;
+    labels?: Partial<ContactCardLabels>;
+    name?: string;
+    nameAs?: 'h2' | 'h3' | 'h4' | 'div';
+    phone?: string;
+    renderLink?: UixRenderLink;
+    role?: ReactNode;
+    // (undocumented)
+    state?: ContactCardState;
+    stats?: ReactNode;
+}
+
+// @public
+export type ContactCardState = 'active' | 'purged' | 'unavailable';
+
+// @public
 export function ContentList(input: ContentListProps): react.JSX.Element;
 
 // @public
@@ -1362,6 +1397,9 @@ export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 
 // @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_CONTACT_CARD_LABELS: ContactCardLabels;
 
 // @public (undocumented)
 export const DEFAULT_DASHBOARD_CANVAS_LABELS: DashboardCanvasLabels;
@@ -5850,6 +5888,9 @@ export interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
     pinned?: boolean;
 }
 
+// @public
+export const telHref: (phone: string) => string;
+
 // @public (undocumented)
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[];
 
@@ -6424,6 +6465,7 @@ export interface UixLabels {
         typeToConfirm?: string;
         compensation?: string;
     };
+    contactCard?: Partial<ContactCardLabels>;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
     // (undocumented)
