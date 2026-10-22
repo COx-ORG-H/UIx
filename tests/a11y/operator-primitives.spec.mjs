@@ -88,22 +88,31 @@ test('an interactive Stat is one button named "label: value, action" that opens 
   expect(await page.evaluate(() => window.__op.activations)).toBe(1);
 });
 
-test('toned tiles draw a toned outline and value, never a toned label', async ({ page }) => {
+// HAR-1563: a toned tile keeps the neutral frame; the value carries the tone, led by a dot.
+test('toned tiles colour the value and lead it with a dot, never the border or the label', async ({ page }) => {
   const seen = await page.evaluate(() => {
     const read = (id) => {
       const tile = document.getElementById(id);
+      const value = tile.querySelector('.uix-stat__value');
+      const dot = getComputedStyle(value, '::before');
       return {
         border: getComputedStyle(tile).borderTopColor,
-        value: getComputedStyle(tile.querySelector('.uix-stat__value')).color,
+        value: getComputedStyle(value).color,
         label: getComputedStyle(tile.querySelector('.uix-stat__label')).color,
+        dot: dot.content === 'none' ? null : { width: dot.width, colour: dot.backgroundColor },
       };
     };
     return { danger: read('stat-sla'), warning: read('stat-queue'), neutral: read('stat-priority') };
   });
-  expect(seen.danger.border).not.toBe(seen.neutral.border);
-  expect(seen.warning.border).not.toBe(seen.neutral.border);
+  expect(seen.danger.border).toBe(seen.neutral.border);
+  expect(seen.warning.border).toBe(seen.neutral.border);
   expect(seen.danger.value).not.toBe(seen.neutral.value);
+  expect(seen.warning.value).not.toBe(seen.neutral.value);
   expect(seen.danger.label).toBe(seen.neutral.label);
+  expect(seen.neutral.dot).toBeNull();
+  expect(seen.danger.dot?.width).toBe('8px');
+  expect(seen.warning.dot?.width).toBe('8px');
+  expect(seen.danger.dot.colour).not.toBe(seen.warning.dot.colour);
 });
 
 test('a pending Stat is busy and unavailable, keeps focus, and does nothing until it ends', async ({ page }) => {
