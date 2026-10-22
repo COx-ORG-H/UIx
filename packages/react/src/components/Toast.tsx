@@ -293,8 +293,9 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   useToastTimers(store, visible, hovered || focused || hidden);
 
   // The stack reflows with a glide (HAR-2578): when a toast arrives or leaves, the others move from
-  // where they were to where they are now (FLIP), on transform and --uix-ease-in-out, instead of
-  // jumping. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
+  // where they were to where they are now (FLIP), on transform, instead of jumping. --uix-ease-out
+  // rather than in-out: the toast that makes room clears the arriving one early instead of
+  // overlapping it for most of the glide. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
   // enter or exit transform does not count as movement.
   const regionRef = useRef<HTMLDivElement>(null);
   const tops = useRef(new Map<string, number>());
@@ -312,7 +313,7 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
       if (!glide || before === undefined || Math.abs(before - top) < 1 || typeof el.animate !== 'function') continue;
       el.animate([{ transform: `translateY(${before - top}px)` }, { transform: 'translateY(0)' }], {
         duration: tokenMs('--uix-dur', 160, el),
-        easing: getComputedStyle(el).getPropertyValue('--uix-ease-in-out').trim() || 'ease-in-out',
+        easing: getComputedStyle(el).getPropertyValue('--uix-ease-out').trim() || 'ease-out',
         composite: 'add',
       });
     }

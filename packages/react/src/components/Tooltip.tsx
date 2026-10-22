@@ -12,8 +12,9 @@ import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
 /* The delay group (HAR-2578). A tooltip waits --uix-delay-tooltip before it opens on hover, so a
  * pointer passing over a toolbar does not flash a bubble per button. Once one has been shown, its
  * neighbours open at once: while any is open, and for --uix-delay-tooltip-skip after the last one
- * closed. Shared by every Tooltip on the page. */
-const group = { open: 0, lastClosed: -Infinity };
+ * closed; the one it replaces goes at once, so two bubbles never overlap. Shared by every Tooltip
+ * on the page. */
+const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null } = { open: 0, lastClosed: -Infinity, current: null };
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
   /** Tooltip text. Pass this or `content`. */
@@ -72,6 +73,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   /** `instant`: inside the delay group — no fade either. */
   const reveal = (instant: boolean) => {
     cancelOpen();
+    if (group.current && group.current !== self) group.current.current(true);
+    group.current = self;
     const b = bubbleRef.current;
     if (b && !b.matches(':popover-open')) {
       b.toggleAttribute('data-uix-instant', instant);
@@ -89,23 +92,27 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     if (via === 'focus' || warm) { reveal(via === 'pointer'); return; }
     if (openTimer.current == null) openTimer.current = window.setTimeout(() => reveal(false), tokenMs('--uix-delay-tooltip', 400));
   };
-  const hide = () => {
+  /** `instant`: replaced by a neighbour in the group — gone at once, no fade. */
+  const hide = (instant = false) => {
     cancelClose();
     cancelOpen();
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) {
-      // The bubble that leaves fades out unless the next one will open inside the group.
-      b.removeAttribute('data-uix-instant');
+      b.toggleAttribute('data-uix-instant', instant);
       try { b.hidePopover(); } catch { /* already closed */ }
     }
     if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
+    if (group.current === self) group.current = null;
     setOpen(false);
   };
   // Small close delay so the pointer can cross the offset gap into the bubble (1.4.13 hoverable);
   // entering trigger or bubble cancels it.
+  // A stable handle on this tooltip's latest `hide`, for the delay group.
+  const self = useRef(hide);
+  self.current = hide;
   const scheduleHide = () => {
     cancelClose();
-    closeTimer.current = window.setTimeout(hide, 100);
+    closeTimer.current = window.setTimeout(() => hide(), 100);
   };
 
   // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere.
@@ -122,6 +129,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     if (closeTimer.current != null) clearTimeout(closeTimer.current);
     if (openTimer.current != null) clearTimeout(openTimer.current);
     if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
+    if (group.current === self) group.current = null;
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) { try { b.hidePopover(); } catch { /* noop */ } }
   }, []);
@@ -152,7 +160,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
       onMouseEnter={() => show('pointer')}
       onMouseLeave={scheduleHide}
       onFocus={() => show('focus')}
-      onBlur={hide}
+      onBlur={() => hide()}
       onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
       {...props}
     >
