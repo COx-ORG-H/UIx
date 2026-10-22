@@ -256,9 +256,13 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__meta span { padding: 4px 9px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill); color: var(--uix-text-muted); font-size: .78rem; }
 
 .uix-docs__page-section { margin-top: 64px; scroll-margin-top: calc(var(--docs-header-h) + 24px); }
-.uix-docs__page h2 { margin: 0 0 var(--uix-space-4); font-size: 1.7rem; line-height: 1.2; letter-spacing: -.025em; }
-.uix-docs__page h3 { margin: var(--uix-space-6) 0 var(--uix-space-3); font-size: 1.08rem; letter-spacing: -.01em; }
-.uix-docs__page p { margin: 0 0 var(--uix-space-4); }
+/* Docs prose headings and paragraphs only: an element that carries a kit class (h2.uix-section-title,
+   h3.uix-chart__title, p.uix-page-header__subtitle …) keeps the kit's own size and spacing. These rules are
+   unlayered, so they used to beat every @layer uix.components rule and showed specimens with docs margins
+   (a 16 px page-header subtitle gap, a 12 px chart subtitle gap; HAR-1577). :where() keeps the old specificity. */
+.uix-docs__page h2:where(:not([class*="uix-"]:not([class*="uix-docs"]))) { margin: 0 0 var(--uix-space-4); font-size: 1.7rem; line-height: 1.2; letter-spacing: -.025em; }
+.uix-docs__page h3:where(:not([class*="uix-"]:not([class*="uix-docs"]))) { margin: var(--uix-space-6) 0 var(--uix-space-3); font-size: 1.08rem; letter-spacing: -.01em; }
+.uix-docs__page p:where(:not([class*="uix-"]:not([class*="uix-docs"]))) { margin: 0 0 var(--uix-space-4); }
 /* Prose lists only — docs-authored (class-less or uix-docs__*) lists outside any kit component. These rules are
    unlayered, so an unscoped `ul`/`li + li` would beat every @layer uix.components rule and give kit lists
    (ul.uix-menu, .uix-tree ul, .uix-prose ul …) prose indents and gaps. :where() keeps the old specificity. */

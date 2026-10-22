@@ -4,8 +4,11 @@
   .uix-attachment { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); }
   .uix-attachment__icon { width: 32px; height: 32px; flex: none; border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); display: grid; place-items: center; color: var(--uix-text-muted); }
   .uix-attachment__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-attachment__name { font-size: var(--uix-text-body); }
+  .uix-attachment__name { display: block; font-size: var(--uix-text-body); }
   .uix-attachment__size { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* plain markup: the size under the name, --uix-space-1 apart (HAR-1577). The React row stacks
+     its line and meta in .uix-attachment__body, whose gap is the same --uix-space-1. */
+  .uix-attachment__name + .uix-attachment__size { display: block; margin-top: var(--uix-space-1); }
   .uix-attachment__actions { margin-left: auto; }
 }
 

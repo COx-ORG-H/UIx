@@ -27,9 +27,9 @@
       "brotli": 469
     },
     "styles/components/attachment.css": {
-      "raw": 2214,
-      "gzip": 654,
-      "brotli": 524
+      "raw": 2516,
+      "gzip": 763,
+      "brotli": 623
     },
     "styles/components/audit-log.css": {
       "raw": 995,
@@ -237,9 +237,9 @@
       "brotli": 2193
     },
     "styles/components/list.css": {
-      "raw": 1061,
-      "gzip": 472,
-      "brotli": 357
+      "raw": 1224,
+      "gzip": 536,
+      "brotli": 410
     },
     "styles/components/match-review.css": {
       "raw": 1612,
@@ -247,9 +247,9 @@
       "brotli": 420
     },
     "styles/components/media.css": {
-      "raw": 746,
-      "gzip": 383,
-      "brotli": 294
+      "raw": 941,
+      "gzip": 457,
+      "brotli": 361
     },
     "styles/components/menu.css": {
       "raw": 2556,

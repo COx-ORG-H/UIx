@@ -35,7 +35,8 @@
   .uix-navitem__badge { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   /* two-line row: a label plus a wrapping second line (HAR-1355). min-height above lets it grow. */
   .uix-navitem[data-multiline] { align-items: flex-start; padding-block: var(--uix-space-2); }
-  .uix-navitem__text { flex: 1; min-width: 0; display: grid; }
+  /* label over description, --uix-space-1 apart: the kit's one title -> secondary rhythm (HAR-1577) */
+  .uix-navitem__text { flex: 1; min-width: 0; display: grid; gap: var(--uix-space-1); }
   .uix-navitem__desc { font-size: var(--uix-text-meta); line-height: 1.35; color: var(--uix-text-muted); overflow-wrap: anywhere; white-space: normal; font-weight: 400; }
   .uix-navitem[aria-current="page"] .uix-navitem__desc { color: var(--uix-text-hushed); }
   /* on the active tint, muted badge dips below AA — hushed composites darker on the tint */
