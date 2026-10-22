@@ -5,6 +5,9 @@ import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import { ShortcutHint } from './ShortcutHint.js';
 import type { KeyShortcut } from './Kbd.js';
+import { ButtonFeedback } from './ButtonFeedback.js';
+import type { ButtonResult, ButtonResultLabels } from './ButtonFeedback.js';
+import { PENDING_DELAY_MS } from '../motion-timing.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
 /** `xs` is 24 px: the smallest hit area WCAG 2.5.8 allows, for dense tool rows (HAR-1348). */
@@ -23,7 +26,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: boolean;
+  /**
+   * The button's action is running. The button stops taking presses at once and is announced
+   * busy; the spinner appears only after `loadingDelay` and then stays at least 500 ms, so a
+   * fast action never flashes one (HAR-2580, motion standard §2.3). The button keeps its full
+   * colour while it works: a spinner, not a greyed-out control.
+   */
   loading?: boolean;
+  /** Milliseconds before the spinner shows (default 300). `0` shows it at once. */
+  loadingDelay?: number;
+  /**
+   * How the button's last action ended (HAR-2581). When it changes to `success` or `error`,
+   * or an action ends with one, the label crossfades to a check and `resultLabels.success`
+   * ("Done") or an alert mark and `resultLabels.error` ("Failed") for 1.5 s, announced
+   * politely, then returns. Never on the first render. The button is always as wide as its
+   * widest wording, so nothing beside it moves. Pass `null` while there is no result (keep
+   * the prop defined); say what failed and how to recover somewhere that stays, such as a
+   * field error or a toast. e.g. `result={m.isSuccess ? 'success' : m.isError ? 'error' : null}`
+   */
+  result?: ButtonResult | null;
+  /** The result words, e.g. `{ success: 'Assigned', error: 'Not assigned' }`; or `UixLabelsProvider` `buttonResult`. */
+  resultLabels?: Partial<ButtonResultLabels>;
   /**
    * Let a long label wrap onto more lines: the size becomes a minimum height instead of a fixed
    * one (HAR-1813, WCAG 1.4.10 reflow). For human-language labels on public or narrow screens;
@@ -49,7 +72,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading = false, wrap = false, shortcut, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -65,15 +88,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={buttonClasses(variant, size, icon, wrap, className)}
         // Only explicit `disabled` removes native semantics; `loading` keeps the button
-        // focusable and announced as busy, with a click guard instead (UIX-A11Y-3).
+        // focusable and announced as busy, with a click guard instead (UIX-A11Y-3). The
+        // spinner itself is ButtonFeedback's delayed marker, not data-loading (HAR-2580).
         disabled={disabled}
         aria-disabled={loading || undefined}
         aria-busy={loading || undefined}
-        data-loading={loading || undefined}
+        data-pending={loading || undefined}
         onClick={loading || onClick ? (e) => { if (loading) { e.preventDefault(); return; } onClick?.(e); } : undefined}
         {...props}
       >
-        {children}
+        {loading !== undefined || result !== undefined ? (
+          <ButtonFeedback loading={!!loading} loadingDelay={loadingDelay} result={result} resultLabels={resultLabels}>{children}</ButtonFeedback>
+        ) : children}
         {shortcut && shortcut.length > 0 && (
           <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} />
         )}
