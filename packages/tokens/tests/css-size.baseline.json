@@ -227,9 +227,9 @@
       "brotli": 256
     },
     "styles/components/lightbox.css": {
-      "raw": 4813,
-      "gzip": 1612,
-      "brotli": 1310
+      "raw": 6254,
+      "gzip": 1957,
+      "brotli": 1602
     },
     "styles/components/link.css": {
       "raw": 6952,

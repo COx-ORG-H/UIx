@@ -69,7 +69,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Kbd | kbd.css | ✓ `Kbd` | Beta | no | Also `KbdCombo` (platform-aware ⌘/Ctrl glyphs, spoken key names). Landed 2.27.0 (HAR-1361). HAR-2031: `KeyShortcut`, `ariaKeyShortcuts`. |
 | Label | labels.css | ✓ `Label` | Stable | no | Exported as `Label` (from `labels.css`). |
 | LicensePositionBar | license-position-bar.css | ✓ `LicensePositionBar` | Beta | no | Meter + status recipe with explicit over-entitlement state. |
-| Lightbox | lightbox.css | absent | Planned | no | Planned wrapper (presentational). |
+| Lightbox | lightbox.css | ✓ `Lightbox` | Beta | no | Full-screen media viewer (HAR-1367). HAR-1826: toolbar `actions`, `renderOverlay` in the picture's own box, keys the consumer claims (`onKeyDown`, `onEscapeKeyDown`); no counter for a single item. |
 | Link | link.css | n/a | Beta | no | Quiet-link CSS contract; also consumed by the `RelatedLinks` composition. In-text prose links keep the base blue + underline (WCAG 1.4.1). |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
 | MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |

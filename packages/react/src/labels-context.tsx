@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { LightboxLabels } from './components/Lightbox.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -35,6 +36,8 @@ export interface UixLabels {
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
   discardPrompt?: Partial<DiscardPromptLabels>;
   peek?: { previous?: string; next?: string; close?: string };
+  /** `Lightbox` (HAR-1826): previous / next / close, the counter, the zoom toggle. */
+  lightbox?: Partial<LightboxLabels>;
   toast?: { dismiss?: string };
   toaster?: { region?: string };
   appShell?: { skipToContent?: string; exitFocus?: string };

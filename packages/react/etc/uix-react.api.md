@@ -11,6 +11,7 @@ import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
+import { KeyboardEvent as KeyboardEvent_2 } from 'react';
 import { LiHTMLAttributes } from 'react';
 import { MouseEvent as MouseEvent_2 } from 'react';
 import * as react from 'react';
@@ -358,8 +359,8 @@ export interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, 'chi
     items: readonly BreadcrumbItem[];
     // (undocumented)
     label: string;
-    // (undocumented)
     renderLink?: UixRenderLink;
+    // (undocumented)
     separator?: ReactNode;
 }
 
@@ -2845,8 +2846,20 @@ export interface LightboxLabels {
     zoomOut: string;
 }
 
+// @public
+export interface LightboxOverlayContext {
+    // (undocumented)
+    height: number;
+    index: number;
+    // (undocumented)
+    item: LightboxItem;
+    media: HTMLImageElement | HTMLVideoElement | null;
+    width: number;
+}
+
 // @public (undocumented)
 export interface LightboxProps {
+    actions?: ReactNode;
     // (undocumented)
     className?: string;
     index: number;
@@ -2857,10 +2870,13 @@ export interface LightboxProps {
     loop?: boolean;
     // (undocumented)
     onClose: () => void;
+    onEscapeKeyDown?: (event: KeyboardEvent_2<HTMLDialogElement>) => void;
     // (undocumented)
     onIndexChange: (index: number) => void;
+    onKeyDown?: (event: KeyboardEvent_2<HTMLDialogElement>) => void;
     // (undocumented)
     open: boolean;
+    renderOverlay?: (context: LightboxOverlayContext) => ReactNode;
 }
 
 // @public
@@ -2925,22 +2941,6 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
     rows?: number;
 }
 
-// @public (undocumented)
-export function mapRuleGroup(group: RuleGroup, id: string, update: (node: RuleCondition | RuleGroup) => RuleCondition | RuleGroup): RuleGroup;
-
-// @public
-export function Mark(input: MarkProps): react.JSX.Element;
-
-// @public (undocumented)
-export interface MarkProps extends HTMLAttributes<HTMLElement> {
-    // (undocumented)
-    children?: ReactNode;
-}
-
-// @public (undocumented)
-export interface MatchBulkResult {
-    // (undocumented)
-    failed?: number;
 // @public
 export function LocaleSwitcher(input: LocaleSwitcherProps): react.JSX.Element;
 
@@ -2959,6 +2959,22 @@ export interface LocaleSwitcherProps extends Omit<HTMLAttributes<HTMLElement>, '
     renderLink?: UixRenderLink;
 }
 
+// @public (undocumented)
+export function mapRuleGroup(group: RuleGroup, id: string, update: (node: RuleCondition | RuleGroup) => RuleCondition | RuleGroup): RuleGroup;
+
+// @public
+export function Mark(input: MarkProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface MarkProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    children?: ReactNode;
+}
+
+// @public (undocumented)
+export interface MatchBulkResult {
+    // (undocumented)
+    failed?: number;
     // (undocumented)
     succeeded: number;
 }
@@ -5280,6 +5296,8 @@ export function SegmentedOption(input: SegmentedOptionProps): react.JSX.Element;
 export interface SegmentedOptionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'onChange'> {
     // (undocumented)
     children?: ReactNode;
+    href?: string;
+    hrefLang?: string;
     // (undocumented)
     value: string;
 }
@@ -5297,8 +5315,6 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 // @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
-    href?: string;
-    hrefLang?: string;
 // @public (undocumented)
 export type SelectAllState = 'none' | 'some' | 'all';
 
@@ -6367,6 +6383,7 @@ export interface UixLabels {
     filterEditor?: Partial<FilterEditorLabels>;
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
+    lightbox?: Partial<LightboxLabels>;
     // (undocumented)
     modal?: {
         close?: string;

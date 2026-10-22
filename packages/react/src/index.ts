@@ -82,7 +82,7 @@ export type { DialogCloseEvent, DialogCloseProps, DiscardPromptLabels } from './
 export { Peek } from './components/Peek.js';
 
 export { Lightbox, DEFAULT_LIGHTBOX_LABELS } from './components/Lightbox.js';
-export type { LightboxProps, LightboxItem, LightboxLabels } from './components/Lightbox.js';
+export type { LightboxProps, LightboxItem, LightboxLabels, LightboxOverlayContext } from './components/Lightbox.js';
 export type { PeekProps } from './components/Peek.js';
 
 // Layout
