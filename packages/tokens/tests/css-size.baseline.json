@@ -77,9 +77,9 @@
       "brotli": 1343
     },
     "styles/components/checkbox.css": {
-      "raw": 1637,
-      "gzip": 626,
-      "brotli": 488
+      "raw": 3119,
+      "gzip": 1132,
+      "brotli": 894
     },
     "styles/components/color-picker.css": {
       "raw": 2409,

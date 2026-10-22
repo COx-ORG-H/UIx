@@ -19,3 +19,21 @@
   .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-checkbox > input:disabled ~ * { opacity: .5; }
 }
+
+/* CheckboxGroup (HAR-1799): a fieldset whose legend names the boxes, with the field's message
+   slot. The UA fieldset chrome is stripped so it reads like a Field. `--uix-checkbox-group-columns`
+   (React `columns`) is a ceiling: a column never gets narrower than 10rem, so a phone gets one. */
+@layer uix.components {
+  .uix-checkbox-group { display: flex; flex-direction: column; gap: var(--uix-space-2); min-width: 0; min-inline-size: auto; margin: 0; padding: 0; border: 0; }
+  .uix-checkbox-group__legend { padding: 0; margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); overflow-wrap: anywhere; }
+  .uix-checkbox-group__legend[data-required]::after { content: " *"; color: var(--uix-danger-text); }
+  .uix-checkbox-group__options {
+    --uix-checkbox-group-columns: 1;
+    display: grid; gap: var(--uix-space-2) var(--uix-space-5); align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(max(10rem, calc((100% - (var(--uix-checkbox-group-columns) - 1) * var(--uix-space-5)) / var(--uix-checkbox-group-columns))), 1fr));
+  }
+  .uix-checkbox-group__options > .uix-checkbox { align-items: flex-start; min-width: 0; overflow-wrap: anywhere; }
+  /* the box sits on the first line of a label that wraps */
+  .uix-checkbox-group__options > .uix-checkbox > .uix-checkbox__box { translate: 0 calc((1lh - 18px) / 2); }
+  .uix-checkbox-group[data-invalid] .uix-checkbox__box { border-color: var(--uix-danger); }
+}

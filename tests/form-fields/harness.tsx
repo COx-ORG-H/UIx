@@ -2,11 +2,13 @@
  * HAR-1575, HAR-1588, HAR-1377, HAR-2465, HAR-1834), bundled by build.mjs from source for
  * tests/a11y/form-fields.spec.mjs. One <section> per issue; `?only=<id>` renders just that one
  * (the screenshots of the visual check use it).
- *   - #sizes: Input, Select, Textarea, InputGroup and Button at sm / md / lg, in one row each. */
-import { StrictMode } from 'react';
+ *   - #sizes: Input, Select, Textarea, InputGroup and Button at sm / md / lg, in one row each.
+ *   - #checkbox-group: CheckboxGroup in a card (3 columns, long German and Bosnian tags, error when none
+ *     is ticked) and a disabled group. */
+import { StrictMode, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Field, Input, InputGroup, Select, Textarea } from '../../packages/react/src/index.js';
+import { Button, Checkbox, CheckboxGroup, Field, Input, InputGroup, Select, Textarea } from '../../packages/react/src/index.js';
 
 const Search = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
@@ -41,7 +43,30 @@ function Sizes() {
   );
 }
 
-const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes };
+const SHELVES = ['Fiction', 'History', 'Poetry', 'Children', 'Reference', 'Zeitgeschichte und Gesellschaftswissenschaften', 'Local authors', 'Biografije i memoari'];
+
+function Tags() {
+  const [chosen, setChosen] = useState<string[]>(['History']);
+  const toggle = (tag: string) => setChosen((now) => (now.includes(tag) ? now.filter((t) => t !== tag) : [...now, tag]));
+  return (
+    <section id="checkbox-group" aria-label="Checkbox group" style={{ display: 'grid', gap: 'var(--uix-space-5)' }}>
+      <div className="uix-card" style={{ maxWidth: '40rem' }}><div className="uix-card__body">
+        <CheckboxGroup id="tags" label="Curated tags" hint="Shown on the book's public page." columns={3} required
+          error={chosen.length ? undefined : 'Choose at least one tag.'}>
+          {SHELVES.map((tag) => (
+            <Checkbox key={tag} name="tags" value={tag} label={tag} checked={chosen.includes(tag)} onChange={() => toggle(tag)} />
+          ))}
+        </CheckboxGroup>
+      </div></div>
+      <CheckboxGroup id="tags-disabled" label="Locked tags" disabled>
+        <Checkbox name="locked" label="Archive" defaultChecked />
+        <Checkbox name="locked" label="Staff picks" />
+      </CheckboxGroup>
+    </section>
+  );
+}
+
+const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags };
 
 function App() {
   const only = new URLSearchParams(location.search).get('only');

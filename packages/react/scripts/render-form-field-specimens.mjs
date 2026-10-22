@@ -1,0 +1,103 @@
+// Regenerates packages/tokens/docs/form-field-specimens.js: the docs specimens of the form-field
+// batch (HAR-1799, HAR-1376, HAR-1835, HAR-1588, HAR-1377, HAR-2465 …), from the BUILT package, so
+// the styleguide shows exactly the markup the components render (the precedent is
+// render-uxc-specimens.mjs).
+//
+//   npm run build -w @tensor_1/react
+//   node packages/react/scripts/render-form-field-specimens.mjs
+//
+// packages/react/src/form-field-specimens.test.mjs fails when the committed module differs.
+import { writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { JSDOM } from 'jsdom';
+import { createElement as h, act } from 'react';
+
+const here = dirname(fileURLToPath(import.meta.url));
+export const SPECIMEN_MODULE = join(here, '../../tokens/docs/form-field-specimens.js');
+
+const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'MutationObserver', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT'];
+
+const caption = (text) => `<div class="uix-guide__subhead" data-form-fields>${text}</div>`;
+
+/**
+ * Render every specimen. Returns `{ [route]: html }`. Installs a jsdom for the duration and
+ * removes it again, so a test that imports this can own its own globals.
+ */
+export async function renderFormFieldSpecimens() {
+  const saved = new Map(GLOBALS.map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true, url: 'http://localhost/' });
+  const { window } = dom;
+  const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
+  expose('window', window);
+  expose('document', window.document);
+  expose('navigator', window.navigator);
+  expose('getComputedStyle', window.getComputedStyle.bind(window));
+  expose('requestAnimationFrame', window.requestAnimationFrame.bind(window));
+  expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('MutationObserver', window.MutationObserver);
+  expose('HTMLElement', window.HTMLElement);
+  expose('IS_REACT_ACT_ENVIRONMENT', true);
+  window.HTMLElement.prototype.showPopover = function showPopover() {};
+  window.HTMLElement.prototype.hidePopover = function hidePopover() {};
+
+  try {
+    const { createRoot } = await import('react-dom/client');
+    const ui = await import(pathToFileURL(join(here, '../dist/index.js')).href);
+    const roots = [];
+    const mount = (element) => {
+      const host = window.document.createElement('div');
+      window.document.body.append(host);
+      const root = createRoot(host);
+      act(() => root.render(element));
+      roots.push({ root, host });
+      return host;
+    };
+    // React's generated ids differ between versions; the page gets stable ones.
+    let nextId = 0;
+    const ids = new Map();
+    const stable = (html) => html.replace(/(:r[0-9a-z]+:|«r[0-9a-z]+»|_r_[0-9a-z]+_)/g, (id) => {
+      if (!ids.has(id)) { nextId += 1; ids.set(id, `ff-${nextId}`); }
+      return ids.get(id);
+    });
+    const html = (el) => stable(el.innerHTML);
+    const noop = () => {};
+    const blocks = [];
+
+    // ── CheckboxGroup (HAR-1799): a named group in three columns, and the same with its error ──
+    const tags = ['Fiction', 'History', 'Poetry', 'Children', 'Reference', 'Local authors'];
+    const group = (props, chosen) => mount(h(ui.CheckboxGroup, props, tags.map((tag) => h(ui.Checkbox, {
+      key: tag, name: props.id, value: tag, label: tag, checked: chosen.includes(tag), onChange: noop,
+    }))));
+    blocks.push([
+      caption('Checkbox group (React <code>CheckboxGroup</code>, <code>.uix-checkbox-group</code>) — a <code>&lt;fieldset&gt;</code> whose legend names the boxes, so each one is announced in its group; the field’s hint or error below, tied to the group; <code>columns</code> is a ceiling, a phone gets one column'),
+      '<div data-checkbox-group-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 24rem;max-width:36rem">${html(group({ id: 'ff-tags', label: 'Curated tags', hint: 'Shown on the book’s public page.', columns: 3, required: true }, ['History', 'Local authors']))}</div>`,
+      `<div style="flex:1 1 16rem;max-width:24rem">${html(group({ id: 'ff-tags-error', label: 'Audience', error: 'Choose at least one audience.', columns: 2, required: true }, []))}</div>`,
+      '</div>',
+    ].join('\n'));
+
+    for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
+    return { 'examples-form-controls': blocks.join('\n') };
+  } finally {
+    dom.window.close();
+    for (const [name, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete globalThis[name];
+    }
+  }
+}
+
+/** The module text for a set of specimens: what the docs import. */
+export const formFieldSpecimenModule = (specimens) => `/* GENERATED by packages/react/scripts/render-form-field-specimens.mjs — do not edit by hand.
+ * The docs specimens of the form-field batch (HAR-1799 …): the markup the built React components
+ * render, in the states named in each caption. showcase-data.js appends each block to its route.
+ * packages/react/src/form-field-specimens.test.mjs fails when this file and the components differ. */
+export const FORM_FIELD_SPECIMENS = ${JSON.stringify(specimens, null, 2)};
+`;
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  writeFileSync(SPECIMEN_MODULE, formFieldSpecimenModule(await renderFormFieldSpecimens()));
+  console.log(`wrote ${SPECIMEN_MODULE}`);
+}

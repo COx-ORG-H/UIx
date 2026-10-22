@@ -1109,3 +1109,22 @@ mask; an avatar with a dot no longer clips it.
   `entityPicker`. `SearchSuggest` has the two slots these use: `idle` and `note`.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
+
+### Form fields (HAR-1812, HAR-1799, …)
+
+#### CheckboxGroup
+
+```tsx
+<CheckboxGroup label={t('tags')} hint={t('tagsHint')} error={errors.tags} columns={3} required>
+  {tags.map((tag) => (
+    <Checkbox key={tag.id} name="tags" value={tag.id} label={tag.name}
+      checked={chosen.includes(tag.id)} onChange={() => toggle(tag.id)} />
+  ))}
+</CheckboxGroup>
+```
+
+The checkbox counterpart of `<RadioGroup label>`: a `<fieldset>` whose `<legend>` names the group,
+so it is announced with each box, and the field's message slot below (`hint`, or `error` with
+`role="alert"`, tied to the group with `aria-describedby`). `columns` is a ceiling: no column is
+narrower than 10rem, so a phone gets one. `disabled` disables every box; `required` draws the
+marker (which boxes must be ticked is your rule).

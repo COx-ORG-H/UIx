@@ -54,8 +54,8 @@ export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps } from '.
 export { Select } from './components/Select.js';
 export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 
-export { Checkbox } from './components/Checkbox.js';
-export type { CheckboxProps } from './components/Checkbox.js';
+export { Checkbox, CheckboxGroup } from './components/Checkbox.js';
+export type { CheckboxProps, CheckboxGroupProps } from './components/Checkbox.js';
 
 export { Radio, RadioCard, RadioGroup } from './components/Radio.js';
 export type { RadioProps, RadioCardProps, RadioGroupProps } from './components/Radio.js';

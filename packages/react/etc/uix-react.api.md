@@ -646,6 +646,25 @@ export interface ChartStatPoint {
 // @public (undocumented)
 export const Checkbox: react.ForwardRefExoticComponent<CheckboxProps & react.RefAttributes<HTMLInputElement>>;
 
+// @public
+export function CheckboxGroup(input: CheckboxGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CheckboxGroupProps {
+    // (undocumented)
+    children: ReactNode;
+    // (undocumented)
+    className?: string;
+    columns?: number;
+    disabled?: boolean;
+    error?: ReactNode;
+    hint?: ReactNode;
+    // (undocumented)
+    id?: string;
+    label: ReactNode;
+    required?: boolean;
+}
+
 // @public (undocumented)
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)

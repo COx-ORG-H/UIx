@@ -75,3 +75,44 @@ test.describe('sizes (HAR-1812)', () => {
     await axe(page, '#sizes');
   });
 });
+
+test.describe('CheckboxGroup (HAR-1799)', () => {
+  test('each box is announced inside the named group, with the hint as its description', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'checkbox-group');
+    const group = page.getByRole('group', { name: 'Curated tags' });
+    await expect(group).toBeVisible();
+    await expect(group.getByRole('checkbox')).toHaveCount(8);
+    await expect(group).toHaveAccessibleDescription("Shown on the book's public page.");
+    await expect(page.getByRole('group', { name: 'Locked tags' }).getByRole('checkbox', { name: 'Staff picks' })).toBeDisabled();
+  });
+
+  test('unticking the last box shows the error, announced and tied to the group', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'checkbox-group');
+    const group = page.getByRole('group', { name: 'Curated tags' });
+    await group.getByRole('checkbox', { name: 'History' }).focus();
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('alert')).toHaveText('Choose at least one tag.');
+    await expect(group).toHaveAccessibleDescription('Choose at least one tag.');
+    await axe(page, '#checkbox-group');
+  });
+
+  test('three columns in a wide card, one at 320 px; long words wrap inside their column', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'checkbox-group');
+    const columns = () => page.locator('#tags .uix-checkbox-group__options').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    expect(await columns()).toBe(3);
+    await page.setViewportSize({ width: 320, height: 800 });
+    expect(await columns()).toBe(1);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBe(0);
+    // the box stays on the first line of a label that wraps
+    const label = page.locator('#tags .uix-checkbox', { hasText: 'Zeitgeschichte' });
+    const [boxTop, labelTop, labelHeight] = await label.evaluate((el) => [el.querySelector('.uix-checkbox__box').getBoundingClientRect().top, el.getBoundingClientRect().top, el.getBoundingClientRect().height]);
+    expect(labelHeight).toBeGreaterThan(30);
+    expect(boxTop - labelTop).toBeLessThan(6);
+  });
+
+  test('axe: the groups at rest', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'checkbox-group');
+    await axe(page, '#checkbox-group');
+  });
+});
