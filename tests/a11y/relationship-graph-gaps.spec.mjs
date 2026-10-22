@@ -1,4 +1,4 @@
-/* RelationshipGraph: TENSOR's K3 gaps map (HAR-1639).
+/* RelationshipGraph: TENSOR's K3 gaps map (HAR-1639) and CMDB topology sizes (HAR-1387).
  *
  * K3 (tests/graph-gaps/harness.tsx?case=k3), Chromium, light and dark, German labels:
  *   - a missing relation is a dashed edge in the danger tone; toned nodes match the legend;
@@ -7,6 +7,10 @@
  *   - a table row reveals its node in the map and keeps the keyboard in the table;
  *   - each node's description carries its relationships, "erwartet, fehlt" included;
  *   - with reduced motion the reveal is a jump, not a slide.
+ * CMDB (…?case=cmdb&nodes=N), light: 300 and 600 nodes render without overlapping items, the
+ * keyboard reaches the fourth column, and dragging the map holds frame times nobody sees (median
+ * under 34 ms, the 95th percentile under 50 ms, over 60 pointer moves). Before HAR-1387 every
+ * pointer move rebuilt every item, edge and list row: p95 100 ms at 300 nodes, 450 ms at 600.
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -102,3 +106,47 @@ test('K3: axe', async ({ page }, testInfo) => {
   const gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
 });
+
+for (const count of [300, 600]) {
+  test(`CMDB ${count} nodes: no overlapping items, the keyboard reaches the last column, dragging stays smooth`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'light', 'a performance measure, once');
+    await open(page, testInfo, `?case=cmdb&nodes=${count}`, { viewport: { width: 1280, height: 900 } });
+    const layout = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('#cmdb .uix-relationship-graph__item')].map((el) => ({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }));
+      let overlaps = 0;
+      const byColumn = new Map();
+      for (const item of items) byColumn.set(item.x, [...(byColumn.get(item.x) ?? []), item]);
+      for (const column of byColumn.values()) {
+        column.sort((a, b) => a.y - b.y);
+        for (let i = 1; i < column.length; i += 1) if (column[i].y < column[i - 1].y + column[i - 1].h) overlaps += 1;
+      }
+      return { items: items.length, columns: byColumn.size, overlaps, firstRender: window.__graphTimings.firstRender };
+    });
+    expect(layout.overlaps).toBe(0);
+    expect(layout.columns).toBeGreaterThanOrEqual(5);
+    testInfo.annotations.push({ type: 'first render (ms)', description: String(Math.round(layout.firstRender)) });
+    // keyboard: from the root, ArrowRight four times reaches column 4
+    await page.locator('#cmdb .uix-relationship-graph__item[tabindex="0"]').focus();
+    for (let i = 0; i < 4; i += 1) await page.keyboard.press('ArrowRight');
+    const depth = await page.evaluate(() => document.activeElement.offsetLeft);
+    expect(depth).toBeGreaterThan(0);
+    // frame times while dragging the map
+    const box = await page.locator('#cmdb .uix-relationship-graph__viewport').boundingBox();
+    await page.evaluate(() => {
+      window.__frames = [];
+      let last = performance.now();
+      const loop = (now) => { window.__frames.push(now - last); last = now; if (window.__frames.length < 80) requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    });
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    for (let i = 0; i < 60; i += 1) await page.mouse.move(box.x + box.width / 2 - i * 6, box.y + box.height / 2 - i * 3);
+    await page.mouse.up();
+    const frames = await page.evaluate(() => window.__frames.slice(5).sort((a, b) => a - b));
+    const median = frames[Math.floor(frames.length / 2)];
+    const p95 = frames[Math.floor(frames.length * 0.95)];
+    testInfo.annotations.push({ type: 'drag frame times (ms)', description: `median ${median.toFixed(1)}, p95 ${p95.toFixed(1)}` });
+    expect(median).toBeLessThan(34);
+    expect(p95).toBeLessThan(50);
+  });
+}

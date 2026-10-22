@@ -1257,3 +1257,8 @@ would overlap in a dense column are moved apart, or left out when they would dri
 relationship stays in the nodes' descriptions and the list). An edge across more than one column
 is a solid "skip" edge in a channel under the columns it crosses, no longer dashed or flagged as a
 cycle; `LayeredEdgeKind` gains `skip` and `back`.
+
+`RelationshipGraph layout="layered"` was measured at CMDB topology sizes (HAR-1387): 300 and
+600 items read at the opening 75 % with no overlap, and a pan or a zoom only moves the stage
+(the items, edges and list are not rebuilt), so dragging stays at the display's frame rate. A
+force layout was not needed.
