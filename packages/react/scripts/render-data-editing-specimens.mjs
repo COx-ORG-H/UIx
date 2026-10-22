@@ -42,6 +42,36 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── DiffViewer for people and MatchReview adopt mode (HAR-1369) ─────────────────────────────
+  ({ ui, mount, html }) => {
+    const names = { '$.title': 'Title', '$.authors': 'Authors', '$.year': 'Year of first edition' };
+    const diff = mount(h(ui.DiffViewer, {
+      base: { title: 'Death and the Dervish', authors: ['Meša Selimović'], year: 1966 },
+      current: { title: 'Death and the Dervish', authors: ['Mesa Selimovic'], year: 1966 },
+      incoming: { title: 'Death and the Dervish', authors: ['Meša Selimović'], year: 1967 },
+      labelFor: (path) => names[path],
+      renderValue: (value) => (value === undefined ? undefined : Array.isArray(value) ? value.join(', ') : String(value)),
+      provenance: (_path, side) => ({ current: 'Edited by Ana, 12 Oct 2026', incoming: 'Registry import (DNB), 20 Oct 2026' })[side],
+    }));
+    const match = mount(h(ui.MatchReview, {
+      fieldMode: 'adopt', incoming: { title: 'Death and the Dervish', author: 'Mesa Selimovic', year: 1966, isbn: null }, incomingLabel: 'Catalogue record',
+      fields: [{ id: 'title', label: 'Title' }, { id: 'author', label: 'Author' }, { id: 'year', label: 'Year' }, { id: 'isbn', label: 'ISBN' }],
+      candidates: [{ id: 'dnb-1', confidence: 0.92, record: { title: 'Death and the Dervish', author: 'Meša Selimović', year: 1966, isbn: '978-0-8101-1297-5' } }],
+      candidateLabel: () => 'German National Library',
+      provenance: () => 'Retrieved 22 Oct 2026 over SRU; matched on title and author.',
+      onDecision() {}, onAdopt() {},
+    }));
+    return {
+      'examples-diff-viewer': [
+        caption('Diff viewer for people (React <code>DiffViewer labelFor renderValue provenance</code>, HAR-1369) — entries named instead of JSON paths, values shown as the product shows them, and where each version came from under it'),
+        `<div data-diff-viewer-people-example>${html(diff)}</div>`,
+      ].join('\n'),
+      'examples-match-review': [
+        caption('Match review, adopt mode (React <code>MatchReview fieldMode="adopt"</code>, HAR-1369) — the record now against a candidate, field by field; a checkbox where they differ, "Same" where not; Adopt takes the chosen fields; where the candidate comes from in a disclosure'),
+        `<div data-match-review-adopt-example>${html(match)}</div>`,
+      ].join('\n'),
+    };
+  },
   // ── SortableList (HAR-1375): grip, content, Move up / Move down; the ends disabled ───────────
   ({ ui, mount, html }) => {
     const steps = [{ id: 'review', title: 'Review the request' }, { id: 'approve', title: 'Get approval' }, { id: 'notify', title: 'Notify the requester' }];

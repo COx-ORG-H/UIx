@@ -7,5 +7,36 @@
   .uix-match-review__table { min-width:54rem; } .uix-match-review__table tr[data-status="resolved"] { background:var(--uix-success-bg); }
   .uix-match-review__confidence { font-variant-numeric:tabular-nums; font-weight:600; }
   .uix-match-review__actions { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); }
+  /* fieldMode="adopt" (HAR-1369): per candidate, the record now against the candidate, field by field */
+  .uix-match-review__candidate { display:grid; gap:var(--uix-space-3); padding:var(--uix-space-4); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); }
+  .uix-match-review__candidate-head { display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-2) var(--uix-space-3); }
+  .uix-match-review__candidate-title { margin:0; min-width:0; font-size:var(--uix-text-h3); overflow-wrap:anywhere; }
+  .uix-match-review__candidate .uix-match-review__table-wrap { border-radius:var(--uix-radius-md); }
+  .uix-match-review__compare :is(tbody th, td) { padding-block:var(--uix-space-2); overflow-wrap:anywhere; }
+  .uix-match-review__compare thead th:last-child, .uix-match-review__compare td:last-child { width:1%; white-space:nowrap; text-align:center; }
+  /* row headers sit in the rows like cells: same padding, rule and height, the row's own background */
+  .uix-match-review__compare tbody th { padding-inline:var(--uix-space-4); height:var(--uix-row-h); border-bottom:1px solid var(--uix-border); background:transparent; color:var(--uix-text-muted); font-weight:500; text-align:start; vertical-align:middle; }
+  .uix-match-review__compare tr[data-differs] td:nth-child(3) { font-weight:600; }
+  .uix-match-review__compare tr[data-chosen] { background:var(--uix-row-selected-bg); }
+  .uix-match-review__adopt { width:18px; height:18px; margin:0; accent-color:var(--uix-brand); }
+  .uix-match-review__same { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-match-review__provenance summary { cursor:pointer; color:var(--uix-link); font-size:var(--uix-text-meta); font-weight:500; }
+  .uix-match-review__provenance-body { margin-top:var(--uix-space-2); color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-match-review__candidate-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-2); }
+  .uix-match-review__result { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-match-review__result--failed { color:var(--uix-danger-text); }
+  /* A phone: each field is a block, its name and the checkbox on top, the two values under it,
+     each named by its column (data-label), so no word breaks inside itself (HAR-1369 screenshots). */
+  @media (max-width:30rem) {
+    .uix-match-review__candidate { padding:var(--uix-space-3); }
+    .uix-match-review__compare thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+    .uix-match-review__compare, .uix-match-review__compare tbody { display:block; }
+    .uix-match-review__compare tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--uix-space-1) var(--uix-space-3); padding:var(--uix-space-2) var(--uix-space-3); border-bottom:1px solid var(--uix-border); }
+    .uix-match-review__compare tbody tr:last-child { border-bottom:0; }
+    .uix-match-review__compare tbody :is(th, td) { display:block; height:auto; padding:0; border:0; }
+    .uix-match-review__compare tbody td:nth-child(2), .uix-match-review__compare tbody td:nth-child(3) { grid-column:1 / -1; }
+    .uix-match-review__compare tbody td:last-child { grid-row:1; grid-column:2; width:auto; }
+    .uix-match-review__compare tbody td[data-label]::before { content:attr(data-label) ": "; color:var(--uix-text-muted); font-weight:400; }
+  }
   .uix-match-review--state { justify-items:start; padding:var(--uix-space-6); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); }
 }

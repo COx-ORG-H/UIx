@@ -1603,6 +1603,9 @@ export type DiffKind = 'added' | 'removed' | 'changed' | 'conflicted';
 // @public (undocumented)
 export type DiffResolution = 'accept' | 'skip' | 'pending';
 
+// @public
+export type DiffSide = 'base' | 'current' | 'incoming';
+
 // @public (undocumented)
 export interface DiffSummary {
     // (undocumented)
@@ -1697,10 +1700,13 @@ export interface DiffViewerProps {
     entries?: DiffEntry[];
     // (undocumented)
     incoming?: JsonValue;
+    labelFor?: (path: string) => ReactNode;
     // (undocumented)
     labels?: Partial<DiffViewerLabels>;
     // (undocumented)
     onResolutionChange?: (path: string, resolution: DiffResolution) => void;
+    provenance?: (path: string, side: DiffSide) => ReactNode;
+    renderValue?: (value: JsonValue | undefined, path: string, side: DiffSide) => ReactNode;
     // (undocumented)
     resolutions?: Record<string, DiffResolution>;
 }
@@ -3136,6 +3142,11 @@ export interface MatchReviewLabels {
     acceptSelected: string;
     // (undocumented)
     actions: string;
+    adopt: string;
+    adopted: string;
+    adoptFailed: string;
+    adoptField: string;
+    adoptSelected: string;
     // (undocumented)
     applying: string;
     // (undocumented)
@@ -3144,10 +3155,14 @@ export interface MatchReviewLabels {
     bulkAcceptFailed: string;
     // (undocumented)
     bulkDismissFailed: string;
+    candidate: string;
+    candidateValue: string;
     // (undocumented)
     caption: string;
+    compareCaption: string;
     // (undocumented)
     confidence: string;
+    currentValue: string;
     // (undocumented)
     decisionAccepted: string;
     // (undocumented)
@@ -3175,6 +3190,8 @@ export interface MatchReviewLabels {
     // (undocumented)
     failedSuffix: string;
     // (undocumented)
+    field: string;
+    // (undocumented)
     loading: string;
     // (undocumented)
     notScored: string;
@@ -3184,12 +3201,14 @@ export interface MatchReviewLabels {
     pendingOf: string;
     // (undocumented)
     pickOther: string;
+    provenance: string;
     // (undocumented)
     region: string;
     // (undocumented)
     resolved: string;
     // (undocumented)
     retry: string;
+    same: string;
     // (undocumented)
     select: string;
     // (undocumented)
@@ -3204,12 +3223,14 @@ export interface MatchReviewLabels {
 
 // @public (undocumented)
 export interface MatchReviewProps {
+    candidateLabel?: (candidate: MatchReviewCandidate) => ReactNode;
     // (undocumented)
     candidates: MatchReviewCandidate[];
     // (undocumented)
     className?: string;
     // (undocumented)
     error?: string;
+    fieldMode?: 'decide' | 'adopt';
     // (undocumented)
     fields: MatchReviewField[];
     // (undocumented)
@@ -3220,6 +3241,7 @@ export interface MatchReviewProps {
     labels?: Partial<MatchReviewLabels>;
     // (undocumented)
     loading?: boolean;
+    onAdopt?: (candidateId: string, fieldIds: string[]) => void | Promise<unknown>;
     // (undocumented)
     onBulkDecision?: (candidateIds: string[], action: Extract<MatchReviewAction, 'accept' | 'dismiss'>) => void | MatchBulkResult | Promise<void | MatchBulkResult>;
     // (undocumented)
@@ -3228,6 +3250,7 @@ export interface MatchReviewProps {
     onRetry?: () => void;
     // (undocumented)
     onSelectionChange?: (ids: Set<string>) => void;
+    provenance?: (candidate: MatchReviewCandidate) => ReactNode;
     // (undocumented)
     selectedIds?: Set<string>;
 }
@@ -6524,6 +6547,7 @@ export interface UixLabels {
     dateRangePicker?: Partial<DateRangePickerLabels>;
     // (undocumented)
     dateTimePicker?: Partial<DateTimePickerLabels>;
+    diffViewer?: Partial<DiffViewerLabels>;
     discardPrompt?: Partial<DiscardPromptLabels>;
     // (undocumented)
     drawer?: {
@@ -6538,6 +6562,7 @@ export interface UixLabels {
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
     lightbox?: Partial<LightboxLabels>;
+    matchReview?: Partial<MatchReviewLabels>;
     // (undocumented)
     modal?: {
         close?: string;

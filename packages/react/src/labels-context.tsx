@@ -21,6 +21,8 @@ import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { LightboxLabels } from './components/Lightbox.js';
 import type { SortableListLabels } from './components/SortableList.js';
+import type { DiffViewerLabels } from './components/DiffViewer.js';
+import type { MatchReviewLabels } from './components/MatchReview.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -65,6 +67,10 @@ export interface UixLabels {
   dateTimePicker?: Partial<DateTimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
+  /** `DiffViewer` (HAR-1369): the version names, the resolution buttons, the summary. */
+  diffViewer?: Partial<DiffViewerLabels>;
+  /** `MatchReview` (HAR-1369): the decision table, bulk actions and the adopt mode. */
+  matchReview?: Partial<MatchReviewLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;

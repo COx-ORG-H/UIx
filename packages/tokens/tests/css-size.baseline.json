@@ -142,9 +142,9 @@
       "brotli": 462
     },
     "styles/components/diff-viewer.css": {
-      "raw": 2655,
-      "gzip": 730,
-      "brotli": 609
+      "raw": 3156,
+      "gzip": 867,
+      "brotli": 710
     },
     "styles/components/drawer.css": {
       "raw": 3030,
@@ -242,9 +242,9 @@
       "brotli": 357
     },
     "styles/components/match-review.css": {
-      "raw": 1612,
-      "gzip": 514,
-      "brotli": 420
+      "raw": 5105,
+      "gzip": 1309,
+      "brotli": 1081
     },
     "styles/components/media.css": {
       "raw": 746,

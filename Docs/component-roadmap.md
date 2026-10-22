@@ -53,7 +53,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | DateRangePicker | date-range-picker.css | ✓ `DateRangePicker` | Beta | no | Controlled multi-month range selection with unavailable-date rules. 2.36.0 (HAR-1383): `mode="field"` (a trigger that opens the months in a popover), `weekStartsOn`. |
 | DescriptionList | description-list.css | ✓ `DescriptionList` | Beta | no | Also `DescriptionItem`. HAR-2032: below 22rem of its own width (container query) each label sits above its value. |
 | DetailLayout | detail-layout.css | ✓ `DetailLayout` | Stable | no | Layout scaffold; also the `DetailPage` record composition. |
-| DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. |
+| DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. HAR-1369: `labelFor`, `renderValue(value, path, side)`, `provenance(path, side)`. |
 | TextDiff | text-diff.css | ✓ `TextDiff` | Beta | no | Two-way text diff by line (changed lines paired, words marked) or by word for prose; split (stacks when narrow) or unified; folds unchanged runs; `diffText` / `textDiffRows` model. Landed with HAR-1368. |
 | EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. HAR-2030: `SearchBar` renders `.uix-searchbar` (label, icon, clear, Enter / Escape, `md` / `lg`, submit button). |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. HAR-2029: `dirty` asks "Discard changes?" (anchored, focus on Keep editing) on Escape, ×, backdrop and `DialogClose`; `pending` blocks them. |
@@ -72,7 +72,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Lightbox | lightbox.css | ✓ `Lightbox` | Beta | no | Full-screen media viewer (HAR-1367). HAR-1826: toolbar `actions`, `renderOverlay` in the picture's own box, keys the consumer claims (`onKeyDown`, `onEscapeKeyDown`); no counter for a single item. |
 | Link | link.css | n/a | Beta | no | Quiet-link CSS contract; also consumed by the `RelatedLinks` composition. In-text prose links keep the base blue + underline (WCAG 1.4.1). |
 | List | list.css | ✓ `List` | Stable | no | Also `ListItem`. |
-| MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. |
+| MatchReview | match-review.css | ✓ `MatchReview` | Beta | no | Descriptor-driven candidates, individual decisions, and bulk review. HAR-1369: `fieldMode="adopt"` (compare table, a checkbox per differing field, `onAdopt(candidateId, fieldIds)`, provenance disclosure; stacks per field on a phone). |
 | Media | media.css | absent | Planned | no | Planned wrapper (presentational). |
 | Menu | menu.css | ✓ `Menu` | Beta | no | APG menu button on the kit `Popover`; also `MenuItem` (link items, shortcut, danger), `MenuGroup`, `MenuSeparator`. Landed 2.27.0 (HAR-1359). 2.32.0 (HAR-1629): `MenuItemRadio`, `MenuItemCheckbox`, `MenuRadioGroup`, `id` / `data-*` on items, Escape on the trigger, capped to the viewport. HAR-2031: a key-name `shortcut` renders `KbdCombo` and sets `aria-keyshortcuts`. |
 | Meter | meter.css | ✓ `Meter` | Beta | no | `MeterTone`. Recently landed. |

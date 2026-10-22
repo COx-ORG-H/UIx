@@ -34,6 +34,14 @@ test('every state named in a caption is on the page', () => {
   assert.deepEqual([...nav.matchAll(/class="uix-cmdk__group"[^>]*>([^<]+)</g)].map((m) => m[1]), ['Pages', 'Actions']);
   assert.match(nav, /aria-activedescendant="(dex-[^"]+)"[\s\S]*id="\1" role="option" class="uix-cmdk__item" data-active="true"/);
   assert.match(nav, /<mark class="uix-cmdk__mark">Re<\/mark>ports/);
+  // diff viewer for people and match review adopt mode
+  const diff = specimens['examples-diff-viewer'];
+  assert.match(diff, /<span class="uix-diff-viewer__name">Authors<\/span>/);
+  assert.match(diff, /<div class="uix-diff-viewer__provenance">Registry import \(DNB\), 20 Oct 2026<\/div>/);
+  const match = specimens['examples-match-review'];
+  assert.match(match, /class="uix-match-review uix-match-review--adopt"/);
+  assert.equal((match.match(/class="uix-match-review__adopt"/g) ?? []).length, 2, 'author and ISBN differ');
+  assert.match(match, /<details class="uix-match-review__provenance">/);
   // sortable list: three rows, Move up disabled on the first and Move down on the last
   const formsSortable = specimens['examples-form-controls'];
   assert.match(formsSortable, /data-sortable-list-example[\s\S]*<ul class="uix-sortable" aria-label="Approval steps">/);

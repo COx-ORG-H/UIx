@@ -444,7 +444,7 @@ export { BrandProfiles, BrandProfileEditor, DEFAULT_BRAND_PROFILE_EDITOR_LABELS,
 export type { BrandProfileEditorLabels, BrandProfile, BrandProfileTypography, BrandProfileLogo, BrandProfileEditorProps, AppliedBrandProfileSnapshot } from './components/BrandProfiles.js';
 
 export { DEFAULT_DIFF_VIEWER_LABELS, DiffViewer } from './components/DiffViewer.js';
-export type { DiffViewerLabels, DiffViewerProps } from './components/DiffViewer.js';
+export type { DiffViewerLabels, DiffViewerProps, DiffSide } from './components/DiffViewer.js';
 export { buildThreeWayDiff, summarizeDiff } from './diff-model.js';
 export type { DiffEntry, DiffKind, DiffResolution, DiffSummary } from './diff-model.js';
 export { DEFAULT_TEXT_DIFF_LABELS, TextDiff } from './components/TextDiff.js';
