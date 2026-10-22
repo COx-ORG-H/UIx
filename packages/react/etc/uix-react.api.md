@@ -3386,8 +3386,8 @@ export interface NavGroupProps {
     onExpandedChange?: (expanded: boolean) => void;
 }
 
-// @public (undocumented)
-export function NavItem(input: NavItemProps): react.JSX.Element;
+// @public
+export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -5624,8 +5624,8 @@ export interface StepStateLabels {
 // @public
 export function studentTQuantile(p: number, df: number): number;
 
-// @public (undocumented)
-export function SubNavItem(input: SubNavItemProps): react.JSX.Element;
+// @public
+export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -6233,6 +6233,7 @@ export interface TreeNavAction {
 
 // @public (undocumented)
 export interface TreeNodeData {
+    ariaLabel?: string;
     // (undocumented)
     children?: TreeNodeData[];
     hasChildren?: boolean;
@@ -6267,6 +6268,7 @@ export interface TreeNodeProps {
     selected?: string;
     // (undocumented)
     tabbableId?: string;
+    treeId?: string;
 }
 
 // @public (undocumented)
@@ -6515,6 +6517,7 @@ export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptio
 export interface UseVirtualRowsOptions {
     enabled?: boolean;
     estimatedViewportHeight?: number;
+    measureRows?: string;
     overscan?: number;
     rowHeight: number;
     threshold?: number;
@@ -6527,6 +6530,7 @@ export interface UseVirtualRowsResult<T> {
     padBottom: number;
     // (undocumented)
     padTop: number;
+    rowHeight: number;
     // (undocumented)
     rows: readonly T[];
     // (undocumented)

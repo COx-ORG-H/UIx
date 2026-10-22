@@ -187,3 +187,102 @@ test('threshold: windowing starts above it (>), not at it', () => {
   assert.equal(custom.last().virtualized, true);
   custom.cleanup();
 });
+
+/* HAR-1829: `measureRows` — the rows' real pitch instead of a fixed rowHeight. TENSOR's own
+ * virtualiser was told 32 / 44 / 56 px while its DataTable rows rendered at 51 / 63 / 75 px:
+ * short spacers, a short scrollbar, and a window that drifted off the rows on screen. jsdom has no
+ * layout, so each data row's offsetHeight is stubbed to `pitch` (the spacers are not data rows). */
+function mountMeasured(count, options) {
+  const layout = { height: 600, scrollTop: 0, pitch: 51 };
+  const results = [];
+  const before = observers.length;
+  function Table({ opts }) {
+    const v = ui.useVirtualRows(rowsOf(count), { rowHeight: 32, measureRows: '[data-row]', ...opts });
+    results.push({ startIndex: v.startIndex, totalHeight: v.totalHeight, rowHeight: v.rowHeight, padTop: v.padTop });
+    return h('div', {
+      ref: (el) => {
+        if (el) {
+          Object.defineProperty(el, 'clientHeight', { configurable: true, get: () => layout.height });
+          Object.defineProperty(el, 'scrollTop', { configurable: true, get: () => layout.scrollTop, set: (y) => { layout.scrollTop = y; } });
+        }
+        v.containerRef.current = el;
+      },
+      'data-scroller': '',
+    },
+    h('div', { style: { height: v.padTop }, 'aria-hidden': 'true' }),
+    v.rows.map((row) => h('div', {
+      key: row,
+      'data-row': '',
+      ref: (el) => { if (el) Object.defineProperty(el, 'offsetHeight', { configurable: true, get: () => layout.pitch }); },
+    }, row)),
+    h('div', { style: { height: v.padBottom }, 'aria-hidden': 'true' }));
+  }
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const render = (opts = options) => act(() => root.render(h(Table, { opts })));
+  render();
+  const scroller = host.querySelector('[data-scroller]');
+  const observer = observers.slice(before).pop();
+  return {
+    layout, results, render,
+    last: () => results[results.length - 1],
+    scrollTo: async (y) => {
+      layout.scrollTop = y;
+      await act(async () => {
+        scroller.dispatchEvent(new window.Event('scroll'));
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      });
+    },
+    resize: async () => {
+      await act(async () => {
+        observer.callback([]);
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      });
+    },
+    cleanup: () => { act(() => root.unmount()); host.remove(); },
+  };
+}
+
+test('measureRows: rows styled at 51 px with rowHeight 32 size the list at 51 px a row', async () => {
+  const t = mountMeasured(5000, {});
+  assert.equal(t.results[0].rowHeight, 32, 'the first paint uses the estimate');
+  assert.equal(t.last().rowHeight, 51, 'then the measured pitch');
+  assert.equal(t.last().totalHeight, 5000 * 51);
+  await t.scrollTo(51 * 1000);
+  const { startIndex } = t.last();
+  assert.ok(startIndex <= 1000 && startIndex >= 1000 - 6, `the window starts within overscan of row 1000 (got ${startIndex})`);
+  assert.equal(t.last().padTop, startIndex * 51, 'and the top spacer is that many measured rows');
+  t.cleanup();
+});
+
+test('measureRows: never re-measured on scroll; re-measured on resize and when the estimate changes', async () => {
+  const t = mountMeasured(5000, {});
+  assert.equal(t.last().rowHeight, 51);
+  // The rows grow (say a font loaded) while the reader scrolls: the spacers stay put.
+  t.layout.pitch = 63;
+  await t.scrollTo(51 * 200);
+  assert.equal(t.last().rowHeight, 51, 'a scroll does not move the spacers under the reader');
+  await t.resize();
+  assert.equal(t.last().rowHeight, 63, 'a container resize measures again');
+  // A density switch: the consumer passes a new estimate and the rows render at the new pitch.
+  t.layout.pitch = 75;
+  t.render({ rowHeight: 56 });
+  assert.equal(t.last().rowHeight, 75);
+  assert.equal(t.last().totalHeight, 5000 * 75);
+  t.cleanup();
+});
+
+test('without measureRows the rowHeight option is the pitch, as before, and is returned', () => {
+  const t = mount(5000, { estimatedViewportHeight: 600 });
+  assert.equal(t.last().totalHeight, 5000 * ROW);
+  t.cleanup();
+  const m = mountMeasured(5000, { measureRows: undefined });
+  assert.equal(m.last().rowHeight, 32);
+  assert.equal(m.last().totalHeight, 5000 * 32);
+  m.cleanup();
+  // Not windowed (below the threshold): nothing to measure, the estimate stands.
+  const few = mountMeasured(50, {});
+  assert.equal(few.last().rowHeight, 32);
+  few.cleanup();
+});
