@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 7728f4e routine: a JSX comment between elements read as a text node by literal-a11y-text; the gate named the file and line -->
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
@@ -24,6 +25,9 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
+### 2026-10-23 · print layout · `8212a1f`
+- **Rule:** a header or footer that must repeat on every printed page has to be a real `<thead>` / `<tfoot>` of a real `<table>`; Chromium does not repeat the header group of a CSS table built of divs (`display: table-header-group`), and print emulation (`emulateMedia`) does not paginate, so only a real PDF shows it. Give the screen reset of such a table zero specificity (`:where()`), or it out-specifies the print rules that restore the table display.  **Why:** PrintLayout's first two builds printed the header on page 1 and the footer on the last page only; a probe of five structures (div table, div table with cells, real table, real table with rows, fixed elements) showed only real tables and fixed boxes repeat, and then a `.page > :is(thead, tbody, tfoot) { display: block }` screen reset (0,1,1) beat the print `.header { display: table-header-group }` (0,1,0).  **Gate:** `tests/a11y/print-layout.spec.mjs` prints a PDF with `page.pdf` and counts the header and footer links per page against a link drawn once.  **Tag:** print, false-green, test-double-fidelity, cascade, generalizable
 
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.
