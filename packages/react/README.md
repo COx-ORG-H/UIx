@@ -1242,3 +1242,18 @@ list, one resource after another (`resourceLayout` fixes either).
   resources={practitioners} resourceSpans={spans} slotMinutes={15} dayStart="07:30" dayEnd="17:00"
   onSelectSlot={openSlotPopover} selectedSlot={open && { resourceId: open.resourceId, start: open.start }} loading={isFetching} />
 ```
+
+#### RelationshipGraph: gaps on the map
+
+For a map of what is expected and what is there (TENSOR's K3 gaps): an edge takes
+`variant: 'dashed'` (an expected relation that is missing), a `tone` and a `description` that
+both nodes say to a screen reader ("covers, from Control K3.2 (expected, missing)"); a node takes
+a `tone`; a legend item takes the same `tone`, a `shape` (`edge` or `node`) and a `variant`, so
+it matches what it explains. Say a tone's meaning in words too (`description`, the node's text).
+`revealId` scrolls a node into view without moving focus (a table row beside the map), and with
+reduced motion it jumps. Without `rootId` no node gets the root border (`markRoot` forces it
+either way). `controls="none"` hides the toolbar in the radial layout as well. Edge labels that
+would overlap in a dense column are moved apart, or left out when they would drift too far (the
+relationship stays in the nodes' descriptions and the list). An edge across more than one column
+is a solid "skip" edge in a channel under the columns it crosses, no longer dashed or flagged as a
+cycle; `LayeredEdgeKind` gains `skip` and `back`.

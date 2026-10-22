@@ -78,5 +78,24 @@
   .uix-relationship-graph--fullscreen { position:fixed; inset:0; z-index:var(--uix-z-overlay, 1000); display:flex; flex-direction:column; padding:var(--uix-space-4); background:var(--uix-bg-app, var(--uix-surface)); }
   .uix-relationship-graph--fullscreen .uix-relationship-graph__viewport { flex:1; min-height:0; height:auto; }
   @media (max-width:640px) { .uix-relationship-graph__hint { display:none; } }
+  /* ── Tones, variants and legends (HAR-1639) ────────────────────────────────────────────────
+     A tone is a colour a node or an edge shares with its legend item; it never stands alone (the
+     consumer says the same in text). A dashed edge is an expected relation that is missing. */
+  .uix-relationship-graph [data-tone="neutral"] { --uix-graph-tone:var(--uix-neutral-solid); }
+  .uix-relationship-graph [data-tone="info"] { --uix-graph-tone:var(--uix-info); }
+  .uix-relationship-graph [data-tone="success"] { --uix-graph-tone:var(--uix-success); }
+  .uix-relationship-graph [data-tone="warning"] { --uix-graph-tone:var(--uix-warning-border); }
+  .uix-relationship-graph [data-tone="danger"] { --uix-graph-tone:var(--uix-danger); }
+  .uix-relationship-graph [data-tone="accent"] { --uix-graph-tone:var(--uix-accent); }
+  .uix-relationship-graph__link[data-tone] path { stroke:var(--uix-graph-tone); stroke-width:2px; }
+  .uix-relationship-graph__link[data-tone] polygon { fill:var(--uix-graph-tone); }
+  .uix-relationship-graph__link[data-variant="dashed"] path,.uix-relationship-graph__edge[data-variant="dashed"] { stroke-dasharray:6 4; }
+  .uix-relationship-graph__edge[data-tone] { stroke:var(--uix-graph-tone); }
+  /* a toned node: its border and a bar on its leading edge */
+  .uix-relationship-graph__item[data-tone] { border-color:var(--uix-graph-tone); box-shadow:inset 4px 0 0 var(--uix-graph-tone); }
+  .uix-relationship-graph__legend li[data-tone]::before { border-color:var(--uix-graph-tone); }
+  .uix-relationship-graph__legend li:is([data-shape="edge"],[data-variant]):not([data-shape="node"])::before { width:1.5rem; height:0; border-width:2px 0 0; border-radius:0; }
+  .uix-relationship-graph__legend li[data-variant="dashed"]::before { border-top-style:dashed; }
+  .uix-relationship-graph__legend li[data-shape="node"]::before { width:1rem; height:.75rem; border-width:1px 1px 1px 4px; border-radius:var(--uix-radius-xs); }
   @media (forced-colors: active) { .uix-relationship-graph__link path { stroke:CanvasText; } .uix-relationship-graph__link polygon { fill:CanvasText; } .uix-relationship-graph__item { border-color:ButtonText; } }
 }

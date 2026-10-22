@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'react';
-import { boundRelationshipGraph, layeredNeighbor, layoutLayeredGraph } from '../relationship-graph-model.js';
+import { boundRelationshipGraph, edgeLabelSize, layeredNeighbor, layoutLayeredGraph, separateEdgeLabels } from '../relationship-graph-model.js';
 import type { LayeredItem, LayeredLayout, LayeredNavigationKey, RoutedEdge } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
 import { Maximize2Icon, Minimize2Icon, MinusIcon, PlusIcon, RotateCcwIcon, ScanIcon } from '../icons/components.js';
 import { useKbdPlatform } from './Kbd.js';
+import { useReducedMotion } from '../hooks/useReducedMotion.js';
 import type { ResolvedRelationshipGraphProps } from './RelationshipGraph.js';
 import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 import { Tooltip } from './Tooltip.js';
@@ -44,6 +45,7 @@ function fitView(layout: LayeredLayout, size: Size): View {
 
 const arrowPoints = '0,0 -8,-4.5 -8,4.5';
 
+
 /** `RelationshipGraph layout="layered"` (ADR-0003). Internal — reached through RelationshipGraph. */
 export function LayeredRelationshipGraph({
   nodes, edges, selectedId, onSelect, onExpandNeighbors, onOpenDetails, maxNodes = 400,
@@ -51,9 +53,14 @@ export function LayeredRelationshipGraph({
   highlightedEdgeIds = EMPTY_IDS, conflictedEdgeIds = EMPTY_IDS, legend = [], className, labels,
   rootId, renderNode, nodeAriaLabel, renderCluster, clusterThreshold, expandedClusterIds,
   onToggleCluster, dimmedNodeIds = EMPTY_IDS, edgeLabels = 'auto', showList = true, height,
-  focusId, onFocusChange, controls = 'full', initialView: initialViewMode = 'readable',
+  focusId, onFocusChange, controls = 'full', initialView: initialViewMode = 'readable', revealId, markRoot,
 }: ResolvedRelationshipGraphProps) {
   const hintId = useId();
+  const describeId = useId();
+  // A pan, zoom or reveal glides; with reduced motion it lands at once (HAR-1639, the motion contract).
+  const reducedMotion = useReducedMotion();
+  const reducedRef = useRef(reducedMotion);
+  reducedRef.current = reducedMotion;
   const viewportHintId = useId();
   const compact = controls === 'compact';
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
@@ -150,7 +157,7 @@ export function LayeredRelationshipGraph({
   useEffect(() => () => clearTimeout(hintTimer.current), []);
 
   const moveView = useCallback((next: View, smooth: boolean) => {
-    setAnimate(smooth);
+    setAnimate(smooth && !reducedRef.current);
     setView(next);
   }, []);
 
@@ -206,6 +213,19 @@ export function LayeredRelationshipGraph({
       ensureVisible(controlledTarget, true);
     });
   }, [controlledKey, controlledTarget, controlledPresent, ensureVisible]);
+
+  // Bring `revealId` into view without focus (HAR-1639): when it changes, or once its item and
+  // the first view exist. A cluster stands in for a member it hides.
+  const revealTarget = revealId !== undefined ? (layout.itemOf[revealId] ?? revealId) : undefined;
+  const revealReady = revealTarget !== undefined && itemById.has(revealTarget) && size.width > 0;
+  const revealedKey = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!revealReady || revealTarget === undefined || initialisedFor.current === undefined) return;
+    if (revealedKey.current === revealTarget) return;
+    revealedKey.current = revealTarget;
+    requestAnimationFrame(() => ensureVisible(revealTarget, true));
+  }, [revealReady, revealTarget, ensureVisible]);
+  useEffect(() => { if (revealId === undefined) revealedKey.current = undefined; }, [revealId]);
 
   // Ctrl/⌘ + wheel zooms around the pointer; a plain wheel scrolls the page (in full
   // screen there is no page to scroll, so it zooms). With the compact controls, a plain
@@ -359,6 +379,22 @@ export function LayeredRelationshipGraph({
       .join(', ');
   };
 
+  // Each node says its relationships (HAR-1639): the edge layer is drawn for the eye only.
+  const nodeLabelById = useMemo(() => new Map(bounded.nodes.map((node) => [node.id, node.label])), [bounded.nodes]);
+  const relationsOf = useMemo(() => {
+    const map = new Map<string, string[]>();
+    const add = (id: string, text: string) => { const list = map.get(id); if (list) list.push(text); else map.set(id, [text]); };
+    for (const edge of bounded.edges) {
+      if (!nodeLabelById.has(edge.source) || !nodeLabelById.has(edge.target) || edge.source === edge.target) continue;
+      const relation = edge.label ?? edge.type ?? labels.relationship;
+      const note = edge.description ? ` (${edge.description})` : '';
+      add(edge.source, `${labels.relationTo(relation, nodeLabelById.get(edge.target)!)}${note}`);
+      add(edge.target, `${labels.relationFrom(relation, nodeLabelById.get(edge.source)!)}${note}`);
+    }
+    return map;
+  }, [bounded.edges, nodeLabelById, labels]);
+  const showRoot = markRoot ?? rootId !== undefined;
+
   const showLabel = (edge: RoutedEdge): boolean => {
     if (edgeLabels === 'never' || edge.label === undefined) return false;
     if (edgeLabels === 'always') return true;
@@ -372,6 +408,11 @@ export function LayeredRelationshipGraph({
     transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
   };
   const zoomPercent = Math.round(view.zoom * 100);
+  // Labels drawn now, moved apart where two would overlap; one that would drift too far is left out.
+  const labelPlacement = separateEdgeLabels(layout.edges.filter(showLabel).map((edge) => {
+    const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
+    return { id: edge.id, x: edge.labelX, y: edge.labelY, ...edgeLabelSize(lines) };
+  }));
 
   // One icon control of the compact cluster: a named button, its words in a tooltip.
   const control = (
@@ -435,6 +476,7 @@ export function LayeredRelationshipGraph({
           {layout.edges.map((edge) => {
             const active = activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id));
             const angle = (edge.arrowAngle * 180) / Math.PI;
+            const placed = labelPlacement.get(edge.id);
             return <g
               key={edge.id}
               className="uix-relationship-graph__link"
@@ -443,12 +485,14 @@ export function LayeredRelationshipGraph({
               data-emphasis={edge.emphasis || undefined}
               data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
               data-dimmed={(dimmedNodeIds.has(edge.source) && dimmedNodeIds.has(edge.target)) || undefined}
+              data-variant={edge.variant === 'dashed' ? 'dashed' : undefined}
+              data-tone={edge.tone}
             >
               <path d={edge.path} />
               {edge.arrow !== 'none' && <polygon points={arrowPoints} transform={`translate(${edge.arrowX} ${edge.arrowY}) rotate(${angle})`} />}
-              {showLabel(edge) && <text x={edge.labelX} y={edge.labelY} textAnchor="middle" dominantBaseline="middle">
+              {placed && !placed.hidden && <text x={placed.x} y={placed.y} textAnchor="middle" dominantBaseline="middle" data-moved={placed.y !== edge.labelY || undefined}>
                 {(edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines).map((line, index, lines) => (
-                  <tspan key={index} x={edge.labelX} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : '1.1em'}>{line}</tspan>
+                  <tspan key={index} x={placed.x} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : '1.1em'}>{line}</tspan>
                 ))}
               </text>}
             </g>;
@@ -461,8 +505,9 @@ export function LayeredRelationshipGraph({
           style={{ left: column.x, width: layout.nodeWidth }}
         >{labels.column(column.depth, column.count)}</div>)}
         <div role="group" aria-roledescription={labels.roleDescription} aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)} aria-describedby={hintId}>
-          {layout.items.map((item) => {
+          {layout.items.map((item, itemIndex) => {
             const selected = item.id === selectedItemId;
+            const relations = item.node ? relationsOf.get(item.node.id) : undefined;
             const dimmed = item.node ? dimmedNodeIds.has(item.node.id) : item.cluster!.members.every((member) => dimmedNodeIds.has(member.id));
             const body = item.cluster
               ? (renderCluster?.(item.cluster) ?? <>
@@ -487,10 +532,12 @@ export function LayeredRelationshipGraph({
               data-dimmed={dimmed || undefined}
               data-highlighted={(item.node && highlightedNodeIds.has(item.node.id)) || undefined}
               data-conflicted={(item.node && conflictedNodeIds.has(item.node.id)) || undefined}
-              data-root={item.id === rootItemId || undefined}
+              data-root={(showRoot && item.id === rootItemId) || undefined}
+              data-tone={item.node?.tone}
               style={{ left: item.x, top: item.y, width: item.width, height: item.height }}
               tabIndex={item.id === focusedId ? 0 : -1}
               aria-label={labelFor(item)}
+              aria-describedby={relations ? `${describeId}-${itemIndex}` : undefined}
               {...(item.cluster ? { 'aria-expanded': false } : { 'aria-pressed': selected })}
               onClick={() => activate(item)}
               onKeyDown={(event) => onItemKeyDown(event, item)}
@@ -507,6 +554,10 @@ export function LayeredRelationshipGraph({
             </button>;
           })}
         </div>
+        <div hidden>{layout.items.map((item, itemIndex) => {
+          const relations = item.node ? relationsOf.get(item.node.id) : undefined;
+          return relations ? <span key={item.id} id={`${describeId}-${itemIndex}`}>{relations.join('; ')}</span> : null;
+        })}</div>
         {layout.items.filter((item) => item.expandedGroup).map((item) => {
           const group = item.expandedGroup!;
           return <button
@@ -543,7 +594,7 @@ export function LayeredRelationshipGraph({
         </div>
       </>}
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id}>{entry.label}</li>)}</ul>}
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id} data-tone={entry.tone} data-shape={entry.shape} data-variant={entry.variant}>{entry.label}</li>)}</ul>}
     {showList && <EquivalentRelationshipList
       nodes={bounded.nodes}
       edges={bounded.edges}

@@ -347,9 +347,9 @@
       "brotli": 1134
     },
     "styles/components/relationship-graph.css": {
-      "raw": 12612,
-      "gzip": 2748,
-      "brotli": 2353
+      "raw": 14662,
+      "gzip": 3176,
+      "brotli": 2707
     },
     "styles/components/rich-text.css": {
       "raw": 13156,

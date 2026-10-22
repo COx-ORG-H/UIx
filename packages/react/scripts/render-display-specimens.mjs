@@ -1,5 +1,5 @@
 // Regenerates packages/tokens/docs/display-specimens.js: the docs specimens for the display
-// components of batch 5 (QrCode HAR-1251, CodeDisplay HAR-1253, ContactCard HAR-1379, EventRow HAR-1370, PrintLayout HAR-986, QrScanner HAR-1254, the resource day HAR-983), from the BUILT package, so the styleguide shows
+// components of batch 5 (QrCode HAR-1251, CodeDisplay HAR-1253, ContactCard HAR-1379, EventRow HAR-1370, PrintLayout HAR-986, QrScanner HAR-1254, the resource day HAR-983, graph gaps HAR-1639), from the BUILT package, so the styleguide shows
 // exactly the markup the components render (the precedent is render-uxc-specimens.mjs).
 //
 //   npm run build:react   (or: npm run build -w @tensor_1/react)
@@ -186,9 +186,34 @@ export async function renderDisplaySpecimens() {
       entries: [], anchorDate: day, timeZone: 'Europe/Sarajevo', view: 'day', showHeader: false, legend: [],
       resources: people, resourceSpans: spans, dayStart: '08:00', dayEnd: '10:00', resourceLayout: 'columns', onSelectSlot: () => {},
     }));
-    add('examples-scheduling-calendar', [
+    add('examples-data-display', [
       caption('Day view by resource (React <code>SchedulingCalendar view="day" resources</code>) — one column per practitioner on a slot axis in the tenant’s zone; free spans are cut into bookable slots, bookings and time off stay whole, and time no span covers is hatched “no schedule”, never free. One tab stop; arrows move between slots and practitioners; below 480 px it is a list'),
       `<div data-resource-day-example style="max-width:48rem">${html(resourceDay)}</div>`,
+    ].join('\n'));
+
+    // ── RelationshipGraph gaps (HAR-1639): a missing relation, toned nodes, a legend that matches ──
+    const k3 = mount(h(ui.RelationshipGraph, {
+      layout: 'layered', controls: 'none', edgeLabels: 'always', height: '16rem', clusterThreshold: 0, showList: false,
+      nodes: [
+        { id: 'k1', label: 'Control K3.1', type: 'Control', depth: 0 },
+        { id: 'k2', label: 'Control K3.2', type: 'Control', depth: 0 },
+        { id: 'pay', label: 'Payments API', type: 'Application', tone: 'success', description: 'evidence present', depth: 1 },
+        { id: 'ledger', label: 'Ledger database', type: 'Database', tone: 'danger', description: 'evidence missing', depth: 2 },
+      ],
+      edges: [
+        { id: 'k1-pay', source: 'k1', target: 'pay', label: 'covers' },
+        { id: 'pay-ledger', source: 'pay', target: 'ledger', label: 'writes to' },
+        { id: 'k2-ledger', source: 'k2', target: 'ledger', label: 'covers', variant: 'dashed', tone: 'danger', description: 'expected, missing' },
+      ],
+      legend: [
+        { id: 'missing', label: 'Expected, missing', tone: 'danger', variant: 'dashed' },
+        { id: 'present', label: 'Evidence present', tone: 'success', shape: 'node' },
+        { id: 'absent', label: 'Evidence missing', tone: 'danger', shape: 'node' },
+      ],
+    }));
+    add('examples-data-display', [
+      caption('Gaps on the map (React <code>RelationshipGraph</code> edge <code>variant</code> / <code>tone</code> / <code>description</code>, node <code>tone</code>, legend <code>tone</code> / <code>shape</code> / <code>variant</code>, <code>controls="none"</code>) — an expected relation that is missing is a dashed danger edge, crossing a column in a channel under it; nodes carry their state as a tone and in words; no root border in a map with several starting points; each node says its relationships to a screen reader'),
+      `<div data-graph-gaps-example style="max-width:44rem">${html(k3)}</div>`,
     ].join('\n'));
 
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }

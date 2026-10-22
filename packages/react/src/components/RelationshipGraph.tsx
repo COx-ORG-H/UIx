@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
 import { boundRelationshipGraph, layoutRelationshipGraph, traverseRelationshipNode } from '../relationship-graph-model.js';
-import type { RelationshipGraphCluster, RelationshipGraphEdge, RelationshipGraphNode } from '../relationship-graph-model.js';
+import type { RelationshipGraphCluster, RelationshipGraphEdge, RelationshipGraphNode, RelationshipGraphTone } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
 import { LayeredRelationshipGraph } from './RelationshipGraphLayered.js';
 import { EquivalentRelationshipList } from './RelationshipGraphList.js';
@@ -11,6 +11,12 @@ import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 export interface RelationshipGraphLegendItem {
   id: string;
   label: string;
+  /** Layered: the swatch takes the tone the matching nodes or edges take (HAR-1639). */
+  tone?: RelationshipGraphTone;
+  /** Layered: the swatch is a line (`edge`, default) or a node box (`node`). */
+  shape?: 'edge' | 'node';
+  /** Layered: a dashed line swatch for an edge `variant="dashed"`. */
+  variant?: 'solid' | 'dashed';
 }
 
 /** Every visible or announced string. Pass translations; English defaults fill the gaps. */
@@ -61,6 +67,10 @@ export interface RelationshipGraphLabels {
   retry: string;
   emptyTitle: string;
   emptyHint: string;
+  /** Layered: a node's outgoing relationship in its description (HAR-1639), e.g. "depends on Payments DB". */
+  relationTo: (relation: string, target: string) => string;
+  /** Layered: a node's incoming relationship in its description, e.g. "depends on, from Checkout". */
+  relationFrom: (relation: string, source: string) => string;
 }
 
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels = {
@@ -106,6 +116,8 @@ export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels = {
   retry: 'Try again',
   emptyTitle: 'No relationships to display.',
   emptyHint: 'Adjust the neighborhood or filters to include a node.',
+  relationTo: (relation, target) => `${relation} ${target}`,
+  relationFrom: (relation, source) => `${relation}, from ${source}`,
 };
 
 export interface RelationshipGraphProps {
@@ -169,6 +181,17 @@ export interface RelationshipGraphProps {
   /** Layered: controlled roving focus. */
   focusId?: string;
   onFocusChange?: (id: string) => void;
+  /**
+   * Layered: brings this node into view without moving focus (HAR-1639), e.g. the row picked in
+   * a table beside the map while the keyboard stays in the table. Smooth, or at once with reduced
+   * motion. Changing it again scrolls again; `focusId` focuses as well.
+   */
+  revealId?: string;
+  /**
+   * Layered: draws the root with a heavier border. Default: when `rootId` is given. A map with
+   * several starting points (no `rootId`) has no one root, so nothing is marked (HAR-1639).
+   */
+  markRoot?: boolean;
 }
 
 const EMPTY_IDS: ReadonlySet<string> = new Set<string>();
@@ -219,7 +242,7 @@ function RadialRelationshipGraph({
   nodes, edges, selectedId, onSelect, onExpandNeighbors, onOpenDetails, maxNodes = 40,
   density = 'standard', highlightedNodeIds = EMPTY_IDS, conflictedNodeIds = EMPTY_IDS,
   highlightedEdgeIds = EMPTY_IDS, conflictedEdgeIds = EMPTY_IDS, legend = EMPTY_LEGEND,
-  className, labels, showList = true,
+  className, labels, showList = true, controls = 'full',
 }: ResolvedRelationshipGraphProps) {
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
   const positioned = useMemo(() => layoutRelationshipGraph(bounded.nodes, bounded.edges, selectedId), [bounded, selectedId]);
@@ -250,7 +273,8 @@ function RadialRelationshipGraph({
   const reset = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
   return <section className={cx('uix-relationship-graph', `uix-relationship-graph--${density}`, className)} aria-label={labels.graph}>
-    <div className="uix-relationship-graph__toolbar" aria-label={labels.controls}>
+    {/* `controls="none"` hides the toolbar here too (HAR-1639); the radial ring has no compact cluster. */}
+    {controls !== 'none' && <div className="uix-relationship-graph__toolbar" aria-label={labels.controls}>
       <button type="button" onClick={() => setPan((value) => ({ ...value, x: value.x - 24 }))} aria-label={labels.panLeft}>{labels.left}</button>
       <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y - 24 }))} aria-label={labels.panUp}>{labels.up}</button>
       <button type="button" onClick={() => setPan((value) => ({ ...value, y: value.y + 24 }))} aria-label={labels.panDown}>{labels.down}</button>
@@ -259,7 +283,7 @@ function RadialRelationshipGraph({
       <button type="button" onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.2).toFixed(1))))} aria-label={labels.zoomOut}>{labels.zoomOut}</button>
       <button type="button" onClick={reset}>{labels.reset}</button>
       <span aria-live="polite">{labels.zoomLevel(Math.round(zoom * 100))}</span>
-    </div>
+    </div>}
     {bounded.omittedNodeCount > 0 && <p className="uix-relationship-graph__bounded" role="status">{labels.bounded(bounded.nodes.length, bounded.omittedNodeCount)}</p>}
     <div className="uix-relationship-graph__visual">
       <svg ref={svgRef} viewBox={radialViewBox(positioned)} role="group" aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)}>
@@ -267,7 +291,7 @@ function RadialRelationshipGraph({
           {bounded.edges.map((edge) => {
             const source = positionedById.get(edge.source)!;
             const target = positionedById.get(edge.target)!;
-            return <line key={edge.id} x1={source.x * RADIAL_SCALE_X} y1={source.y * RADIAL_SCALE_Y} x2={target.x * RADIAL_SCALE_X} y2={target.y * RADIAL_SCALE_Y} className="uix-relationship-graph__edge" data-typed={(edge.type != null && typeColor.has(edge.type)) || undefined} style={edge.type != null && typeColor.has(edge.type) ? ({ '--uix-graph-type-color': typeColor.get(edge.type) } as CSSProperties) : undefined} data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
+            return <line key={edge.id} x1={source.x * RADIAL_SCALE_X} y1={source.y * RADIAL_SCALE_Y} x2={target.x * RADIAL_SCALE_X} y2={target.y * RADIAL_SCALE_Y} className="uix-relationship-graph__edge" data-typed={(edge.type != null && typeColor.has(edge.type)) || undefined} style={edge.type != null && typeColor.has(edge.type) ? ({ '--uix-graph-type-color': typeColor.get(edge.type) } as CSSProperties) : undefined} data-highlighted={highlightedEdgeIds.has(edge.id) || undefined} data-conflicted={conflictedEdgeIds.has(edge.id) || undefined} data-tone={edge.tone} data-variant={edge.variant === 'dashed' ? 'dashed' : undefined}><title>{edge.label ?? edge.type ?? labels.relationship}</title></line>;
           })}
           {positioned.map((node) => <g
             key={node.id} transform={`translate(${node.x * RADIAL_SCALE_X} ${node.y * RADIAL_SCALE_Y})`} role="button"

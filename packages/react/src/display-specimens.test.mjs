@@ -60,11 +60,18 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /data-status="unsupported"[\s\S]*?This browser cannot use the camera here/);
   assert.equal((forms.match(/class="uix-qr-scanner__manual"/g) ?? []).length, 3);
   // resource day: three columns; a booking, time off, bookable slots, and no free slot before 09:00 for the third
-  const calendar = specimens['examples-scheduling-calendar'];
+  const calendar = specimens['examples-data-display'];
   assert.match(calendar, /data-resource-day-example/);
   assert.equal((calendar.match(/class="uix-scheduling-calendar__rs-column"/g) ?? []).length, 3);
   assert.match(calendar, /aria-label="Dr\. Amra Hadžić, 09:00 – 09:30, Booked, Lejla M\."/);
   assert.match(calendar, /data-kind="off"/);
   assert.doesNotMatch(calendar, /Dr\. Selma Đurđević, 08:[0-9]{2} – [0-9:]+, Free/);
+  // graph gaps: a dashed danger edge, toned nodes, a matching legend, no root border
+  const graph = specimens['examples-data-display'];
+  assert.match(graph, /data-graph-gaps-example/);
+  assert.match(graph, /data-variant="dashed" data-tone="danger"/);
+  assert.match(graph, /data-node-id="ledger"[^>]*data-tone="danger"/);
+  assert.match(graph, /<li data-type="missing" data-tone="danger" data-variant="dashed">/);
+  assert.doesNotMatch(graph.slice(graph.indexOf('data-graph-gaps-example')), /data-root/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

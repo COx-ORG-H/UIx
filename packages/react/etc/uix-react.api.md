@@ -1762,6 +1762,25 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
 }
 
 // @public
+export interface EdgeLabelBox {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    width: number;
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export function edgeLabelSize(lines: readonly string[]): {
+    width: number;
+    height: number;
+};
+
+// @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
 
 // @public
@@ -2767,8 +2786,8 @@ export interface LayeredEdgeClassification {
     kindById: Map<string, LayeredEdgeKind>;
 }
 
-// @public (undocumented)
-export type LayeredEdgeKind = 'forward' | 'lateral' | 'cycle';
+// @public
+export type LayeredEdgeKind = 'forward' | 'skip' | 'lateral' | 'back' | 'cycle';
 
 // @public (undocumented)
 export interface LayeredItem {
@@ -3829,6 +3848,16 @@ export interface PlacedDaySpan {
     startCol: number;
 }
 
+// @public
+export interface PlacedEdgeLabel {
+    // (undocumented)
+    hidden: boolean;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
 // @public (undocumented)
 export interface PlacedMonthSpan {
     continuesAfter: boolean;
@@ -4309,6 +4338,7 @@ export interface RelationshipGraphCluster {
 // @public (undocumented)
 export interface RelationshipGraphEdge {
     arrow?: RelationshipGraphArrow;
+    description?: string;
     emphasis?: boolean;
     // (undocumented)
     id: string;
@@ -4318,8 +4348,10 @@ export interface RelationshipGraphEdge {
     source: string;
     // (undocumented)
     target: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public
@@ -4383,10 +4415,12 @@ export interface RelationshipGraphLabels {
     panRight: string;
     // (undocumented)
     panUp: string;
+    relationFrom: (relation: string, source: string) => string;
     // (undocumented)
     relationship: string;
     // (undocumented)
     relationships: (count: number) => string;
+    relationTo: (relation: string, target: string) => string;
     // (undocumented)
     reset: string;
     // (undocumented)
@@ -4412,6 +4446,9 @@ export interface RelationshipGraphLegendItem {
     id: string;
     // (undocumented)
     label: string;
+    shape?: 'edge' | 'node';
+    tone?: RelationshipGraphTone;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -4423,6 +4460,7 @@ export interface RelationshipGraphNode {
     id: string;
     // (undocumented)
     label: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
     // (undocumented)
@@ -4464,6 +4502,7 @@ export interface RelationshipGraphProps {
     legend?: RelationshipGraphLegendItem[];
     // (undocumented)
     loading?: boolean;
+    markRoot?: boolean;
     maxNodes?: number;
     nodeAriaLabel?: (node: RelationshipGraphNode) => string;
     // (undocumented)
@@ -4485,11 +4524,15 @@ export interface RelationshipGraphProps {
         selected: boolean;
         dimmed: boolean;
     }) => ReactNode;
+    revealId?: string;
     rootId?: string;
     // (undocumented)
     selectedId?: string;
     showList?: boolean;
 }
+
+// @public
+export type RelationshipGraphTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'accent';
 
 // @public (undocumented)
 export function relationshipNeighbors(nodeId: string, edges: RelationshipGraphEdge[]): string[];
@@ -4638,6 +4681,8 @@ export interface RoutedEdge {
     // (undocumented)
     arrowY: number;
     autoLabel: boolean;
+    // (undocumented)
+    description?: string;
     edgeIds: string[];
     // (undocumented)
     emphasis: boolean;
@@ -4658,7 +4703,10 @@ export interface RoutedEdge {
     // (undocumented)
     target: string;
     // (undocumented)
+    tone?: RelationshipGraphTone;
+    // (undocumented)
     type?: string;
+    variant: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -5696,6 +5744,12 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 // @public (undocumented)
 export function selectRangeDate(current: DateRangeValue, date: string): DateRangeValue;
+
+// @public
+export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
+    gap?: number;
+    maxShift?: number;
+}): Map<string, PlacedEdgeLabel>;
 
 // @public
 export function serializeView(v: ViewState): string;

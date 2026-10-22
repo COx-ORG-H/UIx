@@ -1,8 +1,16 @@
+/**
+ * A colour that a node or an edge shares with a legend item (HAR-1639). Colour is never the only
+ * signal: say the same thing in the node's text, the edge's `description` or its `variant`.
+ */
+export type RelationshipGraphTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'accent';
+
 export interface RelationshipGraphNode {
   id: string;
   label: string;
   type?: string;
   description?: string;
+  /** Layered layout: the node's border and edge mark take this tone (HAR-1639). */
+  tone?: RelationshipGraphTone;
   x?: number;
   y?: number;
   /** Layered layout: the node's column. Omitted → BFS distance from the root along source→target. */
@@ -22,6 +30,18 @@ export interface RelationshipGraphEdge {
   arrow?: RelationshipGraphArrow;
   /** Layered layout: always draw this edge's label, whatever the label policy. */
   emphasis?: boolean;
+  /**
+   * `dashed` draws the line dashed, e.g. an expected relation that is missing (HAR-1639). Default
+   * `solid`; a lateral or cycle edge is dashed either way.
+   */
+  variant?: 'solid' | 'dashed';
+  /** The line and arrowhead take this tone (HAR-1639). */
+  tone?: RelationshipGraphTone;
+  /**
+   * Said to assistive technology with the relationship, on both nodes it joins, e.g. "expected,
+   * missing" (HAR-1639). The drawn line itself is decoration; the nodes carry the relationship.
+   */
+  description?: string;
 }
 
 export interface PositionedRelationshipNode extends RelationshipGraphNode {
@@ -113,7 +133,12 @@ export function traverseRelationshipNode(nodes: RelationshipGraphNode[], current
  * fan-outs collapse into cluster items; barycenter sweeps reduce crossings.
  * Pure and deterministic: the same input always yields the same geometry. */
 
-export type LayeredEdgeKind = 'forward' | 'lateral' | 'cycle';
+/**
+ * `forward` steps one column right; `skip` goes right across more than one column; `lateral`
+ * stays in its column; `back` goes left without closing a loop; `cycle` goes left and closes one
+ * (HAR-1639: only a cycle is flagged as one, and only lateral and cycle edges are dashed).
+ */
+export type LayeredEdgeKind = 'forward' | 'skip' | 'lateral' | 'back' | 'cycle';
 
 export interface LayeredLayoutOptions {
   rootId?: string;
@@ -151,7 +176,7 @@ export interface LayeredItem {
   children: string[];
   /** Set on the first member of an expanded cluster: the group its collapse control belongs to. */
   expandedGroup?: RelationshipGraphCluster;
-  /** True when a lateral or cycle edge touches this node. */
+  /** True when a cycle edge touches this node (HAR-1639: no longer set by skip, lateral or back edges). */
   inCycle: boolean;
   /** Edges (any kind) touching this item. */
   degree: number;
@@ -169,6 +194,10 @@ export interface RoutedEdge {
   label?: string;
   arrow: RelationshipGraphArrow;
   emphasis: boolean;
+  /** The first underlying edge's `variant`, `tone` and `description`. */
+  variant: 'solid' | 'dashed';
+  tone?: RelationshipGraphTone;
+  description?: string;
   path: string;
   labelX: number;
   labelY: number;
@@ -308,6 +337,8 @@ export function classifyLayeredEdges(
       const list = forwardOut.get(edge.source);
       if (list) list.push(edge.target);
       else forwardOut.set(edge.source, [edge.target]);
+    } else if (to > from + 1) {
+      kindById.set(edge.id, 'skip');
     } else if (to < from) {
       backEdges.push(edge);
     } else {
@@ -333,7 +364,7 @@ export function classifyLayeredEdges(
         }
       }
     }
-    kindById.set(edge.id, closes ? 'cycle' : 'lateral');
+    kindById.set(edge.id, closes ? 'cycle' : 'back');
   }
   return { depthById, kindById };
 }
@@ -368,6 +399,9 @@ export function layoutLayeredGraph(
   const forwardParents = new Map<string, RelationshipGraphEdge[]>();
   const forwardChildCount = new Map<string, number>();
   const inCycle = new Set<string>();
+  // Touched by any edge that is not a plain forward step: never folded into a cluster, which
+  // routes forward edges only.
+  const crossLinked = new Set<string>();
   const nodeDegree = new Map<string, number>();
   for (const edge of drawable) {
     nodeDegree.set(edge.source, (nodeDegree.get(edge.source) ?? 0) + 1);
@@ -378,8 +412,12 @@ export function layoutLayeredGraph(
       else forwardParents.set(edge.target, [edge]);
       forwardChildCount.set(edge.source, (forwardChildCount.get(edge.source) ?? 0) + 1);
     } else {
-      inCycle.add(edge.source);
-      inCycle.add(edge.target);
+      crossLinked.add(edge.source);
+      crossLinked.add(edge.target);
+      if (kindById.get(edge.id) === 'cycle') {
+        inCycle.add(edge.source);
+        inCycle.add(edge.target);
+      }
     }
   }
 
@@ -387,7 +425,7 @@ export function layoutLayeredGraph(
   const groups = new Map<string, RelationshipGraphCluster>();
   if (threshold > 0) {
     for (const node of nodes) {
-      if (node.id === rootId || inCycle.has(node.id) || (forwardChildCount.get(node.id) ?? 0) > 0) continue;
+      if (node.id === rootId || crossLinked.has(node.id) || (forwardChildCount.get(node.id) ?? 0) > 0) continue;
       const parents = forwardParents.get(node.id) ?? [];
       if (parents.length !== 1) continue;
       const via = parents[0]!;
@@ -547,7 +585,25 @@ export function layoutLayeredGraph(
     let labelY: number;
     let startAngle: number;
     let endAngle: number;
-    if (kind === 'forward') {
+    if (kind === 'skip') {
+      // Across more than one column: down into a channel under every item of the columns it
+      // crosses, along it, and up into the target, so it never runs behind a node and never reads
+      // as a chain through the columns between (HAR-1639).
+      startX = from.x + from.width;
+      startY = from.y + from.height / 2;
+      endX = to.x;
+      endY = to.y + to.height / 2;
+      let floor = Math.max(startY, endY);
+      for (const item of itemById.values()) if (item.depth > from.depth && item.depth < to.depth) floor = Math.max(floor, item.y + item.height);
+      const channel = floor + 18;
+      const half = columnGap / 2;
+      path = `M${round1(startX)} ${round1(startY)} C${round1(startX + half)} ${round1(startY)} ${round1(startX + half)} ${round1(channel)} ${round1(startX + half)} ${round1(channel)} L${round1(endX - half)} ${round1(channel)} C${round1(endX - half)} ${round1(channel)} ${round1(endX - half)} ${round1(endY)} ${round1(endX)} ${round1(endY)}`;
+      labelX = (startX + endX) / 2;
+      labelY = channel;
+      startAngle = Math.PI;
+      endAngle = 0;
+      height = Math.max(height, channel + 8);
+    } else if (kind === 'forward') {
       startX = from.x + from.width;
       startY = from.y + from.height / 2;
       endX = to.x;
@@ -593,6 +649,7 @@ export function layoutLayeredGraph(
       edgeIds: [edge.id],
       arrow,
       emphasis: edge.emphasis === true,
+      variant: edge.variant === 'dashed' ? 'dashed' : 'solid',
       path,
       labelX: round1(labelX),
       labelY: round1(labelY),
@@ -605,6 +662,8 @@ export function layoutLayeredGraph(
         (edge.emphasis === true || (kind === 'forward' && from.children.length <= AUTO_LABEL_MAX_FANOUT)),
     };
     if (edge.type !== undefined) entry.type = edge.type;
+    if (edge.tone !== undefined) entry.tone = edge.tone;
+    if (edge.description !== undefined) entry.description = edge.description;
     const label = edge.label ?? edge.type;
     if (label !== undefined) entry.label = label;
     routed.set(key, entry);
@@ -635,6 +694,63 @@ export function layoutLayeredGraph(
     nodeHeight,
     headerHeight: LAYERED_HEADER,
   };
+}
+
+/** An edge label's box on the stage, for `separateEdgeLabels`. */
+export interface EdgeLabelBox {
+  id: string;
+  /** Centre of the label. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Where a label is drawn after `separateEdgeLabels`, or that it is left out. */
+export interface PlacedEdgeLabel {
+  x: number;
+  y: number;
+  hidden: boolean;
+}
+
+/** The box a wrapped edge label takes, from its lines (the meta type size, as `wrapEdgeLabel` assumes). */
+export function edgeLabelSize(lines: readonly string[]): { width: number; height: number } {
+  const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
+  return { width: longest * LABEL_CHAR_WIDTH + 8, height: Math.max(1, lines.length) * 13 + 2 };
+}
+
+/**
+ * Moves edge labels apart where they would be drawn over each other (HAR-1639: two labels on top
+ * of each other in a dense layered column). Labels are taken top to bottom; one that overlaps a
+ * label already placed moves down just below it. A label that would have to move further than
+ * `maxShift` from its edge is left out instead (the relationship is still in the nodes'
+ * descriptions and in the list). Deterministic: the same boxes give the same placement.
+ */
+export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options: { gap?: number; maxShift?: number } = {}): Map<string, PlacedEdgeLabel> {
+  const gap = options.gap ?? 2;
+  const maxShift = options.maxShift ?? 40;
+  const placed: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+  const result = new Map<string, PlacedEdgeLabel>();
+  const ordered = [...boxes].sort((a, b) => a.y - b.y || a.x - b.x || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const box of ordered) {
+    const left = box.x - box.width / 2;
+    const right = box.x + box.width / 2;
+    let top = box.y - box.height / 2;
+    // Moving down can run into a label placed further down: check again until nothing overlaps.
+    for (let guard = 0; guard <= placed.length; guard += 1) {
+      const hit = placed.find((other) => left < other.right && other.left < right && top < other.bottom + gap && other.top - gap < top + box.height);
+      if (!hit) break;
+      top = hit.bottom + gap;
+    }
+    const shift = top - (box.y - box.height / 2);
+    if (shift > maxShift) {
+      result.set(box.id, { x: box.x, y: box.y, hidden: true });
+      continue;
+    }
+    placed.push({ left, right, top, bottom: top + box.height });
+    result.set(box.id, { x: box.x, y: round1(top + box.height / 2), hidden: false });
+  }
+  return result;
 }
 
 export type LayeredNavigationKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End';
