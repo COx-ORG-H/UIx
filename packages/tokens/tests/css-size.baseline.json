@@ -76,6 +76,11 @@
       "gzip": 1217,
       "brotli": 992
     },
+    "styles/components/change-highlight.css": {
+      "raw": 3324,
+      "gzip": 1152,
+      "brotli": 978
+    },
     "styles/components/chart.css": {
       "raw": 5938,
       "gzip": 1620,
@@ -115,6 +120,11 @@
       "raw": 477,
       "gzip": 262,
       "brotli": 211
+    },
+    "styles/components/count.css": {
+      "raw": 1229,
+      "gzip": 569,
+      "brotli": 479
     },
     "styles/components/dashboard-canvas.css": {
       "raw": 5193,

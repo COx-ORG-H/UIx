@@ -7,13 +7,18 @@
  *   - #save-status: an autosaving field with SaveStatus.
  *   - #busy: a BusyRegion list and a refreshing TableWrap; Refetch keeps the rows.
  *   - #loaders: Spinner delay and LoadingState delay, mounted while a load runs.
+ *   - #changes: a row whose status a "live update" changes (the row tints, the pill rings) and
+ *     a Count in a badge and a stat tile.
+ *   - #optimistic: a star saved optimistically; with "and fails" it comes back and flashes.
+ *   Review options: ?tint=attention swaps the highlight tint, ?length=long uses --uix-dur-highlight.
  *   - #dialog: a Save with `result` inside a Modal (its announcement must reach into the modal),
  *     and an icon-only button with `result` (the mark alone, inside its square). */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  BusyRegion, Button, LoadingState, Modal, SaveStatus, Spinner, Table, TableWrap, Td, Th, Tr,
+  BusyRegion, Button, ChangeHighlight, Count, LoadingState, Modal, SaveStatus, Spinner, Stat, StarButton, StatusPill,
+  Table, TableWrap, Td, Th, Tr, useOptimisticValue,
 } from '../../packages/react/src/index.js';
 import type { ButtonResult, SaveStatusState } from '../../packages/react/src/index.js';
 
@@ -169,6 +174,71 @@ function DialogSection() {
   );
 }
 
+const params = new URLSearchParams(location.search);
+if (params.get('tint') === 'attention' || params.get('length') === 'long') {
+  const style = document.createElement('style');
+  style.textContent = `.uix-change-highlight, .uix-changed {${params.get('tint') === 'attention' ? '--uix-change-tint: var(--uix-attention-bg);' : ''}${params.get('length') === 'long' ? '--uix-change-duration: var(--uix-dur-highlight);' : ''}}`;
+  document.head.append(style);
+}
+
+const STATUSES: [string, 'info' | 'warning' | 'success'][] = [['In progress', 'info'], ['Waiting for customer', 'warning'], ['Resolved', 'success']];
+
+function ChangesSection() {
+  const [step, setStep] = useState(0);
+  const [unread, setUnread] = useState(4);
+  const [open, setOpen] = useState(42);
+  const [status, tone] = STATUSES[step % STATUSES.length];
+  return (
+    <section id="changes" aria-labelledby="changes-h">
+      <h2 id="changes-h">ChangeHighlight and Count</h2>
+      <div className="uix-cluster">
+        <Button data-testid="live-update" onClick={() => setStep((n) => n + 1)}>Simulate a live update</Button>
+        <Button data-testid="unread-up" onClick={() => setUnread((n) => n + 1)}>+1 unread</Button>
+        <Button data-testid="unread-down" onClick={() => setUnread((n) => Math.max(0, n - 1))}>−1 unread</Button>
+        <Button data-testid="open-up" onClick={() => setOpen((n) => n + 3)}>+3 open</Button>
+      </div>
+      <div className="uix-cluster">
+        <a className="uix-navitem" href="#changes" style={{ minWidth: '10rem' }}><span>Inbox</span><span className="uix-navitem__badge" data-testid="badge"><Count value={unread} /></span></a>
+        <Stat label="Open incidents" value={<Count value={open} data-testid="stat-count" />} meta="6 opened today" style={{ minWidth: '12rem' }} />
+      </div>
+      <TableWrap>
+        <Table>
+          <thead><tr><Th>Number</Th><Th>Title</Th><Th>Status</Th></tr></thead>
+          <tbody>
+            <Tr><Td>INC-0411</Td><Td>Mail delivery delayed</Td><Td><StatusPill tone="neutral">New</StatusPill></Td></Tr>
+            <ChangeHighlight as="tr" value={step} data-testid="changed-row" announce={step ? `INC-0412 status changed to ${status} by A. Novak` : undefined}>
+              <Td>INC-0412</Td><Td>Email outage in Sarajevo office</Td>
+              <Td><ChangeHighlight value={status} variant="ring" data-testid="changed-pill"><StatusPill tone={tone}>{status}</StatusPill></ChangeHighlight></Td>
+            </ChangeHighlight>
+            <Tr><Td>INC-0413</Td><Td>VPN drops every 20 minutes</Td><Td><StatusPill tone="neutral">New</StatusPill></Td></Tr>
+          </tbody>
+        </Table>
+      </TableWrap>
+    </section>
+  );
+}
+
+function OptimisticSection() {
+  const [server, setServer] = useState(false);
+  const [message, setMessage] = useState('');
+  const star = useOptimisticValue(server, (next: boolean) => server_().then(() => setServer(next)), {
+    onRollback: ({ restored }) => setMessage(`Couldn’t ${restored ? 'remove' : 'add'} the favourite — it is back as it was.`),
+  });
+  return (
+    <section id="optimistic" aria-labelledby="optimistic-h">
+      <h2 id="optimistic-h">Optimistic star with visible rollback</h2>
+      <div className="uix-cluster">
+        <ChangeHighlight value={star.rollbacks} variant="ring" data-testid="star-wrap" announce={star.rollback ? 'Favourite restored' : undefined}>
+          <StarButton pinned={star.value} label="Major incidents" onToggle={(next) => { setMessage(''); void star.set(next); }} />
+        </ChangeHighlight>
+        <span data-testid="star-state">{star.value ? 'Starred' : 'Not starred'}</span>
+      </div>
+      <p role="status" data-testid="star-message">{message}</p>
+    </section>
+  );
+}
+const server_ = () => server();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LatencyPicker />
@@ -177,5 +247,7 @@ createRoot(document.getElementById('root')!).render(
     <BusySection />
     <LoadersSection />
     <DialogSection />
+    <ChangesSection />
+    <OptimisticSection />
   </StrictMode>,
 );

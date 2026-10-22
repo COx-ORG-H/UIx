@@ -1,0 +1,16 @@
+/* uix count — a number that ticks once when it changes (HAR-2587, motion standard §2.8): a badge,
+   a stat value, an unread total. React's Count sets [data-uix-tick="up" | "down"] after a change,
+   never on the first render: the new figure comes in 4 px from below (up) or above (down) with a
+   fade. One tick, never a loop, never a count-up. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-count { display: inline-block; font-variant-numeric: tabular-nums; }
+  @keyframes uix-count-up { from { opacity: .3; transform: translateY(var(--uix-lift)); } }
+  @keyframes uix-count-down { from { opacity: .3; transform: translateY(calc(-1 * var(--uix-lift))); } }
+  @keyframes uix-count-fade { from { opacity: .3; } }
+  .uix-count[data-uix-tick="up"] { animation: uix-count-up var(--uix-dur) var(--uix-ease-out); }
+  .uix-count[data-uix-tick="down"] { animation: uix-count-down var(--uix-dur) var(--uix-ease-out); }
+  @media (prefers-reduced-motion: reduce) {
+    /* no travel; the fade stays (!important: the reduced-motion policy ends keyframes at once) */
+    .uix-count[data-uix-tick="up"], .uix-count[data-uix-tick="down"] { animation: uix-count-fade var(--uix-dur) var(--uix-ease-out) !important; }
+  }
+}

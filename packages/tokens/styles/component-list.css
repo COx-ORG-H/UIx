@@ -60,6 +60,8 @@
 @import "components/comments.css";
 @import "components/save-status.css";
 @import "components/busy-region.css";
+@import "components/change-highlight.css";
+@import "components/count.css";
 @import "components/reactions.css";
 @import "components/rich-text.css";
 @import "components/media.css";

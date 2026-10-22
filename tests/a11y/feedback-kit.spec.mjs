@@ -235,3 +235,75 @@ test('320 px: nothing scrolls sideways, and the result keeps the button inside t
   const save = await page.getByTestId('save').boundingBox();
   expect(save.x + save.width).toBeLessThanOrEqual(row.x + row.width + 0.5);
 });
+
+// ── Release B: ChangeHighlight, Count, useOptimisticValue (HAR-2583, HAR-2585, HAR-2587) ──────
+
+const animations = (locator) => locator.evaluate((el) => el.getAnimations({ subtree: false }).map((a) => a.animationName));
+
+test('ChangeHighlight: nothing on load; a live update tints the row cells and rings the pill, then clears; announced', async ({ page }) => {
+  const row = page.getByTestId('changed-row');
+  const pill = page.getByTestId('changed-pill');
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/);
+  expect(await page.locator('[data-uix-changed]').count(), 'something flashed on first render').toBe(0);
+
+  await page.getByTestId('live-update').click();
+  await expect(row).toHaveAttribute('data-uix-changed', '');
+  await expect(pill).toHaveAttribute('data-uix-changed', '');
+  expect(await animations(row.locator('td').first())).toEqual(['uix-changed']);
+  expect(await animations(row), 'the row itself must not tint over its cells').toEqual([]);
+  expect(await animations(pill)).toEqual(['uix-changed-ring']);
+  const tint = await row.locator('td').first().evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(tint, 'no tint at the start of the highlight').not.toBe('rgba(0, 0, 0, 0)');
+
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toHaveText('INC-0412 status changed to Waiting for customer by A. Novak');
+  // the attribute goes when the animation ends (real time: CSS animations do not follow the page clock)
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+  await expect(pill).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+});
+
+test('ChangeHighlight under reduced motion: a steady outline on the row as one box, no tint', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('live-update').click();
+  const row = page.getByTestId('changed-row');
+  expect(await animations(row)).toEqual(['uix-changed-static']);
+  expect(await animations(row.locator('td').first())).toEqual([]);
+  const outline = await row.evaluate((el) => getComputedStyle(el).outlineStyle);
+  expect(outline).toBe('solid');
+});
+
+test('Count: one tick per change, in its direction; nothing moves beside it', async ({ page }) => {
+  const badge = page.getByTestId('badge').locator('.uix-count');
+  await expect(badge).toHaveText('4');
+  await expect(badge).not.toHaveAttribute('data-uix-tick', /.*/);
+  const box = await page.getByTestId('badge').boundingBox();
+  await page.getByTestId('unread-up').click();
+  await expect(badge).toHaveText('5');
+  expect(await animations(badge)).toEqual(['uix-count-up']);
+  await page.getByTestId('unread-down').click();
+  expect(await animations(badge)).toEqual(['uix-count-down']);
+  expect((await page.getByTestId('badge').boundingBox()).x).toBe(box.x);
+  await expect(badge).toHaveCSS('font-variant-numeric', 'tabular-nums');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('unread-up').click();
+  expect(await animations(badge), 'reduced motion still slides').toEqual(['uix-count-fade']);
+});
+
+test('useOptimisticValue: the star shows at once; a failed save brings it back, flashes it and says so', async ({ page }) => {
+  const section = page.locator('#optimistic');
+  const star = section.getByRole('button', { name: /Major incidents/ });
+  await expect(page.getByTestId('star-state')).toHaveText('Not starred');
+  await latency(page, 1200, true);
+  await star.click();
+  await expect(page.getByTestId('star-state')).toHaveText('Starred');
+  await expect(star).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('star-wrap')).not.toHaveAttribute('data-uix-changed', /.*/);
+  await page.clock.runFor(1250);
+  await expect(page.getByTestId('star-state')).toHaveText('Not starred');
+  await expect(star).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('star-wrap')).toHaveAttribute('data-uix-changed', '');
+  await expect(page.getByTestId('star-message')).toContainText('it is back as it was');
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toHaveText('Favourite restored');
+  await expect(star, 'focus left the star').toBeFocused();
+});

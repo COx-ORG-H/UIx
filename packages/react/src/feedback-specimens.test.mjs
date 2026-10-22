@@ -35,6 +35,11 @@ test('every state named in a caption is on the page', () => {
   assert.match(motion, /class="uix-busy-region" aria-busy="true"/);
   assert.match(motion, /class="uix-table-wrap" aria-busy="true"/);
   assert.equal((motion.match(/class="uix-busy-bar" aria-hidden="true" data-shown="true"/g) ?? []).length, 2);
+  // a changed row (tinting its cells) and a ringed pill, both in their just-changed state; a ticked count
+  assert.match(motion, /<tr class="uix-change-highlight" data-uix-changed="">/);
+  assert.match(motion, /class="uix-change-highlight uix-change-highlight--ring" data-uix-changed="">/);
+  assert.match(motion, /class="uix-count" data-uix-tick="up">42</);
+  assert.match(motion, /data-feedback-change-run/);
   // the live demo's target and its announcer
   assert.match(motion, /<button data-feedback-target class="uix-btn uix-btn--primary">/);
   assert.match(motion, /data-feedback-announce/);

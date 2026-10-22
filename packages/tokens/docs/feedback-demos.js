@@ -6,7 +6,24 @@ const PENDING_MIN_VISIBLE_MS = 500;
 const RESULT_HOLD_MS = 1500;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Replays the change highlight and a count tick on the specimens above (as the React hooks do).
+const replay = (el, attribute, value = '') => {
+  el.removeAttribute(attribute);
+  void el.offsetWidth;
+  el.setAttribute(attribute, value);
+};
+
 export const initFeedbackDemos = (root) => {
+  root.querySelectorAll('[data-feedback-change-run]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const block = root.querySelector('[data-feedback-change]');
+      if (!block) return;
+      block.querySelectorAll('.uix-change-highlight').forEach((el) => replay(el, 'data-uix-changed'));
+      const count = block.querySelector('.uix-count');
+      if (count) { count.textContent = String(Number(count.textContent) + 1); replay(count, 'data-uix-tick', 'up'); }
+    });
+  });
+
   root.querySelectorAll('[data-feedback-demo]').forEach((demo) => {
     const button = demo.querySelector('[data-feedback-target]');
     const marker = button?.querySelector(':scope > [hidden]');

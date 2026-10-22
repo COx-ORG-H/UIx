@@ -87,6 +87,23 @@ export async function renderFeedbackSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── ChangeHighlight, Count, optimistic rollback (HAR-2583, HAR-2585, HAR-2587) ───────
+    // Each rendered once, then changed, so the markup is the "just changed" state.
+    const pillRow = (status, tone) => h(ui.Table, null, h('tbody', null,
+      h(ui.ChangeHighlight, { as: 'tr', value: status }, h(ui.Td, null, 'INC-0412'), h(ui.Td, null, 'Email outage in Sarajevo office'),
+        h(ui.Td, null, h(ui.ChangeHighlight, { value: status, variant: 'ring' }, h(ui.StatusPill, { tone }, status))))));
+    const changed = await mount(h(ui.TableWrap, null, pillRow('In progress', 'info')));
+    await changed.render(h(ui.TableWrap, null, pillRow('Waiting for customer', 'warning')));
+    const count = await mount(h(ui.Count, { value: 41 }));
+    await count.render(h(ui.Count, { value: 42 }));
+    const change = [
+      caption('ChangeHighlight (React <code>ChangeHighlight</code>, <code>useChangeHighlight</code>; plain markup <code>.uix-changed</code>) — a value that changed in place (a live update, the result of a transition, a rolled-back optimistic change) is tinted at once and the tint fades; never on first render. A row tints its cells; something with a colour of its own, like a status pill, gets a ring. Under reduced motion or forced colours: a steady outline for the same time. <code>announce</code> says what changed. Count — a badge or stat value ticks once on a change, up or down; never a loop, never a count-up.'),
+      '<div class="uix-stack" style="--gap:12px;max-width:40rem" data-feedback-change>',
+      changed.host.innerHTML,
+      `<div class="uix-cluster"><a class="uix-navitem" href="#examples-motion" style="min-width:10rem"><span>Inbox</span><span class="uix-navitem__badge">${count.host.innerHTML}</span></a></div>`,
+      '</div>',
+    ].join('\n');
+
     // ── Live demo (feedback-demos.js drives it) ──────────────────────────────────────────
     const demo = [
       caption('Try it — the same classes and timings, driven by a pretend server'),
@@ -95,13 +112,14 @@ export async function renderFeedbackSpecimens() {
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="150">Answers in 150 ms</button>',
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="1200">Answers in 1.2 s</button>',
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="1200" data-feedback-fail>Fails after 1.2 s</button>',
+      '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-change-run>Change the highlighted values</button>',
       '</div>',
       rest.host.innerHTML.replace('<button ', '<button data-feedback-target '),
       '<span role="status" class="uix-visually-hidden" data-feedback-announce></span>',
       '</div>',
     ].join('\n');
 
-    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?" and "did it work?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, demo].join('\n') };
+    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, demo].join('\n') };
   } finally {
     for (const { root, host } of roots) { await act(async () => root.unmount()); host.remove(); }
     dom.window.close();

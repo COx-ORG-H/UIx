@@ -8,7 +8,9 @@ import { join } from 'node:path';
 
 const out = process.argv[2];
 const base = process.argv[3] ?? 'http://localhost:4191';
-const page_ = process.env.FRAMES_PAGE ?? '/tests/feedback-kit/harness.html';
+const page_ = process.env.FRAMES_PAGE ?? `/tests/feedback-kit/harness.html${process.env.FRAMES_QUERY ? `?${process.env.FRAMES_QUERY}` : ''}`;
+const suffix = process.env.FRAMES_QUERY ? `-${process.env.FRAMES_QUERY.replace(/[^a-z0-9]+/gi, '_')}` : '';
+const widths = (process.env.FRAMES_WIDTHS ?? '1280,320').split(',').map(Number);
 const only = process.env.FRAMES_ONLY?.split(',');
 if (!out) throw new Error('usage: node tests/feedback-kit/frames.mjs <out-dir> [base-url]');
 mkdirSync(out, { recursive: true });
@@ -38,6 +40,30 @@ const SCENARIOS = {
     await wait(450); await shot(section, '2-busy-600ms');
     await wait(1400); await shot(section, '3-after-2000ms');
   },
+  async changes(page, shot) {
+    const table = page.locator('#changes table');
+    await table.scrollIntoViewIfNeeded();
+    await shot(table, '0-rest');
+    await page.getByTestId('live-update').click();
+    for (const [ms, at] of [[60, 60], [340, 400], [500, 900], [400, 1300], [500, 1800], [800, 2600]]) {
+      await wait(ms); await shot(table, `1-update-${at}ms`);
+    }
+    const counts = page.locator('#changes .uix-cluster').nth(1);
+    await page.getByTestId('unread-up').click(); await page.getByTestId('open-up').click();
+    await wait(40); await shot(counts, '2-count-40ms');
+    await wait(60); await shot(counts, '3-count-100ms');
+    await wait(300); await shot(counts, '4-count-400ms');
+  },
+  async optimistic(page, shot) {
+    const section = page.locator('#optimistic');
+    await section.scrollIntoViewIfNeeded();
+    await page.locator('#latency input[type=checkbox]').check();
+    await section.getByRole('button').click();
+    await wait(100); await shot(section, '1-optimistic-100ms');
+    await wait(1250); await shot(section, '2-rolled-back-1350ms');
+    await wait(500); await shot(section, '3-1850ms');
+    await page.locator('#latency input[type=checkbox]').uncheck();
+  },
   async savestatus(page, shot) {
     const section = page.locator('#save-status');
     await page.locator('#save-status input').fill('Printer on floor 3 is jammed again');
@@ -49,8 +75,8 @@ const SCENARIOS = {
 const browser = await chromium.launch();
 for (const theme of ['light', 'dark']) {
   for (const reducedMotion of ['no-preference', 'reduce']) {
-    for (const width of [1280, 320]) {
-      const tag = `${theme}-${reducedMotion === 'reduce' ? 'rm' : 'motion'}-${width}`;
+    for (const width of widths) {
+      const tag = `${theme}-${reducedMotion === 'reduce' ? 'rm' : 'motion'}-${width}${suffix}`;
       const video = width === 1280 && reducedMotion === 'no-preference';
       const context = await browser.newContext({
         viewport: { width, height: 900 }, colorScheme: theme, reducedMotion, deviceScaleFactor: 2,
