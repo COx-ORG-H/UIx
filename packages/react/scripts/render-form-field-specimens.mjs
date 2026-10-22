@@ -120,6 +120,31 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── Combobox (HAR-1588): closed with a value, and open with groups, a disabled option, the
+    // chosen one checked; the static page shows the top-layer list in place ──────────────────────
+    const categories = [
+      { label: 'Hardware', options: [{ value: 'laptop', label: 'Laptop' }, { value: 'monitor', label: 'Monitor (out of stock)', disabled: true }, { value: 'dock', label: 'Docking station' }] },
+      { label: 'Software', options: [{ value: 'office', label: 'Office suite' }, { value: 'vpn', label: 'VPN client' }] },
+      { value: 'other', label: 'Other' },
+    ];
+    const comboClosed = mount(h('div', { className: 'uix-field' },
+      h('span', { id: 'ff-cat-label', className: 'uix-field__label' }, 'Category'),
+      h(ui.Combobox, { inputId: 'ff-cat', 'aria-labelledby': 'ff-cat-label', label: 'Category', emptyLabel: 'No matching category', options: categories, defaultValue: 'vpn' })));
+    const comboOpen = mount(h('div', { className: 'uix-field' },
+      h('span', { id: 'ff-cat-open-label', className: 'uix-field__label' }, 'Category (open)'),
+      h(ui.Combobox, { inputId: 'ff-cat-open', 'aria-labelledby': 'ff-cat-open-label', label: 'Category', emptyLabel: 'No matching category', options: categories, defaultValue: 'office' })));
+    act(() => { comboOpen.querySelector('input').focus(); });
+    const comboPopup = comboOpen.querySelector('.uix-combobox__popup');
+    comboPopup.removeAttribute('popover');
+    comboPopup.setAttribute('style', 'position:static;margin-top:var(--uix-space-1);max-height:none');
+    blocks.push([
+      caption('Combobox (React <code>Combobox</code>) — type to filter; the list is a top-layer popup, so a drawer, a popover or a table cell never clips it; ↑ ↓ PageUp PageDown and Home End move, disabled options are skipped, Escape puts the chosen text back; groups are named, and “no match” sits outside the listbox. Shown open in place here'),
+      '<div data-combobox-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 16rem;max-width:22rem">${html(comboClosed)}</div>`,
+      `<div style="flex:1 1 16rem;max-width:22rem">${html(comboOpen)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
     const dataBlocks = [];
     const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },

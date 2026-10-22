@@ -151,7 +151,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
-  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart',
+  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart', 'combobox',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

@@ -36,8 +36,8 @@ export { OtpInput } from './components/OtpInput.js';
 export type { OtpInputProps } from './components/OtpInput.js';
 
 export { Combobox } from './components/Combobox.js';
-export type { ComboboxProps, ComboboxOption } from './components/Combobox.js';
-export { filterComboboxOptions } from './combobox-model.js';
+export type { ComboboxProps, ComboboxOption, ComboboxGroup } from './components/Combobox.js';
+export { filterComboboxItems, filterComboboxOptions } from './combobox-model.js';
 
 export { SearchSuggest } from './components/SearchSuggest.js';
 // One search field look and behaviour over .uix-searchbar (HAR-2030)

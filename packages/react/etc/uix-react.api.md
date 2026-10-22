@@ -816,6 +816,15 @@ export interface ColumnFilter {
 // @public
 export function Combobox(input: ComboboxProps): react.JSX.Element;
 
+// @public
+export interface ComboboxGroup {
+    disabled?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    options: readonly ComboboxOption[];
+}
+
 // @public (undocumented)
 export interface ComboboxOption {
     // (undocumented)
@@ -830,22 +839,25 @@ export interface ComboboxOption {
 
 // @public (undocumented)
 export interface ComboboxProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    'aria-labelledby'?: string;
     // (undocumented)
     defaultValue?: string;
     // (undocumented)
     disabled?: boolean;
-    // (undocumented)
     emptyLabel: string;
-    // (undocumented)
+    inputId?: string;
     label: string;
     // (undocumented)
     name?: string;
     // (undocumented)
     onValueChange?: (value: string, option: ComboboxOption) => void;
-    // (undocumented)
-    options: readonly ComboboxOption[];
+    options: readonly (ComboboxOption | ComboboxGroup)[];
     // (undocumented)
     placeholder?: string;
+    placement?: Placement;
     // (undocumented)
     value?: string;
 }
@@ -2014,6 +2026,9 @@ export interface FilterChoice {
     // (undocumented)
     value: string;
 }
+
+// @public
+export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string): (ComboboxOption | ComboboxGroup)[];
 
 // @public (undocumented)
 export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];

@@ -333,3 +333,76 @@ test.describe('FilterPopover date (HAR-2432)', () => {
     expect(await page.evaluate(() => window.__filter.applied)).toEqual(['2026-11-23']);
   });
 });
+
+test.describe('Combobox at parity with Select (HAR-1588)', () => {
+  /** The open list of input `id`: on top where it is drawn, inside the viewport, wider than the field. */
+  const listGeometry = (page, id) => page.evaluate((inputId) => {
+    const input = document.getElementById(inputId);
+    const popup = input.parentElement.querySelector('.uix-combobox__popup');
+    const r = popup.getBoundingClientRect();
+    const option = popup.querySelector('[role="option"]');
+    const o = option.getBoundingClientRect();
+    const top = document.elementFromPoint(o.left + o.width / 2, o.top + o.height / 2);
+    return {
+      open: popup.matches(':popover-open'),
+      onTop: option.contains(top),
+      inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+      widthOk: r.width >= input.getBoundingClientRect().width - 1,
+    };
+  }, id);
+
+  test('keys: open on the chosen option, skip disabled, Home/End, PageDown, Escape restores the text', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'combobox');
+    const input = page.locator('#cb-plain');
+    await expect(input).toHaveAccessibleName('Category');
+    await input.focus();
+    const active = () => page.evaluate(() => { const id = document.getElementById('cb-plain').getAttribute('aria-activedescendant'); return id && document.getElementById(id).textContent; });
+    await expect.poll(active).toBe('Office suite');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    expect(await active()).toBe('Laptop');
+    await page.keyboard.press('End');
+    expect(await active()).toBe('Queue 24');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('PageDown');
+    expect(await active()).toBe('Queue 05'); // ten entries down from Laptop (the disabled Monitor counts as a row)
+    await page.keyboard.type('vpn');
+    expect(await active()).toBe('VPN client');
+    await page.keyboard.press('Escape');
+    await expect(input).toHaveValue('Office suite');
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('VPN client');
+  });
+
+  for (const [name, id, before] of [
+    ['a modal Drawer', 'cb-drawer', async (page) => { await page.locator('#cb-open-drawer').click(); }],
+    ['an overflow:hidden Popover', 'cb-popover', async (page) => { await page.locator('#cb-open-popover').click(); }],
+    ['an overflow:hidden table cell', 'cb-cell', async () => {}],
+  ]) {
+    test(`inside ${name} the list is in the top layer, not clipped`, async ({ page }, testInfo) => {
+      await open(page, testInfo, 'combobox');
+      await before(page);
+      await page.locator(`#${id}`).click();
+      await expect(page.locator(`#${id}`)).toHaveAttribute('aria-expanded', 'true');
+      await expect.poll(() => listGeometry(page, id)).toEqual({ open: true, onTop: true, inside: true, widthOk: true });
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      await expect(page.locator(`#${id}`)).toHaveValue('VPN client');
+    });
+  }
+
+  test('axe: closed, open with groups, and open with no match', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'combobox');
+    await axe(page, '#combobox');
+    await page.locator('#cb-plain').focus();
+    await expect(page.locator('#cb-plain')).toHaveAttribute('aria-expanded', 'true');
+    await axe(page, '#combobox');
+    await page.keyboard.type('zzz');
+    await expect(page.locator('#cb-plain ~ .uix-combobox__popup .uix-select__state')).toHaveText('No matching category');
+    await expect(page.locator('#cb-plain ~ .uix-combobox__popup [role="listbox"]')).toBeHidden();
+    await axe(page, '#combobox');
+  });
+});

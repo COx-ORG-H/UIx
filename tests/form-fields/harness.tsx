@@ -10,12 +10,14 @@
  *   - #times: TimePicker (de with min/max and a 30-minute step, en-US, disabled), DateTimePicker (de)
  *     and a TimePicker inside a modal Drawer.
  *   - #filter-date: FilterPopover type="date" in a Popover, with a provider dateFormat (de).
- *     window.__filter.applied records each Apply. */
+ *     window.__filter.applied records each Apply.
+ *   - #combobox: Combobox with groups, a disabled option and 27 more, plain, in a modal Drawer, in a
+ *     Popover with overflow:hidden and in an overflow:hidden table cell. */
 import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, CheckboxGroup, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
+  Button, Checkbox, CheckboxGroup, Combobox, DateTimePicker, Drawer, Field, FilterPopover, Input, InputGroup, OtpInput, PasswordInput, Popover,
   Select, Textarea, TimePicker, UixLabelsProvider,
 } from '../../packages/react/src/index.js';
 
@@ -166,7 +168,48 @@ function FilterDate() {
   );
 }
 
-const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate };
+const CATEGORIES = [
+  { label: 'Hardware', options: [{ value: 'laptop', label: 'Laptop' }, { value: 'monitor', label: 'Monitor', disabled: true }, { value: 'dock', label: 'Docking station' }] },
+  { label: 'Software', options: [{ value: 'office', label: 'Office suite' }, { value: 'vpn', label: 'VPN client', keywords: ['remote'] }] },
+  { value: 'other', label: 'Other' },
+  ...Array.from({ length: 24 }, (_, i) => ({ value: `q${i + 1}`, label: `Queue ${String(i + 1).padStart(2, '0')}` })),
+];
+
+function Comboboxes() {
+  const [value, setValue] = useState('office');
+  const [drawer, setDrawer] = useState(false);
+  const anchor = useRef<HTMLButtonElement>(null);
+  const field = (id: string) => (
+    <Combobox id={`${id}-root`} inputId={id} aria-labelledby={`${id}-label`} label="Category" emptyLabel="No matching category"
+      options={CATEGORIES} value={value} onValueChange={(next) => setValue(next)} />
+  );
+  return (
+    <section id="combobox" aria-label="Combobox" style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '26rem' }}>
+      <div className="uix-field"><span id="cb-plain-label" className="uix-field__label">Category</span>{field('cb-plain')}</div>
+      <div>
+        <Button id="cb-open-drawer" onClick={() => setDrawer(true)}>Open drawer</Button>
+        <Drawer open={drawer} onClose={() => setDrawer(false)} title="Edit asset">
+          <div className="uix-field"><span id="cb-drawer-label" className="uix-field__label">Category in drawer</span>{field('cb-drawer')}</div>
+        </Drawer>
+      </div>
+      <div>
+        <button ref={anchor} id="cb-open-popover" className="uix-btn uix-btn--secondary" type="button" popoverTarget="cb-pop">Filter</button>
+        <Popover id="cb-pop" anchor={anchor} style={{ width: '16rem', overflow: 'hidden' }}>
+          <div className="uix-field"><span id="cb-popover-label" className="uix-field__label">Category in popover</span>{field('cb-popover')}</div>
+        </Popover>
+      </div>
+      <table className="uix-table" style={{ tableLayout: 'fixed', width: 'min(24rem, 100%)' }}>
+        <tbody><tr><td style={{ overflow: 'hidden', height: '3rem' }}>
+          <span id="cb-cell-label" className="uix-visually-hidden">Category in cell</span>{field('cb-cell')}
+        </td></tr></tbody>
+      </table>
+    </section>
+  );
+}
+
+const SECTIONS: Record<string, () => ReactNode> = {
+  sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times, 'filter-date': FilterDate, combobox: Comboboxes,
+};
 
 function App() {
   const only = new URLSearchParams(location.search).get('only');

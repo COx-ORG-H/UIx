@@ -87,9 +87,9 @@
       "brotli": 545
     },
     "styles/components/combobox.css": {
-      "raw": 3218,
-      "gzip": 1078,
-      "brotli": 861
+      "raw": 3479,
+      "gzip": 1197,
+      "brotli": 949
     },
     "styles/components/command-palette.css": {
       "raw": 1890,

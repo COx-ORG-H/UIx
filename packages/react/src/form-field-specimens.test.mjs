@@ -48,6 +48,13 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /role="alert">Choose 18:00 or earlier\.<\/span>/);
   assert.match(forms, /class="uix-date-time-picker"[\s\S]*uix-time-picker__input[^>]*value="14:30"/);
   assert.doesNotMatch(forms, /type="time"/);
+  // Combobox: closed with its value; open with two named groups, a disabled option, the chosen one checked
+  assert.match(forms, /data-combobox-example/);
+  assert.match(forms, /id="ff-cat"[^>]*value="VPN client"|value="VPN client"[^>]*id="ff-cat"/);
+  assert.match(forms, /id="ff-cat-open"[^>]*aria-expanded="true"|aria-expanded="true"[^>]*id="ff-cat-open"/);
+  assert.equal((forms.match(/role="group" class="uix-listbox__group"/g) ?? []).length >= 2, true);
+  assert.match(forms, /aria-disabled="true"[^>]*>[\s\S]{0,200}Monitor \(out of stock\)/);
+  assert.match(forms, /aria-selected="true"[^>]*>[\s\S]{0,120}Office suite[\s\S]{0,120}uix-listbox__check" aria-hidden="true"><svg/);
   // FilterPopover date: a DatePicker showing the German date, no native date input
   const data = specimens['examples-data-display'];
   assert.match(data, /data-filter-date-example/);

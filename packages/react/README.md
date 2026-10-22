@@ -1192,3 +1192,20 @@ says why. `name` submits `HH:mm` through a hidden input. Words: `labels` or `Uix
   the labels group; the props still win.
 - `DateTimePicker` names its time from the label's accessible text (an `aria-hidden` "*" is left
   out) and follows the label when its text changes after mount.
+
+#### Combobox at parity with Select (HAR-1588)
+
+```tsx
+<span id="cat-label" className="uix-field__label">{t('category')}</span>
+<Combobox aria-labelledby="cat-label" label={t('category')} emptyLabel={t('noMatch')} value={category} onValueChange={setCategory}
+  options={[{ label: t('hardware'), options: hardware }, { label: t('software'), options: software }, other]} />
+```
+
+The list is a top-layer popover placed with `useAnchoredPosition` (like `Select`), so a Drawer, a
+Popover or an `overflow: hidden` cell never clips it. ↑ ↓ PageUp PageDown move (Home End too while
+an option is active), disabled options are skipped and the list does not wrap; Enter chooses;
+Escape closes it and puts the chosen option's text back, as leaving the field does. `options` take
+groups (`{ label, options, disabled }`, rendered as `role="group"`); the no-match row is outside the
+listbox; the chosen option has a check mark. New: `aria-labelledby` (replaces `label` as the name),
+`aria-describedby`, `aria-invalid` and `inputId` land on the input; `placement`;
+`filterComboboxItems`.
