@@ -203,6 +203,61 @@ test('drawer: Escape closes an open popover first, and does not ask', async ({ p
   await expect(prompt(page)).toBeVisible();
 });
 
+/** The three hover hints in the drawer (HAR-2415): what shows each one, and the hint itself. */
+const HINTS = [
+  ['a Tooltip', '#tip-copy', (page) => page.getByRole('tooltip', { name: 'Copy a link to this template' })],
+  ['a Button shortcut hint', '#hint-preview', (page) => page.locator('.uix-tooltip__bubble--hint:popover-open')],
+  ['an InfoTip', '#info-template button', (page) => page.locator('.uix-info-tip__panel:popover-open')],
+];
+
+for (const [what, trigger, hint] of HINTS) {
+  test(`drawer: dirty, Escape on ${what} closes only the hint; the next one asks`, async ({ page }) => {
+    const dialog = await openDialog(page, 'open-drawer', 'drawer');
+    await nameField(page, 'drawer').fill('Incident created v2');
+    await dialog.locator(trigger).hover();
+    await expect(hint(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(hint(page)).toBeHidden();
+    await expect(prompt(page), 'the hint\'s Escape does not reach the drawer').toHaveCount(0);
+    await expect(dialog).toHaveJSProperty('open', true);
+    await page.keyboard.press('Escape');
+    await expect(prompt(page)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Keep editing' })).toBeFocused();
+  });
+
+  test(`drawer: clean, Escape on ${what} closes only the hint; the next one closes the drawer`, async ({ page }) => {
+    const dialog = await openDialog(page, 'open-drawer', 'drawer');
+    await dialog.locator(trigger).hover();
+    await expect(hint(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(hint(page)).toBeHidden();
+    // A close would arrive as a queued `close` event: give it the time to.
+    await page.waitForTimeout(100);
+    await expect(dialog).toHaveJSProperty('open', true);
+    expect((await closes(page)).drawer).toBe(0);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveJSProperty('open', false);
+    await expect.poll(async () => (await closes(page)).drawer).toBe(1);
+  });
+}
+
+test('drawer: Escape on a keyboard-focused Button hint closes the hint; focus stays on the button', async ({ page }) => {
+  const dialog = await openDialog(page, 'open-drawer', 'drawer');
+  await nameField(page, 'drawer').fill('Incident created v2');
+  // Keyboard focus (focus-visible) shows the hint.
+  await dialog.locator('#tip-copy').focus();
+  await page.keyboard.press('Tab');
+  await expect(dialog.locator('#hint-preview')).toBeFocused();
+  const hint = page.locator('.uix-tooltip__bubble--hint:popover-open');
+  await expect(hint).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(hint).toHaveCount(0);
+  await expect(prompt(page)).toHaveCount(0);
+  await expect(dialog.locator('#hint-preview')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(prompt(page)).toBeVisible();
+});
+
 test('drawer: a click on the step\'s own text keeps it open', async ({ page }) => {
   const dialog = await openDialog(page, 'open-drawer', 'drawer');
   await nameField(page, 'drawer').fill('Incident created v2');

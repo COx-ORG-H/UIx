@@ -1,12 +1,15 @@
 "use client";
 
-import { cloneElement, isValidElement, useEffect, useId, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, ReactElement, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
   /** Tooltip text. Pass this or `content`. */
@@ -74,12 +77,20 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     closeTimer.current = window.setTimeout(hide, 100);
   };
 
-  // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') hide(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+  // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere. That
+  // Escape is the bubble's alone (HAR-2415): taken in the capture phase and cancelled, so a Drawer
+  // or Modal around the trigger neither closes nor asks "Discard changes?"; the next Escape is
+  // theirs. A layout effect, so an Escape right after the bubble opened already finds it.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      hide();
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -117,7 +128,6 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
       onMouseLeave={scheduleHide}
       onFocus={show}
       onBlur={hide}
-      onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
       {...props}
     >
       {child}

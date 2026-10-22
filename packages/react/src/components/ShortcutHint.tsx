@@ -100,7 +100,14 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
       }, 100);
     };
     const onFocus = () => { if (focusVisible(button)) show(); };
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') hide(); };
+    // An Escape that closes the hint is the hint's alone (HAR-2415): taken in the capture phase
+    // and cancelled, so the Drawer or Modal around the button stays open; the next one is theirs.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !isShown(bubble)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      hide();
+    };
     // A focused button that becomes disabled fires no blur.
     const watch = new MutationObserver(() => {
       if (button.hasAttribute('disabled') || button.getAttribute('aria-disabled') === 'true') hide();
@@ -112,7 +119,7 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
     button.addEventListener('blur', hide);
     bubble.addEventListener('mouseenter', show);
     bubble.addEventListener('mouseleave', hideSoon);
-    button.ownerDocument.addEventListener('keydown', onKey);
+    button.ownerDocument.addEventListener('keydown', onKey, true);
     return () => {
       window.clearTimeout(timer);
       watch.disconnect();
@@ -122,7 +129,7 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
       button.removeEventListener('blur', hide);
       bubble.removeEventListener('mouseenter', show);
       bubble.removeEventListener('mouseleave', hideSoon);
-      button.ownerDocument.removeEventListener('keydown', onKey);
+      button.ownerDocument.removeEventListener('keydown', onKey, true);
       if (isShown(bubble)) { try { bubble.hidePopover(); } catch { /* noop */ } }
     };
   }, [host]);
