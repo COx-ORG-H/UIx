@@ -40,5 +40,13 @@ test('every state named in a caption is on the page', () => {
   assert.equal((forms.match(/class="uix-otp__cell"/g) ?? []).length, 14);
   assert.match(forms, /autoComplete="one-time-code"|autocomplete="one-time-code"/);
   assert.match(forms, /role="alert">That code was already used\.<\/span>/);
+  // TimePicker: 24 h German, 12 h en-US, a refused draft with its reason; DateTimePicker's time is one
+  assert.match(forms, /data-time-picker-example/);
+  assert.match(forms, /id="ff-opens"[^>]*value="09:30"/);
+  assert.match(forms, /id="ff-quiet"[^>]*value="10:00\sPM"/);
+  assert.match(forms, /id="ff-closes"[^>]*value="19:30"[^>]*aria-invalid="true"|id="ff-closes"[^>]*aria-invalid="true"[^>]*value="19:30"/);
+  assert.match(forms, /role="alert">Choose 18:00 or earlier\.<\/span>/);
+  assert.match(forms, /class="uix-date-time-picker"[\s\S]*uix-time-picker__input[^>]*value="14:30"/);
+  assert.doesNotMatch(forms, /type="time"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });

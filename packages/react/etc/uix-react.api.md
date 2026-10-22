@@ -1319,6 +1319,7 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
     minuteStep?: number;
     // (undocumented)
     onValueChange: (value: string | null) => void;
+    timeLabels?: Partial<TimePickerLabels>;
     timeZone?: string;
     timeZoneLabel?: string | null;
     value: string | null;
@@ -1424,6 +1425,9 @@ export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public (undocumented)
 export const DEFAULT_TEXT_DIFF_LABELS: TextDiffLabels;
+
+// @public (undocumented)
+export const DEFAULT_TIME_PICKER_LABELS: TimePickerLabels;
 
 // @public (undocumented)
 export const DEFAULT_TREE_LABELS: TreeLabels;
@@ -2271,6 +2275,9 @@ export function formatDateKey(value: string, locale?: string | readonly string[]
 export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
 
 // @public
+export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -2567,7 +2574,13 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean;
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
 // @public
+export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
+
+// @public
 export function isValidDateKey(value: string): boolean;
+
+// @public
+export function isValidTimeKey(value: string | null | undefined): value is string;
 
 // @public
 export function itemDaySpan(start: string | number | Date, end: string | number | Date, timeZone: string): ZonedDaySpan;
@@ -3291,6 +3304,9 @@ export interface MetricInputProps {
     value: number | null;
 }
 
+// @public
+export const minutesToTime: (minutes: number) => string;
+
 // @public (undocumented)
 export function Modal(input: ModalProps): react.JSX.Element;
 
@@ -3669,6 +3685,9 @@ export function parseDateValue(value: Date | number | string): Date | null;
 
 // @public (undocumented)
 export function parseMetricValue(value: string): number | null;
+
+// @public
+export function parseTimeInput(text: string, locale?: string | readonly string[]): string | null;
 
 // @public
 export function parseView(qs: string): ViewState;
@@ -5683,6 +5702,9 @@ export interface StepStateLabels {
 }
 
 // @public
+export function stepTime(value: string | null, delta: number, min?: string, max?: string): string;
+
+// @public
 export function studentTQuantile(p: number, df: number): number;
 
 // @public (undocumented)
@@ -6001,6 +6023,9 @@ export interface TimeGridSegment {
 }
 
 // @public
+export type TimeInputProblem = 'format' | 'early' | 'late';
+
+// @public
 export function Timeline(input: TimelineProps): react.JSX.Element;
 
 // @public
@@ -6072,6 +6097,71 @@ export interface TimelineTick {
 
 // @public
 export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZone: string, weekStartsOn?: number): TimelineTick[];
+
+// @public
+export const TimePicker: react.ForwardRefExoticComponent<TimePickerProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface TimePickerLabels {
+    invalidTime: string;
+    list: string;
+    open: string;
+    openSelected: string;
+    tooEarly: string;
+    tooLate: string;
+}
+
+// @public (undocumented)
+export interface TimePickerProps {
+    // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    hour12?: boolean;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    labels?: Partial<TimePickerLabels>;
+    locale?: string;
+    // (undocumented)
+    max?: string;
+    min?: string;
+    minuteStep?: number;
+    name?: string;
+    onInputProblem?: (problem: TimeInputProblem | null) => void;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    // (undocumented)
+    onValueChange: (value: string | null) => void;
+    // (undocumented)
+    placeholder?: string;
+    placement?: Placement;
+    // (undocumented)
+    readOnly?: boolean;
+    // (undocumented)
+    required?: boolean;
+    // (undocumented)
+    size?: 'sm' | 'md';
+    // (undocumented)
+    style?: CSSProperties;
+    value: string | null;
+}
+
+// @public
+export function timeSlots(step: number, min?: string, max?: string): string[];
+
+// @public
+export const timeToMinutes: (value: string) => number;
 
 // @public
 export function timeZoneName(timeZone: string, date: string | null, locale?: string | readonly string[]): string;
@@ -6441,6 +6531,7 @@ export interface UixLabels {
     };
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;
+    timePicker?: Partial<TimePickerLabels>;
     // (undocumented)
     toast?: {
         dismiss?: string;
@@ -6514,6 +6605,9 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
     name?: ReactNode;
     sub?: ReactNode;
 }
+
+// @public
+export function uses12Hour(locale?: string | readonly string[]): boolean;
 
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;

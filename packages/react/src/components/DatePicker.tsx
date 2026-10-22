@@ -12,6 +12,8 @@ import { useUixLabels } from '../labels-context.js';
 import type { Placement } from '../overlay-position.js';
 import { fullDateLabel, localDateKey, MonthCalendar, useFieldPopover } from './DateFieldParts.js';
 import { Popover } from './Popover.js';
+import { TimePicker } from './TimePicker.js';
+import type { TimePickerLabels } from './TimePicker.js';
 
 /** Every word `DatePicker` renders or announces. */
 export interface DatePickerLabels {
@@ -271,21 +273,23 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
   timeZone?: string;
   /** Text shown instead of the zone's short name ("Vienna time", "UTC+2"); `null` shows none. */
   timeZoneLabel?: string | null;
-  /** Minutes between time steps. Default 1. */
+  /** Minutes the time's arrow keys step by, and between the times in its list. Default 15. */
   minuteStep?: number;
+  /** Words of the time field (its list button, list and messages); `UixLabelsProvider` `timePicker` too. */
+  timeLabels?: Partial<TimePickerLabels>;
   /** The time a date gets when it is chosen before any time. Default `'00:00'`. */
   defaultTime?: string;
   labels?: Partial<DateTimePickerLabels>;
 }
 
 /**
- * A date and a time as one field (HAR-1383): the {@link DatePicker} and a time input, with the
+ * A date and a time as one field (HAR-1383): the {@link DatePicker} and a {@link TimePicker} (HAR-1835), with the
  * time zone the pair is in shown beside them. The value is `YYYY-MM-DDTHH:mm`, the shape
  * `datetime-local` uses, so it replaces that input without changing what a form submits.
  * Clearing the date clears the value; a time alone is not a value.
  */
 export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(function DateTimePicker({
-  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 1, defaultTime = '00:00', min, max, name, id: idProp,
+  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 15, timeLabels, defaultTime = '00:00', min, max, name, id: idProp,
   'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy,
   labels: labelOverrides, locale, size = 'md', disabled, readOnly, required, className, style, ...dateProps
 }, forwardedRef) {
@@ -315,7 +319,7 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
   const zone = timeZone ?? viewerZone;
   const zoneText = timeZoneLabel === null ? null : timeZoneLabel ?? (zone ? timeZoneName(zone, date, locale) : null);
   const timeName = grouped ? labels.time : fieldLabel ? fillLabel(labels.timeOf, { label: fieldLabel }) : labels.time;
-  const step = Math.max(1, Math.round(minuteStep)) * 60;
+  const step = Math.max(1, Math.round(minuteStep));
 
   return <div
     className={cx('uix-date-time-picker', size === 'sm' && 'uix-date-time-picker--sm', className)} style={style}
@@ -330,14 +334,13 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
         onValueChange(joinDateTime(next, shownTime, defaultTime));
       }}
     />
-    <input
-      type="time" className={cx('uix-input', size === 'sm' && 'uix-input--sm', 'uix-date-time-picker__time')}
-      value={shownTime} step={step} disabled={disabled} readOnly={readOnly} required={required && !!date}
-      aria-label={timeName} aria-describedby={zoneText ? zoneId : undefined}
-      onChange={(event) => {
-        const next = event.target.value;
-        if (date) onValueChange(joinDateTime(date, next, defaultTime));
-        else setPendingTime(next);
+    <TimePicker
+      className="uix-date-time-picker__time" value={shownTime || null} minuteStep={step} locale={locale} size={size}
+      disabled={disabled} readOnly={readOnly} required={required && !!date}
+      aria-label={timeName} aria-describedby={zoneText ? zoneId : undefined} labels={timeLabels}
+      onValueChange={(next) => {
+        if (date) onValueChange(joinDateTime(date, next ?? '', defaultTime));
+        else setPendingTime(next ?? '');
       }}
     />
     {zoneText && <span className="uix-date-time-picker__zone">

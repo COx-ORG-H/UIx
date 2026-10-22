@@ -6,11 +6,15 @@
  *   - #checkbox-group: CheckboxGroup in a card (3 columns, long German and Bosnian tags, error when none
  *     is ticked) and a disabled group.
  *   - #sign-in: PasswordInput (md, lg, disabled) in a form, OtpInput numeric with an error on 000000,
- *     an 8-character alphanumeric one and a disabled one. window.__posted / __completed record results. */
+ *     an 8-character alphanumeric one and a disabled one. window.__posted / __completed record results.
+ *   - #times: TimePicker (de with min/max and a 30-minute step, en-US, disabled), DateTimePicker (de)
+ *     and a TimePicker inside a modal Drawer. */
 import { StrictMode, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Checkbox, CheckboxGroup, Field, Input, InputGroup, OtpInput, PasswordInput, Select, Textarea } from '../../packages/react/src/index.js';
+import {
+  Button, Checkbox, CheckboxGroup, DateTimePicker, Drawer, Field, Input, InputGroup, OtpInput, PasswordInput, Select, Textarea, TimePicker,
+} from '../../packages/react/src/index.js';
 
 const Search = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
@@ -110,7 +114,33 @@ function SignIn() {
   );
 }
 
-const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn };
+function Times() {
+  const [start, setStart] = useState<string | null>('09:30');
+  const [quiet, setQuiet] = useState<string | null>(null);
+  const [due, setDue] = useState<string | null>('2026-11-22T14:30');
+  const [drawer, setDrawer] = useState(false);
+  const [late, setLate] = useState<string | null>('16:00');
+  return (
+    <section id="times" aria-label="Times" style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '30rem' }}>
+      <Field label="Opens at" hint="Business hours, 08:00 to 18:00." required>
+        <TimePicker id="opens" name="opens" value={start} onValueChange={setStart} locale="de" minuteStep={30} min="08:00" max="18:00" />
+      </Field>
+      <Field label="Quiet hours start (en-US)">
+        <TimePicker id="quiet" value={quiet} onValueChange={setQuiet} locale="en-US" />
+      </Field>
+      <Field label="Geplanter Start">
+        <DateTimePicker id="due" value={due} onValueChange={setDue} locale="de" timeZone="Europe/Vienna" today="2026-11-10" />
+      </Field>
+      <Field label="Disabled"><TimePicker id="time-off" value="12:00" onValueChange={() => {}} disabled /></Field>
+      <div><Button id="open-time-drawer" onClick={() => setDrawer(true)}>Edit calendar</Button></div>
+      <Drawer open={drawer} onClose={() => setDrawer(false)} title="Business calendar">
+        <Field label="Closes at"><TimePicker id="closes" value={late} onValueChange={setLate} locale="de" /></Field>
+      </Drawer>
+    </section>
+  );
+}
+
+const SECTIONS: Record<string, () => ReactNode> = { sizes: Sizes, 'checkbox-group': Tags, 'sign-in': SignIn, times: Times };
 
 function App() {
   const only = new URLSearchParams(location.search).get('only');

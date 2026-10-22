@@ -96,6 +96,30 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── TimePicker (HAR-1835): German 24 h with min / max, en-US 12 h, a refused draft, and the
+    // DateTimePicker that now uses it for its time ──────────────────────────────────────────────
+    const opens = mount(h(ui.Field, { label: 'Opens at', hint: 'Between 08:00 and 18:00, in 30-minute steps.', required: true },
+      h(ui.TimePicker, { id: 'ff-opens', name: 'opens', value: '09:30', onValueChange: noop, locale: 'de', minuteStep: 30, min: '08:00', max: '18:00' })));
+    const quiet = mount(h(ui.Field, { label: 'Quiet hours start' },
+      h(ui.TimePicker, { id: 'ff-quiet', value: '22:00', onValueChange: noop, locale: 'en-US' })));
+    const refused = mount(h(ui.Field, { label: 'Closes at' },
+      h(ui.TimePicker, { id: 'ff-closes', value: '17:00', onValueChange: noop, locale: 'de', max: '18:00' })));
+    const closes = refused.querySelector('input.uix-time-picker__input');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(closes, '19:30');
+      closes.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    act(() => { closes.dispatchEvent(new window.FocusEvent('focusout', { bubbles: true })); });
+    const starts = mount(h(ui.Field, { label: 'Planned start' },
+      h(ui.DateTimePicker, { id: 'ff-starts', value: '2026-11-22T14:30', onValueChange: noop, locale: 'de', timeZone: 'Europe/Vienna', timeZoneLabel: 'Vienna', today: '2026-11-10' })));
+    blocks.push([
+      caption('Time of day (React <code>TimePicker</code>, also the time of <code>DateTimePicker</code>) — the locale’s clock (14:30 in German, 10:00 PM in en-US), typed times read on Enter or blur (<code>1430</code>, <code>9</code>, <code>2:30 pm</code>), ArrowUp / ArrowDown step the hour or the minutes under the caret, the clock button lists the times at <code>minuteStep</code>; a time outside <code>min</code> / <code>max</code> is refused with the reason'),
+      '<div data-time-picker-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div class="uix-stack" style="flex:1 1 14rem;max-width:20rem">${html(opens)}${html(quiet)}${html(refused)}</div>`,
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(starts)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return { 'examples-form-controls': blocks.join('\n') };
   } finally {

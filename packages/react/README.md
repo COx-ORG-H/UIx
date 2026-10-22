@@ -1154,3 +1154,22 @@ draws a gap; `aria-invalid` (from `Field error`) turns the cells red.
 
 `InputGroup` gains `trailingAction`: a real control inside the field's end (class
 `uix-input-group__action`, square, the field's height less 4 px a side), which both use.
+
+#### TimePicker
+
+```tsx
+<Field label={t('opensAt')} hint={t('businessHours')}>
+  <TimePicker name="opens" value={opens} onValueChange={setOpens} locale={locale} minuteStep={30} min="08:00" max="18:00" />
+</Field>
+```
+
+A time of day beside `DatePicker`; the value is `HH:mm` (what `<input type="time">` holds) or
+`null`. The field shows the locale's clock (14:30 in `de`, 2:30 PM in `en-US`; `hour12` overrides)
+and reads a typed time on Enter or blur: `1430`, `14.30`, `9`, `2:30 pm`. ArrowUp / ArrowDown step
+the part under the caret (the hour, or the minutes to the next `minuteStep`), PageUp / PageDown the
+hour, Alt+ArrowDown opens the list. The clock button lists the times at `minuteStep` between `min`
+and `max`; the list takes focus on the chosen time, Enter picks, Escape closes and focus goes back
+to the field. Text that is not a time, or one before `min` / after `max`, marks the field invalid and
+says why. `name` submits `HH:mm` through a hidden input. Words: `labels` or `UixLabelsProvider`
+`timePicker`. `DateTimePicker` now uses it for its time (no native `type="time"` is left);
+`minuteStep` defaults to 15 there and only steps the keys and the list, any typed minute is kept.

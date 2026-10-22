@@ -122,9 +122,9 @@
       "brotli": 1186
     },
     "styles/components/date-picker.css": {
-      "raw": 6010,
-      "gzip": 1656,
-      "brotli": 1379
+      "raw": 6855,
+      "gzip": 1914,
+      "brotli": 1597
     },
     "styles/components/date-range-picker.css": {
       "raw": 5100,

@@ -408,6 +408,11 @@ export {
   dateOrder, datePattern, formatDateKey, isValidDateKey, joinDateTime, parseDateInput, splitDateTime, timeZoneName,
 } from './date-field-model.js';
 export type { DatePart } from './date-field-model.js';
+export { TimePicker, DEFAULT_TIME_PICKER_LABELS } from './components/TimePicker.js';
+export type { TimeInputProblem, TimePickerLabels, TimePickerProps } from './components/TimePicker.js';
+export {
+  formatTimeKey, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timeSlots, timeToMinutes, uses12Hour,
+} from './time-field-model.js';
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
   isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,

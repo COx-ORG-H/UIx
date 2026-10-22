@@ -396,7 +396,8 @@ test('DatePicker and DateTimePicker render on the server', () => {
   assert.doesNotMatch(date, /data-date=/, 'no calendar in the closed markup');
   const dateTime = renderToStaticMarkup(h(ui.DateTimePicker, { value: '2026-11-22T14:30', onValueChange() {}, locale: 'en-GB', timeZone: 'Europe/Vienna', today: '2026-11-10', 'aria-label': 'Starts' }));
   assert.match(dateTime, /value="22\/11\/2026"/);
-  assert.match(dateTime, /type="time"[^>]*value="14:30"|value="14:30"[^>]*type="time"/);
+  assert.match(dateTime, /uix-time-picker__input"[^>]*value="14:30"/, 'the time part is a TimePicker (HAR-1835)');
+  assert.doesNotMatch(dateTime, /type="time"/, 'no native time input');
   const range = renderToStaticMarkup(h(ui.DateRangePicker, { mode: 'field', value: { start: '2026-11-22', end: '2026-11-28' }, onChange() {}, locale: 'de' }));
   assert.match(range, /22\.11\.2026 – 28\.11\.2026/);
 });
@@ -417,7 +418,7 @@ function mountDateTime(props = {}, wrap = (el) => el) {
     ...view, changes,
     root: () => host.querySelector('.uix-date-time-picker'),
     date: () => host.querySelector('input.uix-date-picker__input'),
-    time: () => host.querySelector('input[type="time"]'),
+    time: () => host.querySelector('input.uix-time-picker__input'),
     zone: () => host.querySelector('.uix-date-time-picker__zone'),
   };
 }
@@ -430,7 +431,8 @@ test('DateTimePicker splits one value into a date, a time and the zone they are 
   assert.equal(v.date().getAttribute('aria-label'), 'Date');
   assert.equal(v.time().value, '14:30');
   assert.equal(v.time().getAttribute('aria-label'), 'Time');
-  assert.equal(v.time().step, '60');
+  assert.equal(v.host.querySelector('input[type="time"]'), null, 'no native time input (HAR-1835)');
+  assert.equal(v.time().closest('.uix-time-picker').querySelector('.uix-date-picker__toggle').getAttribute('aria-label'), 'Change time, 14:30');
   const zone = v.zone();
   assert.match(zone.querySelector('[aria-hidden="true"]').textContent, /^(CET|GMT\+1)$/, 'Vienna in November');
   const spoken = zone.querySelector('.uix-visually-hidden');
@@ -449,12 +451,15 @@ test('DateTimePicker splits one value into a date, a time and the zone they are 
 
 test('DateTimePicker: changing either part reports the whole value', () => {
   const v = mountDateTime({ value: '2026-11-22T14:30', 'aria-label': 'Starts', minuteStep: 15 });
-  assert.equal(v.time().step, '900');
+  // ArrowUp steps the minutes (the caret is at the end) by minuteStep
+  key(v.time(), 'ArrowUp');
+  assert.deepEqual(v.changes, ['2026-11-22T14:45']);
   type(v.time(), '09:15');
-  assert.deepEqual(v.changes, ['2026-11-22T09:15']);
+  blur(v.time());
+  assert.deepEqual(v.changes, ['2026-11-22T14:45', '2026-11-22T09:15']);
   type(v.date(), '24/12/2026');
   blur(v.date());
-  assert.deepEqual(v.changes, ['2026-11-22T09:15', '2026-12-24T09:15'], 'a new date keeps the time');
+  assert.deepEqual(v.changes.slice(1), ['2026-11-22T09:15', '2026-12-24T09:15'], 'a new date keeps the time');
   type(v.date(), '');
   blur(v.date());
   assert.equal(v.changes.at(-1), null, 'clearing the date clears the value');
@@ -465,6 +470,7 @@ test('DateTimePicker: changing either part reports the whole value', () => {
 test('DateTimePicker: a time typed first waits for its date; a date alone gets defaultTime', () => {
   const v = mountDateTime({ 'aria-label': 'Starts' });
   type(v.time(), '16:45');
+  blur(v.time());
   assert.deepEqual(v.changes, [], 'a time alone is not a value');
   assert.equal(v.time().value, '16:45');
   type(v.date(), '22/11/2026');

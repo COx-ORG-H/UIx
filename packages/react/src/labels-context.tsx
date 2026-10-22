@@ -20,6 +20,7 @@ import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { PasswordInputLabels } from './components/PasswordInput.js';
+import type { TimePickerLabels } from './components/TimePicker.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -55,6 +56,8 @@ export interface UixLabels {
   dateRangePicker?: Partial<DateRangePickerLabels>;
   datePicker?: Partial<DatePickerLabels>;
   dateTimePicker?: Partial<DateTimePickerLabels>;
+  /** `TimePicker` (HAR-1835), also the time part of `DateTimePicker`. */
+  timePicker?: Partial<TimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
   filterEditor?: Partial<FilterEditorLabels>;

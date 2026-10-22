@@ -220,3 +220,80 @@ test.describe('PasswordInput and OtpInput (HAR-1376)', () => {
     await axe(page, '#sign-in');
   });
 });
+
+test.describe('TimePicker (HAR-1835)', () => {
+  test('typing, arrows and the list in a real browser; focus comes back to the field', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    const field = page.getByLabel('Opens at');
+    await expect(field).toHaveValue('09:30');
+    await field.click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowUp');
+    await expect(field).toHaveValue('10:00');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowUp');
+    await expect(field).toHaveValue('11:00');
+    await field.fill('7');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('alert')).toHaveText('Choose 08:00 or later.');
+    await field.fill('1715');
+    await page.keyboard.press('Tab');
+    await expect(field).toHaveValue('17:15');
+    await field.focus();
+    await page.keyboard.press('Alt+ArrowDown');
+    const list = page.getByRole('listbox', { name: 'Times' });
+    await expect(list).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Enter');
+    await expect(list).toBeHidden();
+    await expect(field).toHaveValue('16:30');
+    await expect(field).toBeFocused();
+  });
+
+  test('en-US shows a 12-hour clock and reads "2:30 pm"', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    const field = page.getByLabel('Quiet hours start (en-US)');
+    await field.fill('2:30 pm');
+    await page.keyboard.press('Enter');
+    await expect(field).toHaveValue(/^2:30\sPM$/);
+  });
+
+  test('DateTimePicker uses it: no native time input, the time keeps the label it borrows', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    await expect(page.locator('#times input[type="time"]')).toHaveCount(0);
+    const time = page.getByRole('textbox', { name: 'Geplanter Start, time' });
+    await expect(time).toHaveValue('14:30');
+    await time.focus();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowDown');
+    await expect(time).toHaveValue('14:15');
+  });
+
+  test('inside a modal Drawer the list is in the top layer, not clipped; Escape closes only the list', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    await page.locator('#open-time-drawer').click();
+    const dialog = page.getByRole('dialog', { name: 'Business calendar' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: /Change time/ }).click();
+    const list = page.getByRole('listbox', { name: 'Times' });
+    await expect(list).toBeFocused();
+    const selected = list.getByRole('option', { selected: true });
+    await expect(selected).toHaveText('16:00');
+    await expect(selected).toBeInViewport();
+    // hit-test the chosen row: nothing of the drawer paints over it
+    const hit = await selected.evaluate((el) => { const r = el.getBoundingClientRect(); const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return el.contains(top); });
+    expect(hit).toBe(true);
+    await axe(page, '.uix-time-picker__popover');
+    await page.keyboard.press('Escape');
+    await expect(list).toBeHidden();
+    await expect(dialog).toBeVisible();
+    await expect(page.getByLabel('Closes at')).toBeFocused();
+  });
+
+  test('320 px: the fields fit; axe closed', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'times');
+    await page.setViewportSize({ width: 320, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    await axe(page, '#times');
+  });
+});
