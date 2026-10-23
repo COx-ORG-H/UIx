@@ -150,6 +150,8 @@ test('reduced motion chosen in the app, with the OS set to no preference', async
   await page.locator('#prefs').getByRole('radiogroup', { name: 'Motion' }).getByRole('radio', { name: 'Reduce' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduce');
   await expect(page.locator('#reduced')).toHaveText('reduced');
+  // the switch itself suspends every transition for two frames; read the steady state after it
+  await expect(page.locator('html')).not.toHaveAttribute('data-uix-switching', /.*/);
   const after = await probe();
   expect(after.property).not.toContain('transform');
   expect(after.property).toContain('opacity');

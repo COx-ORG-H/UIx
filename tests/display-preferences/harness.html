@@ -13,6 +13,8 @@
     body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
     main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-6); max-width: 48rem; margin: 0 auto; }
     section { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-3); }
+    /* the harness's own 50 px heading at xl text; the kit components are what the 320 px check is about */
+    h1, h2 { overflow-wrap: anywhere; }
   </style>
 </head>
 <body>

@@ -12,6 +12,7 @@
  *   - axe is clean in each state. */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/staff-shell/harness.html';
 
@@ -60,7 +61,9 @@ test('AccountMenu opens with the keyboard, runs a row and gives focus back', asy
   const menu = page.getByRole('menu', { name: 'Račun' });
   await expect(menu).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Profil' })).toBeFocused();
-  // the menu opens above the trigger at the bottom of the sidebar, inside the viewport
+  // the menu opens above the trigger at the bottom of the sidebar, inside the viewport (measured
+  // once it has settled: its held first frame sits one --uix-lift off its place)
+  await settleOverlay(menu);
   const box = await menu.boundingBox();
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(800);
