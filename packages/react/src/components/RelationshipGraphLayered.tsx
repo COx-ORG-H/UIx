@@ -30,6 +30,9 @@ interface View { x: number; y: number; zoom: number }
 interface Size { width: number; height: number }
 
 const clampZoom = (zoom: number): number => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+/** The height of the map footer's band along the viewport's bottom edge (0 with no footer). */
+const footerGutter = (viewport: HTMLElement, footer: HTMLElement | null): number =>
+  footer && footer.parentElement === viewport ? Math.min(footer.offsetHeight, viewport.clientHeight) : 0;
 
 function initialView(layout: LayeredLayout, size: Size): View {
   if (size.width === 0 || size.height === 0 || layout.width === 0) return { x: 0, y: 0, zoom: 1 };
@@ -118,17 +121,20 @@ export function LayeredRelationshipGraph({
     [hoverId, selectedItemId],
   );
 
-  // Viewport size.
+  // The free part of the viewport: above the map footer's band (compact controls), whose height
+  // fit, the first view, Reset and zoom-about-the-centre leave clear, so they never put a node
+  // under the hint, the zoom level or the controls (PR #166 review).
   useEffect(() => {
     const element = viewportRef.current;
     if (!element) return;
-    const measure = () => setSize({ width: element.clientWidth, height: element.clientHeight });
+    const measure = () => setSize({ width: element.clientWidth, height: Math.max(0, element.clientHeight - footerGutter(element, footerRef.current)) });
     measure();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
     observer.observe(element);
+    if (footerRef.current) observer.observe(footerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [compact]);
 
   // Initial view once per root (a cluster toggle or data refresh must not jump the view).
   useEffect(() => {

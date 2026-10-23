@@ -6,7 +6,9 @@
  *              rows reveal their node without taking focus;
  *   ?case=cmdb a topology at CMDB size: ?nodes=N (default 300) over 6 levels with cross links,
  *              lateral and back edges and a few cycles; window.__graphTimings records how long the
- *              first render took. */
+ *              first render took;
+ *   ?case=radial the default ring layout with its toolbar, for the footer-gutter screenshots (it has
+ *              no map footer, so the gutter must leave it as it was). */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RelationshipGraph } from '../../packages/react/src/index.js';
@@ -105,5 +107,18 @@ function Cmdb() {
   );
 }
 
+function Radial() {
+  const { nodes, edges } = topology(14);
+  const [selected, setSelected] = useState('ci-0');
+  return (
+    <>
+      <h1>CMDB-Ring</h1>
+      <div id="radial">
+        <RelationshipGraph nodes={nodes} edges={edges} selectedId={selected} onSelect={(node) => setSelected(node.id)} showList={false} />
+      </div>
+    </>
+  );
+}
+
 const view = params.get('case') ?? 'k3';
-createRoot(document.getElementById('root')!).render(<StrictMode>{view === 'cmdb' ? <Cmdb /> : <K3 />}</StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode>{view === 'cmdb' ? <Cmdb /> : view === 'radial' ? <Radial /> : <K3 />}</StrictMode>);

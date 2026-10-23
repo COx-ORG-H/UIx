@@ -204,3 +204,39 @@ for (const count of [300, 600]) {
     expect(p95).toBeLessThan(50);
   });
 }
+
+// Batch follow-up (PR #166 review): the hint and the zoom level sat on surfaces, but the map ran
+// on underneath, between and around them, so at 1280 px the bottom row ("Application 83",
+// "Rack 27") was half covered. The footer is now a band across the map's bottom edge, and Fit
+// and the first view leave its height free.
+for (const width of [390, 1280, 1920]) {
+  test(`CMDB map at ${width} px: the footer is a band along the bottom edge, and Fit puts no item under it`, async ({ page }, testInfo) => {
+    await open(page, testInfo, '?case=cmdb&nodes=40', { viewport: { width, height: width === 1920 ? 1080 : 900 }, reducedMotion: true });
+    const band = await page.evaluate(() => {
+      const viewport = document.querySelector('#cmdb .uix-relationship-graph__viewport');
+      const footer = viewport.querySelector('.uix-relationship-graph__footer');
+      const v = viewport.getBoundingClientRect();
+      const f = footer.getBoundingClientRect();
+      const border = parseFloat(getComputedStyle(viewport).borderLeftWidth);
+      const background = getComputedStyle(footer).backgroundColor;
+      return {
+        left: Math.round(f.left - (v.left + border)), right: Math.round(v.right - border - f.right), bottom: Math.round(v.bottom - border - f.bottom),
+        opaque: background !== 'rgba(0, 0, 0, 0)' && !/,\s*0(\.\d+)?\)$/.test(background),
+      };
+    });
+    expect(band).toEqual({ left: 0, right: 0, bottom: 0, opaque: true });
+
+    await page.getByRole('button', { name: 'Fit' }).click();
+    await page.waitForTimeout(100);
+    const fit = await page.evaluate(() => {
+      const viewport = document.querySelector('#cmdb .uix-relationship-graph__viewport');
+      const top = viewport.querySelector('.uix-relationship-graph__footer').getBoundingClientRect().top;
+      const zoom = Number(/scale\(([\d.]+)\)/.exec(viewport.querySelector('.uix-relationship-graph__stage').style.transform)?.[1]);
+      const under = [...viewport.querySelectorAll('.uix-relationship-graph__item')]
+        .filter((item) => item.getBoundingClientRect().bottom > top + 0.5).map((item) => item.textContent.slice(0, 24));
+      return { zoom, under };
+    });
+    // At the 40 % floor a phone-width map cannot hold the graph; Fit then shows what it can.
+    if (fit.zoom > 0.4) expect(fit.under).toEqual([]);
+  });
+}
