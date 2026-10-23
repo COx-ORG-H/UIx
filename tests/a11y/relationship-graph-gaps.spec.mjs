@@ -107,6 +107,60 @@ test('K3: axe', async ({ page }, testInfo) => {
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
 });
 
+/* HAR-1387 review of PR #166: the 300-node map rendered but did not read. 197 of 200 labels said
+ * "depends on", the hub's 53 translucent strokes stacked to black, the hint and the zoom level sat
+ * on the map with no surface over "Rack 27", a focused item could land under the controls, and
+ * the "cycle" flag covered the first line of a name. */
+test('CMDB 300 nodes: reads — no repeated labels, an opaque bus, chrome on a surface, focus clear of it, names clear of flags', async ({ page }, testInfo) => {
+  await open(page, testInfo, '?case=cmdb&nodes=300', { viewport: { width: 1280, height: 900 }, reducedMotion: true });
+  const read = await page.evaluate(() => {
+    const labels = [...document.querySelectorAll('#cmdb .uix-relationship-graph__link text')].map((text) => text.textContent);
+    const opaque = (colour) => !/\/\s*0?\.\d|rgba\(/.test(colour);
+    const bus = document.querySelectorAll('#cmdb .uix-relationship-graph__link[data-bus]');
+    const stroke = getComputedStyle(bus[0].querySelector('path')).stroke;
+    const chrome = ['.uix-relationship-graph__hint', '.uix-relationship-graph__zoom-level'].map((selector) => {
+      const style = getComputedStyle(document.querySelector(`#cmdb ${selector}`));
+      return { selector, background: style.backgroundColor, border: style.borderTopWidth };
+    });
+    const flagged = [...document.querySelectorAll('#cmdb .uix-relationship-graph__item[data-flag]')].map((item) => {
+      const name = item.querySelector('.uix-relationship-graph__item-label');
+      const range = document.createRange();
+      range.selectNodeContents(name);
+      const text = [...range.getClientRects()];
+      const flag = item.querySelector('.uix-relationship-graph__item-flag').getBoundingClientRect();
+      return text.some((r) => r.left < flag.right && flag.left < r.right && r.top < flag.bottom && flag.top < r.bottom);
+    });
+    return { labels, busCount: bus.length, stroke, strokeOpaque: opaque(stroke), chrome: chrome.map((c) => ({ ...c, opaque: opaque(c.background) && c.background !== 'rgba(0, 0, 0, 0)' })), flagged };
+  });
+  expect(read.labels.filter((text) => text === 'depends on')).toEqual([]);
+  expect(read.labels.length).toBeLessThan(20);
+  expect(read.busCount).toBeGreaterThan(40);
+  expect(read.strokeOpaque, read.stroke).toBe(true);
+  for (const chrome of read.chrome) {
+    expect(chrome.opaque, `${chrome.selector}: ${chrome.background}`).toBe(true);
+    expect(chrome.border).toBe('1px');
+  }
+  expect(read.flagged.length).toBeGreaterThan(0);
+  expect(read.flagged.filter(Boolean)).toEqual([]);
+  // the keyboard walks down the second column: no focused item ends up under the footer
+  await page.locator('#cmdb [data-node-id="ci-0"]').focus();
+  await page.keyboard.press('ArrowRight');
+  const covered = [];
+  for (let i = 0; i < 30; i += 1) {
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(40);
+    const hit = await page.evaluate(() => {
+      const item = document.activeElement.getBoundingClientRect();
+      return [...document.querySelectorAll('#cmdb .uix-relationship-graph__hint, #cmdb .uix-relationship-graph__controls')].some((chrome) => {
+        const r = chrome.getBoundingClientRect();
+        return r.width > 0 && item.left < r.right && r.left < item.right && item.top < r.bottom && r.top < item.bottom;
+      }) ? document.activeElement.dataset.nodeId : null;
+    });
+    if (hit) covered.push(hit);
+  }
+  expect(covered).toEqual([]);
+});
+
 for (const count of [300, 600]) {
   test(`CMDB ${count} nodes: no overlapping items, the keyboard reaches the last column, dragging stays smooth`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'light', 'a performance measure, once');

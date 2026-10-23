@@ -207,6 +207,17 @@ export interface RoutedEdge {
   arrowAngle: number;
   /** Label policy `auto` shows this label without interaction. */
   autoLabel: boolean;
+  /**
+   * The label is said once by the target column's header (`LayeredColumn.edgeLabel`), so the
+   * edge itself never draws it under `edgeLabels="auto"` (HAR-1387: 197 of 200 labels on a
+   * 300-node map read "depends on").
+   */
+  columnLabel: boolean;
+  /**
+   * One of a busy node's forward edges, drawn as a bus: along a shared trunk in the column gap
+   * and a short stub into the target, so a fan-out reads as one line, not a black fan (HAR-1387).
+   */
+  bus: boolean;
   /** The label wrapped to fit the column gap (at most two lines). */
   labelLines: string[];
 }
@@ -216,6 +227,11 @@ export interface LayeredColumn {
   x: number;
   /** Underlying nodes in the column, cluster members included. */
   count: number;
+  /**
+   * The relation most forward edges into this column share, when the column takes more than a
+   * few of them: the header says it once and those edges draw no label (HAR-1387).
+   */
+  edgeLabel?: string;
 }
 
 export interface LayeredLayout {
@@ -371,6 +387,19 @@ export function classifyLayeredEdges(
 
 export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string {
   return `cluster:${parentId}:${type ?? ''}:${edgeType ?? ''}`;
+}
+
+/**
+ * A bus edge: right from the source to the trunk, along it to the target's row, right into the
+ * target, with small rounded corners. Every edge of one fan-out shares the first two segments.
+ */
+function busPath(startX: number, startY: number, trunk: number, endX: number, endY: number): string {
+  const dy = endY - startY;
+  if (Math.abs(dy) < 1) return `M${round1(startX)} ${round1(startY)} H${round1(endX)}`;
+  const r = Math.min(8, Math.abs(dy) / 2, trunk - startX, endX - trunk);
+  const dir = Math.sign(dy);
+  return `M${round1(startX)} ${round1(startY)} H${round1(trunk - r)} Q${round1(trunk)} ${round1(startY)} ${round1(trunk)} ${round1(startY + dir * r)}`
+    + ` V${round1(endY - dir * r)} Q${round1(trunk)} ${round1(endY)} ${round1(trunk + r)} ${round1(endY)} H${round1(endX)}`;
 }
 
 const mean = (values: number[]): number => values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -603,6 +632,18 @@ export function layoutLayeredGraph(
       startAngle = Math.PI;
       endAngle = 0;
       height = Math.max(height, channel + 8);
+    } else if (kind === 'forward' && from.children.length > AUTO_LABEL_MAX_FANOUT) {
+      // A busy node's fan-out: one trunk at the middle of the column gap, a stub into each target.
+      startX = from.x + from.width;
+      startY = from.y + from.height / 2;
+      endX = to.x;
+      endY = to.y + to.height / 2;
+      const trunk = startX + columnGap / 2;
+      path = busPath(startX, startY, trunk, endX, endY);
+      labelX = (trunk + endX) / 2;
+      labelY = endY;
+      startAngle = Math.PI;
+      endAngle = 0;
     } else if (kind === 'forward') {
       startX = from.x + from.width;
       startY = from.y + from.height / 2;
@@ -657,6 +698,8 @@ export function layoutLayeredGraph(
       arrowY: round1(atStart ? startY : endY),
       arrowAngle: atStart ? startAngle : endAngle,
       labelLines: [],
+      columnLabel: false,
+      bus: kind === 'forward' && from.children.length > AUTO_LABEL_MAX_FANOUT,
       autoLabel:
         to.kind !== 'cluster' &&
         (edge.emphasis === true || (kind === 'forward' && from.children.length <= AUTO_LABEL_MAX_FANOUT)),
@@ -667,6 +710,37 @@ export function layoutLayeredGraph(
     const label = edge.label ?? edge.type;
     if (label !== undefined) entry.label = label;
     routed.set(key, entry);
+  }
+
+  // A column that takes more than a few forward edges says their common relation once, in its
+  // header; only the edges that differ from it keep a label of their own (HAR-1387).
+  const intoColumn = new Map<number, RoutedEdge[]>();
+  for (const entry of routed.values()) {
+    if (entry.kind !== 'forward' || entry.label === undefined) continue;
+    const depth = itemById.get(entry.target)!.depth;
+    const list = intoColumn.get(depth);
+    if (list) list.push(entry);
+    else intoColumn.set(depth, [entry]);
+  }
+  for (const [depth, entries] of intoColumn) {
+    if (entries.length <= AUTO_LABEL_MAX_FANOUT) continue;
+    const counts = new Map<string, number>();
+    for (const entry of entries) counts.set(entry.label!, (counts.get(entry.label!) ?? 0) + 1);
+    let dominant: string | undefined;
+    let most = 1;
+    for (const [label, count] of counts) if (count > most) { dominant = label; most = count; }
+    if (dominant === undefined) continue;
+    const column = columns.find((candidate) => candidate.depth === depth);
+    if (column) column.edgeLabel = dominant;
+    for (const entry of entries) {
+      if (entry.emphasis) continue;
+      if (entry.label === dominant) {
+        entry.columnLabel = true;
+        entry.autoLabel = false;
+      } else if (itemById.get(entry.target)!.kind !== 'cluster') {
+        entry.autoLabel = true;
+      }
+    }
   }
 
   // One auto label per (source, label): siblings drawn from the same node would

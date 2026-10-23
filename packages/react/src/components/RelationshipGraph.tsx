@@ -50,7 +50,17 @@ export interface RelationshipGraphLabels {
   graphSummary: (nodes: number, edges: number) => string;
   relationship: string;
   conflict: string;
+  /** @deprecated No longer read: the list names a node's neighbours under `connectedHeading`. A
+   * `connectedTo` supplied without `connectedHeading` still sets that heading, from its words. */
   connectedTo: (names: string) => string;
+  /** The relationship list: the heading of a node's neighbours, e.g. "Connected to". */
+  connectedHeading: string;
+  /** The relationship list: shows every neighbour of a node with more than eight. */
+  showAllRelations: (count: number) => string;
+  /** The relationship list: back to the first eight neighbours. */
+  showFewerRelations: string;
+  /** Layered: ends a hub's description, which names only its first five relationships. */
+  moreRelations: (count: number, inList: boolean) => string;
   noConnections: string;
   expandNeighbors: string;
   openDetails: string;
@@ -101,6 +111,10 @@ export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels = {
   relationship: 'Relationship',
   conflict: 'conflict',
   connectedTo: (names) => `Connected to ${names}`,
+  connectedHeading: 'Connected to',
+  showAllRelations: (count) => `Show all ${count}`,
+  showFewerRelations: 'Show fewer',
+  moreRelations: (count, inList) => `and ${count} more${inList ? ', listed in the relationship list' : ''}`,
   noConnections: 'No visible connections',
   expandNeighbors: 'Expand neighbors',
   openDetails: 'Open details',
@@ -225,7 +239,14 @@ function radialViewBox(nodes: { x: number; y: number }[]): string {
 
 /** Bounded, deterministic SVG relationship view with an equivalent accessible list. */
 export function RelationshipGraph(props: RelationshipGraphProps) {
-  const labels = useMemo(() => ({ ...DEFAULT_RELATIONSHIP_GRAPH_LABELS, ...props.labels }), [props.labels]);
+  const labels = useMemo(() => {
+    const merged = { ...DEFAULT_RELATIONSHIP_GRAPH_LABELS, ...props.labels };
+    // A consumer that translated the old "Connected to {names}" keeps its words as the heading.
+    if (props.labels?.connectedTo && props.labels.connectedHeading === undefined) {
+      merged.connectedHeading = props.labels.connectedTo('').replace(/[\s:,]+$/u, '');
+    }
+    return merged;
+  }, [props.labels]);
   const stateClass = cx('uix-relationship-graph uix-relationship-graph--state', props.className);
   if (props.loading) return <div className={stateClass} role="status">{labels.loading}</div>;
   if (props.error) {

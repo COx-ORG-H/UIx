@@ -2814,6 +2814,7 @@ export interface LayeredColumn {
     count: number;
     // (undocumented)
     depth: number;
+    edgeLabel?: string;
     // (undocumented)
     x: number;
 }
@@ -4418,7 +4419,8 @@ export interface RelationshipGraphLabels {
     column: (depth: number, count: number) => string;
     // (undocumented)
     conflict: string;
-    // (undocumented)
+    connectedHeading: string;
+    // @deprecated (undocumented)
     connectedTo: (names: string) => string;
     // (undocumented)
     controls: string;
@@ -4455,6 +4457,7 @@ export interface RelationshipGraphLabels {
     listHeading: string;
     // (undocumented)
     loading: string;
+    moreRelations: (count: number, inList: boolean) => string;
     navigationHint: (modifier: string) => string;
     // (undocumented)
     noConnections: string;
@@ -4482,6 +4485,8 @@ export interface RelationshipGraphLabels {
     right: string;
     // (undocumented)
     roleDescription: string;
+    showAllRelations: (count: number) => string;
+    showFewerRelations: string;
     // (undocumented)
     up: string;
     viewportKeyboardHint: string;
@@ -4737,6 +4742,8 @@ export interface RoutedEdge {
     // (undocumented)
     arrowY: number;
     autoLabel: boolean;
+    bus: boolean;
+    columnLabel: boolean;
     // (undocumented)
     description?: string;
     edgeIds: string[];

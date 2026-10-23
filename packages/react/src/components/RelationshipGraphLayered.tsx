@@ -20,6 +20,8 @@ const READABLE_ZOOM = 0.75;
 const ZOOM_STEP = 1.2;
 const PAN_STEP = 64;
 const FOCUS_MARGIN = 24;
+/** A node's description names this many relationships, then points to the list (HAR-1387). */
+const DESCRIBED_RELATIONS = 5;
 /** How long the "Ctrl + scroll to zoom" hint stays after a plain wheel over the map. */
 const HINT_MS = 1600;
 const NAV_KEYS: readonly string[] = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
@@ -86,11 +88,15 @@ export function LayeredRelationshipGraph({
   const viewportRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLButtonElement>());
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   const [view, setView] = useState<View>({ x: 0, y: 0, zoom: 1 });
   const [animate, setAnimate] = useState(false);
   const [localFocus, setLocalFocus] = useState<string | undefined>(undefined);
   const [hoverId, setHoverId] = useState<string | undefined>(undefined);
+  // The item that really has the keyboard focus — not the roving tab stop, which the root holds
+  // before anyone tabs in (HAR-1387: its 53 labels were drawn on load).
+  const [focusWithinId, setFocusWithinId] = useState<string | undefined>(undefined);
   const [fullscreen, setFullscreen] = useState(false);
   const [wheelHint, setWheelHint] = useState(false);
   const viewRef = useRef(view);
@@ -176,8 +182,11 @@ export function LayeredRelationshipGraph({
     let nextY = y;
     if (left < FOCUS_MARGIN) nextX += FOCUS_MARGIN - left;
     else if (right > width - FOCUS_MARGIN) nextX -= right - (width - FOCUS_MARGIN);
+    // The map's footer (hint, zoom level, controls) covers its bottom edge: keep the item above it.
+    const footer = footerRef.current;
+    const bottomMargin = footer ? Math.max(FOCUS_MARGIN, heightPx - footer.offsetTop + 8) : FOCUS_MARGIN;
     if (top < FOCUS_MARGIN) nextY += FOCUS_MARGIN - top;
-    else if (bottom > heightPx - FOCUS_MARGIN) nextY -= bottom - (heightPx - FOCUS_MARGIN);
+    else if (bottom > heightPx - bottomMargin) nextY -= bottom - (heightPx - bottomMargin);
     if (nextX !== x || nextY !== y) moveView({ x: nextX, y: nextY, zoom }, smooth);
   }, [moveView]);
 
@@ -391,14 +400,25 @@ export function LayeredRelationshipGraph({
       add(edge.source, `${labels.relationTo(relation, nodeLabelById.get(edge.target)!)}${note}`);
       add(edge.target, `${labels.relationFrom(relation, nodeLabelById.get(edge.source)!)}${note}`);
     }
-    return map;
-  }, [bounded.edges, nodeLabelById, labels]);
+    // A hub's description names a few and points to the list: 2,890 characters at 300 nodes
+    // were read on every focus (HAR-1387).
+    const described = new Map<string, string>();
+    for (const [id, list] of map) {
+      const hidden = list.length - DESCRIBED_RELATIONS;
+      described.set(id, hidden > 0
+        ? `${list.slice(0, DESCRIBED_RELATIONS).join('; ')}; ${labels.moreRelations(hidden, showList)}`
+        : list.join('; '));
+    }
+    return described;
+  }, [bounded.edges, nodeLabelById, labels, showList]);
   const showRoot = markRoot ?? rootId !== undefined;
 
   const showLabel = (edge: RoutedEdge): boolean => {
     if (edgeLabels === 'never' || edge.label === undefined) return false;
     if (edgeLabels === 'always') return true;
-    return edge.autoLabel || activeIds.has(edge.source) || activeIds.has(edge.target) || focusedId === edge.source || focusedId === edge.target;
+    // Said once by the column header.
+    if (edge.columnLabel) return false;
+    return edge.autoLabel || activeIds.has(edge.source) || activeIds.has(edge.target) || focusWithinId === edge.source || focusWithinId === edge.target;
   };
 
   const viewportStyle = (height !== undefined ? { '--uix-relationship-graph-height': height } : {}) as CSSProperties;
@@ -413,7 +433,7 @@ export function LayeredRelationshipGraph({
     const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
     return { id: edge.id, x: edge.labelX, y: edge.labelY, ...edgeLabelSize(lines) };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- showLabel reads exactly these
-  })), [layout, edgeLabels, activeIds, focusedId, labels]);
+  })), [layout, edgeLabels, activeIds, focusWithinId, labels]);
 
   // HAR-1387: a pan or a zoom changes the stage's transform and nothing else. The edges, the
   // items and the list are kept from the last render unless what they show changed, so dragging
@@ -425,14 +445,17 @@ export function LayeredRelationshipGraph({
 
   const edgeLayer = useMemo(() => (
     <svg className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
-      {layout.edges.map((edge) => {
-        const active = activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id));
+      {/* Active edges are drawn last, so a highlighted bus edge is not covered on the shared trunk. */}
+      {layout.edges.map((edge) => ({ edge, active: activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id)) }))
+        .sort((a, b) => Number(a.active) - Number(b.active))
+        .map(({ edge, active }) => {
         const angle = (edge.arrowAngle * 180) / Math.PI;
         const placed = labelPlacement.get(edge.id);
         return <g
           key={edge.id}
           className="uix-relationship-graph__link"
           data-kind={edge.kind}
+          data-bus={edge.bus || undefined}
           data-active={active || undefined}
           data-emphasis={edge.emphasis || undefined}
           data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
@@ -456,8 +479,8 @@ export function LayeredRelationshipGraph({
       key={column.depth}
       className="uix-relationship-graph__column"
       aria-hidden="true"
-      style={{ left: column.x, width: layout.nodeWidth }}
-    >{labels.column(column.depth, column.count)}</div>)}
+      style={{ left: column.x, width: layout.nodeWidth + 64 }}
+    >{labels.column(column.depth, column.count)}{column.edgeLabel !== undefined && <> · {column.edgeLabel}</>}</div>)}
     <div role="group" aria-roledescription={labels.roleDescription} aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)} aria-describedby={hintId}>
       {layout.items.map((item, itemIndex) => {
         const selected = item.id === selectedItemId;
@@ -488,6 +511,7 @@ export function LayeredRelationshipGraph({
           data-conflicted={(item.node && conflictedNodeIds.has(item.node.id)) || undefined}
           data-root={(showRoot && item.id === rootItemId) || undefined}
           data-tone={item.node?.tone}
+          data-flag={item.inCycle || undefined}
           style={{ left: item.x, top: item.y, width: item.width, height: item.height }}
           tabIndex={item.id === focusedId ? 0 : -1}
           aria-label={labelFor(item)}
@@ -496,10 +520,12 @@ export function LayeredRelationshipGraph({
           onClick={() => live.current.activate(item)}
           onKeyDown={(event) => live.current.onItemKeyDown(event, item)}
           onFocus={() => {
+            setFocusWithinId(item.id);
             if (item.id === focusedId) return;
             setLocalFocus(item.id);
             live.current.onFocusChange?.(item.id);
           }}
+          onBlur={() => setFocusWithinId((current) => (current === item.id ? undefined : current))}
           onPointerEnter={() => setHoverId(item.id)}
           onPointerLeave={() => setHoverId((current) => (current === item.id ? undefined : current))}
         >
@@ -510,7 +536,7 @@ export function LayeredRelationshipGraph({
     </div>
     <div hidden>{layout.items.map((item, itemIndex) => {
       const relations = item.node ? relationsOf.get(item.node.id) : undefined;
-      return relations ? <span key={item.id} id={`${describeId}-${itemIndex}`}>{relations.join('; ')}</span> : null;
+      return relations ? <span key={item.id} id={`${describeId}-${itemIndex}`}>{relations}</span> : null;
     })}</div>
     {layout.items.filter((item) => item.expandedGroup).map((item) => {
       const group = item.expandedGroup!;
@@ -599,7 +625,7 @@ export function LayeredRelationshipGraph({
         {wheelHint && <p className="uix-relationship-graph__toast" role="status">{labels.navigationHint(modifier)}</p>}
         {/* One row along the map's bottom edge: the hint takes only the room the controls
             leave, so the three never overlap at any map width (TENSOR HAR-2512). */}
-        <div className="uix-relationship-graph__footer">
+        <div ref={footerRef} className="uix-relationship-graph__footer">
           <p className="uix-relationship-graph__hint" aria-hidden="true">{labels.navigationHint(modifier)}</p>
           <div className="uix-relationship-graph__controls" role="group" aria-label={labels.controls}>
             <span className="uix-relationship-graph__zoom-level" aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
