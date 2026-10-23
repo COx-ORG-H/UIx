@@ -5,6 +5,7 @@
 <!-- lesson-skip: 9006caa routine: HAR-1828 named the subtree-wide accessible name; pinned by a test -->
 <!-- lesson-skip: df9a5e6 routine CSS wrap fix; HAR-1754 named the cause, reflow specs cover it -->
 <!-- lesson-skip: 8fe7118 routine review fixes (Tree indent, keyboard underline, passive effect); each found by looking at screenshots -->
+<!-- lesson-skip: b4f426d routine review fixes (overflow-wrap anywhere, Escape on a React handler after inner controls, IME guard, focus return, reserved message height); each named by the reviewer and pinned by a test -->
 <!-- lesson-skip: 4e3b663 same family as the 2026-10-16 lesson (state that trails a queued event); the field now asks :popover-open; pinned by a deferred-toggle jsdom test -->
 
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
