@@ -31,7 +31,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Alert | alert.css | ✓ `Alert` | Stable | no | Feedback banner; `AlertTone`. |
 | AppShell | app-shell.css | ✓ `AppShell` | Stable | no | `nav` full/rail/hidden tiers, `focus` mode, `mainBleed`. |
 | Attachment | attachment.css | absent | Planned | no | Planned wrapper (presentational). |
-| AuditLog | audit-log.css | absent | Planned | no | Planned wrapper (presentational). |
+| AuditLog | audit-log.css | ✓ `AuditLog` | Beta | no | HAR-987 (MEDx S50, POSx PRT-01): entries (actor, labelled action + target, relative + exact time, Details), period / person / action filters over `FilterEditor`, keyset "Show older entries", reload in a `BusyRegion`, first-load / empty / filtered-empty / error / forbidden states. |
 | Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. 2.36.0 (HAR-1374): `presence` (`online`, `busy`, `away`, `offline`: a shape and a colour, the state in text), `PresenceDot`; the dot is no longer clipped by the avatar. |
 | BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
 | Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. HAR-1385: `renderLink` renders the links with the app's router (the shared `UixRenderLink` adapter); a long unbroken title wraps. |

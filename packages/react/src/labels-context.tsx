@@ -24,6 +24,7 @@ import type { SortableListLabels } from './components/SortableList.js';
 import type { DiffViewerLabels } from './components/DiffViewer.js';
 import type { MatchReviewLabels } from './components/MatchReview.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
+import type { AuditLogLabels } from './components/AuditLog.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -74,6 +75,8 @@ export interface UixLabels {
   diffViewer?: Partial<DiffViewerLabels>;
   /** `MatchReview` (HAR-1369): the decision table, bulk actions and the adopt mode. */
   matchReview?: Partial<MatchReviewLabels>;
+  /** `AuditLog` (HAR-987): the filters, Details, Show older entries, and every state. */
+  auditLog?: Partial<AuditLogLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;

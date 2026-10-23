@@ -34,6 +34,13 @@ test('every state named in a caption is on the page', () => {
   assert.deepEqual([...nav.matchAll(/class="uix-cmdk__group"[^>]*>([^<]+)</g)].map((m) => m[1]), ['Pages', 'Actions']);
   assert.match(nav, /aria-activedescendant="(dex-[^"]+)"[\s\S]*id="\1" role="option" class="uix-cmdk__item" data-active="true"/);
   assert.match(nav, /<mark class="uix-cmdk__mark">Re<\/mark>ports/);
+  // audit log: the filter bar with one set filter, three entries, a Details disclosure, older entries
+  const crm = specimens['examples-crm-itsm'];
+  assert.match(crm, /data-audit-log-example[\s\S]*<section class="uix-audit-log" aria-label="Access history">/);
+  assert.equal((crm.match(/class="uix-audit__row uix-audit-log__row"/g) ?? []).length, 3);
+  assert.match(crm, /What: Opened, Changed/);
+  assert.match(crm, /<summary>Details<\/summary>/);
+  assert.match(crm, />Show older entries</);
   // diff viewer for people and match review adopt mode
   const diff = specimens['examples-diff-viewer'];
   assert.match(diff, /<span class="uix-diff-viewer__name">Authors<\/span>/);

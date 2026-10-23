@@ -154,7 +154,7 @@ export const REACT_COMPONENT_SLUGS = [
   'save-status', 'busy-region', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
   'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart',
   // the data, editing and navigation batch (HAR-1375, HAR-1826)
-  'sortable-list', 'lightbox',
+  'sortable-list', 'lightbox', 'audit-log',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

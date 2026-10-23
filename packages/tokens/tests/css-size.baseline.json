@@ -32,9 +32,9 @@
       "brotli": 524
     },
     "styles/components/audit-log.css": {
-      "raw": 995,
-      "gzip": 412,
-      "brotli": 328
+      "raw": 3028,
+      "gzip": 1028,
+      "brotli": 842
     },
     "styles/components/avatar.css": {
       "raw": 4221,

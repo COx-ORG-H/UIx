@@ -42,6 +42,28 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── AuditLog (HAR-987): filters, entries with a labelled action, Details, older entries ─────
+  ({ ui, mount, html }) => {
+    const log = mount(h(ui.AuditLog, {
+      now: new Date('2026-10-22T12:00:00Z'), locale: 'en-GB',
+      formatExact: (d) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
+      actions: { viewed: { label: 'Opened', tone: 'info' }, edited: { label: 'Changed', tone: 'warning' }, exported: { label: 'Exported', tone: 'danger' } },
+      actors: [{ value: 'u1', label: 'Dr. Amra Kovač' }, { value: 'u2', label: 'Nurse Lejla Hadžić' }],
+      filters: { action: { kind: 'enum', values: ['viewed', 'edited'] } }, onFiltersChange() {},
+      events: [
+        { id: 'e1', actor: 'Dr. Amra Kovač', action: 'viewed', target: 'Patient record 1042', at: '2026-10-22T11:30:00Z' },
+        { id: 'e2', actor: 'Nurse Lejla Hadžić', action: 'edited', target: 'Allergies', at: '2026-10-22T09:05:00Z', detail: 'Fields: allergies. Reason: follow-up visit.' },
+        { id: 'e3', actor: 'Dr. Amra Kovač', action: 'viewed', target: 'Lab result 2026-10-14', at: '2026-10-21T16:40:00Z' },
+      ],
+      hasMore: true, onLoadMore() {},
+    }));
+    return {
+      'examples-crm-itsm': [
+        caption('Audit log (React <code>AuditLog</code>, <code>.uix-audit</code>, HAR-987) — who opened or changed what and when: a labelled action and its target, the relative time with the exact one under it, Details, filters by period, person and action, and Show older entries; a reload keeps the rows'),
+        `<div data-audit-log-example style="max-width:48rem">${html(log)}</div>`,
+      ].join('\n'),
+    };
+  },
   // ── DiffViewer for people and MatchReview adopt mode (HAR-1369) ─────────────────────────────
   ({ ui, mount, html }) => {
     const names = { '$.title': 'Title', '$.authors': 'Authors', '$.year': 'Year of first edition' };

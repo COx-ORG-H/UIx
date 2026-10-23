@@ -437,6 +437,9 @@ export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipG
 export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel } from './relationship-graph-model.js';
 export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey } from './relationship-graph-model.js';
 
+// Who opened or changed what, and when (HAR-987; MEDx S50, POSx PRT-01)
+export { AuditLog, DEFAULT_AUDIT_LOG_LABELS } from './components/AuditLog.js';
+export type { AuditLogProps, AuditLogEvent, AuditLogAction, AuditLogFilters, AuditLogLabels } from './components/AuditLog.js';
 export { DEFAULT_MATCH_REVIEW_LABELS, MatchReview } from './components/MatchReview.js';
 export type { MatchReviewLabels, MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
 

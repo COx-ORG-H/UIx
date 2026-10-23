@@ -190,6 +190,108 @@ export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, '
 }
 
 // @public
+export function AuditLog(input: AuditLogProps): react.JSX.Element;
+
+// @public
+export interface AuditLogAction {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    tone?: StatusPillProps['tone'];
+}
+
+// @public
+export interface AuditLogEvent {
+    action: string;
+    actor: ReactNode;
+    at: Date | number | string;
+    detail?: ReactNode;
+    // (undocumented)
+    id: string;
+    target?: ReactNode;
+}
+
+// @public
+export interface AuditLogFilters {
+    // (undocumented)
+    action?: Extract<FilterValue, {
+        kind: 'enum';
+    }>;
+    // (undocumented)
+    actor?: Extract<FilterValue, {
+        kind: 'enum';
+    }>;
+    // (undocumented)
+    when?: Extract<FilterValue, {
+        kind: 'date-range';
+    }>;
+}
+
+// @public (undocumented)
+export interface AuditLogLabels {
+    // (undocumented)
+    action: string;
+    // (undocumented)
+    actor: string;
+    // (undocumented)
+    clearFilters: string;
+    // (undocumented)
+    details: string;
+    // (undocumented)
+    empty: string;
+    // (undocumented)
+    emptyDetail: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    filteredEmpty: string;
+    // (undocumented)
+    filteredEmptyDetail: string;
+    filters: string;
+    // (undocumented)
+    forbidden: string;
+    // (undocumented)
+    forbiddenDetail: string;
+    list: string;
+    loaded: string;
+    // (undocumented)
+    loading: string;
+    loadingMore: string;
+    // (undocumented)
+    loadMore: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    when: string;
+}
+
+// @public (undocumented)
+export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actions: Readonly<Record<string, AuditLogAction>>;
+    actors?: readonly FilterChoice[];
+    // (undocumented)
+    events: readonly AuditLogEvent[];
+    filters?: AuditLogFilters;
+    formatDate?: (date: string) => string;
+    formatExact?: (date: Date) => string;
+    hasMore?: boolean;
+    // (undocumented)
+    labels?: Partial<AuditLogLabels>;
+    // (undocumented)
+    loadingMore?: boolean;
+    locale?: string | readonly string[];
+    now?: Date | number;
+    // (undocumented)
+    onFiltersChange?: (filters: AuditLogFilters) => void;
+    // (undocumented)
+    onLoadMore?: () => void;
+    // (undocumented)
+    onRetry?: () => void;
+    refreshing?: boolean;
+    status?: 'ready' | 'loading' | 'error' | 'forbidden';
+}
+
+// @public
 export function Avatar(input: AvatarProps): react.JSX.Element;
 
 // @public
@@ -1391,6 +1493,9 @@ export interface DaySpanLayout {
 
 // @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
+
+// @public (undocumented)
+export const DEFAULT_AUDIT_LOG_LABELS: AuditLogLabels;
 
 // @public (undocumented)
 export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
@@ -6568,6 +6673,7 @@ export interface UixLabels {
     };
     // (undocumented)
     attachment?: Partial<AttachmentLabels>;
+    auditLog?: Partial<AuditLogLabels>;
     bulkBar?: {
         region?: string;
     };

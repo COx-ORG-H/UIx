@@ -8,4 +8,26 @@
   .uix-audit__detail ins { background: var(--uix-success-bg); color: var(--uix-success); text-decoration: none; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
   .uix-audit__detail del { background: var(--uix-danger-bg); color: var(--uix-danger-text); text-decoration: line-through; padding: 0 var(--uix-space-1); border-radius: var(--uix-radius-xs); }
   .uix-audit__time { color: var(--uix-text-muted); white-space: nowrap; }
+
+  /* React `AuditLog` (HAR-987): filters over a list of entries; a row is who · what (a labelled
+     action and its target) · when (relative, the exact time under it), with Details below. */
+  .uix-audit-log { display: grid; gap: var(--uix-space-3); min-width: 0; }
+  .uix-audit-log__filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); }
+  /* a reload keeps the rows on show: BusyRegion dims them under its bar (HAR-2582) */
+  ol.uix-audit-log__list { margin: 0; padding: 0; list-style: none; }
+  .uix-audit-log__row { align-items: start; }
+  .uix-audit-log__what { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-2); min-width: 0; color: var(--uix-text); }
+  .uix-audit-log__target { min-width: 0; overflow-wrap: anywhere; }
+  .uix-audit-log__when { display: grid; justify-items: end; gap: calc(var(--uix-space-1) / 2); text-align: end; }
+  .uix-audit-log__exact { font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
+  .uix-audit-log__more { grid-column: 1 / -1; }
+  .uix-audit-log__more summary { width: max-content; cursor: pointer; color: var(--uix-link); font-weight: 500; }
+  .uix-audit-log__more summary:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
+  .uix-audit-log__detail { margin-top: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); color: var(--uix-text-hushed); overflow-wrap: anywhere; }
+  .uix-audit-log__more-row { display: flex; justify-content: center; }
+  /* a phone: who, then what, then when, one under the other */
+  @media (max-width: 30rem) {
+    .uix-audit-log__row { grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-1); }
+    .uix-audit-log__when { justify-items: start; text-align: start; grid-auto-flow: column; justify-content: start; gap: var(--uix-space-2); }
+  }
 }

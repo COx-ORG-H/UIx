@@ -82,7 +82,7 @@ export const COMPONENT_GUIDANCE = {
   composer: ['Draft a comment or message.', 'An editing area with composition actions; submission and persistence belong to the app.'],
   'contact-card': ['Summarize a person and their key contact actions.', 'Identity, role, relevant metrics and contact affordances in one compact surface.'],
   attachment: ['List files already associated with a record.', 'File identity, size and file actions; use File upload to select new files.'],
-  'audit-log': ['Inspect who changed a record and when.', 'Chronological actor/action/time rows; the application supplies authoritative audit events.'],
+  'audit-log': ['Inspect who opened or changed a record and when.', 'Chronological rows of who, a labelled action and its target, and when (relative, with the exact time); Details behind a disclosure; filters by period, person and action; older entries on request; a reload keeps the rows on show. The application supplies authoritative audit events, free of health data.'],
   'notification-center': ['Review recent notifications and their destinations.', 'A notification list with read state and context; the app owns unread counts and persistence.'],
   pipeline: ['Show an item’s progression through operational stages.', 'An ordered stage rail with current state and optional duration or detail.'],
   sla: ['Show remaining time or service-level risk.', 'A labeled time/status indicator; the app computes deadlines and breach status.'],
