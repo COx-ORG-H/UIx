@@ -71,11 +71,12 @@ test('a double booking is two items: one tab stop, one current, both reachable',
   unmount();
 });
 
-test('a free slot shows "+ time" to the eye only; a booking is the time grid entry chip', () => {
+test('a free slot shows a plus and its time to the eye only; a booking is the time grid entry chip', () => {
   const { host, unmount } = mount({ resourceSpans: doubleBooked });
   const free = host.querySelector('[data-kind="free"]');
   const add = free.querySelector('.uix-scheduling-calendar__rs-add');
-  assert.equal(add.textContent, '+ 08:30');
+  assert.equal(add.textContent, '08:30');
+  assert.ok(add.querySelector('svg'), 'the plus is an icon of the set, not a typed glyph');
   assert.equal(add.getAttribute('aria-hidden'), 'true');
   assert.match(free.getAttribute('aria-label'), /08:30/);
   const booking = host.querySelector('[data-kind="booked"]');

@@ -13,6 +13,7 @@ import { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { zonedTimeOfDay } from '../calendar-model.js';
 import { fillLabel } from '../fill-label.js';
+import { PlusIcon } from '../icons/components.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { layoutResourceColumn, resourceDayGaps, resourceDaySlots } from '../scheduling-resource-model.js';
 import type { ResourceDayItem, ResourceDaySlot, SchedulingAvailabilityKind, SchedulingResource, SchedulingResourceSpan } from '../scheduling-resource-model.js';
@@ -125,7 +126,7 @@ const Column = memo(function Column({ index, resource, items, slots, timeZone, l
       if (item.kind === 'free') {
         return <button key={item.key} type="button" {...shared} {...interactive} className="uix-scheduling-calendar__rs-item"
           style={vars({ '--uix-scheduling-calendar-rs-offset': item.offset, '--uix-scheduling-calendar-rs-length': item.length })}>
-          <span className="uix-scheduling-calendar__rs-add" aria-hidden="true">+ {time}</span>
+          <span className="uix-scheduling-calendar__rs-add" aria-hidden="true"><PlusIcon />{time}</span>
         </button>;
       }
       // A booking is an entry of the time grid: the same chip, the same lanes.
