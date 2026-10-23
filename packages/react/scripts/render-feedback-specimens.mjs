@@ -133,6 +133,17 @@ export async function renderFeedbackSpecimens() {
       `<div class="uix-card" style="max-width:40rem" data-feedback-success>${successState.host.innerHTML}</div>`,
     ].join('\n');
 
+    // ── Drag affordances (HAR-2590) ──────────────────────────────────────────────────────
+    const board = await mount(h(ui.Kanban, { 'aria-label': 'Board' },
+      h(ui.KanbanColumn, { title: 'To do', count: 2 },
+        h(ui.KanbanCard, { title: 'INC-0412 Email outage', dragging: true }), h(ui.KanbanCard, { title: 'INC-0413 VPN drops' })),
+      h(ui.KanbanColumn, { title: 'Doing', count: 2, dropTarget: true },
+        h(ui.KanbanCard, { title: 'INC-0415 Printer jammed' }), h(ui.KanbanDropLine), h(ui.KanbanCard, { title: 'INC-0418 Payroll export' }))));
+    const drag = [
+      caption('Drag (<code>drag.css</code>; React <code>KanbanCard dragging</code>, <code>KanbanColumn dropTarget</code>, <code>KanbanDropLine</code>, <code>settleDrop</code>, <code>useKeyboardGrab</code>) — the dragged card lifts, the column it would land in is tinted and outlined, a line marks the gap, and the card settles when dropped. From the keyboard Space picks an item up (a dashed ring, no motion), the arrows move it and each step is said. SortableList and DashboardCanvas use the same lift and settle.'),
+      `<div data-feedback-drag style="max-width:40rem">${board.host.innerHTML}</div>`,
+    ].join('\n');
+
     // ── Live demo (feedback-demos.js drives it) ──────────────────────────────────────────
     const demo = [
       caption('Try it — the same classes and timings, driven by a pretend server'),
@@ -148,7 +159,7 @@ export async function renderFeedbackSpecimens() {
       '</div>',
     ].join('\n');
 
-    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, lists, demo].join('\n') };
+    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, lists, drag, demo].join('\n') };
   } finally {
     for (const { root, host } of roots) { await act(async () => root.unmount()); host.remove(); }
     dom.window.close();

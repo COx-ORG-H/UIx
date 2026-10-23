@@ -13,7 +13,7 @@ const out = process.argv[2];
 // without a base URL, serve the repo root on a free port for this run
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const server = process.argv[3] ? null : createServer((req, res) => handler(req, res, { public: root }));
-if (server) await new Promise((r) => server.listen(0, r));
+if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = process.argv[3] ?? `http://localhost:${server.address().port}`;
 const page_ = process.env.FRAMES_PAGE ?? `/tests/feedback-kit/harness.html${process.env.FRAMES_QUERY ? `?${process.env.FRAMES_QUERY}` : ''}`;
 const suffix = process.env.FRAMES_QUERY ? `-${process.env.FRAMES_QUERY.replace(/[^a-z0-9]+/gi, '_')}` : '';
@@ -126,6 +126,26 @@ const SCENARIOS = {
     const success = page.locator('#success');
     for (const [ms, label] of [[0, '0'], [300, '1'], [400, '2'], [500, '3'], [800, '4']]) { await wait(ms); await shot(success, `success-slow-${label}`); }
     await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 });
+  },
+  async drag(page, shot) {
+    const board = page.getByTestId('board');
+    await board.scrollIntoViewIfNeeded();
+    const card = board.locator('[data-card="c1"]');
+    const box = await card.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await wait(200); await shot(board, '1-lifted');
+    const target = board.locator('[data-col="doing"]');
+    const t = await target.boundingBox();
+    await page.mouse.move(Math.min(t.x + t.width / 2, page.viewportSize().width - 4), t.y + t.height - 30, { steps: 5 });
+    await wait(200); await shot(board, '2-over-target');
+    await page.mouse.up();
+    await wait(60); await shot(board, '3-settling');
+    await wait(400); await shot(board, '4-landed');
+    const grab = page.getByTestId('grab-0');
+    await grab.focus(); await page.keyboard.press('Space');
+    await shot(page.getByTestId('grab-list'), '5-keyboard-grabbed');
+    await page.keyboard.press('Escape');
   },
   async savestatus(page, shot) {
     const section = page.locator('#save-status');

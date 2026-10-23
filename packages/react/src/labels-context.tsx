@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { KeyboardGrabLabels } from './hooks/useKeyboardGrab.js';
 import type { LightboxLabels } from './components/Lightbox.js';
 import type { SortableListLabels } from './components/SortableList.js';
 import type { DiffViewerLabels } from './components/DiffViewer.js';
@@ -93,6 +94,8 @@ export interface UixLabels {
   inlineEdit?: Partial<InlineEditLabels>;
   /** `SortableList` (HAR-1375): the grip, Move up / Move down, the move announcement. */
   sortableList?: Partial<SortableListLabels>;
+  /** `useKeyboardGrab` (HAR-2590): picked up, dropped, cancelled; `{label}`. */
+  keyboardGrab?: Partial<KeyboardGrabLabels>;
   /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
   confirmDialog?: { typeToConfirm?: string; compensation?: string; typeToConfirmMismatch?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;

@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { settleDrop } from '../hooks/useKeyboardGrab.js';
 import { fillLabel } from '../fill-label.js';
 import { GripVerticalIcon, Maximize2Icon } from '../icons/components.js';
 import {
@@ -164,6 +165,23 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
 
   useEffect(() => () => dragRef.current?.stop(), []);
 
+  // A widget dropped by the pointer settles where it lands, once the new layout is on screen
+  // (HAR-2590). Keyboard steps stay instant.
+  // Only once the consumer's layout puts the widget where it was dropped; a layout that never
+  // arrives (no onLayoutChange, a refused move) gets no landing.
+  const settle = useRef<{ id: string; col: number; row: number; layout: unknown } | null>(null);
+  useEffect(() => {
+    const pending = settle.current;
+    if (!pending || preview) return;
+    const item = layout.find((entry) => entry.id === pending.id);
+    if (!item || item.col !== pending.col || item.row !== pending.row) {
+      if (layout !== pending.layout) settle.current = null;
+      return;
+    }
+    settle.current = null;
+    settleDrop(Array.from(gridRef.current?.children ?? []).find((el) => (el as HTMLElement).dataset.canvasId === pending.id) as HTMLElement | undefined);
+  });
+
   const describe = (item: T, kind: 'move' | 'resize'): string =>
     kind === 'move'
       ? fillLabel(labels.moved, { label: itemLabel(item), col: item.col + 1, row: item.row + 1 })
@@ -174,6 +192,8 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
     const next = placeCanvasItem(state.layout, id, placement);
     const placed = next.find((item) => item.id === id);
     if (!placed) return;
+    // a pointer move lands; a resize never lifted, so it does not
+    if (source === 'pointer' && kind === 'move') settle.current = { id, col: placed.col, row: placed.row, layout: state.layout };
     state.onLayoutChange?.(next, { id, kind, source });
     setAnnouncement(describe(placed, kind));
   };

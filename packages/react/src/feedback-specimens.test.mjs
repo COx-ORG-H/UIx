@@ -48,6 +48,10 @@ test('every state named in a caption is on the page', () => {
   assert.match(motion, /role="tabpanel"/, 'tabs without panels point aria-controls at nothing');
   assert.match(motion, /<h3 class="uix-empty__title uix-success__title" tabindex="-1">Request submitted<\/h3>/);
   assert.equal((motion.match(/<ol class="uix-success__steps"><li>/g) ?? []).length, 1);
+  // drag: a lifted card, a drop-target column, a drop line
+  assert.match(motion, /class="uix-kanban__card" data-uix-drag="lifted"/);
+  assert.match(motion, /data-uix-drop-target="true"/);
+  assert.match(motion, /<div class="uix-drop-line" aria-hidden="true"><\/div>/);
   // the live demo's target and its announcer
   assert.match(motion, /<button data-feedback-target class="uix-btn uix-btn--primary">/);
   assert.match(motion, /data-feedback-announce/);

@@ -16,13 +16,14 @@
  *   Review options: ?tint=attention swaps the highlight tint, ?length=long uses --uix-dur-highlight.
  *   - #dialog: a Save with `result` inside a Modal (its announcement must reach into the modal),
  *     and an icon-only button with `result` (the mark alone, inside its square). */
-import { StrictMode, useRef, useState } from 'react';
+import { StrictMode, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  BusyRegion, Button, ChangeHighlight, CollapsibleSection, Count, LoadingState, Modal, MotionList, SaveStatus, Segmented,
-  SegmentedOption, Spinner, Stat, StarButton, StatusPill, SuccessState, Tab, TabPanel, Table, TableWrap, Tabs, Td, Th, Tr,
-  useDeferredReorder, useOptimisticValue,
+  BusyRegion, Button, ChangeHighlight, CollapsibleSection, Count, Kanban, KanbanCard, KanbanColumn, KanbanDropLine,
+  LoadingState, Modal, MotionList, SaveStatus, Segmented, SegmentedOption, SortableList, Spinner, StarButton, Stat,
+  StatusPill, SuccessState, Tab, Table, TableWrap, TabPanel, Tabs, Td, Th, Tr, settleDrop, useDeferredReorder,
+  useKeyboardGrab, useOptimisticValue,
 } from '../../packages/react/src/index.js';
 import type { ButtonResult, SaveStatusState } from '../../packages/react/src/index.js';
 
@@ -313,6 +314,101 @@ function SuccessSection() {
   );
 }
 
+type Card = { id: string; title: string };
+const BOARD: Record<string, Card[]> = {
+  todo: [{ id: 'c1', title: 'INC-0412 Email outage' }, { id: 'c2', title: 'INC-0413 VPN drops' }],
+  doing: [{ id: 'c3', title: 'INC-0415 Printer jammed' }, { id: 'c4', title: 'INC-0418 Payroll export' }],
+};
+
+function DragSection() {
+  // SortableList: the kit's own pointer drag (lift, settle)
+  const [rows, setRows] = useState(['Email outage', 'VPN drops', 'Printer jammed', 'Payroll export']);
+  // Kanban: a small pointer drag of the harness's own, wired to the kit's affordances
+  const [board, setBoard] = useState(BOARD);
+  const [drag, setDrag] = useState<{ id: string; col: string | null; index: number } | null>(null);
+  const [landed, setLanded] = useState<string | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!landed) return;
+    settleDrop(boardRef.current?.querySelector<HTMLElement>(`[data-card="${landed}"]`));
+    setLanded(null);
+  }, [landed]);
+  useEffect(() => {
+    if (!drag) return undefined;
+    const move = (event: PointerEvent) => {
+      const col = (document.elementFromPoint(event.clientX, event.clientY) as Element | null)?.closest<HTMLElement>('[data-col]');
+      if (!col) { setDrag((d) => d && { ...d, col: null }); return; }
+      const cards = Array.from(col.querySelectorAll<HTMLElement>('[data-card]')).filter((c) => c.dataset.card !== drag.id);
+      const index = cards.filter((c) => { const r = c.getBoundingClientRect(); return event.clientY > r.top + r.height / 2; }).length;
+      setDrag((d) => d && { ...d, col: col.dataset.col ?? null, index });
+    };
+    const up = () => {
+      setDrag((d) => {
+        if (d?.col) {
+          setBoard((b) => {
+            const card = Object.values(b).flat().find((c) => c.id === d.id)!;
+            const next = Object.fromEntries(Object.entries(b).map(([k, v]) => [k, v.filter((c) => c.id !== d.id)]));
+            next[d.col!].splice(d.index, 0, card);
+            return next;
+          });
+          setLanded(d.id);
+        }
+        return null;
+      });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    return () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+  }, [drag?.id]);
+  // the keyboard path for a list the product builds itself
+  const [order, setOrder] = useState(['P1 Critical', 'P2 High', 'P3 Medium']);
+  return (
+    <section id="drag" aria-labelledby="drag-h">
+      <h2 id="drag-h">Drag affordances</h2>
+      <SortableList items={rows} getId={(r) => r} getLabel={(r) => r} renderItem={(r) => r} onReorder={setRows} aria-label="Queue order" data-testid="sortable" />
+      <div ref={boardRef} style={{ minWidth: 0 }}>
+        <Kanban data-testid="board">
+          {Object.entries(board).map(([col, cards]) => (
+            <KanbanColumn key={col} title={col === 'todo' ? 'To do' : 'Doing'} count={cards.length} data-col={col} dropTarget={drag?.col === col}>
+              {(() => {
+                // the dragged card stays where it was, lifted; the line shows where it would land
+                const out: ReactNode[] = [];
+                let n = 0;
+                for (const card of cards) {
+                  const dragged = drag?.id === card.id;
+                  if (!dragged && drag?.col === col && drag.index === n) out.push(<KanbanDropLine key="line" />);
+                  out.push(<KanbanCard key={card.id} data-card={card.id} title={card.title} dragging={dragged}
+                    onPointerDown={(e) => { if (e.button === 0) { e.preventDefault(); setDrag({ id: card.id, col: null, index: 0 }); } }} />);
+                  if (!dragged) n += 1;
+                }
+                if (drag?.col === col && drag.index >= n) out.push(<KanbanDropLine key="line" />);
+                return out;
+              })()}
+            </KanbanColumn>
+          ))}
+        </Kanban>
+      </div>
+      <ol className="uix-stack" aria-label="Priorities (keyboard: Space, arrows, Space)" data-testid="grab-list">
+        {order.map((label, i) => <GrabRow key={label} label={label} index={i} count={order.length} move={(d) => setOrder((o) => {
+          const n = [...o]; const j = Math.max(0, Math.min(o.length - 1, i + d)); n.splice(i, 1); n.splice(j, 0, label); return n;
+        })} />)}
+      </ol>
+    </section>
+  );
+}
+
+function GrabRow({ label, index, count, move }: { label: string; index: number; count: number; move: (delta: number) => void }) {
+  const start = useRef(index);
+  const grab = useKeyboardGrab({
+    id: label,
+    label,
+    onMove: (dir) => { if (dir === 'up' || dir === 'down') { move(dir === 'up' ? -1 : 1); return `Position ${Math.max(1, Math.min(count, index + 1 + (dir === 'up' ? -1 : 1)))} of ${count}`; } },
+    onCancel: () => move(start.current - index),
+  });
+  if (!grab.grabbed) start.current = index;
+  return <li className="uix-card" style={{ padding: 'var(--uix-space-2) var(--uix-space-3)' }} tabIndex={0} data-testid={`grab-${index}`} {...grab.itemProps}>{label}</li>;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LatencyPicker />
@@ -326,5 +422,6 @@ createRoot(document.getElementById('root')!).render(
     <ListSection />
     <TabsSection />
     <SuccessSection />
+    <DragSection />
   </StrictMode>,
 );

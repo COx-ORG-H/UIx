@@ -34,6 +34,8 @@ export { announcePolite } from './announce.js';
 export { useDeferredReorder } from './hooks/useDeferredReorder.js';
 export type { UseDeferredReorderResult } from './hooks/useDeferredReorder.js';
 export { useSlidingIndicator } from './hooks/useSlidingIndicator.js';
+export { useKeyboardGrab, settleDrop, DEFAULT_KEYBOARD_GRAB_LABELS } from './hooks/useKeyboardGrab.js';
+export type { KeyboardGrabDirection, KeyboardGrabLabels, UseKeyboardGrabOptions, UseKeyboardGrabResult } from './hooks/useKeyboardGrab.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';
@@ -396,8 +398,8 @@ export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette-
 export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';
 export type { InboxProps, InboxListProps, InboxItemProps, InboxDetailProps } from './components/Inbox.js';
 
-export { Kanban, KanbanColumn, KanbanCard } from './components/Kanban.js';
-export type { KanbanProps, KanbanColumnProps, KanbanCardProps, KanbanMoveDirection } from './components/Kanban.js';
+export { Kanban, KanbanColumn, KanbanCard, KanbanDropLine } from './components/Kanban.js';
+export type { KanbanProps, KanbanColumnProps, KanbanCardProps, KanbanMoveDirection, KanbanDropLineProps } from './components/Kanban.js';
 
 export { Tree, DEFAULT_TREE_LABELS } from './components/Tree.js';
 export type { TreeProps, TreeNodeData, TreeNodeProps, TreeLabels } from './components/Tree.js';

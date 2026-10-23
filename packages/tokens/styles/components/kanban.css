@@ -4,10 +4,19 @@
   .uix-kanban__col { flex: 0 0 260px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); display: flex; flex-direction: column; max-height: 460px; }
   .uix-kanban__head { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-3) var(--uix-space-4); font-weight: 600; font-size: var(--uix-text-meta); }
   .uix-kanban__count { margin-left: auto; color: var(--uix-text-muted); font-weight: 500; }
-  .uix-kanban__body { padding: 0 var(--uix-space-3) var(--uix-space-3); display: flex; flex-direction: column; gap: var(--uix-space-2); overflow-y: auto; }
+  /* a little room on top: the scrolling body would clip a lifted or picked-up card's edge */
+  .uix-kanban__body { padding: var(--uix-space-1) var(--uix-space-3) var(--uix-space-3); display: flex; flex-direction: column; gap: var(--uix-space-2); overflow-y: auto; }
   .uix-kanban__card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3); box-shadow: var(--uix-shadow-sm); cursor: grab; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   @media (hover: hover) and (pointer: fine) { .uix-kanban__card:hover { box-shadow: var(--uix-shadow-popover); transform: translateY(calc(-1 * var(--uix-lift))); } }
   .uix-kanban__card:active { cursor: grabbing; }
+  /* dragged (drag.css, HAR-2590): the lift wins over the hover rise while the pointer is on it */
+  .uix-kanban__card[data-uix-drag="lifted"] { transform: scale(1.02); box-shadow: var(--uix-shadow-popover); }
+  @media (prefers-reduced-motion: reduce) { .uix-kanban__card[data-uix-drag="lifted"] { transform: none; } }
   .uix-kanban__card-title { font-weight: 500; font-size: var(--uix-text-body); margin-bottom: var(--uix-space-2); }
   .uix-kanban__card-meta { display: flex; align-items: center; gap: var(--uix-space-2); }
+}
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same rule */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-kanban__card[data-uix-drag="lifted"] { transform: none; } }
 }
