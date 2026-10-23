@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
-import type { ButtonHTMLAttributes, FormEvent, ReactNode, RefObject } from 'react';
+import type { ButtonHTMLAttributes, FormEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react';
 import { cx } from '../cx.js';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
@@ -176,15 +176,19 @@ export const ConfirmDialog = forwardRef<HTMLDialogElement, ConfirmDialogProps>(f
             <label className="uix-field__label" htmlFor={typedId}>
               {typeof typeToConfirmLabel === 'string' ? fillLabel(typeToConfirmLabel, { value: typeToConfirm }) : typeToConfirmLabel}
             </label>
+            {/* A phone keyboard must not capitalise or correct the first letter into a mismatch. */}
             <Input
               ref={typedRef} id={typedId} value={typed} autoComplete="off" spellCheck={false}
+              autoCapitalize="none" autoCorrect="off"
               placeholder={typeToConfirmPlaceholder} invalid={typedWrong} disabled={pending}
               aria-describedby={typedWrong ? typedMsgId : undefined}
               onChange={(event) => setTyped(event.currentTarget.value)}
             />
-            {/* Space reserved like Field's, so the message appearing never moves the footer. */}
-            <div className="uix-field__msg" id={typedMsgId}>
-              {typedWrong && <span className="uix-field__error" role="alert">{fillLabel(mismatch, { value: typeToConfirm })}</span>}
+            {/* The message's own wrapped height is reserved by a hidden copy in the same grid cell,
+                so it appearing never moves the footer, also when it wraps (a long value, German). */}
+            <div className="uix-field__msg uix-confirm__typed-msg">
+              <span className="uix-field__error" aria-hidden="true">{fillLabel(mismatch, { value: typeToConfirm })}</span>
+              {typedWrong && <span id={typedMsgId} className="uix-field__error" role="alert">{fillLabel(mismatch, { value: typeToConfirm })}</span>}
             </div>
           </div>
         )}
@@ -249,6 +253,14 @@ export interface PopconfirmProps {
 const FIELD = 'input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), select:not(:disabled), [contenteditable="true"]';
 
 /**
+ * An Escape the step may take: not one something else already took, not one that ends an IME
+ * composition (it cancels the conversion, and must not also throw away the typed reason), and
+ * only when this step is the newest open one.
+ */
+const isOwnEscape = (event: KeyboardEvent, token: object) => event.key === 'Escape' && !event.defaultPrevented
+  && !event.isComposing && event.keyCode !== 229 && isTopLayer(token);
+
+/**
  * An anchored, single-step confirmation for low-risk actions (HAR-1356; TENSOR C2): a small
  * dialog on the kit `Popover`, focus on Cancel (or on a field in its content), Escape or a press
  * outside cancels, and focus returns to the anchor. Use `ConfirmDialog` when the action is hard to undo.
@@ -267,6 +279,14 @@ export function Popconfirm({
   const contentRef = useRef<HTMLDivElement>(null);
   const latest = useRef({ onCancel, onEscapeKeyDown });
   latest.current = { onCancel, onEscapeKeyDown };
+  /** This step's place in the overlay stack while it is open. */
+  const layer = useRef<object | null>(null);
+  /** A field in the content holds text: the step does not close itself when its anchor scrolls away. */
+  const [holdsInput, setHoldsInput] = useState(false);
+  const readContent = () => {
+    const fields = Array.from(contentRef.current?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input:not([type="hidden"]), textarea') ?? []);
+    setHoldsInput(fields.some((field) => field.value.trim() !== ''));
+  };
   const hasBody = description != null || compensation != null;
   const hasTitle = title != null;
   const nameBy = labelledBy ?? (hasTitle ? 'title' : 'confirm');
@@ -290,25 +310,17 @@ export function Popconfirm({
 
     // The newest open step answers Escape; one opened from inside another closes first.
     const token = {};
+    layer.current = token;
     const pop = pushLayer(token);
-    /** Escape is this step's unless a popup inside it, a dialog above it or a newer step takes it. */
-    const escape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || event.defaultPrevented || !isTopLayer(token)) return;
-      if (panel.querySelector('[aria-expanded="true"]')) return;
+    // Focus elsewhere (the step stays open when focus leaves it by Tab): take the Escape before
+    // anything else sees it, so a Drawer or Modal around the anchor neither closes nor asks. With
+    // focus in the step, `onKeyDown` below takes it, after the controls inside had their turn.
+    const onDocumentKey = (event: KeyboardEvent) => {
+      if (panel.contains(event.target as Node) || !isOwnEscape(event, token)) return;
+      if (panel.querySelector('[aria-expanded="true"][aria-haspopup]')) return;
       const dialog = (event.target as Element | null)?.closest?.('dialog');
       if (dialog && !dialog.contains(panel)) return;
-      latest.current.onEscapeKeyDown?.(event);
-      if (event.defaultPrevented) return;
-      event.preventDefault();
-      event.stopPropagation();
-      latest.current.onCancel();
-    };
-    // Focus in the step: on the step itself, after the controls inside had their turn (a Select
-    // closing its list cancels the event first). Focus elsewhere: before anything else sees it,
-    // so a Drawer or Modal around the anchor neither closes nor asks.
-    const onPanelKey = (event: KeyboardEvent) => escape(event);
-    const onDocumentKey = (event: KeyboardEvent) => {
-      if (!panel.contains(event.target as Node)) escape(event);
+      cancelOnEscape(event);
     };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
@@ -316,16 +328,27 @@ export function Popconfirm({
       if (!isTopLayer(token)) return;
       latest.current.onCancel();
     };
-    panel.addEventListener('keydown', onPanelKey);
     document.addEventListener('keydown', onDocumentKey, true);
     document.addEventListener('pointerdown', onPointer, true);
     return () => {
       pop();
-      panel.removeEventListener('keydown', onPanelKey);
+      layer.current = null;
       document.removeEventListener('keydown', onDocumentKey, true);
       document.removeEventListener('pointerdown', onPointer, true);
     };
   }, [open, anchor, panelId]);
+
+  /**
+   * Escape is the step's: `onEscapeKeyDown` first (its preventDefault keeps the step open), then
+   * cancel. Either way it goes no further, so a Drawer or Modal around the step does not see it.
+   */
+  const cancelOnEscape = (event: KeyboardEvent) => {
+    latest.current.onEscapeKeyDown?.(event);
+    event.stopPropagation();
+    if (event.defaultPrevented) return;
+    event.preventDefault();
+    latest.current.onCancel();
+  };
 
   const confirm = confirmButtonProps(confirmProps, {
     disabled: confirmDisabled,
@@ -342,8 +365,23 @@ export function Popconfirm({
       aria-labelledby={nameBy === 'title' && hasTitle ? `${id}-title` : confirmId}
       aria-describedby={hasBody ? `${id}-body` : undefined}
       className={cx('uix-popconfirm', children != null && 'uix-popconfirm--content')}
-      closeWhenAnchorHidden={closeWhenAnchorHidden}
-      onAnchorHidden={closeWhenAnchorHidden ? () => latest.current.onCancel() : undefined}
+      // A typed reason is never thrown away by a scroll: the step then stays until it is answered.
+      closeWhenAnchorHidden={closeWhenAnchorHidden && !holdsInput}
+      onAnchorHidden={closeWhenAnchorHidden ? () => {
+        // Focus that was in the step goes back to the anchor, without scrolling to it.
+        const panel = document.getElementById(panelId);
+        if (panel?.contains(document.activeElement)) resolveAnchor(anchor)?.focus({ preventScroll: true });
+        latest.current.onCancel();
+      } : undefined}
+      // A React handler, so it runs after the controls inside (a Select closing its list, a
+      // disclosure collapsing) and only when none of them took the Escape.
+      onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) => {
+        const token = layer.current;
+        if (!token || !isOwnEscape(event.nativeEvent, token)) return;
+        cancelOnEscape(event.nativeEvent);
+        event.stopPropagation();
+      }}
+      onInput={readContent}
     >
       {hasTitle && <div id={`${id}-title`} className="uix-popconfirm__title">{title}</div>}
       {hasBody && (

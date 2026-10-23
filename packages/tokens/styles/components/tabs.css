@@ -7,7 +7,7 @@
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
     color: var(--uix-text-hushed); padding: var(--uix-space-3) var(--uix-space-3); cursor: pointer; position: relative;
     /* long or translated labels wrap (two lines at the 16rem cap) instead of truncating */
-    white-space: normal; max-width: min(16rem, 100%); overflow-wrap: break-word; text-align: start;
+    white-space: normal; max-width: min(16rem, 100%); overflow-wrap: anywhere; text-align: start;
     transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   @media (hover: hover) { .uix-tab:hover { color: var(--uix-text); } }

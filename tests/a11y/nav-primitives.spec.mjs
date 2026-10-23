@@ -46,10 +46,14 @@ const rowsOf = (page, id) => page.locator(`#${id}`).evaluate((list) => {
 for (const width of [320, 390]) {
   test(`Tabs wrap: at ${width} px every variant wraps onto more rows and nothing sticks out`, async ({ page }, testInfo) => {
     await open(page, testInfo, width);
-    for (const id of ['tabs-line-240', 'tabs-line', 'tabs-enclosed', 'tabs-pill', 'tabs-unbroken']) {
+    for (const id of ['tabs-line-240', 'tabs-line', 'tabs-enclosed', 'tabs-pill', 'tabs-unbroken', 'tabs-pill-unbroken']) {
       const g = await rowsOf(page, id);
       expect(g.wrap, `${id} wraps`).toBe('wrap');
-      if (id !== 'tabs-unbroken') expect(g.rows, `${id} uses more than one row`).toBeGreaterThan(1);
+      if (!id.endsWith('unbroken')) expect(g.rows, `${id} uses more than one row`).toBeGreaterThan(1);
+      // An inline-flex pill row is as wide as its content's min-content: an unbroken word has to
+      // be breakable inside its tab (overflow-wrap: anywhere), or the row and the page widen.
+      const column = await page.locator(`#${id}`).evaluate((list) => list.closest('.col-240, .col-320').getBoundingClientRect().right);
+      expect(g.right, `${id} stays inside its column`).toBeLessThanOrEqual(column + 0.5);
       expect(g.scrollWidth, `${id} does not scroll sideways`).toBeLessThanOrEqual(g.clientWidth + 1);
       for (const tab of g.tabs) {
         expect(tab.width, `${id}: no tab is wider than its row`).toBeLessThanOrEqual(g.width + 0.5);
@@ -97,6 +101,26 @@ test('Tabs wrap: the selected tab keeps its cue on an upper row (line underline,
   expect(cue.underlineHeight).toBe('2px');
   expect(cue.enclosedBorder).toBe('1px');
   expect(cue.pillShadow).not.toBe('none');
+});
+
+test('Tabs in forced colors: a focused, selected pill shows its focus ring, not the selected outline', async ({ browser }, testInfo) => {
+  const context = await browser.newContext({ forcedColors: 'active', viewport: { width: 1280, height: 900 } });
+  const page = await context.newPage();
+  await page.addInitScript((t) => { try { localStorage.setItem('uix-theme', t); } catch { /* */ } }, testInfo.project.name);
+  await open(page, testInfo);
+  const tabs = page.locator('#tabs-pill [role="tab"]');
+  const outlineOf = (tab) => tab.evaluate((el) => getComputedStyle(el).outlineColor);
+  // The selected cue at rest: the SelectedItem outline.
+  const selected = page.locator('#tabs-pill [role="tab"][aria-selected="true"]');
+  const cue = await outlineOf(selected);
+  // Keyboard onto the selected pill: it is focused and selected at once.
+  await selected.focus();
+  await page.keyboard.press('ArrowRight');
+  const focused = page.locator('#tabs-pill [role="tab"][aria-selected="true"]');
+  await expect(focused).toBeFocused();
+  expect(await focused.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+  expect(await outlineOf(focused), 'the focus ring, which the selected outline used to replace').not.toBe(cue);
+  await context.close();
 });
 
 test('Tabs motion: the underline slides after a pointer choice, moves at once from the keyboard and with reduced motion', async ({ page }, testInfo) => {

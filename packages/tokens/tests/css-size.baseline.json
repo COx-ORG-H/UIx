@@ -272,9 +272,9 @@
       "brotli": 441
     },
     "styles/components/modal.css": {
-      "raw": 3993,
-      "gzip": 1287,
-      "brotli": 1049
+      "raw": 4273,
+      "gzip": 1392,
+      "brotli": 1136
     },
     "styles/components/notification-center.css": {
       "raw": 1254,

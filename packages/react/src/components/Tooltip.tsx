@@ -41,6 +41,9 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
  * (flip/shift), shown on hover and keyboard focus, dismissed on blur or Escape
  * (document-level, per WCAG 1.4.13), and hoverable: the bubble stays open while
  * the pointer is over it (UIX-A11Y-1).
+ *
+ * While the bubble is open it takes the first Escape (HAR-2415), also on a combobox-style trigger
+ * whose list is open (a Select, a date field): one Escape closes the bubble, the next one the list.
  */
 export function Tooltip({ label, content, placement = 'top', shortcut, className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);

@@ -147,13 +147,16 @@ test('Popconfirm: Escape cancels, unless a popup inside it is open; onEscapeKeyD
   assert.deepEqual(view.cancels, ['cancel']);
   view.unmount();
 
-  // A Select's list inside the step is open: its Escape, not the step's.
+  // A Select's list inside the step is open: its Escape (it cancels the event), not the step's.
   function WithSelect() {
     const anchor = useRef(null);
     return h('div', null,
       h('button', { type: 'button', ref: anchor }, 'Move'),
       h(ui.Popconfirm, { open: true, anchor, title: 'Move?', confirmLabel: 'Move', cancelLabel: 'Keep', onConfirm() {}, onCancel: () => cancels.push('cancel') },
-        h('button', { type: 'button', 'aria-expanded': 'true', 'aria-haspopup': 'listbox', id: 'team' }, 'Team')));
+        h('button', {
+          type: 'button', 'aria-expanded': 'true', 'aria-haspopup': 'listbox', id: 'team',
+          onKeyDown: (e) => { if (e.key === 'Escape') e.preventDefault(); },
+        }, 'Team')));
   }
   const cancels = [];
   const select = mount(h(WithSelect));
@@ -162,11 +165,42 @@ test('Popconfirm: Escape cancels, unless a popup inside it is open; onEscapeKeyD
   assert.deepEqual(cancels, [], 'an open popup inside the step takes Escape first');
   select.unmount();
 
+  // An IME user cancelling a conversion keeps the step and the typed reason.
+  const ime = mountPopconfirm();
+  act(() => { document.activeElement.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true, cancelable: true })); });
+  act(() => { document.activeElement.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', keyCode: 229, bubbles: true, cancelable: true })); });
+  assert.deepEqual(ime.cancels, [], 'an Escape that ends a composition is not the step\'s');
+  key(document.activeElement, 'Escape');
+  assert.deepEqual(ime.cancels, ['cancel']);
+  ime.unmount();
+
   const kept = mountPopconfirm({ onEscapeKeyDown: (e) => e.preventDefault() });
   key(document.activeElement, 'Escape');
   assert.deepEqual(kept.cancels, [], 'onEscapeKeyDown prevented it');
   assert.ok(kept.panel().hasAttribute('data-test-popover-open'));
   kept.unmount();
+});
+
+test('Popconfirm in a dirty Modal: Escape on an expanded disclosure inside the step cancels the step only', () => {
+  // The step's Escape ran on a native listener on the panel, before the React handlers inside it,
+  // and stepped aside for any [aria-expanded="true"] without cancelling: the Escape went on to the
+  // dialog, which asked "Discard changes?" (or closed, when clean).
+  const log = [];
+  function Form() {
+    const anchor = useRef(null);
+    const [step, setStep] = useState(true);
+    return h(ui.Modal, { open: true, dirty: true, onClose: () => log.push('close'), title: 'Edit' },
+      h('button', { type: 'button', ref: anchor }, 'Archive'),
+      h(ui.Popconfirm, { open: step, anchor, title: 'Archive?', confirmLabel: 'Archive', cancelLabel: 'Keep', onConfirm() {}, onCancel: () => { log.push('cancel'); setStep(false); } },
+        h('button', { type: 'button', 'aria-expanded': 'true', 'aria-controls': 'more', id: 'details' }, 'Details'),
+        h('div', { id: 'more' }, 'Two linked changes')));
+  }
+  const view = mount(h(Form));
+  const event = key(view.host.querySelector('#details'), 'Escape');
+  assert.deepEqual(log, ['cancel'], 'the step cancelled, the dialog heard nothing');
+  assert.equal(event.defaultPrevented, true, 'and the browser does not close the dialog either');
+  assert.equal(view.host.querySelector('[data-uix-discard-prompt][data-test-popover-open]'), null, 'no "Discard changes?" step');
+  view.unmount();
 });
 
 test('Popconfirm: only the newest open step answers Escape; a dialog opened above it closes first', () => {
@@ -250,6 +284,7 @@ test('ConfirmDialog: confirmProps on the confirm button; a node label; placehold
   }));
   const dialog = view.host.querySelector('dialog');
   const field = dialog.querySelector('input');
+  const phoneSafe = (el) => el.getAttribute('autocapitalize') === 'none' && el.getAttribute('autocorrect') === 'off' && el.getAttribute('spellcheck') === 'false';
   assert.equal(dialog.querySelector(`label[for="${field.id}"] code`).textContent, 'srv-ledger-01', 'a node label renders as given');
   assert.equal(field.placeholder, 'srv-ledger-01');
   const confirm = dialog.querySelector('[data-action-id="ci.delete"]');
@@ -258,12 +293,13 @@ test('ConfirmDialog: confirmProps on the confirm button; a node label; placehold
   assert.equal(confirm.disabled, true);
   typeInto(field, 'srv-led');
   assert.equal(field.hasAttribute('aria-invalid'), false, 'a correct start is not an error');
-  assert.equal(dialog.querySelector('.uix-field__error'), null);
+  assert.equal(dialog.querySelector('.uix-confirm__typed-msg [role="alert"]') === null, true, 'no message yet');
   typeInto(field, 'srv-lex');
   assert.equal(field.getAttribute('aria-invalid'), 'true', 'a wrong character is');
   const message = document.getElementById(field.getAttribute('aria-describedby'));
   assert.equal(message.textContent, 'That does not match srv-ledger-01.', 'and it says why');
-  assert.equal(message.querySelector('[role="alert"]').textContent, 'That does not match srv-ledger-01.');
+  assert.equal(message.getAttribute('role'), 'alert');
+  assert.ok(phoneSafe(field), 'a phone keyboard neither capitalises nor corrects it');
   typeInto(field, 'srv-ledger-01');
   assert.equal(field.hasAttribute('aria-invalid'), false);
   click(confirm);

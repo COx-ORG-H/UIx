@@ -80,14 +80,51 @@ test('Popconfirm in a dirty Drawer: Escape closes the Select list, then the step
   await expect(page.getByRole('alertdialog', { name: 'Discard changes?' })).toBeVisible();
 });
 
-test('Popconfirm closeWhenAnchorHidden: scrolling the anchor out of view cancels the step', async ({ page }) => {
+test('Popconfirm closeWhenAnchorHidden: scrolling the anchor out of view cancels the step; focus goes back to the anchor', async ({ page }) => {
   await page.locator('#unlink').click();
   const step = page.getByRole('dialog', { name: 'Verknüpfung lösen?' });
   await expect(step).toBeVisible();
   await settleOverlay(step);
+  await expect(page.locator('#unlink-note')).toBeFocused();
+  const pageScroll = await page.evaluate(() => window.scrollY);
   await page.locator('#scroll-box').evaluate((el) => { el.scrollTop = 400; });
   await expect(step).toBeHidden();
   await expect.poll(async () => (await log(page)).cancelled).toEqual(['unlink']);
+  await expect(page.locator('#unlink'), 'focus is back on the anchor, not on <body>').toBeFocused();
+  expect(await page.evaluate(() => window.scrollY), 'without scrolling the page to it').toBe(pageScroll);
+  expect(await page.locator('#scroll-box').evaluate((el) => el.scrollTop), 'or the box').toBe(400);
+});
+
+test('Popconfirm closeWhenAnchorHidden: a step holding a typed note stays open when its anchor scrolls away', async ({ page }) => {
+  await page.locator('#unlink').click();
+  const step = page.getByRole('dialog', { name: 'Verknüpfung lösen?' });
+  await settleOverlay(step);
+  await page.keyboard.type('CI wird ersetzt');
+  await page.locator('#scroll-box').evaluate((el) => { el.scrollTop = 400; });
+  await page.waitForTimeout(300);
+  await expect(step).toBeVisible();
+  await expect(page.locator('#unlink-note')).toHaveValue('CI wird ersetzt');
+  expect((await log(page)).cancelled).toEqual([]);
+});
+
+test('ConfirmDialog type-to-confirm at 320 px in German: a wrapping message does not move the footer', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 760 });
+  await page.locator('#open-typed-long').click();
+  const dialog = page.getByRole('alertdialog', { name: 'Gruppe löschen?' });
+  await expect(dialog).toBeVisible();
+  await settleOverlay(dialog);
+  const field = dialog.getByRole('textbox');
+  await expect(field).toHaveAttribute('autocapitalize', 'none');
+  await expect(field).toHaveAttribute('autocorrect', 'off');
+  await expect(field).toHaveAttribute('spellcheck', 'false');
+  const before = await dialog.locator('.uix-dialog__footer').boundingBox();
+  await page.keyboard.type('Netzwerkbetrieb-X');
+  await expect(field).toHaveAttribute('aria-invalid', 'true');
+  const message = dialog.locator('.uix-confirm__typed-msg [role="alert"]');
+  await expect(message).toBeVisible();
+  expect((await message.boundingBox()).height, 'the message wraps onto several lines here').toBeGreaterThan(30);
+  const after = await dialog.locator('.uix-dialog__footer').boundingBox();
+  expect(Math.abs(after.y - before.y), 'the footer stays put').toBeLessThan(1);
 });
 
 test('ConfirmDialog pending: Escape and × do nothing; the caller unmounting it gives focus back to the opener', async ({ page }) => {

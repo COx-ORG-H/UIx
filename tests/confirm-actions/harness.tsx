@@ -8,7 +8,9 @@
  *   #scroll    a Popconfirm whose anchor scrolls out of a 160 px box (closeWhenAnchorHidden)
  *   #pending   a ConfirmDialog the caller unmounts when the action settles (`{open && …}`):
  *              pending blocks Escape and ×; focus returns to the opener
- *   #typed     a ConfirmDialog with type-to-confirm, a node label and confirmProps
+ *   #typed     a ConfirmDialog with type-to-confirm, a node label and confirmProps; #typed-long the
+ *              same with a long German value, for the message that wraps at 320 px
+ *   #tabs-pill a pill Tabs row with one long unbroken word, in a 288 px column
  *   #undo      an undo toast with a fixed 1.5 s timer (pauseOnHover: false)
  */
 import { StrictMode, useRef, useState } from 'react';
@@ -75,6 +77,7 @@ function InDrawer() {
 function Scroll() {
   const anchor = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const [note, setNote] = useState('');
   return (
     <section id="scroll">
       <h2>Anker scrollt weg</h2>
@@ -84,8 +87,12 @@ function Scroll() {
       </div>
       <Popconfirm
         open={open} anchor={anchor} closeWhenAnchorHidden title="Verknüpfung lösen?" confirmLabel="Lösen" cancelLabel="Abbrechen"
-        onConfirm={() => setOpen(false)} onCancel={() => { count('cancelled', 'unlink'); setOpen(false); }}
-      />
+        onConfirm={() => setOpen(false)} onCancel={() => { count('cancelled', 'unlink'); setOpen(false); setNote(''); }}
+      >
+        <Field label="Notiz (optional)" htmlFor="unlink-note">
+          <Textarea id="unlink-note" rows={2} value={note} onChange={(e) => setNote(e.currentTarget.value)} />
+        </Field>
+      </Popconfirm>
     </section>
   );
 }
@@ -106,6 +113,23 @@ function Pending() {
           onCancel={() => { count('cancelled', 'delete'); setOpen(false); }}
         />
       )}
+    </section>
+  );
+}
+
+function TypedLong() {
+  const [open, setOpen] = useState(false);
+  return (
+    <section id="typed-long">
+      <h2>Langer Wert</h2>
+      <div><Button id="open-typed-long" variant="danger" onClick={() => setOpen(true)}>Gruppe löschen</Button></div>
+      <ConfirmDialog
+        open={open} title="Gruppe löschen?" confirmLabel="Löschen" cancelLabel="Abbrechen" destructive
+        typeToConfirm="Netzwerkbetrieb-Rechenzentrum-Frankfurt-Zweite-Ebene"
+        typeToConfirmLabel="Zum Bestätigen {value} eingeben"
+        typeToConfirmMismatch="Das stimmt nicht mit {value} überein. Bitte prüfen Sie Groß- und Kleinschreibung."
+        onConfirm={() => setOpen(false)} onCancel={() => setOpen(false)}
+      />
     </section>
   );
 }
@@ -156,6 +180,7 @@ function Harness() {
       <Scroll />
       <Pending />
       <Typed />
+      <TypedLong />
       <Undo />
     </>
   );

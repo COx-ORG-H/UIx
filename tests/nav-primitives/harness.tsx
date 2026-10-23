@@ -49,6 +49,7 @@ function TabCases() {
         <TabRow id="tabs-enclosed" variant="enclosed" initial="overview" />
         <TabRow id="tabs-pill" variant="pill" initial="reporting" />
         <TabRow id="tabs-unbroken" variant="line" initial="long" labels={[{ value: 'long', label: UNBROKEN }, { value: 'short', label: 'Kurz' }]} />
+        <TabRow id="tabs-pill-unbroken" variant="pill" initial="long" labels={[{ value: 'long', label: UNBROKEN }, { value: 'short', label: 'Kurz' }]} />
       </div>
       <div id="tabs-wide"><TabRow id="tabs-line-wide" variant="line" /></div>
       <form id="tab-form" onSubmit={(event) => { event.preventDefault(); window.__nav.submits += 1; }}>
