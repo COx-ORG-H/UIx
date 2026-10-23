@@ -63,7 +63,8 @@ const DEFAULT_LABELS: SelectLabels = {
 const fill = (template: string, count: number): string => template.replace('{count}', String(count));
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
-  size?: 'sm' | 'md';
+  /** `sm` 28 px, `md` 36 px (default), `lg` 44 px, the public touch-target size (HAR-1812). */
+  size?: 'sm' | 'md' | 'lg';
   /** The options as data, instead of `<option>` / `<optgroup>` children. */
   options?: readonly (SelectOption | SelectGroup)[];
   /**
@@ -226,7 +227,7 @@ type AsyncState = { status: 'idle' | 'loading' | 'ready' | 'error'; items: Selec
  * A select that draws its own list (HAR-1572): the WAI-ARIA APG select-only combobox — focus
  * stays on the trigger, `aria-activedescendant` marks the active option — in a top-layer popover
  * placed with `useAnchoredPosition`, or a bottom sheet on a phone. A visually hidden native
- * `<select>` carries `name`, `required`, `form`, `multiple` and the value, so `<option>` children,
+ * select element (the form proxy) carries `name`, `required`, `form`, `multiple` and the value, so `<option>` children,
  * `onChange(e)` with `e.target.value`, FormData, `form.reset()`, `ref` and react-hook-form keep
  * working; `ref` points at that select.
  */
@@ -821,7 +822,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         ref={triggerRef}
         type="button"
         role="combobox"
-        className={cx('uix-select', size === 'sm' && 'uix-select--sm', className)}
+        className={cx('uix-select', size !== 'md' && `uix-select--${size}`, className)}
         style={style}
         disabled={disabled}
         aria-label={ariaLabel}

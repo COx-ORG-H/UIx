@@ -21,10 +21,10 @@ const render = (props) => {
 };
 
 for (const [name, props, tag] of [
-  ['select', { type: 'select', options: [{ value: '', label: 'Any status' }, { value: 'open', label: 'Open' }] }, 'SELECT'],
-  ['enum', { type: 'enum', options: [{ value: 'a', label: 'A' }] }, 'SELECT'],
+  // the kit Select (HAR-1575): a <button role="combobox"> is the control the label names
+  ['select', { type: 'select', options: [{ value: '', label: 'Any status' }, { value: 'open', label: 'Open' }] }, 'BUTTON'],
+  ['enum', { type: 'enum', options: [{ value: 'a', label: 'A' }] }, 'BUTTON'],
   ['text', { type: 'text', placeholder: 'Contains…' }, 'INPUT'],
-  ['date', { type: 'date' }, 'INPUT'],
 ]) {
   test(`FilterPopover (${name}) labels its control through a .uix-field, never .uix-label`, () => {
     const root = render(props);
@@ -33,7 +33,8 @@ for (const [name, props, tag] of [
     assert.ok(field, 'the control sits in a .uix-field');
     const label = field.querySelector(':scope > label.uix-field__label');
     assert.equal(label?.textContent, 'Status');
-    const control = field.querySelector(':scope > :is(select, input)');
+    const control = field.querySelector(':scope > :is(button.uix-select, input)');
+    assert.equal(field.querySelector('select:not([data-uix-select-proxy])'), null, 'no native select');
     assert.equal(control?.tagName, tag);
     assert.ok(control.id, 'the control has an id');
     assert.equal(label.getAttribute('for'), control.id, 'label[for] is the control id');
@@ -50,4 +51,17 @@ test('two FilterPopovers on one page get distinct control ids', () => {
   const ids = [...doc.querySelectorAll('.uix-filter-popover input')].map((el) => el.id);
   assert.equal(new Set(ids).size, 2);
   for (const label of doc.querySelectorAll('.uix-field__label')) assert.ok(doc.getElementById(label.getAttribute('for')));
+});
+
+test('FilterPopover (date) renders the kit DatePicker, never a native date input (HAR-2432)', () => {
+  const root = render({ type: 'date', value: '2026-11-22' });
+  assert.equal(root.querySelector('input[type="date"]'), null);
+  const field = root.querySelector(':scope > .uix-field');
+  const label = field.querySelector(':scope > label.uix-field__label');
+  const input = field.querySelector(':scope > .uix-date-picker input.uix-date-picker__input');
+  assert.ok(input, 'a DatePicker text input');
+  assert.equal(label.getAttribute('for'), input.id);
+  assert.ok(field.querySelector('.uix-date-picker__toggle'), 'with its calendar button');
+  assert.notEqual(input.value, '', 'the YYYY-MM-DD value is shown formatted');
+  assert.equal(field.nextElementSibling?.className, 'uix-filter-popover__actions');
 });

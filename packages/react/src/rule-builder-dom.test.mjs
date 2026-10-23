@@ -23,7 +23,7 @@ let dom;
 let createRoot;
 let ui;
 
-const EXPOSED = ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT'];
+const EXPOSED = ['window', 'document', 'navigator', 'Event', 'IS_REACT_ACT_ENVIRONMENT'];
 const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
 
 before(async () => {
@@ -31,6 +31,7 @@ before(async () => {
   expose('window', dom.window);
   expose('document', dom.window.document);
   expose('navigator', dom.window.navigator);
+  expose('Event', dom.window.Event);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   ({ createRoot } = await import('react-dom/client'));
   ui = await import('../dist/index.js');
@@ -256,7 +257,12 @@ test('readOnly: the builder with every control disabled and no add, move or remo
   const controls = [...builder.querySelectorAll('select, input')];
   assert.equal(controls.length, 2 * 3 + 1 + 1, 'two conditions (field, operator, value), the all/any select, one action type');
   assert.ok(controls.every((c) => c.disabled), 'every control is disabled');
-  assert.equal(builder.querySelectorAll('button').length, 0, 'no add, move or remove button');
+  assert.equal(builder.querySelectorAll('button:not([role="combobox"])').length, 0, 'no add, move or remove button');
+  // the choices are kit Selects (HAR-1575): a disabled trigger each, the value on it, the proxy holds the form value
+  const triggers = [...builder.querySelectorAll('button[role="combobox"].uix-select')];
+  assert.equal(triggers.length, 6);
+  assert.ok(triggers.every((b) => b.disabled));
+  assert.deepEqual(triggers.map((b) => b.textContent), ['allen (UND)', 'Priorität', 'ist', 'Dienst', 'ist nicht', 'Benachrichtigen']);
   assert.deepEqual(controls.filter((c) => c.tagName === 'SELECT').map((s) => s.selectedOptions[0].textContent), ['allen (UND)', 'Priorität', 'ist', 'Dienst', 'ist nicht', 'Benachrichtigen']);
   assert.deepEqual(english(builder), []);
   assert.deepEqual(t.emitted, []);
@@ -281,4 +287,57 @@ test('readOnly="summary" keeps the sentence, and its words are labels', () => {
   assert.match(german, /aria-label="Regelübersicht"><p>Wenn Priorität ist &quot;P1&quot; UND Dienst ist nicht &quot;mail&quot;\.<\/p><\/section>$/, 'conditions only: no actions clause, no issue line');
   assert.match(render({ labels: GERMAN }, EMPTY), /<p>Wenn keine Bedingungen, dann keine Aktionen\.<\/p><p class="uix-rule-builder__invalid">Die Regel hat 2 Prüfhinweise\.<\/p>/);
   assert.match(render({ labels: GERMAN }, { ...TWO, when: { ...TWO.when, combinator: 'or' } }), / ODER /);
+});
+
+test('HAR-1575: no native select; every choice is a kit Select the keyboard drives (field, operator, all/any, action)', () => {
+  const t = mount({ actions: [...ACTIONS, { id: 'ticket', label: 'Ticket anlegen' }], labels: GERMAN }, { ...TWO, then: [{ id: 'a1', type: 'notify', parameters: {} }] });
+  const builder = t.host.querySelector('.uix-rule-builder');
+  assert.equal(builder.querySelectorAll('select:not([data-uix-select-proxy])').length, 0, 'no visible native select');
+  const key = (el, k) => act(() => { el.focus(); el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); });
+  const trigger = (name) => [...builder.querySelectorAll('button[role="combobox"]')].find((b) => b.closest('label')?.querySelector('.uix-visually-hidden')?.textContent === name || b.getAttribute('aria-label') === name);
+  // the first condition's field: open, move down, choose
+  const field = trigger('Feld');
+  key(field, 'ArrowDown');
+  assert.equal(field.getAttribute('aria-expanded'), 'true');
+  key(field, 'ArrowDown');
+  key(field, 'Enter');
+  assert.equal(t.emitted.at(-1).when.conditions[0].field, 'service');
+  // its operator
+  const operator = trigger('Vergleich');
+  key(operator, 'End');
+  key(operator, 'Enter');
+  assert.equal(t.emitted.at(-1).when.conditions[0].operator, 'ne');
+  // the all/any combinator (a wrapping label names it)
+  const combinator = builder.querySelector('.uix-rule-builder__group-heading button[role="combobox"]');
+  assert.ok(combinator.closest('label').textContent.startsWith('Treffer bei'));
+  key(combinator, 'ArrowDown');
+  key(combinator, 'End');
+  key(combinator, 'Enter');
+  assert.equal(t.emitted.at(-1).when.combinator, 'or');
+  // the action type
+  const action = trigger('Aktionstyp');
+  key(action, 'ArrowDown');
+  key(action, 'ArrowDown');
+  key(action, 'Enter');
+  assert.equal(t.emitted.at(-1).then[0].type, 'ticket');
+  assert.deepEqual(english(builder), []);
+  t.cleanup();
+});
+
+test('HAR-1575: BrandProfiles chooses a profile through a kit Select', () => {
+  const chosen = [];
+  const profiles = [{ id: 'tensor', name: 'Tensor', brand: '#2563eb', brandForeground: '#ffffff' }, { id: 'motus', name: 'Motus', brand: '#0f766e', brandForeground: '#ffffff' }];
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  act(() => root.render(h(ui.BrandProfiles, { value: profiles[0], profiles, onChange() {}, onSelectProfile: (p) => chosen.push(p.id) })));
+  assert.equal(host.querySelectorAll('select:not([data-uix-select-proxy])').length, 0);
+  const trigger = host.querySelector('button[role="combobox"].uix-select');
+  assert.equal(trigger.textContent, 'Tensor');
+  act(() => { trigger.focus(); trigger.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true })); });
+  act(() => { trigger.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true })); });
+  act(() => { trigger.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })); });
+  assert.deepEqual(chosen, ['motus']);
+  act(() => root.unmount());
+  host.remove();
 });
