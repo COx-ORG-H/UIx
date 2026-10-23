@@ -273,6 +273,10 @@ test('ChangeHighlight under reduced motion: a steady outline on the row as one b
 });
 
 test('the in-app reduced-motion choice (data-motion="reduce", OS at no-preference) gets the same outline and fade', async ({ page }) => {
+  // the Count fade lasts 160 ms: slow CSS animations so a loaded machine still reads it running
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
   await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
   await page.getByTestId('live-update').click();
   expect(await animations(page.getByTestId('changed-row'))).toEqual(['uix-changed-static']);
