@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
+<!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
 <!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
 <!-- lesson-skip: 5cc12fc routine: a table cell's width is a preference, a squeezed table shrank the checkbox column under the frozen id's offset; found by looking at the 390 px shot, pinned by a spec -->
 <!-- lesson-skip: 0bb7303 routine: NFD leaves stroked letters (đ ø ł ı) whole; the reviewer named them, a fold test now lists each -->
@@ -78,6 +80,10 @@
 
 ### 2026-10-23 · print layout · `8212a1f`
 - **Rule:** a header or footer that must repeat on every printed page has to be a real `<thead>` / `<tfoot>` of a real `<table>`; Chromium does not repeat the header group of a CSS table built of divs (`display: table-header-group`), and print emulation (`emulateMedia`) does not paginate, so only a real PDF shows it. Give the screen reset of such a table zero specificity (`:where()`), or it out-specifies the print rules that restore the table display.  **Why:** PrintLayout's first two builds printed the header on page 1 and the footer on the last page only; a probe of five structures (div table, div table with cells, real table, real table with rows, fixed elements) showed only real tables and fixed boxes repeat, and then a `.page > :is(thead, tbody, tfoot) { display: block }` screen reset (0,1,1) beat the print `.header { display: table-header-group }` (0,1,0).  **Gate:** `tests/a11y/print-layout.spec.mjs` prints a PDF with `page.pdf` and counts the header and footer links per page against a link drawn once.  **Tag:** print, false-green, test-double-fidelity, cascade, generalizable
+
+### 2026-10-23 · a11y, live regions · `010986c`
+- **Rule:** a live region portalled to `document.body` is never announced while a modal `<dialog>` is open: `showModal()` makes everything outside the dialog inert. Portal status text to `el.closest('dialog') ?? document.body` (ButtonFeedback, `announcePolite(text, from)`, ShortcutHint all do).  **Why:** the button's result region worked on a page and was silent in a Drawer footer, the main use; only a reviewer reading ShortcutHint's comment knew.
+- **Gate:** `feedback-pending-dom.test.mjs` (result inside a `<dialog>` speaks from the dialog) and `feedback-kit.spec.mjs` (Modal save announces inside the open dialog).  **Tag:** a11y, portal, dialog, generalizable
 
 ### 2026-10-23 · a blur that says nowhere · `66d6dd3`
 - **Rule:** never read a blur with `relatedTarget === null` as "focus left". Safari (and Firefox on macOS) do not focus a clicked button, so pressing Cancel blurs the field with no `relatedTarget` before the click runs: a save-on-blur saved the draft the person was cancelling. Track a pointer press inside the editor (pointerdown capture, released after the click), keep focus with `onMouseDown={e => e.preventDefault()}` on the editor's own buttons, and when `relatedTarget` is null wait one task and save only if focus is really outside and the editor is still open.

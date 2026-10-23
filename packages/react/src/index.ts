@@ -26,6 +26,11 @@ export type {
 export { useDelayedPending } from './hooks/useDelayedPending.js';
 export type { DelayedPendingOptions } from './hooks/useDelayedPending.js';
 export { PENDING_DELAY_MS, PENDING_MIN_VISIBLE_MS, RESULT_HOLD_MS } from './motion-timing.js';
+export { useChangeHighlight, flashChanged } from './hooks/useChangeHighlight.js';
+export type { ChangeHighlightOptions } from './hooks/useChangeHighlight.js';
+export { useOptimisticValue } from './hooks/useOptimisticValue.js';
+export type { OptimisticRollback, UseOptimisticValueOptions, UseOptimisticValueResult } from './hooks/useOptimisticValue.js';
+export { announcePolite } from './announce.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';
@@ -314,6 +319,10 @@ export { Comments, Comment } from './components/Comments.js';
 export type { CommentsProps, CommentProps } from './components/Comments.js';
 export { SaveStatus, DEFAULT_SAVE_STATUS_LABELS } from './components/SaveStatus.js';
 export { BusyRegion } from './components/BusyRegion.js';
+export { ChangeHighlight } from './components/ChangeHighlight.js';
+export type { ChangeHighlightProps } from './components/ChangeHighlight.js';
+export { Count } from './components/Count.js';
+export type { CountProps } from './components/Count.js';
 export type { BusyRegionProps } from './components/BusyRegion.js';
 export { DEFAULT_BUTTON_RESULT_LABELS } from './components/ButtonFeedback.js';
 export type { ButtonResult, ButtonResultLabels } from './components/ButtonFeedback.js';

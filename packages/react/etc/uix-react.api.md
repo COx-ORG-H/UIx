@@ -107,6 +107,9 @@ export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 // @public (undocumented)
 export type Align = 'start' | 'center' | 'end';
 
+// @public
+export function announcePolite(text: string, from?: Element | null): void;
+
 // @public (undocumented)
 export function appendRuleNode(group: RuleGroup, parentId: string, node: RuleCondition | RuleGroup, maxDepth?: number): RuleGroup;
 
@@ -818,6 +821,26 @@ export interface CellSubProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 // @public
+export const ChangeHighlight: react.ForwardRefExoticComponent<ChangeHighlightProps & react.RefAttributes<HTMLElement | null>>;
+
+// @public (undocumented)
+export interface ChangeHighlightOptions {
+    announce?: string;
+    disabled?: boolean;
+}
+
+// @public (undocumented)
+export interface ChangeHighlightProps extends HTMLAttributes<HTMLElement> {
+    announce?: string;
+    as?: keyof HTMLElementTagNameMap;
+    // (undocumented)
+    children?: ReactNode;
+    disabled?: boolean;
+    value: unknown;
+    variant?: 'tint' | 'ring';
+}
+
+// @public
 export interface ChartStatPoint {
     // (undocumented)
     x: number;
@@ -1316,6 +1339,15 @@ export interface CopyButtonProps {
     failedLabel?: string;
     label: string;
     value: string;
+}
+
+// @public
+export function Count(input: CountProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    format?: (value: number) => string;
+    value: number;
 }
 
 // @public
@@ -2902,6 +2934,9 @@ export type FilterValueKind = FilterValue['kind'];
 // @public (undocumented)
 export function findRuleNodeDepth(group: RuleGroup, id: string, depth?: number): number | undefined;
 
+// @public
+export function flashChanged(el: HTMLElement): void;
+
 // @public (undocumented)
 export interface FlatNode<T> {
     // (undocumented)
@@ -4314,6 +4349,14 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+
+// @public (undocumented)
+export interface OptimisticRollback<T> {
+    attempted: T;
+    // (undocumented)
+    error: unknown;
+    restored: T;
+}
 
 // @public
 export function OrgChart(input: OrgChartProps): react.JSX.Element;
@@ -7922,6 +7965,9 @@ export interface UseAnchoredPositionOptions {
 }
 
 // @public
+export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;
+
+// @public
 export function useDelayedPending(pending: boolean, input?: DelayedPendingOptions): boolean;
 
 // @public
@@ -7945,6 +7991,23 @@ export interface UseDisplayPreferencesResult {
     setPreference: <K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => void;
     // (undocumented)
     setPreferences: (next: DisplayPreferenceValues) => void;
+}
+
+// @public
+export function useOptimisticValue<T>(serverValue: T, commit: (next: T) => Promise<unknown>, input?: UseOptimisticValueOptions<T>): UseOptimisticValueResult<T>;
+
+// @public (undocumented)
+export interface UseOptimisticValueOptions<T> {
+    onRollback?: (rollback: OptimisticRollback<T>) => void;
+}
+
+// @public (undocumented)
+export interface UseOptimisticValueResult<T> {
+    pending: boolean;
+    rollback: OptimisticRollback<T> | null;
+    rollbacks: number;
+    set: (next: T) => Promise<void>;
+    value: T;
 }
 
 // @public

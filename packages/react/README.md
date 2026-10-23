@@ -256,6 +256,35 @@ const showSpinner = useDelayedPending(upload.isPending);
 {showSpinner && <Spinner size="sm" label={t('uploading')} />}
 ```
 
+### What changed: highlight, count, optimistic values (motion standard §2.5, §2.6, §2.8)
+
+- **`ChangeHighlight value={…}`** (or `useChangeHighlight(value)` on your own element, or
+  `.uix-changed` on plain markup) tints the element when `value` changes after mount and fades
+  the tint; never on the first render; a second change restarts it. `as="tr"` tints the row's
+  cells; `variant="ring"` rings something with a colour of its own (a status pill, a star).
+  Under reduced motion or forced colours it is a steady outline for the same time. Give it
+  words: `announce="Status changed to Resolved by A. Novak"` speaks through a polite region
+  (inside the open dialog when there is one). `flashChanged(el)` and `announcePolite(text)`
+  are the same pieces for changes that do not flow through a React value.
+- **`Count value={n}`** for a badge or stat value: one 4 px tick in the change's direction with
+  a fade, tabular figures, `format` for "99+". Never a loop, never a count-up.
+- **`useOptimisticValue(serverValue, commit, { onRollback })`** only for reversible, personal
+  actions (star, pin, reaction, mark read, display preference, own saved-view order). It shows
+  the change at once; if `commit` rejects, the last confirmed value comes back, `rollbacks`
+  counts up (flash it with `ChangeHighlight value={rollbacks}`) and `onRollback` lets you say
+  what was restored. State transitions, assignment, approvals and priority stay pessimistic.
+
+```tsx
+<ChangeHighlight as="tr" value={row.updatedAt} announce={t('rowUpdated', { id: row.id, actor })}>…</ChangeHighlight>
+<Td><ChangeHighlight value={row.status} variant="ring"><StatusPill tone={tone}>{label}</StatusPill></ChangeHighlight></Td>
+<span className="uix-navitem__badge"><Count value={unread} format={(n) => (n > 99 ? '99+' : String(n))} /></span>
+
+const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next), { onRollback: () => toast.error(t('starNotSaved')) });
+<ChangeHighlight value={star.rollbacks} variant="ring" announce={star.rollback ? t('starRestored') : undefined}>
+  <StarButton pinned={star.value} label={view.name} onToggle={(next) => star.set(next)} />
+</ChangeHighlight>
+```
+
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
