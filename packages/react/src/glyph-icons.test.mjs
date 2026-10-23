@@ -34,6 +34,28 @@ test('the guard fails, with the line, on a × button and a ▾ in CSS content', 
   assert.deepEqual(scan("render({ content: '‹' })", 'react'), [{ line: 1, rule: 'string', glyph: '‹' }]);
   // prose and a Kbd-style legend inside a sentence are not flagged
   assert.deepEqual(scan('<p>Press ↑ to move up.</p>', 'docs'), []);
+  assert.deepEqual(scan('<p>Go ← back or → on.</p>', 'docs'), []);
+});
+
+// Review of #165: a glyph standing in for an icon before a label, and one inserted by a template
+// literal, slipped past the first version of the guard ("+ Add filter", "← All incidents", the
+// docs pager's "← ${name}").
+test('the guard fails on a glyph before a label and on a glyph a template literal inserts', () => {
+  assert.deepEqual(scan('<button type="button"><span class="uix-chip__label">+ Add filter</span></button>', 'docs'), [{ line: 1, rule: 'docs-button-leading', glyph: '+' }]);
+  assert.deepEqual(scan('<a class="uix-link" href="#list">← All incidents</a>', 'docs'), [{ line: 1, rule: 'docs-a-leading', glyph: '←' }]);
+  assert.deepEqual(scan('const pager = `<strong>← ${name}</strong>`;', 'docs'), [{ line: 1, rule: 'template', glyph: '←' }]);
+  assert.deepEqual(scan("const sep = `${'›'}`;", 'docs'), [{ line: 1, rule: 'template', glyph: '›' }]);
+  assert.deepEqual(scan("const sep = `${'›'}`;", 'react'), [{ line: 1, rule: 'string', glyph: '›' }], 'one finding, not two');
+  assert.deepEqual(scan('<Button>\n  → Next step\n</Button>', 'react'), [{ line: 1, rule: 'jsx-leading', glyph: '→' }]);
+});
+
+test('an allowlist key names one occurrence, so a second glyph in an allowed file is new', async () => {
+  const keys = (await collect()).map((hit) => hit.key);
+  for (const key of keys) assert.match(key, /::[^:]+::.#\d+$/u, `${key} ends in #n`);
+  assert.equal(new Set(keys).size, keys.length, 'keys are unique');
+  const allowed = new Set(readAllow().map((a) => a.key));
+  assert.ok(allowed.has('packages/react/src/components/TextDiff.tsx::string::+#1'));
+  assert.ok(!allowed.has('packages/react/src/components/TextDiff.tsx::string::+#2'), 'a second + in TextDiff strings would fail');
 });
 
 const svgOnly = (html, cls) => {

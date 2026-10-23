@@ -857,11 +857,11 @@ const renderPager = (slug) => {
   if (index < 0) {
     const isExample = SHOWCASE_PAGES.some((page) => page.slug === slug);
     const target = isExample ? ['examples', 'Example gallery'] : ['all-components', 'All components'];
-    return `<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#${target[0]}"><span>Back to index</span><strong>← ${target[1]}</strong></a><span></span></nav>`;
+    return `<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#${target[0]}"><span>Back to index</span><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg> ${target[1]}</strong></a><span></span></nav>`;
   }
   const previous = index > 0 ? NAV_ITEMS[index - 1] : null;
   const next = index < NAV_ITEMS.length - 1 ? NAV_ITEMS[index + 1] : null;
-  return `<nav class="uix-docs__pager" aria-label="Documentation pages">${previous ? `<a href="#${previous.slug}"><span>Previous</span><strong>← ${esc(previous.name)}</strong></a>` : '<span></span>'}${next ? `<a href="#${next.slug}"><span>Next</span><strong>${esc(next.name)} →</strong></a>` : ''}</nav>`;
+  return `<nav class="uix-docs__pager" aria-label="Documentation pages">${previous ? `<a href="#${previous.slug}"><span>Previous</span><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg> ${esc(previous.name)}</strong></a>` : '<span></span>'}${next ? `<a href="#${next.slug}"><span>Next</span><strong>${esc(next.name)} <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></strong></a>` : ''}</nav>`;
 };
 
 /** The markup of a guide or component reference page, without the DOM (docs.test.js reads it). */

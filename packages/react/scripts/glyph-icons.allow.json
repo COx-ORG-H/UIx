@@ -1,15 +1,24 @@
 {
-  "$comment": "HAR-1576 — legitimate text characters the glyph guard (glyph-icons.mjs) would flag. Each entry is text, not an icon, and says why. This list may only shrink: an entry that matches nothing fails as stale.",
+  "$comment": "HAR-1576 — legitimate text characters the glyph guard (glyph-icons.mjs) would flag. Each entry is text, not an icon, and says why. Keys name one occurrence (file::rule::glyph#n, the n-th in that file), so a new glyph in an allowed file still fails. This list may only shrink: an entry that matches nothing fails as stale.",
   "allow": [
-    { "key": "packages/react/src/components/Kbd.tsx::string::↑", "why": "Kbd legend: the Up arrow key is printed on the keycap as ↑ (with 'Up arrow' as its spoken name)." },
-    { "key": "packages/react/src/components/Kbd.tsx::string::↓", "why": "Kbd legend: the Down arrow key is printed on the keycap as ↓ (with 'Down arrow' as its spoken name)." },
-    { "key": "packages/react/src/components/Kbd.tsx::string::+", "why": "Kbd: the + between the keys of a chord (Ctrl + K) and the + key's own legend." },
-    { "key": "packages/react/src/components/RelationshipGraphLayered.tsx::string::+", "why": "Keyboard map: the + key that zooms in, matched on event.key and shown as its Kbd legend; the button itself draws PlusIcon." },
-    { "key": "packages/react/src/components/RelationshipGraphLayered.tsx::string::−", "why": "Keyboard map: the − key legend for zoom out; the button itself draws MinusIcon." },
-    { "key": "packages/react/src/components/TextDiff.tsx::jsx-text::−", "why": "Diff sign: a removed line is marked − in the gutter, as in every diff (aria-hidden; the row says 'removed')." },
-    { "key": "packages/react/src/components/TextDiff.tsx::jsx-text::+", "why": "Diff sign: an added line is marked + in the gutter (aria-hidden; the row says 'added')." },
-    { "key": "packages/react/src/components/TextDiff.tsx::string::−", "why": "Diff sign for a removed line in the unified view (the same gutter sign as above)." },
-    { "key": "packages/react/src/components/TextDiff.tsx::string::+", "why": "Diff sign for an added line in the unified view (the same gutter sign as above)." },
-    { "key": "packages/tokens/styles/components/search-suggest.css::css-content::›", "why": "Breadcrumb separator between the crumbs of a result's location: punctuation in a line of text, not a control." }
+    { "key": "packages/react/src/components/Kbd.tsx::string::↑#1", "why": "Kbd legend: the Up arrow key is printed on the keycap as ↑ (with 'Up arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::↑#2", "why": "Kbd legend: the Up arrow key is printed on the keycap as ↑ (with 'Up arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::↓#1", "why": "Kbd legend: the Down arrow key is printed on the keycap as ↓ (with 'Down arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::↓#2", "why": "Kbd legend: the Down arrow key is printed on the keycap as ↓ (with 'Down arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::←#1", "why": "Kbd legend: the Left arrow key is printed on the keycap as ← (with 'Left arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::←#2", "why": "Kbd legend: the Left arrow key is printed on the keycap as ← (with 'Left arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::→#1", "why": "Kbd legend: the Right arrow key is printed on the keycap as → (with 'Right arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::→#2", "why": "Kbd legend: the Right arrow key is printed on the keycap as → (with 'Right arrow' as its spoken name)." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::+#1", "why": "Kbd: the + between the keys of a chord (Ctrl + K) and the + key's own legend." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::+#2", "why": "Kbd: the + between the keys of a chord (Ctrl + K) and the + key's own legend." },
+    { "key": "packages/react/src/components/Kbd.tsx::string::+#3", "why": "Kbd: the + between the keys of a chord (Ctrl + K) and the + key's own legend." },
+    { "key": "packages/react/src/components/RelationshipGraphLayered.tsx::string::+#1", "why": "Keyboard map: the + key that zooms in, matched on event.key and shown as its Kbd legend; the button itself draws PlusIcon." },
+    { "key": "packages/react/src/components/RelationshipGraphLayered.tsx::string::+#2", "why": "Keyboard map: the + key that zooms in, matched on event.key and shown as its Kbd legend; the button itself draws PlusIcon." },
+    { "key": "packages/react/src/components/RelationshipGraphLayered.tsx::string::−#1", "why": "Keyboard map: the − key legend for zoom out; the button itself draws MinusIcon." },
+    { "key": "packages/react/src/components/TextDiff.tsx::jsx-text::−#1", "why": "Diff sign: a removed line is marked − in the gutter, as in every diff (aria-hidden; the row says 'removed')." },
+    { "key": "packages/react/src/components/TextDiff.tsx::jsx-text::+#1", "why": "Diff sign: an added line is marked + in the gutter (aria-hidden; the row says 'added')." },
+    { "key": "packages/react/src/components/TextDiff.tsx::string::−#1", "why": "Diff sign for a removed line in the unified view (the same gutter sign as above)." },
+    { "key": "packages/react/src/components/TextDiff.tsx::string::+#1", "why": "Diff sign for an added line in the unified view (the same gutter sign as above)." },
+    { "key": "packages/tokens/styles/components/search-suggest.css::css-content::›#1", "why": "Breadcrumb separator between the crumbs of a result's location: punctuation in a line of text, not a control." }
   ]
 }
