@@ -117,11 +117,32 @@ test('a single page that does not fit is outlined and reported; the poster fits'
   await expect.poll(() => page.evaluate(() => window.__printOverflow)).toEqual({ overfull: true });
 });
 
-test('at 320 px the preview reflows inside the screen', async ({ page }, testInfo) => {
-  await open(page, testInfo, { viewport: { width: 320, height: 800 } });
-  const doc = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
-  expect(doc.scroll).toBe(doc.client);
-});
+// Review of PR #166: the preview used to reflow narrower at the same one-page height and in 14 px
+// screen type, so at 320–390 px the poster that prints on one page was reported as overflowing.
+// Now it is the page at its true width and print type, scaled down whole.
+for (const width of [320, 390]) {
+  test(`at ${width} px the preview is the page scaled down: inside the screen, print type, no false overflow`, async ({ page }, testInfo) => {
+    await open(page, testInfo, { viewport: { width, height: 800 } });
+    const read = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+      layouts: ['nalaz', 'poster'].map((id) => {
+        const el = document.getElementById(id);
+        return {
+          id,
+          right: el.getBoundingClientRect().right,
+          font: getComputedStyle(el.querySelector('.uix-print-layout__body')).fontSize,
+          overflowing: el.hasAttribute('data-overflowing'),
+        };
+      }),
+    }));
+    expect(read.scroll).toBe(read.client);
+    for (const layout of read.layouts) expect(layout.right).toBeLessThanOrEqual(read.client);
+    expect(read.layouts.map((layout) => layout.font)).toEqual(['13.3333px', '12px']);
+    expect(read.layouts.find((layout) => layout.id === 'poster').overflowing).toBe(false);
+    await expect.poll(() => page.evaluate(() => window.__printOverflow.poster ?? false)).toBe(false);
+  });
+}
 
 test('axe: the shell and both documents on screen', async ({ page }, testInfo) => {
   await open(page, testInfo);

@@ -21,6 +21,7 @@ let createRoot;
 let ui;
 let observers = [];
 let frames = [];
+let created = 0;
 
 const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
 
@@ -31,7 +32,7 @@ before(async () => {
   expose('navigator', dom.window.navigator);
   expose('IS_REACT_ACT_ENVIRONMENT', true);
   // a ResizeObserver the test can fire, and a frame that runs at once
-  expose('ResizeObserver', class { constructor(callback) { this.callback = callback; observers.push(this); } observe() {} unobserve() {} disconnect() { observers = observers.filter((o) => o !== this); } });
+  expose('ResizeObserver', class { constructor(callback) { created += 1; this.callback = callback; observers.push(this); } observe() {} unobserve() {} disconnect() { observers = observers.filter((o) => o !== this); } });
   // frames run when the test says, as a browser runs them after the observer's callback
   expose('requestAnimationFrame', (fn) => { frames.push(fn); return frames.length; });
   expose('cancelAnimationFrame', () => {});
@@ -66,7 +67,8 @@ const sizePage = (page, { content, box }) => {
 
 test('the frame: A4 portrait by default, its parts, isolate and page numbers', () => {
   const { host, unmount } = mount(h(ui.PrintLayout, { header: 'Dom zdravlja Centar', footer: 'Stranica' }, h('p', null, 'Nalaz')));
-  const frame = host.firstElementChild;
+  const frame = host.querySelector('.uix-print-layout');
+  assert.equal(host.firstElementChild.className, 'uix-print-preview', 'the page sits in its preview box');
   assert.equal(frame.className, 'uix-print-layout');
   assert.deepEqual({ ...frame.dataset }, { size: 'A4', orientation: 'portrait', page: 'uix-print-a4', isolate: '' });
   // a layout table: Chromium repeats a real <thead> and <tfoot> on every printed page
@@ -84,7 +86,7 @@ test('the frame: A4 portrait by default, its parts, isolate and page numbers', (
 test('the named page follows size, orientation, page numbers and single page', () => {
   const page = (props) => {
     const { host, unmount } = mount(h(ui.PrintLayout, props, 'x'));
-    const value = host.firstElementChild.dataset.page;
+    const value = host.querySelector('.uix-print-layout').dataset.page;
     unmount();
     return value;
   };
@@ -93,7 +95,7 @@ test('the named page follows size, orientation, page numbers and single page', (
   assert.equal(page({ pageNumbers: false }), 'uix-print-a4-plain');
   assert.equal(page({ size: 'A4', orientation: 'landscape', singlePage: true }), 'uix-print-a4-landscape-plain');
   const { host, unmount } = mount(h(ui.PrintLayout, { isolate: false }, 'x'));
-  assert.equal(host.firstElementChild.hasAttribute('data-isolate'), false);
+  assert.equal(host.querySelector('.uix-print-layout').hasAttribute('data-isolate'), false);
   assert.equal(host.querySelector('.uix-print-layout__header'), null, 'no header part without a header');
   unmount();
 });
@@ -103,7 +105,7 @@ test('single page: an overflow is outlined and reported once; fitting again is r
   frames = [];
   const seen = [];
   const { host, unmount } = mount(h(ui.PrintLayout, { size: 'A5', singlePage: true, onOverflowChange: (value) => seen.push(value) }, h('p', null, 'Poster')));
-  const frame = host.firstElementChild;
+  const frame = host.querySelector('.uix-print-layout');
   assert.equal(frame.dataset.singlePage, '');
   assert.deepEqual(seen, [], 'a page that fits reports nothing');
   const page = frame.querySelector('.uix-print-layout__page');
@@ -117,6 +119,27 @@ test('single page: an overflow is outlined and reported once; fitting again is r
   assert.equal(frame.hasAttribute('data-overflowing'), false);
   assert.deepEqual(seen, [true, false]);
   unmount();
+});
+
+test('single page: new children re-measure without a new observer (one subscription per page shape)', () => {
+  observers = [];
+  frames = [];
+  const seen = [];
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const render = (text) => act(() => root.render(h(ui.PrintLayout, { size: 'A5', singlePage: true, onOverflowChange: (value) => seen.push(value) }, h('p', null, text))));
+  render('Poster 1');
+  const before = created;
+  for (let i = 2; i <= 5; i += 1) render(`Poster ${i}`);
+  assert.equal(created, before, 'no observer was created again by a new child');
+  // the kept observer still measures the new content
+  const page = host.querySelector('.uix-print-layout__page');
+  sizePage(page, { content: 900, box: 794 });
+  resize();
+  assert.deepEqual(seen, [true]);
+  act(() => root.unmount());
+  host.remove();
 });
 
 test('PrintSignature: words from the provider, an explicit label wins; the stamp only when asked', () => {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
-import type { HTMLAttributes, ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 
@@ -16,6 +16,11 @@ export interface PrintLayoutLabels {
 export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels = { signature: 'Signature', stamp: 'Stamp' };
 
 export type PrintPageSize = 'A4' | 'A5';
+
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+/** Paper widths in millimetres, portrait and landscape. */
+const PAPER_MM: Record<PrintPageSize, [number, number]> = { A4: [210, 297], A5: [148, 210] };
+const PX_PER_MM = 96 / 25.4;
 
 export interface PrintLayoutProps extends HTMLAttributes<HTMLDivElement> {
   /** The paper. Default `A4` (210 × 297 mm); `A5` is 148 × 210 mm (a poster, a slip). */
@@ -53,13 +58,42 @@ export interface PrintLayoutProps extends HTMLAttributes<HTMLDivElement> {
  */
 export function PrintLayout({
   size = 'A4', orientation = 'portrait', header, footer, pageNumbers = true, singlePage = false, onOverflowChange, isolate = true,
-  className, children, ...props
+  className, children, style, ...props
 }: PrintLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const fitRef = useRef<HTMLDivElement>(null);
   const report = useRef(onOverflowChange);
   report.current = onOverflowChange;
+  const [scale, setScale] = useState(1);
+
+  // The screen preview is the page at its true width and its print type size, scaled down as a
+  // whole to the room it has. Reflowing it narrower (as it was) changed what fits on one page:
+  // at 320 px a poster that prints on one page was reported as overflowing (review of PR #166).
+  const paperMm = PAPER_MM[size][orientation === 'landscape' ? 1 : 0];
+  const paperPx = paperMm * PX_PER_MM;
+  // The room is the preview box's: the paper's width, or its container's when that is narrower.
+  // It never depends on the scaled page inside it, so the scale cannot feed back into itself
+  // (measuring the page's own parent let a column that sizes to its content shrink step by step).
+  useIsomorphicLayoutEffect(() => {
+    const box = fitRef.current;
+    if (!box) return undefined;
+    const fit = () => {
+      const room = box.getBoundingClientRect().width;
+      // sub-pixel rounding is no reason to scale the paper
+      if (room > 0) setScale(room >= paperPx - 0.5 ? 1 : room / paperPx);
+    };
+    fit();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(fit);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [paperPx]);
 
   // A single page that does not fit is outlined on screen and reported: measured, never clipped.
+  // Subscribed once per page shape: the cells persist across renders and grow with what is in
+  // them, so new children need no new observer.
+  const hasHeader = header != null;
+  const hasFooter = footer != null;
   useEffect(() => {
     const root = ref.current;
     if (!singlePage || !root || typeof ResizeObserver === 'undefined') return undefined;
@@ -78,31 +112,34 @@ export function PrintLayout({
     };
     const observer = new ResizeObserver(() => { if (!frame) frame = requestAnimationFrame(measure); });
     observer.observe(content);
-    for (const child of Array.from(content.children)) observer.observe(child);
+    for (const cell of Array.from(content.querySelectorAll(':scope > * > tr > td'))) observer.observe(cell);
     measure();
     return () => { observer.disconnect(); if (frame) cancelAnimationFrame(frame); };
-  }, [singlePage, children, header, footer]);
+  }, [singlePage, hasHeader, hasFooter]);
 
   // The page is a real table, for layout only: Chromium repeats a thead and a tfoot on every
   // printed page, and a CSS table built of divs it does not (measured, HAR-986). On screen the
   // stylesheet lays it out as a column.
   const page = `uix-print-${size.toLowerCase()}${orientation === 'landscape' ? '-landscape' : ''}${pageNumbers && !singlePage ? '' : '-plain'}`;
   return (
-    <div
-      ref={ref}
-      className={cx('uix-print-layout', className)}
-      data-size={size}
-      data-orientation={orientation}
-      data-page={page}
-      data-single-page={singlePage ? '' : undefined}
-      data-isolate={isolate ? '' : undefined}
-      {...props}
-    >
-      <table className="uix-print-layout__page" role="presentation">
-        {header != null && <thead className="uix-print-layout__header"><tr><td><div className="uix-print-layout__bar">{header}</div></td></tr></thead>}
-        <tbody className="uix-print-layout__main"><tr><td className="uix-print-layout__body">{children}</td></tr></tbody>
-        {footer != null && <tfoot className="uix-print-layout__footer"><tr><td><div className="uix-print-layout__bar">{footer}</div></td></tr></tfoot>}
-      </table>
+    <div ref={fitRef} className="uix-print-preview" style={{ inlineSize: `${paperMm}mm` }}>
+      <div
+        ref={ref}
+        className={cx('uix-print-layout', className)}
+        data-size={size}
+        data-orientation={orientation}
+        data-page={page}
+        data-single-page={singlePage ? '' : undefined}
+        data-isolate={isolate ? '' : undefined}
+        style={scale < 1 ? { '--uix-print-preview-scale': Number(scale.toFixed(4)), ...style } as CSSProperties : style}
+        {...props}
+      >
+        <table className="uix-print-layout__page" role="presentation">
+          {header != null && <thead className="uix-print-layout__header"><tr><td><div className="uix-print-layout__bar">{header}</div></td></tr></thead>}
+          <tbody className="uix-print-layout__main"><tr><td className="uix-print-layout__body">{children}</td></tr></tbody>
+          {footer != null && <tfoot className="uix-print-layout__footer"><tr><td><div className="uix-print-layout__bar">{footer}</div></td></tr></tfoot>}
+        </table>
+      </div>
     </div>
   );
 }

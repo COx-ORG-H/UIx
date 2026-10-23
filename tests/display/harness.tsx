@@ -149,7 +149,8 @@ function PrintCase() {
   const overfull = new URLSearchParams(location.search).has('overfull');
   window.__printOverflow ??= {};
   return (
-    <div className="uix-shell" style={{ height: '100vh' }}>
+    // a phone hides the side navigation, as an app shell does there: the page gets the width
+    <div className="uix-shell" style={{ height: '100vh' }} data-nav={window.innerWidth < 640 ? 'hidden' : undefined}>
       <aside className="uix-shell__sidebar"><nav aria-label="Glavni meni" style={{ padding: 'var(--uix-space-4)' }}>Ordinacija</nav></aside>
       <header className="uix-shell__topbar">Dom zdravlja Centar</header>
       <main className="uix-shell__main">
