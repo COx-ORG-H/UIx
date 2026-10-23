@@ -21,8 +21,8 @@ const source = readFileSync(join(here, '../styles/components/scheduling-calendar
 const DIMENSIONS = ['band', 'status', 'window', 'marker', 'chrome'];
 /** Status hues: the tokens a product reads as good / warning / bad / informational, and the brand. */
 const HUE = /^--uix-(?:print-)?(danger|warning|success|info|accent|brand|link|ring)\b/;
-/** `--uix-*` names that are not colours: spacing, radii, the type scale and the component's own runtime knobs. */
-const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|scheduling-calendar-[a-z-]+)$/;
+/** `--uix-*` names that are not colours: spacing, radii, the type scale, layers, motion and the component's own runtime knobs. */
+const NOT_A_COLOUR = /^--uix-(space-\d+|radius-[a-z]+|text-meta|text-eyebrow|z-[a-z]+|dur(?:-[a-z]+)*|ease-[a-z-]+|scheduling-calendar-[a-z-]+)$/;
 /** Which selectors may read a dimension's colours. */
 const READERS = {
   band: /\[data-band=/,

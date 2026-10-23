@@ -1,12 +1,23 @@
-/* uix contact / customer card (CRM) — depends only on --uix-* tokens. */
+/* uix contact / customer card (CRM) — depends only on --uix-* tokens. React: ContactCard (HAR-1379). */
 @layer uix.components {
-  .uix-contact { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--uix-space-1); padding: var(--uix-space-5); }
-  .uix-contact__name { font-size: var(--uix-text-h3); font-weight: 600; margin-top: var(--uix-space-2); }
-  .uix-contact__role { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-contact__actions { display: flex; gap: var(--uix-space-2); margin-top: var(--uix-space-3); align-self: stretch; }
-  .uix-contact__actions > .uix-btn { flex: 1; }
+  .uix-contact { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--uix-space-1); padding: var(--uix-space-5); min-width: 0; }
+  /* bare: inside a surface that already has its padding (a card body, a peek, a popover) */
+  .uix-contact--bare { padding: 0; }
+  .uix-contact__name { font-size: var(--uix-text-h3); font-weight: 600; margin: var(--uix-space-2) 0 0; max-width: 100%; overflow-wrap: anywhere; }
+  .uix-contact__role { font-size: var(--uix-text-meta); color: var(--uix-text-muted); max-width: 100%; overflow-wrap: anywhere; }
+  .uix-contact__actions { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); margin-top: var(--uix-space-3); align-self: stretch; }
+  .uix-contact__actions > .uix-btn { flex: 1 1 7rem; }
   .uix-contact__stats { display: flex; gap: var(--uix-space-5); margin-top: var(--uix-space-4); }
   .uix-contact__stat { text-align: center; }
   .uix-contact__stat b { display: block; font-size: var(--uix-text-h3); }
   .uix-contact__stat span { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+
+  /* the address and number as text, selectable; a long address breaks rather than widening the card */
+  .uix-contact__details { display: flex; flex-direction: column; gap: var(--uix-space-1); margin-top: var(--uix-space-2); max-width: 100%; font-size: var(--uix-text-meta); }
+  .uix-contact__detail { overflow-wrap: anywhere; }
+  /* an erased or unavailable contact: a neutral placeholder and a line that says why */
+  .uix-contact__placeholder { background: var(--uix-bg-subtle); color: var(--uix-text-muted); border: 1px solid var(--uix-border); }
+  .uix-contact__placeholder svg { width: 55%; height: 55%; }
+  .uix-contact__note { color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-style: italic; }
+  .uix-contact[data-state="purged"] .uix-contact__name { color: var(--uix-text-muted); font-weight: 500; }
 }

@@ -170,6 +170,24 @@ test('EventRow: date block + title/meta', () => {
   assert.match(html, /<span class="uix-event-date__month">Jul<\/span><span class="uix-event-date__day">30<\/span>/);
   assert.match(html, /<p class="uix-event-row__title">Summer all-hands<\/p>/);
   assert.match(html, /<p class="uix-event-row__meta">10:00 · Berlin atrium<\/p>/);
+  // without the new slots the markup is what it always was (HAR-1370)
+  assert.doesNotMatch(html, /weekday|__year|__time|__media|<time/);
+});
+
+test('EventRow (HAR-1370): weekday, year and time in the tile, a <time> element, a thumbnail', () => {
+  const html = render(h(EventRow, {
+    weekday: 'Sri', month: 'Okt', day: '22', year: '2026', time: '18:00', dateTime: '2026-10-22T18:00+02:00',
+    title: 'Promocija knjige', meta: 'Narodna biblioteka · ulaz slobodan',
+    media: h('img', { src: '/covers/42.jpg', alt: '' }),
+  }));
+  // (React 19 server rendering puts an image preload first)
+  assert.match(html, /<div class="uix-event-row uix-event-row--media">/);
+  assert.match(html, /<time class="uix-event-date" dateTime="2026-10-22T18:00\+02:00"><span class="uix-event-date__weekday">Sri<\/span><span class="uix-event-date__month">Okt<\/span><span class="uix-event-date__day">22<\/span><span class="uix-event-date__year">2026<\/span><span class="uix-event-date__time">18:00<\/span><\/time>/);
+  assert.match(html, /<div class="uix-event-row__media"><img src="\/covers\/42.jpg" alt=""\/><\/div><\/div>$/);
+  // a tile with only some of the slots, and no dateTime: still a div
+  const partial = render(h(EventRow, { month: 'Okt', day: '22', time: '09:30', title: 'x' }));
+  assert.match(partial, /<div class="uix-event-date"><span class="uix-event-date__month">Okt<\/span><span class="uix-event-date__day">22<\/span><span class="uix-event-date__time">09:30<\/span><\/div>/);
+  assert.match(partial, /^<div class="uix-event-row">/);
 });
 
 test('StatusRow: indicator + flexible name + trailing meta', () => {

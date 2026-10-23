@@ -23,6 +23,11 @@ import type { LightboxLabels } from './components/Lightbox.js';
 import type { SortableListLabels } from './components/SortableList.js';
 import type { DiffViewerLabels } from './components/DiffViewer.js';
 import type { MatchReviewLabels } from './components/MatchReview.js';
+import type { QrCodeLabels } from './components/QrCode.js';
+import type { CodeDisplayLabels } from './components/CodeDisplay.js';
+import type { ContactCardLabels } from './components/ContactCard.js';
+import type { PrintLayoutLabels } from './components/PrintLayout.js';
+import type { QrScannerLabels } from './components/QrScanner.js';
 import type { PasswordInputLabels } from './components/PasswordInput.js';
 import type { TimePickerLabels } from './components/TimePicker.js';
 import type { TagInputLabels } from './components/TagInput.js';
@@ -71,6 +76,16 @@ export interface UixLabels {
    * `empty` when nothing matches, `recent` the heading of the recent items.
    */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string; empty?: string; recent?: string };
+  /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
+  qrCode?: Partial<QrCodeLabels>;
+  /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
+  codeDisplay?: Partial<CodeDisplayLabels>;
+  /** `ContactCard` (HAR-1379): the Email / Call actions and the erased and unavailable states. */
+  contactCard?: Partial<ContactCardLabels>;
+  /** `PrintSignature` (HAR-986): the captions of the signature line and the stamp box. */
+  printLayout?: Partial<PrintLayoutLabels>;
+  /** `QrScanner` (HAR-1254): the start / stop buttons, every state's title and text, the read announcement. */
+  qrScanner?: Partial<QrScannerLabels>;
   entityPicker?: Partial<EntityPickerLabels>;
   tree?: Partial<TreeLabels>;
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */

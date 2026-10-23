@@ -15,12 +15,22 @@
   .uix-relationship-graph__edge[data-typed] { stroke:var(--uix-graph-type-color, var(--uix-border-strong)); }
   .uix-relationship-graph__list { padding:var(--uix-space-3); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); }
   .uix-relationship-graph__list>ul { display:grid; gap:var(--uix-space-2); margin:var(--uix-space-2) 0 0; padding:0; list-style:none; }
-  .uix-relationship-graph__list li { display:flex; justify-content:space-between; gap:var(--uix-space-2); padding:var(--uix-space-2); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
-  .uix-relationship-graph__list li>button:first-child { display:grid; gap:var(--uix-space-1); flex:1; border:0; background:transparent; color:var(--uix-text); text-align:left; } .uix-relationship-graph__list li>button span { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__list>ul>li { display:flex; justify-content:space-between; gap:var(--uix-space-2); padding:var(--uix-space-2); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
+  /* A row: the node's button (its name only), then its neighbours as a list of their own (HAR-1387). */
+  .uix-relationship-graph__list-main { display:grid; flex:1; gap:var(--uix-space-1); min-width:0; }
+  .uix-relationship-graph__list-main>button { display:grid; justify-items:start; gap:var(--uix-space-1); padding:0; border:0; background:transparent; color:var(--uix-text); font:inherit; text-align:left; cursor:pointer; }
+  .uix-relationship-graph__list-main>button span,.uix-relationship-graph__list-relations,.uix-relationship-graph__list-none { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
+  .uix-relationship-graph__list-none { margin:0; }
+  /* "Connected to", then the names wrapping beside it, comma after comma, then "Show all N" */
+  .uix-relationship-graph__list-relations { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 var(--uix-space-1); }
+  .uix-relationship-graph__list-relations ul { display:flex; flex:1 1 12rem; flex-wrap:wrap; gap:0 var(--uix-space-1); min-width:0; margin:0; padding:0; list-style:none; }
+  .uix-relationship-graph__list-relations li { min-width:0; overflow-wrap:anywhere; }
+  .uix-relationship-graph__list-relations li:not(:last-child)::after { content:","; }
+  .uix-relationship-graph__list-more { font-size:inherit; }
   .uix-relationship-graph__list-actions { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); }
   .uix-relationship-graph--compact .uix-relationship-graph__visual,.uix-relationship-graph--compact .uix-relationship-graph__visual svg { min-height:16rem; height:16rem; }
   .uix-relationship-graph--state { padding:var(--uix-space-8); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); }
-  @media (max-width:640px) { .uix-relationship-graph__list li { display:grid; } }
+  @media (max-width:640px) { .uix-relationship-graph__list>ul>li { display:grid; } }
 
   /* Layered mode (ADR-0002): HTML node buttons over an SVG edge layer, one transformed stage. */
   .uix-relationship-graph--layered .uix-relationship-graph__toolbar button:disabled { opacity:.5; cursor:not-allowed; }
@@ -29,11 +39,13 @@
   .uix-relationship-graph__stage { position:absolute; top:0; left:0; transform-origin:0 0; }
   .uix-relationship-graph__stage[data-animate] { transition:transform var(--uix-dur) var(--uix-ease-out); }
   .uix-relationship-graph__edges { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
-  .uix-relationship-graph__link path { fill:none; stroke:color-mix(in srgb, var(--uix-text) 28%, transparent); stroke-width:1.5px; }
-  .uix-relationship-graph__link polygon { fill:color-mix(in srgb, var(--uix-text) 45%, transparent); }
+  /* Opaque, mixed into the map's own surface: fifty edges sharing a bus trunk stay one grey line
+     instead of stacking a translucent stroke to black (HAR-1387). */
+  .uix-relationship-graph__link path { fill:none; stroke:color-mix(in srgb, var(--uix-text) 28%, var(--uix-bg-subtle)); stroke-width:1.5px; }
+  .uix-relationship-graph__link polygon { fill:color-mix(in srgb, var(--uix-text) 45%, var(--uix-bg-subtle)); }
   .uix-relationship-graph__link text { fill:var(--uix-text-muted); font-family:var(--uix-font-sans); font-size:var(--uix-text-eyebrow); paint-order:stroke; stroke:var(--uix-bg-subtle); stroke-width:4px; stroke-linejoin:round; }
   .uix-relationship-graph__link[data-kind="lateral"] path, .uix-relationship-graph__link[data-kind="cycle"] path { stroke-dasharray:5 4; }
-  .uix-relationship-graph__link[data-emphasis] path { stroke:color-mix(in srgb, var(--uix-text) 55%, transparent); }
+  .uix-relationship-graph__link[data-emphasis] path { stroke:color-mix(in srgb, var(--uix-text) 55%, var(--uix-bg-subtle)); }
   .uix-relationship-graph__link[data-active] path { stroke:var(--uix-accent); stroke-width:2.5px; }
   .uix-relationship-graph__link[data-active] polygon { fill:var(--uix-accent); }
   .uix-relationship-graph__link[data-active] text { fill:var(--uix-text); }
@@ -50,6 +62,8 @@
   .uix-relationship-graph__item[data-kind="cluster"] { border-style:dashed; background:var(--uix-surface-2); }
   .uix-relationship-graph__item-label { min-width:0; display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; font-size:var(--uix-text-body); line-height:1.25; }
   .uix-relationship-graph__item-meta { min-width:0; overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
+  /* The flag sits on the item's top-right border: the first line of the name keeps clear of it. */
+  .uix-relationship-graph__item[data-flag] .uix-relationship-graph__item-label { padding-right:3.25rem; }
   .uix-relationship-graph__item-flag { position:absolute; top:-9px; right:var(--uix-space-2); padding:0 var(--uix-space-1); border:1px solid var(--uix-border); border-radius:var(--uix-radius-pill); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); line-height:1.4; }
   .uix-relationship-graph__collapse { position:absolute; height:22px; padding:0 var(--uix-space-2); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-pill); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); cursor:pointer; }
   .uix-relationship-graph__collapse:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
@@ -69,8 +83,10 @@
   .uix-relationship-graph__control:focus-visible { outline:2px solid var(--uix-ring); outline-offset:1px; }
   .uix-relationship-graph__control:disabled { opacity:.45; cursor:not-allowed; }
   .uix-relationship-graph__control svg { width:16px; height:16px; }
-  .uix-relationship-graph__zoom-level { flex:0 1 auto; min-width:0; overflow:hidden; padding:0 var(--uix-space-1); border-radius:var(--uix-radius-sm); background:color-mix(in srgb, var(--uix-bg-subtle) 85%, transparent); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; white-space:nowrap; text-overflow:ellipsis; }
-  .uix-relationship-graph__hint { flex:1 1 0; min-width:0; margin:0; overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
+  /* The hint and the zoom level sit on a surface of their own: the map scrolls under them, and a
+     node's name must not show through the words (HAR-1387). */
+  .uix-relationship-graph__zoom-level { flex:0 1 auto; min-width:0; overflow:hidden; padding:var(--uix-space-1) var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; white-space:nowrap; text-overflow:ellipsis; }
+  .uix-relationship-graph__hint { flex:0 1000 auto; min-width:0; margin:0 auto 0 0; overflow:hidden; padding:var(--uix-space-1) var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
   /* A hint cut to a few words says nothing, so it goes; on the narrowest map so does the zoom level. */
   @container uix-relationship-graph-footer (max-width:24rem) { .uix-relationship-graph__hint { display:none; } }
   @container uix-relationship-graph-footer (max-width:17rem) { .uix-relationship-graph__zoom-level { display:none; } }
@@ -78,5 +94,24 @@
   .uix-relationship-graph--fullscreen { position:fixed; inset:0; z-index:var(--uix-z-overlay, 1000); display:flex; flex-direction:column; padding:var(--uix-space-4); background:var(--uix-bg-app, var(--uix-surface)); }
   .uix-relationship-graph--fullscreen .uix-relationship-graph__viewport { flex:1; min-height:0; height:auto; }
   @media (max-width:640px) { .uix-relationship-graph__hint { display:none; } }
+  /* ── Tones, variants and legends (HAR-1639) ────────────────────────────────────────────────
+     A tone is a colour a node or an edge shares with its legend item; it never stands alone (the
+     consumer says the same in text). A dashed edge is an expected relation that is missing. */
+  .uix-relationship-graph [data-tone="neutral"] { --uix-graph-tone:var(--uix-neutral-solid); }
+  .uix-relationship-graph [data-tone="info"] { --uix-graph-tone:var(--uix-info); }
+  .uix-relationship-graph [data-tone="success"] { --uix-graph-tone:var(--uix-success); }
+  .uix-relationship-graph [data-tone="warning"] { --uix-graph-tone:var(--uix-warning-text); }
+  .uix-relationship-graph [data-tone="danger"] { --uix-graph-tone:var(--uix-danger); }
+  .uix-relationship-graph [data-tone="accent"] { --uix-graph-tone:var(--uix-accent); }
+  .uix-relationship-graph__link[data-tone] path { stroke:var(--uix-graph-tone); stroke-width:2px; }
+  .uix-relationship-graph__link[data-tone] polygon { fill:var(--uix-graph-tone); }
+  .uix-relationship-graph__link[data-variant="dashed"] path,.uix-relationship-graph__edge[data-variant="dashed"] { stroke-dasharray:6 4; }
+  .uix-relationship-graph__edge[data-tone] { stroke:var(--uix-graph-tone); }
+  /* a toned node: its border and a bar on its leading edge */
+  .uix-relationship-graph__item[data-tone] { border-color:var(--uix-graph-tone); box-shadow:inset 4px 0 0 var(--uix-graph-tone); }
+  .uix-relationship-graph__legend li[data-tone]::before { border-color:var(--uix-graph-tone); }
+  .uix-relationship-graph__legend li:is([data-shape="edge"],[data-variant]):not([data-shape="node"])::before { width:1.5rem; height:0; border-width:2px 0 0; border-radius:0; }
+  .uix-relationship-graph__legend li[data-variant="dashed"]::before { border-top-style:dashed; }
+  .uix-relationship-graph__legend li[data-shape="node"]::before { width:1rem; height:.75rem; border-width:1px 1px 1px 4px; border-radius:var(--uix-radius-xs); }
   @media (forced-colors: active) { .uix-relationship-graph__link path { stroke:CanvasText; } .uix-relationship-graph__link polygon { fill:CanvasText; } .uix-relationship-graph__item { border-color:ButtonText; } }
 }
