@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
@@ -55,6 +55,9 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
     try { raw = window.localStorage.getItem(storageKey); } catch { /* private mode */ }
     return parseDisplayPreferences(raw, JSON.parse(defaultsKey));
   }, [storageKey, defaultsKey]);
+  // the latest choices, for a change made where storage cannot be read back (private mode)
+  const latest = useRef(preferences);
+  latest.current = preferences;
 
   useIsomorphicLayoutEffect(() => {
     setState(read());
@@ -98,8 +101,11 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
   }, [storageKey]);
 
   const setPreference = useCallback(<K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => {
-    setPreferences({ ...read(), [key]: value });
-  }, [read, setPreferences]);
+    // storage is the shared truth (another instance may have written); without it, this hook's state
+    let stored = false;
+    try { stored = window.localStorage.getItem(storageKey) != null; } catch { /* private mode */ }
+    setPreferences({ ...(stored ? read() : latest.current), [key]: value });
+  }, [read, setPreferences, storageKey]);
 
   return { preferences, resolvedTheme: resolveDisplayAttributes(preferences, system)['data-theme'], setPreference, setPreferences };
 }
