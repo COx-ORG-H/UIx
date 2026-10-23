@@ -6,7 +6,8 @@
   /* a fixed combinator (HAR-1618): the Match choice as plain text, where the select was */
   .uix-rule-builder__match { font-size:var(--uix-text-meta); font-weight:400; color:var(--uix-text-muted); }
   .uix-rule-builder__rows { display:grid; gap:var(--uix-space-3); }
-  .uix-rule-builder__condition,.uix-rule-builder__action { display:grid; grid-template-columns:minmax(9rem,1fr) minmax(9rem,1fr) minmax(10rem,1.4fr) auto; gap:var(--uix-space-2); align-items:start; padding:var(--uix-space-3); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
+  /* a choice column grows to the label it shows before the value takes the rest, so "is greater than" is not cut off (HAR-1575) */
+  .uix-rule-builder__condition,.uix-rule-builder__action { display:grid; grid-template-columns:minmax(9rem,max-content) minmax(9rem,max-content) minmax(10rem,1fr) auto; gap:var(--uix-space-2); align-items:start; padding:var(--uix-space-3); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
   .uix-rule-builder__nested { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--uix-space-2); align-items:start; }
   .uix-rule-builder__nested .uix-rule-builder__group { border-left:3px solid var(--uix-accent); }
   .uix-rule-builder__row-actions,.uix-rule-builder__add { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); }

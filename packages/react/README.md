@@ -1196,6 +1196,151 @@ mask; an avatar with a dot no longer clips it.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
 
+### Form fields (HAR-1812, HAR-1799, …)
+
+#### CheckboxGroup
+
+```tsx
+<CheckboxGroup label={t('tags')} hint={t('tagsHint')} error={errors.tags} columns={3} required>
+  {tags.map((tag) => (
+    <Checkbox key={tag.id} name="tags" value={tag.id} label={tag.name}
+      checked={chosen.includes(tag.id)} onChange={() => toggle(tag.id)} />
+  ))}
+</CheckboxGroup>
+```
+
+The checkbox counterpart of `<RadioGroup label>`: a `<fieldset>` whose `<legend>` names the group,
+so it is announced with each box, and the field's message slot below (`hint`, or `error` with
+`role="alert"`, tied to the group with `aria-describedby`). `columns` is a ceiling: no column is
+narrower than 10rem, so a phone gets one. `disabled` disables every box; `required` draws the
+marker (which boxes must be ticked is your rule).
+
+#### PasswordInput and OtpInput
+
+```tsx
+<Field label={t('password')} error={errors.password}>
+  <PasswordInput name="password" autoComplete="current-password" />
+</Field>
+<Field label={t('code')} hint={t('codeHint')} error={errors.code}>
+  <OtpInput name="code" length={6} groupSize={3} onComplete={(code) => verify(code)} />
+</Field>
+```
+
+`PasswordInput` is an `Input type="password"` with a reveal toggle inside its end: a button with
+`aria-pressed` whose name stays "Show password" (`labels.show`, or `UixLabelsProvider`
+`passwordInput`). A pointer press keeps the caret in the field; Tab reaches the toggle. When the
+form submits, a revealed password is hidden first, so the browser still offers to save it.
+`revealed` / `defaultRevealed` / `onRevealedChange`, `size`, and every `Input` prop pass through.
+
+`OtpInput` is ONE input (`inputMode="numeric"`, `autoComplete="one-time-code"`, `pattern`;
+no `maxLength`, so an autofilled "ABCD-EFGH" is cleaned before it is cut) drawn as `length` cells, so the phone's code autofill, password managers and screen
+readers see one field. Typing or pasting "123 456" keeps the characters; `onComplete(code)` runs
+once each time the code fills. `mode="alphanumeric"` takes letters (upper-cased); `groupSize`
+draws a gap; `aria-invalid` (from `Field error`) turns the cells red.
+
+`InputGroup` gains `trailingAction`: a real control inside the field's end (class
+`uix-input-group__action`, square, the field's height less 4 px a side), which both use.
+
+#### TimePicker
+
+```tsx
+<Field label={t('opensAt')} hint={t('businessHours')}>
+  <TimePicker name="opens" value={opens} onValueChange={setOpens} locale={locale} minuteStep={30} min="08:00" max="18:00" />
+</Field>
+```
+
+A time of day beside `DatePicker`; the value is `HH:mm` (what `<input type="time">` holds) or
+`null`. The field shows the locale's clock (14:30 in `de`, 2:30 PM in `en-US`; `hour12` overrides)
+and reads a typed time on Enter or blur: `1430`, `14.30`, `9`, `2:30 pm`. ArrowUp / ArrowDown step
+the part under the caret (the hour, or the minutes to the next `minuteStep`), PageUp / PageDown the
+hour, Alt+ArrowDown opens the list. The clock button lists the times at `minuteStep` between `min`
+and `max`; the list takes focus on the chosen time, Enter picks, Escape closes and focus goes back
+to the field. Text that is not a time, or one before `min` / after `max`, marks the field invalid and
+says why. `name` submits `HH:mm` through a hidden input. Words: `labels` or `UixLabelsProvider`
+`timePicker`. `DateTimePicker` now uses it for its time (no native `type="time"` is left);
+`minuteStep` defaults to 15 there and only steps the keys and the list, any typed minute is kept.
+
+#### Date fields without call-site workarounds (HAR-2432)
+
+```tsx
+<UixLabelsProvider labels={{
+  dateFormat: { locale: 'de', formatDate: toDDMMYYYY, parseDate: fromDDMMYYYY, placeholder: 'TT.MM.JJJJ' },
+  dateRangePicker: { label: t('chooseRange'), invalidMessage: t('rangeInvalid') },
+}}>
+```
+
+- `dateFormat` sets `locale`, `formatDate`, `parseDate` and `placeholder` for every `DatePicker`,
+  `DateTimePicker`, `DateRangePicker` (and the `locale` of `TimePicker`) below the provider; a prop
+  on one field still wins.
+- `FilterPopover type="date"` renders the kit `DatePicker`; the value stays `YYYY-MM-DD` (`''` for
+  none).
+- `DateRangePickerLabels` has `label` and `invalidMessage`, so no English default is left outside
+  the labels group; the props still win.
+- `DateTimePicker` names its time from the label's accessible text (an `aria-hidden` "*" is left
+  out) and follows the label when its text changes after mount.
+
+#### Combobox at parity with Select (HAR-1588)
+
+```tsx
+<span id="cat-label" className="uix-field__label">{t('category')}</span>
+<Combobox aria-labelledby="cat-label" label={t('category')} emptyLabel={t('noMatch')} value={category} onValueChange={setCategory}
+  options={[{ label: t('hardware'), options: hardware }, { label: t('software'), options: software }, other]} />
+```
+
+The list is a top-layer popover placed with `useAnchoredPosition` (like `Select`), so a Drawer, a
+Popover or an `overflow: hidden` cell never clips it. ↑ ↓ PageUp PageDown move (Home End too while
+an option is active), disabled options are skipped and the list does not wrap; Enter chooses;
+Escape closes it and puts the chosen option's text back, as leaving the field does. `options` take
+groups (`{ label, options, disabled }`, rendered as `role="group"`); the no-match row is outside the
+listbox; the chosen option has a check mark. New: `aria-labelledby` (replaces `label` as the name),
+`aria-describedby`, `aria-invalid` and `inputId` land on the input; `placement`;
+`filterComboboxItems`.
+
+#### TagInput
+
+```tsx
+<Field label={t('labels')} hint={t('labelsHint')}>
+  <TagInput name="labels" value={labels} onValueChange={setLabels} suggestions={known} maxTags={10}
+    validate={(tag) => (tag.length > 40 ? t('tooLong') : null)} />
+</Field>
+```
+
+Type and press Enter or a comma to add a chip; a paste of "a, b, c" adds three. A duplicate (ignoring
+case and accents), a `validate` refusal or one past `maxTags` keeps the text and says why under the
+field. Suggestions (those not added yet) open in a top-layer list once the person types or presses
+ArrowDown; Enter adds the active one. Backspace in the empty field reaches the last chip; ArrowLeft /
+ArrowRight move between chips and back; Backspace or Delete removes the focused chip and focus stays
+with the tags; the field is the only tab stop. Each change is announced politely. Inside `Field` the
+text input gets the label, hint and error; `name` submits one value per tag. Words: `labels` or
+`UixLabelsProvider` `tagInput`.
+
+#### SearchSuggest freeText (HAR-2465)
+
+```tsx
+<label className="uix-field__label" htmlFor="maker">{t('manufacturer')}</label>
+<SearchSuggest freeText inputId="maker" name="manufacturer" label={t('manufacturer')}
+  value={maker} onValueChange={setMaker} options={spellings} loading={loading} />
+```
+
+A text field with suggestions: the value is the text. Enter keeps what was typed and never submits
+the surrounding form (also while `loading`); no row is picked unless the person moves to it
+(ArrowDown / ArrowUp, then Enter) or clicks it, and then its title replaces the text through
+`onValueChange`, again without submitting. Blur, Tab and Escape keep the text (a second Escape does
+not clear it). No magnifier is drawn. `onSelect` is optional. Without `freeText` the search mode is
+unchanged. Decision: `Docs/adr/0004-search-suggest-free-text.md`.
+
+#### EntityPicker and SearchSuggest gaps (HAR-1834)
+
+- A failure Retry cannot fix: reject `onSearch` with `{ retryable: false, message? }`, or pass
+  `isRetryable(error)`. The list shows the message (or `labels.forbidden`) and no Retry row.
+- `SearchSuggest` takes `disabled` and `invalid`; `EntityPicker` forwards them, so an empty disabled
+  picker cannot be typed in and an empty required one with an error is announced invalid.
+- Clear starts a new search: the old query and rows are gone and the field has focus.
+- A visible label names the field: with a `<label for>` (a `Field`) or `aria-labelledby`
+  (`EntityPicker`) / `inputLabelledBy` (`SearchSuggest`), no `aria-label` overrides it.
+- While the next query loads the last rows stay in view (`aria-busy` at once), and the spinner waits
+  300 ms (`useDelayedPending`), so a fast answer shows none; Enter during a search picks nothing and
+  submits nothing.
 ### Calm status colour, the app shell and display preferences (2.48)
 
 #### StatusPill treatments, Stat sentiment, quiet Alert (HAR-1563)

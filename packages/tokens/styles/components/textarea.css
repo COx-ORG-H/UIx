@@ -12,4 +12,7 @@
   .uix-textarea:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-textarea:disabled { opacity: .55; background: var(--uix-bg-subtle); }
   .uix-textarea[aria-invalid="true"] { border-color: var(--uix-danger); }
+  /* lg: the public-page size beside Input lg (HAR-1812): its type and side padding; the 84 px
+     floor already clears the 44 px target, and it still grows with rows and the handle */
+  .uix-textarea--lg { padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-h3); }
 }

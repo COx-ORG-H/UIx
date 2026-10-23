@@ -28,7 +28,8 @@ test('every state named in a caption is on the page', () => {
   assert.match(forms, /class="uix-input uix-date-picker__input"[^>]*value="18 Nov 2026"/);
   assert.match(forms, /aria-invalid="true"[^>]*value="next week"|value="next week"[^>]*aria-invalid="true"/);
   assert.match(forms, /role="alert">\s*Enter a date as D Mon YYYY\./);
-  assert.match(forms, /type="time"[^>]*value="14:30"|value="14:30"[^>]*type="time"/);
+  assert.match(forms, /uix-time-picker__input"[^>]*value="14:30"/, "the time is a TimePicker (HAR-1835)");
+  assert.doesNotMatch(forms, /type="time"/);
   assert.match(forms, />CET</);
   assert.match(forms, /16 Nov 2026 – 27 Nov 2026/);
   assert.equal((forms.match(/data-date="2026-11-\d\d"/g) ?? []).length, 30, 'the open calendar shows November');

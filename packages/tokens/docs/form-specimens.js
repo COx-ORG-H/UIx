@@ -106,7 +106,7 @@ export const selectMarkup = ({ id, items, value = [], multiple = false, placehol
     .map((o) => `<option value="${escHtml(o.value)}"${o.disabled ? ' disabled=""' : ''}${value.includes(o.value) || (!multiple && !value.length && o.value === '') ? ' selected=""' : ''}>${escHtml(o.label)}</option>`).join('');
   const display = showPlaceholder ? escHtml(placeholder ?? '') : `<span class="uix-select__text">${escHtml(chosen[0].label)}</span>`;
   const toolbar = multiple && chosen.length ? `<div class="uix-select__toolbar"><span>${chosen.length} selected</span><button type="button" class="uix-btn uix-btn--link uix-btn--sm" tabindex="-1">Clear</button></div>` : '';
-  return `<button${ariaLabel ? ` aria-label="${escHtml(ariaLabel)}"` : ''} id="${id}" type="button" role="combobox" class="uix-select${size === 'sm' ? ' uix-select--sm' : ''}"${disabled ? ' disabled=""' : ''} aria-haspopup="listbox" aria-expanded="false" aria-controls="${list}"${invalid ? ' aria-invalid="true"' : ''}${readOnly ? ' aria-readonly="true"' : ''}${invalid ? ' data-invalid="true"' : ''}${showPlaceholder ? ' data-placeholder="true"' : ''} data-state="closed"><span class="uix-select__value">${display}</span>${more ? `<span class="uix-select__more"><span aria-hidden="true">+${more}</span><span class="uix-visually-hidden">, ${chosen.length} selected</span></span>` : ''}</button>`
+  return `<button${ariaLabel ? ` aria-label="${escHtml(ariaLabel)}"` : ''} id="${id}" type="button" role="combobox" class="uix-select${size && size !== 'md' ? ` uix-select--${size}` : ''}"${disabled ? ' disabled=""' : ''} aria-haspopup="listbox" aria-expanded="false" aria-controls="${list}"${invalid ? ' aria-invalid="true"' : ''}${readOnly ? ' aria-readonly="true"' : ''}${invalid ? ' data-invalid="true"' : ''}${showPlaceholder ? ' data-placeholder="true"' : ''} data-state="closed"><span class="uix-select__value">${display}</span>${more ? `<span class="uix-select__more"><span aria-hidden="true">+${more}</span><span class="uix-visually-hidden">, ${chosen.length} selected</span></span>` : ''}</button>`
     + `<select data-uix-select-proxy="" class="uix-select__proxy" aria-hidden="true" tabindex="-1"${name ? ` name="${escHtml(name)}"` : ''}${disabled ? ' disabled=""' : ''}${multiple ? ' multiple=""' : ''}>${proxyOptions}</select>`
     + `<div class="uix-select__popup" data-uix-select-popup="" hidden="" popover="manual">${toolbar}<div id="${list}" role="listbox" class="uix-listbox uix-select__listbox"${placeholder ? ` aria-label="${escHtml(placeholder)}"` : ''}${multiple ? ' aria-multiselectable="true"' : ''} tabindex="-1">${body}</div></div>`;
 };
@@ -202,7 +202,7 @@ export const initSelectSpecimens = (root) => {
       o.setAttribute('aria-selected', String(on));
       o.querySelector('.uix-listbox__check').innerHTML = on ? SELECT_CHECK : '';
     };
-    const render = () => {
+    const render = (notify = true) => {
       const on = selected();
       const value = trigger.querySelector('.uix-select__value');
       trigger.toggleAttribute('data-placeholder', !on.length);
@@ -215,7 +215,14 @@ export const initSelectSpecimens = (root) => {
       trigger.querySelector('.uix-select__more')?.remove();
       if (multiple && on.length > 1) trigger.insertAdjacentHTML('beforeend', `<span class="uix-select__more"><span aria-hidden="true">+${on.length - 1}</span><span class="uix-visually-hidden">, ${on.length} selected</span></span>`);
       const values = on.map(valueOf);
+      const before = JSON.stringify([...proxy.options].filter((p) => p.selected).map((p) => p.value));
       [...proxy.options].forEach((p) => { p.selected = values.includes(p.value); });
+      // Like the React Select, a changed value fires input + change on the form proxy, so page
+      // scripts (tables.html) can listen to it as to a native select (HAR-1575).
+      if (notify && before !== JSON.stringify(values)) {
+        proxy.dispatchEvent(new Event('input', { bubbles: true }));
+        proxy.dispatchEvent(new Event('change', { bubbles: true }));
+      }
       const count = popup.querySelector('.uix-select__toolbar span');
       if (count) count.textContent = `${on.length} selected`;
     };

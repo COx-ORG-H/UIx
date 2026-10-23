@@ -44,7 +44,7 @@ export type { ButtonProps, ButtonGroupProps, ButtonLinkProps, ButtonSize, Button
 
 // Kit chrome strings for a subtree (HAR-1358)
 export { UixLabelsProvider, useUixLabels } from './labels-context.js';
-export type { UixLabels, UixLabelsProviderProps } from './labels-context.js';
+export type { UixDateFormat, UixLabels, UixLabelsProviderProps } from './labels-context.js';
 
 // Link adapter — one renderLink callback for every component that can render a link (HAR-1348)
 export { renderPlainLink } from './link.js';
@@ -52,17 +52,23 @@ export type { UixLinkProps, UixRenderLink } from './link.js';
 
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
+export { PasswordInput, DEFAULT_PASSWORD_INPUT_LABELS } from './components/PasswordInput.js';
+export type { PasswordInputProps, PasswordInputLabels } from './components/PasswordInput.js';
+export { OtpInput } from './components/OtpInput.js';
+export type { OtpInputProps } from './components/OtpInput.js';
+export { TagInput, DEFAULT_TAG_INPUT_LABELS } from './components/TagInput.js';
+export type { TagInputProps, TagInputLabels } from './components/TagInput.js';
 
 export { Combobox } from './components/Combobox.js';
-export type { ComboboxProps, ComboboxOption } from './components/Combobox.js';
-export { filterComboboxOptions } from './combobox-model.js';
+export type { ComboboxProps, ComboboxOption, ComboboxGroup } from './components/Combobox.js';
+export { filterComboboxItems, filterComboboxOptions } from './combobox-model.js';
 
 export { SearchSuggest } from './components/SearchSuggest.js';
 // One search field look and behaviour over .uix-searchbar (HAR-2030)
 export { SearchBar } from './components/SearchBar.js';
 export type { SearchBarProps, SearchBarLabels } from './components/SearchBar.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
-export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchResult } from './components/EntityPicker.js';
+export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchError, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';
 export { searchSegments, foldForSearch } from './search-suggest-model.js';
 export type { SearchSegment, FoldedText } from './search-suggest-model.js';
@@ -76,8 +82,8 @@ export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps } from '.
 export { Select } from './components/Select.js';
 export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
 
-export { Checkbox } from './components/Checkbox.js';
-export type { CheckboxProps } from './components/Checkbox.js';
+export { Checkbox, CheckboxGroup } from './components/Checkbox.js';
+export type { CheckboxProps, CheckboxGroupProps } from './components/Checkbox.js';
 
 export { Radio, RadioCard, RadioGroup } from './components/Radio.js';
 export type { RadioProps, RadioCardProps, RadioGroupProps } from './components/Radio.js';
@@ -437,6 +443,11 @@ export {
   dateOrder, datePattern, formatDateKey, isValidDateKey, joinDateTime, parseDateInput, splitDateTime, timeZoneName,
 } from './date-field-model.js';
 export type { DatePart } from './date-field-model.js';
+export { TimePicker, DEFAULT_TIME_PICKER_LABELS } from './components/TimePicker.js';
+export type { TimeInputProblem, TimePickerLabels, TimePickerProps } from './components/TimePicker.js';
+export {
+  formatTimeKey, isOvernightRange, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes, uses12Hour,
+} from './time-field-model.js';
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,
   isDateInRange, isDateUnavailable, packLanes, rankOverflow, selectRangeDate, startOfMonth,
