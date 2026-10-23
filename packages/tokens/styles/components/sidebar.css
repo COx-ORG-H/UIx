@@ -169,7 +169,7 @@
   .uix-account-menu:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
   .uix-account-menu[aria-expanded="true"] { background: var(--uix-bg-active); }
   .uix-account-menu__avatar { flex: none; }
-  .uix-account-menu__text { display: grid; flex: 1 1 auto; min-width: 0; }
+  .uix-account-menu__text { display: grid; flex: 1 1 auto; gap: var(--uix-space-1); min-width: 0; } /* the kit's one title -> secondary rhythm (HAR-1577) */
   .uix-account-menu__name { font-size: var(--uix-text-body); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* the second line is hushed, not muted: muted dips under 4.5:1 on the hover and open tints */
   .uix-account-menu__sub { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
