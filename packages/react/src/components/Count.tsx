@@ -7,7 +7,11 @@ import { cx } from '../cx.js';
 export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /** The number shown. */
   value: number;
-  /** Formats the number (default `toLocaleString()` of the page's locale), e.g. `n > 99 ? '99+' : String(n)`. */
+  /**
+   * Formats the number, e.g. `n > 99 ? '99+' : String(n)` or your i18n formatter. The default is
+   * `toLocaleString()` in the runtime's locale: pass `format` when the server renders it, so the
+   * server's and the browser's thousands separators cannot differ.
+   */
   format?: (value: number) => string;
 }
 
@@ -26,9 +30,11 @@ export function Count({ value, format, className, ...props }: CountProps) {
     const before = previous.current;
     previous.current = value;
     const el = ref.current;
-    if (!el || Object.is(before, value)) return;
-    el.removeAttribute('data-uix-tick');
-    void el.offsetWidth; // restart a tick that is still running
+    if (!el || Object.is(before, value) || !Number.isFinite(value) || !Number.isFinite(before)) return;
+    if (el.hasAttribute('data-uix-tick')) {
+      el.removeAttribute('data-uix-tick');
+      void el.offsetWidth; // restart a tick that is still running
+    }
     el.setAttribute('data-uix-tick', value > before ? 'up' : 'down');
   }, [value]);
   useEffect(() => {

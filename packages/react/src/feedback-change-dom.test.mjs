@@ -41,7 +41,11 @@ function mount() {
     unmount: async () => { await act(async () => root.unmount()); host.remove(); },
   };
 }
-const animationEnd = (el, target = el) => target.dispatchEvent(new window.Event('animationend', { bubbles: true }));
+const animationEnd = (el, target = el, animationName = 'uix-changed') => {
+  const event = new window.Event('animationend', { bubbles: true });
+  Object.defineProperty(event, 'animationName', { value: animationName });
+  target.dispatchEvent(event);
+};
 
 test('ChangeHighlight: never on the first render; a change flashes, the same value does not, a second change restarts', async () => {
   const { host, render, unmount } = mount();
@@ -60,6 +64,20 @@ test('ChangeHighlight: never on the first render; a change flashes, the same val
   // a re-render with a new className keeps the flash (React never renders the attribute)
   await render(h(ui.ChangeHighlight, { value: 'Resolved', className: 'x' }, 'Resolved'));
   assert.equal(el.hasAttribute('data-uix-changed'), true);
+  // a change while the flash runs restarts it: the attribute goes and comes back, one handler
+  const seen = [];
+  const watcher = new window.MutationObserver((records) => seen.push(...records.map((r) => r.oldValue)));
+  watcher.observe(el, { attributes: true, attributeOldValue: true, attributeFilter: ['data-uix-changed'] });
+  await render(h(ui.ChangeHighlight, { value: 'Waiting', className: 'x' }, 'Waiting'));
+  await new Promise((r) => setTimeout(r, 0));
+  watcher.disconnect();
+  assert.deepEqual(seen, ['', null], 'the running flash was not restarted (removed, then set again)');
+  // a nested animation (a Count's tick) ending does not end the highlight
+  const inner = document.createElement('span');
+  el.append(inner);
+  animationEnd(el, inner, 'uix-count-up');
+  assert.equal(el.hasAttribute('data-uix-changed'), true, "a child's own animation ended the highlight");
+  inner.remove();
   animationEnd(el);
   assert.equal(el.hasAttribute('data-uix-changed'), false, 'the flash outlived its animation');
 
@@ -117,8 +135,11 @@ test('Count: no tick on the first render; one tick per change, in its direction;
   assert.equal(el.getAttribute('data-uix-tick'), null);
   await render(h(ui.Count, { value: 3 }));
   assert.equal(el.getAttribute('data-uix-tick'), 'down');
+  el.dispatchEvent(new window.Event('animationend', { bubbles: true }));
   await render(h(ui.Count, { value: 3 }));
-  assert.equal(el.getAttribute('data-uix-tick'), 'down', 'a re-render without a change re-ticked');
+  assert.equal(el.getAttribute('data-uix-tick'), null, 'a re-render without a change re-ticked');
+  await render(h(ui.Count, { value: Number.NaN }));
+  assert.equal(el.getAttribute('data-uix-tick'), null, 'NaN ticked');
   await render(h(ui.Count, { value: 120, format: (n) => (n > 99 ? '99+' : String(n)) }));
   assert.equal(el.textContent, '99+');
   await unmount();
@@ -179,14 +200,24 @@ test('useOptimisticValue: overlapping changes — only the latest outcome counts
   assert.equal(shown(), '3', 'an older failure overrode a newer success');
   assert.equal(out.current.rollbacks, 0);
 
+  // an older change saves, a newer one fails: the older saved value comes back, not the stale start
+  let older;
+  let newer;
+  await act(async () => { older = out.current.set(10); });
+  await act(async () => { newer = out.current.set(11); });
+  await act(async () => { calls[2].resolve(); await older; });
+  await act(async () => { calls[3].reject(new Error('no')); await newer; });
+  assert.equal(shown(), '10', 'the rollback skipped the value that had saved');
+  assert.equal(out.current.rollback.restored, 10);
+
   // the server moves while a change is in flight; the change fails: the newest server value returns
   let third;
   await act(async () => { third = out.current.set(4); });
   await render(tree(7));
   assert.equal(shown(), '4', 'a server update overwrote the pending change');
-  await act(async () => { calls[2].reject(new Error('no')); await third; });
+  await act(async () => { calls[4].reject(new Error('no')); await third; });
   assert.equal(shown(), '7');
-  assert.equal(out.current.rollbacks, 1);
+  assert.equal(out.current.rollbacks, 2);
   await drain();
   await unmount();
 });

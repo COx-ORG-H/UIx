@@ -60,6 +60,9 @@ export function useOptimisticValue<T>(serverValue: T, commit: (next: T) => Promi
   const [rollbacks, setRollbacks] = useState(0);
   const confirmed = useRef(serverValue);
   const latest = useRef(0);
+  // the newest change known to have saved: a rollback restores to it, even when a later change
+  // overtook it on screen
+  const confirmedId = useRef(0);
   const mounted = useRef(true);
   const commitRef = useRef(commit);
   const onRollbackRef = useRef(onRollback);
@@ -90,8 +93,8 @@ export function useOptimisticValue<T>(serverValue: T, commit: (next: T) => Promi
     setRollback(null);
     try {
       await commitRef.current(next);
+      if (id > confirmedId.current) { confirmedId.current = id; confirmed.current = next; }
       if (!mounted.current || id !== latest.current) return;
-      confirmed.current = next;
       setPending(false);
     } catch (error) {
       if (!mounted.current || id !== latest.current) return;

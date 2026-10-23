@@ -272,7 +272,38 @@ test('ChangeHighlight under reduced motion: a steady outline on the row as one b
   expect(outline).toBe('solid');
 });
 
+test('ChangeHighlight under reduced motion: the ring stays outside the pill', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('live-update').click();
+  const pill = page.getByTestId('changed-pill');
+  expect(await animations(pill)).toEqual(['uix-changed-static-ring']);
+  expect(await pill.evaluate((el) => parseFloat(getComputedStyle(el).outlineOffset))).toBeGreaterThan(0);
+});
+
+test('ChangeHighlight in forced colours: the row is outlined, and the highlight ends', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await page.getByTestId('live-update').click();
+  const row = page.getByTestId('changed-row');
+  expect(await animations(row)).toEqual(['uix-changed-static']);
+  expect(await animations(row.locator('td').first())).toEqual([]);
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+});
+
+test('ChangeHighlight on a pinned column keeps the cell opaque while tinted', async ({ page }) => {
+  await page.getByTestId('live-update').click();
+  const alpha = await page.getByTestId('changed-row').locator('td').first().evaluate((el) => {
+    const m = getComputedStyle(el).backgroundColor.match(/rgba?\(([^)]+)\)/);
+    const parts = m ? m[1].split(',').map(Number) : [];
+    return parts.length === 4 ? parts[3] : 1;
+  });
+  expect(alpha).toBe(1);
+});
+
 test('Count: one tick per change, in its direction; nothing moves beside it', async ({ page }) => {
+  // the tick lasts 160 ms: slow CSS animations down so a loaded machine still reads it running
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
   const badge = page.getByTestId('badge').locator('.uix-count');
   await expect(badge).toHaveText('4');
   await expect(badge).not.toHaveAttribute('data-uix-tick', /.*/);

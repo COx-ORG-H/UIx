@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, forwardRef, useImperativeHandle } from 'react';
+import { createElement, forwardRef, useCallback } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useChangeHighlight } from '../hooks/useChangeHighlight.js';
@@ -35,10 +35,15 @@ export const ChangeHighlight = forwardRef<HTMLElement | null, ChangeHighlightPro
   forwarded,
 ) {
   const ref = useChangeHighlight<HTMLElement>(value, { announce, disabled });
-  useImperativeHandle(forwarded, () => ref.current as HTMLElement, [ref]);
+  // one callback ref for both, so a new `as` (a new element) reaches the caller's ref too
+  const setRef = useCallback((node: HTMLElement | null) => {
+    (ref as { current: HTMLElement | null }).current = node;
+    if (typeof forwarded === 'function') forwarded(node);
+    else if (forwarded) forwarded.current = node;
+  }, [ref, forwarded]);
   return createElement(as, {
     ...props,
-    ref,
+    ref: setRef,
     className: cx('uix-change-highlight', variant === 'ring' && 'uix-change-highlight--ring', className),
   }, children);
 });

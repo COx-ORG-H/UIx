@@ -7,6 +7,11 @@
 
 const timers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
 
+/** Create the polite region `announcePolite(…, from)` will use, ahead of its first message. */
+export function ensureAnnouncer(from?: Element | null): void {
+  liveRegion(from);
+}
+
 function liveRegion(from?: Element | null): HTMLElement | null {
   if (typeof document === 'undefined') return null;
   const container: HTMLElement = (from?.closest('dialog') as HTMLElement | null) ?? document.body;

@@ -177,7 +177,7 @@ function DialogSection() {
 const params = new URLSearchParams(location.search);
 if (params.get('tint') === 'attention' || params.get('length') === 'long') {
   const style = document.createElement('style');
-  style.textContent = `.uix-change-highlight, .uix-changed {${params.get('tint') === 'attention' ? '--uix-change-tint: var(--uix-attention-bg);' : ''}${params.get('length') === 'long' ? '--uix-change-duration: var(--uix-dur-highlight);' : ''}}`;
+  style.textContent = `.uix-change-highlight, .uix-changed {${params.get('tint') === 'attention' ? '--uix-change-tint: color-mix(in srgb, var(--uix-attention) 18%, var(--uix-surface));' : ''}${params.get('length') === 'long' ? '--uix-change-duration: var(--uix-dur-highlight);' : ''}}`;
   document.head.append(style);
 }
 
