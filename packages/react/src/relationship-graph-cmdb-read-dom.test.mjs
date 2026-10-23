@@ -67,7 +67,7 @@ function hub() {
   return { nodes, edges };
 }
 
-const drawnLabels = (host) => [...host.querySelectorAll('.uix-relationship-graph__link text')].map((text) => text.textContent);
+const drawnLabels = (host) => [...host.querySelectorAll('.uix-relationship-graph__edge-label text')].map((text) => text.textContent);
 
 test('a busy column says its common relation once; only the edges that differ keep a label', async () => {
   const { host, unmount } = await mount({ rootId: 'svc', ...hub() });

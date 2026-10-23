@@ -35,8 +35,8 @@ test('K3: a missing relation is dashed and danger-toned; toned nodes match the l
     const link = [...document.querySelectorAll('.uix-relationship-graph__link')].find((g) => g.dataset.variant === 'dashed');
     const path = getComputedStyle(link.querySelector('path'));
     const ledger = getComputedStyle(document.querySelector('[data-node-id="ledger"]'));
-    const legendMissing = getComputedStyle(document.querySelector('.uix-relationship-graph__legend li[data-variant="dashed"]'), '::before');
-    const legendAbsent = getComputedStyle(document.querySelector('.uix-relationship-graph__legend li[data-shape="node"][data-tone="danger"]'), '::before');
+    const legendMissing = getComputedStyle(document.querySelector('.uix-relationship-graph__legend li[data-variant="dashed"] .uix-relationship-graph__legend-mark'));
+    const legendAbsent = getComputedStyle(document.querySelector('.uix-relationship-graph__legend li[data-shape="node"][data-tone="danger"] .uix-relationship-graph__legend-mark'));
     return {
       dash: path.strokeDasharray, edge: path.stroke, node: ledger.borderTopColor,
       legendEdge: legendMissing.borderTopColor, legendEdgeStyle: legendMissing.borderTopStyle, legendNode: legendAbsent.borderLeftColor,
@@ -53,7 +53,7 @@ test('K3: a missing relation is dashed and danger-toned; toned nodes match the l
 
 test('K3: every label shown, and no two label boxes overlap', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const boxes = await page.evaluate(() => [...document.querySelectorAll('.uix-relationship-graph__link text')].map((text) => {
+  const boxes = await page.evaluate(() => [...document.querySelectorAll('.uix-relationship-graph__edge-label text')].map((text) => {
     const r = text.getBoundingClientRect();
     return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, text: text.textContent };
   }));
@@ -114,7 +114,7 @@ test('K3: axe', async ({ page }, testInfo) => {
 test('CMDB 300 nodes: reads — no repeated labels, an opaque bus, chrome on a surface, focus clear of it, names clear of flags', async ({ page }, testInfo) => {
   await open(page, testInfo, '?case=cmdb&nodes=300', { viewport: { width: 1280, height: 900 }, reducedMotion: true });
   const read = await page.evaluate(() => {
-    const labels = [...document.querySelectorAll('#cmdb .uix-relationship-graph__link text')].map((text) => text.textContent);
+    const labels = [...document.querySelectorAll('#cmdb .uix-relationship-graph__edge-label text')].map((text) => text.textContent);
     const opaque = (colour) => !/\/\s*0?\.\d|rgba\(/.test(colour);
     const bus = document.querySelectorAll('#cmdb .uix-relationship-graph__link[data-bus]');
     const stroke = getComputedStyle(bus[0].querySelector('path')).stroke;
@@ -240,3 +240,120 @@ for (const width of [390, 1280, 1920]) {
     if (fit.zoom > 0.4) expect(fit.under).toEqual([]);
   });
 }
+
+// Operator review 2026-10-23 on the clinical-services demo (?case=clinical: 25 nodes, toned and
+// dashed edges, Bosnian labels): edge labels were tiny and lines ran through them, the legend's
+// samples sat off their words' middle, and a pan dragged a ghost of the selected labels along.
+const luminance = (rgb) => {
+  const [r, g, b] = rgb.map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => { const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+
+test('clinical map: edge labels sit on opaque chips above every line, in small text at >= 4.5:1, apart', async ({ page }, testInfo) => {
+  await open(page, testInfo, '?case=clinical', { viewport: { width: 1280, height: 900 }, reducedMotion: true });
+  const read = await page.evaluate(() => {
+    const svg = document.querySelector('#clinical .uix-relationship-graph__edges');
+    const rgb = (value) => {
+      const probe = document.createElement('span');
+      probe.style.color = value;
+      document.body.append(probe);
+      const out = getComputedStyle(probe).color.match(/[\d.]+/g).map(Number);
+      probe.remove();
+      return out;
+    };
+    const root = getComputedStyle(document.documentElement);
+    const meta = parseFloat(root.getPropertyValue('--uix-text-meta')) * parseFloat(root.fontSize);
+    const labels = [...svg.querySelectorAll('.uix-relationship-graph__edge-label')].map((group) => {
+      const text = group.querySelector('text');
+      const rect = group.querySelector('rect');
+      const t = text.getBBox();
+      const r = rect.getBBox();
+      const rectStyle = getComputedStyle(rect);
+      const chipColour = rgb(rectStyle.fill);
+      return {
+        words: text.textContent,
+        font: parseFloat(getComputedStyle(text).fontSize),
+        inside: r.x <= t.x && r.y <= t.y && r.x + r.width >= t.x + t.width && r.y + r.height >= t.y + t.height,
+        opaque: Number(rectStyle.fillOpacity) === 1 && (chipColour.length === 3 || chipColour[3] === 1),
+        textColour: rgb(getComputedStyle(text).fill),
+        chipColour,
+        box: { left: r.x, right: r.x + r.width, top: r.y, bottom: r.y + r.height },
+      };
+    });
+    const layer = svg.querySelector('.uix-relationship-graph__edge-labels');
+    const headers = [...document.querySelectorAll('#clinical .uix-relationship-graph__column')].map((c) => c.textContent.toLowerCase());
+    return { meta, labels, labelsLast: svg.lastElementChild === layer, headers };
+  });
+  expect(read.labels.length).toBeGreaterThanOrEqual(6);
+  expect(read.labelsLast, 'labels are drawn after every line').toBe(true);
+  for (const label of read.labels) {
+    expect(label.font, `${label.words}: font size`).toBeGreaterThanOrEqual(read.meta - 0.01);
+    expect(label.inside, `${label.words}: the chip holds the words`).toBe(true);
+    expect(label.opaque, `${label.words}: the chip is opaque`).toBe(true);
+    expect(contrast(label.textColour.slice(0, 3), label.chipColour.slice(0, 3)), `${label.words}: contrast`).toBeGreaterThanOrEqual(4.5);
+  }
+  const overlapping = [];
+  read.labels.forEach((a, i) => read.labels.slice(i + 1).forEach((b) => {
+    if (a.box.left < b.box.right - 1 && b.box.left < a.box.right - 1 && a.box.top < b.box.bottom - 1 && b.box.top < a.box.bottom - 1) overlapping.push(`${a.words} × ${b.words}`);
+  }));
+  expect(overlapping).toEqual([]);
+  // the column that says its common relation once draws no label for it (HAR-1387)
+  expect(read.headers.some((h) => h.includes('virtualna mašina na'))).toBe(true);
+  expect(read.labels.filter((l) => l.words.includes('virtualna'))).toEqual([]);
+});
+
+for (const width of [390, 1280]) {
+  test(`clinical map at ${width} px: each legend sample is centred on its words, and items wrap whole`, async ({ page }, testInfo) => {
+    await open(page, testInfo, '?case=clinical', { viewport: { width, height: 900 } });
+    const items = await page.evaluate(() => [...document.querySelectorAll('#clinical .uix-relationship-graph__legend li')].map((li) => {
+      const mark = li.querySelector('.uix-relationship-graph__legend-mark').getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(li.lastChild);
+      const words = range.getBoundingClientRect();
+      const lineHeight = parseFloat(getComputedStyle(li).lineHeight);
+      return {
+        label: li.textContent,
+        dy: Math.abs((mark.top + mark.height / 2) - (words.top + words.height / 2)),
+        lines: Math.round(li.getBoundingClientRect().height / lineHeight),
+        markHeight: mark.height,
+        lineHeight,
+      };
+    }));
+    expect(items.length).toBe(4);
+    for (const item of items) {
+      expect(item.dy, `${item.label}: centres`).toBeLessThanOrEqual(1);
+      expect(item.lines, `${item.label}: one line`).toBe(1);
+      expect(item.markHeight).toBeLessThanOrEqual(item.lineHeight);
+    }
+  });
+}
+
+test('clinical map: a pan starts no text selection and no native drag, from labels, headers or nodes', async ({ page }, testInfo) => {
+  await open(page, testInfo, '?case=clinical', { viewport: { width: 1280, height: 900 } });
+  await page.evaluate(() => {
+    window.__drags = [];
+    document.addEventListener('dragstart', (event) => window.__drags.push({ on: event.target.nodeName ?? '#text', prevented: event.defaultPrevented }));
+  });
+  const map = page.locator('#clinical');
+  const drag = async (locator) => {
+    const box = await locator.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 120, box.y + box.height / 2 + 60, { steps: 8 });
+    await page.mouse.up();
+  };
+  for (const part of [map.locator('.uix-relationship-graph__edge-label text').first(), map.locator('.uix-relationship-graph__column').first()]) {
+    await page.evaluate(() => getSelection().removeAllRanges());
+    await drag(part);
+    expect(await page.evaluate(() => String(getSelection())), 'a pan selects nothing').toBe('');
+  }
+  // even with everything selected (Ctrl+A), a press on a label or a node drags no ghost
+  for (const part of [map.locator('.uix-relationship-graph__edge-label text').first(), map.locator('.uix-relationship-graph__item').nth(6)]) {
+    await page.evaluate(() => getSelection().selectAllChildren(document.querySelector('#clinical')));
+    await drag(part);
+  }
+  expect(await page.evaluate(() => window.__drags.filter((d) => !d.prevented))).toEqual([]);
+  // the names are still there for assistive technology and the keyboard
+  await expect(map.getByRole('button', { name: /DICOM pristupnik/ })).toBeVisible();
+});

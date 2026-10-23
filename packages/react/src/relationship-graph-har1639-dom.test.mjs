@@ -68,7 +68,13 @@ function mount(props) {
 }
 const flush = () => act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
 const item = (host, id) => host.querySelector(`.uix-relationship-graph__item[data-node-id="${id}"]`);
-const link = (host, id) => [...host.querySelectorAll('.uix-relationship-graph__link')].find((g) => g.querySelector('text')?.textContent === id || g.dataset.edge === id);
+/** An edge's line group, by its drawn label (labels are drawn in their own layer above every line) or its id. */
+const link = (host, id) => {
+  const label = [...host.querySelectorAll('.uix-relationship-graph__edge-label')].find((g) => g.textContent === id);
+  const edge = label?.dataset.edge ?? id;
+  return [...host.querySelectorAll('.uix-relationship-graph__link')].find((g) => g.dataset.edge === edge);
+};
+const linkWith = (host, words) => link(host, [...host.querySelectorAll('.uix-relationship-graph__edge-label')].find((g) => g.textContent.includes(words))?.dataset.edge);
 
 test('(1, 2) edge variant and tone, node tone, and a legend that matches them', () => {
   const ui = mount({ controls: 'none', edgeLabels: 'always', legend: [
@@ -76,10 +82,11 @@ test('(1, 2) edge variant and tone, node tone, and a legend that matches them', 
     { id: 'ok', label: 'Evidence present', tone: 'success', shape: 'node' },
   ] });
   const links = [...ui.host.querySelectorAll('.uix-relationship-graph__link')];
-  const missing = links.find((g) => g.textContent.includes('writes to'));
+  assert.ok(links.length > 0);
+  const missing = linkWith(ui.host, 'writes to');
   assert.equal(missing.dataset.variant, 'dashed');
   assert.equal(missing.dataset.tone, 'danger');
-  const covers = links.find((g) => g.textContent.includes('covers'));
+  const covers = linkWith(ui.host, 'covers');
   assert.equal(covers.dataset.variant, undefined);
   assert.equal(item(ui.host, 'app').dataset.tone, 'success');
   assert.equal(item(ui.host, 'db').dataset.tone, 'danger');
@@ -141,7 +148,7 @@ test('(6) labels in a dense column are drawn apart', () => {
   const nodes = [{ id: 'hub', label: 'Hub' }, ...Array.from({ length: 8 }, (_, i) => ({ id: `c${i}`, label: `Child ${i}` }))];
   const edges = nodes.slice(1).map((node, i) => ({ id: `e${i}`, source: 'hub', target: node.id, label: 'depends on' }));
   const ui = mount({ nodes, edges, rootId: 'hub', clusterThreshold: 0, controls: 'none', edgeLabels: 'always', density: 'compact' });
-  const ys = [...ui.host.querySelectorAll('.uix-relationship-graph__link text')].map((text) => ({ x: Number(text.getAttribute('x')), y: Number(text.getAttribute('y')) }));
+  const ys = [...ui.host.querySelectorAll('.uix-relationship-graph__edge-label text')].map((text) => ({ x: Number(text.getAttribute('x')), y: Number(text.getAttribute('y')) }));
   assert.ok(ys.length >= 2);
   const sorted = ys.filter((label) => Math.abs(label.x - ys[0].x) < 60).sort((a, b) => a.y - b.y);
   for (let i = 1; i < sorted.length; i += 1) assert.ok(sorted[i].y - sorted[i - 1].y >= 15, `labels ${i - 1} and ${i} are ${sorted[i].y - sorted[i - 1].y} px apart`);
