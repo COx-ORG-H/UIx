@@ -1,5 +1,8 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 0c2a40d routine: Chip's onClick dropped the event Menu's trigger reads; the PR #168 review named it, pinned by a jsdom Menu test -->
+<!-- lesson-skip: 17f48df routine: decorative key caps had no touch rule; one media query in kbd.css, pinned by a touch-emulated Chromium spec -->
+<!-- lesson-skip: caa32c6 routine: fit measured the whole viewport under an overlaid footer; the PR #166 review named it, pinned by jsdom and Chromium tests -->
 <!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
 <!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->

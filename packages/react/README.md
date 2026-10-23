@@ -192,7 +192,7 @@ Rules the component cannot enforce for you:
 - **Dimming is not a signal.** `dimmedNodeIds` must be accompanied by text that says what is dimmed and why.
 - **Localise everything.** Every visible and announced string comes from `labels`; the English defaults live in `DEFAULT_RELATIONSHIP_GRAPH_LABELS`.
 
-**Map controls (`controls`, `initialView`).** The default `controls="full"` is the labelled toolbar above the map. `controls="compact"` is the map convention: an icon cluster in the map's bottom-right corner (zoom in, zoom out, fit, reset, full screen, each with a tooltip) and the zoom level beside it; drag pans, Ctrl/⌘ + wheel or a pinch zooms around the pointer, and a plain wheel keeps scrolling the page and briefly says how to zoom. The map itself takes keyboard focus: arrow keys pan (on an item they still move between items), `+` and `−` zoom, `0` resets and Escape leaves full screen. Full screen covers the page (the page behind does not scroll) and there a plain wheel zooms. `controls="none"` draws nothing; drag, pinch and Ctrl/⌘ + wheel still work. `initialView="fit"` opens with every item in view (down to the 40 % minimum) instead of the 75 % readability floor, and Reset returns to it.
+**Map controls (`controls`, `initialView`).** The default `controls="full"` is the labelled toolbar above the map. `controls="compact"` is the map convention: an icon cluster in the map's bottom-right corner (zoom in, zoom out, fit, reset, full screen, each with a tooltip) and the zoom level beside it; drag pans, Ctrl/⌘ + wheel or a pinch zooms around the pointer, and a plain wheel keeps scrolling the page and briefly says how to zoom. The map itself takes keyboard focus: arrow keys pan (on an item they still move between items), `+` and `−` zoom, `0` resets and Escape leaves full screen. Full screen covers the page (the page behind does not scroll) and there a plain wheel zooms. `controls="none"` draws nothing; drag, pinch and Ctrl/⌘ + wheel still work. `initialView="fit"` opens with every item in view (down to the 40 % minimum) instead of the 75 % readability floor, and Reset returns to it. With `controls="compact"` the hint, the zoom level and the cluster sit in a band along the map's bottom edge; the map ends at the band, and fit, the first view and Reset leave its height free.
 
 ```tsx
 <RelationshipGraph layout="layered" controls="compact" initialView="fit" height="clamp(24rem, 62vh, 44rem)" … />
@@ -1071,6 +1071,9 @@ const v = useVirtualRows(rows, { rowHeight: 44, estimatedViewportHeight: 600, en
 - The ref is the body (the button, link or span that carries the chip's action), also on a
   removable chip; `bodyProps` puts attributes there.
 - `current` on a link chip: `aria-current="page"` and the filled look.
+- `onClick` gets the click event, so a chip can be a `Menu` trigger:
+  `<Menu trigger={<Chip variant="add" icon={<PlusIcon />}>Filter</Chip>}>…</Menu>`. A handler that takes no
+  argument still works.
 
 #### FileUpload and Attachment
 
@@ -1621,6 +1624,9 @@ const [nav, setNav] = useState<ShellNav>('full');
 
 - `Sidebar actions` sit beside the brand (hidden in the rail); `search` is a row that opens your search and shows
   its keys (it does not bind them: your command palette listens); `footer` is pinned to the bottom.
+- Key caps are for a keyboard: on a touch phone or tablet (`(hover: none) and (pointer: coarse)`) the kit draws
+  none, in the search row, Menu and CommandPalette rows, Tooltips, SearchSuggest and a Button's hint. What a
+  screen reader hears is unchanged (`aria-keyshortcuts`, the spoken keys and descriptions stay).
 - `AccountMenu`: avatar (photo, your node, or initials), name and a second line as a `Menu` trigger;
   `collapsed` in the rail.
 - `navHotkey` switches full ↔ rail instantly, never while typing; `navTierStorageKey` remembers the tier before
