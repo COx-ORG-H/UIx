@@ -29,7 +29,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Component | CSS file | React export | Maturity | A11y-reviewed | Notes |
 |---|---|---|---|---|---|
 | Alert | alert.css | ✓ `Alert` | Stable | no | Feedback banner; `AlertTone`. |
-| AppShell | app-shell.css | ✓ `AppShell` | Stable | no | `nav` full/rail/hidden tiers, `focus` mode, `mainBleed`. |
+| AppShell | app-shell.css | ✓ `AppShell` | Stable | no | `nav` full/rail/hidden tiers, `focus` mode, `mainBleed`. HAR-1815: `layout="viewport"` (frameless, `100dvh`, no top-bar row, one column under 40rem). HAR-1371: `navHotkey`, `navTierStorageKey`, `defaultNav`/`onNavChange`, `phoneNav="drawer"`. |
 | Attachment | attachment.css | absent | Planned | no | Planned wrapper (presentational). |
 | AuditLog | audit-log.css | ✓ `AuditLog` | Beta | no | HAR-987 (MEDx S50, POSx PRT-01): entries (actor, labelled action + target, relative + exact time, Details), period / person / action filters over `FilterEditor`, keyset "Show older entries", reload in a `BusyRegion`, first-load / empty / filtered-empty / error / forbidden states. |
 | Avatar | avatar.css | ✓ `Avatar` | Stable | no | Also `AvatarGroup`, `UserChip`. 2.36.0 (HAR-1374): `presence` (`online`, `busy`, `away`, `offline`: a shape and a colour, the state in text), `PresenceDot`; the dot is no longer clipped by the avatar. |
@@ -38,7 +38,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
 | Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). HAR-2031: `shortcut` shows the keys in a hover / focus hint. HAR-2416: `ButtonLink shortcut`; screen readers hear the keys once, as the control's description (no kit `aria-keyshortcuts`). |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
-| Card | card.css | ✓ `Card` | Stable | no | Layout container; also `CardLink` and `CollapsibleSection`. |
+| Card | card.css | ✓ `Card` | Stable | no | Layout container; also `CardLink` and `CollapsibleSection`. HAR-1818: `Inset` (`.uix-inset`), a sunken well inside a card body. |
 | Chart | chart.css | ✓ `Chart` (`@tensor_1/react/chart`) | Beta | no | Optional ECharts adapter with accessible data table, analytical card states, metric, and legend chrome; lean preset also available. |
 | Checkbox | checkbox.css | ✓ `Checkbox` | Stable | no | Form primitive. |
 | ColorPicker | color-picker.css | ✓ `ColorPicker` | Beta | no | HSV/hex picker with presets, recent colors, and contrast feedback. |
@@ -56,6 +56,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | DiffViewer | diff-viewer.css | ✓ `DiffViewer` | Beta | no | Three-way JSON configuration diff and per-entry resolution. HAR-1369: `labelFor`, `renderValue(value, path, side)`, `provenance(path, side)`. |
 | TextDiff | text-diff.css | ✓ `TextDiff` | Beta | no | Two-way text diff by line (changed lines paired, words marked) or by word for prose; split (stacks when narrow) or unified; folds unchanged runs; `diffText` / `textDiffRows` model. Landed with HAR-1368. |
 | EditorialHome | editorial-home.css | ✓ `PageIntro` | Beta | no | Editorial-home kit (INTRA-04): family `SectionHead`, `NoticeQueue`, `FeaturedStage`, `FeaturedRundown(Item)`, `NewsLead`, `ContentList(Item)`, `ResourceGrid`, `StatLine`, `EventRow`, `StatusRow`. Ported from the approved TENSOR intranet prototype; landed 2.8.0. HAR-2030: `SearchBar` renders `.uix-searchbar` (label, icon, clear, Enter / Escape, `md` / `lg`, submit button). |
+| DisplayPreferences | display-preferences.css | ✓ `DisplayPreferences` | Beta | no | HAR-1372: also `ThemeSwitcher`, `useDisplayPreferences`, `displayPreferencesScript`; the tokens read `data-contrast`, `data-text-scale`, `data-motion`, `data-density` on `<html>`. |
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. HAR-2029: `dirty` asks "Discard changes?" (anchored, focus on Keep editing) on Escape, ×, backdrop and `DialogClose`; `pending` blocks them. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | ✓ `Flow` | Beta | no | Also `FlowNode`; presentational graph shell with explicit state text and consumer-owned geometry. |
@@ -80,7 +81,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Modal | modal.css | ✓ `Modal` | Stable | no | Overlay; `useDialog` hook; also generic `ConfirmDialog` and `PromptDialog`. HAR-2029: `dirty` / `pending` as on Drawer, and `DialogClose`. |
 | NotificationCenter | notification-center.css | absent | Planned | no | Planned wrapper (presentational). |
 | OrgChart | org-chart.css | ✓ `OrgChart` | Beta | no | Reporting lines as a top-down chart of person cards (photo or initials, name, title, team, location, direct-report count as the expand control); `loadChildren` on expand with loading and retry rows, `revealId` for search, leaf rows stacked, zoom / Fit / pan, an indented list below 48rem of its own width; WAI-ARIA tree keys that follow the picture. `OrgChartNode`, `OrgChartLabels`. Landed with HAR-1807. |
-| PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. |
+| PageHeader | page-header.css | ✓ `PageHeader` | Stable | no | Layout header. HAR-1815: `size="display"`, the staff type preset. |
 | Pagination | pagination.css | ✓ `Pagination` | Stable | no | Data-display control. |
 | Peek | peek.css | ✓ `Peek` | Stable | no | Side-peek overlay. |
 | Pipeline | pipeline.css | ✓ `Pipeline` | Beta | no | Also `PipelineStage`; compact bar and detailed scrollable operational rail. |
@@ -96,13 +97,13 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Segmented | segmented.css | ✓ `Segmented` | Beta | no | Also `SegmentedOption`. HAR-1380: `selection="link"` (a named nav of links, `aria-current="page"`) and the `LocaleSwitcher` convenience. |
 | SortableList | sortable-list.css | ✓ `SortableList` | Beta | no | HAR-1375: a list the person reorders: grip (pointer drag), Move up / Move down always present, Alt+↑ / Alt+↓, focus kept, polite announcement. Shares `reorder.ts` (`placeId`, `useRowDrag`) with ViewMenu, SavedViewMenu and NavFavourites. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
-| Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also controlled `NavGroup`, rail mode, `SidebarSection`, `NavItem`, and `SubNavItem`. |
+| Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also controlled `NavGroup`, rail mode, `SidebarSection`, `NavItem`, and `SubNavItem`. HAR-1371: `actions`, `search`, `footer` slots and `AccountMenu`. |
 | Sla | sla.css | absent | Planned | no | Planned wrapper (presentational). |
 | Slider | slider.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Spinner | spinner.css | ✓ `Spinner` | Stable | no | Feedback. |
-| Stat | stat-tile.css | ✓ `Stat` | Stable | no | Exported as `Stat` (`StatTrend`). |
+| Stat | stat-tile.css | ✓ `Stat` | Stable | no | Exported as `Stat` (`StatTrend`). HAR-1563: `trend.sentiment`; toned tiles keep a neutral border. HAR-1803: a link tile shows a chevron at rest. |
 | States | states.css | ✓ `EmptyState` | Stable | no | Also rich page/drawer variants, `ErrorState`, `ForbiddenState`, `NotFoundState`, `LoadingState`, `Skeleton`, and `AsyncOperationStatus`. |
-| StatusPill | status-pill.css | ✓ `StatusPill` | Stable | no | `PillTone`, `PillTreatment`. |
+| StatusPill | status-pill.css | ✓ `StatusPill` | Stable | no | `PillTone`, `PillTreatment`. HAR-1563: `treatment` `soft` (`filled` alias) / `dot` / `outline`, tone `progress`. |
 | Stepper | stepper.css | absent | Planned | no | The numeric −/+ stepper (not a wizard; that is `Steps`). `MetricInput` covers bounded numeric entry today. |
 | Steps | steps.css | ✓ `Steps` | Beta | no | Also `Step`; ordered list, state in text (complete/current/upcoming/waiting/error), navigable steps, stacks below 40rem. Landed 2.27.0 (HAR-1362). 2.32.0 (HAR-1628): `progress={false}` for numbered sections that hold content. |
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |

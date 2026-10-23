@@ -58,7 +58,7 @@ test('every state named in a caption is on the page', () => {
   assert.match(crm, /data-audit-log-example[\s\S]*<section class="uix-audit-log" aria-label="Access history">/);
   assert.equal((crm.match(/class="uix-audit__row uix-audit-log__row"/g) ?? []).length, 3);
   assert.match(crm, /What: Opened, Changed/);
-  assert.match(crm, /<summary>Details<\/summary>/);
+  assert.match(crm, /<summary class="uix-audit-log__more-summary"><span>Details<\/span><span class="uix-collapsible__chevron"/);
   assert.match(crm, />Show older entries</);
   // diff viewer for people and match review adopt mode
   const diff = specimens['examples-workflows-pipelines'];

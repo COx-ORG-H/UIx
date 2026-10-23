@@ -19,8 +19,14 @@
     0% { outline: 2px solid var(--uix-ring); outline-offset: var(--uix-space-1); }
     100% { outline: 2px solid transparent; outline-offset: var(--uix-space-1); }
   }
+  /* !important: the reduced-motion policy (motion.css) ends every keyframe animation at once, which
+     would end this steady outline before anyone saw it; a layered !important wins over it. The
+     in-app preference (data-motion="reduce", HAR-1372) gets the same outline. */
   @media (prefers-reduced-motion: reduce) {
-    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both; }
+    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
   }
 
   @media (forced-colors: active) {

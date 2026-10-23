@@ -9,5 +9,7 @@
   .uix-list--roving > .uix-list__item[tabindex] { cursor: default; }
   .uix-list__title { display: block; font-weight: 500; }
   .uix-list__meta { display: block; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* the kit's one title -> secondary rhythm: --uix-space-1 under the title (HAR-1577) */
+  .uix-list__title + .uix-list__meta { margin-top: var(--uix-space-1); }
   .uix-list__trail { margin-left: auto; display: flex; align-items: center; gap: var(--uix-space-2); }
 }

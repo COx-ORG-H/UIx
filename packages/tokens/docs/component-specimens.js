@@ -43,6 +43,11 @@ export const COMPONENT_SPECIMENS = {
     "anchor": "#rs-type",
     "container": "[data-uix-richselect]"
   },
+  "display-preferences": {
+    "route": "examples-form-controls",
+    "selector": ".uix-display-prefs",
+    "parts": [".uix-display-prefs", "[data-theme-switcher-example]"]
+  },
   "search-bar": {
     "route": "examples-form-controls",
     "selector": "[data-search-bar-example]"
@@ -95,11 +100,13 @@ export const COMPONENT_SPECIMENS = {
   },
   "app-shell": {
     "route": "examples-navigation",
-    "selector": ".uix-shell"
+    "selector": ".uix-shell",
+    "parts": [".uix-shell", "[data-shell-viewport-example]"]
   },
   "sidebar": {
     "route": "examples-navigation",
-    "selector": ".uix-sidebar"
+    "selector": ".uix-sidebar",
+    "parts": [".uix-sidebar", "[data-sidebar-account-example]"]
   },
   "breadcrumbs": {
     "route": "examples-navigation",
@@ -123,7 +130,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "page-header": {
     "route": "examples-navigation",
-    "selector": ".uix-page-header"
+    "selector": ".uix-page-header",
+    "parts": [".uix-page-header", "[data-shell-viewport-example] .uix-page-header--display"]
   },
   "command-palette": {
     "route": "examples-navigation",
@@ -139,7 +147,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "card": {
     "route": "examples-data-display",
-    "selector": ".uix-card"
+    "selector": ".uix-card",
+    "parts": [".uix-card", "[data-card-inset-example]"]
   },
   "table": {
     "route": "examples-data-display",
@@ -452,7 +461,8 @@ export const COMPONENT_SPECIMENS = {
   },
   "detail-page": {
     "route": "examples-workspace",
-    "selector": ".uix-detail-page"
+    "selector": ".uix-detail-page",
+    "parts": [".uix-detail-page", "[data-detail-staff-example]"]
   },
   "related-links": {
     "route": "examples-workspace",

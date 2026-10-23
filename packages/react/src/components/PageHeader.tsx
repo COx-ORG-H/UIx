@@ -19,16 +19,22 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
   helpLabel?: string;
   /** Right-aligned action area (buttons, menus). */
   actions?: ReactNode;
+  /**
+   * `display` is the staff type preset (HAR-1815; TENSOR, MOTUS ADR-0047): a 40 px heading-font
+   * title, a bold hushed eyebrow, a body-size hushed subtitle up to 42rem, and the actions
+   * aligned to the bottom of the titles. `default` is the 24 px header.
+   */
+  size?: 'default' | 'display';
 }
 
 /**
  * Page header — eyebrow / title (+ optional `help` ?) / subtitle + actions row, over `.uix-page-header`.
  * The hairline + breathing room below come from the component CSS.
  */
-export function PageHeader({ eyebrow, title, subtitle, help, helpLabel, actions, as: TitleTag = 'h1', className, ...props }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, subtitle, help, helpLabel, actions, as: TitleTag = 'h1', size = 'default', className, ...props }: PageHeaderProps) {
   const heading = <TitleTag className="uix-page-header__title">{title}</TitleTag>;
   return (
-    <header className={cx('uix-page-header', className)} {...props}>
+    <header className={cx('uix-page-header', size === 'display' && 'uix-page-header--display', className)} {...props}>
       <div className="uix-page-header__titles">
         {eyebrow != null && <div className="uix-page-header__eyebrow">{eyebrow}</div>}
         {/* The ? sits beside the heading, not in it, so the heading's name stays the title. */}

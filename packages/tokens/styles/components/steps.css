@@ -32,6 +32,8 @@
   .uix-steps--horizontal > .uix-step > .uix-step__text { flex: 0 0 auto; max-width: 12rem; }
   .uix-step[data-state="waiting"] .uix-step__marker { border-style: dashed; border-color: var(--uix-warning-border); color: var(--uix-warning-text); }
   .uix-step[data-state="error"] { color: var(--uix-text); }
+  /* the error marker is the icon set's X (HAR-1576), the size of the done check */
+  .uix-step__marker > .uix-icon { width: 12px; height: 12px; }
   .uix-step[data-state="error"] .uix-step__marker { background: var(--uix-danger-bg); border-color: var(--uix-danger-border); color: var(--uix-danger-text); }
   /* vertical (and horizontal below 40rem): a column, the connector a line under the marker */
   .uix-steps--vertical { flex-direction: column; gap: 0; }

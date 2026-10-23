@@ -1,0 +1,38 @@
+/* uix display preferences (HAR-1372) — the attributes useDisplayPreferences, DisplayPreferences and
+   displayPreferencesScript write on <html>, as re-pointed existing tokens (no new --uix-* names):
+     data-contrast="more"          stronger secondary text and borders (3:1 hairlines), both themes
+     data-text-scale="sm|lg|xl"    the rem scale every type token is in (md writes nothing)
+     data-density="compact|comfortable"  table rows and controls
+     data-motion="reduce"          the reduced-motion policy (motion.css), without the OS setting
+   data-theme="light|dark" is the kit's existing theme switch. Depends only on --uix-* tokens. */
+@layer uix.tokens {
+  /* mixes of the theme's own text and surface, so one rule serves light and dark */
+  :root[data-contrast="more"] {
+    --uix-text-hushed: color-mix(in srgb, var(--uix-text) 86%, transparent);
+    --uix-text-muted: color-mix(in srgb, var(--uix-text) 74%, var(--uix-surface));
+    --uix-border: color-mix(in srgb, var(--uix-text) 45%, var(--uix-surface));
+    --uix-border-strong: color-mix(in srgb, var(--uix-text) 60%, var(--uix-surface));
+  }
+
+  /* every --uix-text-* size is in rem, so the root size scales the whole type ramp */
+  :root[data-text-scale="sm"] { font-size: 93.75%; }
+  :root[data-text-scale="lg"] { font-size: 112.5%; }
+  :root[data-text-scale="xl"] { font-size: 125%; }
+
+  :root[data-density="compact"] { --uix-row-h: var(--uix-row-h-compact); --uix-control-h: var(--uix-space-7); }
+  :root[data-density="comfortable"] { --uix-row-h: var(--uix-row-h-comfortable); --uix-control-h: var(--uix-space-8); }
+}
+
+@layer uix.components {
+  /* a switch of theme, contrast, size or density changes tokens under every element: no transition
+     runs for that frame, so nothing fades between themes (the hook sets this for two frames) */
+  :root[data-uix-switching] *, :root[data-uix-switching] *::before, :root[data-uix-switching] *::after { transition: none !important; }
+
+  .uix-display-prefs { display: grid; gap: var(--uix-space-4); min-width: 0; }
+  .uix-display-prefs__row { display: grid; gap: var(--uix-space-2); min-width: 0; }
+  .uix-display-prefs__label { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed); }
+  /* the groups keep their own width in a stretching grid or flex column; they wrap at 320 px */
+  :is(.uix-display-prefs .uix-segmented, .uix-theme-switcher) { justify-self: start; align-self: flex-start; max-width: 100%; }
+  :is(.uix-theme-switcher, .uix-display-prefs) .uix-segmented__option { display: inline-flex; align-items: center; gap: var(--uix-space-1); }
+  :is(.uix-theme-switcher, .uix-display-prefs) .uix-segmented__option > .uix-icon { flex: none; }
+}

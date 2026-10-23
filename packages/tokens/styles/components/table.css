@@ -16,9 +16,14 @@
   }
   .uix-table th[data-sort] { cursor: pointer; user-select: none; }
   .uix-table th[data-sort]:hover { color: var(--uix-text); }
-  .uix-table th[data-sort]::after { content: " ↕"; opacity: .35; }
-  .uix-table th[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; color: var(--uix-accent); }
-  .uix-table th[aria-sort="descending"]::after { content: " ↓"; opacity: 1; color: var(--uix-accent); }
+  /* sort arrows: Lucide arrow-up-down / arrow-up / arrow-down through a mask in currentColor, so they
+     match the icon set and follow the theme (HAR-1576; scripts/glyph-mask.mjs prints the urls) */
+  .uix-table th[data-sort]::after {
+    content: ""; display: inline-block; width: 1em; height: 1em; margin-inline-start: var(--uix-space-1); vertical-align: -.15em;
+    background: currentColor; opacity: .35; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-4 4-4-4'/%3E%3Cpath d='M17 20V4'/%3E%3Cpath d='m3 8 4-4 4 4'/%3E%3Cpath d='M7 4v16'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-4 4-4-4'/%3E%3Cpath d='M17 20V4'/%3E%3Cpath d='m3 8 4-4 4 4'/%3E%3Cpath d='M7 4v16'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .uix-table th[aria-sort="ascending"]::after { opacity: 1; color: var(--uix-accent); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E"); }
+  .uix-table th[aria-sort="descending"]::after { opacity: 1; color: var(--uix-accent); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E"); }
   /* multi-column sort ordinal (⇧+click adds a secondary key) */
   .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent); }
 
@@ -105,6 +110,8 @@
   /* ── cell content vocabulary — a fixed set of renderers keeps tables consistent ── */
   .uix-cell-strong { font-weight: 600; }
   .uix-cell-sub { display: block; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* read-back codes, references and times: digits line up down the column (HAR-1815) */
+  .uix-cell-sub--tabular { font-variant-numeric: tabular-nums; }
   .uix-cell-mono { font-family: var(--uix-font-mono); font-size: var(--uix-text-meta); }
 
   /* ── id cell — the canonical row click-through (row → peek, ↗ → full record) ───── */

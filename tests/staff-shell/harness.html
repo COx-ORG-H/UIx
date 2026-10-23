@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="bs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff shell harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/staff-shell.spec.mjs: an application shell that owns the whole
+       viewport, so the body has no padding and the root is not a landmark (the shell has its own
+       main). Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; background: var(--uix-bg-app); color: var(--uix-text); }
+  </style>
+</head>
+<body>
+  <div id="root"><p>Loading the harness…</p></div>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

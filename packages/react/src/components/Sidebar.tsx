@@ -4,6 +4,10 @@ import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { SearchIcon } from '../icons/components.js';
+import { useInShellDrawer } from '../shell-context.js';
+import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import type { KeyShortcut } from './Kbd.js';
 
 const ChevronIcon = () => (
   <svg className="uix-navgroup__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -11,27 +15,57 @@ const ChevronIcon = () => (
   </svg>
 );
 
+/** The search row under the sidebar head (HAR-1371): it opens your search or command palette. */
+export interface SidebarSearch {
+  /** The row's words, e.g. "Search". In the rail they are the button's name only. */
+  label: ReactNode;
+  /**
+   * The keys that open the same search, shown at the end of the row and given to assistive
+   * technology as `aria-keyshortcuts`, e.g. `['Mod', 'K']`. Showing them does not bind them:
+   * your command palette (or app) listens for the keys.
+   */
+  shortcut?: KeyShortcut;
+  onActivate: () => void;
+}
+
 export interface SidebarProps extends HTMLAttributes<HTMLElement> {
   collapsed?: boolean;
   nav?: 'full' | 'rail';
   onToggle?: () => void;
   brand?: ReactNode;
   toggleIcon?: ReactNode;
+  /**
+   * Controls in the head beside the brand (HAR-1371): a mode toggle, a "…" utility `Menu`,
+   * collapse-all. Icon buttons (`Button icon size="sm"`) fit the row. Hidden in the rail.
+   */
+  actions?: ReactNode;
+  /** A search row under the head that opens your search (HAR-1371). */
+  search?: SidebarSearch;
+  /**
+   * A slot pinned to the bottom of the sidebar (HAR-1371), for an `AccountMenu`. In the rail it
+   * keeps what it renders; give an `AccountMenu` `collapsed` there.
+   */
+  footer?: ReactNode;
   children?: ReactNode;
   expandLabel?: string;
   collapseLabel?: string;
 }
 
-export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, children, expandLabel: expandLabelProp, collapseLabel: collapseLabelProp, className, ...props }: SidebarProps) {
+export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, actions, search, footer, children, expandLabel: expandLabelProp, collapseLabel: collapseLabelProp, className, ...props }: SidebarProps) {
   const uixLabels = useUixLabels();
   const expandLabel = expandLabelProp ?? uixLabels.sidebar?.expand ?? 'Expand sidebar';
   const collapseLabel = collapseLabelProp ?? uixLabels.sidebar?.collapse ?? 'Collapse sidebar';
-  const isCollapsed = collapsed ?? nav === 'rail';
+  // in AppShell's phone drawer the sidebar is always full: a rail chosen on a wide screen would
+  // leave a 56 px strip of icons in a drawer meant for reading
+  const inDrawer = useInShellDrawer();
+  const isCollapsed = !inDrawer && (collapsed ?? nav === 'rail');
+  const platform = useKbdPlatform();
   return (
-    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={nav} {...props}>
-      {(brand != null || onToggle) && (
+    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={inDrawer ? undefined : nav} {...props}>
+      {(brand != null || onToggle || actions != null) && (
         <div className="uix-sidebar__head">
           {brand && <div className="uix-sidebar__brand">{brand}</div>}
+          {actions != null && <div className="uix-sidebar__actions">{actions}</div>}
           {onToggle && (
             <button type="button" className="uix-sidebar__toggle" onClick={onToggle} aria-label={isCollapsed ? expandLabel : collapseLabel}>
               {toggleIcon ?? (
@@ -45,7 +79,20 @@ export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, children,
           )}
         </div>
       )}
+      {search && (
+        <button
+          type="button"
+          className="uix-sidebar__search"
+          onClick={search.onActivate}
+          aria-keyshortcuts={search.shortcut ? ariaKeyShortcuts(search.shortcut, platform) : undefined}
+        >
+          <SearchIcon className="uix-sidebar__search-icon" />
+          <span className="uix-sidebar__search-label">{search.label}</span>
+          {search.shortcut && <KbdCombo className="uix-sidebar__search-keys" keys={[...search.shortcut]} platform={platform} aria-hidden="true" />}
+        </button>
+      )}
       {children}
+      {footer != null && <div className="uix-sidebar__foot">{footer}</div>}
     </nav>
   );
 }
