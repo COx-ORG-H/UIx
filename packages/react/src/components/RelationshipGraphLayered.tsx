@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { boundRelationshipGraph, edgeLabelSize, layeredNeighbor, layoutLayeredGraph, separateEdgeLabels } from '../relationship-graph-model.js';
 import type { LayeredItem, LayeredLayout, LayeredNavigationKey, RoutedEdge } from '../relationship-graph-model.js';
@@ -13,6 +13,8 @@ import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 import { Tooltip } from './Tooltip.js';
 
 const EMPTY_IDS: ReadonlySet<string> = new Set<string>();
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 const MIN_ZOOM = 0.4;
 const MAX_ZOOM = 1.5;
 /** The initial view never shrinks text below this to make a graph "fit". */
@@ -24,12 +26,21 @@ const FOCUS_MARGIN = 24;
 const DESCRIBED_RELATIONS = 5;
 /** How long the "Ctrl + scroll to zoom" hint stays after a plain wheel over the map. */
 const HINT_MS = 1600;
-const NAV_KEYS: readonly string[] = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+/** An edge label's text size (the kit's meta, 12.5 px) and the smallest it may be drawn on screen. */
+const LABEL_FONT_PX = 12.5;
+const MIN_LABEL_PX = 11;
+/** An edge label's chip around its measured text (the model's estimate uses the same padding). */
+const LABEL_CHIP_PAD_X = 6;
+const LABEL_CHIP_PAD_Y = 2;
+const NAV_KEYS: readonly string[] =['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
 
 interface View { x: number; y: number; zoom: number }
 interface Size { width: number; height: number }
 
 const clampZoom = (zoom: number): number => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+/** The height of the map footer's band along the viewport's bottom edge (0 with no footer). */
+const footerGutter = (viewport: HTMLElement, footer: HTMLElement | null): number =>
+  footer && footer.parentElement === viewport ? Math.min(footer.offsetHeight, viewport.clientHeight) : 0;
 
 function initialView(layout: LayeredLayout, size: Size): View {
   if (size.width === 0 || size.height === 0 || layout.width === 0) return { x: 0, y: 0, zoom: 1 };
@@ -85,6 +96,7 @@ export function LayeredRelationshipGraph({
   const itemRefs = useRef(new Map<string, HTMLButtonElement>());
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const edgesRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   const [view, setView] = useState<View>({ x: 0, y: 0, zoom: 1 });
   const [animate, setAnimate] = useState(false);
@@ -118,17 +130,20 @@ export function LayeredRelationshipGraph({
     [hoverId, selectedItemId],
   );
 
-  // Viewport size.
+  // The free part of the viewport: above the map footer's band (compact controls), whose height
+  // fit, the first view, Reset and zoom-about-the-centre leave clear, so they never put a node
+  // under the hint, the zoom level or the controls (PR #166 review).
   useEffect(() => {
     const element = viewportRef.current;
     if (!element) return;
-    const measure = () => setSize({ width: element.clientWidth, height: element.clientHeight });
+    const measure = () => setSize({ width: element.clientWidth, height: Math.max(0, element.clientHeight - footerGutter(element, footerRef.current)) });
     measure();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
     observer.observe(element);
+    if (footerRef.current) observer.observe(footerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [compact]);
 
   // Initial view once per root (a cluster toggle or data refresh must not jump the view).
   useEffect(() => {
@@ -420,18 +435,46 @@ export function LayeredRelationshipGraph({
   };
 
   const viewportStyle = (height !== undefined ? { '--uix-relationship-graph-height': height } : {}) as CSSProperties;
-  const stageStyle: CSSProperties = {
+  // Edge labels keep their size on screen when the map is zoomed out (operator review 2026-10-23:
+  // at a 62 % fit the 12.5 px labels were 7 px glyphs). Each label is counter-scaled by up to
+  // 1 / zoom (never below the map's own size: on screen never larger than at 100 %), but only as far
+  // as its chip still fits its room (the column gap or a bus stub), so it never covers a node. A
+  // label that would then be under 11 px on screen is left out until the map is zoomed in (not with
+  // edgeLabels="always"); its relation is in the column header (when shared), the descriptions and
+  // the list. The zoom is
+  // rounded down in steps of 0.05, so the size on screen is never under the estimate and a wheel
+  // zoom places the labels again a few times, not on every frame; panning never does.
+  const zoomStep = Math.min(1, Math.max(0.05, Math.floor(view.zoom * 20) / 20));
+  const stageStyle = {
     width: layout.width,
     height: layout.height,
     transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
-  };
+  } as CSSProperties;
   const zoomPercent = Math.round(view.zoom * 100);
-  // Labels drawn now, moved apart where two would overlap; one that would drift too far is left out.
-  const labelPlacement = useMemo(() => separateEdgeLabels(layout.edges.filter(showLabel).map((edge) => {
-    const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
-    return { id: edge.id, x: edge.labelX, y: edge.labelY, ...edgeLabelSize(lines) };
+  // Labels drawn now, at the size they take on screen: moved apart where two would overlap; one
+  // that would drift too far or cover a node is left out. A label that says what others say (the
+  // same words) gives way first to a one-of-a-kind, toned or emphasised one.
+  const labelPlacement = useMemo(() => {
+    const shown = layout.edges.filter(showLabel);
+    const count = new Map<string, number>();
+    for (const edge of shown) count.set(edge.label ?? '', (count.get(edge.label ?? '') ?? 0) + 1);
+    const scales = new Map<string, number>();
+    const boxes = [];
+    for (const edge of shown) {
+      const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
+      const size = edgeLabelSize(lines);
+      const scale = Math.max(1, Math.min(1 / zoomStep, edge.labelRoom / size.width));
+      // under 11 px on screen: too small to read here, left out until the map is zoomed in, unless
+      // the product asked for every label (edgeLabels="always", TENSOR's K3 map)
+      if (edgeLabels !== 'always' && LABEL_FONT_PX * scale * zoomStep < MIN_LABEL_PX - 0.01) continue;
+      scales.set(edge.id, scale);
+      const priority = (activeIds.has(edge.source) || activeIds.has(edge.target) ? 4 : 0) + (edge.tone || edge.emphasis ? 2 : 0) + (count.get(edge.label ?? '') === 1 ? 1 : 0);
+      boxes.push({ id: edge.id, x: edge.labelX, y: edge.labelY, width: size.width * scale, height: size.height * scale, priority });
+    }
+    const placed = separateEdgeLabels(boxes, { maxShift: 48 / zoomStep, obstacles: layout.items });
+    return new Map([...placed].map(([id, place]) => [id, { ...place, scale: scales.get(id) ?? 1 }]));
   // eslint-disable-next-line react-hooks/exhaustive-deps -- showLabel reads exactly these
-  })), [layout, edgeLabels, activeIds, focusWithinId, labels]);
+  }, [layout, edgeLabels, activeIds, focusWithinId, labels, zoomStep]);
 
   // HAR-1387: a pan or a zoom changes the stage's transform and nothing else. The edges, the
   // items and the list are kept from the last render unless what they show changed, so dragging
@@ -441,37 +484,83 @@ export function LayeredRelationshipGraph({
   const live = useRef({ activate, onItemKeyDown, onFocusChange, toggleCluster, onSelect });
   live.current = { activate, onItemKeyDown, onFocusChange, toggleCluster, onSelect };
 
-  const edgeLayer = useMemo(() => (
-    <svg className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
-      {/* Active edges are drawn last, so a highlighted bus edge is not covered on the shared trunk. */}
-      {layout.edges.map((edge) => ({ edge, active: activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id)) }))
-        .sort((a, b) => Number(a.active) - Number(b.active))
-        .map(({ edge, active }) => {
-        const angle = (edge.arrowAngle * 180) / Math.PI;
-        const placed = labelPlacement.get(edge.id);
-        return <g
-          key={edge.id}
-          className="uix-relationship-graph__link"
-          data-kind={edge.kind}
-          data-bus={edge.bus || undefined}
-          data-active={active || undefined}
-          data-emphasis={edge.emphasis || undefined}
-          data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
-          data-dimmed={(dimmedNodeIds.has(edge.source) && dimmedNodeIds.has(edge.target)) || undefined}
-          data-variant={edge.variant === 'dashed' ? 'dashed' : undefined}
-          data-tone={edge.tone}
-        >
-          <path d={edge.path} />
-          {edge.arrow !== 'none' && <polygon points={arrowPoints} transform={`translate(${edge.arrowX} ${edge.arrowY}) rotate(${angle})`} />}
-          {placed && !placed.hidden && <text x={placed.x} y={placed.y} textAnchor="middle" dominantBaseline="middle" data-moved={placed.y !== edge.labelY || undefined}>
-            {(edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines).map((line, index, lines) => (
-              <tspan key={index} x={placed.x} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : '1.1em'}>{line}</tspan>
-            ))}
-          </text>}
-        </g>;
-      })}
-    </svg>
-  ), [layout, activeIds, highlightedEdgeIds, conflictedEdgeIds, dimmedNodeIds, labelPlacement, labels]);
+  const edgeLayer = useMemo(() => {
+    // Active edges are drawn last, so a highlighted bus edge is not covered on the shared trunk.
+    const ordered = layout.edges
+      .map((edge) => ({ edge, active: activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id)) }))
+      .sort((a, b) => Number(a.active) - Number(b.active));
+    const dimmed = (edge: RoutedEdge) => (dimmedNodeIds.has(edge.source) && dimmedNodeIds.has(edge.target)) || undefined;
+    return (
+      <svg ref={edgesRef} className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
+        {ordered.map(({ edge, active }) => {
+          const angle = (edge.arrowAngle * 180) / Math.PI;
+          return <g
+            key={edge.id}
+            className="uix-relationship-graph__link"
+            data-edge={edge.id}
+            data-kind={edge.kind}
+            data-bus={edge.bus || undefined}
+            data-active={active || undefined}
+            data-emphasis={edge.emphasis || undefined}
+            data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
+            data-dimmed={dimmed(edge)}
+            data-variant={edge.variant === 'dashed' ? 'dashed' : undefined}
+            data-tone={edge.tone}
+          >
+            <path d={edge.path} />
+            {edge.arrow !== 'none' && <polygon points={arrowPoints} transform={`translate(${edge.arrowX} ${edge.arrowY}) rotate(${angle})`} />}
+          </g>;
+        })}
+        {/* Labels above every line, each on a chip of the map's own surface, so no line runs through
+            the words (operator review 2026-10-23: a later edge was drawn over an earlier label). The
+            tone is the chip's border; the words keep the text colour. The chip is sized from the
+            estimate here and fitted to the measured text after layout. */}
+        <g className="uix-relationship-graph__edge-labels">
+          {ordered.map(({ edge, active }) => {
+            const placed = labelPlacement.get(edge.id);
+            if (!placed || placed.hidden) return null;
+            const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
+            const chip = edgeLabelSize(lines);
+            return <g
+              key={edge.id}
+              className="uix-relationship-graph__edge-label"
+              data-edge={edge.id}
+              data-active={active || undefined}
+              data-dimmed={dimmed(edge)}
+              data-tone={edge.tone}
+              data-moved={placed.y !== edge.labelY || undefined}
+              style={placed.scale !== 1 ? ({ '--uix-graph-label-scale': placed.scale } as CSSProperties) : undefined}
+            >
+              <rect x={placed.x - chip.width / 2} y={placed.y - chip.height / 2} width={chip.width} height={chip.height} rx={4} />
+              <text x={placed.x} y={placed.y} textAnchor="middle" dominantBaseline="central">
+                {lines.map((line, index) => (
+                  <tspan key={index} x={placed.x} dy={index === 0 ? `${-(lines.length - 1) * 0.6}em` : '1.2em'}>{line}</tspan>
+                ))}
+              </text>
+            </g>;
+          })}
+        </g>
+      </svg>
+    );
+  }, [layout, activeIds, highlightedEdgeIds, conflictedEdgeIds, dimmedNodeIds, labelPlacement, labels]);
+
+  // Fit each label's chip to its measured text before paint (the estimate keeps labels apart).
+  useIsomorphicLayoutEffect(() => {
+    const svg = edgesRef.current;
+    if (!svg) return;
+    for (const group of Array.from(svg.querySelectorAll<SVGGElement>('.uix-relationship-graph__edge-label'))) {
+      const text = group.querySelector('text');
+      const rect = group.querySelector('rect');
+      if (!text || !rect || typeof text.getBBox !== 'function') continue;
+      let box: DOMRect;
+      try { box = text.getBBox(); } catch { continue; }
+      if (box.width === 0) continue;
+      rect.setAttribute('x', String(box.x - LABEL_CHIP_PAD_X));
+      rect.setAttribute('y', String(box.y - LABEL_CHIP_PAD_Y));
+      rect.setAttribute('width', String(box.width + 2 * LABEL_CHIP_PAD_X));
+      rect.setAttribute('height', String(box.height + 2 * LABEL_CHIP_PAD_Y));
+    }
+  }, [edgeLayer]);
   const itemLayer = useMemo(() => <>
     {layout.columns.map((column) => <div
       key={column.depth}
@@ -605,6 +694,10 @@ export function LayeredRelationshipGraph({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
+      // A pan must never become a native drag of the words under the pointer (operator review
+      // 2026-10-23: a ghost of the node labels followed the pointer). The map is also unselectable
+      // in CSS; the list below it stays selectable, and every name is still read by screen readers.
+      onDragStart={(event) => event.preventDefault()}
       {...(compact
         ? {
             tabIndex: 0,
@@ -643,7 +736,7 @@ export function LayeredRelationshipGraph({
         </div>
       </>}
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id} data-tone={entry.tone} data-shape={entry.shape} data-variant={entry.variant}>{entry.label}</li>)}</ul>}
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id} data-tone={entry.tone} data-shape={entry.shape} data-variant={entry.variant}><span className="uix-relationship-graph__legend-mark" aria-hidden="true" />{entry.label}</li>)}</ul>}
     {listLayer}
   </section>;
 }

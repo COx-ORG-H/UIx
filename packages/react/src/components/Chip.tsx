@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import type { HTMLAttributes, ReactNode, Ref } from 'react';
+import type { HTMLAttributes, MouseEvent, ReactNode, Ref } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixLinkProps, UixRenderLink } from '../link.js';
@@ -14,8 +14,12 @@ export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> 
   /** Toggle chip: `aria-pressed`, filled while on. Pair with `onPressedChange`. */
   pressed?: boolean;
   onPressedChange?: (pressed: boolean) => void;
-  /** A chip that acts in place (e.g. opens the filter it shows for editing). */
-  onClick?: () => void;
+  /**
+   * A chip that acts in place (e.g. opens the filter it shows for editing). Gets the click event,
+   * so a chip can be the `trigger` of a `Menu` (which reads `defaultPrevented`); a handler that
+   * takes no argument still works. Not called while `disabled`.
+   */
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
   /** A link chip. */
   href?: string;
   renderLink?: UixRenderLink;
@@ -65,10 +69,10 @@ export const Chip = forwardRef<HTMLElement, ChipProps>(function Chip({
       {count != null && <span className="uix-chip__count">{count}</span>}
     </>
   );
-  const handleClick = () => {
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (disabled) return;
     if (toggle) onPressedChange?.(!pressed);
-    onClick?.();
+    onClick?.(event);
   };
   const outer = cx(
     'uix-chip',
