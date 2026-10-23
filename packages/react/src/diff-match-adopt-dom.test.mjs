@@ -115,9 +115,10 @@ test('MatchReview adopt: a compare table per candidate, checkboxes only where va
   assert.equal(adopt.textContent, 'Adopt 2 fields');
   click(adopt);
   assert.deepEqual(adopted, [['dnb-1', ['author', 'isbn']]], 'in field order');
-  assert.equal(adopt.hasAttribute('aria-busy'), false, 'no spinner in the first 300 ms');
+  assert.equal(adopt.getAttribute('aria-busy'), 'true', 'busy for assistive technology at once');
+  assert.equal(adopt.querySelector('[data-uix-btn-busy]'), null, 'no spinner in the first 300 ms');
   await act(async () => { await new Promise((r) => setTimeout(r, 320)); });
-  assert.equal(adopt.getAttribute('aria-busy'), 'true');
+  assert.ok(adopt.querySelector('[data-uix-btn-busy]'), 'the spinner after 300 ms');
   await act(async () => { settle(); await Promise.resolve(); await Promise.resolve(); });
   assert.equal(sections[0].querySelector('[role="status"]').textContent, '2 fields adopted from DNB');
   assert.equal(boxes.every((b) => !b.checked), true, 'the choice is cleared after adopting');

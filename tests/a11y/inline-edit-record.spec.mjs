@@ -58,11 +58,11 @@ test('commit="blur": leaving the field saves; the pending state shows only after
     document.activeElement.blur();
     await new Promise((resolve) => setTimeout(resolve, 150));
     const save = [...document.querySelectorAll('#record .uix-inline-edit__actions button')].find((b) => b.textContent === 'Speichern');
-    return { busy: save.getAttribute('aria-busy'), readOnly: document.querySelector('#record input').readOnly, editorBusy: document.querySelector('#record .uix-inline-edit__editor').getAttribute('aria-busy') };
+    return { busy: save.querySelector('[data-uix-btn-busy]') ? 'spinner' : null, readOnly: document.querySelector('#record input').readOnly, editorBusy: document.querySelector('#record .uix-inline-edit__editor').getAttribute('aria-busy') };
   });
   expect(early).toEqual({ busy: null, readOnly: false, editorBusy: 'true' });
   const save = page.locator('#record').getByRole('button', { name: 'Speichern' });
-  await expect(save).toHaveAttribute('aria-busy', 'true');
+  await expect(save.locator('[data-uix-btn-busy]')).toHaveCount(1);
   await expect(input).toHaveAttribute('readonly', '');
   await expect(page.locator('#record [role="status"]').first()).toHaveText('Wird gespeichert…');
   await expect(page.locator('#record .uix-inline-edit__value').first()).toHaveText('Drucker langsam im 3. OG');
@@ -74,7 +74,7 @@ test('a fast save never shows the pending state', async ({ page }, testInfo) => 
   await open(page, testInfo);
   await page.evaluate(() => {
     window.__busySeen = false;
-    new MutationObserver(() => { if (document.querySelector('#record [aria-busy="true"].uix-btn, #record input[readonly]')) window.__busySeen = true; })
+    new MutationObserver(() => { if (document.querySelector('#record .uix-btn [data-uix-btn-busy], #record input[readonly]')) window.__busySeen = true; })
       .observe(document.getElementById('record'), { subtree: true, attributes: true, childList: true });
   });
   await titleView(page).click();

@@ -151,7 +151,7 @@ test('a promise from onSave: busy while it runs, then closed; a rejection keeps 
   assert.equal(t.input().readOnly, false);
   assert.equal(t.input().disabled, false);
   assert.equal(t.button('Cancel').disabled, false);
-  assert.equal(t.button('Save').hasAttribute('aria-busy'), false, 'no spinner yet');
+  assert.equal(t.button('Save').querySelector('[data-uix-btn-busy]'), null, 'no spinner yet (the Button waits 300 ms)');
   assert.equal(t.status(), '');
   type(t.input(), 'Typed while saving');
   assert.equal(t.input().value, 'Draft one', 'typing during the save is ignored');

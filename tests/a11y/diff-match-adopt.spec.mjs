@@ -42,9 +42,9 @@ test('adopt with the keyboard: Space checks, the button says how many, busy only
   await page.keyboard.press('Space');
   const adopt = dnb.getByRole('button', { name: '2 Felder übernehmen' });
   await adopt.click();
-  const early = await adopt.evaluate((b) => new Promise((resolve) => setTimeout(() => resolve(b.getAttribute('aria-busy')), 150)));
-  expect(early, 'no busy state for the first 300 ms').toBeNull();
-  await expect(adopt).toHaveAttribute('aria-busy', 'true');
+  const early = await adopt.evaluate((b) => new Promise((resolve) => setTimeout(() => resolve(b.querySelector('[data-uix-btn-busy]') ? 'spinner' : null), 150)));
+  expect(early, 'no spinner for the first 300 ms').toBeNull();
+  await expect(adopt.locator('[data-uix-btn-busy]')).toHaveCount(1);
   await expect(dnb.getByRole('status')).toHaveText('2 Felder von Deutsche Nationalbibliothek übernommen');
   expect(await page.evaluate(() => window.__adopt.adopted)).toEqual([['dnb-1', ['author', 'publisher']]]);
 });

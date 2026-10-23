@@ -5,6 +5,7 @@ import type { FocusEvent, KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { PencilIcon } from '../icons/components.js';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
@@ -151,9 +152,6 @@ export interface InlineEditProps<T = string> {
   className?: string;
 }
 
-/** A save that ran for this long shows its pending state; a faster one never flashes it. */
-const PENDING_DELAY_MS = 300;
-
 const defaultEmpty = (value: unknown) => value == null || value === '';
 
 /**
@@ -180,7 +178,10 @@ export function InlineEdit<T = string>({
   const [draftState, setDraftState] = useState<T>(value);
   const draft = draftProp !== undefined ? draftProp : draftState;
   const [pending, setPending] = useState(false);
-  const [pendingVisible, setPendingVisible] = useState(false);
+  /** The save's pending look: after 300 ms, held at least 500 ms (the kit's latency ladder, HAR-2580). */
+  // The field and Cancel wait the same 300 ms but come back the moment the save ends: after a
+  // failure the person edits at once (the Save spinner keeps its own 500 ms minimum).
+  const pendingVisible = useDelayedPending(pending) && pending;
   /** A refused draft (`validate`) or a failed save (`failure` set). */
   const [error, setError] = useState<{ message: ReactNode; failure?: { reason: unknown } }>();
   const [status, setStatus] = useState('');
@@ -204,15 +205,11 @@ export function InlineEdit<T = string>({
   useLayoutEffect(() => { setAccepted(null); }, [value]);
   const shown = accepted ? accepted.value : value;
 
+  // "Saving…" is announced only for a save slow enough to show its pending look.
   useEffect(() => {
-    if (!pending) { setPendingVisible(false); return; }
-    const timer = setTimeout(() => {
-      setPendingVisible(true);
-      setStatus(labels.saving);
-    }, PENDING_DELAY_MS);
-    return () => clearTimeout(timer);
-    // labels.saving is read when the timer fires: a new labels object each render must not restart it.
-  }, [pending]);
+    if (pendingVisible && pending) setStatus(labels.saving);
+    // labels.saving is read as it is then: a new labels object each render must not re-announce.
+  }, [pendingVisible, pending]);
 
   const state: InlineEditState = pending ? 'saving' : error?.failure ? 'error' : isEditing ? 'editing' : saved ? 'saved' : 'idle';
   const onStateChangeRef = useRef(onStateChange);
@@ -431,7 +428,7 @@ export function InlineEdit<T = string>({
               : <Input {...field} disabled={false} size="sm" value={textDraft} invalid={error != null} onChange={(event) => change(event.currentTarget.value as T)} />}
         </div>
         <span className="uix-inline-edit__actions">
-          {commit !== 'change' && <Button type="button" size="sm" variant="primary" loading={pendingVisible} onClick={() => save()}>{labels.save}</Button>}
+          {commit !== 'change' && <Button type="button" size="sm" variant="primary" loading={pending} onClick={() => save()}>{labels.save}</Button>}
           <Button type="button" size="sm" disabled={pendingVisible} onClick={cancel}>{labels.cancel}</Button>
         </span>
         {errorBody != null && <div id={errorId} className="uix-field__error uix-inline-edit__error" role="alert">{errorBody}</div>}

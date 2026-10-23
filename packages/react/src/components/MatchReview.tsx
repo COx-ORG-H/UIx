@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { JsonValue } from '../json-value.js';
 import { cx } from '../cx.js';
@@ -300,17 +300,6 @@ export function MatchReview({
 
 const sameValue = (a: JsonValue | undefined, b: JsonValue | undefined) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-/** A pending visual only for work that takes 300 ms or more, so a fast answer never flashes one. */
-function useSlow(pending: boolean) {
-  const [slow, setSlow] = useState(false);
-  useEffect(() => {
-    if (!pending) { setSlow(false); return; }
-    const timer = setTimeout(() => setSlow(true), 300);
-    return () => clearTimeout(timer);
-  }, [pending]);
-  return slow;
-}
-
 /** One candidate in adopt mode: the record now against the candidate, a checkbox per differing field. */
 function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenance, onAdopt, onDecision, decisionLabel }: {
   candidate: MatchReviewCandidate; incoming: Record<string, JsonValue>; fields: MatchReviewField[]; labels: MatchReviewLabels;
@@ -321,7 +310,6 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
   const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ text: string; failed: boolean } | null>(null);
-  const slow = useSlow(pending);
   const resolved = candidate.status === 'resolved';
   const headingText = typeof heading === 'string' ? heading : fillLabel(labels.candidate, { id: candidate.id });
   const toggle = (fieldId: string, on: boolean) => {
@@ -388,7 +376,7 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
         </details>
       )}
       {!resolved && <div className="uix-match-review__candidate-actions">
-        {onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={slow} onClick={() => void adopt()}>{fillLabel(labels.adoptSelected, { count: chosen.size })}</Button>}
+        {onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(labels.adoptSelected, { count: chosen.size })}</Button>}
         <Button size="sm" variant="ghost" onClick={() => { if (!pending) onDecision(candidate.id, 'dismiss'); }}>{labels.dismiss}</Button>
         <span className={cx('uix-match-review__result', message?.failed && 'uix-match-review__result--failed')} role="status">{message?.text}</span>
       </div>}
