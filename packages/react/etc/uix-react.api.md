@@ -905,7 +905,7 @@ export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> 
     href?: string;
     // (undocumented)
     icon?: ReactNode;
-    onClick?: () => void;
+    onClick?: (event: MouseEvent_2<HTMLElement>) => void;
     // (undocumented)
     onPressedChange?: (pressed: boolean) => void;
     onRemove?: () => void;
