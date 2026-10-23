@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
+<!-- lesson-skip: 5cc12fc routine: a table cell's width is a preference, a squeezed table shrank the checkbox column under the frozen id's offset; found by looking at the 390 px shot, pinned by a spec -->
 <!-- lesson-skip: 0bb7303 routine: NFD leaves stroked letters (đ ø ł ı) whole; the reviewer named them, a fold test now lists each -->
 <!-- lesson-skip: 93d034a routine: a cmdk option marked only by background vanished in forced colours; same family as the existing forced-colours entries, pinned by a spec -->
 <!-- lesson-skip: 1fe9677 routine: a backdrop click closed on a press that began inside; pointerdown and click must both land on the backdrop, pinned by jsdom tests -->
