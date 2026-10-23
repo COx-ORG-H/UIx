@@ -75,6 +75,8 @@
   /* the indicator is the last child: isolate + z-index -1 paint it above the row's own
      background and beneath the tabs */
   .uix-tabs { position: relative; isolation: isolate; }
+  /* clipped while it slides (a resize must not widen the page); a scrolling row contains it */
+  .uix-tabs[data-uix-indicator]:not(.uix-tabs--scroll) { overflow: clip; overflow-clip-margin: var(--uix-space-1); }
   .uix-tabs__indicator { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; }
   .uix-tabs__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
   .uix-tabs--line > .uix-tabs__indicator::after {
