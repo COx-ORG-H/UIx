@@ -26,6 +26,9 @@ const FOCUS_MARGIN = 24;
 const DESCRIBED_RELATIONS = 5;
 /** How long the "Ctrl + scroll to zoom" hint stays after a plain wheel over the map. */
 const HINT_MS = 1600;
+/** An edge label's text size (the kit's meta, 12.5 px) and the smallest it may be drawn on screen. */
+const LABEL_FONT_PX = 12.5;
+const MIN_LABEL_PX = 11;
 /** An edge label's chip around its measured text (the model's estimate uses the same padding). */
 const LABEL_CHIP_PAD_X = 6;
 const LABEL_CHIP_PAD_Y = 2;
@@ -432,18 +435,46 @@ export function LayeredRelationshipGraph({
   };
 
   const viewportStyle = (height !== undefined ? { '--uix-relationship-graph-height': height } : {}) as CSSProperties;
-  const stageStyle: CSSProperties = {
+  // Edge labels keep their size on screen when the map is zoomed out (operator review 2026-10-23:
+  // at a 62 % fit the 12.5 px labels were 7 px glyphs). Each label is counter-scaled by up to
+  // 1 / zoom (never below the map's own size: on screen never larger than at 100 %), but only as far
+  // as its chip still fits its room (the column gap or a bus stub), so it never covers a node. A
+  // label that would then be under 11 px on screen is left out until the map is zoomed in (not with
+  // edgeLabels="always"); its relation is in the column header (when shared), the descriptions and
+  // the list. The zoom is
+  // rounded down in steps of 0.05, so the size on screen is never under the estimate and a wheel
+  // zoom places the labels again a few times, not on every frame; panning never does.
+  const zoomStep = Math.min(1, Math.max(0.05, Math.floor(view.zoom * 20) / 20));
+  const stageStyle = {
     width: layout.width,
     height: layout.height,
     transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
-  };
+  } as CSSProperties;
   const zoomPercent = Math.round(view.zoom * 100);
-  // Labels drawn now, moved apart where two would overlap; one that would drift too far is left out.
-  const labelPlacement = useMemo(() => separateEdgeLabels(layout.edges.filter(showLabel).map((edge) => {
-    const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
-    return { id: edge.id, x: edge.labelX, y: edge.labelY, ...edgeLabelSize(lines) };
+  // Labels drawn now, at the size they take on screen: moved apart where two would overlap; one
+  // that would drift too far or cover a node is left out. A label that says what others say (the
+  // same words) gives way first to a one-of-a-kind, toned or emphasised one.
+  const labelPlacement = useMemo(() => {
+    const shown = layout.edges.filter(showLabel);
+    const count = new Map<string, number>();
+    for (const edge of shown) count.set(edge.label ?? '', (count.get(edge.label ?? '') ?? 0) + 1);
+    const scales = new Map<string, number>();
+    const boxes = [];
+    for (const edge of shown) {
+      const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
+      const size = edgeLabelSize(lines);
+      const scale = Math.max(1, Math.min(1 / zoomStep, edge.labelRoom / size.width));
+      // under 11 px on screen: too small to read here, left out until the map is zoomed in, unless
+      // the product asked for every label (edgeLabels="always", TENSOR's K3 map)
+      if (edgeLabels !== 'always' && LABEL_FONT_PX * scale * zoomStep < MIN_LABEL_PX - 0.01) continue;
+      scales.set(edge.id, scale);
+      const priority = (activeIds.has(edge.source) || activeIds.has(edge.target) ? 4 : 0) + (edge.tone || edge.emphasis ? 2 : 0) + (count.get(edge.label ?? '') === 1 ? 1 : 0);
+      boxes.push({ id: edge.id, x: edge.labelX, y: edge.labelY, width: size.width * scale, height: size.height * scale, priority });
+    }
+    const placed = separateEdgeLabels(boxes, { maxShift: 48 / zoomStep, obstacles: layout.items });
+    return new Map([...placed].map(([id, place]) => [id, { ...place, scale: scales.get(id) ?? 1 }]));
   // eslint-disable-next-line react-hooks/exhaustive-deps -- showLabel reads exactly these
-  })), [layout, edgeLabels, activeIds, focusWithinId, labels]);
+  }, [layout, edgeLabels, activeIds, focusWithinId, labels, zoomStep]);
 
   // HAR-1387: a pan or a zoom changes the stage's transform and nothing else. The edges, the
   // items and the list are kept from the last render unless what they show changed, so dragging
@@ -498,6 +529,7 @@ export function LayeredRelationshipGraph({
               data-dimmed={dimmed(edge)}
               data-tone={edge.tone}
               data-moved={placed.y !== edge.labelY || undefined}
+              style={placed.scale !== 1 ? ({ '--uix-graph-label-scale': placed.scale } as CSSProperties) : undefined}
             >
               <rect x={placed.x - chip.width / 2} y={placed.y - chip.height / 2} width={chip.width} height={chip.height} rx={4} />
               <text x={placed.x} y={placed.y} textAnchor="middle" dominantBaseline="central">
@@ -516,7 +548,7 @@ export function LayeredRelationshipGraph({
   useIsomorphicLayoutEffect(() => {
     const svg = edgesRef.current;
     if (!svg) return;
-    for (const group of svg.querySelectorAll<SVGGElement>('.uix-relationship-graph__edge-label')) {
+    for (const group of Array.from(svg.querySelectorAll<SVGGElement>('.uix-relationship-graph__edge-label'))) {
       const text = group.querySelector('text');
       const rect = group.querySelector('rect');
       if (!text || !rect || typeof text.getBBox !== 'function') continue;

@@ -278,14 +278,14 @@ test('clinical map: edge labels sit on opaque chips above every line, in small t
         opaque: Number(rectStyle.fillOpacity) === 1 && (chipColour.length === 3 || chipColour[3] === 1),
         textColour: rgb(getComputedStyle(text).fill),
         chipColour,
-        box: { left: r.x, right: r.x + r.width, top: r.y, bottom: r.y + r.height },
+        box: (({ left, right, top, bottom }) => ({ left, right, top, bottom }))(rect.getBoundingClientRect()),
       };
     });
     const layer = svg.querySelector('.uix-relationship-graph__edge-labels');
     const headers = [...document.querySelectorAll('#clinical .uix-relationship-graph__column')].map((c) => c.textContent.toLowerCase());
     return { meta, labels, labelsLast: svg.lastElementChild === layer, headers };
   });
-  expect(read.labels.length).toBeGreaterThanOrEqual(6);
+  expect(read.labels.length).toBeGreaterThanOrEqual(4); // the rest wait for a closer zoom (below)
   expect(read.labelsLast, 'labels are drawn after every line').toBe(true);
   for (const label of read.labels) {
     expect(label.font, `${label.words}: font size`).toBeGreaterThanOrEqual(read.meta - 0.01);
@@ -357,3 +357,43 @@ test('clinical map: a pan starts no text selection and no native drag, from labe
   // the names are still there for assistive technology and the keyboard
   await expect(map.getByRole('button', { name: /DICOM pristupnik/ })).toBeVisible();
 });
+
+// Coordinator check of bd59c62 on the demo: at the 62 % fit the labels were ~7 px glyphs, chips or
+// not. Zoomed out, a label is counter-scaled to keep the small text size on screen, placed at that
+// size, and left out where it would cover a node.
+for (const width of [390, 1280]) {
+  test(`clinical map at ${width} px, fitted and zoomed in: every drawn edge label is >= 11 px on screen and covers no node`, async ({ page }, testInfo) => {
+    await open(page, testInfo, '?case=clinical', { viewport: { width, height: 900 }, reducedMotion: true });
+    const read = () => page.evaluate(() => {
+      const map = document.querySelector('#clinical');
+      const zoom = Number(/scale\(([\d.]+)\)/.exec(map.querySelector('.uix-relationship-graph__stage').style.transform)[1]);
+      const nodes = [...map.querySelectorAll('.uix-relationship-graph__item')].map((n) => n.getBoundingClientRect());
+      const labels = [...map.querySelectorAll('.uix-relationship-graph__edge-label')].map((g) => {
+        const rect = g.querySelector('rect');
+        const chip = rect.getBoundingClientRect();
+        const font = parseFloat(getComputedStyle(g.querySelector('text')).fontSize);
+        return {
+          words: g.textContent,
+          glyphs: font * (chip.height / rect.getBBox().height),
+          covers: nodes.filter((n) => chip.left < n.right - 0.5 && n.left < chip.right - 0.5 && chip.top < n.bottom - 0.5 && n.top < chip.bottom - 0.5).length,
+        };
+      });
+      return { zoom, labels };
+    });
+    const check = (state) => {
+      for (const label of state.labels) {
+        expect(label.glyphs, `${label.words} at ${state.zoom}: on-screen size`).toBeGreaterThanOrEqual(11);
+        expect(label.covers, `${label.words} at ${state.zoom}: covers a node`).toBe(0);
+      }
+    };
+    const fitted = await read();
+    expect(fitted.zoom, 'the fit zooms out').toBeLessThan(1);
+    check(fitted); // on a phone the fit may leave no room for any label: they come back zoomed in
+    if (width >= 1280) expect(fitted.labels.length, 'at 1280 px labels fit at the fit zoom').toBeGreaterThan(0);
+    await page.locator('#clinical .uix-relationship-graph__viewport').focus();
+    while ((await read()).zoom < 0.75) await page.keyboard.press('+');
+    const zoomed = await read();
+    expect(zoomed.labels.length, 'zoomed in, labels are drawn').toBeGreaterThanOrEqual(4);
+    check(zoomed);
+  });
+}
