@@ -6,6 +6,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
+import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
 
@@ -156,7 +157,7 @@ export function Toast({
       {action != null && <div className="uix-toast__action-slot">{action}</div>}
       {onClose && (
         <button type="button" className="uix-toast__close" onClick={handleClose} aria-label={dismissLabel}>
-          ×
+          <XIcon />
         </button>
       )}
     </div>

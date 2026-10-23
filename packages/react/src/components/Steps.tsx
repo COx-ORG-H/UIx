@@ -3,6 +3,7 @@ import type { HTMLAttributes, LiHTMLAttributes, ReactElement, ReactNode } from '
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { XIcon } from '../icons/components.js';
 
 export type StepState = 'complete' | 'current' | 'upcoming' | 'waiting' | 'error';
 
@@ -101,7 +102,7 @@ export function Step({
   index = 0, last = false, stateLabels = DEFAULT_STEP_STATE_LABELS, progress = true, headingLevel, className, ...props
 }: StepProps) {
   const titleId = useId();
-  const glyph = marker ?? (!progress ? index + 1 : state === 'complete' ? <Check /> : state === 'error' ? '!' : index + 1);
+  const glyph = marker ?? (!progress ? index + 1 : state === 'complete' ? <Check /> : state === 'error' ? <XIcon /> : index + 1);
   const Title = headingLevel ? (`h${headingLevel}` as 'h2') : 'span';
   const name = (
     <>

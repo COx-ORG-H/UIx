@@ -6,6 +6,7 @@ import { cx } from '../cx.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
 import { EditorIcon } from './EditorIcons.js';
+import { StarIcon } from '../icons/components.js';
 import { Input } from './Input.js';
 import { Popover } from './Popover.js';
 import { Segmented, SegmentedOption } from './Segmented.js';
@@ -573,7 +574,7 @@ export function SavedViewMenu({ items, sections, onSelect, onPinChange, pinLabel
           <button type="button" id={nameId} className="uix-menu__item" data-active={item.active || undefined} aria-current={item.active || undefined} title={typeof item.label === 'string' ? item.label : undefined} onClick={() => onSelect(item.id)}>
             <span className="uix-saved-views__name">{item.label}</span>
           </button>
-          {onPinChange && <button type="button" className="uix-saved-views__pin" aria-label={item.pinned ? unpinLabel : pinLabel} data-on={item.pinned || undefined} onClick={() => onPinChange(item.id, !item.pinned)}>★</button>}
+          {onPinChange && <button type="button" className="uix-saved-views__pin" aria-label={item.pinned ? unpinLabel : pinLabel} data-on={item.pinned || undefined} onClick={() => onPinChange(item.id, !item.pinned)}><StarIcon /></button>}
           {extra != null && extra !== false && <span className="uix-saved-views__actions">{extra}</span>}
         </li>
       );

@@ -5,6 +5,7 @@ import type { ChangeEvent, FocusEvent, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { clampMetricValue, parseMetricValue, stepMetricValue } from '../metric-model.js';
 import { Input } from './Input.js';
+import { MinusIcon, PlusIcon } from '../icons/components.js';
 
 export interface MetricInputProps {
   value: number | null;
@@ -100,8 +101,8 @@ export function MetricInput({
         />
         {unit && <span className="uix-metric-input__unit" aria-hidden="true">{unit}</span>}
         <span className="uix-metric-input__steps">
-          <button type="button" className="uix-metric-input__step" onClick={() => stepBy(1)} disabled={disabled || readOnly} aria-label={`Increase ${label}`}>+</button>
-          <button type="button" className="uix-metric-input__step" onClick={() => stepBy(-1)} disabled={disabled || readOnly} aria-label={`Decrease ${label}`}>−</button>
+          <button type="button" className="uix-metric-input__step" onClick={() => stepBy(1)} disabled={disabled || readOnly} aria-label={`Increase ${label}`}><PlusIcon /></button>
+          <button type="button" className="uix-metric-input__step" onClick={() => stepBy(-1)} disabled={disabled || readOnly} aria-label={`Decrease ${label}`}><MinusIcon /></button>
         </span>
       </div>
       {unit && <span className="uix-visually-hidden">Unit: {unit}</span>}

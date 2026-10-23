@@ -48,6 +48,12 @@ export interface DetailPageProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
    * modified click, no JS).
    */
   onTabSelect?: (id: string) => void;
+  /**
+   * `staff` is the staff type preset (HAR-1815): the title at h2 with its 1.15 leading, the back
+   * link an inline hushed link without an underline, and each metric's label an eyebrow over an
+   * h3-size, regular-weight, tabular value. `default` is the plain record page.
+   */
+  variant?: 'default' | 'staff';
 }
 
 const plainLink = ({ href, className, children, onClick, ...rest }: DetailPageLinkProps) => (
@@ -61,10 +67,10 @@ const isPlainLeftClick = (e: MouseEvent<HTMLAnchorElement>) =>
 /** Framework-neutral record-detail scaffold; routing and data policy stay with the application. */
 export function DetailPage({
   back, eyebrow, title, subtitle, actions, tabs, metrics, side, children, tabsLabel,
-  renderLink = plainLink, onTabSelect, className, ...props
+  renderLink = plainLink, onTabSelect, variant = 'default', className, ...props
 }: DetailPageProps) {
   return (
-    <section className={cx('uix-detail-page', className)} {...props}>
+    <section className={cx('uix-detail-page', variant === 'staff' && 'uix-detail-page--staff', className)} {...props}>
       {back && renderLink({ href: back.href, className: 'uix-link uix-link--quiet uix-detail-page__back', children: back.label })}
       <PageHeader eyebrow={eyebrow} title={title} subtitle={subtitle} actions={actions} />
       {metrics && metrics.length > 0 && (

@@ -54,3 +54,17 @@ test("Pipeline: title and description are block-level, the description sits --ui
   assert.match(description, /display: block/);
   assert.match(description, /margin-top: var\(--uix-space-1\)/);
 });
+
+// HAR-1577: one title -> secondary rhythm. The rendered 4 px is measured by tests/a11y/title-rhythm.spec.mjs.
+test("List, Attachment, Media and NavItem put --uix-space-1 between a title and its secondary text", () => {
+  assert.match(ruleBody(list, ".uix-list__title + .uix-list__meta"), /margin-top: var\(--uix-space-1\)/);
+  const attachment = read("attachment");
+  assert.match(ruleBody(attachment, ".uix-attachment__name"), /display: block/);
+  assert.match(ruleBody(attachment, ".uix-attachment__name + .uix-attachment__size"), /margin-top: var\(--uix-space-1\)/);
+  assert.match(ruleBody(attachment, ".uix-attachment__body"), /gap: var\(--uix-space-1\)/, "the React row's line -> meta gap");
+  const media = read("media");
+  assert.match(ruleBody(media, ".uix-media__name"), /display: block/);
+  assert.match(ruleBody(media, ".uix-media__meta"), /display: block/);
+  assert.match(ruleBody(media, ".uix-media__name + .uix-media__meta"), /margin-top: var\(--uix-space-1\)/);
+  assert.match(ruleBody(read("sidebar"), ".uix-navitem__text"), /display: grid; gap: var\(--uix-space-1\)/);
+});

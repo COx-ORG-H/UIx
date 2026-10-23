@@ -28,12 +28,32 @@
   .uix-pill--p4 { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
   .uix-pill--p5 { --tone-bg: var(--uix-bg-active);  --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-text-muted); }
 
-  /* outline treatment — transparent fill, tone-tinted border, tone-colored text. The border tints
-     the tone hue (--tone-fg) at 40%; neutral/muted use the structural borders, critical reads strongest. */
-  .uix-pill--outline { background: transparent; border: 1px solid var(--tone-line, color-mix(in srgb, var(--tone-fg) 40%, transparent)); }
-  .uix-pill--outline.uix-pill--neutral  { --tone-line: var(--uix-border-strong); }
-  .uix-pill--outline.uix-pill--muted    { --tone-line: var(--uix-border); }
-  .uix-pill--outline.uix-pill--critical { color: var(--uix-danger-text); --tone-dot: var(--uix-danger); --tone-line: color-mix(in srgb, var(--uix-danger) 60%, transparent); }
+  /* in flight (HAR-1563): the same blue as info, under the name the colour policy uses */
+  .uix-pill--progress { --tone-bg: var(--uix-info-bg); --tone-fg: var(--uix-info-text); --tone-dot: var(--uix-info); }
+
+  /* each tone's solid, for the quiet treatments below, where the dot is the only hue (HAR-1563) */
+  .uix-pill--neutral, .uix-pill--muted, .uix-pill--p5 { --tone-solid: var(--uix-neutral-solid); }
+  /* the pale hues mix 40 % of their text role in, so a light-mode dot clears 3:1 on the surface
+     (success 2.54 -> 3.38, warning 2.15 -> 3.32, amber 2.94 -> 4.09) and a dark one stays calm */
+  .uix-pill--success, .uix-pill--sla-ok { --tone-solid: color-mix(in srgb, var(--uix-success-solid) 60%, var(--uix-success-text)); }
+  .uix-pill--info, .uix-pill--progress, .uix-pill--p4 { --tone-solid: var(--uix-info-solid); }
+  .uix-pill--warning, .uix-pill--p2 { --tone-solid: color-mix(in srgb, var(--uix-warning-solid) 60%, var(--uix-warning-text)); }
+  .uix-pill--p3 { --tone-solid: color-mix(in srgb, var(--uix-amber) 60%, var(--uix-amber-text)); }
+  .uix-pill--danger, .uix-pill--critical, .uix-pill--p1 { --tone-solid: var(--uix-danger-solid); }
+  .uix-pill--attention, .uix-pill--sla-at-risk { --tone-solid: var(--uix-attention-solid); }
+  .uix-pill--overdue, .uix-pill--sla-breached { --tone-solid: var(--uix-overdue-solid); }
+
+  /* dot treatment (HAR-1563) — for dense tables: no fill and no padding, a neutral label, and the
+     tone only in the dot. The label is the meaning; the dot is the glance. */
+  .uix-pill--dot { background: transparent; padding-inline: 0; color: var(--uix-neutral-text); }
+  .uix-pill--dot .uix-pill__dot { background: var(--tone-solid, var(--uix-neutral-solid)); }
+
+  /* outline treatment (HAR-1563) — a neutral hairline, a hushed label and the tone's dot. Only
+     critical keeps a toned border, so the one thing that needs action still stands out. */
+  .uix-pill--outline { background: transparent; border: 1px solid var(--uix-neutral-border); color: var(--uix-neutral-text); }
+  .uix-pill--outline .uix-pill__dot { background: var(--tone-solid, var(--uix-neutral-solid)); }
+  .uix-pill--outline.uix-pill--muted { border-color: var(--uix-border); }
+  .uix-pill--outline.uix-pill--critical { border-color: var(--uix-danger-solid); color: var(--uix-danger-text); }
 }
 
 /* Sizes (HAR-1614): sm for dense cells, lg for a page header. The default is unchanged. */
@@ -42,4 +62,6 @@
   .uix-pill--sm .uix-pill__dot { width: 6px; height: 6px; }
   .uix-pill--lg { padding: var(--uix-space-2) var(--uix-space-4); font-size: var(--uix-text-body); }
   .uix-pill--lg .uix-pill__dot { width: 9px; height: 9px; }
+  /* the dot treatment has no box at any size: its label lines up with the cell's other text */
+  .uix-pill--dot:is(.uix-pill--sm, .uix-pill--lg) { padding-inline: 0; }
 }

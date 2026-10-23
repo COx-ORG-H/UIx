@@ -22,6 +22,21 @@
   }
 }
 
+/* The in-app preference (HAR-1372): <html data-motion="reduce">, written by useDisplayPreferences and
+   displayPreferencesScript, applies the same policy for a person who has not set it in the OS. With the OS
+   setting on, the block above already applies. Components that swap a loop for a pulse mirror their
+   reduced rule the same way. */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+    transition-property: opacity, color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, visibility, overlay, display !important;
+    transition-behavior: allow-discrete !important;
+    /* motion-allow: ends product keyframes at once while still firing animationend (the same policy as above) */
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Keyframes (cascade-neutral). */
 @keyframes uix-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes uix-pop-in {
@@ -42,6 +57,9 @@
   @media (prefers-reduced-motion: reduce) {
     /* the entrance helpers keep their fade and lose their travel */
     .uix-anim-fade, .uix-anim-pop, .uix-anim-up { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] :is(.uix-anim-fade, .uix-anim-pop, .uix-anim-up) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
   }
 
   /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover.

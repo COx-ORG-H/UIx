@@ -12,3 +12,8 @@
     background: color-mix(in srgb, var(--uix-bg-app) 60%, transparent); backdrop-filter: blur(2px);
   }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same pulse */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-spinner { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
+}
