@@ -166,8 +166,17 @@
   .uix-event-date { text-align: center; }
   .uix-event-date__month { display: block; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); text-transform: uppercase; }
   .uix-event-date__day { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
-  .uix-event-row__title { margin: 0; font-weight: 600; }
-  .uix-event-row__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
+  .uix-event-row__title { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .uix-event-row__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
+  /* HAR-1370: weekday, year and time in the tile (it widens to its longest line, never under
+     42 px), and a 4:3 thumbnail at the row's end */
+  .uix-event-row:has(.uix-event-date__weekday, .uix-event-date__year, .uix-event-date__time) { grid-template-columns: minmax(42px, max-content) minmax(0, 1fr); }
+  .uix-event-row--media, .uix-event-row--media:has(.uix-event-date__weekday, .uix-event-date__year, .uix-event-date__time) { grid-template-columns: minmax(42px, max-content) minmax(0, 1fr) auto; }
+  .uix-event-date__weekday, .uix-event-date__year, .uix-event-date__time { display: block; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .uix-event-date__weekday { text-transform: uppercase; }
+  .uix-event-date__time { margin-top: var(--uix-space-1); color: var(--uix-text); font-weight: 600; }
+  .uix-event-row__media { width: 96px; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--uix-radius-md); background: var(--uix-bg-subtle); }
+  .uix-event-row__media > :is(img, picture, video, svg) { display: block; width: 100%; height: 100%; object-fit: cover; }
 
   .uix-status-row { min-height: 48px; display: flex; align-items: center; gap: var(--uix-space-3); border-bottom: 1px solid var(--uix-border); }
   .uix-status-row:last-child { border-bottom: 0; }
@@ -218,6 +227,11 @@
 
     .uix-stat-line { grid-template-columns: 1fr; }
     .uix-stat-line__item { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--uix-border); }
+
+    /* on a phone the thumbnail goes under the text, so the title keeps the row's width */
+    .uix-event-row--media, .uix-event-row--media:has(.uix-event-date__weekday, .uix-event-date__year, .uix-event-date__time) { grid-template-columns: minmax(42px, max-content) minmax(0, 1fr); }
+    .uix-event-row--media > .uix-event-date { grid-row: span 2; align-self: start; }
+    .uix-event-row__media { grid-column: 2; width: min(8rem, 100%); }
   }
 }
 

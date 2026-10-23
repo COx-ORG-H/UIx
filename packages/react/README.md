@@ -1196,6 +1196,148 @@ mask; an avatar with a dot no longer clips it.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
 
+### Codes, contacts and paper (batch 5)
+
+#### QrCode
+
+`QrCode` draws `value` as a scannable SVG QR code with the standard four-module quiet zone.
+Name it for where it leads (`label`), pick `errorCorrection` (`M` by default; `Q` or `H` for a
+poster that may be creased or partly covered) and a `size`: CSS pixels, or a length such as
+`'32mm'` on paper. Keep at least 2 px per module on a screen and 0.4 mm per module on paper.
+The symbol is ink on paper in light, dark, print and forced colours, because scanners read dark
+on light. The encoder is the kit's own (`encodeQr`, `qrPath`), with no runtime dependency.
+
+```tsx
+<QrCode value={campaignUrl} label={t('qrOpensCampaign')} errorCorrection="Q" size="40mm" />
+```
+
+#### CodeDisplay
+
+`CodeDisplay` shows a one-time code large enough to read across a counter: monospace groups
+(`groupSize`, or the code's own spaces and hyphens), a visible `label`, and a screen-reader
+spelling character by character (`spell` for a spelling alphabet or to tell O from 0).
+`expiresAt` adds a countdown that is never a live region: a screen reader hears "{time} left"
+once at `warnBefore` seconds (60) and "expired" once, and `onExpire` runs once. An expired code
+is struck through and says so in words; `copyable` adds a `CopyButton` while the code is live.
+The product makes the code and enforces its expiry.
+
+```tsx
+<CodeDisplay code={pairing.code} label={t('pairingCode')} expiresAt={pairing.expiresAt} copyable onExpire={refresh} />
+```
+
+#### ContactCard
+
+`ContactCard` renders `.uix-contact` in a card (`bare` for a peek, a popover or a card body that
+already has padding): avatar, `name` (a quiet link with `href` / `renderLink`), `role`, the
+`email` and `phone` as selectable text, and Email / Call as `mailto:` / `tel:` `ButtonLink`s
+named for the person ("Email Amra Hadžić"), then your own `actions` and `stats`.
+`state="purged"` (the person's data was erased) shows a neutral placeholder and nothing that
+reaches anyone, even when stale props still carry an address; `state="unavailable"` keeps the
+name and says the details are unavailable. Words: `labels` or `UixLabelsProvider` `contactCard`.
+
+```tsx
+<ContactCard name={p.name} role={p.role} avatar={<Avatar size="lg" src={p.photo} alt="" />} email={p.email} phone={p.phone}
+  state={p.erasedAt ? 'purged' : 'active'} href={`/people/${p.id}`} renderLink={(props) => <Link {...props} />} />
+```
+
+#### EventRow slots
+
+`EventRow` takes `weekday`, `year` and `time` in its date tile (the tile widens to its longest
+line), `dateTime` to make the tile a `<time>` with a machine-readable date, and `media` for a
+thumbnail at the row's end: an `<img>` drawn 4:3 and cropped to fill, moved under the text on a
+phone. Without them the markup is unchanged.
+
+```tsx
+<EventRow weekday="Wed" month="Oct" day="22" year="2026" time="18:00" dateTime="2026-10-22T18:00+02:00"
+  title={<Link href="/program/42">Book launch</Link>} meta="National library" media={<img src={cover} alt="" />} />
+```
+
+#### PrintLayout
+
+`PrintLayout` is a print document frame for the browser's own print (`window.print()`): `size`
+`A4` (default) or `A5`, `orientation`, a `header` and a `footer` that repeat on every printed page
+(it renders a layout `<table>`: Chromium repeats a real `<thead>` / `<tfoot>`, not a CSS table of
+divs), "page / pages" in the bottom-right margin (`pageNumbers`), and ink-on-paper tokens for
+everything inside, also as a paper preview on screen in the dark theme. While it is on the page,
+printing shows only the documents (`isolate`, default): the app shell, toolbars and toasts are
+left out and scroll boxes cannot cut the document. `singlePage` keeps a poster or a one-page
+readout in one piece; when its content does not fit, the preview is outlined and
+`onOverflowChange(true)` is called. `PrintSignature` is a signature line with place and date and
+an optional stamp box (never split across pages); `PrintPageBreak` starts a new page. Utilities:
+`.uix-print-keep`, `.uix-print-hide`, `.uix-print-only`.
+
+```tsx
+<PrintLayout header={<PracticeHeader />} footer={<DoctorFooter />}>
+  <h1>{t('findings')}</h1>
+  <DescriptionList items={patient} />
+  <PrintSignature placeAndDate={placeAndDate} name={doctor} stamp />
+</PrintLayout>
+```
+
+#### QrScanner
+
+`QrScanner` is a camera viewfinder for a decoder you supply: `decode(frame)` gets
+`{ imageData, video }` (frames at most `maxFrameSize` px on the long side, every `interval` ms)
+and returns the text it read; the kit ships no decoder and makes no network request.
+`onResult(value)` is called once per new text (the same text again within `repeatAfter` ms is
+not repeated), and a status message says it once. Before the browser's prompt the scanner shows
+your `explainer` and a start button (with `autoStart`, a camera the browser already allows starts
+at once); after a refusal it says how to allow the camera again; it says so when the browser has
+no camera API, no camera is found, or the camera sends no picture. `manualEntry` is rendered in
+every state. A hint appears after `hintAfter` ms of frames without a code; a torch toggle appears
+when the camera has one. The camera stops on Stop, on unmount and while the page is hidden.
+
+```tsx
+<QrScanner decode={({ imageData }) => wasmDecoder.read(imageData)} onResult={redeem}
+  explainer={<p>{t('cameraWhy')}</p>} manualEntry={<VoucherCodeField />} />
+```
+
+A scan trail (what was read, what the product did with it, what to do next) is the product's:
+keep `onResult` and `onStatusChange` in state and show the last few as a `Timeline` under the
+scanner, newest first, with the outcome in words ("Not changed: already lent").
+
+#### SchedulingCalendar: the day by resource
+
+`view="day"` with `resources` draws one column per resource (a practitioner, a room) on a slot
+axis in `timeZone`: `resourceSpans` are the free, booked and off stretches the server composed;
+a free span is cut into bookable slots of `slotMinutes` (15), a booking and time off stay whole,
+and a time no span covers is hatched "no schedule" (never free; nothing is inferred). `dayStart`
+/ `dayEnd` set the axis (07:00–19:00). `onSelectSlot` gets `{ resourceId, start, end, kind, span }`
+for a click, Enter or Space on a slot or a booking; `selectedSlot` marks one. The view is one tab
+stop: arrows move between slots and resources, Home / End to a column's ends. The gutter and the
+heads stay in view while the grid scrolls. `loading` shows skeletons on the first load and dims
+what is on screen on a refetch. Below `resourceListBelow` (480 px of its own width) the day is a
+list, one resource after another (`resourceLayout` fixes either).
+
+```tsx
+<SchedulingCalendar view="day" anchorDate={day} timeZone={tenantZone} entries={[]}
+  resources={practitioners} resourceSpans={spans} slotMinutes={15} dayStart="07:30" dayEnd="17:00"
+  onSelectSlot={openSlotPopover} selectedSlot={open && { resourceId: open.resourceId, start: open.start }} loading={isFetching} />
+```
+
+#### RelationshipGraph: gaps on the map
+
+For a map of what is expected and what is there (TENSOR's K3 gaps): an edge takes
+`variant: 'dashed'` (an expected relation that is missing), a `tone` and a `description` that
+both nodes say to a screen reader ("covers, from Control K3.2 (expected, missing)"); a node takes
+a `tone`; a legend item takes the same `tone`, a `shape` (`edge` or `node`) and a `variant`, so
+it matches what it explains. Say a tone's meaning in words too (`description`, the node's text).
+`revealId` scrolls a node into view without moving focus (a table row beside the map), and with
+reduced motion it jumps. Without `rootId` no node gets the root border (`markRoot` forces it
+either way). `controls="none"` hides the toolbar in the radial layout as well. Edge labels that
+would overlap in a dense column are moved apart, or left out when they would drift too far (the
+relationship stays in the nodes' descriptions and the list). An edge across more than one column
+is a solid "skip" edge in a channel under the columns it crosses, no longer dashed or flagged as a
+cycle; `LayeredEdgeKind` gains `skip` and `back`.
+
+`RelationshipGraph layout="layered"` was measured at CMDB topology sizes (HAR-1387; 300 and 600
+items): no items overlap; a column that takes many forward edges says their common relation once
+in its header and only edges that differ keep a label; a busy node fans out along one bus; a
+node's description names five relationships and points to the list, whose rows list at most eight
+neighbours until "Show all N" (`connectedHeading`, `showAllRelations`, `showFewerRelations`,
+`moreRelations`); a pan or a zoom only moves the stage, so dragging stays at the display's frame
+rate. A force layout was not needed.
+
 ### Form fields (HAR-1812, HAR-1799, …)
 
 #### CheckboxGroup

@@ -1,0 +1,30 @@
+/* uix QR code (HAR-1251) — React QrCode renders an <svg class="uix-qr-code"> with a paper rect
+   and one path of dark modules; the four-module quiet zone is inside the viewBox.
+   Scanners read dark on light, so the symbol never follows the theme: it is print ink on print
+   paper in light, dark, print and forced colours alike, and it is printed as drawn. */
+@layer uix.components {
+  .uix-qr-code {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--uix-radius-sm);
+    forced-color-adjust: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .uix-qr-code__paper { fill: var(--uix-print-paper); }
+  .uix-qr-code__ink { fill: var(--uix-print-ink); }
+
+  /* value too long for a QR code: a square that says so, never a broken symbol */
+  .uix-qr-code--error {
+    display: grid;
+    place-items: center;
+    padding: var(--uix-space-3);
+    border: 1px dashed var(--uix-border-strong);
+    background: var(--uix-bg-subtle);
+    color: var(--uix-text-muted);
+    font-size: var(--uix-text-meta);
+    text-align: center;
+  }
+}

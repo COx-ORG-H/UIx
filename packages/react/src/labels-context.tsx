@@ -19,6 +19,11 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { QrCodeLabels } from './components/QrCode.js';
+import type { CodeDisplayLabels } from './components/CodeDisplay.js';
+import type { ContactCardLabels } from './components/ContactCard.js';
+import type { PrintLayoutLabels } from './components/PrintLayout.js';
+import type { QrScannerLabels } from './components/QrScanner.js';
 import type { PasswordInputLabels } from './components/PasswordInput.js';
 import type { TimePickerLabels } from './components/TimePicker.js';
 import type { TagInputLabels } from './components/TagInput.js';
@@ -58,6 +63,16 @@ export interface UixLabels {
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
   searchBar?: Partial<SearchBarLabels>;
+  /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
+  qrCode?: Partial<QrCodeLabels>;
+  /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
+  codeDisplay?: Partial<CodeDisplayLabels>;
+  /** `ContactCard` (HAR-1379): the Email / Call actions and the erased and unavailable states. */
+  contactCard?: Partial<ContactCardLabels>;
+  /** `PrintSignature` (HAR-986): the captions of the signature line and the stamp box. */
+  printLayout?: Partial<PrintLayoutLabels>;
+  /** `QrScanner` (HAR-1254): the start / stop buttons, every state's title and text, the read announcement. */
+  qrScanner?: Partial<QrScannerLabels>;
   /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
   commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
   entityPicker?: Partial<EntityPickerLabels>;

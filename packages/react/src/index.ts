@@ -179,6 +179,23 @@ export { StarButton } from './components/StarButton.js';
 export type { StarButtonProps } from './components/StarButton.js';
 export { CopyButton } from './components/CopyButton.js';
 export type { CopyButtonProps } from './components/CopyButton.js';
+// A scannable, print-safe QR code from the kit's own encoder (HAR-1251)
+export { QrCode, DEFAULT_QR_CODE_LABELS } from './components/QrCode.js';
+export type { QrCodeProps, QrCodeLabels } from './components/QrCode.js';
+export { encodeQr, qrPath, qrDataCapacity, qrVersionFor, QrCapacityError } from './qr-model.js';
+export type { QrMatrix, QrErrorCorrection, QrEncodeOptions } from './qr-model.js';
+// A camera viewfinder that reads codes with the product's own decoder (HAR-1254)
+export { QrScanner, DEFAULT_QR_SCANNER_LABELS } from './components/QrScanner.js';
+export type { QrScannerProps, QrScannerLabels, QrScannerStatus, QrScannerFrame, QrScannerDecoder } from './components/QrScanner.js';
+// A one-time code shown large, spelled out, with an optional expiry countdown (HAR-1253)
+export { CodeDisplay, DEFAULT_CODE_DISPLAY_LABELS, codeGroups, formatCountdown } from './components/CodeDisplay.js';
+export type { CodeDisplayProps, CodeDisplayLabels } from './components/CodeDisplay.js';
+// A person at a glance with mailto/tel actions and an erased state (HAR-1379)
+export { ContactCard, DEFAULT_CONTACT_CARD_LABELS, telHref } from './components/ContactCard.js';
+export type { ContactCardProps, ContactCardLabels, ContactCardState } from './components/ContactCard.js';
+// A print document frame: A4 / A5 pages, repeating header and footer, signature (HAR-986)
+export { PrintLayout, PrintSignature, PrintPageBreak, DEFAULT_PRINT_LAYOUT_LABELS } from './components/PrintLayout.js';
+export type { PrintLayoutProps, PrintSignatureProps, PrintLayoutLabels, PrintPageSize } from './components/PrintLayout.js';
 
 export { NavFavourites } from './components/NavFavourites.js';
 export type { NavFavouritesProps, NavFavouriteItem, NavFavouritesLabels } from './components/NavFavourites.js';
@@ -413,6 +430,10 @@ export type { SchedulingCalendarLabels,
   SchedulingBand, SchedulingStatus, SchedulingMarker, SchedulingMarkerEmphasis, SchedulingOverlayPattern,
   SchedulingCalendarDay, SchedulingLegendItem, SchedulingAgendaGroup,
 } from './components/SchedulingCalendar.js';
+// The day view by resource: one column per practitioner, truthful free / booked / off (HAR-983)
+export type { SchedulingSlotSelection } from './components/SchedulingResourceDay.js';
+export { resourceDaySlots, layoutResourceColumn, resourceDayGaps } from './scheduling-resource-model.js';
+export type { SchedulingResource, SchedulingResourceSpan, SchedulingAvailabilityKind, ResourceDaySlot, ResourceDaySlotOptions, ResourceDayItem } from './scheduling-resource-model.js';
 export type { TimeGridEntryContext } from './components/SchedulingTimeGrid.js';
 export {
   TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutDaySpans, layoutMonthSpans, layoutTimeGridDay, placesInTopLane, proposeMove, schedulingGridDays,
@@ -460,8 +481,8 @@ export type {
 
 export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
 export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';
-export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel } from './relationship-graph-model.js';
-export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey } from './relationship-graph-model.js';
+export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel, separateEdgeLabels, edgeLabelSize } from './relationship-graph-model.js';
+export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey, RelationshipGraphTone, EdgeLabelBox, PlacedEdgeLabel } from './relationship-graph-model.js';
 
 export { DEFAULT_MATCH_REVIEW_LABELS, MatchReview } from './components/MatchReview.js';
 export type { MatchReviewLabels, MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
