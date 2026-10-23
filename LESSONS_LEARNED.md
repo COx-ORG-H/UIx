@@ -2,6 +2,14 @@
 
 <!-- lesson-skip: 8240ba4 already recorded: StrictMode runs updaters and cleanups twice (3e0ff88 entry); pinned by the StrictMode jsdom test -->
 <!-- lesson-skip: 7728f4e routine: a JSX comment between elements read as a text node by literal-a11y-text; the gate named the file and line -->
+<!-- lesson-skip: f38c222 routine: HAR-2415 named the leak; same shape as the 9cbe96d skip (Escape handled by the hint, not stopped) -->
+<!-- lesson-skip: 61b3635 routine: HAR-1764 named the missing type="button"; pinned by a form-submit test -->
+<!-- lesson-skip: 9006caa routine: HAR-1828 named the subtree-wide accessible name; pinned by a test -->
+<!-- lesson-skip: df9a5e6 routine CSS wrap fix; HAR-1754 named the cause, reflow specs cover it -->
+<!-- lesson-skip: 8fe7118 routine review fixes (Tree indent, keyboard underline, passive effect); each found by looking at screenshots -->
+<!-- lesson-skip: b4f426d routine review fixes (overflow-wrap anywhere, Escape on a React handler after inner controls, IME guard, focus return, reserved message height); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 4e3b663 same family as the 2026-10-16 lesson (state that trails a queued event); the field now asks :popover-open; pinned by a deferred-toggle jsdom test -->
+
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
@@ -32,6 +40,10 @@
 
 ### 2026-10-23 · print layout · `8212a1f`
 - **Rule:** a header or footer that must repeat on every printed page has to be a real `<thead>` / `<tfoot>` of a real `<table>`; Chromium does not repeat the header group of a CSS table built of divs (`display: table-header-group`), and print emulation (`emulateMedia`) does not paginate, so only a real PDF shows it. Give the screen reset of such a table zero specificity (`:where()`), or it out-specifies the print rules that restore the table display.  **Why:** PrintLayout's first two builds printed the header on page 1 and the footer on the last page only; a probe of five structures (div table, div table with cells, real table, real table with rows, fixed elements) showed only real tables and fixed boxes repeat, and then a `.page > :is(thead, tbody, tfoot) { display: block }` screen reset (0,1,1) beat the print `.header { display: table-header-group }` (0,1,0).  **Gate:** `tests/a11y/print-layout.spec.mjs` prints a PDF with `page.pdf` and counts the header and footer links per page against a link drawn once.  **Tag:** print, false-green, test-double-fidelity, cascade, generalizable
+
+### 2026-10-23 · one Escape, two layers, in WebKit · `b4e9b87`
+- **Rule:** never assume one Escape reaches only the topmost layer. With a light-dismiss popover open inside a modal `<dialog>`, WebKit closes the popover *and* fires `cancel` on the dialog for the same keypress; Chromium and Firefox close only the popover. A dialog that acts on `cancel` must ignore one that arrives in the same task as a popover's `beforetoggle` to `closed` (and reopen if the engine closed it anyway).  **Why:** in Safari a clean kit Drawer closed together with its help popover, and a dirty one asked "Discard changes?", since 2.42.0. The keydown order was identical in both engines (probed); only the extra `cancel` differed, so no keydown-based guard could see it.
+- **Gate:** "clean, Escape closes an open popover and leaves the drawer open" in `tests/a11y/discard-prompt.spec.mjs`, now run in WebKit and Firefox by CI's cross-browser job (`CROSS_BROWSER_SPECS`, kept in step by `cross-browser-config.spec.mjs`). It failed in WebKit before `useGuardedDialog` tracked the light dismiss.  **Tag:** cross-browser, overlay, test-double-fidelity, generalizable
 
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.

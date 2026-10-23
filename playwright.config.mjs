@@ -11,6 +11,13 @@
 import { defineConfig } from '@playwright/test';
 
 const PORT = 4178;
+
+/**
+ * The specs that also run in Firefox and WebKit (CI's select-cross-browser job runs exactly these;
+ * tests/a11y/cross-browser-config.spec.mjs keeps the two lists equal).
+ */
+export const CROSS_BROWSER_SPECS = ['select', 'stat-row', 'description-list', 'discard-prompt', 'search-bar', 'shortcut'];
+const CROSS_BROWSER_MATCH = new RegExp(String.raw`[\\/](${CROSS_BROWSER_SPECS.join('|')})\.spec\.mjs$`);
 const BASE = `http://localhost:${PORT}/packages/tokens/`;
 
 export default defineConfig({
@@ -38,13 +45,15 @@ export default defineConfig({
   projects: [
     { name: 'light', use: { browserName: 'chromium', colorScheme: 'light' } },
     { name: 'dark', use: { browserName: 'chromium', colorScheme: 'dark' } },
-    // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572), and the stat
-    // tiles of one stretched row (HAR-1753: a <button> as a flex container). Opt-in, so the
-    // default runs stay Chromium-only:  UIX_CROSS_BROWSER=1 npx playwright test tests/a11y/select.spec.mjs
-    //   tests/a11y/stat-row.spec.mjs --project=chromium --project=firefox --project=webkit
-    //   (needs `npx playwright install firefox webkit`)
+    // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572), the stat tiles of
+    // one stretched row (HAR-1753: a <button> as a flex container), and the four 2.42.0 kit
+    // changes (HAR-2417: the description list's container query, the discard step's focus and
+    // Escape, the search bar, the shortcut hints). Opt-in, so the default runs stay Chromium-only:
+    //   UIX_CROSS_BROWSER=1 npx playwright test <the CROSS_BROWSER_SPECS> --project=chromium --project=firefox --project=webkit
+    //   (needs `npx playwright install firefox webkit`). These projects are light; a spec maps any
+    //   project that is not `dark` to the light theme.
     ...(process.env.UIX_CROSS_BROWSER ? ['chromium', 'firefox', 'webkit'].map((browserName) => ({
-      name: browserName, testMatch: /(select|stat-row)\.spec\.mjs$/, use: { browserName, colorScheme: 'light' },
+      name: browserName, testMatch: CROSS_BROWSER_MATCH, use: { browserName, colorScheme: 'light' },
     })) : []),
   ],
   webServer: {

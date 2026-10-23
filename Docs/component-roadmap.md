@@ -36,7 +36,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | BrandProfiles | brand-profiles.css | ✓ `BrandProfiles` | Beta | no | Serializable brand editor; also `BrandProfileEditor`, apply/restore helpers. |
 | Breadcrumbs | breadcrumbs.css | ✓ `Breadcrumbs` | Beta | no | Framework-neutral navigation wrapper. |
 | BuilderCanvas | builder-canvas.css | ✓ `BuilderCanvas` | Beta | no | Palette, ordered canvas, property surface, and accessible move controls. |
-| Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). HAR-2031: `shortcut` shows the keys in a hover / focus hint and sets `aria-keyshortcuts`. |
+| Button | button.css | ✓ `Button` | Stable | yes | Also `ButtonGroup`. Manual a11y review done (A11Y-1). HAR-2031: `shortcut` shows the keys in a hover / focus hint. HAR-2416: `ButtonLink shortcut`; screen readers hear the keys once, as the control's description (no kit `aria-keyshortcuts`). |
 | Calendar | calendar.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Card | card.css | ✓ `Card` | Stable | no | Layout container; also `CardLink` and `CollapsibleSection`. |
 | Chart | chart.css | ✓ `Chart` (`@tensor_1/react/chart`) | Beta | no | Optional ECharts adapter with accessible data table, analytical card states, metric, and legend chrome; lean preset also available. |
@@ -116,7 +116,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |
 | Timeline | timeline.css | ✓ `Timeline` | Beta | no | Also `TimelineItem`. Recently landed. |
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |
-| Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. HAR-2031: `shortcut` (keys in the bubble, `aria-keyshortcuts` on the trigger). |
+| Tooltip | tooltip.css | ✓ `Tooltip` | Stable | no | Overlay/feedback. HAR-2031: `shortcut` (keys in the bubble). HAR-2416: the keys are said once, in the trigger's description; no `aria-keyshortcuts`. HAR-2415: an Escape that closes the bubble does not reach a Drawer or Modal around it. |
 | Tree | tree.css | ✓ `Tree` | Stable | no | Capability; `TreeNodeData`. 2.36.0 (HAR-1382): `hasChildren` and `loadChildren` (children loaded on expand, with a loading row and an error row with Retry). |
 | Typography | typography.css | n/a | Stable | no | Foundation type styles (applied via classes); no standalone wrapper by design. |
 | UtilityBits | utility-bits.css | n/a | Stable | no | CSS-only utilities (`.uix-stack`/`.uix-cluster` etc.); no standalone wrapper by design. |

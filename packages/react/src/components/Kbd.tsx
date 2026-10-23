@@ -87,6 +87,14 @@ export function ariaKeyShortcuts(keys: KeyShortcut, platform: KbdPlatform): stri
 export const isKeyShortcut = (value: unknown): value is KeyShortcut =>
   Array.isArray(value) && value.length > 0 && value.every((key) => typeof key === 'string');
 
+/**
+ * What a screen reader should hear for a shortcut: the key names joined with "+", e.g.
+ * "Control+K" or "Command+K" (HAR-2416). The same text `KbdCombo` speaks. Internal.
+ */
+export function spokenKeys(keys: KeyShortcut, platform: KbdPlatform, keyLabels?: Partial<Record<string, string>>): string {
+  return keys.map((key) => keyLabels?.[key] ?? KEYS[key]?.[platform]?.[1] ?? key).join('+');
+}
+
 export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /**
    * Keys in order, e.g. `['Mod', 'K']`. `Mod` is ⌘ on Apple and Ctrl elsewhere; `Shift`,
@@ -105,15 +113,11 @@ export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'ch
  */
 export function KbdCombo({ keys, platform, keyLabels, className, ...props }: KbdComboProps) {
   const active = useKbdPlatform(platform);
-  const parts = keys.map((key) => {
-    const known = KEYS[key]?.[active];
-    return { glyph: known?.[0] ?? key, spoken: keyLabels?.[key] ?? known?.[1] ?? key };
-  });
   return (
     <span className={cx('uix-kbd-combo', className)} {...props}>
-      <span className="uix-visually-hidden">{parts.map((p) => p.spoken).join('+')}</span>
+      <span className="uix-visually-hidden">{spokenKeys(keys, active, keyLabels)}</span>
       <span className="uix-kbd-combo__keys" aria-hidden="true">
-        {parts.map((p, i) => <kbd key={`${keys[i]}-${i}`} className="uix-kbd">{p.glyph}</kbd>)}
+        {keys.map((key, i) => <kbd key={`${key}-${i}`} className="uix-kbd">{KEYS[key]?.[active]?.[0] ?? key}</kbd>)}
       </span>
     </span>
   );
