@@ -28,13 +28,16 @@
   .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 
-  /* Sliding indicator (React Segmented, HAR-2589): one lifted segment slides to the chosen
-     option (transform only); the option's own lift steps aside. A change from the keyboard
-     jumps. Without JavaScript the options' own lift shows. */
-  .uix-segmented { position: relative; }
+  /* Sliding indicator (React Segmented, HAR-2589). At rest the chosen option shows its own lift.
+     When a click changes it, one lifted segment slides from the old option to the new one
+     (transform only); while it slides ([data-uix-indicator]) the new option's own lift steps
+     aside, then the indicator hides again. Keyboard changes jump. */
+  /* the indicator is the last child: isolate + z-index -1 paint it above the track and beneath
+     the options */
+  .uix-segmented { position: relative; isolation: isolate; }
   .uix-segmented__option { position: relative; }
   /* the same look as a selected option: surface, lift and the 3:1 inset ring */
-  .uix-segmented__indicator { position: absolute; pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-segmented__indicator { position: absolute; z-index: -1; pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
   .uix-segmented__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
   @media (forced-colors: none) {
     .uix-segmented[data-uix-indicator] .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: transparent; box-shadow: none; }

@@ -228,7 +228,9 @@ test('SuccessState: the mark, the focused title, the reference, what happens nex
 
 test('Tabs and Segmented render one hidden, decorative indicator; enclosed tabs have none', () => {
   const tabs = renderToStaticMarkup(h(ui.Tabs, { value: 'a', 'aria-label': 'Views' }, h(ui.Tab, { value: 'a' }, 'All'), h(ui.Tab, { value: 'b' }, 'Mine')));
-  assert.match(tabs, /<div aria-label="Views" role="tablist" class="uix-tabs uix-tabs--line"><span class="uix-tabs__indicator" aria-hidden="true" hidden=""><\/span><button type="button" role="tab"/);
+  assert.match(tabs, /<div aria-label="Views" role="tablist" class="uix-tabs uix-tabs--line"><button type="button" role="tab"/);
+  // last, so :nth-child on the tabs keeps counting tabs
+  assert.match(tabs, /<span class="uix-tabs__indicator" aria-hidden="true" hidden=""><\/span><\/div>$/);
   const enclosed = renderToStaticMarkup(h(ui.Tabs, { value: 'a', variant: 'enclosed' }, h(ui.Tab, { value: 'a' }, 'All')));
   assert.doesNotMatch(enclosed, /uix-tabs__indicator/);
   const segmented = renderToStaticMarkup(h(ui.Segmented, { value: 'x', 'aria-label': 'Density' }, h(ui.SegmentedOption, { value: 'x' }, 'Compact')));

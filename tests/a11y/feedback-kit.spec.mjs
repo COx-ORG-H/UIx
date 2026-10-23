@@ -406,38 +406,43 @@ test('useDeferredReorder: a live re-sort waits while the pointer is over the lis
   expect(await first()).not.toBe(start);
 });
 
-test('Tabs and Segmented: a click slides the indicator; an arrow key jumps it', async ({ page }) => {
+test('Tabs and Segmented: a click slides the mark across, then the tab shows its own again; an arrow key jumps', async ({ page }) => {
   await slowMotion(page);
   const line = page.getByTestId('line-tabs');
   const indicator = line.locator('.uix-tabs__indicator');
-  await expect(line).toHaveAttribute('data-uix-indicator', '');
-  await expect(indicator).toBeVisible();
+  // at rest: no indicator, the selected tab's own underline
+  await expect(indicator).toBeHidden();
+  await expect(line).not.toHaveAttribute('data-uix-indicator', /.*/);
   const tab = line.getByRole('tab', { name: 'About to breach' });
   await tab.click();
+  // sliding (slowed 20×): the indicator moves on a transform, the new tab's own mark steps aside
+  await expect(indicator).toBeVisible();
   await expect(indicator).toHaveAttribute('data-moving', '');
   expect(await running(indicator)).toContain('transform');
-  // the indicator lands on the selected tab
-  await expect.poll(async () => {
-    const [a, b] = [await indicator.boundingBox(), await tab.boundingBox()];
-    return Math.abs(a.x - b.x) + Math.abs(a.width - b.width);
-  }, { timeout: 10000 }).toBeLessThan(1);
-  // the selected tab's own underline steps aside while the indicator shows
   expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('hidden');
+  // landed on the new tab's box, then handed back
+  const size = await tab.boundingBox();
+  expect(Math.abs((await indicator.evaluate((el) => el.offsetWidth)) - size.width)).toBeLessThan(1);
+  await expect(indicator).toBeHidden({ timeout: 5000 });
+  await expect(line).not.toHaveAttribute('data-uix-indicator', /.*/);
+  expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');
 
   await page.keyboard.press('ArrowRight');
   await expect(line.getByRole('tab', { name: 'Closed' })).toHaveAttribute('aria-selected', 'true');
-  await expect(indicator).not.toHaveAttribute('data-moving', /.*/);
-  expect(await running(indicator), 'a keyboard change slid').toEqual([]);
+  await expect(indicator, 'a keyboard change slid').toBeHidden();
 
   const segmented = page.getByTestId('segmented');
   await segmented.getByRole('button', { name: 'Compact' }).click();
   await expect(segmented.locator('.uix-segmented__indicator')).toHaveAttribute('data-moving', '');
   await expect(segmented.getByRole('button', { name: 'Compact' })).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(segmented.locator('.uix-segmented__indicator')).toBeHidden({ timeout: 5000 });
+  await expect(segmented.getByRole('button', { name: 'Compact' })).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
 });
 
-test('without the indicator (forced colours) the selected tab keeps its own mark', async ({ page }) => {
+test('forced colours: a click never hides the selected tab’s own mark', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' });
   const line = page.getByTestId('line-tabs');
+  await line.getByRole('tab', { name: 'Assigned to me' }).click();
   await expect(line.locator('.uix-tabs__indicator')).toBeHidden();
   const selected = line.getByRole('tab', { selected: true });
   expect(await selected.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');

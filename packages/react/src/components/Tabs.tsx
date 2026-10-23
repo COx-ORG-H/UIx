@@ -166,8 +166,9 @@ export function Tabs({
       className={cx('uix-tabs', `uix-tabs--${variant}`, scroll && 'uix-tabs--scroll', className)}
       onKeyDown={onKeyDown}
     >
-      {sliding && <span ref={indicatorRef} className="uix-tabs__indicator" aria-hidden="true" hidden />}
       {tabs}
+      {/* last, so positional selectors on the tabs (:nth-child) are not shifted; painted beneath them */}
+      {sliding && <span ref={indicatorRef} className="uix-tabs__indicator" aria-hidden="true" hidden />}
     </div>
   );
 

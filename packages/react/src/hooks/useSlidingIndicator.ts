@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+import { prefersReducedMotion } from './useReducedMotion.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
+/** If a slide never reports its end (a hidden tab, no stylesheet), hand the mark back anyway. */
+const SLIDE_FALLBACK_MS = 1000;
 
 interface Box { x: number; y: number; w: number; h: number }
 
@@ -20,82 +24,75 @@ function trackInput() {
 }
 
 /**
- * Moves one indicator element (`indicatorRef`, a child of `containerRef`) onto the selected
- * item (`selectedSelector`) (HAR-2589): the selected tab's underline or the lifted segment
- * slides from the old item to the new one. The box is set at once and the move is played back
- * with a transform (FLIP), so nothing animates width or position.
+ * Slides the selection mark from the old item to the new one when a pointer changes it
+ * (HAR-2589): the selected tab's underline, the pill, the lifted segment. At rest every item
+ * keeps its own selected look (server HTML, forced colours, wrapped rows: nothing to keep in
+ * place); only during the slide does one indicator (`indicatorRef`, a child of `containerRef`)
+ * carry the mark — the container has `data-uix-indicator` and the new item's own mark steps
+ * aside — and at the end of the slide it hands the mark back and hides. The indicator is sized
+ * to the new item and played back from the old one with a transform (FLIP): nothing animates
+ * width or position.
  *
- * - A change made from the keyboard jumps: arrow keys are the 100×-a-day path (§2.2).
- * - The first placement and any resize (the container, or an item: a web font arriving, a
- *   live count in a label) re-place it without a slide.
- * - Until the indicator is placed, the container has no `data-uix-indicator`, so the items'
- *   own selected style shows (server HTML, no JavaScript, no selection).
- * - Reduced motion: the kit's policy drops transform from transitions, so it jumps.
+ * - A change from the keyboard jumps: arrow keys are the 100×-a-day path (§2.2).
+ * - Reduced motion jumps.
  */
 export function useSlidingIndicator(
   containerRef: RefObject<HTMLElement | null>,
   indicatorRef: RefObject<HTMLElement | null>,
   selectedSelector: string,
 ): void {
-  const last = useRef<Box | null>(null);
-  // the element itself, so a remounted container (another variant, another overflow mode) is
-  // observed afresh
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  const observer = useRef<ResizeObserver | null>(null);
+  const last = useRef<{ el: Element; box: Box } | null>(null);
+  const finish = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => finish.current?.(), []);
 
   useIsomorphicLayoutEffect(() => {
     trackInput();
-    const current = containerRef.current;
-    if (current !== container) {
+    const container = containerRef.current;
+    const indicator = indicatorRef.current;
+    const selected = container?.querySelector<HTMLElement>(selectedSelector) ?? null;
+    if (!container || !selected || selected.offsetParent !== container) {
+      finish.current?.();
       last.current = null;
-      setContainer(current);
+      return;
     }
-    if (!current) return;
-    place(current, indicatorRef.current, selectedSelector, last, lastInput === 'pointer');
-    // observe every item too: an item can change size while the container does not
-    if (observer.current) for (const child of Array.from(current.children)) observer.current.observe(child);
+    const box: Box = { x: selected.offsetLeft, y: selected.offsetTop, w: selected.offsetWidth, h: selected.offsetHeight };
+    const before = last.current;
+    last.current = { el: selected, box };
+    if (!before || before.el === selected) return;
+    // a new selection: any slide still running ends where it is
+    finish.current?.();
+    if (!indicator || lastInput !== 'pointer' || prefersReducedMotion() || !box.w || !box.h) return;
+    slide(container, indicator, before.box, box, finish);
   });
-
-  useEffect(() => {
-    if (!container || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(() => place(container, indicatorRef.current, selectedSelector, last, false));
-    observer.current = ro;
-    ro.observe(container);
-    for (const child of Array.from(container.children)) ro.observe(child);
-    return () => { ro.disconnect(); observer.current = null; };
-  }, [container, indicatorRef, selectedSelector]);
 }
 
-function place(container: HTMLElement, indicator: HTMLElement | null, selector: string, last: { current: Box | null }, animate: boolean) {
-  const selected = container.querySelector<HTMLElement>(selector);
-  if (!indicator || !selected || selected.offsetParent !== container) {
-    // no indicator or nothing to point at: hand the selection mark back to the items
-    container.removeAttribute('data-uix-indicator');
-    if (indicator) indicator.hidden = true;
-    last.current = null;
-    return;
-  }
-  const box: Box = { x: selected.offsetLeft, y: selected.offsetTop, w: selected.offsetWidth, h: selected.offsetHeight };
-  const before = last.current;
-  last.current = box;
-  const showing = !indicator.hidden && container.hasAttribute('data-uix-indicator');
-  if (showing && before && before.x === box.x && before.y === box.y && before.w === box.w && before.h === box.h) return;
+function slide(container: HTMLElement, indicator: HTMLElement, from: Box, to: Box, finish: { current: (() => void) | null }) {
   indicator.hidden = false;
-  indicator.removeAttribute('data-moving');
-  // a jump (keyboard, resize) also stops a slide still running from an earlier click
-  if (!animate) indicator.getAnimations?.().forEach((a) => a.cancel());
-  indicator.style.transform = '';
-  indicator.style.inlineSize = `${box.w}px`;
-  indicator.style.blockSize = `${box.h}px`;
+  indicator.style.inlineSize = `${to.w}px`;
+  indicator.style.blockSize = `${to.h}px`;
   // physical: offsetLeft counts from the left edge in either writing direction
   indicator.style.left = '0';
   indicator.style.top = '0';
-  indicator.style.translate = `${box.x}px ${box.y}px`;
+  indicator.style.translate = `${to.x}px ${to.y}px`;
+  indicator.style.transform = `translate(${from.x - to.x}px, ${from.y - to.y}px) scale(${from.w / to.w}, ${from.h / to.h})`;
   container.setAttribute('data-uix-indicator', '');
-  if (!animate || !showing || !before || !box.w || !box.h) return;
-  // FLIP: start where the old item was, then let the transition take it home
-  indicator.style.transform = `translate(${before.x - box.x}px, ${before.y - box.y}px) scale(${before.w / box.w}, ${before.h / box.h})`;
   void indicator.offsetWidth;
   indicator.setAttribute('data-moving', '');
   indicator.style.transform = '';
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const end = () => {
+    clearTimeout(timer);
+    indicator.removeEventListener('transitionend', onEnd);
+    indicator.getAnimations?.().forEach((a) => a.cancel());
+    indicator.removeAttribute('data-moving');
+    indicator.hidden = true;
+    container.removeAttribute('data-uix-indicator');
+    if (finish.current === end) finish.current = null;
+  };
+  const onEnd = (event: TransitionEvent) => { if (event.target === indicator && event.propertyName === 'transform') end(); };
+  indicator.addEventListener('transitionend', onEnd);
+  timer = setTimeout(end, SLIDE_FALLBACK_MS);
+  finish.current = end;
 }

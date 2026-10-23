@@ -68,12 +68,14 @@
   .uix-tabs-scroller__prev svg, .uix-tabs-scroller__next svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-tabs-scroller__prev:dir(rtl) svg, .uix-tabs-scroller__next:dir(rtl) svg { transform: scaleX(-1); }
 
-  /* Sliding indicator (React Tabs, HAR-2589). Once placed, one element carries the line's
-     underline or the pill's lifted tab and slides between tabs (transform only, about 160 ms);
-     the selected tab's own mark steps aside. A change from the keyboard jumps. Without
-     JavaScript the container has no [data-uix-indicator] and the tabs' own marks show. */
-  .uix-tabs { position: relative; }
-  .uix-tabs__indicator { position: absolute; pointer-events: none; transform-origin: 0 0; }
+  /* Sliding indicator (React Tabs, HAR-2589). At rest each tab shows its own mark. When a click
+     changes the tab, one element carries the line's underline or the pill's fill from the old
+     tab to the new one (transform only, about 160 ms); while it slides ([data-uix-indicator])
+     the new tab's own mark steps aside, then it hides again. Keyboard changes jump. */
+  /* the indicator is the last child: isolate + z-index -1 paint it above the row's own
+     background and beneath the tabs */
+  .uix-tabs { position: relative; isolation: isolate; }
+  .uix-tabs__indicator { position: absolute; z-index: -1; pointer-events: none; transform-origin: 0 0; }
   .uix-tabs__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
   .uix-tabs--line > .uix-tabs__indicator::after {
     content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px;

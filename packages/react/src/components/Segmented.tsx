@@ -116,8 +116,9 @@ export function Segmented({ value, onChange, selection = 'toggle', renderLink, c
   return (
     <SegmentedCtx.Provider value={contextValue}>
       <div ref={ref} role={selection === 'radio' ? 'radiogroup' : 'group'} className={cx('uix-segmented', className)} onKeyDown={handleKeyDown} {...props}>
-        <span ref={indicatorRef} className="uix-segmented__indicator" aria-hidden="true" hidden />
         {children}
+        {/* last, so positional selectors on the options (:nth-child) are not shifted; painted beneath them */}
+        <span ref={indicatorRef} className="uix-segmented__indicator" aria-hidden="true" hidden />
       </div>
     </SegmentedCtx.Provider>
   );

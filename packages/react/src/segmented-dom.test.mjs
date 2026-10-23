@@ -185,19 +185,19 @@ test('default mode keeps role="group" and aria-pressed; selection="radio" gives 
     h(ui.SegmentedOption, { value: 'a' }, 'A'), h(ui.SegmentedOption, { value: 'b' }, 'B')));
   assert.equal(toggle,
     '<div role="group" class="uix-segmented" aria-label="View">'
-    // the sliding indicator (HAR-2589): hidden and decorative until the client places it
-    + '<span class="uix-segmented__indicator" aria-hidden="true" hidden=""></span>'
     + '<button type="button" class="uix-segmented__option" aria-pressed="false" tabindex="-1">A</button>'
-    + '<button type="button" class="uix-segmented__option" aria-pressed="true" tabindex="0">B</button></div>',
+    + '<button type="button" class="uix-segmented__option" aria-pressed="true" tabindex="0">B</button>'
+    // the sliding indicator (HAR-2589): last, hidden and decorative; shown only while it slides
+    + '<span class="uix-segmented__indicator" aria-hidden="true" hidden=""></span></div>',
     'only tabindex and the hidden indicator are new in the default rendering');
 
   const radio = renderToStaticMarkup(h(ui.Segmented, { value: 'dark', selection: 'radio', 'aria-labelledby': 'theme-label' },
     h(ui.SegmentedOption, { value: 'light' }, 'Light'), h(ui.SegmentedOption, { value: 'dark' }, 'Dark')));
   assert.equal(radio,
     '<div role="radiogroup" class="uix-segmented" aria-labelledby="theme-label">'
-    + '<span class="uix-segmented__indicator" aria-hidden="true" hidden=""></span>'
     + '<button type="button" role="radio" class="uix-segmented__option" aria-checked="false" tabindex="-1">Light</button>'
-    + '<button type="button" role="radio" class="uix-segmented__option" aria-checked="true" tabindex="0">Dark</button></div>');
+    + '<button type="button" role="radio" class="uix-segmented__option" aria-checked="true" tabindex="0">Dark</button>'
+    + '<span class="uix-segmented__indicator" aria-hidden="true" hidden=""></span></div>');
   assert.doesNotMatch(radio, /aria-pressed/);
 
   // the keyboard model is the same in radio mode
