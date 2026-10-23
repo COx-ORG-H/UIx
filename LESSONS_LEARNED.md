@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 2974f47 routine: verify-components said the zero-tall drop line was hidden; the specimen now points at the drop target -->
 <!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
 <!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
