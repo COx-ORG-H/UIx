@@ -1,5 +1,53 @@
 # @tensor_1/tokens
 
+## 2.49.0
+
+### Minor Changes
+
+- 062c66b: Drag affordances shared by every draggable thing (motion rollout WP2: HAR-2590). New stylesheet `components/drag.css`: `[data-uix-drag="lifted"]` (pointer: lift, scale 1.02, deeper shadow), `[data-uix-drag="grabbed"]` (keyboard: dashed ring, no motion), `[data-uix-drop-target]`, `.uix-drop-line` and `[data-uix-settle]` (the landing). Reduced motion (OS or `data-motion="reduce"`) keeps the states and drops the scale and the landing.
+
+  - `SortableList` rows lift while dragged and settle when dropped; `DashboardCanvas` widgets settle where a pointer drag drops them (keyboard steps stay instant).
+  - `Kanban`: `KanbanCard dragging`, `KanbanColumn dropTarget`, new `KanbanDropLine`.
+  - `settleDrop(el)` and `useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })` (Space/Enter pick up and drop, arrows move, Escape or leaving puts back, every step said politely; the picked-up state follows `id` across lists), with `UixLabelsProvider` `keyboardGrab`, `DEFAULT_KEYBOARD_GRAB_LABELS` and the types `KeyboardGrabDirection`, `KeyboardGrabLabels`, `UseKeyboardGrabOptions`, `UseKeyboardGrabResult`, `KanbanDropLineProps`.
+  - `.uix-kanban__body` gains 4 px of top padding, so a lifted or picked-up top card is not clipped by the scrolling column.
+
+- 954f353: Lists that move visibly, the success outcome, sliding tab and segment indicators (motion rollout WP2: HAR-2586, HAR-2588, HAR-2589).
+
+  - `MotionList` (`items`, `getKey`, `renderItem`, `as`): items enter (rise 8 px + fade), leave (fade in place, then the rest glide up) and re-sort (FLIP glide), never on first render; focus stays on a moved item, moves to the next item when the focused one leaves, and is never pulled in from outside. New stylesheet `components/list-motion.css` (`.uix-motion-list`, `[data-uix-entering]`, `[data-uix-exiting]`, `[data-uix-moving]`).
+  - `useDeferredReorder(items, getKey)` → `{ items, held, listProps }`: a live re-sort waits while a mouse is over the list or keyboard focus is inside it.
+  - `SuccessState` (`title`, `headingLevel`, `reference`, `referenceLabel`, `next`, `nextTitle`, `action`, `focusOnMount`, `variant`): a mark that draws once, the title focused on mount on a page, what happens next and the next action. Classes `.uix-success*` in `states.css`.
+  - Tabs (line, pill) and Segmented: the selection mark slides on a click and jumps from the keyboard; `useSlidingIndicator`. Both render a hidden `.uix-tabs__indicator` / `.uix-segmented__indicator` first child (decorative, `aria-hidden`); the options' own marks show until it is placed, in forced colours, and in Segmented's link mode.
+  - CollapsibleSection: opening fades the body in on `::details-content`; an already open section, a keyboard open and closing are instant.
+  - All of it follows the in-app reduced-motion choice (`data-motion="reduce"`) as well as the OS setting.
+
+- de50359: Overlay timing (HAR-2578, motion rollout work package 1, part B), on the tokens part A added.
+
+  - **New tokens (additive) for the feedback kit:** `--uix-dur-change` (1200 ms, a change tint on the row or field that changed), `--uix-delay-pending` (300 ms before a pending indicator shows), `--uix-hold-pending` (500 ms it then stays at least), `--uix-hold-result` (1500 ms an in-place result holds).
+
+  - **Exits are faster than enters.** Modal, Drawer and Peek enter at `--uix-dur-slow` (240 ms) and leave at `--uix-dur-exit-slow` (160 ms); popovers, menus, Select and tooltips enter at `--uix-dur-fast` (120 ms) and leave at `--uix-dur-exit-fast` (80 ms). Every exit is ease-out. The closed state's rule carries the exit duration, the open state's the enter.
+  - **Popovers, menus, Select and SearchSuggest grow from their trigger:** `scale(.95)` plus opacity about the anchor point. `useAnchoredPosition` writes that point as `--uix-anchor-origin` on the overlay (`transform-origin: var(--uix-anchor-origin)`); the old `--uix-lift` slide away from the anchor is gone. Its placement check now accounts for a scale about that origin.
+  - **Keyboard-opened overlays do not animate.** A Modal, Drawer, Peek, Popover, Menu or Select opened or closed right after a key press (Enter on a button, ↓ on a menu trigger, Escape) carries `[data-uix-key-opened]`, which `motion.css` treats like `[data-uix-instant]`.
+  - **Tooltip delay group.** A `Tooltip` waits `--uix-delay-tooltip` (400 ms) before it opens on hover. While one is open, and for `--uix-delay-tooltip-skip` (300 ms) after the last one closed, a neighbour opens at once with no fade, and the bubble it replaces goes at once (two never overlap). Keyboard focus still opens it at once.
+  - **Toasts move on transitions:** they enter from the toaster's edge and leave toward it (`--uix-dur-slow` in, `--uix-dur-exit` out) and turn around if updated mid-exit. When a toast arrives or leaves, the others glide to their new place (`--uix-dur`, `--uix-ease-out`, so the one making room clears the newcomer early). A toast with a close action can be swiped away: past a third of its width, or flung faster than 0.11 px/ms, it flies out and closes; a slow, short drag snaps back. `toast-store` removes a leaving toast after the CSS `--uix-dur-exit`; `TOAST_LEAVE_MS` (its fallback) is now 110.
+  - **SearchSuggest** enters once per opening: a list that hides and reappears between result sets while the user types comes back in place (`[data-settled]`) instead of replaying its enter.
+  - **Bulk bar** enters on a transition from `@starting-style` instead of a keyframe.
+
+### Patch Changes
+
+- 9188c2a: Follow-ups to the batch PRs (#159, #165, #166, #168).
+
+  - `Chip` `onClick` now receives the click event (`(event) => void`; a `() => void` handler still works), so a chip can be the trigger of a `Menu`. `DataWorkspace`'s "+ Filter" is now a real `Chip variant="add"`; its markup is unchanged.
+  - Shortcut key caps are hidden on touch devices (`@media (hover: none) and (pointer: coarse)`): the Sidebar search row's keys (also in the AppShell phone drawer), the keys of Menu, CommandPalette and Tooltip rows, SearchSuggest's trailing key, and a Button's hint bubble, which a tap used to open. `aria-keyshortcuts`, the spoken keys and descriptions are unchanged; a key a product puts in a Menu or CommandItem shortcut slot is clipped from view, not removed. One rule in `components/kbd.css`.
+  - `RelationshipGraph controls="compact"`: the footer (navigation hint, zoom level, controls) is a band across the map's bottom edge on the map's background with a rule above it, so no node shows half under a pill; fit, the first view, Reset and zooming about the centre leave the band's height free.
+  - `RelationshipGraph layout="layered"` edge labels are drawn above every line, each on an opaque chip of the map's surface, in the small text size (meta) at >= 4.5:1; a tone is the chip's border. A busy node's trunk stands 4 px from the node so each stub carries its label on a straight run. Markup: labels moved from each `.uix-relationship-graph__link` into `g.uix-relationship-graph__edge-labels > g.uix-relationship-graph__edge-label[data-edge]` (rect + text); links gained `data-edge`. Wrapping fits the larger text (about 12 characters per line in a standard gap).
+  - `RelationshipGraph` legend items are inline-flex rows with a real `span.uix-relationship-graph__legend-mark` (was `li::before`), centred on their words; items wrap whole.
+  - The layered map is a pan surface: it no longer selects text or starts a native drag (`user-select: none`, `-webkit-user-drag: none`, `dragstart` cancelled). The relationship list stays selectable.
+  - `Table`: every row state sets `--uix-row-bg` (a registered colour) on the row; frozen cells (`.uix-table--pinned-col`, `.uix-table--pinned-actions`, DataWorkspace's frozen id) paint it over the surface, so a frozen cell follows selected, pinned, zebra and hover (hover now only where the device can hover). Fixes the zebra stripe on selected even rows in the frozen id column.
+  - `BulkBar` wraps: actions take a second row on a phone instead of running off the edge.
+  - `Segmented` clips its sliding indicator to the track, so a window that narrows mid-slide cannot widen the page.
+
+- 5439e94: Tabs and Segmented: while the selection mark slides, the row clips it to its own box, so a resize partway through the slide can no longer make the page scroll sideways for a moment. Scrolling tab rows are left as they were.
+
 ## 2.48.0
 
 ### Minor Changes
