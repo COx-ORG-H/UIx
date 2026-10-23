@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
 <!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
 <!-- lesson-skip: 3b9609d routine: the reviewer named three shapes the glyph guard missed; each is now a scan test -->
 <!-- lesson-skip: 444a356 routine: a hidden presence word led the trigger's accessible name; the reviewer read the name, a spec now asserts it starts with the person -->
@@ -43,6 +44,10 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
+### 2026-10-23 · a11y, live regions · `010986c`
+- **Rule:** a live region portalled to `document.body` is never announced while a modal `<dialog>` is open: `showModal()` makes everything outside the dialog inert. Portal status text to `el.closest('dialog') ?? document.body` (ButtonFeedback, `announcePolite(text, from)`, ShortcutHint all do).  **Why:** the button's result region worked on a page and was silent in a Drawer footer, the main use; only a reviewer reading ShortcutHint's comment knew.
+- **Gate:** `feedback-pending-dom.test.mjs` (result inside a `<dialog>` speaks from the dialog) and `feedback-kit.spec.mjs` (Modal save announces inside the open dialog).  **Tag:** a11y, portal, dialog, generalizable
 
 ### 2026-10-23 · an in-app motion choice has more readers than CSS · `0e7b267`
 - **Rule:** when an app can override `prefers-reduced-motion` (here `:root[data-motion="reduce"]`), every reader must ask the one helper (`prefersReducedMotion()`) or a CSS mirror under `@media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] … }`. A component that calls `matchMedia('(prefers-reduced-motion: reduce)')` itself, or a CSS static fallback that only lives under the media query, silently ignores the in-app choice; and a fallback in an `@layer` loses to the unlayered motion policy unless it is `!important` (layered `!important` wins over unlayered).  **Why:** HAR-1372 shipped the switch and mirrored the button, spinner and progress rules, but ECharts kept animating, the toast still slid, and the arrival highlight lost its static fallback; the reviewer found all three by setting the switch, not the OS.
