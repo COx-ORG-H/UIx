@@ -331,30 +331,45 @@
   .uix-scheduling-calendar__rs-description { display:block; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-weight:400; overflow-wrap:anywhere; }
   .uix-scheduling-calendar__rs-gutter { position:sticky; left:0; z-index:var(--uix-z-raised); background:var(--calendar-chrome-surface); }
   .uix-scheduling-calendar__rs-tick { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot)); right:var(--uix-space-1); padding-top:var(--calendar-gap); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; line-height:1; }
-  /* the column's own background is "no schedule"; every span covers it */
-  .uix-scheduling-calendar__rs-column { position:relative; min-width:0; border-left:1px solid var(--calendar-chrome-line);
-    background:
-      repeating-linear-gradient(to bottom,transparent 0 calc(var(--calendar-slot) - 1px),var(--calendar-chrome-line) calc(var(--calendar-slot) - 1px) var(--calendar-slot)),
-      repeating-linear-gradient(135deg,var(--calendar-chrome-line) 0 1px,transparent 1px 8px),
-      var(--calendar-chrome-surface-quiet); }
+  /* The column's own background is "no schedule" (hatched); a free span covers it with paper.
+     Lines mark the hours only, drawn over the paper; the slots are felt on hover, not drawn
+     (review of PR #166: per-slot boxes with a label each read as a form, not a day). A booking
+     is the time grid's own entry chip, at the time grid's own lanes. */
+  .uix-scheduling-calendar__rs-column { --calendar-hour:var(--calendar-slot); position:relative; min-width:0; border-left:1px solid var(--calendar-chrome-line);
+    background:repeating-linear-gradient(135deg,var(--calendar-chrome-line) 0 1px,transparent 1px 8px),var(--calendar-chrome-surface-quiet); }
+  .uix-scheduling-calendar__rs-column::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:repeating-linear-gradient(to bottom,var(--calendar-chrome-line) 0 1px,transparent 1px calc(var(--uix-scheduling-calendar-rs-per-hour,1) * var(--calendar-slot)));
+    background-position:0 calc(var(--uix-scheduling-calendar-rs-hour-at,0) * var(--calendar-slot)); }
   /* until the first spans arrive nothing is known: no hatch that would say "no schedule" */
   .uix-scheduling-calendar__resources[data-first-load] .uix-scheduling-calendar__rs-column { background:var(--calendar-chrome-surface); }
-  .uix-scheduling-calendar__rs-item,.uix-scheduling-calendar__rs-skeleton { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot) + 1px); height:max(calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot) - 2px),0.75rem);
-    left:calc(var(--calendar-gap) + (100% - 2 * var(--calendar-gap)) * var(--uix-scheduling-calendar-rs-lane,0) / var(--uix-scheduling-calendar-rs-lanes,1)); width:calc((100% - 2 * var(--calendar-gap)) / var(--uix-scheduling-calendar-rs-lanes,1) - var(--calendar-gap)); }
-  .uix-scheduling-calendar__rs-item { display:flex; align-items:flex-start; gap:var(--uix-space-1); min-width:0; padding:var(--calendar-gap) var(--uix-space-2); overflow:hidden; border:1px solid transparent; border-radius:var(--uix-radius-xs); font:inherit; font-size:var(--uix-text-meta); line-height:1.35; text-align:left; color:var(--calendar-chrome-text); }
-  .uix-scheduling-calendar__rs-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .uix-scheduling-calendar__rs-item[data-kind="free"] { background:var(--calendar-chrome-surface); border-color:var(--calendar-chrome-line); border-left:3px solid var(--calendar-chrome-line-strong); color:var(--calendar-chrome-text-quiet); font-variant-numeric:tabular-nums; cursor:pointer; }
-  .uix-scheduling-calendar__rs-item[data-kind="booked"] { background:var(--calendar-chrome-surface-quiet); border-color:var(--calendar-chrome-text); border-left-width:3px; cursor:pointer; }
-  .uix-scheduling-calendar__rs-item[data-kind="off"] { background:var(--calendar-chrome-surface-quiet); border-color:var(--calendar-chrome-line); color:var(--calendar-chrome-text-quiet); font-style:italic; }
-  .uix-scheduling-calendar__rs-item[data-continues-before] { border-top-style:dashed; }
-  .uix-scheduling-calendar__rs-item[data-continues-after] { border-bottom-style:dashed; }
-  .uix-scheduling-calendar__rs-item:focus-visible,.uix-scheduling-calendar__rs-row:focus-visible { outline:2px solid var(--calendar-chrome-text); outline-offset:1px; z-index:var(--uix-z-raised); }
-  .uix-scheduling-calendar__rs-item[data-selected],.uix-scheduling-calendar__rs-row[data-selected] { box-shadow:inset 0 0 0 2px var(--calendar-chrome-text); }
+  .uix-scheduling-calendar__rs-skeleton { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot) + 1px); left:var(--calendar-gap); right:var(--calendar-gap); height:calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot) - 2px); }
+  /* a free slot: exactly its slot, so a free span tiles into one sheet of paper */
+  .uix-scheduling-calendar__rs-item { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot)); left:0; right:0; height:calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot)); display:flex; align-items:flex-start; min-width:0; padding:var(--calendar-gap) var(--uix-space-2); overflow:hidden; border:0; border-radius:0; background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); font:inherit; font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; line-height:1.35; text-align:left; cursor:pointer; }
+  .uix-scheduling-calendar__rs-add { visibility:hidden; white-space:nowrap; }
+  .uix-scheduling-calendar__rs-item:focus-visible,.uix-scheduling-calendar__rs-item[data-selected] { z-index:2; background:var(--calendar-chrome-ghost-surface); }
+  .uix-scheduling-calendar__rs-item:is(:focus-visible,[data-selected]) > .uix-scheduling-calendar__rs-add { visibility:visible; }
+  .uix-scheduling-calendar__rs-item:focus-visible { outline:2px solid var(--calendar-chrome-text); outline-offset:-2px; }
+  .uix-scheduling-calendar__rs-item[data-selected] { box-shadow:inset 0 0 0 2px var(--calendar-chrome-text); }
+  /* time off: quiet words on a quiet sheet, over the paper and under nothing interactive */
+  .uix-scheduling-calendar__rs-off { position:absolute; z-index:2; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-slot)); left:0; right:0; height:calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-slot)); padding:var(--calendar-gap) var(--uix-space-2); overflow:hidden; border-top:1px solid var(--calendar-chrome-line); background:var(--calendar-chrome-surface-quiet); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-style:italic; line-height:1.35; }
+  .uix-scheduling-calendar__rs-text { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* a booking: the entry chip (its plain edge), heavy only when it is the selected one */
+  .uix-scheduling-calendar__rs-booking { z-index:2; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-slot) + 1px); height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-slot) - 2px),0.875rem); padding:var(--calendar-gap) var(--uix-space-1); font:inherit; font-size:var(--uix-text-meta); }
+  .uix-scheduling-calendar__rs-booking[data-continues-before] { border-top-style:dashed; border-top-left-radius:0; border-top-right-radius:0; }
+  .uix-scheduling-calendar__rs-booking[data-continues-after] { border-bottom-style:dashed; border-bottom-left-radius:0; border-bottom-right-radius:0; }
+  .uix-scheduling-calendar__rs-booking[data-selected] { border-width:2px; border-color:var(--calendar-chrome-text); }
+  .uix-scheduling-calendar__rs-booking[data-selected] .uix-scheduling-calendar__title { font-weight:600; }
+  .uix-scheduling-calendar__rs-booking:focus-visible { z-index:3; outline:2px solid var(--calendar-chrome-text); outline-offset:1px; }
+  .uix-scheduling-calendar__rs-row:focus-visible { outline:2px solid var(--calendar-chrome-text); outline-offset:1px; z-index:var(--uix-z-raised); }
+  .uix-scheduling-calendar__rs-row[data-selected] { box-shadow:inset 0 0 0 2px var(--calendar-chrome-text); }
   @media (hover:hover) {
-    .uix-scheduling-calendar__rs-item[data-kind="free"]:hover { background:var(--calendar-chrome-ghost-surface); color:var(--calendar-chrome-text); }
-    .uix-scheduling-calendar__rs-item[data-kind="booked"]:hover { background:var(--calendar-chrome-surface); }
+    .uix-scheduling-calendar__rs-item:hover { z-index:2; background:var(--calendar-chrome-ghost-surface); }
+    .uix-scheduling-calendar__rs-item:hover > .uix-scheduling-calendar__rs-add { visibility:visible; }
+    .uix-scheduling-calendar__rs-booking:hover { background:var(--calendar-chrome-surface-quiet); }
     button.uix-scheduling-calendar__rs-row:hover { background:var(--calendar-chrome-ghost-surface); }
   }
+  /* a finger needs a taller slot than a pointer (WCAG 2.5.8) */
+  @media (pointer:coarse) { .uix-scheduling-calendar__resources { --calendar-slot:2.75rem; } }
   .uix-scheduling-calendar__rs-skeleton { display:block; }
 
   /* the list: one resource after another, each time range on its own row */

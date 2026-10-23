@@ -82,7 +82,9 @@ interface ColumnProps {
   onSelect: (resource: SchedulingResource, item: ResourceDayItem) => void;
 }
 
-const stopKey = (column: number, start: number) => `${column}:${start}`;
+/** A tab stop is one item of one column. Keyed by the item, not its start: two bookings at the
+ *  same time (a double booking) are two stops, and only one of them is current. */
+const stopKey = (column: number, item: ResourceDayItem) => `${column}:${item.key}`;
 
 function itemName(resource: SchedulingResource, item: ResourceDayItem, timeZone: string, labels: SchedulingResourceLabels) {
   if (item.span.accessibleName && item.kind !== 'free') return item.span.accessibleName;
@@ -99,35 +101,40 @@ const Column = memo(function Column({ index, resource, items, slots, timeZone, l
   return <div className="uix-scheduling-calendar__rs-column" role="group" aria-label={resource.label} data-resource-id={resource.id} style={vars({ '--uix-scheduling-calendar-rs-slots': slots.length })}>
     {skeleton && [0.2, 0.45, 0.7].map((at) => <span key={at} className="uix-skeleton uix-scheduling-calendar__rs-skeleton" aria-hidden="true" style={vars({ '--uix-scheduling-calendar-rs-offset': Math.floor(slots.length * at), '--uix-scheduling-calendar-rs-length': 3 })} />)}
     {items.map((item) => {
-      const key = stopKey(index, item.start);
-      const style = vars({ '--uix-scheduling-calendar-rs-offset': item.offset, '--uix-scheduling-calendar-rs-length': item.length, '--uix-scheduling-calendar-rs-lane': item.lane, '--uix-scheduling-calendar-rs-lanes': item.lanes });
-      const common = {
-        className: 'uix-scheduling-calendar__rs-item',
+      const key = stopKey(index, item);
+      const time = zonedTimeOfDay(item.start, timeZone);
+      const selected = selectedKey === key;
+      const shared = {
         'data-kind': item.kind,
         'data-span-id': item.span.id,
         'data-continues-before': item.continuesBefore || undefined,
         'data-continues-after': item.continuesAfter || undefined,
-        style,
       };
-      const time = zonedTimeOfDay(item.start, timeZone);
-      if (item.kind === 'off') {
-        return <div key={item.key} {...common}><span className="uix-scheduling-calendar__rs-text">{item.span.label ?? labels.availability.off}</span><span className="uix-visually-hidden">{itemName(resource, item, timeZone, labels)}</span></div>;
+      const interactive = {
+        tabIndex: tabStop === key ? 0 : -1,
+        'data-rs-col': index,
+        'data-rs-key': key,
+        'data-rs-start': item.start,
+        'data-selected': selected || undefined,
+        'aria-current': selected ? ('true' as const) : undefined,
+        'aria-label': itemName(resource, item, timeZone, labels),
+        onClick: () => onSelect(resource, item),
+      };
+      // A slot of free time is open paper: no box, no words, until it is hovered or focused,
+      // when it shows the ghost surface and "+ 08:15" (the week and day grids' own idiom).
+      if (item.kind === 'free') {
+        return <button key={item.key} type="button" {...shared} {...interactive} className="uix-scheduling-calendar__rs-item"
+          style={vars({ '--uix-scheduling-calendar-rs-offset': item.offset, '--uix-scheduling-calendar-rs-length': item.length })}>
+          <span className="uix-scheduling-calendar__rs-add" aria-hidden="true">+ {time}</span>
+        </button>;
       }
-      return <button
-        key={item.key}
-        type="button"
-        {...common}
-        tabIndex={tabStop === key ? 0 : -1}
-        data-rs-col={index}
-        data-rs-start={item.start}
-        data-selected={selectedKey === key || undefined}
-        aria-current={selectedKey === key ? 'true' : undefined}
-        aria-label={itemName(resource, item, timeZone, labels)}
-        onClick={() => onSelect(resource, item)}
-      >
-        {item.kind === 'free'
-          ? <span className="uix-scheduling-calendar__rs-text">{time}</span>
-          : <span className="uix-scheduling-calendar__rs-text"><span className="uix-scheduling-calendar__time">{time}</span>{' '}<span className="uix-scheduling-calendar__title">{item.span.label ?? labels.availability.booked}</span></span>}
+      // A booking is an entry of the time grid: the same chip, the same lanes.
+      const entryStyle = vars({ '--uix-scheduling-calendar-offset': item.offset, '--uix-scheduling-calendar-length': item.length, '--uix-scheduling-calendar-lane': item.lane, '--uix-scheduling-calendar-lanes': item.lanes });
+      if (item.kind === 'off') {
+        return <div key={item.key} {...shared} className="uix-scheduling-calendar__rs-off" style={entryStyle}><span className="uix-scheduling-calendar__rs-text">{item.span.label ?? labels.availability.off}</span><span className="uix-visually-hidden">{itemName(resource, item, timeZone, labels)}</span></div>;
+      }
+      return <button key={item.key} type="button" {...shared} {...interactive} className="uix-scheduling-calendar__entry uix-scheduling-calendar__tg-item uix-scheduling-calendar__rs-booking" style={entryStyle}>
+        <span className="uix-scheduling-calendar__entry-text"><span className="uix-scheduling-calendar__time">{time}</span>{' '}<span className="uix-scheduling-calendar__title">{item.span.label ?? labels.availability.booked}</span></span>
       </button>;
     })}
   </div>;
@@ -147,7 +154,7 @@ export function SchedulingResourceDay({
     return map;
   }, [spans]);
   const columns = useMemo(() => resources.map((resource) => layoutResourceColumn(byResource.get(resource.id) ?? [], slots)), [resources, byResource, slots]);
-  const interactive = useMemo(() => columns.flatMap((items, column) => items.filter((item) => item.kind !== 'off').map((item) => stopKey(column, item.start))), [columns]);
+  const interactive = useMemo(() => columns.flatMap((items, column) => items.filter((item) => item.kind !== 'off').map((item) => stopKey(column, item))), [columns]);
   const [active, setActive] = useState<string | null>(null);
   const tabStop = active && interactive.includes(active) ? active : interactive[0] ?? null;
   const selectedKey = useMemo(() => {
@@ -155,7 +162,7 @@ export function SchedulingResourceDay({
     const column = resources.findIndex((resource) => resource.id === selected.resourceId);
     const at = new Date(selected.start).getTime();
     const hit = columns[column]?.find((item) => item.kind !== 'off' && item.start <= at && at < item.end);
-    return hit ? stopKey(column, hit.start) : null;
+    return hit ? stopKey(column, hit) : null;
   }, [selected, resources, columns]);
 
   // Columns or a list, by the view's own width (a container, not the viewport).
@@ -174,7 +181,7 @@ export function SchedulingResourceDay({
   const live = useRef({ onSelectSlot });
   live.current = { onSelectSlot };
   const onSelect = useMemo(() => (resource: SchedulingResource, item: ResourceDayItem) => {
-    setActive(stopKey(resources.indexOf(resource), item.start));
+    setActive(stopKey(resources.indexOf(resource), item));
     if (item.kind === 'off') return;
     live.current.onSelectSlot?.({ resourceId: resource.id, start: iso(item.start), end: iso(item.end), kind: item.kind, span: item.span });
   }, [resources]);
@@ -203,7 +210,7 @@ export function SchedulingResourceDay({
     }
     event.preventDefault();
     if (!next) return;
-    setActive(stopKey(Number(next.dataset.rsCol), Number(next.dataset.rsStart)));
+    setActive(next.dataset.rsKey ?? null);
     next.focus();
   };
 
@@ -241,10 +248,10 @@ export function SchedulingResourceDay({
               const range = `${zonedTimeOfDay(row.start, timeZone)} – ${zonedTimeOfDay(row.end, timeZone)}`;
               if (!row.item) return <li key={row.key} className="uix-scheduling-calendar__rs-row" data-kind="none"><span className="uix-scheduling-calendar__rs-range">{range}</span><span>{labels.noSchedule}</span></li>;
               const item = row.item;
-              const key = stopKey(column, item.start);
+              const key = stopKey(column, item);
               const content = <><span className="uix-scheduling-calendar__rs-range">{range}</span><span className="uix-scheduling-calendar__rs-kind">{labels.availability[item.kind]}</span>{item.span.label && <span className="uix-scheduling-calendar__rs-label">{item.span.label}</span>}</>;
               if (item.kind === 'off') return <li key={row.key} className="uix-scheduling-calendar__rs-row" data-kind="off">{content}</li>;
-              return <li key={row.key}><button type="button" className="uix-scheduling-calendar__rs-row" data-kind={item.kind} tabIndex={tabStop === key ? 0 : -1} data-rs-col={column} data-rs-start={item.start}
+              return <li key={row.key}><button type="button" className="uix-scheduling-calendar__rs-row" data-kind={item.kind} tabIndex={tabStop === key ? 0 : -1} data-rs-col={column} data-rs-key={key} data-rs-start={item.start}
                 data-selected={selectedKey === key || undefined} aria-current={selectedKey === key ? 'true' : undefined} aria-label={itemName(resource, item, timeZone, labels)} onClick={() => onSelect(resource, item)}>{content}</button></li>;
             })}</ol>}
         </section>;
@@ -259,8 +266,13 @@ export function SchedulingResourceDay({
   // With nothing to select (skeletons, no spans) the scroll box itself takes focus, so the keyboard can scroll it.
   // The gutter labels each hour and, with slots of 30 minutes or more, each slot.
   const showAll = slots.length > 1 && slots[1]!.start - slots[0]!.start >= 30 * 60_000;
+  // Lines mark the hours only (the slots are felt on hover, not drawn): every `perHour` slots,
+  // from the first slot that starts on the hour.
+  const slotMs = slots.length > 1 ? slots[1]!.start - slots[0]!.start : 60 * 60_000;
+  const perHour = Math.max(1, Math.round(3_600_000 / slotMs));
+  const hourAt = Math.max(0, slots.findIndex((slot) => slot.label.endsWith(':00')));
   return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-layout="columns" role="group" aria-label={gridLabel} aria-describedby={hintId} aria-busy={loading || undefined} data-loading={loading || undefined} data-first-load={firstLoad || undefined} onKeyDown={onKeyDown}
-    style={vars({ '--uix-scheduling-calendar-rs-columns': resources.length, '--uix-scheduling-calendar-rs-slots': slots.length })}>
+    style={vars({ '--uix-scheduling-calendar-rs-columns': resources.length, '--uix-scheduling-calendar-rs-slots': slots.length, '--uix-scheduling-calendar-rs-per-hour': perHour, '--uix-scheduling-calendar-rs-hour-at': hourAt % perHour })}>
     {status}
     <div className="uix-scheduling-calendar__rs-scroll" tabIndex={interactive.length === 0 ? 0 : undefined}>
       <div className="uix-scheduling-calendar__rs-grid">
