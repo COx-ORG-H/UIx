@@ -4,6 +4,7 @@ import test from "node:test";
 
 /*
  * PR #168 review (batch 3, data and editing) — stylesheet contracts:
+ *   (e) a small link button has no side padding (it sat 12 px off the text it belongs to);
  *   (b) a refetch dims its content to 0.8, not 0.6 (status pills under 0.6 fell below 4.5:1);
  *   (a) frozen-column dividers go when a measured TableWrap does not overflow.
  */
@@ -13,6 +14,10 @@ const ruleBody = (text, selector) => {
   const m = text.match(new RegExp(`${esc}\\s*\\{([^}]*)\\}`));
   return m ? m[1] : "";
 };
+
+test("(e) .uix-btn--link.uix-btn--sm has padding-inline 0", () => {
+  assert.match(ruleBody(css("button.css"), ".uix-btn--link.uix-btn--sm"), /padding-inline:\s*0\s*;/);
+});
 
 test("(b) BusyRegion and a refreshing TableWrap dim to 0.8", () => {
   const busy = css("busy-region.css");
