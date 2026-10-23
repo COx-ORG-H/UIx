@@ -87,7 +87,8 @@ export async function renderShellSpecimens() {
     // The page cannot give a specimen the whole viewport: the shell is held at 30rem here.
     const navIcon = (d) => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d }));
     const staffShell = mount(h(ui.AppShell, {
-      layout: 'viewport', mainId: 'shell-viewport-main', style: { height: '30rem' }, 'aria-label': 'Staff shell specimen',
+      // a static page cannot open the phone drawer: the specimen keeps its column (phoneNav none)
+      layout: 'viewport', phoneNav: 'none', mainId: 'shell-viewport-main', style: { height: '30rem' }, 'aria-label': 'Staff shell specimen',
       sidebar: h(ui.Sidebar, { brand: 'Biblioteka', 'aria-label': 'Staff navigation' },
         h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M3 12l9-9 9 9M5 10v10h14V10'), active: true }, 'Pregled'),
         h(ui.NavItem, { href: '#examples-navigation', icon: navIcon('M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20') }, 'Katalog'),
@@ -96,7 +97,7 @@ export async function renderShellSpecimens() {
     h(ui.PageHeader, { size: 'display', as: 'h2', eyebrow: 'Danas', title: 'Pregled', subtitle: 'Posudbe, rezervacije i zakašnjenja za ovu podružnicu.', actions: h(ui.Button, { variant: 'primary' }, 'Nova posudba') }),
     h('p', null, 'The viewport shell has no frame and no top-bar row; the sidebar and the main column run the full height.')));
     add('examples-navigation', [
-      caption('App shell, full viewport (React <code>AppShell layout="viewport"</code>, <code>.uix-shell--viewport</code>) — an application’s shell: no frame, <code>100dvh</code> (held at 30rem on this page), no top-bar row, the staff main padding (wider on a wide screen), and below 40rem one column with the sidebar hidden for the phone nav tier. The title is the display preset of <code>PageHeader</code>'),
+      caption('App shell, full viewport (React <code>AppShell layout="viewport"</code>, <code>.uix-shell--viewport</code>) — an application’s shell: no frame, <code>100dvh</code> (held at 30rem on this page), no top-bar row, the staff main padding (wider on a wide screen), and, by default, the phone nav tier (below 40rem one column, the sidebar in a drawer; this static page cannot open a drawer, so the specimen sets <code>phoneNav="none"</code>). The title is the display preset of <code>PageHeader</code>'),
       // a page has one main landmark, the docs' own: the specimen's <main> is shown as a div
       `<div data-shell-viewport-example>${html(staffShell).replace(/<main\b/, '<div').replace(/<\/main>/, '</div>')}</div>`,
     ].join('\n'));

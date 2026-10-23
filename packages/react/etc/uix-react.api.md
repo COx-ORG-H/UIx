@@ -42,7 +42,7 @@ export interface AccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, '
 // @public
 export function accountInitials(name: string): string;
 
-// @public
+// @public (undocumented)
 export function AccountMenu(input: AccountMenuProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -59,6 +59,7 @@ export interface AccountMenuProps {
     // (undocumented)
     labels?: Partial<AccountMenuLabels>;
     placement?: Placement;
+    presenceLabels?: Partial<Record<AvatarPresence, string>>;
     // (undocumented)
     user: AccountMenuUser;
 }
@@ -149,7 +150,7 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     onExitFocus?: () => void;
     onNavChange?: (nav: ShellNav) => void;
     openNavLabel?: string;
-    phoneNav?: 'drawer';
+    phoneNav?: 'drawer' | 'none';
     // (undocumented)
     sidebar?: ReactNode;
     skipToContentLabel?: ReactNode;

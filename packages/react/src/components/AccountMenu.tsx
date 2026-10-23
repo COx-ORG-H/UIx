@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { ChevronsUpDownIcon } from '../icons/components.js';
-import { Avatar } from './Avatar.js';
+import { Avatar, DEFAULT_PRESENCE_LABELS } from './Avatar.js';
 import type { AvatarPresence } from './Avatar.js';
 import { Menu } from './Menu.js';
 import type { Placement } from '../overlay-position.js';
@@ -43,6 +43,8 @@ export interface AccountMenuProps {
   /** Where the menu opens. Default `top-start`: the trigger usually sits at the bottom of a sidebar. */
   placement?: Placement;
   labels?: Partial<AccountMenuLabels>;
+  /** The spoken presence words (after the name and second line), e.g. `{ online: 'Dostupan' }`. */
+  presenceLabels?: Partial<Record<AvatarPresence, string>>;
   className?: string;
 }
 
@@ -59,7 +61,9 @@ export function accountInitials(name: string): string {
  * The signed-in person's menu (HAR-1371; MOTUS C-2, TENSOR B15): an avatar with the name and a
  * second line as the trigger of a `Menu`. Put it in `Sidebar footer`. The rows are yours.
  */
-export function AccountMenu({ user, items, collapsed = false, placement = 'top-start', labels: labelOverrides, className }: AccountMenuProps) {
+const SILENT_PRESENCE: Record<AvatarPresence, string> = { online: '', busy: '', away: '', offline: '' };
+
+export function AccountMenu({ user, items, collapsed = false, placement = 'top-start', labels: labelOverrides, presenceLabels, className }: AccountMenuProps) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_ACCOUNT_MENU_LABELS, ...uixLabels.accountMenu, ...labelOverrides };
   // in AppShell's phone drawer the sidebar is full, so the trigger is too
@@ -70,12 +74,14 @@ export function AccountMenu({ user, items, collapsed = false, placement = 'top-s
   const trigger = (
     <button type="button" className={cx('uix-account-menu', rail && 'uix-account-menu--collapsed', className)}>
       {/* the initials are a picture of the name, which the button already says */}
-      <Avatar src={photo} alt="" presence={user.status} className="uix-account-menu__avatar">
+      {/* the avatar draws the presence dot; its word is said after the name, not before it */}
+      <Avatar src={photo} alt="" presence={user.status} presenceLabels={SILENT_PRESENCE} className="uix-account-menu__avatar">
         {custom ?? (photo ? null : <span aria-hidden="true">{accountInitials(user.name)}</span>)}
       </Avatar>
       <span className="uix-account-menu__text">
         <span className="uix-account-menu__name">{user.name}</span>
         {user.sub != null && <span className="uix-account-menu__sub">{user.sub}</span>}
+        {user.status && <span className="uix-visually-hidden">, {presenceLabels?.[user.status] ?? DEFAULT_PRESENCE_LABELS[user.status]}</span>}
       </span>
       <ChevronsUpDownIcon className="uix-account-menu__chevron" />
     </button>

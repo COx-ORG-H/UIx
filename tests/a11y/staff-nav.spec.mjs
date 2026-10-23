@@ -51,7 +51,8 @@ test('the head row and the search row', async ({ page }, testInfo) => {
 
 test('AccountMenu opens with the keyboard, runs a row and gives focus back', async ({ page }, testInfo) => {
   await open(page, testInfo.project.name);
-  const trigger = page.getByRole('button', { name: /Dževad Hodžić/ });
+  // the name starts with the person, not with the presence word of the avatar
+  const trigger = page.getByRole('button', { name: /^Dževad Hodžić.*online$/ });
   await expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
   // the initials are not part of the name
   expect(await trigger.evaluate((el) => el.textContent.includes('DH'))).toBe(true);

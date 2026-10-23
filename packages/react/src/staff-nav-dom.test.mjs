@@ -67,8 +67,10 @@ test('AccountMenu: the person names the trigger; initials are hidden from assist
   assert.equal(ui.accountInitials(''), '');
   const html = renderToStaticMarkup(h(ui.AccountMenu, { user: { name: 'Ada Lovelace', sub: 'ada@example.org', status: 'online' } }));
   assert.match(html, /<button type="button" class="uix-account-menu"[^>]*aria-haspopup="menu"/);
-  assert.match(html, /<span class="uix-avatar uix-account-menu__avatar"><span aria-hidden="true">AL<\/span><span class="uix-avatar__status" aria-hidden="true"><\/span><span class="uix-visually-hidden">online<\/span><\/span>/);
-  assert.match(html, /<span class="uix-account-menu__name">Ada Lovelace<\/span><span class="uix-account-menu__sub">ada@example.org<\/span>/);
+  // the avatar's own presence word is silent; the word follows the name and the second line
+  assert.match(html, /<span class="uix-avatar uix-account-menu__avatar"><span aria-hidden="true">AL<\/span><span class="uix-avatar__status" aria-hidden="true"><\/span><span class="uix-visually-hidden"><\/span><\/span>/);
+  assert.match(html, /<span class="uix-account-menu__name">Ada Lovelace<\/span><span class="uix-account-menu__sub">ada@example.org<\/span><span class="uix-visually-hidden">, online<\/span>/);
+  assert.match(renderToStaticMarkup(h(ui.AccountMenu, { user: { name: 'A', status: 'busy' }, presenceLabels: { busy: 'Zauzet' } })), /<span class="uix-visually-hidden">, Zauzet<\/span>/);
   assert.match(renderToStaticMarkup(h(ui.AccountMenu, { user: { name: 'A', avatar: '/a.png' }, collapsed: true })), /class="uix-account-menu uix-account-menu--collapsed".*<img src="\/a.png" alt=""\/>/);
 });
 
