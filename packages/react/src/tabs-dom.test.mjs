@@ -199,3 +199,35 @@ test('a call without a name renders the same tablist as before; id and data-* pa
   assert.equal(document.activeElement, second);
   extra.cleanup();
 });
+
+test('a Tabs strip inside a form never submits it: a click, ArrowRight and Home only switch tabs (HAR-1764)', () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const submits = [];
+  function Editor() {
+    const [value, setValue] = useState('edit');
+    return h('form', { onSubmit: (e) => { e.preventDefault(); submits.push(value); } },
+      h(Tabs, { value, onChange: setValue, 'aria-label': 'Article' },
+        h(Tab, { value: 'edit' }, 'Edit'),
+        h(Tab, { value: 'preview' }, 'Preview'),
+        h(Tab, { value: 'history' }, 'History')),
+      h('button', { type: 'submit' }, 'Save'));
+  }
+  act(() => root.render(h(Editor)));
+  const tabs = [...host.querySelectorAll('[role="tab"]')];
+  assert.deepEqual(tabs.map((t) => t.getAttribute('type')), ['button', 'button', 'button']);
+  act(() => tabs[1].click());
+  assert.equal(tabs[1].getAttribute('aria-selected'), 'true', 'the click selected Preview');
+  tabs[1].focus();
+  act(() => tabs[1].dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })));
+  assert.equal(tabs[2].getAttribute('aria-selected'), 'true', 'ArrowRight selected History (it clicks the tab)');
+  act(() => tabs[2].dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })));
+  assert.equal(tabs[0].getAttribute('aria-selected'), 'true');
+  assert.deepEqual(submits, [], 'no tab submitted the form');
+  // The form's own submit button still submits it: the test can see a submit.
+  act(() => host.querySelector('button[type="submit"]').click());
+  assert.deepEqual(submits, ['edit']);
+  act(() => root.unmount());
+  host.remove();
+});

@@ -65,7 +65,8 @@ export interface UixLabels {
   inlineEdit?: Partial<InlineEditLabels>;
   /** `SortableList` (HAR-1375): the grip, Move up / Move down, the move announcement. */
   sortableList?: Partial<SortableListLabels>;
-  confirmDialog?: { typeToConfirm?: string; compensation?: string };
+  /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
+  confirmDialog?: { typeToConfirm?: string; compensation?: string; typeToConfirmMismatch?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
   datePicker?: Partial<DatePickerLabels>;

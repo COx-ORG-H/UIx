@@ -29,6 +29,13 @@ export interface ToastOptions {
    * Defaults: success/info/default 5 s, warning 8 s, error and loading stay.
    */
   duration?: number | null;
+  /**
+   * `false`: a fixed timer (HAR-1831). The toast closes `duration` after it appears, even while the
+   * pointer or focus is on it or the tab is hidden; for an undo window that must end on time
+   * (TENSOR's `useUndoableAction` commits after exactly 5 s). A toast waiting beyond the
+   * Toaster's `limit` starts its timer when it appears. Default `true`: the timer pauses.
+   */
+  pauseOnHover?: boolean;
   action?: ToastAction;
   /** Replaces the tone glyph. */
   icon?: ReactNode;
@@ -42,6 +49,8 @@ export interface ToastRecord {
   message: ReactNode;
   description?: ReactNode;
   duration: number | null;
+  /** `false`: the timer does not pause (see {@link ToastOptions.pauseOnHover}). */
+  pauseOnHover?: boolean;
   action?: ToastAction;
   icon?: ReactNode;
   /** Set while the leave animation runs; the record is removed after it. */
@@ -96,6 +105,7 @@ export function createToastStore(): ToastStore {
       id, kind, message,
       description: options.description,
       duration: options.duration === undefined ? DEFAULT_DURATION[kind] : options.duration,
+      pauseOnHover: options.pauseOnHover,
       action: options.action,
       icon: options.icon,
       onDismiss: options.onDismiss,
@@ -149,9 +159,16 @@ export interface ToastApi {
   promise: <T>(promise: Promise<T>, messages: ToastPromiseMessages<T>, options?: ToastOptions) => Promise<T>;
   /**
    * An optimistic action with an Undo button (TENSOR C2 `useUndoableAction`): `onCommit` runs
-   * when the toast closes without Undo; `onUndo` runs instead when Undo is pressed.
+   * when the toast closes without Undo; `onUndo` runs instead when Undo is pressed. Pass
+   * `pauseOnHover: false` for a commit that happens exactly `duration` after the toast appears.
    */
   undoable: (message: ReactNode, options: UndoableToastOptions) => string;
+  /**
+   * Undo an `undoable` toast from code, as if its Undo were pressed (HAR-1831): `onUndo` runs,
+   * `onCommit` does not, and the toast closes. Returns `false` when `id` is not an open undoable
+   * toast (it was already undone or committed). `dismiss(id)` commits instead.
+   */
+  undo: (id: string) => boolean;
   /** The store this API writes to; pass it to `<Toaster store>` for a non-default queue. */
   store: ToastStore;
 }
@@ -174,14 +191,31 @@ export function createToastApi(store: ToastStore): ToastApi {
     );
     return promise;
   };
+  /** The open undoable toasts, by id: what pressing Undo would do. */
+  const undoers = new Map<string, () => void>();
   api.undoable = (message, { onUndo, onCommit, undoLabel = 'Undo', duration = 6000, ...options }) => {
-    let undone = false;
-    return store.show('default', message, {
+    let settled = false;
+    const undo = () => { if (settled) return; settled = true; onUndo(); };
+    const id = store.show('default', message, {
       ...options,
       duration,
-      action: { label: undoLabel, onClick: () => { undone = true; onUndo(); } },
-      onDismiss: () => { if (!undone) onCommit(); },
+      action: { label: undoLabel, onClick: undo },
+      onDismiss: () => {
+        undoers.delete(id);
+        if (settled) return;
+        settled = true;
+        onCommit();
+      },
     });
+    undoers.set(id, undo);
+    return id;
+  };
+  api.undo = (id) => {
+    const undo = undoers.get(id);
+    if (!undo) return false;
+    undo();
+    store.dismiss(id, 'action');
+    return true;
   };
   api.store = store;
   return api;
