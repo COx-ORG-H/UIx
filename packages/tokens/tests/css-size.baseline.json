@@ -72,9 +72,14 @@
       "brotli": 915
     },
     "styles/components/card.css": {
-      "raw": 4727,
-      "gzip": 1459,
-      "brotli": 1228
+      "raw": 5714,
+      "gzip": 1789,
+      "brotli": 1490
+    },
+    "styles/components/change-highlight.css": {
+      "raw": 4719,
+      "gzip": 1361,
+      "brotli": 1146
     },
     "styles/components/chart.css": {
       "raw": 5938,
@@ -120,6 +125,11 @@
       "raw": 477,
       "gzip": 262,
       "brotli": 211
+    },
+    "styles/components/count.css": {
+      "raw": 1578,
+      "gzip": 650,
+      "brotli": 547
     },
     "styles/components/dashboard-canvas.css": {
       "raw": 5193,
@@ -255,6 +265,11 @@
       "raw": 6952,
       "gzip": 2668,
       "brotli": 2193
+    },
+    "styles/components/list-motion.css": {
+      "raw": 1989,
+      "gzip": 693,
+      "brotli": 598
     },
     "styles/components/list.css": {
       "raw": 1224,
@@ -397,9 +412,9 @@
       "brotli": 1953
     },
     "styles/components/segmented.css": {
-      "raw": 2717,
-      "gzip": 1208,
-      "brotli": 986
+      "raw": 4071,
+      "gzip": 1613,
+      "brotli": 1327
     },
     "styles/components/select.css": {
       "raw": 10452,
@@ -437,9 +452,9 @@
       "brotli": 1930
     },
     "styles/components/states.css": {
-      "raw": 2542,
-      "gzip": 889,
-      "brotli": 748
+      "raw": 6012,
+      "gzip": 1694,
+      "brotli": 1424
     },
     "styles/components/status-pill.css": {
       "raw": 6054,
@@ -472,9 +487,9 @@
       "brotli": 4567
     },
     "styles/components/tabs.css": {
-      "raw": 5107,
-      "gzip": 1621,
-      "brotli": 1349
+      "raw": 6807,
+      "gzip": 2074,
+      "brotli": 1731
     },
     "styles/components/tag-input.css": {
       "raw": 3696,

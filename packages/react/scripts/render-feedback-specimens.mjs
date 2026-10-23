@@ -87,6 +87,52 @@ export async function renderFeedbackSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── ChangeHighlight, Count, optimistic rollback (HAR-2583, HAR-2585, HAR-2587) ───────
+    // Each rendered once, then changed, so the markup is the "just changed" state.
+    const pillRow = (status, tone) => h(ui.Table, null, h('tbody', null,
+      h(ui.ChangeHighlight, { as: 'tr', value: status }, h(ui.Td, null, 'INC-0412'), h(ui.Td, null, 'Email outage in Sarajevo office'),
+        h(ui.Td, null, h(ui.ChangeHighlight, { value: status, variant: 'ring' }, h(ui.StatusPill, { tone }, status))))));
+    const changed = await mount(h(ui.TableWrap, null, pillRow('In progress', 'info')));
+    await changed.render(h(ui.TableWrap, null, pillRow('Waiting for customer', 'warning')));
+    const count = await mount(h(ui.Count, { value: 41 }));
+    await count.render(h(ui.Count, { value: 42 }));
+    const change = [
+      caption('ChangeHighlight (React <code>ChangeHighlight</code>, <code>useChangeHighlight</code>; plain markup <code>.uix-changed</code>) — a value that changed in place (a live update, the result of a transition, a rolled-back optimistic change) is tinted at once and the tint fades; never on first render. A row tints its cells; something with a colour of its own, like a status pill, gets a ring. Under reduced motion or forced colours: a steady outline for the same time. <code>announce</code> says what changed. Count — a badge or stat value ticks once on a change, up or down; never a loop, never a count-up.'),
+      '<div class="uix-stack" style="--gap:12px;max-width:40rem" data-feedback-change>',
+      changed.host.innerHTML,
+      `<div class="uix-cluster"><a class="uix-navitem" href="#examples-motion" style="min-width:10rem"><span>Inbox</span><span class="uix-navitem__badge">${count.host.innerHTML}</span></a></div>`,
+      '</div>',
+    ].join('\n');
+
+    // ── MotionList, sliding indicator, SuccessState (HAR-2586, HAR-2588, HAR-2589) ─────────
+    const queueItems = [['412', 'Email outage in Sarajevo office'], ['413', 'VPN drops every 20 minutes'], ['415', 'Printer on floor 3 is jammed']];
+    const motionList = await mount(h(ui.MotionList, {
+      items: queueItems, getKey: ([id]) => id, className: 'uix-list', 'aria-label': 'Queue',
+      renderItem: ([id, title]) => h('li', { className: 'uix-list__item' }, `INC-0${id} · ${title}`),
+    }));
+    const tabs = await mount(h(ui.Tabs, { value: 'all', 'aria-label': 'Queue views' },
+      h(ui.Tab, { value: 'all' }, 'All open'), h(ui.Tab, { value: 'mine' }, 'Assigned to me'), h(ui.Tab, { value: 'breach' }, 'About to breach'),
+      h(ui.TabPanel, { value: 'all', keepMounted: true }, 'All open tickets'), h(ui.TabPanel, { value: 'mine', keepMounted: true }, 'Assigned to you'),
+      h(ui.TabPanel, { value: 'breach', keepMounted: true }, 'About to breach')));
+    const segmented = await mount(h(ui.Segmented, { value: 'comfortable', 'aria-label': 'Density' },
+      h(ui.SegmentedOption, { value: 'compact' }, 'Compact'), h(ui.SegmentedOption, { value: 'comfortable' }, 'Comfortable'), h(ui.SegmentedOption, { value: 'spacious' }, 'Spacious')));
+    const successState = await mount(h(ui.SuccessState, {
+      title: 'Request submitted', headingLevel: 3, focusOnMount: false, variant: 'section', reference: 'REQ-0233',
+      next: ['We have emailed you a confirmation.', 'An agent picks it up within one working day.', 'Follow it under My requests.'],
+      action: h(ui.Button, { variant: 'primary' }, 'Back to the portal'),
+    }, h('p', null, 'Thanks — we have your request for a new laptop.')));
+    const lists = [
+      caption('MotionList (React <code>MotionList</code>, <code>useDeferredReorder</code>) — a new item rises 8 px and fades in; a removed one fades in place and only then leaves, so the items below glide up instead of jumping; a re-sort glides (transform only). A live re-sort waits while the pointer or focus is in the list. Reduced motion keeps the fades.'),
+      '<div class="uix-stack" style="--gap:8px;max-width:40rem" data-feedback-list>',
+      '<div class="uix-cluster"><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-add>Add</button><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-remove>Resolve the first</button><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-sort>Re-sort</button></div>',
+      motionList.host.innerHTML,
+      '</div>',
+      caption('Tabs and Segmented — in React the underline or the lifted segment slides to the choice (pointer); from the keyboard it jumps. Without JavaScript, as here, each option shows its own mark.'),
+      `<div class="uix-stack" style="--gap:12px" data-feedback-indicators>${tabs.host.innerHTML}${segmented.host.innerHTML}</div>`,
+      caption('SuccessState — the outcome of a rare journey (a portal request submitted): the mark draws once, the title takes focus, then the reference, what happens next and the next action. Never repeats; reduced motion shows the mark at once.'),
+      `<div class="uix-card" style="max-width:40rem" data-feedback-success>${successState.host.innerHTML}</div>`,
+    ].join('\n');
+
     // ── Live demo (feedback-demos.js drives it) ──────────────────────────────────────────
     const demo = [
       caption('Try it — the same classes and timings, driven by a pretend server'),
@@ -95,13 +141,14 @@ export async function renderFeedbackSpecimens() {
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="150">Answers in 150 ms</button>',
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="1200">Answers in 1.2 s</button>',
       '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-run="1200" data-feedback-fail>Fails after 1.2 s</button>',
+      '<button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-change-run>Change the highlighted values</button>',
       '</div>',
       rest.host.innerHTML.replace('<button ', '<button data-feedback-target '),
       '<span role="status" class="uix-visually-hidden" data-feedback-announce></span>',
       '</div>',
     ].join('\n');
 
-    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?" and "did it work?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, demo].join('\n') };
+    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, lists, demo].join('\n') };
   } finally {
     for (const { root, host } of roots) { await act(async () => root.unmount()); host.remove(); }
     dom.window.close();

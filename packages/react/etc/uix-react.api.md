@@ -9,11 +9,13 @@ import { AriaAttributes } from 'react';
 import { ButtonHTMLAttributes } from 'react';
 import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
+import { FocusEvent as FocusEvent_2 } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import { KeyboardEvent as KeyboardEvent_2 } from 'react';
 import { LiHTMLAttributes } from 'react';
 import { MouseEvent as MouseEvent_2 } from 'react';
+import { PointerEvent as PointerEvent_2 } from 'react';
 import * as react from 'react';
 import { ReactElement } from 'react';
 import { ReactNode } from 'react';
@@ -26,6 +28,7 @@ import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
 import { TextareaHTMLAttributes } from 'react';
 import { ThHTMLAttributes } from 'react';
+import { TransitionEvent as TransitionEvent_2 } from 'react';
 
 // @public (undocumented)
 export interface AccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -106,6 +109,9 @@ export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 // @public (undocumented)
 export type Align = 'start' | 'center' | 'end';
+
+// @public
+export function announcePolite(text: string, from?: Element | null): void;
 
 // @public (undocumented)
 export function appendRuleNode(group: RuleGroup, parentId: string, node: RuleCondition | RuleGroup, maxDepth?: number): RuleGroup;
@@ -818,6 +824,26 @@ export interface CellSubProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 // @public
+export const ChangeHighlight: react.ForwardRefExoticComponent<ChangeHighlightProps & react.RefAttributes<HTMLElement | null>>;
+
+// @public (undocumented)
+export interface ChangeHighlightOptions {
+    announce?: string;
+    disabled?: boolean;
+}
+
+// @public (undocumented)
+export interface ChangeHighlightProps extends HTMLAttributes<HTMLElement> {
+    announce?: string;
+    as?: keyof HTMLElementTagNameMap;
+    // (undocumented)
+    children?: ReactNode;
+    disabled?: boolean;
+    value: unknown;
+    variant?: 'tint' | 'ring';
+}
+
+// @public
 export interface ChartStatPoint {
     // (undocumented)
     x: number;
@@ -1316,6 +1342,15 @@ export interface CopyButtonProps {
     failedLabel?: string;
     label: string;
     value: string;
+}
+
+// @public
+export function Count(input: CountProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    format?: (value: number) => string;
+    value: number;
 }
 
 // @public
@@ -2902,6 +2937,9 @@ export type FilterValueKind = FilterValue['kind'];
 // @public (undocumented)
 export function findRuleNodeDepth(group: RuleGroup, id: string, depth?: number): number | undefined;
 
+// @public
+export function flashChanged(el: HTMLElement): void;
+
 // @public (undocumented)
 export interface FlatNode<T> {
     // (undocumented)
@@ -4158,6 +4196,287 @@ export interface MonthSpanLayout {
     placed: PlacedMonthSpan[];
 }
 
+// @public
+export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTMLElement<{
+    ref: react.RefObject<HTMLElement>;
+    className: string;
+    onTransitionEnd: (event: TransitionEvent_2<HTMLElement>) => void;
+    color?: string | undefined | undefined;
+    title?: string | undefined | undefined;
+    id?: string | undefined | undefined;
+    draggable?: (boolean | "false" | "true") | undefined;
+    style?: react.CSSProperties | undefined;
+    defaultChecked?: boolean | undefined | undefined;
+    defaultValue?: string | number | readonly string[] | undefined;
+    suppressContentEditableWarning?: boolean | undefined | undefined;
+    suppressHydrationWarning?: boolean | undefined | undefined;
+    accessKey?: string | undefined | undefined;
+    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
+    autoFocus?: boolean | undefined | undefined;
+    contentEditable?: "inherit" | (boolean | "false" | "true") | "plaintext-only" | undefined;
+    contextMenu?: string | undefined | undefined;
+    dir?: string | undefined | undefined;
+    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
+    hidden?: boolean | undefined | undefined;
+    lang?: string | undefined | undefined;
+    nonce?: string | undefined | undefined;
+    slot?: string | undefined | undefined;
+    spellCheck?: (boolean | "false" | "true") | undefined;
+    tabIndex?: number | undefined | undefined;
+    translate?: "yes" | "no" | undefined | undefined;
+    radioGroup?: string | undefined | undefined;
+    role?: react.AriaRole | undefined;
+    about?: string | undefined | undefined;
+    content?: string | undefined | undefined;
+    datatype?: string | undefined | undefined;
+    inlist?: any;
+    prefix?: string | undefined | undefined;
+    property?: string | undefined | undefined;
+    rel?: string | undefined | undefined;
+    resource?: string | undefined | undefined;
+    rev?: string | undefined | undefined;
+    typeof?: string | undefined | undefined;
+    vocab?: string | undefined | undefined;
+    autoCorrect?: string | undefined | undefined;
+    autoSave?: string | undefined | undefined;
+    itemProp?: string | undefined | undefined;
+    itemScope?: boolean | undefined | undefined;
+    itemType?: string | undefined | undefined;
+    itemID?: string | undefined | undefined;
+    itemRef?: string | undefined | undefined;
+    results?: number | undefined | undefined;
+    security?: string | undefined | undefined;
+    unselectable?: "on" | "off" | undefined | undefined;
+    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
+    is?: string | undefined | undefined;
+    exportparts?: string | undefined | undefined;
+    part?: string | undefined | undefined;
+    "aria-activedescendant"?: string | undefined | undefined;
+    "aria-atomic"?: (boolean | "false" | "true") | undefined;
+    "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined | undefined;
+    "aria-braillelabel"?: string | undefined | undefined;
+    "aria-brailleroledescription"?: string | undefined | undefined;
+    "aria-busy"?: (boolean | "false" | "true") | undefined;
+    "aria-checked"?: boolean | "false" | "mixed" | "true" | undefined | undefined;
+    "aria-colcount"?: number | undefined | undefined;
+    "aria-colindex"?: number | undefined | undefined;
+    "aria-colindextext"?: string | undefined | undefined;
+    "aria-colspan"?: number | undefined | undefined;
+    "aria-controls"?: string | undefined | undefined;
+    "aria-current"?: boolean | "false" | "true" | "page" | "step" | "location" | "date" | "time" | undefined | undefined;
+    "aria-describedby"?: string | undefined | undefined;
+    "aria-description"?: string | undefined | undefined;
+    "aria-details"?: string | undefined | undefined;
+    "aria-disabled"?: (boolean | "false" | "true") | undefined;
+    "aria-dropeffect"?: "none" | "copy" | "execute" | "link" | "move" | "popup" | undefined | undefined;
+    "aria-errormessage"?: string | undefined | undefined;
+    "aria-expanded"?: (boolean | "false" | "true") | undefined;
+    "aria-flowto"?: string | undefined | undefined;
+    "aria-grabbed"?: (boolean | "false" | "true") | undefined;
+    "aria-haspopup"?: boolean | "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog" | undefined | undefined;
+    "aria-hidden"?: (boolean | "false" | "true") | undefined;
+    "aria-invalid"?: boolean | "false" | "true" | "grammar" | "spelling" | undefined | undefined;
+    "aria-keyshortcuts"?: string | undefined | undefined;
+    "aria-label"?: string | undefined | undefined;
+    "aria-labelledby"?: string | undefined | undefined;
+    "aria-level"?: number | undefined | undefined;
+    "aria-live"?: "off" | "assertive" | "polite" | undefined | undefined;
+    "aria-modal"?: (boolean | "false" | "true") | undefined;
+    "aria-multiline"?: (boolean | "false" | "true") | undefined;
+    "aria-multiselectable"?: (boolean | "false" | "true") | undefined;
+    "aria-orientation"?: "horizontal" | "vertical" | undefined | undefined;
+    "aria-owns"?: string | undefined | undefined;
+    "aria-placeholder"?: string | undefined | undefined;
+    "aria-posinset"?: number | undefined | undefined;
+    "aria-pressed"?: boolean | "false" | "mixed" | "true" | undefined | undefined;
+    "aria-readonly"?: (boolean | "false" | "true") | undefined;
+    "aria-relevant"?: "additions" | "additions removals" | "additions text" | "all" | "removals" | "removals additions" | "removals text" | "text" | "text additions" | "text removals" | undefined | undefined;
+    "aria-required"?: (boolean | "false" | "true") | undefined;
+    "aria-roledescription"?: string | undefined | undefined;
+    "aria-rowcount"?: number | undefined | undefined;
+    "aria-rowindex"?: number | undefined | undefined;
+    "aria-rowindextext"?: string | undefined | undefined;
+    "aria-rowspan"?: number | undefined | undefined;
+    "aria-selected"?: (boolean | "false" | "true") | undefined;
+    "aria-setsize"?: number | undefined | undefined;
+    "aria-sort"?: "none" | "ascending" | "descending" | "other" | undefined | undefined;
+    "aria-valuemax"?: number | undefined | undefined;
+    "aria-valuemin"?: number | undefined | undefined;
+    "aria-valuenow"?: number | undefined | undefined;
+    "aria-valuetext"?: string | undefined | undefined;
+    dangerouslySetInnerHTML?: {
+        __html: string | TrustedHTML;
+    } | undefined | undefined;
+    onCopy?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onCopyCapture?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onCut?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onCutCapture?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onPaste?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onPasteCapture?: react.ClipboardEventHandler<HTMLElement> | undefined;
+    onCompositionEnd?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onCompositionEndCapture?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onCompositionStart?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onCompositionStartCapture?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onCompositionUpdate?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onCompositionUpdateCapture?: react.CompositionEventHandler<HTMLElement> | undefined;
+    onFocus?: react.FocusEventHandler<HTMLElement> | undefined;
+    onFocusCapture?: react.FocusEventHandler<HTMLElement> | undefined;
+    onBlur?: react.FocusEventHandler<HTMLElement> | undefined;
+    onBlurCapture?: react.FocusEventHandler<HTMLElement> | undefined;
+    onChange?: react.FormEventHandler<HTMLElement> | undefined;
+    onChangeCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onBeforeInput?: react.InputEventHandler<HTMLElement> | undefined;
+    onBeforeInputCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onInput?: react.FormEventHandler<HTMLElement> | undefined;
+    onInputCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onReset?: react.FormEventHandler<HTMLElement> | undefined;
+    onResetCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onSubmit?: react.FormEventHandler<HTMLElement> | undefined;
+    onSubmitCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onInvalid?: react.FormEventHandler<HTMLElement> | undefined;
+    onInvalidCapture?: react.FormEventHandler<HTMLElement> | undefined;
+    onLoad?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onError?: react.ReactEventHandler<HTMLElement> | undefined;
+    onErrorCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onKeyDown?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onKeyDownCapture?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onKeyPress?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onKeyPressCapture?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onKeyUp?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onKeyUpCapture?: react.KeyboardEventHandler<HTMLElement> | undefined;
+    onAbort?: react.ReactEventHandler<HTMLElement> | undefined;
+    onAbortCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onCanPlay?: react.ReactEventHandler<HTMLElement> | undefined;
+    onCanPlayCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onCanPlayThrough?: react.ReactEventHandler<HTMLElement> | undefined;
+    onCanPlayThroughCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onDurationChange?: react.ReactEventHandler<HTMLElement> | undefined;
+    onDurationChangeCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEmptied?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEmptiedCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEncrypted?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEncryptedCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEnded?: react.ReactEventHandler<HTMLElement> | undefined;
+    onEndedCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadedData?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadedDataCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadedMetadata?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadedMetadataCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadStart?: react.ReactEventHandler<HTMLElement> | undefined;
+    onLoadStartCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPause?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPauseCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPlay?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPlayCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPlaying?: react.ReactEventHandler<HTMLElement> | undefined;
+    onPlayingCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onProgress?: react.ReactEventHandler<HTMLElement> | undefined;
+    onProgressCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onRateChange?: react.ReactEventHandler<HTMLElement> | undefined;
+    onRateChangeCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSeeked?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSeekedCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSeeking?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSeekingCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onStalled?: react.ReactEventHandler<HTMLElement> | undefined;
+    onStalledCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSuspend?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSuspendCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onTimeUpdate?: react.ReactEventHandler<HTMLElement> | undefined;
+    onTimeUpdateCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onVolumeChange?: react.ReactEventHandler<HTMLElement> | undefined;
+    onVolumeChangeCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onWaiting?: react.ReactEventHandler<HTMLElement> | undefined;
+    onWaitingCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onAuxClick?: react.MouseEventHandler<HTMLElement> | undefined;
+    onAuxClickCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onClick?: react.MouseEventHandler<HTMLElement> | undefined;
+    onClickCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onContextMenu?: react.MouseEventHandler<HTMLElement> | undefined;
+    onContextMenuCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onDoubleClick?: react.MouseEventHandler<HTMLElement> | undefined;
+    onDoubleClickCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onDrag?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragEnd?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragEndCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragEnter?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragEnterCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragExit?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragExitCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragLeave?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragLeaveCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragOver?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragOverCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragStart?: react.DragEventHandler<HTMLElement> | undefined;
+    onDragStartCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onDrop?: react.DragEventHandler<HTMLElement> | undefined;
+    onDropCapture?: react.DragEventHandler<HTMLElement> | undefined;
+    onMouseDown?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseDownCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseEnter?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseLeave?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseMove?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseMoveCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseOut?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseOutCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseOver?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseOverCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseUp?: react.MouseEventHandler<HTMLElement> | undefined;
+    onMouseUpCapture?: react.MouseEventHandler<HTMLElement> | undefined;
+    onSelect?: react.ReactEventHandler<HTMLElement> | undefined;
+    onSelectCapture?: react.ReactEventHandler<HTMLElement> | undefined;
+    onTouchCancel?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchCancelCapture?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchEnd?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchEndCapture?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchMove?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchMoveCapture?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchStart?: react.TouchEventHandler<HTMLElement> | undefined;
+    onTouchStartCapture?: react.TouchEventHandler<HTMLElement> | undefined;
+    onPointerDown?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerDownCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerMove?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerMoveCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerUp?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerUpCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerCancel?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerCancelCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerEnter?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerLeave?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerOver?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerOverCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerOut?: react.PointerEventHandler<HTMLElement> | undefined;
+    onPointerOutCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onGotPointerCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onGotPointerCaptureCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onLostPointerCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onLostPointerCaptureCapture?: react.PointerEventHandler<HTMLElement> | undefined;
+    onScroll?: react.UIEventHandler<HTMLElement> | undefined;
+    onScrollCapture?: react.UIEventHandler<HTMLElement> | undefined;
+    onWheel?: react.WheelEventHandler<HTMLElement> | undefined;
+    onWheelCapture?: react.WheelEventHandler<HTMLElement> | undefined;
+    onAnimationStart?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onAnimationStartCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onAnimationEnd?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onAnimationEndCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onAnimationIteration?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onAnimationIterationCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
+    onTransitionEndCapture?: react.TransitionEventHandler<HTMLElement> | undefined;
+}, HTMLElement>;
+
+// @public (undocumented)
+export interface MotionListProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    as?: 'ul' | 'ol' | 'div' | 'tbody';
+    // Warning: (ae-forgotten-export) The symbol "Key_2" needs to be exported by the entry point index.d.ts
+    getKey: (item: T) => Key_2;
+    items: readonly T[];
+    renderItem: (item: T, state: {
+        exiting: boolean;
+    }) => ReactElement;
+}
+
 // @public (undocumented)
 export type MotionPreference = 'system' | 'reduce';
 
@@ -4314,6 +4633,14 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+
+// @public (undocumented)
+export interface OptimisticRollback<T> {
+    attempted: T;
+    // (undocumented)
+    error: unknown;
+    restored: T;
+}
 
 // @public
 export function OrgChart(input: OrgChartProps): react.JSX.Element;
@@ -6931,6 +7258,24 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     children?: ReactNode;
 }
 
+// @public
+export function SuccessState(input: SuccessStateProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SuccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    action?: ReactNode;
+    children?: ReactNode;
+    focusOnMount?: boolean;
+    headingLevel?: 1 | 2 | 3;
+    next?: ReactNode[];
+    nextTitle?: ReactNode;
+    reference?: ReactNode;
+    referenceLabel?: ReactNode;
+    title: ReactNode;
+    // (undocumented)
+    variant?: StateVariant;
+}
+
 // @public (undocumented)
 export function summarizeDiff(entries: DiffEntry[], resolutions?: Record<string, DiffResolution>): DiffSummary;
 
@@ -7922,6 +8267,26 @@ export interface UseAnchoredPositionOptions {
 }
 
 // @public
+export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;
+
+// Warning: (ae-forgotten-export) The symbol "Key" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function useDeferredReorder<T>(items: readonly T[], getKey: (item: T) => Key): UseDeferredReorderResult<T>;
+
+// @public (undocumented)
+export interface UseDeferredReorderResult<T> {
+    held: boolean;
+    items: T[];
+    listProps: {
+        onPointerEnter: (event: PointerEvent_2<HTMLElement>) => void;
+        onPointerLeave: (event: PointerEvent_2<HTMLElement>) => void;
+        onFocus: (event: FocusEvent_2<HTMLElement>) => void;
+        onBlur: (event: FocusEvent_2<HTMLElement>) => void;
+    };
+}
+
+// @public
 export function useDelayedPending(pending: boolean, input?: DelayedPendingOptions): boolean;
 
 // @public
@@ -7948,6 +8313,23 @@ export interface UseDisplayPreferencesResult {
 }
 
 // @public
+export function useOptimisticValue<T>(serverValue: T, commit: (next: T) => Promise<unknown>, input?: UseOptimisticValueOptions<T>): UseOptimisticValueResult<T>;
+
+// @public (undocumented)
+export interface UseOptimisticValueOptions<T> {
+    onRollback?: (rollback: OptimisticRollback<T>) => void;
+}
+
+// @public (undocumented)
+export interface UseOptimisticValueResult<T> {
+    pending: boolean;
+    rollback: OptimisticRollback<T> | null;
+    rollbacks: number;
+    set: (next: T) => Promise<void>;
+    value: T;
+}
+
+// @public
 export function UserChip(input: UserChipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -7963,6 +8345,9 @@ export function useReducedMotion(): boolean;
 
 // @public
 export function uses12Hour(locale?: string | readonly string[]): boolean;
+
+// @public
+export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>, indicatorRef: RefObject<HTMLElement | null>, selectedSelector: string): void;
 
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;

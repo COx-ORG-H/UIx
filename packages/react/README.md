@@ -256,6 +256,65 @@ const showSpinner = useDelayedPending(upload.isPending);
 {showSpinner && <Spinner size="sm" label={t('uploading')} />}
 ```
 
+### What changed: highlight, count, optimistic values (motion standard §2.5, §2.6, §2.8)
+
+- **`ChangeHighlight value={…}`** (or `useChangeHighlight(value)` on your own element, or
+  `.uix-changed` on plain markup) tints the element when `value` changes after mount and fades
+  the tint; never on the first render; a second change restarts it. `as="tr"` tints the row's
+  cells; `variant="ring"` rings something with a colour of its own (a status pill, a star).
+  Under reduced motion or forced colours it is a steady outline for the same time. Give it
+  words: `announce="Status changed to Resolved by A. Novak"` speaks through a polite region
+  (inside the open dialog when there is one). `flashChanged(el)` and `announcePolite(text)`
+  are the same pieces for changes that do not flow through a React value.
+- **`Count value={n}`** for a badge or stat value: one 4 px tick in the change's direction with
+  a fade, tabular figures, `format` for "99+". Never a loop, never a count-up.
+- **`useOptimisticValue(serverValue, commit, { onRollback })`** only for reversible, personal
+  actions (star, pin, reaction, mark read, display preference, own saved-view order). It shows
+  the change at once; if `commit` rejects, the last confirmed value comes back, `rollbacks`
+  counts up (flash it with `ChangeHighlight value={rollbacks}`) and `onRollback` lets you say
+  what was restored. State transitions, assignment, approvals and priority stay pessimistic.
+
+```tsx
+<ChangeHighlight as="tr" value={row.updatedAt} announce={t('rowUpdated', { id: row.id, actor })}>…</ChangeHighlight>
+<Td><ChangeHighlight value={row.status} variant="ring"><StatusPill tone={tone}>{label}</StatusPill></ChangeHighlight></Td>
+<span className="uix-navitem__badge"><Count value={unread} format={(n) => (n > 99 ? '99+' : String(n))} /></span>
+
+const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next), { onRollback: () => toast.error(t('starNotSaved')) });
+<ChangeHighlight value={star.rollbacks} variant="ring" announce={star.rollback ? t('starRestored') : undefined}>
+  <StarButton pinned={star.value} label={view.name} onToggle={(next) => star.set(next)} />
+</ChangeHighlight>
+```
+
+### Lists that move, the success outcome, sliding indicators (motion standard §2.5, §2.8)
+
+- **`MotionList`** (`items`, `getKey`, `renderItem`, `as`): a new item rises 8 px and fades in;
+  a removed item stays in place (hidden from assistive tech, `inert`), fades out, and only then
+  leaves, so the items below glide up; a re-sort glides (FLIP, transform only). Nothing moves on
+  the first render. Focus stays on a moved item and goes to the next item when the focused one
+  leaves; focus outside the list is never pulled in. `renderItem` must pass unknown props to its
+  element (`<li>`, or a `Tr` with `as="tbody"`).
+- **`useDeferredReorder(items, getKey)`**: never re-sort under the pointer. While a mouse is over
+  the list or keyboard focus is inside it, a new order waits (content still updates, new rows go
+  to the end); `held` says so; the order applies when they leave. Spread `listProps` on the list.
+- **`SuccessState`** in `States`: the outcome of a rare journey (a request submitted): a mark
+  that draws once, the title (focused on mount for `page` and `full-page`), `reference`,
+  `next` (what happens next), `action`. Reduced motion shows the mark at once.
+- **Tabs, Segmented**: the line underline, the pill and the lifted segment slide to the chosen
+  option on a click (160 ms); a keyboard change and reduced motion jump. Server HTML, forced
+  colours and Segmented's link mode keep each option's own mark. `useSlidingIndicator` is the
+  hook behind it.
+- **CollapsibleSection** opening fades the body in and settles it 4 px (on `::details-content`,
+  where supported); an already open section, a keyboard open and closing are instant.
+
+```tsx
+const queue = useDeferredReorder(rows, (row) => row.id);
+<MotionList {...queue.listProps} as="tbody" items={queue.items} getKey={(row) => row.id}
+  renderItem={(row) => <Tr>…</Tr>} />
+
+<SuccessState title={t('requestSubmitted')} reference={<>{req.number} <CopyButton … /></>}
+  next={[t('confirmationSent'), t('agentPicksUp')]} action={<ButtonLink href={`/requests/${req.id}`}>{t('viewRequest')}</ButtonLink>} />
+```
+
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.

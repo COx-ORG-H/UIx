@@ -5,6 +5,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, Keyboa
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
 
 interface SegmentedContextValue {
   value?: string;
@@ -55,6 +56,10 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 export function Segmented({ value, onChange, selection = 'toggle', renderLink, children, className, onKeyDown, ...props }: SegmentedProps) {
   const ref = useRef<HTMLDivElement>(null);
   const contextValue = useMemo(() => ({ value, onChange, selection, renderLink }), [value, onChange, selection, renderLink]);
+  // the lifted segment slides to the chosen option (HAR-2589); from the keyboard it jumps. Not in
+  // link mode: a link navigates away, there is nothing to slide to.
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  useSlidingIndicator(ref, indicatorRef, `${OPTION}:is([aria-pressed="true"], [aria-checked="true"])`);
 
   // Roving tabindex, enforced on the DOM after every render like Tabs: exactly one tab stop —
   // the selected enabled option, else the first enabled one (with no selection every option
@@ -112,6 +117,8 @@ export function Segmented({ value, onChange, selection = 'toggle', renderLink, c
     <SegmentedCtx.Provider value={contextValue}>
       <div ref={ref} role={selection === 'radio' ? 'radiogroup' : 'group'} className={cx('uix-segmented', className)} onKeyDown={handleKeyDown} {...props}>
         {children}
+        {/* last, so positional selectors on the options (:nth-child) are not shifted; painted beneath them */}
+        <span ref={indicatorRef} className="uix-segmented__indicator" aria-hidden="true" hidden />
       </div>
     </SegmentedCtx.Provider>
   );

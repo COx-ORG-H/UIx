@@ -3,6 +3,7 @@
 import { Children, createContext, isValidElement, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
 
 interface TabsContextValue {
   value?: string;
@@ -55,6 +56,11 @@ export function Tabs({
 }: TabsProps) {
   const baseId = useId();
   const listRef = useRef<HTMLDivElement>(null);
+  // the line's underline and the pill's lifted tab slide between tabs (HAR-2589); enclosed tabs
+  // keep their own frame
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  const sliding = variant !== 'enclosed';
+  useSlidingIndicator(listRef, indicatorRef, sliding ? '[role="tab"][aria-selected="true"]' : ':not(*)');
   const contextValue = useMemo(() => ({ value, onChange, baseId }), [value, onChange, baseId]);
   const scroll = overflow === 'scroll';
   const [hidden, setHidden] = useState({ start: false, end: false });
@@ -161,6 +167,8 @@ export function Tabs({
       onKeyDown={onKeyDown}
     >
       {tabs}
+      {/* last, so positional selectors on the tabs (:nth-child) are not shifted; painted beneath them */}
+      {sliding && <span ref={indicatorRef} className="uix-tabs__indicator" aria-hidden="true" hidden />}
     </div>
   );
 

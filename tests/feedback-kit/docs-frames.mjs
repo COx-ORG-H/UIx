@@ -3,8 +3,16 @@
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:http';
+import handler from 'serve-handler';
 
-const [out, base = 'http://localhost:4191'] = process.argv.slice(2);
+const [out, given] = process.argv.slice(2);
+// without a base URL, serve the repo root on a free port for this run
+const root = fileURLToPath(new URL('../..', import.meta.url));
+const server = given ? null : createServer((req, res) => handler(req, res, { public: root }));
+if (server) await new Promise((r) => server.listen(0, r));
+const base = given ?? `http://localhost:${server.address().port}`;
 mkdirSync(out, { recursive: true });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const browser = await chromium.launch();
@@ -21,7 +29,7 @@ for (const theme of ['light', 'dark']) {
       await page.goto(`${base}/packages/tokens/docs/index.html#examples-motion`, { waitUntil: 'networkidle' });
       const block = page.locator('[data-feedback-buttons]');
       await block.scrollIntoViewIfNeeded();
-      for (const sel of ['[data-feedback-buttons]', '[data-feedback-save-status]', '[data-feedback-busy]', '[data-feedback-demo]']) {
+      for (const sel of ['[data-feedback-buttons]', '[data-feedback-save-status]', '[data-feedback-busy]', '[data-feedback-change]', '[data-feedback-demo]']) {
         await page.locator(sel).screenshot({ path: join(out, `docs-${tag}-${sel.slice(15, -1)}.png`) });
       }
       const demo = page.locator('[data-feedback-demo]');
@@ -35,3 +43,4 @@ for (const theme of ['light', 'dark']) {
   }
 }
 await browser.close();
+server?.close();

@@ -235,3 +235,265 @@ test('320 px: nothing scrolls sideways, and the result keeps the button inside t
   const save = await page.getByTestId('save').boundingBox();
   expect(save.x + save.width).toBeLessThanOrEqual(row.x + row.width + 0.5);
 });
+
+// ── Release B: ChangeHighlight, Count, useOptimisticValue (HAR-2583, HAR-2585, HAR-2587) ──────
+
+const animations = (locator) => locator.evaluate((el) => el.getAnimations({ subtree: false }).map((a) => a.animationName));
+
+test('ChangeHighlight: nothing on load; a live update tints the row cells and rings the pill, then clears; announced', async ({ page }) => {
+  const row = page.getByTestId('changed-row');
+  const pill = page.getByTestId('changed-pill');
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/);
+  expect(await page.locator('[data-uix-changed]').count(), 'something flashed on first render').toBe(0);
+
+  await page.getByTestId('live-update').click();
+  await expect(row).toHaveAttribute('data-uix-changed', '');
+  await expect(pill).toHaveAttribute('data-uix-changed', '');
+  expect(await animations(row.locator('td').first())).toEqual(['uix-changed']);
+  expect(await animations(row), 'the row itself must not tint over its cells').toEqual([]);
+  expect(await animations(pill)).toEqual(['uix-changed-ring']);
+  const tint = await row.locator('td').first().evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(tint, 'no tint at the start of the highlight').not.toBe('rgba(0, 0, 0, 0)');
+
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toHaveText('INC-0412 status changed to Waiting for customer by A. Novak');
+  // the attribute goes when the animation ends (real time: CSS animations do not follow the page clock)
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+  await expect(pill).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+});
+
+test('ChangeHighlight under reduced motion: a steady outline on the row as one box, no tint', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('live-update').click();
+  const row = page.getByTestId('changed-row');
+  expect(await animations(row)).toEqual(['uix-changed-static']);
+  expect(await animations(row.locator('td').first())).toEqual([]);
+  const outline = await row.evaluate((el) => getComputedStyle(el).outlineStyle);
+  expect(outline).toBe('solid');
+});
+
+test('the in-app reduced-motion choice (data-motion="reduce", OS at no-preference) gets the same outline and fade', async ({ page }) => {
+  // the Count fade lasts 160 ms: slow CSS animations so a loaded machine still reads it running
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
+  await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
+  await page.getByTestId('live-update').click();
+  expect(await animations(page.getByTestId('changed-row'))).toEqual(['uix-changed-static']);
+  expect(await animations(page.getByTestId('changed-pill'))).toEqual(['uix-changed-static-ring']);
+  await page.getByTestId('unread-up').click();
+  expect(await animations(page.getByTestId('badge').locator('.uix-count'))).toEqual(['uix-count-fade']);
+});
+
+test('ChangeHighlight under reduced motion: the ring stays outside the pill', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('live-update').click();
+  const pill = page.getByTestId('changed-pill');
+  expect(await animations(pill)).toEqual(['uix-changed-static-ring']);
+  expect(await pill.evaluate((el) => parseFloat(getComputedStyle(el).outlineOffset))).toBeGreaterThan(0);
+});
+
+test('ChangeHighlight in forced colours: the row is outlined, and the highlight ends', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await page.getByTestId('live-update').click();
+  const row = page.getByTestId('changed-row');
+  expect(await animations(row)).toEqual(['uix-changed-static']);
+  expect(await animations(row.locator('td').first())).toEqual([]);
+  await expect(row).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+});
+
+test('ChangeHighlight on a pinned column keeps the cell opaque while tinted', async ({ page }) => {
+  await page.getByTestId('live-update').click();
+  const alpha = await page.getByTestId('changed-row').locator('td').first().evaluate((el) => {
+    const m = getComputedStyle(el).backgroundColor.match(/rgba?\(([^)]+)\)/);
+    const parts = m ? m[1].split(',').map(Number) : [];
+    return parts.length === 4 ? parts[3] : 1;
+  });
+  expect(alpha).toBe(1);
+});
+
+test('Count: one tick per change, in its direction; nothing moves beside it', async ({ page }) => {
+  // the tick lasts 160 ms: slow CSS animations down so a loaded machine still reads it running
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
+  const badge = page.getByTestId('badge').locator('.uix-count');
+  await expect(badge).toHaveText('4');
+  await expect(badge).not.toHaveAttribute('data-uix-tick', /.*/);
+  const box = await page.getByTestId('badge').boundingBox();
+  await page.getByTestId('unread-up').click();
+  await expect(badge).toHaveText('5');
+  expect(await animations(badge)).toEqual(['uix-count-up']);
+  await page.getByTestId('unread-down').click();
+  expect(await animations(badge)).toEqual(['uix-count-down']);
+  expect((await page.getByTestId('badge').boundingBox()).x).toBe(box.x);
+  await expect(badge).toHaveCSS('font-variant-numeric', 'tabular-nums');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('unread-up').click();
+  expect(await animations(badge), 'reduced motion still slides').toEqual(['uix-count-fade']);
+});
+
+test('useOptimisticValue: the star shows at once; a failed save brings it back, flashes it and says so', async ({ page }) => {
+  const section = page.locator('#optimistic');
+  const star = section.getByRole('button', { name: /Major incidents/ });
+  await expect(page.getByTestId('star-state')).toHaveText('Not starred');
+  await latency(page, 1200, true);
+  await star.click();
+  await expect(page.getByTestId('star-state')).toHaveText('Starred');
+  await expect(star).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('star-wrap')).not.toHaveAttribute('data-uix-changed', /.*/);
+  await page.clock.runFor(1250);
+  await expect(page.getByTestId('star-state')).toHaveText('Not starred');
+  await expect(star).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('star-wrap')).toHaveAttribute('data-uix-changed', '');
+  await expect(page.getByTestId('star-message')).toContainText('it is back as it was');
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toHaveText('Favourite restored');
+  await expect(star, 'focus left the star').toBeFocused();
+});
+
+// ── Release C: MotionList, sliding indicator, disclosure, SuccessState (HAR-2586, HAR-2588, HAR-2589) ─
+
+const slowMotion = async (page) => {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
+};
+const running = (locator) => locator.evaluate((el) => el.getAnimations().map((a) => a.animationName ?? a.transitionProperty));
+const away = (page) => page.mouse.move(1, 1);
+
+test('MotionList: a new row rises in; a resolved row fades in place, then leaves and the rows below glide up', async ({ page }) => {
+  await slowMotion(page);
+  const list = page.getByTestId('queue');
+  await expect(list.locator('[data-uix-entering]')).toHaveCount(0);
+  await page.getByTestId('add').click();
+  await away(page);
+  const added = list.locator('li').first();
+  await expect(added).toHaveAttribute('data-uix-entering', '');
+  expect(await running(added)).toContain('uix-list-enter');
+
+  // let the add glide (slowed 20×) settle, so the next measure starts from rest
+  await expect(list.locator('[data-uix-moving]')).toHaveCount(0, { timeout: 10000 });
+  await page.getByTestId('resolve').click();
+  await away(page);
+  const leaving = list.locator('[data-uix-exiting]');
+  await expect(leaving).toHaveCount(1);
+  await expect(leaving).toHaveAttribute('aria-hidden', 'true');
+  expect(await running(leaving)).toContain('uix-list-exit');
+  // INC-0415 sits below the leaving row: when the row goes it must glide up, not jump. Its
+  // place partway through the glide is between where it was and where it ends.
+  const below = list.locator('li', { has: page.getByTestId('row-415') });
+  const start = (await below.boundingBox()).y;
+  await expect(leaving).toHaveCount(0, { timeout: 8000 });
+  await expect(below).toHaveAttribute('data-uix-moving', '');
+  expect(await running(below)).toContain('transform');
+  const mid = (await below.boundingBox()).y;
+  const end = await below.evaluate((el) => el.offsetTop + el.offsetParent.getBoundingClientRect().top);
+  expect(mid, 'the row below jumped instead of gliding').toBeGreaterThan(end + 1);
+  expect(mid).toBeLessThanOrEqual(start + 1);
+});
+
+test('useDeferredReorder: a live re-sort waits while the pointer is over the list, then glides into place', async ({ page }) => {
+  const list = page.getByTestId('queue');
+  const first = async () => (await list.locator('li').first().textContent()).trim();
+  const start = await first();
+  await list.hover();
+  await page.getByTestId('shuffle').evaluate((b) => b.click()); // a live update: the pointer stays on the list
+  await expect(page.getByTestId('held')).toContainText('New order waiting');
+  expect(await first()).toBe(start);
+  await away(page);
+  await expect(page.getByTestId('held')).toHaveText('Order is current');
+  expect(await first()).not.toBe(start);
+});
+
+test('Tabs and Segmented: a click slides the mark across, then the tab shows its own again; an arrow key jumps', async ({ page }) => {
+  await slowMotion(page);
+  const line = page.getByTestId('line-tabs');
+  const indicator = line.locator('.uix-tabs__indicator');
+  // at rest: no indicator, the selected tab's own underline
+  await expect(indicator).toBeHidden();
+  await expect(line).not.toHaveAttribute('data-uix-indicator', /.*/);
+  const tab = line.getByRole('tab', { name: 'About to breach' });
+  await tab.click();
+  // sliding (slowed 20×): the indicator moves on a transform, the new tab's own mark steps aside
+  await expect(indicator).toBeVisible();
+  await expect(indicator).toHaveAttribute('data-moving', '');
+  expect(await running(indicator)).toContain('transform');
+  expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('hidden');
+  // landed on the new tab's box, then handed back
+  const size = await tab.boundingBox();
+  expect(Math.abs((await indicator.evaluate((el) => el.offsetWidth)) - size.width)).toBeLessThan(1);
+  await expect(indicator).toBeHidden({ timeout: 5000 });
+  await expect(line).not.toHaveAttribute('data-uix-indicator', /.*/);
+  expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(line.getByRole('tab', { name: 'Closed' })).toHaveAttribute('aria-selected', 'true');
+  await expect(indicator, 'a keyboard change slid').toBeHidden();
+
+  const segmented = page.getByTestId('segmented');
+  await segmented.getByRole('button', { name: 'Compact' }).click();
+  await expect(segmented.locator('.uix-segmented__indicator')).toHaveAttribute('data-moving', '');
+  await expect(segmented.getByRole('button', { name: 'Compact' })).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(segmented.locator('.uix-segmented__indicator')).toBeHidden({ timeout: 5000 });
+  await expect(segmented.getByRole('button', { name: 'Compact' })).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+});
+
+test('forced colours: a click never hides the selected tab’s own mark', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  const line = page.getByTestId('line-tabs');
+  await line.getByRole('tab', { name: 'Assigned to me' }).click();
+  await expect(line.locator('.uix-tabs__indicator')).toBeHidden();
+  const selected = line.getByRole('tab', { selected: true });
+  expect(await selected.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');
+});
+
+const contentOpacity = (locator) => locator.evaluate((el) => Number(getComputedStyle(el, '::details-content').opacity));
+
+test('CollapsibleSection: an open section does not animate on load; opening from the keyboard is instant', async ({ page }) => {
+  await slowMotion(page);
+  await page.evaluate(() => {
+    const d = document.createElement('details');
+    d.className = 'uix-collapsible';
+    d.open = true;
+    d.id = 'preopened';
+    d.innerHTML = '<summary class="uix-collapsible__summary">Preopened</summary><div class="uix-collapsible__body">Body</div>';
+    document.getElementById('tabs').append(d);
+  });
+  expect(await contentOpacity(page.locator('#preopened')), 'an open section faded in on first render').toBe(1);
+  const section = page.getByTestId('collapsible');
+  await section.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(section).toHaveAttribute('open', '');
+  expect(await contentOpacity(section), 'a keyboard open faded in').toBe(1);
+});
+
+test('CollapsibleSection: a click fades the body in (opacity on ::details-content, no height)', async ({ page }) => {
+  await slowMotion(page);
+  const section = page.getByTestId('collapsible');
+  await section.locator('summary').click();
+  await expect(section).toHaveAttribute('open', '');
+  const mid = await contentOpacity(section);
+  expect(mid, 'no fade on a click').toBeLessThan(1);
+  const transition = await section.evaluate((el) => getComputedStyle(el, '::details-content').transitionProperty);
+  expect(transition).toBe('opacity, translate');
+  await expect.poll(() => contentOpacity(section), { timeout: 10000 }).toBe(1);
+});
+
+test('SuccessState: focus lands on the outcome; the mark draws once; reduced motion shows it at once', async ({ page }) => {
+  await page.getByTestId('submit').click();
+  const state = page.getByTestId('success-state');
+  await expect(state.getByRole('heading', { name: 'Request submitted' })).toBeFocused();
+  expect(await running(state.locator('.uix-success__check'))).toEqual(['uix-success-check']);
+  expect(await state.locator('.uix-success__check').evaluate((el) => getComputedStyle(el).animationIterationCount)).toBe('1');
+  await expect(state.getByRole('listitem')).toHaveCount(3);
+  await page.clock.resume();
+  expect(await axe(page)).toEqual([]);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await state.getByRole('button', { name: 'Back to the portal' }).click();
+  await page.getByTestId('submit').click();
+  const check = page.getByTestId('success-state').locator('.uix-success__check');
+  expect(await check.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+  expect(await check.evaluate((el) => getComputedStyle(el).strokeDashoffset)).toBe('0px');
+});

@@ -35,6 +35,19 @@ test('every state named in a caption is on the page', () => {
   assert.match(motion, /class="uix-busy-region" aria-busy="true"/);
   assert.match(motion, /class="uix-table-wrap" aria-busy="true"/);
   assert.equal((motion.match(/class="uix-busy-bar" aria-hidden="true" data-shown="true"/g) ?? []).length, 2);
+  // a changed row (tinting its cells) and a ringed pill, both in their just-changed state; a ticked count
+  assert.match(motion, /<tr class="uix-change-highlight" data-uix-changed="">/);
+  assert.match(motion, /class="uix-change-highlight uix-change-highlight--ring" data-uix-changed="">/);
+  assert.match(motion, /class="uix-count" data-uix-tick="up">42</);
+  assert.match(motion, /data-feedback-change-run/);
+  // a motion list, the tab and segment indicators (hidden until placed), the success outcome
+  assert.match(motion, /<ul aria-label="Queue" class="uix-motion-list uix-list"><li class="uix-list__item" data-uix-key="412">/);
+  assert.match(motion, /<span class="uix-tabs__indicator" aria-hidden="true" hidden=""><\/span>/);
+  assert.match(motion, /<span class="uix-segmented__indicator" aria-hidden="true" hidden=""><\/span>/);
+  assert.match(motion, /class="uix-empty uix-success"/);
+  assert.match(motion, /role="tabpanel"/, 'tabs without panels point aria-controls at nothing');
+  assert.match(motion, /<h3 class="uix-empty__title uix-success__title" tabindex="-1">Request submitted<\/h3>/);
+  assert.equal((motion.match(/<ol class="uix-success__steps"><li>/g) ?? []).length, 1);
   // the live demo's target and its announcer
   assert.match(motion, /<button data-feedback-target class="uix-btn uix-btn--primary">/);
   assert.match(motion, /data-feedback-announce/);
