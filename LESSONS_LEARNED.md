@@ -51,6 +51,7 @@
 <!-- lesson-skip: 9979dc2 routine: review named each gap; pinned by decode and Chromium tests -->
 <!-- lesson-skip: 4dc845e routine CSS fit fix; measured at 320/360/390 by a spec -->
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
+<!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
 ### 2026-10-23 · a scale measured from a box the scaled thing sizes · `39bc060`
