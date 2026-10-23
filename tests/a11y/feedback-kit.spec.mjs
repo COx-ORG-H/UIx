@@ -420,12 +420,15 @@ test('Tabs and Segmented: a click slides the mark across, then the tab shows its
   await expect(indicator).toHaveAttribute('data-moving', '');
   expect(await running(indicator)).toContain('transform');
   expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('hidden');
+  // clipped to the row while it slides: a resize mid-slide cannot widen the page
+  expect(await line.evaluate((el) => getComputedStyle(el).overflowX)).toBe('clip');
   // landed on the new tab's box, then handed back
   const size = await tab.boundingBox();
   expect(Math.abs((await indicator.evaluate((el) => el.offsetWidth)) - size.width)).toBeLessThan(1);
   await expect(indicator).toBeHidden({ timeout: 5000 });
   await expect(line).not.toHaveAttribute('data-uix-indicator', /.*/);
   expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');
+  expect(await line.evaluate((el) => getComputedStyle(el).overflowX)).toBe('visible');
 
   await page.keyboard.press('ArrowRight');
   await expect(line.getByRole('tab', { name: 'Closed' })).toHaveAttribute('aria-selected', 'true');
@@ -434,6 +437,7 @@ test('Tabs and Segmented: a click slides the mark across, then the tab shows its
   const segmented = page.getByTestId('segmented');
   await segmented.getByRole('button', { name: 'Compact' }).click();
   await expect(segmented.locator('.uix-segmented__indicator')).toHaveAttribute('data-moving', '');
+  expect(await segmented.evaluate((el) => getComputedStyle(el).overflowX)).toBe('clip');
   await expect(segmented.getByRole('button', { name: 'Compact' })).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(segmented.locator('.uix-segmented__indicator')).toBeHidden({ timeout: 5000 });
   await expect(segmented.getByRole('button', { name: 'Compact' })).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');

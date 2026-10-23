@@ -412,9 +412,9 @@
       "brotli": 1953
     },
     "styles/components/segmented.css": {
-      "raw": 4071,
-      "gzip": 1613,
-      "brotli": 1327
+      "raw": 4236,
+      "gzip": 1678,
+      "brotli": 1378
     },
     "styles/components/select.css": {
       "raw": 10452,
@@ -487,9 +487,9 @@
       "brotli": 4567
     },
     "styles/components/tabs.css": {
-      "raw": 6807,
-      "gzip": 2074,
-      "brotli": 1731
+      "raw": 6954,
+      "gzip": 2136,
+      "brotli": 1784
     },
     "styles/components/tag-input.css": {
       "raw": 3696,
