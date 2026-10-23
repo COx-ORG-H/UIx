@@ -85,7 +85,9 @@
   .uix-shell__phone-bar { display: none; }
   /* the sidebar fills its column, so a Sidebar footer (the AccountMenu) sits at the bottom */
   .uix-shell__sidebar > .uix-sidebar { min-height: 100%; }
-  .uix-shell__nav-drawer .uix-sidebar { width: auto; min-height: 100%; padding: 0; background: transparent; }
+  /* in the drawer the sidebar grows to the drawer body (a flex column whose height is a min-height,
+     so min-height: 100% would not resolve) and the AccountMenu sits at the bottom, as in the column */
+  .uix-shell__nav-drawer .uix-sidebar { flex: 1 0 auto; width: auto; padding: 0; background: transparent; }
   .uix-shell__nav-drawer-body { display: flex; flex-direction: column; min-height: 100%; }
   @media (max-width: 40rem) {
     .uix-shell[data-phone-nav], .uix-shell[data-phone-nav][data-nav] { grid-template-columns: minmax(0, 1fr); }

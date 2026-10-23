@@ -158,6 +158,13 @@ test('a rail chosen on desktop: the phone drawer still shows the full sidebar, a
   const label = drawer.locator('.uix-navitem__label', { hasText: 'Katalog' });
   expect((await label.boundingBox()).width, 'the label is shown, not clipped to the rail').toBeGreaterThan(20);
   await expect(drawer.locator('.uix-account-menu')).not.toHaveClass(/uix-account-menu--collapsed/);
+  // the AccountMenu sits at the bottom of the drawer, as it does at the bottom of the column
+  const gap = await page.evaluate(() => {
+    const body = document.querySelector('.uix-shell__nav-drawer .uix-drawer__body').getBoundingClientRect();
+    const account = document.querySelector('.uix-shell__nav-drawer .uix-account-menu').getBoundingClientRect();
+    return body.bottom - account.bottom;
+  });
+  expect(gap, 'the account menu is at the foot of the drawer, not under the last nav item').toBeLessThan(48);
   // the moment the close starts, the content is still in the drawer that slides out
   const during = await page.evaluate(() => new Promise((resolve) => {
     const dialog = document.querySelector('dialog.uix-shell__nav-drawer');
