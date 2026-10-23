@@ -35,6 +35,11 @@
   /* the indicator is the last child: isolate + z-index -1 paint it above the track and beneath
      the options */
   .uix-segmented { position: relative; isolation: isolate; }
+  /* A window that narrows mid-slide wraps the options before the ResizeObserver that ends the
+     slide has run, so for that frame the indicator sits at its old place, past the control's edge,
+     and widened the page by 19 px at 320 px in CI (display-preferences.spec, red on master since
+     #170). The track clips it; the margin keeps the options' focus ring and lift. */
+  .uix-segmented { overflow: clip; overflow-clip-margin: var(--uix-space-1); }
   .uix-segmented__option { position: relative; }
   /* the same look as a selected option: surface, lift and the 3:1 inset ring */
   .uix-segmented__indicator { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
