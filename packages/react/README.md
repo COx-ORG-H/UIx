@@ -1284,8 +1284,15 @@ const [nav, setNav] = useState<ShellNav>('full');
 #### Display preferences: theme, contrast, text size, motion, density (HAR-1372)
 
 ```tsx
-// app/layout.tsx: before the stylesheets, so nothing flashes
-<head><script dangerouslySetInnerHTML={{ __html: displayPreferencesScript('staff-display') }} /></head>
+// app/layout.tsx: before the stylesheets, so nothing flashes. The script sets attributes on <html>
+// before React hydrates, so <html> needs suppressHydrationWarning; under a Content-Security-Policy
+// give the inline script your per-request nonce (or allow its hash).
+<html lang="bs" suppressHydrationWarning>
+  <head>
+    <script nonce={nonce} dangerouslySetInnerHTML={{ __html: displayPreferencesScript('staff-display') }} />
+  </head>
+  <body>{children}</body>
+</html>
 
 // a settings page, or a dialog from AccountMenu
 <DisplayPreferences storageKey="staff-display" />

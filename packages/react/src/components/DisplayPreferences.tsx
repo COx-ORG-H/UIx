@@ -14,8 +14,13 @@ import type { DisplayPreferenceValues, SystemDisplayPreferences, ThemePreference
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
-/** Same-tab change notice between hook instances (the `storage` event only reaches other tabs). */
+/**
+ * Same-tab change notice between hook instances (the `storage` event only reaches other tabs).
+ * It carries the new values, so an instance never has to read them back from storage, which a
+ * sandboxed frame or blocked site data makes throw.
+ */
 const CHANGE_EVENT = 'uixdisplaypreferencechange';
+interface ChangeDetail { storageKey: string; value: DisplayPreferenceValues }
 
 export interface UseDisplayPreferencesOptions {
   /** `localStorage` key. Default `DISPLAY_PREFERENCES_STORAGE_KEY`; pass the same key to `displayPreferencesScript`. */
@@ -55,7 +60,7 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
     try { raw = window.localStorage.getItem(storageKey); } catch { /* private mode */ }
     return parseDisplayPreferences(raw, JSON.parse(defaultsKey));
   }, [storageKey, defaultsKey]);
-  // the latest choices, for a change made where storage cannot be read back (private mode)
+  // the latest choices: every instance in the tab keeps them in step through CHANGE_EVENT
   const latest = useRef(preferences);
   latest.current = preferences;
 
@@ -68,44 +73,47 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
   useEffect(() => {
     const queries = typeof matchMedia === 'function' ? [matchMedia('(prefers-color-scheme: dark)'), matchMedia('(prefers-contrast: more)')] : [];
     const onSystem = () => setSystem(readSystemDisplayPreferences());
-    const onStored = (event: Event) => {
-      if (event instanceof StorageEvent && event.key !== storageKey) return;
-      if (!(event instanceof StorageEvent) && (event as CustomEvent<string>).detail !== storageKey) return;
-      setState(read());
+    // another tab: storage has the new values; this tab: the event carries them
+    const onStorage = (event: StorageEvent) => { if (event.key === storageKey) setState(read()); };
+    const onChange = (event: Event) => {
+      const detail = (event as CustomEvent<ChangeDetail>).detail;
+      if (detail?.storageKey === storageKey) setState(detail.value);
     };
     for (const q of queries) q.addEventListener('change', onSystem);
-    window.addEventListener('storage', onStored);
-    window.addEventListener(CHANGE_EVENT, onStored);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener(CHANGE_EVENT, onChange);
     return () => {
       for (const q of queries) q.removeEventListener('change', onSystem);
-      window.removeEventListener('storage', onStored);
-      window.removeEventListener(CHANGE_EVENT, onStored);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(CHANGE_EVENT, onChange);
     };
   }, [storageKey, read]);
 
   useIsomorphicLayoutEffect(() => {
     if (!apply || !loaded) return;
     const root = document.documentElement;
+    const next = resolveDisplayAttributes(preferences, system);
+    // nothing to change (the head script already applied it, or another instance did): no
+    // switching frame either, which would cut a dialog's entrance short on mount
+    const names = ['data-theme', 'data-contrast', 'data-text-scale', 'data-motion', 'data-density'] as const;
+    if (names.every((name) => (next[name] ?? null) === root.getAttribute(name))) return undefined;
     // No transition while the tokens change under every element: a theme switch is one frame,
     // not a half-second fade of every border (motion contract: frequent, so no animation).
     root.setAttribute('data-uix-switching', '');
-    applyDisplayAttributes(root, resolveDisplayAttributes(preferences, system));
+    applyDisplayAttributes(root, next);
     const frame = requestAnimationFrame(() => requestAnimationFrame(() => root.removeAttribute('data-uix-switching')));
     return () => { cancelAnimationFrame(frame); root.removeAttribute('data-uix-switching'); };
   }, [apply, loaded, preferences, system]);
 
   const setPreferences = useCallback((next: DisplayPreferenceValues) => {
     setState(next);
-    try { window.localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* private mode: this page only */ }
-    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: storageKey }));
+    try { window.localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* blocked storage: this page only */ }
+    window.dispatchEvent(new CustomEvent<ChangeDetail>(CHANGE_EVENT, { detail: { storageKey, value: next } }));
   }, [storageKey]);
 
   const setPreference = useCallback(<K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => {
-    // storage is the shared truth (another instance may have written); without it, this hook's state
-    let stored = false;
-    try { stored = window.localStorage.getItem(storageKey) != null; } catch { /* private mode */ }
-    setPreferences({ ...(stored ? read() : latest.current), [key]: value });
-  }, [read, setPreferences, storageKey]);
+    setPreferences({ ...latest.current, [key]: value });
+  }, [setPreferences]);
 
   return { preferences, resolvedTheme: resolveDisplayAttributes(preferences, system)['data-theme'], setPreference, setPreferences };
 }

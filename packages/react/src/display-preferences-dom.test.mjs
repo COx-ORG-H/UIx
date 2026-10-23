@@ -144,3 +144,52 @@ test('server markup: five labelled radio groups and an icons-only switcher whose
   assert.equal((icons.match(/aria-label="(Light|Dark|System)"/g) ?? []).length, 3);
   assert.doesNotMatch(icons, /<span>(Light|Dark|System)<\/span>/);
 });
+
+// ── review of #165 ────────────────────────────────────────────────────────────
+test('blocked storage (a sandboxed frame): a click still applies, and the switcher in the tab follows', () => {
+  const html = document.documentElement;
+  for (const n of ['data-theme', 'data-contrast', 'data-text-scale', 'data-motion', 'data-density']) html.removeAttribute(n);
+  const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const original = window.localStorage;
+  const blocked = { getItem() { throw new Error('SecurityError'); }, setItem() { throw new Error('SecurityError'); }, removeItem() {}, clear() {} };
+  Object.defineProperty(window, 'localStorage', { value: blocked, configurable: true });
+  expose('localStorage', blocked);
+  try {
+    const panel = mount(h(ui.DisplayPreferences, { storageKey: 'blocked' }));
+    const switcher = mount(h(ui.ThemeSwitcher, { storageKey: 'blocked' }));
+    act(() => radio(panel.host, 'Theme', 'Dark').click());
+    assert.equal(html.getAttribute('data-theme'), 'dark', 'the click is not undone by a read-back of defaults');
+    assert.equal(radio(switcher.host, 'Theme', 'Dark').getAttribute('aria-checked'), 'true');
+    act(() => radio(panel.host, 'Text size', 'Large').click());
+    assert.equal(html.getAttribute('data-theme'), 'dark', 'a second change keeps the first');
+    assert.equal(html.getAttribute('data-text-scale'), 'lg');
+    panel.unmount();
+    switcher.unmount();
+  } finally {
+    Object.defineProperty(window, 'localStorage', { value: original, configurable: true });
+    if (real) Object.defineProperty(globalThis, 'localStorage', real);
+  }
+});
+
+test('mounting where the attributes already match sets no switching frame (a dialog keeps its entrance)', () => {
+  localStorage.setItem('m', JSON.stringify({ theme: 'dark' }));
+  const html = document.documentElement;
+  html.setAttribute('data-theme', 'dark');
+  for (const n of ['data-contrast', 'data-text-scale', 'data-motion', 'data-density']) html.removeAttribute(n);
+  const seen = [];
+  const observer = new MutationObserver((records) => { for (const r of records) seen.push(r.attributeName); });
+  observer.observe(html, { attributes: true });
+  const panel = mount(h(ui.DisplayPreferences, { storageKey: 'm' }));
+  const records = observer.takeRecords().map((r) => r.attributeName);
+  observer.disconnect();
+  assert.deepEqual([...seen, ...records].filter((n) => n === 'data-uix-switching'), []);
+  // a real change still gets its switching frame
+  const changes = [];
+  const watch = new MutationObserver((rs) => { for (const r of rs) changes.push(r.attributeName); });
+  watch.observe(html, { attributes: true });
+  act(() => radio(panel.host, 'Theme', 'Light').click());
+  changes.push(...watch.takeRecords().map((r) => r.attributeName));
+  watch.disconnect();
+  assert.ok(changes.includes('data-uix-switching'));
+  panel.unmount();
+});
