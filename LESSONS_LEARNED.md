@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: f23b7d6 routine: a runtime-only token in one declaration; test:tokens (UIX-03) names it -->
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
