@@ -11,7 +11,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 let dom;
@@ -111,6 +111,7 @@ test('MatchReview adopt: a compare table per candidate, checkboxes only where va
   assert.equal(adopt.textContent, 'Adopt 0 fields');
   assert.equal(adopt.disabled, true, 'nothing chosen yet');
   click(boxes[1]);
+  assert.equal(adopt.textContent, 'Adopt 1 field', 'one field: the One label (PR #168 review)');
   click(boxes[0]);
   assert.equal(adopt.textContent, 'Adopt 2 fields');
   click(adopt);
@@ -123,7 +124,9 @@ test('MatchReview adopt: a compare table per candidate, checkboxes only where va
   assert.equal(sections[0].querySelector('[role="status"]').textContent, '2 fields adopted from DNB');
   assert.equal(boxes.every((b) => !b.checked), true, 'the choice is cleared after adopting');
   // provenance disclosure, and a resolved candidate's controls are disabled
-  assert.equal(sections[0].querySelector('details.uix-match-review__provenance summary').textContent, 'Where this candidate comes from');
+  const summary = sections[0].querySelector('details.uix-match-review__provenance summary');
+  assert.equal(summary.textContent, 'Where this candidate comes from');
+  assert.ok(summary.querySelector('.uix-collapsible__chevron[aria-hidden="true"] svg'), 'the kit chevron, not the native triangle (PR #168 review)');
   assert.match(sections[0].querySelector('.uix-match-review__provenance-body').textContent, /dnb-1/);
   assert.equal(sections[1].querySelector('input').disabled, true);
   assert.equal(sections[1].querySelector('.uix-pill').textContent.includes('Dismissed'), true);
@@ -133,16 +136,37 @@ test('MatchReview adopt: a compare table per candidate, checkboxes only where va
 });
 
 test('MatchReview adopt: a rejected onAdopt keeps the choice and says so; German words through the provider', async () => {
-  const t = mount(h(ui.UixLabelsProvider, { labels: { matchReview: { adoptSelected: '{count} Felder übernehmen', adoptField: '{field} von {candidate} übernehmen', adoptFailed: 'Übernehmen fehlgeschlagen.', same: 'Gleich', candidate: 'Kandidat {id}' } } },
+  const t = mount(h(ui.UixLabelsProvider, { labels: { matchReview: { adoptSelectedOne: '{count} Feld übernehmen', adoptSelectedMany: '{count} Felder übernehmen', adoptField: '{field} von {candidate} übernehmen', adoptFailed: 'Übernehmen fehlgeschlagen.', same: 'Gleich', candidate: 'Kandidat {id}' } } },
     h(ui.MatchReview, { fieldMode: 'adopt', incoming: RECORD, fields: FIELDS, candidates: [CANDIDATES[0]], onDecision() {}, onAdopt: () => Promise.reject(new Error('down')) })));
   assert.equal(t.host.querySelector('h3').textContent, 'Kandidat dnb-1');
   const box = t.host.querySelector('input[type="checkbox"]');
   assert.equal(box.getAttribute('aria-label'), 'Author von Kandidat dnb-1 übernehmen');
   click(box);
-  click([...t.host.querySelectorAll('button')].find((b) => b.textContent === '1 Felder übernehmen'));
+  click([...t.host.querySelectorAll('button')].find((b) => b.textContent === '1 Feld übernehmen'));
   await act(async () => { await Promise.resolve(); await Promise.resolve(); });
   assert.equal(t.host.querySelector('.uix-match-review__result--failed').textContent, 'Übernehmen fehlgeschlagen.');
   assert.equal(box.checked, true, 'the choice is kept for another try');
+  t.unmount();
+});
+
+test('MatchReview adopt: a consumer that resolves the candidate in onAdopt still hears "adopted" (PR #168 review)', async () => {
+  function Owner() {
+    const [candidates, setCandidates] = useState([CANDIDATES[0]]);
+    return h(ui.MatchReview, {
+      fieldMode: 'adopt', incoming: RECORD, fields: FIELDS, candidates, candidateLabel: () => 'DNB', onDecision() {},
+      onAdopt: async (id) => { setCandidates((list) => list.map((c) => (c.id === id ? { ...c, status: 'resolved', decision: 'accepted' } : c))); },
+    });
+  }
+  const t = mount(h(Owner));
+  const region = t.host.querySelector('[role="status"]');
+  assert.ok(region, 'the region is there before anything is said');
+  click(t.host.querySelector('input[type="checkbox"]'));
+  click([...t.host.querySelectorAll('button')].find((b) => b.textContent === 'Adopt 1 field'));
+  await act(async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); });
+  assert.equal(t.host.querySelector('.uix-match-review__candidate').dataset.status, 'resolved');
+  assert.equal(t.host.querySelector('[role="status"]'), region, 'the same region, still mounted');
+  assert.equal(region.textContent, '1 field adopted from DNB');
+  assert.equal([...t.host.querySelectorAll('button')].some((b) => b.textContent === 'Dismiss'), false, 'a resolved candidate has no actions');
   t.unmount();
 });
 

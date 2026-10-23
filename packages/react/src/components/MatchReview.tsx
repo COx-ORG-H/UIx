@@ -8,6 +8,7 @@ import { StatusPill } from './StatusPill.js';
 import { Button } from './Button.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { ChevronDownIcon } from '../icons/components.js';
 
 export interface MatchReviewField {
   id: string;
@@ -89,12 +90,16 @@ export interface MatchReviewLabels {
   adoptField: string;
   /** Adopt mode: shown instead of a checkbox when the candidate has the same value. */
   same: string;
-  /** Adopt mode: the button. `{count}` fields chosen. */
-  adoptSelected: string;
+  /** Adopt mode: the button with one field chosen. `{count}`. */
+  adoptSelectedOne: string;
+  /** Adopt mode: the button with any other number of fields chosen (0 too). `{count}`. */
+  adoptSelectedMany: string;
   /** Adopt mode: the provenance disclosure. */
   provenance: string;
-  /** Adopt mode: announced after `onAdopt` resolves. `{count}`, `{candidate}`. */
-  adopted: string;
+  /** Adopt mode: announced after `onAdopt` resolves, one field. `{count}`, `{candidate}`. */
+  adoptedOne: string;
+  /** Adopt mode: announced after `onAdopt` resolves, more fields. `{count}`, `{candidate}`. */
+  adoptedMany: string;
   /** Adopt mode: shown when `onAdopt` rejects. */
   adoptFailed: string;
 }
@@ -147,9 +152,11 @@ export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels = {
   adopt: 'Adopt',
   adoptField: 'Adopt {field} from {candidate}',
   same: 'Same',
-  adoptSelected: 'Adopt {count} fields',
+  adoptSelectedOne: 'Adopt {count} field',
+  adoptSelectedMany: 'Adopt {count} fields',
   provenance: 'Where this candidate comes from',
-  adopted: '{count} fields adopted from {candidate}',
+  adoptedOne: '{count} field adopted from {candidate}',
+  adoptedMany: '{count} fields adopted from {candidate}',
   adoptFailed: 'Could not adopt the fields. Try again.',
 };
 
@@ -327,7 +334,7 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
     try {
       await onAdopt(candidate.id, fieldIds);
       setChosen(new Set());
-      setMessage({ text: fillLabel(labels.adopted, { count: fieldIds.length, candidate: headingText }), failed: false });
+      setMessage({ text: fillLabel(fieldIds.length === 1 ? labels.adoptedOne : labels.adoptedMany, { count: fieldIds.length, candidate: headingText }), failed: false });
     } catch {
       setMessage({ text: labels.adoptFailed, failed: true });
     } finally {
@@ -371,15 +378,20 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
       </div>
       {provenance != null && provenance !== false && (
         <details className="uix-match-review__provenance">
-          <summary>{labels.provenance}</summary>
+          <summary className="uix-match-review__provenance-summary">
+            <span>{labels.provenance}</span>
+            <span className="uix-collapsible__chevron" aria-hidden="true"><ChevronDownIcon size="sm" /></span>
+          </summary>
           <div className="uix-match-review__provenance-body">{provenance}</div>
         </details>
       )}
-      {!resolved && <div className="uix-match-review__candidate-actions">
-        {onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(labels.adoptSelected, { count: chosen.size })}</Button>}
-        <Button size="sm" variant="ghost" onClick={() => { if (!pending) onDecision(candidate.id, 'dismiss'); }}>{labels.dismiss}</Button>
+      {/* The live region stays mounted whether or not the candidate is resolved: a consumer that
+          resolves the candidate in onAdopt would otherwise unmount it before "adopted" is read. */}
+      <div className="uix-match-review__candidate-actions">
+        {!resolved && onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(chosen.size === 1 ? labels.adoptSelectedOne : labels.adoptSelectedMany, { count: chosen.size })}</Button>}
+        {!resolved && <Button size="sm" variant="ghost" onClick={() => { if (!pending) onDecision(candidate.id, 'dismiss'); }}>{labels.dismiss}</Button>}
         <span className={cx('uix-match-review__result', message?.failed && 'uix-match-review__result--failed')} role="status">{message?.text}</span>
-      </div>}
+      </div>
     </section>
   );
 }

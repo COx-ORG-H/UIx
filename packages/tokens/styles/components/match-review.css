@@ -20,9 +20,18 @@
   .uix-match-review__compare tr[data-chosen] { background:var(--uix-row-selected-bg); }
   .uix-match-review__adopt { width:18px; height:18px; margin:0; accent-color:var(--uix-accent); }
   .uix-match-review__same { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
-  .uix-match-review__provenance summary { cursor:pointer; color:var(--uix-link); font-size:var(--uix-text-meta); font-weight:500; }
+  /* The disclosure is a quiet row, not a link: the kit chevron (as CollapsibleSection), muted text. */
+  .uix-match-review__provenance-summary { display:inline-flex; align-items:flex-start; gap:var(--uix-space-1); list-style:none; cursor:pointer; color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-weight:500; border-radius:var(--uix-radius-xs); }
+  .uix-match-review__provenance-summary::-webkit-details-marker { display:none; }
+  .uix-match-review__provenance-summary:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
+  .uix-match-review__provenance[open] .uix-collapsible__chevron { transform:rotate(180deg); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-match-review__provenance-summary:hover, .uix-match-review__provenance-summary:hover .uix-collapsible__chevron { color:var(--uix-text); }
+  }
   .uix-match-review__provenance-body { margin-top:var(--uix-space-2); color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-match-review__candidate-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--uix-space-2); }
+  /* A resolved candidate keeps only the (empty) live region here: it takes no row gap until it speaks. */
+  .uix-match-review__candidate-actions:not(:has(.uix-btn)):has(.uix-match-review__result:empty) { margin-block-start:calc(-1 * var(--uix-space-3)); }
   .uix-match-review__result { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-match-review__result--failed { color:var(--uix-danger-text); }
   /* A phone: each field is a block, its name and the checkbox on top, the two values under it,

@@ -30,7 +30,7 @@ function Harness() {
   return (
     <UixLabelsProvider labels={{
       diffViewer: { base: 'Osnova', current: 'Moje', incoming: 'Njihovo', acceptIncoming: 'Preuzmi njihovo', keepCurrent: 'Zadrži moje', markPending: 'Na čekanju', acceptIncomingFor: 'Preuzmi njihovo za {path}', keepCurrentFor: 'Zadrži moje za {path}', markPendingFor: 'Na čekanju za {path}', valueFor: '{version}: {path}', resolve: 'Riješi {path}', changed: 'Izmijenjeno', resolutionPending: 'na čekanju', resolutionAccept: 'preuzeto', resolutionSkip: 'zadržano', notPresent: 'Nema' },
-      matchReview: { adoptSelected: '{count} Felder übernehmen', adoptField: '{field} von {candidate} übernehmen', same: 'Gleich', field: 'Feld', currentValue: 'Jetzt', candidateValue: 'Kandidat', adopt: 'Übernehmen', provenance: 'Herkunft', adopted: '{count} Felder von {candidate} übernommen', adoptFailed: 'Übernehmen fehlgeschlagen. Bitte erneut versuchen.', dismiss: 'Verwerfen', pendingOf: '{pending} offen von {total}', decisionDismissed: 'Verworfen' },
+      matchReview: { adoptSelectedOne: '{count} Feld übernehmen', adoptSelectedMany: '{count} Felder übernehmen', adoptField: '{field} von {candidate} übernehmen', same: 'Gleich', field: 'Feld', currentValue: 'Jetzt', candidateValue: 'Kandidat', adopt: 'Übernehmen', provenance: 'Herkunft', adoptedOne: '{count} Feld von {candidate} übernommen', adoptedMany: '{count} Felder von {candidate} übernommen', adoptFailed: 'Übernehmen fehlgeschlagen. Bitte erneut versuchen.', dismiss: 'Verwerfen', pendingOf: '{pending} offen von {total}', decisionDismissed: 'Verworfen' },
     }}>
       <h1>Abgleich</h1>
       <section>

@@ -53,7 +53,7 @@ test('a failed adopt keeps the choice and says so; a resolved candidate has no a
   await open(page, testInfo);
   const dnb = page.getByRole('region', { name: 'Deutsche Nationalbibliothek' });
   await dnb.getByRole('checkbox', { name: /ISBN/ }).check();
-  await dnb.getByRole('button', { name: '1 Felder übernehmen' }).click();
+  await dnb.getByRole('button', { name: '1 Feld übernehmen' }).click();
   await expect(dnb.getByRole('status')).toHaveText('Übernehmen fehlgeschlagen. Bitte erneut versuchen.');
   await expect(dnb.getByRole('checkbox', { name: /ISBN/ })).toBeChecked();
   const wikidata = page.getByRole('region', { name: 'Wikidata' });
