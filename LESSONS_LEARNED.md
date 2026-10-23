@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 8240ba4 already recorded: StrictMode runs updaters and cleanups twice (3e0ff88 entry); pinned by the StrictMode jsdom test -->
 <!-- lesson-skip: 7728f4e routine: a JSX comment between elements read as a text node by literal-a11y-text; the gate named the file and line -->
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->

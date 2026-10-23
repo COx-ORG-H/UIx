@@ -101,7 +101,7 @@ test('keyboard: one tab stop, arrows between slots and practitioners, Enter sele
   await expect(page.locator('[data-selected]')).toHaveCount(1);
 });
 
-test('first load shows skeletons; a refetch keeps the spans, dimmed and busy; empty says so', async ({ page }, testInfo) => {
+test('first load shows skeletons; a refetch keeps the spans and says it is busy; empty says so', async ({ page }, testInfo) => {
   await open(page, testInfo, '?columns=3&layout=columns&state=loading');
   await expect(page.locator('.uix-scheduling-calendar__rs-skeleton').first()).toBeVisible();
   await expect(page.locator('.uix-scheduling-calendar__resources [role="status"]')).toHaveText('Učitavanje rasporeda…');
@@ -109,6 +109,8 @@ test('first load shows skeletons; a refetch keeps the spans, dimmed and busy; em
   await expect(page.locator('.uix-scheduling-calendar__resources')).toHaveAttribute('aria-busy', 'true');
   await expect(page.locator('.uix-scheduling-calendar__rs-skeleton')).toHaveCount(0);
   expect(await page.locator('[data-kind="booked"]').count()).toBeGreaterThan(0);
+  // past the kit's pending delay a quiet line says so in words; the spans stay readable
+  await expect(page.locator('.uix-scheduling-calendar__rs-busy')).toHaveText('Učitavanje rasporeda…');
   await open(page, testInfo, '?columns=3&layout=columns&state=empty');
   await expect(page.locator('.uix-scheduling-calendar__empty')).toHaveText('Za ovaj dan nema rasporeda.');
   await expect(page.locator('[data-kind="free"]')).toHaveCount(0);

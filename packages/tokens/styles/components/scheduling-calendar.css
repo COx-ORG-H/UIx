@@ -337,6 +337,8 @@
       repeating-linear-gradient(to bottom,transparent 0 calc(var(--calendar-slot) - 1px),var(--calendar-chrome-line) calc(var(--calendar-slot) - 1px) var(--calendar-slot)),
       repeating-linear-gradient(135deg,var(--calendar-chrome-line) 0 1px,transparent 1px 8px),
       var(--calendar-chrome-surface-quiet); }
+  /* until the first spans arrive nothing is known: no hatch that would say "no schedule" */
+  .uix-scheduling-calendar__resources[data-first-load] .uix-scheduling-calendar__rs-column { background:var(--calendar-chrome-surface); }
   .uix-scheduling-calendar__rs-item,.uix-scheduling-calendar__rs-skeleton { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot) + 1px); height:max(calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot) - 2px),0.75rem);
     left:calc(var(--calendar-gap) + (100% - 2 * var(--calendar-gap)) * var(--uix-scheduling-calendar-rs-lane,0) / var(--uix-scheduling-calendar-rs-lanes,1)); width:calc((100% - 2 * var(--calendar-gap)) / var(--uix-scheduling-calendar-rs-lanes,1) - var(--calendar-gap)); }
   .uix-scheduling-calendar__rs-item { display:flex; align-items:flex-start; gap:var(--uix-space-1); min-width:0; padding:var(--calendar-gap) var(--uix-space-2); overflow:hidden; border:1px solid transparent; border-radius:var(--uix-radius-xs); font:inherit; font-size:var(--uix-text-meta); line-height:1.35; text-align:left; color:var(--calendar-chrome-text); }

@@ -13,6 +13,7 @@ import { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { zonedTimeOfDay } from '../calendar-model.js';
 import { fillLabel } from '../fill-label.js';
+import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { layoutResourceColumn, resourceDayGaps, resourceDaySlots } from '../scheduling-resource-model.js';
 import type { ResourceDayItem, ResourceDaySlot, SchedulingAvailabilityKind, SchedulingResource, SchedulingResourceSpan } from '../scheduling-resource-model.js';
 
@@ -206,12 +207,16 @@ export function SchedulingResourceDay({
     next.focus();
   };
 
-  const skeleton = loading && spans.length === 0;
+  // A load that ends within the kit's pending delay shows nothing at all (no flash of skeletons);
+  // until the first spans arrive the columns are blank, never hatched as "no schedule".
+  const showPending = useDelayedPending(loading);
+  const firstLoad = loading && spans.length === 0;
+  const skeleton = showPending && spans.length === 0;
   const Heading = `h${headingLevel}` as 'h3';
   const gridLabel = fillLabel(labels.resourceGrid, { date: dateText });
   // First load: skeletons, the words for a screen reader. A refetch: the spans stay as they are,
   // and a quiet line says it is loading (no dimming: every span stays readable).
-  const status = loading ? <span role="status" className={skeleton ? 'uix-visually-hidden' : 'uix-scheduling-calendar__rs-busy'}>{labels.loading}</span> : null;
+  const status = showPending ? <span role="status" className={skeleton ? 'uix-visually-hidden' : 'uix-scheduling-calendar__rs-busy'}>{labels.loading}</span> : null;
 
   if (resources.length === 0) {
     return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-empty>
@@ -220,7 +225,7 @@ export function SchedulingResourceDay({
   }
 
   if (list) {
-    return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-layout="list" role="group" aria-label={gridLabel} aria-describedby={hintId} aria-busy={loading || undefined} data-loading={loading || undefined} onKeyDown={onKeyDown}>
+    return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-layout="list" role="group" aria-label={gridLabel} aria-describedby={hintId} aria-busy={loading || undefined} data-loading={loading || undefined} data-first-load={firstLoad || undefined} onKeyDown={onKeyDown}>
       {status}
       {resources.map((resource, column) => {
         const items = columns[column]!;
@@ -254,7 +259,7 @@ export function SchedulingResourceDay({
   // With nothing to select (skeletons, no spans) the scroll box itself takes focus, so the keyboard can scroll it.
   // The gutter labels each hour and, with slots of 30 minutes or more, each slot.
   const showAll = slots.length > 1 && slots[1]!.start - slots[0]!.start >= 30 * 60_000;
-  return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-layout="columns" role="group" aria-label={gridLabel} aria-describedby={hintId} aria-busy={loading || undefined} data-loading={loading || undefined} onKeyDown={onKeyDown}
+  return <div ref={rootRef} className="uix-scheduling-calendar__resources" data-layout="columns" role="group" aria-label={gridLabel} aria-describedby={hintId} aria-busy={loading || undefined} data-loading={loading || undefined} data-first-load={firstLoad || undefined} onKeyDown={onKeyDown}
     style={vars({ '--uix-scheduling-calendar-rs-columns': resources.length, '--uix-scheduling-calendar-rs-slots': slots.length })}>
     {status}
     <div className="uix-scheduling-calendar__rs-scroll" tabIndex={interactive.length === 0 ? 0 : undefined}>
