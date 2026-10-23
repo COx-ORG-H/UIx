@@ -123,3 +123,80 @@ test('at 320 px the page never scrolls sideways (the table scrolls in its wrap);
   const gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
 });
+
+// Operator review 2026-10-23 (the demo's "Prijave", dark, ~540 px, every row selected): the frozen
+// id cells kept the zebra stripe on even rows while the rest of the row showed the selected tint.
+// Every row state now sets --uix-row-bg on the row; frozen cells paint it over the surface.
+const paintOf = (page, selector) => page.locator(selector).evaluate((cell) => {
+  const parse = (value) => {
+    const m = value.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const [r, g, b, a = 1] = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+    return [r, g, b, a];
+  };
+  const layers = [];
+  for (let node = cell; node && layers.every((l) => l[3] < 1); node = node.parentElement) {
+    const style = getComputedStyle(node);
+    const image = style.backgroundImage.startsWith('linear-gradient') ? parse(style.backgroundImage) : null;
+    if (image) layers.push(image);
+    const colour = parse(style.backgroundColor);
+    if (colour && colour[3] > 0) layers.push(colour);
+  }
+  let out = [255, 255, 255];
+  for (const [r, g, b, a] of layers.reverse()) out = [r * a + out[0] * (1 - a), g * a + out[1] * (1 - a), b * a + out[2] * (1 - a)];
+  return { rgb: out.map(Math.round), opaque: layers.length > 0 };
+});
+
+for (const width of [540, 1280]) {
+  test(`at ${width} px, every row selected: the frozen checkbox, id and actions cells paint the row's state, on even and odd rows`, async ({ page }, testInfo) => {
+    await open(page, testInfo, { width, height: 900 });
+    await ws(page).locator('thead input[type="checkbox"]').check();
+    await expect(ws(page).locator('.uix-bulkbar')).toBeVisible();
+    await page.mouse.move(0, 0);
+    const settled = () => page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => {}))));
+    await settled(); // the row eases to its new state; compare where it lands
+    for (const row of [1, 2]) { // :nth-child(1) is odd, (2) even (zebra)
+      const cell = (n) => `#incidents tbody tr:nth-child(${row}) > td:nth-child(${n})`;
+      const plain = await paintOf(page, cell(3));
+      for (const [name, selector] of [['checkbox', cell(1)], ['id', cell(2)], ['actions', `#incidents tbody tr:nth-child(${row}) > td:last-child`]]) {
+        const frozen = await paintOf(page, selector);
+        const pinned = await page.locator(selector).evaluate((el) => getComputedStyle(el).position);
+        expect(pinned, `${name} is frozen`).toBe('sticky');
+        frozen.rgb.forEach((v, i) => expect(Math.abs(v - plain.rgb[i]), `row ${row} ${name}: ${frozen.rgb} vs ${plain.rgb}`).toBeLessThanOrEqual(2));
+      }
+    }
+    // hover is a row state too (on a device that can hover)
+    await ws(page).locator('tbody tr:nth-child(2) > td:nth-child(3)').hover();
+    await settled();
+    const hovered = await paintOf(page, '#incidents tbody tr:nth-child(2) > td:nth-child(3)');
+    const hoveredId = await paintOf(page, '#incidents tbody tr:nth-child(2) > td:nth-child(2)');
+    hoveredId.rgb.forEach((v, i) => expect(Math.abs(v - hovered.rgb[i])).toBeLessThanOrEqual(2));
+  });
+}
+
+for (const width of [320, 390]) {
+  test(`at ${width} px the bulk bar shows its count and every action inside the screen`, async ({ page }, testInfo) => {
+    await open(page, testInfo, { width, height: 800 });
+    await ws(page).locator('thead input[type="checkbox"]').check();
+    const bar = ws(page).getByRole('toolbar', { name: 'Aktionen für die Auswahl' });
+    await expect(bar).toBeVisible();
+    const boxes = await bar.evaluate((el) => {
+      const r = (node) => node.getBoundingClientRect();
+      const b = r(el);
+      return {
+        bar: { left: b.left, right: b.right, top: b.top, bottom: b.bottom },
+        parts: [...el.querySelectorAll('.uix-bulkbar__count, button')].map((node) => ({ text: node.textContent, ...JSON.parse(JSON.stringify(r(node))) })),
+        vw: document.documentElement.clientWidth,
+      };
+    });
+    expect(boxes.parts.map((p) => p.text)).toEqual(expect.arrayContaining(['10 ausgewählt', 'Mir zuweisen', 'Mehr']));
+    for (const part of boxes.parts) {
+      expect(part.width, `${part.text} is drawn`).toBeGreaterThan(0);
+      expect(part.left, `${part.text} inside the bar`).toBeGreaterThanOrEqual(boxes.bar.left);
+      expect(part.right, `${part.text} inside the bar`).toBeLessThanOrEqual(boxes.bar.right + 0.5);
+      expect(part.right, `${part.text} on screen`).toBeLessThanOrEqual(boxes.vw);
+      expect(part.height, `${part.text} on one line`).toBeLessThan(part.text.includes('ausgewählt') ? 24 : 48);
+    }
+    await expect(bar.getByRole('button', { name: 'Mehr' })).toBeInViewport();
+  });
+}
