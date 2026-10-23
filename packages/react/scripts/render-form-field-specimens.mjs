@@ -183,6 +183,12 @@ export async function renderFormFieldSpecimens() {
       h(ui.EntityPicker, { id: 'ff-no-access', label: 'Person', value: null, onValueChange: noop, delay: 0, onSearch: () => Promise.reject({ retryable: false }) })));
     act(() => { noAccess.querySelector('input').focus(); });
     await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    // The page shows the open list in place: the picker floats it (fixed, placed from the field) in
+    // an app, which a static page cannot do.
+    const noAccessPopup = noAccess.querySelector('.uix-search-suggest__popup');
+    noAccessPopup.removeAttribute('data-strategy');
+    noAccessPopup.removeAttribute('data-placement');
+    noAccessPopup.removeAttribute('style');
     blocks.push([
       caption('Entity picker states (React <code>EntityPicker</code>) — an empty required picker marked invalid with its error, and a search the person may not run: <code>onSearch</code> rejected with <code>{ retryable: false }</code>, so the list says why and offers no Retry; a visible label names the field'),
       '<div data-entity-picker-states-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',

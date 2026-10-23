@@ -331,6 +331,8 @@ test.describe('FilterPopover date (HAR-2432)', () => {
     const calendar = page.getByRole('dialog', { name: 'Calendar' });
     await expect(calendar).toBeVisible();
     await expect(filter, 'the nested calendar keeps the filter open').toBeVisible();
+    // the calendar takes focus on the chosen day before the keys move it
+    await expect(calendar.locator('[data-date="2026-11-22"]')).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
     await expect(calendar).toBeHidden();
