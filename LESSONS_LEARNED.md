@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
 <!-- lesson-skip: 3b9609d routine: the reviewer named three shapes the glyph guard missed; each is now a scan test -->
 <!-- lesson-skip: 444a356 routine: a hidden presence word led the trigger's accessible name; the reviewer read the name, a spec now asserts it starts with the person -->
 <!-- lesson-skip: 217df0e same family as the 1d66ae0 entry (check a state colour in both themes); the dot test now walks every tone in both -->
