@@ -181,3 +181,4 @@ step treated a missing token as "inert-safe" and exited 0 with a notice. Check t
 the run colour, after every tag. Gate: the publish step now fails the run when the token is
 missing or blank.
 <!-- lesson-skip: 6afa2d2 timing polish caught by frame review, not a reusable trap -->
+<!-- lesson-skip: 96acfc2 Firefox-only cause unconfirmed (not reproducible here); revisit if CI confirms it -->
