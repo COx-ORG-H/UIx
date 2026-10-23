@@ -24,6 +24,18 @@
   .uix-collapsible__summary:hover .uix-collapsible__chevron { color: var(--uix-text); }
   .uix-collapsible[open] .uix-collapsible__chevron { transform: rotate(180deg); }
   .uix-collapsible__body { padding: 0 var(--uix-space-5) var(--uix-space-5); }
+  /* Opening (HAR-2589): the body fades in and settles 4 px down into place. A transition on
+     ::details-content, not @starting-style, so a section that is already open when the page
+     loads does not animate; opening from the keyboard (the summary is :focus-visible) is
+     instant too, and so is closing. Height never animates (the motion contract forbids layout
+     animation): what follows moves at once and the eye follows the fade. Browsers without
+     ::details-content simply open. Reduced motion drops the 4 px and keeps the fade. */
+  .uix-collapsible::details-content { opacity: 0; translate: 0 calc(-1 * var(--uix-space-1)); }
+  .uix-collapsible[open]::details-content {
+    opacity: 1; translate: none;
+    transition: opacity var(--uix-dur) var(--uix-ease-out), translate var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-collapsible[open]:has(> summary:focus-visible)::details-content { transition: none; }
 }
 
 /* CollapsibleSection `headingLevel` and `compact` (HAR-1628). The heading only adds the outline

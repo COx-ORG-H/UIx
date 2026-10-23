@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
+<!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
 <!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
 <!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
@@ -71,6 +73,10 @@
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
+
+### 2026-10-23 · adding motion to a shipped component · `63d2ba2`
+- **Rule:** when you add a decorative element to a component people already use (an indicator, a marker, a busy span), put it **last** (or use a pseudo-element) and let it carry state **only while it animates**. A new first child shifts every `:nth-child` selector and test that counts the items, and a decoration that permanently takes over the selected item's own look breaks every consumer and spec reading that look (contrast rings, fills, underlines).  **Why:** the sliding tab/segment indicator was the first child and always placed; master's display-preference, nav-link and nav-primitive specs (written by other sessions) read the selected option's own ring at rest and picked an option by `:nth-child(2)`.
+- **Gate:** the feedback-lists DOM test asserts the indicator is the last child; `feedback-kit.spec.mjs` asserts the indicator is hidden and the option's own mark visible at rest.  **Tag:** compatibility, motion, parallel-sessions, generalizable
 
 ### 2026-10-23 · a scale measured from a box the scaled thing sizes · `39bc060`
 - **Rule:** when a component scales itself to fit (zoom, transform, font-size by measurement), measure a box whose width cannot depend on the scaled content: a wrapper with its own definite width (the paper's, capped by `max-inline-size: 100%`), never the component's parent. Inline-size containment is not the fix: in a shrink-to-fit context (a centred flex or grid item) the contained box collapses to nothing.  **Why:** the PrintLayout preview first measured its parent; in an app-shell column that sized to its content, every smaller scale made the column narrower and the next measure smaller, down to 4 % (a 30 px page). A `contain: inline-size` wrapper then collapsed the same way at 1280 px. A wrapper sized like the paper is stable: its width comes from its own declaration and its container, never from the zoomed page.  **Gate:** `tests/a11y/print-layout.spec.mjs` checks true paper width at 1280 px and a page inside the screen, in print type, with no false overflow at 320 and 390 px.  **Tag:** layout, feedback-loop, measurement, generalizable

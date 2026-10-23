@@ -13,7 +13,47 @@ const replay = (el, attribute, value = '') => {
   el.setAttribute(attribute, value);
 };
 
+// The MotionList demo: the same attributes MotionList sets (enter, exit then glide, FLIP re-sort).
+const glide = (list, change) => {
+  const before = new Map([...list.children].map((li) => [li, li.getBoundingClientRect().top]));
+  change();
+  for (const li of list.children) {
+    const from = before.get(li);
+    if (from === undefined) continue;
+    const dy = from - li.getBoundingClientRect().top;
+    if (!dy) continue;
+    li.removeAttribute('data-uix-moving');
+    li.style.transform = `translateY(${dy}px)`;
+    void li.offsetWidth;
+    li.setAttribute('data-uix-moving', '');
+    li.style.transform = '';
+  }
+};
+let demoTicket = 430;
+
 export const initFeedbackDemos = (root) => {
+  root.querySelectorAll('[data-feedback-list]').forEach((demo) => {
+    const list = demo.querySelector('.uix-motion-list');
+    if (!list) return;
+    demo.addEventListener('click', (event) => {
+      if (event.target.closest('[data-feedback-list-add]')) {
+        const li = document.createElement('li');
+        li.className = 'uix-list__item';
+        li.textContent = `INC-0${demoTicket++} · New ticket`;
+        glide(list, () => list.prepend(li));
+        replay(li, 'data-uix-entering');
+      } else if (event.target.closest('[data-feedback-list-remove]')) {
+        const li = list.querySelector(':scope > li:not([data-uix-exiting])');
+        if (!li) return;
+        li.setAttribute('data-uix-exiting', '');
+        li.setAttribute('aria-hidden', 'true');
+        li.addEventListener('animationend', () => glide(list, () => li.remove()), { once: true });
+      } else if (event.target.closest('[data-feedback-list-sort]')) {
+        glide(list, () => list.append(...[...list.children].reverse()));
+      }
+    });
+  });
+
   root.querySelectorAll('[data-feedback-change-run]').forEach((button) => {
     button.addEventListener('click', () => {
       const block = root.querySelector('[data-feedback-change]');
