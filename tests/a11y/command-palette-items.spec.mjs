@@ -107,3 +107,12 @@ test('at 320 px nothing scrolls sideways, open or in place; axe in both', async 
   expect(box.x + box.width).toBeLessThanOrEqual(320);
   expect(await scan('dialog[data-uix-cmdk-dialog]')).toEqual([]);
 });
+
+test('forced colours: the active option keeps an outline (it was only a background tint)', async ({ page }, testInfo) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await open(page, testInfo);
+  await page.locator('#launch').click();
+  const active = dialog(page).locator('[role="option"][data-active]');
+  await expect(active).toHaveCount(1);
+  expect(await active.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
+});
