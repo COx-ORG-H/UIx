@@ -45,6 +45,10 @@
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
 
+### 2026-10-23 · an exit animation makes a closed dialog pass toBeVisible · `3bcbcb7`
+- **Rule:** to assert an overlay stayed open, check its state (`dialog.open`, `:popover-open`, `aria-expanded`), not `toBeVisible()`. A dialog or popover that just closed stays painted for its exit transition, and Playwright counts it visible.  **Why:** a TagInput spec "Escape closed the list, not the drawer" passed on master while the Escape did close the drawer; it went red only when keyboard closes became instant.
+- **Gate:** `tests/a11y/form-fields.spec.mjs` now asserts `dialog.open`; ⚠ TODO no lint for `toBeVisible` as an "it stayed open" check elsewhere.  **Tag:** false-green, motion, overlay, test-double-fidelity
+
 ### 2026-10-23 · removing an enter animation exposes state races · `c34ab3b`
 - **Rule:** when an overlay stops animating (instant, keyboard-opened, reduced motion), a key handler that gates on React state set by an async browser event (`toggle`, `transitionend`) must also read the DOM (`:popover-open`), because the next key can now arrive before that event.  **Why:** the date fields gated Escape on `open`, updated only by the queued `toggle` event; the 120 ms enter used to hide the gap, and in CI the Escape leaked to the dialog around the field (passed 4/4 locally). The same fix landed on master in parallel as HAR-2389 (`onFieldKeyDown`), which this branch took in the merge.
 - **Gate:** `tests/a11y/older-gaps.spec.mjs` range-field test (Enter, then Escape, `outerEscape` 0) failed in CI on the instant open; ⚠ TODO no generic gate for other state-gated key handlers.  **Tag:** race, motion, overlay, local-env-lies
