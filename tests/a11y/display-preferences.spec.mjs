@@ -184,7 +184,8 @@ for (const theme of ['light', 'dark']) {
 
 // Review of #165: the arrival highlight survives reduced motion (the policy ends every keyframe
 // animation at once, which ended its steady outline before anyone saw it), for the OS setting and
-// for the in-app preference; a toast fades instead of sliding under the in-app preference too.
+// for the in-app preference; a toast fades instead of sliding under the in-app preference too. Toasts
+// move on transitions (HAR-2578): reduced motion leaves fades in their transition list, never transform.
 for (const via of ['os', 'app']) {
   test(`reduced motion (${via}): the arrival outline stays for the highlight time; a toast only fades`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion: via === 'os' ? 'reduce' : 'no-preference' });
@@ -199,11 +200,12 @@ for (const via of ['os', 'app']) {
       await new Promise((r) => setTimeout(r, 300));
       const s = getComputedStyle(target);
       const t = getComputedStyle(toast);
-      return { name: s.animationName, duration: s.animationDuration, outline: s.outlineStyle, toast: t.animationName };
+      return { name: s.animationName, duration: s.animationDuration, outline: s.outlineStyle, toast: t.transitionProperty.split(', ') };
     });
     expect(seen.name).toBe('uix-arrival-static');
     expect(parseFloat(seen.duration)).toBeGreaterThan(1);
     expect(seen.outline, 'the outline is still drawn 300 ms in').toBe('solid');
-    expect(seen.toast).toBe('uix-fade-in');
+    expect(seen.toast, 'a toast fades').toContain('opacity');
+    expect(seen.toast, 'and does not slide').not.toContain('transform');
   });
 }

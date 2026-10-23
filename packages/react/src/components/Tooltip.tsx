@@ -7,6 +7,14 @@ import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, isKeyShortcut, spokenKeys, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
+import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
+
+/* The delay group (HAR-2578). A tooltip waits --uix-delay-tooltip before it opens on hover, so a
+ * pointer passing over a toolbar does not flash a bubble per button. Once one has been shown, its
+ * neighbours open at once: while any is open, and for --uix-delay-tooltip-skip after the last one
+ * closed; the one it replaces goes at once, so two bubbles never overlap. Shared by every Tooltip
+ * on the page. */
+const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null } = { open: 0, lastClosed: -Infinity, current: null };
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -49,6 +57,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | null>(null);
+  const openTimer = useRef<number | null>(null);
+  const shown = useRef(false);
   const [open, setOpen] = useState(false);
   const id = useId();
   const platform = useKbdPlatform();
@@ -58,26 +68,64 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
+  useEffect(() => { watchInputModality(); }, []);
+
   const cancelClose = () => {
     if (closeTimer.current != null) { clearTimeout(closeTimer.current); closeTimer.current = null; }
   };
-  const show = () => {
-    cancelClose();
+  const cancelOpen = () => {
+    if (openTimer.current != null) { clearTimeout(openTimer.current); openTimer.current = null; }
+  };
+  /** `instant`: inside the delay group — no fade either. */
+  const reveal = (instant: boolean) => {
+    cancelOpen();
+    if (group.current && group.current !== self) group.current.current(true);
+    group.current = self;
     const b = bubbleRef.current;
-    if (b && !b.matches(':popover-open')) { try { b.showPopover(); } catch { /* already open */ } }
+    if (b && !b.matches(':popover-open')) {
+      b.toggleAttribute('data-uix-instant', instant);
+      markKeyOpened(b);
+      try { b.showPopover(); } catch { /* already open */ }
+    }
+    if (!shown.current) { shown.current = true; group.open += 1; }
     setOpen(true);
   };
-  const hide = () => {
+  /** Keyboard focus opens at once; a pointer waits the delay unless the group is warm. */
+  const show = (via: 'pointer' | 'focus') => {
     cancelClose();
+    if (shown.current) return;
+    const warm = group.open > 0 || performance.now() - group.lastClosed < tokenMs('--uix-delay-tooltip-skip', 300);
+    if (via === 'focus' || warm) { reveal(via === 'pointer'); return; }
+    if (openTimer.current == null) openTimer.current = window.setTimeout(() => reveal(false), tokenMs('--uix-delay-tooltip', 400));
+  };
+  /** `instant`: replaced by a neighbour in the group — gone at once, no fade. */
+  const hide = (instant = false) => {
+    cancelClose();
+    cancelOpen();
     const b = bubbleRef.current;
-    if (b && b.matches(':popover-open')) { try { b.hidePopover(); } catch { /* already closed */ } }
+    if (b && b.matches(':popover-open')) {
+      b.toggleAttribute('data-uix-instant', instant);
+      try { b.hidePopover(); } catch { /* already closed */ }
+    }
+    if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
+    if (group.current === self) group.current = null;
     setOpen(false);
   };
+  // A stable handle on this tooltip's latest `hide`, for the delay group.
+  const self = useRef(hide);
+  self.current = hide;
   // Small close delay so the pointer can cross the offset gap into the bubble (1.4.13 hoverable);
-  // entering trigger or bubble cancels it.
+  // entering trigger or bubble cancels it. When it runs out, it closes only if the pointer is over
+  // neither: a bubble that appears under a resting pointer and is then placed away from it gets a
+  // `mouseleave` with the pointer still on the trigger (Firefox dispatches one after the move; the
+  // trigger's `mouseenter` does not fire again, since the bubble is inside it).
   const scheduleHide = () => {
     cancelClose();
-    closeTimer.current = window.setTimeout(hide, 100);
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null;
+      try { if (triggerRef.current?.matches(':hover')) return; } catch { /* no :hover support */ }
+      hide();
+    }, 100);
   };
 
   // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere. That
@@ -100,6 +148,9 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   // hide the top-layer bubble if the trigger unmounts while shown
   useEffect(() => () => {
     if (closeTimer.current != null) clearTimeout(closeTimer.current);
+    if (openTimer.current != null) clearTimeout(openTimer.current);
+    if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
+    if (group.current === self) group.current = null;
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) { try { b.hidePopover(); } catch { /* noop */ } }
   }, []);
@@ -130,10 +181,10 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
       className={cx('uix-tooltip', className)}
       aria-describedby={single ? undefined : description}
       tabIndex={single ? undefined : 0}
-      onMouseEnter={show}
+      onMouseEnter={() => show('pointer')}
       onMouseLeave={scheduleHide}
-      onFocus={show}
-      onBlur={hide}
+      onFocus={() => show('focus')}
+      onBlur={() => hide()}
       {...props}
     >
       {child}

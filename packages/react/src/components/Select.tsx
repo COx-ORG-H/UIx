@@ -8,6 +8,7 @@ import type {
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
+import { markKeyOpened, watchInputModality } from '../motion.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -629,12 +630,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       const room = Math.max(r.top, window.innerHeight - r.bottom) / zoom - OFFSET - EDGE;
       popup.style.minWidth = `${Math.round(r.width / zoom)}px`;
       popup.style.maxHeight = `${Math.max(96, Math.min(MAX_HEIGHT, Math.floor(room)))}px`;
+      // Opened from the keyboard (Alt+↓, Enter, typing): no enter motion (motion.css).
+      if (!isOpen()) markKeyOpened(popup);
       try { if (!isOpen()) popup.showPopover(); } catch { /* no Popover API: `hidden` drives it */ }
       if (isSearchable) searchRef.current?.focus({ preventScroll: true });
     } else {
+      if (isOpen()) markKeyOpened(popup);
       try { if (isOpen()) popup.hidePopover(); } catch { /* no Popover API */ }
     }
   }, [showing, isSearchable]);
+  useEffect(() => { watchInputModality(); }, []);
   useAnchoredPosition(triggerRef, popupRef, { open: showing, placement, offset: OFFSET, padding: EDGE });
 
   /* ---- the phone sheet: the listbox takes focus */

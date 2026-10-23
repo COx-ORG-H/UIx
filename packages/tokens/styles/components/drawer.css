@@ -5,18 +5,19 @@
     border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
     transform: translateX(100%);
-    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* the closed state's durations are the exit's (--uix-dur-exit-slow); [open] carries the enter */
+    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
     /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
     display: none;
   }
-  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; }
+  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
   .uix-drawer::backdrop {
     background: var(--uix-scrim); opacity: 0;
-    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
   }
-  .uix-drawer[open]::backdrop { opacity: 1; }
+  .uix-drawer[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
   /* side="start" — the phone navigation drawer, from the left edge (HAR-1351) */
   .uix-drawer--start { margin: 0 auto 0 0; border-left: 0; border-right: 1px solid var(--uix-border); transform: translateX(-100%); }

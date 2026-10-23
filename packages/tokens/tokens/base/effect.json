@@ -21,6 +21,12 @@
   "dur-exit-slow": { "$type": "duration", "$value": "160ms", "$description": "Exit paired with --uix-dur-slow (modal, drawer, side peek)." },
   "dur-highlight": { "$type": "duration", "$value": "2400ms", "$description": "How long an arrival or change tint takes to fade back to the row colour. Not a transition budget: the tint is a held signal, not movement." },
 
+  "dur-change":    { "$type": "duration", "$value": "1200ms", "$description": "How long a change tint (ChangeHighlight, .uix-changed) takes to fade on the row or field that changed. Shorter than --uix-dur-highlight: a change in place, not a landing." },
+
+  "delay-pending": { "$type": "duration", "$value": "300ms", "$description": "How long a pending action waits before it shows a pending indicator: a spinner that would flash for less is noise." },
+  "hold-pending":  { "$type": "duration", "$value": "500ms", "$description": "Once a pending indicator shows, the least time it stays, so it never flickers." },
+  "hold-result":   { "$type": "duration", "$value": "1500ms", "$description": "How long an in-place result (a button's success or error state, a copied check) holds before it returns to rest." },
+
   "delay-tooltip":      { "$type": "duration", "$value": "400ms", "$description": "Hover delay before a tooltip opens. Keyboard focus opens it at once." },
   "delay-tooltip-skip": { "$type": "duration", "$value": "300ms", "$description": "Delay-group window: a neighbouring tooltip hovered within this long after one closed opens at once." },
 

@@ -114,6 +114,8 @@ test('strategy="fixed": the list escapes a clipping toolbar and matches the fiel
   await toolbarField.focus();
   const popup = page.locator('#clipped .uix-search-suggest__popup');
   await expect(popup).toBeVisible();
+  // measured once its enter (a scale from .95, HAR-2578) has finished
+  await expect.poll(() => popup.evaluate((el) => el.getAnimations().length)).toBe(0);
   const geo = await page.evaluate(() => {
     const clip = document.querySelector('#clipped [data-clip]').getBoundingClientRect();
     const list = document.querySelector('#clipped .uix-search-suggest__popup');
