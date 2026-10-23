@@ -14,7 +14,7 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { settleOverlay } from './settle.mjs';
+import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/confirm-actions/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -117,12 +117,14 @@ test('ConfirmDialog type-to-confirm at 320 px in German: a wrapping message does
   await expect(field).toHaveAttribute('autocapitalize', 'none');
   await expect(field).toHaveAttribute('autocorrect', 'off');
   await expect(field).toHaveAttribute('spellcheck', 'false');
+  await settleAnimations(page);
   const before = await dialog.locator('.uix-dialog__footer').boundingBox();
   await page.keyboard.type('Netzwerkbetrieb-X');
   await expect(field).toHaveAttribute('aria-invalid', 'true');
   const message = dialog.locator('.uix-confirm__typed-msg [role="alert"]');
   await expect(message).toBeVisible();
   expect((await message.boundingBox()).height, 'the message wraps onto several lines here').toBeGreaterThan(30);
+  await settleAnimations(page);
   const after = await dialog.locator('.uix-dialog__footer').boundingBox();
   expect(Math.abs(after.y - before.y), 'the footer stays put').toBeLessThan(1);
 });
@@ -154,6 +156,8 @@ test('ConfirmDialog type-to-confirm: a node label, a placeholder, invalid once t
   await page.locator('#open-typed').click();
   const dialog = page.getByRole('alertdialog', { name: 'Dienst löschen?' });
   const field = dialog.getByRole('textbox', { name: 'Zum Bestätigen ledger-prod eingeben' });
+  // Measure the footer only once the dialog's enter motion has ended (it moved ~1 px under CI load).
+  await settleOverlay(dialog);
   await expect(field).toBeFocused();
   await expect(field).toHaveAttribute('placeholder', 'ledger-prod');
   const confirm = dialog.locator('[data-action-id="service.delete"]');
@@ -164,6 +168,7 @@ test('ConfirmDialog type-to-confirm: a node label, a placeholder, invalid once t
   await page.keyboard.type('x');
   await expect(field).toHaveAttribute('aria-invalid', 'true');
   await expect(field).toHaveAccessibleDescription('Das stimmt nicht mit ledger-prod überein.');
+  await settleAnimations(page);
   expect((await dialog.locator('.uix-dialog__footer').boundingBox()).y, 'the message does not move the footer').toBeCloseTo(footer.y, 0);
   await axe(page);
   await page.keyboard.press('Backspace');
