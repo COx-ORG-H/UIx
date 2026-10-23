@@ -21,10 +21,12 @@
   .uix-relationship-graph__list-main>button { display:grid; justify-items:start; gap:var(--uix-space-1); padding:0; border:0; background:transparent; color:var(--uix-text); font:inherit; text-align:left; cursor:pointer; }
   .uix-relationship-graph__list-main>button span,.uix-relationship-graph__list-relations,.uix-relationship-graph__list-none { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-relationship-graph__list-none { margin:0; }
-  .uix-relationship-graph__list-relations ul { display:inline; margin:0 0 0 var(--uix-space-1); padding:0; list-style:none; }
-  .uix-relationship-graph__list-relations li { display:inline; }
-  .uix-relationship-graph__list-relations li:not(:last-child)::after { content:", "; }
-  .uix-relationship-graph__list-more { margin-left:var(--uix-space-2); font-size:inherit; }
+  /* "Connected to", then the names wrapping beside it, comma after comma, then "Show all N" */
+  .uix-relationship-graph__list-relations { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 var(--uix-space-1); }
+  .uix-relationship-graph__list-relations ul { display:flex; flex:1 1 12rem; flex-wrap:wrap; gap:0 var(--uix-space-1); min-width:0; margin:0; padding:0; list-style:none; }
+  .uix-relationship-graph__list-relations li { min-width:0; overflow-wrap:anywhere; }
+  .uix-relationship-graph__list-relations li:not(:last-child)::after { content:","; }
+  .uix-relationship-graph__list-more { font-size:inherit; }
   .uix-relationship-graph__list-actions { display:flex; flex-wrap:wrap; gap:var(--uix-space-1); }
   .uix-relationship-graph--compact .uix-relationship-graph__visual,.uix-relationship-graph--compact .uix-relationship-graph__visual svg { min-height:16rem; height:16rem; }
   .uix-relationship-graph--state { padding:var(--uix-space-8); border:1px dashed var(--uix-border-strong); border-radius:var(--uix-radius-lg); }
@@ -84,7 +86,7 @@
   /* The hint and the zoom level sit on a surface of their own: the map scrolls under them, and a
      node's name must not show through the words (HAR-1387). */
   .uix-relationship-graph__zoom-level { flex:0 1 auto; min-width:0; overflow:hidden; padding:var(--uix-space-1) var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; white-space:nowrap; text-overflow:ellipsis; }
-  .uix-relationship-graph__hint { flex:0 1 auto; min-width:0; margin:0 auto 0 0; overflow:hidden; padding:var(--uix-space-1) var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
+  .uix-relationship-graph__hint { flex:0 1000 auto; min-width:0; margin:0 auto 0 0; overflow:hidden; padding:var(--uix-space-1) var(--uix-space-2); border:1px solid var(--uix-border); border-radius:var(--uix-radius-sm); background:var(--uix-surface); color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; }
   /* A hint cut to a few words says nothing, so it goes; on the narrowest map so does the zoom level. */
   @container uix-relationship-graph-footer (max-width:24rem) { .uix-relationship-graph__hint { display:none; } }
   @container uix-relationship-graph-footer (max-width:17rem) { .uix-relationship-graph__zoom-level { display:none; } }
