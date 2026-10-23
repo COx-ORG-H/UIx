@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 217f18f routine: a merge read back from storage that private mode cannot read; found in review, pinned by a test -->
 <!-- lesson-skip: e6cc8ac same cause as the 2026-09-22 docs-specimens entry (unlayered docs prose rules beat @layer kit rules), now for h2/h3/p; scoped the same way with :where() -->
 <!-- lesson-skip: e14a553 routine: a raw 1px the contract gate named; replaced with from-font -->
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
@@ -26,6 +27,10 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
+### 2026-10-23 · keyboard shortcuts · `34deb5c`
+- **Rule:** a single-key shortcut guard that ignores presses with Ctrl or Alt must let AltGr through (`event.getModifierState('AltGraph')`). Windows reports AltGr as Ctrl+Alt, and on German, Bosnian, Polish and Nordic layouts `[`, `]`, `{`, `@`, `\`, `|` and `€` exist only behind AltGr.  **Why:** AppShell `navHotkey="["` (HAR-1371) never fired on the Bosnian staff keyboards it was built for; every jsdom and Chromium test typed `[` with no modifier. `Menu` typeahead and `OrgChart` use the same `!ctrlKey && !altKey` guard.
+- **Gate:** "AppShell navHotkey…" in `packages/react/src/staff-nav-dom.test.mjs` dispatches `[` with `ctrlKey`, `altKey` and `modifierAltGraph` and failed before the fix.  **Tag:** i18n, keyboard, test-double-fidelity, generalizable
 
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.
