@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useRef } from 'react';
-import type { ReactNode, HTMLAttributes } from 'react';
+import { forwardRef, useCallback, useId, useRef } from 'react';
+import type { ForwardedRef, MutableRefObject, ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
@@ -43,10 +43,11 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
   instant?: boolean;
 }
 
-export function Modal({
+/** A modal `<dialog>`; the ref reaches it (HAR-1831). */
+export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
   open, onClose, dirty = false, pending = false, discardLabels, title, children, footer, className, closeLabel: closeLabelProp,
   role = 'dialog', instant = false, onKeyDown, ...rest
-}: ModalProps) {
+}, ref) {
   const uixLabels = useUixLabels();
   const closeLabel = closeLabelProp ?? uixLabels.modal?.close ?? 'Close dialog';
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -55,10 +56,11 @@ export function Modal({
   const guard = useGuardedDialog({ open, onClose, dirty, pending, labels: discardLabels, closeRef });
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
   const titleId = useId();
+  const dialogRef = useMergedRef(guard.ref, ref);
 
   return (
     <dialog
-      ref={guard.ref}
+      ref={dialogRef}
       className={cx('uix-dialog', className)}
       role={role}
       aria-labelledby={title != null ? titleId : undefined}
@@ -92,4 +94,14 @@ export function Modal({
       {guard.prompt}
     </dialog>
   );
+});
+Modal.displayName = 'Modal';
+
+/** One callback ref that fills the dialog hook's ref and the consumer's. */
+function useMergedRef<T>(own: { current: T | null }, forwarded: ForwardedRef<T>) {
+  return useCallback((el: T | null) => {
+    (own as MutableRefObject<T | null>).current = el;
+    if (typeof forwarded === 'function') forwarded(el);
+    else if (forwarded) forwarded.current = el;
+  }, [own, forwarded]);
 }

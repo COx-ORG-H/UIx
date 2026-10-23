@@ -48,6 +48,10 @@
   .uix-confirm__body { display: grid; gap: var(--uix-space-3); }
   .uix-confirm__compensation { display: grid; gap: var(--uix-space-1); padding: var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); color: var(--uix-text); font-size: var(--uix-text-meta); }
   .uix-confirm__compensation-title { font-weight: 600; }
+  /* the mismatch message (HAR-1831): a hidden copy holds its wrapped height, so it never moves the footer */
+  .uix-confirm__typed-msg { display: grid; }
+  .uix-confirm__typed-msg > * { grid-area: 1 / 1; }
+  .uix-confirm__typed-msg > [aria-hidden="true"] { visibility: hidden; }
   .uix-confirm__error { padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-danger-bg); color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
   .uix-dialog__footer .uix-confirm__tertiary { margin-inline-end: auto; }
 }

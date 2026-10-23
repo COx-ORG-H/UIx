@@ -189,6 +189,9 @@ export function Popover({
     const onFocusOut = (event: Event) => { if (!inside((event as FocusEvent).relatedTarget as Element | null)) hide(closeDelay); };
     const onKeyDown = (event: Event) => {
       if ((event as KeyboardEvent).key !== 'Escape' || !isPopoverOpen(el)) return;
+      // The card's Escape only closes the card, not a Drawer or Modal around it (HAR-2415).
+      event.preventDefault();
+      event.stopPropagation();
       window.clearTimeout(timer);
       // Focus that was inside goes back to the anchor; the card must not reopen from that.
       const hadFocus = el.contains(el.ownerDocument.activeElement);

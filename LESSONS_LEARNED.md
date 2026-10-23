@@ -1,5 +1,13 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: f38c222 routine: HAR-2415 named the leak; same shape as the 9cbe96d skip (Escape handled by the hint, not stopped) -->
+<!-- lesson-skip: 61b3635 routine: HAR-1764 named the missing type="button"; pinned by a form-submit test -->
+<!-- lesson-skip: 9006caa routine: HAR-1828 named the subtree-wide accessible name; pinned by a test -->
+<!-- lesson-skip: df9a5e6 routine CSS wrap fix; HAR-1754 named the cause, reflow specs cover it -->
+<!-- lesson-skip: 8fe7118 routine review fixes (Tree indent, keyboard underline, passive effect); each found by looking at screenshots -->
+<!-- lesson-skip: b4f426d routine review fixes (overflow-wrap anywhere, Escape on a React handler after inner controls, IME guard, focus return, reserved message height); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 4e3b663 same family as the 2026-10-16 lesson (state that trails a queued event); the field now asks :popover-open; pinned by a deferred-toggle jsdom test -->
+
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
@@ -26,8 +34,12 @@
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
 
 ### 2026-10-23 · removing an enter animation exposes state races · `c34ab3b`
-- **Rule:** when an overlay stops animating (instant, keyboard-opened, reduced motion), a key handler that gates on React state set by an async browser event (`toggle`, `transitionend`) must also read the DOM (`:popover-open`), because the next key can now arrive before that event.  **Why:** the date fields gated Escape on `open`, updated only by the queued `toggle` event; the 120 ms enter used to hide the gap, and in CI the Escape leaked to the dialog around the field (passed 4/4 locally).
+- **Rule:** when an overlay stops animating (instant, keyboard-opened, reduced motion), a key handler that gates on React state set by an async browser event (`toggle`, `transitionend`) must also read the DOM (`:popover-open`), because the next key can now arrive before that event.  **Why:** the date fields gated Escape on `open`, updated only by the queued `toggle` event; the 120 ms enter used to hide the gap, and in CI the Escape leaked to the dialog around the field (passed 4/4 locally). The same fix landed on master in parallel as HAR-2389 (`onFieldKeyDown`), which this branch took in the merge.
 - **Gate:** `tests/a11y/older-gaps.spec.mjs` range-field test (Enter, then Escape, `outerEscape` 0) failed in CI on the instant open; ⚠ TODO no generic gate for other state-gated key handlers.  **Tag:** race, motion, overlay, local-env-lies
+
+### 2026-10-23 · one Escape, two layers, in WebKit · `b4e9b87`
+- **Rule:** never assume one Escape reaches only the topmost layer. With a light-dismiss popover open inside a modal `<dialog>`, WebKit closes the popover *and* fires `cancel` on the dialog for the same keypress; Chromium and Firefox close only the popover. A dialog that acts on `cancel` must ignore one that arrives in the same task as a popover's `beforetoggle` to `closed` (and reopen if the engine closed it anyway).  **Why:** in Safari a clean kit Drawer closed together with its help popover, and a dirty one asked "Discard changes?", since 2.42.0. The keydown order was identical in both engines (probed); only the extra `cancel` differed, so no keydown-based guard could see it.
+- **Gate:** "clean, Escape closes an open popover and leaves the drawer open" in `tests/a11y/discard-prompt.spec.mjs`, now run in WebKit and Firefox by CI's cross-browser job (`CROSS_BROWSER_SPECS`, kept in step by `cross-browser-config.spec.mjs`). It failed in WebKit before `useGuardedDialog` tracked the light dismiss.  **Tag:** cross-browser, overlay, test-double-fidelity, generalizable
 
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.

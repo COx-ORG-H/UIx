@@ -5,6 +5,7 @@ import { initShowcase, disposeShowcase } from '../guide/app.js';
 import { initAdvancedShowcase } from '../guide/phase-46-9.js';
 import { COMPONENT_SPECIMENS } from './component-specimens.js';
 import { initFormSpecimens } from './form-specimens.js';
+import { initFeedbackDemos } from './feedback-demos.js';
 import { COMPONENT_GUIDANCE as COMPONENT_INTENT } from './component-guidance.js';
 
 export const slugify = (name) =>
@@ -106,7 +107,7 @@ export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time'],
-  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Lightbox', 'Arrival'],
+  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Utility bits'],
@@ -150,7 +151,7 @@ export const REACT_COMPONENT_SLUGS = [
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
-  'save-status', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
+  'save-status', 'busy-region', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
   'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart',
 ];
 
@@ -230,6 +231,7 @@ export const exampleRouteFor = (item) => {
     'text-diff': 'examples-text-diff',
     'dashboard-grid': 'examples-dashboard-grid',
     'dashboard-canvas': 'examples-dashboard-canvas',
+    'busy-region': 'examples-motion',
     'org-chart': 'examples-org-chart',
     'insight-card': 'examples-insight-charts',
     'license-position-bar': 'examples-metrics',
@@ -646,7 +648,12 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
 </div>
 <div id="overview" role="tabpanel">…</div>`))}
     ${section('variants', 'Variants', demo(`<div class="uix-stack"><div class="uix-tabs uix-tabs--enclosed" role="tablist" aria-label="Enclosed example"><button class="uix-tab" role="tab" aria-selected="true">Details</button><button class="uix-tab" role="tab" aria-selected="false">History</button></div><div class="uix-tabs uix-tabs--pill" role="tablist" aria-label="Pill example"><button class="uix-tab" role="tab" aria-selected="true">Week</button><button class="uix-tab" role="tab" aria-selected="false">Month</button><button class="uix-tab" role="tab" aria-selected="false">Quarter</button></div></div>`, undefined, { column: true }))}
-    ${section('guidance', 'Usage guidance', `${compare('Use tabs for a small set of peer views whose content can change without changing the task context.', 'Use tabs as a substitute for primary navigation or for steps that must be completed in order.')}<p>Keep labels short and use sentence case. Long or translated labels wrap to two lines at a 16rem cap instead of truncating. When a record has more tabs than fit at the narrowest supported width, set <code>overflow="scroll"</code>: the tabs stay on one row that scrolls sideways, the selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs.</p>`)}
+    ${section('guidance', 'Usage guidance', `${compare('Use tabs for a small set of peer views whose content can change without changing the task context.', 'Use tabs as a substitute for primary navigation or for steps that must be completed in order.')}<p>Keep labels short and use sentence case. Long or translated labels wrap to two lines at a 16rem cap instead of truncating, and no tab is wider than its row. By default (<code>overflow="wrap"</code>) tabs that do not fit wrap onto another row, so every tab stays visible and nothing scrolls sideways. When a record has more tabs than fit at the narrowest supported width and the row must stay one line, set <code>overflow="scroll"</code>: the tabs stay on one row that scrolls sideways, the selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs.</p>`)}
+    ${section('wrap', 'Overflow: rows that wrap (default)', demo(`<div style="width:min(100%,320px)" data-docs-tabs-wrap lang="de" class="uix-stack"><div class="uix-tabs uix-tabs--line" role="tablist" aria-label="Vorfall"><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Übersicht</button><button class="uix-tab" role="tab" aria-selected="true">Arbeitsprotokoll</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Verknüpfte Konfigurationselemente</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Regulatorische Meldungen</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Prüfpfad</button></div><div class="uix-tabs uix-tabs--enclosed" role="tablist" aria-label="Vorfall (umrandet)"><button class="uix-tab" role="tab" aria-selected="true">Übersicht</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Arbeitsprotokoll</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Verknüpfte Konfigurationselemente</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Prüfpfad</button></div></div>`, `<Tabs value={tab} onChange={setTab}>  {/* overflow="wrap" is the default */}
+  <Tab value="overview">Übersicht</Tab>
+  <Tab value="worklog">Arbeitsprotokoll</Tab>
+  …
+</Tabs>`))}
     ${section('overflow', 'Overflow: one scrolling row', demo(`<div style="width:min(100%,320px)"><div class="uix-tabs-scroller"><button type="button" class="uix-tabs-scroller__prev" aria-hidden="true" tabindex="-1" hidden></button><div class="uix-tabs uix-tabs--line uix-tabs--scroll" role="tablist" aria-label="Record sections"><button class="uix-tab" role="tab" aria-selected="true">Overview</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Worklog</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Linked configuration items</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Regulatory reporting</button><button class="uix-tab" role="tab" aria-selected="false" tabindex="-1">Audit trail</button></div><button type="button" class="uix-tabs-scroller__next" aria-hidden="true" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></div>`, `<Tabs value={tab} onChange={setTab} overflow="scroll">
   <Tab value="overview">Overview</Tab>
   <Tab value="worklog">Worklog</Tab>
@@ -830,6 +837,7 @@ const renderPage = () => {
   if (source === 'core' || source === 'workspace') initShowcase({ manageTheme: false });
   if (source === 'advanced') initAdvancedShowcase();
   initFormSpecimens(host);
+  initFeedbackDemos(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);

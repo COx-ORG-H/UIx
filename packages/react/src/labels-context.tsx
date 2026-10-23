@@ -19,6 +19,7 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -30,6 +31,8 @@ import type { SearchBarLabels } from './components/SearchBar.js';
  * on the server.
  */
 export interface UixLabels {
+  /** The words a `Button` with `result` shows for a moment after its action (HAR-2581). */
+  buttonResult?: Partial<ButtonResultLabels>;
   modal?: { close?: string };
   drawer?: { close?: string };
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
@@ -49,7 +52,8 @@ export interface UixLabels {
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */
   orgChart?: Partial<OrgChartLabels>;
   inlineEdit?: Partial<InlineEditLabels>;
-  confirmDialog?: { typeToConfirm?: string; compensation?: string };
+  /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
+  confirmDialog?: { typeToConfirm?: string; compensation?: string; typeToConfirmMismatch?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
   dateRangePicker?: Partial<DateRangePickerLabels>;
   datePicker?: Partial<DatePickerLabels>;

@@ -1,11 +1,11 @@
 "use client";
 
-import { cloneElement, isValidElement, useEffect, useId, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, ReactElement, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
-import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, isKeyShortcut, spokenKeys, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
 
@@ -15,6 +15,9 @@ import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
  * closed; the one it replaces goes at once, so two bubbles never overlap. Shared by every Tooltip
  * on the page. */
 const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null } = { open: 0, lastClosed: -Infinity, current: null };
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content'> {
   /** Tooltip text. Pass this or `content`. */
@@ -29,10 +32,11 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
   placement?: Placement;
   /**
    * The trigger's keyboard shortcut, in `KbdCombo` key names, e.g. `['Mod', 'K']` (HAR-2031):
-   * shown with `Kbd` after the text, and set as the trigger's `aria-keyshortcuts` for the
-   * viewer's platform. Default: the `shortcut` of a `Button` child, so a Tooltip around a Button
-   * with a shortcut shows one bubble with the label and the keys. The kit only shows it: the
-   * product binds the key.
+   * shown with `Kbd` after the text. Screen readers hear it once, in the trigger's description
+   * after the text ("Keyboard shortcuts, Shift+?"), the same rule as a `Button` with `shortcut`
+   * (HAR-2416). Default: the `shortcut` of a `Button` child, so a Tooltip around a Button with a
+   * shortcut shows one bubble with the label and the keys. The kit only shows it: the product
+   * binds the key.
    */
   shortcut?: KeyShortcut;
   children?: ReactNode;
@@ -45,6 +49,9 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
  * (flip/shift), shown on hover and keyboard focus, dismissed on blur or Escape
  * (document-level, per WCAG 1.4.13), and hoverable: the bubble stays open while
  * the pointer is over it (UIX-A11Y-1).
+ *
+ * While the bubble is open it takes the first Escape (HAR-2415), also on a combobox-style trigger
+ * whose list is open (a Select, a date field): one Escape closes the bubble, the next one the list.
  */
 export function Tooltip({ label, content, placement = 'top', shortcut, className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -58,7 +65,6 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const childShortcut = isValidElement(children) ? (children.props as { shortcut?: unknown }).shortcut : undefined;
   const own = shortcut ?? (isKeyShortcut(childShortcut) ? childShortcut : undefined);
   const keys = own && own.length > 0 ? own : null;
-  const keyshortcuts = keys ? ariaKeyShortcuts(keys, platform) : undefined;
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
@@ -115,12 +121,20 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     closeTimer.current = window.setTimeout(() => hide(), 100);
   };
 
-  // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') hide(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+  // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere. That
+  // Escape is the bubble's alone (HAR-2415): taken in the capture phase and cancelled, so a Drawer
+  // or Modal around the trigger neither closes nor asks "Discard changes?"; the next Escape is
+  // theirs. A layout effect, so an Escape right after the bubble opened already finds it.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      hide();
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -141,12 +155,16 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   // the control itself; existing describedby values are preserved (same merge as Field —
   // UIX-A11Y-1). Non-element children (plain text/icon) keep it on the wrapper, which becomes
   // focusable so the tooltip is keyboard-reachable.
+  // With keys, the description is the text and the spoken keys, each by id: a closed bubble is
+  // hidden, and a description taken from a hidden element also reads its aria-hidden glyphs
+  // ("Shift+? Shift ?"). The keys are said once (HAR-2416).
+  const text = content ?? label;
+  const description = keys ? [text != null ? `${id}-text` : null, `${id}-keys`].filter(Boolean).join(' ') : id;
   const single = isValidElement(children);
   const child = single
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
-        'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], id]
+        'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], description]
           .filter(Boolean).join(' '),
-        ...(keyshortcuts ? { 'aria-keyshortcuts': keyshortcuts } : {}),
       })
     : children;
 
@@ -154,14 +172,12 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     <span
       ref={triggerRef}
       className={cx('uix-tooltip', className)}
-      aria-describedby={single ? undefined : id}
-      aria-keyshortcuts={single ? undefined : keyshortcuts}
+      aria-describedby={single ? undefined : description}
       tabIndex={single ? undefined : 0}
       onMouseEnter={() => show('pointer')}
       onMouseLeave={scheduleHide}
       onFocus={() => show('focus')}
       onBlur={() => hide()}
-      onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
       {...props}
     >
       {child}
@@ -174,8 +190,15 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
         onMouseLeave={scheduleHide}
         {...bubbleAttr}
       >
-        {content ?? label}
-        {keys && <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>}
+        {keys ? (
+          <>
+            {text != null && <span id={`${id}-text`}>{text}</span>}
+            <span className="uix-tooltip__shortcut">
+              <span id={`${id}-keys`} className="uix-visually-hidden">{spokenKeys(keys, platform)}</span>
+              <KbdCombo keys={[...keys]} platform={platform} aria-hidden="true" />
+            </span>
+          </>
+        ) : text}
       </span>
     </span>
   );

@@ -27,5 +27,9 @@
   .uix-popconfirm { display: grid; gap: var(--uix-space-2); width: max-content; max-width: min(20rem, calc(100vw - 2 * var(--uix-space-4))); padding: var(--uix-space-3); }
   .uix-popconfirm__title { font-weight: 600; color: var(--uix-text); }
   .uix-popconfirm__body { display: grid; gap: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
+  /* content of its own, e.g. a required reason field (HAR-1831): the step takes its full width
+     so the field is not squeezed to the text's max-content */
+  .uix-popconfirm--content { width: min(20rem, calc(100vw - 2 * var(--uix-space-4))); }
+  .uix-popconfirm__content { display: grid; gap: var(--uix-space-2); min-width: 0; }
   .uix-popconfirm__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--uix-space-2); margin-top: var(--uix-space-1); }
 }

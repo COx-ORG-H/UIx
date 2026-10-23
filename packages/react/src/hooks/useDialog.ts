@@ -1,7 +1,10 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useLayoutEffect } from 'react';
 import { markKeyOpened, watchInputModality } from '../motion.js';
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 /* Page scroll lock, shared across every open dialog (Modal / Drawer / Peek). A native
  * <dialog> shown with showModal() makes the background inert but still lets it SCROLL
@@ -47,6 +50,11 @@ function unlockBodyScroll() {
  * `keepOpen` is asked when the browser closed the dialog on its own (Escape or a close request
  * nobody cancelled, a `method="dialog"` form). Returning `true` reopens it instead of calling
  * `onClose`: a form dialog with unsaved input or a save in flight (HAR-2029).
+ *
+ * The dialog opens and closes in a layout effect (HAR-1831). A dialog its caller unmounts while
+ * open (`{open && <ConfirmDialog …/>}`, or a page that navigates away) is closed in the commit,
+ * while it is still in the document, so the browser returns focus to the control that opened it;
+ * a passive cleanup ran after the element was removed, and focus fell to `<body>`.
  */
 export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement> {
   const ref = useRef<HTMLDialogElement>(null);
@@ -57,7 +65,7 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
 
   useEffect(() => { watchInputModality(); }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     // A dialog opened or closed from the keyboard does it instantly (motion.css [data-uix-key-opened]).
     if (!el || !open) {
