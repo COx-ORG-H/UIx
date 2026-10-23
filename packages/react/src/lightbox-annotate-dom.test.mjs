@@ -206,3 +206,13 @@ test('a stroke that starts on the picture and ends on the backdrop does not clos
   assert.deepEqual(log.filter((l) => l === 'close'), ['close']);
   unmount();
 });
+
+test('arrows and Home / End in a text field inside the viewer are the field\'s, not the pager\'s (PR #168 review)', () => {
+  const { host, unmount } = mount(h(ui.Lightbox, {
+    items: pair, index: 0, onIndexChange() { throw new Error('paged'); }, open: true, onClose() {},
+    actions: h('input', { className: 'label-field', 'aria-label': 'Label' }),
+  }));
+  const field = host.querySelector('.label-field');
+  for (const k of ['ArrowRight', 'ArrowLeft', 'Home', 'End']) assert.equal(key(field, k), true, k);
+  unmount();
+});

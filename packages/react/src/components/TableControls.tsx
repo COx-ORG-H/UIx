@@ -228,7 +228,8 @@ export function ViewMenu({
   });
 
   const commit = (next: readonly string[], id: string) => {
-    setDraft(next);
+    // The draft lasts only while a drag does: an order the consumer refuses does not stay on screen.
+    setDraft(null);
     onReorder?.([...next]);
     const column = byId.get(id);
     if (column) setAnnouncement(fill(labels.moved, { label: columnText(column), position: next.indexOf(id) + 1, count: next.length }));
@@ -248,7 +249,9 @@ export function ViewMenu({
       const start = dragStart.current;
       dragStart.current = null;
       if (start && !sameOrder(start, order)) commit(order, id);
+      else setDraft(null);
     },
+    cancel: () => { dragStart.current = null; setDraft(null); },
   });
 
   const rowActions = (column: ViewMenuColumn, index: number): RowMenuAction[] => [
@@ -447,7 +450,7 @@ export function SavedViewMenu({ items, sections, onSelect, onPinChange, pinLabel
     const current = orderOf(group);
     const next = placeId(current, id, current.indexOf(id) + delta);
     if (next === current) return;
-    setDraft({ group: group.id, ids: next });
+    setDraft(null);
     onReorder?.([...next], group.id);
   };
   const { dragging, start: startDrag } = useRowDrag('.uix-saved-views__row', {
@@ -464,8 +467,10 @@ export function SavedViewMenu({ items, sections, onSelect, onPinChange, pinLabel
       dragStart.current = null;
       if (!group) return;
       const end = orderOf(group);
+      setDraft(null);
       if (start && !sameOrder(start, end)) onReorder?.([...end], group.id);
     },
+    cancel: () => { dragStart.current = null; setDraft(null); },
   });
 
   const visible = groups.filter((group) => group.items.length > 0);

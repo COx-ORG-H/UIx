@@ -194,6 +194,8 @@ export function Lightbox({
       return;
     }
     if ((event.target as HTMLElement).closest('video')) return; // the player owns its arrow keys
+    // A text field in the overlay or the toolbar (a label for an area) owns its arrows, Home and End.
+    if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]')) return;
     if (event.key === 'ArrowLeft') { event.preventDefault(); go(index - 1); }
     else if (event.key === 'ArrowRight') { event.preventDefault(); go(index + 1); }
     else if (event.key === 'Home') { event.preventDefault(); go(0); }

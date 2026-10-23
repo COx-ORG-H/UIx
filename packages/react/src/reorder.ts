@@ -34,7 +34,12 @@ export function dropIndex(rows: readonly Element[], dragged: Element | null, cli
   return index;
 }
 
-export interface RowDragHandlers { over: (id: string, index: number) => void; drop: (id: string) => void }
+export interface RowDragHandlers {
+  over: (id: string, index: number) => void;
+  drop: (id: string) => void;
+  /** The drag was cancelled (Escape, or the browser took the pointer): put the starting order back. */
+  cancel?: (id: string) => void;
+}
 
 /**
  * Pointer drag for a list whose rows reorder live. It listens on the window for the whole drag:
@@ -54,19 +59,33 @@ export function useRowDrag(rowSelector: string, handlers: RowDragHandlers) {
       if (!current) return;
       latest.current.over(current.id, dropIndex(Array.from(current.list.querySelectorAll(`:scope > ${rowSelector}`)), current.row, event.clientY));
     };
-    const end = () => {
+    const finish = (kind: 'drop' | 'cancel') => {
       const current = drag.current;
       drag.current = null;
       setDragging(null);
-      if (current) latest.current.drop(current.id);
+      if (!current) return;
+      if (kind === 'drop') latest.current.drop(current.id);
+      else latest.current.cancel?.(current.id);
+    };
+    const end = () => finish('drop');
+    // A cancelled pointer (the browser took it for a scroll, a system gesture) is not a drop.
+    const cancel = () => finish('cancel');
+    // Escape during a drag puts the rows back, and only that: it does not also close the menu around.
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      finish('cancel');
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
-    window.addEventListener('pointercancel', end);
+    window.addEventListener('pointercancel', cancel);
+    window.addEventListener('keydown', escape, true);
     return () => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
-      window.removeEventListener('pointercancel', end);
+      window.removeEventListener('pointercancel', cancel);
+      window.removeEventListener('keydown', escape, true);
     };
   }, [dragging, rowSelector]);
   const start = (event: PointerEvent<HTMLElement>, id: string) => {

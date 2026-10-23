@@ -1,7 +1,8 @@
 /* HAR-1375 (MOTUS C-16 photo order) — SortableList in jsdom: Move up / Move down on every row
  * (disabled at the ends), Alt+↑ / Alt+↓ anywhere in a row, ↑ / ↓ on a focused grip, focus kept on
  * the moved row (handed to the other move button at an end), the polite announcement in the
- * given words, a draft order until the consumer's new order arrives, and `disabled`.
+ * given words, an order the consumer refuses not staying on screen, a drag cancelled by Escape or
+ * pointercancel (in ViewMenu and SavedViewMenu too, which share the drag), and `disabled`.
  * Also the shared reorder model (`placeId`) that ViewMenu, SavedViewMenu and NavFavourites use.
  * A pointer drag is measured in Chromium: tests/a11y/sortable-list.spec.mjs.
  * Renders the BUILT dist — run `npm run build` first; CI does. */
@@ -95,15 +96,18 @@ test('Move down keeps focus on the moved row, hands it to Move up at the end, an
   t.unmount();
 });
 
-test('Alt+↑ / Alt+↓ anywhere in a row; ↑ / ↓ on a focused grip; plain arrows elsewhere are left alone', () => {
+test('Alt+↑ / Alt+↓ anywhere in a row but a text field; ↑ / ↓ on a focused grip; plain arrows elsewhere are left alone', () => {
   const log = [];
-  const t = mount(h(List, { log, renderItem: (p) => h('input', { className: 'title-input', 'aria-label': p.title, defaultValue: p.title }) }));
-  const field = () => t.host.querySelector('input[aria-label="Lesung"]');
-  field().focus();
-  assert.equal(key(field(), 'ArrowUp', { altKey: true }), false);
+  const t = mount(h(List, { log, renderItem: (p) => h('span', null, h('a', { href: `#${p.id}`, className: 'link' }, p.title), h('input', { className: 'title-input', 'aria-label': p.title, defaultValue: p.title })) }));
+  const link = () => [...t.host.querySelectorAll('.link')].find((a) => a.textContent === 'Lesung');
+  link().focus();
+  assert.equal(key(link(), 'ArrowUp', { altKey: true }), false);
   assert.deepEqual(log.at(-1), ['p1', 'p3', 'p2']);
-  assert.equal(document.activeElement, field(), 'focus stays in the field that had it');
-  assert.equal(key(field(), 'ArrowUp'), true, 'a plain arrow is the field\'s');
+  assert.equal(document.activeElement, link(), 'focus stays on what had it');
+  assert.equal(key(link(), 'ArrowUp'), true, 'a plain arrow is left alone');
+  const field = t.host.querySelector('input[aria-label="Lesung"]');
+  assert.equal(key(field, 'ArrowUp', { altKey: true }), true, 'in a text field Alt/Option + arrow moves the caret (PR #168 review)');
+  assert.equal(log.length, 1);
   const grip = [...t.host.querySelectorAll('.uix-sortable__row')][0].querySelector('.uix-sortable__grip');
   grip.focus();
   key(grip, 'ArrowDown');
@@ -112,12 +116,58 @@ test('Alt+↑ / Alt+↓ anywhere in a row; ↑ / ↓ on a focused grip; plain ar
   t.unmount();
 });
 
-test('a consumer that has not applied the order yet: the list shows the draft, then follows the new items', () => {
+test('an order the consumer refuses does not stay on screen (PR #168 review)', () => {
   const log = [];
   const t = mount(h(List, { log, late: true }));
   click(t.host.querySelector('.uix-sortable__move--down'));
-  assert.deepEqual(titles(t.host).map((s) => s.slice(4)), ['Kinderecke', 'Lesesaal', 'Lesung'], 'the draft order shows');
+  assert.deepEqual(log, [['p2', 'p1', 'p3']], 'asked');
+  assert.deepEqual(titles(t.host).map((s) => s.slice(4)), ['Lesesaal', 'Kinderecke', 'Lesung'], 'the consumer\'s order shows');
   t.unmount();
+});
+
+/** Press on a grip and move the pointer past every row (jsdom rects are 0 high), then end the drag with `finish`. */
+function dragToEnd(host, gripSelector, finish) {
+  const grip = host.querySelector(gripSelector);
+  act(() => { grip.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1 })); });
+  act(() => { window.dispatchEvent(new window.PointerEvent('pointermove', { clientY: 100, pointerId: 1 })); });
+  act(finish);
+}
+const pointercancel = () => window.dispatchEvent(new window.PointerEvent('pointercancel', { pointerId: 1 }));
+const escape = () => window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+const pointerup = () => window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 1 }));
+
+test('a drag cancelled by pointercancel or Escape puts the rows back and reports nothing; a drop reports once', () => {
+  for (const finish of [pointercancel, escape]) {
+    const log = [];
+    const t = mount(h(List, { log }));
+    dragToEnd(t.host, '.uix-sortable__grip', finish);
+    assert.deepEqual(log, [], `${finish.name}: nothing reported`);
+    assert.deepEqual(titles(t.host).map((s) => s.slice(4)), ['Lesesaal', 'Kinderecke', 'Lesung'], `${finish.name}: the starting order`);
+    t.unmount();
+  }
+  const log = [];
+  const t = mount(h(List, { log }));
+  dragToEnd(t.host, '.uix-sortable__grip', pointerup);
+  assert.deepEqual(log, [['p2', 'p3', 'p1']]);
+  t.unmount();
+});
+
+test('ViewMenu and SavedViewMenu share the drag: Escape and pointercancel put the rows back there too', () => {
+  const cols = [{ id: 'a', label: 'Alpha', visible: true }, { id: 'b', label: 'Beta', visible: true }, { id: 'c', label: 'Gamma', visible: true }];
+  for (const finish of [pointercancel, escape]) {
+    const calls = [];
+    const v = mount(h(ui.ViewMenu, { columns: cols, onColumnVisibilityChange() {}, onReorder: (ids) => calls.push(ids) }));
+    dragToEnd(v.host, '.uix-view-menu__grip', finish);
+    assert.deepEqual(calls, [], `ViewMenu ${finish.name}`);
+    assert.deepEqual([...v.host.querySelectorAll('.uix-view-menu__col')].map((r) => r.dataset.columnId), ['a', 'b', 'c']);
+    v.unmount();
+    const saved = [];
+    const m = mount(h(ui.SavedViewMenu, { items: [{ id: 'x', label: 'X' }, { id: 'y', label: 'Y' }, { id: 'z', label: 'Z' }], onSelect() {}, onReorder: (ids) => saved.push(ids), reorderLabel: 'Drag' }));
+    dragToEnd(m.host, '.uix-saved-views__grip', finish);
+    assert.deepEqual(saved, [], `SavedViewMenu ${finish.name}`);
+    assert.deepEqual([...m.host.querySelectorAll('.uix-saved-views__name')].map((n) => n.textContent), ['X', 'Y', 'Z']);
+    m.unmount();
+  }
 });
 
 test('UixLabelsProvider translates it; disabled shows no controls', () => {

@@ -70,7 +70,8 @@ export function SortableList<T>({
   const labels = { ...DEFAULT_SORTABLE_LIST_LABELS, ...useUixLabels().sortableList, ...labelOverrides };
   const ids = items.map(getId);
   const orderKey = ids.join('\u0000');
-  // The order being dragged (or just moved) until the consumer's new order arrives.
+  // The order being dragged, only while the drag lasts: after a move the list shows the consumer's
+  // items, so an order the consumer refuses never stays on screen (PR #168 review).
   const [draft, setDraft] = useState<readonly string[] | null>(null);
   useEffect(() => setDraft(null), [orderKey]);
   const order = draft && sameOrder([...draft].sort(), [...ids].sort()) ? draft : ids;
@@ -98,7 +99,7 @@ export function SortableList<T>({
   });
 
   const commit = (next: readonly string[], id: string) => {
-    setDraft(next);
+    setDraft(null);
     onReorder([...next]);
     setAnnouncement(fillLabel(labels.moved, { label: nameOf(id), position: next.indexOf(id) + 1, count: next.length }));
   };
@@ -119,11 +120,15 @@ export function SortableList<T>({
       const begin = dragStart.current;
       dragStart.current = null;
       if (begin && !sameOrder(begin, order)) commit(order, id);
+      else setDraft(null);
     },
+    cancel: () => { dragStart.current = null; setDraft(null); },
   });
 
   const onRowKeyDown = (event: KeyboardEvent<HTMLLIElement>, id: string) => {
     if (disabled || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+    // In a text field Alt/Option + arrow moves the caret (macOS): the field keeps it.
+    if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]')) return;
     event.preventDefault();
     // Focus stays on what had it in the row (a move button that is now disabled hands it to the other).
     const target = event.target as HTMLElement;
