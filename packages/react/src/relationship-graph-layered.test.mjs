@@ -245,14 +245,18 @@ test('compact density shrinks the geometry; an empty graph is empty', () => {
 });
 
 test('edge labels wrap into two lines that fit the column gap', () => {
-  assert.deepEqual(wrapEdgeLabel('depends on', 88), ['depends on']);
-  assert.deepEqual(wrapEdgeLabel('sub outsourced to', 88), ['sub outsourced', 'to']);
-  assert.deepEqual(wrapEdgeLabel('bereitgestellt über', 88), ['bereitgestellt', 'über']);
-  const long = wrapEdgeLabel('governed by contract with extra words', 88);
+  // 76 px of text: a 96 px gap less the chip's border room and padding, at the meta size (12.5 px)
+  assert.deepEqual(wrapEdgeLabel('depends on', 76), ['depends on']);
+  assert.deepEqual(wrapEdgeLabel('virtualna mašina na', 76), ['virtualna', 'mašina na']);
+  assert.deepEqual(wrapEdgeLabel('potpisuje na', 76), ['potpisuje na']);
+  const long = wrapEdgeLabel('governed by contract with extra words', 76);
   assert.equal(long.length, 2);
   assert.ok(long[1].endsWith('…'));
-  assert.ok(long.every((line) => line.length <= 15));
-  assert.deepEqual(wrapEdgeLabel('Donaudampfschifffahrtsgesellschaft', 88), ['Donaudampfschi…']);
+  assert.ok(long.every((line) => line.length <= 12));
+  assert.deepEqual(wrapEdgeLabel('Donaudampfschifffahrtsgesellschaft', 76), ['Donaudampfs…']);
+  // a word that is whole is not marked cut: only words left over are
+  assert.deepEqual(wrapEdgeLabel('bereitgestellt über', 76), ['bereitgeste…', 'über']);
+  assert.deepEqual(wrapEdgeLabel('a b c d e f g h i j k l m n o p q r s', 20), ['a b', 'c d…']);
 });
 
 test('siblings from one node with the same relationship show the label once', () => {
@@ -275,14 +279,14 @@ test('HAR-1639 (1): an edge carries its variant, tone and description to the rou
 
 test('HAR-1639 (6): labels that would overlap are moved apart; one that would drift too far is left out', () => {
   const size = edgeLabelSize(['depends_on']);
-  assert.ok(size.width > 50 && size.height >= 13);
+  assert.ok(size.width > 50 && size.height >= 19, 'a chip in the meta size');
   const boxes = [
     { id: 'a', x: 200, y: 100, ...size },
     { id: 'b', x: 204, y: 103, ...size },
     { id: 'c', x: 198, y: 104, ...size },
     { id: 'far', x: 600, y: 100, ...size },
   ];
-  const placed = separateEdgeLabels(boxes, { gap: 2, maxShift: 40 });
+  const placed = separateEdgeLabels(boxes, { gap: 2 });
   const box = (id) => ({ top: placed.get(id).y - size.height / 2, bottom: placed.get(id).y + size.height / 2 });
   assert.equal(placed.get('a').y, 100, 'the first keeps its place');
   assert.ok(box('b').top >= box('a').bottom, 'b moved below a');

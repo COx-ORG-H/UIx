@@ -333,7 +333,7 @@ function RadialRelationshipGraph({
         </g>
       </svg>
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((item) => <li key={item.id} data-type={item.id} style={{ '--uix-graph-type-color': typeColor.get(item.id) } as CSSProperties}>{item.label}</li>)}</ul>}
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((item) => <li key={item.id} data-type={item.id} style={{ '--uix-graph-type-color': typeColor.get(item.id) } as CSSProperties}><span className="uix-relationship-graph__legend-mark" aria-hidden="true" />{item.label}</li>)}</ul>}
     {showList && <EquivalentRelationshipList nodes={bounded.nodes} edges={bounded.edges} selectedId={selectedId} labels={labels} onSelect={select} onExpandNeighbors={onExpandNeighbors} onOpenDetails={onOpenDetails} />}
   </section>;
 }

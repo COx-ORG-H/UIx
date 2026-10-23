@@ -37,14 +37,19 @@
   .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
-  .uix-table tbody tr { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table tbody tr:nth-child(even) { background: var(--uix-row-alt); }
-  .uix-table--no-zebra tbody tr, .uix-table--no-zebra tbody tr:nth-child(even) { background: var(--uix-row); }
-  .uix-table tbody tr[data-pinned] { background: var(--uix-row-pinned-bg); }
-  /* [data-selected] carries row-selection styling; aria-selected is invalid on a native
+  /* The row's current state is one value, --uix-row-bg: the row paints it, and a frozen cell paints
+     it too (below), so a frozen cell can never keep the zebra stripe on a selected row (operator
+     review 2026-10-23). Every state rule has the same specificity (:where), so the order decides:
+     hover > selected > pinned > zebra > plain. --uix-row-bg is a registered colour (@property at
+     the end of this file), so the row eases the value itself and its frozen cells ease with it.
+     [data-selected] carries row-selection styling; aria-selected is invalid on a native
      table row — AT state comes from the row checkbox (UIX-A11Y-2). */
-  .uix-table tbody tr[data-selected] { background: var(--uix-row-selected-bg); }
-  .uix-table tbody tr:hover { background: var(--uix-bg-hover); }
+  .uix-table tbody tr { --uix-row-bg: var(--uix-row); background: var(--uix-row-bg); transition: --uix-row-bg var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table tbody tr:where(:nth-child(even)) { --uix-row-bg: var(--uix-row-alt); }
+  .uix-table--no-zebra tbody tr:where(:nth-child(even)) { --uix-row-bg: var(--uix-row); }
+  .uix-table tbody tr:where([data-pinned]) { --uix-row-bg: var(--uix-row-pinned-bg); }
+  .uix-table tbody tr:where([data-selected]) { --uix-row-bg: var(--uix-row-selected-bg); }
+  @media (hover: hover) { .uix-table tbody tr:where(:hover) { --uix-row-bg: var(--uix-bg-hover); } }
   /* Row links stay calm on hover/focus: the row tint is the affordance, so neither the base
      layer's `a:hover` underline nor link.css reaches them. `:not(.uix-btn)` keeps buttons
      styled; the global :focus-visible ring still marks keyboard focus. */
@@ -76,21 +81,17 @@
      sideways overflow (data-overflow="false") draws none. Without the measurement they stay. */
   .uix-table-wrap[data-overflow="false"] :is(.uix-table--pinned-col :is(th, td):first-child, .uix-table--pinned-actions :is(th, td):last-child) { box-shadow: none; }
   /* A pinned cell paints its row's state itself and must be opaque, or the cells scrolling
-     under it show through. The dark pinned/selected tints are translucent, so they are layered
-     over the surface the row sits on rather than painted bare. */
-  .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table--pinned-col tbody tr:nth-child(even) td:first-child, .uix-table--pinned-actions tbody tr:nth-child(even) td:last-child { background: var(--uix-row-alt); }
-  /* same specificity as the even-row rule above and the state rules below, so the order decides:
-     an :nth-child(even) here outranked hover, pinned and selected on every even row */
-  .uix-table--pinned-col.uix-table--no-zebra tbody tr td:first-child,
-  .uix-table--pinned-actions.uix-table--no-zebra tbody tr td:last-child { background: var(--uix-row); }
-  .uix-table--pinned-col tbody tr[data-pinned] td:first-child, .uix-table--pinned-actions tbody tr[data-pinned] td:last-child { background: linear-gradient(var(--uix-row-pinned-bg), var(--uix-row-pinned-bg)) var(--uix-surface); }
-  .uix-table--pinned-col tbody tr[data-selected] td:first-child, .uix-table--pinned-actions tbody tr[data-selected] td:last-child { background: linear-gradient(var(--uix-row-selected-bg), var(--uix-row-selected-bg)) var(--uix-surface); }
-  .uix-table--pinned-col tbody tr:hover td:first-child, .uix-table--pinned-actions tbody tr:hover td:last-child { background: var(--uix-bg-hover); }
+     under it show through. The dark tints are translucent, so the row's --uix-row-bg is layered
+     over the surface rather than painted bare. */
+  .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface); }
   /* an expanded row's full-width detail cell is both first and last child: keep its own tint */
   .uix-table--pinned-col tbody tr.uix-table__detail > td, .uix-table--pinned-actions tbody tr.uix-table__detail > td { background: var(--uix-bg-subtle); }
   @media (prefers-reduced-motion: reduce) {
-    .uix-table tbody tr, .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { transition: none; }
+    .uix-table tbody tr { transition: none; }
+  }
+  /* forced colours keep a gradient image: a frozen cell is plain Canvas there, like its row */
+  @media (forced-colors: active) {
+    .uix-table--pinned-col tbody tr td:first-child, .uix-table--pinned-actions tbody tr td:last-child { background: Canvas; }
   }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
@@ -142,8 +143,10 @@
   .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: var(--uix-selcol-w); padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
 
   /* contextual bulk-action bar — appears when >=1 row is selected */
+  /* It wraps: on a phone the actions take a second row rather than run off the bar's edge, and
+     the count stays on one line (operator review 2026-10-23). */
   .uix-bulkbar {
-    display: flex; align-items: center; gap: var(--uix-space-3);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2) var(--uix-space-3); min-width: 0;
     padding: var(--uix-space-2) var(--uix-space-3); margin-bottom: var(--uix-space-3);
     border: 1px solid var(--uix-accent); border-radius: var(--uix-radius-md);
     background: var(--uix-brand-muted); color: var(--uix-text);
@@ -153,7 +156,7 @@
   @starting-style { .uix-bulkbar:not([hidden]) { opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))); } }
   .uix-bulkbar[hidden] { display: none; }
   /* --uix-accent-text, not --uix-accent: the plain accent on the accent tint is 3.4:1 in dark (HAR-1388 specimen) */
-  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent-text); font-variant-numeric: tabular-nums; }
+  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .uix-bulkbar__spacer { flex: 1; }
 
   /* ── row hover actions + kebab ─────────────────────────────────────────────────── */
@@ -227,3 +230,7 @@
   .uix-compare__head > div + div, .uix-compare__cell + .uix-compare__cell { border-left: 1px solid var(--uix-border); }
   .uix-compare__attr { grid-column: 1 / -1; background: var(--uix-bg-subtle); padding: var(--uix-space-1) var(--uix-space-3); border-top: 1px solid var(--uix-border); font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); }
 }
+
+/* The row's state colour (above) is registered so it can be eased: the row and its frozen cells,
+   which paint the same value, change together. Outside the layer: @property is global. */
+@property --uix-row-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }

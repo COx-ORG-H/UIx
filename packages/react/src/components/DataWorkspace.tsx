@@ -555,9 +555,7 @@ function FilterChips({ filters, labels, baseId }: { filters: NonNullable<DataWor
       ))}
       {unset.length > 0 && (
         <span ref={addRef}>
-          {/* The add chip's markup on a plain button: Menu's trigger needs the click event,
-              which Chip's onClick does not pass on. */}
-          <Menu trigger={<button type="button" className="uix-chip uix-chip--add"><span className="uix-chip__icon" aria-hidden="true"><PlusIcon /></span><span className="uix-chip__label">{labels.addFilter}</span></button>}>
+          <Menu trigger={<Chip variant="add" icon={<PlusIcon />}>{labels.addFilter}</Chip>}>
             {unset.map((field) => <MenuItem key={field.id} onSelect={() => edit(field, addRef.current)}>{field.label}</MenuItem>)}
           </Menu>
         </span>

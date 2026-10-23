@@ -250,3 +250,59 @@ test('an empty menu closes with Escape on the trigger as well', async () => {
   assert.equal(trigger.getAttribute('aria-expanded'), 'false');
   unmount();
 });
+
+// Batch follow-up (PR #168 review): Chip's onClick did not pass the click event on, so Menu's
+// trigger handler read `defaultPrevented` of undefined and a Chip could not open a Menu.
+// DataWorkspace's "+ Filter" worked around it with the add chip's markup on a plain button.
+test('a Chip is a Menu trigger: click and keyboard open it, a choice and Escape return focus to the chip', async () => {
+  const chosen = [];
+  const clicks = [];
+  const { host, unmount } = mount(h(ui.Menu, {
+    trigger: h(ui.Chip, { variant: 'add', icon: h('svg'), onClick: (event) => clicks.push(event?.type) }, 'Filter'),
+  },
+  h(ui.MenuItem, { onSelect: () => chosen.push('status') }, 'Status'),
+  h(ui.MenuItem, { onSelect: () => chosen.push('owner') }, 'Owner')));
+  const chip = host.querySelector('button.uix-chip.uix-chip--add');
+  assert.ok(chip, 'the add chip is a button');
+  assert.equal(chip.getAttribute('aria-haspopup'), 'menu', 'the trigger props reach the chip body');
+
+  // pointer: the chip's own onClick runs with the event, then the menu opens on its first item
+  chip.focus();
+  click(chip);
+  await frame();
+  assert.deepEqual(clicks, ['click'], "the chip's onClick gets the click event");
+  assert.equal(chip.getAttribute('aria-expanded'), 'true', 'the click opens the menu');
+  const menu = menuOf(chip);
+  assert.equal(menu.getAttribute('role'), 'menu');
+  assert.equal(menu.getAttribute('aria-labelledby'), chip.id, 'the menu is named by the chip');
+  assert.equal(document.activeElement, menu.querySelector('[role="menuitem"]'), 'focus moves to the first item');
+  key(document.activeElement, 'Escape');
+  await frame();
+  assert.equal(chip.getAttribute('aria-expanded'), 'false');
+  assert.equal(document.activeElement, chip, 'Escape returns focus to the chip (the ref reaches the body)');
+
+  // keyboard: ArrowUp opens on the last item; choosing it closes the menu and returns focus
+  key(chip, 'ArrowUp');
+  await frame();
+  assert.equal(chip.getAttribute('aria-expanded'), 'true');
+  const items = [...menuOf(chip).querySelectorAll('[role="menuitem"]')];
+  assert.equal(document.activeElement, items[1], 'ArrowUp opens on the last item');
+  click(items[1]);
+  await frame();
+  assert.deepEqual(chosen, ['owner']);
+  assert.equal(chip.getAttribute('aria-expanded'), 'false');
+  assert.equal(document.activeElement, chip, 'a choice returns focus to the chip');
+  unmount();
+});
+
+test('Chip onClick: a handler written for the old () => void signature still runs; a disabled chip runs none', () => {
+  let calls = 0;
+  const { host, unmount } = mount(h('div', null,
+    h(ui.Chip, { onClick: () => { calls += 1; } }, 'Edit'),
+    h(ui.Chip, { onClick: () => { calls += 10; }, disabled: true }, 'Off')));
+  const [on, off] = host.querySelectorAll('button.uix-chip');
+  click(on);
+  click(off);
+  assert.equal(calls, 1);
+  unmount();
+});

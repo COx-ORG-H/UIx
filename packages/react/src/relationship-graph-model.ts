@@ -220,6 +220,8 @@ export interface RoutedEdge {
   bus: boolean;
   /** The label wrapped to fit the column gap (at most two lines). */
   labelLines: string[];
+  /** The widest chip the label may take at its place (map units): the column gap, or a bus stub. */
+  labelRoom: number;
 }
 
 export interface LayeredColumn {
@@ -257,33 +259,46 @@ const LAYERED_PADDING = 16;
 const LAYERED_HEADER = 28;
 const GROUP_HEADER = 28;
 const AUTO_LABEL_MAX_FANOUT = 4;
-/** Average glyph advance of the meta type size, used to wrap edge labels into the column gap. */
-const LABEL_CHAR_WIDTH = 5.6;
+/** Average glyph advance of the meta type size (12.5 px, the kit's small text), used to wrap edge
+ *  labels into the column gap and to size their chips before they are measured. */
+const LABEL_CHAR_WIDTH = 6.3;
+/** An edge label's chip: padding around the text, and its line height (meta at 1.2). */
+const LABEL_PAD_X = 6;
+const LABEL_PAD_Y = 3;
+const LABEL_LINE = 15;
+/** A busy node's trunk stands this far out from the node, so each stub into a target is a straight
+ *  run long enough to carry its label on a chip (the labels used to sit on the trunk's bends). */
+const BUS_INSET = 4;
+/** The arrowhead's length at the end of a stub. */
+const ARROW_LENGTH = 9;
 const LABEL_MAX_LINES = 2;
 
 /** Word-wrap a label into at most two lines that fit `width`; overlong words end in an ellipsis. */
 export function wrapEdgeLabel(label: string, width: number): string[] {
   const max = Math.max(4, Math.floor(width / LABEL_CHAR_WIDTH));
   const clip = (word: string): string => (word.length > max ? `${word.slice(0, max - 1)}…` : word);
+  const words = label.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let current = '';
-  for (const word of label.split(/\s+/).filter(Boolean)) {
+  let placed = 0;
+  for (const word of words) {
     const next = current ? `${current} ${word}` : word;
     if (next.length <= max) {
       current = next;
+      placed += 1;
       continue;
     }
     if (current) lines.push(current);
-    current = clip(word);
+    current = '';
     if (lines.length === LABEL_MAX_LINES) break;
+    current = clip(word);
+    placed += 1;
   }
   if (current && lines.length < LABEL_MAX_LINES) lines.push(current);
-  if (lines.length === LABEL_MAX_LINES) {
-    const consumed = lines.join(' ').replace(/…$/, '').length;
-    if (consumed < label.replace(/\s+/g, ' ').trim().length) {
-      const last = lines[LABEL_MAX_LINES - 1]!;
-      lines[LABEL_MAX_LINES - 1] = last.endsWith('…') ? last : `${last.slice(0, Math.max(1, max - 1))}…`;
-    }
+  // Words left over: the last line says so (a word cut short already ends in an ellipsis).
+  if (placed < words.length && lines.length > 0) {
+    const last = lines[lines.length - 1]!;
+    if (!last.endsWith('…')) lines[lines.length - 1] = last.length < max ? `${last}…` : `${last.slice(0, max - 1)}…`;
   }
   return lines;
 }
@@ -638,9 +653,10 @@ export function layoutLayeredGraph(
       startY = from.y + from.height / 2;
       endX = to.x;
       endY = to.y + to.height / 2;
-      const trunk = startX + columnGap / 2;
+      const trunk = startX + BUS_INSET;
       path = busPath(startX, startY, trunk, endX, endY);
-      labelX = (trunk + endX) / 2;
+      // on the straight stub: between the trunk's corner and the arrowhead
+      labelX = (trunk + BUS_INSET + endX - ARROW_LENGTH) / 2;
       labelY = endY;
       startAngle = Math.PI;
       endAngle = 0;
@@ -698,6 +714,7 @@ export function layoutLayeredGraph(
       arrowY: round1(atStart ? startY : endY),
       arrowAngle: atStart ? startAngle : endAngle,
       labelLines: [],
+      labelRoom: columnGap - 8,
       columnLabel: false,
       bus: kind === 'forward' && from.children.length > AUTO_LABEL_MAX_FANOUT,
       autoLabel:
@@ -748,7 +765,10 @@ export function layoutLayeredGraph(
   const seenLabels = new Set<string>();
   for (const entry of routed.values()) {
     if (entry.label === undefined) continue;
-    entry.labelLines = wrapEdgeLabel(entry.label, columnGap - 8);
+    // A chip fits its straight run: the stub of a bus, the column gap otherwise.
+    const run = entry.bus ? columnGap - 2 * BUS_INSET - ARROW_LENGTH : columnGap - 8;
+    entry.labelRoom = run;
+    entry.labelLines = wrapEdgeLabel(entry.label, run - 2 * LABEL_PAD_X);
     if (!entry.autoLabel || entry.emphasis || entry.kind !== 'forward') continue;
     const key = `${entry.source}|${entry.label}`;
     if (seenLabels.has(key)) entry.autoLabel = false;
@@ -778,7 +798,12 @@ export interface EdgeLabelBox {
   y: number;
   width: number;
   height: number;
+  /** Placed first when labels compete for room (a toned, emphasised or one-of-a-kind label). */
+  priority?: number;
 }
+
+/** A box an edge label must not cover (a node), by its top-left corner. */
+export interface LabelObstacle { x: number; y: number; width: number; height: number }
 
 /** Where a label is drawn after `separateEdgeLabels`, or that it is left out. */
 export interface PlacedEdgeLabel {
@@ -787,10 +812,10 @@ export interface PlacedEdgeLabel {
   hidden: boolean;
 }
 
-/** The box a wrapped edge label takes, from its lines (the meta type size, as `wrapEdgeLabel` assumes). */
+/** The chip a wrapped edge label takes, from its lines (the meta type size, as `wrapEdgeLabel` assumes). */
 export function edgeLabelSize(lines: readonly string[]): { width: number; height: number } {
   const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
-  return { width: longest * LABEL_CHAR_WIDTH + 8, height: Math.max(1, lines.length) * 13 + 2 };
+  return { width: longest * LABEL_CHAR_WIDTH + 2 * LABEL_PAD_X, height: Math.max(1, lines.length) * LABEL_LINE + 2 * LABEL_PAD_Y };
 }
 
 /**
@@ -798,14 +823,17 @@ export function edgeLabelSize(lines: readonly string[]): { width: number; height
  * of each other in a dense layered column). Labels are taken top to bottom; one that overlaps a
  * label already placed moves down just below it. A label that would have to move further than
  * `maxShift` from its edge is left out instead (the relationship is still in the nodes'
- * descriptions and in the list). Deterministic: the same boxes give the same placement.
+ * descriptions and in the list), and so is one that would cover an `obstacle` (a node). Labels with
+ * a higher `priority` are placed first, so a repeated relation gives way to a one-of-a-kind or
+ * toned one. Deterministic: the same boxes give the same placement.
  */
-export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options: { gap?: number; maxShift?: number } = {}): Map<string, PlacedEdgeLabel> {
+export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options: { gap?: number; maxShift?: number; obstacles?: readonly LabelObstacle[] } = {}): Map<string, PlacedEdgeLabel> {
   const gap = options.gap ?? 2;
-  const maxShift = options.maxShift ?? 40;
+  const maxShift = options.maxShift ?? 48;
   const placed: Array<{ left: number; right: number; top: number; bottom: number }> = [];
   const result = new Map<string, PlacedEdgeLabel>();
-  const ordered = [...boxes].sort((a, b) => a.y - b.y || a.x - b.x || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const obstacles = options.obstacles ?? [];
+  const ordered = [...boxes].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || a.y - b.y || a.x - b.x || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   for (const box of ordered) {
     const left = box.x - box.width / 2;
     const right = box.x + box.width / 2;
@@ -817,7 +845,9 @@ export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options: { ga
       top = hit.bottom + gap;
     }
     const shift = top - (box.y - box.height / 2);
-    if (shift > maxShift) {
+    // a label that would cover a node is left out too (its relationship is in the descriptions)
+    const covers = obstacles.some((o) => left < o.x + o.width && o.x < right && top < o.y + o.height && o.y < top + box.height);
+    if (shift > maxShift || covers) {
       result.set(box.id, { x: box.x, y: box.y, hidden: true });
       continue;
     }

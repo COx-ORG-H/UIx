@@ -177,3 +177,36 @@ test('full screen covers the page, a plain wheel zooms there, and Escape leaves 
   assert.equal(document.documentElement.style.overflow, '', 'the page stayed locked');
   ui.cleanup();
 });
+
+// Batch follow-up (PR #166 review): Fit and the first view used the whole viewport height, so the
+// bottom row went under the footer's band (hint, zoom level, controls). They now leave it free.
+test('compact: Fit, the first view and Reset leave the footer band free', () => {
+  const BAND = 120;
+  const proto = dom.window.HTMLElement.prototype;
+  const original = Object.getOwnPropertyDescriptor(proto, 'offsetHeight');
+  Object.defineProperty(proto, 'offsetHeight', {
+    configurable: true,
+    get() { return this.classList.contains('uix-relationship-graph__footer') ? BAND : 0; },
+  });
+  try {
+    const bottomOf = (host) => {
+      const stage = host.querySelector('.uix-relationship-graph__stage');
+      const [, y, zoom] = /translate\([-\d.]+px, ([-\d.]+)px\) scale\(([\d.]+)\)/.exec(stage.style.transform).map(Number);
+      return y + parseFloat(stage.style.height) * zoom;
+    };
+    const fit = mount({ controls: 'compact', initialView: 'fit' });
+    assert.ok(bottomOf(fit.host) <= 400 - BAND + 0.5, `the fitted graph ends at ${bottomOf(fit.host)}, under the band from ${400 - BAND}`);
+    const viewport = fit.host.querySelector('.uix-relationship-graph__viewport');
+    key(viewport, '+');
+    key(viewport, '0');
+    assert.ok(bottomOf(fit.host) <= 400 - BAND + 0.5, 'Reset returns to a view clear of the band');
+    fit.cleanup();
+    // the full toolbar has no footer: the whole height is the map's
+    const full = mount({ controls: 'full', initialView: 'fit' });
+    assert.ok(bottomOf(full.host) > 400 - BAND, 'without a footer nothing is reserved');
+    full.cleanup();
+  } finally {
+    if (original) Object.defineProperty(proto, 'offsetHeight', original);
+    else delete proto.offsetHeight;
+  }
+});

@@ -1,5 +1,12 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 610b3fd routine: the API report and the class-defined gate named the two gaps -->
+<!-- lesson-skip: fa450cd routine: labels in map units shrank with the fit zoom; counter-scaled within their room, pinned by an on-screen size spec; the TS2488 was caught by CI's dts build -->
+<!-- lesson-skip: b04d837 routine: labels drawn per edge group sat under later lines, legend marks were baseline-aligned ::before boxes, and the pan surface was selectable; the operator's demo named each, pinned by Chromium specs -->
+<!-- lesson-skip: d6be6d0 routine: an absolutely positioned indicator outlived a resize by one frame; same family as cb64990, pinned by a clip test -->
+<!-- lesson-skip: 0c2a40d routine: Chip's onClick dropped the event Menu's trigger reads; the PR #168 review named it, pinned by a jsdom Menu test -->
+<!-- lesson-skip: 17f48df routine: decorative key caps had no touch rule; one media query in kbd.css, pinned by a touch-emulated Chromium spec -->
+<!-- lesson-skip: caa32c6 routine: fit measured the whole viewport under an overlaid footer; the PR #166 review named it, pinned by jsdom and Chromium tests -->
 <!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
 <!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
@@ -74,6 +81,9 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
+
+### 2026-10-23 · row state painted twice · `3c75338`
+- **Rule:** when a state (zebra, pinned, selected, hover) is painted in two places, the row and a frozen cell, give the state one value (a custom property set on the row at equal specificity, ordered by precedence) and let both read it. Never restate the precedence as a second set of selectors on the cells: `:nth-child(even)` and `:not(...)` carry specificity that the state attributes do not, so the copies drift. Register the value (`@property ... <color>`) when it must ease, so both painters ease together.  **Why:** table.css already carried a comment about an `:nth-child(even)` that outranked selected on frozen cells; #168 copied the pattern for the frozen id column and the `:not(.uix-table--no-zebra)` it added outranked selected again, so every even selected row showed a stripe in the id column (operator, demo "Prijave", dark).  **Gate:** "every row selected: the frozen checkbox, id and actions cells paint the row's state" in `tests/a11y/data-workspace.spec.mjs` compares painted colours of frozen and plain cells, odd and even, light and dark, and on hover.  **Tag:** css-specificity, single-source, table, generalizable
 ### 2026-10-23 · an exit animation makes a closed dialog pass toBeVisible · `3bcbcb7`
 - **Rule:** to assert an overlay stayed open, check its state (`dialog.open`, `:popover-open`, `aria-expanded`), not `toBeVisible()`. A dialog or popover that just closed stays painted for its exit transition, and Playwright counts it visible.  **Why:** a TagInput spec "Escape closed the list, not the drawer" passed on master while the Escape did close the drawer; it went red only when keyboard closes became instant.
 - **Gate:** `tests/a11y/form-fields.spec.mjs` now asserts `dialog.open`; ⚠ TODO no lint for `toBeVisible` as an "it stayed open" check elsewhere.  **Tag:** false-green, motion, overlay, test-double-fidelity
