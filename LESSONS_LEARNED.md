@@ -27,6 +27,10 @@
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
 
+### 2026-10-23 · a generated file with a time in it · `8d6b668`
+- **Rule:** a generated, committed file that renders a date or time (a docs specimen, a snapshot) must pin its time zone (and its `now`), and its freshness test must also render under a far-away `TZ` and compare. Otherwise it is the author's zone that is committed, and CI (UTC) regenerates something else.  **Why:** the AuditLog specimen rendered `RelativeTime` and an exact time in the local zone: identical on the author's machine, a failed `gates` job on the first push of PR #168. A fixed `now` was not enough; the zone was the other half.
+- **Gate:** `packages/react/src/data-editing-specimens.test.mjs` renders the specimens with `process.env.TZ = 'Pacific/Kiritimati'` and compares them with the committed module (red with the UTC pin removed).  **Tag:** false-green, generated-files, time-zone, generalizable
+
 ### 2026-10-23 · a stylesheet no bundle reads · `feat/batch-3-data-editing`
 - **Rule:** a new component stylesheet is not shipped until `styles/component-list.css` imports it; check the BUILT bundle for the block class (`grep -c uix-x build/css/styles.css`), and screenshot the component from a harness that links the bundle, before calling it styled.  **Why:** `inline-edit.css` (HAR-1381) was written, size-tracked by `test:size:css` and scanned by `test:contract`, all of which read the file itself, and never added to the list. `InlineEdit` rendered as bare browser buttons in every product for two weeks; its jsdom and Playwright tests checked names, focus and saves, not looks. HAR-1833's first screenshot showed it.
 - **Gate:** `packages/tokens/tests/component-list.test.mjs` fails when a `styles/components/*.css` is missing from the list (seen red with the line removed); `tests/a11y/inline-edit-record.spec.mjs` asserts the computed look of the value button.  **Tag:** false-green, css, packaging, generalizable
