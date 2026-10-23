@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
+<!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
 <!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
 <!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
@@ -71,6 +73,10 @@
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
+
+### 2026-10-23 · adding motion to a shipped component · `63d2ba2`
+- **Rule:** when you add a decorative element to a component people already use (an indicator, a marker, a busy span), put it **last** (or use a pseudo-element) and let it carry state **only while it animates**. A new first child shifts every `:nth-child` selector and test that counts the items, and a decoration that permanently takes over the selected item's own look breaks every consumer and spec reading that look (contrast rings, fills, underlines).  **Why:** the sliding tab/segment indicator was the first child and always placed; master's display-preference, nav-link and nav-primitive specs (written by other sessions) read the selected option's own ring at rest and picked an option by `:nth-child(2)`.
+- **Gate:** the feedback-lists DOM test asserts the indicator is the last child; `feedback-kit.spec.mjs` asserts the indicator is hidden and the option's own mark visible at rest.  **Tag:** compatibility, motion, parallel-sessions, generalizable
 
 ### 2026-10-23 · motion, one-shot attributes · `0c7fd01`
 - **Rule:** a helper that sets an attribute to play a one-shot animation and removes it on `animationend` (settle, flash, tick) must not let any branch say `animation: none`: an element with no animation never fires `animationend`, so the attribute stays and the animation plays later when the rule stops matching (reduced motion switched off, a hidden panel shown). Give the reduced-motion branch a short real animation (the kit guard's `.001ms`, or a fade), or clear the attribute at once when `getComputedStyle(el).animationName === 'none'`, and listen for `animationcancel` too.  **Why:** `settleDrop` used `animation: none` under reduced motion; every drop left `data-uix-settle`, and the landings all replayed when motion came back.

@@ -285,6 +285,36 @@ const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next),
 </ChangeHighlight>
 ```
 
+### Lists that move, the success outcome, sliding indicators (motion standard §2.5, §2.8)
+
+- **`MotionList`** (`items`, `getKey`, `renderItem`, `as`): a new item rises 8 px and fades in;
+  a removed item stays in place (hidden from assistive tech, `inert`), fades out, and only then
+  leaves, so the items below glide up; a re-sort glides (FLIP, transform only). Nothing moves on
+  the first render. Focus stays on a moved item and goes to the next item when the focused one
+  leaves; focus outside the list is never pulled in. `renderItem` must pass unknown props to its
+  element (`<li>`, or a `Tr` with `as="tbody"`).
+- **`useDeferredReorder(items, getKey)`**: never re-sort under the pointer. While a mouse is over
+  the list or keyboard focus is inside it, a new order waits (content still updates, new rows go
+  to the end); `held` says so; the order applies when they leave. Spread `listProps` on the list.
+- **`SuccessState`** in `States`: the outcome of a rare journey (a request submitted): a mark
+  that draws once, the title (focused on mount for `page` and `full-page`), `reference`,
+  `next` (what happens next), `action`. Reduced motion shows the mark at once.
+- **Tabs, Segmented**: the line underline, the pill and the lifted segment slide to the chosen
+  option on a click (160 ms); a keyboard change and reduced motion jump. Server HTML, forced
+  colours and Segmented's link mode keep each option's own mark. `useSlidingIndicator` is the
+  hook behind it.
+- **CollapsibleSection** opening fades the body in and settles it 4 px (on `::details-content`,
+  where supported); an already open section, a keyboard open and closing are instant.
+
+```tsx
+const queue = useDeferredReorder(rows, (row) => row.id);
+<MotionList {...queue.listProps} as="tbody" items={queue.items} getKey={(row) => row.id}
+  renderItem={(row) => <Tr>…</Tr>} />
+
+<SuccessState title={t('requestSubmitted')} reference={<>{req.number} <CopyButton … /></>}
+  next={[t('confirmationSent'), t('agentPicksUp')]} action={<ButtonLink href={`/requests/${req.id}`}>{t('viewRequest')}</ButtonLink>} />
+```
+
 ### Drag affordances (motion standard §2.8)
 
 One set of drag states for every draggable thing (`drag.css`), as attributes so any element can

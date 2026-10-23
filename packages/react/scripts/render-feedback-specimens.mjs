@@ -104,6 +104,35 @@ export async function renderFeedbackSpecimens() {
       '</div>',
     ].join('\n');
 
+    // ── MotionList, sliding indicator, SuccessState (HAR-2586, HAR-2588, HAR-2589) ─────────
+    const queueItems = [['412', 'Email outage in Sarajevo office'], ['413', 'VPN drops every 20 minutes'], ['415', 'Printer on floor 3 is jammed']];
+    const motionList = await mount(h(ui.MotionList, {
+      items: queueItems, getKey: ([id]) => id, className: 'uix-list', 'aria-label': 'Queue',
+      renderItem: ([id, title]) => h('li', { className: 'uix-list__item' }, `INC-0${id} · ${title}`),
+    }));
+    const tabs = await mount(h(ui.Tabs, { value: 'all', 'aria-label': 'Queue views' },
+      h(ui.Tab, { value: 'all' }, 'All open'), h(ui.Tab, { value: 'mine' }, 'Assigned to me'), h(ui.Tab, { value: 'breach' }, 'About to breach'),
+      h(ui.TabPanel, { value: 'all', keepMounted: true }, 'All open tickets'), h(ui.TabPanel, { value: 'mine', keepMounted: true }, 'Assigned to you'),
+      h(ui.TabPanel, { value: 'breach', keepMounted: true }, 'About to breach')));
+    const segmented = await mount(h(ui.Segmented, { value: 'comfortable', 'aria-label': 'Density' },
+      h(ui.SegmentedOption, { value: 'compact' }, 'Compact'), h(ui.SegmentedOption, { value: 'comfortable' }, 'Comfortable'), h(ui.SegmentedOption, { value: 'spacious' }, 'Spacious')));
+    const successState = await mount(h(ui.SuccessState, {
+      title: 'Request submitted', headingLevel: 3, focusOnMount: false, variant: 'section', reference: 'REQ-0233',
+      next: ['We have emailed you a confirmation.', 'An agent picks it up within one working day.', 'Follow it under My requests.'],
+      action: h(ui.Button, { variant: 'primary' }, 'Back to the portal'),
+    }, h('p', null, 'Thanks — we have your request for a new laptop.')));
+    const lists = [
+      caption('MotionList (React <code>MotionList</code>, <code>useDeferredReorder</code>) — a new item rises 8 px and fades in; a removed one fades in place and only then leaves, so the items below glide up instead of jumping; a re-sort glides (transform only). A live re-sort waits while the pointer or focus is in the list. Reduced motion keeps the fades.'),
+      '<div class="uix-stack" style="--gap:8px;max-width:40rem" data-feedback-list>',
+      '<div class="uix-cluster"><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-add>Add</button><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-remove>Resolve the first</button><button type="button" class="uix-btn uix-btn--secondary uix-btn--sm" data-feedback-list-sort>Re-sort</button></div>',
+      motionList.host.innerHTML,
+      '</div>',
+      caption('Tabs and Segmented — in React the underline or the lifted segment slides to the choice (pointer); from the keyboard it jumps. Without JavaScript, as here, each option shows its own mark.'),
+      `<div class="uix-stack" style="--gap:12px" data-feedback-indicators>${tabs.host.innerHTML}${segmented.host.innerHTML}</div>`,
+      caption('SuccessState — the outcome of a rare journey (a portal request submitted): the mark draws once, the title takes focus, then the reference, what happens next and the next action. Never repeats; reduced motion shows the mark at once.'),
+      `<div class="uix-card" style="max-width:40rem" data-feedback-success>${successState.host.innerHTML}</div>`,
+    ].join('\n');
+
     // ── Drag affordances (HAR-2590) ──────────────────────────────────────────────────────
     const board = await mount(h(ui.Kanban, { 'aria-label': 'Board' },
       h(ui.KanbanColumn, { title: 'To do', count: 2 },
@@ -130,7 +159,7 @@ export async function renderFeedbackSpecimens() {
       '</div>',
     ].join('\n');
 
-    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, drag, demo].join('\n') };
+    return { 'examples-motion': [caption('<strong>State feedback</strong> — the kit answers "is it working?", "did it work?" and "what changed?" in place (motion standard §2.3, §2.5, §2.8)'), buttons, saveStatus, busy, change, lists, drag, demo].join('\n') };
   } finally {
     for (const { root, host } of roots) { await act(async () => root.unmount()); host.remove(); }
     dom.window.close();

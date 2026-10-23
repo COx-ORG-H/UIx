@@ -72,6 +72,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-motion",
     "selector": ".uix-count"
   },
+  "list-motion": {
+    "route": "examples-motion",
+    "selector": ".uix-motion-list"
+  },
   "drag": {
     "route": "examples-motion",
     "selector": "[data-uix-drop-target]"

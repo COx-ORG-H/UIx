@@ -109,7 +109,8 @@ test('LocaleSwitcher: lang and hreflang on each link, the current locale marked'
 
 test('the other selection modes are unchanged', () => {
   const html = renderToStaticMarkup(h(ui.Segmented, { value: 'a', 'aria-label': 'View' }, h(ui.SegmentedOption, { value: 'a', href: '/ignored' }, 'A')));
-  assert.match(html, /^<div role="group" class="uix-segmented" aria-label="View"><button type="button" class="uix-segmented__option" aria-pressed="true" tabindex="0">A<\/button><\/div>$/);
+  // the sliding indicator (HAR-2589) is the one addition: last, hidden and decorative
+  assert.match(html, /^<div role="group" class="uix-segmented" aria-label="View"><button type="button" class="uix-segmented__option" aria-pressed="true" tabindex="0">A<\/button><span class="uix-segmented__indicator" aria-hidden="true" hidden=""><\/span><\/div>$/);
 });
 
 test('review: Segmented link mode — a disabled option or one without href has no href (never "#") and reports nothing', () => {
