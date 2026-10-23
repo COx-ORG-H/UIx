@@ -246,10 +246,10 @@ test('HAR-1356: Popconfirm opens on its anchor, focuses Cancel, Escape cancels a
 
 test('HAR-1357: Pagination link mode renders real links; cursor mode has First / Previous / Next', () => {
   const links = renderToStaticMarkup(h(ui.Pagination, { page: 1, pageCount: 3, hrefFor: (p) => `/katalog?page=${p}` }));
-  assert.match(links, /<a class="uix-pagination__btn" role="link" aria-disabled="true" aria-label="Previous page">‹<\/a>/);
+  assert.match(links, /<a class="uix-pagination__btn" role="link" aria-disabled="true" aria-label="Previous page"><svg [^>]*class="uix-icon"[^>]*><path d="m15 18-6-6 6-6"><\/path><\/svg><\/a>/); // ChevronLeftIcon (HAR-1576)
   assert.match(links, /<a href="\/katalog\?page=1" class="uix-pagination__btn" aria-current="page">1<\/a>/);
   assert.match(links, /<a href="\/katalog\?page=3" class="uix-pagination__btn">3<\/a>/);
-  assert.match(links, /<a href="\/katalog\?page=2" class="uix-pagination__btn" aria-label="Next page">›<\/a>/);
+  assert.match(links, /<a href="\/katalog\?page=2" class="uix-pagination__btn" aria-label="Next page"><svg [^>]*class="uix-icon"[^>]*><path d="m9 18 6-6-6-6"><\/path><\/svg><\/a>/);
 
   const buttons = renderToStaticMarkup(h(ui.Pagination, { page: 2, pageCount: 3, onChange: () => {} }));
   assert.match(buttons, /<button type="button" class="uix-pagination__btn" aria-current="page">2<\/button>/, 'button pager unchanged apart from type');
