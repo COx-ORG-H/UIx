@@ -201,7 +201,7 @@ test('a row is named by its title and breadcrumb and described by its context', 
   unmount();
 });
 
-test('empty, loading and error states render in the list', () => {
+test('empty, loading and error states render in the list', async () => {
   const empty = mount({ initial: 'zzq', options: [], empty: 'No settings match' });
   focus(empty.input);
   assert.ok(popup(empty.host).textContent.includes('No settings match'));
@@ -209,7 +209,10 @@ test('empty, loading and error states render in the list', () => {
 
   const loading = mount({ initial: 'ti', options: [], loading: true, loadingLabel: 'Searching…' });
   focus(loading.input);
-  assert.equal(loading.input.getAttribute('aria-busy'), 'true');
+  assert.equal(loading.input.getAttribute('aria-busy'), 'true', 'busy at once');
+  // the 300 ms rule: a fast answer shows no spinner; a slow one does (one timer, so a plain sleep)
+  assert.equal(loading.host.querySelector('.uix-search-suggest__spinner'), null, 'no spinner before 300 ms');
+  await act(() => new Promise((resolve) => setTimeout(resolve, 320)));
   assert.ok(popup(loading.host).textContent.includes('Searching…'));
   assert.equal(loading.host.querySelectorAll('[role="status"]').length, 2, 'the field spinner and the result live region — the list echo is hidden');
   loading.unmount();

@@ -720,6 +720,25 @@ export interface ChartStatPoint {
 // @public (undocumented)
 export const Checkbox: react.ForwardRefExoticComponent<CheckboxProps & react.RefAttributes<HTMLInputElement>>;
 
+// @public
+export function CheckboxGroup(input: CheckboxGroupProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CheckboxGroupProps {
+    // (undocumented)
+    children: ReactNode;
+    // (undocumented)
+    className?: string;
+    columns?: number;
+    disabled?: boolean;
+    error?: ReactNode;
+    hint?: ReactNode;
+    // (undocumented)
+    id?: string;
+    label: ReactNode;
+    required?: boolean;
+}
+
 // @public (undocumented)
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
@@ -902,6 +921,15 @@ export interface ColumnFilter {
 // @public
 export function Combobox(input: ComboboxProps): react.JSX.Element;
 
+// @public
+export interface ComboboxGroup {
+    disabled?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    options: readonly ComboboxOption[];
+}
+
 // @public (undocumented)
 export interface ComboboxOption {
     // (undocumented)
@@ -916,22 +944,25 @@ export interface ComboboxOption {
 
 // @public (undocumented)
 export interface ComboboxProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    'aria-labelledby'?: string;
     // (undocumented)
     defaultValue?: string;
     // (undocumented)
     disabled?: boolean;
-    // (undocumented)
     emptyLabel: string;
-    // (undocumented)
+    inputId?: string;
     label: string;
     // (undocumented)
     name?: string;
     // (undocumented)
     onValueChange?: (value: string, option: ComboboxOption) => void;
-    // (undocumented)
-    options: readonly ComboboxOption[];
+    options: readonly (ComboboxOption | ComboboxGroup)[];
     // (undocumented)
     placeholder?: string;
+    placement?: Placement;
     // (undocumented)
     value?: string;
 }
@@ -1354,6 +1385,8 @@ export interface DateRangePickerLabels {
     fieldStart: string;
     // (undocumented)
     inRange: string;
+    invalidMessage: string;
+    label: string;
     // (undocumented)
     next: string;
     // (undocumented)
@@ -1389,14 +1422,11 @@ export interface DateRangePickerProps {
     id?: string;
     // (undocumented)
     invalid?: boolean;
-    // (undocumented)
     invalidMessage?: string;
     // (undocumented)
     isDateDisabled?: (date: string) => boolean;
-    // (undocumented)
     label?: string;
     labels?: Partial<DateRangePickerLabels>;
-    // (undocumented)
     locale?: string;
     // (undocumented)
     max?: string;
@@ -1442,6 +1472,7 @@ export interface DateTimePickerLabels extends DatePickerLabels {
 // @public (undocumented)
 export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'onValueChange' | 'labels' | 'min' | 'max'> {
     defaultTime?: string;
+    hour12?: boolean;
     // (undocumented)
     labels?: Partial<DateTimePickerLabels>;
     // (undocumented)
@@ -1450,6 +1481,7 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
     minuteStep?: number;
     // (undocumented)
     onValueChange: (value: string | null) => void;
+    timeLabels?: Partial<TimePickerLabels>;
     timeZone?: string;
     timeZoneLabel?: string | null;
     value: string | null;
@@ -1541,6 +1573,9 @@ export const DEFAULT_ORG_CHART_LABELS: OrgChartLabels;
 // @public (undocumented)
 export const DEFAULT_PAGINATION_LABELS: PaginationLabels;
 
+// @public (undocumented)
+export const DEFAULT_PASSWORD_INPUT_LABELS: PasswordInputLabels;
+
 // @public
 export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 
@@ -1578,7 +1613,13 @@ export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
 
 // @public (undocumented)
+export const DEFAULT_TAG_INPUT_LABELS: TagInputLabels;
+
+// @public (undocumented)
 export const DEFAULT_TEXT_DIFF_LABELS: TextDiffLabels;
+
+// @public (undocumented)
+export const DEFAULT_TIME_PICKER_LABELS: TimePickerLabels;
 
 // @public (undocumented)
 export const DEFAULT_TREE_LABELS: TreeLabels;
@@ -2019,6 +2060,7 @@ export interface EntityPickerLabels {
     empty: string;
     // (undocumented)
     error: string;
+    forbidden: string;
     // (undocumented)
     loading: string;
     more: string;
@@ -2035,6 +2077,7 @@ export interface EntityPickerLabels {
 // @public (undocumented)
 export interface EntityPickerProps {
     'aria-describedby'?: string;
+    'aria-labelledby'?: string;
     // (undocumented)
     className?: string;
     delay?: number;
@@ -2043,6 +2086,7 @@ export interface EntityPickerProps {
     id?: string;
     // (undocumented)
     invalid?: boolean;
+    isRetryable?: (error: unknown) => boolean;
     label: string;
     labels?: Partial<EntityPickerLabels>;
     minQueryLength?: number;
@@ -2054,6 +2098,13 @@ export interface EntityPickerProps {
     placeholder?: string;
     renderValue?: (option: SearchSuggestOption) => ReactNode;
     value: SearchSuggestOption | null;
+}
+
+// @public
+export interface EntityPickerSearchError {
+    message?: string;
+    // (undocumented)
+    retryable: false;
 }
 
 // @public
@@ -2303,6 +2354,9 @@ export interface FilterChoice {
     // (undocumented)
     value: string;
 }
+
+// @public
+export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string): (ComboboxOption | ComboboxGroup)[];
 
 // @public (undocumented)
 export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
@@ -2566,6 +2620,9 @@ export function formatDateKey(value: string, locale?: string | readonly string[]
 export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
 
 // @public
+export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -2736,6 +2793,7 @@ export interface InputGroupProps {
     id?: string;
     // (undocumented)
     leadingIcon?: ReactNode;
+    trailingAction?: ReactNode;
     // (undocumented)
     trailingIcon?: ReactNode;
 }
@@ -2744,8 +2802,7 @@ export interface InputGroupProps {
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
     // (undocumented)
     invalid?: boolean;
-    // (undocumented)
-    size?: 'sm' | 'md';
+    size?: 'sm' | 'md' | 'lg';
     // (undocumented)
     valid?: boolean;
     warning?: boolean;
@@ -2869,11 +2926,20 @@ export function isDateUnavailable(date: string, options: {
 // @public
 export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
+// @public
+export const isOvernightRange: (min?: string, max?: string) => boolean;
+
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
 // @public
+export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
+
+// @public
 export function isValidDateKey(value: string): boolean;
+
+// @public
+export function isValidTimeKey(value: string | null | undefined): value is string;
 
 // @public
 export function itemDaySpan(start: string | number | Date, end: string | number | Date, timeZone: string): ZonedDaySpan;
@@ -3603,6 +3669,9 @@ export interface MetricInputProps {
 }
 
 // @public
+export const minutesToTime: (minutes: number) => string;
+
+// @public
 export const Modal: react.ForwardRefExoticComponent<ModalProps & react.RefAttributes<HTMLDialogElement>>;
 
 // @public (undocumented)
@@ -3864,6 +3933,29 @@ export interface OrgChartProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onS
 // @public
 export const orgChartZoomStep: (zoom: number, dir: 1 | -1) => number;
 
+// @public
+export const OtpInput: react.ForwardRefExoticComponent<OtpInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public (undocumented)
+export interface OtpInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'size' | 'maxLength' | 'pattern' | 'inputMode'> {
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    defaultValue?: string;
+    groupSize?: number;
+    // (undocumented)
+    invalid?: boolean;
+    length?: number;
+    mode?: 'numeric' | 'alphanumeric';
+    onComplete?: (code: string) => void;
+    onValueChange?: (value: string) => void;
+    // (undocumented)
+    style?: CSSProperties;
+    value?: string;
+}
+
 // @public (undocumented)
 export interface PackedLanes {
     // (undocumented)
@@ -3967,6 +4059,9 @@ export function parseDisplayPreferences(raw: string | null | undefined, defaults
 export function parseMetricValue(value: string): number | null;
 
 // @public
+export function parseTimeInput(text: string, locale?: string | readonly string[]): string | null;
+
+// @public
 export function parseView(qs: string): ViewState;
 
 // @public
@@ -3983,6 +4078,24 @@ export function partitionFiles<F extends {
     accepted: F[];
     rejected: FileRejection<F>[];
 };
+
+// @public
+export const PasswordInput: react.ForwardRefExoticComponent<PasswordInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface PasswordInputLabels {
+    show: string;
+}
+
+// @public (undocumented)
+export interface PasswordInputProps extends Omit<InputProps, 'type'> {
+    defaultRevealed?: boolean;
+    groupClassName?: string;
+    labels?: Partial<PasswordInputLabels>;
+    // (undocumented)
+    onRevealedChange?: (revealed: boolean) => void;
+    revealed?: boolean;
+}
 
 // @public (undocumented)
 export function Peek(input: PeekProps): react.JSX.Element;
@@ -5858,23 +5971,27 @@ export interface SearchSuggestOption {
 export interface SearchSuggestProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'onSelect' | 'title' | 'defaultValue'> {
     autoFocus?: boolean;
     clearLabel?: string;
+    disabled?: boolean;
     empty?: ReactNode;
     error?: ReactNode;
     footer?: SearchSuggestAction;
+    freeText?: boolean;
     heading?: string;
     headingAction?: SearchSuggestAction;
     highlight?: string;
     idle?: ReactNode;
     inputDescribedBy?: string;
     inputId?: string;
+    inputLabelledBy?: string;
     inputRef?: Ref<HTMLInputElement | null>;
+    invalid?: boolean;
     label: string;
     loading?: boolean;
     loadingLabel?: string;
     name?: string;
     note?: ReactNode;
     onOpenChange?: (open: boolean) => void;
-    onSelect: (id: string, option: SearchSuggestOption) => void;
+    onSelect?: (id: string, option: SearchSuggestOption) => void;
     onValueChange: (value: string) => void;
     open?: boolean;
     options: readonly SearchSuggestOption[];
@@ -5998,8 +6115,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
     }) => ReactNode;
     renderValue?: (selected: readonly SelectOption[]) => ReactNode;
     searchable?: boolean | 'auto';
-    // (undocumented)
-    size?: 'sm' | 'md';
+    size?: 'sm' | 'md' | 'lg';
 }
 
 // @public (undocumented)
@@ -6307,6 +6423,9 @@ export interface StepStateLabels {
 }
 
 // @public
+export function stepTime(value: string | null, delta: number, min?: string, max?: string): string;
+
+// @public
 export function studentTQuantile(p: number, df: number): number;
 
 // @public
@@ -6439,6 +6558,53 @@ export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChang
     variant?: 'line' | 'enclosed' | 'pill';
 }
 
+// @public
+export function TagInput(input: TagInputProps): react.JSX.Element;
+
+// @public
+export interface TagInputLabels {
+    added: string;
+    count: string;
+    duplicate: string;
+    list: string;
+    max: string;
+    remove: string;
+    removed: string;
+    suggestions: string;
+}
+
+// @public (undocumented)
+export interface TagInputProps {
+    // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    labels?: Partial<TagInputLabels>;
+    maxTags?: number;
+    name?: string;
+    // (undocumented)
+    onValueChange: (value: string[]) => void;
+    // (undocumented)
+    placeholder?: string;
+    separators?: readonly string[];
+    suggestions?: readonly string[];
+    validate?: (tag: string, value: readonly string[]) => string | null | undefined;
+    value: readonly string[];
+}
+
 // @public (undocumented)
 export function Td(input: TdProps): react.JSX.Element;
 
@@ -6461,6 +6627,7 @@ export const Textarea: react.ForwardRefExoticComponent<TextareaProps & react.Ref
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     // (undocumented)
     invalid?: boolean;
+    size?: 'md' | 'lg';
 }
 
 // @public
@@ -6656,6 +6823,9 @@ export interface TimeGridSegment {
 }
 
 // @public
+export type TimeInputProblem = 'format' | 'early' | 'late' | 'outside';
+
+// @public
 export function Timeline(input: TimelineProps): react.JSX.Element;
 
 // @public
@@ -6727,6 +6897,78 @@ export interface TimelineTick {
 
 // @public
 export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZone: string, weekStartsOn?: number): TimelineTick[];
+
+// @public
+export function timePartEnds(value: string, locale?: string | readonly string[], hour12?: boolean): {
+    hour: number;
+    minute: number;
+} | null;
+
+// @public
+export const TimePicker: react.ForwardRefExoticComponent<TimePickerProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public
+export interface TimePickerLabels {
+    invalidTime: string;
+    list: string;
+    open: string;
+    openSelected: string;
+    outside: string;
+    tooEarly: string;
+    tooLate: string;
+}
+
+// @public (undocumented)
+export interface TimePickerProps {
+    // (undocumented)
+    'aria-describedby'?: string;
+    // (undocumented)
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
+    // (undocumented)
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    // (undocumented)
+    'aria-required'?: AriaAttributes['aria-required'];
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    disabled?: boolean;
+    hour12?: boolean;
+    id?: string;
+    // (undocumented)
+    invalid?: boolean;
+    labels?: Partial<TimePickerLabels>;
+    locale?: string;
+    // (undocumented)
+    max?: string;
+    min?: string;
+    minuteStep?: number;
+    name?: string;
+    onInputProblem?: (problem: TimeInputProblem | null) => void;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    // (undocumented)
+    onValueChange: (value: string | null) => void;
+    // (undocumented)
+    placeholder?: string;
+    placement?: Placement;
+    // (undocumented)
+    readOnly?: boolean;
+    // (undocumented)
+    required?: boolean;
+    // (undocumented)
+    size?: 'sm' | 'md';
+    // (undocumented)
+    style?: CSSProperties;
+    value: string | null;
+}
+
+// @public
+export function timeSlots(step: number, min?: string, max?: string): string[];
+
+// @public
+export const timeToMinutes: (value: string) => number;
 
 // @public
 export function timeZoneName(timeZone: string, date: string | null, locale?: string | readonly string[]): string;
@@ -7022,6 +7264,14 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 // @public
+export interface UixDateFormat {
+    formatDate?: (date: string) => string;
+    locale?: string;
+    parseDate?: (text: string) => string | null;
+    placeholder?: string;
+}
+
+// @public
 export interface UixLabels {
     accountMenu?: Partial<AccountMenuLabels>;
     alert?: {
@@ -7054,6 +7304,7 @@ export interface UixLabels {
         typeToConfirmMismatch?: string;
     };
     contactCard?: Partial<ContactCardLabels>;
+    dateFormat?: UixDateFormat;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
     // (undocumented)
@@ -7080,6 +7331,7 @@ export interface UixLabels {
     };
     orgChart?: Partial<OrgChartLabels>;
     pagination?: Partial<PaginationLabels>;
+    passwordInput?: Partial<PasswordInputLabels>;
     // (undocumented)
     peek?: {
         previous?: string;
@@ -7107,8 +7359,10 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    tagInput?: Partial<TagInputLabels>;
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;
+    timePicker?: Partial<TimePickerLabels>;
     // (undocumented)
     toast?: {
         dismiss?: string;
@@ -7208,6 +7462,9 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
 
 // @public
 export function useReducedMotion(): boolean;
+
+// @public
+export function uses12Hour(locale?: string | readonly string[]): boolean;
 
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;

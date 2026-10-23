@@ -139,7 +139,7 @@ test('AC2: summarizeFilter names the preset on set equality, else the default su
   assert.equal(m(twin, { kind: 'enum', values: ['x', 'y'] }).id, 'a', 'the first preset in the given order wins');
 });
 
-test('AC3 (R8 AC4): the enum and reference bodies, with presets, contain no <select>', async () => {
+test('AC3 (R8 AC4): the enum and reference bodies, with presets, contain no native select', async () => {
   const e = mount(h(Harness, { field, initial: { kind: 'enum', values: ['x', 'y'] }, log: [] }));
   assert.ok(presetGroup(e.host));
   assert.equal(e.host.querySelectorAll('select').length, 0);

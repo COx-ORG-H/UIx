@@ -12,6 +12,8 @@ import { useUixLabels } from '../labels-context.js';
 import type { Placement } from '../overlay-position.js';
 import { fullDateLabel, localDateKey, MonthCalendar, useFieldPopover } from './DateFieldParts.js';
 import { Popover } from './Popover.js';
+import { TimePicker } from './TimePicker.js';
+import type { TimePickerLabels } from './TimePicker.js';
 
 /** Every word `DatePicker` renders or announces. */
 export interface DatePickerLabels {
@@ -60,6 +62,8 @@ export interface DatePickerProps {
   /**
    * How the field writes a date. Default: the locale's numeric date (22.11.2026, 11/22/2026).
    * Pass `parseDate` with it when your format is not three numbers, so typing still works.
+   * `formatDate`, `parseDate`, `locale` and `placeholder` default to `UixLabelsProvider`
+   * `dateFormat`, so one provider sets the format of every date field (HAR-2432).
    */
   formatDate?: (date: string) => string;
   /** Read typed text into `YYYY-MM-DD`, or `null` when it is not a date. Default: ISO or the locale's order. */
@@ -108,8 +112,8 @@ export interface DatePickerProps {
  * ArrowDown in the field opens the calendar; Escape closes it and focus returns to the field.
  */
 export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function DatePicker({
-  value, onValueChange, min, max, isUnavailable, formatDate, parseDate, locale, weekStartsOn = 1, today,
-  placeholder, size = 'md', disabled, readOnly, required, invalid, name, id: idProp,
+  value, onValueChange, min, max, isUnavailable, formatDate: formatDateProp, parseDate: parseDateProp, locale: localeProp,
+  weekStartsOn = 1, today, placeholder: placeholderProp, size = 'md', disabled, readOnly, required, invalid, name, id: idProp,
   'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy,
   'aria-invalid': ariaInvalid, 'aria-required': ariaRequired, placement = 'bottom-start',
   onInputProblem, onOpenChange, labels: labelOverrides, className, style,
@@ -118,7 +122,13 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   const id = idProp ?? `${uid}-input`;
   const popoverId = `${uid}-calendar`;
   const errorId = `${uid}-error`;
-  const labels: DatePickerLabels = { ...DEFAULT_DATE_PICKER_LABELS, ...useUixLabels().datePicker, ...labelOverrides };
+  const uixLabels = useUixLabels();
+  const labels: DatePickerLabels = { ...DEFAULT_DATE_PICKER_LABELS, ...uixLabels.datePicker, ...labelOverrides };
+  // The app-wide date format (HAR-2432): UixLabelsProvider `dateFormat`; a prop still wins.
+  const locale = localeProp ?? uixLabels.dateFormat?.locale;
+  const formatDate = formatDateProp ?? uixLabels.dateFormat?.formatDate;
+  const parseDate = parseDateProp ?? uixLabels.dateFormat?.parseDate;
+  const placeholder = placeholderProp ?? uixLabels.dateFormat?.placeholder;
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
@@ -229,6 +239,25 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   </div>;
 });
 
+/**
+ * The text a `<label>` gives a screen reader: its text without what is `aria-hidden` or `hidden`
+ * (a required "*") and without the picker it wraps (its zone text, messages and lists).
+ * Whitespace collapsed.
+ */
+function labelText(label: HTMLElement, control: HTMLElement | null): string {
+  let text = '';
+  const walk = (node: Node) => {
+    if (node === control) return;
+    if (node.nodeType === 3) { text += node.nodeValue ?? ''; return; }
+    if (node.nodeType !== 1) return;
+    const el = node as HTMLElement;
+    if (el.getAttribute('aria-hidden') === 'true' || el.hidden) return;
+    node.childNodes.forEach(walk);
+  };
+  label.childNodes.forEach(walk);
+  return text.replace(/\s+/g, ' ').trim();
+}
+
 /** The words `DateTimePicker` adds to the date field's own ({@link DatePickerLabels}). */
 export interface DateTimePickerLabels extends DatePickerLabels {
   /** Name of the date input when the picker has its own `aria-label`. */
@@ -264,54 +293,76 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
   timeZone?: string;
   /** Text shown instead of the zone's short name ("Vienna time", "UTC+2"); `null` shows none. */
   timeZoneLabel?: string | null;
-  /** Minutes between time steps. Default 1. */
+  /** Minutes the time's arrow keys step by, and between the times in its list. Default 15. */
   minuteStep?: number;
+  /** Words of the time field (its list button, list and messages); `UixLabelsProvider` `timePicker` too. */
+  timeLabels?: Partial<TimePickerLabels>;
+  /** `true` writes the time as 2:30 PM, `false` as 14:30, whatever the locale. */
+  hour12?: boolean;
   /** The time a date gets when it is chosen before any time. Default `'00:00'`. */
   defaultTime?: string;
   labels?: Partial<DateTimePickerLabels>;
 }
 
 /**
- * A date and a time as one field (HAR-1383): the {@link DatePicker} and a time input, with the
+ * A date and a time as one field (HAR-1383): the {@link DatePicker} and a {@link TimePicker} (HAR-1835), with the
  * time zone the pair is in shown beside them. The value is `YYYY-MM-DDTHH:mm`, the shape
  * `datetime-local` uses, so it replaces that input without changing what a form submits.
  * Clearing the date clears the value; a time alone is not a value.
  */
 export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(function DateTimePicker({
-  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 1, defaultTime = '00:00', min, max, name, id: idProp,
+  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 15, timeLabels, hour12, defaultTime = '00:00', min, max, name, id: idProp,
   'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy,
-  labels: labelOverrides, locale, size = 'md', disabled, readOnly, required, className, style, ...dateProps
+  labels: labelOverrides, locale: localeProp, size = 'md', disabled, readOnly, required, className, style, ...dateProps
 }, forwardedRef) {
   const uid = useId();
   const id = idProp ?? `${uid}-date`;
   const zoneId = `${uid}-zone`;
-  const labels: DateTimePickerLabels = { ...DEFAULT_DATE_TIME_PICKER_LABELS, ...useUixLabels().dateTimePicker, ...labelOverrides };
+  const uixLabels = useUixLabels();
+  const labels: DateTimePickerLabels = { ...DEFAULT_DATE_TIME_PICKER_LABELS, ...uixLabels.dateTimePicker, ...labelOverrides };
+  const locale = localeProp ?? uixLabels.dateFormat?.locale;
   const { date, time } = splitDateTime(value);
   const dateRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   useImperativeHandle(forwardedRef, () => dateRef.current as HTMLInputElement);
   // A time typed before any date waits here; it joins the date once one is chosen.
   const [pendingTime, setPendingTime] = useState('');
   const shownTime = date ? time : pendingTime;
 
-  // Inside a labelled field the label names the date input; the time input borrows its text.
+  // Inside a labelled field the label names the date input; the time input borrows its text: the
+  // label's accessible text, so an aria-hidden required "*" is left out (HAR-2432), read again on
+  // every render and whenever the label's text changes on its own (a translation that loads late).
   const [fieldLabel, setFieldLabel] = useState('');
   // Without `timeZone` the viewer's own zone is shown: read after mount, a server's zone would differ.
   const [viewerZone, setViewerZone] = useState<string | null>(null);
   const grouped = !!ariaLabel || !!ariaLabelledBy;
+  const [labelNode, setLabelNode] = useState<HTMLLabelElement | null>(null);
   useEffect(() => {
-    if (!grouped) setFieldLabel(dateRef.current?.labels?.[0]?.textContent?.trim() ?? '');
+    if (grouped) return;
+    const input = dateRef.current;
+    const label = input?.labels?.[0] ?? null;
+    setLabelNode(label);
+    setFieldLabel(label ? labelText(label, rootRef.current) : '');
+  });
+  useEffect(() => {
+    if (grouped || !labelNode || typeof MutationObserver === 'undefined') return undefined;
+    const observer = new MutationObserver(() => setFieldLabel(labelText(labelNode, rootRef.current)));
+    observer.observe(labelNode, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden', 'hidden'] });
+    return () => observer.disconnect();
+  }, [grouped, labelNode]);
+  useEffect(() => {
     if (!timeZone) {
       try { setViewerZone(new Intl.DateTimeFormat().resolvedOptions().timeZone); } catch { /* no Intl zone */ }
     }
-  }, [grouped, timeZone]);
+  }, [timeZone]);
 
   const zone = timeZone ?? viewerZone;
   const zoneText = timeZoneLabel === null ? null : timeZoneLabel ?? (zone ? timeZoneName(zone, date, locale) : null);
   const timeName = grouped ? labels.time : fieldLabel ? fillLabel(labels.timeOf, { label: fieldLabel }) : labels.time;
-  const step = Math.max(1, Math.round(minuteStep)) * 60;
+  const step = Math.max(1, Math.round(minuteStep));
 
   return <div
-    className={cx('uix-date-time-picker', size === 'sm' && 'uix-date-time-picker--sm', className)} style={style}
+    ref={rootRef} className={cx('uix-date-time-picker', size === 'sm' && 'uix-date-time-picker--sm', className)} style={style}
     role="group" aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}
   >
     <DatePicker
@@ -323,14 +374,16 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
         onValueChange(joinDateTime(next, shownTime, defaultTime));
       }}
     />
-    <input
-      type="time" className={cx('uix-input', size === 'sm' && 'uix-input--sm', 'uix-date-time-picker__time')}
-      value={shownTime} step={step} disabled={disabled} readOnly={readOnly} required={required && !!date}
-      aria-label={timeName} aria-describedby={zoneText ? zoneId : undefined}
-      onChange={(event) => {
-        const next = event.target.value;
-        if (date) onValueChange(joinDateTime(date, next, defaultTime));
-        else setPendingTime(next);
+    <TimePicker
+      className="uix-date-time-picker__time" value={shownTime || null} minuteStep={step} locale={locale} hour12={hour12} size={size}
+      disabled={disabled} readOnly={readOnly} required={required && !!date}
+      invalid={!!dateProps.invalid || dateProps['aria-invalid'] === true || dateProps['aria-invalid'] === 'true'}
+      aria-label={timeName} labels={timeLabels}
+      // the field's hint and error describe the time too, then the zone
+      aria-describedby={[ariaDescribedBy, zoneText ? zoneId : undefined].filter(Boolean).join(' ') || undefined}
+      onValueChange={(next) => {
+        if (date) onValueChange(joinDateTime(date, next ?? '', defaultTime));
+        else setPendingTime(next ?? '');
       }}
     />
     {zoneText && <span className="uix-date-time-picker__zone">

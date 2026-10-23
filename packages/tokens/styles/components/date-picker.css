@@ -47,9 +47,22 @@
   /* --- DateTimePicker: the date field, a time input and the zone they are in ---------------- */
   .uix-date-time-picker { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2); min-width: 0; }
   .uix-date-time-picker > .uix-date-picker { flex: 1 1 8.5rem; }
-  .uix-date-time-picker__time { flex: 0 1 auto; width: auto; min-width: 6.5rem; font-variant-numeric: tabular-nums; }
+  /* the time part is a TimePicker (HAR-1835): narrower than the date, never under a "12:30 PM" */
+  .uix-date-time-picker > .uix-date-time-picker__time { flex: 0 1 8.5rem; min-width: 7rem; }
   .uix-date-time-picker__zone { display: inline-flex; align-items: center; min-height: var(--uix-control-h); color: var(--uix-text-muted); font-size: var(--uix-text-meta); white-space: nowrap; }
   .uix-date-time-picker--sm .uix-date-time-picker__zone { min-height: 28px; }
+
+  /* --- TimePicker (HAR-1835): the date field's shape, a clock button and a list of times ------- */
+  .uix-time-picker { max-width: 9rem; }
+  .uix-time-picker__input { text-overflow: ellipsis; }
+  .uix-time-picker__popover { padding: var(--uix-space-1); }
+  .uix-time-picker__list {
+    min-width: 8rem; max-height: min(16rem, 50vh); overflow-y: auto; overscroll-behavior: contain;
+    padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font-variant-numeric: tabular-nums;
+  }
+  .uix-time-picker__list:focus { outline: none; }
+  /* the list has focus, its active time is the ring (aria-activedescendant) */
+  .uix-time-picker__list:focus-visible .uix-listbox__option[data-active] { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
 
   /* --- DateRangePicker mode="field": a trigger that shows the range ------------------------- */
   .uix-date-range-field { display: grid; width: 100%; min-width: 0; max-width: 18rem; }

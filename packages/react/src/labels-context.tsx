@@ -24,6 +24,9 @@ import type { CodeDisplayLabels } from './components/CodeDisplay.js';
 import type { ContactCardLabels } from './components/ContactCard.js';
 import type { PrintLayoutLabels } from './components/PrintLayout.js';
 import type { QrScannerLabels } from './components/QrScanner.js';
+import type { PasswordInputLabels } from './components/PasswordInput.js';
+import type { TimePickerLabels } from './components/TimePicker.js';
+import type { TagInputLabels } from './components/TagInput.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
@@ -83,6 +86,8 @@ export interface UixLabels {
   dateRangePicker?: Partial<DateRangePickerLabels>;
   datePicker?: Partial<DatePickerLabels>;
   dateTimePicker?: Partial<DateTimePickerLabels>;
+  /** `TimePicker` (HAR-1835), also the time part of `DateTimePicker`. */
+  timePicker?: Partial<TimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
@@ -90,14 +95,35 @@ export interface UixLabels {
   ruleBuilder?: Partial<RuleBuilderLabels>;
   fileUpload?: Partial<FileUploadLabels>;
   attachment?: Partial<AttachmentLabels>;
+  /** `TagInput` (HAR-1377): the chips' × names, the announcements and the refusals. */
+  tagInput?: Partial<TagInputLabels>;
+  /** `PasswordInput` (HAR-1376): the reveal toggle's name. */
+  passwordInput?: Partial<PasswordInputLabels>;
   /** `remove`: the name of a removable chip's × button; `{label}` is the chip text. */
   chip?: { remove?: string };
   /** `dismiss`: the name of a dismissible alert's × button. */
   alert?: { dismiss?: string };
+  /** Not words: the date format of every date field (HAR-2432). See {@link UixDateFormat}. */
+  dateFormat?: UixDateFormat;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */
   bulkBar?: { region?: string };
+}
+
+/**
+ * One date format for every date field below the provider (HAR-2432): `DatePicker`,
+ * `DateTimePicker`, `DateRangePicker` and `TimePicker` (its `locale`). Each field's own prop wins.
+ */
+export interface UixDateFormat {
+  /** The locale of the field's text, month and weekday names, and the clock. */
+  locale?: string;
+  /** How a field writes a `YYYY-MM-DD` date, e.g. `(d) => d.split('-').reverse().join('.')`. */
+  formatDate?: (date: string) => string;
+  /** Read typed text into `YYYY-MM-DD`, or `null` when it is not a date. Pass it with `formatDate`. */
+  parseDate?: (text: string) => string | null;
+  /** The date field's placeholder, e.g. `TT.MM.JJJJ`. */
+  placeholder?: string;
 }
 
 const UixLabelsContext = createContext<UixLabels>({});
