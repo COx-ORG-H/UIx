@@ -52,12 +52,12 @@ const EVENTS = [
 ];
 
 test('each entry: who, a labelled action and its target, a relative time with the exact one, Details', () => {
-  const html = renderToStaticMarkup(h(ui.AuditLog, { events: EVENTS, actions: ACTIONS, now: NOW, locale: 'en-GB' }));
+  const html = renderToStaticMarkup(h(ui.AuditLog, { events: EVENTS, actions: ACTIONS, now: NOW, locale: 'en-GB', timeZone: 'Europe/Sarajevo' }));
   assert.match(html, /^<section class="uix-audit-log" aria-label="Access history"><div class="uix-busy-region uix-audit-log__region">[\s\S]*?<ol class="uix-audit uix-audit-log__list" aria-label="Access history">/);
   assert.equal((html.match(/<li class="uix-audit__row uix-audit-log__row">/g) ?? []).length, 3);
   assert.match(html, /<span class="uix-audit__actor">Dr\. Amra Kovač<\/span>/);
   assert.match(html, /uix-pill--info[^>]*>Opened<\/span><span class="uix-audit-log__target">Patient record 1042<\/span>/);
-  assert.match(html, /<time dateTime="2026-10-22T11:30:00.000Z"[^>]*>30 minutes ago<\/time><span class="uix-audit-log__exact">22 Oct 2026, \d\d:30<\/span>/);
+  assert.match(html, /<time dateTime="2026-10-22T11:30:00.000Z"[^>]*>30 minutes ago<\/time><span class="uix-audit-log__exact">22 Oct 2026, 13:30<\/span>/, 'the exact time in the practice\'s zone (UTC+2 in October)');
   assert.match(html, /<details class="uix-audit-log__more"><summary>Details<\/summary><div class="uix-audit-log__detail">Added: penicillin<\/div><\/details>/);
   assert.match(html, /uix-pill--neutral[^>]*>mystery<\/span>/, 'an action without a label shows its key, neutral');
   assert.doesNotMatch(html, /uix-audit-log__filters/, 'no filter bar without onFiltersChange');

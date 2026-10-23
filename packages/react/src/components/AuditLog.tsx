@@ -125,6 +125,8 @@ export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'childr
    * prints "2026 M10 22"), or for a fixed product format.
    */
   formatExact?: (date: Date) => string;
+  /** Time zone of the times shown, e.g. the practice's `Europe/Sarajevo`. Default: the viewer's. */
+  timeZone?: string;
   /** Formats `YYYY-MM-DD` in a filter chip. Default: as given. */
   formatDate?: (date: string) => string;
   /** The current time, for stable relative times in tests and server renders. */
@@ -145,7 +147,7 @@ type FieldId = typeof FIELD_IDS[number];
  */
 export function AuditLog({
   events, actions, status = 'ready', refreshing = false, onRetry, actors, filters = {}, onFiltersChange,
-  hasMore = false, onLoadMore, loadingMore = false, locale, formatExact, formatDate, now, labels: labelOverrides, className, ...props
+  hasMore = false, onLoadMore, loadingMore = false, locale, formatExact, timeZone, formatDate, now, labels: labelOverrides, className, ...props
 }: AuditLogProps) {
   const labels = { ...DEFAULT_AUDIT_LOG_LABELS, ...useUixLabels().auditLog, ...labelOverrides };
   const id = useId();
@@ -159,7 +161,7 @@ export function AuditLog({
     if (events.length > before) setAnnounced(fillLabel(labels.loaded, { count: events.length - before }));
   }, [events.length, loadingMore, labels.loaded]);
 
-  const intlExact = new Intl.DateTimeFormat(locale as string | string[] | undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const intlExact = new Intl.DateTimeFormat(locale as string | string[] | undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone });
   const exact = formatExact ?? ((date: Date) => intlExact.format(date));
   const fields: Record<FieldId, FilterField | null> = {
     when: { id: 'when', label: labels.when, kind: 'date-range' },
@@ -203,7 +205,7 @@ export function AuditLog({
                 {event.target != null && <span className="uix-audit-log__target">{event.target}</span>}
               </span>
               <span className="uix-audit__time uix-audit-log__when">
-                <RelativeTime value={event.at} now={now} locale={locale} />
+                <RelativeTime value={event.at} now={now} locale={locale} timeZone={timeZone} />
                 {!Number.isNaN(date.getTime()) && <span className="uix-audit-log__exact">{exact(date)}</span>}
               </span>
               {event.detail != null && (

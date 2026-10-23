@@ -79,7 +79,8 @@ const BUILDERS = [
   // ── AuditLog (HAR-987): filters, entries with a labelled action, Details, older entries ─────
   ({ ui, mount, html }) => {
     const log = mount(h(ui.AuditLog, {
-      now: new Date('2026-10-22T12:00:00Z'), locale: 'en-GB',
+      // UTC: the specimen must not depend on the time zone of the machine that renders it.
+      now: new Date('2026-10-22T12:00:00Z'), locale: 'en-GB', timeZone: 'UTC',
       formatExact: (d) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
       actions: { viewed: { label: 'Opened', tone: 'info' }, edited: { label: 'Changed', tone: 'warning' }, exported: { label: 'Exported', tone: 'danger' } },
       actors: [{ value: 'u1', label: 'Dr. Amra Kovač' }, { value: 'u2', label: 'Nurse Lejla Hadžić' }],

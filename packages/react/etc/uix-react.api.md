@@ -289,6 +289,7 @@ export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'childr
     onRetry?: () => void;
     refreshing?: boolean;
     status?: 'ready' | 'loading' | 'error' | 'forbidden';
+    timeZone?: string;
 }
 
 // @public

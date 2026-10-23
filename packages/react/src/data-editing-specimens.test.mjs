@@ -16,6 +16,18 @@ test('the committed specimens are exactly what the components render today', () 
   assert.equal(dataEditingSpecimenModule(specimens), committed, 'packages/tokens/docs/data-editing-specimens.js is out of date — run node packages/react/scripts/render-data-editing-specimens.mjs');
 });
 
+test('the specimens do not depend on the time zone of the machine that renders them', async () => {
+  // CI renders in UTC and an author maybe in Europe/Sarajevo: a time without a pinned zone differed
+  // (the AuditLog specimen, first push of PR #168). Kiritimati is UTC+14, as far from both as it gets.
+  const saved = process.env.TZ;
+  process.env.TZ = 'Pacific/Kiritimati';
+  try {
+    assert.equal(dataEditingSpecimenModule(await renderDataEditingSpecimens()), committed);
+  } finally {
+    if (saved === undefined) delete process.env.TZ; else process.env.TZ = saved;
+  }
+});
+
 test('the comparison can fail: a changed class is a different module', () => {
   const changed = Object.fromEntries(Object.entries(specimens).map(([route, html]) => [route, html.replace('uix-segmented', 'uix-segmented-x')]));
   assert.notEqual(dataEditingSpecimenModule(changed), committed);
