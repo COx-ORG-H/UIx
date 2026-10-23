@@ -188,3 +188,23 @@ test('children mode is unchanged', () => {
   assert.equal(t.host.querySelector('[role="option"]').getAttribute('aria-selected'), 'true');
   t.unmount();
 });
+
+test('a press in the field released on the backdrop does not close the dialog (PR #168 review)', () => {
+  function Host() {
+    const [open, setOpen] = useState(true);
+    return h(ui.CommandPalette, { items: ITEMS, open, onOpenChange: setOpen });
+  }
+  const t = mount(h(Host));
+  const dialog = t.host.querySelector('dialog');
+  act(() => {
+    dialog.querySelector('input').dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true }));
+    dialog.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  });
+  assert.equal(dialog.hasAttribute('open'), true);
+  act(() => {
+    dialog.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true }));
+    dialog.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  });
+  assert.equal(dialog.hasAttribute('open'), false);
+  t.unmount();
+});

@@ -188,3 +188,21 @@ test('UixLabelsProvider translates the viewer', () => {
   assert.equal(host.querySelector('.uix-lightbox__counter').textContent, '1 von 2');
   unmount();
 });
+
+test('a stroke that starts on the picture and ends on the backdrop does not close; a click on the backdrop does', () => {
+  const log = [];
+  const { host, unmount } = mount(h(Viewer, { log }));
+  const dialog = host.querySelector('dialog');
+  const overlay = host.querySelector('.uix-lightbox__overlay');
+  act(() => {
+    overlay.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true }));
+    dialog.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // the browser targets the common ancestor
+  });
+  assert.deepEqual(log.filter((l) => l === 'close'), [], 'the draft survives');
+  act(() => {
+    dialog.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true }));
+    dialog.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  });
+  assert.deepEqual(log.filter((l) => l === 'close'), ['close']);
+  unmount();
+});

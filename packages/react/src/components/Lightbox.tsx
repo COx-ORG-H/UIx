@@ -129,6 +129,8 @@ export function Lightbox({
     return claimed;
   });
   const mediaRef = useRef<HTMLImageElement & HTMLVideoElement>(null);
+  /** The press began on the backdrop: a stroke drawn on the picture and released outside it is not a click on it. */
+  const pressedBackdrop = useRef(false);
   const [overlayBox, setOverlayBox] = useState<Box | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
@@ -217,7 +219,13 @@ export function Lightbox({
       aria-label={labels.region}
       data-actions={actions != null || undefined}
       onKeyDown={onKeyDown}
-      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+      onPointerDown={(event) => { pressedBackdrop.current = event.target === event.currentTarget; }}
+      onClick={(event) => {
+        // Close only when the press began and ended on the backdrop: an annotation stroke released
+        // past the picture's edge must not throw the draft away (PR #168 review).
+        if (event.target === event.currentTarget && pressedBackdrop.current) onClose();
+        pressedBackdrop.current = false;
+      }}
     >
       {current && (
         <figure className="uix-lightbox__figure">

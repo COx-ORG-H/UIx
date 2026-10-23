@@ -236,6 +236,8 @@ function CommandPaletteItems({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
+  /** The press began on the backdrop (a text selection dragged out of the field is not a click on it). */
+  const pressedBackdrop = useRef(false);
 
   const found = useMemo(() => (filter ?? filterCommandItems)(items, query), [filter, items, query]);
   const showRecent = query.trim() === '' && (recent?.length ?? 0) > 0;
@@ -398,7 +400,11 @@ function CommandPaletteItems({
       data-uix-instant=""
       aria-label={inputLabel}
       // a click on the backdrop (the dialog box itself, outside the palette) closes it
-      onClick={(event) => { if (event.target === event.currentTarget) onOpenChange?.(false); }}
+      onPointerDown={(event) => { pressedBackdrop.current = event.target === event.currentTarget; }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget && pressedBackdrop.current) onOpenChange?.(false);
+        pressedBackdrop.current = false;
+      }}
     >
       {palette}
     </dialog>
