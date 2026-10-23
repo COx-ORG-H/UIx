@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 28c16a2 routine: this batch's own rhythm sweep caught its own new pair; the gate worked -->
 <!-- lesson-skip: 217f18f routine: a merge read back from storage that private mode cannot read; found in review, pinned by a test -->
 <!-- lesson-skip: e6cc8ac same cause as the 2026-09-22 docs-specimens entry (unlayered docs prose rules beat @layer kit rules), now for h2/h3/p; scoped the same way with :where() -->
 <!-- lesson-skip: e14a553 routine: a raw 1px the contract gate named; replaced with from-font -->
