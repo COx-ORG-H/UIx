@@ -23,6 +23,7 @@ import type { LightboxLabels } from './components/Lightbox.js';
 import type { SortableListLabels } from './components/SortableList.js';
 import type { DiffViewerLabels } from './components/DiffViewer.js';
 import type { MatchReviewLabels } from './components/MatchReview.js';
+import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -34,6 +35,8 @@ import type { MatchReviewLabels } from './components/MatchReview.js';
  * on the server.
  */
 export interface UixLabels {
+  /** The words a `Button` with `result` shows for a moment after its action (HAR-2581). */
+  buttonResult?: Partial<ButtonResultLabels>;
   modal?: { close?: string };
   drawer?: { close?: string };
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
