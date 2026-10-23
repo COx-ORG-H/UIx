@@ -71,8 +71,22 @@ export function useFieldPopover(popoverId: string, restoreFocus: () => void, onO
     try { el.hidePopover(); } catch { skipRestore.current = false; }
   };
 
+  /**
+   * The field root's keydown: Escape while the calendar is open belongs to the field, wherever
+   * focus is (a day, the button, the input). It closes the calendar and does not also close a
+   * drawer around it. "Open" is the popover's own state, not `open`: the `toggle` event that
+   * updates `open` is queued, so an Escape pressed right after the calendar opened would
+   * otherwise pass through to the page (HAR-2389).
+   */
+  const onFieldKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || !isOpen(popoverEl())) return;
+    event.stopPropagation();
+    event.preventDefault();
+    hide();
+  };
+
   return {
-    open, show, hide,
+    open, show, hide, onFieldKeyDown,
     /** Spread on the button that opens the calendar. */
     triggerProps: {
       'aria-haspopup': 'dialog' as const,

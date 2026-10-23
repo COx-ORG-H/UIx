@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { helpParagraphs } from '../info-tip-model.js';
@@ -10,6 +10,9 @@ import { Popover } from './Popover.js';
 /** Hover intent before the panel opens, and the grace period to cross into it (WCAG 1.4.13 hoverable). */
 const OPEN_DELAY = 300;
 const CLOSE_DELAY = 100;
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content' | 'children'> {
   /**
@@ -112,16 +115,24 @@ function InfoTipControl({
   };
 
   // Esc from anywhere (hover-opened, or focus left in the panel) and a press outside both close it.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') escape(); };
+  // That Escape is the panel's alone (HAR-2415): taken in the capture phase and cancelled, so a
+  // Drawer or Modal around the tip neither closes nor asks "Discard changes?". A layout effect, so
+  // an Escape right after the panel opened already finds it.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      escape();
+    };
     const onPointer = (e: PointerEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) hide();
     };
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
     document.addEventListener('pointerdown', onPointer, true);
     return () => {
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
       document.removeEventListener('pointerdown', onPointer, true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -158,11 +169,8 @@ function InfoTipControl({
           if (openRef.current && (pinned.current || !viaPointer)) hide();
           else { show(); pinned.current = true; }
         }}
-        onKeyDown={(e) => {
-          pressing.current = false;
-          // Esc closes only the panel, not an enclosing dialog or drawer.
-          if (e.key === 'Escape' && openRef.current) { e.preventDefault(); e.stopPropagation(); hide(); }
-        }}
+        // Esc is taken by the document listener above, before an enclosing dialog or drawer sees it.
+        onKeyDown={() => { pressing.current = false; }}
       >
         <QuestionMark />
       </button>

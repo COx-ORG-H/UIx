@@ -527,6 +527,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     href: string;
     icon?: boolean;
     renderLink?: UixRenderLink;
+    shortcut?: KeyShortcut;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
@@ -945,7 +946,12 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
 export function computePosition(anchor: Rect, floating: Size, viewport: Size, options?: PositionOptions_2): PositionResult;
 
 // @public
-export function ConfirmDialog(input: ConfirmDialogProps): react.JSX.Element;
+export type ConfirmButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'type'> & {
+    [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
+};
+
+// @public
+export const ConfirmDialog: react.ForwardRefExoticComponent<ConfirmDialogProps & react.RefAttributes<HTMLDialogElement>>;
 
 // @public (undocumented)
 export interface ConfirmDialogProps {
@@ -957,6 +963,7 @@ export interface ConfirmDialogProps {
     compensationLabel?: string;
     // (undocumented)
     confirmLabel: ReactNode;
+    confirmProps?: ConfirmButtonProps;
     // (undocumented)
     description?: ReactNode;
     // (undocumented)
@@ -971,13 +978,14 @@ export interface ConfirmDialogProps {
     onTertiary?: () => void | Promise<void>;
     // (undocumented)
     open: boolean;
-    // (undocumented)
     pending?: boolean;
     tertiaryLabel?: ReactNode;
     // (undocumented)
     title: ReactNode;
     typeToConfirm?: string;
-    typeToConfirmLabel?: string;
+    typeToConfirmLabel?: ReactNode;
+    typeToConfirmMismatch?: string;
+    typeToConfirmPlaceholder?: string;
 }
 
 // @public
@@ -3302,8 +3310,8 @@ export interface MetricInputProps {
     value: number | null;
 }
 
-// @public (undocumented)
-export function Modal(input: ModalProps): react.JSX.Element;
+// @public
+export const Modal: react.ForwardRefExoticComponent<ModalProps & react.RefAttributes<HTMLDialogElement>>;
 
 // @public (undocumented)
 export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
@@ -3419,8 +3427,8 @@ export interface NavGroupProps {
     onExpandedChange?: (expanded: boolean) => void;
 }
 
-// @public (undocumented)
-export function NavItem(input: NavItemProps): react.JSX.Element;
+// @public
+export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -3826,26 +3834,32 @@ export interface PopconfirmProps {
     anchor: RefObject<HTMLElement | null> | HTMLElement | null;
     // (undocumented)
     cancelLabel: ReactNode;
+    children?: ReactNode;
+    closeWhenAnchorHidden?: boolean;
     compensation?: ReactNode;
     // (undocumented)
     compensationLabel?: string;
+    confirmDisabled?: boolean;
     // (undocumented)
     confirmLabel: ReactNode;
+    confirmProps?: ConfirmButtonProps;
     // (undocumented)
     description?: ReactNode;
     // (undocumented)
     destructive?: boolean;
+    labelledBy?: 'title' | 'confirm';
     onCancel: () => void;
     // (undocumented)
     onConfirm: () => void | Promise<void>;
+    onEscapeKeyDown?: (event: KeyboardEvent) => void;
     // (undocumented)
     open: boolean;
     // (undocumented)
     pending?: boolean;
     // (undocumented)
     placement?: Placement;
-    // (undocumented)
-    title: ReactNode;
+    role?: 'dialog' | 'alertdialog';
+    title?: ReactNode;
 }
 
 // @public
@@ -5671,8 +5685,8 @@ export interface StepStateLabels {
 // @public
 export function studentTQuantile(p: number, df: number): number;
 
-// @public (undocumented)
-export function SubNavItem(input: SubNavItemProps): react.JSX.Element;
+// @public
+export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -6093,6 +6107,7 @@ export interface ToastApi {
     store: ToastStore;
     // (undocumented)
     success: (message: ReactNode, options?: ToastOptions) => string;
+    undo: (id: string) => boolean;
     undoable: (message: ReactNode, options: UndoableToastOptions) => string;
     update: (id: string, patch: Partial<Omit<ToastRecord, 'id' | 'version'>>) => void;
     // (undocumented)
@@ -6127,6 +6142,7 @@ export interface ToastOptions {
     icon?: ReactNode;
     id?: string;
     onDismiss?: (reason: ToastDismissReason) => void;
+    pauseOnHover?: boolean;
 }
 
 // @public (undocumented)
@@ -6176,6 +6192,7 @@ export interface ToastRecord {
     message: ReactNode;
     // (undocumented)
     onDismiss?: (reason: ToastDismissReason) => void;
+    pauseOnHover?: boolean;
     version: number;
 }
 
@@ -6281,6 +6298,7 @@ export interface TreeNavAction {
 
 // @public (undocumented)
 export interface TreeNodeData {
+    ariaLabel?: string;
     // (undocumented)
     children?: TreeNodeData[];
     hasChildren?: boolean;
@@ -6315,6 +6333,7 @@ export interface TreeNodeProps {
     selected?: string;
     // (undocumented)
     tabbableId?: string;
+    treeId?: string;
 }
 
 // @public (undocumented)
@@ -6371,10 +6390,10 @@ export interface UixLabels {
         resultsOne?: string;
         resultsMany?: string;
     };
-    // (undocumented)
     confirmDialog?: {
         typeToConfirm?: string;
         compensation?: string;
+        typeToConfirmMismatch?: string;
     };
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
@@ -6570,6 +6589,7 @@ export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptio
 export interface UseVirtualRowsOptions {
     enabled?: boolean;
     estimatedViewportHeight?: number;
+    measureRows?: string;
     overscan?: number;
     rowHeight: number;
     threshold?: number;
@@ -6582,6 +6602,7 @@ export interface UseVirtualRowsResult<T> {
     padBottom: number;
     // (undocumented)
     padTop: number;
+    rowHeight: number;
     // (undocumented)
     rows: readonly T[];
     // (undocumented)

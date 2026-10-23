@@ -6,10 +6,12 @@
  *     inside takes Escape first while its list is open;
  *   - #open-modal: the same form in a Modal;
  *   - inside the drawer only: #help-trigger opens an auto Popover (#help-pop), and #open-inner
- *     opens a Modal nested in the drawer's JSX (#inner, whose OK counts __discard.innerOk). */
+ *     opens a Modal nested in the drawer's JSX (#inner, whose OK counts __discard.innerOk);
+ *   - and three hover hints whose Escape is theirs alone (HAR-2415): #tip-copy in a Tooltip,
+ *     #hint-preview, a Button with a shortcut, and the InfoTip #info-template. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, DialogClose, Drawer, Field, Input, Modal, Popover, Select } from '../../packages/react/src/index.js';
+import { Button, DialogClose, Drawer, Field, InfoTip, Input, Modal, Popover, Select, Tooltip } from '../../packages/react/src/index.js';
 
 declare global {
   interface Window { __discard: { closes: Record<'drawer' | 'modal', number>; innerOk: number; settle: () => void } }
@@ -70,6 +72,13 @@ function Harness() {
         <div style={{ display: 'flex', gap: 'var(--uix-space-2)', marginTop: 'var(--uix-space-4)' }}>
           <Button id="help-trigger" {...helpTarget}>Help</Button>
           <Button id="open-inner" onClick={() => setInner(true)}>Pick a template</Button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--uix-space-2)', marginTop: 'var(--uix-space-4)' }}>
+          <Tooltip label="Copy a link to this template">
+            <Button id="tip-copy">Copy link</Button>
+          </Tooltip>
+          <Button id="hint-preview" shortcut={['Mod', 'P']}>Preview</Button>
+          <span>Variables<InfoTip id="info-template" label="About: Variables" content="Variables are filled in when the notification is sent." /></span>
         </div>
         <Popover id="help-pop">Templates fill the notification text.</Popover>
         <Modal id="inner" open={inner} onClose={() => setInner(false)} title="Pick a template"

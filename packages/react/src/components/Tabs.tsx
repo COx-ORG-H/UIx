@@ -25,7 +25,8 @@ export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChang
   children?: ReactNode;
   className?: string;
   /**
-   * What happens when the tabs don't fit. `'wrap'` (default) keeps today's layout.
+   * What happens when the tabs don't fit. `'wrap'` (default): the tab row wraps onto more rows,
+   * and no tab is wider than its row, so one long label wraps inside its tab (HAR-1754).
    * `'scroll'` keeps one row that scrolls sideways, with pointer-only edge buttons
    * shown on the side that has hidden tabs. The selected tab is always scrolled into view.
    */
@@ -210,6 +211,8 @@ export function Tab({ value, children, disabled, className, onClick, ...props }:
   const selected = ctx.value === value;
   return (
     <button
+      // Never a submit button: a tab strip inside a <form> must not send it (HAR-1764).
+      type="button"
       role="tab"
       id={ctx.baseId ? `${ctx.baseId}-tab-${value}` : undefined}
       aria-controls={ctx.baseId ? `${ctx.baseId}-panel-${value}` : undefined}
