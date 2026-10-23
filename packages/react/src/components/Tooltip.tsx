@@ -111,14 +111,21 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     if (group.current === self) group.current = null;
     setOpen(false);
   };
-  // Small close delay so the pointer can cross the offset gap into the bubble (1.4.13 hoverable);
-  // entering trigger or bubble cancels it.
   // A stable handle on this tooltip's latest `hide`, for the delay group.
   const self = useRef(hide);
   self.current = hide;
+  // Small close delay so the pointer can cross the offset gap into the bubble (1.4.13 hoverable);
+  // entering trigger or bubble cancels it. When it runs out, it closes only if the pointer is over
+  // neither: a bubble that appears under a resting pointer and is then placed away from it gets a
+  // `mouseleave` with the pointer still on the trigger (Firefox dispatches one after the move; the
+  // trigger's `mouseenter` does not fire again, since the bubble is inside it).
   const scheduleHide = () => {
     cancelClose();
-    closeTimer.current = window.setTimeout(() => hide(), 100);
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null;
+      try { if (triggerRef.current?.matches(':hover')) return; } catch { /* no :hover support */ }
+      hide();
+    }, 100);
   };
 
   // Esc dismisses without moving focus (1.4.13 dismissible), even when focus is elsewhere. That
