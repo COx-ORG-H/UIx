@@ -664,3 +664,45 @@ test('Escape on the field itself closes an open calendar and stays inside the fi
   assert.deepEqual(outer, []);
   view.unmount();
 });
+
+test('Escape right after the calendar opened, before its queued toggle event, stays inside the field (HAR-2389)', () => {
+  // Browsers queue `toggle`: between showPopover() and that event the popover is open while the
+  // field's React state still says closed. Under CI load an Escape landed in that gap.
+  const proto = window.HTMLElement.prototype;
+  const { showPopover } = proto;
+  const queued = [];
+  proto.showPopover = function deferredShow() {
+    if (this.hasAttribute(OPEN)) return;
+    this.setAttribute(OPEN, '');
+    queued.push(this);
+  };
+  const flush = () => act(() => {
+    for (const el of queued.splice(0)) { const event = new window.Event('toggle'); event.newState = 'open'; el.dispatchEvent(event); }
+  });
+  try {
+    const outer = [];
+    const view = render(h('div', { onKeyDown: (e) => { if (e.key === 'Escape') outer.push('Escape'); } },
+      h(ui.DateRangePicker, { mode: 'field', value: {}, onChange() {}, locale: 'de', label: 'Period' })));
+    const trigger = view.host.querySelector('.uix-date-range-field__trigger');
+    const popover = view.host.querySelector('.uix-date-range-field__popover');
+    click(trigger);
+    assert.equal(popover.hasAttribute(OPEN), true, 'the months are open');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false', 'and the toggle event has not arrived yet');
+    assert.equal(key(trigger, 'Escape'), false, 'the field takes the Escape');
+    assert.equal(popover.hasAttribute(OPEN), false, 'and closes the months');
+    assert.deepEqual(outer, [], 'nothing around the field heard it');
+    flush();
+    view.unmount();
+
+    const v = mountDate({ value: '2026-11-18' });
+    click(v.toggle());
+    assert.equal(v.isOpen(), true);
+    assert.equal(key(v.toggle(), 'Escape'), false);
+    assert.equal(v.isOpen(), false);
+    assert.deepEqual(v.outer, [], 'the same holds for DatePicker');
+    flush();
+    v.unmount();
+  } finally {
+    proto.showPopover = showPopover;
+  }
+});

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
-import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, spokenKeys, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
@@ -23,18 +23,19 @@ export interface ShortcutHintProps {
   keys: KeyShortcut;
   /** Text before the keys, e.g. an icon button's name. */
   label?: string;
-  /** Set the button's `aria-keyshortcuts`. `false` when the button already has its own (a prop, or a Tooltip's). */
-  ownsAria: boolean;
+  /** The control's own `aria-describedby`: the spoken keys are added after it, never instead. */
+  describedBy?: string;
 }
 
 /**
- * The hover / keyboard-focus hint of a `Button` with `shortcut` (HAR-2031). In the button it
- * leaves only an empty, hidden marker, so the button's text, name, layout and selectors are
- * unchanged (no wrapper, no sibling). The bubble itself is portalled after mount into the
- * nearest `<dialog>` (outside one a modal dialog makes everything inert) or `<body>`, as a
- * top-layer popover, `aria-hidden`: assistive technology gets the key from the button's
- * `aria-keyshortcuts`, which this sets for the viewer's platform (Mod is Meta on Apple, Control
- * elsewhere) unless the button already has its own.
+ * The hover / keyboard-focus hint of a `Button` or `ButtonLink` with `shortcut` (HAR-2031,
+ * HAR-2416). In the control it leaves only an empty, hidden marker, so the control's text, name,
+ * layout and selectors are unchanged (no wrapper, no sibling). The bubble itself is portalled
+ * after mount into the nearest `<dialog>` (outside one a modal dialog makes everything inert) or
+ * `<body>`, as a top-layer popover, `aria-hidden`. Screen readers hear the keys once, as the
+ * control's description ("Control+K"; ⌘ is "Command" on Apple), the same way a `Tooltip` with a
+ * shortcut says them: the description is the one channel every screen reader announces, and an
+ * `aria-keyshortcuts` beside it was read a second time by those that announce that too.
  *
  * It opens on hover and on keyboard focus (`:focus-visible`), so focus a menu or dialog sends back
  * after a mouse choice does not open it. It closes on leave, blur, Escape and when the button is
@@ -43,29 +44,16 @@ export interface ShortcutHintProps {
  *
  * It is its own client component so that `Button`, which has no hooks, still renders on a server.
  */
-export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
+export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
   const markerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const anchorRef = useRef<HTMLElement | null>(null);
   const [host, setHost] = useState<Element | null>(null);
   const [open, setOpen] = useState(false);
   const platform = useKbdPlatform();
-  const shortcuts = ariaKeyShortcuts(keys, platform);
+  const spokenId = `${useId()}-keys`;
 
   useAnchoredPosition(anchorRef, bubbleRef, { open, placement: 'top', offset: 6 });
-
-  // The attribute is ours only when the button has none: put back what was there on cleanup.
-  useIsomorphicLayoutEffect(() => {
-    const button = markerRef.current?.parentElement;
-    if (!button || !ownsAria) return undefined;
-    const before = button.getAttribute('aria-keyshortcuts');
-    button.setAttribute('aria-keyshortcuts', shortcuts);
-    return () => {
-      if (button.getAttribute('aria-keyshortcuts') !== shortcuts) return;
-      if (before == null) button.removeAttribute('aria-keyshortcuts');
-      else button.setAttribute('aria-keyshortcuts', before);
-    };
-  }, [shortcuts, ownsAria]);
 
   // Where the bubble goes, once the button is in the document.
   useIsomorphicLayoutEffect(() => {
@@ -74,6 +62,21 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
     if (!button || button.parentElement?.closest('.uix-tooltip')) { setHost(null); return; }
     setHost(button.closest('dialog') ?? button.ownerDocument.body);
   }, []);
+
+  // The control is described by the spoken keys, after its own description. Not inside a Tooltip
+  // (no host): the Tooltip's description already says them. React owns the attribute too, so this
+  // runs again whenever the control's own value changes, and puts that value back on cleanup.
+  useIsomorphicLayoutEffect(() => {
+    const control = anchorRef.current;
+    if (!host || !control) return undefined;
+    const value = [describedBy, spokenId].filter(Boolean).join(' ');
+    control.setAttribute('aria-describedby', value);
+    return () => {
+      if (control.getAttribute('aria-describedby') !== value) return;
+      if (describedBy) control.setAttribute('aria-describedby', describedBy);
+      else control.removeAttribute('aria-describedby');
+    };
+  }, [host, describedBy, spokenId]);
 
   useEffect(() => {
     const button = anchorRef.current;
@@ -100,7 +103,14 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
       }, 100);
     };
     const onFocus = () => { if (focusVisible(button)) show(); };
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') hide(); };
+    // An Escape that closes the hint is the hint's alone (HAR-2415): taken in the capture phase
+    // and cancelled, so the Drawer or Modal around the button stays open; the next one is theirs.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !isShown(bubble)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      hide();
+    };
     // A focused button that becomes disabled fires no blur.
     const watch = new MutationObserver(() => {
       if (button.hasAttribute('disabled') || button.getAttribute('aria-disabled') === 'true') hide();
@@ -112,7 +122,7 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
     button.addEventListener('blur', hide);
     bubble.addEventListener('mouseenter', show);
     bubble.addEventListener('mouseleave', hideSoon);
-    button.ownerDocument.addEventListener('keydown', onKey);
+    button.ownerDocument.addEventListener('keydown', onKey, true);
     return () => {
       window.clearTimeout(timer);
       watch.disconnect();
@@ -122,7 +132,7 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
       button.removeEventListener('blur', hide);
       bubble.removeEventListener('mouseenter', show);
       bubble.removeEventListener('mouseleave', hideSoon);
-      button.ownerDocument.removeEventListener('keydown', onKey);
+      button.ownerDocument.removeEventListener('keydown', onKey, true);
       if (isShown(bubble)) { try { bubble.hidePopover(); } catch { /* noop */ } }
     };
   }, [host]);
@@ -133,22 +143,25 @@ export function ShortcutHint({ keys, label, ownsAria }: ShortcutHintProps) {
     <>
       <span ref={markerRef} hidden data-uix-shortcut-hint="" />
       {host && createPortal(
-        <span
-          ref={bubbleRef}
-          className="uix-tooltip__bubble uix-tooltip__bubble--hint"
-          aria-hidden="true"
-          {...bubbleAttr}
-          onClick={stop}
-          onDoubleClick={stop}
-          onContextMenu={stop}
-          onPointerDown={stop}
-          onPointerUp={stop}
-          onMouseDown={stop}
-          onMouseUp={stop}
-        >
-          {label && <span>{label}</span>}
-          <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>
-        </span>,
+        <>
+          <span id={spokenId} hidden>{spokenKeys(keys, platform)}</span>
+          <span
+            ref={bubbleRef}
+            className="uix-tooltip__bubble uix-tooltip__bubble--hint"
+            aria-hidden="true"
+            {...bubbleAttr}
+            onClick={stop}
+            onDoubleClick={stop}
+            onContextMenu={stop}
+            onPointerDown={stop}
+            onPointerUp={stop}
+            onMouseDown={stop}
+            onMouseUp={stop}
+          >
+            {label && <span>{label}</span>}
+            <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>
+          </span>
+        </>,
         host,
       )}
     </>

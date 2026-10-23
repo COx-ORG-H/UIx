@@ -8,10 +8,11 @@
  *   - #send: a submit Button with a shortcut in a form (#hint-form);
  *   - #watch: an icon Button with a shortcut inside a Tooltip (one bubble: the Tooltip's);
  *   - #tip-trigger: a link inside a Tooltip with shortcut ['Shift', '?'];
+ *   - #new-link: a ButtonLink with shortcut ['N'] (HAR-2416), #new-icon an icon one with ['Mod', 'I'];
  *   - #record-menu: a Menu whose trigger and items carry shortcuts. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, ButtonGroup, Menu, MenuItem, MenuItemCheckbox, MenuSeparator, Tooltip } from '../../packages/react/src/index.js';
+import { Button, ButtonGroup, ButtonLink, Menu, MenuItem, MenuItemCheckbox, MenuSeparator, Tooltip } from '../../packages/react/src/index.js';
 
 declare global { interface Window { __shortcut: Record<string, number> } }
 const count = (key: string) => () => { window.__shortcut[key] = (window.__shortcut[key] ?? 0) + 1; };
@@ -58,6 +59,13 @@ function Harness() {
       <section style={{ width: '20rem' }}>
         <h2>Full width</h2>
         <Button id="full" variant="primary" shortcut={['Mod', 'Enter']} style={{ width: '100%' }}>Save and close</Button>
+      </section>
+      <section>
+        <h2>Links</h2>
+        <div style={{ display: 'flex', gap: 'var(--uix-space-2)', alignItems: 'center' }}>
+          <ButtonLink id="new-link" href="#new" variant="primary" shortcut={['N']}>New incident</ButtonLink>
+          <ButtonLink id="new-icon" href="#import" icon variant="ghost" aria-label="Import" shortcut={['Mod', 'I']}><SearchIcon /></ButtonLink>
+        </div>
       </section>
       <section>
         <h2>Tooltip</h2>

@@ -149,7 +149,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, locale]);
 
-  const { open, show, hide, triggerProps } = useFieldPopover(popoverId, () => inputRef.current?.focus({ preventScroll: true }), onOpenChange);
+  const { open, show, hide, onFieldKeyDown, triggerProps } = useFieldPopover(popoverId, () => inputRef.current?.focus({ preventScroll: true }), onOpenChange);
   const locked = !!disabled || !!readOnly;
 
   /** Read the typed text. Returns whether the field is now in a good state. */
@@ -201,14 +201,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
 
   return <div
     ref={anchorRef} className={cx('uix-date-picker', size === 'sm' && 'uix-date-picker--sm', className)} style={style}
-    onKeyDown={(event) => {
-      // Escape while the calendar is open belongs to the field, wherever focus is (a day, the
-      // button, the input): it closes the calendar and does not also close a drawer around it.
-      if (event.key !== 'Escape' || !open) return;
-      event.stopPropagation();
-      event.preventDefault();
-      hide();
-    }}
+    onKeyDown={onFieldKeyDown}
   >
     <div className="uix-date-picker__control">
       <input

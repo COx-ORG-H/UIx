@@ -81,7 +81,7 @@ export { Modal } from './components/Modal.js';
 export type { ModalProps } from './components/Modal.js';
 
 export { ConfirmDialog, Popconfirm, PromptDialog } from './components/Dialogs.js';
-export type { ConfirmDialogProps, PopconfirmProps, PromptDialogProps } from './components/Dialogs.js';
+export type { ConfirmButtonProps, ConfirmDialogProps, PopconfirmProps, PromptDialogProps } from './components/Dialogs.js';
 
 export { Drawer } from './components/Drawer.js';
 export type { DrawerProps } from './components/Drawer.js';

@@ -139,6 +139,13 @@ export async function renderUxcSpecimens() {
     };
     const OPEN_STYLE = 'position:static;display:inline-block;opacity:1;margin:0';
     const lastHint = () => [...window.document.body.querySelectorAll(':scope > .uix-tooltip__bubble--hint')].pop();
+    // A Button's spoken keys, its description, are portalled with its hint (HAR-2416): shown beside it.
+    const spoken = (host) => {
+      const control = host.querySelector('button, a');
+      return (control.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
+        .map((id) => window.document.getElementById(id)).filter((el) => el && !host.contains(el))
+        .map((el) => stable(el.outerHTML)).join('');
+    };
     const assign = mount(h(ui.Button, { shortcut: ['A'] }, 'Assign'));
     const assignHint = showOpen(lastHint(), OPEN_STYLE);
     const palette = mount(h(ui.Button, { icon: true, variant: 'ghost', 'aria-label': 'Search', shortcut: ['Mod', 'K'] },
@@ -160,20 +167,41 @@ export async function renderUxcSpecimens() {
       h(ui.MenuItem, { shortcut: ['Del'], tone: 'danger' }, 'Delete')));
     rows.querySelector('[role^="menuitem"]').setAttribute('tabindex', '0');
     const shortcuts = [
-      caption('Shortcuts where people act (React <code>Button shortcut</code>, <code>Tooltip shortcut</code>, <code>MenuItem shortcut</code>) — the key in the hover and focus hint and at the end of a menu row, and <code>aria-keyshortcuts</code> on the control; ⌘ / Meta on Apple, Ctrl / Control elsewhere (shown here for Windows and Linux)'),
+      caption('Shortcuts where people act (React <code>Button shortcut</code>, <code>ButtonLink shortcut</code>, <code>Tooltip shortcut</code>, <code>MenuItem shortcut</code>) — the key in the hover and focus hint and at the end of a menu row; screen readers hear a button\'s or tooltip\'s keys once, as its description, and a menu row\'s from its text and <code>aria-keyshortcuts</code>; ⌘ / Command on Apple, Ctrl / Control elsewhere (shown here for Windows and Linux)'),
       '<div data-shortcut-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
-      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}</div>`,
-      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${assignHint}${html(assign)}${spoken(assign)}</div>`,
+      `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${paletteHint}${html(palette)}${spoken(palette)}</div>`,
       `<div class="uix-stack" style="--gap:8px;align-items:flex-start">${tipBubble}${tipHtml}</div>`,
       html(rows),
       '</div>',
     ].join('\n');
 
+    // ── Popconfirm with a required reason (HAR-1831) ─────────────────────────────────────────
+    // Rendered last, so the ids above keep their numbers. The step is shown where the browser
+    // places it, under the button that asked; Reject waits for the reason.
+    const rejectAnchor = window.document.createElement('button');
+    window.document.body.append(rejectAnchor);
+    const reasonHost = mount(h(ui.Popconfirm, {
+      open: true, anchor: rejectAnchor, destructive: true, confirmDisabled: true,
+      title: 'Reject this change?', description: 'The requester sees your reason.',
+      confirmLabel: 'Reject', cancelLabel: 'Cancel', onConfirm: noop, onCancel: noop,
+    }, h(ui.Field, { label: 'Reason' }, h(ui.Textarea, { rows: 3, placeholder: 'Why is it rejected?' }))));
+    const reasonStep = reasonHost.querySelector('.uix-popconfirm');
+    if (!reasonStep?.hasAttribute(OPEN)) throw new Error('the Popconfirm did not open');
+    reasonStep.removeAttribute('popover');
+    reasonStep.removeAttribute(OPEN);
+    reasonStep.setAttribute('style', 'position:static;margin:0;opacity:1;transform:none');
+    const reason = [
+      caption('Popconfirm with content (React <code>Popconfirm</code> <code>children</code>, <code>confirmDisabled</code>) — a required reason inside the step: the field has focus when it opens, Reject stays disabled until it is filled, and a destructive step is an <code>alertdialog</code>'),
+      `<div data-popconfirm-reason-example class="uix-stack" style="--gap:8px;align-items:flex-start"><button type="button" class="uix-btn uix-btn--danger">Reject</button>${stable(reasonStep.outerHTML)}</div>`,
+    ].join('\n');
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
+    rejectAnchor.remove();
     return {
       'examples-navigation': shortcuts,
       'examples-form-controls': searchBar,
-      'examples-overlays': [descriptionList, discard].join('\n'),
+      'examples-overlays': [descriptionList, discard, reason].join('\n'),
     };
   } finally {
     dom.window.close();

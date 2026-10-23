@@ -125,6 +125,42 @@ test('HAR-1355: NavItem description renders a second line and marks the row mult
   assert.doesNotMatch(renderToStaticMarkup(h(ui.NavItem, { href: '/' }, 'Home')), /data-multiline|navitem__text/, 'single-line markup unchanged');
 });
 
+test('HAR-1810: NavItem and SubNavItem forward their ref to the <a> or <button>; a Popover anchors to it', () => {
+  const refs = {};
+  function AccountRow() {
+    const anchor = useRef(null);
+    const link = useRef(null);
+    const sub = useRef(null);
+    const subButton = useRef(null);
+    Object.assign(refs, { anchor, link, sub, subButton });
+    // `popoverTarget` is the button attribute that opens the menu: it passes through.
+    return h('nav', null,
+      h(ui.NavItem, { href: '/inbox', ref: link }, 'Inbox'),
+      h(ui.NavItem, { as: 'button', ref: anchor, popoverTarget: 'account-menu', 'aria-haspopup': 'menu', id: 'account' }, 'Ada Lovelace'),
+      h(ui.SubNavItem, { href: '/inbox/mine', ref: sub }, 'Mine'),
+      h(ui.SubNavItem, { as: 'button', ref: subButton }, 'More'),
+      h(ui.Popover, { id: 'account-menu', anchor, placement: 'right-start' }, h('p', null, 'Signed in as Ada')));
+  }
+  const view = mount(h(AccountRow));
+  const button = view.host.querySelector('#account');
+  assert.equal(refs.anchor.current, button, 'the ref is the rendered <button>');
+  assert.equal(button.tagName, 'BUTTON');
+  assert.equal(button.getAttribute('type'), 'button');
+  assert.equal(button.getAttribute('popovertarget'), 'account-menu');
+  assert.equal(button.getAttribute('aria-haspopup'), 'menu');
+  assert.equal(refs.link.current?.tagName, 'A');
+  assert.equal(refs.link.current.getAttribute('href'), '/inbox');
+  assert.equal(refs.sub.current?.tagName, 'A');
+  assert.equal(refs.subButton.current?.tagName, 'BUTTON');
+  // The Popover reads its anchor from the ref: opening it places it against the row.
+  const pop = view.host.querySelector('#account-menu');
+  act(() => { pop.showPopover(); pop.dispatchEvent(Object.assign(new window.Event('toggle'), { newState: 'open' })); });
+  assert.ok(pop.hasAttribute('data-test-popover-open'));
+  assert.equal(ui.NavItem.displayName, 'NavItem');
+  assert.equal(ui.SubNavItem.displayName, 'SubNavItem');
+  view.unmount();
+});
+
 test('HAR-1352: CollapsibleSection stays plain without the new props; lazy, persistKey and openRequest work', async () => {
   const icons = await import('../dist/icons.js');
   const chevron = renderToStaticMarkup(h(icons.ChevronDownIcon, { size: 'sm' }));
