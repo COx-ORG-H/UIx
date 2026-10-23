@@ -1,9 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
+import { tokenMs } from '../motion.js';
 import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
@@ -16,6 +18,75 @@ export type ToastTone = 'success' | 'danger' | 'info' | 'warning';
  * polite toasts push their text into it on mount. Null outside a Toaster → the toast falls back
  * to being its own live region, exactly as before. */
 const ToasterContext = createContext<{ announce: (text: string) => void } | null>(null);
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
+/* Swipe to dismiss (HAR-2578). A horizontal drag that starts on the toast (not on its buttons)
+ * follows the pointer; released past a third of the toast's width, or flung faster than
+ * SWIPE_VELOCITY the way it was dragged, it flies out that way and closes. Otherwise it snaps
+ * back. The close button and Escape stay the keyboard path. */
+const SWIPE_VELOCITY = 0.11; // px per ms
+const SWIPE_SLOP = 6; // px of travel before a press becomes a drag, so a tap stays a tap
+const SWIPE_WINDOW = 100; // ms of movement the release velocity is measured over
+
+interface Drag { id: number; x0: number; y0: number; dx: number; samples: { x: number; t: number }[]; active: boolean }
+
+/** px/ms over the last SWIPE_WINDOW before `t`; 0 when the pointer stood still that long. */
+function releaseVelocity(samples: { x: number; t: number }[], x: number, t: number): number {
+  const recent = samples.filter((s) => t - s.t <= SWIPE_WINDOW);
+  if (recent.length === 0) return 0;
+  return (x - recent[0].x) / Math.max(1, t - recent[0].t);
+}
+type PointerHandler = ((e: ReactPointerEvent<HTMLDivElement>) => void) | undefined;
+
+function useSwipeToDismiss(onClose: (() => void) | undefined, own: {
+  onPointerDown: PointerHandler; onPointerMove: PointerHandler; onPointerUp: PointerHandler; onPointerCancel: PointerHandler;
+}) {
+  const drag = useRef<Drag | null>(null);
+  const end = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d?.active || !onClose) return;
+    const el = e.currentTarget;
+    el.removeAttribute('data-swiping');
+    const v = releaseVelocity(d.samples, e.clientX, e.timeStamp);
+    const fling = Math.abs(v) > SWIPE_VELOCITY && Math.sign(v) === Math.sign(d.dx);
+    if (e.type === 'pointerup' && (fling || Math.abs(d.dx) > el.offsetWidth / 3)) {
+      // Out the way it was thrown; under reduced motion it stays where it was let go and fades.
+      if (!prefersReducedMotion()) el.style.translate = `${Math.sign(d.dx) * (el.offsetWidth + 32)}px 0`;
+      onClose();
+    } else {
+      el.style.translate = '';
+    }
+  };
+  return {
+    onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
+      own.onPointerDown?.(e);
+      if (!onClose || e.defaultPrevented || e.button !== 0) return;
+      if ((e.target as Element).closest('button, a, input, textarea, select, [role="button"]')) return;
+      drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, samples: [{ x: e.clientX, t: e.timeStamp }], active: false };
+    },
+    onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
+      own.onPointerMove?.(e);
+      const d = drag.current;
+      if (!d || d.id !== e.pointerId) return;
+      const dx = e.clientX - d.x0;
+      if (!d.active) {
+        if (Math.abs(dx) < SWIPE_SLOP) return;
+        if (Math.abs(e.clientY - d.y0) > Math.abs(dx)) { drag.current = null; return; } // a vertical scroll
+        d.active = true;
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        e.currentTarget.setAttribute('data-swiping', '');
+      }
+      d.samples = [...d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW), { x: e.clientX, t: e.timeStamp }];
+      d.dx = dx;
+      e.currentTarget.style.translate = `${dx}px 0`;
+    },
+    onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => { own.onPointerUp?.(e); end(e); },
+    onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => { own.onPointerCancel?.(e); end(e); },
+  };
+}
 
 export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. */
@@ -30,7 +101,10 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   leaving?: boolean;
 }
 
-export function Toast({ title, message, tone, icon, action, onClose, leaving, dismissLabel: dismissLabelProp, className, ...props }: ToastProps) {
+export function Toast({
+  title, message, tone, icon, action, onClose, leaving, dismissLabel: dismissLabelProp, className,
+  onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...props
+}: ToastProps) {
   const uixLabels = useUixLabels();
   const dismissLabel = dismissLabelProp ?? uixLabels.toast?.dismiss ?? 'Dismiss';
   // Errors interrupt (assertive); everything else waits its turn (polite). Danger stays its own
@@ -63,6 +137,8 @@ export function Toast({ title, message, tone, icon, action, onClose, leaving, di
     onClose?.();
   };
 
+  const swipe = useSwipeToDismiss(onClose, { onPointerDown, onPointerMove, onPointerUp, onPointerCancel });
+
   const ownLiveRegion = assertive || !toaster;
   return (
     <div
@@ -71,6 +147,7 @@ export function Toast({ title, message, tone, icon, action, onClose, leaving, di
       role={ownLiveRegion ? (assertive ? 'alert' : 'status') : undefined}
       aria-live={ownLiveRegion ? (assertive ? 'assertive' : 'polite') : undefined}
       {...props}
+      {...swipe}
     >
       {icon && <div className="uix-toast__icon" aria-hidden="true">{icon}</div>}
       <div className="uix-toast__body" ref={bodyRef}>
@@ -217,6 +294,34 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   }, []);
   useToastTimers(store, visible, hovered || focused || hidden);
 
+  // The stack reflows with a glide (HAR-2578): when a toast arrives or leaves, the others move from
+  // where they were to where they are now (FLIP), on transform, instead of jumping. --uix-ease-out
+  // rather than in-out: the toast that makes room clears the arriving one early instead of
+  // overlapping it for most of the glide. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
+  // enter or exit transform does not count as movement.
+  const regionRef = useRef<HTMLDivElement>(null);
+  const tops = useRef(new Map<string, number>());
+  useIsomorphicLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region) return;
+    const base = region.getBoundingClientRect().top;
+    const next = new Map<string, number>();
+    const glide = !prefersReducedMotion();
+    for (const el of Array.from(region.querySelectorAll<HTMLElement>(':scope > [data-toast-id]'))) {
+      const id = el.dataset.toastId!;
+      const top = base + el.offsetTop;
+      next.set(id, top);
+      const before = tops.current.get(id);
+      if (!glide || before === undefined || Math.abs(before - top) < 1 || typeof el.animate !== 'function') continue;
+      el.animate([{ transform: `translateY(${before - top}px)` }, { transform: 'translateY(0)' }], {
+        duration: tokenMs('--uix-dur', 160, el),
+        easing: getComputedStyle(el).getPropertyValue('--uix-ease-out').trim() || 'ease-out',
+        composite: 'add',
+      });
+    }
+    tops.current = next;
+  });
+
   // Esc dismisses the store toast that holds focus (WCAG 2.2.1 / 1.4.13 dismissible).
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
@@ -231,6 +336,7 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   return (
     <ToasterContext.Provider value={ctx}>
       <div
+        ref={regionRef}
         className={cx('uix-toaster', className)}
         role="region"
         aria-label={regionLabel}

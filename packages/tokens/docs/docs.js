@@ -587,14 +587,17 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
   /* exit: about two-thirds of the enter, still ease-out — never ease-in */
   transition-duration: var(--uix-dur-exit);
 }`, 'css')}${table(['Token', 'Value', 'Use'], [
-      ['<code>--uix-dur-fast</code> / <code>--uix-dur-exit-fast</code>', '120 / 80 ms', 'Press, hover and state feedback'],
-      ['<code>--uix-dur</code> / <code>--uix-dur-exit</code>', '160 / 110 ms', 'Popovers, menus, select, toasts'],
+      ['<code>--uix-dur-fast</code> / <code>--uix-dur-exit-fast</code>', '120 / 80 ms', 'Press, hover and state feedback; popovers, menus, select and tooltips'],
+      ['<code>--uix-dur</code> / <code>--uix-dur-exit</code>', '160 / 110 ms', 'The bulk bar, a toast stack’s glide, a toast’s exit (it enters at <code>--uix-dur-slow</code>)'],
       ['<code>--uix-dur-slow</code> / <code>--uix-dur-exit-slow</code>', '240 / 160 ms', 'Modal, drawer, side peek'],
       ['<code>--uix-dur-slower</code>', '320 ms', 'Large surfaces only; routine UI stays ≤ 300 ms'],
       ['<code>--uix-delay-tooltip</code> / <code>--uix-delay-tooltip-skip</code>', '400 / 300 ms', 'Tooltip hover delay; a neighbour hovered inside the skip window opens at once'],
       ['<code>--uix-loop-spin</code>, <code>--uix-loop-progress</code>, <code>--uix-loop-shimmer</code>, <code>--uix-loop-ping</code>, <code>--uix-loop-blink</code>', '600 / 1200 / 1400 / 1600 / 1100 ms', 'One cycle of a looping indicator'],
       ['<code>--uix-loop-pulse</code>', '2000 ms', 'The reduced-motion opacity pulse that replaces every loop'],
-      ['<code>--uix-dur-highlight</code>', '2400 ms', 'An arrival or change tint fading back; a held signal, not movement'],
+      ['<code>--uix-dur-highlight</code>', '2400 ms', 'An arrival tint fading back; a held signal, not movement'],
+      ['<code>--uix-dur-change</code>', '1200 ms', 'A change tint on the row or field that changed'],
+      ['<code>--uix-delay-pending</code> / <code>--uix-hold-pending</code>', '300 / 500 ms', 'A pending indicator appears after 300 ms and, once shown, stays at least 500 ms'],
+      ['<code>--uix-hold-result</code>', '1500 ms', 'An in-place result (success, error, copied) holds, then returns to rest'],
       ['<code>--uix-ease-out</code> / <code>--uix-ease-out-strong</code>', '', 'Entrances and exits'],
       ['<code>--uix-ease-in-out</code>', 'cubic-bezier(.77,0,.175,1)', 'Movement already on screen'],
       ['<code>--uix-ease-spring</code>', '', 'A small confirmation (a check, a star); never layout, never staff-UI bounce'],

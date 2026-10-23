@@ -93,13 +93,20 @@ function removeAnchorName(el: HTMLElement, name: string): void {
 
 /** The element's own CSS translation (its enter/exit motion), so a measurement can discount it. */
 function translationOf(el: HTMLElement): { x: number; y: number } {
-  const t = getComputedStyle(el).transform;
+  const style = getComputedStyle(el);
+  const t = style.transform;
   if (!t || t === 'none' || typeof DOMMatrixReadOnly === 'undefined') return { x: 0, y: 0 };
   try {
     const m = new DOMMatrixReadOnly(t);
+    // Where the transform moves the box's centre, about its transform-origin: an enter scale that
+    // grows from the anchor (HAR-2578) shifts the centre as a translate does.
+    const [ox = 0, oy = 0] = style.transformOrigin.split(' ').map((v) => parseFloat(v) || 0);
+    const cx = el.offsetWidth / 2 - ox;
+    const cy = el.offsetHeight / 2 - oy;
+    const p = m.transformPoint({ x: cx, y: cy });
     // In the element's CSS pixels; on screen they are scaled by its zoom.
     const z = zoomOf(el);
-    return { x: m.m41 * z, y: m.m42 * z };
+    return { x: (p.x - cx) * z, y: (p.y - cy) * z };
   } catch {
     return { x: 0, y: 0 };
   }
@@ -274,6 +281,16 @@ export function useAnchoredPosition(
     const measured = size.width > 0 || size.height > 0;
     if (measured && session.current) side.current = pos.side;
     if (floating.dataset.placement !== pos.placement) floating.dataset.placement = pos.placement;
+    // The point of the box nearest the anchor's centre, on the side that faces it: the enter scale
+    // grows from there, so the overlay comes out of its trigger (HAR-2578). CSS reads it as
+    // `transform-origin: var(--uix-anchor-origin)`.
+    if (measured) {
+      const clamp = (v: number, max: number) => Math.min(Math.max(v, 0), max);
+      const ox = pos.side === 'left' ? size.width : pos.side === 'right' ? 0 : clamp(a.x + a.width / 2 - pos.x, size.width);
+      const oy = pos.side === 'top' ? size.height : pos.side === 'bottom' ? 0 : clamp(a.y + a.height / 2 - pos.y, size.height);
+      const origin = `${Math.round(ox / zoom)}px ${Math.round(oy / zoom)}px`;
+      if (s.getPropertyValue('--uix-anchor-origin') !== origin) s.setProperty('--uix-anchor-origin', origin);
+    }
 
     const writeFixed = (at: PositionResult) => {
       const left = `${Math.round(at.x / zoom)}px`;

@@ -66,8 +66,15 @@
   }
   .uix-select__popup:not([hidden]) { display: flex; }
   [popover].uix-select__popup:not(:popover-open) { display: none; }
-  [popover].uix-select__popup { opacity: 1; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), overlay var(--uix-dur-fast) allow-discrete, display var(--uix-dur-fast) allow-discrete; }
-  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; } }
+  /* grows out of the trigger (--uix-anchor-origin from useAnchoredPosition) at --uix-dur-fast; the
+     closed state carries the faster exit. Opened from the keyboard it does not animate (motion.css). */
+  [popover].uix-select__popup {
+    opacity: 0; transform: scale(.95); transform-origin: var(--uix-anchor-origin, top left);
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out),
+                overlay var(--uix-dur-exit-fast) allow-discrete, display var(--uix-dur-exit-fast) allow-discrete;
+  }
+  [popover].uix-select__popup:popover-open { opacity: 1; transform: none; transition-duration: var(--uix-dur-fast); }
+  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.95); } }
   .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; }
   .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .uix-select__popup .uix-listbox:focus { outline: none; }

@@ -69,8 +69,9 @@
     .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
   }
 
-  /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces (the command palette, an overlay opened
-     from the keyboard) open and close with no animation — the frequency budget is "none". Overlays set
-     [data-uix-instant] themselves (Modal `instant`, CommandPalette, keyboard-opened menus and selects). */
-  [data-uix-instant], [data-uix-instant]::backdrop { transition: none !important; animation: none !important; }
+  /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces open and close with no animation — the
+     frequency budget is "none". [data-uix-instant] is a standing choice (Modal `instant`, CommandPalette,
+     a tooltip opened inside its delay group); [data-uix-key-opened] is set per open or close by the React
+     overlays (Modal, Drawer, Peek, Popover and Menu, Select) when a key press led to it. */
+  :is([data-uix-instant], [data-uix-key-opened]), :is([data-uix-instant], [data-uix-key-opened])::backdrop { transition: none !important; animation: none !important; }
 }

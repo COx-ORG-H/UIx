@@ -74,6 +74,16 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
+### 2026-10-23 · an exit animation makes a closed dialog pass toBeVisible · `3bcbcb7`
+- **Rule:** to assert an overlay stayed open, check its state (`dialog.open`, `:popover-open`, `aria-expanded`), not `toBeVisible()`. A dialog or popover that just closed stays painted for its exit transition, and Playwright counts it visible.  **Why:** a TagInput spec "Escape closed the list, not the drawer" passed on master while the Escape did close the drawer; it went red only when keyboard closes became instant.
+- **Gate:** `tests/a11y/form-fields.spec.mjs` now asserts `dialog.open`; ⚠ TODO no lint for `toBeVisible` as an "it stayed open" check elsewhere.  **Tag:** false-green, motion, overlay, test-double-fidelity
+
+### 2026-10-23 · removing an enter animation exposes state races · `c34ab3b`
+- **Rule:** when an overlay stops animating (instant, keyboard-opened, reduced motion), a key handler that gates on React state set by an async browser event (`toggle`, `transitionend`) must also read the DOM (`:popover-open`), because the next key can now arrive before that event.  **Why:** the date fields gated Escape on `open`, updated only by the queued `toggle` event; the 120 ms enter used to hide the gap, and in CI the Escape leaked to the dialog around the field (passed 4/4 locally). The same fix landed on master in parallel as HAR-2389 (`onFieldKeyDown`), which this branch took in the merge.
+- **Gate:** `tests/a11y/older-gaps.spec.mjs` range-field test (Enter, then Escape, `outerEscape` 0) failed in CI on the instant open; ⚠ TODO no generic gate for other state-gated key handlers.  **Tag:** race, motion, overlay, local-env-lies
+
+
+
 ### 2026-10-23 · adding motion to a shipped component · `63d2ba2`
 - **Rule:** when you add a decorative element to a component people already use (an indicator, a marker, a busy span), put it **last** (or use a pseudo-element) and let it carry state **only while it animates**. A new first child shifts every `:nth-child` selector and test that counts the items, and a decoration that permanently takes over the selected item's own look breaks every consumer and spec reading that look (contrast rings, fills, underlines).  **Why:** the sliding tab/segment indicator was the first child and always placed; master's display-preference, nav-link and nav-primitive specs (written by other sessions) read the selected option's own ring at rest and picked an option by `:nth-child(2)`.
 - **Gate:** the feedback-lists DOM test asserts the indicator is the last child; `feedback-kit.spec.mjs` asserts the indicator is hidden and the option's own mark visible at rest.  **Tag:** compatibility, motion, parallel-sessions, generalizable
@@ -263,3 +273,5 @@ The `v2.16.0` tag passed every gate and the Release run went green, yet npm had 
 step treated a missing token as "inert-safe" and exited 0 with a notice. Check the registry, not
 the run colour, after every tag. Gate: the publish step now fails the run when the token is
 missing or blank.
+<!-- lesson-skip: 6afa2d2 timing polish caught by frame review, not a reusable trap -->
+<!-- lesson-skip: 96acfc2 Firefox-only cause unconfirmed (not reproducible here); revisit if CI confirms it -->

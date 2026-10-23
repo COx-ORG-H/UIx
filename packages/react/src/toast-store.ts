@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { tokenMs } from './motion.js';
 
 /**
  * The imperative toast queue behind `toast()` (HAR-1363; TENSOR A2/C3, MOTUS A3/A4/C-13).
@@ -87,8 +88,11 @@ const DEFAULT_DURATION: Record<ToastKind, number | null> = {
   success: 5000, info: 5000, default: 5000, warning: 8000, error: null, loading: null,
 };
 
-/** How long the leave animation gets before the record is removed. */
-export const TOAST_LEAVE_MS = 200;
+/**
+ * How long the leave transition gets before the record is removed when no stylesheet answers:
+ * the store reads `--uix-dur-exit` (toast.css leaves on it), so the two never disagree (HAR-2578).
+ */
+export const TOAST_LEAVE_MS = 110;
 
 let counter = 0;
 
@@ -134,7 +138,7 @@ export function createToastStore(): ToastStore {
     set(records.map((r) => (ids.has(r.id) ? { ...r, leaving: true } : r)));
     for (const r of closing) r.onDismiss?.(reason);
     const remove = () => set(records.filter((r) => !(ids.has(r.id) && r.leaving)));
-    if (typeof setTimeout === 'function') setTimeout(remove, TOAST_LEAVE_MS); else remove();
+    if (typeof setTimeout === 'function') setTimeout(remove, tokenMs('--uix-dur-exit', TOAST_LEAVE_MS)); else remove();
   };
 
   return {

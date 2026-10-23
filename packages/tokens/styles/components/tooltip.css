@@ -15,12 +15,16 @@
     padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm);
     /* no pointer-events:none — the bubble must be hoverable (WCAG 1.4.13, UIX-A11Y-1) */
     box-shadow: var(--uix-shadow-popover); white-space: normal;
-    opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
+    /* grows out of the trigger (--uix-anchor-origin); the closed state carries the faster exit. The
+       React Tooltip waits --uix-delay-tooltip before it opens on hover, and a neighbour hovered within
+       --uix-delay-tooltip-skip of one closing opens at once with [data-uix-instant] (no fade). */
+    opacity: 0; transform: scale(.97); transform-origin: var(--uix-anchor-origin, bottom center);
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out);
   }
   /* rich content (HAR-1349): a short list or a few lines, never interactive */
   .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-left: 1.1em; }
   .uix-tooltip__bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: var(--uix-space-1); }
-  .uix-tooltip__bubble:popover-open { opacity: 1; }
+  .uix-tooltip__bubble:popover-open { opacity: 1; transform: none; transition-duration: var(--uix-dur-fast); }
   /* A shortcut in the bubble (HAR-2031: Tooltip `shortcut`, Button `shortcut`): after the text,
      the keys drawn as outlines in the bubble's own colour, so they keep its contrast in both
      themes. A Button's hint bubble is one line: the name of an icon button, then the keys. */
@@ -28,7 +32,7 @@
   .uix-tooltip__shortcut:first-child { margin-inline-start: 0; }
   .uix-tooltip__shortcut .uix-kbd { color: inherit; background: transparent; border-color: color-mix(in srgb, currentColor 45%, transparent); }
   .uix-tooltip__bubble--hint { white-space: nowrap; }
-  @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; } }
+  @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; transform: scale(.97); } }
 
   /* legacy CSS-only tooltip — clipped by overflow ancestors; superseded by .uix-tooltip__bubble */
   [data-uix-tip] { position: relative; }
