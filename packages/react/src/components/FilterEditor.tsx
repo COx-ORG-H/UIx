@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from 'react';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
@@ -9,9 +9,11 @@ import { Radio, RadioGroup } from './Radio.js';
 import { Select } from './Select.js';
 import { Chip } from './Chip.js';
 import { fillLabel } from '../fill-label.js';
+import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { foldForSearch } from '../search-suggest-model.js';
-import { DATE_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset } from '../filter-model.js';
+import { DATE_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset, orderFilterRange } from '../filter-model.js';
 import type { DateFilterOperator, FilterChoice, FilterField, FilterValue, NumberFilterOperator, TextFilterOperator } from '../filter-model.js';
 
 export interface FilterEditorLabels {
@@ -122,7 +124,9 @@ export function FilterEditor({ field, value: valueProp, onValueChange, onApply, 
   if (value.kind === 'date' && field.dateOperators?.length && !field.dateOperators.includes(value.operator)) value = { ...value, operator: field.dateOperators[0] };
   /** A tag typed but not yet committed: Apply and Enter take it along (set by TagsBody). */
   const pendingTag = useRef<() => FilterValue | undefined>(() => undefined);
-  const apply = () => onApply(pendingTag.current() ?? value);
+  // Only a tags body has a tag being typed: a field that was tags before must not leak its draft.
+  // A range typed the wrong way round is put in order rather than matching nothing.
+  const apply = () => onApply(orderFilterRange((value.kind === 'tags' ? pendingTag.current() : undefined) ?? value));
   // Enter applies in every kind (HAR-1832), not only in the text field. A control that uses Enter
   // itself (a button, an open list, a tag being added) prevents it first; an IME commit does not apply.
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -202,7 +206,8 @@ export function FilterEditor({ field, value: valueProp, onValueChange, onApply, 
   return (
     <div className="uix-filter-popover uix-filter-editor" role="group" aria-labelledby={`${id}-label`} data-kind={field.kind} onKeyDown={onKeyDown}>
       <div id={`${id}-label`} className="uix-filter-editor__label">{field.label}</div>
-      {body}
+      {/* Another field is another editor: its search, its typed tag and its results start fresh. */}
+      <Fragment key={`${field.kind}:${field.id}`}>{body}</Fragment>
       <div className="uix-filter-popover__actions">
         <Button type="button" size="sm" onClick={onClear}>{labels.clear}</Button>
         <Button type="button" size="sm" variant="primary" onClick={apply}>{labels.apply}</Button>
@@ -247,7 +252,8 @@ function ReferenceBody({ field, value, onChange, labels, delay }: { field: Filte
   const [query, setQuery] = useState('');
   const [state, setState] = useState<{ status: 'idle' | 'loading' | 'done' | 'error'; results: readonly FilterChoice[] }>({ status: 'idle', results: [] });
   const [attempt, setAttempt] = useState(0);
-  const [slow, setSlow] = useState(false);
+  // The kit's pending rule: nothing for 300 ms, then the note for at least 500 ms (no flash).
+  const slow = useDelayedPending(state.status === 'loading');
   const latest = useRef(0);
   // The latest functions, so a field object rebuilt on every render does not search again (HAR-1832):
   // the search re-runs for a new query, a retry, or another field.
@@ -268,11 +274,6 @@ function ReferenceBody({ field, value, onChange, labels, delay }: { field: Filte
     }, delay);
     return () => window.clearTimeout(timer);
   }, [query, attempt, field.id, delay]);
-  useEffect(() => {
-    if (state.status !== 'loading') { setSlow(false); return; }
-    const timer = window.setTimeout(() => setSlow(true), 300);
-    return () => window.clearTimeout(timer);
-  }, [state.status]);
 
   // Ids restored from a saved view arrive without labels: ask once per set of unknown ids.
   const [known, setKnown] = useState<ReadonlyMap<string, string>>(new Map());
@@ -311,11 +312,13 @@ function ReferenceBody({ field, value, onChange, labels, delay }: { field: Filte
       )}
       <Input type="search" size="sm" aria-label={labels.search} placeholder={labels.search} value={query} onChange={(e) => setQuery(e.currentTarget.value)} autoFocus />
       <div className="uix-filter-editor__list" aria-busy={state.status === 'loading' || undefined}>
-        {state.status === 'loading' && slow && <p className="uix-filter-editor__note" role="status">{labels.searching}</p>}
         {state.status === 'error' && <p className="uix-filter-editor__note" role="alert">{labels.searchFailed} <Button type="button" variant="link" size="sm" onClick={() => setAttempt((n) => n + 1)}>{labels.retry}</Button></p>}
         {state.status === 'done' && state.results.length === 0 && <p className="uix-filter-editor__note">{labels.noMatches}</p>}
         {showResults && state.results.map((r) => <Checkbox key={r.value} label={r.label} checked={chosen.has(r.value)} onChange={(e) => toggle(r, e.currentTarget.checked)} />)}
       </div>
+      {/* Below the list, so the results on show do not jump down while the next ones load; one
+          region that stays mounted, so "Searching…" is read. */}
+      <p className={cx('uix-filter-editor__note', 'uix-filter-editor__searching')} role="status" data-shown={slow || undefined}>{slow ? labels.searching : ''}</p>
     </>
   );
 }

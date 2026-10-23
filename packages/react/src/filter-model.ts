@@ -150,13 +150,31 @@ function addDays(date: string, days: number): string {
 }
 
 /**
+ * A range whose ends were typed the wrong way round (from 10 Oct to 1 Oct, 7 to 2) put in order,
+ * so it means what the person meant instead of matching nothing (PR #168 review). Number
+ * `between`, date `between` and `date-range`; every other value comes back as it is. Internal:
+ * FilterEditor applies through it, `dateFilterBounds` and `summarizeFilter` read through it.
+ */
+export function orderFilterRange<V extends FilterValue | undefined>(value: V): V {
+  if (!value) return value;
+  if (value.kind === 'number' && value.operator === 'between' && value.value !== undefined && value.to !== undefined && value.value > value.to) {
+    return { ...value, value: value.to, to: value.value };
+  }
+  if ((value.kind === 'date-range' || (value.kind === 'date' && value.operator === 'between')) && value.from && value.to && value.from > value.to) {
+    return { ...value, from: value.to, to: value.from };
+  }
+  return value;
+}
+
+/**
  * The half-open range a `date` filter means, for a query (HAR-1832): `{ from }` is the first day
  * included, `{ until }` the first day NOT included, either may be missing. "On 5 Oct" is
  * `[5 Oct, 6 Oct)`, "before 5 Oct" is `[…, 5 Oct)`, "after 5 Oct" is `[6 Oct, …)`, "between 1 and
  * 5 Oct" is `[1 Oct, 6 Oct)`. A `date-range` value reads as `between` with optional ends. Empty
  * values give `{}`.
  */
-export function dateFilterBounds(value: FilterValue | undefined): { from?: string; until?: string } {
+export function dateFilterBounds(input: FilterValue | undefined): { from?: string; until?: string } {
+  const value = orderFilterRange(input);
   if (value?.kind === 'date-range') {
     return { ...(value.from ? { from: value.from } : {}), ...(value.to ? { until: addDays(value.to, 1) } : {}) };
   }
@@ -217,7 +235,8 @@ export interface SummarizeFilterOptions {
  * 01.10.2026 – 05.10.2026", "Created: before 05.10.2026", "Host: db-01, db-02 +1", "Escalated: Yes". An enum value equal to one of `field.presets`
  * gives that preset's label (the `preset` label). Empty values give an empty string.
  */
-export function summarizeFilter(field: FilterField, value: FilterValue | undefined, options: SummarizeFilterOptions = {}): string {
+export function summarizeFilter(field: FilterField, input: FilterValue | undefined, options: SummarizeFilterOptions = {}): string {
+  const value = orderFilterRange(input);
   if (!value || isFilterEmpty(value)) return '';
   const labels = { ...DEFAULT_FILTER_SUMMARY_LABELS, ...options.labels, operators: { ...DEFAULT_FILTER_SUMMARY_LABELS.operators, ...options.labels?.operators } };
   const date = options.formatDate ?? ((d: string) => d);

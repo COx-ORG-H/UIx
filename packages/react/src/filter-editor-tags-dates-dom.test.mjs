@@ -216,3 +216,65 @@ test('German labels through UixLabelsProvider filterEditor', () => {
   assert.equal(t.host.querySelector('.uix-filter-editor__date span').textContent, 'Datum');
   t.unmount();
 });
+
+/* PR #168 review: the search note waits 300 ms and stays at least 500 ms, below the list, in one
+ * region; a range typed the wrong way round is put in order; another field starts fresh. */
+test('review: "Searching…" after 300 ms for at least 500 ms, below the results, in one mounted region', async () => {
+  let answer;
+  const field = { id: 'who', label: 'Assignee', kind: 'reference', onSearch: () => new Promise((r) => { answer = r; }) };
+  const t = mount(h(Harness, { field, initial: undefined, log: [] }));
+  const region = t.host.querySelector('.uix-filter-editor__searching');
+  assert.ok(region, 'the region is there before it speaks');
+  assert.equal(region.getAttribute('role'), 'status');
+  assert.equal(t.host.querySelector('.uix-filter-editor__list').nextElementSibling, region, 'below the list');
+  await settle(150);
+  assert.equal(region.textContent, '', 'nothing in the first 300 ms');
+  await settle(500); // act flushes the loading render's effects only at its own end: allow for that
+  assert.equal(region.textContent, 'Searching…');
+  assert.equal(region.dataset.shown, 'true');
+  await act(async () => { answer([{ value: 'u1', label: 'Ada' }]); await Promise.resolve(); });
+  await settle(100);
+  assert.equal(region.textContent, 'Searching…', 'held for at least 500 ms once shown');
+  await settle(700);
+  assert.equal(t.host.querySelector('.uix-filter-editor__searching'), region, 'the same region');
+  assert.equal(region.textContent, '');
+  t.unmount();
+});
+
+test('review: a range typed the wrong way round is applied, bounded and summarised in order', () => {
+  const created = { id: 'c', label: 'Created', kind: 'date' };
+  const log = [];
+  const t = mount(h(Harness, { field: created, initial: { kind: 'date', operator: 'between', from: '2026-10-10', to: '2026-10-01' }, log }));
+  click([...t.host.querySelectorAll('button')].find((b) => b.textContent === 'Apply'));
+  assert.deepEqual(applied(log).at(-1), { kind: 'date', operator: 'between', from: '2026-10-01', to: '2026-10-10' });
+  t.unmount();
+  const n = mount(h(Harness, { field: { id: 'n', label: 'Age', kind: 'number' }, initial: { kind: 'number', operator: 'between', value: 7, to: 2 }, log }));
+  click([...n.host.querySelectorAll('button')].find((b) => b.textContent === 'Apply'));
+  assert.deepEqual(applied(log).at(-1), { kind: 'number', operator: 'between', value: 2, to: 7 });
+  n.unmount();
+  assert.deepEqual(ui.dateFilterBounds({ kind: 'date', operator: 'between', from: '2026-10-10', to: '2026-10-01' }), { from: '2026-10-01', until: '2026-10-11' });
+  assert.deepEqual(ui.dateFilterBounds({ kind: 'date-range', from: '2026-10-10', to: '2026-10-01' }), { from: '2026-10-01', until: '2026-10-11' });
+  assert.equal(ui.summarizeFilter(created, { kind: 'date', operator: 'between', from: '2026-10-10', to: '2026-10-01' }), 'Created: 2026-10-01 – 2026-10-10');
+});
+
+test('review: another field starts fresh — a typed tag neither stays nor leaks into another kind', () => {
+  const a = { id: 'host', label: 'Host', kind: 'tags' };
+  const b = { id: 'label', label: 'Label', kind: 'tags' };
+  const c = { id: 'title', label: 'Title', kind: 'text' };
+  const log = [];
+  let show;
+  function Switcher() {
+    const [field, setField] = useState(a);
+    show = setField;
+    return h(Harness, { field, initial: undefined, log });
+  }
+  const t = mount(h(Switcher));
+  type(t.host.querySelector('.uix-taginput__field'), 'db-01');
+  act(() => show(b));
+  assert.equal(t.host.querySelector('.uix-taginput__field').value, '', 'the other tags field has no typed tag');
+  type(t.host.querySelector('.uix-taginput__field'), 'web-01');
+  act(() => show(c));
+  click([...t.host.querySelectorAll('button')].find((x) => x.textContent === 'Apply'));
+  assert.equal(applied(log).at(-1).kind, 'text', 'a text field applies text, not the tag typed before');
+  t.unmount();
+});
