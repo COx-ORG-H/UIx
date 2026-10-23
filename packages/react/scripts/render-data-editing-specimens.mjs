@@ -117,12 +117,12 @@ const BUILDERS = [
       provenance: () => 'Retrieved 22 Oct 2026 over SRU; matched on title and author.',
       onDecision() {}, onAdopt() {},
     }));
+    // On the shared workflows route: the diff-viewer and match-review routes are each copied whole
+    // as their reference's markup, so a caption there would leak docs-only classes into it.
     return {
-      'examples-diff-viewer': [
+      'examples-workflows-pipelines': [
         caption('Diff viewer for people (React <code>DiffViewer labelFor renderValue provenance</code>, HAR-1369) — entries named instead of JSON paths, values shown as the product shows them, and where each version came from under it'),
         `<div data-diff-viewer-people-example>${html(diff)}</div>`,
-      ].join('\n'),
-      'examples-match-review': [
         caption('Match review, adopt mode (React <code>MatchReview fieldMode="adopt"</code>, HAR-1369) — the record now against a candidate, field by field; a checkbox where they differ, "Same" where not; Adopt takes the chosen fields; where the candidate comes from in a disclosure'),
         `<div data-match-review-adopt-example>${html(match)}</div>`,
       ].join('\n'),

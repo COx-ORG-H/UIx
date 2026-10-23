@@ -49,10 +49,10 @@ test('every state named in a caption is on the page', () => {
   assert.match(crm, /<summary>Details<\/summary>/);
   assert.match(crm, />Show older entries</);
   // diff viewer for people and match review adopt mode
-  const diff = specimens['examples-diff-viewer'];
+  const diff = specimens['examples-workflows-pipelines'];
   assert.match(diff, /<span class="uix-diff-viewer__name">Authors<\/span>/);
   assert.match(diff, /<div class="uix-diff-viewer__provenance">Registry import \(DNB\), 20 Oct 2026<\/div>/);
-  const match = specimens['examples-match-review'];
+  const match = specimens['examples-workflows-pipelines'];
   assert.match(match, /class="uix-match-review uix-match-review--adopt"/);
   assert.equal((match.match(/class="uix-match-review__adopt"/g) ?? []).length, 2, 'author and ISBN differ');
   assert.match(match, /<details class="uix-match-review__provenance">/);
