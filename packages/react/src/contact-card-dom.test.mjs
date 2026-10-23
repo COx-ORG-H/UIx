@@ -51,6 +51,14 @@ test('telHref keeps the digits and a leading plus', () => {
   assert.equal(ui.telHref(' 061/234 567 '), 'tel:061234567');
 });
 
+test('telHref puts an extension after the number as ;ext=, never into it', () => {
+  assert.equal(ui.telHref('+387 33 123 456 ext. 12'), 'tel:+38733123456;ext=12');
+  assert.equal(ui.telHref('+387 33 123 456 x12'), 'tel:+38733123456;ext=12');
+  assert.equal(ui.telHref('+387 33 123 456, lok. 204'), 'tel:+38733123456;ext=204');
+  assert.equal(ui.telHref('033 123 456 #7'), 'tel:033123456;ext=7');
+  assert.equal(ui.telHref('+1 (555) 010-9999 Ext: 4410'), 'tel:+15550109999;ext=4410');
+});
+
 test('active: name, role, details as text, Email and Call as links named for the person', () => {
   const { host, unmount } = mount(h(ui.ContactCard, { ...PERSON, avatar: h(ui.Avatar, { size: 'lg' }, 'AH'), nameAs: 'h3' }));
   const card = host.firstElementChild;

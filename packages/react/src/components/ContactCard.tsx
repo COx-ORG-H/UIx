@@ -72,7 +72,13 @@ export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, '
 }
 
 /** The digits and a leading + of a phone number, for a `tel:` link. */
-export const telHref = (phone: string) => `tel:${phone.trim().replace(/(?!^\+)[^\d]/g, '')}`;
+export const telHref = (phone: string) => {
+  // An extension ("ext. 12", "x12", "#12", "lok. 12") is not part of the number: it goes after
+  // it as RFC 3966's `;ext=`, so a dialler does not call +387 61 234 56712 (review of PR #166).
+  const extension = /[\s,;]*(?:ext\.?|extn\.?|extension|x|#|lok(?:al)?\.?)\s*:?\s*(\d+)\s*$/i.exec(phone);
+  const number = (extension ? phone.slice(0, extension.index) : phone).trim().replace(/(?!^\+)[^\d]/g, '');
+  return `tel:${number}${extension ? `;ext=${extension[1]}` : ''}`;
+};
 
 const PersonGlyph = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
