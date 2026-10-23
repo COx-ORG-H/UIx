@@ -24,6 +24,13 @@ export interface FoldedText {
 
 const COMBINING_MARK = /\p{M}/u;
 
+/**
+ * Letters that are not a base letter plus a combining mark, so NFD leaves them alone: the Bosnian,
+ * Croatian and Serbian đ, the Danish and Norwegian ø, the Polish ł, the dotless ı. Each folds to the
+ * letter people type for it ("dorde" finds "Đorđe"). One letter each, so the index map stays exact.
+ */
+const STROKED: Readonly<Record<string, string>> = { 'đ': 'd', 'ø': 'o', 'ł': 'l', 'ı': 'i', 'ħ': 'h', 'ŧ': 't' };
+
 /** Fold `text` for matching and keep a map back to the original indices. */
 export function foldForSearch(text: string): FoldedText {
   let folded = '';
@@ -33,7 +40,8 @@ export function foldForSearch(text: string): FoldedText {
   for (const char of text) {
     // Lower-case BEFORE decomposing: 'İ'.toLowerCase() is 'i' + a combining dot, which the mark
     // filter below must still see and drop.
-    const base = char === 'ß' || char === 'ẞ' ? 'ss' : char.toLowerCase().normalize('NFD');
+    const lower = char.toLowerCase();
+    const base = char === 'ß' || char === 'ẞ' ? 'ss' : STROKED[lower] ?? lower.normalize('NFD');
     for (const part of base) {
       if (COMBINING_MARK.test(part)) continue;
       folded += part;
