@@ -197,12 +197,22 @@ export function InlineEdit<T = string>({
   editingRef.current = isEditing;
   const inFlight = useRef(false);
   const lastSent = useRef<{ value: T } | null>(null);
+  /** Counts the times the editor opened: a save that settles after a reopen must not close the new session. */
+  const session = useRef(0);
+  /** A pointer press inside the editor is under way (Safari and macOS Firefox blur with no relatedTarget). */
+  const pressInside = useRef(false);
   const mounted = useRef(true);
   // Set on mount too: StrictMode runs the cleanup once before the real mount.
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
-  // A new value from the parent supersedes the one shown since the save (layout: no frame of the old one).
-  useLayoutEffect(() => { setAccepted(null); }, [value]);
+  // A new value from the parent supersedes the one shown since the save (layout: no frame of the old
+  // one). Compared with `equals`: an object value rebuilt on every parent render is not a new value.
+  const lastValue = useRef(value);
+  useLayoutEffect(() => {
+    if (equals(lastValue.current, value)) return;
+    lastValue.current = value;
+    setAccepted(null);
+  });
   const shown = accepted ? accepted.value : value;
 
   // "Saving…" is announced only for a save slow enough to show its pending look.
@@ -257,6 +267,7 @@ export function InlineEdit<T = string>({
     lastSent.current = null;
   }
   const start = () => {
+    session.current += 1;
     resetForOpen();
     setEditing(true);
   };
@@ -288,6 +299,7 @@ export function InlineEdit<T = string>({
     if (equals(next, shown)) { setError(undefined); close(explicit); return; }
     setError(undefined);
     lastSent.current = { value: next };
+    const mine = session.current;
     let result: void | Promise<unknown>;
     try {
       result = onSave(next);
@@ -299,8 +311,9 @@ export function InlineEdit<T = string>({
       setAccepted({ value: next });
       setStatus(labels.saved);
       setSaved(true);
-      // A parent may have closed a controlled editor while the save ran: the value still counts.
-      if (editingRef.current) close(explicit);
+      // A parent may have closed a controlled editor while the save ran: the value still counts. An
+      // editor opened again since is a new session the old save must not close.
+      if (editingRef.current && session.current === mine) close(explicit);
     };
     if (!result || typeof (result as Promise<unknown>).then !== 'function') { done(); return; }
     inFlight.current = true;
@@ -316,6 +329,7 @@ export function InlineEdit<T = string>({
         if (!mounted.current) return;
         inFlight.current = false;
         setPending(false);
+        if (session.current !== mine) return;
         setStatus('');
         setError({ message: failureMessage(reason), failure: { reason } });
         editorRef.current?.querySelector<HTMLElement>('input, textarea, select')?.focus();
@@ -333,6 +347,8 @@ export function InlineEdit<T = string>({
 
   const onEditorKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
+      // An Escape that closes an open list inside the editor (a Combobox, a Select) is the list's.
+      if (event.defaultPrevented || (event.target as HTMLElement).closest?.('[aria-expanded="true"]')) return;
       // Ours: an Escape that cancels the edit must not also close the drawer around it.
       event.preventDefault();
       event.stopPropagation();
@@ -351,7 +367,24 @@ export function InlineEdit<T = string>({
     // Focus moving to this field's own buttons (Save, Cancel, Try again) is not leaving it.
     const next = event.relatedTarget;
     if (next && event.currentTarget.contains(next as Node)) return;
-    send(draft, false);
+    // Safari and macOS Firefox do not focus a clicked button: the blur comes with no relatedTarget
+    // and the click follows. A press that started inside the editor is not leaving it; otherwise
+    // wait a task (the click runs first) and save only if focus really left and Cancel did not run.
+    if (pressInside.current) return;
+    if (next) { send(draft, false); return; }
+    const draftNow = draft;
+    setTimeout(() => {
+      if (!editingRef.current || pressInside.current) return;
+      if (editorRef.current?.contains(document.activeElement)) return;
+      send(draftNow, false);
+    }, 0);
+  };
+  const onEditorPointerDown = () => {
+    pressInside.current = true;
+    // Released after the click that follows the press has run.
+    const release = () => { setTimeout(() => { pressInside.current = false; }, 0); window.removeEventListener('pointerup', release, true); window.removeEventListener('pointercancel', release, true); };
+    window.addEventListener('pointerup', release, true);
+    window.addEventListener('pointercancel', release, true);
   };
 
   const liveRegion = <span className="uix-visually-hidden" role="status" aria-live="polite">{status}</span>;
@@ -373,25 +406,27 @@ export function InlineEdit<T = string>({
     );
   }
 
+  // The view and the editor are the same root element with the live region as its second child, so
+  // the region is never remounted with its text in it (a region inserted with text announces nothing).
   if (!isEditing) {
-    if (trigger === 'icon') {
-      return (
-        <span className={cx('uix-inline-edit', 'uix-inline-edit--icon-trigger', className)}>
-          <span className="uix-inline-edit__value">{display}</span>
-          <button ref={viewRef} type="button" className="uix-inline-edit__trigger" aria-label={fillLabel(labels.edit, { label })} onClick={start}>
-            <PencilIcon size="sm" />
-          </button>
-          {liveRegion}
-        </span>
-      );
-    }
     return (
-      <span className={cx('uix-inline-edit', className)}>
-        <button ref={viewRef} type="button" className="uix-inline-edit__view" onClick={start}>
-          <span className="uix-inline-edit__value">{display}</span>
-          <span className="uix-visually-hidden">, {fillLabel(labels.edit, { label })}</span>
-          <span className="uix-inline-edit__icon" aria-hidden="true"><PencilIcon size="sm" /></span>
-        </button>
+      <span className={cx('uix-inline-edit', trigger === 'icon' && 'uix-inline-edit--icon-trigger', className)}>
+        {trigger === 'icon'
+          ? (
+            <>
+              <span className="uix-inline-edit__value">{display}</span>
+              <button ref={viewRef} type="button" className="uix-inline-edit__trigger" aria-label={fillLabel(labels.edit, { label })} onClick={start}>
+                <PencilIcon size="sm" />
+              </button>
+            </>
+          )
+          : (
+            <button ref={viewRef} type="button" className="uix-inline-edit__view" onClick={start}>
+              <span className="uix-inline-edit__value">{display}</span>
+              <span className="uix-visually-hidden">, {fillLabel(labels.edit, { label })}</span>
+              <span className="uix-inline-edit__icon" aria-hidden="true"><PencilIcon size="sm" /></span>
+            </button>
+          )}
         {liveRegion}
       </span>
     );
@@ -419,6 +454,7 @@ export function InlineEdit<T = string>({
         aria-busy={pending || undefined}
         onKeyDown={onEditorKeyDown}
         onBlur={onEditorBlur}
+        onPointerDownCapture={onEditorPointerDown}
       >
         <div className="uix-inline-edit__control">
           {renderEditor
@@ -428,8 +464,9 @@ export function InlineEdit<T = string>({
               : <Input {...field} disabled={false} size="sm" value={textDraft} invalid={error != null} onChange={(event) => change(event.currentTarget.value as T)} />}
         </div>
         <span className="uix-inline-edit__actions">
-          {commit !== 'change' && <Button type="button" size="sm" variant="primary" loading={pending} onClick={() => save()}>{labels.save}</Button>}
-          <Button type="button" size="sm" disabled={pendingVisible} onClick={cancel}>{labels.cancel}</Button>
+          {/* mousedown keeps focus in the field: in Safari a clicked button never takes it */}
+          {commit !== 'change' && <Button type="button" size="sm" variant="primary" loading={pending} onMouseDown={(event) => event.preventDefault()} onClick={() => save()}>{labels.save}</Button>}
+          <Button type="button" size="sm" disabled={pendingVisible} onMouseDown={(event) => event.preventDefault()} onClick={cancel}>{labels.cancel}</Button>
         </span>
         {errorBody != null && <div id={errorId} className="uix-field__error uix-inline-edit__error" role="alert">{errorBody}</div>}
       </div>
