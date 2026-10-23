@@ -9,10 +9,12 @@
   .uix-alert__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-alert__title { font-weight: 600; margin-bottom: var(--uix-space-1); }
   .uix-alert__body { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
-  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 30%, transparent);    --tone-fg: var(--uix-info-text); }
-  .uix-alert--success { --tone-bg: var(--uix-success-bg); --tone-border: color-mix(in srgb, var(--uix-success) 30%, transparent); --tone-fg: var(--uix-success-text); }
-  .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 40%, transparent); --tone-fg: var(--uix-warning-text); }
-  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 30%, transparent);  --tone-fg: var(--uix-danger-text); }
+  /* the border is a 24 % hairline of the tone (HAR-1563): the tint already says the tone, and a
+     stronger edge made a page of alerts loud. The icon takes the text role, which clears 3:1. */
+  .uix-alert--info    { --tone-bg: var(--uix-info-bg);    --tone-border: color-mix(in srgb, var(--uix-info) 24%, transparent);    --tone-fg: var(--uix-info-text); }
+  .uix-alert--success { --tone-bg: var(--uix-success-bg); --tone-border: color-mix(in srgb, var(--uix-success) 24%, transparent); --tone-fg: var(--uix-success-text); }
+  .uix-alert--warning { --tone-bg: var(--uix-warning-bg); --tone-border: color-mix(in srgb, var(--uix-warning) 24%, transparent); --tone-fg: var(--uix-warning-text); }
+  .uix-alert--danger  { --tone-bg: var(--uix-danger-bg);  --tone-border: color-mix(in srgb, var(--uix-danger) 24%, transparent);  --tone-fg: var(--uix-danger-text); }
 }
 
 /* HAR-1614: the text column takes the free width and may shrink below its longest word, so a

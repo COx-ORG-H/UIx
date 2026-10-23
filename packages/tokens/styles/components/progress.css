@@ -16,3 +16,10 @@
     background: conic-gradient(var(--uix-accent) calc(var(--val, .66) * 360deg), var(--uix-bg-active) 0); }
   .uix-ring__inner { width: 32px; height: 32px; border-radius: 50%; background: var(--uix-surface); display: grid; place-items: center; font-size: var(--uix-text-meta); font-weight: 600; }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same rule */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-progress--indeterminate .uix-progress__bar { width: 100%; animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
+  }
+}

@@ -15,3 +15,11 @@
   }
   .uix-live { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same rule */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-heartbeat__ping { display: none; }
+    :root[data-motion="reduce"] .uix-heartbeat:not(.uix-heartbeat--idle) .uix-heartbeat__dot { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
+  }
+}
