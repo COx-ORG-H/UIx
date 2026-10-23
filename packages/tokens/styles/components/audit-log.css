@@ -21,10 +21,17 @@
   .uix-audit-log__when { display: grid; justify-items: end; gap: calc(var(--uix-space-1) / 2); text-align: end; }
   .uix-audit-log__exact { font-size: var(--uix-text-eyebrow); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
   .uix-audit-log__more { grid-column: 1 / -1; }
-  .uix-audit-log__more summary { width: max-content; cursor: pointer; color: var(--uix-link); font-weight: 500; }
-  .uix-audit-log__more summary:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
+  /* Details: a quiet disclosure, not a link — the kit chevron (as CollapsibleSection), muted text. */
+  .uix-audit-log__more-summary { display: inline-flex; align-items: flex-start; gap: var(--uix-space-1); width: max-content; list-style: none; cursor: pointer; color: var(--uix-text-muted); font-weight: 500; }
+  .uix-audit-log__more-summary::-webkit-details-marker { display: none; }
+  .uix-audit-log__more-summary:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-xs); }
+  .uix-audit-log__more[open] .uix-collapsible__chevron { transform: rotate(180deg); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-audit-log__more-summary:hover, .uix-audit-log__more-summary:hover .uix-collapsible__chevron { color: var(--uix-text); }
+  }
   .uix-audit-log__detail { margin-top: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); background: var(--uix-bg-subtle); color: var(--uix-text-hushed); overflow-wrap: anywhere; }
-  .uix-audit-log__more-row { display: flex; justify-content: center; }
+  .uix-audit-log__more-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--uix-space-2) var(--uix-space-3); }
+  .uix-audit-log__more-failed { color: var(--uix-danger-text); font-size: var(--uix-text-meta); }
   /* a phone: who, then what, then when, one under the other */
   @media (max-width: 30rem) {
     .uix-audit-log__row { grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-1); }

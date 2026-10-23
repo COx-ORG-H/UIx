@@ -5,6 +5,8 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
+import { ChevronDownIcon } from '../icons/components.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
 import type { FilterChoice, FilterField, FilterValue } from '../filter-model.js';
 import { BusyRegion } from './BusyRegion.js';
@@ -26,7 +28,10 @@ export interface AuditLogEvent {
   action: string;
   /** What it was done to: "Patient record 1042", "Invoice R-2026-118". */
   target?: ReactNode;
-  /** When: a `Date`, epoch ms or an ISO string. */
+  /**
+   * When: a `Date`, epoch ms or an ISO string. An ISO date-time without an offset
+   * (`2026-10-22T09:30:00`) is read as UTC, as audit stores keep it, not as the viewer's local time.
+   */
   at: Date | number | string;
   /** More about it, behind a Details disclosure: fields changed, the reason given, the IP. */
   detail?: ReactNode;
@@ -60,6 +65,8 @@ export interface AuditLogLabels {
   loadingMore: string;
   /** Polite status after more entries arrived. `{count}`. */
   loaded: string;
+  /** Shown (as an alert) when `loadMoreError` is set; the Show older entries button retries. */
+  loadMoreFailed: string;
   loading: string;
   empty: string;
   emptyDetail: string;
@@ -82,6 +89,7 @@ export const DEFAULT_AUDIT_LOG_LABELS: AuditLogLabels = {
   loadMore: 'Show older entries',
   loadingMore: 'Loading older entries…',
   loaded: '{count} older entries shown',
+  loadMoreFailed: 'The older entries could not be loaded.',
   loading: 'Loading the history',
   empty: 'No access recorded yet',
   emptyDetail: 'Every time someone opens or changes this record, it shows here.',
@@ -110,6 +118,11 @@ export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'childr
   onRetry?: () => void;
   /** The actors offered in the Who filter. Without them there is no Who filter. */
   actors?: readonly FilterChoice[];
+  /**
+   * Names for actor ids in `filters.actor` that are not among `actors` (restored from a URL or a
+   * saved view): the Who chip shows the names, not the ids.
+   */
+  resolveActorLabels?: (ids: readonly string[]) => Promise<readonly FilterChoice[]>;
   /** The filters in effect (controlled). With `onFiltersChange`, the filter bar shows. */
   filters?: AuditLogFilters;
   onFiltersChange?: (filters: AuditLogFilters) => void;
@@ -117,6 +130,8 @@ export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'childr
   hasMore?: boolean;
   onLoadMore?: () => void;
   loadingMore?: boolean;
+  /** Loading older entries failed: the button stays to try again, with `labels.loadMoreFailed` beside it. */
+  loadMoreError?: boolean;
   /** Locale of times and dates; a list falls back in order. */
   locale?: string | readonly string[];
   /**
@@ -125,7 +140,10 @@ export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'childr
    * prints "2026 M10 22"), or for a fixed product format.
    */
   formatExact?: (date: Date) => string;
-  /** Time zone of the times shown, e.g. the practice's `Europe/Sarajevo`. Default: the viewer's. */
+  /**
+   * Time zone of the times shown, e.g. the practice's `Europe/Sarajevo`. Default: the viewer's.
+   * A zone the browser does not know falls back to the viewer's (with a warning in development).
+   */
   timeZone?: string;
   /** Formats `YYYY-MM-DD` in a filter chip. Default: as given. */
   formatDate?: (date: string) => string;
@@ -146,8 +164,8 @@ type FieldId = typeof FIELD_IDS[number];
  * the audit semantics, and supplies entries free of health data.
  */
 export function AuditLog({
-  events, actions, status = 'ready', refreshing = false, onRetry, actors, filters = {}, onFiltersChange,
-  hasMore = false, onLoadMore, loadingMore = false, locale, formatExact, timeZone, formatDate, now, labels: labelOverrides, className, ...props
+  events, actions, status = 'ready', refreshing = false, onRetry, actors, resolveActorLabels, filters = {}, onFiltersChange,
+  hasMore = false, onLoadMore, loadingMore = false, loadMoreError = false, locale, formatExact, timeZone: zoneProp, formatDate, now, labels: labelOverrides, className, ...props
 }: AuditLogProps) {
   const labels = { ...DEFAULT_AUDIT_LOG_LABELS, ...useUixLabels().auditLog, ...labelOverrides };
   const id = useId();
@@ -156,16 +174,20 @@ export function AuditLog({
   // After "Show older entries", say how many arrived, once the consumer has added them.
   useEffect(() => {
     const before = countBefore.current;
-    if (before == null || loadingMore || events.length === before) return;
+    if (before == null || loadingMore) return;
+    // A failed load: the alert says so, the polite "loading" is withdrawn.
+    if (loadMoreError) { countBefore.current = null; setAnnounced(''); return; }
+    if (events.length === before) return;
     countBefore.current = null;
     if (events.length > before) setAnnounced(fillLabel(labels.loaded, { count: events.length - before }));
-  }, [events.length, loadingMore, labels.loaded]);
+  }, [events.length, loadingMore, loadMoreError, labels.loaded]);
 
+  const timeZone = knownTimeZone(zoneProp);
   const intlExact = new Intl.DateTimeFormat(locale as string | string[] | undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone });
   const exact = formatExact ?? ((date: Date) => intlExact.format(date));
   const fields: Record<FieldId, FilterField | null> = {
     when: { id: 'when', label: labels.when, kind: 'date-range' },
-    actor: actors?.length ? { id: 'actor', label: labels.actor, kind: 'enum', options: actors } : null,
+    actor: actors?.length ? { id: 'actor', label: labels.actor, kind: 'enum', options: actors, resolveLabels: resolveActorLabels } : null,
     action: { id: 'action', label: labels.action, kind: 'enum', options: Object.entries(actions).map(([value, a]) => ({ value, label: a.label })) },
   };
   const active = FIELD_IDS.filter((f) => !isFilterEmpty(filters[f]));
@@ -193,10 +215,11 @@ export function AuditLog({
   else body = (
     <>
       <BusyRegion busy={refreshing} className="uix-audit-log__region">
-      <ol className="uix-audit uix-audit-log__list" aria-label={labels.list}>
+      {/* Named once, by the section around it: a second "Access history" on the list repeats it. */}
+      <ol className="uix-audit uix-audit-log__list">
         {events.map((event) => {
           const action = actions[event.action];
-          const date = new Date(event.at);
+          const date = toDate(event.at);
           return (
             <li key={event.id} className="uix-audit__row uix-audit-log__row">
               <span className="uix-audit__actor">{event.actor}</span>
@@ -205,12 +228,15 @@ export function AuditLog({
                 {event.target != null && <span className="uix-audit-log__target">{event.target}</span>}
               </span>
               <span className="uix-audit__time uix-audit-log__when">
-                <RelativeTime value={event.at} now={now} locale={locale} timeZone={timeZone} />
+                <RelativeTime value={date} now={now} locale={locale} timeZone={timeZone} />
                 {!Number.isNaN(date.getTime()) && <span className="uix-audit-log__exact">{exact(date)}</span>}
               </span>
               {event.detail != null && (
                 <details className="uix-audit-log__more">
-                  <summary>{labels.details}</summary>
+                  <summary className="uix-audit-log__more-summary">
+                    <span>{labels.details}</span>
+                    <span className="uix-collapsible__chevron" aria-hidden="true"><ChevronDownIcon size="sm" /></span>
+                  </summary>
                   <div className="uix-audit-log__detail">{event.detail}</div>
                 </details>
               )}
@@ -221,8 +247,9 @@ export function AuditLog({
       </BusyRegion>
       {hasMore && onLoadMore && (
         <div className="uix-audit-log__more-row">
+          {loadMoreError && !loadingMore && <span className="uix-audit-log__more-failed" role="alert">{labels.loadMoreFailed}</span>}
           <Button size="sm" loading={loadingMore} onClick={() => { if (loadingMore) return; countBefore.current = events.length; setAnnounced(labels.loadingMore); onLoadMore(); }}>
-            {labels.loadMore}
+            {loadMoreError && !loadingMore ? labels.retry : labels.loadMore}
           </Button>
         </div>
       )}
@@ -238,18 +265,41 @@ export function AuditLog({
   );
 }
 
+/** An ISO date-time without an offset or Z, read as UTC; everything else as `new Date` reads it. */
+const LOCAL_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/;
+const toDate = (at: Date | number | string) => new Date(typeof at === 'string' && LOCAL_ISO.test(at) ? `${at}Z` : at);
+
+declare const process: { env: { NODE_ENV?: string } } | undefined;
+const warnedZones = new Set<string>();
+/** The zone if `Intl` knows it, else undefined (the viewer's), with one warning per zone in development. */
+function knownTimeZone(zone: string | undefined): string | undefined {
+  if (!zone) return undefined;
+  try {
+    new Intl.DateTimeFormat(undefined, { timeZone: zone });
+    return zone;
+  } catch {
+    if (!warnedZones.has(zone) && typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      warnedZones.add(zone);
+      console.warn(`uix AuditLog: timeZone "${zone}" is not known to this browser; showing the viewer's time zone.`);
+    }
+    return undefined;
+  }
+}
+
 /** One filter chip: its summary when set, the field's name when not; a popover with the editor. */
 function AuditFilter({ id, field, value, formatDate, onApply }: { id: string; field: FilterField; value?: FilterValue; formatDate?: (d: string) => string; onApply: (v: FilterValue | undefined) => void }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const [draft, setDraft] = useState<FilterValue | undefined>(value);
   const set = !isFilterEmpty(value);
   const popover = () => document.getElementById(`${id}-pop`);
+  // Ids restored from a URL or a saved view get their names on the chip.
+  const resolved = useResolvedFilterLabels(field, value);
   return (
     <span ref={anchor} className="uix-audit-log__filter">
       {/* The kit's filter chips: a set filter shows its summary and a × that clears it; an unset
           one is the dashed "add" chip. Either opens the editor. */}
       {set
-        ? <Chip aria-haspopup="dialog" onClick={() => { setDraft(value); popover()?.togglePopover(); }} onRemove={() => onApply(undefined)}>{summarizeFilter(field, value, { formatDate })}</Chip>
+        ? <Chip aria-haspopup="dialog" onClick={() => { setDraft(value); popover()?.togglePopover(); }} onRemove={() => onApply(undefined)}>{summarizeFilter(resolved.field, resolved.value, { formatDate })}</Chip>
         : <Chip variant="add" aria-haspopup="dialog" onClick={() => { setDraft(value); popover()?.togglePopover(); }}>{field.label}</Chip>}
       <Popover id={`${id}-pop`} anchor={anchor} role="dialog" aria-label={field.label}>
         <FilterEditor

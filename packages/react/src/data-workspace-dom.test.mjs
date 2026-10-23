@@ -189,3 +189,122 @@ test('German words through UixLabelsProvider', () => {
   assert.match(html, /Filter hinzufügen/);
   assert.match(html, /aria-label="Maximieren"/);
 });
+
+/* PR #168 review */
+const base = (extra = {}) => ({ label: 'Incidents', rows: ROWS, getRowId: (r) => r.id, columns: COLUMNS, ...extra });
+const filterSet = (values) => ({ fields: FIELDS, values, onChange() {} });
+
+test('review: a refetch with nothing back yet keeps the last body, busy — never "Nothing here yet" in between', () => {
+  const t = mount(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({ state: { kind: 'enum', values: ['closed'] } }) })));
+  assert.match(t.host.textContent, /Nothing matches/);
+  // the person clears the filter: the consumer refetches, the old (empty) rows are all it has
+  act(() => t.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}), refreshing: true }))));
+  assert.match(t.host.textContent, /Nothing matches/, 'the last settled body stays while the rows load');
+  assert.doesNotMatch(t.host.textContent, /Nothing here yet/);
+  assert.equal(t.host.querySelector('.uix-data-workspace__state').getAttribute('aria-busy'), 'true', 'busy at once');
+  act(() => t.root.render(h(ui.DataWorkspace, base({ filters: filterSet({}) }))));
+  assert.equal(t.host.querySelectorAll('tbody tr').length, 6, 'the rows arrive');
+  // from rows: a refetch that has nothing yet keeps the rows on show
+  act(() => t.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}), refreshing: true }))));
+  assert.equal(t.host.querySelectorAll('tbody tr').length, 6);
+  act(() => t.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}) }))));
+  assert.match(t.host.textContent, /Nothing here yet/, 'settled empty: now the empty state');
+  t.unmount();
+});
+
+test('review: Escape that closes a popover or menu inside does not also restore the maximized workspace', () => {
+  const log = [];
+  const t = mount(h(Workspace, { log, extra: { viewMenu: { columns: [{ id: 'title', label: 'Title', visible: true }], onColumnVisibilityChange() {} } } }));
+  click(t.host.querySelector('button[aria-label="Maximize"]'));
+  const view = [...t.host.querySelectorAll('[popover]')].find((p) => p.querySelector('.uix-view-menu'));
+  keydown(view.querySelector('input, button') ?? view, 'Escape');
+  assert.ok(t.host.querySelector('.uix-data-workspace--maximized'), 'Escape in the View popover is the popover\'s');
+  const trigger = view.parentElement.querySelector('button[aria-haspopup="dialog"]');
+  trigger.setAttribute('aria-expanded', 'true'); // as when the popover is open and focus is on the page
+  keydown(document.body, 'Escape');
+  assert.ok(t.host.querySelector('.uix-data-workspace--maximized'), 'an open popover takes the first Escape');
+  trigger.setAttribute('aria-expanded', 'false');
+  keydown(document.body, 'Escape');
+  assert.equal(t.host.querySelector('.uix-data-workspace--maximized'), null, 'with nothing open, Escape restores');
+  t.unmount();
+});
+
+test('review: with selection both the checkbox and the id are frozen; the actions column only when a row has actions, sized to them', () => {
+  const t = mount(h(Workspace, { log: [] }));
+  const table = t.host.querySelector('table');
+  assert.ok(table.classList.contains('uix-table--pinned-col'));
+  assert.ok(table.classList.contains('uix-data-workspace__grid--pin-id'), 'the id column is frozen after the checkbox');
+  t.unmount();
+  const none = renderToStaticMarkup(h(ui.DataWorkspace, base({ rowActions: () => null })));
+  assert.doesNotMatch(none, /uix-table__actions|uix-table--pinned-actions/, 'no row has actions: no column');
+  const some = renderToStaticMarkup(h(ui.DataWorkspace, base({ rowActions: (r) => (r.priority === 1 ? h('button', { type: 'button' }, '⋯') : null) })));
+  assert.match(some, /uix-table--pinned-actions/);
+  assert.equal((some.match(/<td class="uix-table__actions">/g) ?? []).length, 6, 'every row keeps its cell');
+});
+
+test('review: Save changes is a secondary button', () => {
+  const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ viewChanged: true, onSaveView() {} })));
+  assert.match(html, /<button[^>]*class="uix-btn uix-btn--secondary[^"]*"[^>]*>Save changes<\/button>/);
+});
+
+test('review: a chip names ids restored from a URL (field.resolveLabels); applying the last unset filter focuses its chip', async () => {
+  const assignee = { id: 'assignee', label: 'Assignee', kind: 'reference', onSearch: async () => [], resolveLabels: async (ids) => ids.map((id) => ({ value: id, label: id === 'usr_8f3a' ? 'Lea Novak' : id })) };
+  const t = mount(h(ui.DataWorkspace, base({ filters: { fields: [assignee], values: { assignee: { kind: 'reference', values: [{ value: 'usr_8f3a', label: 'usr_8f3a' }] } }, onChange() {} } })));
+  await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
+  assert.match(t.host.querySelector('.uix-data-workspace__chip').textContent, /Assignee: Lea Novak/);
+  t.unmount();
+
+  const log = [];
+  const w = mount(h(Workspace, { log }));
+  const toolbar = () => w.host.querySelector('[role="toolbar"]');
+  const apply = (fieldLabel, pick) => {
+    click(toolbar().querySelector('button.uix-chip--add'));
+    click([...w.host.querySelectorAll('[role="menuitem"]')].find((m) => m.textContent === fieldLabel));
+    const pop = [...w.host.querySelectorAll('[popover]')].find((p) => p.hasAttribute('data-open') && p.querySelector('.uix-filter-editor'));
+    pick(pop);
+    click([...pop.querySelectorAll('button')].find((b) => b.textContent === 'Apply'));
+  };
+  apply('State', (pop) => click(pop.querySelector('.uix-checkbox input')));
+  apply('Title', (pop) => act(() => {
+    const input = pop.querySelector('input:not([type="checkbox"])');
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, 'Vorfall');
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  }));
+  assert.equal(toolbar().querySelector('button.uix-chip--add'), null, 'no unset field left');
+  const titleChip = [...toolbar().querySelectorAll('.uix-data-workspace__chip')].find((c) => /Title/.test(c.textContent));
+  assert.equal(document.activeElement, titleChip.querySelector('button'), 'focus is on the new chip, not dropped on the page');
+  w.unmount();
+});
+
+test('review: Ctrl/⌘ + / belongs to the workspace it is pressed in, or to the first one from an unfocused page', () => {
+  const two = mount(h('div', null,
+    h(ui.DataWorkspace, base({ label: 'First', search: { value: '', onChange() {} } })),
+    h('input', { className: 'app-field' }),
+    h(ui.DataWorkspace, base({ label: 'Second', search: { value: '', onChange() {} }, toolbarEnd: h('button', { type: 'button', className: 'second-new' }, 'New') }))));
+  const [first, second] = [...two.host.querySelectorAll('.uix-data-workspace')];
+  keydown(document.body, '/', { ctrlKey: true });
+  assert.equal(document.activeElement, first.querySelector('input[type="search"]'), 'an unfocused page: the first workspace');
+  const inSecond = second.querySelector('.second-new');
+  inSecond.focus();
+  keydown(inSecond, '/', { ctrlKey: true });
+  assert.equal(document.activeElement, second.querySelector('input[type="search"]'), 'inside the second: its own search');
+  const app = two.host.querySelector('.app-field');
+  app.focus();
+  keydown(app, '/', { ctrlKey: true });
+  assert.equal(document.activeElement, app, 'an app field outside keeps the key');
+  two.unmount();
+});
+
+test('review: TableWrap says whether the table overflows, so frozen columns draw dividers only then', () => {
+  const observed = [];
+  globalThis.ResizeObserver = class { constructor(cb) { this.cb = cb; } observe(el) { observed.push(el); } disconnect() {} };
+  try {
+    const t = mount(h(ui.DataWorkspace, base()));
+    const wrap = t.host.querySelector('.uix-table-wrap');
+    assert.equal(wrap.getAttribute('data-overflow'), 'false', 'jsdom has no width: nothing overflows');
+    assert.ok(observed.includes(wrap) && observed.some((el) => el.tagName === 'TABLE'));
+    t.unmount();
+  } finally {
+    delete globalThis.ResizeObserver;
+  }
+});

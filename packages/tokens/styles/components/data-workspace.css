@@ -7,6 +7,19 @@
   .uix-data-workspace > .uix-toolbar { margin-bottom: 0; }
   .uix-data-workspace__search { flex: 0 1 18rem; min-width: min(12rem, 100%); }
   .uix-data-workspace__chip, .uix-data-workspace__menu { display: inline-flex; }
+  /* the row-actions column takes the width of its buttons, not the table's 84px */
+  .uix-data-workspace .uix-table__actions { width: 1%; }
+  /* with selection, the id column is frozen too, right after the checkbox column */
+  .uix-data-workspace__grid--pin-id :is(th, td):nth-child(2) { position: sticky; left: var(--uix-selcol-w); z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
+  .uix-data-workspace__grid--pin-id :is(th, td):first-child { box-shadow: none; }
+  .uix-data-workspace__grid--pin-id thead th:nth-child(2) { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
+  .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-data-workspace__grid--pin-id:not(.uix-table--no-zebra) tbody tr:nth-child(even) td:nth-child(2) { background: var(--uix-row-alt); }
+  .uix-data-workspace__grid--pin-id tbody tr[data-pinned] td:nth-child(2) { background: linear-gradient(var(--uix-row-pinned-bg), var(--uix-row-pinned-bg)) var(--uix-surface); }
+  .uix-data-workspace__grid--pin-id tbody tr[data-selected] td:nth-child(2) { background: linear-gradient(var(--uix-row-selected-bg), var(--uix-row-selected-bg)) var(--uix-surface); }
+  .uix-data-workspace__grid--pin-id tbody tr:hover td:nth-child(2) { background: var(--uix-bg-hover); }
+  .uix-table-wrap[data-overflow="false"] .uix-data-workspace__grid--pin-id :is(th, td):nth-child(2) { box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) { .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { transition: none; } }
   /* the record-id cell: the id opens a peek, ↗ opens the full record */
   .uix-data-workspace__id { display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap; }
   .uix-data-workspace__open { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: var(--uix-radius-xs); color: var(--uix-text-muted); }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
@@ -9,6 +9,8 @@ import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
 import type { FilterField, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
+import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
+import { BusyRegion } from './BusyRegion.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
 import { Chip } from './Chip.js';
@@ -129,14 +131,23 @@ export interface DataWorkspaceProps<T> extends Omit<HTMLAttributes<HTMLElement>,
   onSelectionChange?: (selection: Set<string>) => void;
   /** The bulk bar's actions for the selection (a `Menu` for the overflow). */
   bulkActions?: (selectedIds: string[]) => ReactNode;
-  /** A row's actions (a `Menu`, quick buttons), in a column frozen at the right edge. */
+  /**
+   * A row's actions (a `Menu`, quick buttons), in a column frozen at the right edge and sized to
+   * them. Return `null` for a row without actions; with none on the page there is no column.
+   */
   rowActions?: (row: T) => ReactNode;
   /** More props for a row, e.g. a data attribute that marks it changed (see ChangeHighlight, PR #164). */
   getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
   density?: TableDensity;
-  /** Toolbar: the search field (Ctrl/⌘ + / focuses it). */
+  /**
+   * Toolbar: the search field. Ctrl/⌘ + / focuses it from inside the workspace, or from the page
+   * when nothing has focus and this is the page's first workspace.
+   */
   search?: { value: string; onChange: (value: string) => void; label?: string; placeholder?: string };
-  /** Toolbar: filter chips and "+ Filter" over `FilterEditor`. */
+  /**
+   * Toolbar: filter chips and "+ Filter" over `FilterEditor`. A chip whose value holds ids
+   * restored from a URL or saved view asks `field.resolveLabels` for their names.
+   */
   filters?: {
     fields: readonly FilterField[];
     values: Readonly<Record<string, FilterValue | undefined>>;
@@ -153,7 +164,7 @@ export interface DataWorkspaceProps<T> extends Omit<HTMLAttributes<HTMLElement>,
   viewChanged?: boolean;
   onSaveView?: () => void;
   onSaveViewAs?: () => void;
-  /** Toolbar: a maximize toggle; Escape restores. */
+  /** Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first. */
   maximized?: boolean;
   onMaximizedChange?: (maximized: boolean) => void;
   /** Toolbar: the product's own actions at the end ("New incident"). */
@@ -202,11 +213,17 @@ export function DataWorkspace<T>({
   /** The row a Shift-click range starts from: the last row clicked without Shift. */
   const anchor = useRef<string | null>(null);
 
-  // Ctrl/⌘ + / focuses the search, from anywhere on the page.
+  // Ctrl/⌘ + / focuses the search: from inside this workspace, or from a page with nothing
+  // focused when this is its first workspace. Another workspace or app field keeps the key.
   useEffect(() => {
     if (!search) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === '/' && (event.ctrlKey || event.metaKey) && !event.altKey) {
+      if (event.key !== '/' || !(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+      const root = rootRef.current;
+      const target = event.target as Node | null;
+      const inside = root != null && target != null && root.contains(target);
+      const unfocused = target === document.body || target === document.documentElement || target === document;
+      if (inside || (unfocused && root != null && document.querySelector('.uix-data-workspace') === root)) {
         event.preventDefault();
         searchRef.current?.focus();
         searchRef.current?.select();
@@ -219,12 +236,30 @@ export function DataWorkspace<T>({
   // Escape restores a maximized workspace, unless something inside used it (a popover, a field).
   useEffect(() => {
     if (!maximized || !onMaximizedChange) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape' && !event.defaultPrevented) onMaximizedChange(false); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      // A popover (View, saved views, a filter editor) or a menu closes on this Escape by itself
+      // (light dismiss, after the event): the same key must not also restore the workspace.
+      const root = rootRef.current;
+      const target = event.target as Element | null;
+      const owner = target?.closest?.('[popover], [role="dialog"], [role="menu"], [role="listbox"], [aria-expanded="true"]');
+      if (owner && root?.contains(owner)) return;
+      if (root && openInside(root)) return;
+      onMaximizedChange(false);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [maximized, onMaximizedChange]);
 
-  const ids = rows.map(getRowId);
+  // While a refetch runs with nothing back yet, the last settled body stays (in a BusyRegion): a
+  // cleared filter must not flash "Nothing here yet" before its rows arrive (PR #168 review).
+  const filtered = (filters ? filters.fields.some((field) => !isFilterEmpty(filters.values[field.id])) : false) || (search?.value.trim() ?? '') !== '';
+  const settled = useRef<{ rows: readonly T[]; filtered: boolean }>({ rows, filtered });
+  useEffect(() => { if (!refreshing && status === 'ready') settled.current = { rows, filtered }; });
+  const view = refreshing && rows.length === 0 ? settled.current : { rows, filtered };
+  const shownRows = view.rows;
+
+  const ids = useMemo(() => shownRows.map(getRowId), [shownRows, getRowId]);
   const selected = selection ?? new Set<string>();
   const selectable = onSelectionChange != null;
   const onPage = ids.filter((rowId) => selected.has(rowId)).length;
@@ -249,6 +284,10 @@ export function DataWorkspace<T>({
     onSelectionChange(next);
   };
 
+  // Each row's actions, asked once per render; the column shows only when a row on the page has some.
+  const actionsByRow = useMemo(() => (rowActions ? shownRows.map((row) => rowActions(row)) : []), [shownRows, rowActions]);
+  const hasActions = actionsByRow.some((node) => node != null && node !== false);
+
   const activeFilters = filters ? filters.fields.filter((field) => !isFilterEmpty(filters.values[field.id])) : [];
   const searching = (search?.value.trim() ?? '') !== '';
   const clearAll = () => {
@@ -271,7 +310,8 @@ export function DataWorkspace<T>({
       )}
       {/* Save sits with the view it saves, left of the spacer: appearing as the search changes, it
           must not move the search field under the person's fingers. */}
-      {viewChanged && onSaveView && <Button size="sm" variant="primary" onClick={onSaveView}>{labels.saveView}</Button>}
+      {/* Secondary: saving a view is not the page's primary action (that is the product's, at the end). */}
+      {viewChanged && onSaveView && <Button size="sm" variant="secondary" onClick={onSaveView}>{labels.saveView}</Button>}
       {viewChanged && onSaveViewAs && <Button size="sm" variant="ghost" onClick={onSaveViewAs}>{labels.saveViewAs}</Button>}
       {filters && <FilterChips filters={filters} labels={labels} baseId={id} />}
       <span className="uix-toolbar__spacer" />
@@ -298,13 +338,20 @@ export function DataWorkspace<T>({
   let body: ReactNode;
   if (status === 'loading') body = <LoadingState rows={6} label={labels.loading} className="uix-data-workspace__loading" />;
   else if (status === 'error') body = <ErrorState title={labels.error} action={onRetry && <Button size="sm" onClick={onRetry}>{labels.retry}</Button>} />;
-  else if (rows.length === 0 && (activeFilters.length > 0 || searching)) {
-    body = <FilteredEmptyState title={labels.filteredEmpty} action={<Button size="sm" onClick={clearAll}>{labels.clearFilters}</Button>}>{labels.filteredEmptyDetail}</FilteredEmptyState>;
-  } else if (rows.length === 0) body = <EmptyState title={labels.empty}>{labels.emptyDetail}</EmptyState>;
-  else {
+  else if (shownRows.length === 0) {
+    // The empty states sit in a BusyRegion too, so a refetch from one of them is busy at once.
+    body = (
+      <BusyRegion busy={refreshing} className="uix-data-workspace__state">
+        {view.filtered
+          ? <FilteredEmptyState title={labels.filteredEmpty} action={<Button size="sm" onClick={clearAll}>{labels.clearFilters}</Button>}>{labels.filteredEmptyDetail}</FilteredEmptyState>
+          : <EmptyState title={labels.empty}>{labels.emptyDetail}</EmptyState>}
+      </BusyRegion>
+    );
+  } else {
     body = (
       <TableWrap refreshing={refreshing} className="uix-data-workspace__table">
-        <Table density={density} pinnedCol={idColumn != null} pinnedActions={rowActions != null} aria-label={label}>
+        {/* With selection, the checkbox and the id are both frozen (the id at the checkbox's width). */}
+        <Table density={density} pinnedCol={idColumn != null} pinnedActions={hasActions} className={cx(selectable && idColumn && 'uix-data-workspace__grid--pin-id')} aria-label={label}>
           <thead>
             <tr>
               {selectable && (
@@ -321,12 +368,12 @@ export function DataWorkspace<T>({
                   {column.header}
                 </Th>
               ))}
-              {rowActions && <th scope="col" className="uix-table__actions"><span className="uix-visually-hidden">{labels.rowActions}</span></th>}
+              {hasActions && <th scope="col" className="uix-table__actions"><span className="uix-visually-hidden">{labels.rowActions}</span></th>}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
-              const rowId = getRowId(row);
+            {shownRows.map((row, index) => {
+              const rowId = ids[index];
               const text = idColumn?.text(row) ?? rowId;
               const isSelected = selected.has(rowId);
               return (
@@ -354,7 +401,7 @@ export function DataWorkspace<T>({
                     </Td>
                   )}
                   {columns.map((column) => <Td key={column.id} className={column.align === 'end' ? 'uix-col--num' : undefined}>{column.cell(row)}</Td>)}
-                  {rowActions && <RowActions>{rowActions(row)}</RowActions>}
+                  {hasActions && <RowActions>{actionsByRow[index]}</RowActions>}
                 </Tr>
               );
             })}
@@ -379,7 +426,7 @@ export function DataWorkspace<T>({
         </BulkBar>
       )}
       {body}
-      {pagination && status === 'ready' && rows.length > 0 && <Footer pagination={pagination} labels={labels} rowCount={rows.length} />}
+      {pagination && status === 'ready' && shownRows.length > 0 && <Footer pagination={pagination} labels={labels} rowCount={shownRows.length} />}
     </section>
   );
 }
@@ -435,10 +482,26 @@ function PopoverButton({ id, label, title, variant, children }: { id: string; la
   );
 }
 
+/** A chip's text, with the names of ids restored from a URL or a saved view. */
+function ChipSummary({ field, value, options }: { field: FilterField; value: FilterValue | undefined; options?: SummarizeFilterOptions }) {
+  const resolved = useResolvedFilterLabels(field, value);
+  return <>{summarizeFilter(resolved.field, resolved.value, options)}</>;
+}
+
+/** An open popover, dialog or menu inside the workspace, which takes Escape before the workspace. */
+function openInside(root: HTMLElement): boolean {
+  try {
+    if (root.querySelector(':popover-open')) return true;
+  } catch { /* a browser without :popover-open */ }
+  return root.querySelector('dialog[open], [aria-expanded="true"]') != null;
+}
+
 /** Set filters as chips (summary, ×, click to edit) and "+ Filter" listing the unset ones. */
 function FilterChips({ filters, labels, baseId }: { filters: NonNullable<DataWorkspaceProps<unknown>['filters']>; labels: DataWorkspaceLabels; baseId: string }) {
   const [editing, setEditing] = useState<{ field: FilterField; anchor: HTMLElement } | null>(null);
   const [draft, setDraft] = useState<FilterValue | undefined>();
+  /** A filter just applied from "+ Filter": its new chip takes focus once it renders. */
+  const [focusChip, setFocusChip] = useState<string | null>(null);
   const popId = `${baseId}-filter`;
   const anchors = useRef(new Map<string, HTMLElement | null>());
   const addRef = useRef<HTMLSpanElement>(null);
@@ -460,21 +523,30 @@ function FilterChips({ filters, labels, baseId }: { filters: NonNullable<DataWor
   }, [editing, popId]);
   const finish = (value: FilterValue | undefined) => {
     if (!editing) return;
-    filters.onChange(editing.field.id, value && !isFilterEmpty(value) ? value : undefined);
+    const applied = value && !isFilterEmpty(value) ? value : undefined;
+    filters.onChange(editing.field.id, applied);
     const back = anchors.current.get(editing.field.id) ?? addRef.current?.querySelector('button');
     document.getElementById(popId)?.hidePopover?.();
     (back?.querySelector?.('button') ?? back)?.focus?.();
+    // From "+ Filter": the chip does not exist yet, and "+ Filter" goes when it was the last unset
+    // field. Focus the new chip once it renders, so focus is not dropped on the page.
+    if (applied && !anchors.current.get(editing.field.id)) setFocusChip(editing.field.id);
   };
+  useEffect(() => {
+    if (!focusChip) return;
+    const chip = anchors.current.get(focusChip)?.querySelector('button');
+    if (chip) { chip.focus(); setFocusChip(null); }
+  });
   return (
     <>
       {set.map((field) => (
-        <span key={field.id} ref={(el) => { anchors.current.set(field.id, el); }} className="uix-data-workspace__chip">
+        <span key={field.id} ref={(el) => { if (el) anchors.current.set(field.id, el); else anchors.current.delete(field.id); }} className="uix-data-workspace__chip">
           <Chip
             aria-haspopup="dialog" count={filters.counts?.[field.id]}
             onClick={() => edit(field, anchors.current.get(field.id) ?? null)}
             onRemove={() => filters.onChange(field.id, undefined)}
           >
-            {summarizeFilter(field, filters.values[field.id], filters.summary)}
+            <ChipSummary field={field} value={filters.values[field.id]} options={filters.summary} />
           </Chip>
         </span>
       ))}

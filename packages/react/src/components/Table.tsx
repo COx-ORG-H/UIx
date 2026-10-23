@@ -5,6 +5,7 @@ import { forwardRef } from 'react';
 import { cx } from '../cx.js';
 import { highlightSegments } from '../table-engine.js';
 import { BusyBar } from './BusyBar.js';
+import { TableOverflowProbe } from './TableOverflowProbe.js';
 
 export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -29,6 +30,7 @@ export const TableWrap = forwardRef<HTMLDivElement, TableWrapProps>(function Tab
   return (
     <div ref={ref} className={cx('uix-table-wrap', className)} aria-busy={refreshing || undefined} {...props}>
       {refreshing !== undefined && <BusyBar busy={refreshing} />}
+      <TableOverflowProbe />
       {announcement != null && (
         <div role="status" className="uix-visually-hidden">{announcement}</div>
       )}
