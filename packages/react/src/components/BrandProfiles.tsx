@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { cx } from '../cx.js';
 import { normalizeHex } from '../color-model.js';
 import { ColorPicker } from './ColorPicker.js';
+import { Select } from './Select.js';
 import { fillLabel } from '../fill-label.js';
 
 export interface BrandProfileTypography {
@@ -177,10 +178,10 @@ export function BrandProfileEditor({
     <section className={cx('uix-brand-profiles', className)} aria-label={labels.region}>
       <div className="uix-brand-profiles__form">
         {profiles.length > 0 && <label className="uix-field__label">{labels.profile}
-          <select className="uix-select" value={value.id} onChange={(event) => {
-            const selected = profiles.find((profile) => profile.id === event.currentTarget.value);
+          <Select value={value.id} options={profiles.map((profile) => ({ value: profile.id, label: profile.name }))} onValueChange={(next) => {
+            const selected = profiles.find((profile) => profile.id === next);
             if (selected) onSelectProfile?.(selected);
-          }}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
+          }} />
         </label>}
         <label className="uix-field__label">{labels.name}<input className="uix-input" value={value.name} onChange={(event) => update({ name: event.currentTarget.value })} /></label>
         <div className="uix-brand-profiles__colors">

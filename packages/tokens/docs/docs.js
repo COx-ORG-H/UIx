@@ -4,7 +4,7 @@ import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
 import { initShowcase, disposeShowcase } from '../guide/app.js';
 import { initAdvancedShowcase } from '../guide/phase-46-9.js';
 import { COMPONENT_SPECIMENS } from './component-specimens.js';
-import { initFormSpecimens } from './form-specimens.js';
+import { initFormSpecimens, selectMarkup } from './form-specimens.js';
 import { initFeedbackDemos } from './feedback-demos.js';
 import { COMPONENT_GUIDANCE as COMPONENT_INTENT } from './component-guidance.js';
 
@@ -153,7 +153,7 @@ export const REACT_COMPONENT_SLUGS = [
   'segmented', 'select', 'sidebar', 'spinner', 'stat-tile', 'states', 'status-pill', 'switch', 'table', 'tabs',
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'busy-region', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
-  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart',
+  'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart', 'combobox', 'tag-input',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -281,7 +281,7 @@ const renderComponentReference = (item) => {
 
 const COMPONENT_DETAILS = {
   'color-picker': ['Choose an exact color for a brand, label or visual property. Keep semantic status colors tied to the theme rather than arbitrary user selections.', 'Open the swatch, edit a six-digit hex value or the HSV controls. Expect a normalized hex value, an updated swatch and contrast feedback. Escape closes the picker and returns focus. Your application stores the chosen value; contrast feedback is advisory, not a validation gate.'],
-  'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. The app owns the allowed vocabulary, maximum count and saved array.'],
+  'tag-input': ['Collect several short labels in one field. Use a select or combobox when values must come from a controlled vocabulary.', 'Type a label and press Enter or a comma to add it; use each Remove button to remove it. This example trims whitespace and rejects duplicates. In React, TagInput does this with suggestions, validate, maxTags, the keyboard between the field and the chips, and one hidden form value per tag; the app owns the allowed vocabulary and the saved array.'],
   'file-upload': ['Let people choose attachments with a centred UIx button inside a drop zone. Show selected filenames before starting a transfer.', 'Choose files to see a local selection list. No bytes are uploaded by this documentation example. The app owns size/type validation, transfer progress, cancellation, server validation and retry. File selection alone is not upload success.'],
 };
 
@@ -405,7 +405,7 @@ const PAGES = {
         <div class="uix-docs__specimen-top"><span class="uix-docs__specimen-kicker">Service operations</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Healthy</span></div>
         <div><div class="uix-docs__specimen-value">98.7%</div><span class="uix-docs__specimen-kicker">SLA attainment · last 30 days</span></div>
         <div class="uix-docs__spark" role="img" aria-label="SLA trend rising"><span style="height:35%"></span><span style="height:48%"></span><span style="height:44%"></span><span style="height:60%"></span><span style="height:56%"></span><span style="height:76%"></span><span style="height:82%"></span><span style="height:91%"></span></div>
-        <div class="uix-docs__specimen-row"><label class="uix-field"><span class="uix-field__label">Queue</span><select class="uix-select"><option>Priority incidents</option></select></label><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Queue opened">Open queue</button></div>
+        <div class="uix-docs__specimen-row"><label class="uix-field"><span class="uix-field__label">Queue</span>${selectMarkup({ id: 'intro-queue', value: ['priority'], items: [{ value: 'priority', label: 'Priority incidents' }, { value: 'major', label: 'Major incidents' }, { value: 'all', label: 'All incidents' }] })}</label><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Queue opened">Open queue</button></div>
       </div>
     </div>
     ${section('why-uix', 'One contract, every product surface', `<p>UIx separates stable product semantics from framework choices. The <code>--uix-*</code> contract controls color, type, spacing, motion, and layout; CSS primitives consume that contract; React components add typed behavior without changing the visual language.</p><div class="uix-docs__principles"><div class="uix-docs__principle"><span class="uix-docs__principle-number">01</span><strong>Stack neutral</strong><p>Use the same system in plain HTML, React, Vue, Tailwind, or server-rendered applications.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">02</span><strong>Operational by default</strong><p>Dense tables, state models, overlays, shells, and domain patterns are first-class.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">03</span><strong>Governed change</strong><p>Generated outputs, parity checks, API reports, and accessibility gates keep consumers aligned.</p></div></div>`)}
@@ -668,6 +668,10 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
 
 <input class="uix-input" aria-invalid="true" aria-describedby="cost-error">
 <span class="uix-field__error" id="cost-error">Enter a valid cost center.</span>`, { column: true }))}
+    ${section('sizes', 'Sizes', `<p>Input, Select and Textarea take the same sizes as Button: <code>sm</code> 28 px for dense tool rows, <code>md</code> 36 px by default, and <code>lg</code> 44 px, the touch-target floor of a public page (WCAG 2.5.5). Use one size for a whole form, so every control and its button share a height. Textarea <code>lg</code> takes the larger type and padding and still grows.</p>${demo(`<div class="uix-stack" style="width:min(100%,420px)" data-size-lg-example><div class="uix-field"><label class="uix-field__label" for="lg-name" data-required>Full name</label><input id="lg-name" class="uix-input uix-input--lg" autocomplete="name" required></div><div class="uix-field"><label class="uix-field__label" for="lg-topic">Topic</label>${selectMarkup({ id: 'lg-topic', name: 'topic', size: 'lg', value: ['loan'], items: [{ value: 'loan', label: 'Borrowing a book' }, { value: 'room', label: 'Booking a reading room' }, { value: 'other', label: 'Something else' }] })}</div><div class="uix-field"><label class="uix-field__label" for="lg-msg">Message</label><textarea id="lg-msg" class="uix-textarea uix-textarea--lg" rows="3"></textarea></div><button class="uix-btn uix-btn--primary uix-btn--lg" type="button">Send</button></div>`, `<Field label="Full name" required><Input size="lg" autoComplete="name" /></Field>
+<Field label="Topic"><Select size="lg" options={topics} defaultValue="loan" /></Field>
+<Field label="Message"><Textarea size="lg" rows={3} /></Field>
+<Button size="lg" variant="primary" type="submit">Send</Button>`, { language: 'tsx' })}${demo(`<div class="uix-stack" style="width:min(100%,420px)" data-size-scale-example><input class="uix-input uix-input--sm" aria-label="Small" placeholder="sm · 28 px"><input class="uix-input" aria-label="Medium" placeholder="md · 36 px"><input class="uix-input uix-input--lg" aria-label="Large" placeholder="lg · 44 px"><div class="uix-input-group uix-input-group--has-leading"><span class="uix-input-group__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span><input class="uix-input uix-input--lg" aria-label="Search the catalogue" placeholder="InputGroup at lg"></div></div>`)}`)}
     ${section('guidance', 'Usage guidance', `${compare('Keep the label visible, reserve the message slot, and explain how to recover from invalid input.', 'Use placeholder text as the only label or show validation only in a page-level banner.')}<p>Prefer native input types and autocomplete tokens. For prefix, suffix, and icons, use the input-group pattern without removing the programmatic label.</p>`)}
     ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Associate every message with the control through <code>aria-describedby</code>.</li><li>Set <code>aria-invalid="true"</code> only after validation has run.</li><li>Move focus to the first invalid field after a failed submit; keep typed values intact.</li><li>A required marker supplements—not replaces—the required programmatic state.</li></ul>`)}`,
 

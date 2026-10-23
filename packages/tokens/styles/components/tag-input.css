@@ -25,3 +25,24 @@
   .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }
   .uix-tag__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 }
+
+/* TagInput (React, HAR-1377): the field, its refusal line and the suggestion list (a top-layer
+   popup styled as Select's). */
+@layer uix.components {
+  .uix-taginput-field { display: grid; gap: var(--uix-space-1); min-width: 0; }
+  /* the chips' list wrapper is not a box of its own: the chips sit in the field's wrapping row */
+  .uix-taginput__tags { display: contents; }
+  .uix-taginput[data-invalid] { border-color: var(--uix-danger); }
+  .uix-taginput[data-invalid]:focus-within { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
+  /* disabled: the subtle surface and no × buttons; the tags stay readable (no opacity on the text) */
+  .uix-taginput[data-disabled] { background: var(--uix-bg-subtle); cursor: not-allowed; }
+  .uix-taginput__field::placeholder { color: var(--uix-text-muted); }
+  .uix-taginput__field:disabled { cursor: not-allowed; }
+  /* a long tag wraps inside its chip instead of widening the field */
+  .uix-taginput .uix-tag { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+  .uix-taginput__message { min-width: 0; overflow-wrap: anywhere; }
+  .uix-taginput__popup { max-width: min(28rem, calc(100vw - 2 * var(--uix-space-4))); }
+  /* a suggestion is "selected" while it is the active one (selection follows the keys): the row tint
+     shows that; the chosen-value look of a select (accent, bold) does not apply */
+  .uix-taginput__popup .uix-listbox__option[aria-selected="true"] { color: var(--uix-text); font-weight: 400; }
+}
