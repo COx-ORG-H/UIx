@@ -12,3 +12,28 @@
   .uix-kbd-combo { display: inline-flex; align-items: center; }
   .uix-kbd-combo__keys { display: inline-flex; align-items: center; gap: var(--uix-space-1); }
 }
+
+/* Shortcut hints are for a keyboard. On a device with no hover and a coarse pointer (a touch
+   phone or tablet) the kit's decorative key caps go: the Sidebar search row's keys, the keys of a
+   Menu, CommandPalette or Tooltip row, SearchSuggest's trailing key, and a Button's hint bubble
+   (a tap fires mouseenter, which opened it). A keyboard-and-mouse window of any width keeps them.
+   Nothing a screen reader hears changes: what goes is already aria-hidden (each KbdCombo says its
+   keys in a visually-hidden span, which stays), a key a product put in a Menu or CommandItem
+   shortcut slot is only clipped from view, and `aria-keyshortcuts` and descriptions stay. Each
+   selector out-specifies the rule that lays the part out, so the order the sheets load in does
+   not matter. */
+@layer uix.components {
+  @media (hover: none) and (pointer: coarse) {
+    .uix-sidebar__search .uix-sidebar__search-keys,
+    :is(.uix-menu__shortcut, .uix-cmdk__shortcut, .uix-tooltip__shortcut) .uix-kbd-combo__keys,
+    .uix-search-suggest__trail > .uix-kbd,
+    .uix-tooltip__bubble.uix-tooltip__bubble--hint,
+    .uix-tooltip__bubble:has(> .uix-tooltip__shortcut:only-child) { display: none; }
+    :is(.uix-menu__shortcut, .uix-cmdk__item) > kbd.uix-kbd {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    /* no gap left where the keys were */
+    .uix-menu__item .uix-menu__shortcut { padding-left: 0; }
+    .uix-tooltip__bubble .uix-tooltip__shortcut { margin-inline-start: 0; }
+  }
+}
