@@ -185,6 +185,8 @@ export async function renderDisplaySpecimens() {
     const resourceDay = mount(h(ui.SchedulingCalendar, {
       entries: [], anchorDate: day, timeZone: 'Europe/Sarajevo', view: 'day', showHeader: false, legend: [],
       resources: people, resourceSpans: spans, dayStart: '08:00', dayEnd: '10:00', resourceLayout: 'columns', onSelectSlot: () => {},
+      // a fixed date text: Intl's default locale differs between machines (en-GB here, en-US on CI)
+      formatDate: () => 'Thursday, 22 October 2026',
     }));
     add('examples-data-display', [
       caption('Day view by resource (React <code>SchedulingCalendar view="day" resources</code>) — one column per practitioner on a slot axis in the tenant’s zone; free spans are cut into bookable slots, bookings and time off stay whole, and time no span covers is hatched “no schedule”, never free. One tab stop; arrows move between slots and practitioners; below 480 px it is a list'),
