@@ -59,10 +59,10 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
           <div className="uix-peek__nav">
             {/* aria-disabled (not disabled) at the boundary keeps the button focusable, so focus
                 isn't stranded when the last record makes it unavailable (UIX-A11Y-1). */}
-            <button className="uix-peek__navbtn" onClick={() => onNavPrev?.()} aria-disabled={onNavPrev ? undefined : true} aria-label={previousLabel}>
+            <button type="button" className="uix-peek__navbtn" onClick={() => onNavPrev?.()} aria-disabled={onNavPrev ? undefined : true} aria-label={previousLabel}>
               <ChevronUp />
             </button>
-            <button className="uix-peek__navbtn" onClick={() => onNavNext?.()} aria-disabled={onNavNext ? undefined : true} aria-label={nextLabel}>
+            <button type="button" className="uix-peek__navbtn" onClick={() => onNavNext?.()} aria-disabled={onNavNext ? undefined : true} aria-label={nextLabel}>
               <ChevronDown />
             </button>
           </div>
@@ -70,7 +70,7 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
         {title && <h2 className="uix-peek__title" id={titleId}>{title}</h2>}
         {hint && <span className="uix-peek__hint">{hint}</span>}
         {onClose && (
-          <button className="uix-peek__close" onClick={onClose} aria-label={closeLabel}>
+          <button type="button" className="uix-peek__close" onClick={onClose} aria-label={closeLabel}>
             <CloseIcon />
           </button>
         )}

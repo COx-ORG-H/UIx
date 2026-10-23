@@ -39,6 +39,39 @@ export interface AccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, '
     variant?: StateVariant;
 }
 
+// @public
+export function accountInitials(name: string): string;
+
+// @public (undocumented)
+export function AccountMenu(input: AccountMenuProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AccountMenuLabels {
+    menu: string;
+}
+
+// @public (undocumented)
+export interface AccountMenuProps {
+    // (undocumented)
+    className?: string;
+    collapsed?: boolean;
+    items?: ReactNode;
+    // (undocumented)
+    labels?: Partial<AccountMenuLabels>;
+    placement?: Placement;
+    presenceLabels?: Partial<Record<AvatarPresence, string>>;
+    // (undocumented)
+    user: AccountMenuUser;
+}
+
+// @public (undocumented)
+export interface AccountMenuUser {
+    avatar?: string | ReactNode;
+    name: string;
+    status?: AvatarPresence;
+    sub?: ReactNode;
+}
+
 // @public (undocumented)
 export function addCalendarDays(value: string, amount: number): string;
 
@@ -94,6 +127,9 @@ export interface AppliedBrandProfileSnapshot {
 export function applyBrandProfile(profile: BrandProfile, target?: HTMLElement | null): AppliedBrandProfileSnapshot | undefined;
 
 // @public
+export function applyDisplayAttributes(root: Element, attributes: DisplayAttributes): void;
+
+// @public
 export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
 
 // @public (undocumented)
@@ -104,12 +140,20 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
     collapsed?: boolean;
+    defaultNav?: ShellNav;
     exitFocusLabel?: ReactNode;
     focus?: boolean;
+    layout?: 'frame' | 'viewport';
     mainBleed?: boolean;
     mainId?: string;
     nav?: ShellNav;
+    navHotkey?: string;
+    navigationLabel?: ReactNode;
+    navTierStorageKey?: string;
     onExitFocus?: () => void;
+    onNavChange?: (nav: ShellNav) => void;
+    openNavLabel?: string;
+    phoneNav?: 'drawer' | 'none';
     // (undocumented)
     sidebar?: ReactNode;
     skipToContentLabel?: ReactNode;
@@ -530,6 +574,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     href: string;
     icon?: boolean;
     renderLink?: UixRenderLink;
+    shortcut?: KeyShortcut;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
@@ -659,7 +704,12 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
 export function CellStrong(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
 
 // @public
-export function CellSub(input: HTMLAttributes<HTMLSpanElement>): react.JSX.Element;
+export function CellSub(input: CellSubProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CellSubProps extends HTMLAttributes<HTMLSpanElement> {
+    tabular?: boolean;
+}
 
 // @public
 export const ChangeHighlight: react.ForwardRefExoticComponent<ChangeHighlightProps & react.RefAttributes<HTMLElement | null>>;
@@ -968,7 +1018,12 @@ export interface ComposerProps extends HTMLAttributes<HTMLDivElement> {
 export function computePosition(anchor: Rect, floating: Size, viewport: Size, options?: PositionOptions_2): PositionResult;
 
 // @public
-export function ConfirmDialog(input: ConfirmDialogProps): react.JSX.Element;
+export type ConfirmButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'type'> & {
+    [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
+};
+
+// @public
+export const ConfirmDialog: react.ForwardRefExoticComponent<ConfirmDialogProps & react.RefAttributes<HTMLDialogElement>>;
 
 // @public (undocumented)
 export interface ConfirmDialogProps {
@@ -980,6 +1035,7 @@ export interface ConfirmDialogProps {
     compensationLabel?: string;
     // (undocumented)
     confirmLabel: ReactNode;
+    confirmProps?: ConfirmButtonProps;
     // (undocumented)
     description?: ReactNode;
     // (undocumented)
@@ -994,13 +1050,14 @@ export interface ConfirmDialogProps {
     onTertiary?: () => void | Promise<void>;
     // (undocumented)
     open: boolean;
-    // (undocumented)
     pending?: boolean;
     tertiaryLabel?: ReactNode;
     // (undocumented)
     title: ReactNode;
     typeToConfirm?: string;
-    typeToConfirmLabel?: string;
+    typeToConfirmLabel?: ReactNode;
+    typeToConfirmMismatch?: string;
+    typeToConfirmPlaceholder?: string;
 }
 
 // @public
@@ -1022,6 +1079,9 @@ export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>
 export interface ContentListProps extends HTMLAttributes<HTMLUListElement> {
     children?: ReactNode;
 }
+
+// @public (undocumented)
+export type ContrastPreference = 'standard' | 'more' | 'system';
 
 // @public (undocumented)
 export function contrastRatio(background: string, foreground: string): number | undefined;
@@ -1372,6 +1432,9 @@ export interface DaySpanLayout {
 }
 
 // @public (undocumented)
+export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
+
+// @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
 
 // @public (undocumented)
@@ -1400,6 +1463,12 @@ export const DEFAULT_DATE_TIME_PICKER_LABELS: DateTimePickerLabels;
 
 // @public (undocumented)
 export const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels;
+
+// @public (undocumented)
+export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferenceValues;
+
+// @public (undocumented)
+export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels;
 
 // @public (undocumented)
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
@@ -1472,6 +1541,9 @@ export interface DelayedPendingOptions {
     delay?: number;
     minVisible?: number;
 }
+
+// @public (undocumented)
+export type DensityPreference = 'compact' | 'standard' | 'comfortable';
 
 // @public
 export function DescriptionItem(input: DescriptionItemProps): react.JSX.Element;
@@ -1571,6 +1643,7 @@ export interface DetailPageProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     tabsLabel?: string;
     // (undocumented)
     title: ReactNode;
+    variant?: 'default' | 'staff';
 }
 
 // @public (undocumented)
@@ -1722,6 +1795,106 @@ export interface DiscardPromptLabels {
     discard: string;
     keepEditing: string;
     title: string;
+}
+
+// @public (undocumented)
+export const DISPLAY_PREFERENCE_OPTIONS: {
+    readonly theme: readonly ["light", "dark", "system"];
+    readonly contrast: readonly ["standard", "more", "system"];
+    readonly textScale: readonly ["sm", "md", "lg", "xl"];
+    readonly motion: readonly ["system", "reduce"];
+    readonly density: readonly ["compact", "standard", "comfortable"];
+};
+
+// @public
+export const DISPLAY_PREFERENCES_STORAGE_KEY = "uix-display-preferences";
+
+// @public
+export interface DisplayAttributes {
+    // (undocumented)
+    'data-contrast'?: 'more';
+    // (undocumented)
+    'data-density'?: 'compact' | 'comfortable';
+    // (undocumented)
+    'data-motion'?: 'reduce';
+    // (undocumented)
+    'data-text-scale'?: 'sm' | 'lg' | 'xl';
+    // (undocumented)
+    'data-theme': 'light' | 'dark';
+}
+
+// @public
+export function DisplayPreferences(input: DisplayPreferencesProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface DisplayPreferencesLabels {
+    // (undocumented)
+    contrast: string;
+    // (undocumented)
+    contrastMore: string;
+    // (undocumented)
+    contrastStandard: string;
+    // (undocumented)
+    dark: string;
+    // (undocumented)
+    density: string;
+    // (undocumented)
+    densityComfortable: string;
+    // (undocumented)
+    densityCompact: string;
+    // (undocumented)
+    densityStandard: string;
+    // (undocumented)
+    light: string;
+    // (undocumented)
+    motion: string;
+    // (undocumented)
+    motionReduce: string;
+    // (undocumented)
+    motionSystem: string;
+    // (undocumented)
+    system: string;
+    // (undocumented)
+    textDefault: string;
+    // (undocumented)
+    textLarge: string;
+    // (undocumented)
+    textLarger: string;
+    // (undocumented)
+    textScale: string;
+    // (undocumented)
+    textSmall: string;
+    // (undocumented)
+    theme: string;
+}
+
+// @public (undocumented)
+export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    // (undocumented)
+    labels?: Partial<DisplayPreferencesLabels>;
+    // (undocumented)
+    onValueChange?: (value: DisplayPreferenceValues) => void;
+    settings?: readonly (keyof DisplayPreferenceValues)[];
+    // (undocumented)
+    storageKey?: string;
+    value?: DisplayPreferenceValues;
+}
+
+// @public
+export function displayPreferencesScript(storageKey?: string, defaults?: DisplayPreferenceValues): string;
+
+// @public (undocumented)
+export interface DisplayPreferenceValues {
+    // (undocumented)
+    contrast: ContrastPreference;
+    // (undocumented)
+    density: DensityPreference;
+    // (undocumented)
+    motion: MotionPreference;
+    // (undocumented)
+    textScale: TextScalePreference;
+    // (undocumented)
+    theme: ThemePreference;
 }
 
 // @public (undocumented)
@@ -2499,6 +2672,17 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     // (undocumented)
     valid?: boolean;
     warning?: boolean;
+}
+
+// @public
+export function Inset(input: InsetProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface InsetProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    padding?: 'sm' | 'md';
+    tone?: 'sunken' | 'surface';
 }
 
 // @public (undocumented)
@@ -3337,8 +3521,8 @@ export interface MetricInputProps {
     value: number | null;
 }
 
-// @public (undocumented)
-export function Modal(input: ModalProps): react.JSX.Element;
+// @public
+export const Modal: react.ForwardRefExoticComponent<ModalProps & react.RefAttributes<HTMLDialogElement>>;
 
 // @public (undocumented)
 export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
@@ -3379,6 +3563,9 @@ export interface MonthSpanLayout {
     hiddenByRow: Record<number, string[]>;
     placed: PlacedMonthSpan[];
 }
+
+// @public (undocumented)
+export type MotionPreference = 'system' | 'reduce';
 
 // @public
 export function moveCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, direction: DashboardCanvasDirection): T[];
@@ -3454,8 +3641,8 @@ export interface NavGroupProps {
     onExpandedChange?: (expanded: boolean) => void;
 }
 
-// @public (undocumented)
-export function NavItem(input: NavItemProps): react.JSX.Element;
+// @public
+export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -3632,6 +3819,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     eyebrow?: ReactNode;
     help?: string | null;
     helpLabel?: string;
+    size?: 'default' | 'display';
     subtitle?: ReactNode;
     // (undocumented)
     title: ReactNode;
@@ -3699,6 +3887,9 @@ export function parseDateInput(text: string, locale?: string | readonly string[]
 // @public (undocumented)
 export function parseDateValue(value: Date | number | string): Date | null;
 
+// @public
+export function parseDisplayPreferences(raw: string | null | undefined, defaults?: DisplayPreferenceValues): DisplayPreferenceValues;
+
 // @public (undocumented)
 export function parseMetricValue(value: string): number | null;
 
@@ -3756,10 +3947,10 @@ export const PENDING_MIN_VISIBLE_MS = 500;
 export type PillSize = 'sm' | 'md' | 'lg';
 
 // @public (undocumented)
-export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
+export type PillTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'critical' | 'muted' | 'progress' | 'attention' | 'overdue' | 'sla-ok' | 'sla-at-risk' | 'sla-breached' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5';
 
-// @public (undocumented)
-export type PillTreatment = 'filled' | 'outline';
+// @public
+export type PillTreatment = 'soft' | 'filled' | 'dot' | 'outline';
 
 // @public
 export function Pipeline(input: PipelineProps): react.JSX.Element;
@@ -3869,26 +4060,32 @@ export interface PopconfirmProps {
     anchor: RefObject<HTMLElement | null> | HTMLElement | null;
     // (undocumented)
     cancelLabel: ReactNode;
+    children?: ReactNode;
+    closeWhenAnchorHidden?: boolean;
     compensation?: ReactNode;
     // (undocumented)
     compensationLabel?: string;
+    confirmDisabled?: boolean;
     // (undocumented)
     confirmLabel: ReactNode;
+    confirmProps?: ConfirmButtonProps;
     // (undocumented)
     description?: ReactNode;
     // (undocumented)
     destructive?: boolean;
+    labelledBy?: 'title' | 'confirm';
     onCancel: () => void;
     // (undocumented)
     onConfirm: () => void | Promise<void>;
+    onEscapeKeyDown?: (event: KeyboardEvent) => void;
     // (undocumented)
     open: boolean;
     // (undocumented)
     pending?: boolean;
     // (undocumented)
     placement?: Placement;
-    // (undocumented)
-    title: ReactNode;
+    role?: 'dialog' | 'alertdialog';
+    title?: ReactNode;
 }
 
 // @public
@@ -4083,6 +4280,9 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
     visible: T[];
     hidden: number;
 };
+
+// @public
+export function readSystemDisplayPreferences(): SystemDisplayPreferences;
 
 // @public
 export interface Rect {
@@ -4391,6 +4591,9 @@ export function reorder<T>(arr: readonly T[], from: number, to: number): T[];
 
 // @public
 export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly T[], id: string, change: DashboardCanvasResize): T[];
+
+// @public
+export function resolveDisplayAttributes(prefs: DisplayPreferenceValues, system: SystemDisplayPreferences): DisplayAttributes;
 
 // @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
@@ -5326,8 +5529,10 @@ export function SectionHead(input: SectionHeadProps): react.JSX.Element;
 // @public (undocumented)
 export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     action?: ReactNode;
+    as?: 'h2' | 'h3';
     help?: string | null;
     helpLabel?: string;
+    size?: 'default' | 'compact';
     // (undocumented)
     title: ReactNode;
     titleId?: string;
@@ -5465,6 +5670,7 @@ export function Sidebar(input: SidebarProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface SidebarProps extends HTMLAttributes<HTMLElement> {
+    actions?: ReactNode;
     // (undocumented)
     brand?: ReactNode;
     // (undocumented)
@@ -5475,12 +5681,22 @@ export interface SidebarProps extends HTMLAttributes<HTMLElement> {
     collapseLabel?: string;
     // (undocumented)
     expandLabel?: string;
+    footer?: ReactNode;
     // (undocumented)
     nav?: 'full' | 'rail';
     // (undocumented)
     onToggle?: () => void;
+    search?: SidebarSearch;
     // (undocumented)
     toggleIcon?: ReactNode;
+}
+
+// @public
+export interface SidebarSearch {
+    label: ReactNode;
+    // (undocumented)
+    onActivate: () => void;
+    shortcut?: KeyShortcut;
 }
 
 // @public (undocumented)
@@ -5615,12 +5831,22 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
     value: ReactNode;
 }
 
+// @public
+export function StatRow(input: StatRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatRowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    minTileWidth?: string;
+}
+
 // @public (undocumented)
 export interface StatTrend {
-    // (undocumented)
     direction: 'up' | 'down';
     // (undocumented)
     label: ReactNode;
+    sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
 // @public (undocumented)
@@ -5630,7 +5856,6 @@ export function StatusPill(input: StatusPillProps): react.JSX.Element;
 export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     children?: ReactNode;
-    // (undocumented)
     dot?: boolean;
     size?: PillSize;
     // (undocumented)
@@ -5714,8 +5939,8 @@ export interface StepStateLabels {
 // @public
 export function studentTQuantile(p: number, df: number): number;
 
-// @public (undocumented)
-export function SubNavItem(input: SubNavItemProps): react.JSX.Element;
+// @public
+export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
 
 // @public (undocumented)
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -5758,6 +5983,14 @@ export const Switch: react.ForwardRefExoticComponent<SwitchProps & react.RefAttr
 export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     // (undocumented)
     label?: ReactNode;
+}
+
+// @public
+export interface SystemDisplayPreferences {
+    // (undocumented)
+    dark: boolean;
+    // (undocumented)
+    moreContrast: boolean;
 }
 
 // @public (undocumented)
@@ -5972,7 +6205,27 @@ export interface TextDiffSegment {
 export type TextFilterOperator = 'contains' | 'not-contains' | 'is' | 'is-not' | 'starts-with';
 
 // @public (undocumented)
+export type TextScalePreference = 'sm' | 'md' | 'lg' | 'xl';
+
+// @public (undocumented)
 export function Th(input: ThProps): react.JSX.Element;
+
+// @public (undocumented)
+export type ThemePreference = 'light' | 'dark' | 'system';
+
+// @public
+export function ThemeSwitcher(input: ThemeSwitcherProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ThemeSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    display?: 'labels' | 'icons';
+    // (undocumented)
+    labels?: Partial<DisplayPreferencesLabels>;
+    // (undocumented)
+    onValueChange?: (value: ThemePreference) => void;
+    storageKey?: string;
+    value?: ThemePreference;
+}
 
 // @public (undocumented)
 export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
@@ -6136,6 +6389,7 @@ export interface ToastApi {
     store: ToastStore;
     // (undocumented)
     success: (message: ReactNode, options?: ToastOptions) => string;
+    undo: (id: string) => boolean;
     undoable: (message: ReactNode, options: UndoableToastOptions) => string;
     update: (id: string, patch: Partial<Omit<ToastRecord, 'id' | 'version'>>) => void;
     // (undocumented)
@@ -6170,6 +6424,7 @@ export interface ToastOptions {
     icon?: ReactNode;
     id?: string;
     onDismiss?: (reason: ToastDismissReason) => void;
+    pauseOnHover?: boolean;
 }
 
 // @public (undocumented)
@@ -6219,6 +6474,7 @@ export interface ToastRecord {
     message: ReactNode;
     // (undocumented)
     onDismiss?: (reason: ToastDismissReason) => void;
+    pauseOnHover?: boolean;
     version: number;
 }
 
@@ -6324,6 +6580,7 @@ export interface TreeNavAction {
 
 // @public (undocumented)
 export interface TreeNodeData {
+    ariaLabel?: string;
     // (undocumented)
     children?: TreeNodeData[];
     hasChildren?: boolean;
@@ -6358,6 +6615,7 @@ export interface TreeNodeProps {
     selected?: string;
     // (undocumented)
     tabbableId?: string;
+    treeId?: string;
 }
 
 // @public (undocumented)
@@ -6392,13 +6650,15 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 
 // @public
 export interface UixLabels {
+    accountMenu?: Partial<AccountMenuLabels>;
     alert?: {
         dismiss?: string;
     };
-    // (undocumented)
     appShell?: {
         skipToContent?: string;
         exitFocus?: string;
+        openNav?: string;
+        navigation?: string;
     };
     // (undocumented)
     attachment?: Partial<AttachmentLabels>;
@@ -6414,10 +6674,10 @@ export interface UixLabels {
         resultsOne?: string;
         resultsMany?: string;
     };
-    // (undocumented)
     confirmDialog?: {
         typeToConfirm?: string;
         compensation?: string;
+        typeToConfirmMismatch?: string;
     };
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
@@ -6426,6 +6686,7 @@ export interface UixLabels {
     // (undocumented)
     dateTimePicker?: Partial<DateTimePickerLabels>;
     discardPrompt?: Partial<DiscardPromptLabels>;
+    displayPreferences?: Partial<DisplayPreferencesLabels>;
     // (undocumented)
     drawer?: {
         close?: string;
@@ -6540,6 +6801,26 @@ export function useDelayedPending(pending: boolean, input?: DelayedPendingOption
 export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement>;
 
 // @public
+export function useDisplayPreferences(input?: UseDisplayPreferencesOptions): UseDisplayPreferencesResult;
+
+// @public (undocumented)
+export interface UseDisplayPreferencesOptions {
+    apply?: boolean;
+    defaults?: Partial<DisplayPreferenceValues>;
+    storageKey?: string;
+}
+
+// @public (undocumented)
+export interface UseDisplayPreferencesResult {
+    preferences: DisplayPreferenceValues;
+    resolvedTheme: 'light' | 'dark';
+    // (undocumented)
+    setPreference: <K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => void;
+    // (undocumented)
+    setPreferences: (next: DisplayPreferenceValues) => void;
+}
+
+// @public
 export function useOptimisticValue<T>(serverValue: T, commit: (next: T) => Promise<unknown>, input?: UseOptimisticValueOptions<T>): UseOptimisticValueResult<T>;
 
 // @public (undocumented)
@@ -6633,6 +6914,7 @@ export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptio
 export interface UseVirtualRowsOptions {
     enabled?: boolean;
     estimatedViewportHeight?: number;
+    measureRows?: string;
     overscan?: number;
     rowHeight: number;
     threshold?: number;
@@ -6645,6 +6927,7 @@ export interface UseVirtualRowsResult<T> {
     padBottom: number;
     // (undocumented)
     padTop: number;
+    rowHeight: number;
     // (undocumented)
     rows: readonly T[];
     // (undocumented)

@@ -25,10 +25,24 @@
     .uix-progress, .uix-meter { border: 1px solid ButtonText; }
     .uix-progress__bar, .uix-meter__fill { background: SelectedItem; forced-color-adjust: none; }
 
+    /* tabs — the line underline and the selected pill are backgrounds, so the selected tab had no
+       cue at all; the enclosed tab keeps its border */
+    .uix-tabs--line .uix-tab::after { background: SelectedItem; forced-color-adjust: none; }
+    .uix-tabs--pill .uix-tab[aria-selected="true"]:not(:focus-visible) { outline: 2px solid SelectedItem; outline-offset: -2px; }
+
     /* saved views — the selected row is a background tint only (no check glyph) */
     .uix-saved-views__row[data-active] { outline: 2px solid SelectedItem; outline-offset: -2px; }
     /* view menu — the dragged column row is only dimmed (opacity), which WHCM keeps but can hide */
     .uix-view-menu__col[data-dragging] { outline: 2px dashed Highlight; outline-offset: -2px; }
+
+    /* status pill dot — a background only, and in the dot and outline treatments the only mark of
+       the tone; the label beside it carries the meaning, the dot stays as a shape (HAR-1563) */
+    .uix-pill__dot, .uix-stat__value::before { forced-color-adjust: none; background: CanvasText; }
+
+    /* masked glyphs (HAR-1576) paint a background through the mask: redraw it in the text colour,
+       and the active sort arrow in the selection colour */
+    .uix-glyph, .uix-table th[data-sort]::after, button.uix-select::after { forced-color-adjust: none; background: CanvasText; opacity: 1; }
+    .uix-table th[aria-sort]:not([aria-sort="none"])::after { background: Highlight; }
 
     /* tag / chip remove — the hover circle is a background tint only (HAR-1569); the icon is
        currentColor, so it already takes ButtonText */

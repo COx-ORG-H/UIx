@@ -61,3 +61,43 @@ for (const row of ['row-compact', 'row-hero']) {
     }
   });
 }
+
+// A row of tiles reflows on a phone (HAR-1803 review): the kit's StatRow (.uix-stat-row) and a
+// wrapping flex row put fewer tiles side by side, never six squeezed ones. At 320 and 390 px no
+// tile is narrower than 8.5rem (12rem for hero tiles) or the whole row, every label stays on one line, no word in a value
+// is broken, and nothing scrolls sideways. A fixed six-column grid broke "Assignee" into AS/SI/GN/EE.
+for (const width of [320, 390]) {
+  test(`at ${width} px the stat rows reflow: readable tiles, whole labels, no sideways scroll`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const row of ['row-compact', 'row-hero']) {
+      const tiles = await page.locator(`#${row} > .uix-stat`).evaluateAll((els) => els.map((tile) => {
+        const rowWidth = tile.parentElement.getBoundingClientRect().width;
+        const label = tile.querySelector('.uix-stat__label > span');
+        const value = tile.querySelector('.uix-stat__value');
+        const lineHeight = parseFloat(getComputedStyle(label).lineHeight) || parseFloat(getComputedStyle(label).fontSize) * 1.3;
+        // a word broken across lines shows as a value line box narrower than its longest word
+        const range = document.createRange();
+        range.selectNodeContents(value);
+        const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+        const words = value.textContent.trim().split(/\s+/).length;
+        return {
+          tile: tile.dataset.tile,
+          width: tile.getBoundingClientRect().width,
+          rowWidth,
+          labelLines: Math.round(label.getBoundingClientRect().height / lineHeight),
+          valueLinesWithinWords: lines <= words,
+        };
+      }));
+      const floor = await page.evaluate((rem) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem, row === 'row-hero' ? 12 : 8.5);
+      for (const t of tiles) {
+        expect(t.width >= floor - 0.5 || t.width >= t.rowWidth - 0.5, `${row} ${t.tile} is ${t.width.toFixed(0)} px wide`).toBe(true);
+        expect(t.labelLines, `${row} ${t.tile} label on one line`).toBe(1);
+        expect(t.valueLinesWithinWords, `${row} ${t.tile} value breaks only between words`).toBe(true);
+      }
+      // the row fits the viewport and its own box (the harness's other sections are not measured)
+      const fit = await page.locator(`#${row}`).evaluate((el) => ({ over: el.scrollWidth - el.clientWidth, right: el.getBoundingClientRect().right, vw: document.documentElement.clientWidth }));
+      expect(fit.over, `${row} scrolls sideways`).toBe(0);
+      expect(fit.right, `${row} ends inside the viewport`).toBeLessThanOrEqual(fit.vw);
+    }
+  });
+}

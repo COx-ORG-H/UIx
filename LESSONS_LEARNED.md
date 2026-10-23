@@ -1,5 +1,24 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
+<!-- lesson-skip: 3b9609d routine: the reviewer named three shapes the glyph guard missed; each is now a scan test -->
+<!-- lesson-skip: 444a356 routine: a hidden presence word led the trigger's accessible name; the reviewer read the name, a spec now asserts it starts with the person -->
+<!-- lesson-skip: 217df0e same family as the 1d66ae0 entry (check a state colour in both themes); the dot test now walks every tone in both -->
+<!-- lesson-skip: d73d3b7 routine: selected Segmented option below 3:1 against the track, measured by the reviewer; pinned by a contrast spec -->
+<!-- lesson-skip: be97dc3 same family as the 217f18f skip (storage that cannot be read back) plus a same-value switch flash; each pinned by a jsdom test -->
+<!-- lesson-skip: 229d512 routine review fixes (drawer showed the rail, content unmounted before the exit, no button without phoneNav, Mac Option+[); each pinned by a test -->
+<!-- lesson-skip: 28c16a2 routine: this batch's own rhythm sweep caught its own new pair; the gate worked -->
+<!-- lesson-skip: 217f18f routine: a merge read back from storage that private mode cannot read; found in review, pinned by a test -->
+<!-- lesson-skip: e6cc8ac same cause as the 2026-09-22 docs-specimens entry (unlayered docs prose rules beat @layer kit rules), now for h2/h3/p; scoped the same way with :where() -->
+<!-- lesson-skip: e14a553 routine: a raw 1px the contract gate named; replaced with from-font -->
+<!-- lesson-skip: f38c222 routine: HAR-2415 named the leak; same shape as the 9cbe96d skip (Escape handled by the hint, not stopped) -->
+<!-- lesson-skip: 61b3635 routine: HAR-1764 named the missing type="button"; pinned by a form-submit test -->
+<!-- lesson-skip: 9006caa routine: HAR-1828 named the subtree-wide accessible name; pinned by a test -->
+<!-- lesson-skip: df9a5e6 routine CSS wrap fix; HAR-1754 named the cause, reflow specs cover it -->
+<!-- lesson-skip: 8fe7118 routine review fixes (Tree indent, keyboard underline, passive effect); each found by looking at screenshots -->
+<!-- lesson-skip: b4f426d routine review fixes (overflow-wrap anywhere, Escape on a React handler after inner controls, IME guard, focus return, reserved message height); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 4e3b663 same family as the 2026-10-16 lesson (state that trails a queued event); the field now asks :popover-open; pinned by a deferred-toggle jsdom test -->
+
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
@@ -24,6 +43,18 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
+### 2026-10-23 · an in-app motion choice has more readers than CSS · `0e7b267`
+- **Rule:** when an app can override `prefers-reduced-motion` (here `:root[data-motion="reduce"]`), every reader must ask the one helper (`prefersReducedMotion()`) or a CSS mirror under `@media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] … }`. A component that calls `matchMedia('(prefers-reduced-motion: reduce)')` itself, or a CSS static fallback that only lives under the media query, silently ignores the in-app choice; and a fallback in an `@layer` loses to the unlayered motion policy unless it is `!important` (layered `!important` wins over unlayered).  **Why:** HAR-1372 shipped the switch and mirrored the button, spinner and progress rules, but ECharts kept animating, the toast still slid, and the arrival highlight lost its static fallback; the reviewer found all three by setting the switch, not the OS.
+- **Gate:** `tests/a11y/display-preferences.spec.mjs` sets `data-motion="reduce"` with the OS at no-preference and checks toast and arrival computed styles; `display-preferences-dom.test.mjs` fails on a private `matchMedia('(prefers-reduced-motion` in ChartCore.  **Tag:** motion, a11y, single-source, generalizable
+
+### 2026-10-23 · keyboard shortcuts · `34deb5c`
+- **Rule:** a single-key shortcut guard that ignores presses with Ctrl or Alt must let AltGr through (`event.getModifierState('AltGraph')`). Windows reports AltGr as Ctrl+Alt, and on German, Bosnian, Polish and Nordic layouts `[`, `]`, `{`, `@`, `\`, `|` and `€` exist only behind AltGr.  **Why:** AppShell `navHotkey="["` (HAR-1371) never fired on the Bosnian staff keyboards it was built for; every jsdom and Chromium test typed `[` with no modifier. `Menu` typeahead and `OrgChart` use the same `!ctrlKey && !altKey` guard.
+- **Gate:** "AppShell navHotkey…" in `packages/react/src/staff-nav-dom.test.mjs` dispatches `[` with `ctrlKey`, `altKey` and `modifierAltGraph` and failed before the fix.  **Tag:** i18n, keyboard, test-double-fidelity, generalizable
+
+### 2026-10-23 · one Escape, two layers, in WebKit · `b4e9b87`
+- **Rule:** never assume one Escape reaches only the topmost layer. With a light-dismiss popover open inside a modal `<dialog>`, WebKit closes the popover *and* fires `cancel` on the dialog for the same keypress; Chromium and Firefox close only the popover. A dialog that acts on `cancel` must ignore one that arrives in the same task as a popover's `beforetoggle` to `closed` (and reopen if the engine closed it anyway).  **Why:** in Safari a clean kit Drawer closed together with its help popover, and a dirty one asked "Discard changes?", since 2.42.0. The keydown order was identical in both engines (probed); only the extra `cancel` differed, so no keydown-based guard could see it.
+- **Gate:** "clean, Escape closes an open popover and leaves the drawer open" in `tests/a11y/discard-prompt.spec.mjs`, now run in WebKit and Firefox by CI's cross-browser job (`CROSS_BROWSER_SPECS`, kept in step by `cross-browser-config.spec.mjs`). It failed in WebKit before `useGuardedDialog` tracked the light dismiss.  **Tag:** cross-browser, overlay, test-double-fidelity, generalizable
 
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.

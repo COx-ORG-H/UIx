@@ -5,8 +5,22 @@ import type { RefObject } from 'react';
 import { shouldVirtualize, virtualWindow } from '../table-engine.js';
 
 export interface UseVirtualRowsOptions {
-  /** Fixed rendered row height in pixels. */
+  /**
+   * Rendered row height in pixels. With `measureRows` it is the estimate for the first paint,
+   * until the mounted rows have been measured.
+   */
   rowHeight: number;
+  /**
+   * A selector for the mounted data rows inside the container, e.g. `'tbody > tr[data-row]'`
+   * (HAR-1829). With it the hook sizes its spacers and window from the rows' real pitch (their
+   * mean `offsetHeight`) instead of trusting `rowHeight`, which only has to be close: a row's
+   * height comes from CSS and content (kit padding, a second line, density), and a wrong number
+   * gives a short scrollbar and a window that drifts away from the rows on screen. It measures
+   * when windowing starts, when `rowHeight` changes (a density switch) and when the container
+   * resizes, never while scrolling, so the spacers do not move under the reader. Spacer rows
+   * must not match it.
+   */
+  measureRows?: string;
   /** Rows rendered beyond each viewport edge. Default: 6. */
   overscan?: number;
   /**
@@ -35,6 +49,11 @@ export interface UseVirtualRowsResult<T> {
   padBottom: number;
   totalHeight: number;
   virtualized: boolean;
+  /**
+   * The row height in use: the measured pitch with `measureRows`, else the `rowHeight` option.
+   * Scroll a keyboard-focused row into view with it (`index * rowHeight`).
+   */
+  rowHeight: number;
 }
 
 /**
@@ -45,10 +64,14 @@ export interface UseVirtualRowsResult<T> {
  */
 export function useVirtualRows<T>(
   rows: readonly T[],
-  { rowHeight, overscan = 6, threshold = 100, estimatedViewportHeight = 0, enabled = true }: UseVirtualRowsOptions,
+  { rowHeight: estimate, overscan = 6, threshold = 100, estimatedViewportHeight = 0, enabled = true, measureRows }: UseVirtualRowsOptions,
 ): UseVirtualRowsResult<T> {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState({ scrollTop: 0, height: 0 });
+  /** The measured row pitch, with the estimate it was measured under. */
+  const [measured, setMeasured] = useState<{ height: number; estimate: number } | null>(null);
+  /** Measures the mounted rows (HAR-1829); kept current for the resize observer. */
+  const measureRowsRef = useRef<() => void>(() => {});
 
   useLayoutEffect(() => {
     const element = containerRef.current;
@@ -67,7 +90,8 @@ export function useVirtualRows<T>(
     };
     commitMeasurement();
     element.addEventListener('scroll', measure, { passive: true });
-    const observer = new ResizeObserver(measure);
+    // A resize can change the rows' height (text rewraps); a scroll cannot, so only this re-measures them.
+    const observer = new ResizeObserver(() => { measure(); measureRowsRef.current(); });
     observer.observe(element);
     return () => {
       element.removeEventListener('scroll', measure);
@@ -78,6 +102,27 @@ export function useVirtualRows<T>(
 
   const height = viewport.height > 0 ? viewport.height : Math.max(0, estimatedViewportHeight);
   const virtualized = enabled && height > 0 && shouldVirtualize(rows.length, threshold);
+  // A measurement belongs to the estimate it was taken under: a new estimate (a density switch)
+  // uses the new number until the rows have been measured again, in the same commit.
+  const rowHeight = measureRows && measured && measured.estimate === estimate ? measured.height : estimate;
+
+  measureRowsRef.current = () => {
+    const element = containerRef.current;
+    if (!element || !measureRows || !virtualized) return;
+    let total = 0;
+    let count = 0;
+    for (const row of Array.from(element.querySelectorAll<HTMLElement>(measureRows))) {
+      const h = row.offsetHeight;
+      if (h > 0) { total += h; count += 1; }
+    }
+    if (count === 0) return;
+    // Hundredths: a mean of whole pixels can be fractional; finer than that only churns renders.
+    const next = Math.round((total / count) * 100) / 100;
+    setMeasured((current) => (current && current.estimate === estimate && current.height === next ? current : { height: next, estimate }));
+  };
+  // When windowing starts and when the estimate changes: the rows are laid out by now.
+  useLayoutEffect(() => { measureRowsRef.current(); }, [virtualized, estimate, measureRows]);
+
   const window = useMemo(
     () => virtualized
       ? virtualWindow(viewport.scrollTop, height, rowHeight, rows.length, overscan)
@@ -94,5 +139,6 @@ export function useVirtualRows<T>(
     padBottom: window.padBottom,
     totalHeight: window.total,
     virtualized,
+    rowHeight,
   };
 }

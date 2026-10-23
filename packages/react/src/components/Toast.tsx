@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
 
@@ -79,7 +80,7 @@ export function Toast({ title, message, tone, icon, action, onClose, leaving, di
       {action != null && <div className="uix-toast__action-slot">{action}</div>}
       {onClose && (
         <button type="button" className="uix-toast__close" onClick={handleClose} aria-label={dismissLabel}>
-          ×
+          <XIcon />
         </button>
       )}
     </div>
@@ -147,7 +148,8 @@ interface Timer { version: number; remaining: number; start: number; handle?: nu
 
 /**
  * Runs each visible toast's timer, paused while the pointer or focus is in the toaster or
- * the tab is hidden, so a toast never closes while someone is reading or reaching for it.
+ * the tab is hidden, so a toast never closes while someone is reading or reaching for it. A
+ * toast with `pauseOnHover: false` keeps a fixed timer (HAR-1831).
  */
 function useToastTimers(store: ToastStore, visible: readonly ToastRecord[], paused: boolean) {
   const timers = useRef(new Map<string, Timer>());
@@ -165,7 +167,7 @@ function useToastTimers(store: ToastStore, visible: readonly ToastRecord[], paus
     for (const record of live.values()) {
       let timer = map.get(record.id);
       if (!timer) { timer = { version: record.version, remaining: record.duration!, start: now }; map.set(record.id, timer); }
-      if (paused) {
+      if (paused && record.pauseOnHover !== false) {
         if (timer.handle != null) { clearTimeout(timer.handle); timer.handle = undefined; timer.remaining -= now - timer.start; }
       } else if (timer.handle == null) {
         timer.start = now;
