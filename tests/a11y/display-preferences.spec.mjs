@@ -164,3 +164,20 @@ test('axe: the panel and the switcher, both themes', async ({ page }) => {
     expect(await axe(page)).toEqual([]);
   }
 });
+
+// Review of #165: the selected segment of a ThemeSwitcher / DisplayPreferences group must be a
+// visible boundary (WCAG 1.4.11): its fill is only 1.05:1 (dark) / 1.09:1 (light) on the track, so
+// it carries an inset --uix-text-muted ring, >= 3:1 on the track in both themes.
+for (const theme of ['light', 'dark']) {
+  test(`${theme}: the selected segment has a ring of at least 3:1 against the track`, async ({ page }) => {
+    await open(page, { theme });
+    const seen = await page.locator('#prefs [role="radiogroup"]').first().evaluate((group) => {
+      const checked = group.querySelector('[aria-checked="true"]');
+      const shadow = getComputedStyle(checked).boxShadow;
+      const probe = (v) => { const d = document.createElement('div'); d.style.color = `var(${v})`; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; };
+      return { shadow, muted: probe('--uix-text-muted'), track: getComputedStyle(group).backgroundColor };
+    });
+    expect(seen.shadow).toContain(`${seen.muted} 0px 0px 0px 1px inset`);
+    expect(await ratio(page, '--uix-text-muted', '--uix-bg-subtle')).toBeGreaterThanOrEqual(3);
+  });
+}

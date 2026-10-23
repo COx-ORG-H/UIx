@@ -372,9 +372,9 @@
       "brotli": 1801
     },
     "styles/components/segmented.css": {
-      "raw": 1894,
-      "gzip": 877,
-      "brotli": 717
+      "raw": 2283,
+      "gzip": 1055,
+      "brotli": 863
     },
     "styles/components/select.css": {
       "raw": 9672,
