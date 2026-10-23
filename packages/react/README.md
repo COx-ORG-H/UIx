@@ -259,7 +259,7 @@ const showSpinner = useDelayedPending(upload.isPending);
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
-- **`Stat tone`** (`warning`, `danger`) draws a toned outline and value; the label stays muted, so the tone never replaces words. `size="compact"` fits dense fact bands.
+- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.48). `size="compact"` fits dense fact bands.
 - **`Stat onActivate`** makes the whole tile a button that opens an editor (`aria-haspopup="dialog"`). Pass `activateLabel` (e.g. "change") so the name reads "Priority: P1, change", and `expanded` while the editor is open. The ref points at the button, for anchoring a popover.
 - **`Stat pending`** is for a tile whose action is still running (a save, a state change). The button gets `aria-busy="true"` and `aria-disabled="true"`, is dimmed with a progress cursor, and calls neither `onActivate` nor your `onClick` / `onKeyDown` until `pending` is false again. It is never natively `disabled`, so it keeps focus and a screen reader can still read it. Only a tile with `onActivate` has the state; a read-only tile and a link tile ignore the prop.
 - **Tiles in one row line up.** A grid or flex row stretches its tiles to the tallest one. Read-only, button and link tiles all start their label and value at the same offset from the top edge, whatever the height (before 2.38.0 a button tile centred its rows).
@@ -1305,3 +1305,156 @@ cycle; `LayeredEdgeKind` gains `skip` and `back`.
 600 items read at the opening 75 % with no overlap, and a pan or a zoom only moves the stage
 (the items, edges and list are not rebuilt), so dragging stays at the display's frame rate. A
 force layout was not needed.
+
+### Calm status colour, the app shell and display preferences (2.48)
+
+#### StatusPill treatments, Stat sentiment, quiet Alert (HAR-1563)
+
+```tsx
+<StatusPill tone="danger" treatment="dot">Breached</StatusPill>       // a table cell
+<StatusPill tone="progress">In progress</StatusPill>                  // the record's header (soft, the default)
+<StatusPill tone="warning" treatment="outline">Due in 2h</StatusPill> // a flag among other chrome
+<Stat label="Breached SLAs" value={7} trend={{ direction: 'up', label: '2', sentiment: 'negative' }} />
+```
+
+- `StatusPill treatment`: `'soft'` (default, the tinted wash; `'filled'` is its old name and still works), `'dot'`
+  (no fill, a neutral label, the tone only in the dot: for tables) and `'outline'` (a neutral hairline, a hushed
+  label and the dot; only `critical` keeps a toned border). `dot` and `outline` always draw the dot. **Changed:**
+  `outline` used to colour the label and a 40 % border in the tone's hue.
+- `StatusPill tone="progress"`: in flight, the same blue as `info`.
+- `Stat trend.sentiment`: `'positive'` (green), `'negative'` (red) or `'neutral'` (grey, the default). **Changed:** the
+  chip used to be green for `up` and red for `down`, so a rise in breached SLAs showed green. Pass the sentiment the
+  change has for your metric.
+- `Stat tone`: the border stays neutral and a dot leads the toned value (**changed:** the border was toned).
+- `Alert`: the borders are a 24 % hairline of the tone (**changed:** 30 to 40 %); the warning icon is the text
+  role, at least 3:1 on its tint in both themes.
+
+#### A Stat link tile looks like a link at rest (HAR-1803)
+
+A tablet has no hover, so a tile that leads somewhere has to show it before it is touched. A link tile
+(`href`) draws a trailing chevron (`ChevronRightIcon`) in its label row; a tile that opens a dialog or menu
+keeps its down chevron; an in-place action tile (`onActivate` with `haspopup={false}`, class
+`.uix-stat--action`) underlines its value with a dotted line. All three are shapes, so they read without
+colour and in forced-colours mode, and none depends on hover. A plain figure tile is unchanged. The
+hover tint of interactive tiles now applies only where the device can hover (`@media (hover: hover)`).
+
+```tsx
+<Stat label={t('overdue')} value={4} href="/loans?overdue" renderLink={toRoute} />  // › at rest
+```
+
+#### Inset: a well inside a card body (HAR-1818)
+
+```tsx
+<Card title={t('current')}>
+  <Inset role="group" aria-label={t('headerPreview')}><BrandBar brand={brand} /></Inset>
+  <Inset padding="sm"><code>{css}</code></Inset>
+</Card>
+```
+
+`Inset` (`.uix-inset`) frames a preview or a specimen inside a card body: a hairline border, the md radius,
+the subtle background and `--uix-space-4` padding (`padding="sm"`: `--uix-space-3`). Use it instead of a `Card`
+in a `Card`, which brings a second shadow, card padding and card semantics. `tone="surface"` is for a well on
+a panel that is already subtle. It lays out nothing; give it a `role="group"` and a name when the preview needs
+one.
+
+#### Icons, not text glyphs (HAR-1576)
+
+Toast, Pagination, MetricInput, SavedViewMenu and Steps draw the icon set (`XIcon`, the chevrons, `PlusIcon`
+/ `MinusIcon`, `StarIcon`) where they drew `× ‹ › « + − ★ !`. The table sort arrows and the `Select` trigger's
+chevron are the icon set's glyphs through a CSS mask in `currentColor`, so they follow the theme; plain CSS gets
+the same through `.uix-glyph`:
+
+```html
+<span class="uix-glyph uix-glyph--chevron-down" aria-hidden="true"></span>
+```
+
+`node packages/react/scripts/glyph-icons.mjs` is the guard (it runs in `npm test`): a glyph as the whole content
+of a button, a link or an icon slot, or in a CSS `content:`, fails with its file and line. Text that only looks
+like an icon (a Kbd legend, a diff sign) goes in `glyph-icons.allow.json` with a reason.
+
+#### The staff shell: full viewport and the type presets (HAR-1815)
+
+```tsx
+<AppShell layout="viewport" sidebar={<StaffNav />}>
+  <PageHeader size="display" eyebrow={t('today')} title={t('overview')} subtitle={t('overviewLead')} actions={actions} />
+</AppShell>
+<DetailPage variant="staff" back={{ href: '/loans', label: t('allLoans') }} title={loan.code} metrics={metrics}>
+  <Card><SectionHead size="compact" as="h3" title={t('copies')} /><Table>…<CellSub tabular>{copy.inventory}</CellSub>…</Table></Card>
+</DetailPage>
+```
+
+- `AppShell layout="viewport"`: no frame, `100dvh`, no top-bar row (a `topbar` sits at the top of the main
+  column), staff padding (`space-7 space-6 space-6`, `space-8` at the sides from 80rem), and below 40rem one
+  column with the sidebar hidden. `layout="frame"` is the default and the old look.
+- `PageHeader size="display"`: 40 px heading-font title, bold hushed eyebrow, body-size hushed subtitle (42rem),
+  actions on the bottom line.
+- `DetailPage variant="staff"`: h2 / 1.15 title, un-underlined hushed back link, eyebrow metric labels over
+  regular tabular h3 values.
+- `SectionHead size="compact"` (15 px / 1.3 / 600) and `as="h3"`; `CellSub tabular`.
+
+#### Sidebar actions and search, AccountMenu, the rail hotkey and the phone nav tier (HAR-1371)
+
+```tsx
+const [nav, setNav] = useState<ShellNav>('full');
+<AppShell layout="viewport" navHotkey="[" navTierStorageKey="staff-nav" onNavChange={setNav} phoneNav="drawer"
+  sidebar={(
+    <Sidebar brand={brand} nav={nav === 'rail' ? 'rail' : 'full'}
+      actions={<><ModeToggle /><Menu trigger={<Button icon size="sm" variant="ghost" aria-label={t('tools')}><EllipsisIcon /></Button>}>…</Menu></>}
+      search={{ label: t('search'), shortcut: ['Mod', 'K'], onActivate: openPalette }}
+      footer={<AccountMenu collapsed={nav === 'rail'} user={{ name, sub: email, status: 'online' }} items={<>
+        <MenuItem href="/profile">{t('profile')}</MenuItem>
+        <MenuItem onSelect={signOut} tone="danger">{t('signOut')}</MenuItem>
+      </>} />}>
+      {navItems}
+    </Sidebar>
+  )}>
+  {page}
+</AppShell>
+```
+
+- `Sidebar actions` sit beside the brand (hidden in the rail); `search` is a row that opens your search and shows
+  its keys (it does not bind them: your command palette listens); `footer` is pinned to the bottom.
+- `AccountMenu`: avatar (photo, your node, or initials), name and a second line as a `Menu` trigger;
+  `collapsed` in the rail.
+- `navHotkey` switches full ↔ rail instantly, never while typing; `navTierStorageKey` remembers the tier before
+  the first paint and reports it through `onNavChange`.
+- `phoneNav="drawer"`: at 40rem and under, a menu button opens the sidebar in a start-side `Drawer`.
+
+#### Display preferences: theme, contrast, text size, motion, density (HAR-1372)
+
+```tsx
+// app/layout.tsx: before the stylesheets, so nothing flashes. The script sets attributes on <html>
+// before React hydrates, so <html> needs suppressHydrationWarning; under a Content-Security-Policy
+// give the inline script your per-request nonce (or allow its hash).
+<html lang="bs" suppressHydrationWarning>
+  <head>
+    <script nonce={nonce} dangerouslySetInnerHTML={{ __html: displayPreferencesScript('staff-display') }} />
+  </head>
+  <body>{children}</body>
+</html>
+
+// a settings page, or a dialog from AccountMenu
+<DisplayPreferences storageKey="staff-display" />
+// the header
+<ThemeSwitcher storageKey="staff-display" display="icons" />
+// your own control
+const { preferences, setPreference, resolvedTheme } = useDisplayPreferences({ storageKey: 'staff-display' });
+```
+
+The tokens read five attributes on `<html>`: `data-theme` (light / dark), `data-contrast="more"`,
+`data-text-scale="sm|lg|xl"`, `data-motion="reduce"` and `data-density="compact|comfortable"`. A choice applies
+at once (transitions are suspended for that frame), is stored, and `system` follows the OS. The head script and the
+hook read the same key and the same defaults; pass both the same. `useReducedMotion` honours `data-motion`.
+
+#### StatRow: a row of tiles that reflows
+
+```tsx
+<StatRow>{facts.map((f) => <Stat key={f.id} size="compact" {...f} />)}</StatRow>
+<StatRow className="uix-stat-row--hero">{kpis}</StatRow>  // 12rem tiles for 34 px values
+```
+
+`StatRow` (`.uix-stat-row`) puts as many tiles side by side as fit at 8.5rem each (12rem with
+`.uix-stat-row--hero`, or as soon as a hero tile is in the row; `minTileWidth` / `--stat-row-min` to
+choose), all the same height, down to one per row on a phone. A fixed column count squeezed six tiles
+into 320 px until their labels broke letter by letter. Labels now wrap at a space and break inside a
+word only when that word alone is wider than the tile.

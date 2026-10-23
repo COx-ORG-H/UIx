@@ -72,13 +72,20 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
   helpLabel?: string;
   /** Right-aligned slot — a `.uix-section-link` anchor, a button, a pill. */
   action?: ReactNode;
+  /**
+   * `compact` is the in-card section preset (HAR-1815): a 15 px / 1.3 / 600 title in place of
+   * the 24 px editorial h2. Default `default`.
+   */
+  size?: 'default' | 'compact';
+  /** Heading level of the title. Default `h2`; an in-card section is often an `h3`. */
+  as?: 'h2' | 'h3';
 }
 
 /** Section head — title row (+ optional `help` ?) with an optional trailing action (`.uix-section-head`). */
-export function SectionHead({ title, titleId, help, helpLabel, action, className, ...props }: SectionHeadProps) {
-  const heading = <h2 className="uix-section-title" id={titleId}>{title}</h2>;
+export function SectionHead({ title, titleId, help, helpLabel, action, size = 'default', as: Heading = 'h2', className, ...props }: SectionHeadProps) {
+  const heading = <Heading className="uix-section-title" id={titleId}>{title}</Heading>;
   return (
-    <div className={cx('uix-section-head', className)} {...props}>
+    <div className={cx('uix-section-head', size === 'compact' && 'uix-section-head--compact', className)} {...props}>
       {hasHelp(help) ? (
         <div className="uix-section-head__title-row">
           {heading}

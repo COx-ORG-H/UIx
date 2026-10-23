@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
 
@@ -79,7 +80,7 @@ export function Toast({ title, message, tone, icon, action, onClose, leaving, di
       {action != null && <div className="uix-toast__action-slot">{action}</div>}
       {onClose && (
         <button type="button" className="uix-toast__close" onClick={handleClose} aria-label={dismissLabel}>
-          ×
+          <XIcon />
         </button>
       )}
     </div>

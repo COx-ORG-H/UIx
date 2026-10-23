@@ -6,5 +6,7 @@
   .uix-metric-input__unit { display:flex; align-items:center; padding-inline:var(--uix-space-3); border-block:1px solid var(--uix-border-strong); background:var(--uix-bg-subtle); color:var(--uix-text-muted); }
   .uix-metric-input__steps { display:grid; grid-template-rows:1fr 1fr; width:2.5rem; min-height:0; }
   .uix-metric-input__step { min-height:0; padding:0; border:1px solid var(--uix-border-strong); background:var(--uix-surface); color:var(--uix-text); line-height:1; } .uix-metric-input__step:first-child { border-top-right-radius:var(--uix-radius-md); } .uix-metric-input__step:last-child { border-top:0; border-bottom-right-radius:var(--uix-radius-md); }
-  .uix-metric-input__step:hover { background:var(--uix-bg-hover); } .uix-metric-input--invalid .uix-metric-input__control { color:var(--uix-danger-text); }
+  .uix-metric-input__step:hover { background:var(--uix-bg-hover); }
+  /* + and − are the icon set's Plus and Minus (HAR-1576), centred in each half */
+  .uix-metric-input__step { display:grid; place-items:center; } .uix-metric-input__step > .uix-icon { width:var(--uix-icon-sm); height:var(--uix-icon-sm); } .uix-metric-input--invalid .uix-metric-input__control { color:var(--uix-danger-text); }
 }

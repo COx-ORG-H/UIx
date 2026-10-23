@@ -23,9 +23,13 @@ const heartbeat = (state, label) => `<span class="uix-heartbeat${state === 'live
 // The interactive Stat is the React component's own markup, with fixed ids in place of useId's;
 // packages/react/src/operator-primitives.test.mjs renders each tile again and compares.
 const STAT_CHEVRON = '<span class="uix-stat__chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>';
-const statButton = ({ id, label, value, meta, action, haspopup = 'dialog', pending = false }) => `<button type="button" class="uix-stat uix-stat--compact uix-stat--interactive"${haspopup ? ` aria-haspopup="${haspopup}" aria-expanded="false"` : ''} aria-labelledby="${id}-label ${id}-sep ${id}-value ${id}-action"${meta ? ` aria-describedby="${id}-meta"` : ''}${pending ? ' aria-busy="true" aria-disabled="true"' : ''}><span id="${id}-sep" class="uix-visually-hidden">:</span><span id="${id}-action" class="uix-visually-hidden">, ${action}</span><span class="uix-stat__label"><span id="${id}-label">${label}</span>${haspopup ? STAT_CHEVRON : ''}</span><span class="uix-stat__value" id="${id}-value">${value}</span>${meta ? `<span class="uix-stat__meta" id="${id}-meta">${meta}</span>` : ''}</button>`;
+const statButton = ({ id, label, value, meta, action, haspopup = 'dialog', pending = false }) => `<button type="button" class="uix-stat uix-stat--compact uix-stat--interactive${haspopup === false ? ' uix-stat--action' : ''}"${haspopup ? ` aria-haspopup="${haspopup}" aria-expanded="false"` : ''} aria-labelledby="${id}-label ${id}-sep ${id}-value ${id}-action"${meta ? ` aria-describedby="${id}-meta"` : ''}${pending ? ' aria-busy="true" aria-disabled="true"' : ''}><span id="${id}-sep" class="uix-visually-hidden">:</span><span id="${id}-action" class="uix-visually-hidden">, ${action}</span><span class="uix-stat__label"><span id="${id}-label">${label}</span>${haspopup ? STAT_CHEVRON : ''}</span><span class="uix-stat__value" id="${id}-value">${value}</span>${meta ? `<span class="uix-stat__meta" id="${id}-meta">${meta}</span>` : ''}</button>`;
+
+// the link tile's resting chevron (HAR-1803): ChevronRightIcon from the kit's icon set
+const STAT_GO = '<span class="uix-stat__go" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span>';
 
 /** The tiles of the stat-row specimen, as the props `Stat` takes: the test renders these. */
+
 export const STAT_ROW_TILES = [
   { label: 'Opened', value: '12 Oct' },
   { id: 'gap-stat-assignee', label: 'Assignee', value: 'Network operations', meta: 'Second line, on call until 18:00 today', action: 'change' },
@@ -37,7 +41,7 @@ export const STAT_ROW_TILES = [
 export const statRowTile = (tile) => (tile.id
   ? statButton(tile)
   : tile.href
-    ? `<a href="${tile.href}" class="uix-stat uix-stat--compact uix-stat--interactive uix-stat--link"><span class="uix-stat__label"><span>${tile.label}</span></span><span class="uix-stat__value">${tile.value}</span></a>`
+    ? `<a href="${tile.href}" class="uix-stat uix-stat--compact uix-stat--interactive uix-stat--link"><span class="uix-stat__label"><span>${tile.label}</span>${STAT_GO}</span><span class="uix-stat__value">${tile.value}</span></a>`
     : `<div class="uix-stat uix-stat--compact"><div class="uix-stat__label"><span>${tile.label}</span></div><div class="uix-stat__value">${tile.value}</div></div>`);
 
 export const TENSOR_GAP_SPECIMENS = {
@@ -148,7 +152,7 @@ ${compactSection('gap-sec-sla', 'SLA', '2 targets', '<p>Response in 4 h, resolut
 ${compactSection('gap-sec-links', 'Related records', '1 link', '<p>CHG-1042 blocks this incident.</p>', false)}
 </div></div>
 <div class="uix-guide__subhead" data-tensor-gaps>Stat tiles of unequal content in one row (React <code>Stat</code> with <code>onActivate</code>, <code>href</code>, <code>pending</code>) — a read-only tile, three buttons, a link and a pending tile; the row stretches them to one height and every label and value starts at the same line. The pending tile is busy, dimmed and still takes focus</div>
-<div data-stat-row-example style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:12px;width:100%">
+<div data-stat-row-example class="uix-stat-row" style="width:100%">
 ${STAT_ROW_TILES.map(statRowTile).join('\n')}
 </div>`,
 

@@ -133,6 +133,25 @@ Reconciling TENSOR's current `apps/web/lib/list-surfaces/column-widths.ts` onto 
 nearest tier — the quantization is deliberate (products stop hand-picking px). Because truncation is a cell
 class, the `<col>` sizes the column while `.uix-col--truncate` on the body `<td>`s clips the text.
 
+### Status colour — neutral first
+
+One policy maps every product's domain states to colour (HAR-1564; docs → Foundations → **Status colour**,
+`explorer.html#status-colour`, with the mapping matrix and a do/don't queue):
+
+- **Neutral is the default** for every lifecycle state (new, draft, approved, scheduled, on hold, closed, cancelled,
+  rejected, merged, archived, active, healthy). **Blue** (`progress`) is in flight; **green** a positive outcome worth
+  noticing (never "on track" or "closed"); **amber** attention needed soon; **red** failed, breached or blocked and
+  actionable now. Cancel and reject are decisions, not failures. A **solid fill** (`critical`) is only for SEV-1.
+- **Treatment by surface:** a table cell uses `StatusPill treatment="dot"`, a record's own header `soft`, a flag
+  among other chrome `outline`.
+- **Colour budget:** at most one filled hued pill per row, at most three hues on a screen outside charts, and if more
+  than 30% of the rows carry a filled hue the mapping is wrong.
+- **Trends** are coloured by sentiment (`Stat trend.sentiment`), never by direction.
+- **Dark mode:** status text at OKLCH L 75–79% with C ≤ 0.10, solids C ≤ 0.14, tints at 12%
+  (`packages/tokens/tests/status-ramp.test.mjs`).
+
+The product still owns the meaning of its states; this policy decides how loud each kind of state is.
+
 ### Canvases — one interaction contract
 
 Every surface the reader pans or zooms (a relationship graph, a topology, an org chart, a map, a
@@ -188,7 +207,7 @@ UIx is **presentational and stack-neutral**. Business logic, data-fetching, and 
   laid out on UIx `DashboardGrid` (the generic layout half; drag-and-drop and persistence stay in the product).
 - Workflow/compliance components (e.g. an approval `ConfirmAction` carrying audit/RBAC metadata) → product owns
   the logic; the **shell** uses UIx `Button`/`Modal`/`Alert`.
-- Domain badges/icons (regulatory status, entity-type icons) → product owns the meaning; styling via UIx `Label`/`StatusPill`.
+- Domain badges/icons (regulatory status, entity-type icons) → product owns the meaning; styling via UIx `Label`/`StatusPill`, and how loud each state is by the status colour policy above.
 
 The test: if it needs to know about ITSM/POS/Shop concepts, tRPC, or audit trails, it's a **consumer** component
 that *uses* UIx — not a UIx component.

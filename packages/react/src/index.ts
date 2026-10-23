@@ -10,6 +10,19 @@ export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVir
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
 export { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion.js';
+// Display preferences: theme, contrast, text size, motion, density (HAR-1372)
+export { DisplayPreferences, ThemeSwitcher, useDisplayPreferences, DEFAULT_DISPLAY_PREFERENCES_LABELS } from './components/DisplayPreferences.js';
+export type {
+  DisplayPreferencesProps, DisplayPreferencesLabels, ThemeSwitcherProps, UseDisplayPreferencesOptions, UseDisplayPreferencesResult,
+} from './components/DisplayPreferences.js';
+export {
+  DEFAULT_DISPLAY_PREFERENCES, DISPLAY_PREFERENCES_STORAGE_KEY, DISPLAY_PREFERENCE_OPTIONS, applyDisplayAttributes, displayPreferencesScript,
+  parseDisplayPreferences, readSystemDisplayPreferences, resolveDisplayAttributes,
+} from './display-preferences-model.js';
+export type {
+  ContrastPreference, DensityPreference, DisplayAttributes, DisplayPreferenceValues, MotionPreference, SystemDisplayPreferences,
+  TextScalePreference, ThemePreference,
+} from './display-preferences-model.js';
 export { useDelayedPending } from './hooks/useDelayedPending.js';
 export type { DelayedPendingOptions } from './hooks/useDelayedPending.js';
 export { PENDING_DELAY_MS, PENDING_MIN_VISIBLE_MS, RESULT_HOLD_MS } from './motion-timing.js';
@@ -90,8 +103,8 @@ export type { LightboxProps, LightboxItem, LightboxLabels } from './components/L
 export type { PeekProps } from './components/Peek.js';
 
 // Layout
-export { Card, CardLink } from './components/Card.js';
-export type { CardProps, CardLinkProps } from './components/Card.js';
+export { Card, CardLink, Inset } from './components/Card.js';
+export type { CardProps, CardLinkProps, InsetProps } from './components/Card.js';
 
 export { DashboardGrid, DashboardGridItem, dashboardGridClassName, dashboardGridItemClassName } from './components/DashboardGrid.js';
 export type {
@@ -146,7 +159,10 @@ export { AppShell } from './components/AppShell.js';
 export type { AppShellProps, ShellNav } from './components/AppShell.js';
 
 export { Sidebar, SidebarSection, NavItem, NavGroup, SubNavItem } from './components/Sidebar.js';
-export type { SidebarProps, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
+export type { SidebarProps, SidebarSearch, SidebarSectionProps, NavItemProps, NavGroupProps, SubNavItemProps } from './components/Sidebar.js';
+// The signed-in person's menu for the sidebar foot (HAR-1371)
+export { AccountMenu, DEFAULT_ACCOUNT_MENU_LABELS, accountInitials } from './components/AccountMenu.js';
+export type { AccountMenuProps, AccountMenuUser, AccountMenuLabels } from './components/AccountMenu.js';
 
 export { StarButton } from './components/StarButton.js';
 export type { StarButtonProps } from './components/StarButton.js';
@@ -207,7 +223,7 @@ export {
 } from './components/Table.js';
 export type {
   TableWrapProps, TableProps, ThProps, TdProps, TrProps, TableDensity, SortDirection,
-  BulkBarProps, RowActionsProps, RowActionProps, ExpandToggleProps, MarkProps, HighlightedProps,
+  BulkBarProps, RowActionsProps, RowActionProps, ExpandToggleProps, MarkProps, HighlightedProps, CellSubProps,
 } from './components/Table.js';
 
 // Table engine — framework-agnostic sort / filter / search / view-state / virtualization / selection
@@ -225,8 +241,8 @@ export type { ProgressProps } from './components/Progress.js';
 export { Meter } from './components/Meter.js';
 export type { MeterProps, MeterTone } from './components/Meter.js';
 
-export { Stat } from './components/Stat.js';
-export type { StatProps, StatTrend } from './components/Stat.js';
+export { Stat, StatRow } from './components/Stat.js';
+export type { StatProps, StatTrend, StatRowProps } from './components/Stat.js';
 
 export { Bullet, DEFAULT_INSIGHT_CARD_LABELS, InsightCard } from './components/InsightCard.js';
 export type {

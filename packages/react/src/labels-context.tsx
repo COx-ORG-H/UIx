@@ -24,6 +24,8 @@ import type { CodeDisplayLabels } from './components/CodeDisplay.js';
 import type { ContactCardLabels } from './components/ContactCard.js';
 import type { PrintLayoutLabels } from './components/PrintLayout.js';
 import type { QrScannerLabels } from './components/QrScanner.js';
+import type { AccountMenuLabels } from './components/AccountMenu.js';
+import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 
 /**
@@ -45,7 +47,15 @@ export interface UixLabels {
   peek?: { previous?: string; next?: string; close?: string };
   toast?: { dismiss?: string };
   toaster?: { region?: string };
-  appShell?: { skipToContent?: string; exitFocus?: string };
+  /**
+   * `openNav`: the phone-tier button that opens the navigation drawer; `navigation`: that
+   * drawer's title (HAR-1371).
+   */
+  appShell?: { skipToContent?: string; exitFocus?: string; openNav?: string; navigation?: string };
+  /** `ThemeSwitcher` and `DisplayPreferences` (HAR-1372): the setting names and their choices. */
+  displayPreferences?: Partial<DisplayPreferencesLabels>;
+  /** `AccountMenu` (HAR-1371): the menu's name. */
+  accountMenu?: Partial<AccountMenuLabels>;
   sidebar?: { expand?: string; collapse?: string };
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */

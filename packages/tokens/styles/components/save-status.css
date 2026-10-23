@@ -16,3 +16,8 @@
     .uix-save-status[data-state="saving"] .uix-save-status__icon { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
   }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same pulse */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-save-status[data-state="saving"] .uix-save-status__icon { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
+}

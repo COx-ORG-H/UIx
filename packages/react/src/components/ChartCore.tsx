@@ -6,6 +6,7 @@ import type { ECharts, EChartsOption } from 'echarts';
 import { cx } from '../cx.js';
 import { mergeChartTheme, uixChartTheme, uixChartTokens } from '../chart-theme.js';
 import type { UixChartTokens } from '../chart-theme.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 
 export interface ChartEngine {
   init(element: HTMLElement, theme?: string | null, options?: { renderer?: 'svg' | 'canvas' }): ECharts;
@@ -42,10 +43,11 @@ function themed(option: ChartOption, theme: 'uix' | 'none', element: Element): E
   return theme === 'none' ? resolved : mergeChartTheme(uixChartTheme(element), resolved);
 }
 
-/** Merge `animation: false` when the user prefers reduced motion. Only called from effects (client-side),
-    but guard matchMedia anyway for SSR safety (UIX-A11Y-4). */
+/** Merge `animation: false` when the user prefers reduced motion: the OS setting, or the in-app
+    preference `<html data-motion="reduce">` (HAR-1372). Only called from effects (client-side);
+    prefersReducedMotion is SSR-safe anyway (UIX-A11Y-4). */
 function motionSafe(option: EChartsOption): EChartsOption {
-  if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (prefersReducedMotion()) {
     return { ...option, animation: false };
   }
   return option;

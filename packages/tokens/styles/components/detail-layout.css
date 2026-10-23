@@ -13,3 +13,12 @@
   .uix-detail-page__metrics dd { margin: var(--uix-space-1) 0 0; color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; }
   @media (max-width: 820px) { .uix-detail { grid-template-columns: 1fr; } }
 }
+
+/* Staff preset (HAR-1815): the record page TENSOR and MOTUS share. */
+@layer uix.components {
+  .uix-detail-page--staff .uix-page-header__title { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); }
+  .uix-detail-page--staff .uix-detail-page__back { display: inline-flex; align-items: center; gap: var(--uix-space-1); color: var(--uix-text-hushed); text-decoration: none; }
+  @media (hover: hover) { .uix-detail-page--staff .uix-detail-page__back:hover { color: var(--uix-text); } }
+  .uix-detail-page--staff .uix-detail-page__metrics dt { font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; color: var(--uix-text-muted); }
+  .uix-detail-page--staff .uix-detail-page__metrics dd { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); font-weight: 400; font-variant-numeric: tabular-nums; }
+}

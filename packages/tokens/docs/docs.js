@@ -83,6 +83,7 @@ const NAV_ITEMS = [
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
   { name: 'Chart tokens', slug: 'chart-tokens', group: 'Foundations', summary: 'The categorical palette, analytic roles and the shipped ECharts theme.', keywords: ['chart', 'palette', 'echarts', 'threshold', 'forecast', 'dataviz'] },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
+  { name: 'Status colour', slug: 'status-colour', group: 'Foundations', summary: 'Which state gets a colour, how loud it is on each surface, and the colour budget of a screen.', keywords: ['status', 'color', 'colour', 'policy', 'tone', 'neutral', 'badge', 'pill', 'dark mode'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
   { name: 'Icons & assets', slug: 'icons-assets', group: 'Foundations', summary: 'Icon, emoji, image, and media usage across UIx products.', keywords: ['icons', 'emoji', 'images', 'media'] },
   { name: 'Accessibility', slug: 'accessibility', group: 'Foundations', summary: 'Keyboard, focus, contrast, and motion expectations.', keywords: ['a11y', 'wcag', 'screen reader'] },
@@ -104,7 +105,7 @@ const NAV_ITEMS = [
 ];
 
 export const COMPONENT_GROUPS = {
-  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'QR scanner', 'Form'],
+  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival'],
@@ -145,7 +146,7 @@ export const REACT_COMPONENT_SLUGS = [
   'alert', 'app-shell', 'async-operation-status', 'avatar', 'brand-profiles', 'builder-canvas', 'button', 'card',
   'chart', 'checkbox', 'collapsible-section', 'color-picker', 'command-palette', 'comments', 'composer',
   'confirm-dialog', 'date-range-picker', 'description-list', 'detail-layout', 'detail-page', 'diff-viewer',
-  'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
+  'display-preferences', 'drawer', 'editorial-home', 'filter-popover', 'flow', 'form', 'inbox', 'input', 'kanban',
   'labels', 'license-position-bar', 'list', 'match-review', 'meter', 'metric-input', 'modal', 'nav-favourites',
   'page-header', 'pagination', 'peek', 'pipeline', 'popover', 'progress', 'prose', 'radio', 'relationship-graph', 'search-bar', 'search-suggest',
   'prompt-dialog', 'related-links', 'relative-time', 'rule-builder', 'saved-view-menu', 'scheduling-calendar',
@@ -259,6 +260,10 @@ export const exampleRouteFor = (item) => {
   return 'examples-utility';
 };
 
+/** Reference pages that show status colour link to the policy (HAR-1564). */
+const STATUS_COLOUR_SLUGS = new Set(['stat-tile', 'scheduling-calendar', 'scheduling-timeline']);
+const statusColourSection = () => section('status-colour', 'Status colour', `<p>Which state gets a colour and how loud it is follows the <a href="#status-colour">status colour policy</a>: neutral first, colour for what someone should act on, and a colour budget per screen.</p>`);
+
 const renderComponentReference = (item) => {
   const [usage, accessibility] = COMPONENT_GUIDANCE[item.group];
   const exampleRoute = exampleRouteFor(item);
@@ -269,6 +274,7 @@ const renderComponentReference = (item) => {
     ${componentPreview(item)}
     ${section('availability', 'Availability', availability)}
     ${section('behavior-contract', 'Behavior and expected result', `<p>${esc(COMPONENT_DETAILS[item.slug]?.[1] || COMPONENT_INTENT[item.slug][1])}</p><p>${REACT_COMPONENT_SLUGS.includes(item.slug) ? 'A React adapter is available. See the <a href="#react">React integration guide</a> and the <a href="../../react/etc/uix-react.api.md">exported API</a> for its exact props. The preview here demonstrates HTML/CSS with docs behavior; it does not mount React.' : 'This is a CSS contract. Your application owns events, state, validation and persistence; importing CSS does not install those behaviors.'}</p><p>Start with <code>@import "@tensor_1/tokens/bundle";</code> to include tokens, base styles, components and layout utilities. A component-only import requires those shared layers separately. <a href="#installation">Installation</a> · <a href="#build-with-uix">Composition and styling</a></p>`)}
+    ${STATUS_COLOUR_SLUGS.has(item.slug) ? statusColourSection() : ''}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
     ${section('state-matrix', 'Examples and state matrix', `<p>Examples now live in the same documentation system as the component contract, so variants, combinations, and dense product context stay searchable and versioned together.</p><p><a class="uix-btn uix-btn--primary" href="#${esc(exampleRoute)}">Open ${esc(item.name)} examples</a> <a class="uix-btn uix-btn--outline" href="#all-components">Back to all components</a></p>`)}`;
@@ -349,7 +355,7 @@ const renderShowcasePage = (page) => {
 };
 
 const statusCell = (available, label = 'Available') => available
-  ? `<span class="uix-docs__status" data-status="yes"><span aria-hidden="true">✓</span>${esc(label)}</span>`
+  ? `<span class="uix-docs__status" data-status="yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>${esc(label)}</span>`
   : '<span class="uix-docs__status" data-status="no"><span aria-hidden="true">—</span>Not available</span>';
 
 const renderComponentStatus = () => {
@@ -493,6 +499,40 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     ${section('rules', 'Rules', `<p><a class="uix-btn uix-btn--secondary" href="#examples-data-display">Open the chart examples</a></p>${compare('Draw the grid as a quiet solid hairline. Keep dashes for thresholds and projections, so a dashed line always means “not measured”. Label values and legends in text tokens.', 'Dash the gridlines, colour a target line with a series or status hue, or paint axis labels in the series colour.')}`)}`;
   },
 
+  'status-colour': () => {
+    // The status colour policy (HAR-1564, colour K3 of the 2026-10-07 operator review).
+    const pill = (tone, text, treatment = 'soft') => `<span class="uix-pill uix-pill--${tone}${treatment === 'soft' ? '' : ` uix-pill--${treatment}`}"><span class="uix-pill__dot"></span>${esc(text)}</span>`;
+    const MATRIX = [
+      ['New, draft, submitted', 'Lifecycle', 'neutral'],
+      ['Approved, scheduled, on hold', 'Lifecycle', 'neutral'],
+      ['Active, healthy, on track', 'Lifecycle', 'neutral'],
+      ['Closed, merged, archived', 'Lifecycle', 'neutral'],
+      ['Cancelled, rejected', 'A decision, not a failure', 'neutral'],
+      ['In progress, in review, deploying', 'In flight', 'progress'],
+      ['Restored, recovered, succeeded after a failure', 'Positive outcome worth noticing', 'success'],
+      ['Due soon, at risk, waiting too long', 'Attention needed soon', 'warning'],
+      ['Failed, breached, blocked', 'Actionable now', 'danger'],
+      ['SEV-1, critical incident', 'The one solid fill', 'critical'],
+    ];
+    const matrix = `<div class="uix-docs__status-table" data-status-matrix tabindex="0" role="region" aria-label="Status colour mapping matrix"><table class="uix-table"><thead><tr><th scope="col">State</th><th scope="col">Category</th><th scope="col">Table (dot)</th><th scope="col">Header (soft)</th><th scope="col">Flag (outline)</th></tr></thead><tbody>${MATRIX.map(([state, category, tone]) => `<tr><td>${esc(state)}</td><td>${esc(category)}</td><td>${pill(tone, tone, 'dot')}</td><td>${pill(tone, tone)}</td><td>${pill(tone, tone, 'outline')}</td></tr>`).join('')}</tbody></table></div>`;
+    // One ITSM queue, twice: colour as the state (today) and colour as the exception (the policy).
+    const ROWS = [
+      ['INC-4821', 'Disk pressure on db-03', ['info', 'New'], ['neutral', 'New'], ['success', '2h 14m'], null, ['p3', 'P3'], null],
+      ['INC-4822', 'DNS flap in eu-west', ['warning', 'In progress'], ['progress', 'In progress'], ['attention', '32m'], ['warning', 'Due in 32m'], ['p2', 'P2'], null],
+      ['INC-4823', 'Certificate expiry on api-gw', ['attention', 'Waiting on vendor'], ['neutral', 'Waiting on vendor'], ['success', '5h'], null, ['p3', 'P3'], null],
+      ['INC-4824', 'Payments API returns 502', ['danger', 'In progress'], ['progress', 'In progress'], ['overdue', 'Breached 14m'], ['danger', 'Breached 14m'], ['p1', 'P1'], ['critical', 'SEV-1']],
+      ['INC-4825', 'VPN disconnects randomly', ['success', 'Resolved'], ['neutral', 'Resolved'], ['success', 'Met'], null, ['p4', 'P4'], null],
+      ['INC-4826', 'Duplicate change request', ['danger', 'Cancelled'], ['neutral', 'Cancelled'], ['success', '—'], null, ['p5', 'P5'], null],
+    ];
+    const queue = (policy) => `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="${policy ? 'Queue with the policy' : 'Queue with colour as the state'}" data-status-queue="${policy ? 'do' : 'dont'}"><table class="uix-table"><thead><tr><th scope="col">Incident</th><th scope="col">Status</th><th scope="col">SLA</th><th scope="col">Priority</th></tr></thead><tbody>${ROWS.map(([id, title, oldState, newState, oldSla, newSla, prio, sev]) => `<tr><td><strong>${esc(title)}</strong><span class="uix-cell-sub uix-cell-sub--tabular">${esc(id)}</span></td><td>${policy ? `${sev ? pill(sev[0], sev[1]) + ' ' : ''}${pill(newState[0], newState[1], 'dot')}` : pill(oldState[0], oldState[1])}</td><td>${policy ? (newSla ? pill(newSla[0], newSla[1], 'outline') : `<span class="uix-cell-sub--tabular">${esc(oldSla[1])}</span>`) : pill(oldSla[0], oldSla[1])}</td><td>${policy ? `<span>${esc(prio[1])}</span>` : pill(prio[0], prio[1])}</td></tr>`).join('')}</tbody></table></div>`;
+    return `${pageHeader('Foundations', 'Status colour', 'Every product maps its domain states to colour by one policy: neutral first, colour only for what a person should notice, and a budget per screen.', ['neutral-first', 'treatment by surface', 'colour budget'])}
+    ${section('rules', 'The rules', `<ol data-status-rules><li><strong>Neutral is the default.</strong> Every lifecycle state is neutral: new, draft, submitted, approved, scheduled, on hold, closed, cancelled, rejected, merged, archived, active, healthy.</li><li><strong>Blue</strong> (<code>progress</code>) means in flight: in progress, in review, deploying.</li><li><strong>Green</strong> (<code>success</code>) means a positive outcome worth noticing, such as restored after a failure. It never means on track, active or closed.</li><li><strong>Amber</strong> (<code>warning</code>, <code>attention</code>) means attention needed soon.</li><li><strong>Red</strong> (<code>danger</code>) means failed, breached or blocked, and actionable now. Cancel and reject are decisions, not failures: they stay neutral.</li><li><strong>A solid fill</strong> (<code>critical</code>) is only for SEV-1 / critical.</li><li><strong>Colour budget:</strong> at most one filled hued pill per row; at most three hues on a screen outside charts; if more than 30% of the rows carry a filled hue, the mapping is wrong.</li><li><strong>Treatment by surface:</strong> a table cell uses <code>dot</code>, a record's own header uses <code>soft</code>, a flag among other chrome uses <code>outline</code> (<a href="#status-pill">Status pill</a>).</li><li><strong>Trends</strong> are coloured by sentiment, not by direction: a rise in breached SLAs is red (<a href="#stat-tile">Stat</a> <code>trend.sentiment</code>).</li><li><strong>Dark mode</strong> follows the targets below.</li></ol>`)}
+    ${section('matrix', 'Mapping matrix', `<p>Map each domain state to a category first, then to the tone of that category. The treatment follows the surface, never the state.</p>${matrix}`)}
+    ${section('do-dont', 'One queue, two mappings', `<p>The same six incidents. With colour as the state, every row shouts and the breach is one red among many. With the policy, the screen is calm, and the three things to act on — the SEV-1, the breach, the SLA due in 32 minutes — are the only colour.</p><div class="uix-stack" style="--gap:var(--uix-space-4)"><h3>Don’t: colour as the state</h3>${queue(false)}<h3>Do: neutral first, colour as the exception</h3>${queue(true)}${compare('Map lifecycle states to neutral and keep colour for what someone should act on; one filled pill per row at most.', 'Give every state its own hue, colour cancelled red, or colour “on track” green.')}</div>`)}
+    ${section('budget', 'The colour budget', `<p>Count before you ship a screen. Outside charts: at most three hues, at most one filled hued pill per row, and filled hues on no more than 30% of the rows. The do-queue above uses three hues (blue, amber, red), one filled pill (the SEV-1) on one row of six (17%).</p>${callout('When the budget does not fit', 'If a screen needs more colour than the budget allows, the mapping is wrong: move lifecycle states back to neutral, and turn soft pills in a table into dots.', 'warning')}`)}
+    ${section('dark-mode', 'Dark-mode targets', `<p>The dark status ramp is calm and balanced (HAR-1562): status text sits at OKLCH lightness 75–79% with chroma at most 0.10, solids (the dots) at chroma at most 0.14, and tints at 12% over the surface, so no hue out-shouts the text around it. <code>packages/tokens/tests/status-ramp.test.mjs</code> holds every status token to these numbers. Every dot clears 3:1 against the surface in both themes: the pale hues (success, warning, amber) mix 40% of their text colour into the solid.</p>`)}
+    ${section('accessibility-notes', 'Accessibility notes', `<p>Colour never carries a state alone: every pill has its label, every trend its arrow and spoken direction. In forced-colors mode the dots are drawn in the system text colour.</p>`)}`;
+  },
   theming: () => `${pageHeader('Foundations', 'Theming', 'UIx ships light and dark modes from the same semantic contract, with two write-only brand slots for product identity.', ['light + dark', 'no-flash', 'brand profiles'])}
     ${section('color-mode', 'Set the color mode', `<p>Apply the theme to the document root. Components inherit the correct semantic values without variant-specific markup.</p>${codeBlock(`<html data-theme="dark">`, 'html')}${codeBlock(`document.documentElement.dataset.theme = "dark";`, 'js')}`)}
     ${section('no-flash', 'Avoid a theme flash', `<p>Resolve the saved preference before styles paint. If no explicit preference exists, follow the operating system.</p>${codeBlock(`const saved = localStorage.getItem("uix-theme");
@@ -500,6 +540,10 @@ const theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches
   ? "dark"
   : "light");
 document.documentElement.dataset.theme = theme;`, 'js')}`)}
+    ${section('display-preferences', 'Theme, contrast, text size, motion and density', `<p>The same root attributes carry the rest of a person's display choices: <code>data-contrast="more"</code> (stronger secondary text and hairlines), <code>data-text-scale="sm|lg|xl"</code>, <code>data-motion="reduce"</code> and <code>data-density="compact|comfortable"</code>. In React, <code>&lt;DisplayPreferences&gt;</code> and <code>&lt;ThemeSwitcher&gt;</code> write and remember them, and <code>displayPreferencesScript()</code> in the document head applies them before the first paint (<a href="#display-preferences">Display preferences</a>).</p>${codeBlock(`<head>
+  <script>{displayPreferencesScript("staff-display")}</script>
+</head>
+<ThemeSwitcher storageKey="staff-display" display="icons" />`, 'tsx')}`)}
     ${section('brand', 'Brand a product', `<p>Override only the write slots. Accent, links, rings, and muted brand surfaces re-chain automatically.</p>${codeBlock(`:root {
   --uix-brand: #16a34a;
   --uix-brand-fg: #ffffff;
@@ -631,11 +675,19 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
   'status-pill': () => `${pageHeader('Components', 'Status pill', 'Compact labels communicate workflow, severity, priority, and time pressure with text, shape, and color together.', ['semantic tones', 'priority P1–P5', 'SLA states'])}
     ${section('status', 'Workflow status', demo(`<span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Draft</span><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Waiting</span><span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>Blocked</span>`))}
     ${section('priority', 'Priority and SLA', demo(`<span class="uix-pill uix-pill--p1"><span class="uix-pill__dot"></span>P1 Critical</span><span class="uix-pill uix-pill--p3"><span class="uix-pill__dot"></span>P3 Medium</span><span class="uix-pill uix-pill--sla-ok"><span class="uix-pill__dot"></span>SLA healthy</span><span class="uix-pill uix-pill--sla-at-risk"><span class="uix-pill__dot"></span>32m remaining</span><span class="uix-pill uix-pill--sla-breached"><span class="uix-pill__dot"></span>Breached 14m</span>`))}
+    ${section('treatments', 'Treatments: dot, soft and outline', `<p>One tone, three volumes. Pick by surface, not by state: a status in a table row is a <strong>dot</strong> beside a neutral label, the status of the record a page is about is <strong>soft</strong> (the tinted wash, the default), and a flag that sits among other chrome is an <strong>outline</strong>: a neutral hairline with a hushed label. Only <code>critical</code> keeps a toned border in the outline, and only <code>critical</code> is a solid fill. React: <code>&lt;StatusPill treatment="dot" | "soft" | "outline"&gt;</code>; <code>filled</code> is the old name of <code>soft</code>. <code>dot</code> and <code>outline</code> always draw the dot. The <a href="#status-colour">status colour policy</a> says which tone a state gets.</p>${demo(`<div class="uix-stack" data-pill-treatments style="--gap:16px"><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Dot (tables)</span><div class="uix-cluster" data-pill-treatment="dot"><span class="uix-pill uix-pill--neutral uix-pill--dot"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--dot"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--dot"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--dot"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--dot"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--dot"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Soft (headers)</span><div class="uix-cluster" data-pill-treatment="soft"><span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Outline (flags)</span><div class="uix-cluster" data-pill-treatment="outline"><span class="uix-pill uix-pill--neutral uix-pill--outline"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--outline"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--outline"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--outline"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--outline"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--outline"><span class="uix-pill__dot"></span>SEV-1</span></div></div></div>`, `<!-- a table cell -->
+<span class="uix-pill uix-pill--danger uix-pill--dot"><span class="uix-pill__dot"></span>Breached</span>
+<!-- the record's own header -->
+<span class="uix-pill uix-pill--progress"><span class="uix-pill__dot"></span>In progress</span>
+<!-- a flag among other chrome -->
+<span class="uix-pill uix-pill--warning uix-pill--outline"><span class="uix-pill__dot"></span>Due in 2h</span>`, { column: true })}`)}
+    ${statusColourSection()}
     ${section('semantics', 'Choose one semantic axis', `<p>A pill instance should describe one thing: workflow status, priority, severity, or time pressure. Do not overload a single tone so “warning” means both medium priority and approaching SLA.</p>${compare('Pair a recognizable label with the right semantic family and keep terminology consistent across views.', 'Render an unlabeled colored dot or invent a one-off tone inside a product.')}`)}
-    ${section('accessibility-notes', 'Accessibility notes', `<p>Color is redundant: every pill includes text and may include a dot. When status changes asynchronously, announce the surrounding workflow update—not every decorative pill repaint.</p>`)}`,
+    ${section('accessibility-notes', 'Accessibility notes', `<p>Color is redundant: every pill includes text and may include a dot. The dot is decorative (<code>aria-hidden</code>) and the label carries the state; every tone's dot still clears 3:1 against the surface in both themes (the pale hues mix in their text colour). In forced-colors mode the dot is redrawn in the system text colour. When status changes asynchronously, announce the surrounding workflow update—not every decorative pill repaint.</p>`)}`,
 
   alert: () => `${pageHeader('Components', 'Alert', 'Alerts place concise, contextual feedback inside the surface where a user can act on it.', ['4 semantic tones', 'inline feedback', 'non-modal'])}
     ${section('example', 'Example', demo(`<div class="uix-stack" style="width:min(100%,560px)"><div class="uix-alert uix-alert--info"><div><div class="uix-alert__title">Policy update available</div><div class="uix-alert__body">Review two changed rules before publishing this policy.</div></div></div><div class="uix-alert uix-alert--success"><div><div class="uix-alert__title">Import complete</div><div class="uix-alert__body">248 records were validated and added.</div></div></div><div class="uix-alert uix-alert--warning"><div><div class="uix-alert__title">Approval required</div><div class="uix-alert__body">This change affects all European workspaces.</div></div></div><div class="uix-alert uix-alert--danger"><div><div class="uix-alert__title">Connection failed</div><div class="uix-alert__body">Check the endpoint and try again.</div></div></div></div>`, undefined, { column: true }))}
+    ${statusColourSection()}
     ${section('when-to-use', 'When to use an alert', `<ul><li>Place validation summaries before the relevant form and link them to invalid fields.</li><li>Use an alert for persistent page or section context; use a toast for transient confirmation.</li><li>Keep titles specific and make recovery instructions concrete.</li><li>Reserve danger for blocked progress, destructive consequences, or serious failure.</li></ul>`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>Static informational alerts need no live-region role. For a message inserted after an action, choose <code>role="status"</code> for routine updates or <code>role="alert"</code> only when immediate interruption is necessary.</p>`)}`,
 
@@ -806,11 +858,17 @@ const renderPager = (slug) => {
   if (index < 0) {
     const isExample = SHOWCASE_PAGES.some((page) => page.slug === slug);
     const target = isExample ? ['examples', 'Example gallery'] : ['all-components', 'All components'];
-    return `<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#${target[0]}"><span>Back to index</span><strong>← ${target[1]}</strong></a><span></span></nav>`;
+    return `<nav class="uix-docs__pager" aria-label="Documentation pages"><a href="#${target[0]}"><span>Back to index</span><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg> ${target[1]}</strong></a><span></span></nav>`;
   }
   const previous = index > 0 ? NAV_ITEMS[index - 1] : null;
   const next = index < NAV_ITEMS.length - 1 ? NAV_ITEMS[index + 1] : null;
-  return `<nav class="uix-docs__pager" aria-label="Documentation pages">${previous ? `<a href="#${previous.slug}"><span>Previous</span><strong>← ${esc(previous.name)}</strong></a>` : '<span></span>'}${next ? `<a href="#${next.slug}"><span>Next</span><strong>${esc(next.name)} →</strong></a>` : ''}</nav>`;
+  return `<nav class="uix-docs__pager" aria-label="Documentation pages">${previous ? `<a href="#${previous.slug}"><span>Previous</span><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg> ${esc(previous.name)}</strong></a>` : '<span></span>'}${next ? `<a href="#${next.slug}"><span>Next</span><strong>${esc(next.name)} <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon uix-icon--sm" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></strong></a>` : ''}</nav>`;
+};
+
+/** The markup of a guide or component reference page, without the DOM (docs.test.js reads it). */
+export const pageContent = (slug) => {
+  const component = COMPONENT_ITEMS.find((item) => item.slug === slug);
+  return PAGES[slug] ? PAGES[slug]() : component ? renderComponentReference(component) : null;
 };
 
 const renderPage = () => {
@@ -821,11 +879,7 @@ const renderPage = () => {
   if (!host) return;
   const component = COMPONENT_ITEMS.find((item) => item.slug === slug);
   const example = SHOWCASE_PAGES.find((item) => item.slug === slug);
-  const content = PAGES[slug]
-    ? PAGES[slug]()
-    : component
-      ? renderComponentReference(component)
-      : renderShowcasePage(example);
+  const content = pageContent(slug) ?? renderShowcasePage(example);
   disposeShowcase();
   host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
   if (component) mountComponentPreview(component, host.querySelector('[data-component-preview]'));

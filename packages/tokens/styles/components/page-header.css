@@ -10,3 +10,15 @@
   .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: var(--uix-space-2); max-width: 70ch; }
   .uix-page-header__actions { display: flex; gap: var(--uix-space-2); align-items: center; flex-wrap: wrap; }
 }
+
+/* Display preset (HAR-1815): the staff page header TENSOR and MOTUS share. A 40 px heading-font
+   title (--uix-text-display, leading 1.05, weight 600, tight tracking), a bold hushed eyebrow, a
+   body-size hushed subtitle up to 42rem, and the actions on the titles' bottom line. */
+@layer uix.components {
+  .uix-page-header--display { align-items: flex-end; }
+  .uix-page-header--display .uix-page-header__eyebrow { color: var(--uix-text-hushed); font-weight: 700; }
+  .uix-page-header--display :is(.uix-page-header__title, .uix-page-header__title-row) { font-family: var(--uix-font-heading); font-size: var(--uix-text-display); line-height: var(--uix-leading-display); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
+  .uix-page-header--display .uix-page-header__subtitle { font-size: var(--uix-text-body); color: var(--uix-text-hushed); max-width: 42rem; }
+  /* a 40 px title is too wide for a phone: it steps down to the h2 size there */
+  @media (max-width: 40rem) { .uix-page-header--display :is(.uix-page-header__title, .uix-page-header__title-row) { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); } }
+}
