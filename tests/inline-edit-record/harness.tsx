@@ -23,7 +23,7 @@ function saveTitle(next: string): Promise<void> {
   window.__record.saves.push(`title:${next}`);
   if (next.includes('fehler')) return wait(120).then(() => { throw new Error('Zeitüberschreitung beim Speichern.'); });
   if (next.includes('konflikt')) return wait(120).then(() => { throw new Conflict('Jemand hat dieses Feld inzwischen geändert.'); });
-  return wait(next.includes('langsam') ? 900 : 120);
+  return wait(next.includes('langsam') ? 2000 : 120);
 }
 
 function Record() {

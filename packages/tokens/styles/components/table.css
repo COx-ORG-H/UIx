@@ -138,7 +138,8 @@
     animation: uix-bulkbar-in var(--uix-dur) var(--uix-ease-out);
   }
   .uix-bulkbar[hidden] { display: none; }
-  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent); font-variant-numeric: tabular-nums; }
+  /* --uix-accent-text, not --uix-accent: the plain accent on the accent tint is 3.4:1 in dark (HAR-1388 specimen) */
+  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent-text); font-variant-numeric: tabular-nums; }
   .uix-bulkbar__spacer { flex: 1; }
   @keyframes uix-bulkbar-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .uix-bulkbar { animation: none; } }
