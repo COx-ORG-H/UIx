@@ -1310,4 +1310,5 @@ unchanged. Decision: `Docs/adr/0004-search-suggest-free-text.md`.
 - A visible label names the field: with a `<label for>` (a `Field`) or `aria-labelledby`
   (`EntityPicker`) / `inputLabelledBy` (`SearchSuggest`), no `aria-label` overrides it.
 - While the next query loads the last rows stay in view (`aria-busy` at once), and the spinner waits
-  300 ms, so a fast answer shows none; Enter during a search picks nothing and submits nothing.
+  300 ms (`useDelayedPending`), so a fast answer shows none; Enter during a search picks nothing and
+  submits nothing.

@@ -6,6 +6,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
+import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { Spinner } from './Spinner.js';
 
 /** One result row. */
@@ -152,21 +153,6 @@ const keepFocus = (event: MouseEvent) => event.preventDefault();
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
- * `active`, but only once it has lasted `delay` ms: a wait shorter than that shows no spinner, so
- * a fast answer does not flash one (the 300 ms rule). A local stand-in for the kit's
- * delayed-pending helper (PR #160); swap it for that once it lands.
- */
-function useShownAfter(active: boolean, delay = 300): boolean {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    if (!active) { setShown(false); return undefined; }
-    const timer = setTimeout(() => setShown(true), delay);
-    return () => clearTimeout(timer);
-  }, [active, delay]);
-  return active && shown;
-}
-
-/**
  * A search field with a suggestion list underneath: the "search and jump" pattern of Windows
  * Settings, Android Settings and most docs sites. Each row shows a name, where it lives and a line
  * of context. ARIA combobox pattern: focus stays in the field, arrow keys move the active row
@@ -227,8 +213,9 @@ export function SearchSuggest({
   };
   const [focused, setFocused] = useState(false);
   const [activeState, setActive] = useState(-1);
-  // The spinner (and the list's loading row) wait 300 ms; aria-busy and the Enter guard do not.
-  const showSpinner = useShownAfter(loading);
+  // The spinner (and the list's loading row) wait 300 ms and then stay 500 ms (the kit's delayed
+  // pending); aria-busy and the Enter guard follow `loading` at once.
+  const showSpinner = useDelayedPending(loading);
   // A <label for> names the input: then no aria-label overrides it (HAR-1834).
   const [labelled, setLabelled] = useState(false);
   useEffect(() => { setLabelled((fieldRef.current?.labels?.length ?? 0) > 0); });

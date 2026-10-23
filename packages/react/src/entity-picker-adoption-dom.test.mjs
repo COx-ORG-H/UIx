@@ -4,7 +4,7 @@
  *   3. clear starts a new search: no old query, no old rows, focus in the field;
  *   4. a visible label names the field (no aria-label over it);
  * and, for async search, the last answer stays in view while the next one loads, with the spinner
- * held back for 300 ms. Renders the BUILT dist — run `npm run build` first; CI does. */
+ * held back for 300 ms (the kit's useDelayedPending). Renders the BUILT dist — run `npm run build` first; CI does. */
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
@@ -159,6 +159,8 @@ test('async: the last answer stays in view while the next loads; the spinner wai
   release();
   await settle();
   assert.deepEqual(v.rows(), ['Ada Lovelace']);
+  // the kit's delayed pending keeps a shown spinner 500 ms, so it never flickers off and on
+  await settle(520);
   assert.equal(v.host.querySelector('.uix-search-suggest__spinner'), null);
   v.unmount();
 });
