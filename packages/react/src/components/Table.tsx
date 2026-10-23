@@ -4,6 +4,7 @@ import type {
 import { forwardRef } from 'react';
 import { cx } from '../cx.js';
 import { highlightSegments } from '../table-engine.js';
+import { BusyBar } from './BusyBar.js';
 
 export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -11,15 +12,23 @@ export interface TableWrapProps extends HTMLAttributes<HTMLDivElement> {
    * "N selected". Pass `useTable().announcement` straight through (UIX-A11Y-2).
    */
   announcement?: string;
+  /**
+   * The rows are being fetched again (a filter, sort, page or saved-view change; HAR-2582). The
+   * current rows stay and dim under an indeterminate bar along the top, and the wrap is
+   * `aria-busy`; after 300 ms, held at least 500 ms. Keep the previous rows while fetching
+   * (TanStack Query `placeholderData: keepPreviousData`); skeleton rows are for a first load.
+   */
+  refreshing?: boolean;
   children?: ReactNode;
 }
 
 export const TableWrap = forwardRef<HTMLDivElement, TableWrapProps>(function TableWrap(
-  { announcement, children, className, ...props },
+  { announcement, refreshing, children, className, ...props },
   ref,
 ) {
   return (
-    <div ref={ref} className={cx('uix-table-wrap', className)} {...props}>
+    <div ref={ref} className={cx('uix-table-wrap', className)} aria-busy={refreshing || undefined} {...props}>
+      {refreshing !== undefined && <BusyBar busy={refreshing} />}
       {announcement != null && (
         <div role="status" className="uix-visually-hidden">{announcement}</div>
       )}

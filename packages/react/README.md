@@ -217,10 +217,49 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 <TabPanel value="history" keepMounted>{history}</TabPanel>
 ```
 
+### State feedback: pending, result, refetch (motion standard §2.3, §2.5)
+
+The kit follows one latency ladder: nothing new for the first 300 ms of an action, then a pending
+indicator that stays at least 500 ms; an in-place result for 1.5 s. The waits are exported as
+`PENDING_DELAY_MS`, `PENDING_MIN_VISIBLE_MS` and `RESULT_HOLD_MS`.
+
+- **`Button loading`** blocks presses at once (`aria-disabled`, `aria-busy`) but looks the same for
+  300 ms; then the spinner shows, in the button's full colour, for at least 500 ms. A fast action
+  never flashes one. `loadingDelay={0}` shows it at once. Pass `loading`, never only
+  `disabled={isPending}`: a greyed-out button says nothing about work.
+- **`Button result`** (`'success' | 'error' | null`): when it changes, or an action ends with one,
+  the label crossfades to a check and `resultLabels.success` ("Done") or an alert mark and
+  `resultLabels.error` ("Failed") for 1.5 s, announced politely, then returns. Never on the first
+  render. The button is always as wide as its widest wording, so nothing beside it moves. Keep the
+  prop defined (`null` while there is no result). Say what failed and how to recover somewhere that
+  stays (a field error, a toast). Words also come from `UixLabelsProvider` `buttonResult`.
+- **`SaveStatus`** waits 300 ms before "Saving…" (`delay`); a fast save goes straight to "Saved".
+- **`Spinner delay` / `LoadingState delay`** (`true` = 300 ms) render nothing until the delay has
+  passed. To also hold a loader 500 ms once shown, mount it from `useDelayedPending(pending)`.
+- **`BusyRegion busy`** and **`TableWrap refreshing`** keep the rows on a refetch (filter, sort,
+  page, saved view): the content dims under an indeterminate bar and the region is `aria-busy`.
+  Skeletons are for a first load only; keep the previous data while fetching
+  (TanStack Query `placeholderData: keepPreviousData`).
+
+```tsx
+const assign = trpc.incident.assign.useMutation();
+<Button loading={assign.isPending} result={assign.isSuccess ? 'success' : assign.isError ? 'error' : null}
+  resultLabels={{ success: t('assigned'), error: t('notAssigned') }} onClick={() => assign.mutate(input)}>
+  {t('assignToMe')}
+</Button>
+
+const list = trpc.incident.list.useQuery(filters, { placeholderData: keepPreviousData });
+<TableWrap refreshing={list.isFetching && !list.isPending}>…</TableWrap>
+<BusyRegion busy={feed.isFetching && !feed.isPending}>{items}</BusyRegion>
+
+const showSpinner = useDelayedPending(upload.isPending);
+{showSpinner && <Spinner size="sm" label={t('uploading')} />}
+```
+
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
-- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.46). `size="compact"` fits dense fact bands.
+- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.47). `size="compact"` fits dense fact bands.
 - **`Stat onActivate`** makes the whole tile a button that opens an editor (`aria-haspopup="dialog"`). Pass `activateLabel` (e.g. "change") so the name reads "Priority: P1, change", and `expanded` while the editor is open. The ref points at the button, for anchoring a popover.
 - **`Stat pending`** is for a tile whose action is still running (a save, a state change). The button gets `aria-busy="true"` and `aria-disabled="true"`, is dimmed with a progress cursor, and calls neither `onActivate` nor your `onClick` / `onKeyDown` until `pending` is false again. It is never natively `disabled`, so it keeps focus and a screen reader can still read it. Only a tile with `onActivate` has the state; a read-only tile and a link tile ignore the prop.
 - **Tiles in one row line up.** A grid or flex row stretches its tiles to the tallest one. Read-only, button and link tiles all start their label and value at the same offset from the top edge, whatever the height (before 2.38.0 a button tile centred its rows).
@@ -1128,7 +1167,7 @@ mask; an avatar with a dot no longer clips it.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
 
-### Calm status colour, the app shell and display preferences (2.46)
+### Calm status colour, the app shell and display preferences (2.47)
 
 #### StatusPill treatments, Stat sentiment, quiet Alert (HAR-1563)
 

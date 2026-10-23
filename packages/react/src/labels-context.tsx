@@ -21,6 +21,7 @@ import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
+import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -32,6 +33,8 @@ import type { DisplayPreferencesLabels } from './components/DisplayPreferences.j
  * on the server.
  */
 export interface UixLabels {
+  /** The words a `Button` with `result` shows for a moment after its action (HAR-2581). */
+  buttonResult?: Partial<ButtonResultLabels>;
   modal?: { close?: string };
   drawer?: { close?: string };
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
