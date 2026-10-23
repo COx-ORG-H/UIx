@@ -83,7 +83,8 @@ test.describe('anchored overlays under CSS zoom (HAR-1798)', () => {
       await trigger.click();
       const list = page.getByRole('listbox');
       await expect(list).toBeVisible();
-      await settleOverlay(list);
+      // the popup is what moves (it grows from scale(.95), HAR-2578), not the listbox inside it
+      await settleOverlay(page.locator('[data-uix-select-popup]:popover-open'));
       const geo = await page.evaluate(() => {
         const t = document.getElementById('zoom-role').getBoundingClientRect();
         // The popup, not the listbox inside its padding.

@@ -4,21 +4,46 @@
  *   - #open-instant: a Modal with `instant`;
  *   - #open-palette: a plain Modal holding a CommandPalette, which marks its dialog instant itself;
  *   - #legacy-cmdk: a bare <dialog data-uix-cmdk-dialog> (the attribute is still honoured);
+ *   - #open-drawer: a Drawer;
+ *   - #menu-trigger: a Menu (a Popover grown from its trigger; instant when opened from the keyboard);
+ *   - #select: a Select;
+ *   - #tip-a, #tip-b, #tip-c: three Tooltips side by side (the delay group);
+ *   - #toast-add / #toast-dismiss-first: a Toaster stack;
+ *   - #suggest: a SearchSuggest whose list hides between result sets;
  *   - the looping indicators: Spinner, Button loading, Skeleton, indeterminate Progress, SaveStatus, Heartbeat;
  *   - a Meter whose value changes on #meter-step;
  *   - a table row with row actions (visible on coarse pointers, hover-revealed on fine ones).
- * window.__reduced mirrors useReducedMotion(). */
+ * window.__reduced mirrors useReducedMotion(); window.__toast is the toast API. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, CommandItem, CommandPalette, Heartbeat, Meter, Modal, Progress, SaveStatus, Skeleton, Spinner, useReducedMotion,
+  Button, CommandItem, CommandPalette, Drawer, Heartbeat, Menu, MenuItem, Meter, Modal, Progress, SaveStatus, SearchSuggest,
+  Select, Skeleton, Spinner, Toaster, Tooltip, toast, useReducedMotion,
 } from '../../packages/react/src/index.js';
 
-declare global { interface Window { __reduced: boolean } }
+declare global { interface Window { __reduced: boolean; __toast: typeof toast } }
+window.__toast = toast;
+
+const RESULTS = [
+  { id: 'mailbox', title: 'Mailbox rules' },
+  { id: 'mail-flow', title: 'Mail flow' },
+];
+
+function Suggest() {
+  const [value, setValue] = useState('');
+  // A query of one letter has no results, so the list hides; two letters bring it back.
+  const options = value.trim().length >= 2 || value === '' ? RESULTS.filter((r) => r.title.toLowerCase().includes(value.toLowerCase())) : [];
+  return (
+    <div id="suggest">
+      <SearchSuggest label="Search settings" value={value} onValueChange={setValue} options={options} onSelect={() => {}} />
+    </div>
+  );
+}
 
 function Harness() {
-  const [open, setOpen] = useState<'modal' | 'instant' | 'palette' | null>(null);
+  const [open, setOpen] = useState<'modal' | 'instant' | 'palette' | 'drawer' | null>(null);
   const [meter, setMeter] = useState(30);
+  const [n, setN] = useState(0);
   const reduced = useReducedMotion();
   window.__reduced = reduced;
   const close = () => setOpen(null);
@@ -33,7 +58,25 @@ function Harness() {
           <Button id="open-instant" onClick={() => setOpen('instant')}>Open instant modal</Button>
           <Button id="open-palette" onClick={() => setOpen('palette')}>Open command palette</Button>
           <Button id="open-legacy" onClick={() => (document.getElementById('legacy-cmdk') as HTMLDialogElement).showModal()}>Open legacy palette</Button>
+          <Button id="open-drawer" onClick={() => setOpen('drawer')}>Open drawer</Button>
+          <Menu trigger={<Button id="menu-trigger">Actions</Button>}>
+            <MenuItem onSelect={() => {}}>Assign to me</MenuItem>
+            <MenuItem onSelect={() => {}}>Resolve</MenuItem>
+          </Menu>
         </div>
+        <div style={{ width: '16rem' }}>
+          <Select id="select" aria-label="Priority" options={[{ value: 'p1', label: 'P1 Critical' }, { value: 'p2', label: 'P2 High' }, { value: 'p3', label: 'P3 Moderate' }]} defaultValue="p2" />
+        </div>
+        <div id="tips" style={{ display: 'flex', gap: 'var(--uix-space-1)' }}>
+          <Tooltip label="Bold"><Button id="tip-a">B</Button></Tooltip>
+          <Tooltip label="Italic"><Button id="tip-b">I</Button></Tooltip>
+          <Tooltip label="Underline"><Button id="tip-c">U</Button></Tooltip>
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--uix-space-2)' }}>
+          <Button id="toast-add" onClick={() => { setN(n + 1); toast.success(`Saved change ${n + 1}`, { duration: null }); }}>Add toast</Button>
+          <Button id="toast-dismiss-first" onClick={() => { const first = toast.store.getSnapshot().find((r) => !r.leaving); if (first) toast.dismiss(first.id); }}>Dismiss oldest toast</Button>
+        </div>
+        <Suggest />
       </section>
 
       <section aria-label="Looping indicators">
@@ -76,9 +119,13 @@ function Harness() {
           <CommandItem>Open settings</CommandItem>
         </CommandPalette>
       </Modal>
+      <Drawer id="drawer" open={open === 'drawer'} onClose={close} title="INC-1042">
+        <p>Ledger sync stalled since 09:12.</p>
+      </Drawer>
       <dialog id="legacy-cmdk" className="uix-dialog" data-uix-cmdk-dialog aria-label="Legacy palette">
         <form method="dialog"><button type="submit">Close</button></form>
       </dialog>
+      <Toaster />
     </>
   );
 }

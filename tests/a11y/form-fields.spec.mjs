@@ -527,8 +527,16 @@ test.describe('TagInput (HAR-1377)', () => {
     expect(onTop).toBe(true);
     await option.click();
     await expect(page.locator('#tags-drawer')).toBeFocused();
+    // Picking a suggestion closes the list. Open it again, so the Escape below has a list to close:
+    // without it the Escape is the clean drawer's, and the dialog only looked visible while its exit
+    // animation ran (a keyboard-initiated close is instant since HAR-2578, which exposed it).
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#tags-drawer')).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog', { name: 'Tag the asset' }), 'Escape closed the list, not the drawer').toBeVisible();
+    await expect(page.locator('#tags-drawer'), 'Escape closed the list').toHaveAttribute('aria-expanded', 'false');
+    const drawer = page.getByRole('dialog', { name: 'Tag the asset' });
+    await expect(drawer, 'and not the drawer').toBeVisible();
+    expect(await drawer.evaluate((el) => el.open), 'the drawer is still open, not just still painted').toBe(true);
   });
 
   test('axe: at rest, with suggestions open and with a refusal', async ({ page }, testInfo) => {

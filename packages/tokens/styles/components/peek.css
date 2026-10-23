@@ -6,21 +6,22 @@
     border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
     transform: translateX(100%);
-    transition: transform var(--uix-dur-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    /* the closed state's durations are the exit's (--uix-dur-exit-slow); [open] carries the enter */
+    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
     /* Author display values for BOTH states are required for the slide-in to animate: the
        allow-discrete `display` transition only engages with author values, and that gating also
        lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
        parked at translateX(100%). Closed = none; open = flex. */
     display: none;
   }
-  .uix-peek[open] { transform: none; display: flex; flex-direction: column; }
+  .uix-peek[open] { transform: none; display: flex; flex-direction: column; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-peek[open] { transform: translateX(100%); } }
   .uix-peek::backdrop {
     background: var(--uix-scrim); opacity: 0;
-    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
   }
-  .uix-peek[open]::backdrop { opacity: 1; }
+  .uix-peek[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-peek[open]::backdrop { opacity: 0; } }
 
   .uix-peek__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }

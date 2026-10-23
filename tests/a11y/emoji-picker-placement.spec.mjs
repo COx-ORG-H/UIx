@@ -170,29 +170,37 @@ for (const anchoring of [true, false]) {
   });
 }
 
-/** Open the standalone picker and return where its enter motion starts, from its first frames. */
+/** Open the standalone picker and return how its enter motion starts, from its first frames: the
+ *  starting scale and the transform-origin's y as a fraction of the panel's height (HAR-2578: it
+ *  grows out of its trigger, so the origin sits on the edge that faces it). */
 const enterMotion = (page) => page.evaluate(async () => {
   const pop = document.querySelector('[role="dialog"][aria-label="Emoji auswählen"]');
-  document.querySelector('#standalone-picker').click();
+  const trigger = document.querySelector('#standalone-picker');
+  // A pointer press, as a real click has: after the Escape that closed it last time, a bare
+  // click() would still count as keyboard-initiated and open with no motion at all (HAR-2578).
+  trigger.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  trigger.click();
   for (let i = 0; i < 30; i += 1) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
     const move = pop.getAnimations().find((a) => a.transitionProperty === 'transform');
     if (move) {
       const [from] = move.effect.getKeyframes();
-      const y = from.transform === 'none' ? 0 : new DOMMatrixReadOnly(from.transform).m42;
-      return { placement: pop.dataset.placement, fromY: y, duration: move.effect.getTiming().duration };
+      const scale = from.transform === 'none' ? 1 : new DOMMatrixReadOnly(from.transform).a;
+      const originY = parseFloat(getComputedStyle(pop).transformOrigin.split(' ')[1]) / pop.offsetHeight;
+      return { placement: pop.dataset.placement, scale, originY, duration: move.effect.getTiming().duration };
     }
     if (pop.matches(':popover-open') && !pop.hasAttribute('data-uix-placing') && i > 10) break;
   }
-  return { placement: pop.dataset.placement, fromY: null, duration: 0 };
+  return { placement: pop.dataset.placement, scale: null, originY: null, duration: 0 };
 });
 
-test('the enter motion moves away from the trigger, and not at all with reduced motion', async ({ page }) => {
+test('the enter motion grows out of the trigger, and does not move at all with reduced motion', async ({ page }) => {
   await putTrigger(page, '#standalone-picker', 120);
   const search = page.getByRole('searchbox', { name: 'Emoji suchen' });
   const top = await enterMotion(page);
   expect(top.placement).toBe('top-start');
-  expect(top.fromY, 'on top: rises from 4px below').toBe(4);
+  expect(top.scale, 'from scale(.95)').toBeCloseTo(0.95, 5);
+  expect(top.originY, 'on top: grows from its bottom edge').toBeCloseTo(1, 1);
   await expect(search).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Emoji auswählen' })).toBeHidden();
@@ -200,7 +208,7 @@ test('the enter motion moves away from the trigger, and not at all with reduced 
   await putTrigger(page, '#standalone-picker', 700);
   const below = await enterMotion(page);
   expect(below.placement).toBe('bottom-start');
-  expect(below.fromY, 'below: drops from 4px above').toBe(-4);
+  expect(below.originY, 'below: grows from its top edge').toBe(0);
   await expect(search).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(search).toBeHidden();

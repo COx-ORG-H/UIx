@@ -182,9 +182,9 @@
       "brotli": 1003
     },
     "styles/components/drawer.css": {
-      "raw": 3030,
-      "gzip": 1030,
-      "brotli": 839
+      "raw": 3246,
+      "gzip": 1084,
+      "brotli": 886
     },
     "styles/components/editorial-home.css": {
       "raw": 22070,
@@ -307,9 +307,9 @@
       "brotli": 530
     },
     "styles/components/modal.css": {
-      "raw": 4273,
-      "gzip": 1392,
-      "brotli": 1136
+      "raw": 4500,
+      "gzip": 1453,
+      "brotli": 1203
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -332,9 +332,9 @@
       "brotli": 516
     },
     "styles/components/peek.css": {
-      "raw": 3983,
-      "gzip": 1445,
-      "brotli": 1197
+      "raw": 4199,
+      "gzip": 1498,
+      "brotli": 1250
     },
     "styles/components/pipeline.css": {
       "raw": 6039,
@@ -342,9 +342,9 @@
       "brotli": 1273
     },
     "styles/components/popover.css": {
-      "raw": 2856,
-      "gzip": 1032,
-      "brotli": 831
+      "raw": 2933,
+      "gzip": 1140,
+      "brotli": 918
     },
     "styles/components/print-layout.css": {
       "raw": 13251,
@@ -412,9 +412,9 @@
       "brotli": 5739
     },
     "styles/components/search-suggest.css": {
-      "raw": 8989,
-      "gzip": 2201,
-      "brotli": 1856
+      "raw": 9280,
+      "gzip": 2340,
+      "brotli": 1953
     },
     "styles/components/segmented.css": {
       "raw": 4071,
@@ -422,9 +422,9 @@
       "brotli": 1327
     },
     "styles/components/select.css": {
-      "raw": 9932,
-      "gzip": 2679,
-      "brotli": 2248
+      "raw": 10452,
+      "gzip": 2841,
+      "brotli": 2383
     },
     "styles/components/sidebar.css": {
       "raw": 14151,
@@ -517,14 +517,14 @@
       "brotli": 384
     },
     "styles/components/toast.css": {
-      "raw": 3907,
-      "gzip": 1175,
-      "brotli": 973
+      "raw": 4556,
+      "gzip": 1520,
+      "brotli": 1280
     },
     "styles/components/tooltip.css": {
-      "raw": 3301,
-      "gzip": 1290,
-      "brotli": 1077
+      "raw": 3834,
+      "gzip": 1484,
+      "brotli": 1217
     },
     "styles/components/tree.css": {
       "raw": 3166,
@@ -552,9 +552,9 @@
       "brotli": 2109
     },
     "styles/motion.css": {
-      "raw": 5106,
-      "gzip": 1869,
-      "brotli": 1531
+      "raw": 5256,
+      "gzip": 1931,
+      "brotli": 1587
     },
     "styles/utilities.css": {
       "raw": 1310,
