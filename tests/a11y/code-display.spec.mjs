@@ -42,6 +42,22 @@ test('expired differs from live in words and in the drawn code, not only in colo
   await expect(page.locator('#code-soon')).toHaveAttribute('data-state', 'soon');
 });
 
+// Review of PR #166: lg in a card broke the code at 320 and 360 px, its last group alone on a line.
+for (const width of [320, 360, 390]) {
+  test(`lg in a card at ${width} px: the three groups stay on one line, inside the card`, async ({ page }, testInfo) => {
+    await open(page, testInfo, { width, height: 900 });
+    const read = await page.locator('#code-lg').evaluate((root) => {
+      const tops = [...root.querySelectorAll('.uix-code-display__group')].map((group) => Math.round(group.getBoundingClientRect().top));
+      const code = root.querySelector('.uix-code-display__code').getBoundingClientRect();
+      const card = root.closest('.uix-card').getBoundingClientRect();
+      return { tops, fontSize: parseFloat(getComputedStyle(root.querySelector('.uix-code-display__code')).fontSize), inside: code.right <= card.right && code.left >= card.left };
+    });
+    expect(new Set(read.tops).size, `group tops: ${read.tops.join(', ')}`).toBe(1);
+    expect(read.inside).toBe(true);
+    expect(read.fontSize).toBeGreaterThanOrEqual(24);
+  });
+}
+
 test('the copy button sits on the code’s line, centred on it, and copies the bare code', async ({ page, context }, testInfo) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, testInfo);

@@ -20,7 +20,12 @@
     font-variant-numeric: tabular-nums slashed-zero;
     letter-spacing: .06em;
   }
-  .uix-code-display--lg .uix-code-display__code { font-size: var(--uix-text-display); line-height: var(--uix-leading-display); }
+  /* lg is the hero of a card or a till screen: it takes the width it is given and fits a
+     three-by-three code (11 characters with the separators, ~8.4em of mono at this tracking) on
+     one line, down to the h2 size; only below that do the groups wrap (review of PR #166: in a
+     card at 320–360 px the last group fell to its own line). */
+  .uix-code-display--lg { display: grid; inline-size: 100%; container-type: inline-size; }
+  .uix-code-display--lg .uix-code-display__code { font-size: clamp(var(--uix-text-h2), calc(100cqi / 8.4), var(--uix-text-display)); line-height: var(--uix-leading-display); }
   .uix-code-display__group { min-width: 0; overflow-wrap: anywhere; }
   .uix-code-display__sep { margin-inline: .2em; color: var(--uix-text-hushed); font-weight: 400; }
   /* the spoken copy is for screen readers only; a pointer selection of the code never picks it up */
