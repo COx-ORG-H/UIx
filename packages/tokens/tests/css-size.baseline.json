@@ -87,9 +87,9 @@
       "brotli": 488
     },
     "styles/components/code-display.css": {
-      "raw": 2330,
-      "gzip": 860,
-      "brotli": 690
+      "raw": 2818,
+      "gzip": 1102,
+      "brotli": 907
     },
     "styles/components/color-picker.css": {
       "raw": 2409,
@@ -317,9 +317,9 @@
       "brotli": 831
     },
     "styles/components/print-layout.css": {
-      "raw": 13043,
-      "gzip": 2969,
-      "brotli": 2544
+      "raw": 13251,
+      "gzip": 3054,
+      "brotli": 2624
     },
     "styles/components/progress.css": {
       "raw": 1742,
@@ -372,9 +372,9 @@
       "brotli": 533
     },
     "styles/components/scheduling-calendar.css": {
-      "raw": 60159,
-      "gzip": 10611,
-      "brotli": 9115
+      "raw": 62507,
+      "gzip": 11056,
+      "brotli": 9483
     },
     "styles/components/scheduling-timeline.css": {
       "raw": 30178,

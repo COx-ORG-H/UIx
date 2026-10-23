@@ -1486,6 +1486,9 @@ export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 // @public (undocumented)
 export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels;
 
+// @public
+export const DEFAULT_QR_CODE_LABELS: QrCodeLabels;
+
 // @public (undocumented)
 export const DEFAULT_QR_SCANNER_LABELS: QrScannerLabels;
 
@@ -4196,6 +4199,7 @@ export interface QrCodeLabels {
 
 // @public (undocumented)
 export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'children' | 'width' | 'height' | 'viewBox'> {
+    eci?: boolean;
     errorCorrection?: QrErrorCorrection;
     label: string;
     labels?: Partial<QrCodeLabels>;
@@ -4209,6 +4213,7 @@ export function qrDataCapacity(version: number, errorCorrection: QrErrorCorrecti
 
 // @public (undocumented)
 export interface QrEncodeOptions {
+    eci?: boolean;
     errorCorrection?: QrErrorCorrection;
     mask?: number;
     minVersion?: number;
@@ -4287,7 +4292,7 @@ export interface QrScannerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 export type QrScannerStatus = 'idle' | 'asking' | 'scanning' | 'denied' | 'unsupported' | 'no-camera' | 'no-frame';
 
 // @public
-export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number): number | undefined;
+export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number, headerBits?: number): number | undefined;
 
 // @public
 export function quantiles(values: readonly number[], ps: readonly number[]): (number | null)[];
