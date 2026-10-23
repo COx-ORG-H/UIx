@@ -37,7 +37,7 @@
   .uix-segmented { position: relative; isolation: isolate; }
   .uix-segmented__option { position: relative; }
   /* the same look as a selected option: surface, lift and the 3:1 inset ring */
-  .uix-segmented__indicator { position: absolute; z-index: -1; pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-segmented__indicator { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
   .uix-segmented__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
   @media (forced-colors: none) {
     .uix-segmented[data-uix-indicator] .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: transparent; box-shadow: none; }
