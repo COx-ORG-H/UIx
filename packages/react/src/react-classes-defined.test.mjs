@@ -39,6 +39,13 @@ const HOOKS = new Map([
   ['uix-filter-editor__tags', 'FilterEditor tags field (HAR-1832): styled by .uix-taginput; a hook for tests'],
   ['uix-sortable__move--up', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
   ['uix-sortable__move--down', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
+  ['uix-match-review--adopt', 'MatchReview fieldMode="adopt" (HAR-1369): a mode hook; the adopt parts carry their own classes'],
+  ['uix-audit-log__filter', 'AuditLog filter chip wrapper (HAR-987): the popover anchor; styled by .uix-chip'],
+  ['uix-audit-log__region', 'AuditLog list region (HAR-987): styled by .uix-busy-region; a hook for tests'],
+  ['uix-data-workspace__toolbar', 'DataWorkspace toolbar (HAR-1388): styled by .uix-toolbar; a hook for consumers and tests'],
+  ['uix-data-workspace__table', 'DataWorkspace table wrap (HAR-1388): styled by .uix-table-wrap; a hook for consumers and tests'],
+  ['uix-data-workspace__loading', 'DataWorkspace first-load skeleton (HAR-1388): styled by LoadingState; a hook for tests'],
+  ['uix-id-cell', 'record-id cell (DataWorkspace, HAR-1388; tables.html): its parts .uix-id-cell__btn / __arrow are styled'],
 ]);
 
 const cssFiles = [];

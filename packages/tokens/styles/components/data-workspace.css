@@ -1,0 +1,25 @@
+/* uix data workspace — the generic presentation half of a product's data table (React
+   `DataWorkspace`, HAR-1388, ADR-0004): toolbar · bulk bar · table · footer, composed from
+   .uix-toolbar, .uix-chip, .uix-searchbar, .uix-bulkbar, .uix-table and .uix-pagination.
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-data-workspace { display: grid; gap: var(--uix-space-3); min-width: 0; }
+  .uix-data-workspace > .uix-toolbar { margin-bottom: 0; }
+  .uix-data-workspace__search { flex: 0 1 18rem; min-width: min(12rem, 100%); }
+  .uix-data-workspace__chip, .uix-data-workspace__menu { display: inline-flex; }
+  /* the record-id cell: the id opens a peek, ↗ opens the full record */
+  .uix-data-workspace__id { display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap; }
+  .uix-data-workspace__open { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: var(--uix-radius-xs); color: var(--uix-text-muted); }
+  .uix-data-workspace__open:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  @media (hover: hover) and (pointer: fine) { .uix-data-workspace__open:hover { background: var(--uix-bg-hover); color: var(--uix-text); } }
+  .uix-data-workspace__footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2) var(--uix-space-4); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-data-workspace__range { font-variant-numeric: tabular-nums; }
+  .uix-data-workspace__size { display: inline-flex; align-items: center; gap: var(--uix-space-2); white-space: nowrap; }
+  /* maximized: the workspace takes the window; Escape or the toggle restores it */
+  .uix-data-workspace--maximized {
+    position: fixed; inset: 0; z-index: var(--uix-z-overlay); align-content: start; overflow: auto;
+    padding: var(--uix-space-4); background: var(--uix-bg-app);
+  }
+  /* a phone: the search takes its own row */
+  @media (max-width: 40rem) { .uix-data-workspace__search { flex: 1 1 100%; } }
+}

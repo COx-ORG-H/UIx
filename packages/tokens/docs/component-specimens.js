@@ -415,6 +415,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-utility",
     "selector": ".uix-code"
   },
+  "data-workspace": {
+    "route": "examples-data-display",
+    "selector": ".uix-data-workspace",
+    "container": "[data-data-workspace-example]"
+  },
   "view-menu": {
     "route": "examples-workspace",
     "selector": ".uix-view-menu"

@@ -42,6 +42,40 @@ const BUILDERS = [
       ].join('\n'),
     };
   },
+  // ── DataWorkspace (HAR-1388): toolbar, a selection with the bulk bar, id cells, footer ───────
+  ({ ui, mount, html }) => {
+    const rows = [
+      { id: 'INC-20418', title: 'Printer on the 3rd floor does not print', state: 'Open', priority: 2 },
+      { id: 'INC-20417', title: 'VPN drops every hour', state: 'Pending', priority: 1 },
+      { id: 'INC-20416', title: 'Password reset for accounting', state: 'Resolved', priority: 3 },
+    ];
+    const tone = { Open: 'info', Pending: 'warning', Resolved: 'success' };
+    const workspace = mount(h(ui.DataWorkspace, {
+      label: 'Incidents', rows, getRowId: (r) => r.id,
+      columns: [
+        { id: 'title', header: 'Title', cell: (r) => r.title, sortable: true },
+        { id: 'state', header: 'State', cell: (r) => h(ui.StatusPill, { tone: tone[r.state] }, r.state), sortable: true },
+        { id: 'priority', header: 'Priority', cell: (r) => `P${r.priority}`, align: 'end' },
+      ],
+      idColumn: { header: 'ID', text: (r) => r.id, onPeek() {}, href: (r) => `#incident-${r.id}` },
+      sort: { columnId: 'title', direction: 'ascending' }, onSortChange() {},
+      selection: new Set(['INC-20417']), onSelectionChange() {},
+      bulkActions: () => h(ui.Button, { size: 'sm' }, 'Assign to me'),
+      search: { value: '', onChange() {}, label: 'Search incidents' },
+      filters: { fields: [{ id: 'state', label: 'State', kind: 'enum', options: [{ value: 'open', label: 'Open' }, { value: 'pending', label: 'Pending' }] }, { id: 'created', label: 'Created', kind: 'date-range' }], values: { state: { kind: 'enum', values: ['open', 'pending'] } }, onChange() {} },
+      savedViews: { current: 'My open incidents', menu: { items: [{ id: 'mine', label: 'My open incidents', active: true }], onSelect() {} } },
+      viewChanged: true, onSaveView() {}, onSaveViewAs() {},
+      onMaximizedChange() {},
+      toolbarEnd: h(ui.Button, { size: 'sm', variant: 'primary' }, 'New incident'),
+      pagination: { mode: 'offset', page: 1, pageSize: 25, total: 3, onPageChange() {}, pageSizes: [25, 50, 100], onPageSizeChange() {} },
+    }));
+    return {
+      'examples-data-display': [
+        caption('Data workspace (React <code>DataWorkspace</code>, <code>.uix-data-workspace</code>, HAR-1388, ADR-0004) — the kit\'s table pieces in one order: saved view, Save changes, filter chips and + Filter, search (Ctrl/⌘ + /), View, maximize, the product\'s actions; a selection with the bulk bar, the record-id cell (id → peek, ↗ → record), and the x–y of N footer'),
+        `<div data-data-workspace-example>${html(workspace)}</div>`,
+      ].join('\n'),
+    };
+  },
   // ── AuditLog (HAR-987): filters, entries with a labelled action, Details, older entries ─────
   ({ ui, mount, html }) => {
     const log = mount(h(ui.AuditLog, {

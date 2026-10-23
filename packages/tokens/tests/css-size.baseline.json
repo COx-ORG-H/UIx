@@ -126,6 +126,11 @@
       "gzip": 1397,
       "brotli": 1186
     },
+    "styles/components/data-workspace.css": {
+      "raw": 2067,
+      "gzip": 844,
+      "brotli": 683
+    },
     "styles/components/date-picker.css": {
       "raw": 6010,
       "gzip": 1656,

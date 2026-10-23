@@ -34,6 +34,13 @@ test('every state named in a caption is on the page', () => {
   assert.deepEqual([...nav.matchAll(/class="uix-cmdk__group"[^>]*>([^<]+)</g)].map((m) => m[1]), ['Pages', 'Actions']);
   assert.match(nav, /aria-activedescendant="(dex-[^"]+)"[\s\S]*id="\1" role="option" class="uix-cmdk__item" data-active="true"/);
   assert.match(nav, /<mark class="uix-cmdk__mark">Re<\/mark>ports/);
+  // data workspace: toolbar, bulk bar, three rows with id cells, the footer
+  const dataWs = specimens['examples-data-display'];
+  assert.match(dataWs, /data-data-workspace-example[\s\S]*<section class="uix-data-workspace" aria-label="Incidents">/);
+  assert.match(dataWs, /class="uix-bulkbar"[\s\S]*1 selected/);
+  assert.equal((dataWs.match(/class="uix-id-cell__btn"/g) ?? []).length, 3);
+  assert.match(dataWs, /<span class="uix-data-workspace__range">1–3 of 3<\/span>/);
+  assert.match(dataWs, />Save changes</);
   // audit log: the filter bar with one set filter, three entries, a Details disclosure, older entries
   const crm = specimens['examples-crm-itsm'];
   assert.match(crm, /data-audit-log-example[\s\S]*<section class="uix-audit-log" aria-label="Access history">/);

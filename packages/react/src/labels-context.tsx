@@ -25,6 +25,7 @@ import type { DiffViewerLabels } from './components/DiffViewer.js';
 import type { MatchReviewLabels } from './components/MatchReview.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
+import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -77,6 +78,8 @@ export interface UixLabels {
   matchReview?: Partial<MatchReviewLabels>;
   /** `AuditLog` (HAR-987): the filters, Details, Show older entries, and every state. */
   auditLog?: Partial<AuditLogLabels>;
+  /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
+  dataWorkspace?: Partial<DataWorkspaceLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;

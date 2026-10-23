@@ -287,6 +287,11 @@ export { Segmented, SegmentedOption, LocaleSwitcher } from './components/Segment
 export type { SegmentedProps, SegmentedOptionProps, LocaleSwitcherProps, LocaleSwitcherLocale } from './components/Segmented.js';
 
 export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableControls.js';
+// The generic presentation half of a product's data table (HAR-1388, UIx ADR-0004)
+export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataWorkspace.js';
+export type {
+  DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
+} from './components/DataWorkspace.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';

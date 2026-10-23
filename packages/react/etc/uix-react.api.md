@@ -1280,6 +1280,173 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 // @public
 export type DashboardGridSpan = 1 | 2 | 'full';
 
+// @public
+export function DataWorkspace<T>(input: DataWorkspaceProps<T>): react.JSX.Element;
+
+// @public (undocumented)
+export interface DataWorkspaceColumn<T> {
+    align?: 'start' | 'end';
+    // (undocumented)
+    cell: (row: T) => ReactNode;
+    // (undocumented)
+    header: ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    sortable?: boolean;
+    width?: string;
+}
+
+// @public
+export interface DataWorkspaceIdColumn<T> {
+    // (undocumented)
+    header: ReactNode;
+    href?: (row: T) => string;
+    onPeek?: (row: T) => void;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    text: (row: T) => string;
+}
+
+// @public
+export interface DataWorkspaceLabels {
+    // (undocumented)
+    addFilter: string;
+    // (undocumented)
+    bulkActions: string;
+    // (undocumented)
+    clearFilters: string;
+    // (undocumented)
+    empty: string;
+    // (undocumented)
+    emptyDetail: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    filteredEmpty: string;
+    // (undocumented)
+    filteredEmptyDetail: string;
+    // (undocumented)
+    loading: string;
+    // (undocumented)
+    maximize: string;
+    open: string;
+    range: string;
+    // (undocumented)
+    restore: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    rowActions: string;
+    // (undocumented)
+    rowsPerPage: string;
+    savedView: string;
+    // (undocumented)
+    saveView: string;
+    // (undocumented)
+    saveViewAs: string;
+    // (undocumented)
+    search: string;
+    // (undocumented)
+    searchPlaceholder: string;
+    // (undocumented)
+    selectAll: string;
+    selected: string;
+    selectRow: string;
+    // (undocumented)
+    view: string;
+}
+
+// @public (undocumented)
+export type DataWorkspacePagination = {
+    mode: 'offset';
+    page: number;
+    pageSize: number;
+    total: number;
+    onPageChange: (page: number) => void;
+    pageSizes?: readonly number[];
+    onPageSizeChange?: (size: number) => void;
+} | {
+    mode: 'cursor';
+    hasPrevious: boolean;
+    hasNext: boolean;
+    onFirst?: () => void;
+    onPrevious: () => void;
+    onNext: () => void;
+    summary?: ReactNode;
+    pageSize?: number;
+    pageSizes?: readonly number[];
+    onPageSizeChange?: (size: number) => void;
+};
+
+// @public (undocumented)
+export interface DataWorkspaceProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    bulkActions?: (selectedIds: string[]) => ReactNode;
+    // (undocumented)
+    columns: readonly DataWorkspaceColumn<T>[];
+    // (undocumented)
+    density?: TableDensity;
+    filters?: {
+        fields: readonly FilterField[];
+        values: Readonly<Record<string, FilterValue | undefined>>;
+        onChange: (fieldId: string, value: FilterValue | undefined) => void;
+        counts?: Readonly<Record<string, number>>;
+        summary?: SummarizeFilterOptions;
+    };
+    // (undocumented)
+    getRowId: (row: T) => string;
+    getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
+    // (undocumented)
+    idColumn?: DataWorkspaceIdColumn<T>;
+    label: string;
+    // (undocumented)
+    labels?: Partial<DataWorkspaceLabels>;
+    maximized?: boolean;
+    // (undocumented)
+    onMaximizedChange?: (maximized: boolean) => void;
+    // (undocumented)
+    onRetry?: () => void;
+    // (undocumented)
+    onSaveView?: () => void;
+    // (undocumented)
+    onSaveViewAs?: () => void;
+    // (undocumented)
+    onSelectionChange?: (selection: Set<string>) => void;
+    // (undocumented)
+    onSortChange?: (sort: DataWorkspaceSort | null) => void;
+    // (undocumented)
+    pagination?: DataWorkspacePagination;
+    refreshing?: boolean;
+    rowActions?: (row: T) => ReactNode;
+    // (undocumented)
+    rows: readonly T[];
+    savedViews?: {
+        current: ReactNode;
+        menu: SavedViewMenuProps;
+    };
+    search?: {
+        value: string;
+        onChange: (value: string) => void;
+        label?: string;
+        placeholder?: string;
+    };
+    selection?: ReadonlySet<string>;
+    // (undocumented)
+    sort?: DataWorkspaceSort | null;
+    status?: 'ready' | 'loading' | 'error';
+    toolbarEnd?: ReactNode;
+    viewChanged?: boolean;
+    viewMenu?: ViewMenuProps;
+}
+
+// @public (undocumented)
+export interface DataWorkspaceSort {
+    // (undocumented)
+    columnId: string;
+    // (undocumented)
+    direction: 'ascending' | 'descending';
+}
+
 // @public (undocumented)
 export const DATE_FILTER_OPERATORS: readonly DateFilterOperator[];
 
@@ -1511,6 +1678,9 @@ export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
 
 // @public (undocumented)
 export const DEFAULT_DASHBOARD_CANVAS_LABELS: DashboardCanvasLabels;
+
+// @public (undocumented)
+export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels;
 
 // @public (undocumented)
 export const DEFAULT_DATE_PICKER_LABELS: DatePickerLabels;
@@ -6693,6 +6863,7 @@ export interface UixLabels {
         typeToConfirm?: string;
         compensation?: string;
     };
+    dataWorkspace?: Partial<DataWorkspaceLabels>;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
     // (undocumented)
