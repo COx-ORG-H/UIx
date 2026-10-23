@@ -19,6 +19,7 @@ import { ReactNode } from 'react';
 import { Ref } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
+import { SVGAttributes } from 'react';
 import { SyntheticEvent } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -797,6 +798,37 @@ export function classifyLayeredEdges(nodes: RelationshipGraphNode[], edges: Rela
 export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string;
 
 // @public
+export function CodeDisplay(input: CodeDisplayProps): react.JSX.Element;
+
+// @public
+export interface CodeDisplayLabels {
+    copied: string;
+    copy: string;
+    copyFailed: string;
+    expired: string;
+    expiresIn: string;
+    expiresSoon: string;
+}
+
+// @public (undocumented)
+export interface CodeDisplayProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    code: string;
+    copyable?: boolean;
+    expiresAt?: string | number | Date;
+    groupSize?: number | readonly number[];
+    label: ReactNode;
+    labels?: Partial<CodeDisplayLabels>;
+    onExpire?: () => void;
+    separator?: string;
+    size?: 'md' | 'lg';
+    spell?: (character: string) => string;
+    warnBefore?: number;
+}
+
+// @public
+export function codeGroups(code: string, groupSize?: number | readonly number[]): string[];
+
+// @public
 export function CollapsibleSection(props: CollapsibleSectionProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1067,6 +1099,41 @@ export interface ConfirmDialogProps {
     typeToConfirmMismatch?: string;
     typeToConfirmPlaceholder?: string;
 }
+
+// @public
+export function ContactCard(input: ContactCardProps): react.JSX.Element;
+
+// @public
+export interface ContactCardLabels {
+    call: string;
+    callName: string;
+    email: string;
+    emailName: string;
+    purged: string;
+    purgedName: string;
+    unavailable: string;
+}
+
+// @public (undocumented)
+export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'> {
+    actions?: ReactNode;
+    avatar?: ReactNode;
+    bare?: boolean;
+    email?: string;
+    href?: string;
+    labels?: Partial<ContactCardLabels>;
+    name?: string;
+    nameAs?: 'h2' | 'h3' | 'h4' | 'div';
+    phone?: string;
+    renderLink?: UixRenderLink;
+    role?: ReactNode;
+    // (undocumented)
+    state?: ContactCardState;
+    stats?: ReactNode;
+}
+
+// @public
+export type ContactCardState = 'active' | 'purged' | 'unavailable';
 
 // @public
 export function ContentList(input: ContentListProps): react.JSX.Element;
@@ -1447,7 +1514,13 @@ export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
 export const DEFAULT_BUTTON_RESULT_LABELS: ButtonResultLabels;
 
 // @public (undocumented)
+export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
+
+// @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_CONTACT_CARD_LABELS: ContactCardLabels;
 
 // @public (undocumented)
 export const DEFAULT_DASHBOARD_CANVAS_LABELS: DashboardCanvasLabels;
@@ -1505,6 +1578,15 @@ export const DEFAULT_PASSWORD_INPUT_LABELS: PasswordInputLabels;
 
 // @public
 export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
+
+// @public (undocumented)
+export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels;
+
+// @public
+export const DEFAULT_QR_CODE_LABELS: QrCodeLabels;
+
+// @public (undocumented)
+export const DEFAULT_QR_SCANNER_LABELS: QrScannerLabels;
 
 // @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
@@ -1929,6 +2011,25 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
 }
 
 // @public
+export interface EdgeLabelBox {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    width: number;
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export function edgeLabelSize(lines: readonly string[]): {
+    width: number;
+    height: number;
+};
+
+// @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
 
 // @public
@@ -1944,6 +2045,9 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     title?: ReactNode;
     variant?: StateVariant;
 }
+
+// @public
+export function encodeQr(text: string, options?: QrEncodeOptions): QrMatrix;
 
 // @public
 export function EntityPicker(input: EntityPickerProps): react.JSX.Element;
@@ -2041,12 +2145,17 @@ export function EventRow(input: EventRowProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface EventRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    dateTime?: string;
     day: ReactNode;
+    media?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
     month: ReactNode;
+    time?: ReactNode;
     // (undocumented)
     title: ReactNode;
+    weekday?: ReactNode;
+    year?: ReactNode;
 }
 
 // @public
@@ -2502,6 +2611,9 @@ export function foldForSearch(text: string): FoldedText;
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
 
 // @public
+export function formatCountdown(seconds: number): string;
+
+// @public
 export function formatDateKey(value: string, locale?: string | readonly string[]): string;
 
 // @public
@@ -2947,6 +3059,7 @@ export interface LayeredColumn {
     count: number;
     // (undocumented)
     depth: number;
+    edgeLabel?: string;
     // (undocumented)
     x: number;
 }
@@ -2959,8 +3072,8 @@ export interface LayeredEdgeClassification {
     kindById: Map<string, LayeredEdgeKind>;
 }
 
-// @public (undocumented)
-export type LayeredEdgeKind = 'forward' | 'lateral' | 'cycle';
+// @public
+export type LayeredEdgeKind = 'forward' | 'skip' | 'lateral' | 'back' | 'cycle';
 
 // @public (undocumented)
 export interface LayeredItem {
@@ -3062,6 +3175,9 @@ export interface LayoutMonthSpansOptions {
 
 // @public (undocumented)
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
+
+// @public
+export function layoutResourceColumn(spans: readonly SchedulingResourceSpan[], slots: readonly ResourceDaySlot[]): ResourceDayItem[];
 
 // @public
 export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: string, timeZone: string, options?: {
@@ -4079,6 +4195,16 @@ export interface PlacedDaySpan {
     startCol: number;
 }
 
+// @public
+export interface PlacedEdgeLabel {
+    // (undocumented)
+    hidden: boolean;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
 // @public (undocumented)
 export interface PlacedMonthSpan {
     continuesAfter: boolean;
@@ -4245,6 +4371,46 @@ export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
 // @public (undocumented)
 export type Primitive = string | number | boolean | null | undefined;
 
+// @public
+export function PrintLayout(input: PrintLayoutProps): react.JSX.Element;
+
+// @public
+export interface PrintLayoutLabels {
+    signature: string;
+    stamp: string;
+}
+
+// @public (undocumented)
+export interface PrintLayoutProps extends HTMLAttributes<HTMLDivElement> {
+    footer?: ReactNode;
+    header?: ReactNode;
+    isolate?: boolean;
+    onOverflowChange?: (overflowing: boolean) => void;
+    orientation?: 'portrait' | 'landscape';
+    pageNumbers?: boolean;
+    singlePage?: boolean;
+    size?: PrintPageSize;
+}
+
+// @public
+export function PrintPageBreak(input: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
+
+// @public (undocumented)
+export type PrintPageSize = 'A4' | 'A5';
+
+// @public
+export function PrintSignature(input: PrintSignatureProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PrintSignatureProps extends HTMLAttributes<HTMLDivElement> {
+    label?: ReactNode;
+    // (undocumented)
+    labels?: Partial<PrintLayoutLabels>;
+    name?: ReactNode;
+    placeAndDate?: ReactNode;
+    stamp?: boolean;
+}
+
 // @public (undocumented)
 export function Progress(input: ProgressProps): react.JSX.Element;
 
@@ -4309,6 +4475,120 @@ export interface ProseProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public
+export class QrCapacityError extends Error {
+    constructor(bytes: number, errorCorrection: QrErrorCorrection);
+    // (undocumented)
+    readonly bytes: number;
+    // (undocumented)
+    readonly errorCorrection: QrErrorCorrection;
+}
+
+// @public
+export function QrCode(input: QrCodeProps): react.JSX.Element;
+
+// @public
+export interface QrCodeLabels {
+    tooLong: string;
+}
+
+// @public (undocumented)
+export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'children' | 'width' | 'height' | 'viewBox'> {
+    eci?: boolean;
+    errorCorrection?: QrErrorCorrection;
+    label: string;
+    labels?: Partial<QrCodeLabels>;
+    minVersion?: number;
+    size?: number | string;
+    value: string;
+}
+
+// @public
+export function qrDataCapacity(version: number, errorCorrection: QrErrorCorrection): number;
+
+// @public (undocumented)
+export interface QrEncodeOptions {
+    eci?: boolean;
+    errorCorrection?: QrErrorCorrection;
+    mask?: number;
+    minVersion?: number;
+}
+
+// @public
+export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
+
+// @public (undocumented)
+export interface QrMatrix {
+    // (undocumented)
+    errorCorrection: QrErrorCorrection;
+    mask: number;
+    modules: boolean[][];
+    size: number;
+    version: number;
+}
+
+// @public
+export function qrPath(matrix: QrMatrix, margin?: number): string;
+
+// @public
+export function QrScanner(input: QrScannerProps): react.JSX.Element;
+
+// @public
+export type QrScannerDecoder = (frame: QrScannerFrame) => string | null | undefined | Promise<string | null | undefined>;
+
+// @public
+export interface QrScannerFrame {
+    imageData: ImageData;
+    video: HTMLVideoElement;
+}
+
+// @public
+export interface QrScannerLabels {
+    asking: string;
+    deniedBody: string;
+    deniedTitle: string;
+    // (undocumented)
+    noCameraBody: string;
+    noCameraTitle: string;
+    // (undocumented)
+    noFrameBody: string;
+    noFrameTitle: string;
+    read: string;
+    retry: string;
+    scanning: string;
+    start: string;
+    stop: string;
+    torch: string;
+    unreadable: string;
+    // (undocumented)
+    unsupportedBody: string;
+    unsupportedTitle: string;
+    viewfinder: string;
+}
+
+// @public (undocumented)
+export interface QrScannerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onError'> {
+    autoStart?: boolean;
+    decode: QrScannerDecoder;
+    explainer?: ReactNode;
+    facingMode?: 'environment' | 'user';
+    frameTimeout?: number;
+    hintAfter?: number;
+    interval?: number;
+    labels?: Partial<QrScannerLabels>;
+    manualEntry?: ReactNode;
+    maxFrameSize?: number;
+    onResult: (value: string) => void;
+    onStatusChange?: (status: QrScannerStatus) => void;
+    repeatAfter?: number;
+}
+
+// @public
+export type QrScannerStatus = 'idle' | 'asking' | 'scanning' | 'denied' | 'unsupported' | 'no-camera' | 'no-frame';
+
+// @public
+export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number, headerBits?: number): number | undefined;
 
 // @public
 export function quantiles(values: readonly number[], ps: readonly number[]): (number | null)[];
@@ -4416,6 +4696,7 @@ export interface RelationshipGraphCluster {
 // @public (undocumented)
 export interface RelationshipGraphEdge {
     arrow?: RelationshipGraphArrow;
+    description?: string;
     emphasis?: boolean;
     // (undocumented)
     id: string;
@@ -4425,8 +4706,10 @@ export interface RelationshipGraphEdge {
     source: string;
     // (undocumented)
     target: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public
@@ -4440,7 +4723,8 @@ export interface RelationshipGraphLabels {
     column: (depth: number, count: number) => string;
     // (undocumented)
     conflict: string;
-    // (undocumented)
+    connectedHeading: string;
+    // @deprecated (undocumented)
     connectedTo: (names: string) => string;
     // (undocumented)
     controls: string;
@@ -4477,6 +4761,7 @@ export interface RelationshipGraphLabels {
     listHeading: string;
     // (undocumented)
     loading: string;
+    moreRelations: (count: number, inList: boolean) => string;
     navigationHint: (modifier: string) => string;
     // (undocumented)
     noConnections: string;
@@ -4490,10 +4775,12 @@ export interface RelationshipGraphLabels {
     panRight: string;
     // (undocumented)
     panUp: string;
+    relationFrom: (relation: string, source: string) => string;
     // (undocumented)
     relationship: string;
     // (undocumented)
     relationships: (count: number) => string;
+    relationTo: (relation: string, target: string) => string;
     // (undocumented)
     reset: string;
     // (undocumented)
@@ -4502,6 +4789,8 @@ export interface RelationshipGraphLabels {
     right: string;
     // (undocumented)
     roleDescription: string;
+    showAllRelations: (count: number) => string;
+    showFewerRelations: string;
     // (undocumented)
     up: string;
     viewportKeyboardHint: string;
@@ -4519,6 +4808,9 @@ export interface RelationshipGraphLegendItem {
     id: string;
     // (undocumented)
     label: string;
+    shape?: 'edge' | 'node';
+    tone?: RelationshipGraphTone;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -4530,6 +4822,7 @@ export interface RelationshipGraphNode {
     id: string;
     // (undocumented)
     label: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
     // (undocumented)
@@ -4571,6 +4864,7 @@ export interface RelationshipGraphProps {
     legend?: RelationshipGraphLegendItem[];
     // (undocumented)
     loading?: boolean;
+    markRoot?: boolean;
     maxNodes?: number;
     nodeAriaLabel?: (node: RelationshipGraphNode) => string;
     // (undocumented)
@@ -4592,11 +4886,15 @@ export interface RelationshipGraphProps {
         selected: boolean;
         dimmed: boolean;
     }) => ReactNode;
+    revealId?: string;
     rootId?: string;
     // (undocumented)
     selectedId?: string;
     showList?: boolean;
 }
+
+// @public
+export type RelationshipGraphTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'accent';
 
 // @public (undocumented)
 export function relationshipNeighbors(nodeId: string, edges: RelationshipGraphEdge[]): string[];
@@ -4666,6 +4964,52 @@ export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly 
 export function resolveDisplayAttributes(prefs: DisplayPreferenceValues, system: SystemDisplayPreferences): DisplayAttributes;
 
 // @public
+export function resourceDayGaps(items: readonly ResourceDayItem[], slots: readonly ResourceDaySlot[]): Array<{
+    start: number;
+    end: number;
+}>;
+
+// @public
+export interface ResourceDayItem {
+    // (undocumented)
+    continuesAfter: boolean;
+    continuesBefore: boolean;
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    // (undocumented)
+    lane: number;
+    // (undocumented)
+    lanes: number;
+    length: number;
+    offset: number;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: number;
+}
+
+// @public
+export interface ResourceDaySlot {
+    // (undocumented)
+    end: number;
+    label: string;
+    start: number;
+}
+
+// @public (undocumented)
+export interface ResourceDaySlotOptions {
+    dayEnd?: string;
+    dayStart?: string;
+    slotMinutes?: number;
+}
+
+// @public
+export function resourceDaySlots(date: string, timeZone: string, options?: ResourceDaySlotOptions): ResourceDaySlot[];
+
+// @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -4705,6 +5049,10 @@ export interface RoutedEdge {
     // (undocumented)
     arrowY: number;
     autoLabel: boolean;
+    bus: boolean;
+    columnLabel: boolean;
+    // (undocumented)
+    description?: string;
     edgeIds: string[];
     // (undocumented)
     emphasis: boolean;
@@ -4725,7 +5073,10 @@ export interface RoutedEdge {
     // (undocumented)
     target: string;
     // (undocumented)
+    tone?: RelationshipGraphTone;
+    // (undocumented)
     type?: string;
+    variant: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -5081,6 +5432,9 @@ export interface SchedulingAgendaGroup {
 }
 
 // @public
+export type SchedulingAvailabilityKind = 'free' | 'booked' | 'off';
+
+// @public
 export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
 
 // @public
@@ -5128,6 +5482,7 @@ export interface SchedulingCalendarLabels {
     // (undocumented)
     agendaEmpty: string;
     allDay?: string;
+    availability?: Partial<Record<SchedulingAvailabilityKind, string>>;
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
@@ -5159,6 +5514,8 @@ export interface SchedulingCalendarLabels {
     nextMonth?: string;
     // (undocumented)
     nextWeek?: string;
+    noResources?: string;
+    noSchedule?: string;
     overlay?: string;
     // @deprecated (undocumented)
     previous: string;
@@ -5169,8 +5526,11 @@ export interface SchedulingCalendarLabels {
     previousWeek?: string;
     // (undocumented)
     region: string;
+    resourceGrid?: string;
+    resourceHint?: string;
     // (undocumented)
     retry: string;
+    slotName?: string;
     // (undocumented)
     states: Record<SchedulingEntryState, string>;
     statuses?: Partial<Record<SchedulingStatus, string>>;
@@ -5216,8 +5576,10 @@ export interface SchedulingCalendarProps {
     canMove?: boolean;
     // (undocumented)
     className?: string;
+    dayEnd?: string;
     dayEntries?: Record<string, SchedulingCalendarEntry[]>;
     days?: Record<string, SchedulingCalendarDay>;
+    dayStart?: string;
     emptyNote?: ReactNode;
     entries: SchedulingCalendarEntry[];
     // (undocumented)
@@ -5230,7 +5592,6 @@ export interface SchedulingCalendarProps {
     labels?: Partial<SchedulingCalendarLabels>;
     legend?: SchedulingLegendItem[];
     legendCaption?: ReactNode;
-    // (undocumented)
     loading?: boolean;
     // (undocumented)
     locale?: string;
@@ -5247,6 +5608,7 @@ export interface SchedulingCalendarProps {
     onSelectDate?: (date: string) => void;
     onSelectEntry?: (entry: SchedulingCalendarEntry) => void;
     onSelectOverlay?: (overlay: SchedulingCalendarOverlay) => void;
+    onSelectSlot?: (slot: SchedulingSlotSelection) => void;
     onShowMore?: (date: string, entries: SchedulingCalendarEntry[]) => void;
     // (undocumented)
     onViewChange?: (view: SchedulingCalendarView) => void;
@@ -5254,7 +5616,16 @@ export interface SchedulingCalendarProps {
     overlays?: SchedulingCalendarOverlay[];
     renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
     renderEntry?: (entry: SchedulingCalendarEntry, context?: TimeGridEntryContext) => ReactNode;
+    resourceLayout?: 'auto' | 'columns' | 'list';
+    resourceListBelow?: number;
+    resources?: SchedulingResource[];
+    resourceSpans?: SchedulingResourceSpan[];
+    selectedSlot?: {
+        resourceId: string;
+        start: string;
+    };
     showHeader?: boolean;
+    slotMinutes?: number;
     spanLaneCap?: number;
     spanLayout?: MonthSpanLayout;
     step?: number;
@@ -5316,6 +5687,42 @@ export type SchedulingOverlayKind = 'maintenance' | 'blackout';
 
 // @public
 export type SchedulingOverlayPattern = 'diagonal' | 'cross' | 'dotted' | 'solid';
+
+// @public
+export interface SchedulingResource {
+    description?: string;
+    // (undocumented)
+    id: string;
+    label: string;
+}
+
+// @public
+export interface SchedulingResourceSpan {
+    accessibleName?: string;
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    label?: string;
+    // (undocumented)
+    resourceId: string;
+    start: string;
+}
+
+// @public
+export interface SchedulingSlotSelection {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    kind: Exclude<SchedulingAvailabilityKind, 'off'>;
+    // (undocumented)
+    resourceId: string;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: string;
+}
 
 // @public
 export type SchedulingStatus = 'tentative' | 'committed' | 'live' | 'done' | 'dead';
@@ -5713,6 +6120,12 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 // @public (undocumented)
 export function selectRangeDate(current: DateRangeValue, date: string): DateRangeValue;
+
+// @public
+export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
+    gap?: number;
+    maxShift?: number;
+}): Map<string, PlacedEdgeLabel>;
 
 // @public
 export function serializeView(v: ViewState): string;
@@ -6200,6 +6613,9 @@ export interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     pinned?: boolean;
 }
+
+// @public
+export const telHref: (phone: string) => string;
 
 // @public (undocumented)
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[];
@@ -6876,6 +7292,7 @@ export interface UixLabels {
     chip?: {
         remove?: string;
     };
+    codeDisplay?: Partial<CodeDisplayLabels>;
     commandPalette?: {
         input?: string;
         resultsOne?: string;
@@ -6886,6 +7303,7 @@ export interface UixLabels {
         compensation?: string;
         typeToConfirmMismatch?: string;
     };
+    contactCard?: Partial<ContactCardLabels>;
     dateFormat?: UixDateFormat;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
@@ -6920,6 +7338,9 @@ export interface UixLabels {
         next?: string;
         close?: string;
     };
+    printLayout?: Partial<PrintLayoutLabels>;
+    qrCode?: Partial<QrCodeLabels>;
+    qrScanner?: Partial<QrScannerLabels>;
     // (undocumented)
     ruleBuilder?: Partial<RuleBuilderLabels>;
     // (undocumented)

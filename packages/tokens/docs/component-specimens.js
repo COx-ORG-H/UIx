@@ -299,6 +299,22 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-composer"
   },
+  "qr-code": {
+    "route": "examples-data-display",
+    "selector": ".uix-qr-code"
+  },
+  "code-display": {
+    "route": "examples-data-display",
+    "selector": ".uix-code-display"
+  },
+  "print-layout": {
+    "route": "examples-prose",
+    "selector": ".uix-print-layout"
+  },
+  "qr-scanner": {
+    "route": "examples-form-controls",
+    "selector": ".uix-qr-scanner"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"

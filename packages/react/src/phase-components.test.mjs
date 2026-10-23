@@ -89,7 +89,8 @@ test('RelationshipGraph pairs its bounded SVG with an equivalent named list', ()
   });
   assert.match(html, /Graph with 2 nodes and 1 relationships/);
   assert.match(html, /aria-label="Accessible relationship list"/);
-  assert.match(html, /Connected to Beta/);
+  // the neighbours are a list of their own, headed "Connected to", outside the button name (HAR-1387)
+  assert.match(html, /<span id="[^"]+">Connected to<\/span><ul aria-labelledby="[^"]+"><li>Beta<\/li><\/ul>/);
 });
 
 const LAYERED_NODES = [
@@ -168,7 +169,7 @@ test('RelationshipGraph radial mode keeps its English defaults and accepts label
     edges: [{ id: 'ab', source: 'a', target: 'b' }],
     labels: { connectedTo: (names) => `Verbunden mit ${names}` },
   });
-  assert.match(html, /Verbunden mit Beta/);
+  assert.match(html, />Verbunden mit<\/span><ul aria-labelledby="[^"]+"><li>Beta</);
   assert.match(html, /aria-label="Pan left">Left</);
 });
 
