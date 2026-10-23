@@ -6,14 +6,17 @@
   /* A value that cannot be edited is plain text on the same line box as its editable neighbours. */
   .uix-inline-edit--readonly { align-items: center; min-height: 28px; }
   /* The value IS the button: it looks like text until it is hovered or focused. The negative
-     inline margin keeps the text on the column it had as plain text. */
+     inline margin keeps the text on the column it had as plain text. It sits on the wrapper, not
+     the button: an inline-flex box sizes itself to its item's width MINUS the item's negative
+     margins, so on the button it squeezed every value by 16 px and wrapped "Amra / Kovač" (HAR-1833). */
+  .uix-inline-edit:has(> .uix-inline-edit__view) { margin-inline: calc(-1 * var(--uix-space-2)); max-width: calc(100% + 2 * var(--uix-space-2)); }
   .uix-inline-edit__view {
     display: inline-flex; align-items: center; gap: var(--uix-space-2); max-width: 100%; min-width: 0; min-height: 28px;
-    margin: 0 calc(-1 * var(--uix-space-2)); padding: var(--uix-space-1) var(--uix-space-2);
+    margin: 0; padding: var(--uix-space-1) var(--uix-space-2);
     border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: inherit; font: inherit; text-align: start; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-inline-edit__view:hover { background: var(--uix-bg-hover); }
+  @media (hover: hover) and (pointer: fine) { .uix-inline-edit__view:hover { background: var(--uix-bg-hover); } }
   .uix-inline-edit__view:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
   .uix-inline-edit__value { min-width: 0; overflow-wrap: anywhere; }
   .uix-inline-edit__placeholder { color: var(--uix-text-muted); }
@@ -26,4 +29,17 @@
   .uix-inline-edit__control > * { width: 100%; }
   .uix-inline-edit__actions { display: inline-flex; flex: none; gap: var(--uix-space-2); }
   .uix-inline-edit__error { flex-basis: 100%; }
+  /* trigger="icon" (HAR-1833): the value stays text; a pencil button after it is named only
+     "Edit {label}". 28 px, the same row height as the value button. */
+  .uix-inline-edit--icon-trigger { align-items: center; gap: var(--uix-space-1); min-height: 28px; }
+  .uix-inline-edit__trigger {
+    display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; padding: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) { .uix-inline-edit__trigger:hover { background: var(--uix-bg-hover); color: var(--uix-text); } }
+  .uix-inline-edit__trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; color: var(--uix-text); }
+  /* readOnlyReason (HAR-1833): why it cannot be edited, quieter, under the value */
+  .uix-inline-edit--reason { flex-direction: column; align-items: flex-start; gap: var(--uix-space-1); }
+  .uix-inline-edit__reason { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
 }

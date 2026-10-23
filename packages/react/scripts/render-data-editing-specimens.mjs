@@ -1,0 +1,296 @@
+// Regenerates packages/tokens/docs/data-editing-specimens.js: the docs specimens for the data,
+// editing and navigation batch (HAR-1380, HAR-1375, HAR-987, HAR-1388 and their siblings), from
+// the BUILT package, so the styleguide shows exactly the markup the components render (the
+// precedent is render-uxc-specimens.mjs; a module of its own, so parallel batches do not
+// rewrite one file).
+//
+//   npm run build -w @tensor_1/react
+//   node packages/react/scripts/render-data-editing-specimens.mjs
+//
+// packages/react/src/data-editing-specimens.test.mjs fails when the committed module differs.
+import { writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { JSDOM } from 'jsdom';
+import { createElement as h, act } from 'react';
+
+const here = dirname(fileURLToPath(import.meta.url));
+export const SPECIMEN_MODULE = join(here, '../../tokens/docs/data-editing-specimens.js');
+
+const GLOBALS = ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'ResizeObserver', 'IntersectionObserver', 'MutationObserver', 'HTMLElement', 'HTMLInputElement', 'HTMLTextAreaElement', 'Node', 'IS_REACT_ACT_ENVIRONMENT'];
+
+const caption = (text) => `<div class="uix-guide__subhead" data-data-editing>${text}</div>`;
+
+/** The specimens each builder adds, by docs route. A builder gets `{ ui, mount, html }`. */
+const BUILDERS = [
+  // ── Segmented link mode (HAR-1380): a language switcher is navigation ─────────────────────
+  ({ ui, mount, html }) => {
+    const short = mount(h(ui.LocaleSwitcher, {
+      label: 'Language', current: 'de',
+      locales: [{ code: 'bs', label: 'BS', href: '#lang-bs' }, { code: 'de', label: 'DE', href: '#lang-de' }, { code: 'en', label: 'EN', href: '#lang-en' }],
+    }));
+    const long = mount(h(ui.Segmented, { selection: 'link', value: 'bs', 'aria-label': 'Jezik' },
+      h(ui.SegmentedOption, { value: 'bs', href: '#jezik-bs', hrefLang: 'bs', lang: 'bs' }, 'Bosanski'),
+      h(ui.SegmentedOption, { value: 'de', href: '#jezik-de', hrefLang: 'de', lang: 'de' }, 'Deutsch'),
+      h(ui.SegmentedOption, { value: 'en', href: '#jezik-en', hrefLang: 'en', lang: 'en' }, 'English')));
+    return {
+      'examples-navigation': [
+        caption('Language switcher (React <code>LocaleSwitcher</code>, <code>Segmented selection="link"</code>) — navigation, not a choice: a named <code>&lt;nav&gt;</code> of links with <code>lang</code> and <code>hreflang</code>, the current language lifted and marked <code>aria-current="page"</code>; Tab visits each link'),
+        '<div data-segmented-link-example class="uix-cluster" style="--gap:24px;align-items:center">',
+        html(short), html(long),
+        '</div>',
+      ].join('\n'),
+    };
+  },
+  // ── DataWorkspace (HAR-1388): toolbar, a selection with the bulk bar, id cells, footer ───────
+  ({ ui, mount, html }) => {
+    const rows = [
+      { id: 'INC-20418', title: 'Printer on the 3rd floor does not print', state: 'Open', priority: 2 },
+      { id: 'INC-20417', title: 'VPN drops every hour', state: 'Pending', priority: 1 },
+      { id: 'INC-20416', title: 'Password reset for accounting', state: 'Resolved', priority: 3 },
+    ];
+    const tone = { Open: 'info', Pending: 'warning', Resolved: 'success' };
+    const workspace = mount(h(ui.DataWorkspace, {
+      label: 'Incidents', rows, getRowId: (r) => r.id,
+      columns: [
+        { id: 'title', header: 'Title', cell: (r) => r.title, sortable: true },
+        { id: 'state', header: 'State', cell: (r) => h(ui.StatusPill, { tone: tone[r.state] }, r.state), sortable: true },
+        { id: 'priority', header: 'Priority', cell: (r) => `P${r.priority}`, align: 'end' },
+      ],
+      idColumn: { header: 'ID', text: (r) => r.id, onPeek() {}, href: (r) => `#incident-${r.id}` },
+      sort: { columnId: 'title', direction: 'ascending' }, onSortChange() {},
+      selection: new Set(['INC-20417']), onSelectionChange() {},
+      bulkActions: () => h(ui.Button, { size: 'sm' }, 'Assign to me'),
+      search: { value: '', onChange() {}, label: 'Search incidents' },
+      filters: { fields: [{ id: 'state', label: 'State', kind: 'enum', options: [{ value: 'open', label: 'Open' }, { value: 'pending', label: 'Pending' }] }, { id: 'created', label: 'Created', kind: 'date-range' }], values: { state: { kind: 'enum', values: ['open', 'pending'] } }, onChange() {} },
+      savedViews: { current: 'My open incidents', menu: { items: [{ id: 'mine', label: 'My open incidents', active: true }], onSelect() {} } },
+      viewChanged: true, onSaveView() {}, onSaveViewAs() {},
+      onMaximizedChange() {},
+      toolbarEnd: h(ui.Button, { size: 'sm', variant: 'primary' }, 'New incident'),
+      pagination: { mode: 'offset', page: 1, pageSize: 25, total: 3, onPageChange() {}, pageSizes: [25, 50, 100], onPageSizeChange() {} },
+    }));
+    return {
+      'examples-data-display': [
+        caption('Data workspace (React <code>DataWorkspace</code>, <code>.uix-data-workspace</code>, HAR-1388, ADR-0005) — the kit\'s table pieces in one order: saved view, Save changes, filter chips and + Filter, search (Ctrl/⌘ + /), View, maximize, the product\'s actions; a selection with the bulk bar, the record-id cell (id → peek, ↗ → record), and the x–y of N footer'),
+        `<div data-data-workspace-example>${html(workspace)}</div>`,
+      ].join('\n'),
+    };
+  },
+  // ── AuditLog (HAR-987): filters, entries with a labelled action, Details, older entries ─────
+  ({ ui, mount, html }) => {
+    const log = mount(h(ui.AuditLog, {
+      // UTC: the specimen must not depend on the time zone of the machine that renders it.
+      now: new Date('2026-10-22T12:00:00Z'), locale: 'en-GB', timeZone: 'UTC',
+      formatExact: (d) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
+      actions: { viewed: { label: 'Opened', tone: 'info' }, edited: { label: 'Changed', tone: 'warning' }, exported: { label: 'Exported', tone: 'danger' } },
+      actors: [{ value: 'u1', label: 'Dr. Amra Kovač' }, { value: 'u2', label: 'Nurse Lejla Hadžić' }],
+      filters: { action: { kind: 'enum', values: ['viewed', 'edited'] } }, onFiltersChange() {},
+      events: [
+        { id: 'e1', actor: 'Dr. Amra Kovač', action: 'viewed', target: 'Patient record 1042', at: '2026-10-22T11:30:00Z' },
+        { id: 'e2', actor: 'Nurse Lejla Hadžić', action: 'edited', target: 'Allergies', at: '2026-10-22T09:05:00Z', detail: 'Fields: allergies. Reason: follow-up visit.' },
+        { id: 'e3', actor: 'Dr. Amra Kovač', action: 'viewed', target: 'Lab result 2026-10-14', at: '2026-10-21T16:40:00Z' },
+      ],
+      hasMore: true, onLoadMore() {},
+    }));
+    return {
+      'examples-crm-itsm': [
+        caption('Audit log (React <code>AuditLog</code>, <code>.uix-audit</code>, HAR-987) — who opened or changed what and when: a labelled action and its target, the relative time with the exact one under it, Details, filters by period, person and action, and Show older entries; a reload keeps the rows'),
+        `<div data-audit-log-example style="max-width:48rem">${html(log)}</div>`,
+      ].join('\n'),
+    };
+  },
+  // ── DiffViewer for people and MatchReview adopt mode (HAR-1369) ─────────────────────────────
+  ({ ui, mount, html }) => {
+    const names = { '$.title': 'Title', '$.authors': 'Authors', '$.year': 'Year of first edition' };
+    const diff = mount(h(ui.DiffViewer, {
+      base: { title: 'Death and the Dervish', authors: ['Meša Selimović'], year: 1966 },
+      current: { title: 'Death and the Dervish', authors: ['Mesa Selimovic'], year: 1966 },
+      incoming: { title: 'Death and the Dervish', authors: ['Meša Selimović'], year: 1967 },
+      labelFor: (path) => names[path],
+      renderValue: (value) => (value === undefined ? undefined : Array.isArray(value) ? value.join(', ') : String(value)),
+      provenance: (_path, side) => ({ current: 'Edited by Ana, 12 Oct 2026', incoming: 'Registry import (DNB), 20 Oct 2026' })[side],
+    }));
+    const match = mount(h(ui.MatchReview, {
+      fieldMode: 'adopt', incoming: { title: 'Death and the Dervish', author: 'Mesa Selimovic', year: 1966, isbn: null }, incomingLabel: 'Catalogue record',
+      fields: [{ id: 'title', label: 'Title' }, { id: 'author', label: 'Author' }, { id: 'year', label: 'Year' }, { id: 'isbn', label: 'ISBN' }],
+      candidates: [{ id: 'dnb-1', confidence: 0.92, record: { title: 'Death and the Dervish', author: 'Meša Selimović', year: 1966, isbn: '978-0-8101-1297-5' } }],
+      candidateLabel: () => 'German National Library',
+      provenance: () => 'Retrieved 22 Oct 2026 over SRU; matched on title and author.',
+      onDecision() {}, onAdopt() {},
+    }));
+    // On the shared workflows route: the diff-viewer and match-review routes are each copied whole
+    // as their reference's markup, so a caption there would leak docs-only classes into it.
+    return {
+      'examples-workflows-pipelines': [
+        caption('Diff viewer for people (React <code>DiffViewer labelFor renderValue provenance</code>, HAR-1369) — entries named instead of JSON paths, values shown as the product shows them, and where each version came from under it'),
+        `<div data-diff-viewer-people-example>${html(diff)}</div>`,
+        caption('Match review, adopt mode (React <code>MatchReview fieldMode="adopt"</code>, HAR-1369) — the record now against a candidate, field by field; a checkbox where they differ, "Same" where not; Adopt takes the chosen fields; where the candidate comes from in a disclosure'),
+        `<div data-match-review-adopt-example>${html(match)}</div>`,
+      ].join('\n'),
+    };
+  },
+  // ── SortableList (HAR-1375): grip, content, Move up / Move down; the ends disabled ───────────
+  ({ ui, mount, html }) => {
+    const steps = [{ id: 'review', title: 'Review the request' }, { id: 'approve', title: 'Get approval' }, { id: 'notify', title: 'Notify the requester' }];
+    const list = mount(h(ui.SortableList, { 'aria-label': 'Approval steps', items: steps, getId: (s) => s.id, getLabel: (s) => s.title, renderItem: (s) => s.title, onReorder() {} }));
+    return {
+      'examples-form-controls': [
+        caption('Sortable list (React <code>SortableList</code>, <code>.uix-sortable</code>, HAR-1375) — drag a row by its grip, or use Move up / Move down, which are always there; Alt+↑ / Alt+↓ move the focused row and a status line says where it went'),
+        `<div data-sortable-list-example style="max-width:32rem">${html(list)}</div>`,
+      ].join('\n'),
+    };
+  },
+  // ── CommandPalette items mode (HAR-1378): grouped, filtered, an active option ────────────────
+  ({ ui, mount, html }) => {
+    const icon = (d) => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d }));
+    const palette = mount(h(ui.CommandPalette, {
+      inputLabel: 'Commands', placeholder: 'Search commands and pages…', query: 're', onQueryChange() {},
+      items: [
+        { id: 'new', label: 'Create incident', group: 'Actions', shortcut: ['Mod', 'I'], icon: icon('M12 5v14M5 12h14') },
+        { id: 'assign', label: 'Assign to me', group: 'Actions', shortcut: ['A'], icon: icon('M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8') },
+        { id: 'reports', label: 'Reports', group: 'Pages', description: 'Monthly reports and exports', href: '#reports' },
+        { id: 'requests', label: 'Service requests', group: 'Pages', description: 'Requests › Open', href: '#requests' },
+        { id: 'resolve', label: 'Resolve incident', group: 'Actions', keywords: ['close'] },
+      ],
+    }));
+    return {
+      'examples-navigation': [
+        caption('Command palette with items (React <code>CommandPalette items</code>, HAR-1378) — the palette filters (case and diacritics folded, best match first), groups, marks the match, and keeps one option active for ↑ / ↓ and Enter through <code>aria-activedescendant</code>; <code>open</code> hosts it in its own dialog'),
+        `<div data-command-palette-items-example>${html(palette)}</div>`,
+      ].join('\n'),
+    };
+  },
+  // ── FilterEditor kinds (HAR-1832): free-text tags, and a date with a condition ───────────────
+  ({ ui, mount, html }) => {
+    const none = () => {};
+    const tags = mount(h(ui.FilterEditor, { field: { id: 'host', label: 'Host', kind: 'tags' }, value: { kind: 'tags', values: ['db-prod-eu-central-01', 'web-01'] }, onValueChange: none, onApply: none, onClear: none }));
+    const date = mount(h(ui.FilterEditor, { field: { id: 'created', label: 'Created', kind: 'date' }, value: { kind: 'date', operator: 'before', from: '2026-10-05' }, onValueChange: none, onApply: none, onClear: none }));
+    return {
+      'examples-data-display': [
+        caption('Filter editor: tags and dates (React <code>FilterEditor</code>, HAR-1832) — free-text values typed as tags (Enter or a comma adds one, × or Backspace removes it); a date with on / before / after / between, kept as chosen when a saved view comes back; Enter applies from any field'),
+        '<div data-filter-editor-kinds-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+        html(tags), html(date),
+        '</div>',
+      ].join('\n'),
+    };
+  },
+  // ── InlineEdit as a record field (HAR-1833): an object value, an icon trigger, a read-only
+  //    reason, and a failed save with Try again ─────────────────────────────────────────────
+  ({ ui, mount, html, window }) => {
+    const failing = mount(h(ui.InlineEdit, {
+      label: 'Title', value: 'Printer offline',
+      onSave: () => Promise.reject(new Error('The server did not answer in time.')),
+      renderError: (_error, { message, retry }) => h('span', { className: 'uix-cluster', style: { alignItems: 'center' } },
+        h('span', null, message), h(ui.Button, { size: 'sm', variant: 'link', onClick: retry }, 'Try again')),
+    }));
+    // Open the editor, type, and fail the save, so the page shows the error state.
+    act(() => failing.querySelector('button.uix-inline-edit__view').dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+    const input = failing.querySelector('input');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, 'Printer offline on the 3rd floor');
+      input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    return {
+      deferred: async () => {
+        await act(async () => {
+          input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          for (let i = 0; i < 5; i += 1) await Promise.resolve();
+        });
+        const row = (term, field) => h(ui.DescriptionItem, { term }, field);
+        const record = mount(h(ui.DescriptionList, null,
+          row('Owner', h(ui.InlineEdit, { label: 'Owner', value: { id: 'u2', name: 'Jonas Weber' }, renderView: (v) => v.name, equals: (a, b) => a?.id === b?.id, commit: 'change', onSave() {} })),
+          row('Ticket', h(ui.InlineEdit, { label: 'Ticket', value: 'INC-20417', trigger: 'icon', renderView: (v) => h('a', { className: 'uix-link', href: '#inline-edit-ticket' }, v), onSave() {} })),
+          row('Source', h(ui.InlineEdit, { label: 'Source', value: 'Imported from ServiceNow', readOnlyReason: 'Set by the integration.', onSave() {} })),
+          row('Title', h('span', { 'data-failing': '' }))));
+        const markup = html(record).replace('<span data-failing=""></span>', html(failing));
+        return {
+          'examples-form-controls': [
+            caption('Inline edit as a record field (React <code>InlineEdit</code>, HAR-1833) — an object value shown by <code>renderView</code>; <code>trigger="icon"</code> when the value is itself a link, the pencil named only "Edit Ticket"; a <code>readOnlyReason</code> instead of an edit control; a failed save keeps the draft, with Try again from <code>renderError</code>'),
+            `<div data-inline-edit-record-example style="max-width:40rem">${markup}</div>`,
+          ].join('\n'),
+        };
+      },
+    };
+  },
+];
+
+/**
+ * Render every specimen. Returns `{ [route]: html }`. Installs a jsdom for the duration and
+ * removes it again, so a test that imports this can own its own globals.
+ */
+export async function renderDataEditingSpecimens() {
+  const saved = new Map(GLOBALS.map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true, url: 'http://localhost/' });
+  const { window } = dom;
+  const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
+  expose('window', window);
+  expose('document', window.document);
+  expose('navigator', window.navigator);
+  expose('getComputedStyle', window.getComputedStyle.bind(window));
+  expose('requestAnimationFrame', window.requestAnimationFrame.bind(window));
+  expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
+  expose('MutationObserver', window.MutationObserver);
+  expose('HTMLElement', window.HTMLElement);
+  expose('HTMLInputElement', window.HTMLInputElement);
+  expose('HTMLTextAreaElement', window.HTMLTextAreaElement);
+  expose('Node', window.Node);
+  expose('IS_REACT_ACT_ENVIRONMENT', true);
+  const dialog = window.HTMLDialogElement.prototype;
+  dialog.showModal = function showModal() { this.setAttribute('open', ''); };
+  dialog.close = function close() { this.removeAttribute('open'); };
+
+  try {
+    const { createRoot } = await import('react-dom/client');
+    const ui = await import(pathToFileURL(join(here, '../dist/index.js')).href);
+    const roots = [];
+    const mount = (element) => {
+      const host = window.document.createElement('div');
+      window.document.body.append(host);
+      const root = createRoot(host);
+      act(() => root.render(element));
+      roots.push({ root, host });
+      return host;
+    };
+    // React's generated ids differ between versions; the page gets stable ones.
+    let nextId = 0;
+    const ids = new Map();
+    const stable = (markup) => markup.replace(/(:r[0-9a-z]+:|«r[0-9a-z]+»|_r_[0-9a-z]+_)/g, (id) => {
+      if (!ids.has(id)) { nextId += 1; ids.set(id, `dex-${nextId}`); }
+      return ids.get(id);
+    });
+    const html = (el) => stable(el.innerHTML);
+
+    const byRoute = {};
+    for (const build of BUILDERS) {
+      let blocks = build({ ui, mount, html, window });
+      // A builder that has to wait (a save that fails) returns `deferred`.
+      if (typeof blocks.deferred === 'function') blocks = await blocks.deferred();
+      for (const [route, markup] of Object.entries(blocks)) {
+        byRoute[route] = byRoute[route] ? `${byRoute[route]}\n${markup}` : markup;
+      }
+    }
+    for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
+    return Object.fromEntries(Object.entries(byRoute).sort(([a], [b]) => a.localeCompare(b)));
+  } finally {
+    dom.window.close();
+    for (const [name, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete globalThis[name];
+    }
+  }
+}
+
+/** The module text for a set of specimens: what the docs import. */
+export const dataEditingSpecimenModule = (specimens) => `/* GENERATED by packages/react/scripts/render-data-editing-specimens.mjs — do not edit by hand.
+ * The docs specimens for the data, editing and navigation batch: the markup the built React
+ * components render, in the states named in each caption. showcase-data.js appends each block
+ * to its route. packages/react/src/data-editing-specimens.test.mjs fails when this file and the
+ * components differ. */
+export const DATA_EDITING_SPECIMENS = ${JSON.stringify(specimens, null, 2)};
+`;
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  writeFileSync(SPECIMEN_MODULE, dataEditingSpecimenModule(await renderDataEditingSpecimens()));
+  console.log(`wrote ${SPECIMEN_MODULE}`);
+}

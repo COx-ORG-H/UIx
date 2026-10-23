@@ -1,0 +1,6 @@
+---
+"@tensor_1/react": minor
+"@tensor_1/tokens": minor
+---
+
+**`AuditLog`** (HAR-987; MEDx S50 "Historija pristupa", POSx PRT-01 / INT-01): who opened or changed which record, and when. An ordered list of `events` (`actor`, `action` from your labelled `actions` with a pill tone, `target`, `at`, optional `detail` behind a Details disclosure), each with the relative time and the exact one under it (`formatExact` where the browser lacks the locale's data: Chromium has none for `bs`). With `filters` / `onFiltersChange`, a filter bar of kit chips over `FilterEditor`: period (date range), person (`actors`) and action, a × on a set filter, Clear filters. `hasMore` / `onLoadMore` / `loadingMore` for keyset "Show older entries" (focus stays, the count is announced). `status` `loading` (skeleton rows, first load only), `error` (with `onRetry`), `forbidden`; empty and filtered-empty states. `refreshing` keeps the rows on show in a `BusyRegion` while the filters reload. Presentational: the product fetches, owns the audit semantics, and passes rows free of health data. All words from `labels` or `UixLabelsProvider` `auditLog`. `.uix-audit` gains the React parts (`.uix-audit-log*`); on a phone a row stacks.

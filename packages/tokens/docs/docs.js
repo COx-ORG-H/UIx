@@ -105,9 +105,9 @@ const NAV_ITEMS = [
 ];
 
 export const COMPONENT_GROUPS = {
-  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'QR scanner', 'Form'],
+  'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Change highlight', 'Count'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
@@ -154,6 +154,8 @@ export const REACT_COMPONENT_SLUGS = [
   'textarea', 'timeline', 'toast', 'toggle-row', 'tooltip', 'info-tip', 'tree', 'rich-text', 'markdown', 'reactions',
   'save-status', 'busy-region', 'change-highlight', 'count', 'copy-button', 'menu', 'steps', 'kbd', 'icon', 'scheduling-timeline', 'file-upload', 'text-diff',
   'dashboard-grid', 'dashboard-canvas', 'heartbeat', 'inline-edit', 'date-picker', 'insight-card', 'org-chart', 'combobox', 'tag-input',
+  // the data, editing and navigation batch (HAR-1375, HAR-1826)
+  'sortable-list', 'lightbox', 'audit-log', 'data-workspace',
   'qr-code', 'code-display', 'contact-card', 'print-layout', 'qr-scanner',
 ];
 

@@ -97,6 +97,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-metrics",
     "selector": ".uix-metric-input"
   },
+  "sortable-list": {
+    "route": "examples-form-controls",
+    "selector": ".uix-sortable",
+    "container": "[data-sortable-list-example]"
+  },
   "form": {
     "route": "examples-form-controls",
     "selector": ".uix-form-grid"
@@ -442,6 +447,11 @@ export const COMPONENT_SPECIMENS = {
   "utility-bits": {
     "route": "examples-utility",
     "selector": ".uix-code"
+  },
+  "data-workspace": {
+    "route": "examples-data-display",
+    "selector": ".uix-data-workspace",
+    "container": "[data-data-workspace-example]"
   },
   "view-menu": {
     "route": "examples-workspace",

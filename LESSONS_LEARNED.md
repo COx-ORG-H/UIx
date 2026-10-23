@@ -2,6 +2,21 @@
 
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
 <!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
+<!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
+<!-- lesson-skip: 5cc12fc routine: a table cell's width is a preference, a squeezed table shrank the checkbox column under the frozen id's offset; found by looking at the 390 px shot, pinned by a spec -->
+<!-- lesson-skip: 0bb7303 routine: NFD leaves stroked letters (đ ø ł ı) whole; the reviewer named them, a fold test now lists each -->
+<!-- lesson-skip: 93d034a routine: a cmdk option marked only by background vanished in forced colours; same family as the existing forced-colours entries, pinned by a spec -->
+<!-- lesson-skip: 1fe9677 routine: a backdrop click closed on a press that began inside; pointerdown and click must both land on the backdrop, pinned by jsdom tests -->
+<!-- lesson-skip: 7249cfd routine review fixes (draft order kept after a refused reorder, pointercancel as a drop, no Escape cancel); each pinned by a jsdom test -->
+<!-- lesson-skip: 9e70b73 same cause as the "a region inserted with text announces nothing" family: the live region unmounted with the actions row; pinned by a same-node test -->
+<!-- lesson-skip: 439821c routine review fixes (own 300 ms timer instead of useDelayedPending, reversed range, body not keyed by field); each pinned by a jsdom test -->
+<!-- lesson-skip: 7471b8d routine review fixes (empty state picked during a refetch, Escape layering, frozen id, chip ids, load-more error); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 6d69ac9 routine: a dim value measured below 4.5:1 by the reviewer; measured again and pinned by a CSS contract test -->
+<!-- lesson-skip: 652af34 routine: sm padding leaked onto the link variant; pinned by a CSS contract test -->
+<!-- lesson-skip: f6eec1c routine: link mode dropped disabled and fell back to href="#"; pinned by jsdom tests -->
+<!-- lesson-skip: 7cd7c55 routine: the contract gate named two raw px values in this batch's own fixes; the gate worked -->
+<!-- lesson-skip: f05d14b same cause as "An a11y scan only sees the states a specimen renders at load" (recorded); a new specimen showed the state -->
+<!-- lesson-skip: f23b7d6 routine: a runtime-only token in one declaration; test:tokens (UIX-03) names it -->
 <!-- lesson-skip: 8240ba4 already recorded: StrictMode runs updaters and cleanups twice (3e0ff88 entry); pinned by the StrictMode jsdom test -->
 <!-- lesson-skip: 7728f4e routine: a JSX comment between elements read as a text node by literal-a11y-text; the gate named the file and line -->
 <!-- lesson-skip: a797ad7 routine: native selects swapped for the kit Select; the static + runtime gates landed in the same commit -->
@@ -70,6 +85,18 @@
 - **Rule:** a live region portalled to `document.body` is never announced while a modal `<dialog>` is open: `showModal()` makes everything outside the dialog inert. Portal status text to `el.closest('dialog') ?? document.body` (ButtonFeedback, `announcePolite(text, from)`, ShortcutHint all do).  **Why:** the button's result region worked on a page and was silent in a Drawer footer, the main use; only a reviewer reading ShortcutHint's comment knew.
 - **Gate:** `feedback-pending-dom.test.mjs` (result inside a `<dialog>` speaks from the dialog) and `feedback-kit.spec.mjs` (Modal save announces inside the open dialog).  **Tag:** a11y, portal, dialog, generalizable
 
+### 2026-10-23 · a blur that says nowhere · `66d6dd3`
+- **Rule:** never read a blur with `relatedTarget === null` as "focus left". Safari (and Firefox on macOS) do not focus a clicked button, so pressing Cancel blurs the field with no `relatedTarget` before the click runs: a save-on-blur saved the draft the person was cancelling. Track a pointer press inside the editor (pointerdown capture, released after the click), keep focus with `onMouseDown={e => e.preventDefault()}` on the editor's own buttons, and when `relatedTarget` is null wait one task and save only if focus is really outside and the editor is still open.
+- **Gate:** "1: Cancel clicked where the browser blurs with no relatedTarget …" in `packages/react/src/inline-edit-review-dom.test.mjs` dispatches pointerdown, a focusout with `relatedTarget: null`, then the click, and failed before the fix.  **Tag:** cross-browser, focus, forms
+
+### 2026-10-23 · a generated file with a time in it · `8d6b668`
+- **Rule:** a generated, committed file that renders a date or time (a docs specimen, a snapshot) must pin its time zone (and its `now`), and its freshness test must also render under a far-away `TZ` and compare. Otherwise it is the author's zone that is committed, and CI (UTC) regenerates something else.  **Why:** the AuditLog specimen rendered `RelativeTime` and an exact time in the local zone: identical on the author's machine, a failed `gates` job on the first push of PR #168. A fixed `now` was not enough; the zone was the other half.
+- **Gate:** `packages/react/src/data-editing-specimens.test.mjs` renders the specimens with `process.env.TZ = 'Pacific/Kiritimati'` and compares them with the committed module (red with the UTC pin removed).  **Tag:** false-green, generated-files, time-zone, generalizable
+
+### 2026-10-23 · a stylesheet no bundle reads · `feat/batch-3-data-editing`
+- **Rule:** a new component stylesheet is not shipped until `styles/component-list.css` imports it; check the BUILT bundle for the block class (`grep -c uix-x build/css/styles.css`), and screenshot the component from a harness that links the bundle, before calling it styled.  **Why:** `inline-edit.css` (HAR-1381) was written, size-tracked by `test:size:css` and scanned by `test:contract`, all of which read the file itself, and never added to the list. `InlineEdit` rendered as bare browser buttons in every product for two weeks; its jsdom and Playwright tests checked names, focus and saves, not looks. HAR-1833's first screenshot showed it.
+- **Gate:** `packages/tokens/tests/component-list.test.mjs` fails when a `styles/components/*.css` is missing from the list (seen red with the line removed); `tests/a11y/inline-edit-record.spec.mjs` asserts the computed look of the value button.  **Tag:** false-green, css, packaging, generalizable
+- **Rule:** never give the only item of an `inline-flex` box a negative inline margin to pull it back onto a column: the box's shrink-to-fit width is the item's width minus that margin, so the item wraps its text early ("Amra / Kovač" in a 900 px column). Put the negative margin on the box.
 ### 2026-10-23 · an input's type change moves the caret later · `2a0c5b5`
 - **Rule:** after changing an input's `type` (a password reveal), put the selection back in a layout effect *after forcing a style update* (`void input.offsetWidth`). Chrome resets the caret to 0 when it rebuilds the field for the new type at the next style update, not when the attribute changes: a `setSelectionRange` straight after the commit reads fine and is then undone. Do not restore again after a frame: a key pressed in between is moved too.  **Why:** `PasswordInput` turned End, X, toggle, Y into "Ycorrect horse batteryX". A MutationObserver saw `selectionStart` 22 right after the change and a `selectionchange` to 0 later; a frame-delayed restore fixed that test and broke Home, →, toggle, Z.
 - **Gate:** "B1: typing goes on at the caret after the toggle" in `tests/a11y/form-fields.spec.mjs` types after toggling both ways (stable over 4 repeats). Found by the independent review of #167. Model: Opus 5.5.  **Tag:** browser-quirk, focus, test-double-fidelity, generalizable

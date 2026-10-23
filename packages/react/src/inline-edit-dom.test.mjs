@@ -147,7 +147,16 @@ test('a promise from onSave: busy while it runs, then closed; a rejection keeps 
   click(t.button('Save'));
   const group = t.host.querySelector('.uix-inline-edit__editor');
   assert.equal(group.getAttribute('aria-busy'), 'true');
-  assert.equal(t.input().disabled, true);
+  // Busy at once, but nothing greys out or spins for the first 300 ms (HAR-1833): a fast save never flashes.
+  assert.equal(t.input().readOnly, false);
+  assert.equal(t.input().disabled, false);
+  assert.equal(t.button('Cancel').disabled, false);
+  assert.equal(t.button('Save').querySelector('[data-uix-btn-busy]'), null, 'no spinner yet (the Button waits 300 ms)');
+  assert.equal(t.status(), '');
+  type(t.input(), 'Typed while saving');
+  assert.equal(t.input().value, 'Draft one', 'typing during the save is ignored');
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 320)); });
+  assert.equal(t.input().readOnly, true);
   assert.equal(t.button('Cancel').disabled, true);
   assert.equal(t.status(), 'Saving…');
   key(t.input(), 'Escape');
@@ -161,7 +170,7 @@ test('a promise from onSave: busy while it runs, then closed; a rejection keeps 
   assert.equal(t.input().getAttribute('aria-describedby'), error.id);
   assert.equal(t.input().getAttribute('aria-invalid'), 'true');
   assert.equal(t.input().value, 'Draft one', 'the draft is kept');
-  assert.equal(t.input().disabled, false);
+  assert.equal(t.input().readOnly, false);
   assert.equal(document.activeElement, t.input(), 'focus is on the field again');
 
   click(t.button('Save'));
@@ -225,7 +234,7 @@ test('renderEditor: a custom control gets the draft, the field wiring, save and 
   const select = t.host.querySelector('select');
   assert.equal(select.getAttribute('aria-label'), 'Priority');
   assert.equal(document.activeElement, select, 'focus goes to the custom control');
-  assert.equal(seen[0], 'aria-describedby,aria-invalid,aria-label,disabled,id');
+  assert.equal(seen[0], 'aria-describedby,aria-invalid,aria-label,disabled,id,readOnly');
   act(() => { select.value = 'p1'; select.dispatchEvent(new window.Event('change', { bubbles: true })); });
   click(t.button('Save'));
   assert.deepEqual(t.saved, ['p1']);
@@ -271,10 +280,10 @@ test('under StrictMode a promise from onSave still settles', async () => {
   const input = () => host.querySelector('.uix-inline-edit__editor input');
   type(input(), 'Checkout latency');
   key(input(), 'Enter');
-  assert.equal(input().disabled, true, 'busy while the save runs');
+  assert.equal(host.querySelector('.uix-inline-edit__editor').getAttribute('aria-busy'), 'true', 'busy while the save runs');
   await act(async () => { reject(new Error('That title is taken.')); await Promise.resolve(); });
   await flush();
-  assert.equal(input().disabled, false, 'the editor is usable again');
+  assert.equal(host.querySelector('.uix-inline-edit__editor').hasAttribute('aria-busy'), false, 'the editor is usable again');
   assert.equal(host.querySelector('[role="alert"]').textContent, 'That title is taken.');
   assert.equal(input().value, 'Checkout latency', 'the draft is kept');
   act(() => root.unmount());
