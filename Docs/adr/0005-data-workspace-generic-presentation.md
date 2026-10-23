@@ -1,4 +1,4 @@
-# ADR-0004: DataWorkspace, the generic presentation half of the products' data tables
+# ADR-0005: DataWorkspace, the generic presentation half of the products' data tables
 
 **Status:** Accepted
 

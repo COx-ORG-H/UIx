@@ -1,4 +1,4 @@
-/* HAR-1388 (UIx ADR-0004; TENSOR data-table, MOTUS UixDataWorkspace) — DataWorkspace in jsdom: the
+/* HAR-1388 (UIx ADR-0005; TENSOR data-table, MOTUS UixDataWorkspace) — DataWorkspace in jsdom: the
  * toolbar order, Ctrl/⌘ + / to the search, filter chips and "+ Filter" over FilterEditor, sorting
  * through the headers, selection kept by id with Shift-click ranges and select-all, the bulk bar,
  * the record-id cell (peek and ↗), the frozen row-actions column, the footer (x–y of N, rows per

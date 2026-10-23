@@ -6,6 +6,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
+import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { Spinner } from './Spinner.js';
 
 /** One result row. */
@@ -39,8 +40,19 @@ export interface SearchSuggestProps
   onValueChange: (value: string) => void;
   /** The suggestions to show, best first. The consumer filters; this component only renders. */
   options: readonly SearchSuggestOption[];
-  /** Called when a row is chosen by click or Enter. The list closes afterwards. */
-  onSelect: (id: string, option: SearchSuggestOption) => void;
+  /**
+   * Called when a row is chosen by click or Enter. The list closes afterwards. Optional with
+   * `freeText`, where choosing a row also puts its title in the field.
+   */
+  onSelect?: (id: string, option: SearchSuggestOption) => void;
+  /**
+   * A text field with suggestions, not a search (HAR-2465): the value is the text. Enter keeps
+   * what was typed and never submits the surrounding form; no row is picked unless the person
+   * moves to it (ArrowDown / ArrowUp, then Enter) or clicks it, and then its title replaces the
+   * text (`onValueChange`) without submitting either. Blur, Tab and Escape keep the text; while
+   * `loading`, Enter does nothing. No magnifier is drawn.
+   */
+  freeText?: boolean;
   /** Accessible name of the field (there is no visible label; the placeholder is not a label). */
   label: string;
   placeholder?: string;
@@ -99,6 +111,15 @@ export interface SearchSuggestProps
   inputId?: string;
   /** `aria-describedby` of the input (hint and error text from a `Field`). */
   inputDescribedBy?: string;
+  /**
+   * Ids of the visible label(s) that name the input (HAR-1834). With them, or with a
+   * `<label for={inputId}>`, the input gets no `aria-label`, so the visible label is its name.
+   */
+  inputLabelledBy?: string;
+  /** The field cannot be typed in and the list never opens (HAR-1834). */
+  disabled?: boolean;
+  /** Marks the input `aria-invalid` (an empty required field with an error, HAR-1834). */
+  invalid?: boolean;
 }
 
 const SearchIcon = () => (
@@ -143,6 +164,7 @@ export function SearchSuggest({
   onValueChange,
   options,
   onSelect,
+  freeText = false,
   label,
   placeholder,
   highlight,
@@ -167,6 +189,9 @@ export function SearchSuggest({
   name,
   inputId,
   inputDescribedBy,
+  inputLabelledBy,
+  disabled = false,
+  invalid = false,
   className,
   onBlur,
   ...props
@@ -188,6 +213,12 @@ export function SearchSuggest({
   };
   const [focused, setFocused] = useState(false);
   const [activeState, setActive] = useState(-1);
+  // The spinner (and the list's loading row) wait 300 ms and then stay 500 ms (the kit's delayed
+  // pending); aria-busy and the Enter guard follow `loading` at once.
+  const showSpinner = useDelayedPending(loading) && !disabled;
+  // A <label for> names the input: then no aria-label overrides it (HAR-1834).
+  const [labelled, setLabelled] = useState(false);
+  useEffect(() => { setLabelled((fieldRef.current?.labels?.length ?? 0) > 0); });
 
   const itemCount = options.length + (footer ? 1 : 0);
   // Clamp during render: when options shrink without a keystroke (a fetch resolving), the stale
@@ -197,10 +228,19 @@ export function SearchSuggest({
   useEffect(() => setActive(-1), [optionKey]);
 
   const hasText = value.trim().length > 0;
-  const showEmpty = hasText && !loading && !error && options.length === 0 && empty != null;
-  const showLoading = loading && options.length === 0;
+  // The loading row shows only while a search runs AND the delayed spinner is up.
+  const showLoading = showSpinner && loading && options.length === 0;
+  // What the list said when the last search settled (no match, or the error). While the next search
+  // runs and before its spinner shows, the list keeps saying it, so it neither collapses nor
+  // flashes "no match" for a search that has not answered yet.
+  const current = { empty: hasText && error == null && empty != null, error: error ?? null };
+  const settled = useRef<{ empty: boolean; error: ReactNode }>({ empty: false, error: null });
+  useEffect(() => { if (!loading) settled.current = current; });
+  const state = options.length > 0 || showLoading ? null : loading ? settled.current : current;
+  const shownError = state?.error ?? null;
+  const showEmpty = !!state?.empty && shownError == null;
   const showIdle = idle != null && itemCount === 0 && !loading && error == null && !showEmpty;
-  const visible = open && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
+  const visible = open && !disabled && (itemCount > 0 || showLoading || showEmpty || showIdle || shownError != null);
   const optionId = (index: number) => `${id}-option-${index}`;
 
   useEffect(() => {
@@ -211,8 +251,11 @@ export function SearchSuggest({
 
   const choose = (index: number) => {
     const option = options[index];
-    if (option) onSelect(option.id, option);
-    else if (footer && index === options.length) footer.onSelect();
+    if (option) {
+      // free text: the row's title becomes the value
+      if (freeText && option.title !== value) onValueChange(option.title);
+      onSelect?.(option.id, option);
+    } else if (footer && index === options.length) footer.onSelect();
     else return;
     setOpen(false);
     setActive(-1);
@@ -248,7 +291,17 @@ export function SearchSuggest({
         }
         return;
       case 'Enter':
+        // While a search runs the rows are the last answer's: in the search mode Enter neither picks
+        // one (not even the active one) nor submits.
+        if (loading && !freeText) { event.preventDefault(); return; }
         if (visible && active >= 0) { event.preventDefault(); choose(active); return; }
+        if (freeText) {
+          // The text is the value: Enter keeps it, closes the list and never submits the form,
+          // also while suggestions load.
+          event.preventDefault();
+          if (open) setOpen(false);
+          return;
+        }
         // Only a row the user can see: after Escape closed the list, Enter must not act on it.
         if (visible && hasText && options.length) { event.preventDefault(); choose(0); }
         return;
@@ -258,7 +311,8 @@ export function SearchSuggest({
           event.stopPropagation();
           setOpen(false);
           setActive(-1);
-        } else if (value) {
+        } else if (value && !freeText) {
+          // A search clears on the second Escape; free text is a value and stays.
           event.preventDefault();
           event.stopPropagation();
           onValueChange('');
@@ -303,13 +357,13 @@ export function SearchSuggest({
   return (
     <div
       ref={rootRef}
-      className={cx('uix-search-suggest', size === 'lg' && 'uix-search-suggest--lg', className)}
+      className={cx('uix-search-suggest', size === 'lg' && 'uix-search-suggest--lg', freeText && 'uix-search-suggest--free-text', className)}
       data-open={visible || undefined}
       onBlur={handleBlur}
       {...props}
     >
       <div ref={fieldBoxRef} className="uix-search-suggest__field">
-        <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>
+        {!freeText && <span className="uix-search-suggest__lead" aria-hidden="true"><SearchIcon /></span>}
         <input
           ref={fieldRef}
           id={inputId}
@@ -317,7 +371,10 @@ export function SearchSuggest({
           className="uix-input uix-search-suggest__input"
           type="text"
           role="combobox"
-          aria-label={label}
+          aria-label={inputLabelledBy || labelled ? undefined : label}
+          aria-labelledby={inputLabelledBy}
+          aria-invalid={invalid || undefined}
+          disabled={disabled}
           aria-autocomplete="list"
           aria-expanded={visible}
           aria-controls={listboxId}
@@ -325,7 +382,7 @@ export function SearchSuggest({
           aria-busy={loading || undefined}
           autoComplete="off"
           spellCheck={false}
-          enterKeyHint="search"
+          enterKeyHint={freeText ? 'done' : 'search'}
           name={name}
           value={value}
           placeholder={placeholder}
@@ -340,13 +397,13 @@ export function SearchSuggest({
           onKeyDown={handleKeyDown}
         />
         <span className="uix-search-suggest__trail">
-          {loading && <Spinner className="uix-search-suggest__spinner" label={loadingLabel} />}
-          {!loading && value && (
+          {showSpinner && <Spinner className="uix-search-suggest__spinner" label={loadingLabel} />}
+          {!showSpinner && value && !disabled && (
             <button type="button" className="uix-search-suggest__clear" aria-label={clearLabel} onMouseDown={keepFocus} onClick={clear}>
               <ClearIcon />
             </button>
           )}
-          {!loading && !value && !focused && shortcutHint && <kbd className="uix-kbd" aria-hidden="true">{shortcutHint}</kbd>}
+          {!showSpinner && !value && !focused && shortcutHint && <kbd className="uix-kbd" aria-hidden="true">{shortcutHint}</kbd>}
         </span>
       </div>
 
@@ -427,7 +484,7 @@ export function SearchSuggest({
             {loadingLabel && <span>{loadingLabel}</span>}
           </div>
         )}
-        {error != null && options.length === 0 && !loading && <div className="uix-search-suggest__state">{error}</div>}
+        {shownError != null && <div className="uix-search-suggest__state">{shownError}</div>}
         {showEmpty && <div className="uix-search-suggest__state">{empty}</div>}
         {showIdle && <div className="uix-search-suggest__state">{idle}</div>}
         {note != null && options.length > 0 && <div className="uix-search-suggest__note">{note}</div>}

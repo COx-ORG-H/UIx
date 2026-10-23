@@ -1,5 +1,5 @@
 /* uix data workspace — the generic presentation half of a product's data table (React
-   `DataWorkspace`, HAR-1388, ADR-0004): toolbar · bulk bar · table · footer, composed from
+   `DataWorkspace`, HAR-1388, ADR-0005): toolbar · bulk bar · table · footer, composed from
    .uix-toolbar, .uix-chip, .uix-searchbar, .uix-bulkbar, .uix-table and .uix-pagination.
    Depends only on --uix-* tokens. */
 @layer uix.components {

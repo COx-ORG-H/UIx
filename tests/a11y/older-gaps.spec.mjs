@@ -43,7 +43,7 @@ test.describe('DatePicker: a typed date field with a calendar popover', () => {
     await open(page, testInfo);
     await page.locator('#before-dates').focus();
     const stops = [];
-    // A native time input is several stops (hours, minutes): consecutive repeats count once.
+    // Consecutive repeats count once (a native time input used to be several stops).
     for (let i = 0; i < 12 && stops.at(-1) !== 'after-dates'; i += 1) {
       await page.keyboard.press('Tab');
       const stop = await page.evaluate(() => {
@@ -54,7 +54,7 @@ test.describe('DatePicker: a typed date field with a calendar popover', () => {
     }
     expect(stops).toEqual([
       'Due date', 'Change date, Mittwoch, 18. November 2026',
-      'Starts', 'Change date, Sonntag, 22. November 2026', 'Starts, time',
+      'Starts', 'Change date, Sonntag, 22. November 2026', 'Starts, time', 'Change time, 14:30',
       'Period', 'after-dates',
     ]);
   });
@@ -184,13 +184,16 @@ test.describe('DateTimePicker and DateRangePicker mode="field"', () => {
   test('the time keeps its date, and the zone of that day is shown and described', async ({ page }, testInfo) => {
     await open(page, testInfo);
     const group = page.locator('#dates .uix-date-time-picker');
-    const time = group.locator('input[type="time"]');
+    // the time is a TimePicker (HAR-1835), no native type="time"
+    await expect(group.locator('input[type="time"]')).toHaveCount(0);
+    const time = group.locator('input.uix-time-picker__input');
     await expect(time).toHaveValue('14:30');
     await expect(time).toHaveAccessibleName('Starts, time');
     await expect(time).toHaveAccessibleDescription(/^Time zone: (MEZ|GMT\+1)$/);
     await expect(group.locator('.uix-date-time-picker__zone [aria-hidden="true"]')).toHaveText(/^(MEZ|GMT\+1)$/);
     await time.fill('09:15');
-    expect((await state(page)).starts).toBe('2026-11-22T09:15');
+    await page.keyboard.press('Enter');
+    await expect.poll(async () => (await state(page)).starts).toBe('2026-11-22T09:15');
     const date = group.getByRole('textbox', { name: 'Starts', exact: true });
     await date.fill('1.7.2026');
     await page.keyboard.press('Tab');

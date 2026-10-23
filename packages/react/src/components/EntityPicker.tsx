@@ -30,6 +30,11 @@ export interface EntityPickerLabels {
   more: string;
   /** Polite count when there are more matches than shown. `{count}` is the number shown. */
   resultsMore: string;
+  /**
+   * Shown, with no Retry, when the search failed for good (HAR-1834): `onSearch` rejected with
+   * `{ retryable: false }` (and no `message`), or `isRetryable` said no. E.g. no permission.
+   */
+  forbidden: string;
   /** Shown in the open list while the query is shorter than `minQueryLength`. `{count}`. */
   tooShort: string;
   /** The same when `minQueryLength` is 1. */
@@ -50,7 +55,15 @@ export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels = {
   resultsMore: '{count} results shown, more match. Keep typing to narrow the search.',
   tooShort: 'Type at least {count} characters.',
   typeToSearch: 'Type to search.',
+  forbidden: 'You do not have access to search these records.',
 };
+
+/** What `onSearch` may reject with when trying again cannot help (HAR-1834). */
+export interface EntityPickerSearchError {
+  retryable: false;
+  /** Shown instead of the `forbidden` words. */
+  message?: string;
+}
 
 /** What `onSearch` may resolve to when it knows its list was cut off. */
 export interface EntityPickerSearchResult {
@@ -66,9 +79,15 @@ export interface EntityPickerProps {
   /**
    * Finds records for the query; a rejection shows the error state with a Retry row. Resolve
    * with the options, or with `{ options, hasMore: true }` when the list was cut off (a page of
-   * 20 out of many): the list then says that more match.
+   * 20 out of many): the list then says that more match. Reject with
+   * `{ retryable: false, message? }` (an {@link EntityPickerSearchError}) when trying again
+   * cannot help, e.g. no permission: the error shows without Retry.
    */
   onSearch: (query: string) => Promise<readonly SearchSuggestOption[] | EntityPickerSearchResult>;
+  /** Decide from the rejection whether Retry is offered. Default: not for `{ retryable: false }`. */
+  isRetryable?: (error: unknown) => boolean;
+  /** Ids of the visible label that names the search field (instead of `label`). */
+  'aria-labelledby'?: string;
   /** The field's name (the visible label usually comes from a surrounding `Field`). */
   label: string;
   /** Id of the control, for `Field htmlFor`/`label for`. */
@@ -101,8 +120,8 @@ export interface EntityPickerProps {
  * states, and Retry is a list row, so the keyboard reaches it. Stale results are ignored.
  */
 export function EntityPicker({
-  value, onValueChange, onSearch, label, id, name, placeholder, minQueryLength = 0, delay = 250, disabled, invalid,
-  'aria-describedby': describedBy, renderValue, labels: labelOverrides, className,
+  value, onValueChange, onSearch, isRetryable, label, id, name, placeholder, minQueryLength = 0, delay = 250, disabled, invalid,
+  'aria-describedby': describedBy, 'aria-labelledby': labelledBy, renderValue, labels: labelOverrides, className,
 }: EntityPickerProps) {
   const labels = { ...DEFAULT_ENTITY_PICKER_LABELS, ...useUixLabels().entityPicker, ...labelOverrides };
   const [editing, setEditing] = useState(value == null);
@@ -110,6 +129,8 @@ export function EntityPicker({
   const [results, setResults] = useState<readonly SearchSuggestOption[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  // A failure that trying again cannot fix (HAR-1834): its words, and no Retry row.
+  const [fatal, setFatal] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const latest = useRef(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -120,21 +141,38 @@ export function EntityPicker({
   useEffect(() => { if (value) setEditing(false); else setEditing(true); }, [value?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!editing || disabled) return;
+    // Any change makes the search in flight stale: its answer is dropped (a query that is gone, or a
+    // picker that was disabled meanwhile, never shows rows).
+    const run = ++latest.current;
+    // Disabled (or closed) mid-search: the search is dropped, so nothing is busy any more.
+    if (!editing || disabled) { setStatus((s) => (s === 'loading' ? 'idle' : s)); return; }
     const q = query.trim();
     if (q.length < minQueryLength) { setStatus('idle'); setResults([]); setHasMore(false); return; }
-    const run = ++latest.current;
+    // Busy from the keystroke, not from the end of the debounce: Enter on the last answer's rows
+    // must not pick one for a query that has changed.
+    setStatus('loading');
     const timer = window.setTimeout(() => {
-      setStatus('loading');
       onSearch(q).then(
         (found) => {
           if (run !== latest.current) return;
           const list = 'options' in found ? found.options : found;
           setResults(list);
           setHasMore('options' in found && !!found.hasMore && list.length > 0);
+          setFatal(null);
           setStatus('done');
         },
-        () => { if (run === latest.current) { setResults([]); setHasMore(false); setStatus('error'); } },
+        (error: unknown) => {
+          if (run !== latest.current) return;
+          // `{ retryable: false, message? }` says so itself (and may bring its words); isRetryable
+          // decides for any other shape, and then the words are the forbidden label, never a raw error.
+          const declared = typeof error === 'object' && error !== null && (error as { retryable?: unknown }).retryable === false;
+          const retryable = isRetryable ? isRetryable(error) : !declared;
+          const message = declared ? (error as { message?: unknown }).message : undefined;
+          setFatal(retryable ? null : (typeof message === 'string' && message ? message : labels.forbidden));
+          setResults([]);
+          setHasMore(false);
+          setStatus('error');
+        },
       );
     }, delay);
     return () => window.clearTimeout(timer);
@@ -148,7 +186,17 @@ export function EntityPicker({
 
   const startEditing = () => { setQuery(''); returnFocus.current = true; setEditing(true); };
   const choose = (option: SearchSuggestOption) => { onValueChange(option); returnFocus.current = true; setEditing(false); };
-  const clear = () => { onValueChange(null); returnFocus.current = true; setEditing(true); };
+  // Clear starts a new search: the old query and its results go too, and the field takes focus (HAR-1834).
+  const clear = () => {
+    onValueChange(null);
+    setQuery('');
+    setResults([]);
+    setHasMore(false);
+    setStatus('idle');
+    setFatal(null);
+    returnFocus.current = true;
+    setEditing(true);
+  };
 
   const hidden = name ? <input type="hidden" name={name} value={value?.id ?? ''} /> : null;
   const tooShort = !disabled && query.trim().length < minQueryLength;
@@ -195,17 +243,21 @@ export function EntityPicker({
         inputRef={inputRef}
         value={query}
         onValueChange={setQuery}
-        options={status === 'done' ? results : []}
+        // While the next query loads, the last answer stays in view (no blank list on a refetch).
+        options={status === 'done' || status === 'loading' ? results : []}
         onSelect={(_, option) => choose(option)}
         label={`${label}. ${labels.search}`}
+        inputLabelledBy={labelledBy}
+        disabled={disabled}
+        invalid={invalid}
         placeholder={placeholder ?? labels.none}
         loading={status === 'loading'}
         loadingLabel={labels.loading}
         empty={tooShort ? undefined : labels.empty}
         idle={tooShort ? fillLabel(minQueryLength === 1 ? labels.typeToSearch : labels.tooShort, { count: minQueryLength }) : undefined}
         note={status === 'done' && hasMore ? labels.more : undefined}
-        error={status === 'error' ? labels.error : undefined}
-        footer={status === 'error' ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1) } : undefined}
+        error={status === 'error' ? (fatal ?? labels.error) : undefined}
+        footer={status === 'error' && fatal == null ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1) } : undefined}
         status={status === 'done' ? fillLabel(hasMore ? labels.resultsMore : labels.results, { count: results.length }) : undefined}
         strategy="fixed"
       />

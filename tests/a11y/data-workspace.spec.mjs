@@ -1,4 +1,4 @@
-/* DataWorkspace (HAR-1388; UIx ADR-0004) in Chromium on a German incident list with a fake server
+/* DataWorkspace (HAR-1388; UIx ADR-0005) in Chromium on a German incident list with a fake server
  * (tests/data-workspace/harness.tsx): Ctrl + / to the search, a filter chosen with the keyboard, a
  * refetch that keeps the rows (busy at once, the bar after 300 ms, no skeleton), selection kept
  * across pages and Shift-click ranges, the id cell, maximize and Escape, 320 px and axe. */

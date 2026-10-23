@@ -192,7 +192,7 @@ const MaximizeIcon = ({ restore }: { restore: boolean }) => (
 
 /**
  * The generic presentation half of a product's data table (HAR-1388; TENSOR `data-table.tsx`,
- * MOTUS `UixDataWorkspace.tsx`; UIx ADR-0004). Composes the kit's pieces in one order: saved
+ * MOTUS `UixDataWorkspace.tsx`; UIx ADR-0005). Composes the kit's pieces in one order: saved
  * view · Save changes / Save as (when the view changed) · filter chips and "+ Filter" ·
  * search (Ctrl/⌘ + /) · View · maximize · the product's actions; a `Table` with a record-id cell (id → peek, ↗ → record),
  * selection with Shift-click ranges, a frozen row-actions column and a `BulkBar`; an "x–y of N"

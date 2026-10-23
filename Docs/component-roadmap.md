@@ -45,7 +45,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | DashboardGrid | dashboard-grid.css | ✓ `DashboardGrid` | Beta | no | Layout grid for dashboard widgets: spans 1, 2 (clamped) and `full`; column count follows the grid's own width (container query); each item is an inline-size container so charts size from it. Also `DashboardGridItem` / `DashboardGrid.Item`, `dashboardGridClassName`. Landed with HAR-1555. |
 | InsightCard | insight-card.css | ✓ `InsightCard`, `Bullet` | Beta | no | Decision card: answer headline, so-what, status word + icon, KPIs with comparison and a bullet against target, chart body with an optional aside (split from 60rem of card width), coverage, source, one action |
 | ChartPanels / CorrelationScatter | chart.css | ✓ `@tensor_1/react/chart/analytic` | Beta | no | Aligned panels on one axis with one crosshair (no dual axes), overlays for thresholds, events, projections, the previous period, a partial period and crossings; a scatter with OLS trend, r, n, percentiles and a breaking point |
-| Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. |
+| Combobox | combobox.css | ✓ `Combobox` | Beta | no | Controlled searchable single-select with keyboard navigation. HAR-1588: at parity with `Select` (top-layer list, APG keys, groups, the no-match row outside the listbox). |
 | CommandPalette | command-palette.css | ✓ `CommandPalette` | Beta | no | Also `CommandGroup`, `CommandItem`. 2.36.0 (HAR-1647): the result count is a label (`resultsLabel`, provider `commandPalette.resultsOne` / `resultsMany`). HAR-1378: items mode (`items`, `query`, `recent`, `open` / `onOpenChange` in a native dialog), built-in `filterCommandItems` over `foldForSearch`, `aria-activedescendant` with ↑ / ↓ / Home / End / Enter, groups, empty state. |
 | Comments | comments.css | ✓ `Comments` | Beta | no | Also `Comment`. Recently landed. |
 | ContactCard | contact-card.css | absent | Planned | no | Planned wrapper (presentational). |
@@ -109,9 +109,9 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Switch | switch.css | ✓ `Switch` | Stable | no | Form primitive. |
 | Table | table.css | ✓ `Table` | Stable | no | Family: `TableWrap`, `Th`, `Td`, `Tr`, `BulkBar`, `RowActions`, etc.; `useTable` + `table-engine`. |
 | TableToolbar | table-toolbar.css | ✓ `Chip` | Stable | no | CSS support for Table and the exported `FilterPopover` composition. Also home of `.uix-chip`: React `Chip` (toggle, removable, link, "+ add") and `ChipGroup` landed 2.27.0 (HAR-1360). `FilterEditor` (HAR-1365) gained `tags` and `date` (on / before / after / between) kinds, `resolveLabels` for restored reference ids and Enter-applies in every kind in HAR-1832. |
-| DataWorkspace | data-workspace.css | ✓ `DataWorkspace` | Beta | no | HAR-1388, ADR-0004: the generic presentation half of the products' data tables over Table / TableWrap refreshing / SavedViewMenu / ViewMenu / Chip + FilterEditor / SearchBar / BulkBar / Menu / Pagination; the product keeps registry, URL state, fetching, PII. |
+| DataWorkspace | data-workspace.css | ✓ `DataWorkspace` | Beta | no | HAR-1388, ADR-0005: the generic presentation half of the products' data tables over Table / TableWrap refreshing / SavedViewMenu / ViewMenu / Chip + FilterEditor / SearchBar / BulkBar / Menu / Pagination; the product keeps registry, URL state, fetching, PII. |
 | Tabs | tabs.css | ✓ `Tabs` | Stable | no | Also `Tab`. |
-| TagInput | tag-input.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
+| TagInput | tag-input.css | ✓ `TagInput` | Beta | no | Type-to-add chips (Enter, comma, paste), suggestions in a top-layer list, refusals with a reason (duplicate, `validate`, `maxTags`), keyboard between the field and the chips, one hidden value per tag. Landed with HAR-1377. |
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |
 | Timeline | timeline.css | ✓ `Timeline` | Beta | no | Also `TimelineItem`. Recently landed. |
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |
@@ -128,8 +128,8 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
   dedicated CSS file of their own (they reuse `comments.css` / `form.css` / `sidebar.css` styling), so they are not
   rows above. They are, however, real exports in `@tensor_1/react` — see `packages/react/src/index.ts`.
 - The **10 currently-planned presentational wrappers** are stepper, reactions, attachment, audit-log,
-  notification-center, sla, heartbeat, media, lightbox, and contact-card. In addition, calendar, file-upload,
-  slider and tag-input remain Planned; those need real behaviour, not just a class wrapper. Kbd, Steps and
+  notification-center, sla, heartbeat, media, lightbox, and contact-card. In addition, calendar, file-upload
+  and slider remain Planned; those need real behaviour, not just a class wrapper (tag-input got its `TagInput` with HAR-1377). Kbd, Steps and
   Menu gained wrappers in 2.27.0 (the UIx reuse remediation, HAR-1346).
 
 ## Motion and feedback kit

@@ -23,6 +23,8 @@
   .uix-search-suggest__clear:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 
   .uix-search-suggest--lg .uix-search-suggest__input { height: calc(var(--uix-control-h) + 8px); padding-left: 44px; font-size: var(--uix-text-h3); }
+  /* free text (HAR-2465): a value field, not a search, so no magnifier and no room for one */
+  .uix-search-suggest--free-text .uix-search-suggest__input { padding-left: var(--uix-space-3); }
   .uix-search-suggest--lg .uix-search-suggest__lead { left: 14px; }
   .uix-search-suggest--lg .uix-search-suggest__lead svg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
 

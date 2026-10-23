@@ -2,7 +2,10 @@
 @layer uix.components {
   .uix-combobox { position: relative; }
   .uix-combobox > .uix-input { width: 100%; }
-  .uix-combobox__listbox { position: absolute; z-index: var(--uix-z-dropdown); inset-inline: 0; top: calc(100% + var(--uix-space-1)); max-height: 240px; overflow-y: auto; }
+  /* a static list right under the field (plain HTML); the React Combobox draws its list in a
+     top-layer popup instead (HAR-1588), styled as Select's */
+  .uix-combobox > .uix-combobox__listbox { position: absolute; z-index: var(--uix-z-dropdown); inset-inline: 0; top: calc(100% + var(--uix-space-1)); max-height: 240px; overflow-y: auto; }
+  .uix-combobox__popup { max-width: min(32rem, calc(100vw - 2 * var(--uix-space-4))); }
   .uix-listbox {
     list-style: none; margin: 0; padding: var(--uix-space-1); min-width: 200px;
     background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
