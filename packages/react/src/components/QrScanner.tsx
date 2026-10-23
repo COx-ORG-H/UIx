@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
@@ -124,6 +124,8 @@ const ERROR_STATUS: Record<string, QrScannerStatus> = {
   OverconstrainedError: 'no-camera',
 };
 
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
 const cameraApi = () => typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function';
 
 /**
@@ -140,7 +142,10 @@ export function QrScanner({
 }: QrScannerProps) {
   const uixLabels = useUixLabels();
   const labels: QrScannerLabels = { ...DEFAULT_QR_SCANNER_LABELS, ...uixLabels.qrScanner, ...labelsProp };
-  const [status, setStatusState] = useState<QrScannerStatus>(() => (cameraApi() ? 'idle' : 'unsupported'));
+  // Always idle on the first render, on the server and in the browser alike (a server has no
+  // camera API, so deciding here rendered "unsupported" there and "idle" here: a hydration
+  // mismatch). Whether the browser can use a camera is found out after mount.
+  const [status, setStatusState] = useState<QrScannerStatus>('idle');
   const [hint, setHint] = useState(false);
   const [torch, setTorch] = useState<boolean | null>(null);
   // "did it work": the last read, said once and shown briefly on the frame.
@@ -170,6 +175,9 @@ export function QrScanner({
     if (videoRef.current) videoRef.current.srcObject = null;
     setTorch(null);
     setHint(false);
+    // A read belongs to the camera run that made it: once the camera is gone, the status region
+    // says what happens now (denied, no picture), not the last code.
+    setRead(null);
   }, []);
 
   const start = useCallback(async () => {
@@ -248,28 +256,47 @@ export function QrScanner({
     return () => clearTimeout(timer);
   }, [status, release, setStatus]);
 
+  const startRef = useRef(start);
+  startRef.current = start;
+
+  // No camera API: say so before the first paint, so no start button that cannot work flashes.
+  useIsomorphicLayoutEffect(() => { if (!cameraApi()) setStatus('unsupported'); }, [setStatus]);
+
   // Ask the browser whether the camera is already allowed or refused, before showing the start button.
   useEffect(() => {
+    if (!cameraApi()) return undefined;
     if (status !== 'idle' || typeof navigator === 'undefined' || !navigator.permissions?.query) return undefined;
     let cancelled = false;
     navigator.permissions.query({ name: 'camera' as PermissionName }).then((result) => {
       if (cancelled) return;
       if (result.state === 'denied') setStatus('denied');
-      else if (result.state === 'granted' && autoStart) void start();
+      else if (result.state === 'granted' && autoStart) void startRef.current();
     }, () => undefined);
     return () => { cancelled = true; };
     // only on mount: later visits to idle are the person's own Stop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The camera stops while the page is hidden and on unmount; it comes back when the page does.
+  // The camera stops while the page is hidden; it comes back when the page does.
   useEffect(() => {
     const onVisibility = () => {
-      if (document.hidden && streamRef.current) { release(); setStatus('idle'); resumeRef.current = true; } else if (!document.hidden && resumeRef.current) { resumeRef.current = false; void start(); }
+      if (document.hidden && streamRef.current) { release(); setStatus('idle'); resumeRef.current = true; } else if (!document.hidden && resumeRef.current) { resumeRef.current = false; void startRef.current(); }
     };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => { document.removeEventListener('visibilitychange', onVisibility); release(); };
-  }, [release, setStatus, start]);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [release, setStatus]);
+
+  // The camera stops on unmount, and only then: an effect that also re-ran on a new `facingMode`
+  // released the stream and left the status at "scanning" over a black frame (review of PR #166).
+  useEffect(() => () => release(), [release]);
+
+  // Another camera asked for while one is running: switch to it.
+  const facingRef = useRef(facingMode);
+  useEffect(() => {
+    if (facingRef.current === facingMode) return;
+    facingRef.current = facingMode;
+    if (statusRef.current === 'scanning' || statusRef.current === 'asking') void start();
+  }, [facingMode, start]);
 
   // The "read" mark on the frame is brief; the announcement stays in the status region.
   useEffect(() => {

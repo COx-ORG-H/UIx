@@ -235,3 +235,60 @@ test('a hint after frames with no code; words from UixLabelsProvider qrScanner',
     mock.timers.reset();
   }
 });
+
+/* Review of PR #166: hydration, a camera switch while scanning, and the status region after a read. */
+
+test('the first render is "idle" on the server and in the browser: no hydration mismatch', async () => {
+  noCamera();
+  const { renderToString } = await import('react-dom/server');
+  const html = renderToString(h(ui.QrScanner, { decode: () => null, onResult: () => {} }));
+  assert.match(html, /data-status="idle"/, 'the server cannot know about cameras: it renders idle');
+  const { host, unmount } = mount({});
+  assert.equal(state(host), 'unsupported', 'the browser finds out after mount');
+  unmount();
+});
+
+test('a new facingMode while scanning switches the camera instead of leaving a black frame', async () => {
+  const cam = camera();
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const props = { decode: () => null, onResult: () => {}, autoStart: false };
+  act(() => root.render(h(ui.QrScanner, { ...props, facingMode: 'environment' })));
+  await flush();
+  await act(async () => { [...host.querySelectorAll('button')].find((b) => b.textContent === 'Use the camera').click(); });
+  await cam.settle();
+  assert.equal(state(host), 'scanning');
+  act(() => root.render(h(ui.QrScanner, { ...props, facingMode: 'user' })));
+  await flush();
+  assert.equal(cam.track.stopped, true, 'the old camera is released');
+  assert.deepEqual(cam.calls.at(-1), { video: { facingMode: { ideal: 'user' } }, audio: false }, 'the other camera is asked for');
+  await cam.settle();
+  assert.equal(state(host), 'scanning');
+  assert.ok(host.querySelector('video').srcObject, 'the new stream is attached');
+  act(() => root.unmount());
+  host.remove();
+});
+
+test('after a read, a refused camera is said in the status region, not the old code', async () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 0 });
+  try {
+    let cam = camera();
+    const { host, unmount } = mount({ autoStart: false, decode: () => 'VOUCHER-0042' });
+    await flush();
+    await act(async () => { [...host.querySelectorAll('button')].find((b) => b.textContent === 'Use the camera').click(); });
+    await cam.settle();
+    frames(host);
+    for (let i = 0; i < 2; i += 1) { await act(async () => { mock.timers.tick(200); }); await flush(); }
+    assert.equal(host.querySelector('[role="status"]').textContent, 'Code read: VOUCHER-0042');
+    await act(async () => { [...host.querySelectorAll('button')].find((b) => b.textContent === 'Stop the camera').click(); });
+    cam = camera({ fail: 'NotAllowedError' });
+    await act(async () => { [...host.querySelectorAll('button')].find((b) => b.textContent === 'Use the camera').click(); });
+    await cam.settle();
+    assert.equal(state(host), 'denied');
+    assert.equal(host.querySelector('[role="status"]').textContent, host.querySelector('.uix-qr-scanner__title').textContent);
+    unmount();
+  } finally {
+    mock.timers.reset();
+  }
+});
