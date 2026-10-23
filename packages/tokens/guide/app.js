@@ -656,7 +656,7 @@ export const initShowcase = (options = {}) => {
     const save = () => localStorage.setItem(key, writeViewPrefs(prefs));
 
     const viewBtn = root.querySelector('[popovertarget="viewmenu"]');
-    if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ▾';
+    if (viewBtn) viewBtn.innerHTML = icon('sliders-horizontal', 'sm') + ' View ' + icon('chevron-down', 'sm');
     // View-menu placement (flip/shift, cross-browser) is handled generically by
     // enhanceAnchoredPopovers — it right-aligns via the .uix-view-menu → bottom-end default.
 
@@ -1053,7 +1053,7 @@ export const initShowcase = (options = {}) => {
       // the .uix-toaster container is NOT, so we announce once, not twice (UIX-FIX-04).
       el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
       el.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
-      el.innerHTML = `<span class="uix-toast__icon" aria-hidden="true">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss">✕</button>`;
+      el.innerHTML = `<span class="uix-toast__icon" aria-hidden="true">${ICONS[tone] || ''}</span><div class="uix-toast__body"><div class="uix-toast__title">${esc(title)}</div>${msg ? `<div class="uix-toast__msg">${esc(msg)}</div>` : ''}</div><button class="uix-toast__close" aria-label="Dismiss"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" class="uix-icon" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>`;
       t.appendChild(el);
       while (t.children.length > 3) t.firstElementChild.remove();
       const leave = () => { el.setAttribute('data-leaving', ''); setTimeout(() => el.remove(), 220); };
@@ -1196,7 +1196,7 @@ export const initShowcase = (options = {}) => {
         btn.innerHTML = '<span class="uix-spinner" aria-hidden="true" style="width:14px;height:14px;border-color:currentColor;border-right-color:transparent"></span> Submitting…';
         live.textContent = 'Submitting';
         setTimeout(() => {
-          btn.innerHTML = '✓ Submitted';
+          btn.innerHTML = `${icon('check', 'sm')} Submitted`;
           live.textContent = 'Submitted';
           setTimeout(() => { btn.innerHTML = original; delete btn.dataset.busy; }, 1500);
         }, 1100);

@@ -19,6 +19,9 @@
   .uix-toast__title { font-weight: 600; font-size: var(--uix-text-body); }
   .uix-toast__msg { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-toast__close { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-xs); }
+  /* the × is the icon set's X (HAR-1576), centred in a 24 px target */
+  .uix-toast__close { display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: var(--uix-space-1); }
+  .uix-toast__close > .uix-icon { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-toast__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-toast--success .uix-toast__icon { color: var(--uix-success); }
   .uix-toast--danger  .uix-toast__icon { color: var(--uix-danger); }
@@ -40,3 +43,12 @@
   .uix-toaster[data-position$="start"] { left: var(--uix-space-4); right: auto; }
   .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same fades */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-toast { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    :root[data-motion="reduce"] .uix-toast[data-leaving] { animation: uix-toast-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
+  }
+}
+

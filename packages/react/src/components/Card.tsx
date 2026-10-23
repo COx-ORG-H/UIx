@@ -78,3 +78,29 @@ export function CardLink({ title, subtitle, headerAction, footer, children, clas
     </a>
   );
 }
+
+export interface InsetProps extends HTMLAttributes<HTMLDivElement> {
+  /** `md` (default) pads with `--uix-space-4`; `sm` with `--uix-space-3`, for a dense card. */
+  padding?: 'sm' | 'md';
+  /**
+   * `sunken` (default) is `--uix-bg-subtle` on the card's surface; `surface` is for a well on a
+   * panel that is already subtle.
+   */
+  tone?: 'sunken' | 'surface';
+  children?: ReactNode;
+}
+
+/**
+ * A bordered, sunken well inside a card body (HAR-1818), over `.uix-inset`: for a preview or a
+ * specimen (a rendered header, an image crop, a code sample). Use it instead of a `Card` in a
+ * `Card`, which brings a second shadow, card padding and card semantics. It lays out nothing:
+ * the content is yours. Give it `role="group"` and an `aria-label` when the preview needs a name.
+ */
+export function Inset({ padding = 'md', tone = 'sunken', children, className, ...props }: InsetProps) {
+  return (
+    <div className={cx('uix-inset', padding === 'sm' && 'uix-inset--sm', tone === 'surface' && 'uix-inset--surface', className)} {...props}>
+      {children}
+    </div>
+  );
+}
+

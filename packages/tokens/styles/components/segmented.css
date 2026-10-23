@@ -16,6 +16,10 @@
   }
   .uix-segmented__option:hover { color: var(--uix-text); }
   /* aria-checked: a `selection="radio"` group (HAR-1604) */
-  .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm); }
+  /* the selected segment is lifted AND ringed: the surface on the track is only 1.05:1 in dark and
+     1.09:1 in light, so an inset --uix-text-muted hairline (4.9:1 light, 7:1 dark on the track) makes
+     it a 3:1 boundary (WCAG 1.4.11). No weight change: a bolder label would widen the option and
+     shift its neighbours on every selection. */
+  .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 }

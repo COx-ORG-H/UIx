@@ -36,3 +36,13 @@
   .uix-collapsible--compact > .uix-collapsible__summary { padding: var(--uix-space-2) 0; border-radius: var(--uix-radius-sm); }
   .uix-collapsible--compact > .uix-collapsible__body { padding: 0 0 var(--uix-space-3); }
 }
+
+/* Inset (HAR-1818): a bordered, sunken well inside a card body for a preview or a specimen (a
+   rendered header, an image crop, a code sample). Not a nested card: no shadow, no card padding,
+   no card semantics. The consumer lays out what is inside. */
+@layer uix.components {
+  .uix-inset { min-width: 0; padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-bg-subtle); overflow-wrap: anywhere; }
+  .uix-inset--sm { padding: var(--uix-space-3); }
+  /* the well on a sunken page (a bg-subtle panel) takes the surface instead, so it still reads as a well */
+  .uix-inset--surface { background: var(--uix-surface); }
+}

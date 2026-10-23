@@ -57,3 +57,43 @@
      the gutter. Pair with a frozen identifier column for horizontal scroll. */
   .uix-shell__main--bleed { padding: 0; }
 }
+
+/* Full-viewport mode (HAR-1815): an application's shell, not a framed demo. No border or radius,
+   the dynamic viewport height, and no fixed top-bar row: the sidebar runs the full height, and a
+   topbar, if there is one, takes the height it needs at the top of the main column. Main gets the
+   staff padding (space-7 / space-6 / space-6) and space-8 at the sides on a wide screen. Below
+   40rem the shell is one column and the sidebar is hidden: the phone nav tier takes over. */
+@layer uix.components {
+  .uix-shell--viewport { height: 100dvh; min-height: 0; border: 0; border-radius: 0; grid-template-rows: auto minmax(0, 1fr); }
+  .uix-shell--viewport > .uix-shell__topbar { grid-row: 1; padding-block: var(--uix-space-3); }
+  .uix-shell--viewport > .uix-shell__main { grid-row: 2; padding: var(--uix-space-7) var(--uix-space-6) var(--uix-space-6); }
+  .uix-shell--viewport:not(:has(> .uix-shell__topbar)) > .uix-shell__main { grid-row: 1 / 3; }
+  .uix-shell--viewport > .uix-shell__main.uix-shell__main--bleed { padding: 0; }
+  @media (min-width: 80rem) { .uix-shell--viewport > .uix-shell__main:not(.uix-shell__main--bleed) { padding-inline: var(--uix-space-8); } }
+  /* one column and no sidebar at phone width come from the phone tier below ([data-phone-nav],
+     the viewport default); with phoneNav="none" the sidebar column stays, as in the frame */
+  @media (max-width: 40rem) {
+    .uix-shell--viewport > .uix-shell__main { padding: var(--uix-space-5) var(--uix-space-4) var(--uix-space-6); }
+  }
+}
+
+/* The phone nav tier (HAR-1371, AppShell phoneNav="drawer"): at 40rem and under, the sidebar
+   column goes and a menu button opens the sidebar in a start-side drawer. The switch is a
+   breakpoint, not an animation; the drawer brings the kit's own enter and exit. */
+@layer uix.components {
+  .uix-shell__nav-button { display: none; }
+  .uix-shell__phone-bar { display: none; }
+  /* the sidebar fills its column, so a Sidebar footer (the AccountMenu) sits at the bottom */
+  .uix-shell__sidebar > .uix-sidebar { min-height: 100%; }
+  /* in the drawer the sidebar grows to the drawer body (a flex column whose height is a min-height,
+     so min-height: 100% would not resolve) and the AccountMenu sits at the bottom, as in the column */
+  .uix-shell__nav-drawer .uix-sidebar { flex: 1 0 auto; width: auto; padding: 0; background: transparent; }
+  .uix-shell__nav-drawer-body { display: flex; flex-direction: column; min-height: 100%; }
+  @media (max-width: 40rem) {
+    .uix-shell[data-phone-nav], .uix-shell[data-phone-nav][data-nav] { grid-template-columns: minmax(0, 1fr); }
+    .uix-shell[data-phone-nav] > .uix-shell__sidebar { display: none; }
+    .uix-shell[data-phone-nav] > :is(.uix-shell__topbar, .uix-shell__main) { grid-column: 1; }
+    .uix-shell[data-phone-nav] .uix-shell__nav-button { display: inline-flex; flex: none; }
+    .uix-shell[data-phone-nav] .uix-shell__phone-bar { display: flex; margin-block-end: var(--uix-space-3); }
+  }
+}

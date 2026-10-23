@@ -1,12 +1,20 @@
 import { forwardRef, useId } from 'react';
-import type { ReactNode, HTMLAttributes, Ref } from 'react';
+import type { CSSProperties, ReactNode, HTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
+import { ChevronRightIcon } from '../icons/components.js';
 
 export interface StatTrend {
+  /** Which way the figure moved: the arrow, and the spoken "up" / "down". */
   direction: 'up' | 'down';
   label: ReactNode;
+  /**
+   * What the change means, which sets the colour (HAR-1563): `positive` green, `negative` red,
+   * `neutral` (default) grey. A rise in breached SLAs is `negative`; direction never picks the
+   * colour.
+   */
+  sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
 export interface StatProps extends HTMLAttributes<HTMLElement> {
@@ -18,7 +26,10 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   meta?: ReactNode;
   /** Trend chip rendered before the meta text. */
   trend?: StatTrend;
-  /** Outline and value colour. `neutral` (default) is today's tile. */
+  /**
+   * `warning` / `danger` colour the value and put a dot of that tone before it; the border stays
+   * neutral (HAR-1563). `neutral` (default) is the plain tile.
+   */
   tone?: 'neutral' | 'warning' | 'danger';
   /** `hero` (default) is today's KPI size; `compact` is for dense fact bands. */
   size?: 'hero' | 'compact';
@@ -48,7 +59,8 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
   /**
    * Makes the whole tile a link (HAR-1350; TENSOR B7, MOTUS B-A7). Server-renderable, unlike
    * `onActivate`. Ignored when `onActivate` is set. The forwarded ref reaches the `<a>` only
-   * without `renderLink`.
+   * without `renderLink`. A trailing chevron in the label row marks the tile as a link at rest,
+   * since a touch screen has no hover (HAR-1803).
    */
   href?: string;
   /** The link tile is the current page (`aria-current="page"`). */
@@ -64,6 +76,9 @@ const Chevron = () => (
     </svg>
   </span>
 );
+
+/** The link tile's resting cue (HAR-1803): a shape, not a colour, and there before any hover. */
+const Go = () => <span className="uix-stat__go" aria-hidden="true"><ChevronRightIcon /></span>;
 
 /**
  * KPI / stat tile over `.uix-stat`. With `onActivate` the tile is a button; the forwarded
@@ -82,6 +97,8 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     size === 'compact' && 'uix-stat--compact',
     (interactive || linked) && 'uix-stat--interactive',
     linked && 'uix-stat--link',
+    // an in-place action has no chevron: its value is underlined at rest instead (HAR-1803)
+    interactive && haspopup === false && 'uix-stat--action',
     className,
   );
 
@@ -93,12 +110,13 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
         <span id={interactive ? `${id}-label` : undefined}>{label}</span>
         {icon}
         {interactive && haspopup !== false && <Chevron />}
+        {linked && <Go />}
       </Row>
       <Row className="uix-stat__value" id={interactive ? `${id}-value` : undefined}>{value}</Row>
       {(meta != null || trend != null) && (
         <Row className="uix-stat__meta" id={interactive ? `${id}-meta` : undefined}>
           {trend != null && (
-            <span className={cx('uix-stat__trend', `uix-stat__trend--${trend.direction}`)}>
+            <span className={cx('uix-stat__trend', `uix-stat__trend--${trend.direction}`, trend.sentiment != null && trend.sentiment !== 'neutral' && `uix-stat__trend--${trend.sentiment}`)}>
               {/* direction glyph + hidden text — the chip is otherwise colour-only (UIX-A11Y-4) */}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {trend.direction === 'up' ? <path d="M12 19V5m-6 6 6-6 6 6" /> : <path d="M12 5v14m6-6-6 6-6-6" />}
@@ -149,3 +167,23 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     </button>
   );
 });
+
+export interface StatRowProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * The narrowest a tile may get before the row puts fewer tiles side by side, as a CSS length
+   * (`--stat-row-min`). Default `8.5rem`, and `12rem` once a hero tile is in the row.
+   */
+  minTileWidth?: string;
+  children?: ReactNode;
+}
+
+/**
+ * A row of `Stat` tiles over `.uix-stat-row` (HAR-1803 review): as many tiles per row as fit at
+ * `minTileWidth`, all the same height, down to one per row on a phone. Use it instead of a fixed
+ * column count, which squeezes tiles until their labels break letter by letter.
+ */
+export function StatRow({ minTileWidth, className, style, children, ...props }: StatRowProps) {
+  const rowStyle = minTileWidth ? { ...style, '--stat-row-min': minTileWidth } as CSSProperties : style;
+  return <div className={cx('uix-stat-row', className)} style={rowStyle} {...props}>{children}</div>;
+}
+

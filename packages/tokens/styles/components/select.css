@@ -31,6 +31,15 @@
   .uix-select[aria-invalid="true"] { border-color: var(--uix-danger); }
   .uix-select[aria-invalid="true"]:focus, .uix-select[aria-invalid="true"][aria-expanded="true"] { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
   .uix-select[aria-readonly="true"] { cursor: default; background-color: var(--uix-bg-subtle); background-image: none; padding-right: var(--uix-space-3); }
+  /* the trigger's chevron is the icon set's chevron-down through a mask, in the muted text colour of
+     the theme (HAR-1576). A native <select> cannot hold a pseudo-element: it keeps the image above,
+     a mid grey that clears 3:1 on the light and the dark surface. */
+  button.uix-select { position: relative; background-image: none; }
+  button.uix-select::after {
+    content: ""; position: absolute; inset-inline-end: var(--uix-space-3); top: 50%; width: var(--uix-icon-sm); height: var(--uix-icon-sm); translate: 0 -50%;
+    background: var(--uix-text-muted); pointer-events: none; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  button.uix-select[aria-readonly="true"]::after { content: none; }
   .uix-select__value { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--uix-space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-select__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-select__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }

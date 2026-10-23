@@ -13,11 +13,19 @@ function subscribe(onChange: () => void) {
   if (typeof matchMedia === 'undefined') return () => {};
   const mql = matchMedia(QUERY);
   mql.addEventListener('change', onChange);
-  return () => mql.removeEventListener('change', onChange);
+  // the in-app preference (HAR-1372): <html data-motion="reduce">, set by useDisplayPreferences
+  const observer = typeof MutationObserver === 'function' && typeof document !== 'undefined'
+    ? new MutationObserver(onChange) : null;
+  observer?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
+  return () => { mql.removeEventListener('change', onChange); observer?.disconnect(); };
 }
 
-/** Non-hook read for event handlers and effects. `false` where there is no `matchMedia` (SSR, tests). */
+/**
+ * Non-hook read for event handlers and effects: the OS setting, or the in-app preference
+ * `<html data-motion="reduce">` (HAR-1372). `false` where there is no `matchMedia` (SSR, tests).
+ */
 export function prefersReducedMotion(): boolean {
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-motion') === 'reduce') return true;
   return typeof matchMedia !== 'undefined' && matchMedia(QUERY).matches;
 }
 

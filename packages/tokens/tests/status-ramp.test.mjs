@@ -97,7 +97,7 @@ test("components paint status text with the text role, never the solid role", ()
     ["status-pill.css", /\.uix-pill--sla-ok\s*\{[^}]*--tone-fg:\s*([^;]+);/],
     ["alert.css", /\.uix-alert--success\s*\{[^}]*--tone-fg:\s*([^;]+);/],
     ["alert.css", /\.uix-alert--warning\s*\{[^}]*--tone-fg:\s*([^;]+);/],
-    ["stat-tile.css", /\.uix-stat__trend--up\s*\{\s*color:\s*([^;]+);/],
+    ["stat-tile.css", /\.uix-stat__trend--positive\s*\{\s*color:\s*([^;]+);/],
     ["sla.css", /\.uix-sla\[data-state="ok"\]\s*\{\s*color:\s*([^;]+);/],
   ]) {
     const m = rule.exec(css(file));
