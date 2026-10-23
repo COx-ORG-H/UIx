@@ -22,10 +22,15 @@ const readTier = (key: string): ShellNav | undefined => {
   } catch { return undefined; }
 };
 
-/** A key press typed into a field, or with a modifier, is not the nav hotkey. */
+/**
+ * A key press typed into a field, or with a modifier, is not the nav hotkey. AltGr is not a
+ * modifier here: on a German or Bosnian keyboard "[" is AltGr+8 / AltGr+F, which Windows reports
+ * as Ctrl+Alt.
+ */
 const isTyping = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement | null;
-  return event.ctrlKey || event.metaKey || event.altKey || event.isComposing
+  const altGraph = typeof event.getModifierState === 'function' && event.getModifierState('AltGraph');
+  return (!altGraph && (event.ctrlKey || event.altKey)) || event.metaKey || event.isComposing
     || !!target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"], [role="combobox"]');
 };
 

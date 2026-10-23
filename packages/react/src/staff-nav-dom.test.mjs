@@ -86,6 +86,9 @@ test('AppShell navHotkey switches full <-> rail, not while typing or with a modi
   key('[');
   assert.equal(root.getAttribute('data-nav'), null);
   assert.deepEqual(changes, ['rail', 'full']);
+  // a German or Bosnian "[" is AltGr+8 / AltGr+F, which Windows reports as Ctrl+Alt
+  act(() => { document.body.dispatchEvent(new window.KeyboardEvent('keydown', { key: '[', ctrlKey: true, altKey: true, modifierAltGraph: true, bubbles: true })); });
+  assert.equal(root.getAttribute('data-nav'), 'rail', 'AltGr+[ is the hotkey');
   shell.unmount();
 });
 
