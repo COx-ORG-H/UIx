@@ -95,17 +95,40 @@ test('a duplicate (any case or accent), a validate refusal and maxTags keep the 
   v.unmount();
 });
 
-test('paste "a, b; c" adds three; the typed text joins the first', () => {
+test('paste "a, b⏎c" adds three; the typed text joins the first', () => {
   const v = mount({ value: [] });
   v.type('x');
   act(() => {
     const event = new window.Event('paste', { bubbles: true, cancelable: true });
-    event.clipboardData = { getData: () => 'ray, beta;gamma' };
+    event.clipboardData = { getData: () => 'ray, beta\ngamma' };
     v.input().dispatchEvent(event);
   });
   assert.deepEqual(v.chips(), ['xray', 'beta', 'gamma']);
   assert.equal(v.input().value, '');
   v.unmount();
+});
+
+test('paste splits on the separators only (a comma may be part of a tag); a refusal is announced', () => {
+  const v = mount({ value: [], separators: ['Enter'] });
+  act(() => {
+    const event = new window.Event('paste', { bubbles: true, cancelable: true });
+    event.clipboardData = { getData: () => 'Smith, John' };
+    v.input().dispatchEvent(event);
+  });
+  assert.deepEqual(v.chips(), [], 'no split on a comma that is not a separator: the text is pasted');
+  const lines = mount({ value: [] });
+  act(() => {
+    const event = new window.Event('paste', { bubbles: true, cancelable: true });
+    event.clipboardData = { getData: () => 'one\ntwo' };
+    lines.input().dispatchEvent(event);
+  });
+  assert.deepEqual(lines.chips(), ['one', 'two']);
+  lines.type('one');
+  lines.key(lines.input(), 'Enter');
+  assert.equal(lines.live(), 'one is already added.', 'the refusal goes through the live region');
+  assert.equal(lines.host.querySelector('.uix-taginput__message').getAttribute('role'), null);
+  v.unmount();
+  lines.unmount();
 });
 
 test('keyboard: Backspace in the empty field reaches the last chip; arrows move; Backspace/Delete remove; focus stays', () => {

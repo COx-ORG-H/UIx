@@ -50,6 +50,32 @@ export function formatTimeKey(value: string, locale?: string | readonly string[]
   }
 }
 
+/**
+ * Where the hour and the minutes end in `formatTimeKey(value, locale, hour12)` (character offsets),
+ * found from the formatter's own parts, so "오후 2:30" (ko, the day period first) and "2:30 PM"
+ * both work. `null` when the value is not a time.
+ */
+export function timePartEnds(value: string, locale?: string | readonly string[], hour12?: boolean): { hour: number; minute: number } | null {
+  if (!isValidTimeKey(value)) return null;
+  const twelve = hour12 ?? uses12Hour(locale);
+  try {
+    const parts = new Intl.DateTimeFormat(locale as string | string[] | undefined, {
+      hour: twelve ? 'numeric' : '2-digit', minute: '2-digit', hourCycle: twelve ? 'h12' : 'h23', timeZone: 'UTC',
+    }).formatToParts(at(value));
+    let offset = 0;
+    let hour = -1;
+    let minute = -1;
+    for (const part of parts) {
+      offset += part.value.length;
+      if (part.type === 'hour') hour = offset;
+      if (part.type === 'minute') minute = offset;
+    }
+    return hour >= 0 && minute >= 0 ? { hour, minute } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The locale's words for before and after noon ("AM", "PM"; "vorm.", "nachm."), lower-cased. */
 function dayPeriods(locale?: string | readonly string[]): { am: string[]; pm: string[] } {
   const am = ['am', 'a.m.', 'a'];

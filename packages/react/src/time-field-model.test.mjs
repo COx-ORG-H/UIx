@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatTimeKey, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timeSlots, timeToMinutes, uses12Hour,
+  formatTimeKey, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes, uses12Hour,
 } from './time-field-model.ts';
 
 test('isValidTimeKey accepts zero-padded 24-hour times only', () => {
@@ -50,6 +50,16 @@ test('stepTime: wraps without bounds, stops at min / max, starts at min from emp
   assert.equal(stepTime('08:10', -15, '08:00', '17:00'), '08:00');
   assert.equal(stepTime(null, 15, '08:00'), '08:00');
   assert.equal(stepTime(null, -15), '00:00');
+});
+
+test('timePartEnds finds the hour and the minutes in the locale\'s own order', () => {
+  assert.deepEqual(timePartEnds('14:30', 'de'), { hour: 2, minute: 5 });
+  assert.deepEqual(timePartEnds('14:30', 'en-US'), { hour: 1, minute: 4 }); // 2:30 PM
+  const ko = formatTimeKey('14:30', 'ko', true);
+  const ends = timePartEnds('14:30', 'ko', true);
+  assert.equal(ko.slice(ends.hour - 1, ends.hour), '2', 'ko puts the day period first; the hour ends after it');
+  assert.equal(ko.slice(ends.minute - 2, ends.minute), '30');
+  assert.equal(timePartEnds('25:00', 'de'), null);
 });
 
 test('isTimeOutOfRange and timeSlots honour min / max', () => {

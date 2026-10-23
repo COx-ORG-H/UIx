@@ -6224,6 +6224,12 @@ export interface TimelineTick {
 export function timelineTicks(range: TimelineRange, scale: TimelineScale, timeZone: string, weekStartsOn?: number): TimelineTick[];
 
 // @public
+export function timePartEnds(value: string, locale?: string | readonly string[], hour12?: boolean): {
+    hour: number;
+    minute: number;
+} | null;
+
+// @public
 export const TimePicker: react.ForwardRefExoticComponent<TimePickerProps & react.RefAttributes<HTMLInputElement>>;
 
 // @public

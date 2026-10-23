@@ -248,7 +248,8 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
 
 /**
  * The text a `<label>` gives a screen reader: its text without what is `aria-hidden` or `hidden`
- * (a required "*") and without the control it wraps. Whitespace collapsed.
+ * (a required "*") and without the picker it wraps (its zone text, messages and lists).
+ * Whitespace collapsed.
  */
 function labelText(label: HTMLElement, control: HTMLElement | null): string {
   let text = '';
@@ -327,6 +328,7 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
   const locale = localeProp ?? uixLabels.dateFormat?.locale;
   const { date, time } = splitDateTime(value);
   const dateRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   useImperativeHandle(forwardedRef, () => dateRef.current as HTMLInputElement);
   // A time typed before any date waits here; it joins the date once one is chosen.
   const [pendingTime, setPendingTime] = useState('');
@@ -345,11 +347,11 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
     const input = dateRef.current;
     const label = input?.labels?.[0] ?? null;
     setLabelNode(label);
-    setFieldLabel(label ? labelText(label, input) : '');
+    setFieldLabel(label ? labelText(label, rootRef.current) : '');
   });
   useEffect(() => {
     if (grouped || !labelNode || typeof MutationObserver === 'undefined') return undefined;
-    const observer = new MutationObserver(() => setFieldLabel(labelText(labelNode, dateRef.current)));
+    const observer = new MutationObserver(() => setFieldLabel(labelText(labelNode, rootRef.current)));
     observer.observe(labelNode, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden', 'hidden'] });
     return () => observer.disconnect();
   }, [grouped, labelNode]);
@@ -365,7 +367,7 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
   const step = Math.max(1, Math.round(minuteStep));
 
   return <div
-    className={cx('uix-date-time-picker', size === 'sm' && 'uix-date-time-picker--sm', className)} style={style}
+    ref={rootRef} className={cx('uix-date-time-picker', size === 'sm' && 'uix-date-time-picker--sm', className)} style={style}
     role="group" aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}
   >
     <DatePicker
@@ -380,6 +382,7 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
     <TimePicker
       className="uix-date-time-picker__time" value={shownTime || null} minuteStep={step} locale={locale} size={size}
       disabled={disabled} readOnly={readOnly} required={required && !!date}
+      invalid={!!dateProps.invalid || dateProps['aria-invalid'] === true || dateProps['aria-invalid'] === 'true'}
       aria-label={timeName} aria-describedby={zoneText ? zoneId : undefined} labels={timeLabels}
       onValueChange={(next) => {
         if (date) onValueChange(joinDateTime(date, next ?? '', defaultTime));

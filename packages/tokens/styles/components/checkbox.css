@@ -30,7 +30,7 @@
   .uix-checkbox-group__options {
     --uix-checkbox-group-columns: 1;
     display: grid; gap: var(--uix-space-2) var(--uix-space-5); align-items: start;
-    grid-template-columns: repeat(auto-fill, minmax(max(10rem, calc((100% - (var(--uix-checkbox-group-columns) - 1) * var(--uix-space-5)) / var(--uix-checkbox-group-columns))), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(10rem, calc((100% - (var(--uix-checkbox-group-columns) - 1) * var(--uix-space-5)) / var(--uix-checkbox-group-columns)))), 1fr));
   }
   .uix-checkbox-group__options > .uix-checkbox { align-items: flex-start; min-width: 0; overflow-wrap: anywhere; }
   /* the box sits on the first line of a label that wraps */

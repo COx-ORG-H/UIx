@@ -110,6 +110,10 @@ export function TagInput({
   }, [suggestions, text, value]);
   const showing = open && matches.length > 0 && !disabled;
 
+  /** Refuse with a reason: shown under the field and announced (the shown line is not a live region:
+   * one that mounts with its text in it is often not read). */
+  const refuse = (reason: string) => { setMessage(reason); setAnnouncement(reason); };
+
   /** Add one or more tags; returns whether the field may be emptied. */
   const add = (raw: readonly string[]): boolean => {
     let next = [...value];
@@ -117,10 +121,10 @@ export function TagInput({
     for (const piece of raw) {
       const tag = piece.trim();
       if (!tag) continue;
-      if (next.some((v) => same(v, tag))) { setMessage(fillLabel(labels.duplicate, { tag })); return false; }
-      if (maxTags != null && next.length >= maxTags) { setMessage(fillLabel(labels.max, { max: maxTags })); return false; }
+      if (next.some((v) => same(v, tag))) { refuse(fillLabel(labels.duplicate, { tag })); return false; }
+      if (maxTags != null && next.length >= maxTags) { refuse(fillLabel(labels.max, { max: maxTags })); return false; }
       const refusal = validate?.(tag, next);
-      if (refusal) { setMessage(refusal); return false; }
+      if (refusal) { refuse(refusal); return false; }
       next = [...next, tag];
       added.push(tag);
     }
@@ -209,9 +213,12 @@ export function TagInput({
 
   const onPaste = (event: ClipboardEvent<HTMLInputElement>) => {
     const pasted = event.clipboardData?.getData('text') ?? '';
-    if (!/[,\n;]/.test(pasted)) return;
+    // Lines always split; other characters only when they are separators (a comma may be part of a tag).
+    const chars = separators.filter((s) => s.length === 1).map((s) => s.replace(/[\\^\]-]/g, '\\$&')).join('');
+    const split = new RegExp(`[\\n\\r${chars}]+`);
+    if (!split.test(pasted)) return;
     event.preventDefault();
-    const pieces = pasted.split(/[,\n;]+/);
+    const pieces = pasted.split(split);
     // The text already typed joins the first piece.
     if (add([`${text}${pieces[0] ?? ''}`, ...pieces.slice(1)])) setText('');
   };
@@ -311,7 +318,7 @@ export function TagInput({
         />
       </div>
       {name && value.map((tag, index) => <input key={`${tag}-${index}`} type="hidden" name={name} value={tag} disabled={disabled} />)}
-      {message && <span id={messageId} className="uix-field__warning uix-taginput__message" role="status">{message}</span>}
+      {message && <span id={messageId} className="uix-field__warning uix-taginput__message">{message}</span>}
       <span className="uix-visually-hidden" role="status" aria-live="polite">{announcement}</span>
       {suggestions && (
         <div ref={popupRef} className="uix-select__popup uix-taginput__popup" hidden={!showing} {...popoverAttr} onMouseDown={(event) => event.preventDefault()}>

@@ -8,7 +8,7 @@ import { ClockIcon } from '../icons/components.js';
 import { useUixLabels } from '../labels-context.js';
 import type { Placement } from '../overlay-position.js';
 import {
-  formatTimeKey, isTimeOutOfRange, isValidTimeKey, parseTimeInput, stepTime, timeSlots, timeToMinutes,
+  formatTimeKey, isTimeOutOfRange, isValidTimeKey, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes,
 } from '../time-field-model.js';
 import { useFieldPopover } from './DateFieldParts.js';
 import { Popover } from './Popover.js';
@@ -175,8 +175,11 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
       const base = parseTimeInput(text, locale) ?? current;
       const input = event.currentTarget;
       const caret = input.selectionStart ?? 0;
-      // The hour is the first run of digits; the caret after it (past the separator) means minutes.
-      const hourEnd = /^\s*\d{1,2}/.exec(input.value)?.[0].length ?? 0;
+      // Where the hour ends: from the locale's own parts when the field shows the formatted time
+      // ("오후 2:30" puts the day period first), else the first run of digits of a typed draft.
+      const ends = base && input.value === format(base) ? timePartEnds(base, locale, hour12) : null;
+      const hourEnd = ends?.hour ?? /^\s*\d{1,2}/.exec(input.value)?.[0].length ?? 0;
+      // The caret up to the hour's end means the hour; past it, the minutes.
       const onHour = key === 'PageUp' || key === 'PageDown' || (!!base && caret <= hourEnd);
       const sign = key === 'ArrowUp' || key === 'PageUp' ? 1 : -1;
       let next: string;
@@ -193,8 +196,8 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
       requestAnimationFrame(() => {
         const el = inputRef.current;
         if (!el || el.ownerDocument.activeElement !== el) return;
-        const end = /^\s*\d{1,2}/.exec(el.value)?.[0].length ?? 0;
-        const at = onHour ? end : Math.min(el.value.length, end + 3);
+        const moved = timePartEnds(next, locale, hour12);
+        const at = moved ? (onHour ? moved.hour : moved.minute) : el.value.length;
         try { el.setSelectionRange(at, at); } catch { /* not a text field */ }
       });
       return;

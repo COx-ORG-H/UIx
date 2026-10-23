@@ -104,6 +104,13 @@ test.describe('CheckboxGroup (HAR-1799)', () => {
     expect(await columns()).toBe(1);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBe(0);
+    // in a container narrower than a 10rem column (a sidebar card) the column shrinks with it
+    const narrow = await page.locator('#tags-disabled').evaluate((group) => {
+      group.style.width = '7rem';
+      const options = group.querySelector('.uix-checkbox-group__options');
+      return options.scrollWidth - options.clientWidth;
+    });
+    expect(narrow).toBeLessThanOrEqual(0);
     // the box stays on the first line of a label that wraps
     const label = page.locator('#tags .uix-checkbox', { hasText: 'Zeitgeschichte' });
     const [boxTop, labelTop, labelHeight] = await label.evaluate((el) => [el.querySelector('.uix-checkbox__box').getBoundingClientRect().top, el.getBoundingClientRect().top, el.getBoundingClientRect().height]);

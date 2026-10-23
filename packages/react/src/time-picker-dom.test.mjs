@@ -151,6 +151,18 @@ test('arrows step the part under the caret: hours by 1, minutes by minuteStep; P
   bounded.unmount();
 });
 
+test('a locale with the day period first (ko): the caret on the hour steps the hour', () => {
+  const v = mountTime({ value: '14:30', locale: 'ko', hour12: true });
+  const text = v.input().value;
+  caret(v.input(), text.indexOf('2') + 1);
+  key(v.input(), 'ArrowUp');
+  assert.equal(v.changes.at(-1), '15:30', 'the hour, though the text starts with the day period');
+  caret(v.input(), v.input().value.length);
+  key(v.input(), 'ArrowUp');
+  assert.equal(v.changes.at(-1), '15:45');
+  v.unmount();
+});
+
 test('min / max refuse a typed time outside them', () => {
   const v = mountTime({ value: '09:00', min: '08:00', max: '17:00' });
   type(v.input(), '18:30');

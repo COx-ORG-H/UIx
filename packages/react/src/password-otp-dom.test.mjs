@@ -141,6 +141,19 @@ test('OtpInput: cleans what is typed, fills cells, completes once per code', () 
   unmount();
 });
 
+test('OtpInput: a selection of the whole code stays (so it can be typed over); a partial one collapses', () => {
+  const { host, unmount } = mount(h(ui.OtpInput, { 'aria-label': 'Code', defaultValue: '123456' }));
+  const input = host.querySelector('input');
+  act(() => input.focus());
+  input.setSelectionRange(0, 6);
+  act(() => { document.dispatchEvent(new window.Event('selectionchange')); });
+  assert.deepEqual([input.selectionStart, input.selectionEnd], [0, 6]);
+  input.setSelectionRange(2, 4);
+  act(() => { document.dispatchEvent(new window.Event('selectionchange')); });
+  assert.deepEqual([input.selectionStart, input.selectionEnd], [6, 6]);
+  unmount();
+});
+
 test('OtpInput: alphanumeric upper-cases; invalid reaches the input; Field names it', () => {
   const { host, unmount } = mount(h(ui.Field, { label: 'Recovery code', error: 'Wrong code.' },
     h(ui.OtpInput, { mode: 'alphanumeric', length: 8, defaultValue: 'ab-12' })));

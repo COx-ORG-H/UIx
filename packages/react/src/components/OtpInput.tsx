@@ -65,10 +65,13 @@ export const OtpInput = forwardRef<HTMLInputElement, OtpInputProps>(function Otp
     }
   }, [value, length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The caret lives at the end: the cells draw no caret in the middle, so none may be there.
+  // The caret lives at the end: the cells draw no caret in the middle, so none may be there. A
+  // selection of the whole code stays (Ctrl+A, a double-click), so a wrong code can be typed over.
   const toEnd = () => {
     const input = inputRef.current;
-    if (input && (input.selectionStart !== input.value.length || input.selectionEnd !== input.value.length)) {
+    if (!input) return;
+    const all = input.value.length > 0 && input.selectionStart === 0 && input.selectionEnd === input.value.length;
+    if (!all && (input.selectionStart !== input.value.length || input.selectionEnd !== input.value.length)) {
       try { input.setSelectionRange(input.value.length, input.value.length); } catch { /* not focused */ }
     }
   };

@@ -228,10 +228,19 @@ export function SearchSuggest({
   useEffect(() => setActive(-1), [optionKey]);
 
   const hasText = value.trim().length > 0;
-  const showEmpty = hasText && !loading && !error && options.length === 0 && empty != null;
-  const showLoading = showSpinner && options.length === 0;
+  // The loading row shows only while a search runs AND the delayed spinner is up.
+  const showLoading = showSpinner && loading && options.length === 0;
+  // What the list said when the last search settled (no match, or the error). While the next search
+  // runs and before its spinner shows, the list keeps saying it, so it neither collapses nor
+  // flashes "no match" for a search that has not answered yet.
+  const current = { empty: hasText && error == null && empty != null, error: error ?? null };
+  const settled = useRef<{ empty: boolean; error: ReactNode }>({ empty: false, error: null });
+  if (!loading) settled.current = current;
+  const state = options.length > 0 || showLoading ? null : loading ? settled.current : current;
+  const shownError = state?.error ?? null;
+  const showEmpty = !!state?.empty && shownError == null;
   const showIdle = idle != null && itemCount === 0 && !loading && error == null && !showEmpty;
-  const visible = open && !disabled && (itemCount > 0 || showLoading || showEmpty || showIdle || error != null);
+  const visible = open && !disabled && (itemCount > 0 || showLoading || showEmpty || showIdle || shownError != null);
   const optionId = (index: number) => `${id}-option-${index}`;
 
   useEffect(() => {
@@ -282,6 +291,9 @@ export function SearchSuggest({
         }
         return;
       case 'Enter':
+        // While a search runs the rows are the last answer's: in the search mode Enter neither picks
+        // one (not even the active one) nor submits.
+        if (loading && !freeText) { event.preventDefault(); return; }
         if (visible && active >= 0) { event.preventDefault(); choose(active); return; }
         if (freeText) {
           // The text is the value: Enter keeps it, closes the list and never submits the form,
@@ -290,8 +302,6 @@ export function SearchSuggest({
           if (open) setOpen(false);
           return;
         }
-        // While a search runs the rows are the last answer's: Enter neither picks one nor submits.
-        if (loading) { event.preventDefault(); return; }
         // Only a row the user can see: after Escape closed the list, Enter must not act on it.
         if (visible && hasText && options.length) { event.preventDefault(); choose(0); }
         return;
@@ -474,7 +484,7 @@ export function SearchSuggest({
             {loadingLabel && <span>{loadingLabel}</span>}
           </div>
         )}
-        {error != null && options.length === 0 && !loading && <div className="uix-search-suggest__state">{error}</div>}
+        {shownError != null && <div className="uix-search-suggest__state">{shownError}</div>}
         {showEmpty && <div className="uix-search-suggest__state">{empty}</div>}
         {showIdle && <div className="uix-search-suggest__state">{idle}</div>}
         {note != null && options.length > 0 && <div className="uix-search-suggest__note">{note}</div>}

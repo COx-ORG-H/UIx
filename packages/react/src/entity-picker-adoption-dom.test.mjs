@@ -138,6 +138,47 @@ test('4. a visible label names the field: no aria-label with a <label for> or ar
   bare.unmount();
 });
 
+test('an answer for a query that is gone is dropped (minQueryLength, then shorter)', async () => {
+  let release;
+  const v = mount({ minQueryLength: 2, onSearch: () => new Promise((resolve) => { release = () => resolve(PEOPLE); }) });
+  act(() => v.input().focus());
+  type(v.input(), 'ab');
+  await settle();
+  type(v.input(), 'a');
+  await settle();
+  release();
+  await settle();
+  assert.deepEqual(v.rows(), [], 'the "ab" answer does not show under "a"');
+  assert.match(v.text(), /Type at least 2 characters\./);
+  v.unmount();
+});
+
+test('the list keeps its "no match" while the next search runs, and Enter on an active stale row picks nothing', async () => {
+  let pending = false;
+  let release;
+  const v = mount({ delay: 50, onSearch: (q) => (q === 'zz' ? Promise.resolve([]) : new Promise((resolve) => { pending = true; release = () => resolve(PEOPLE); })) });
+  act(() => v.input().focus());
+  type(v.input(), 'zz');
+  await settle(80);
+  assert.match(v.text(), /No matches\./);
+  type(v.input(), 'a');
+  await settle(5);
+  assert.equal(v.input().getAttribute('aria-expanded'), 'true', 'the list does not collapse');
+  assert.match(v.text(), /No matches\./, 'it keeps its last answer until the spinner shows');
+  await settle(80);
+  assert.equal(pending, true);
+  release();
+  await settle();
+  // rows for "a"; now a slower search for "ad", with a row made active
+  release = null;
+  type(v.input(), 'ad');
+  await settle(80);
+  key(v.input(), 'ArrowDown');
+  key(v.input(), 'Enter');
+  assert.deepEqual(v.log, [], 'the active row of the last answer is not picked while the next search runs');
+  v.unmount();
+});
+
 test('async: the last answer stays in view while the next loads; the spinner waits 300 ms', async () => {
   let release;
   const v = mount({

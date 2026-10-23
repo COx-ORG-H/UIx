@@ -58,7 +58,7 @@ test('every state named in a caption is on the page', () => {
   // TagInput: three chips (a long German one) with their × names; a duplicate refused with its reason
   assert.match(forms, /data-tag-input-example/);
   assert.match(forms, /aria-label="Remove Zeitgeschichte-und-Gesellschaftswissenschaften"/);
-  assert.match(forms, /class="uix-field__warning uix-taginput__message" role="status">Network is already added\.<\/span>/);
+  assert.match(forms, /class="uix-field__warning uix-taginput__message">Network is already added\.<\/span>/);
   assert.match(forms, /<input[^>]*name="labels"[^>]*value="vpn"|<input[^>]*value="vpn"[^>]*name="labels"/);
   // SearchSuggest freeText: no magnifier, the typed value, the list open with both rows
   assert.match(forms, /data-free-text-example/);
