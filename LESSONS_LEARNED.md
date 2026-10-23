@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 610b3fd routine: the API report and the class-defined gate named the two gaps -->
 <!-- lesson-skip: fa450cd routine: labels in map units shrank with the fit zoom; counter-scaled within their room, pinned by an on-screen size spec; the TS2488 was caught by CI's dts build -->
 <!-- lesson-skip: b04d837 routine: labels drawn per edge group sat under later lines, legend marks were baseline-aligned ::before boxes, and the pan surface was selectable; the operator's demo named each, pinned by Chromium specs -->
 <!-- lesson-skip: d6be6d0 routine: an absolutely positioned indicator outlived a resize by one frame; same family as cb64990, pinned by a clip test -->
