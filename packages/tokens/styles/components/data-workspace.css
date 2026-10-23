@@ -12,6 +12,10 @@
   /* with selection, the id column is frozen too, right after the checkbox column */
   .uix-data-workspace__grid--pin-id :is(th, td):nth-child(2) { position: sticky; left: var(--uix-selcol-w); z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
   .uix-data-workspace__grid--pin-id :is(th, td):first-child { box-shadow: none; }
+  /* A squeezed table shrinks the checkbox column to its content (30px), which would open a gap
+     before the id frozen at --uix-selcol-w: an empty, 0-high block holds the column at that width
+     (the checkbox itself stays as it is, centred, its input over its box). */
+  .uix-data-workspace__grid--pin-id :is(th, td):first-child::after { content: ""; display: block; inline-size: calc(var(--uix-selcol-w) - var(--uix-space-3)); }
   .uix-data-workspace__grid--pin-id thead th:nth-child(2) { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
   .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-data-workspace__grid--pin-id:not(.uix-table--no-zebra) tbody tr:nth-child(even) td:nth-child(2) { background: var(--uix-row-alt); }

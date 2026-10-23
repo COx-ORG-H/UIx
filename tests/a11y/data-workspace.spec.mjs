@@ -91,6 +91,30 @@ test('maximize takes the window; Escape restores it', async ({ page }, testInfo)
   await expect(ws(page)).not.toHaveClass(/uix-data-workspace--maximized/);
 });
 
+test('Escape in the View popover closes it, not the maximized workspace (PR #168 review)', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  await ws(page).getByRole('button', { name: 'Maximieren' }).click();
+  await ws(page).getByRole('button', { name: 'Ansicht' }).click();
+  await expect(ws(page).locator('.uix-view-menu')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(ws(page).locator('.uix-view-menu')).toBeHidden();
+  await expect(ws(page)).toHaveClass(/uix-data-workspace--maximized/);
+  await page.keyboard.press('Escape');
+  await expect(ws(page)).not.toHaveClass(/uix-data-workspace--maximized/);
+});
+
+test('with selection the checkbox and the id stay frozen with no gap; dividers only while the table overflows (PR #168 review)', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 390, height: 844 });
+  const wrap = ws(page).locator('.uix-table-wrap');
+  await expect(wrap).toHaveAttribute('data-overflow', 'true');
+  await wrap.evaluate((el) => { el.scrollLeft = 200; });
+  const cells = await ws(page).locator('tbody tr').first().evaluate((tr) => [...tr.children].slice(0, 2).map((td) => { const r = td.getBoundingClientRect(); return { left: r.left, right: r.right }; }));
+  expect(Math.abs(cells[0].right - cells[1].left), 'the id starts where the checkbox column ends').toBeLessThan(1);
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await expect(wrap).toHaveAttribute('data-overflow', 'false');
+  expect(await ws(page).locator('tbody td.uix-id-cell').first().evaluate((td) => getComputedStyle(td).boxShadow)).toBe('none');
+});
+
 test('at 320 px the page never scrolls sideways (the table scrolls in its wrap); axe', async ({ page }, testInfo) => {
   await open(page, testInfo, { width: 320, height: 900 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);

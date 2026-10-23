@@ -21,7 +21,8 @@ const history = (page) => page.locator('#history');
 
 test('a row says who, what, to what, and when (relative and exact); Details opens with the keyboard', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const list = history(page).getByRole('list', { name: 'Historija pristupa' });
+  // the section is the named region (named once, PR #168 review); the list inside it is the entries
+  const list = history(page).getByRole('region', { name: 'Historija pristupa' }).locator(':scope > .uix-busy-region').getByRole('list');
   const first = list.getByRole('listitem').first();
   await expect(first).toContainText('dr. Amra Kovač');
   await expect(first).toContainText('Otvoreno');
