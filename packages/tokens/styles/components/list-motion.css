@@ -1,0 +1,27 @@
+/* uix list motion — items arrive, leave and move visibly (HAR-2586, motion standard §2.5).
+   React's MotionList marks its children: [data-uix-entering] rises 8 px and fades in (never on
+   the first render); [data-uix-exiting] fades out in place, and only then is it removed, so the
+   items after it glide up into the gap ([data-uix-moving]: a FLIP transform, never a height).
+   Reduced motion keeps the fades and drops the rise and the glide. Depends only on --uix-*
+   tokens. */
+@layer uix.components {
+  @keyframes uix-list-enter { from { opacity: 0; transform: translateY(var(--uix-space-2)); } }
+  @keyframes uix-list-exit { to { opacity: 0; transform: scale(.98); } }
+  @keyframes uix-list-fade-out { to { opacity: 0; } }
+  .uix-motion-list > [data-uix-entering] { animation: uix-list-enter var(--uix-dur) var(--uix-ease-out); }
+  .uix-motion-list > [data-uix-exiting] { animation: uix-list-exit var(--uix-dur-exit) var(--uix-ease-out) forwards; pointer-events: none; }
+  .uix-motion-list > [data-uix-moving] { transition: transform var(--uix-dur-slow) var(--uix-ease-in-out); }
+  @media (prefers-reduced-motion: reduce) {
+    /* !important: the kit's reduced-motion policy ends keyframes at once; the fades are the signal */
+    .uix-motion-list > [data-uix-entering] { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    .uix-motion-list > [data-uix-exiting] { animation: uix-list-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
+  }
+}
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same fades */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-motion-list > [data-uix-entering] { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    :root[data-motion="reduce"] .uix-motion-list > [data-uix-exiting] { animation: uix-list-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
+  }
+}

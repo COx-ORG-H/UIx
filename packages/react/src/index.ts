@@ -31,6 +31,9 @@ export type { ChangeHighlightOptions } from './hooks/useChangeHighlight.js';
 export { useOptimisticValue } from './hooks/useOptimisticValue.js';
 export type { OptimisticRollback, UseOptimisticValueOptions, UseOptimisticValueResult } from './hooks/useOptimisticValue.js';
 export { announcePolite } from './announce.js';
+export { useDeferredReorder } from './hooks/useDeferredReorder.js';
+export type { UseDeferredReorderResult } from './hooks/useDeferredReorder.js';
+export { useSlidingIndicator } from './hooks/useSlidingIndicator.js';
 
 // Overlay positioning — framework-agnostic flip/shift placement for anchored overlays
 export { computePosition } from './overlay-position.js';
@@ -291,7 +294,7 @@ export { InfoTip } from './components/InfoTip.js';
 export type { InfoTipProps } from './components/InfoTip.js';
 
 // States / feedback
-export { EmptyState, ErrorState, ForbiddenState, NotFoundState, FilteredEmptyState, Skeleton, LoadingState } from './components/States.js';
+export { EmptyState, ErrorState, ForbiddenState, NotFoundState, FilteredEmptyState, Skeleton, LoadingState, SuccessState } from './components/States.js';
 export type {
   EmptyStateProps,
   ErrorStateProps,
@@ -299,6 +302,7 @@ export type {
   StateVariant,
   SkeletonProps,
   LoadingStateProps,
+  SuccessStateProps,
 } from './components/States.js';
 
 export { RelativeTime } from './components/RelativeTime.js';
@@ -322,6 +326,8 @@ export { BusyRegion } from './components/BusyRegion.js';
 export { ChangeHighlight } from './components/ChangeHighlight.js';
 export type { ChangeHighlightProps } from './components/ChangeHighlight.js';
 export { Count } from './components/Count.js';
+export { MotionList } from './components/MotionList.js';
+export type { MotionListProps } from './components/MotionList.js';
 export type { CountProps } from './components/Count.js';
 export type { BusyRegionProps } from './components/BusyRegion.js';
 export { DEFAULT_BUTTON_RESULT_LABELS } from './components/ButtonFeedback.js';

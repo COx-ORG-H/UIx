@@ -351,3 +351,144 @@ test('useOptimisticValue: the star shows at once; a failed save brings it back, 
   await expect(page.locator('body > [data-uix-announcer]')).toHaveText('Favourite restored');
   await expect(star, 'focus left the star').toBeFocused();
 });
+
+// ── Release C: MotionList, sliding indicator, disclosure, SuccessState (HAR-2586, HAR-2588, HAR-2589) ─
+
+const slowMotion = async (page) => {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
+};
+const running = (locator) => locator.evaluate((el) => el.getAnimations().map((a) => a.animationName ?? a.transitionProperty));
+const away = (page) => page.mouse.move(1, 1);
+
+test('MotionList: a new row rises in; a resolved row fades in place, then leaves and the rows below glide up', async ({ page }) => {
+  await slowMotion(page);
+  const list = page.getByTestId('queue');
+  await expect(list.locator('[data-uix-entering]')).toHaveCount(0);
+  await page.getByTestId('add').click();
+  await away(page);
+  const added = list.locator('li').first();
+  await expect(added).toHaveAttribute('data-uix-entering', '');
+  expect(await running(added)).toContain('uix-list-enter');
+
+  // let the add glide (slowed 20×) settle, so the next measure starts from rest
+  await expect(list.locator('[data-uix-moving]')).toHaveCount(0, { timeout: 10000 });
+  await page.getByTestId('resolve').click();
+  await away(page);
+  const leaving = list.locator('[data-uix-exiting]');
+  await expect(leaving).toHaveCount(1);
+  await expect(leaving).toHaveAttribute('aria-hidden', 'true');
+  expect(await running(leaving)).toContain('uix-list-exit');
+  // INC-0415 sits below the leaving row: when the row goes it must glide up, not jump. Its
+  // place partway through the glide is between where it was and where it ends.
+  const below = list.locator('li', { has: page.getByTestId('row-415') });
+  const start = (await below.boundingBox()).y;
+  await expect(leaving).toHaveCount(0, { timeout: 8000 });
+  await expect(below).toHaveAttribute('data-uix-moving', '');
+  expect(await running(below)).toContain('transform');
+  const mid = (await below.boundingBox()).y;
+  const end = await below.evaluate((el) => el.offsetTop + el.offsetParent.getBoundingClientRect().top);
+  expect(mid, 'the row below jumped instead of gliding').toBeGreaterThan(end + 1);
+  expect(mid).toBeLessThanOrEqual(start + 1);
+});
+
+test('useDeferredReorder: a live re-sort waits while the pointer is over the list, then glides into place', async ({ page }) => {
+  const list = page.getByTestId('queue');
+  const first = async () => (await list.locator('li').first().textContent()).trim();
+  const start = await first();
+  await list.hover();
+  await page.getByTestId('shuffle').evaluate((b) => b.click()); // a live update: the pointer stays on the list
+  await expect(page.getByTestId('held')).toContainText('New order waiting');
+  expect(await first()).toBe(start);
+  await away(page);
+  await expect(page.getByTestId('held')).toHaveText('Order is current');
+  expect(await first()).not.toBe(start);
+});
+
+test('Tabs and Segmented: a click slides the indicator; an arrow key jumps it', async ({ page }) => {
+  await slowMotion(page);
+  const line = page.getByTestId('line-tabs');
+  const indicator = line.locator('.uix-tabs__indicator');
+  await expect(line).toHaveAttribute('data-uix-indicator', '');
+  await expect(indicator).toBeVisible();
+  const tab = line.getByRole('tab', { name: 'About to breach' });
+  await tab.click();
+  await expect(indicator).toHaveAttribute('data-moving', '');
+  expect(await running(indicator)).toContain('transform');
+  // the indicator lands on the selected tab
+  await expect.poll(async () => {
+    const [a, b] = [await indicator.boundingBox(), await tab.boundingBox()];
+    return Math.abs(a.x - b.x) + Math.abs(a.width - b.width);
+  }, { timeout: 10000 }).toBeLessThan(1);
+  // the selected tab's own underline steps aside while the indicator shows
+  expect(await tab.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('hidden');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(line.getByRole('tab', { name: 'Closed' })).toHaveAttribute('aria-selected', 'true');
+  await expect(indicator).not.toHaveAttribute('data-moving', /.*/);
+  expect(await running(indicator), 'a keyboard change slid').toEqual([]);
+
+  const segmented = page.getByTestId('segmented');
+  await segmented.getByRole('button', { name: 'Compact' }).click();
+  await expect(segmented.locator('.uix-segmented__indicator')).toHaveAttribute('data-moving', '');
+  await expect(segmented.getByRole('button', { name: 'Compact' })).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+});
+
+test('without the indicator (forced colours) the selected tab keeps its own mark', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  const line = page.getByTestId('line-tabs');
+  await expect(line.locator('.uix-tabs__indicator')).toBeHidden();
+  const selected = line.getByRole('tab', { selected: true });
+  expect(await selected.evaluate((el) => getComputedStyle(el, '::after').visibility)).toBe('visible');
+});
+
+const contentOpacity = (locator) => locator.evaluate((el) => Number(getComputedStyle(el, '::details-content').opacity));
+
+test('CollapsibleSection: an open section does not animate on load; opening from the keyboard is instant', async ({ page }) => {
+  await slowMotion(page);
+  await page.evaluate(() => {
+    const d = document.createElement('details');
+    d.className = 'uix-collapsible';
+    d.open = true;
+    d.id = 'preopened';
+    d.innerHTML = '<summary class="uix-collapsible__summary">Preopened</summary><div class="uix-collapsible__body">Body</div>';
+    document.getElementById('tabs').append(d);
+  });
+  expect(await contentOpacity(page.locator('#preopened')), 'an open section faded in on first render').toBe(1);
+  const section = page.getByTestId('collapsible');
+  await section.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(section).toHaveAttribute('open', '');
+  expect(await contentOpacity(section), 'a keyboard open faded in').toBe(1);
+});
+
+test('CollapsibleSection: a click fades the body in (opacity on ::details-content, no height)', async ({ page }) => {
+  await slowMotion(page);
+  const section = page.getByTestId('collapsible');
+  await section.locator('summary').click();
+  await expect(section).toHaveAttribute('open', '');
+  const mid = await contentOpacity(section);
+  expect(mid, 'no fade on a click').toBeLessThan(1);
+  const transition = await section.evaluate((el) => getComputedStyle(el, '::details-content').transitionProperty);
+  expect(transition).toBe('opacity, translate');
+  await expect.poll(() => contentOpacity(section), { timeout: 10000 }).toBe(1);
+});
+
+test('SuccessState: focus lands on the outcome; the mark draws once; reduced motion shows it at once', async ({ page }) => {
+  await page.getByTestId('submit').click();
+  const state = page.getByTestId('success-state');
+  await expect(state.getByRole('heading', { name: 'Request submitted' })).toBeFocused();
+  expect(await running(state.locator('.uix-success__check'))).toEqual(['uix-success-check']);
+  expect(await state.locator('.uix-success__check').evaluate((el) => getComputedStyle(el).animationIterationCount)).toBe('1');
+  await expect(state.getByRole('listitem')).toHaveCount(3);
+  await page.clock.resume();
+  expect(await axe(page)).toEqual([]);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await state.getByRole('button', { name: 'Back to the portal' }).click();
+  await page.getByTestId('submit').click();
+  const check = page.getByTestId('success-state').locator('.uix-success__check');
+  expect(await check.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+  expect(await check.evaluate((el) => getComputedStyle(el).strokeDashoffset)).toBe('0px');
+});

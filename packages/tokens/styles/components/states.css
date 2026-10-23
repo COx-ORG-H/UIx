@@ -27,3 +27,48 @@
 @layer uix.components {
   @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-skeleton { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
 }
+
+/* uix success state (HAR-2588): the outcome of a rare, important journey — a request
+   submitted. The mark draws once (the disc settles in, then the check is drawn), never repeats,
+   never bounces; reduced motion shows it at once. Then the title (focused on mount), the
+   reference, what happens next and the next action. */
+@layer uix.components {
+  .uix-success { gap: var(--uix-space-4); color: var(--uix-text); }
+  .uix-success__mark { inline-size: var(--uix-space-12); block-size: var(--uix-space-12); }
+  .uix-success__mark svg { inline-size: 100%; block-size: 100%; overflow: visible; }
+  .uix-success__disc { fill: var(--uix-success-bg); stroke: var(--uix-success); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; }
+  .uix-success__check { stroke: var(--uix-success-text); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  @keyframes uix-success-disc { from { opacity: 0; transform: scale(.85); } }
+  /* hidden until it starts drawing: a round cap on the zero-length dash would show as a dot */
+  @keyframes uix-success-check { 0% { stroke-dashoffset: 1; opacity: 0; } 1% { opacity: 1; } }
+  .uix-success__disc { animation: uix-success-disc var(--uix-dur-slow) var(--uix-ease-out) both; }
+  .uix-success__check { animation: uix-success-check var(--uix-dur-slower) var(--uix-ease-out) var(--uix-dur-fast) both; }
+  @media (prefers-reduced-motion: reduce) {
+    /* no settle, no drawing: the disc fades in with the check already there */
+    .uix-success__disc { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) both !important; }
+    .uix-success__check { animation: none !important; }
+  }
+  .uix-success__title { margin: 0; }
+  .uix-success__title:focus { outline: none; }
+  .uix-success__title:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: var(--uix-space-1); border-radius: var(--uix-radius-sm); }
+  .uix-success__body { max-inline-size: 52ch; color: var(--uix-text-muted); }
+  .uix-success__body > p { margin: 0; }
+  .uix-success__reference { margin: 0; color: var(--uix-text-muted); }
+  .uix-success__reference-label { font-size: var(--uix-text-meta); }
+  .uix-success__reference-value { display: inline-flex; align-items: center; gap: var(--uix-space-1); font-family: var(--uix-font-mono); font-weight: 600; color: var(--uix-text); }
+  .uix-success__next { inline-size: min(100%, 28rem); padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); text-align: start; }
+  .uix-success__next-title { margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-body); font-weight: 600; }
+  .uix-success__steps { margin: 0; padding-inline-start: var(--uix-space-5); display: grid; gap: var(--uix-space-2); color: var(--uix-text-muted); }
+  @media (forced-colors: active) {
+    .uix-success__disc { fill: Canvas; stroke: CanvasText; }
+    .uix-success__check { stroke: CanvasText; }
+  }
+}
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the mark is simply there */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-success__disc { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) both !important; }
+    :root[data-motion="reduce"] .uix-success__check { animation: none !important; }
+  }
+}

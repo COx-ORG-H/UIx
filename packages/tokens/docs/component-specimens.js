@@ -72,6 +72,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-motion",
     "selector": ".uix-count"
   },
+  "list-motion": {
+    "route": "examples-motion",
+    "selector": ".uix-motion-list"
+  },
   "tag-input": {
     "route": "examples-form-controls",
     "selector": ".uix-taginput"

@@ -1,6 +1,8 @@
+import { createElement } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { DelayedRender } from './DelayedRender.js';
+import { FocusOnMount } from './FocusOnMount.js';
 import { PENDING_DELAY_MS } from '../motion-timing.js';
 
 // ── EmptyState ─────────────────────────────────────────────────────────
@@ -89,6 +91,72 @@ export function NotFoundState({ icon, title, detail, action, variant = 'section'
 /** Empty-result state for an active search or filter, kept distinct for analytics and recovery copy. */
 export function FilteredEmptyState(props: EmptyStateProps) {
   return <EmptyState data-filtered="true" {...props} />;
+}
+
+// ── SuccessState ───────────────────────────────────────────────────────
+
+export interface SuccessStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** What happened, e.g. "Request submitted". Rendered as a heading that takes focus on mount. */
+  title: ReactNode;
+  /** The heading level (default 1: the outcome usually replaces the page's form). */
+  headingLevel?: 1 | 2 | 3;
+  /** Supporting copy under the title. */
+  children?: ReactNode;
+  /** The record's reference, e.g. `<>REQ-0233 <CopyButton … /></>`. */
+  reference?: ReactNode;
+  /** The words before the reference (default "Your reference"). */
+  referenceLabel?: ReactNode;
+  /** A short, ordered "what happens next": two to four steps in the person's words. */
+  next?: ReactNode[];
+  /** The heading of `next` (default "What happens next"). */
+  nextTitle?: ReactNode;
+  /** The next action, e.g. a `ButtonLink` to the request or back to the portal. */
+  action?: ReactNode;
+  /**
+   * Move focus to the title when it mounts. Default: on for `page` and `full-page` (the outcome
+   * replaces the form the person was in), off for a state inside a section, card or drawer.
+   */
+  focusOnMount?: boolean;
+  variant?: StateVariant;
+}
+
+/**
+ * The outcome of a rare, important journey (HAR-2588; motion standard §2.2 "Rare", §2.8
+ * "portal peak"): a request submitted, an application sent. A success mark draws once — never
+ * repeats, never a game — then the title, the reference, what happens next, and the next
+ * action. On a page, focus moves to the title, so a screen reader reads the outcome first. Under
+ * reduced motion the mark is simply there.
+ */
+export function SuccessState({
+  title, headingLevel = 1, children, reference, referenceLabel = 'Your reference', next, nextTitle = 'What happens next',
+  action, focusOnMount, variant = 'page', className, ...props
+}: SuccessStateProps) {
+  const focusTitle = focusOnMount ?? (variant === 'page' || variant === 'full-page');
+  const heading = `h${headingLevel}` as 'h1' | 'h2' | 'h3';
+  const subheading = `h${Math.min(headingLevel + 1, 6)}` as 'h2' | 'h3' | 'h4';
+  return (
+    // `section` is the base look: no modifier class (there is no rule for one)
+    <div className={cx('uix-empty', 'uix-success', variant !== 'section' && `uix-empty--${variant}`, className)} {...props}>
+      <div className="uix-success__mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle className="uix-success__disc" cx="24" cy="24" r="22" />
+          <path className="uix-success__check" d="M14 24.5 21 31.5 34 17.5" pathLength={1} />
+        </svg>
+      </div>
+      <FocusOnMount as={heading} enabled={focusTitle} className="uix-empty__title uix-success__title">{title}</FocusOnMount>
+      {children != null && <div className="uix-success__body">{children}</div>}
+      {reference != null && (
+        <p className="uix-success__reference"><span className="uix-success__reference-label">{referenceLabel}</span> <span className="uix-success__reference-value">{reference}</span></p>
+      )}
+      {next && next.length > 0 && (
+        <div className="uix-success__next">
+          {createElement(subheading, { className: 'uix-success__next-title' }, nextTitle)}
+          <ol className="uix-success__steps">{next.map((step, i) => <li key={i}>{step}</li>)}</ol>
+        </div>
+      )}
+      {action}
+    </div>
+  );
 }
 
 // ── Skeleton + LoadingState ────────────────────────────────────────────

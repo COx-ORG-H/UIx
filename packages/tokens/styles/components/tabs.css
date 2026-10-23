@@ -68,5 +68,25 @@
   .uix-tabs-scroller__prev svg, .uix-tabs-scroller__next svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-tabs-scroller__prev:dir(rtl) svg, .uix-tabs-scroller__next:dir(rtl) svg { transform: scaleX(-1); }
 
+  /* Sliding indicator (React Tabs, HAR-2589). Once placed, one element carries the line's
+     underline or the pill's lifted tab and slides between tabs (transform only, about 160 ms);
+     the selected tab's own mark steps aside. A change from the keyboard jumps. Without
+     JavaScript the container has no [data-uix-indicator] and the tabs' own marks show. */
+  .uix-tabs { position: relative; }
+  .uix-tabs__indicator { position: absolute; pointer-events: none; transform-origin: 0 0; }
+  .uix-tabs__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
+  .uix-tabs--line > .uix-tabs__indicator::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px;
+    background: var(--uix-accent); border-radius: var(--uix-radius-pill);
+  }
+  .uix-tabs--scroll.uix-tabs--line > .uix-tabs__indicator::after { bottom: 0; }
+  .uix-tabs--pill > .uix-tabs__indicator { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); border-radius: calc(var(--uix-radius-md) - 3px); }
+  @media (forced-colors: none) {
+    .uix-tabs--line[data-uix-indicator] .uix-tab::after { visibility: hidden; }
+    .uix-tabs--pill[data-uix-indicator] .uix-tab[aria-selected="true"] { background: transparent; box-shadow: none; }
+  }
+  /* forced colours: the tabs' own marks are clearer than a painted box */
+  @media (forced-colors: active) { .uix-tabs__indicator { display: none; } }
+
   @media (prefers-reduced-motion: reduce) { .uix-tabs--scroll { scroll-behavior: auto; } }
 }
