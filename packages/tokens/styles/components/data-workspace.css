@@ -17,13 +17,11 @@
      (the checkbox itself stays as it is, centred, its input over its box). */
   .uix-data-workspace__grid--pin-id :is(th, td):first-child::after { content: ""; display: block; inline-size: calc(var(--uix-selcol-w) - var(--uix-space-3)); }
   .uix-data-workspace__grid--pin-id thead th:nth-child(2) { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
-  .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: var(--uix-row); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-data-workspace__grid--pin-id:not(.uix-table--no-zebra) tbody tr:nth-child(even) td:nth-child(2) { background: var(--uix-row-alt); }
-  .uix-data-workspace__grid--pin-id tbody tr[data-pinned] td:nth-child(2) { background: linear-gradient(var(--uix-row-pinned-bg), var(--uix-row-pinned-bg)) var(--uix-surface); }
-  .uix-data-workspace__grid--pin-id tbody tr[data-selected] td:nth-child(2) { background: linear-gradient(var(--uix-row-selected-bg), var(--uix-row-selected-bg)) var(--uix-surface); }
-  .uix-data-workspace__grid--pin-id tbody tr:hover td:nth-child(2) { background: var(--uix-bg-hover); }
+  /* the row's state (--uix-row-bg, table.css) over the surface: opaque, and the same as the row
+     (a zebra rule here outranked selected on every even row: operator review 2026-10-23) */
+  .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface); }
+  @media (forced-colors: active) { .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: Canvas; } }
   .uix-table-wrap[data-overflow="false"] .uix-data-workspace__grid--pin-id :is(th, td):nth-child(2) { box-shadow: none; }
-  @media (prefers-reduced-motion: reduce) { .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { transition: none; } }
   /* the record-id cell: the id opens a peek, ↗ opens the full record */
   .uix-data-workspace__id { display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap; }
   .uix-data-workspace__open { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: var(--uix-radius-xs); color: var(--uix-text-muted); }

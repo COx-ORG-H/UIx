@@ -56,7 +56,7 @@ for (const [label, pick] of [
   });
 }
 
-test('row and pinned cell ease their background; none under reduced motion', async ({ page }) => {
+test('row and pinned cell ease their background together; none under reduced motion', async ({ page }) => {
   const row = table(page).locator('tbody tr').first();
   const pinned = row.locator('td').first();
   const transition = (loc) => loc.evaluate((el) => {
@@ -64,11 +64,13 @@ test('row and pinned cell ease their background; none under reduced motion', asy
     return { property: cs.transitionProperty, duration: cs.transitionDuration };
   });
 
-  for (const loc of [row, pinned]) {
-    const t = await transition(loc);
-    expect(t.property).toBe('background-color');
-    expect(Number.parseFloat(t.duration)).toBeGreaterThan(0.01);
-  }
+  // The row eases its state colour (--uix-row-bg, a registered colour); the frozen cell paints the
+  // same value over the surface, so it eases with the row (batch follow-up to #168: a frozen cell
+  // used to keep the zebra stripe on a selected row).
+  const t = await transition(row);
+  expect(t.property).toBe('--uix-row-bg');
+  expect(Number.parseFloat(t.duration)).toBeGreaterThan(0.01);
+  expect(await pinned.evaluate((el) => getComputedStyle(el).backgroundImage)).toMatch(/^linear-gradient/);
 
   // table.css turns the row tint off under reduced motion (transition: none). The motion layer
   // narrows every transition to fades and colours there (HAR-2578), so the property list is that

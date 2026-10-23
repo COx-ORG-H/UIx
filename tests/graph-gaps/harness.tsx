@@ -6,7 +6,12 @@
  *              rows reveal their node without taking focus;
  *   ?case=cmdb a topology at CMDB size: ?nodes=N (default 300) over 6 levels with cross links,
  *              lateral and back edges and a few cycles; window.__graphTimings records how long the
- *              first render took. */
+ *              first render took;
+ *   ?case=clinical a hospital's clinical-service dependencies (the operator's demo, 2026-10-23): 25
+ *              nodes, toned and dashed edges, a node and edge legend, Bosnian labels, compact
+ *              controls, fit; edge-label readability, legend alignment and pan-without-drag;
+ *   ?case=radial the default ring layout with its toolbar, for the footer-gutter screenshots (it has
+ *              no map footer, so the gutter must leave it as it was). */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RelationshipGraph } from '../../packages/react/src/index.js';
@@ -105,5 +110,81 @@ function Cmdb() {
   );
 }
 
+/** The operator's demo graph ("Zavisnosti kliničkih usluga"), copied from the demo app. */
+function Clinical() {
+  const nodes: RelationshipGraphNode[] = [
+    { id: 'bis', label: 'Bolnički informacioni sistem', type: 'Usluga', depth: 0 },
+    { id: 'pacs', label: 'PACS i radiologija', type: 'Usluga', depth: 0, tone: 'danger', description: 'Prekid od 07:40' },
+    { id: 'lis', label: 'Laboratorijski sistem', type: 'Usluga', depth: 0 },
+    { id: 'erx', label: 'E-recept', type: 'Usluga', depth: 0 },
+    { id: 'app-bis', label: 'BIS aplikacija', type: 'Aplikacija', depth: 1 },
+    { id: 'app-ris', label: 'RIS', type: 'Aplikacija', depth: 1 },
+    { id: 'app-gw', label: 'DICOM pristupnik', type: 'Aplikacija', depth: 1, tone: 'danger', description: 'Odbija C-STORE' },
+    { id: 'app-lis', label: 'LIS aplikacija', type: 'Aplikacija', depth: 1 },
+    { id: 'app-erx', label: 'E-recept API', type: 'Aplikacija', depth: 1 },
+    { id: 'app-sign', label: 'Servis potpisa', type: 'Aplikacija', depth: 1 },
+    { id: 'bis-app-01', label: 'bis-app-01', type: 'Server', depth: 2 },
+    { id: 'bis-app-02', label: 'bis-app-02', type: 'Server', depth: 2 },
+    { id: 'ris-app-01', label: 'ris-app-01', type: 'Server', depth: 2 },
+    { id: 'pacs-gw-01', label: 'pacs-gw-01', type: 'Server', depth: 2, tone: 'danger' },
+    { id: 'pacs-gw-02', label: 'pacs-gw-02', type: 'Server', depth: 2, tone: 'warning', description: 'Rezerva, ugašena' },
+    { id: 'lis-app-01', label: 'lis-app-01', type: 'Server', depth: 2 },
+    { id: 'erx-api-01', label: 'erx-api-01', type: 'Server', depth: 2 },
+    { id: 'hsm-01', label: 'hsm-01', type: 'Uređaj', depth: 2 },
+    { id: 'rtg-01', label: 'rtg-01', type: 'Modalitet', depth: 2, tone: 'success' },
+    { id: 'rtg-02', label: 'rtg-02', type: 'Modalitet', depth: 2, tone: 'danger' },
+    { id: 'db-bis', label: 'db-bis (SQL klaster)', type: 'Baza', depth: 3 },
+    { id: 'db-lis', label: 'db-lis', type: 'Baza', depth: 3 },
+    { id: 'pacs-arh', label: 'PACS arhiva', type: 'Skladište', depth: 3 },
+    { id: 'vm-host-a', label: 'vm-host-a', type: 'Host', depth: 3 },
+    { id: 'vm-host-b', label: 'vm-host-b', type: 'Host', depth: 3 },
+  ];
+  const e = (source: string, target: string, label: string, extra: Partial<RelationshipGraphEdge> = {}): RelationshipGraphEdge => ({ id: `${source}>${target}`, source, target, label, ...extra });
+  const edges: RelationshipGraphEdge[] = [
+    e('bis', 'app-bis', 'koristi'), e('pacs', 'app-ris', 'koristi'), e('pacs', 'app-gw', 'koristi', { tone: 'danger', emphasis: true }), e('lis', 'app-lis', 'koristi'),
+    e('erx', 'app-erx', 'koristi'), e('erx', 'app-sign', 'koristi'), e('bis', 'app-ris', 'čita nalaze', { variant: 'dashed' }),
+    e('app-bis', 'bis-app-01', 'radi na'), e('app-bis', 'bis-app-02', 'radi na'), e('app-ris', 'ris-app-01', 'radi na'),
+    e('app-gw', 'pacs-gw-01', 'radi na', { tone: 'danger' }), e('app-gw', 'pacs-gw-02', 'rezerva', { variant: 'dashed', tone: 'warning', description: 'Rezerva nije uključena' }),
+    e('app-gw', 'rtg-01', 'prima od'), e('app-gw', 'rtg-02', 'prima od', { variant: 'dashed', tone: 'danger', description: 'Veza prekinuta od 07:40' }),
+    e('app-lis', 'lis-app-01', 'radi na'), e('app-erx', 'erx-api-01', 'radi na'), e('app-sign', 'hsm-01', 'potpisuje na'),
+    e('bis-app-01', 'db-bis', 'piše u'), e('bis-app-02', 'db-bis', 'piše u'), e('lis-app-01', 'db-lis', 'piše u'), e('pacs-gw-01', 'pacs-arh', 'arhivira u', { tone: 'danger' }),
+    e('ris-app-01', 'vm-host-a', 'virtualna mašina na'), e('pacs-gw-01', 'vm-host-a', 'virtualna mašina na'), e('lis-app-01', 'vm-host-b', 'virtualna mašina na'), e('erx-api-01', 'vm-host-b', 'virtualna mašina na'),
+  ];
+  return (
+    <>
+      <h1>Zavisnosti kliničkih usluga</h1>
+      <div id="clinical">
+        <RelationshipGraph
+          layout="layered" nodes={nodes} edges={edges} height="clamp(26rem, 70vh, 40rem)" initialView="fit" showList={false} controls="compact" clusterThreshold={0}
+          labels={{
+            graph: 'Mapa zavisnosti', controls: 'Kontrole prikaza', legend: 'Vrste veza', fit: 'Uklopi',
+            zoomLevel: (p: number) => `Uvećanje ${p}%`, navigationHint: (m: string) => `Povucite za pomjeranje · ${m} + kotačić za uvećanje`,
+            relationTo: (relation: string, target: string) => `${relation} ${target}`, relationFrom: (relation: string, source: string) => `${relation}, od ${source}`,
+          }}
+          legend={[
+            { id: 'down', label: 'Prekinuta veza', tone: 'danger', variant: 'dashed' },
+            { id: 'spare', label: 'Rezerva', tone: 'warning', variant: 'dashed' },
+            { id: 'hit', label: 'Pogođeno', tone: 'danger', shape: 'node' },
+            { id: 'ok', label: 'Preuzima rad', tone: 'success', shape: 'node' },
+          ]}
+        />
+      </div>
+    </>
+  );
+}
+
+function Radial() {
+  const { nodes, edges } = topology(14);
+  const [selected, setSelected] = useState('ci-0');
+  return (
+    <>
+      <h1>CMDB-Ring</h1>
+      <div id="radial">
+        <RelationshipGraph nodes={nodes} edges={edges} selectedId={selected} onSelect={(node) => setSelected(node.id)} showList={false} />
+      </div>
+    </>
+  );
+}
+
 const view = params.get('case') ?? 'k3';
-createRoot(document.getElementById('root')!).render(<StrictMode>{view === 'cmdb' ? <Cmdb /> : <K3 />}</StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode>{view === 'cmdb' ? <Cmdb /> : view === 'radial' ? <Radial /> : view === 'clinical' ? <Clinical /> : <K3 />}</StrictMode>);

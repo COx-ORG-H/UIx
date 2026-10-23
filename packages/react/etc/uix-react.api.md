@@ -905,7 +905,7 @@ export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> 
     href?: string;
     // (undocumented)
     icon?: ReactNode;
-    onClick?: () => void;
+    onClick?: (event: MouseEvent_2<HTMLElement>) => void;
     // (undocumented)
     onPressedChange?: (pressed: boolean) => void;
     onRemove?: () => void;
@@ -2392,6 +2392,7 @@ export interface EdgeLabelBox {
     height: number;
     // (undocumented)
     id: string;
+    priority?: number;
     // (undocumented)
     width: number;
     x: number;
@@ -3476,6 +3477,18 @@ export type KeyShortcut = readonly string[];
 
 // @public
 export function Label(input: LabelProps): react.JSX.Element;
+
+// @public
+export interface LabelObstacle {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
 
 // @public (undocumented)
 export interface LabelProps extends HTMLAttributes<HTMLSpanElement> {
@@ -5865,6 +5878,7 @@ export interface RoutedEdge {
     // (undocumented)
     label?: string;
     labelLines: string[];
+    labelRoom: number;
     // (undocumented)
     labelX: number;
     // (undocumented)
@@ -6930,6 +6944,7 @@ export function selectRangeDate(current: DateRangeValue, date: string): DateRang
 export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
     gap?: number;
     maxShift?: number;
+    obstacles?: readonly LabelObstacle[];
 }): Map<string, PlacedEdgeLabel>;
 
 // @public

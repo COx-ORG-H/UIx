@@ -505,7 +505,7 @@ export type {
 export { RelationshipGraph, DEFAULT_RELATIONSHIP_GRAPH_LABELS } from './components/RelationshipGraph.js';
 export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipGraphLabels } from './components/RelationshipGraph.js';
 export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel, separateEdgeLabels, edgeLabelSize } from './relationship-graph-model.js';
-export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey, RelationshipGraphTone, EdgeLabelBox, PlacedEdgeLabel } from './relationship-graph-model.js';
+export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey, RelationshipGraphTone, EdgeLabelBox, LabelObstacle, PlacedEdgeLabel } from './relationship-graph-model.js';
 
 // Who opened or changed what, and when (HAR-987; MEDx S50, POSx PRT-01)
 export { AuditLog, DEFAULT_AUDIT_LOG_LABELS } from './components/AuditLog.js';

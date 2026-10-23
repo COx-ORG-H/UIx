@@ -209,3 +209,20 @@ for (const via of ['os', 'app']) {
     expect(seen.toast, 'and does not slide').not.toContain('transform');
   });
 }
+
+// Red on master since #170: a window that narrows while the Segmented indicator slides wraps the
+// options before the slide ends, and the indicator, still at its old place, widened the page in CI
+// (Linux fonts). A wide font reproduces it on any OS; the track now clips the indicator.
+test('a slide cut short by a narrower window never widens the page', async ({ page }) => {
+  await open(page, { theme: 'light' });
+  await page.addStyleTag({ content: 'html, body, button { font-family: Verdana, sans-serif !important; letter-spacing: .06em; }' });
+  const group = (name) => page.locator('#prefs').getByRole('radiogroup', { name });
+  await group('Text size').getByRole('radio', { name: 'Larger' }).click();
+  await group('Density').getByRole('radio', { name: 'Comfortable' }).click();
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  // Whether the slide is still running at that moment depends on the machine (it was in CI, not
+  // here), so the clip itself is pinned too: an indicator left behind cannot reach the page.
+  const clip = await group('Density').evaluate((el) => { const s = getComputedStyle(el.closest('.uix-segmented') ?? el); return `${s.overflowX} ${s.overflowY}`; });
+  expect(clip).toBe('clip clip');
+});
