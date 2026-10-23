@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: e6cc8ac same cause as the 2026-09-22 docs-specimens entry (unlayered docs prose rules beat @layer kit rules), now for h2/h3/p; scoped the same way with :where() -->
+<!-- lesson-skip: e14a553 routine: a raw 1px the contract gate named; replaced with from-font -->
 <!-- lesson-skip: c26df37 squash-merge of 2b69af6 (PR #118); lesson recorded below under 2b69af6 (one component, three elements) -->
 <!-- lesson-skip: cf04a4f not a fix from this session; arrived via git fetch of master (PR #120, own session owns its lesson call) -->
 <!-- lesson-skip: 1455c46 squash-merge of 600bc17 (PR #116; already skipped below: routine inherited accent-color rule) -->
