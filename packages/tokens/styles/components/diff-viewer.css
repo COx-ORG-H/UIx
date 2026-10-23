@@ -8,6 +8,11 @@
   .uix-diff-viewer__versions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); background:var(--uix-border); }
   .uix-diff-viewer__versions>div { min-width:0; padding:var(--uix-space-3); border-right:1px solid var(--uix-border); background:var(--uix-surface); } .uix-diff-viewer__versions>div:last-child { border-right:0; } .uix-diff-viewer__versions strong { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-diff-viewer__versions pre { max-height:14rem; overflow:auto; margin-top:var(--uix-space-2); color:var(--uix-text); font-family:var(--uix-font-mono); white-space:pre-wrap; overflow-wrap:anywhere; }
+  /* HAR-1369: an entry named for people (labelFor), values shown by the product (renderValue), and
+     where each version came from (provenance), quieter, under its value */
+  .uix-diff-viewer__name { min-width:0; overflow-wrap:anywhere; }
+  .uix-diff-viewer__value { margin-top:var(--uix-space-2); color:var(--uix-text); overflow-wrap:anywhere; }
+  .uix-diff-viewer__provenance { margin-top:var(--uix-space-2); color:var(--uix-text-muted); font-size:var(--uix-text-meta); overflow-wrap:anywhere; }
   /* controlSize: entry rows are controls too; md follows --uix-control-h */
   .uix-diff-viewer[data-control-size="md"] .uix-diff-viewer__entry summary { min-height:var(--uix-control-h); }
   .uix-diff-viewer[data-control-size="lg"] .uix-diff-viewer__entry summary { min-height:44px; }

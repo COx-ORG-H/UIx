@@ -89,6 +89,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-metrics",
     "selector": ".uix-metric-input"
   },
+  "sortable-list": {
+    "route": "examples-form-controls",
+    "selector": ".uix-sortable",
+    "container": "[data-sortable-list-example]"
+  },
   "form": {
     "route": "examples-form-controls",
     "selector": ".uix-form-grid"
@@ -299,6 +304,22 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-composer"
   },
+  "qr-code": {
+    "route": "examples-data-display",
+    "selector": ".uix-qr-code"
+  },
+  "code-display": {
+    "route": "examples-data-display",
+    "selector": ".uix-code-display"
+  },
+  "print-layout": {
+    "route": "examples-prose",
+    "selector": ".uix-print-layout"
+  },
+  "qr-scanner": {
+    "route": "examples-form-controls",
+    "selector": ".uix-qr-scanner"
+  },
   "contact-card": {
     "route": "examples-crm-itsm",
     "selector": ".uix-contact"
@@ -418,6 +439,11 @@ export const COMPONENT_SPECIMENS = {
   "utility-bits": {
     "route": "examples-utility",
     "selector": ".uix-code"
+  },
+  "data-workspace": {
+    "route": "examples-data-display",
+    "selector": ".uix-data-workspace",
+    "container": "[data-data-workspace-example]"
   },
   "view-menu": {
     "route": "examples-workspace",

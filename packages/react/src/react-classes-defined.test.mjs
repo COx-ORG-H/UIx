@@ -35,6 +35,19 @@ const HOOKS = new Map([
   ['uix-empty--danger', 'ErrorState tone hook; the tone is on .uix-empty__icon--danger'],
   ['uix-empty--warning', 'ForbiddenState tone hook; the tone is on .uix-empty__icon--warning'],
   ['uix-tree--virtual', 'virtualised-tree hook for tests and consumers'],
+  ['uix-segmented-nav', 'Segmented selection="link" <nav> (HAR-1380): the pill is the ul.uix-segmented inside; a hook for consumers'],
+  ['uix-filter-editor__tags', 'FilterEditor tags field (HAR-1832): styled by .uix-taginput; a hook for tests'],
+  ['uix-sortable__move--up', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
+  ['uix-sortable__move--down', 'SortableList (HAR-1375): which move button is which, for focus after a move; styled by .uix-sortable__move'],
+  ['uix-match-review--adopt', 'MatchReview fieldMode="adopt" (HAR-1369): a mode hook; the adopt parts carry their own classes'],
+  ['uix-audit-log__filter', 'AuditLog filter chip wrapper (HAR-987): the popover anchor; styled by .uix-chip'],
+  ['uix-audit-log__region', 'AuditLog list region (HAR-987): styled by .uix-busy-region; a hook for tests'],
+  ['uix-data-workspace__toolbar', 'DataWorkspace toolbar (HAR-1388): styled by .uix-toolbar; a hook for consumers and tests'],
+  ['uix-data-workspace__table', 'DataWorkspace table wrap (HAR-1388): styled by .uix-table-wrap; a hook for consumers and tests'],
+  ['uix-filter-editor__searching', 'FilterEditor search live region (PR #168 review): styled by .uix-filter-editor__note, visually hidden while silent; a hook for tests'],
+  ['uix-data-workspace__state', 'DataWorkspace empty states (PR #168 review): the BusyRegion around them, busy during a refetch; styled by .uix-busy-region; a hook for tests'],
+  ['uix-data-workspace__loading', 'DataWorkspace first-load skeleton (HAR-1388): styled by LoadingState; a hook for tests'],
+  ['uix-id-cell', 'record-id cell (DataWorkspace, HAR-1388; tables.html): its parts .uix-id-cell__btn / __arrow are styled'],
 ]);
 
 const cssFiles = [];

@@ -1,10 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode, HTMLAttributes, InputHTMLAttributes } from 'react';
+import type { ReactNode, HTMLAttributes, InputHTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
+import { useDialog } from '../hooks/useDialog.js';
+import { filterCommandItems, groupCommandItems } from '../command-palette-model.js';
+import type { CommandPaletteItem } from '../command-palette-model.js';
+import { searchSegments } from '../search-suggest-model.js';
+import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
 
 /* Combobox wiring shared across the palette family (UIX-A11Y-1): the root owns the listbox id
  * and the active option id (input → aria-activedescendant), and counts mounted items so a status
@@ -32,6 +37,40 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   /** Props for the search input (value/onChange/placeholder wired by the consumer). */
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
   children?: ReactNode;
+  /**
+   * Items mode (HAR-1378): pass the commands and the palette filters them itself (case and
+   * diacritics folded, best match first), groups them, moves the active one with ↑ / ↓ (Home / End
+   * while the query is empty) through `aria-activedescendant`, and runs it on Enter or a click.
+   * Without `items`, `children` render as before and the consumer wires everything.
+   */
+  items?: readonly CommandPaletteItem[];
+  /** Items mode: the query (controlled). Pair with `onQueryChange`. */
+  query?: string;
+  /** Items mode: the query as it changes (also when the palette clears it on close). */
+  onQueryChange?: (query: string) => void;
+  /** Items mode: what an empty query shows above all items, under the `recentLabel` heading. */
+  recent?: readonly CommandPaletteItem[];
+  /** Items mode: your own matching instead of the built-in one (`filterCommandItems`). */
+  filter?: (items: readonly CommandPaletteItem[], query: string) => CommandPaletteItem[];
+  /** Items mode: called with every chosen item, after its own `onSelect`, e.g. to record it as recent. */
+  onItemSelect?: (item: CommandPaletteItem) => void;
+  /** Items mode: follow an item's `href` with your router. Default: the browser goes there. */
+  onNavigate?: (href: string, item: CommandPaletteItem) => void;
+  /** Items mode: shown when nothing matches. Default: `UixLabelsProvider` `commandPalette.empty`, then "No results". */
+  emptyLabel?: ReactNode;
+  /** Items mode: the heading of `recent`. Default: `commandPalette.recent`, then "Recent". */
+  recentLabel?: string;
+  /** Items mode: the input's placeholder. */
+  placeholder?: string;
+  /**
+   * Items mode: host the palette in a modal native `<dialog>` (focus stays inside, Escape and a
+   * click outside close it, focus returns to the opener). Closing it clears the query. Without
+   * `open`, the palette renders in place.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Items mode: render at most this many found items (the count still says how many were found). Default 100. */
+  limit?: number;
 }
 
 /**
@@ -44,7 +83,17 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
  * popover it sits in `[data-uix-instant]`: it opens and closes with no animation, without the
  * consumer knowing the attribute (or the older `data-uix-cmdk-dialog`).
  */
-export function CommandPalette({ inputProps, children, inputLabel: inputLabelProp, resultsLabel, className, ...props }: CommandPaletteProps) {
+export function CommandPalette(props: CommandPaletteProps) {
+  if (props.items) return <CommandPaletteItems {...props} items={props.items} />;
+  return <CommandPaletteChildren {...props} />;
+}
+
+function CommandPaletteChildren({
+  inputProps, children, inputLabel: inputLabelProp, resultsLabel, className,
+  items: _items, query: _query, onQueryChange: _onQueryChange, recent: _recent, filter: _filter, onItemSelect: _onItemSelect,
+  onNavigate: _onNavigate, emptyLabel: _emptyLabel, recentLabel: _recentLabel, placeholder: _placeholder, open: _open, onOpenChange: _onOpenChange,
+  limit: _limit, ...props
+}: CommandPaletteProps) {
   const uixLabels = useUixLabels();
   const inputLabel = inputLabelProp ?? uixLabels.commandPalette?.input ?? 'Command palette';
   const resultsOne = uixLabels.commandPalette?.resultsOne ?? '{count} result';
@@ -153,5 +202,211 @@ export function CommandItem({ icon, shortcut, active, children, className, id, .
       <span>{children}</span>
       {shortcut}
     </div>
+  );
+}
+
+/** The id of an item's option: the list's id plus the item id, made safe for an id reference. */
+const optionId = (listId: string, item: CommandPaletteItem, recent: boolean) => `${listId}-${recent ? 'r-' : ''}${item.id.replace(/[^\w-]/g, '_')}`;
+
+/** A label with the query's matches emphasised (the same rule as SearchSuggest). */
+function Highlighted({ text, query }: { text: string; query: string }) {
+  return <>{searchSegments(text, query).map((segment, index) => (segment.match ? <mark key={index} className="uix-cmdk__mark">{segment.text}</mark> : segment.text))}</>;
+}
+
+function CommandPaletteItems({
+  items, query: queryProp, onQueryChange, recent, filter, onItemSelect, onNavigate, emptyLabel, recentLabel, placeholder,
+  open, onOpenChange, limit = 100, inputLabel: inputLabelProp, resultsLabel, inputProps, className, children: _children, ...props
+}: CommandPaletteProps & { items: readonly CommandPaletteItem[] }) {
+  const uixLabels = useUixLabels();
+  const labels = uixLabels.commandPalette;
+  const inputLabel = inputLabelProp ?? labels?.input ?? 'Command palette';
+  const empty = emptyLabel ?? labels?.empty ?? 'No results';
+  const recentHeading = recentLabel ?? labels?.recent ?? 'Recent';
+  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(count === 1 ? labels?.resultsOne ?? '{count} result' : labels?.resultsMany ?? '{count} results', { count });
+  const resultsTextRef = useRef(resultsText);
+  resultsTextRef.current = resultsText;
+  const platform = useKbdPlatform();
+  const listId = useId();
+  const [queryState, setQueryState] = useState('');
+  const query = queryProp ?? queryState;
+  const setQuery = (next: string) => { if (queryProp === undefined) setQueryState(next); onQueryChange?.(next); };
+
+  const inDialog = open !== undefined;
+  const ref = useDialog(inDialog ? open : false, () => onOpenChange?.(false));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null);
+  /** The press began on the backdrop (a text selection dragged out of the field is not a click on it). */
+  const pressedBackdrop = useRef(false);
+
+  const found = useMemo(() => (filter ?? filterCommandItems)(items, query), [filter, items, query]);
+  const showRecent = query.trim() === '' && (recent?.length ?? 0) > 0;
+  // A long list is capped, not virtualised: a palette is for narrowing down, and 100 rows render in a frame.
+  const groups = useMemo(() => groupCommandItems(found.slice(0, Math.max(0, limit))), [found, limit]);
+  /** Every row in display order: recent first (while the query is empty), then the groups. */
+  const rows = useMemo(() => [
+    ...(showRecent ? recent!.map((item) => ({ item, id: optionId(listId, item, true) })) : []),
+    ...groups.flatMap((group) => group.items.map((item) => ({ item, id: optionId(listId, item, false) }))),
+  ], [showRecent, recent, groups, listId]);
+  const enabled = rows.filter((row) => !row.item.disabled);
+
+  // The active row: kept while it is still found, else the first enabled one. Computed during
+  // render, so no frame ever shows a list with no active option (LESSONS 2026-10-16).
+  const [activeState, setActiveState] = useState<string | null>(null);
+  const activeId = enabled.some((row) => row.id === activeState) ? activeState : enabled[0]?.id ?? null;
+  const active = rows.find((row) => row.id === activeId);
+
+  // Keyboard moves are instant: the active row scrolls into view without animation.
+  useLayoutEffect(() => {
+    if (!activeId) return;
+    const el = listRef.current?.querySelector<HTMLElement>(`[id="${activeId}"]`);
+    el?.scrollIntoView?.({ block: 'nearest' });
+  }, [activeId]);
+
+  // The count is announced after typing settles, once per change.
+  const [announced, setAnnounced] = useState('');
+  const count = found.length;
+  useEffect(() => {
+    const t = window.setTimeout(() => setAnnounced(resultsTextRef.current(count)), 150);
+    return () => window.clearTimeout(t);
+  }, [count]);
+
+  // Opening: remember the opener, focus the field. Closing: clear the query, focus goes back.
+  useEffect(() => {
+    if (!inDialog) return;
+    if (open) {
+      returnTo.current = document.activeElement as HTMLElement | null;
+      inputRef.current?.focus();
+    } else {
+      if (query) setQuery('');
+      setActiveState(null);
+      returnTo.current?.focus?.();
+      returnTo.current = null;
+    }
+    // Only on open and close: the query and its setter are read as they are then.
+  }, [open, inDialog]);
+
+  const choose = (item: CommandPaletteItem) => {
+    if (item.disabled) return;
+    item.onSelect?.();
+    if (item.href) {
+      if (onNavigate) onNavigate(item.href, item);
+      else window.location.assign(item.href);
+    }
+    onItemSelect?.(item);
+    if (inDialog) onOpenChange?.(false);
+  };
+
+  const move = (to: number) => {
+    if (enabled.length === 0) return;
+    const index = (to + enabled.length) % enabled.length;
+    setActiveState(enabled[index].id);
+  };
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    inputProps?.onKeyDown?.(event);
+    if (event.defaultPrevented || event.nativeEvent.isComposing) return;
+    const at = enabled.findIndex((row) => row.id === activeId);
+    switch (event.key) {
+      case 'ArrowDown': event.preventDefault(); move(at + 1); break;
+      case 'ArrowUp': event.preventDefault(); move(at - 1); break;
+      // Home / End move the caret while there is text to edit; in an empty field they jump.
+      case 'Home': if (query === '') { event.preventDefault(); move(0); } break;
+      case 'End': if (query === '') { event.preventDefault(); move(enabled.length - 1); } break;
+      case 'Enter': if (active) { event.preventDefault(); choose(active.item); } break;
+      default:
+    }
+  };
+
+  const renderRow = ({ item, id }: { item: CommandPaletteItem; id: string }) => {
+    const isActive = id === activeId;
+    return (
+      <div
+        key={id}
+        id={id}
+        role="option"
+        className="uix-cmdk__item"
+        data-active={isActive || undefined}
+        aria-selected={isActive}
+        aria-disabled={item.disabled || undefined}
+        aria-keyshortcuts={item.shortcut?.length ? ariaKeyShortcuts(item.shortcut, platform) : undefined}
+        // pointermove, not mouseenter: the list scrolling under a still pointer must not steal the active row
+        onPointerMove={() => { if (!item.disabled && !isActive) setActiveState(id); }}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => choose(item)}
+      >
+        {item.icon != null && <span className="uix-cmdk__icon" aria-hidden="true">{item.icon}</span>}
+        <span className="uix-cmdk__text">
+          <span className="uix-cmdk__label"><Highlighted text={item.label} query={query} /></span>
+          {item.description && <span className="uix-cmdk__desc">{item.description}</span>}
+        </span>
+        {item.shortcut?.length ? <span className="uix-cmdk__shortcut"><KbdCombo keys={[...item.shortcut]} platform={platform} /></span> : null}
+      </div>
+    );
+  };
+
+  const recentRows = showRecent ? rows.slice(0, recent!.length) : [];
+  /** Where the next group's rows start in `rows`. */
+  let cursor = recentRows.length;
+  const palette = (
+    <div className={cx('uix-cmdk', className)} data-items="" {...props}>
+      <input
+        ref={inputRef}
+        className="uix-cmdk__input"
+        role="combobox"
+        aria-expanded="true"
+        aria-autocomplete="list"
+        aria-controls={listId}
+        aria-activedescendant={activeId ?? undefined}
+        aria-label={inputLabel}
+        placeholder={placeholder}
+        autoComplete="off"
+        spellCheck={false}
+        {...inputProps}
+        value={query}
+        onChange={(event) => { inputProps?.onChange?.(event); setQuery(event.currentTarget.value); }}
+        onKeyDown={onKeyDown}
+      />
+      <div ref={listRef} className="uix-cmdk__list" role="listbox" id={listId} aria-label={inputLabel} hidden={rows.length === 0}>
+        {recentRows.length > 0 && (
+          <div role="group" aria-labelledby={`${listId}-recent`}>
+            <div className="uix-cmdk__group" id={`${listId}-recent`} role="presentation">{recentHeading}</div>
+            {recentRows.map(renderRow)}
+          </div>
+        )}
+        {groups.map((group, index) => {
+          const groupRows = rows.slice(cursor, cursor + group.items.length);
+          cursor += group.items.length;
+          const headingId = `${listId}-g${index}`;
+          return (
+            <div key={group.label ?? `__${index}`} role="group" aria-labelledby={group.label != null ? headingId : undefined}>
+              {group.label != null && <div className="uix-cmdk__group" id={headingId} role="presentation">{group.label}</div>}
+              {groupRows.map(renderRow)}
+            </div>
+          );
+        })}
+      </div>
+      {rows.length === 0 && <p className="uix-cmdk__empty">{empty}</p>}
+      <span className="uix-visually-hidden" role="status">{announced}</span>
+    </div>
+  );
+
+  if (!inDialog) return palette;
+  return (
+    <dialog
+      ref={ref}
+      className="uix-dialog uix-cmdk-dialog"
+      data-uix-cmdk-dialog=""
+      // the motion contract (HAR-2578): a keyboard surface opens and closes with no animation
+      data-uix-instant=""
+      aria-label={inputLabel}
+      // a click on the backdrop (the dialog box itself, outside the palette) closes it
+      onPointerDown={(event) => { pressedBackdrop.current = event.target === event.currentTarget; }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget && pressedBackdrop.current) onOpenChange?.(false);
+        pressedBackdrop.current = false;
+      }}
+    >
+      {palette}
+    </dialog>
   );
 }

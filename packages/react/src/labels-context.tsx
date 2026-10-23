@@ -19,12 +19,23 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
+import type { LightboxLabels } from './components/Lightbox.js';
+import type { SortableListLabels } from './components/SortableList.js';
+import type { DiffViewerLabels } from './components/DiffViewer.js';
+import type { MatchReviewLabels } from './components/MatchReview.js';
+import type { QrCodeLabels } from './components/QrCode.js';
+import type { CodeDisplayLabels } from './components/CodeDisplay.js';
+import type { ContactCardLabels } from './components/ContactCard.js';
+import type { PrintLayoutLabels } from './components/PrintLayout.js';
+import type { QrScannerLabels } from './components/QrScanner.js';
 import type { PasswordInputLabels } from './components/PasswordInput.js';
 import type { TimePickerLabels } from './components/TimePicker.js';
 import type { TagInputLabels } from './components/TagInput.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
+import type { AuditLogLabels } from './components/AuditLog.js';
+import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -43,6 +54,8 @@ export interface UixLabels {
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
   discardPrompt?: Partial<DiscardPromptLabels>;
   peek?: { previous?: string; next?: string; close?: string };
+  /** `Lightbox` (HAR-1826): previous / next / close, the counter, the zoom toggle. */
+  lightbox?: Partial<LightboxLabels>;
   toast?: { dismiss?: string };
   toaster?: { region?: string };
   /**
@@ -58,13 +71,28 @@ export interface UixLabels {
   searchSuggest?: { clear?: string };
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
   searchBar?: Partial<SearchBarLabels>;
-  /** `resultsOne` / `resultsMany`: the polite result count; `{count}`. */
-  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string };
+  /**
+   * `resultsOne` / `resultsMany`: the polite result count; `{count}`. Items mode (HAR-1378):
+   * `empty` when nothing matches, `recent` the heading of the recent items.
+   */
+  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string; empty?: string; recent?: string };
+  /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
+  qrCode?: Partial<QrCodeLabels>;
+  /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
+  codeDisplay?: Partial<CodeDisplayLabels>;
+  /** `ContactCard` (HAR-1379): the Email / Call actions and the erased and unavailable states. */
+  contactCard?: Partial<ContactCardLabels>;
+  /** `PrintSignature` (HAR-986): the captions of the signature line and the stamp box. */
+  printLayout?: Partial<PrintLayoutLabels>;
+  /** `QrScanner` (HAR-1254): the start / stop buttons, every state's title and text, the read announcement. */
+  qrScanner?: Partial<QrScannerLabels>;
   entityPicker?: Partial<EntityPickerLabels>;
   tree?: Partial<TreeLabels>;
   /** `OrgChart` (HAR-1807): loading and error rows, the report count, the zoom toolbar. */
   orgChart?: Partial<OrgChartLabels>;
   inlineEdit?: Partial<InlineEditLabels>;
+  /** `SortableList` (HAR-1375): the grip, Move up / Move down, the move announcement. */
+  sortableList?: Partial<SortableListLabels>;
   /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
   confirmDialog?: { typeToConfirm?: string; compensation?: string; typeToConfirmMismatch?: string };
   schedulingCalendar?: Partial<SchedulingCalendarLabels>;
@@ -75,6 +103,14 @@ export interface UixLabels {
   timePicker?: Partial<TimePickerLabels>;
   schedulingTimeline?: Partial<SchedulingTimelineLabels>;
   textDiff?: Partial<TextDiffLabels>;
+  /** `DiffViewer` (HAR-1369): the version names, the resolution buttons, the summary. */
+  diffViewer?: Partial<DiffViewerLabels>;
+  /** `MatchReview` (HAR-1369): the decision table, bulk actions and the adopt mode. */
+  matchReview?: Partial<MatchReviewLabels>;
+  /** `AuditLog` (HAR-987): the filters, Details, Show older entries, and every state. */
+  auditLog?: Partial<AuditLogLabels>;
+  /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
+  dataWorkspace?: Partial<DataWorkspaceLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;

@@ -1,5 +1,22 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 8d41b96 routine: the re-shoot found a second path to the same empty-state flash (refreshing turned on a render later); pinned by a jsdom test -->
+<!-- lesson-skip: 5cc12fc routine: a table cell's width is a preference, a squeezed table shrank the checkbox column under the frozen id's offset; found by looking at the 390 px shot, pinned by a spec -->
+<!-- lesson-skip: 0bb7303 routine: NFD leaves stroked letters (đ ø ł ı) whole; the reviewer named them, a fold test now lists each -->
+<!-- lesson-skip: 93d034a routine: a cmdk option marked only by background vanished in forced colours; same family as the existing forced-colours entries, pinned by a spec -->
+<!-- lesson-skip: 1fe9677 routine: a backdrop click closed on a press that began inside; pointerdown and click must both land on the backdrop, pinned by jsdom tests -->
+<!-- lesson-skip: 7249cfd routine review fixes (draft order kept after a refused reorder, pointercancel as a drop, no Escape cancel); each pinned by a jsdom test -->
+<!-- lesson-skip: 9e70b73 same cause as the "a region inserted with text announces nothing" family: the live region unmounted with the actions row; pinned by a same-node test -->
+<!-- lesson-skip: 439821c routine review fixes (own 300 ms timer instead of useDelayedPending, reversed range, body not keyed by field); each pinned by a jsdom test -->
+<!-- lesson-skip: 7471b8d routine review fixes (empty state picked during a refetch, Escape layering, frozen id, chip ids, load-more error); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 6d69ac9 routine: a dim value measured below 4.5:1 by the reviewer; measured again and pinned by a CSS contract test -->
+<!-- lesson-skip: 652af34 routine: sm padding leaked onto the link variant; pinned by a CSS contract test -->
+<!-- lesson-skip: f6eec1c routine: link mode dropped disabled and fell back to href="#"; pinned by jsdom tests -->
+<!-- lesson-skip: 7cd7c55 routine: the contract gate named two raw px values in this batch's own fixes; the gate worked -->
+<!-- lesson-skip: f05d14b same cause as "An a11y scan only sees the states a specimen renders at load" (recorded); a new specimen showed the state -->
+<!-- lesson-skip: f23b7d6 routine: a runtime-only token in one declaration; test:tokens (UIX-03) names it -->
+<!-- lesson-skip: 8240ba4 already recorded: StrictMode runs updaters and cleanups twice (3e0ff88 entry); pinned by the StrictMode jsdom test -->
+<!-- lesson-skip: 7728f4e routine: a JSX comment between elements read as a text node by literal-a11y-text; the gate named the file and line -->
 <!-- lesson-skip: a797ad7 routine: native selects swapped for the kit Select; the static + runtime gates landed in the same commit -->
 <!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
 <!-- lesson-skip: 3b9609d routine: the reviewer named three shapes the glyph guard missed; each is now a scan test -->
@@ -44,6 +61,14 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+<!-- lesson-skip: f11e68b routine: the PR #166 review measured each map problem (label counts, stroke alpha, description length); pinned by jsdom and Chromium tests -->
+<!-- lesson-skip: 07bf8a1 routine: review named the look and the key collision; pinned by a double-booking jsdom test -->
+<!-- lesson-skip: 31ec67a same family as the 3e0ff88 entry (effects that do two jobs re-run on an unrelated dep); hydration case pinned by a renderToString test -->
+<!-- lesson-skip: 9979dc2 routine: review named each gap; pinned by decode and Chromium tests -->
+<!-- lesson-skip: 4dc845e routine CSS fit fix; measured at 320/360/390 by a spec -->
+<!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
+<!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
+<!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
 ### 2026-10-23 · an exit animation makes a closed dialog pass toBeVisible · `3bcbcb7`
 - **Rule:** to assert an overlay stayed open, check its state (`dialog.open`, `:popover-open`, `aria-expanded`), not `toBeVisible()`. A dialog or popover that just closed stays painted for its exit transition, and Playwright counts it visible.  **Why:** a TagInput spec "Escape closed the list, not the drawer" passed on master while the Escape did close the drawer; it went red only when keyboard closes became instant.
@@ -54,6 +79,28 @@
 - **Gate:** `tests/a11y/older-gaps.spec.mjs` range-field test (Enter, then Escape, `outerEscape` 0) failed in CI on the instant open; ⚠ TODO no generic gate for other state-gated key handlers.  **Tag:** race, motion, overlay, local-env-lies
 
 
+
+### 2026-10-23 · a scale measured from a box the scaled thing sizes · `39bc060`
+- **Rule:** when a component scales itself to fit (zoom, transform, font-size by measurement), measure a box whose width cannot depend on the scaled content: a wrapper with its own definite width (the paper's, capped by `max-inline-size: 100%`), never the component's parent. Inline-size containment is not the fix: in a shrink-to-fit context (a centred flex or grid item) the contained box collapses to nothing.  **Why:** the PrintLayout preview first measured its parent; in an app-shell column that sized to its content, every smaller scale made the column narrower and the next measure smaller, down to 4 % (a 30 px page). A `contain: inline-size` wrapper then collapsed the same way at 1280 px. A wrapper sized like the paper is stable: its width comes from its own declaration and its container, never from the zoomed page.  **Gate:** `tests/a11y/print-layout.spec.mjs` checks true paper width at 1280 px and a page inside the screen, in print type, with no false overflow at 320 and 390 px.  **Tag:** layout, feedback-loop, measurement, generalizable
+
+### 2026-10-23 · generated specimens · `0e6630e`
+- **Rule:** a committed module generated from rendered components must not read the machine's default locale (or zone): pass `locale` / `formatDate` explicitly in the generator. And a check that compares one-line-per-route modules has to print where they differ; node's assertion diff truncates both strings at the same point and shows no difference at all.  **Why:** the resource-day specimen named its grid with `Intl` in the default locale: "22 October" on the en-GB maintainer machine, "October 22" on CI. The first CI failure printed two identical prefixes, so the cause was invisible until the test reported the first differing index.  **Gate:** `display-specimens.test.mjs` prints the first difference with context; the generator passes `formatDate`.  **Tag:** generated-files, locale, ci-only, generalizable
+
+### 2026-10-23 · print layout · `8212a1f`
+- **Rule:** a header or footer that must repeat on every printed page has to be a real `<thead>` / `<tfoot>` of a real `<table>`; Chromium does not repeat the header group of a CSS table built of divs (`display: table-header-group`), and print emulation (`emulateMedia`) does not paginate, so only a real PDF shows it. Give the screen reset of such a table zero specificity (`:where()`), or it out-specifies the print rules that restore the table display.  **Why:** PrintLayout's first two builds printed the header on page 1 and the footer on the last page only; a probe of five structures (div table, div table with cells, real table, real table with rows, fixed elements) showed only real tables and fixed boxes repeat, and then a `.page > :is(thead, tbody, tfoot) { display: block }` screen reset (0,1,1) beat the print `.header { display: table-header-group }` (0,1,0).  **Gate:** `tests/a11y/print-layout.spec.mjs` prints a PDF with `page.pdf` and counts the header and footer links per page against a link drawn once.  **Tag:** print, false-green, test-double-fidelity, cascade, generalizable
+
+### 2026-10-23 · a blur that says nowhere · `66d6dd3`
+- **Rule:** never read a blur with `relatedTarget === null` as "focus left". Safari (and Firefox on macOS) do not focus a clicked button, so pressing Cancel blurs the field with no `relatedTarget` before the click runs: a save-on-blur saved the draft the person was cancelling. Track a pointer press inside the editor (pointerdown capture, released after the click), keep focus with `onMouseDown={e => e.preventDefault()}` on the editor's own buttons, and when `relatedTarget` is null wait one task and save only if focus is really outside and the editor is still open.
+- **Gate:** "1: Cancel clicked where the browser blurs with no relatedTarget …" in `packages/react/src/inline-edit-review-dom.test.mjs` dispatches pointerdown, a focusout with `relatedTarget: null`, then the click, and failed before the fix.  **Tag:** cross-browser, focus, forms
+
+### 2026-10-23 · a generated file with a time in it · `8d6b668`
+- **Rule:** a generated, committed file that renders a date or time (a docs specimen, a snapshot) must pin its time zone (and its `now`), and its freshness test must also render under a far-away `TZ` and compare. Otherwise it is the author's zone that is committed, and CI (UTC) regenerates something else.  **Why:** the AuditLog specimen rendered `RelativeTime` and an exact time in the local zone: identical on the author's machine, a failed `gates` job on the first push of PR #168. A fixed `now` was not enough; the zone was the other half.
+- **Gate:** `packages/react/src/data-editing-specimens.test.mjs` renders the specimens with `process.env.TZ = 'Pacific/Kiritimati'` and compares them with the committed module (red with the UTC pin removed).  **Tag:** false-green, generated-files, time-zone, generalizable
+
+### 2026-10-23 · a stylesheet no bundle reads · `feat/batch-3-data-editing`
+- **Rule:** a new component stylesheet is not shipped until `styles/component-list.css` imports it; check the BUILT bundle for the block class (`grep -c uix-x build/css/styles.css`), and screenshot the component from a harness that links the bundle, before calling it styled.  **Why:** `inline-edit.css` (HAR-1381) was written, size-tracked by `test:size:css` and scanned by `test:contract`, all of which read the file itself, and never added to the list. `InlineEdit` rendered as bare browser buttons in every product for two weeks; its jsdom and Playwright tests checked names, focus and saves, not looks. HAR-1833's first screenshot showed it.
+- **Gate:** `packages/tokens/tests/component-list.test.mjs` fails when a `styles/components/*.css` is missing from the list (seen red with the line removed); `tests/a11y/inline-edit-record.spec.mjs` asserts the computed look of the value button.  **Tag:** false-green, css, packaging, generalizable
+- **Rule:** never give the only item of an `inline-flex` box a negative inline margin to pull it back onto a column: the box's shrink-to-fit width is the item's width minus that margin, so the item wraps its text early ("Amra / Kovač" in a 900 px column). Put the negative margin on the box.
 ### 2026-10-23 · an input's type change moves the caret later · `2a0c5b5`
 - **Rule:** after changing an input's `type` (a password reveal), put the selection back in a layout effect *after forcing a style update* (`void input.offsetWidth`). Chrome resets the caret to 0 when it rebuilds the field for the new type at the next style update, not when the attribute changes: a `setSelectionRange` straight after the commit reads fine and is then undone. Do not restore again after a frame: a key pressed in between is moved too.  **Why:** `PasswordInput` turned End, X, toggle, Y into "Ycorrect horse batteryX". A MutationObserver saw `selectionStart` 22 right after the change and a `selectionchange` to 0 later; a frame-delayed restore fixed that test and broke Home, →, toggle, Z.
 - **Gate:** "B1: typing goes on at the caret after the toggle" in `tests/a11y/form-fields.spec.mjs` types after toggling both ways (stable over 4 repeats). Found by the independent review of #167. Model: Opus 5.5.  **Tag:** browser-quirk, focus, test-double-fidelity, generalizable

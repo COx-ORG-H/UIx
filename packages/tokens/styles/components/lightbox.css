@@ -40,12 +40,25 @@
   .uix-lightbox__nav--prev { left: var(--uix-space-3); }
   .uix-lightbox__nav--next { right: var(--uix-space-3); }
   .uix-lightbox__close { top: var(--uix-space-3); right: var(--uix-space-3); }
+  /* HAR-1826: the consumer's actions, then Close, top right; it wraps under itself on a phone. */
+  .uix-lightbox__toolbar { position: absolute; top: var(--uix-space-3); right: var(--uix-space-3); left: var(--uix-space-3); display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--uix-space-2); pointer-events: none; }
+  .uix-lightbox__toolbar > * { pointer-events: auto; }
+  .uix-lightbox__toolbar .uix-lightbox__close { position: static; flex: none; }
+  /* With actions the toolbar is wider than Close alone: the picture starts below it. */
+  .uix-lightbox--gallery[data-actions] { padding-top: calc(44px + 2 * var(--uix-space-3)); }
+  .uix-lightbox--gallery[data-actions] :is(.uix-lightbox__stage, .uix-lightbox__media) { max-height: calc(100dvh - 8rem - 44px - var(--uix-space-3)); }
+  /* Laid over the picture's own box (measured by the React adapter); it draws, so no swipe. */
+  .uix-lightbox__stage:has(.uix-lightbox__overlay) { position: relative; }
+  .uix-lightbox__overlay { position: absolute; touch-action: none; }
   .uix-lightbox__nav:disabled { opacity: .4; cursor: default; }
   .uix-lightbox__nav:not(:disabled):hover, .uix-lightbox__close:hover { background: var(--uix-bg-hover); }
   .uix-lightbox__nav:focus-visible, .uix-lightbox__close:focus-visible, .uix-lightbox__tool:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   /* phones: the image takes the width; previous/next sit at the bottom corners, clear of it */
   @media (max-width: 40rem) {
     .uix-lightbox--gallery .uix-lightbox__media { width: calc(100vw - 2 * var(--uix-space-4)); max-height: calc(100dvh - 10rem); }
+    /* the actions may wrap to a second row here */
+    .uix-lightbox--gallery[data-actions] { padding-top: calc(2 * 44px + 3 * var(--uix-space-3)); }
+    .uix-lightbox--gallery[data-actions] :is(.uix-lightbox__stage, .uix-lightbox__media) { max-height: calc(100dvh - 10rem - 2 * 44px - 2 * var(--uix-space-3)); }
     .uix-lightbox__nav { top: auto; bottom: var(--uix-space-3); transform: none; }
     .uix-lightbox__figure { margin-bottom: 3.5rem; }
   }

@@ -122,7 +122,7 @@ test('the grip moves its row with the arrow keys, within its section only', () =
 
   key(grip, 'ArrowDown');
   assert.deepEqual(calls, [[['team', 'mine', 'p1'], 'custom']]);
-  assert.deepEqual(names(host.querySelector('.uix-saved-views__group')), ['Team queue', 'My open work', 'P1 only'], 'optimistic order while the consumer persists');
+  assert.deepEqual(names(host.querySelector('.uix-saved-views__group')), ['My open work', 'Team queue', 'P1 only'], 'an order the consumer did not apply does not stay on screen (PR #168 review)');
 
   const lastCustom = [...host.querySelectorAll('.uix-saved-views__group')[0].querySelectorAll('.uix-saved-views__grip')].at(-1);
   key(lastCustom, 'ArrowDown');

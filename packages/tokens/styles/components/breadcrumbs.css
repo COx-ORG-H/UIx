@@ -5,6 +5,8 @@
   /* already a quiet link by its own design — hover/focus parity with the quiet-link
      contract in link.css, so the keyboard state matches the pointer state. */
   .uix-breadcrumbs a:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
+  /* a long unbroken title (a German compound, a file name) wraps instead of widening a phone page */
+  .uix-breadcrumbs > li { min-inline-size: 0; overflow-wrap: anywhere; }
   .uix-breadcrumbs__sep { opacity: .55; }
   .uix-breadcrumbs [aria-current="page"] { color: var(--uix-text); font-weight: 500; }
 }

@@ -8,6 +8,8 @@ import {
   clusterIdFor,
   layeredNeighbor,
   layoutLayeredGraph,
+  separateEdgeLabels,
+  edgeLabelSize,
 } from './relationship-graph-model.ts';
 
 const n = (id, extra = {}) => ({ id, label: id.toUpperCase(), ...extra });
@@ -67,13 +69,34 @@ test('classification: forward edges step one column; a back edge that closes a l
   assert.equal(layout.edges.find((edge) => edge.id === 'deep-a').autoLabel, false); // cycle labels show on focus; both ends carry the cycle flag
 });
 
-test('classification: same-column and non-looping back edges are lateral', () => {
+test('classification: a same-column edge is lateral; a back edge that closes no loop is back, not a cycle', () => {
   const nodes = ['r', 'a', 'b', 'c'].map((id) => n(id));
   const edges = [e('r', 'a'), e('r', 'b'), e('a', 'b'), e('b', 'c'), e('c', 'a')];
   const { kindById } = classifyLayeredEdges(nodes, edges, 'r');
   assert.equal(kindById.get('a-b'), 'lateral');
   // c (depth 2) → a (depth 1): a cannot reach c through forward edges (a→b is lateral).
-  assert.equal(kindById.get('c-a'), 'lateral');
+  assert.equal(kindById.get('c-a'), 'back');
+  // HAR-1639 (8): neither end of a non-cycle edge is flagged as being in a cycle
+  const layout = layoutLayeredGraph(nodes, edges, { rootId: 'r' });
+  assert.deepEqual(layout.items.filter((item) => item.inCycle).map((item) => item.id), []);
+});
+
+test('HAR-1639 (8): an edge across more than one column is a solid skip edge, not a cycle', () => {
+  // c's column is supplied (as TENSOR's K3 map does), so r → c crosses two columns
+  const nodes = [n('r'), n('a'), n('b'), n('c', { depth: 3 })];
+  const edges = [e('r', 'a'), e('a', 'b'), e('b', 'c'), e('r', 'c')];
+  const { kindById } = classifyLayeredEdges(nodes, edges, 'r');
+  assert.equal(kindById.get('r-c'), 'skip');
+  const layout = layoutLayeredGraph(nodes, edges, { rootId: 'r' });
+  const skip = layout.edges.find((edge) => edge.id === 'r-c');
+  assert.equal(skip.kind, 'skip');
+  assert.equal(skip.variant, 'solid');
+  assert.match(skip.path, /^M\S+ \S+ C.* L/, 'out of the right side, along a channel');
+  // the channel runs under every item of the columns it crosses
+  const channel = Number(/L\S+ (\S+)/.exec(skip.path)[1]);
+  const between = layout.items.filter((item) => item.depth > 0 && item.depth < 3);
+  assert.ok(between.every((item) => channel > item.y + item.height), 'never behind a node it crosses');
+  assert.equal(layout.items.some((item) => item.inCycle), false);
 });
 
 test('supplied depth wins over BFS; unreachable nodes go to a trailing column; self-loops are dropped', () => {
@@ -83,7 +106,7 @@ test('supplied depth wins over BFS; unreachable nodes go to a trailing column; s
   assert.equal(depthById.get('a'), 2);
   assert.equal(depthById.get('island'), 3);
   assert.equal(kindById.has('a-a'), false);
-  assert.equal(kindById.get('r-a'), 'lateral');
+  assert.equal(kindById.get('r-a'), 'skip');
 });
 
 test('clustering: 5 leaf siblings stay, 6 collapse into one item carrying all members', () => {
@@ -238,4 +261,38 @@ test('siblings from one node with the same relationship show the label once', ()
   const layout = layoutLayeredGraph(nodes, edges, { rootId: 'r' });
   const auto = layout.edges.filter((edge) => edge.autoLabel).map((edge) => edge.label).sort();
   assert.deepEqual(auto, ['depends_on', 'runs_on']);
+});
+
+test('HAR-1639 (1): an edge carries its variant, tone and description to the routed edge', () => {
+  const nodes = [n('app'), n('db')];
+  const edges = [e('app', 'db', { variant: 'dashed', tone: 'danger', description: 'expected, missing' })];
+  const [routed] = layoutLayeredGraph(nodes, edges, { rootId: 'app' }).edges;
+  assert.equal(routed.variant, 'dashed');
+  assert.equal(routed.tone, 'danger');
+  assert.equal(routed.description, 'expected, missing');
+  assert.equal(layoutLayeredGraph(nodes, [e('app', 'db')], { rootId: 'app' }).edges[0].variant, 'solid');
+});
+
+test('HAR-1639 (6): labels that would overlap are moved apart; one that would drift too far is left out', () => {
+  const size = edgeLabelSize(['depends_on']);
+  assert.ok(size.width > 50 && size.height >= 13);
+  const boxes = [
+    { id: 'a', x: 200, y: 100, ...size },
+    { id: 'b', x: 204, y: 103, ...size },
+    { id: 'c', x: 198, y: 104, ...size },
+    { id: 'far', x: 600, y: 100, ...size },
+  ];
+  const placed = separateEdgeLabels(boxes, { gap: 2, maxShift: 40 });
+  const box = (id) => ({ top: placed.get(id).y - size.height / 2, bottom: placed.get(id).y + size.height / 2 });
+  assert.equal(placed.get('a').y, 100, 'the first keeps its place');
+  assert.ok(box('b').top >= box('a').bottom, 'b moved below a');
+  assert.ok(box('c').top >= box('b').bottom, 'c moved below b');
+  assert.equal(placed.get('far').y, 100, 'a label elsewhere is untouched');
+  const crowded = separateEdgeLabels(Array.from({ length: 8 }, (_, i) => ({ id: `l${i}`, x: 200, y: 100 + i, ...size })), { maxShift: 40 });
+  const shown = [...crowded.values()].filter((label) => !label.hidden);
+  assert.ok(shown.length >= 2 && shown.length < 8, 'some fit, the rest are left out');
+  // no two shown labels overlap
+  const tops = shown.map((label) => label.y).sort((p, q) => p - q);
+  for (let i = 1; i < tops.length; i += 1) assert.ok(tops[i] - tops[i - 1] >= size.height, 'shown labels never overlap');
+  assert.deepEqual(separateEdgeLabels(boxes), separateEdgeLabels([...boxes].reverse()), 'deterministic, whatever the input order');
 });

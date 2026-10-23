@@ -15,6 +15,7 @@
 @import "components/search-suggest.css";
 @import "components/tag-input.css";
 @import "components/form.css";
+@import "components/inline-edit.css";
 @import "components/app-shell.css";
 @import "components/sidebar.css";
 @import "components/breadcrumbs.css";
@@ -26,12 +27,18 @@
 @import "components/page-header.css";
 @import "components/kbd.css";
 @import "components/copy-button.css";
+@import "components/qr-code.css";
+@import "components/code-display.css";
+@import "components/print-layout.css";
+@import "components/qr-scanner.css";
 @import "components/card.css";
 @import "components/stat-tile.css";
 @import "components/status-pill.css";
 @import "components/table.css";
 @import "components/table-toolbar.css";
+@import "components/data-workspace.css";
 @import "components/view-menu.css";
+@import "components/sortable-list.css";
 @import "components/list.css";
 @import "components/description-list.css";
 @import "components/typography.css";

@@ -382,20 +382,40 @@ export interface EventRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'tit
   day: ReactNode;
   title: ReactNode;
   meta?: ReactNode;
+  /** Weekday above the month in the date tile, e.g. "Sri" (HAR-1370). */
+  weekday?: ReactNode;
+  /** Year under the day in the date tile, for a list that crosses a year (HAR-1370). */
+  year?: ReactNode;
+  /** Start time at the foot of the date tile, e.g. "18:00" (HAR-1370). */
+  time?: ReactNode;
+  /**
+   * The machine-readable date (and time) of the tile, e.g. `"2026-10-22T18:00+02:00"`: the tile
+   * becomes a `<time>` element, so the date is not only words.
+   */
+  dateTime?: string;
+  /** A thumbnail at the end of the row (an `<img>`), drawn 4:3 and cropped to fill (HAR-1370). */
+  media?: ReactNode;
 }
 
-/** Event row — date block + title/meta (`.uix-event-row`). */
-export function EventRow({ month, day, title, meta, className, ...props }: EventRowProps) {
+/** Event row — date block + title/meta (`.uix-event-row`), with an optional thumbnail. */
+export function EventRow({ month, day, title, meta, weekday, year, time, dateTime, media, className, ...props }: EventRowProps) {
+  const tile = (
+    <>
+      {weekday != null && <span className="uix-event-date__weekday">{weekday}</span>}
+      <span className="uix-event-date__month">{month}</span>
+      <span className="uix-event-date__day">{day}</span>
+      {year != null && <span className="uix-event-date__year">{year}</span>}
+      {time != null && <span className="uix-event-date__time">{time}</span>}
+    </>
+  );
   return (
-    <div className={cx('uix-event-row', className)} {...props}>
-      <div className="uix-event-date">
-        <span className="uix-event-date__month">{month}</span>
-        <span className="uix-event-date__day">{day}</span>
-      </div>
+    <div className={cx('uix-event-row', media != null && 'uix-event-row--media', className)} {...props}>
+      {dateTime ? <time className="uix-event-date" dateTime={dateTime}>{tile}</time> : <div className="uix-event-date">{tile}</div>}
       <div>
         <p className="uix-event-row__title">{title}</p>
         {meta != null && <p className="uix-event-row__meta">{meta}</p>}
       </div>
+      {media != null && <div className="uix-event-row__media">{media}</div>}
     </div>
   );
 }

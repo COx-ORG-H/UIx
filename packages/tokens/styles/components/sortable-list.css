@@ -1,0 +1,42 @@
+/* uix sortable list — a list the person reorders (React `SortableList`, HAR-1375).
+   A row is grip · content · move up / move down. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-sortable { display: grid; gap: var(--uix-space-2); min-width: 0; margin: 0; padding: 0; list-style: none; }
+  .uix-sortable__row {
+    display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; margin: 0;
+    padding: var(--uix-space-2) var(--uix-space-2) var(--uix-space-2) var(--uix-space-1);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+  }
+  /* The dragged row lifts and its neighbours make room by reordering, frame by frame: no motion of its own. */
+  .uix-sortable__row[data-dragging] { position: relative; z-index: var(--uix-z-raised); border-color: var(--uix-ring); box-shadow: var(--uix-shadow-popover); }
+  .uix-sortable[data-dragging] { cursor: grabbing; user-select: none; }
+  .uix-sortable__content { flex: 1; min-width: 0; overflow-wrap: break-word; }
+  /* 24 × 32: the grip is a pointer target, wide enough without taking the content's room. */
+  .uix-sortable__grip {
+    display: grid; place-items: center; flex: none; align-self: stretch; width: 24px; min-height: 32px; padding: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none;
+  }
+  .uix-sortable__grip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-sortable__moves { display: inline-flex; flex: none; gap: var(--uix-space-1); }
+  .uix-sortable__move {
+    display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-sm); background: var(--uix-surface); color: var(--uix-text); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-sortable__move svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-sortable__move:disabled { color: var(--uix-text-muted); opacity: .45; cursor: default; }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-sortable__move:not(:disabled):hover, .uix-sortable__grip:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+  }
+  .uix-sortable__move:not(:disabled):active { background: var(--uix-bg-active); }
+  :is(.uix-sortable__grip, .uix-sortable__move):focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  .uix-sortable__row:focus-within { border-color: var(--uix-border-strong); }
+  /* On a phone Move up stacks over Move down, so the content keeps the width its words need (at
+     320 px they broke inside every word). A viewport query, not a container: an inline-size
+     container has no width of its own, and the list would collapse in a popover or any
+     shrink-to-fit parent (it did in the docs preview). */
+  @media (max-width: 30rem) {
+    .uix-sortable__moves { flex-direction: column; }
+    .uix-sortable__move { width: 32px; height: 28px; }
+  }
+}

@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { JsonValue } from '../json-value.js';
 import { cx } from '../cx.js';
 import { StatusPill } from './StatusPill.js';
+import { Button } from './Button.js';
 import { fillLabel } from '../fill-label.js';
+import { useUixLabels } from '../labels-context.js';
+import { ChevronDownIcon } from '../icons/components.js';
 
 export interface MatchReviewField {
   id: string;
@@ -72,6 +75,33 @@ export interface MatchReviewLabels {
   failedSuffix: string;
   bulkAcceptFailed: string;
   bulkDismissFailed: string;
+  /** Adopt mode (HAR-1369): a candidate's heading when `candidateLabel` gives none. `{id}`. */
+  candidate: string;
+  /** Adopt mode: the compare table's caption. `{candidate}`. */
+  compareCaption: string;
+  field: string;
+  /** Adopt mode: the column of the record as it is now. */
+  currentValue: string;
+  /** Adopt mode: the column of the candidate's values. */
+  candidateValue: string;
+  /** Adopt mode: the column of checkboxes. */
+  adopt: string;
+  /** Adopt mode: one checkbox's name. `{field}`, `{candidate}`. */
+  adoptField: string;
+  /** Adopt mode: shown instead of a checkbox when the candidate has the same value. */
+  same: string;
+  /** Adopt mode: the button with one field chosen. `{count}`. */
+  adoptSelectedOne: string;
+  /** Adopt mode: the button with any other number of fields chosen (0 too). `{count}`. */
+  adoptSelectedMany: string;
+  /** Adopt mode: the provenance disclosure. */
+  provenance: string;
+  /** Adopt mode: announced after `onAdopt` resolves, one field. `{count}`, `{candidate}`. */
+  adoptedOne: string;
+  /** Adopt mode: announced after `onAdopt` resolves, more fields. `{count}`, `{candidate}`. */
+  adoptedMany: string;
+  /** Adopt mode: shown when `onAdopt` rejects. */
+  adoptFailed: string;
 }
 
 export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels = {
@@ -114,6 +144,20 @@ export const DEFAULT_MATCH_REVIEW_LABELS: MatchReviewLabels = {
   failedSuffix: '; {count} failed',
   bulkAcceptFailed: 'Bulk accept failed. Try again.',
   bulkDismissFailed: 'Bulk dismiss failed. Try again.',
+  candidate: 'Candidate {id}',
+  compareCaption: '{candidate}: the record now and the candidate, field by field',
+  field: 'Field',
+  currentValue: 'Now',
+  candidateValue: 'Candidate',
+  adopt: 'Adopt',
+  adoptField: 'Adopt {field} from {candidate}',
+  same: 'Same',
+  adoptSelectedOne: 'Adopt {count} field',
+  adoptSelectedMany: 'Adopt {count} fields',
+  provenance: 'Where this candidate comes from',
+  adoptedOne: '{count} field adopted from {candidate}',
+  adoptedMany: '{count} fields adopted from {candidate}',
+  adoptFailed: 'Could not adopt the fields. Try again.',
 };
 
 export interface MatchReviewProps {
@@ -130,6 +174,18 @@ export interface MatchReviewProps {
   onRetry?: () => void;
   className?: string;
   labels?: Partial<MatchReviewLabels>;
+  /**
+   * `decide` (default): one row per candidate, decided as a whole. `adopt` (HAR-1369, MOTUS B-A9
+   * registry candidates): per candidate a table of the record now against the candidate, field
+   * by field, a checkbox per field that differs, and an Adopt button that calls `onAdopt`.
+   */
+  fieldMode?: 'decide' | 'adopt';
+  /** Adopt mode: take the chosen fields from the candidate. A promise keeps the button busy until it settles. */
+  onAdopt?: (candidateId: string, fieldIds: string[]) => void | Promise<unknown>;
+  /** Adopt mode: the candidate's heading, e.g. its source ("DNB", "Wikidata"). Default `labels.candidate`. */
+  candidateLabel?: (candidate: MatchReviewCandidate) => ReactNode;
+  /** Adopt mode: where a candidate comes from, in a disclosure under its table (source, retrieved, match reason). */
+  provenance?: (candidate: MatchReviewCandidate) => ReactNode;
 }
 
 const valueText = (value: JsonValue | undefined) => value == null ? '—' : typeof value === 'string' ? value : JSON.stringify(value);
@@ -138,8 +194,9 @@ const valueText = (value: JsonValue | undefined) => value == null ? '—' : type
 export function MatchReview({
   incoming, incomingLabel = 'Incoming record', fields, candidates, selectedIds,
   onSelectionChange, onDecision, onBulkDecision, loading, error, onRetry, className, labels: labelOverrides,
+  fieldMode = 'decide', onAdopt, candidateLabel, provenance,
 }: MatchReviewProps) {
-  const labels: MatchReviewLabels = { ...DEFAULT_MATCH_REVIEW_LABELS, ...labelOverrides };
+  const labels: MatchReviewLabels = { ...DEFAULT_MATCH_REVIEW_LABELS, ...useUixLabels().matchReview, ...labelOverrides };
   const plural = (n: number, one: string, many: string) => fillLabel(n === 1 ? one : many, { count: n });
   const decisionLabel = { accepted: labels.decisionAccepted, dismissed: labels.decisionDismissed, split: labels.decisionSplit, other: labels.decisionOther } as const;
   const actionLabel = { accept: labels.accept, dismiss: labels.dismiss, split: labels.split, 'pick-other': labels.pickOther } as const;
@@ -185,6 +242,23 @@ export function MatchReview({
   if (error) return <div className={cx('uix-match-review uix-match-review--state', className)} role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>;
   if (candidates.length === 0) return <div className={cx('uix-match-review uix-match-review--state', className)}><p>{labels.empty}</p><p>{labels.emptyDetail}</p></div>;
 
+  if (fieldMode === 'adopt') {
+    return (
+      <section className={cx('uix-match-review', 'uix-match-review--adopt', className)} aria-label={labels.region}>
+        <div className="uix-match-review__summary">
+          <div><strong>{incomingLabel}</strong><span>{fillLabel(labels.pendingOf, { pending: pending.length, total: candidates.length })}</span></div>
+        </div>
+        {candidates.map((candidate) => (
+          <AdoptCandidate
+            key={candidate.id} candidate={candidate} incoming={incoming} fields={fields} labels={labels}
+            heading={candidateLabel?.(candidate) ?? fillLabel(labels.candidate, { id: candidate.id })}
+            provenance={provenance?.(candidate)} onAdopt={onAdopt} onDecision={onDecision} decisionLabel={decisionLabel}
+          />
+        ))}
+      </section>
+    );
+  }
+
   return (
     <section className={cx('uix-match-review', className)} aria-label={labels.region}>
       <div className="uix-match-review__summary">
@@ -227,6 +301,97 @@ export function MatchReview({
         </table>
       </div>
       <p className="uix-visually-hidden" aria-live="polite">{announcement}</p>
+    </section>
+  );
+}
+
+const sameValue = (a: JsonValue | undefined, b: JsonValue | undefined) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+
+/** One candidate in adopt mode: the record now against the candidate, a checkbox per differing field. */
+function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenance, onAdopt, onDecision, decisionLabel }: {
+  candidate: MatchReviewCandidate; incoming: Record<string, JsonValue>; fields: MatchReviewField[]; labels: MatchReviewLabels;
+  heading: ReactNode; provenance: ReactNode; onAdopt?: MatchReviewProps['onAdopt']; onDecision: MatchReviewProps['onDecision'];
+  decisionLabel: Record<'accepted' | 'dismissed' | 'split' | 'other', string>;
+}) {
+  const id = useId();
+  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState<{ text: string; failed: boolean } | null>(null);
+  const resolved = candidate.status === 'resolved';
+  const headingText = typeof heading === 'string' ? heading : fillLabel(labels.candidate, { id: candidate.id });
+  const toggle = (fieldId: string, on: boolean) => {
+    if (pending) return;
+    const next = new Set(chosen);
+    if (on) next.add(fieldId); else next.delete(fieldId);
+    setChosen(next);
+    setMessage(null);
+  };
+  const adopt = async () => {
+    if (!onAdopt || chosen.size === 0 || pending) return;
+    const fieldIds = fields.map((f) => f.id).filter((f) => chosen.has(f));
+    setPending(true);
+    setMessage(null);
+    try {
+      await onAdopt(candidate.id, fieldIds);
+      setChosen(new Set());
+      setMessage({ text: fillLabel(fieldIds.length === 1 ? labels.adoptedOne : labels.adoptedMany, { count: fieldIds.length, candidate: headingText }), failed: false });
+    } catch {
+      setMessage({ text: labels.adoptFailed, failed: true });
+    } finally {
+      setPending(false);
+    }
+  };
+  const show = (field: MatchReviewField, record: Record<string, JsonValue>) => field.render?.(record[field.id], record) ?? valueText(record[field.id]);
+  return (
+    <section className="uix-match-review__candidate" aria-labelledby={`${id}-heading`} data-status={candidate.status ?? 'pending'}>
+      <div className="uix-match-review__candidate-head">
+        <h3 id={`${id}-heading`} className="uix-match-review__candidate-title">{heading}</h3>
+        {candidate.confidence != null && <span className="uix-match-review__confidence">{`${Math.round(candidate.confidence * 100)}%`}</span>}
+        {resolved && <StatusPill tone="success">{candidate.decision ? decisionLabel[candidate.decision] : labels.resolved}</StatusPill>}
+      </div>
+      <div className="uix-match-review__table-wrap">
+        {/* Explicit roles: on a phone the rows stack as blocks (CSS), and a table whose display
+            changes loses its table semantics in some browsers unless the roles are written out. */}
+        <table className="uix-table uix-match-review__compare" role="table">
+          <caption className="uix-visually-hidden">{fillLabel(labels.compareCaption, { candidate: headingText })}</caption>
+          <thead role="rowgroup"><tr role="row">
+            <th role="columnheader" scope="col">{labels.field}</th><th role="columnheader" scope="col">{labels.currentValue}</th><th role="columnheader" scope="col">{labels.candidateValue}</th><th role="columnheader" scope="col">{labels.adopt}</th>
+          </tr></thead>
+          <tbody role="rowgroup">{fields.map((field) => {
+            const same = sameValue(incoming[field.id], candidate.record[field.id]);
+            return (
+              <tr role="row" key={field.id} data-differs={same ? undefined : ''} data-chosen={chosen.has(field.id) || undefined}>
+                <th role="rowheader" scope="row">{field.label}</th>
+                <td role="cell" data-label={labels.currentValue}>{show(field, incoming)}</td>
+                <td role="cell" data-label={labels.candidateValue}>{show(field, candidate.record)}</td>
+                <td role="cell">{same
+                  ? <span className="uix-match-review__same">{labels.same}</span>
+                  : <input
+                      type="checkbox" className="uix-match-review__adopt" checked={chosen.has(field.id)} disabled={resolved}
+                      aria-label={fillLabel(labels.adoptField, { field: field.label, candidate: headingText })}
+                      onChange={(event) => toggle(field.id, event.currentTarget.checked)}
+                    />}</td>
+              </tr>
+            );
+          })}</tbody>
+        </table>
+      </div>
+      {provenance != null && provenance !== false && (
+        <details className="uix-match-review__provenance">
+          <summary className="uix-match-review__provenance-summary">
+            <span>{labels.provenance}</span>
+            <span className="uix-collapsible__chevron" aria-hidden="true"><ChevronDownIcon size="sm" /></span>
+          </summary>
+          <div className="uix-match-review__provenance-body">{provenance}</div>
+        </details>
+      )}
+      {/* The live region stays mounted whether or not the candidate is resolved: a consumer that
+          resolves the candidate in onAdopt would otherwise unmount it before "adopted" is read. */}
+      <div className="uix-match-review__candidate-actions">
+        {!resolved && onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(chosen.size === 1 ? labels.adoptSelectedOne : labels.adoptSelectedMany, { count: chosen.size })}</Button>}
+        {!resolved && <Button size="sm" variant="ghost" onClick={() => { if (!pending) onDecision(candidate.id, 'dismiss'); }}>{labels.dismiss}</Button>}
+        <span className={cx('uix-match-review__result', message?.failed && 'uix-match-review__result--failed')} role="status">{message?.text}</span>
+      </div>
     </section>
   );
 }

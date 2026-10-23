@@ -11,6 +11,7 @@ import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
+import { KeyboardEvent as KeyboardEvent_2 } from 'react';
 import { LiHTMLAttributes } from 'react';
 import { MouseEvent as MouseEvent_2 } from 'react';
 import * as react from 'react';
@@ -19,6 +20,7 @@ import { ReactNode } from 'react';
 import { Ref } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
+import { SVGAttributes } from 'react';
 import { SyntheticEvent } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -233,6 +235,112 @@ export interface AttachmentProps extends Omit<LiHTMLAttributes<HTMLLIElement>, '
 }
 
 // @public
+export function AuditLog(input: AuditLogProps): react.JSX.Element;
+
+// @public
+export interface AuditLogAction {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    tone?: StatusPillProps['tone'];
+}
+
+// @public
+export interface AuditLogEvent {
+    action: string;
+    actor: ReactNode;
+    at: Date | number | string;
+    detail?: ReactNode;
+    // (undocumented)
+    id: string;
+    target?: ReactNode;
+}
+
+// @public
+export interface AuditLogFilters {
+    // (undocumented)
+    action?: Extract<FilterValue, {
+        kind: 'enum';
+    }>;
+    // (undocumented)
+    actor?: Extract<FilterValue, {
+        kind: 'enum';
+    }>;
+    // (undocumented)
+    when?: Extract<FilterValue, {
+        kind: 'date-range';
+    }>;
+}
+
+// @public (undocumented)
+export interface AuditLogLabels {
+    // (undocumented)
+    action: string;
+    // (undocumented)
+    actor: string;
+    // (undocumented)
+    clearFilters: string;
+    // (undocumented)
+    details: string;
+    // (undocumented)
+    empty: string;
+    // (undocumented)
+    emptyDetail: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    filteredEmpty: string;
+    // (undocumented)
+    filteredEmptyDetail: string;
+    filters: string;
+    // (undocumented)
+    forbidden: string;
+    // (undocumented)
+    forbiddenDetail: string;
+    list: string;
+    loaded: string;
+    // (undocumented)
+    loading: string;
+    loadingMore: string;
+    // (undocumented)
+    loadMore: string;
+    loadMoreFailed: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    when: string;
+}
+
+// @public (undocumented)
+export interface AuditLogProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actions: Readonly<Record<string, AuditLogAction>>;
+    actors?: readonly FilterChoice[];
+    // (undocumented)
+    events: readonly AuditLogEvent[];
+    filters?: AuditLogFilters;
+    formatDate?: (date: string) => string;
+    formatExact?: (date: Date) => string;
+    hasMore?: boolean;
+    // (undocumented)
+    labels?: Partial<AuditLogLabels>;
+    // (undocumented)
+    loadingMore?: boolean;
+    loadMoreError?: boolean;
+    locale?: string | readonly string[];
+    now?: Date | number;
+    // (undocumented)
+    onFiltersChange?: (filters: AuditLogFilters) => void;
+    // (undocumented)
+    onLoadMore?: () => void;
+    // (undocumented)
+    onRetry?: () => void;
+    refreshing?: boolean;
+    resolveActorLabels?: (ids: readonly string[]) => Promise<readonly FilterChoice[]>;
+    status?: 'ready' | 'loading' | 'error' | 'forbidden';
+    timeZone?: string;
+}
+
+// @public
 export function Avatar(input: AvatarProps): react.JSX.Element;
 
 // @public
@@ -402,6 +510,7 @@ export interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, 'chi
     items: readonly BreadcrumbItem[];
     // (undocumented)
     label: string;
+    renderLink?: UixRenderLink;
     // (undocumented)
     separator?: ReactNode;
 }
@@ -797,6 +906,37 @@ export function classifyLayeredEdges(nodes: RelationshipGraphNode[], edges: Rela
 export function clusterIdFor(parentId: string, type: string | undefined, edgeType: string | undefined): string;
 
 // @public
+export function CodeDisplay(input: CodeDisplayProps): react.JSX.Element;
+
+// @public
+export interface CodeDisplayLabels {
+    copied: string;
+    copy: string;
+    copyFailed: string;
+    expired: string;
+    expiresIn: string;
+    expiresSoon: string;
+}
+
+// @public (undocumented)
+export interface CodeDisplayProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    code: string;
+    copyable?: boolean;
+    expiresAt?: string | number | Date;
+    groupSize?: number | readonly number[];
+    label: ReactNode;
+    labels?: Partial<CodeDisplayLabels>;
+    onExpire?: () => void;
+    separator?: string;
+    size?: 'md' | 'lg';
+    spell?: (character: string) => string;
+    warnBefore?: number;
+}
+
+// @public
+export function codeGroups(code: string, groupSize?: number | readonly number[]): string[];
+
+// @public
 export function CollapsibleSection(props: CollapsibleSectionProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -961,14 +1101,50 @@ export interface CommandItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
-export function CommandPalette(input: CommandPaletteProps): react.JSX.Element;
+export function CommandPalette(props: CommandPaletteProps): react.JSX.Element;
+
+// @public
+export interface CommandPaletteGroup {
+    // (undocumented)
+    items: CommandPaletteItem[];
+    label: string | undefined;
+}
+
+// @public
+export interface CommandPaletteItem {
+    description?: string;
+    disabled?: boolean;
+    group?: string;
+    href?: string;
+    icon?: ReactNode;
+    id: string;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    onSelect?: () => void;
+    shortcut?: readonly string[];
+}
 
 // @public (undocumented)
 export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+    emptyLabel?: ReactNode;
+    filter?: (items: readonly CommandPaletteItem[], query: string) => CommandPaletteItem[];
     inputLabel?: string;
     inputProps?: InputHTMLAttributes<HTMLInputElement>;
+    items?: readonly CommandPaletteItem[];
+    limit?: number;
+    onItemSelect?: (item: CommandPaletteItem) => void;
+    onNavigate?: (href: string, item: CommandPaletteItem) => void;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    onQueryChange?: (query: string) => void;
+    open?: boolean;
+    placeholder?: string;
+    query?: string;
+    recent?: readonly CommandPaletteItem[];
+    recentLabel?: string;
     resultsLabel?: (count: number) => string;
 }
 
@@ -1067,6 +1243,41 @@ export interface ConfirmDialogProps {
     typeToConfirmMismatch?: string;
     typeToConfirmPlaceholder?: string;
 }
+
+// @public
+export function ContactCard(input: ContactCardProps): react.JSX.Element;
+
+// @public
+export interface ContactCardLabels {
+    call: string;
+    callName: string;
+    email: string;
+    emailName: string;
+    purged: string;
+    purgedName: string;
+    unavailable: string;
+}
+
+// @public (undocumented)
+export interface ContactCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role'> {
+    actions?: ReactNode;
+    avatar?: ReactNode;
+    bare?: boolean;
+    email?: string;
+    href?: string;
+    labels?: Partial<ContactCardLabels>;
+    name?: string;
+    nameAs?: 'h2' | 'h3' | 'h4' | 'div';
+    phone?: string;
+    renderLink?: UixRenderLink;
+    role?: ReactNode;
+    // (undocumented)
+    state?: ContactCardState;
+    stats?: ReactNode;
+}
+
+// @public
+export type ContactCardState = 'active' | 'purged' | 'unavailable';
 
 // @public
 export function ContentList(input: ContentListProps): react.JSX.Element;
@@ -1230,6 +1441,185 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public
 export type DashboardGridSpan = 1 | 2 | 'full';
+
+// @public
+export function DataWorkspace<T>(input: DataWorkspaceProps<T>): react.JSX.Element;
+
+// @public (undocumented)
+export interface DataWorkspaceColumn<T> {
+    align?: 'start' | 'end';
+    // (undocumented)
+    cell: (row: T) => ReactNode;
+    // (undocumented)
+    header: ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    sortable?: boolean;
+    width?: string;
+}
+
+// @public
+export interface DataWorkspaceIdColumn<T> {
+    // (undocumented)
+    header: ReactNode;
+    href?: (row: T) => string;
+    onPeek?: (row: T) => void;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    text: (row: T) => string;
+}
+
+// @public
+export interface DataWorkspaceLabels {
+    // (undocumented)
+    addFilter: string;
+    // (undocumented)
+    bulkActions: string;
+    // (undocumented)
+    clearFilters: string;
+    // (undocumented)
+    empty: string;
+    // (undocumented)
+    emptyDetail: string;
+    // (undocumented)
+    error: string;
+    // (undocumented)
+    filteredEmpty: string;
+    // (undocumented)
+    filteredEmptyDetail: string;
+    // (undocumented)
+    loading: string;
+    // (undocumented)
+    maximize: string;
+    open: string;
+    range: string;
+    // (undocumented)
+    restore: string;
+    // (undocumented)
+    retry: string;
+    // (undocumented)
+    rowActions: string;
+    // (undocumented)
+    rowsPerPage: string;
+    savedView: string;
+    // (undocumented)
+    saveView: string;
+    // (undocumented)
+    saveViewAs: string;
+    // (undocumented)
+    search: string;
+    // (undocumented)
+    searchPlaceholder: string;
+    // (undocumented)
+    selectAll: string;
+    selected: string;
+    selectRow: string;
+    // (undocumented)
+    view: string;
+}
+
+// @public (undocumented)
+export type DataWorkspacePagination = {
+    mode: 'offset';
+    page: number;
+    pageSize: number;
+    total: number;
+    onPageChange: (page: number) => void;
+    pageSizes?: readonly number[];
+    onPageSizeChange?: (size: number) => void;
+} | {
+    mode: 'cursor';
+    hasPrevious: boolean;
+    hasNext: boolean;
+    onFirst?: () => void;
+    onPrevious: () => void;
+    onNext: () => void;
+    summary?: ReactNode;
+    pageSize?: number;
+    pageSizes?: readonly number[];
+    onPageSizeChange?: (size: number) => void;
+};
+
+// @public (undocumented)
+export interface DataWorkspaceProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    bulkActions?: (selectedIds: string[]) => ReactNode;
+    // (undocumented)
+    columns: readonly DataWorkspaceColumn<T>[];
+    // (undocumented)
+    density?: TableDensity;
+    filters?: {
+        fields: readonly FilterField[];
+        values: Readonly<Record<string, FilterValue | undefined>>;
+        onChange: (fieldId: string, value: FilterValue | undefined) => void;
+        counts?: Readonly<Record<string, number>>;
+        summary?: SummarizeFilterOptions;
+    };
+    // (undocumented)
+    getRowId: (row: T) => string;
+    getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
+    // (undocumented)
+    idColumn?: DataWorkspaceIdColumn<T>;
+    label: string;
+    // (undocumented)
+    labels?: Partial<DataWorkspaceLabels>;
+    maximized?: boolean;
+    // (undocumented)
+    onMaximizedChange?: (maximized: boolean) => void;
+    // (undocumented)
+    onRetry?: () => void;
+    // (undocumented)
+    onSaveView?: () => void;
+    // (undocumented)
+    onSaveViewAs?: () => void;
+    // (undocumented)
+    onSelectionChange?: (selection: Set<string>) => void;
+    // (undocumented)
+    onSortChange?: (sort: DataWorkspaceSort | null) => void;
+    // (undocumented)
+    pagination?: DataWorkspacePagination;
+    refreshing?: boolean;
+    rowActions?: (row: T) => ReactNode;
+    // (undocumented)
+    rows: readonly T[];
+    savedViews?: {
+        current: ReactNode;
+        menu: SavedViewMenuProps;
+    };
+    search?: {
+        value: string;
+        onChange: (value: string) => void;
+        label?: string;
+        placeholder?: string;
+    };
+    selection?: ReadonlySet<string>;
+    // (undocumented)
+    sort?: DataWorkspaceSort | null;
+    status?: 'ready' | 'loading' | 'error';
+    toolbarEnd?: ReactNode;
+    viewChanged?: boolean;
+    viewMenu?: ViewMenuProps;
+}
+
+// @public (undocumented)
+export interface DataWorkspaceSort {
+    // (undocumented)
+    columnId: string;
+    // (undocumented)
+    direction: 'ascending' | 'descending';
+}
+
+// @public (undocumented)
+export const DATE_FILTER_OPERATORS: readonly DateFilterOperator[];
+
+// @public
+export function dateFilterBounds(input: FilterValue | undefined): {
+    from?: string;
+    until?: string;
+};
+
+// @public
+export type DateFilterOperator = 'on' | 'before' | 'after' | 'between';
 
 // @public
 export type DateInputProblem = 'format' | 'unavailable';
@@ -1438,6 +1828,9 @@ export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
 
 // @public (undocumented)
+export const DEFAULT_AUDIT_LOG_LABELS: AuditLogLabels;
+
+// @public (undocumented)
 export const DEFAULT_BRAND_PROFILE_EDITOR_LABELS: BrandProfileEditorLabels;
 
 // @public (undocumented)
@@ -1447,10 +1840,19 @@ export const DEFAULT_BUILDER_CANVAS_LABELS: BuilderCanvasLabels;
 export const DEFAULT_BUTTON_RESULT_LABELS: ButtonResultLabels;
 
 // @public (undocumented)
+export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
+
+// @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_CONTACT_CARD_LABELS: ContactCardLabels;
+
+// @public (undocumented)
 export const DEFAULT_DASHBOARD_CANVAS_LABELS: DashboardCanvasLabels;
+
+// @public (undocumented)
+export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels;
 
 // @public (undocumented)
 export const DEFAULT_DATE_PICKER_LABELS: DatePickerLabels;
@@ -1507,6 +1909,15 @@ export const DEFAULT_PASSWORD_INPUT_LABELS: PasswordInputLabels;
 export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string>;
 
 // @public (undocumented)
+export const DEFAULT_PRINT_LAYOUT_LABELS: PrintLayoutLabels;
+
+// @public
+export const DEFAULT_QR_CODE_LABELS: QrCodeLabels;
+
+// @public (undocumented)
+export const DEFAULT_QR_SCANNER_LABELS: QrScannerLabels;
+
+// @public (undocumented)
 export const DEFAULT_RELATIONSHIP_GRAPH_LABELS: RelationshipGraphLabels;
 
 // @public (undocumented)
@@ -1526,6 +1937,9 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
 
 // @public (undocumented)
 export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
+
+// @public (undocumented)
+export const DEFAULT_SORTABLE_LIST_LABELS: SortableListLabels;
 
 // @public (undocumented)
 export const DEFAULT_STEP_STATE_LABELS: StepStateLabels;
@@ -1696,6 +2110,9 @@ export type DiffKind = 'added' | 'removed' | 'changed' | 'conflicted';
 // @public (undocumented)
 export type DiffResolution = 'accept' | 'skip' | 'pending';
 
+// @public
+export type DiffSide = 'base' | 'current' | 'incoming';
+
 // @public (undocumented)
 export interface DiffSummary {
     // (undocumented)
@@ -1790,10 +2207,13 @@ export interface DiffViewerProps {
     entries?: DiffEntry[];
     // (undocumented)
     incoming?: JsonValue;
+    labelFor?: (path: string) => ReactNode;
     // (undocumented)
     labels?: Partial<DiffViewerLabels>;
     // (undocumented)
     onResolutionChange?: (path: string, resolution: DiffResolution) => void;
+    provenance?: (path: string, side: DiffSide) => ReactNode;
+    renderValue?: (value: JsonValue | undefined, path: string, side: DiffSide) => ReactNode;
     // (undocumented)
     resolutions?: Record<string, DiffResolution>;
 }
@@ -1929,6 +2349,25 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
 }
 
 // @public
+export interface EdgeLabelBox {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    width: number;
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export function edgeLabelSize(lines: readonly string[]): {
+    width: number;
+    height: number;
+};
+
+// @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
 
 // @public
@@ -1944,6 +2383,9 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
     title?: ReactNode;
     variant?: StateVariant;
 }
+
+// @public
+export function encodeQr(text: string, options?: QrEncodeOptions): QrMatrix;
 
 // @public
 export function EntityPicker(input: EntityPickerProps): react.JSX.Element;
@@ -2041,12 +2483,17 @@ export function EventRow(input: EventRowProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface EventRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    dateTime?: string;
     day: ReactNode;
+    media?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
     month: ReactNode;
+    time?: ReactNode;
     // (undocumented)
     title: ReactNode;
+    weekday?: ReactNode;
+    year?: ReactNode;
 }
 
 // @public
@@ -2253,6 +2700,9 @@ export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGr
 export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
 
 // @public
+export function filterCommandItems(items: readonly CommandPaletteItem[], query: string): CommandPaletteItem[];
+
+// @public
 export function FilteredEmptyState(props: EmptyStateProps): react.JSX.Element;
 
 // @public
@@ -2260,6 +2710,8 @@ export function FilterEditor(input: FilterEditorProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface FilterEditorLabels {
+    addTag?: string;
+    addTagHint?: string;
     and: string;
     // (undocumented)
     any: string;
@@ -2267,6 +2719,8 @@ export interface FilterEditorLabels {
     apply: string;
     // (undocumented)
     clear: string;
+    date?: string;
+    dateOperators?: Partial<Record<DateFilterOperator, string>>;
     // (undocumented)
     from: string;
     // (undocumented)
@@ -2306,8 +2760,7 @@ export interface FilterEditorProps {
     field: FilterField;
     // (undocumented)
     labels?: Partial<FilterEditorLabels>;
-    // (undocumented)
-    onApply: () => void;
+    onApply: (value: FilterValue) => void;
     // (undocumented)
     onClear: () => void;
     // (undocumented)
@@ -2319,6 +2772,7 @@ export interface FilterEditorProps {
 
 // @public (undocumented)
 export interface FilterField {
+    dateOperators?: readonly DateFilterOperator[];
     // (undocumented)
     falseLabel?: string;
     // (undocumented)
@@ -2330,6 +2784,7 @@ export interface FilterField {
     operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
     options?: readonly FilterChoice[];
     presets?: readonly FilterPreset[];
+    resolveLabels?: (ids: readonly string[]) => Promise<readonly FilterChoice[]>;
     trueLabel?: string;
     unit?: string;
 }
@@ -2386,10 +2841,15 @@ export interface FilterPreset {
 
 // @public (undocumented)
 export interface FilterSummaryLabels {
+    // (undocumented)
+    after?: string;
+    // (undocumented)
+    before?: string;
     from: string;
     more: string;
     // (undocumented)
     no: string;
+    on?: string;
     // (undocumented)
     operators: Record<TextFilterOperator | NumberFilterOperator, string>;
     preset?: string;
@@ -2416,12 +2876,24 @@ export type FilterValue = {
     kind: 'date-range';
     from?: string;
     to?: string;
+}
+/** A date with a condition (HAR-1832); `YYYY-MM-DD`. A saved `between` stays `between`, even of one day. */
+| {
+    kind: 'date';
+    operator: DateFilterOperator;
+    from?: string;
+    to?: string;
 } | {
     kind: 'boolean';
     value?: boolean;
 } | {
     kind: 'reference';
     values: FilterChoice[];
+}
+/** Free-text values typed in as tags (HAR-1832), e.g. several hostnames; matched by the product. */
+| {
+    kind: 'tags';
+    values: string[];
 };
 
 // @public (undocumented)
@@ -2502,6 +2974,9 @@ export function foldForSearch(text: string): FoldedText;
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
 
 // @public
+export function formatCountdown(seconds: number): string;
+
+// @public
 export function formatDateKey(value: string, locale?: string | readonly string[]): string;
 
 // @public
@@ -2509,6 +2984,9 @@ export function formatFileSize(bytes: number, locale?: string, options?: FileSiz
 
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public
+export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
 
 // @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
@@ -2612,10 +3090,10 @@ export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
 }
 
 // @public
-export function InlineEdit(input: InlineEditProps): react.JSX.Element;
+export function InlineEdit<T = string>(input: InlineEditProps<T>): react.JSX.Element;
 
 // @public
-export interface InlineEditEditorProps {
+export interface InlineEditEditorProps<T = string> {
     // (undocumented)
     cancel: () => void;
     field: {
@@ -2624,11 +3102,19 @@ export interface InlineEditEditorProps {
         'aria-describedby': string | undefined;
         'aria-invalid': true | undefined;
         disabled: boolean;
+        readOnly: boolean;
     };
-    // (undocumented)
-    onChange: (next: string) => void;
-    save: () => void;
-    value: string;
+    onChange: (next: T) => void;
+    save: (next?: T) => void;
+    value: T;
+}
+
+// @public
+export interface InlineEditErrorContext<T = string> {
+    cancel: () => void;
+    draft: T;
+    message: ReactNode;
+    retry: () => void;
 }
 
 // @public
@@ -2638,6 +3124,7 @@ export interface InlineEditLabels {
     edit: string;
     empty: string;
     failed: string;
+    readOnly: string;
     // (undocumented)
     save: string;
     saved: string;
@@ -2645,20 +3132,34 @@ export interface InlineEditLabels {
 }
 
 // @public (undocumented)
-export interface InlineEditProps {
+export interface InlineEditProps<T = string> {
     // (undocumented)
     className?: string;
+    commit?: 'explicit' | 'blur' | 'change';
     disabled?: boolean;
+    draft?: T;
+    editing?: boolean;
+    equals?: (a: T, b: T) => boolean;
+    isEmpty?: (value: T) => boolean;
     label: string;
     labels?: Partial<InlineEditLabels>;
     multiline?: boolean;
-    onSave: (next: string) => void | Promise<void>;
+    onDraftChange?: (draft: T) => void;
+    onEditingChange?: (editing: boolean) => void;
+    onSave: (next: T) => void | Promise<unknown>;
+    onStateChange?: (state: InlineEditState) => void;
     placeholder?: ReactNode;
-    renderEditor?: (props: InlineEditEditorProps) => ReactNode;
-    renderView?: (value: string) => ReactNode;
-    validate?: (next: string) => ReactNode | undefined;
-    value: string;
+    readOnlyReason?: ReactNode;
+    renderEditor?: (props: InlineEditEditorProps<T>) => ReactNode;
+    renderError?: (error: unknown, context: InlineEditErrorContext<T>) => ReactNode;
+    renderView?: (value: T) => ReactNode;
+    trigger?: 'value' | 'icon';
+    validate?: (next: T) => ReactNode | undefined;
+    value: T;
 }
+
+// @public
+export type InlineEditState = 'idle' | 'editing' | 'saving' | 'saved' | 'error';
 
 // @public (undocumented)
 export const Input: react.ForwardRefExoticComponent<InputProps & react.RefAttributes<HTMLInputElement>>;
@@ -2824,6 +3325,9 @@ export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
 
 // @public
+export const isUnresolvedChoice: (choice: FilterChoice) => boolean;
+
+// @public
 export function isValidDateKey(value: string): boolean;
 
 // @public
@@ -2947,6 +3451,7 @@ export interface LayeredColumn {
     count: number;
     // (undocumented)
     depth: number;
+    edgeLabel?: string;
     // (undocumented)
     x: number;
 }
@@ -2959,8 +3464,8 @@ export interface LayeredEdgeClassification {
     kindById: Map<string, LayeredEdgeKind>;
 }
 
-// @public (undocumented)
-export type LayeredEdgeKind = 'forward' | 'lateral' | 'cycle';
+// @public
+export type LayeredEdgeKind = 'forward' | 'skip' | 'lateral' | 'back' | 'cycle';
 
 // @public (undocumented)
 export interface LayeredItem {
@@ -3064,6 +3569,9 @@ export interface LayoutMonthSpansOptions {
 export function layoutRelationshipGraph(nodes: RelationshipGraphNode[], edges: RelationshipGraphEdge[], rootId?: string): PositionedRelationshipNode[];
 
 // @public
+export function layoutResourceColumn(spans: readonly SchedulingResourceSpan[], slots: readonly ResourceDaySlot[]): ResourceDayItem[];
+
+// @public
 export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: string, timeZone: string, options?: {
     maxLanes?: number;
     crossMidnightMinutes?: number;
@@ -3126,8 +3634,20 @@ export interface LightboxLabels {
     zoomOut: string;
 }
 
+// @public
+export interface LightboxOverlayContext {
+    // (undocumented)
+    height: number;
+    index: number;
+    // (undocumented)
+    item: LightboxItem;
+    media: HTMLImageElement | HTMLVideoElement | null;
+    width: number;
+}
+
 // @public (undocumented)
 export interface LightboxProps {
+    actions?: ReactNode;
     // (undocumented)
     className?: string;
     index: number;
@@ -3138,10 +3658,13 @@ export interface LightboxProps {
     loop?: boolean;
     // (undocumented)
     onClose: () => void;
+    onEscapeKeyDown?: (event: KeyboardEvent_2<HTMLDialogElement>) => void;
     // (undocumented)
     onIndexChange: (index: number) => void;
+    onKeyDown?: (event: KeyboardEvent_2<HTMLDialogElement>) => void;
     // (undocumented)
     open: boolean;
+    renderOverlay?: (context: LightboxOverlayContext) => ReactNode;
 }
 
 // @public
@@ -3205,6 +3728,24 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
     density?: 'compact' | 'comfortable';
     label?: string;
     rows?: number;
+}
+
+// @public
+export function LocaleSwitcher(input: LocaleSwitcherProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LocaleSwitcherLocale {
+    code: string;
+    href: string;
+    label: ReactNode;
+}
+
+// @public (undocumented)
+export interface LocaleSwitcherProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'onChange'> {
+    current: string;
+    label: string;
+    locales: readonly LocaleSwitcherLocale[];
+    renderLink?: UixRenderLink;
 }
 
 // @public (undocumented)
@@ -3279,6 +3820,13 @@ export interface MatchReviewLabels {
     acceptSelected: string;
     // (undocumented)
     actions: string;
+    adopt: string;
+    adoptedMany: string;
+    adoptedOne: string;
+    adoptFailed: string;
+    adoptField: string;
+    adoptSelectedMany: string;
+    adoptSelectedOne: string;
     // (undocumented)
     applying: string;
     // (undocumented)
@@ -3287,10 +3835,14 @@ export interface MatchReviewLabels {
     bulkAcceptFailed: string;
     // (undocumented)
     bulkDismissFailed: string;
+    candidate: string;
+    candidateValue: string;
     // (undocumented)
     caption: string;
+    compareCaption: string;
     // (undocumented)
     confidence: string;
+    currentValue: string;
     // (undocumented)
     decisionAccepted: string;
     // (undocumented)
@@ -3318,6 +3870,8 @@ export interface MatchReviewLabels {
     // (undocumented)
     failedSuffix: string;
     // (undocumented)
+    field: string;
+    // (undocumented)
     loading: string;
     // (undocumented)
     notScored: string;
@@ -3327,12 +3881,14 @@ export interface MatchReviewLabels {
     pendingOf: string;
     // (undocumented)
     pickOther: string;
+    provenance: string;
     // (undocumented)
     region: string;
     // (undocumented)
     resolved: string;
     // (undocumented)
     retry: string;
+    same: string;
     // (undocumented)
     select: string;
     // (undocumented)
@@ -3347,12 +3903,14 @@ export interface MatchReviewLabels {
 
 // @public (undocumented)
 export interface MatchReviewProps {
+    candidateLabel?: (candidate: MatchReviewCandidate) => ReactNode;
     // (undocumented)
     candidates: MatchReviewCandidate[];
     // (undocumented)
     className?: string;
     // (undocumented)
     error?: string;
+    fieldMode?: 'decide' | 'adopt';
     // (undocumented)
     fields: MatchReviewField[];
     // (undocumented)
@@ -3363,6 +3921,7 @@ export interface MatchReviewProps {
     labels?: Partial<MatchReviewLabels>;
     // (undocumented)
     loading?: boolean;
+    onAdopt?: (candidateId: string, fieldIds: string[]) => void | Promise<unknown>;
     // (undocumented)
     onBulkDecision?: (candidateIds: string[], action: Extract<MatchReviewAction, 'accept' | 'dismiss'>) => void | MatchBulkResult | Promise<void | MatchBulkResult>;
     // (undocumented)
@@ -3371,6 +3930,7 @@ export interface MatchReviewProps {
     onRetry?: () => void;
     // (undocumented)
     onSelectionChange?: (ids: Set<string>) => void;
+    provenance?: (candidate: MatchReviewCandidate) => ReactNode;
     // (undocumented)
     selectedIds?: Set<string>;
 }
@@ -3632,6 +4192,7 @@ export function NavFavourites(input: NavFavouritesProps): react.JSX.Element;
 export interface NavFavouritesLabels {
     readonly empty: string;
     readonly heading: string;
+    readonly moved?: string;
     // (undocumented)
     readonly moveDown: string;
     // (undocumented)
@@ -4079,6 +4640,16 @@ export interface PlacedDaySpan {
     startCol: number;
 }
 
+// @public
+export interface PlacedEdgeLabel {
+    // (undocumented)
+    hidden: boolean;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
 // @public (undocumented)
 export interface PlacedMonthSpan {
     continuesAfter: boolean;
@@ -4107,6 +4678,9 @@ export interface PlacedSpan<T extends TimelineSpan = TimelineSpan> {
     // (undocumented)
     width: number;
 }
+
+// @public
+export function placeId(ids: readonly string[], id: string, index: number): readonly string[];
 
 // @public (undocumented)
 export type Placement = Side | `${Side}-${Align}`;
@@ -4245,6 +4819,46 @@ export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
 // @public (undocumented)
 export type Primitive = string | number | boolean | null | undefined;
 
+// @public
+export function PrintLayout(input: PrintLayoutProps): react.JSX.Element;
+
+// @public
+export interface PrintLayoutLabels {
+    signature: string;
+    stamp: string;
+}
+
+// @public (undocumented)
+export interface PrintLayoutProps extends HTMLAttributes<HTMLDivElement> {
+    footer?: ReactNode;
+    header?: ReactNode;
+    isolate?: boolean;
+    onOverflowChange?: (overflowing: boolean) => void;
+    orientation?: 'portrait' | 'landscape';
+    pageNumbers?: boolean;
+    singlePage?: boolean;
+    size?: PrintPageSize;
+}
+
+// @public
+export function PrintPageBreak(input: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
+
+// @public (undocumented)
+export type PrintPageSize = 'A4' | 'A5';
+
+// @public
+export function PrintSignature(input: PrintSignatureProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PrintSignatureProps extends HTMLAttributes<HTMLDivElement> {
+    label?: ReactNode;
+    // (undocumented)
+    labels?: Partial<PrintLayoutLabels>;
+    name?: ReactNode;
+    placeAndDate?: ReactNode;
+    stamp?: boolean;
+}
+
 // @public (undocumented)
 export function Progress(input: ProgressProps): react.JSX.Element;
 
@@ -4309,6 +4923,120 @@ export interface ProseProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public
+export class QrCapacityError extends Error {
+    constructor(bytes: number, errorCorrection: QrErrorCorrection);
+    // (undocumented)
+    readonly bytes: number;
+    // (undocumented)
+    readonly errorCorrection: QrErrorCorrection;
+}
+
+// @public
+export function QrCode(input: QrCodeProps): react.JSX.Element;
+
+// @public
+export interface QrCodeLabels {
+    tooLong: string;
+}
+
+// @public (undocumented)
+export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'children' | 'width' | 'height' | 'viewBox'> {
+    eci?: boolean;
+    errorCorrection?: QrErrorCorrection;
+    label: string;
+    labels?: Partial<QrCodeLabels>;
+    minVersion?: number;
+    size?: number | string;
+    value: string;
+}
+
+// @public
+export function qrDataCapacity(version: number, errorCorrection: QrErrorCorrection): number;
+
+// @public (undocumented)
+export interface QrEncodeOptions {
+    eci?: boolean;
+    errorCorrection?: QrErrorCorrection;
+    mask?: number;
+    minVersion?: number;
+}
+
+// @public
+export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
+
+// @public (undocumented)
+export interface QrMatrix {
+    // (undocumented)
+    errorCorrection: QrErrorCorrection;
+    mask: number;
+    modules: boolean[][];
+    size: number;
+    version: number;
+}
+
+// @public
+export function qrPath(matrix: QrMatrix, margin?: number): string;
+
+// @public
+export function QrScanner(input: QrScannerProps): react.JSX.Element;
+
+// @public
+export type QrScannerDecoder = (frame: QrScannerFrame) => string | null | undefined | Promise<string | null | undefined>;
+
+// @public
+export interface QrScannerFrame {
+    imageData: ImageData;
+    video: HTMLVideoElement;
+}
+
+// @public
+export interface QrScannerLabels {
+    asking: string;
+    deniedBody: string;
+    deniedTitle: string;
+    // (undocumented)
+    noCameraBody: string;
+    noCameraTitle: string;
+    // (undocumented)
+    noFrameBody: string;
+    noFrameTitle: string;
+    read: string;
+    retry: string;
+    scanning: string;
+    start: string;
+    stop: string;
+    torch: string;
+    unreadable: string;
+    // (undocumented)
+    unsupportedBody: string;
+    unsupportedTitle: string;
+    viewfinder: string;
+}
+
+// @public (undocumented)
+export interface QrScannerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onError'> {
+    autoStart?: boolean;
+    decode: QrScannerDecoder;
+    explainer?: ReactNode;
+    facingMode?: 'environment' | 'user';
+    frameTimeout?: number;
+    hintAfter?: number;
+    interval?: number;
+    labels?: Partial<QrScannerLabels>;
+    manualEntry?: ReactNode;
+    maxFrameSize?: number;
+    onResult: (value: string) => void;
+    onStatusChange?: (status: QrScannerStatus) => void;
+    repeatAfter?: number;
+}
+
+// @public
+export type QrScannerStatus = 'idle' | 'asking' | 'scanning' | 'denied' | 'unsupported' | 'no-camera' | 'no-frame';
+
+// @public
+export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion?: number, headerBits?: number): number | undefined;
 
 // @public
 export function quantiles(values: readonly number[], ps: readonly number[]): (number | null)[];
@@ -4416,6 +5144,7 @@ export interface RelationshipGraphCluster {
 // @public (undocumented)
 export interface RelationshipGraphEdge {
     arrow?: RelationshipGraphArrow;
+    description?: string;
     emphasis?: boolean;
     // (undocumented)
     id: string;
@@ -4425,8 +5154,10 @@ export interface RelationshipGraphEdge {
     source: string;
     // (undocumented)
     target: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public
@@ -4440,7 +5171,8 @@ export interface RelationshipGraphLabels {
     column: (depth: number, count: number) => string;
     // (undocumented)
     conflict: string;
-    // (undocumented)
+    connectedHeading: string;
+    // @deprecated (undocumented)
     connectedTo: (names: string) => string;
     // (undocumented)
     controls: string;
@@ -4477,6 +5209,7 @@ export interface RelationshipGraphLabels {
     listHeading: string;
     // (undocumented)
     loading: string;
+    moreRelations: (count: number, inList: boolean) => string;
     navigationHint: (modifier: string) => string;
     // (undocumented)
     noConnections: string;
@@ -4490,10 +5223,12 @@ export interface RelationshipGraphLabels {
     panRight: string;
     // (undocumented)
     panUp: string;
+    relationFrom: (relation: string, source: string) => string;
     // (undocumented)
     relationship: string;
     // (undocumented)
     relationships: (count: number) => string;
+    relationTo: (relation: string, target: string) => string;
     // (undocumented)
     reset: string;
     // (undocumented)
@@ -4502,6 +5237,8 @@ export interface RelationshipGraphLabels {
     right: string;
     // (undocumented)
     roleDescription: string;
+    showAllRelations: (count: number) => string;
+    showFewerRelations: string;
     // (undocumented)
     up: string;
     viewportKeyboardHint: string;
@@ -4519,6 +5256,9 @@ export interface RelationshipGraphLegendItem {
     id: string;
     // (undocumented)
     label: string;
+    shape?: 'edge' | 'node';
+    tone?: RelationshipGraphTone;
+    variant?: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -4530,6 +5270,7 @@ export interface RelationshipGraphNode {
     id: string;
     // (undocumented)
     label: string;
+    tone?: RelationshipGraphTone;
     // (undocumented)
     type?: string;
     // (undocumented)
@@ -4571,6 +5312,7 @@ export interface RelationshipGraphProps {
     legend?: RelationshipGraphLegendItem[];
     // (undocumented)
     loading?: boolean;
+    markRoot?: boolean;
     maxNodes?: number;
     nodeAriaLabel?: (node: RelationshipGraphNode) => string;
     // (undocumented)
@@ -4592,11 +5334,15 @@ export interface RelationshipGraphProps {
         selected: boolean;
         dimmed: boolean;
     }) => ReactNode;
+    revealId?: string;
     rootId?: string;
     // (undocumented)
     selectedId?: string;
     showList?: boolean;
 }
+
+// @public
+export type RelationshipGraphTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'accent';
 
 // @public (undocumented)
 export function relationshipNeighbors(nodeId: string, edges: RelationshipGraphEdge[]): string[];
@@ -4666,6 +5412,55 @@ export function resizeCanvasItem<T extends DashboardCanvasItem>(items: readonly 
 export function resolveDisplayAttributes(prefs: DisplayPreferenceValues, system: SystemDisplayPreferences): DisplayAttributes;
 
 // @public
+export function resolveFilterLabels(field: FilterField, value: FilterValue | undefined): Promise<FilterValue | undefined>;
+
+// @public
+export function resourceDayGaps(items: readonly ResourceDayItem[], slots: readonly ResourceDaySlot[]): Array<{
+    start: number;
+    end: number;
+}>;
+
+// @public
+export interface ResourceDayItem {
+    // (undocumented)
+    continuesAfter: boolean;
+    continuesBefore: boolean;
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    // (undocumented)
+    lane: number;
+    // (undocumented)
+    lanes: number;
+    length: number;
+    offset: number;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: number;
+}
+
+// @public
+export interface ResourceDaySlot {
+    // (undocumented)
+    end: number;
+    label: string;
+    start: number;
+}
+
+// @public (undocumented)
+export interface ResourceDaySlotOptions {
+    dayEnd?: string;
+    dayStart?: string;
+    slotMinutes?: number;
+}
+
+// @public
+export function resourceDaySlots(date: string, timeZone: string, options?: ResourceDaySlotOptions): ResourceDaySlot[];
+
+// @public
 export function ResourceGrid(input: ResourceGridProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -4705,6 +5500,10 @@ export interface RoutedEdge {
     // (undocumented)
     arrowY: number;
     autoLabel: boolean;
+    bus: boolean;
+    columnLabel: boolean;
+    // (undocumented)
+    description?: string;
     edgeIds: string[];
     // (undocumented)
     emphasis: boolean;
@@ -4725,7 +5524,10 @@ export interface RoutedEdge {
     // (undocumented)
     target: string;
     // (undocumented)
+    tone?: RelationshipGraphTone;
+    // (undocumented)
     type?: string;
+    variant: 'solid' | 'dashed';
 }
 
 // @public (undocumented)
@@ -5081,6 +5883,9 @@ export interface SchedulingAgendaGroup {
 }
 
 // @public
+export type SchedulingAvailabilityKind = 'free' | 'booked' | 'off';
+
+// @public
 export type SchedulingBand = 'none' | 'low' | 'medium' | 'high';
 
 // @public
@@ -5128,6 +5933,7 @@ export interface SchedulingCalendarLabels {
     // (undocumented)
     agendaEmpty: string;
     allDay?: string;
+    availability?: Partial<Record<SchedulingAvailabilityKind, string>>;
     continuesFrom?: string;
     continuesInDay?: string;
     dayCount?: string;
@@ -5159,6 +5965,8 @@ export interface SchedulingCalendarLabels {
     nextMonth?: string;
     // (undocumented)
     nextWeek?: string;
+    noResources?: string;
+    noSchedule?: string;
     overlay?: string;
     // @deprecated (undocumented)
     previous: string;
@@ -5169,8 +5977,11 @@ export interface SchedulingCalendarLabels {
     previousWeek?: string;
     // (undocumented)
     region: string;
+    resourceGrid?: string;
+    resourceHint?: string;
     // (undocumented)
     retry: string;
+    slotName?: string;
     // (undocumented)
     states: Record<SchedulingEntryState, string>;
     statuses?: Partial<Record<SchedulingStatus, string>>;
@@ -5216,8 +6027,10 @@ export interface SchedulingCalendarProps {
     canMove?: boolean;
     // (undocumented)
     className?: string;
+    dayEnd?: string;
     dayEntries?: Record<string, SchedulingCalendarEntry[]>;
     days?: Record<string, SchedulingCalendarDay>;
+    dayStart?: string;
     emptyNote?: ReactNode;
     entries: SchedulingCalendarEntry[];
     // (undocumented)
@@ -5230,7 +6043,6 @@ export interface SchedulingCalendarProps {
     labels?: Partial<SchedulingCalendarLabels>;
     legend?: SchedulingLegendItem[];
     legendCaption?: ReactNode;
-    // (undocumented)
     loading?: boolean;
     // (undocumented)
     locale?: string;
@@ -5247,6 +6059,7 @@ export interface SchedulingCalendarProps {
     onSelectDate?: (date: string) => void;
     onSelectEntry?: (entry: SchedulingCalendarEntry) => void;
     onSelectOverlay?: (overlay: SchedulingCalendarOverlay) => void;
+    onSelectSlot?: (slot: SchedulingSlotSelection) => void;
     onShowMore?: (date: string, entries: SchedulingCalendarEntry[]) => void;
     // (undocumented)
     onViewChange?: (view: SchedulingCalendarView) => void;
@@ -5254,7 +6067,16 @@ export interface SchedulingCalendarProps {
     overlays?: SchedulingCalendarOverlay[];
     renderDayBadge?: (date: string, entries: SchedulingCalendarEntry[]) => ReactNode;
     renderEntry?: (entry: SchedulingCalendarEntry, context?: TimeGridEntryContext) => ReactNode;
+    resourceLayout?: 'auto' | 'columns' | 'list';
+    resourceListBelow?: number;
+    resources?: SchedulingResource[];
+    resourceSpans?: SchedulingResourceSpan[];
+    selectedSlot?: {
+        resourceId: string;
+        start: string;
+    };
     showHeader?: boolean;
+    slotMinutes?: number;
     spanLaneCap?: number;
     spanLayout?: MonthSpanLayout;
     step?: number;
@@ -5316,6 +6138,42 @@ export type SchedulingOverlayKind = 'maintenance' | 'blackout';
 
 // @public
 export type SchedulingOverlayPattern = 'diagonal' | 'cross' | 'dotted' | 'solid';
+
+// @public
+export interface SchedulingResource {
+    description?: string;
+    // (undocumented)
+    id: string;
+    label: string;
+}
+
+// @public
+export interface SchedulingResourceSpan {
+    accessibleName?: string;
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    kind: SchedulingAvailabilityKind;
+    label?: string;
+    // (undocumented)
+    resourceId: string;
+    start: string;
+}
+
+// @public
+export interface SchedulingSlotSelection {
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    kind: Exclude<SchedulingAvailabilityKind, 'off'>;
+    // (undocumented)
+    resourceId: string;
+    // (undocumented)
+    span: SchedulingResourceSpan;
+    start: string;
+}
 
 // @public
 export type SchedulingStatus = 'tentative' | 'committed' | 'live' | 'done' | 'dead';
@@ -5630,6 +6488,8 @@ export function SegmentedOption(input: SegmentedOptionProps): react.JSX.Element;
 export interface SegmentedOptionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'onChange'> {
     // (undocumented)
     children?: ReactNode;
+    href?: string;
+    hrefLang?: string;
     // (undocumented)
     value: string;
 }
@@ -5639,7 +6499,8 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     // (undocumented)
     children?: ReactNode;
     onChange?: (value: string) => void;
-    selection?: 'toggle' | 'radio';
+    renderLink?: UixRenderLink;
+    selection?: 'toggle' | 'radio' | 'link';
     value?: string;
 }
 
@@ -5713,6 +6574,12 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 // @public (undocumented)
 export function selectRangeDate(current: DateRangeValue, date: string): DateRangeValue;
+
+// @public
+export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
+    gap?: number;
+    maxShift?: number;
+}): Map<string, PlacedEdgeLabel>;
 
 // @public
 export function serializeView(v: ViewState): string;
@@ -5806,6 +6673,42 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public
 export const snapToStep: (ms: number, step: number) => number;
+
+// @public
+export function SortableList<T>(input: SortableListProps<T>): react.JSX.Element;
+
+// @public
+export interface SortableListItemContext {
+    // (undocumented)
+    count: number;
+    dragging: boolean;
+    // (undocumented)
+    index: number;
+}
+
+// @public
+export interface SortableListLabels {
+    grip: string;
+    moved: string;
+    // (undocumented)
+    moveDown: string;
+    // (undocumented)
+    moveUp: string;
+}
+
+// @public (undocumented)
+export interface SortableListProps<T> extends Omit<HTMLAttributes<HTMLUListElement>, 'children' | 'onChange'> {
+    disabled?: boolean;
+    // (undocumented)
+    getId: (item: T) => string;
+    getLabel?: (item: T) => string;
+    // (undocumented)
+    items: readonly T[];
+    labels?: Partial<SortableListLabels>;
+    onReorder: (orderedIds: string[]) => void;
+    // (undocumented)
+    renderItem: (item: T, context: SortableListItemContext) => ReactNode;
+}
 
 // @public
 export type SortDir = 'ascending' | 'descending';
@@ -6032,7 +6935,7 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
 export function summarizeDiff(entries: DiffEntry[], resolutions?: Record<string, DiffResolution>): DiffSummary;
 
 // @public
-export function summarizeFilter(field: FilterField, value: FilterValue | undefined, options?: SummarizeFilterOptions): string;
+export function summarizeFilter(field: FilterField, input: FilterValue | undefined, options?: SummarizeFilterOptions): string;
 
 // @public (undocumented)
 export interface SummarizeFilterOptions {
@@ -6200,6 +7103,9 @@ export interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     pinned?: boolean;
 }
+
+// @public
+export const telHref: (phone: string) => string;
 
 // @public (undocumented)
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[];
@@ -6869,6 +7775,7 @@ export interface UixLabels {
     };
     // (undocumented)
     attachment?: Partial<AttachmentLabels>;
+    auditLog?: Partial<AuditLogLabels>;
     bulkBar?: {
         region?: string;
     };
@@ -6876,16 +7783,21 @@ export interface UixLabels {
     chip?: {
         remove?: string;
     };
+    codeDisplay?: Partial<CodeDisplayLabels>;
     commandPalette?: {
         input?: string;
         resultsOne?: string;
         resultsMany?: string;
+        empty?: string;
+        recent?: string;
     };
     confirmDialog?: {
         typeToConfirm?: string;
         compensation?: string;
         typeToConfirmMismatch?: string;
     };
+    contactCard?: Partial<ContactCardLabels>;
+    dataWorkspace?: Partial<DataWorkspaceLabels>;
     dateFormat?: UixDateFormat;
     // (undocumented)
     datePicker?: Partial<DatePickerLabels>;
@@ -6893,6 +7805,7 @@ export interface UixLabels {
     dateRangePicker?: Partial<DateRangePickerLabels>;
     // (undocumented)
     dateTimePicker?: Partial<DateTimePickerLabels>;
+    diffViewer?: Partial<DiffViewerLabels>;
     discardPrompt?: Partial<DiscardPromptLabels>;
     displayPreferences?: Partial<DisplayPreferencesLabels>;
     // (undocumented)
@@ -6907,6 +7820,8 @@ export interface UixLabels {
     filterEditor?: Partial<FilterEditorLabels>;
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
+    lightbox?: Partial<LightboxLabels>;
+    matchReview?: Partial<MatchReviewLabels>;
     // (undocumented)
     modal?: {
         close?: string;
@@ -6920,6 +7835,9 @@ export interface UixLabels {
         next?: string;
         close?: string;
     };
+    printLayout?: Partial<PrintLayoutLabels>;
+    qrCode?: Partial<QrCodeLabels>;
+    qrScanner?: Partial<QrScannerLabels>;
     // (undocumented)
     ruleBuilder?: Partial<RuleBuilderLabels>;
     // (undocumented)
@@ -6938,6 +7856,7 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    sortableList?: Partial<SortableListLabels>;
     tagInput?: Partial<TagInputLabels>;
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;

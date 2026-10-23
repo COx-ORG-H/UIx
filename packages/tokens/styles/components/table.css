@@ -72,6 +72,9 @@
   .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
   .uix-table--pinned-actions th:last-child, .uix-table--pinned-actions td:last-child { position: sticky; right: 0; z-index: var(--uix-z-raised); box-shadow: -1px 0 0 var(--uix-border); }
   .uix-table--pinned-col thead th:first-child, .uix-table--pinned-actions thead th:last-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
+  /* The dividers mark where rows scroll under a frozen column: a React TableWrap that measured no
+     sideways overflow (data-overflow="false") draws none. Without the measurement they stay. */
+  .uix-table-wrap[data-overflow="false"] :is(.uix-table--pinned-col :is(th, td):first-child, .uix-table--pinned-actions :is(th, td):last-child) { box-shadow: none; }
   /* A pinned cell paints its row's state itself and must be opaque, or the cells scrolling
      under it show through. The dark pinned/selected tints are translucent, so they are layered
      over the surface the row sits on rather than painted bare. */
@@ -134,7 +137,9 @@
   .uix-table tbody tr:focus-within .uix-id-cell__arrow { opacity: 1; }
 
   /* ── selection column + select-all ────────────────────────────────────────────── */
-  .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: 44px; padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
+  /* --uix-selcol-w: the selection column's width, for a column frozen right after it. */
+  .uix-table { --uix-selcol-w: 44px; }
+  .uix-table th.uix-table__selcol, .uix-table td.uix-table__selcell { width: var(--uix-selcol-w); padding-left: var(--uix-space-3); padding-right: 0; text-align: center; }
 
   /* contextual bulk-action bar — appears when >=1 row is selected */
   .uix-bulkbar {
@@ -147,7 +152,8 @@
   }
   @starting-style { .uix-bulkbar:not([hidden]) { opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))); } }
   .uix-bulkbar[hidden] { display: none; }
-  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent); font-variant-numeric: tabular-nums; }
+  /* --uix-accent-text, not --uix-accent: the plain accent on the accent tint is 3.4:1 in dark (HAR-1388 specimen) */
+  .uix-bulkbar__count { font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-accent-text); font-variant-numeric: tabular-nums; }
   .uix-bulkbar__spacer { flex: 1; }
 
   /* ── row hover actions + kebab ─────────────────────────────────────────────────── */

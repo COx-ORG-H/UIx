@@ -106,9 +106,9 @@ test('BusyRegion and TableWrap refreshing keep the rows; aria-busy at once, dim 
 
   await page.clock.runFor(150);
   await expect(region.locator('.uix-busy-bar')).toHaveCSS('opacity', '1');
-  await expect(region.locator('.uix-busy-region__content')).toHaveCSS('opacity', '0.6');
+  await expect(region.locator('.uix-busy-region__content')).toHaveCSS('opacity', '0.8');
   await expect(region.locator('ul'), 'the children keep their own opacity and transitions').toHaveCSS('opacity', '1');
-  await expect(table.locator('tbody')).toHaveCSS('opacity', '0.6');
+  await expect(table.locator('tbody')).toHaveCSS('opacity', '0.8');
   await expect(table.locator('thead')).toHaveCSS('opacity', '1');
   const bar = await table.locator('.uix-busy-bar').evaluate((el) => {
     const cs = getComputedStyle(el);

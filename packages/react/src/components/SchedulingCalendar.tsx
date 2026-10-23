@@ -10,6 +10,9 @@ import { TOP_LANE_CROSS_MIDNIGHT_MINUTES, itemDaySpan, layoutMonthSpans } from '
 import type { MonthSpanGroup, MonthSpanInput, MonthSpanLayout, MoveProposal, PlacedMonthSpan } from '../scheduling-calendar-model.js';
 import { SchedulingAgenda } from './SchedulingAgenda.js';
 import { SchedulingTimeGrid } from './SchedulingTimeGrid.js';
+import { SchedulingResourceDay } from './SchedulingResourceDay.js';
+import type { SchedulingSlotSelection } from './SchedulingResourceDay.js';
+import type { SchedulingAvailabilityKind, SchedulingResource, SchedulingResourceSpan } from '../scheduling-resource-model.js';
 import type { TimeGridEntryContext } from './SchedulingTimeGrid.js';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
@@ -212,6 +215,18 @@ export interface SchedulingCalendarLabels {
   moveCancelled?: string;
   /** Announced when the time asked for does not exist that day. `{time}` is the time used instead. */
   gapForward?: string;
+  /** Names the resource day (HAR-983). `{date}` placeholder. */
+  resourceGrid?: string;
+  /** The words for the kinds of a resource span. */
+  availability?: Partial<Record<SchedulingAvailabilityKind, string>>;
+  /** Time of a resource that no span covers: no schedule, which is not free. */
+  noSchedule?: string;
+  /** A resource slot's or booking's accessible name. `{resource}`, `{start}`, `{end}`, `{kind}`, `{label}`. */
+  slotName?: string;
+  /** How to move in the resource day, read with it. */
+  resourceHint?: string;
+  /** The resource day with no resources. */
+  noResources?: string;
 }
 
 export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
@@ -259,6 +274,12 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels = {
   moveProposed: 'Move to {start} – {end}. Enter confirms, Escape cancels.',
   moveCancelled: 'Move cancelled.',
   gapForward: 'That time does not exist on this day. Moved forward to {time}.',
+  resourceGrid: 'Schedule by person for {date}',
+  availability: { free: 'Free', booked: 'Booked', off: 'Off' },
+  noSchedule: 'No schedule',
+  slotName: '{resource}, {start} – {end}, {kind}, {label}',
+  resourceHint: 'Arrow keys move between times and people. Enter selects.',
+  noResources: 'No one to show for this day.',
 };
 
 export interface SchedulingCalendarProps {
@@ -399,6 +420,35 @@ export interface SchedulingCalendarProps {
   topLaneCap?: number;
   /** Lanes side by side in one day column of the time grid, at most. Fewer are used when the column is narrow. Default 4. */
   maxLanes?: number;
+  /**
+   * With `view="day"`, one column per resource (a practitioner, a room) instead of the time grid
+   * (HAR-983). Their stretches of the day come from `resourceSpans`; a time no span covers is
+   * shown as "no schedule", never as free.
+   */
+  resources?: SchedulingResource[];
+  /** The free, booked and off stretches of each resource, as the server composed them. */
+  resourceSpans?: SchedulingResourceSpan[];
+  /** Minutes per slot of the resource day: each free span is cut into bookable slots of this length. Default 15. */
+  slotMinutes?: number;
+  /** The first local time of the resource day's axis, `HH:MM`. Default `'07:00'`. */
+  dayStart?: string;
+  /** The local time the resource day's axis ends, `HH:MM`. Default `'19:00'`. */
+  dayEnd?: string;
+  /** Called by a click, Enter or Space on a free slot (its own start and end) or a booking. */
+  onSelectSlot?: (slot: SchedulingSlotSelection) => void;
+  /** Marks the slot or booking that holds this instant for this resource, e.g. while its popover is open. */
+  selectedSlot?: { resourceId: string; start: string };
+  /**
+   * `auto` (default): columns, and a list of one resource after another when the calendar is
+   * narrower than `resourceListBelow`. `columns` or `list` fixes one.
+   */
+  resourceLayout?: 'auto' | 'columns' | 'list';
+  /** The width in CSS pixels under which `auto` shows the list. Default 480. */
+  resourceListBelow?: number;
+  /**
+   * The first load shows skeletons; a refetch keeps what is on screen, dimmed and `aria-busy`
+   * (the resource day; the other views show `labels.loading` instead).
+   */
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
@@ -417,6 +467,7 @@ const INTL_PARTS: Record<SchedulingDatePart, Intl.DateTimeFormatOptions> = {
 const EMPTY_OVERLAYS: SchedulingCalendarOverlay[] = [];
 const EMPTY_ENTRIES: SchedulingCalendarEntry[] = [];
 const EMPTY_IDS: string[] = [];
+const EMPTY_SPANS: SchedulingResourceSpan[] = [];
 const DEFAULT_LANE_CAP = 2;
 /** Chip rows a fixed-height cell keeps when `maxEntriesPerDay` is not given. */
 const DEFAULT_CHIP_ROWS = 3;
@@ -435,13 +486,18 @@ function Marker({ marker, showLabel }: { marker: SchedulingMarker; showLabel?: b
 }
 const renderMarker = (marker: SchedulingMarker, showLabel?: boolean) => <Marker marker={marker} showLabel={showLabel} />;
 
-/** Month/week/agenda calendar for UTC ranges rendered in an explicit IANA time zone. */
+/**
+ * Month/week/day/agenda calendar for UTC ranges rendered in an explicit IANA time zone. With
+ * `resources`, the day view is one column per resource (HAR-983).
+ */
 export function SchedulingCalendar({
   entries, anchorDate, timeZone, view: controlledView, onViewChange, onAnchorDateChange,
   onSelectEntry, overlays = EMPTY_OVERLAYS, onSelectOverlay, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, days: dayInfo, dayEntries, spanLayout, windowLaneCap, spanLaneCap,
   legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, agendaGroups, agendaHeadingLevel = 3, virtualizeAbove = 200, monthDensity = 'full', timeGrid = false, now, canMove = false, step = 15, onProposeMove,
-  topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4, loading, error, onRetry, className, labels: labelOverrides,
+  topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4,
+  resources, resourceSpans = EMPTY_SPANS, slotMinutes, dayStart, dayEnd, onSelectSlot, selectedSlot, resourceLayout = 'auto', resourceListBelow = 480,
+  loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
   const uixLabels = useUixLabels();
   const overrides = { ...uixLabels.schedulingCalendar, ...labelOverrides };
@@ -450,11 +506,13 @@ export function SchedulingCalendar({
     ...overrides,
     states: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.states, ...uixLabels.schedulingCalendar?.states, ...labelOverrides?.states },
     statuses: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.statuses, ...uixLabels.schedulingCalendar?.statuses, ...labelOverrides?.statuses },
-  } as Required<SchedulingCalendarLabels> & { statuses: Record<SchedulingStatus, string> };
+    availability: { ...DEFAULT_SCHEDULING_CALENDAR_LABELS.availability, ...uixLabels.schedulingCalendar?.availability, ...labelOverrides?.availability },
+  } as Required<SchedulingCalendarLabels> & { statuses: Record<SchedulingStatus, string>; availability: Record<SchedulingAvailabilityKind, string> };
   const stateLabel = labels.states;
   const viewLabel = { month: labels.viewMonth, week: labels.viewWeek, day: labels.viewDay, agenda: labels.viewAgenda } as const;
   const [internalView, setInternalView] = useState<SchedulingCalendarView>('month');
   const view = controlledView ?? internalView;
+  const resourceDay = view === 'day' && resources !== undefined;
   const [activeDate, setActiveDate] = useState(anchorDate);
   const [expandedDates, setExpandedDates] = useState<ReadonlySet<string>>(() => new Set());
   const dateText = (date: string, part: SchedulingDatePart) => formatDate?.(date, part) ?? cachedDateTimeFormat(locale, INTL_PARTS[part]).format(utcDate(date));
@@ -767,10 +825,15 @@ export function SchedulingCalendar({
     {showHeader && <div className="uix-scheduling-calendar__header">
       <div><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(-1)} disabled={!onAnchorDateChange}>{periodLabel('previous')}</button><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={() => movePeriod(1)} disabled={!onAnchorDateChange}>{periodLabel('next')}</button></div>
       <strong>{view === 'month' ? dateText(startOfMonth(anchorDate), 'month') : view === 'day' ? dateText(anchorDate, 'day') : `${dateText(weekStart, 'day')} – ${dateText(weekDays[weekDays.length - 1]!, 'day')}`}</strong>
-      <div className="uix-segmented" role="group" aria-label={labels.viewGroup}>{(timeGrid || view === 'day' ? ['month', 'week', 'day', 'agenda'] as const : ['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{viewLabel[option]}</button>)}</div>
+      <div className="uix-segmented" role="group" aria-label={labels.viewGroup}>{(timeGrid || view === 'day' || resources !== undefined ? ['month', 'week', 'day', 'agenda'] as const : ['month', 'week', 'agenda'] as const).map((option) => <button key={option} type="button" className="uix-segmented__option" aria-pressed={view === option} data-selected={view === option || undefined} onClick={() => setView(option)}>{viewLabel[option]}</button>)}</div>
     </div>}
     {notice != null && notice !== false && <div className="uix-scheduling-calendar__notice">{notice}</div>}
-    {loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
+    {resourceDay && !error ? <SchedulingResourceDay
+        date={anchorDate} timeZone={timeZone} resources={resources} spans={resourceSpans} dayStart={dayStart} dayEnd={dayEnd} slotMinutes={slotMinutes}
+        layout={resourceLayout} listBelow={resourceListBelow} loading={loading} selected={selectedSlot} onSelectSlot={onSelectSlot}
+        labels={labels} dateText={dateText(anchorDate, 'day')} headingLevel={agendaHeadingLevel} emptyNote={emptyNote}
+      />
+      : loading ? <div className="uix-scheduling-calendar__state" role="status">{labels.loading}</div>
       : error ? <div className="uix-scheduling-calendar__state" role="alert"><p>{error}</p>{onRetry && <button type="button" className="uix-btn uix-btn--secondary" onClick={onRetry}>{labels.retry}</button>}</div>
       : view === 'agenda' && agendaGroups ? <SchedulingAgenda
         groups={agendaGroups} timeZone={timeZone} labels={labels} headingLevel={agendaHeadingLevel} virtualizeAbove={virtualizeAbove} dateText={dateText} formatInstant={formatInstant}

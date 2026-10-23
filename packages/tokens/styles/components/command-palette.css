@@ -1,6 +1,6 @@
 /* uix command palette (⌘K) — inner surface; mounts in a dialog/popover (overlay mechanics in motion + overlays). */
 @layer uix.components {
-  .uix-cmdk { width: min(560px, 92vw); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
+  .uix-cmdk { width: min(560px, 92vw); max-width: 100%; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay); overflow: hidden; }
   .uix-cmdk__input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--uix-border); background: transparent; color: var(--uix-text); font: inherit; font-size: var(--uix-text-h3); padding: 0 var(--uix-space-4); }
   .uix-cmdk__input:focus { outline: none; }
   /* visible focus replacement for the suppressed outline (UIX-A11Y-1): the divider under the
@@ -10,8 +10,22 @@
   .uix-cmdk__group { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
   .uix-cmdk__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3) var(--uix-space-3); border-radius: var(--uix-radius-sm); color: var(--uix-text); cursor: pointer; font-size: var(--uix-text-body); }
   .uix-cmdk__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
-  .uix-cmdk__item:hover, .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
+  .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
+  /* items mode moves the active row with the pointer, so a hover tint there would mark a second row */
+  @media (hover: hover) and (pointer: fine) { .uix-cmdk:not([data-items]) .uix-cmdk__item:hover { background: var(--uix-bg-hover); } }
   .uix-cmdk__item .uix-kbd { margin-left: auto; }
+  /* items mode (HAR-1378): label + description, matched text, the shortcut at the end, empty state */
+  .uix-cmdk__icon { display: inline-flex; flex: none; }
+  .uix-cmdk__text { display: grid; flex: 1; min-width: 0; gap: calc(var(--uix-space-1) / 2); }
+  .uix-cmdk__label { overflow-wrap: anywhere; }
+  .uix-cmdk__desc { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-cmdk__mark { background: transparent; color: inherit; font-weight: 600; }
+  .uix-cmdk__shortcut { flex: none; margin-left: auto; }
+  .uix-cmdk__item[aria-disabled="true"] { color: var(--uix-text-muted); cursor: default; }
+  .uix-cmdk__empty { margin: 0; padding: var(--uix-space-6) var(--uix-space-4); text-align: center; color: var(--uix-text-muted); font-size: var(--uix-text-body); }
+  /* the palette's own dialog: the palette is the visible box, the dialog only hosts it */
+  .uix-dialog.uix-cmdk-dialog { width: auto; max-width: min(560px, 92vw); margin: 12vh auto auto; padding: 0; border: 0; background: transparent; box-shadow: none; overflow: visible; }
+  .uix-cmdk-dialog .uix-cmdk { width: min(560px, 92vw); }
   /* ⌘K is keyboard-triggered and high-frequency → open instantly, no animation (Emil's rule) */
   dialog[data-uix-cmdk-dialog], dialog[data-uix-cmdk-dialog]::backdrop { transition: none; }
 }

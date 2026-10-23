@@ -1,0 +1,8 @@
+---
+"@tensor_1/react": minor
+"@tensor_1/tokens": minor
+---
+
+**`RelationshipGraph` gaps** (HAR-1639; TENSOR K3 gaps map and CMDB topology, found against 2.31.0). (1) An edge takes `variant: 'dashed'`, a `tone` (`neutral` / `info` / `success` / `warning` / `danger` / `accent`) and a `description`. (2) A node takes a `tone` (its border and a bar on its leading edge); a legend item takes `tone`, `shape` (`edge` / `node`) and `variant`, so the legend matches. (3) `revealId` brings a node into view without moving focus (smooth, or at once with reduced motion, through `useReducedMotion`). (4) The toolbar can be hidden: `controls="none"` (and the compact cluster since 2.45.0) now applies to the radial layout too. (5) No root border without `rootId` (a map with several starting points); `markRoot` overrides. (6) Edge labels that would be drawn over each other are moved apart, top to bottom, and one that would drift too far from its edge is left out (`separateEdgeLabels`, `edgeLabelSize` are exported). (7) The edge layer stays decoration; each node's accessible description lists its relationships, edge descriptions included (`labels.relationTo` / `labels.relationFrom`). (8) An edge across more than one column is a `skip` edge: solid, routed in a channel under every item of the columns it crosses, and neither end is flagged as a cycle; a back edge that closes no loop is `back` (not flagged either); only `cycle` edges flag their nodes. `LayeredEdgeKind` gains `skip` and `back`, so code that switches over it exhaustively needs the two new cases; `LayeredItem.inCycle` is now true for cycle edges only.
+
+`relationship-graph.css`: tones for edges, nodes and legend swatches, dashed edges, line and box legend swatches.

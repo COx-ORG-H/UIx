@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'react';
-import { boundRelationshipGraph, layeredNeighbor, layoutLayeredGraph } from '../relationship-graph-model.js';
+import { boundRelationshipGraph, edgeLabelSize, layeredNeighbor, layoutLayeredGraph, separateEdgeLabels } from '../relationship-graph-model.js';
 import type { LayeredItem, LayeredLayout, LayeredNavigationKey, RoutedEdge } from '../relationship-graph-model.js';
 import { cx } from '../cx.js';
 import { Maximize2Icon, Minimize2Icon, MinusIcon, PlusIcon, RotateCcwIcon, ScanIcon } from '../icons/components.js';
 import { useKbdPlatform } from './Kbd.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import type { ResolvedRelationshipGraphProps } from './RelationshipGraph.js';
 import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 import { Tooltip } from './Tooltip.js';
@@ -19,6 +20,8 @@ const READABLE_ZOOM = 0.75;
 const ZOOM_STEP = 1.2;
 const PAN_STEP = 64;
 const FOCUS_MARGIN = 24;
+/** A node's description names this many relationships, then points to the list (HAR-1387). */
+const DESCRIBED_RELATIONS = 5;
 /** How long the "Ctrl + scroll to zoom" hint stays after a plain wheel over the map. */
 const HINT_MS = 1600;
 const NAV_KEYS: readonly string[] = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
@@ -44,6 +47,7 @@ function fitView(layout: LayeredLayout, size: Size): View {
 
 const arrowPoints = '0,0 -8,-4.5 -8,4.5';
 
+
 /** `RelationshipGraph layout="layered"` (ADR-0003). Internal — reached through RelationshipGraph. */
 export function LayeredRelationshipGraph({
   nodes, edges, selectedId, onSelect, onExpandNeighbors, onOpenDetails, maxNodes = 400,
@@ -51,9 +55,10 @@ export function LayeredRelationshipGraph({
   highlightedEdgeIds = EMPTY_IDS, conflictedEdgeIds = EMPTY_IDS, legend = [], className, labels,
   rootId, renderNode, nodeAriaLabel, renderCluster, clusterThreshold, expandedClusterIds,
   onToggleCluster, dimmedNodeIds = EMPTY_IDS, edgeLabels = 'auto', showList = true, height,
-  focusId, onFocusChange, controls = 'full', initialView: initialViewMode = 'readable',
+  focusId, onFocusChange, controls = 'full', initialView: initialViewMode = 'readable', revealId, markRoot,
 }: ResolvedRelationshipGraphProps) {
   const hintId = useId();
+  const describeId = useId();
   const viewportHintId = useId();
   const compact = controls === 'compact';
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
@@ -79,11 +84,15 @@ export function LayeredRelationshipGraph({
   const viewportRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLButtonElement>());
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   const [view, setView] = useState<View>({ x: 0, y: 0, zoom: 1 });
   const [animate, setAnimate] = useState(false);
   const [localFocus, setLocalFocus] = useState<string | undefined>(undefined);
   const [hoverId, setHoverId] = useState<string | undefined>(undefined);
+  // The item that really has the keyboard focus — not the roving tab stop, which the root holds
+  // before anyone tabs in (HAR-1387: its 53 labels were drawn on load).
+  const [focusWithinId, setFocusWithinId] = useState<string | undefined>(undefined);
   const [fullscreen, setFullscreen] = useState(false);
   const [wheelHint, setWheelHint] = useState(false);
   const viewRef = useRef(view);
@@ -150,7 +159,9 @@ export function LayeredRelationshipGraph({
   useEffect(() => () => clearTimeout(hintTimer.current), []);
 
   const moveView = useCallback((next: View, smooth: boolean) => {
-    setAnimate(smooth);
+    // A pan, zoom or reveal glides; with reduced motion (the OS's or the app's own data-motion
+    // choice, read at the moment of the move) it lands at once (HAR-1639, the motion contract).
+    setAnimate(smooth && !prefersReducedMotion());
     setView(next);
   }, []);
 
@@ -169,8 +180,11 @@ export function LayeredRelationshipGraph({
     let nextY = y;
     if (left < FOCUS_MARGIN) nextX += FOCUS_MARGIN - left;
     else if (right > width - FOCUS_MARGIN) nextX -= right - (width - FOCUS_MARGIN);
+    // The map's footer (hint, zoom level, controls) covers its bottom edge: keep the item above it.
+    const footer = footerRef.current;
+    const bottomMargin = footer ? Math.max(FOCUS_MARGIN, heightPx - footer.offsetTop + 8) : FOCUS_MARGIN;
     if (top < FOCUS_MARGIN) nextY += FOCUS_MARGIN - top;
-    else if (bottom > heightPx - FOCUS_MARGIN) nextY -= bottom - (heightPx - FOCUS_MARGIN);
+    else if (bottom > heightPx - bottomMargin) nextY -= bottom - (heightPx - bottomMargin);
     if (nextX !== x || nextY !== y) moveView({ x: nextX, y: nextY, zoom }, smooth);
   }, [moveView]);
 
@@ -206,6 +220,19 @@ export function LayeredRelationshipGraph({
       ensureVisible(controlledTarget, true);
     });
   }, [controlledKey, controlledTarget, controlledPresent, ensureVisible]);
+
+  // Bring `revealId` into view without focus (HAR-1639): when it changes, or once its item and
+  // the first view exist. A cluster stands in for a member it hides.
+  const revealTarget = revealId !== undefined ? (layout.itemOf[revealId] ?? revealId) : undefined;
+  const revealReady = revealTarget !== undefined && itemById.has(revealTarget) && size.width > 0;
+  const revealedKey = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!revealReady || revealTarget === undefined || initialisedFor.current === undefined) return;
+    if (revealedKey.current === revealTarget) return;
+    revealedKey.current = revealTarget;
+    requestAnimationFrame(() => ensureVisible(revealTarget, true));
+  }, [revealReady, revealTarget, ensureVisible]);
+  useEffect(() => { if (revealId === undefined) revealedKey.current = undefined; }, [revealId]);
 
   // Ctrl/⌘ + wheel zooms around the pointer; a plain wheel scrolls the page (in full
   // screen there is no page to scroll, so it zooms). With the compact controls, a plain
@@ -359,10 +386,37 @@ export function LayeredRelationshipGraph({
       .join(', ');
   };
 
+  // Each node says its relationships (HAR-1639): the edge layer is drawn for the eye only.
+  const nodeLabelById = useMemo(() => new Map(bounded.nodes.map((node) => [node.id, node.label])), [bounded.nodes]);
+  const relationsOf = useMemo(() => {
+    const map = new Map<string, string[]>();
+    const add = (id: string, text: string) => { const list = map.get(id); if (list) list.push(text); else map.set(id, [text]); };
+    for (const edge of bounded.edges) {
+      if (!nodeLabelById.has(edge.source) || !nodeLabelById.has(edge.target) || edge.source === edge.target) continue;
+      const relation = edge.label ?? edge.type ?? labels.relationship;
+      const note = edge.description ? ` (${edge.description})` : '';
+      add(edge.source, `${labels.relationTo(relation, nodeLabelById.get(edge.target)!)}${note}`);
+      add(edge.target, `${labels.relationFrom(relation, nodeLabelById.get(edge.source)!)}${note}`);
+    }
+    // A hub's description names a few and points to the list: 2,890 characters at 300 nodes
+    // were read on every focus (HAR-1387).
+    const described = new Map<string, string>();
+    for (const [id, list] of map) {
+      const hidden = list.length - DESCRIBED_RELATIONS;
+      described.set(id, hidden > 0
+        ? `${list.slice(0, DESCRIBED_RELATIONS).join('; ')}; ${labels.moreRelations(hidden, showList)}`
+        : list.join('; '));
+    }
+    return described;
+  }, [bounded.edges, nodeLabelById, labels, showList]);
+  const showRoot = markRoot ?? rootId !== undefined;
+
   const showLabel = (edge: RoutedEdge): boolean => {
     if (edgeLabels === 'never' || edge.label === undefined) return false;
     if (edgeLabels === 'always') return true;
-    return edge.autoLabel || activeIds.has(edge.source) || activeIds.has(edge.target) || focusedId === edge.source || focusedId === edge.target;
+    // Said once by the column header.
+    if (edge.columnLabel) return false;
+    return edge.autoLabel || activeIds.has(edge.source) || activeIds.has(edge.target) || focusWithinId === edge.source || focusWithinId === edge.target;
   };
 
   const viewportStyle = (height !== undefined ? { '--uix-relationship-graph-height': height } : {}) as CSSProperties;
@@ -372,6 +426,137 @@ export function LayeredRelationshipGraph({
     transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
   };
   const zoomPercent = Math.round(view.zoom * 100);
+  // Labels drawn now, moved apart where two would overlap; one that would drift too far is left out.
+  const labelPlacement = useMemo(() => separateEdgeLabels(layout.edges.filter(showLabel).map((edge) => {
+    const lines = edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines;
+    return { id: edge.id, x: edge.labelX, y: edge.labelY, ...edgeLabelSize(lines) };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- showLabel reads exactly these
+  })), [layout, edgeLabels, activeIds, focusWithinId, labels]);
+
+  // HAR-1387: a pan or a zoom changes the stage's transform and nothing else. The edges, the
+  // items and the list are kept from the last render unless what they show changed, so dragging
+  // a 600-node map does not rebuild 600 buttons and 700 paths per pointer move (measured: p95
+  // frame time 450 ms before, see tests/a11y/relationship-graph-gaps.spec.mjs). Handlers reach the
+  // latest props through a ref, so they do not invalidate the kept layers.
+  const live = useRef({ activate, onItemKeyDown, onFocusChange, toggleCluster, onSelect });
+  live.current = { activate, onItemKeyDown, onFocusChange, toggleCluster, onSelect };
+
+  const edgeLayer = useMemo(() => (
+    <svg className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
+      {/* Active edges are drawn last, so a highlighted bus edge is not covered on the shared trunk. */}
+      {layout.edges.map((edge) => ({ edge, active: activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id)) }))
+        .sort((a, b) => Number(a.active) - Number(b.active))
+        .map(({ edge, active }) => {
+        const angle = (edge.arrowAngle * 180) / Math.PI;
+        const placed = labelPlacement.get(edge.id);
+        return <g
+          key={edge.id}
+          className="uix-relationship-graph__link"
+          data-kind={edge.kind}
+          data-bus={edge.bus || undefined}
+          data-active={active || undefined}
+          data-emphasis={edge.emphasis || undefined}
+          data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
+          data-dimmed={(dimmedNodeIds.has(edge.source) && dimmedNodeIds.has(edge.target)) || undefined}
+          data-variant={edge.variant === 'dashed' ? 'dashed' : undefined}
+          data-tone={edge.tone}
+        >
+          <path d={edge.path} />
+          {edge.arrow !== 'none' && <polygon points={arrowPoints} transform={`translate(${edge.arrowX} ${edge.arrowY}) rotate(${angle})`} />}
+          {placed && !placed.hidden && <text x={placed.x} y={placed.y} textAnchor="middle" dominantBaseline="middle" data-moved={placed.y !== edge.labelY || undefined}>
+            {(edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines).map((line, index, lines) => (
+              <tspan key={index} x={placed.x} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : '1.1em'}>{line}</tspan>
+            ))}
+          </text>}
+        </g>;
+      })}
+    </svg>
+  ), [layout, activeIds, highlightedEdgeIds, conflictedEdgeIds, dimmedNodeIds, labelPlacement, labels]);
+  const itemLayer = useMemo(() => <>
+    {layout.columns.map((column) => <div
+      key={column.depth}
+      className="uix-relationship-graph__column"
+      aria-hidden="true"
+      style={{ left: column.x, width: layout.nodeWidth + 64 }}
+    >{labels.column(column.depth, column.count)}{column.edgeLabel !== undefined && <> · {column.edgeLabel}</>}</div>)}
+    <div role="group" aria-roledescription={labels.roleDescription} aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)} aria-describedby={hintId}>
+      {layout.items.map((item, itemIndex) => {
+        const selected = item.id === selectedItemId;
+        const relations = item.node ? relationsOf.get(item.node.id) : undefined;
+        const dimmed = item.node ? dimmedNodeIds.has(item.node.id) : item.cluster!.members.every((member) => dimmedNodeIds.has(member.id));
+        const body = item.cluster
+          ? (renderCluster?.(item.cluster) ?? <>
+              <span className="uix-relationship-graph__item-label">{labels.cluster(item.cluster.members.length, item.cluster.type, item.cluster.edgeLabel)}</span>
+              <span className="uix-relationship-graph__item-meta">{labels.expandCluster}</span>
+            </>)
+          : (renderNode?.(item.node!, { selected, dimmed }) ?? <>
+              <span className="uix-relationship-graph__item-label">{item.node!.label}</span>
+              {(item.node!.type || item.node!.description) && <span className="uix-relationship-graph__item-meta">{[item.node!.type, item.node!.description].filter(Boolean).join(' · ')}</span>}
+            </>);
+        return <button
+          key={item.id}
+          ref={(element) => {
+            if (element) itemRefs.current.set(item.id, element);
+            else itemRefs.current.delete(item.id);
+          }}
+          type="button"
+          className="uix-relationship-graph__item"
+          data-kind={item.kind}
+          data-node-id={item.id}
+          data-selected={selected || undefined}
+          data-dimmed={dimmed || undefined}
+          data-highlighted={(item.node && highlightedNodeIds.has(item.node.id)) || undefined}
+          data-conflicted={(item.node && conflictedNodeIds.has(item.node.id)) || undefined}
+          data-root={(showRoot && item.id === rootItemId) || undefined}
+          data-tone={item.node?.tone}
+          data-flag={item.inCycle || undefined}
+          style={{ left: item.x, top: item.y, width: item.width, height: item.height }}
+          tabIndex={item.id === focusedId ? 0 : -1}
+          aria-label={labelFor(item)}
+          aria-describedby={relations ? `${describeId}-${itemIndex}` : undefined}
+          {...(item.cluster ? { 'aria-expanded': false } : { 'aria-pressed': selected })}
+          onClick={() => live.current.activate(item)}
+          onKeyDown={(event) => live.current.onItemKeyDown(event, item)}
+          onFocus={() => {
+            setFocusWithinId(item.id);
+            if (item.id === focusedId) return;
+            setLocalFocus(item.id);
+            live.current.onFocusChange?.(item.id);
+          }}
+          onBlur={() => setFocusWithinId((current) => (current === item.id ? undefined : current))}
+          onPointerEnter={() => setHoverId(item.id)}
+          onPointerLeave={() => setHoverId((current) => (current === item.id ? undefined : current))}
+        >
+          {body}
+          {item.inCycle && <span className="uix-relationship-graph__item-flag" aria-hidden="true">{labels.cycle}</span>}
+        </button>;
+      })}
+    </div>
+    <div hidden>{layout.items.map((item, itemIndex) => {
+      const relations = item.node ? relationsOf.get(item.node.id) : undefined;
+      return relations ? <span key={item.id} id={`${describeId}-${itemIndex}`}>{relations}</span> : null;
+    })}</div>
+    {layout.items.filter((item) => item.expandedGroup).map((item) => {
+      const group = item.expandedGroup!;
+      return <button
+        key={`collapse:${group.id}`}
+        type="button"
+        className="uix-relationship-graph__collapse"
+        aria-expanded="true"
+        style={{ left: item.x, top: item.y - 26, width: item.width }}
+        onClick={() => live.current.toggleCluster(group.id, group.id)}
+      >{labels.collapseCluster(group.members.length, group.type)}</button>;
+    })}
+  </>, [layout, labels, selectedItemId, focusedId, relationsOf, dimmedNodeIds, highlightedNodeIds, conflictedNodeIds, showRoot, rootItemId, describeId, hintId, bounded, renderNode, renderCluster, nodeAriaLabel]);
+  const listLayer = useMemo(() => showList && <EquivalentRelationshipList
+    nodes={bounded.nodes}
+    edges={bounded.edges}
+    selectedId={selectedId}
+    labels={labels}
+    onSelect={(id) => { const node = bounded.nodes.find((candidate) => candidate.id === id); if (node) live.current.onSelect?.(node); }}
+    onExpandNeighbors={onExpandNeighbors}
+    onOpenDetails={onOpenDetails}
+  />, [showList, bounded, selectedId, labels, onExpandNeighbors, onOpenDetails]);
 
   // One icon control of the compact cluster: a named button, its words in a tooltip.
   const control = (
@@ -431,99 +616,14 @@ export function LayeredRelationshipGraph({
         : {})}
     >
       <div className="uix-relationship-graph__stage" style={stageStyle} data-animate={animate || undefined} onTransitionEnd={() => setAnimate(false)}>
-        <svg className="uix-relationship-graph__edges" width={layout.width} height={layout.height} aria-hidden="true" focusable="false">
-          {layout.edges.map((edge) => {
-            const active = activeIds.has(edge.source) || activeIds.has(edge.target) || edge.edgeIds.some((id) => highlightedEdgeIds.has(id));
-            const angle = (edge.arrowAngle * 180) / Math.PI;
-            return <g
-              key={edge.id}
-              className="uix-relationship-graph__link"
-              data-kind={edge.kind}
-              data-active={active || undefined}
-              data-emphasis={edge.emphasis || undefined}
-              data-conflicted={edge.edgeIds.some((id) => conflictedEdgeIds.has(id)) || undefined}
-              data-dimmed={(dimmedNodeIds.has(edge.source) && dimmedNodeIds.has(edge.target)) || undefined}
-            >
-              <path d={edge.path} />
-              {edge.arrow !== 'none' && <polygon points={arrowPoints} transform={`translate(${edge.arrowX} ${edge.arrowY}) rotate(${angle})`} />}
-              {showLabel(edge) && <text x={edge.labelX} y={edge.labelY} textAnchor="middle" dominantBaseline="middle">
-                {(edge.kind === 'cycle' ? [...edge.labelLines, labels.cycle] : edge.labelLines).map((line, index, lines) => (
-                  <tspan key={index} x={edge.labelX} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : '1.1em'}>{line}</tspan>
-                ))}
-              </text>}
-            </g>;
-          })}
-        </svg>
-        {layout.columns.map((column) => <div
-          key={column.depth}
-          className="uix-relationship-graph__column"
-          aria-hidden="true"
-          style={{ left: column.x, width: layout.nodeWidth }}
-        >{labels.column(column.depth, column.count)}</div>)}
-        <div role="group" aria-roledescription={labels.roleDescription} aria-label={labels.graphSummary(bounded.nodes.length, bounded.edges.length)} aria-describedby={hintId}>
-          {layout.items.map((item) => {
-            const selected = item.id === selectedItemId;
-            const dimmed = item.node ? dimmedNodeIds.has(item.node.id) : item.cluster!.members.every((member) => dimmedNodeIds.has(member.id));
-            const body = item.cluster
-              ? (renderCluster?.(item.cluster) ?? <>
-                  <span className="uix-relationship-graph__item-label">{labels.cluster(item.cluster.members.length, item.cluster.type, item.cluster.edgeLabel)}</span>
-                  <span className="uix-relationship-graph__item-meta">{labels.expandCluster}</span>
-                </>)
-              : (renderNode?.(item.node!, { selected, dimmed }) ?? <>
-                  <span className="uix-relationship-graph__item-label">{item.node!.label}</span>
-                  {(item.node!.type || item.node!.description) && <span className="uix-relationship-graph__item-meta">{[item.node!.type, item.node!.description].filter(Boolean).join(' · ')}</span>}
-                </>);
-            return <button
-              key={item.id}
-              ref={(element) => {
-                if (element) itemRefs.current.set(item.id, element);
-                else itemRefs.current.delete(item.id);
-              }}
-              type="button"
-              className="uix-relationship-graph__item"
-              data-kind={item.kind}
-              data-node-id={item.id}
-              data-selected={selected || undefined}
-              data-dimmed={dimmed || undefined}
-              data-highlighted={(item.node && highlightedNodeIds.has(item.node.id)) || undefined}
-              data-conflicted={(item.node && conflictedNodeIds.has(item.node.id)) || undefined}
-              data-root={item.id === rootItemId || undefined}
-              style={{ left: item.x, top: item.y, width: item.width, height: item.height }}
-              tabIndex={item.id === focusedId ? 0 : -1}
-              aria-label={labelFor(item)}
-              {...(item.cluster ? { 'aria-expanded': false } : { 'aria-pressed': selected })}
-              onClick={() => activate(item)}
-              onKeyDown={(event) => onItemKeyDown(event, item)}
-              onFocus={() => {
-                if (item.id === focusedId) return;
-                setLocalFocus(item.id);
-                onFocusChange?.(item.id);
-              }}
-              onPointerEnter={() => setHoverId(item.id)}
-              onPointerLeave={() => setHoverId((current) => (current === item.id ? undefined : current))}
-            >
-              {body}
-              {item.inCycle && <span className="uix-relationship-graph__item-flag" aria-hidden="true">{labels.cycle}</span>}
-            </button>;
-          })}
-        </div>
-        {layout.items.filter((item) => item.expandedGroup).map((item) => {
-          const group = item.expandedGroup!;
-          return <button
-            key={`collapse:${group.id}`}
-            type="button"
-            className="uix-relationship-graph__collapse"
-            aria-expanded="true"
-            style={{ left: item.x, top: item.y - 26, width: item.width }}
-            onClick={() => toggleCluster(group.id, group.id)}
-          >{labels.collapseCluster(group.members.length, group.type)}</button>;
-        })}
+        {edgeLayer}
+        {itemLayer}
       </div>
       {compact && <>
         {wheelHint && <p className="uix-relationship-graph__toast" role="status">{labels.navigationHint(modifier)}</p>}
         {/* One row along the map's bottom edge: the hint takes only the room the controls
             leave, so the three never overlap at any map width (TENSOR HAR-2512). */}
-        <div className="uix-relationship-graph__footer">
+        <div ref={footerRef} className="uix-relationship-graph__footer">
           <p className="uix-relationship-graph__hint" aria-hidden="true">{labels.navigationHint(modifier)}</p>
           <div className="uix-relationship-graph__controls" role="group" aria-label={labels.controls}>
             <span className="uix-relationship-graph__zoom-level" aria-live="polite">{labels.zoomLevel(zoomPercent)}</span>
@@ -543,15 +643,7 @@ export function LayeredRelationshipGraph({
         </div>
       </>}
     </div>
-    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id}>{entry.label}</li>)}</ul>}
-    {showList && <EquivalentRelationshipList
-      nodes={bounded.nodes}
-      edges={bounded.edges}
-      selectedId={selectedId}
-      labels={labels}
-      onSelect={(id) => { const node = bounded.nodes.find((candidate) => candidate.id === id); if (node) onSelect?.(node); }}
-      onExpandNeighbors={onExpandNeighbors}
-      onOpenDetails={onOpenDetails}
-    />}
+    {legend.length > 0 && <ul className="uix-relationship-graph__legend" aria-label={labels.legend}>{legend.map((entry) => <li key={entry.id} data-type={entry.id} data-tone={entry.tone} data-shape={entry.shape} data-variant={entry.variant}>{entry.label}</li>)}</ul>}
+    {listLayer}
   </section>;
 }

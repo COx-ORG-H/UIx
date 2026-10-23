@@ -50,3 +50,11 @@ test('folding keeps a map back to the original characters', () => {
   assert.deepEqual(folded.source, [0, 1, 1]);
   assert.deepEqual(folded.sourceEnd, [1, 2, 2]);
 });
+
+test('stroked letters NFD cannot split fold one to one: đ, ø, ł, ı (PR #168 review)', () => {
+  assert.equal(foldForSearch('Đorđe Balašević').text, 'dorde balasevic');
+  assert.equal(foldForSearch('Søren Łukasz ılık').text, 'soren lukasz ilik');
+  // the original letters are marked, one source letter per folded letter
+  assert.deepEqual(marked('Đorđe Balašević', 'dorde'), ['Đorđe']);
+  assert.deepEqual(marked('Kraków, Łódź', 'lodz'), ['Łódź']);
+});
