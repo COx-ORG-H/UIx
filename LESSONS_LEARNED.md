@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 5439e94 same trap as the cb64990 skip (a transient indicator widening the page); a layout-time clip instead of a resize observer -->
 <!-- lesson-skip: cb64990 routine: a transient indicator kept a stale translate after a mid-slide resize and widened the page; the 320 px overflow spec caught it in CI -->
 <!-- lesson-skip: d3a64e3 routine: raw z-index caught by the contract gate, tokenized -->
 <!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
