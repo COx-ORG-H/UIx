@@ -63,11 +63,11 @@ export function useSlidingIndicator(
     // a new selection: any slide still running ends where it is
     finish.current?.();
     if (!indicator || lastInput !== 'pointer' || prefersReducedMotion() || !box.w || !box.h) return;
-    slide(container, indicator, before.box, box, finish);
+    slide(container, indicator, selected, before.box, box, finish);
   });
 }
 
-function slide(container: HTMLElement, indicator: HTMLElement, from: Box, to: Box, finish: { current: (() => void) | null }) {
+function slide(container: HTMLElement, indicator: HTMLElement, target: HTMLElement, from: Box, to: Box, finish: { current: (() => void) | null }) {
   indicator.hidden = false;
   indicator.style.inlineSize = `${to.w}px`;
   indicator.style.blockSize = `${to.h}px`;
@@ -82,8 +82,16 @@ function slide(container: HTMLElement, indicator: HTMLElement, from: Box, to: Bo
   indicator.style.transform = '';
 
   let timer: ReturnType<typeof setTimeout> | undefined;
+  // A layout change mid-slide (a narrower window, a text-size change) leaves the target box
+  // stale, and a stale indicator can stick out past the page edge: end the slide there.
+  const size = () => `${container.offsetWidth} ${container.offsetHeight} ${target.offsetWidth} ${target.offsetHeight}`;
+  const startSize = size();
+  const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => { if (size() !== startSize) end(); });
+  resized?.observe(container);
+  resized?.observe(target);
   const end = () => {
     clearTimeout(timer);
+    resized?.disconnect();
     indicator.removeEventListener('transitionend', onEnd);
     indicator.getAnimations?.().forEach((a) => a.cancel());
     indicator.removeAttribute('data-moving');
