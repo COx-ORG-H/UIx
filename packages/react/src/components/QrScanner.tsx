@@ -153,11 +153,14 @@ export function QrScanner({
   const live = useRef({ decode, onResult, onStatusChange, interval, maxFrameSize, repeatAfter, hintAfter, frameTimeout });
   live.current = { decode, onResult, onStatusChange, interval, maxFrameSize, repeatAfter, hintAfter, frameTimeout };
 
+  // The status the consumer last heard of: onStatusChange runs once per change, outside a state
+  // updater (StrictMode runs updaters twice).
+  const statusRef = useRef(status);
   const setStatus = useCallback((next: QrScannerStatus) => {
-    setStatusState((current) => {
-      if (current !== next) live.current.onStatusChange?.(next);
-      return next;
-    });
+    if (statusRef.current === next) return;
+    statusRef.current = next;
+    setStatusState(next);
+    live.current.onStatusChange?.(next);
   }, []);
 
   const release = useCallback(() => {

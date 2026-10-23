@@ -1263,6 +1263,10 @@ when the camera has one. The camera stops on Stop, on unmount and while the page
   explainer={<p>{t('cameraWhy')}</p>} manualEntry={<VoucherCodeField />} />
 ```
 
+A scan trail (what was read, what the product did with it, what to do next) is the product's:
+keep `onResult` and `onStatusChange` in state and show the last few as a `Timeline` under the
+scanner, newest first, with the outcome in words ("Not changed: already lent").
+
 #### SchedulingCalendar: the day by resource
 
 `view="day"` with `resources` draws one column per resource (a practitioner, a room) on a slot

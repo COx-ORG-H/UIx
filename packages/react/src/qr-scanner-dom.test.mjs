@@ -15,7 +15,7 @@
 import test, { before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, StrictMode } from 'react';
 
 let dom;
 let createRoot;
@@ -78,12 +78,13 @@ const mount = (props) => {
   document.body.append(host);
   const root = createRoot(host);
   const statuses = [];
-  act(() => root.render(h(ui.QrScanner, {
+  // StrictMode: effects and state updaters run twice; onStatusChange must still run once per change
+  act(() => root.render(h(StrictMode, null, h(ui.QrScanner, {
     decode: () => null, onResult: () => {}, onStatusChange: (s) => statuses.push(s),
     explainer: h('p', null, 'The camera reads the voucher; nothing leaves this device.'),
     manualEntry: h('label', null, 'Code ', h('input', { name: 'code' })),
     ...props,
-  })));
+  }))));
   return { host, statuses, unmount: () => { act(() => root.unmount()); host.remove(); } };
 };
 const flush = () => act(async () => { for (let i = 0; i < 4; i += 1) await Promise.resolve(); });
