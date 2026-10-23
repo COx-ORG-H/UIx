@@ -25,6 +25,10 @@
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
 
+### 2026-10-23 · removing an enter animation exposes state races · `c34ab3b`
+- **Rule:** when an overlay stops animating (instant, keyboard-opened, reduced motion), a key handler that gates on React state set by an async browser event (`toggle`, `transitionend`) must also read the DOM (`:popover-open`), because the next key can now arrive before that event.  **Why:** the date fields gated Escape on `open`, updated only by the queued `toggle` event; the 120 ms enter used to hide the gap, and in CI the Escape leaked to the dialog around the field (passed 4/4 locally).
+- **Gate:** `tests/a11y/older-gaps.spec.mjs` range-field test (Enter, then Escape, `outerEscape` 0) failed in CI on the instant open; ⚠ TODO no generic gate for other state-gated key handlers.  **Tag:** race, motion, overlay, local-env-lies
+
 ### 2026-10-17 · a closed popover with its own display · `feat/har-2029-discard-prompt`
 - **Rule:** a class that sets `display` on a `[popover]` element must also hide it while closed (`[popover].x:not(:popover-open) { display: none }`). The browser hides a closed popover only through its UA stylesheet, and any author `display` beats that.  **Why:** `.uix-popconfirm { display: grid }` kept every closed Popconfirm laid out at opacity 0: a fixed 114 px box at the viewport's top-left that took clicks, and an `alertdialog` that role queries counted. The discard step of HAR-2029 reused the class and its spec's `toHaveCount(0)` saw it; Select's popup had hit the same and got a one-off rule.
 - **Gate:** `[popover].uix-popover:not(:popover-open) { display: none }` in `popover.css` covers every kit popover (`.uix-filter-popover` sets `grid` too); `tests/a11y/discard-prompt.spec.mjs` asserts the closed step's computed `display` is `none`, and its pending test failed on the old CSS.  **Tag:** false-green, cascade, overlay, generalizable
