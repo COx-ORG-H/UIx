@@ -1,5 +1,35 @@
 # @tensor_1/react
 
+## 2.47.0
+
+### Minor Changes
+
+- 8fba59b: State feedback on the latency ladder (motion rollout WP2: HAR-2580, HAR-2581, HAR-2582). Nothing new shows for the first 300 ms of an action; a pending indicator then stays at least 500 ms; an in-place result holds 1.5 s.
+
+  - `useDelayedPending(pending, { delay, minVisible })` and the constants `PENDING_DELAY_MS` (300), `PENDING_MIN_VISIBLE_MS` (500), `RESULT_HOLD_MS` (1500).
+  - `Button loading` now blocks presses at once but shows its spinner only after 300 ms, held at least 500 ms, and keeps the button's full colour instead of the 50 % dim (`loadingDelay={0}` for the old instant spinner; plain markup `data-loading` is unchanged). `Button` stays server-renderable: the timers live in a client child.
+  - `Button result` (`'success' | 'error' | null`) and `resultLabels`: a check or alert mark and words crossfade over the label for 1.5 s after an action, announced through a polite region outside the button (in the nearest dialog, else the body), with the button's width held to its widest wording; an icon-only button shows the mark alone. Set `result` to `null` when an action starts. `UixLabelsProvider` `buttonResult`; `DEFAULT_BUTTON_RESULT_LABELS`; types `ButtonResult`, `ButtonResultLabels`.
+  - Migration: the React `Button` no longer renders `data-loading`; while `loading` it carries `data-pending` (at once) and a hidden `[data-uix-btn-busy]` marker child (after the delay). A selector or e2e wait on `button[data-loading]` should use `[aria-busy="true"]`. Any `loading` prop (even `false`) adds that hidden first child.
+  - `SaveStatus delay` (default 300 ms): a fast save goes straight to "Saved"; `delay={0}` restores every state at once.
+  - `Spinner delay` and `LoadingState delay` (`true` = 300 ms).
+  - `BusyRegion busy` and `TableWrap refreshing`: a refetch keeps its rows, dims them under an indeterminate bar and sets `aria-busy`; under reduced motion the bar breathes instead of sweeping; right to left it sweeps leftwards. `BusyRegion` wraps its children in `.uix-busy-region__content`. New stylesheet `components/busy-region.css`.
+
+## 2.46.0
+
+### Minor Changes
+
+- 9bc43b6: The motion contract and its gate (HAR-2578, motion rollout work package 1, part A). The canonical vocabulary is the docs Foundations → Motion page.
+
+  - **New tokens (additive):** exit durations `--uix-dur-exit-fast` (80 ms), `--uix-dur-exit` (110 ms), `--uix-dur-exit-slow` (160 ms), about two-thirds of each enter; `--uix-delay-tooltip` (400 ms) and `--uix-delay-tooltip-skip` (300 ms); loop durations `--uix-loop-spin` (600 ms), `--uix-loop-progress` (1200 ms), `--uix-loop-shimmer` (1400 ms), `--uix-loop-ping` (1600 ms), `--uix-loop-blink` (1100 ms), `--uix-loop-pulse` (2000 ms); `--uix-dur-highlight` (2400 ms). No value of an existing token changed. `--uix-ease-in-out` keeps `cubic-bezier(.77,0,.175,1)`; the spec's unshipped `.4,0,.2,1` was corrected to it. `--uix-ease-in` stays for compatibility but must not be used: an accelerating exit reads as lag.
+  - **Gate `check-motion.mjs` in `test:contract`:** fails on a raw time value, `transition: all`, an ease-in curve, an animated layout property (width, height, inset, margin, padding, grid tracks, box-shadow), an infinite or moving animation with no `prefers-reduced-motion` rule for its selector, and a `:hover` that moves or reveals outside `@media (hover: hover) and (pointer: fine)`. Every raw time in the kit is now a token.
+  - **Reduced motion keeps feedback:** under `prefers-reduced-motion: reduce` transitions keep only fades and colour changes (transform and layout glide drop out), instead of every transition being cut. Spinner, Button loading, Skeleton, indeterminate Progress, SaveStatus, a running Flow node and Heartbeat pulse slowly (`uix-pulse`) instead of freezing. Product keyframes still end at once.
+  - **`useReducedMotion()` and `prefersReducedMotion()`** (new exports) for motion that JavaScript drives.
+  - **`Modal instant`** opens and closes with no animation (`[data-uix-instant]`); `CommandPalette` marks the dialog or popover it sits in itself, so a palette in a plain `Modal` no longer animates for 240 ms. `[data-uix-cmdk-dialog]` still works.
+  - **Hover gating:** card lift, kanban lift, the avatar edit overlay, the inline-edit pencil, view-menu grips and the legacy `[data-uix-tip]` move or reveal on hover only on a fine pointer. **Table row actions, the pin, the id-cell arrow, the cell-edit pencil, the sidebar star and the favourites menu trigger are now visible at rest on touch screens**; on a fine pointer they still reveal on hover or keyboard focus.
+  - **No layout animation:** `Meter` and `Progress` move on `transform` (the React components set `--val`; a legacy inline `width` still works, without motion). The AppShell nav tiers and sidebar nav groups switch instantly instead of animating grid tracks. Box-shadow changes step instead of animating (focus rings appear instantly). `.uix-arrival` fades an outline instead of a box-shadow.
+  - **Toast exit** runs at `--uix-dur-exit` with ease-out instead of ease-in.
+  - PR template: a Motion line. Spec §5.9 corrected (no more ease-in exits).
+
 ## 2.45.1
 
 ### Patch Changes
