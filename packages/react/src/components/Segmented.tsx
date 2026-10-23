@@ -147,12 +147,23 @@ export function SegmentedOption({
   const radio = ctx.selection === 'radio';
   if (ctx.selection === 'link') {
     // Button-only attributes have no meaning on a link; everything else (lang, aria-label, data-*) passes.
-    const { type: _type, disabled: _disabled, form: _form, formAction: _formAction, name: _name, ...linkProps } = props;
+    const { type: _type, disabled, form: _form, formAction: _formAction, name: _name, ...linkProps } = props;
+    // A disabled option, or one without an href, is a link that goes nowhere: an <a> without href
+    // (not focusable, not announced as a link) marked aria-disabled, never href="#".
+    if (disabled || !href) {
+      return (
+        <li>
+          <a {...(linkProps as AnchorHTMLAttributes<HTMLAnchorElement>)} hrefLang={hrefLang} className={cx('uix-segmented__option', className)} aria-disabled="true" aria-current={selected ? 'page' : undefined}>
+            {children}
+          </a>
+        </li>
+      );
+    }
     return (
       <li>
         {renderUixLink(ctx.renderLink, {
           ...(linkProps as AnchorHTMLAttributes<HTMLAnchorElement>),
-          href: href ?? '#',
+          href,
           hrefLang,
           className: cx('uix-segmented__option', className),
           'aria-current': selected ? 'page' : undefined,

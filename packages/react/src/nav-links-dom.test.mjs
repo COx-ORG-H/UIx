@@ -68,8 +68,9 @@ test('Segmented selection="link" is a named nav of links; the current one has ar
   assert.ok(list);
   const links = [...list.querySelectorAll(':scope > li > a.uix-segmented__option')];
   assert.deepEqual(links.map((a) => [a.getAttribute('href'), a.getAttribute('hreflang'), a.lang, a.getAttribute('aria-current')]), [
-    ['/bs/program', 'bs', 'bs', 'page'], ['/de/program', 'de', 'de', null], ['/en/program', 'en', 'en', null],
+    ['/bs/program', 'bs', 'bs', 'page'], ['/de/program', 'de', 'de', null], [null, 'en', 'en', null],
   ]);
+  assert.equal(links[2].getAttribute('aria-disabled'), 'true', 'a disabled option is a link that goes nowhere (PR #168 review)');
   assert.equal(host.querySelector('button'), null, 'links, not buttons');
   assert.equal(links[2].hasAttribute('type') || links[2].hasAttribute('disabled'), false, 'button-only attributes are dropped');
   assert.equal(links.some((a) => a.hasAttribute('aria-pressed') || a.hasAttribute('aria-checked') || a.hasAttribute('tabindex')), false, 'no toggle state and no roving tab stop: each link is a tab stop');
@@ -109,4 +110,21 @@ test('LocaleSwitcher: lang and hreflang on each link, the current locale marked'
 test('the other selection modes are unchanged', () => {
   const html = renderToStaticMarkup(h(ui.Segmented, { value: 'a', 'aria-label': 'View' }, h(ui.SegmentedOption, { value: 'a', href: '/ignored' }, 'A')));
   assert.match(html, /^<div role="group" class="uix-segmented" aria-label="View"><button type="button" class="uix-segmented__option" aria-pressed="true" tabindex="0">A<\/button><\/div>$/);
+});
+
+test('review: Segmented link mode — a disabled option or one without href has no href (never "#") and reports nothing', () => {
+  const changes = [];
+  const html = renderToStaticMarkup(h(ui.Segmented, { selection: 'link', value: 'a', 'aria-label': 'Nav' },
+    h(ui.SegmentedOption, { value: 'a', href: '/a' }, 'A'),
+    h(ui.SegmentedOption, { value: 'b' }, 'B')));
+  assert.doesNotMatch(html, /href="#"/);
+  assert.match(html, /<a class="uix-segmented__option" aria-disabled="true">B<\/a>/);
+  const { host, unmount } = mount(h(ui.Segmented, { selection: 'link', value: 'a', 'aria-label': 'Nav', onChange: (v) => changes.push(v) },
+    h(ui.SegmentedOption, { value: 'a', href: '/a' }, 'A'),
+    h(ui.SegmentedOption, { value: 'b', href: '/b', disabled: true }, 'B')));
+  const off = [...host.querySelectorAll('a')].find((a) => a.textContent === 'B');
+  assert.equal(off.hasAttribute('href'), false);
+  act(() => off.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })));
+  assert.deepEqual(changes, [], 'a disabled option does not choose');
+  unmount();
 });
