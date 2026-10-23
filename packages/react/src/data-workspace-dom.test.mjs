@@ -195,7 +195,7 @@ const base = (extra = {}) => ({ label: 'Incidents', rows: ROWS, getRowId: (r) =>
 const filterSet = (values) => ({ fields: FIELDS, values, onChange() {} });
 
 test('review: a refetch with nothing back yet keeps the last body, busy — never "Nothing here yet" in between', () => {
-  const t = mount(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({ state: { kind: 'enum', values: ['closed'] } }) })));
+  let t = mount(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({ state: { kind: 'enum', values: ['closed'] } }) })));
   assert.match(t.host.textContent, /Nothing matches/);
   // the person clears the filter: the consumer refetches, the old (empty) rows are all it has
   act(() => t.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}), refreshing: true }))));
@@ -204,6 +204,20 @@ test('review: a refetch with nothing back yet keeps the last body, busy — neve
   assert.equal(t.host.querySelector('.uix-data-workspace__state').getAttribute('aria-busy'), 'true', 'busy at once');
   act(() => t.root.render(h(ui.DataWorkspace, base({ filters: filterSet({}) }))));
   assert.equal(t.host.querySelectorAll('tbody tr').length, 6, 'the rows arrive');
+  t.unmount();
+
+  // A product that turns `refreshing` on one render after the query changed (an effect): the
+  // empty result still belongs to the filtered query until new rows arrive.
+  const answer = [];
+  const lag = mount(h(ui.DataWorkspace, base({ rows: answer, filters: filterSet({ state: { kind: 'enum', values: ['closed'] } }) })));
+  act(() => lag.root.render(h(ui.DataWorkspace, base({ rows: answer, filters: filterSet({}) }))));
+  assert.match(lag.host.textContent, /Nothing matches/, 'the same (empty) answer, the filter just cleared: not "Nothing here yet"');
+  act(() => lag.root.render(h(ui.DataWorkspace, base({ rows: answer, filters: filterSet({}), refreshing: true }))));
+  assert.match(lag.host.textContent, /Nothing matches/);
+  act(() => lag.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}) }))));
+  assert.match(lag.host.textContent, /Nothing here yet/, 'a new empty answer for the unfiltered query');
+  lag.unmount();
+  t = mount(h(ui.DataWorkspace, base({ filters: filterSet({}) })));
   // from rows: a refetch that has nothing yet keeps the rows on show
   act(() => t.root.render(h(ui.DataWorkspace, base({ rows: [], filters: filterSet({}), refreshing: true }))));
   assert.equal(t.host.querySelectorAll('tbody tr').length, 6);

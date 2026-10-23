@@ -251,12 +251,15 @@ export function DataWorkspace<T>({
     return () => window.removeEventListener('keydown', onKey);
   }, [maximized, onMaximizedChange]);
 
-  // While a refetch runs with nothing back yet, the last settled body stays (in a BusyRegion): a
-  // cleared filter must not flash "Nothing here yet" before its rows arrive (PR #168 review).
+  // An empty result belongs to the query that produced it: "Nothing matches" or "Nothing here yet"
+  // is decided when the rows arrive, not from the filters on screen. A cleared filter therefore
+  // keeps "Nothing matches" until its own rows arrive, also when the product turns `refreshing` on
+  // a render later; while a refetch runs with nothing back yet, the last settled body stays, in a
+  // BusyRegion (PR #168 review).
   const filtered = (filters ? filters.fields.some((field) => !isFilterEmpty(filters.values[field.id])) : false) || (search?.value.trim() ?? '') !== '';
-  const settled = useRef<{ rows: readonly T[]; filtered: boolean }>({ rows, filtered });
-  useEffect(() => { if (!refreshing && status === 'ready') settled.current = { rows, filtered }; });
-  const view = refreshing && rows.length === 0 ? settled.current : { rows, filtered };
+  const [settled, setSettled] = useState<{ rows: readonly T[]; filtered: boolean }>({ rows, filtered });
+  if (!refreshing && rows !== settled.rows) setSettled({ rows, filtered });
+  const view = rows.length > 0 ? { rows, filtered } : refreshing || rows === settled.rows ? settled : { rows, filtered };
   const shownRows = view.rows;
 
   const ids = useMemo(() => shownRows.map(getRowId), [shownRows, getRowId]);
