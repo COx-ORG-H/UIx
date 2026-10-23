@@ -44,8 +44,11 @@
     [data-uix-settle] { animation: none; }
   }
   @media (forced-colors: active) {
-    [data-uix-drag="lifted"], [data-uix-drag="grabbed"] { outline: 2px solid Highlight; }
+    /* the dashes are what tells a picked-up item from a focused one: keep them */
+    [data-uix-drag="lifted"] { outline: 2px solid Highlight; }
+    [data-uix-drag="grabbed"] { outline: 2px dashed Highlight; }
     [data-uix-drop-target] { outline-color: Highlight; }
+    .uix-drop-line::before, .uix-drop-line::after { forced-color-adjust: none; }
     .uix-drop-line::before { background: Highlight; }
     .uix-drop-line::after { border-color: Highlight; background: Canvas; }
   }

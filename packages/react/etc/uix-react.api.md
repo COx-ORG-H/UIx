@@ -9,6 +9,7 @@ import { AriaAttributes } from 'react';
 import { ButtonHTMLAttributes } from 'react';
 import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
+import { FocusEvent as FocusEvent_2 } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import { KeyboardEvent as KeyboardEvent_2 } from 'react';
@@ -3023,9 +3024,6 @@ export function formatFileSize(bytes: number, locale?: string, options?: FileSiz
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
 
-// @public (undocumented)
-export type GrabDirection = 'up' | 'down' | 'left' | 'right';
-
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
 
@@ -3421,7 +3419,10 @@ export interface KanbanColumnProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 }
 
 // @public
-export function KanbanDropLine(): react.JSX.Element;
+export function KanbanDropLine(input: KanbanDropLineProps): react.JSX.Element;
+
+// @public (undocumented)
+export type KanbanDropLineProps = HTMLAttributes<HTMLDivElement>;
 
 // @public (undocumented)
 export type KanbanMoveDirection = 'up' | 'down' | 'left' | 'right';
@@ -3454,6 +3455,9 @@ export interface KbdProps extends HTMLAttributes<HTMLElement> {
     // (undocumented)
     children?: ReactNode;
 }
+
+// @public (undocumented)
+export type KeyboardGrabDirection = 'up' | 'down' | 'left' | 'right';
 
 // @public
 export interface KeyboardGrabLabels {
@@ -7887,6 +7891,7 @@ export interface UixLabels {
     filterEditor?: Partial<FilterEditorLabels>;
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
+    keyboardGrab?: Partial<KeyboardGrabLabels>;
     lightbox?: Partial<LightboxLabels>;
     matchReview?: Partial<MatchReviewLabels>;
     // (undocumented)
@@ -8022,12 +8027,12 @@ export function useKeyboardGrab(input: UseKeyboardGrabOptions): UseKeyboardGrabR
 
 // @public (undocumented)
 export interface UseKeyboardGrabOptions {
+    id: string;
     label: string;
-    // (undocumented)
     labels?: Partial<KeyboardGrabLabels>;
     onCancel?: () => void;
     onDrop?: () => void;
-    onMove: (direction: GrabDirection) => string | void;
+    onMove: (direction: KeyboardGrabDirection) => string | void;
 }
 
 // @public (undocumented)
@@ -8035,8 +8040,9 @@ export interface UseKeyboardGrabResult {
     // (undocumented)
     grabbed: boolean;
     itemProps: {
+        ref: (el: HTMLElement | null) => void;
         onKeyDown: (event: KeyboardEvent_2<HTMLElement>) => void;
-        onBlur: () => void;
+        onBlur: (event: FocusEvent_2<HTMLElement>) => void;
         'data-uix-drag'?: 'grabbed';
     };
 }

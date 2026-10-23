@@ -297,11 +297,12 @@ and the landing.
 - **SortableList** and **DashboardCanvas** lift and settle on their own.
 - **Kanban**: `KanbanCard dragging`, `KanbanColumn dropTarget`, `<KanbanDropLine />` at the gap;
   call `settleDrop(cardElement)` once the card is in its new place.
-- **`useKeyboardGrab({ label, onMove, onDrop, onCancel, labels })`** for a draggable thing you
+- **`useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })`** for a draggable thing you
   build: Space or Enter picks the focused item up, the arrows call `onMove(direction)` (return
   what to say, e.g. "Position 3 of 8"), Space or Enter drops, Escape or leaving puts it back;
-  every step is said politely. Spread `itemProps` on the focusable item. The kit's lists already
-  have their own keyboard paths.
+  every step is said politely. Spread `itemProps` (it includes a `ref`) on the focusable item; the
+  picked-up state follows `id`, so an item moved into another list stays picked up and focused.
+  Words: `labels` or `UixLabelsProvider` `keyboardGrab`. The kit's lists have their own paths.
 
 ```tsx
 <KanbanColumn title={t('doing')} dropTarget={drag?.column === 'doing'}>
@@ -309,7 +310,12 @@ and the landing.
     {drag?.column === 'doing' && drag.index === i && <KanbanDropLine />}
     <KanbanCard title={card.title} dragging={drag?.id === card.id} onMove={…} />
   </Fragment>)}
+  {drag?.column === 'doing' && drag.index >= cards.length && <KanbanDropLine />}
 </KanbanColumn>
+
+// your own draggable list: the picked-up state follows the id, across lists too
+const grab = useKeyboardGrab({ id: item.id, label: item.title, onMove: (dir) => move(item.id, dir), onCancel: restore });
+<li tabIndex={0} {...grab.itemProps}>{item.title}</li>
 ```
 
 ### Scrolling tabs, toned stat tiles and copying

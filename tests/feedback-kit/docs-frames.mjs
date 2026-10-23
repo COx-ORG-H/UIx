@@ -11,7 +11,7 @@ const [out, given] = process.argv.slice(2);
 // without a base URL, serve the repo root on a free port for this run
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const server = given ? null : createServer((req, res) => handler(req, res, { public: root }));
-if (server) await new Promise((r) => server.listen(0, r));
+if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = given ?? `http://localhost:${server.address().port}`;
 mkdirSync(out, { recursive: true });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));

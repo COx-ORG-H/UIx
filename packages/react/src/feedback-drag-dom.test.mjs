@@ -26,7 +26,9 @@ after(() => {
   dom.window.close();
   for (const name of ['window', 'document', 'navigator', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
 });
-afterEach(() => mock.timers.reset());
+// Flush what a test left pending (an announcement) before the mock clock is reset: a reset clock
+// hands out the same timer ids again, and a stale id cleared later cancels a new timer.
+afterEach(() => { try { mock.timers.runAll(); } catch { /* not enabled */ } mock.timers.reset(); });
 
 function mount() {
   const host = document.createElement('div');
@@ -44,6 +46,7 @@ const said = () => { mock.timers.tick(1); return document.body.querySelector(':s
 function Grabbable({ log }) {
   const [pos, setPos] = useState(2);
   const grab = ui.useKeyboardGrab({
+    id: 'inc-412',
     label: 'INC-0412',
     onMove: (dir) => { log.push(dir); setPos((p) => p + (dir === 'down' ? 1 : -1)); return `Position ${pos + (dir === 'down' ? 1 : -1)} of 5`; },
     onDrop: () => log.push('drop'),
@@ -90,13 +93,64 @@ test('useKeyboardGrab: Escape and leaving put it back; keys on a control inside 
   assert.deepEqual(log, ['cancel']);
   assert.match(said(), /Move cancelled\. INC-0412 is back/);
   await key(item, ' ');
-  await act(async () => { item.dispatchEvent(new window.FocusEvent('focusout', { bubbles: true })); });
+  // focus into a control inside the item keeps it picked up
+  await act(async () => { item.dispatchEvent(new window.FocusEvent('focusout', { bubbles: true, relatedTarget: item.querySelector('button') })); });
+  assert.equal(item.getAttribute('data-uix-drag'), 'grabbed', 'focus moving into the item’s own button put it back');
+  await act(async () => { item.dispatchEvent(new window.FocusEvent('focusout', { bubbles: true, relatedTarget: document.body })); });
   assert.deepEqual(log, ['cancel', 'cancel'], 'leaving a picked-up item did not put it back');
   assert.equal(item.getAttribute('data-uix-drag'), null);
+  assert.match(said(), /Move cancelled/, 'leaving put it back silently');
+  // a held Space does not pick up and put down again and again
+  await key(item, ' ');
+  await act(async () => { item.dispatchEvent(new window.KeyboardEvent('keydown', { key: ' ', repeat: true, bubbles: true, cancelable: true })); });
+  assert.equal(item.getAttribute('data-uix-drag'), 'grabbed');
+  await key(item, 'Escape');
   await unmount();
 });
 
-test('settleDrop: one landing, restarted by a second drop, cleared when it ends', () => {
+function Board({ log }) {
+  const [cols, setCols] = useState({ a: ['c1'], b: [] });
+  return h('div', null, Object.entries(cols).map(([col, cards]) => h('ul', { key: col, 'data-col': col }, cards.map((id) => h(Card, {
+    key: id, id, log,
+    move: (dir) => setCols((c) => (dir === 'right' && col === 'a' ? { a: [], b: [id] } : dir === 'left' && col === 'b' ? { a: [id], b: [] } : c)),
+  })))));
+}
+function Card({ id, move, log }) {
+  const grab = ui.useKeyboardGrab({ id, label: `Card ${id}`, onMove: (dir) => { move(dir); return `Moved ${dir}`; }, onDrop: () => log.push('drop'), onCancel: () => log.push('cancel') });
+  return h('li', { tabIndex: 0, 'data-card': id, ...grab.itemProps }, id);
+}
+
+test('useKeyboardGrab: a card moved into another list stays picked up and keeps focus', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const { host, render, unmount } = mount();
+  const log = [];
+  await render(h(Board, { log }));
+  let card = host.querySelector('[data-card="c1"]');
+  card.focus();
+  await key(card, ' ');
+  await key(card, 'ArrowRight');
+  card = host.querySelector('[data-col="b"] [data-card="c1"]');
+  assert.ok(card, 'the card did not move');
+  assert.equal(document.activeElement, card, 'focus fell to the page when the card changed lists');
+  assert.equal(card.getAttribute('data-uix-drag'), 'grabbed', 'the card was put down by moving');
+  assert.deepEqual(log, [], 'moving cancelled or dropped it');
+  await key(card, ' ');
+  assert.deepEqual(log, ['drop']);
+  await unmount();
+});
+
+test('useKeyboardGrab: words from UixLabelsProvider keyboardGrab', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const { host, render, unmount } = mount();
+  await render(h(ui.UixLabelsProvider, { labels: { keyboardGrab: { grabbed: '{label} aufgenommen' } } }, h(Grabbable, { log: [] })));
+  const item = host.querySelector('[data-testid="item"]');
+  await key(item, ' ');
+  assert.equal(said(), 'INC-0412 aufgenommen');
+  await key(item, 'Escape');
+  await unmount();
+});
+
+test('settleDrop: one landing, restarted by a second drop, cleared when it ends (nothing left behind under reduced motion: tests/a11y)', () => {
   const el = document.createElement('div');
   ui.settleDrop(el);
   assert.ok(el.hasAttribute('data-uix-settle'));

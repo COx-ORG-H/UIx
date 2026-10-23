@@ -13,7 +13,7 @@ const out = process.argv[2];
 // without a base URL, serve the repo root on a free port for this run
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const server = process.argv[3] ? null : createServer((req, res) => handler(req, res, { public: root }));
-if (server) await new Promise((r) => server.listen(0, r));
+if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = process.argv[3] ?? `http://localhost:${server.address().port}`;
 const page_ = process.env.FRAMES_PAGE ?? `/tests/feedback-kit/harness.html${process.env.FRAMES_QUERY ? `?${process.env.FRAMES_QUERY}` : ''}`;
 const suffix = process.env.FRAMES_QUERY ? `-${process.env.FRAMES_QUERY.replace(/[^a-z0-9]+/gi, '_')}` : '';

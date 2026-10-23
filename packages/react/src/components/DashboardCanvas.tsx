@@ -167,12 +167,19 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
 
   // A widget dropped by the pointer settles where it lands, once the new layout is on screen
   // (HAR-2590). Keyboard steps stay instant.
-  const settleId = useRef<string | null>(null);
+  // Only once the consumer's layout puts the widget where it was dropped; a layout that never
+  // arrives (no onLayoutChange, a refused move) gets no landing.
+  const settle = useRef<{ id: string; col: number; row: number; layout: unknown } | null>(null);
   useEffect(() => {
-    const id = settleId.current;
-    if (id === null || preview) return;
-    settleId.current = null;
-    settleDrop(Array.from(gridRef.current?.children ?? []).find((el) => (el as HTMLElement).dataset.canvasId === id) as HTMLElement | undefined);
+    const pending = settle.current;
+    if (!pending || preview) return;
+    const item = layout.find((entry) => entry.id === pending.id);
+    if (!item || item.col !== pending.col || item.row !== pending.row) {
+      if (layout !== pending.layout) settle.current = null;
+      return;
+    }
+    settle.current = null;
+    settleDrop(Array.from(gridRef.current?.children ?? []).find((el) => (el as HTMLElement).dataset.canvasId === pending.id) as HTMLElement | undefined);
   });
 
   const describe = (item: T, kind: 'move' | 'resize'): string =>
@@ -185,7 +192,8 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
     const next = placeCanvasItem(state.layout, id, placement);
     const placed = next.find((item) => item.id === id);
     if (!placed) return;
-    if (source === 'pointer') settleId.current = id;
+    // a pointer move lands; a resize never lifted, so it does not
+    if (source === 'pointer' && kind === 'move') settle.current = { id, col: placed.col, row: placed.row, layout: state.layout };
     state.onLayoutChange?.(next, { id, kind, source });
     setAnnouncement(describe(placed, kind));
   };

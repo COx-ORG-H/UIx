@@ -7,4 +7,5 @@ Drag affordances shared by every draggable thing (motion rollout WP2: HAR-2590).
 
 - `SortableList` rows lift while dragged and settle when dropped; `DashboardCanvas` widgets settle where a pointer drag drops them (keyboard steps stay instant).
 - `Kanban`: `KanbanCard dragging`, `KanbanColumn dropTarget`, new `KanbanDropLine`.
-- `settleDrop(el)` and `useKeyboardGrab({ label, onMove, onDrop, onCancel, labels })` (Space/Enter pick up and drop, arrows move, Escape or leaving puts back, every step said politely), with `DEFAULT_KEYBOARD_GRAB_LABELS` and the types `GrabDirection`, `KeyboardGrabLabels`, `UseKeyboardGrabOptions`, `UseKeyboardGrabResult`.
+- `settleDrop(el)` and `useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })` (Space/Enter pick up and drop, arrows move, Escape or leaving puts back, every step said politely; the picked-up state follows `id` across lists), with `UixLabelsProvider` `keyboardGrab`, `DEFAULT_KEYBOARD_GRAB_LABELS` and the types `KeyboardGrabDirection`, `KeyboardGrabLabels`, `UseKeyboardGrabOptions`, `UseKeyboardGrabResult`, `KanbanDropLineProps`.
+- `.uix-kanban__body` gains 4 px of top padding, so a lifted or picked-up top card is not clipped by the scrolling column.

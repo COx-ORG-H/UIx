@@ -96,11 +96,13 @@ export function KanbanCard({ title, meta, children, className, onMove, onKeyDown
   );
 }
 
+export type KanbanDropLineProps = HTMLAttributes<HTMLDivElement>;
+
 /**
  * Where a dragged card would land between two cards (HAR-2590): an accent line with an end mark.
- * Render it in the column at the insertion point while a drag is over it; it is decorative (the
- * keyboard path and the board's `announcement` say where the card goes).
+ * Render it in the column at the insertion point while a drag is over it (also after the last
+ * card); it is decorative (the keyboard path and the board's `announcement` say where it goes).
  */
-export function KanbanDropLine() {
-  return <div className="uix-drop-line" aria-hidden="true" />;
+export function KanbanDropLine({ className, ...props }: KanbanDropLineProps) {
+  return <div {...props} className={cx('uix-drop-line', className)} aria-hidden="true" />;
 }

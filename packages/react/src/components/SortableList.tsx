@@ -111,13 +111,17 @@ export function SortableList<T>({
     commit(next, id);
   };
 
-  // A row dropped by the pointer settles into place once the new order is on screen (HAR-2590).
-  const settleId = useRef<string | null>(null);
+  // A row dropped by the pointer settles once the consumer's items show the order it was dropped
+  // into (HAR-2590): it waits while they still show the old order, and an order refused or
+  // replaced gets no landing.
+  const settle = useRef<{ id: string; to: string; from: string } | null>(null);
   useEffect(() => {
-    const id = settleId.current;
-    if (id === null || draft !== null) return;
-    settleId.current = null;
-    const row = Array.from(listRef.current?.children ?? []).find((child) => (child as HTMLElement).dataset.id === id) as HTMLElement | undefined;
+    const pending = settle.current;
+    if (!pending || draft !== null) return;
+    if (orderKey === pending.from) return;
+    settle.current = null;
+    if (orderKey !== pending.to) return;
+    const row = Array.from(listRef.current?.children ?? []).find((child) => (child as HTMLElement).dataset.id === pending.id) as HTMLElement | undefined;
     settleDrop(row);
   });
 
@@ -130,9 +134,10 @@ export function SortableList<T>({
     drop: (id) => {
       const begin = dragStart.current;
       dragStart.current = null;
-      settleId.current = id;
-      if (begin && !sameOrder(begin, order)) commit(order, id);
-      else setDraft(null);
+      if (begin && !sameOrder(begin, order)) {
+        settle.current = { id, to: order.join('\u0000'), from: orderKey };
+        commit(order, id);
+      } else setDraft(null);
     },
     cancel: () => { dragStart.current = null; setDraft(null); },
   });

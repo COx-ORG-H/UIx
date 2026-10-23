@@ -326,6 +326,7 @@ function DragSection() {
 function GrabRow({ label, index, count, move }: { label: string; index: number; count: number; move: (delta: number) => void }) {
   const start = useRef(index);
   const grab = useKeyboardGrab({
+    id: label,
     label,
     onMove: (dir) => { if (dir === 'up' || dir === 'down') { move(dir === 'up' ? -1 : 1); return `Position ${Math.max(1, Math.min(count, index + 1 + (dir === 'up' ? -1 : 1)))} of ${count}`; } },
     onCancel: () => move(start.current - index),

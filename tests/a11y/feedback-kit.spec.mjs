@@ -431,11 +431,25 @@ test('drag under reduced motion: no scale on lift, no settle', async ({ page }) 
   await page.mouse.down();
   await expect(card).toHaveAttribute('data-uix-drag', 'lifted');
   await expect(card).toHaveCSS('transform', 'none');
+  const target = board.locator('[data-col="doing"]');
+  const t = await target.boundingBox();
+  await page.mouse.move(t.x + t.width / 2, t.y + t.height - 20, { steps: 4 });
   await page.mouse.up();
+  const landed = board.locator('[data-col="doing"] [data-card="c2"]');
+  await expect(landed).toBeAttached();
+  await expect(landed, 'no landing, and nothing left to play later').not.toHaveAttribute('data-uix-settle', /.*/);
   await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.mouse.move(box.x + 10, box.y + 10);
+  const moved = await landed.boundingBox();
+  await page.mouse.move(moved.x + 10, moved.y + 10);
   await page.mouse.down();
-  await expect(card).toHaveCSS('transform', 'none');
+  await expect(landed).toHaveCSS('transform', 'none');
   await page.mouse.up();
+});
+
+test('SortableList: a click on the grip without a move does not land', async ({ page }) => {
+  const grip = page.getByTestId('sortable').locator('.uix-sortable__grip').first();
+  await grip.click();
+  await page.waitForTimeout(50);
+  await expect(page.getByTestId('sortable').locator('[data-uix-settle]')).toHaveCount(0);
 });
