@@ -7,7 +7,7 @@ import type { LayeredItem, LayeredLayout, LayeredNavigationKey, RoutedEdge } fro
 import { cx } from '../cx.js';
 import { Maximize2Icon, Minimize2Icon, MinusIcon, PlusIcon, RotateCcwIcon, ScanIcon } from '../icons/components.js';
 import { useKbdPlatform } from './Kbd.js';
-import { useReducedMotion } from '../hooks/useReducedMotion.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import type { ResolvedRelationshipGraphProps } from './RelationshipGraph.js';
 import { EquivalentRelationshipList } from './RelationshipGraphList.js';
 import { Tooltip } from './Tooltip.js';
@@ -59,10 +59,6 @@ export function LayeredRelationshipGraph({
 }: ResolvedRelationshipGraphProps) {
   const hintId = useId();
   const describeId = useId();
-  // A pan, zoom or reveal glides; with reduced motion it lands at once (HAR-1639, the motion contract).
-  const reducedMotion = useReducedMotion();
-  const reducedRef = useRef(reducedMotion);
-  reducedRef.current = reducedMotion;
   const viewportHintId = useId();
   const compact = controls === 'compact';
   const bounded = useMemo(() => boundRelationshipGraph(nodes, edges, maxNodes), [nodes, edges, maxNodes]);
@@ -163,7 +159,9 @@ export function LayeredRelationshipGraph({
   useEffect(() => () => clearTimeout(hintTimer.current), []);
 
   const moveView = useCallback((next: View, smooth: boolean) => {
-    setAnimate(smooth && !reducedRef.current);
+    // A pan, zoom or reveal glides; with reduced motion (the OS's or the app's own data-motion
+    // choice, read at the moment of the move) it lands at once (HAR-1639, the motion contract).
+    setAnimate(smooth && !prefersReducedMotion());
     setView(next);
   }, []);
 
