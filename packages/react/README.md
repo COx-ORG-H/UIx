@@ -259,7 +259,7 @@ const showSpinner = useDelayedPending(upload.isPending);
 ### Scrolling tabs, toned stat tiles and copying
 
 - **`Tabs overflow="scroll"`** keeps a long tab row on one line that scrolls sideways. The selected tab is always scrolled into view, and edge buttons appear only on the side that has hidden tabs. The buttons are pointer-only: keyboard users move with Arrow, Home and End. Combine it with `TabPanel keepMounted` on a record page with many sections.
-- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.47). `size="compact"` fits dense fact bands.
+- **`Stat tone`** (`warning`, `danger`) colours the value and leads it with a dot of that tone; the border stays neutral and the label muted, so the tone never replaces words (a toned outline before 2.48). `size="compact"` fits dense fact bands.
 - **`Stat onActivate`** makes the whole tile a button that opens an editor (`aria-haspopup="dialog"`). Pass `activateLabel` (e.g. "change") so the name reads "Priority: P1, change", and `expanded` while the editor is open. The ref points at the button, for anchoring a popover.
 - **`Stat pending`** is for a tile whose action is still running (a save, a state change). The button gets `aria-busy="true"` and `aria-disabled="true"`, is dimmed with a progress cursor, and calls neither `onActivate` nor your `onClick` / `onKeyDown` until `pending` is false again. It is never natively `disabled`, so it keeps focus and a screen reader can still read it. Only a tile with `onActivate` has the state; a read-only tile and a link tile ignore the prop.
 - **Tiles in one row line up.** A grid or flex row stretches its tiles to the tallest one. Read-only, button and link tiles all start their label and value at the same offset from the top edge, whatever the height (before 2.38.0 a button tile centred its rows).
@@ -1167,7 +1167,7 @@ mask; an avatar with a dot no longer clips it.
 - `CommandPalette` announces its result count through `UixLabelsProvider` `commandPalette`
   (`resultsOne`, `resultsMany`, `{count}`) or a `resultsLabel(count)` prop; English is unchanged.
 
-### Calm status colour, the app shell and display preferences (2.47)
+### Calm status colour, the app shell and display preferences (2.48)
 
 #### StatusPill treatments, Stat sentiment, quiet Alert (HAR-1563)
 
