@@ -43,3 +43,12 @@
   .uix-toaster[data-position$="start"] { left: var(--uix-space-4); right: auto; }
   .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same fades */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-toast { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    :root[data-motion="reduce"] .uix-toast[data-leaving] { animation: uix-toast-fade-out var(--uix-dur-exit) var(--uix-ease-out) forwards !important; }
+  }
+}
+

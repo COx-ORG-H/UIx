@@ -22,9 +22,9 @@
       "brotli": 1797
     },
     "styles/components/arrival.css": {
-      "raw": 1478,
-      "gzip": 614,
-      "brotli": 507
+      "raw": 1953,
+      "gzip": 780,
+      "brotli": 635
     },
     "styles/components/attachment.css": {
       "raw": 2516,
@@ -467,9 +467,9 @@
       "brotli": 384
     },
     "styles/components/toast.css": {
-      "raw": 3456,
-      "gzip": 1097,
-      "brotli": 907
+      "raw": 3907,
+      "gzip": 1175,
+      "brotli": 973
     },
     "styles/components/tooltip.css": {
       "raw": 3301,

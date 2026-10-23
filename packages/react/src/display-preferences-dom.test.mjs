@@ -193,3 +193,13 @@ test('mounting where the attributes already match sets no switching frame (a dia
   assert.ok(changes.includes('data-uix-switching'));
   panel.unmount();
 });
+
+test('charts ask prefersReducedMotion, so the in-app motion choice reaches ECharts too', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('./components/ChartCore.tsx', import.meta.url), 'utf8');
+  assert.match(source, /if \(prefersReducedMotion\(\)\) \{\s*return \{ \.\.\.option, animation: false \};/);
+  assert.doesNotMatch(source, /matchMedia\('\(prefers-reduced-motion/, 'no private media query that ignores data-motion');
+  document.documentElement.setAttribute('data-motion', 'reduce');
+  assert.equal(ui.prefersReducedMotion(), true);
+  document.documentElement.removeAttribute('data-motion');
+});
