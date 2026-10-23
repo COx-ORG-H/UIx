@@ -40,6 +40,10 @@ test('every state named in a caption is on the page', () => {
   assert.match(motion, /class="uix-change-highlight uix-change-highlight--ring" data-uix-changed="">/);
   assert.match(motion, /class="uix-count" data-uix-tick="up">42</);
   assert.match(motion, /data-feedback-change-run/);
+  // drag: a lifted card, a drop-target column, a drop line
+  assert.match(motion, /class="uix-kanban__card" data-uix-drag="lifted"/);
+  assert.match(motion, /data-uix-drop-target="true"/);
+  assert.match(motion, /<div class="uix-drop-line" aria-hidden="true"><\/div>/);
   // the live demo's target and its announcer
   assert.match(motion, /<button data-feedback-target class="uix-btn uix-btn--primary">/);
   assert.match(motion, /data-feedback-announce/);

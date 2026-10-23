@@ -351,3 +351,91 @@ test('useOptimisticValue: the star shows at once; a failed save brings it back, 
   await expect(page.locator('body > [data-uix-announcer]')).toHaveText('Favourite restored');
   await expect(star, 'focus left the star').toBeFocused();
 });
+
+// ── Release D: drag affordances (HAR-2590) ───────────────────────────────────────────────────
+
+const dragAnimations = (locator) => locator.evaluate((el) => el.getAnimations().map((a) => a.animationName ?? a.transitionProperty));
+const slowDown = async (page) => {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Animation.enable');
+  await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.05 });
+};
+
+test('Kanban drag: the card lifts, the column under the pointer is a drop target with a drop line, the card settles on drop', async ({ page }) => {
+  await slowDown(page);
+  const board = page.getByTestId('board');
+  await board.scrollIntoViewIfNeeded();
+  const card = board.locator('[data-card="c1"]');
+  const box = await card.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(card).toHaveAttribute('data-uix-drag', 'lifted');
+  expect(await card.evaluate((el) => getComputedStyle(el).transform)).not.toBe('none');
+  const target = board.locator('[data-col="doing"]');
+  const tbox = await target.boundingBox();
+  await page.mouse.move(tbox.x + tbox.width / 2, tbox.y + tbox.height - 20, { steps: 5 });
+  await expect(target.locator('.uix-kanban__body')).toHaveAttribute('data-uix-drop-target', 'true');
+  await expect(target.locator('.uix-drop-line')).toHaveCount(1);
+  expect(await target.locator('.uix-drop-line').evaluate((el) => el.getBoundingClientRect().height)).toBe(0);
+  await page.mouse.up();
+  const landed = board.locator('[data-col="doing"] [data-card="c1"]');
+  await expect(landed).toHaveAttribute('data-uix-settle', '');
+  expect(await dragAnimations(landed)).toContain('uix-drag-settle');
+  await expect(board.locator('[data-uix-drop-target]')).toHaveCount(0);
+  await expect(board.locator('.uix-drop-line')).toHaveCount(0);
+});
+
+test('SortableList: a dragged row lifts and settles when dropped', async ({ page }) => {
+  await slowDown(page);
+  const list = page.getByTestId('sortable');
+  await list.scrollIntoViewIfNeeded();
+  const grip = list.locator('.uix-sortable__grip').first();
+  const g = await grip.boundingBox();
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await page.mouse.down();
+  const row = list.locator('.uix-sortable__row').first();
+  await expect(row).toHaveAttribute('data-uix-drag', 'lifted');
+  const last = await list.locator('.uix-sortable__row').last().boundingBox();
+  await page.mouse.move(g.x + g.width / 2, last.y + last.height - 4, { steps: 6 });
+  await page.mouse.up();
+  const moved = list.locator('.uix-sortable__row[data-id="Email outage"]');
+  await expect(moved).toHaveAttribute('data-uix-settle', '');
+  await expect(list.locator('.uix-sortable__row').last()).toHaveAttribute('data-id', 'Email outage');
+});
+
+test('keyboard grab: Space picks up (a dashed ring, no motion), arrows move, Escape puts it back; each step is said', async ({ page }) => {
+  const first = page.getByTestId('grab-0');
+  await first.focus();
+  await page.keyboard.press('Space');
+  await expect(first).toHaveAttribute('data-uix-drag', 'grabbed');
+  await expect(first).toHaveCSS('outline-style', 'dashed');
+  expect(await dragAnimations(first)).toEqual([]);
+  await page.keyboard.press('ArrowDown');
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toHaveText('Position 2 of 3');
+  await expect(page.getByTestId('grab-1')).toHaveText('P1 Critical');
+  await expect(page.getByTestId('grab-1')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('grab-0')).toHaveText('P1 Critical');
+  await page.clock.runFor(1);
+  await expect(page.locator('body > [data-uix-announcer]')).toContainText('Move cancelled');
+});
+
+test('drag under reduced motion: no scale on lift, no settle', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const board = page.getByTestId('board');
+  await board.scrollIntoViewIfNeeded();
+  const card = board.locator('[data-card="c2"]');
+  const box = await card.boundingBox();
+  await page.mouse.move(box.x + 10, box.y + 10);
+  await page.mouse.down();
+  await expect(card).toHaveAttribute('data-uix-drag', 'lifted');
+  await expect(card).toHaveCSS('transform', 'none');
+  await page.mouse.up();
+  await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.mouse.move(box.x + 10, box.y + 10);
+  await page.mouse.down();
+  await expect(card).toHaveCSS('transform', 'none');
+  await page.mouse.up();
+});

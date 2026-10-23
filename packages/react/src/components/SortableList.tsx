@@ -7,6 +7,7 @@ import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
 import { placeId, sameOrder, useRowDrag } from '../reorder.js';
 import { EditorIcon } from './EditorIcons.js';
+import { settleDrop } from '../hooks/useKeyboardGrab.js';
 
 /** Every word `SortableList` renders or announces. `{label}` is the row's name. */
 export interface SortableListLabels {
@@ -60,8 +61,8 @@ type Part = 'grip' | 'up' | 'down' | 'row';
  * order): media, priorities, steps. Each row has a grip to drag with a pointer, and Move up /
  * Move down buttons that are always there (a drag is never the only way). With focus anywhere
  * in a row, Alt+↑ / Alt+↓ move it; a focused grip moves with ↑ / ↓ alone. Focus stays with the
- * moved row, and a polite status says where it went. Keyboard moves are instant; a drag places
- * the row under the pointer with no animation. Shares its order model with `ViewMenu`,
+ * moved row, and a polite status says where it went. Keyboard moves are instant; a drag lifts
+ * the row (drag.css), places it under the pointer frame by frame, and it settles when dropped. Shares its order model with `ViewMenu`,
  * `SavedViewMenu` and `NavFavourites`.
  */
 export function SortableList<T>({
@@ -110,6 +111,16 @@ export function SortableList<T>({
     commit(next, id);
   };
 
+  // A row dropped by the pointer settles into place once the new order is on screen (HAR-2590).
+  const settleId = useRef<string | null>(null);
+  useEffect(() => {
+    const id = settleId.current;
+    if (id === null || draft !== null) return;
+    settleId.current = null;
+    const row = Array.from(listRef.current?.children ?? []).find((child) => (child as HTMLElement).dataset.id === id) as HTMLElement | undefined;
+    settleDrop(row);
+  });
+
   const dragStart = useRef<readonly string[] | null>(null);
   const { dragging, start } = useRowDrag('.uix-sortable__row', {
     over: (id, index) => {
@@ -119,6 +130,7 @@ export function SortableList<T>({
     drop: (id) => {
       const begin = dragStart.current;
       dragStart.current = null;
+      settleId.current = id;
       if (begin && !sameOrder(begin, order)) commit(order, id);
       else setDraft(null);
     },
@@ -144,7 +156,7 @@ export function SortableList<T>({
           if (item === undefined) return null;
           const name = nameOf(id);
           return (
-            <li key={id} className="uix-sortable__row" data-id={id} data-dragging={dragging === id || undefined} onKeyDown={(event) => onRowKeyDown(event, id)}>
+            <li key={id} className="uix-sortable__row" data-id={id} data-dragging={dragging === id || undefined} data-uix-drag={dragging === id ? 'lifted' : undefined} onKeyDown={(event) => onRowKeyDown(event, id)}>
               {!disabled && (
                 <button
                   type="button"

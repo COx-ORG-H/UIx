@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { settleDrop } from '../hooks/useKeyboardGrab.js';
 import { fillLabel } from '../fill-label.js';
 import { GripVerticalIcon, Maximize2Icon } from '../icons/components.js';
 import {
@@ -164,6 +165,16 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
 
   useEffect(() => () => dragRef.current?.stop(), []);
 
+  // A widget dropped by the pointer settles where it lands, once the new layout is on screen
+  // (HAR-2590). Keyboard steps stay instant.
+  const settleId = useRef<string | null>(null);
+  useEffect(() => {
+    const id = settleId.current;
+    if (id === null || preview) return;
+    settleId.current = null;
+    settleDrop(Array.from(gridRef.current?.children ?? []).find((el) => (el as HTMLElement).dataset.canvasId === id) as HTMLElement | undefined);
+  });
+
   const describe = (item: T, kind: 'move' | 'resize'): string =>
     kind === 'move'
       ? fillLabel(labels.moved, { label: itemLabel(item), col: item.col + 1, row: item.row + 1 })
@@ -174,6 +185,7 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
     const next = placeCanvasItem(state.layout, id, placement);
     const placed = next.find((item) => item.id === id);
     if (!placed) return;
+    if (source === 'pointer') settleId.current = id;
     state.onLayoutChange?.(next, { id, kind, source });
     setAnnouncement(describe(placed, kind));
   };

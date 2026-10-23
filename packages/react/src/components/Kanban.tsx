@@ -26,10 +26,12 @@ export function Kanban({ announcement, children, className, ...props }: KanbanPr
 export interface KanbanColumnProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode;
   count?: number;
+  /** A dragged card would land in this column: the column body is tinted and outlined (HAR-2590). */
+  dropTarget?: boolean;
   children?: ReactNode;
 }
 
-export function KanbanColumn({ title, count, children, className, ...props }: KanbanColumnProps) {
+export function KanbanColumn({ title, count, dropTarget, children, className, ...props }: KanbanColumnProps) {
   // The card container is a named list so SRs report "N items" per column (UIX-A11Y-2).
   const headId = useId();
   const hasHead = title != null || count != null;
@@ -41,7 +43,7 @@ export function KanbanColumn({ title, count, children, className, ...props }: Ka
           {count != null && <span className="uix-kanban__count">{count}</span>}
         </div>
       )}
-      <div className="uix-kanban__body" role="list" aria-labelledby={hasHead ? headId : undefined}>
+      <div className="uix-kanban__body" role="list" aria-labelledby={hasHead ? headId : undefined} data-uix-drop-target={dropTarget || undefined}>
         {children}
       </div>
     </div>
@@ -63,10 +65,12 @@ export interface KanbanCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
    * the board-level `announcement` so SR users hear the result.
    */
   onMove?: (dir: KanbanMoveDirection) => void;
+  /** The card is being dragged with the pointer: it lifts (HAR-2590). Call `settleDrop(card)` when it lands. */
+  dragging?: boolean;
   children?: ReactNode;
 }
 
-export function KanbanCard({ title, meta, children, className, onMove, onKeyDown, ...props }: KanbanCardProps) {
+export function KanbanCard({ title, meta, children, className, onMove, onKeyDown, dragging, ...props }: KanbanCardProps) {
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(e);
     if (!onMove || !e.altKey || e.defaultPrevented) return;
@@ -82,6 +86,7 @@ export function KanbanCard({ title, meta, children, className, onMove, onKeyDown
       tabIndex={0}
       className={cx('uix-kanban__card', className)}
       onKeyDown={handleKeyDown}
+      data-uix-drag={dragging ? 'lifted' : undefined}
       {...props}
     >
       {title && <div className="uix-kanban__card-title">{title}</div>}
@@ -89,4 +94,13 @@ export function KanbanCard({ title, meta, children, className, onMove, onKeyDown
       {children}
     </div>
   );
+}
+
+/**
+ * Where a dragged card would land between two cards (HAR-2590): an accent line with an end mark.
+ * Render it in the column at the insertion point while a drag is over it; it is decorative (the
+ * keyboard path and the board's `announcement` say where the card goes).
+ */
+export function KanbanDropLine() {
+  return <div className="uix-drop-line" aria-hidden="true" />;
 }

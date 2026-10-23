@@ -1,0 +1,60 @@
+/* uix drag — the shared affordances of anything a person drags (HAR-2590, motion standard §2.8):
+   a list row, a kanban card, a dashboard widget. Attributes, so any element can carry them:
+     [data-uix-drag="lifted"]   picked up by the pointer: raised, a little larger, a deeper shadow
+     [data-uix-drag="grabbed"]  picked up from the keyboard (Space): a dashed ring, no motion
+     [data-uix-drop-target]     the zone the item would land in: tinted and outlined
+     .uix-drop-line             where it would land between two items: an accent line with ends
+     [data-uix-settle]          set for a moment on drop: the item lands (settleDrop)
+   Lift and settle are transform only; the shadow steps. Reduced motion: no scale, no settle.
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  [data-uix-drag="lifted"] {
+    position: relative; z-index: var(--uix-z-raised); cursor: grabbing;
+    box-shadow: var(--uix-shadow-popover); transform: scale(1.02);
+    transition: transform var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  [data-uix-drag="grabbed"] {
+    position: relative; z-index: var(--uix-z-raised);
+    box-shadow: var(--uix-shadow-popover); outline: 2px dashed var(--uix-ring); outline-offset: 2px;
+  }
+
+  [data-uix-drop-target] {
+    background-color: color-mix(in srgb, var(--uix-accent) 8%, transparent);
+    outline: 2px dashed var(--uix-ring); outline-offset: -2px;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+
+  /* zero tall where it stands (a flex gap around it opens the room); the line is drawn across it */
+  .uix-drop-line { position: relative; display: block; block-size: 0; pointer-events: none; }
+  .uix-drop-line::before {
+    content: ""; position: absolute; inset-inline: var(--uix-space-1); inset-block-start: calc(var(--uix-space-1) * -.25);
+    block-size: calc(var(--uix-space-1) * .5); border-radius: var(--uix-radius-pill); background: var(--uix-accent);
+  }
+  .uix-drop-line::after {
+    content: ""; position: absolute; inset-inline-start: 0; inset-block-start: calc(var(--uix-space-2) * -.5);
+    inline-size: var(--uix-space-2); block-size: var(--uix-space-2); border-radius: var(--uix-radius-pill);
+    border: 2px solid var(--uix-accent); background: var(--uix-surface);
+  }
+
+  @keyframes uix-drag-settle { from { transform: scale(1.02); } }
+  [data-uix-settle] { animation: uix-drag-settle var(--uix-dur) var(--uix-ease-out); }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-uix-drag="lifted"] { transform: none; }
+    [data-uix-settle] { animation: none; }
+  }
+  @media (forced-colors: active) {
+    [data-uix-drag="lifted"], [data-uix-drag="grabbed"] { outline: 2px solid Highlight; }
+    [data-uix-drop-target] { outline-color: Highlight; }
+    .uix-drop-line::before { background: Highlight; }
+    .uix-drop-line::after { border-color: Highlight; background: Canvas; }
+  }
+}
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same rules */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] [data-uix-drag="lifted"] { transform: none; }
+    :root[data-motion="reduce"] [data-uix-settle] { animation: none; }
+  }
+}

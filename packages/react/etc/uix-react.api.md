@@ -1923,6 +1923,9 @@ export const DEFAULT_INLINE_EDIT_LABELS: InlineEditLabels;
 export const DEFAULT_INSIGHT_CARD_LABELS: InsightCardLabels;
 
 // @public (undocumented)
+export const DEFAULT_KEYBOARD_GRAB_LABELS: KeyboardGrabLabels;
+
+// @public (undocumented)
 export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
 
 // @public (undocumented)
@@ -3020,6 +3023,9 @@ export function formatFileSize(bytes: number, locale?: string, options?: FileSiz
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
 
+// @public (undocumented)
+export type GrabDirection = 'up' | 'down' | 'left' | 'right';
+
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
 
@@ -3392,6 +3398,7 @@ export function KanbanCard(input: KanbanCardProps): react.JSX.Element;
 export interface KanbanCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    dragging?: boolean;
     // (undocumented)
     meta?: ReactNode;
     onMove?: (dir: KanbanMoveDirection) => void;
@@ -3408,9 +3415,13 @@ export interface KanbanColumnProps extends Omit<HTMLAttributes<HTMLDivElement>, 
     children?: ReactNode;
     // (undocumented)
     count?: number;
+    dropTarget?: boolean;
     // (undocumented)
     title?: ReactNode;
 }
+
+// @public
+export function KanbanDropLine(): react.JSX.Element;
 
 // @public (undocumented)
 export type KanbanMoveDirection = 'up' | 'down' | 'left' | 'right';
@@ -3442,6 +3453,16 @@ export type KbdPlatform = 'mac' | 'other';
 export interface KbdProps extends HTMLAttributes<HTMLElement> {
     // (undocumented)
     children?: ReactNode;
+}
+
+// @public
+export interface KeyboardGrabLabels {
+    // (undocumented)
+    cancelled: string;
+    // (undocumented)
+    dropped: string;
+    // (undocumented)
+    grabbed: string;
 }
 
 // @public
@@ -6630,6 +6651,9 @@ export function serializeView(v: ViewState): string;
 // @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
 
+// @public
+export function settleDrop(el: HTMLElement | null | undefined): void;
+
 // @public (undocumented)
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
@@ -7991,6 +8015,30 @@ export interface UseDisplayPreferencesResult {
     setPreference: <K extends keyof DisplayPreferenceValues>(key: K, value: DisplayPreferenceValues[K]) => void;
     // (undocumented)
     setPreferences: (next: DisplayPreferenceValues) => void;
+}
+
+// @public
+export function useKeyboardGrab(input: UseKeyboardGrabOptions): UseKeyboardGrabResult;
+
+// @public (undocumented)
+export interface UseKeyboardGrabOptions {
+    label: string;
+    // (undocumented)
+    labels?: Partial<KeyboardGrabLabels>;
+    onCancel?: () => void;
+    onDrop?: () => void;
+    onMove: (direction: GrabDirection) => string | void;
+}
+
+// @public (undocumented)
+export interface UseKeyboardGrabResult {
+    // (undocumented)
+    grabbed: boolean;
+    itemProps: {
+        onKeyDown: (event: KeyboardEvent_2<HTMLElement>) => void;
+        onBlur: () => void;
+        'data-uix-drag'?: 'grabbed';
+    };
 }
 
 // @public

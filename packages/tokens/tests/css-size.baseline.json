@@ -176,6 +176,11 @@
       "gzip": 1067,
       "brotli": 871
     },
+    "styles/components/drag.css": {
+      "raw": 3216,
+      "gzip": 1133,
+      "brotli": 946
+    },
     "styles/components/drawer.css": {
       "raw": 3030,
       "gzip": 1030,
@@ -237,9 +242,9 @@
       "brotli": 1398
     },
     "styles/components/kanban.css": {
-      "raw": 1535,
-      "gzip": 557,
-      "brotli": 460
+      "raw": 2144,
+      "gzip": 759,
+      "brotli": 623
     },
     "styles/components/kbd.css": {
       "raw": 737,
