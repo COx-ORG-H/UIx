@@ -34,6 +34,16 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+<!-- lesson-skip: f11e68b routine: the PR #166 review measured each map problem (label counts, stroke alpha, description length); pinned by jsdom and Chromium tests -->
+<!-- lesson-skip: 07bf8a1 routine: review named the look and the key collision; pinned by a double-booking jsdom test -->
+<!-- lesson-skip: 31ec67a same family as the 3e0ff88 entry (effects that do two jobs re-run on an unrelated dep); hydration case pinned by a renderToString test -->
+<!-- lesson-skip: 9979dc2 routine: review named each gap; pinned by decode and Chromium tests -->
+<!-- lesson-skip: 4dc845e routine CSS fit fix; measured at 320/360/390 by a spec -->
+<!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
+<!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
+
+### 2026-10-23 · a scale measured from a box the scaled thing sizes · `39bc060`
+- **Rule:** when a component scales itself to fit (zoom, transform, font-size by measurement), measure a box whose width cannot depend on the scaled content: a wrapper with its own definite width (the paper's, capped by `max-inline-size: 100%`), never the component's parent. Inline-size containment is not the fix: in a shrink-to-fit context (a centred flex or grid item) the contained box collapses to nothing.  **Why:** the PrintLayout preview first measured its parent; in an app-shell column that sized to its content, every smaller scale made the column narrower and the next measure smaller, down to 4 % (a 30 px page). A `contain: inline-size` wrapper then collapsed the same way at 1280 px. A wrapper sized like the paper is stable: its width comes from its own declaration and its container, never from the zoomed page.  **Gate:** `tests/a11y/print-layout.spec.mjs` checks true paper width at 1280 px and a page inside the screen, in print type, with no false overflow at 320 and 390 px.  **Tag:** layout, feedback-loop, measurement, generalizable
 
 ### 2026-10-23 · generated specimens · `0e6630e`
 - **Rule:** a committed module generated from rendered components must not read the machine's default locale (or zone): pass `locale` / `formatDate` explicitly in the generator. And a check that compares one-line-per-route modules has to print where they differ; node's assertion diff truncates both strings at the same point and shows no difference at all.  **Why:** the resource-day specimen named its grid with `Intl` in the default locale: "22 October" on the en-GB maintainer machine, "October 22" on CI. The first CI failure printed two identical prefixes, so the cause was invisible until the test reported the first differing index.  **Gate:** `display-specimens.test.mjs` prints the first difference with context; the generator passes `formatDate`.  **Tag:** generated-files, locale, ci-only, generalizable
