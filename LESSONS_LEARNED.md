@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 5bdcb1d same trap as the 0e7b267 entry (mirror reduced-motion rules under :root[data-motion="reduce"]); pinned by a spec -->
 <!-- lesson-skip: 38e861a routine review fixes (forced-colours specificity, listener per restart, opaque tint, stale overlap); each pinned by a DOM or browser test -->
 <!-- lesson-skip: a797ad7 routine: native selects swapped for the kit Select; the static + runtime gates landed in the same commit -->
 <!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
