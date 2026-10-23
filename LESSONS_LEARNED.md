@@ -1,5 +1,16 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 0bb7303 routine: NFD leaves stroked letters (đ ø ł ı) whole; the reviewer named them, a fold test now lists each -->
+<!-- lesson-skip: 93d034a routine: a cmdk option marked only by background vanished in forced colours; same family as the existing forced-colours entries, pinned by a spec -->
+<!-- lesson-skip: 1fe9677 routine: a backdrop click closed on a press that began inside; pointerdown and click must both land on the backdrop, pinned by jsdom tests -->
+<!-- lesson-skip: 7249cfd routine review fixes (draft order kept after a refused reorder, pointercancel as a drop, no Escape cancel); each pinned by a jsdom test -->
+<!-- lesson-skip: 9e70b73 same cause as the "a region inserted with text announces nothing" family: the live region unmounted with the actions row; pinned by a same-node test -->
+<!-- lesson-skip: 439821c routine review fixes (own 300 ms timer instead of useDelayedPending, reversed range, body not keyed by field); each pinned by a jsdom test -->
+<!-- lesson-skip: 7471b8d routine review fixes (empty state picked during a refetch, Escape layering, frozen id, chip ids, load-more error); each named by the reviewer and pinned by a test -->
+<!-- lesson-skip: 6d69ac9 routine: a dim value measured below 4.5:1 by the reviewer; measured again and pinned by a CSS contract test -->
+<!-- lesson-skip: 652af34 routine: sm padding leaked onto the link variant; pinned by a CSS contract test -->
+<!-- lesson-skip: f6eec1c routine: link mode dropped disabled and fell back to href="#"; pinned by jsdom tests -->
+<!-- lesson-skip: 7cd7c55 routine: the contract gate named two raw px values in this batch's own fixes; the gate worked -->
 <!-- lesson-skip: f05d14b same cause as "An a11y scan only sees the states a specimen renders at load" (recorded); a new specimen showed the state -->
 <!-- lesson-skip: f23b7d6 routine: a runtime-only token in one declaration; test:tokens (UIX-03) names it -->
 <!-- lesson-skip: 27305a8 routine: percentage min-height inside a flex item sized by min-height; found by looking at the drawer shot, pinned by a spec -->
@@ -45,6 +56,10 @@
 <!-- lesson-skip: 2659d63 routine: unfinished review fixes; each red gate named its cause (raw z-index, a colour missing from the print map, stale expectations) -->
 <!-- lesson-skip: f011459 routine: cp1252 write from a Python patch script; fixed by encoding='utf-8' and check-utf8 -->
 <!-- lesson-skip: 600bc17 routine: one inherited accent-color rule on the root, no trap; pinned by a test -->
+
+### 2026-10-23 · a blur that says nowhere · `66d6dd3`
+- **Rule:** never read a blur with `relatedTarget === null` as "focus left". Safari (and Firefox on macOS) do not focus a clicked button, so pressing Cancel blurs the field with no `relatedTarget` before the click runs: a save-on-blur saved the draft the person was cancelling. Track a pointer press inside the editor (pointerdown capture, released after the click), keep focus with `onMouseDown={e => e.preventDefault()}` on the editor's own buttons, and when `relatedTarget` is null wait one task and save only if focus is really outside and the editor is still open.
+- **Gate:** "1: Cancel clicked where the browser blurs with no relatedTarget …" in `packages/react/src/inline-edit-review-dom.test.mjs` dispatches pointerdown, a focusout with `relatedTarget: null`, then the click, and failed before the fix.  **Tag:** cross-browser, focus, forms
 
 ### 2026-10-23 · a generated file with a time in it · `8d6b668`
 - **Rule:** a generated, committed file that renders a date or time (a docs specimen, a snapshot) must pin its time zone (and its `now`), and its freshness test must also render under a far-away `TZ` and compare. Otherwise it is the author's zone that is committed, and CI (UTC) regenerates something else.  **Why:** the AuditLog specimen rendered `RelativeTime` and an exact time in the local zone: identical on the author's machine, a failed `gates` job on the first push of PR #168. A fixed `now` was not enough; the zone was the other half.
