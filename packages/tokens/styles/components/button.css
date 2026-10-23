@@ -36,6 +36,8 @@
   .uix-btn--icon { width: var(--uix-control-h); padding: 0; }
   .uix-btn--icon.uix-btn--xs { width: 24px; }
   .uix-btn--icon.uix-btn--sm { width: 28px; }
+  /* A small link button is still a link: no side padding, so it lines up with the text around it. */
+  .uix-btn--link.uix-btn--sm { padding-inline: 0; }
   .uix-btn--icon.uix-btn--lg { width: 44px; }
 
   /* A label that may wrap (HAR-1813, WCAG 1.4.10). The size sets a floor instead of a fixed

@@ -15,6 +15,7 @@
 @import "components/search-suggest.css";
 @import "components/tag-input.css";
 @import "components/form.css";
+@import "components/inline-edit.css";
 @import "components/app-shell.css";
 @import "components/sidebar.css";
 @import "components/breadcrumbs.css";
@@ -35,7 +36,9 @@
 @import "components/status-pill.css";
 @import "components/table.css";
 @import "components/table-toolbar.css";
+@import "components/data-workspace.css";
 @import "components/view-menu.css";
+@import "components/sortable-list.css";
 @import "components/list.css";
 @import "components/description-list.css";
 @import "components/typography.css";

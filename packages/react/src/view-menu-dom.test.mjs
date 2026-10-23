@@ -13,7 +13,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, useState } from 'react';
 
 let dom;
 let createRoot;
@@ -50,6 +50,14 @@ const mount = (element) => {
 const click = (el) => act(() => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, button: 0 })));
 const key = (el, k) => act(() => el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true })));
 const pointer = (el, type, clientY) => act(() => el.dispatchEvent(new window.MouseEvent(type, { bubbles: true, button: 0, clientY })));
+/** A consumer that applies the order it is given, the usual way to use onReorder. */
+function Applied({ log, ...rest }) {
+  const [columns, setColumns] = useState(COLS);
+  return h(ui.ViewMenu, {
+    ...rest, columns,
+    onReorder: (ids) => { log.push(ids); setColumns(ids.map((id) => columns.find((c) => c.id === id))); },
+  });
+}
 const rowIds = (scope) => [...scope.querySelectorAll('.uix-view-menu__col')].map((row) => row.dataset.columnId);
 const row = (scope, id) => scope.querySelector(`.uix-view-menu__col[data-column-id="${id}"]`);
 const trigger = (scope, id) => row(scope, id).querySelector('[aria-haspopup="menu"]');
@@ -167,7 +175,7 @@ test('Hide / Show in the ⋯ menu report the visibility change', () => {
 
 test('Move down fires onReorder with the full list, closes the menu, and keeps focus on the row', () => {
   const orders = [];
-  const { host, unmount } = mount(h(ui.ViewMenu, { columns: COLS, onColumnVisibilityChange: () => {}, onReorder: (ids) => orders.push(ids) }));
+  const { host, unmount } = mount(h(Applied, { log: orders, onColumnVisibilityChange: () => {} }));
   click(trigger(host, 'title'));
   click(menuItems(host)[1]);
   assert.deepEqual(orders, [['natural_id', 'state', 'title', 'severity']]);
@@ -208,7 +216,7 @@ test('Escape anywhere closes an open row menu and returns focus to its button', 
 
 test('ArrowUp / ArrowDown on the grip move the row and report the full order', () => {
   const orders = [];
-  const { host, unmount } = mount(h(ui.ViewMenu, { columns: COLS, onColumnVisibilityChange: () => {}, onReorder: (ids) => orders.push(ids) }));
+  const { host, unmount } = mount(h(Applied, { log: orders, onColumnVisibilityChange: () => {} }));
   const grip = () => row(host, 'state').querySelector('.uix-view-menu__grip');
   key(grip(), 'ArrowUp');
   key(grip(), 'ArrowUp');
@@ -240,7 +248,7 @@ test('the consumer order wins once it changes', () => {
   const props = { onColumnVisibilityChange: () => {}, onReorder: () => {} };
   const { host, rerender, unmount } = mount(h(ui.ViewMenu, { ...props, columns: COLS }));
   key(row(host, 'severity').querySelector('.uix-view-menu__grip'), 'ArrowUp');
-  assert.deepEqual(rowIds(host), ['natural_id', 'title', 'severity', 'state']);
+  assert.deepEqual(rowIds(host), COLS.map((c) => c.id), 'an order the consumer did not apply does not stay on screen (PR #168 review)');
   rerender(h(ui.ViewMenu, { ...props, columns: [...COLS].reverse() }));
   assert.deepEqual(rowIds(host), ['severity', 'state', 'title', 'natural_id']);
   unmount();

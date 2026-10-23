@@ -71,8 +71,12 @@ export type { SearchSegment, FoldedText } from './search-suggest-model.js';
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
 
+// A list the person reorders, with the reorder model shared by ViewMenu / SavedViewMenu / NavFavourites (HAR-1375)
+export { SortableList, DEFAULT_SORTABLE_LIST_LABELS } from './components/SortableList.js';
+export type { SortableListProps, SortableListLabels, SortableListItemContext } from './components/SortableList.js';
+export { placeId } from './reorder.js';
 export { InlineEdit, DEFAULT_INLINE_EDIT_LABELS } from './components/InlineEdit.js';
-export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps } from './components/InlineEdit.js';
+export type { InlineEditProps, InlineEditLabels, InlineEditEditorProps, InlineEditErrorContext, InlineEditState } from './components/InlineEdit.js';
 
 export { Select } from './components/Select.js';
 export type { SelectProps, SelectLabels, SelectOption, SelectGroup } from './components/Select.js';
@@ -105,7 +109,7 @@ export type { DialogCloseEvent, DialogCloseProps, DiscardPromptLabels } from './
 export { Peek } from './components/Peek.js';
 
 export { Lightbox, DEFAULT_LIGHTBOX_LABELS } from './components/Lightbox.js';
-export type { LightboxProps, LightboxItem, LightboxLabels } from './components/Lightbox.js';
+export type { LightboxProps, LightboxItem, LightboxLabels, LightboxOverlayContext } from './components/Lightbox.js';
 export type { PeekProps } from './components/Peek.js';
 
 // Layout
@@ -318,18 +322,26 @@ export type { SaveStatusProps, SaveStatusLabels, SaveStatusState } from './compo
 export { Composer, ComposerBar } from './components/Composer.js';
 export type { ComposerProps, ComposerBarProps } from './components/Composer.js';
 
-export { Segmented, SegmentedOption } from './components/Segmented.js';
-export type { SegmentedProps, SegmentedOptionProps } from './components/Segmented.js';
+export { Segmented, SegmentedOption, LocaleSwitcher } from './components/Segmented.js';
+export type { SegmentedProps, SegmentedOptionProps, LocaleSwitcherProps, LocaleSwitcherLocale } from './components/Segmented.js';
 
 export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableControls.js';
+// The generic presentation half of a product's data table (HAR-1388, UIx ADR-0005)
+export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataWorkspace.js';
+export type {
+  DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
+} from './components/DataWorkspace.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';
 export {
   DEFAULT_FILTER_SUMMARY_LABELS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isFilterEmpty, matchFilterPreset, summarizeFilter,
+  // HAR-1832: date conditions, labels for restored reference ids
+  DATE_FILTER_OPERATORS, dateFilterBounds, isUnresolvedChoice, resolveFilterLabels,
 } from './filter-model.js';
 export type {
   FilterChoice, FilterField, FilterPreset, FilterValueKind, FilterSummaryLabels, FilterValue, NumberFilterOperator, SummarizeFilterOptions, TextFilterOperator,
+  DateFilterOperator,
 } from './filter-model.js';
 export type {
   ViewMenuProps, ViewMenuColumn, ViewMenuColumnLabels, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem, SavedViewSection,
@@ -361,6 +373,9 @@ export type {
   CommandGroupProps,
   CommandItemProps,
 } from './components/CommandPalette.js';
+// Items mode (HAR-1378): the palette filters, groups and runs commands itself
+export { filterCommandItems, groupCommandItems } from './command-palette-model.js';
+export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette-model.js';
 
 // ITSM capability
 export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';
@@ -475,6 +490,9 @@ export type { RelationshipGraphProps, RelationshipGraphLegendItem, RelationshipG
 export { boundRelationshipGraph, layoutRelationshipGraph, relationshipNeighbors, traverseRelationshipNode, classifyLayeredEdges, clusterIdFor, layeredNeighbor, layoutLayeredGraph, wrapEdgeLabel, separateEdgeLabels, edgeLabelSize } from './relationship-graph-model.js';
 export type { RelationshipGraphNode, RelationshipGraphEdge, PositionedRelationshipNode, BoundedRelationshipGraph, RelationshipGraphArrow, RelationshipGraphCluster, LayeredEdgeKind, LayeredLayoutOptions, LayeredItem, RoutedEdge, LayeredColumn, LayeredLayout, LayeredEdgeClassification, LayeredNavigationKey, RelationshipGraphTone, EdgeLabelBox, PlacedEdgeLabel } from './relationship-graph-model.js';
 
+// Who opened or changed what, and when (HAR-987; MEDx S50, POSx PRT-01)
+export { AuditLog, DEFAULT_AUDIT_LOG_LABELS } from './components/AuditLog.js';
+export type { AuditLogProps, AuditLogEvent, AuditLogAction, AuditLogFilters, AuditLogLabels } from './components/AuditLog.js';
 export { DEFAULT_MATCH_REVIEW_LABELS, MatchReview } from './components/MatchReview.js';
 export type { MatchReviewLabels, MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
 
@@ -489,7 +507,7 @@ export { BrandProfiles, BrandProfileEditor, DEFAULT_BRAND_PROFILE_EDITOR_LABELS,
 export type { BrandProfileEditorLabels, BrandProfile, BrandProfileTypography, BrandProfileLogo, BrandProfileEditorProps, AppliedBrandProfileSnapshot } from './components/BrandProfiles.js';
 
 export { DEFAULT_DIFF_VIEWER_LABELS, DiffViewer } from './components/DiffViewer.js';
-export type { DiffViewerLabels, DiffViewerProps } from './components/DiffViewer.js';
+export type { DiffViewerLabels, DiffViewerProps, DiffSide } from './components/DiffViewer.js';
 export { buildThreeWayDiff, summarizeDiff } from './diff-model.js';
 export type { DiffEntry, DiffKind, DiffResolution, DiffSummary } from './diff-model.js';
 export { DEFAULT_TEXT_DIFF_LABELS, TextDiff } from './components/TextDiff.js';
