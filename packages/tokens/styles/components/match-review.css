@@ -18,7 +18,7 @@
   .uix-match-review__compare tbody th { padding-inline:var(--uix-space-4); height:var(--uix-row-h); border-bottom:1px solid var(--uix-border); background:transparent; color:var(--uix-text-muted); font-weight:500; text-align:start; vertical-align:middle; }
   .uix-match-review__compare tr[data-differs] td:nth-child(3) { font-weight:600; }
   .uix-match-review__compare tr[data-chosen] { background:var(--uix-row-selected-bg); }
-  .uix-match-review__adopt { width:18px; height:18px; margin:0; accent-color:var(--uix-brand); }
+  .uix-match-review__adopt { width:18px; height:18px; margin:0; accent-color:var(--uix-accent); }
   .uix-match-review__same { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-match-review__provenance summary { cursor:pointer; color:var(--uix-link); font-size:var(--uix-text-meta); font-weight:500; }
   .uix-match-review__provenance-body { margin-top:var(--uix-space-2); color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
