@@ -2,7 +2,8 @@
 @layer uix.components {
   .uix-stat { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); padding: var(--uix-space-6); }
   .uix-stat__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2); }
-  .uix-stat__label > span { min-width: 0; overflow-wrap: anywhere; }
+  /* break-word, not anywhere: a word wraps whole and only breaks when it alone is wider than the tile */
+  .uix-stat__label > span { min-width: 0; overflow-wrap: break-word; }
   .uix-stat__label svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-stat__value { display: block; font-size: var(--uix-text-data-hero); font-weight: 600; line-height: var(--uix-leading-data-hero); margin-top: var(--uix-space-3); overflow-wrap: anywhere; }
   .uix-stat__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); margin-top: var(--uix-space-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); overflow-wrap: anywhere; }
@@ -57,3 +58,14 @@
   .uix-stat--link[aria-current="page"] { border-color: var(--uix-ring); box-shadow: inset 0 0 0 1px var(--uix-ring); }
   @media (prefers-reduced-motion: reduce) { .uix-stat--interactive, .uix-stat__label .uix-stat__chevron svg { transition: none; } }
 }
+
+/* Stat row (HAR-1803 review): tiles side by side while each keeps a readable width, then fewer per
+   row, down to one on a phone. A fixed six-column grid broke labels letter by letter at 320 px
+   ("AS/SI/GN/EE"). --stat-row-min sets the narrowest tile: 8.5rem, and 12rem with --hero (or once
+   a hero tile, with its 34 px value, is in the row); min(100%, …) keeps a single tile inside a
+   container narrower than that. */
+@layer uix.components {
+  .uix-stat-row { --stat-row-auto: 8.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--stat-row-min, var(--stat-row-auto))), 1fr)); gap: var(--uix-space-3); min-width: 0; }
+  .uix-stat-row--hero, .uix-stat-row:has(> .uix-stat:not(.uix-stat--compact)) { --stat-row-auto: 12rem; }
+}
+

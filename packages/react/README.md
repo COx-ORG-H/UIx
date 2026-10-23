@@ -1299,3 +1299,16 @@ The tokens read five attributes on `<html>`: `data-theme` (light / dark), `data-
 `data-text-scale="sm|lg|xl"`, `data-motion="reduce"` and `data-density="compact|comfortable"`. A choice applies
 at once (transitions are suspended for that frame), is stored, and `system` follows the OS. The head script and the
 hook read the same key and the same defaults; pass both the same. `useReducedMotion` honours `data-motion`.
+
+#### StatRow: a row of tiles that reflows
+
+```tsx
+<StatRow>{facts.map((f) => <Stat key={f.id} size="compact" {...f} />)}</StatRow>
+<StatRow className="uix-stat-row--hero">{kpis}</StatRow>  // 12rem tiles for 34 px values
+```
+
+`StatRow` (`.uix-stat-row`) puts as many tiles side by side as fit at 8.5rem each (12rem with
+`.uix-stat-row--hero`, or as soon as a hero tile is in the row; `minTileWidth` / `--stat-row-min` to
+choose), all the same height, down to one per row on a phone. A fixed column count squeezed six tiles
+into 320 px until their labels broke letter by letter. Labels now wrap at a space and break inside a
+word only when that word alone is wider than the tile.

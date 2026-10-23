@@ -1,5 +1,5 @@
 import { forwardRef, useId } from 'react';
-import type { ReactNode, HTMLAttributes, Ref } from 'react';
+import type { CSSProperties, ReactNode, HTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
@@ -167,3 +167,23 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     </button>
   );
 });
+
+export interface StatRowProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * The narrowest a tile may get before the row puts fewer tiles side by side, as a CSS length
+   * (`--stat-row-min`). Default `8.5rem`, and `12rem` once a hero tile is in the row.
+   */
+  minTileWidth?: string;
+  children?: ReactNode;
+}
+
+/**
+ * A row of `Stat` tiles over `.uix-stat-row` (HAR-1803 review): as many tiles per row as fit at
+ * `minTileWidth`, all the same height, down to one per row on a phone. Use it instead of a fixed
+ * column count, which squeezes tiles until their labels break letter by letter.
+ */
+export function StatRow({ minTileWidth, className, style, children, ...props }: StatRowProps) {
+  const rowStyle = minTileWidth ? { ...style, '--stat-row-min': minTileWidth } as CSSProperties : style;
+  return <div className={cx('uix-stat-row', className)} style={rowStyle} {...props}>{children}</div>;
+}
+

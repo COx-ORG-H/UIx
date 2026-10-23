@@ -224,8 +224,8 @@ export type { ProgressProps } from './components/Progress.js';
 export { Meter } from './components/Meter.js';
 export type { MeterProps, MeterTone } from './components/Meter.js';
 
-export { Stat } from './components/Stat.js';
-export type { StatProps, StatTrend } from './components/Stat.js';
+export { Stat, StatRow } from './components/Stat.js';
+export type { StatProps, StatTrend, StatRowProps } from './components/Stat.js';
 
 export { Bullet, DEFAULT_INSIGHT_CARD_LABELS, InsightCard } from './components/InsightCard.js';
 export type {

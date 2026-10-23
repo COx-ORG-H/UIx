@@ -66,15 +66,15 @@ function Tiles() {
  * "Finish saving" is pressed. */
 function StretchedRow({ id, size, layout }: { id: string; size: 'hero' | 'compact'; layout: 'grid' | 'flex' }) {
   const [saving, setSaving] = useState(true);
-  const row = layout === 'grid'
-    ? { display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 'var(--uix-space-3)' }
-    : { display: 'flex', gap: 'var(--uix-space-3)' };
-  const cell = layout === 'flex' ? { flex: '1 1 0', minWidth: 0 } : undefined;
+  // grid: the kit's StatRow (.uix-stat-row), which reflows; flex: a wrapping flex row whose
+  // tiles keep the same floor (8.5rem compact, 12rem hero), so a phone gets fewer tiles per row
+  const row = layout === 'grid' ? undefined : { display: 'flex', flexWrap: 'wrap' as const, gap: 'var(--uix-space-3)' };
+  const cell = layout === 'flex' ? { flex: `1 1 ${size === 'hero' ? 12 : 8.5}rem`, minWidth: 0 } : undefined;
   const noop = () => {};
   return (
     <section aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`}>{`Facts in one ${layout} row (${size})`}</h2>
-      <div id={id} style={row}>
+      <div id={id} className={layout === 'grid' ? 'uix-stat-row' : undefined} style={row}>
         <Stat style={cell} data-tile="read-only" size={size} label="Opened" value="12 Oct" />
         <Stat style={cell} data-tile="read-only-meta" size={size} label="Reporter" value="Ada" meta="Service desk" />
         <Stat style={cell} data-tile="three-lines" size={size} label="Assignee" value="Network operations" meta="Second line, on call until 18:00 today and again tomorrow from 08:00" onActivate={noop} activateLabel={`change (${id})`} />

@@ -152,7 +152,7 @@ ${compactSection('gap-sec-sla', 'SLA', '2 targets', '<p>Response in 4 h, resolut
 ${compactSection('gap-sec-links', 'Related records', '1 link', '<p>CHG-1042 blocks this incident.</p>', false)}
 </div></div>
 <div class="uix-guide__subhead" data-tensor-gaps>Stat tiles of unequal content in one row (React <code>Stat</code> with <code>onActivate</code>, <code>href</code>, <code>pending</code>) — a read-only tile, three buttons, a link and a pending tile; the row stretches them to one height and every label and value starts at the same line. The pending tile is busy, dimmed and still takes focus</div>
-<div data-stat-row-example style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:12px;width:100%">
+<div data-stat-row-example class="uix-stat-row" style="width:100%">
 ${STAT_ROW_TILES.map(statRowTile).join('\n')}
 </div>`,
 

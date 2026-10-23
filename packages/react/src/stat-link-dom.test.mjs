@@ -27,3 +27,9 @@ test('an in-place action tile is marked uix-stat--action; popup tiles keep the d
   assert.match(dialog, /uix-stat__chevron/);
   assert.doesNotMatch(dialog, /uix-stat__go|uix-stat--action/);
 });
+
+test('StatRow is the reflowing row of tiles; minTileWidth sets --stat-row-min', async () => {
+  const { StatRow } = await import('../dist/index.js');
+  assert.equal(renderToStaticMarkup(h(StatRow, null, h(Stat, { label: 'A', value: 1 }))), '<div class="uix-stat-row"><div class="uix-stat"><div class="uix-stat__label"><span>A</span></div><div class="uix-stat__value">1</div></div></div>');
+  assert.match(renderToStaticMarkup(h(StatRow, { minTileWidth: '12rem', className: 'mine' })), /^<div class="uix-stat-row mine" style="--stat-row-min:12rem">/);
+});

@@ -5787,6 +5787,16 @@ export interface StatProps extends HTMLAttributes<HTMLElement> {
     value: ReactNode;
 }
 
+// @public
+export function StatRow(input: StatRowProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatRowProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    minTileWidth?: string;
+}
+
 // @public (undocumented)
 export interface StatTrend {
     direction: 'up' | 'down';
