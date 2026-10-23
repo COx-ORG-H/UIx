@@ -77,9 +77,9 @@
       "brotli": 1228
     },
     "styles/components/change-highlight.css": {
-      "raw": 4106,
-      "gzip": 1277,
-      "brotli": 1068
+      "raw": 4719,
+      "gzip": 1361,
+      "brotli": 1146
     },
     "styles/components/chart.css": {
       "raw": 5938,
@@ -122,9 +122,9 @@
       "brotli": 211
     },
     "styles/components/count.css": {
-      "raw": 1229,
-      "gzip": 569,
-      "brotli": 479
+      "raw": 1578,
+      "gzip": 650,
+      "brotli": 547
     },
     "styles/components/dashboard-canvas.css": {
       "raw": 5193,

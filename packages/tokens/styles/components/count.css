@@ -14,3 +14,10 @@
     .uix-count[data-uix-tick="up"], .uix-count[data-uix-tick="down"] { animation: uix-count-fade var(--uix-dur) var(--uix-ease-out) !important; }
   }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same fade */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-count:is([data-uix-tick="up"], [data-uix-tick="down"]) { animation: uix-count-fade var(--uix-dur) var(--uix-ease-out) !important; }
+  }
+}

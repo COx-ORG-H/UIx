@@ -272,6 +272,15 @@ test('ChangeHighlight under reduced motion: a steady outline on the row as one b
   expect(outline).toBe('solid');
 });
 
+test('the in-app reduced-motion choice (data-motion="reduce", OS at no-preference) gets the same outline and fade', async ({ page }) => {
+  await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
+  await page.getByTestId('live-update').click();
+  expect(await animations(page.getByTestId('changed-row'))).toEqual(['uix-changed-static']);
+  expect(await animations(page.getByTestId('changed-pill'))).toEqual(['uix-changed-static-ring']);
+  await page.getByTestId('unread-up').click();
+  expect(await animations(page.getByTestId('badge').locator('.uix-count'))).toEqual(['uix-count-fade']);
+});
+
 test('ChangeHighlight under reduced motion: the ring stays outside the pill', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.getByTestId('live-update').click();

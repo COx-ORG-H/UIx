@@ -47,3 +47,12 @@
     tr.uix-changed > :is(td, th), tr.uix-change-highlight[data-uix-changed] > :is(td, th) { animation: none; }
   }
 }
+
+/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same outline */
+@layer uix.components {
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] :is(.uix-changed, .uix-change-highlight[data-uix-changed]) { animation: uix-changed-static var(--uix-change-duration) step-end !important; }
+    :root[data-motion="reduce"] .uix-change-highlight--ring[data-uix-changed] { animation: uix-changed-static-ring var(--uix-change-duration) step-end !important; }
+    :root[data-motion="reduce"] :is(tr.uix-changed, tr.uix-change-highlight[data-uix-changed]) > :is(td, th) { animation: none !important; }
+  }
+}
