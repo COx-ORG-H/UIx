@@ -317,8 +317,8 @@ function ReferenceBody({ field, value, onChange, labels, delay }: { field: Filte
         {showResults && state.results.map((r) => <Checkbox key={r.value} label={r.label} checked={chosen.has(r.value)} onChange={(e) => toggle(r, e.currentTarget.checked)} />)}
       </div>
       {/* Below the list, so the results on show do not jump down while the next ones load; one
-          region that stays mounted, so "Searching…" is read. */}
-      <p className={cx('uix-filter-editor__note', 'uix-filter-editor__searching')} role="status" data-shown={slow || undefined}>{slow ? labels.searching : ''}</p>
+          region that stays mounted, so "Searching…" is read; silent, it is visually hidden (no row gap). */}
+      <p className={cx('uix-filter-editor__note', 'uix-filter-editor__searching', !slow && 'uix-visually-hidden')} role="status" data-shown={slow || undefined}>{slow ? labels.searching : ''}</p>
     </>
   );
 }
