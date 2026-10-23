@@ -8,6 +8,7 @@ import { Avatar } from './Avatar.js';
 import type { AvatarPresence } from './Avatar.js';
 import { Menu } from './Menu.js';
 import type { Placement } from '../overlay-position.js';
+import { useInShellDrawer } from '../shell-context.js';
 
 export interface AccountMenuUser {
   /** The person's name, shown on the trigger and used for the avatar's initials. */
@@ -61,10 +62,13 @@ export function accountInitials(name: string): string {
 export function AccountMenu({ user, items, collapsed = false, placement = 'top-start', labels: labelOverrides, className }: AccountMenuProps) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_ACCOUNT_MENU_LABELS, ...uixLabels.accountMenu, ...labelOverrides };
+  // in AppShell's phone drawer the sidebar is full, so the trigger is too
+  const inDrawer = useInShellDrawer();
+  const rail = collapsed && !inDrawer;
   const photo = typeof user.avatar === 'string' ? user.avatar : undefined;
   const custom = typeof user.avatar === 'string' ? undefined : user.avatar;
   const trigger = (
-    <button type="button" className={cx('uix-account-menu', collapsed && 'uix-account-menu--collapsed', className)}>
+    <button type="button" className={cx('uix-account-menu', rail && 'uix-account-menu--collapsed', className)}>
       {/* the initials are a picture of the name, which the button already says */}
       <Avatar src={photo} alt="" presence={user.status} className="uix-account-menu__avatar">
         {custom ?? (photo ? null : <span aria-hidden="true">{accountInitials(user.name)}</span>)}

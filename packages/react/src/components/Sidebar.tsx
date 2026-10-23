@@ -5,6 +5,7 @@ import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes, Ref } from 'react
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { SearchIcon } from '../icons/components.js';
+import { useInShellDrawer } from '../shell-context.js';
 import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 
@@ -54,10 +55,13 @@ export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, actions, 
   const uixLabels = useUixLabels();
   const expandLabel = expandLabelProp ?? uixLabels.sidebar?.expand ?? 'Expand sidebar';
   const collapseLabel = collapseLabelProp ?? uixLabels.sidebar?.collapse ?? 'Collapse sidebar';
-  const isCollapsed = collapsed ?? nav === 'rail';
+  // in AppShell's phone drawer the sidebar is always full: a rail chosen on a wide screen would
+  // leave a 56 px strip of icons in a drawer meant for reading
+  const inDrawer = useInShellDrawer();
+  const isCollapsed = !inDrawer && (collapsed ?? nav === 'rail');
   const platform = useKbdPlatform();
   return (
-    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={nav} {...props}>
+    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={inDrawer ? undefined : nav} {...props}>
       {(brand != null || onToggle || actions != null) && (
         <div className="uix-sidebar__head">
           {brand && <div className="uix-sidebar__brand">{brand}</div>}

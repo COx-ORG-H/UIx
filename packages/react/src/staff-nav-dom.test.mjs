@@ -137,3 +137,62 @@ test('phoneNav="drawer": a named menu button and a start drawer that mounts the 
   const plain = renderToStaticMarkup(h(ui.AppShell, { sidebar: h('nav', null, 'n') }, 'c'));
   assert.doesNotMatch(plain, /uix-shell__nav-button|<dialog/);
 });
+
+// ── review of #165 ────────────────────────────────────────────────────────────
+const press = (init, target = document.body) => act(() => { target.dispatchEvent(new window.KeyboardEvent('keydown', { key: '[', bubbles: true, cancelable: true, ...init })); });
+
+test('the hotkey: the character decides — Option+[ on a Mac fires; Ctrl, ⌘, repeats, editables and modals do not', () => {
+  const shell = mount(h(ui.AppShell, { navHotkey: '[', sidebar: h('nav', null, 'nav') }, h('div', { contentEditable: true, id: 'editor' }, 'x')));
+  const root = shell.host.querySelector('.uix-shell');
+  const tier = () => root.getAttribute('data-nav');
+  press({ altKey: true }); // Mac German / Bosnian: [ is Option+5
+  assert.equal(tier(), 'rail', 'Option+[ (altKey, no AltGraph) is the hotkey');
+  press({ ctrlKey: true });
+  press({ metaKey: true });
+  press({ repeat: true });
+  assert.equal(tier(), 'rail', 'Ctrl+[, ⌘+[ and a held key change nothing');
+  const editor = shell.host.querySelector('#editor');
+  Object.defineProperty(editor, 'isContentEditable', { value: true });
+  press({}, editor);
+  assert.equal(tier(), 'rail', 'typing [ in a contenteditable is text');
+  const dialog = document.createElement('dialog');
+  document.body.append(dialog);
+  dialog.showModal();
+  // jsdom's stubbed showModal opens without the top layer: report it as :modal, as a browser does
+  const matches = dialog.matches.bind(dialog);
+  dialog.matches = (selector) => selector === ':modal' || matches(selector);
+  press({});
+  assert.equal(tier(), 'rail', 'not under a modal dialog');
+  dialog.close();
+  dialog.remove();
+  press({});
+  assert.equal(tier(), null);
+  shell.unmount();
+});
+
+test('layout="viewport" has the phone tier by default; phoneNav="none" keeps the sidebar column', () => {
+  const viewport = renderToStaticMarkup(h(ui.AppShell, { layout: 'viewport', sidebar: h('nav', null, 'n') }, 'c'));
+  assert.match(viewport, /data-phone-nav="drawer"/);
+  assert.match(viewport, /uix-shell__nav-button/);
+  const none = renderToStaticMarkup(h(ui.AppShell, { layout: 'viewport', phoneNav: 'none', sidebar: h('nav', null, 'n') }, 'c'));
+  assert.doesNotMatch(none, /data-phone-nav|uix-shell__nav-button/);
+  assert.doesNotMatch(renderToStaticMarkup(h(ui.AppShell, { sidebar: h('nav', null, 'n') }, 'c')), /data-phone-nav/, 'the frame keeps its column');
+});
+
+test('the phone drawer shows the sidebar full, even when the rail was chosen, and keeps it until the close ends', async () => {
+  const sidebar = h(ui.Sidebar, { nav: 'rail', 'aria-label': 'Staff', footer: h(ui.AccountMenu, { collapsed: true, user: { name: 'Ada Lovelace' } }) }, h(ui.NavItem, { href: '#a' }, 'A'));
+  const shell = mount(h(ui.AppShell, { phoneNav: 'drawer', sidebar }, 'content'));
+  act(() => shell.host.querySelector('.uix-shell__nav-button').click());
+  const drawer = shell.host.querySelector('dialog');
+  const drawerNav = drawer.querySelector('.uix-sidebar');
+  assert.equal(drawerNav.getAttribute('data-nav'), null);
+  assert.equal(drawerNav.getAttribute('data-collapsed'), null);
+  assert.doesNotMatch(drawer.querySelector('.uix-account-menu').className, /--collapsed/);
+  // the grid column keeps the rail
+  assert.equal(shell.host.querySelector('.uix-shell__sidebar .uix-sidebar').getAttribute('data-nav'), 'rail');
+  act(() => drawer.querySelector('a').click());
+  assert.ok(drawer.querySelector('.uix-sidebar'), 'still there while the drawer closes');
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  assert.equal(drawer.querySelector('.uix-sidebar'), null, 'gone once closed');
+  shell.unmount();
+});

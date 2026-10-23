@@ -140,3 +140,31 @@ test('above the phone width there is no menu button and no drawer', async ({ pag
   await expect(page.getByRole('button', { name: 'Otvori navigaciju' })).toBeHidden();
   await expect(page.locator('#shell > .uix-shell__sidebar')).toBeVisible();
 });
+
+// Review of #165: the drawer is a full sidebar even after the rail was chosen on a wide screen,
+// and it does not slide out empty.
+test('a rail chosen on desktop: the phone drawer still shows the full sidebar, and keeps it while it closes', async ({ page }, testInfo) => {
+  await open(page, testInfo.project.name);
+  await page.locator('h1, h2').first().click();
+  await page.keyboard.press('[');
+  await expect(page.locator('#shell')).toHaveAttribute('data-nav', 'rail');
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.getByRole('button', { name: 'Otvori navigaciju' }).click();
+  const drawer = page.getByRole('dialog', { name: 'Navigacija' });
+  await expect(drawer).toBeVisible();
+  const inDrawer = drawer.locator('.uix-sidebar');
+  await expect(inDrawer).not.toHaveAttribute('data-nav', 'rail');
+  const label = drawer.locator('.uix-navitem__label', { hasText: 'Katalog' });
+  expect((await label.boundingBox()).width, 'the label is shown, not clipped to the rail').toBeGreaterThan(20);
+  await expect(drawer.locator('.uix-account-menu')).not.toHaveClass(/uix-account-menu--collapsed/);
+  // the moment the close starts, the content is still in the drawer that slides out
+  const during = await page.evaluate(() => new Promise((resolve) => {
+    const dialog = document.querySelector('dialog.uix-shell__nav-drawer');
+    // following a link closes the drawer; read the next frame of the closing drawer
+    dialog.querySelector('a[href="#katalog"]').click();
+    requestAnimationFrame(() => resolve(dialog.querySelectorAll('.uix-navitem').length));
+  }));
+  expect(during).toBeGreaterThan(0);
+  await expect(drawer).toBeHidden();
+  await expect.poll(() => page.locator('dialog.uix-shell__nav-drawer .uix-navitem').count()).toBe(0);
+});

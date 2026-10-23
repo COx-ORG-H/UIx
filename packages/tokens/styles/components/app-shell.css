@@ -70,10 +70,9 @@
   .uix-shell--viewport:not(:has(> .uix-shell__topbar)) > .uix-shell__main { grid-row: 1 / 3; }
   .uix-shell--viewport > .uix-shell__main.uix-shell__main--bleed { padding: 0; }
   @media (min-width: 80rem) { .uix-shell--viewport > .uix-shell__main:not(.uix-shell__main--bleed) { padding-inline: var(--uix-space-8); } }
+  /* one column and no sidebar at phone width come from the phone tier below ([data-phone-nav],
+     the viewport default); with phoneNav="none" the sidebar column stays, as in the frame */
   @media (max-width: 40rem) {
-    .uix-shell--viewport, .uix-shell--viewport[data-nav] { grid-template-columns: minmax(0, 1fr); }
-    .uix-shell--viewport > .uix-shell__sidebar { display: none; }
-    .uix-shell--viewport > :is(.uix-shell__topbar, .uix-shell__main) { grid-column: 1; }
     .uix-shell--viewport > .uix-shell__main { padding: var(--uix-space-5) var(--uix-space-4) var(--uix-space-6); }
   }
 }

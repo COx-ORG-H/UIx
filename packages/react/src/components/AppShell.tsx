@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, HTMLAttributes, MouseEvent } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { MenuIcon } from '../icons/components.js';
 import { Drawer } from './Drawer.js';
+import { ShellDrawerContext } from '../shell-context.js';
 
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
@@ -23,15 +24,21 @@ const readTier = (key: string): ShellNav | undefined => {
 };
 
 /**
- * A key press typed into a field, or with a modifier, is not the nav hotkey. AltGr is not a
- * modifier here: on a German or Bosnian keyboard "[" is AltGr+8 / AltGr+F, which Windows reports
- * as Ctrl+Alt.
+ * Whether a keydown that produced the hotkey's character should switch the tier. The character
+ * decides, not the modifiers that typed it: on a German or Bosnian keyboard "[" is AltGr+8 /
+ * AltGr+F, which Windows reports as Ctrl+Alt, and on a Mac it is Option+5 (altKey, no AltGraph).
+ * So only ⌘ and a Ctrl without Alt (a real shortcut) are refused. Not while typing (in a field, a
+ * contenteditable, also inside a shadow root), not on key repeat, not under a modal dialog.
  */
-const isTyping = (event: KeyboardEvent) => {
-  const target = event.target as HTMLElement | null;
-  const altGraph = typeof event.getModifierState === 'function' && event.getModifierState('AltGraph');
-  return (!altGraph && (event.ctrlKey || event.altKey)) || event.metaKey || event.isComposing
-    || !!target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"], [role="combobox"]');
+const isNavHotkey = (event: KeyboardEvent, key: string) => {
+  if (event.key !== key || event.defaultPrevented || event.repeat || event.isComposing) return false;
+  if (event.metaKey || (event.ctrlKey && !event.altKey)) return false;
+  const target = ((typeof event.composedPath === 'function' ? event.composedPath()[0] : null) ?? event.target) as HTMLElement | null;
+  if (target?.isContentEditable || target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"], [role="combobox"]')) return false;
+  const modalOpen = Array.from(document.querySelectorAll('dialog[open]')).some((dialog) => {
+    try { return dialog.matches(':modal'); } catch { return true; }
+  });
+  return !modalOpen;
 };
 
 export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
@@ -39,8 +46,8 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
    * `frame` (default) is the bordered, rounded box the docs show a shell in. `viewport` is an
    * application's shell (HAR-1815): no frame, the full dynamic viewport height (`100dvh`), no fixed
    * top-bar row (the sidebar and main both run the full height; a `topbar`, if given, sits at the
-   * top of the main column), main padding that widens on wide screens, and below 40rem one column
-   * with the sidebar hidden, for the phone nav tier.
+   * top of the main column), main padding that widens on wide screens, and the phone nav tier by
+   * default (`phoneNav`), so below 40rem it is one column with the sidebar in a drawer.
    */
   layout?: 'frame' | 'viewport';
   /**
@@ -71,9 +78,11 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * The phone nav tier (HAR-1371): at 40rem and under, the sidebar column is hidden and a menu
    * button (at the start of the topbar, or at the top of main) opens the sidebar in a start-side
-   * `Drawer`. Following a link in it closes the drawer.
+   * `Drawer`, shown full whatever the tier. Following a link in it closes the drawer. Default
+   * `drawer` with `layout="viewport"`, `none` with the frame; `none` keeps the sidebar column at
+   * every width.
    */
-  phoneNav?: 'drawer';
+  phoneNav?: 'drawer' | 'none';
   /** Back-compat alias for nav="rail". Ignored when `nav` is set. */
   collapsed?: boolean;
   /**
@@ -108,7 +117,7 @@ export function AppShell({
   onNavChange,
   navHotkey,
   navTierStorageKey,
-  phoneNav,
+  phoneNav: phoneNavProp,
   collapsed,
   focus,
   onExitFocus,
@@ -125,6 +134,7 @@ export function AppShell({
   ...props
 }: AppShellProps) {
   const uixLabels = useUixLabels();
+  const phoneNav = (phoneNavProp ?? (layout === 'viewport' ? 'drawer' : 'none')) === 'drawer';
   const skipToContentLabel = skipToContentLabelProp ?? uixLabels.appShell?.skipToContent ?? 'Skip to content';
   const exitFocusLabel = exitFocusLabelProp ?? uixLabels.appShell?.exitFocus ?? 'Esc · Exit focus';
   const openNavLabel = openNavLabelProp ?? uixLabels.appShell?.openNav ?? 'Open navigation';
@@ -155,7 +165,7 @@ export function AppShell({
   useEffect(() => {
     if (!navHotkey) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== navHotkey || event.defaultPrevented || isTyping(event)) return;
+      if (!isNavHotkey(event, navHotkey)) return;
       event.preventDefault();
       changeNav(navState === 'full' ? 'rail' : 'full');
     };
@@ -191,6 +201,23 @@ export function AppShell({
   const closeOnLink = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).closest('a[href]')) setDrawerOpen(false);
   };
+  // The drawer's copy of the sidebar mounts on open and stays until the close transition has
+  // ended, so the drawer never slides out empty; closed, it is gone (the sidebar column keeps
+  // its ids unique). The wait is the drawer's own computed exit duration, no number of ours.
+  const [drawerMounted, setDrawerMounted] = useState(false);
+  const drawerBodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (drawerOpen) { setDrawerMounted(true); return undefined; }
+    const dialog = drawerBodyRef.current?.closest('dialog');
+    if (!dialog) { setDrawerMounted(false); return undefined; }
+    const style = getComputedStyle(dialog);
+    const ms = (list: string) => list.split(',').map((v) => (v.trim().endsWith('ms') ? parseFloat(v) : parseFloat(v) * 1000) || 0);
+    const durations = ms(style.transitionDuration);
+    const delays = ms(style.transitionDelay);
+    const exit = Math.max(0, ...durations.map((d, i) => d + (delays[i] ?? 0)));
+    const timer = window.setTimeout(() => setDrawerMounted(false), exit);
+    return () => window.clearTimeout(timer);
+  }, [drawerOpen]);
 
   return (
     <div
@@ -198,7 +225,7 @@ export function AppShell({
       data-nav={navState !== 'full' ? navState : undefined}
       data-collapsed={collapsed && nav == null ? '' : undefined}
       data-focus={focus || undefined}
-      data-phone-nav={phoneNav}
+      data-phone-nav={phoneNav ? 'drawer' : undefined}
       {...props}
     >
       {/* First tab stop in the shell; tabIndex -1 on main makes the anchor jump move focus cross-browser (UIX-A11Y-2). */}
@@ -211,8 +238,11 @@ export function AppShell({
       </main>
       {phoneButton && (
         <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} side="start" title={navigationLabel} className="uix-shell__nav-drawer">
-          {/* mounted only while open: the sidebar is in the grid column too, and its ids must stay unique */}
-          {drawerOpen && <div className="uix-shell__nav-drawer-body" onClick={closeOnLink}>{sidebar}</div>}
+          {(drawerOpen || drawerMounted) && (
+            <ShellDrawerContext.Provider value>
+              <div ref={drawerBodyRef} className="uix-shell__nav-drawer-body" onClick={closeOnLink}>{sidebar}</div>
+            </ShellDrawerContext.Provider>
+          )}
         </Drawer>
       )}
       {focus && onExitFocus && (
