@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from 'react';
-import type { SVGAttributes } from 'react';
+import type { HTMLAttributes, SVGAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { encodeQr, qrPath, QrCapacityError } from '../qr-model.js';
@@ -13,7 +13,8 @@ export interface QrCodeLabels {
   tooLong: string;
 }
 
-const DEFAULT_QR_CODE_LABELS: QrCodeLabels = { tooLong: 'Too long for a QR code' };
+/** The English words of `QrCode`, the base `UixLabelsProvider` `qrCode` and `labels` override. */
+export const DEFAULT_QR_CODE_LABELS: QrCodeLabels = { tooLong: 'Too long for a QR code' };
 
 /** The quiet zone the standard asks for: four light modules on every side. */
 const QUIET_ZONE = 4;
@@ -40,6 +41,8 @@ export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'childre
   size?: number | string;
   /** The smallest version to use, so a set of posters gets symbols of one size. */
   minVersion?: number;
+  /** Mark non-ASCII text as UTF-8 with an ECI designator (see `QrEncodeOptions.eci`). Default false. */
+  eci?: boolean;
   /** The words. Default: `UixLabelsProvider` `qrCode`, then English. */
   labels?: Partial<QrCodeLabels>;
 }
@@ -50,23 +53,25 @@ export interface QrCodeProps extends Omit<SVGAttributes<SVGSVGElement>, 'childre
  * and in forced colours (scanners read dark on light; an inverted symbol fails many of them).
  * The encoder is the kit's own (`encodeQr`), so nothing is fetched and no library is added.
  */
-export function QrCode({ value, label, errorCorrection = 'M', size = 160, minVersion, labels: labelsProp, className, style, ...props }: QrCodeProps) {
+export function QrCode({ value, label, errorCorrection = 'M', size = 160, minVersion, eci = false, labels: labelsProp, className, style, ...props }: QrCodeProps) {
   const uixLabels = useUixLabels();
   const labels: QrCodeLabels = { ...DEFAULT_QR_CODE_LABELS, ...uixLabels.qrCode, ...labelsProp };
   const matrix = useMemo<QrMatrix | undefined>(() => {
     try {
-      return encodeQr(value, { errorCorrection, minVersion });
+      return encodeQr(value, { errorCorrection, minVersion, eci });
     } catch (error) {
       if (error instanceof QrCapacityError) return undefined;
       throw error;
     }
-  }, [value, errorCorrection, minVersion]);
+  }, [value, errorCorrection, minVersion, eci]);
   const length = typeof size === 'number' ? `${size}px` : size;
 
+  // No symbol: words, not an image. A screen reader hears what the code was for and why it is
+  // missing; an `img` named like a working code hid the "too long" (review of PR #166).
   if (!matrix) {
     return (
-      <span className={cx('uix-qr-code', 'uix-qr-code--error', className)} role="img" aria-label={label} style={{ inlineSize: length, ...(style as object) }}>
-        {labels.tooLong}
+      <span {...(props as HTMLAttributes<HTMLSpanElement>)} className={cx('uix-qr-code', 'uix-qr-code--error', className)} style={{ inlineSize: length, ...(style as object) }}>
+        <span className="uix-visually-hidden">{label}: </span>{labels.tooLong}
       </span>
     );
   }

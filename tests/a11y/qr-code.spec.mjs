@@ -91,10 +91,15 @@ test('at 320 px the card symbol shrinks with its card and still scans', async ({
   expect(await scan(page, '#qr-card')).toBe('VOUCHER:2026-10-22:00042');
 });
 
-test('a value too long for a QR code is a labelled square that says so', async ({ page }, testInfo) => {
+test('a value too long for a QR code is a square that says so, in words a screen reader hears', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const tooLong = page.getByRole('img', { name: 'QR kod', exact: true });
-  await expect(tooLong).toHaveText('Predugo za QR kod');
+  // not an image named like a working code (review of PR #166): its words are read
+  await expect(page.getByRole('img', { name: 'QR kod', exact: true })).toHaveCount(0);
+  const tooLong = page.locator('#qr-too-long');
+  await expect(tooLong).toHaveText('QR kod: Predugo za QR kod');
+  expect(await tooLong.getAttribute('role')).toBeNull();
+  // what the code was for is said to a screen reader only; the eye reads why there is none
+  await expect(tooLong.locator('.uix-visually-hidden')).toHaveText(/^QR kod:\s*$/);
   const box = await tooLong.boundingBox();
   expect(Math.round(box.width)).toBe(160);
   expect(Math.round(box.height)).toBe(160);

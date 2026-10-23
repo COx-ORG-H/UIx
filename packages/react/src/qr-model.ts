@@ -26,8 +26,17 @@ export interface QrMatrix {
 export interface QrEncodeOptions {
   /** Default `M`: survives a crease or a smudge on a printed poster. */
   errorCorrection?: QrErrorCorrection;
-  /** The smallest version to use (1 to 40); a larger one is chosen when the text needs it. */
+  /**
+   * The smallest version to use (1 to 40); a larger one is chosen when the text needs it. A
+   * value that is not a finite number throws a `RangeError` (it is a mistake, not a long text).
+   */
   minVersion?: number;
+  /**
+   * Mark text with characters beyond ASCII as UTF-8 with an ECI 26 designator (12 bits before
+   * the data). Off by default: most scanners read UTF-8 without it and a few old ones misread a
+   * symbol that has one; turn it on for a scanner that assumes ISO 8859-1 otherwise.
+   */
+  eci?: boolean;
   /** Force a mask (0 to 7) instead of the lowest-penalty one; for tests. */
   mask?: number;
 }
@@ -81,11 +90,17 @@ export function qrDataCapacity(version: number, errorCorrection: QrErrorCorrecti
 
 /** Bits a byte-mode segment of `bytes` bytes needs: mode, count, data. */
 const segmentBits = (bytes: number, version: number) => 4 + (version <= 9 ? 8 : 16) + bytes * 8;
+/** The ECI designator for UTF-8: mode 0111, then assignment number 26 in one byte. */
+const ECI_UTF8_BITS = 12;
 
-/** The smallest version that holds `bytes` bytes at a level, or undefined past version 40. */
-export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion = 1): number | undefined {
-  for (let version = Math.max(1, Math.min(40, minVersion)); version <= 40; version += 1) {
-    if (bytes < (version <= 9 ? 256 : 65536) && segmentBits(bytes, version) <= qrDataCapacity(version, errorCorrection) * 8) return version;
+/**
+ * The smallest version that holds `bytes` bytes at a level, or undefined past version 40.
+ * `headerBits` counts bits before the byte segment (12 for an ECI designator).
+ */
+export function qrVersionFor(bytes: number, errorCorrection: QrErrorCorrection, minVersion = 1, headerBits = 0): number | undefined {
+  if (!Number.isFinite(minVersion)) throw new RangeError(`QR: minVersion must be a number from 1 to 40, not ${minVersion}`);
+  for (let version = Math.max(1, Math.min(40, Math.floor(minVersion))); version <= 40; version += 1) {
+    if (bytes < (version <= 9 ? 256 : 65536) && headerBits + segmentBits(bytes, version) <= qrDataCapacity(version, errorCorrection) * 8) return version;
   }
   return undefined;
 }
@@ -152,9 +167,10 @@ function withErrorCorrection(data: readonly number[], version: number, errorCorr
 }
 
 /** Mode, count, data, terminator and padding, as codewords for one version and level. */
-function dataCodewords(bytes: Uint8Array, version: number, errorCorrection: QrErrorCorrection): number[] {
+function dataCodewords(bytes: Uint8Array, version: number, errorCorrection: QrErrorCorrection, eci: boolean): number[] {
   const bits: number[] = [];
   const append = (value: number, length: number) => { for (let i = length - 1; i >= 0; i -= 1) bits.push((value >>> i) & 1); };
+  if (eci) { append(0b0111, 4); append(26, 8); }
   append(0b0100, 4);
   append(bytes.length, version <= 9 ? 8 : 16);
   for (const byte of bytes) append(byte, 8);
@@ -348,10 +364,11 @@ function utf8(text: string): Uint8Array {
 export function encodeQr(text: string, options: QrEncodeOptions = {}): QrMatrix {
   const errorCorrection = options.errorCorrection ?? 'M';
   const bytes = utf8(text);
-  const version = qrVersionFor(bytes.length, errorCorrection, options.minVersion);
+  const eci = options.eci === true && bytes.some((byte) => byte >= 0x80);
+  const version = qrVersionFor(bytes.length, errorCorrection, options.minVersion ?? 1, eci ? ECI_UTF8_BITS : 0);
   if (version === undefined) throw new QrCapacityError(bytes.length, errorCorrection);
   const symbol = new QrSymbol(version, errorCorrection);
-  symbol.drawCodewords(withErrorCorrection(dataCodewords(bytes, version, errorCorrection), version, errorCorrection));
+  symbol.drawCodewords(withErrorCorrection(dataCodewords(bytes, version, errorCorrection, eci), version, errorCorrection));
   let mask = options.mask;
   if (mask === undefined) {
     let best = Infinity;

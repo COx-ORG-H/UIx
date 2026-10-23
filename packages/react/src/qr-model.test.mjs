@@ -130,3 +130,30 @@ test('qrPath: one run per stretch of dark modules, offset by the quiet zone', ()
   assert.ok(runs.every((r) => Number(r[1]) >= 4 && Number(r[2]) >= 4), 'the quiet zone is 4 modules');
   assert.match(qrPath(matrix, 0), /^M0 0h7v1h-7z/, 'the finder’s top row starts the path');
 });
+
+/* Review of PR #166: an optional ECI designator for UTF-8, and a minVersion that is not a number. */
+
+test('eci: non-ASCII text can carry an ECI 26 (UTF-8) designator, and still reads', () => {
+  const text = 'Ćevapi u Sarajevu — 5 KM';
+  const marked = encodeQr(text, { eci: true });
+  const plain = encodeQr(text);
+  assert.notDeepEqual(marked.modules, plain.modules, 'the designator changes the symbol');
+  const image = raster(marked);
+  const read = jsQR(image.data, image.width, image.height, { inversionAttempts: 'dontInvert' });
+  assert.equal(read?.data, text);
+  assert.ok(read.chunks.some((chunk) => chunk.type === 'eci' && chunk.assignmentNumber === 26), 'jsQR saw ECI 26');
+  // ASCII needs no designator: the flag leaves it alone
+  assert.deepEqual(encodeQr('VOUCHER-0042', { eci: true }).modules, encodeQr('VOUCHER-0042').modules);
+  // the 12 bits count: at the edge of a version, the designator moves the text to the next one
+  // version 1 at L holds 17 bytes of byte mode: "a" and eight "č" are exactly that
+  const edge = `a${'č'.repeat(8)}`;
+  assert.equal(qrDataCapacity(1, 'L') * 8, 4 + 8 + 17 * 8 + 4, 'v1-L: 152 bits, room for 17 bytes and 4 spare');
+  assert.equal(encodeQr(edge, { errorCorrection: 'L' }).version, 1);
+  assert.equal(encodeQr(edge, { errorCorrection: 'L', eci: true }).version, 2);
+});
+
+test('minVersion that is not a number is a mistake, not a text too long', () => {
+  assert.throws(() => encodeQr('a', { minVersion: Number.NaN }), RangeError);
+  assert.throws(() => encodeQr('a', { minVersion: Number.POSITIVE_INFINITY }), RangeError);
+  assert.equal(encodeQr('a', { minVersion: 2.7 }).version, 2);
+});

@@ -153,7 +153,7 @@ export type { StarButtonProps } from './components/StarButton.js';
 export { CopyButton } from './components/CopyButton.js';
 export type { CopyButtonProps } from './components/CopyButton.js';
 // A scannable, print-safe QR code from the kit's own encoder (HAR-1251)
-export { QrCode } from './components/QrCode.js';
+export { QrCode, DEFAULT_QR_CODE_LABELS } from './components/QrCode.js';
 export type { QrCodeProps, QrCodeLabels } from './components/QrCode.js';
 export { encodeQr, qrPath, qrDataCapacity, qrVersionFor, QrCapacityError } from './qr-model.js';
 export type { QrMatrix, QrErrorCorrection, QrEncodeOptions } from './qr-model.js';
