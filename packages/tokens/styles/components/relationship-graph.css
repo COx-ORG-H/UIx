@@ -55,6 +55,7 @@
      text at >= 4.5:1 on the chip; a tone is the chip's border, never the words' colour. */
   /* zoomed out, a label keeps its on-screen size: scaled by 1 / zoom about its own centre (React
      sets --uix-graph-label-scale on the stage and places the labels at that size) */
+  .uix-relationship-graph__edge-labels { pointer-events:none; }
   .uix-relationship-graph__edge-label { transform-box:fill-box; transform-origin:center; transform:scale(var(--uix-graph-label-scale, 1)); }
   .uix-relationship-graph__edge-label rect { fill:var(--uix-bg-subtle); stroke:var(--uix-border-strong); stroke-width:1px; }
   .uix-relationship-graph__edge-label[data-tone] rect { stroke:var(--uix-graph-tone); }
