@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Navigation primitives harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/nav-primitives.spec.mjs. Offline: no external fonts or assets. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; gap: var(--uix-space-8); max-width: 60rem; margin: 0 auto; }
+    section { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-3); min-width: 0; }
+    section > h2 { font-size: var(--uix-text-h3); overflow-wrap: anywhere; }
+    /* The 240 px settings column of TENSOR's routing page, and a phone. */
+    .col-240 { width: min(240px, 100%); }
+    .col-320 { width: min(320px, 100%); }
+    .rail { width: 240px; }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

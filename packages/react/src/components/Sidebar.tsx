@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
-import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
+import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes, Ref } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { SearchIcon } from '../icons/components.js';
@@ -120,7 +120,16 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   children?: ReactNode;
 }
 
-export function NavItem({ icon, badge, active, as: Tag = 'a', description, children, className, ...props }: NavItemProps) {
+/**
+ * One navigation row: a link (`as="a"`, default) or, for a row that acts in place (a mode toggle,
+ * an account menu), a `button`. The forwarded ref reaches the rendered `<a>` or `<button>`
+ * (HAR-1810), so a row can anchor a `Popover` (`anchor={ref}`); `popoverTarget` and other button
+ * attributes pass through with `as="button"`.
+ */
+export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItemProps>(function NavItem(
+  { icon, badge, active, as: Tag = 'a', description, children, className, ...props },
+  ref,
+) {
   const text = description == null
     ? <span className="uix-navitem__label">{children}</span>
     : <span className="uix-navitem__text"><span className="uix-navitem__label">{children}</span><span className="uix-navitem__desc">{description}</span></span>;
@@ -129,6 +138,7 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', description, child
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
     return (
       <button
+        ref={ref as Ref<HTMLButtonElement>}
         type="button"
         className={cx('uix-navitem', className)}
         aria-current={active ? 'page' : undefined}
@@ -144,6 +154,7 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', description, child
 
   return (
     <a
+      ref={ref as Ref<HTMLAnchorElement>}
       className={cx('uix-navitem', className)}
       aria-current={active ? 'page' : undefined}
       data-multiline={multiline}
@@ -154,7 +165,8 @@ export function NavItem({ icon, badge, active, as: Tag = 'a', description, child
       {badge != null && <span className="uix-navitem__badge">{badge}</span>}
     </a>
   );
-}
+});
+NavItem.displayName = 'NavItem';
 
 export interface NavGroupProps {
   icon?: ReactNode;
@@ -210,19 +222,24 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
   children?: ReactNode;
 }
 
-export function SubNavItem({ active, as: Tag = 'a', children, className, ...props }: SubNavItemProps) {
+/** A nested navigation row. Like `NavItem`, it forwards its ref to the `<a>` or `<button>` (HAR-1810). */
+export const SubNavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, SubNavItemProps>(function SubNavItem(
+  { active, as: Tag = 'a', children, className, ...props },
+  ref,
+) {
   const cls = cx('uix-navitem uix-subitem', className);
   if (Tag === 'button') {
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
     return (
-      <button type="button" className={cls} aria-current={active ? 'page' : undefined} {...(btnProps as HTMLAttributes<HTMLButtonElement>)}>
+      <button ref={ref as Ref<HTMLButtonElement>} type="button" className={cls} aria-current={active ? 'page' : undefined} {...(btnProps as HTMLAttributes<HTMLButtonElement>)}>
         <span className="uix-navitem__label">{children}</span>
       </button>
     );
   }
   return (
-    <a className={cls} aria-current={active ? 'page' : undefined} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>
+    <a ref={ref as Ref<HTMLAnchorElement>} className={cls} aria-current={active ? 'page' : undefined} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>
       <span className="uix-navitem__label">{children}</span>
     </a>
   );
-}
+});
+SubNavItem.displayName = 'SubNavItem';

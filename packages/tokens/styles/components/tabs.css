@@ -1,14 +1,16 @@
 /* uix tabs — line / enclosed / pill. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-tabs { display: flex; gap: var(--uix-space-1); }
+  /* tabs that do not fit wrap onto another row (overflow="wrap", the default; HAR-1754) rather
+     than squeezing every label; no tab is wider than its row, so one long label wraps inside it */
+  .uix-tabs { display: flex; flex-wrap: wrap; gap: var(--uix-space-1); }
   .uix-tab {
     border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); font-weight: 500;
     color: var(--uix-text-hushed); padding: var(--uix-space-3) var(--uix-space-3); cursor: pointer; position: relative;
     /* long or translated labels wrap (two lines at the 16rem cap) instead of truncating */
-    white-space: normal; max-width: 16rem; text-align: start;
+    white-space: normal; max-width: min(16rem, 100%); overflow-wrap: anywhere; text-align: start;
     transition: color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-tab:hover { color: var(--uix-text); }
+  @media (hover: hover) { .uix-tab:hover { color: var(--uix-text); } }
   .uix-tab[aria-selected="true"] { color: var(--uix-text); }
   .uix-tab:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; border-radius: var(--uix-radius-sm); }
 
@@ -20,6 +22,9 @@
     transform: scaleX(0); transition: transform var(--uix-dur) var(--uix-ease-out);
   }
   .uix-tabs--line .uix-tab[aria-selected="true"]::after { transform: scaleX(1); }
+  /* arrow keys switch tabs many times a minute: the underline moves at once (no slide) while the
+     keyboard is in the row; a pointer choice keeps the short slide */
+  .uix-tabs--line:has(.uix-tab:focus-visible) .uix-tab::after { transition: none; }
 
   /* enclosed */
   .uix-tabs--enclosed { gap: 0; border-bottom: 1px solid var(--uix-border); }

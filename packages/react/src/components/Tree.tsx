@@ -19,6 +19,12 @@ export interface TreeNodeData {
   label: ReactNode;
   /** Plain-text label for keyboard typeahead when `label` is not a string (UIX-A11Y-2). */
   typeaheadLabel?: string;
+  /**
+   * The row's accessible name when `label` is rich (an avatar, a name and a meta line) and only
+   * part of it should be spoken, e.g. the person's name (HAR-1828). By default a row is named by
+   * its own `label`, never by its children.
+   */
+  ariaLabel?: string;
   icon?: ReactNode;
   children?: TreeNodeData[];
   /**
@@ -57,6 +63,18 @@ const syntheticOf = (id: string): { parent: string; kind: 'loading' | 'error' } 
 
 const Ring = () => <span className="uix-spinner uix-spinner--sm" aria-hidden="true" />;
 
+/**
+ * The id of a row's own label (HAR-1828). A treeitem's name would otherwise come from its whole
+ * content, which includes the nested group: "Grace Hopper Alice Lovelace …" once expanded. Node ids
+ * are free text, and an IDREF list is split on spaces, so the id is URI-encoded.
+ */
+const labelId = (treeId: string, nodeId: string) => `${treeId}-label-${encodeURIComponent(nodeId)}`;
+
+/** `aria-label` from `ariaLabel`, else `aria-labelledby` the row's own label. */
+const rowName = (treeId: string, node: TreeNodeData) => (node.ariaLabel
+  ? { 'aria-label': node.ariaLabel }
+  : { 'aria-labelledby': labelId(treeId, node.id) });
+
 export interface TreeNodeProps {
   node: TreeNodeData;
   expanded: Set<string>;
@@ -71,6 +89,8 @@ export interface TreeNodeProps {
   rowToggles?: boolean;
   /** Ids of nodes whose children are loading (`aria-busy`). */
   busy?: ReadonlySet<string>;
+  /** Scopes the ids that name each row by its own label (HAR-1828). Set by `Tree`. */
+  treeId?: string;
 }
 
 /**
@@ -79,13 +99,14 @@ export interface TreeNodeProps {
  * child list as `role="group"`. The treeitem itself is the focusable element (roving tabindex),
  * so the row is a plain, presentational span (UIX-FIX-04).
  */
-function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1, rowToggles = true, busy }: TreeNodeProps) {
+function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, onSelect, onFocusNode, level = 1, rowToggles = true, busy, treeId = 'uix-tree' }: TreeNodeProps) {
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const isExpanded = expanded.has(node.id);
 
   return (
     <li
       role="treeitem"
+      {...rowName(treeId, node)}
       aria-level={level}
       aria-expanded={hasChildren ? isExpanded : undefined}
       aria-selected={selectable && !syntheticOf(node.id) ? selected === node.id : undefined}
@@ -117,7 +138,7 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
           </button>
         ) : <span className="uix-tree__toggle" />}
         {node.icon && <span aria-hidden="true">{node.icon}</span>}
-        <span className="uix-tree__label">{node.label}</span>
+        <span id={labelId(treeId, node.id)} className="uix-tree__label">{node.label}</span>
       </span>
       {hasChildren && isExpanded && (
         <ul role="group" className="uix-tree__group">
@@ -135,6 +156,7 @@ function TreeNode({ node, expanded, selected, selectable, tabbableId, onToggle, 
               level={level + 1}
               rowToggles={rowToggles}
               busy={busy}
+              treeId={treeId}
             />
           ))}
         </ul>
@@ -380,6 +402,7 @@ export function Tree({
           level={1}
           rowToggles={rowToggles}
           busy={loading}
+          treeId={treeId}
         />
       ))}
     </ul>
@@ -490,6 +513,7 @@ function VirtualTreeView({
           <li
             key={f.node.id}
             role="treeitem"
+            {...rowName(treeId, f.node)}
             aria-level={f.level}
             aria-setsize={f.setsize}
             aria-posinset={f.posinset}
@@ -523,7 +547,7 @@ function VirtualTreeView({
           </button>
         ) : <span className="uix-tree__toggle" />}
               {f.node.icon && <span aria-hidden="true">{f.node.icon}</span>}
-              <span className="uix-tree__label">{f.node.label}</span>
+              <span id={labelId(treeId, f.node.id)} className="uix-tree__label">{f.node.label}</span>
             </span>
           </li>
         );

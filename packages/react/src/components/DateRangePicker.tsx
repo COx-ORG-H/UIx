@@ -227,7 +227,7 @@ function DateRangeField(props: RangeCalendarProps) {
   const valueId = `${uid}-value`;
   const anchorRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { open, hide, triggerProps } = useFieldPopover(popoverId, () => triggerRef.current?.focus({ preventScroll: true }), onOpenChange);
+  const { open, hide, onFieldKeyDown, triggerProps } = useFieldPopover(popoverId, () => triggerRef.current?.focus({ preventScroll: true }), onOpenChange);
   // A `<label htmlFor>` replaces the trigger's own text as its name; the range is then its description.
   const [labelled, setLabelled] = useState(false);
   useEffect(() => { setLabelled((triggerRef.current?.labels?.length ?? 0) > 0); }, [id]);
@@ -243,14 +243,9 @@ function DateRangeField(props: RangeCalendarProps) {
 
   return <div
     ref={anchorRef} className={cx('uix-date-range-field', className)}
-    onKeyDown={(event) => {
-      // Escape while the months are open belongs to the field, also in the moment before focus
-      // has moved from the trigger into them.
-      if (event.key !== 'Escape' || !open) return;
-      event.stopPropagation();
-      event.preventDefault();
-      hide();
-    }}
+    // Escape while the months are open belongs to the field, also in the moment before focus
+    // has moved from the trigger into them and before the popover's `toggle` arrived.
+    onKeyDown={onFieldKeyDown}
   >
     <button
       ref={triggerRef} type="button" id={id} disabled={disabled}

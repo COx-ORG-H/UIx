@@ -12,14 +12,16 @@ import AxeBuilder from '@axe-core/playwright';
 
 const HARNESS = '/tests/search-bar/harness.html';
 const GATED = new Set(['serious', 'critical']);
+/** The theme of a project: `light` / `dark`, and light in the cross-browser projects (HAR-2417). */
+const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'light');
 
 const open = async (page, testInfo, viewport) => {
   if (viewport) await page.setViewportSize(viewport);
   await page.addInitScript((t) => {
     try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
-  }, testInfo.project.name);
+  }, themeOf(testInfo));
   await page.goto(HARNESS, { waitUntil: 'networkidle' });
-  await expect(page.locator('html')).toHaveAttribute('data-theme', testInfo.project.name);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', themeOf(testInfo));
   await expect(page.locator('#portal')).toBeVisible();
 };
 const record = (page, key) => page.evaluate((k) => window.__searchBar[k] ?? { submits: [], clears: 0, formSubmits: 0, drawerCloses: 0 }, key);

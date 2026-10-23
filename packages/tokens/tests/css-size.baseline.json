@@ -277,9 +277,9 @@
       "brotli": 530
     },
     "styles/components/modal.css": {
-      "raw": 3993,
-      "gzip": 1287,
-      "brotli": 1049
+      "raw": 4273,
+      "gzip": 1392,
+      "brotli": 1136
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -312,9 +312,9 @@
       "brotli": 1273
     },
     "styles/components/popover.css": {
-      "raw": 2524,
-      "gzip": 929,
-      "brotli": 744
+      "raw": 2856,
+      "gzip": 1032,
+      "brotli": 831
     },
     "styles/components/progress.css": {
       "raw": 2106,
@@ -382,9 +382,9 @@
       "brotli": 2182
     },
     "styles/components/sidebar.css": {
-      "raw": 14069,
-      "gzip": 3306,
-      "brotli": 2809
+      "raw": 14151,
+      "gzip": 3313,
+      "brotli": 2816
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -442,9 +442,9 @@
       "brotli": 4385
     },
     "styles/components/tabs.css": {
-      "raw": 4577,
-      "gzip": 1381,
-      "brotli": 1171
+      "raw": 5107,
+      "gzip": 1621,
+      "brotli": 1349
     },
     "styles/components/tag-input.css": {
       "raw": 2227,
@@ -477,9 +477,9 @@
       "brotli": 1077
     },
     "styles/components/tree.css": {
-      "raw": 2982,
-      "gzip": 1150,
-      "brotli": 935
+      "raw": 3166,
+      "gzip": 1241,
+      "brotli": 1010
     },
     "styles/components/typography.css": {
       "raw": 1969,
@@ -497,9 +497,9 @@
       "brotli": 1958
     },
     "styles/forced-colors.css": {
-      "raw": 7398,
-      "gzip": 2272,
-      "brotli": 1915
+      "raw": 7779,
+      "gzip": 2350,
+      "brotli": 1992
     },
     "styles/motion.css": {
       "raw": 5106,
