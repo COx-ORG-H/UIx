@@ -33,10 +33,12 @@
 
   /* each tone's solid, for the quiet treatments below, where the dot is the only hue (HAR-1563) */
   .uix-pill--neutral, .uix-pill--muted, .uix-pill--p5 { --tone-solid: var(--uix-neutral-solid); }
-  .uix-pill--success, .uix-pill--sla-ok { --tone-solid: var(--uix-success-solid); }
+  /* the pale hues mix 40 % of their text role in, so a light-mode dot clears 3:1 on the surface
+     (success 2.54 -> 3.38, warning 2.15 -> 3.32, amber 2.94 -> 4.09) and a dark one stays calm */
+  .uix-pill--success, .uix-pill--sla-ok { --tone-solid: color-mix(in srgb, var(--uix-success-solid) 60%, var(--uix-success-text)); }
   .uix-pill--info, .uix-pill--progress, .uix-pill--p4 { --tone-solid: var(--uix-info-solid); }
-  .uix-pill--warning, .uix-pill--p2 { --tone-solid: var(--uix-warning-solid); }
-  .uix-pill--p3 { --tone-solid: var(--uix-amber); }
+  .uix-pill--warning, .uix-pill--p2 { --tone-solid: color-mix(in srgb, var(--uix-warning-solid) 60%, var(--uix-warning-text)); }
+  .uix-pill--p3 { --tone-solid: color-mix(in srgb, var(--uix-amber) 60%, var(--uix-amber-text)); }
   .uix-pill--danger, .uix-pill--critical, .uix-pill--p1 { --tone-solid: var(--uix-danger-solid); }
   .uix-pill--attention, .uix-pill--sla-at-risk { --tone-solid: var(--uix-attention-solid); }
   .uix-pill--overdue, .uix-pill--sla-breached { --tone-solid: var(--uix-overdue-solid); }

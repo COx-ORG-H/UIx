@@ -97,3 +97,23 @@ for (const dark of [false, true]) {
     assert.ok(contrast(over(c("neutral-text"), surface), surface) >= 4.5);
   });
 }
+
+// Review of #165: in the dot and outline treatments the dot is the only mark of the tone, so every
+// tone's dot clears 3:1 on the surface in both themes (the pale light solids were 2.06 to 2.82).
+for (const dark of [false, true]) {
+  test(`${dark ? "dark" : "light"}: every pill dot (--tone-solid) is at least 3:1 on the surface`, () => {
+    const scope = scopeFor([], dark);
+    const surface = evaluate("var(--uix-surface)", scope);
+    const low = [];
+    let rules = 0;
+    for (const m of pill.matchAll(/([^{}]+)\{\s*--tone-solid:\s*([^;]+);\s*\}/g)) {
+      const value = m[2].replace(/var\(--uix-([\w-]+)\)/g, (_, n) => `var(--uix-${n})`);
+      const colour = evaluate(value, scope);
+      const ratio = contrast(over(colour, surface), surface);
+      if (ratio < 3) low.push(`${m[1].trim()}: ${ratio.toFixed(2)}`);
+      rules += 1;
+    }
+    assert.ok(rules >= 8, `found ${rules} --tone-solid rules`);
+    assert.deepEqual(low, []);
+  });
+}
