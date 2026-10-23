@@ -13,7 +13,11 @@ const committed = readFileSync(SPECIMEN_MODULE, 'utf8');
 const specimens = await renderDisplaySpecimens();
 
 test('the committed specimens are exactly what the components render today', () => {
-  assert.equal(displaySpecimenModule(specimens), committed, 'packages/tokens/docs/display-specimens.js is out of date — run node packages/react/scripts/render-display-specimens.mjs');
+  const rendered = displaySpecimenModule(specimens);
+  // On a mismatch, say where: the module is one long line per route and an assertion diff cuts it.
+  const at = [...rendered].findIndex((char, i) => char !== committed[i]);
+  const where = at === -1 ? '' : ` First difference at ${at}: rendered …${rendered.slice(Math.max(0, at - 80), at + 80)}… committed …${committed.slice(Math.max(0, at - 80), at + 80)}…`;
+  assert.ok(rendered === committed, `packages/tokens/docs/display-specimens.js is out of date — run node packages/react/scripts/render-display-specimens.mjs.${where}`);
 });
 
 test('every state named in a caption is on the page', () => {
