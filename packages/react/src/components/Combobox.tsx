@@ -281,8 +281,11 @@ export function Combobox({
             <Fragment key={`s${i}`}>{section.entries.map(renderEntry)}</Fragment>
           )))}
         </div>
-        {entries.length === 0 && <div className="uix-select__state" role="status">{emptyLabel}</div>}
+        {entries.length === 0 && <div className="uix-select__state">{emptyLabel}</div>}
       </div>
+      {/* Always mounted, so "no match" is announced when it appears (a live region that mounts with
+          its text in it is often not read). */}
+      <span className="uix-visually-hidden" role="status" aria-live="polite">{open && entries.length === 0 ? emptyLabel : ''}</span>
     </div>
   );
 }

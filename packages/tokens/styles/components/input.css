@@ -70,6 +70,8 @@
   .uix-input-group--has-action > .uix-input { padding-right: 40px; }
   .uix-input-group--has-action > .uix-input--sm { padding-right: 32px; }
   .uix-input-group--has-action > .uix-input--lg { padding-right: 48px; }
+  /* at lg (a public page) the 36 px button gets a 44 px target without a bigger look */
+  .uix-input-group:has(> .uix-input--lg) > .uix-input-group__action::before { content: ""; position: absolute; inset: -4px; }
 
   /* OtpInput (HAR-1376): ONE native input (screen readers, autofill and paste see one field)
      laid transparently over cells that draw its characters; the cell at the caret shows the ring */
@@ -78,6 +80,7 @@
   .uix-otp {
     --uix-otp-cells: 6; --uix-otp-seps: 0;
     position: relative; display: flex; gap: var(--uix-space-2); width: 100%;
+    direction: ltr; /* a code reads left to right, also in an RTL page */
     max-width: calc(var(--uix-otp-cells) * 44px + (var(--uix-otp-cells) + var(--uix-otp-seps) - 1) * var(--uix-space-2) + var(--uix-otp-seps) * 8px);
   }
   .uix-otp__input {
@@ -87,7 +90,7 @@
   }
   .uix-otp__input:disabled { cursor: not-allowed; }
   .uix-otp__cell {
-    display: grid; place-items: center; flex: 1 1 0; min-width: 24px; height: 44px;
+    display: grid; place-items: center; flex: 1 1 0; min-width: 20px; height: 44px;
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
     color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; font-variant-numeric: tabular-nums;
     /* no transition: the active cell moves on every keystroke, and typing gets no animation */

@@ -215,7 +215,7 @@ export function SearchSuggest({
   const [activeState, setActive] = useState(-1);
   // The spinner (and the list's loading row) wait 300 ms and then stay 500 ms (the kit's delayed
   // pending); aria-busy and the Enter guard follow `loading` at once.
-  const showSpinner = useDelayedPending(loading);
+  const showSpinner = useDelayedPending(loading) && !disabled;
   // A <label for> names the input: then no aria-label overrides it (HAR-1834).
   const [labelled, setLabelled] = useState(false);
   useEffect(() => { setLabelled((fieldRef.current?.labels?.length ?? 0) > 0); });
@@ -235,7 +235,7 @@ export function SearchSuggest({
   // flashes "no match" for a search that has not answered yet.
   const current = { empty: hasText && error == null && empty != null, error: error ?? null };
   const settled = useRef<{ empty: boolean; error: ReactNode }>({ empty: false, error: null });
-  if (!loading) settled.current = current;
+  useEffect(() => { if (!loading) settled.current = current; });
   const state = options.length > 0 || showLoading ? null : loading ? settled.current : current;
   const shownError = state?.error ?? null;
   const showEmpty = !!state?.empty && shownError == null;

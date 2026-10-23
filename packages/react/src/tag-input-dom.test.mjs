@@ -180,7 +180,7 @@ test('Field names the input; name submits each tag; provider words; disabled has
   const v = mount({ name: 'labels', 'aria-label': undefined }, (el) => h(ui.UixLabelsProvider, { labels: { tagInput: { remove: '{tag} entfernen' } } },
     h(ui.Field, { label: 'Labels', hint: 'Enter adds a label.' }, el)));
   assert.equal(v.host.querySelector('label').htmlFor, v.input().id);
-  assert.match(document.getElementById(v.input().getAttribute('aria-describedby')).textContent, /Enter adds a label/);
+  assert.match(v.input().getAttribute('aria-describedby').split(' ').map((id) => document.getElementById(id).textContent).join(' '), /Enter adds a label. 1 added/);
   assert.deepEqual([...v.host.querySelectorAll('input[type="hidden"][name="labels"]')].map((i) => i.value), ['network']);
   assert.equal(v.removes()[0].getAttribute('aria-label'), 'network entfernen');
   v.unmount();

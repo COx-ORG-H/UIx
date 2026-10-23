@@ -297,6 +297,8 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
   minuteStep?: number;
   /** Words of the time field (its list button, list and messages); `UixLabelsProvider` `timePicker` too. */
   timeLabels?: Partial<TimePickerLabels>;
+  /** `true` writes the time as 2:30 PM, `false` as 14:30, whatever the locale. */
+  hour12?: boolean;
   /** The time a date gets when it is chosen before any time. Default `'00:00'`. */
   defaultTime?: string;
   labels?: Partial<DateTimePickerLabels>;
@@ -309,7 +311,7 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
  * Clearing the date clears the value; a time alone is not a value.
  */
 export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(function DateTimePicker({
-  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 15, timeLabels, defaultTime = '00:00', min, max, name, id: idProp,
+  value, onValueChange, timeZone, timeZoneLabel, minuteStep = 15, timeLabels, hour12, defaultTime = '00:00', min, max, name, id: idProp,
   'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy,
   labels: labelOverrides, locale: localeProp, size = 'md', disabled, readOnly, required, className, style, ...dateProps
 }, forwardedRef) {
@@ -373,10 +375,12 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
       }}
     />
     <TimePicker
-      className="uix-date-time-picker__time" value={shownTime || null} minuteStep={step} locale={locale} size={size}
+      className="uix-date-time-picker__time" value={shownTime || null} minuteStep={step} locale={locale} hour12={hour12} size={size}
       disabled={disabled} readOnly={readOnly} required={required && !!date}
       invalid={!!dateProps.invalid || dateProps['aria-invalid'] === true || dateProps['aria-invalid'] === 'true'}
-      aria-label={timeName} aria-describedby={zoneText ? zoneId : undefined} labels={timeLabels}
+      aria-label={timeName} labels={timeLabels}
+      // the field's hint and error describe the time too, then the zone
+      aria-describedby={[ariaDescribedBy, zoneText ? zoneId : undefined].filter(Boolean).join(' ') || undefined}
       onValueChange={(next) => {
         if (date) onValueChange(joinDateTime(date, next ?? '', defaultTime));
         else setPendingTime(next ?? '');

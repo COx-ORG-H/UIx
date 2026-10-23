@@ -97,7 +97,8 @@ function dayPeriods(locale?: string | readonly string[]): { am: string[]; pm: st
  * read on the 24-hour clock. Returns `HH:mm`, or `null` when the text is not a time.
  */
 export function parseTimeInput(text: string, locale?: string | readonly string[]): string | null {
-  let rest = text.trim().toLowerCase().replace(/\s+/g, ' ');
+  // NFKC: full-width digits and colons from a CJK keyboard ("１４：３０") read as plain ones.
+  let rest = text.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
   if (!rest) return null;
   let period: 'am' | 'pm' | null = null;
   const { am, pm } = dayPeriods(locale);
@@ -137,8 +138,13 @@ export function parseTimeInput(text: string, locale?: string | readonly string[]
   return `${pad(hour)}:${pad(minute)}`;
 }
 
-/** Whether `value` is outside `min` / `max` (both `HH:mm`, inclusive). */
+/** Whether `min` is after `max`: an overnight range (22:00 to 06:00) that wraps round midnight. */
+export const isOvernightRange = (min?: string, max?: string): boolean =>
+  !!min && !!max && isValidTimeKey(min) && isValidTimeKey(max) && min > max;
+
+/** Whether `value` is outside `min` / `max` (both `HH:mm`, inclusive; `min` after `max` wraps midnight). */
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean {
+  if (isOvernightRange(min, max)) return value < min! && value > max!;
   return (!!min && isValidTimeKey(min) && value < min) || (!!max && isValidTimeKey(max) && value > max);
 }
 
@@ -150,6 +156,11 @@ export function stepTime(value: string | null, delta: number, min?: string, max?
   const lo = min && isValidTimeKey(min) ? timeToMinutes(min) : null;
   const hi = max && isValidTimeKey(max) ? timeToMinutes(max) : null;
   if (!value || !isValidTimeKey(value)) return minutesToTime(lo ?? 0);
+  if (lo !== null && hi !== null && lo > hi) {
+    // overnight: wrap round midnight, and stop at the end the step runs into
+    const wrapped = (((timeToMinutes(value) + delta) % 1440) + 1440) % 1440;
+    return minutesToTime(wrapped >= lo || wrapped <= hi ? wrapped : delta > 0 ? hi : lo);
+  }
   let next = timeToMinutes(value) + delta;
   if (lo === null && hi === null) return minutesToTime(next);
   if (lo !== null && next < lo) next = lo;
@@ -163,6 +174,8 @@ export function timeSlots(step: number, min?: string, max?: string): string[] {
   const lo = min && isValidTimeKey(min) ? timeToMinutes(min) : 0;
   const hi = max && isValidTimeKey(max) ? timeToMinutes(max) : 1439;
   const out: string[] = [];
-  for (let m = lo; m <= hi; m += size) out.push(minutesToTime(m));
+  // overnight (22:00 to 06:00): from min through midnight to max, in that order
+  const end = lo > hi ? hi + 1440 : hi;
+  for (let m = lo; m <= end; m += size) out.push(minutesToTime(m));
   return out;
 }

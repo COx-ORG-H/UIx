@@ -67,7 +67,7 @@ function Tags() {
   return (
     <section id="checkbox-group" aria-label="Checkbox group" style={{ display: 'grid', gap: 'var(--uix-space-5)' }}>
       <div className="uix-card" style={{ maxWidth: '40rem' }}><div className="uix-card__body">
-        <CheckboxGroup id="tags" label="Curated tags" hint="Shown on the book's public page." columns={3} required
+        <CheckboxGroup id="curated-tags" label="Curated tags" hint="Shown on the book's public page." columns={3} required
           error={chosen.length ? undefined : 'Choose at least one tag.'}>
           {SHELVES.map((tag) => (
             <Checkbox key={tag} name="tags" value={tag} label={tag} checked={chosen.includes(tag)} onChange={() => toggle(tag)} />
@@ -99,7 +99,7 @@ function SignIn() {
           event.preventDefault();
           window.__posted.signIn = [...new FormData(event.currentTarget).entries()].map(([k, v]) => `${k}=${String(v)}`);
         }}
-        style={{ display: 'grid', gap: 'var(--uix-space-2)' }}
+        style={{ display: 'grid', gap: 'var(--uix-space-4)' }}
       >
         <Field label="Email"><Input id="email" name="email" type="email" autoComplete="username" defaultValue="ada@example.com" /></Field>
         <Field label="Password" hint="At least 12 characters." required>
@@ -249,7 +249,7 @@ function FreeText() {
   return (
     <section id="free-text" aria-label="Free text">
       <form id="device-form" onSubmit={(event) => { event.preventDefault(); window.__submits += 1; window.__posted.device = [...new FormData(event.currentTarget).entries()].map(([k, v]) => `${k}=${String(v)}`); }}
-        style={{ display: 'grid', gap: 'var(--uix-space-2)', maxWidth: '24rem' }}>
+        style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '24rem' }}>
         <label className="uix-field__label" htmlFor="maker">Manufacturer</label>
         <SearchSuggest freeText inputId="maker" name="maker" label="Manufacturer" value={maker} onValueChange={setMaker} options={options} strategy="fixed" />
         <Button type="submit" id="device-submit">Save device</Button>
@@ -272,7 +272,7 @@ function Pickers() {
   const [locked, setLocked] = useState<(typeof STAFF)[number] | null>(null);
   const [approver, setApprover] = useState<(typeof STAFF)[number] | null>(null);
   return (
-    <section id="pickers" aria-label="Pickers" style={{ display: 'grid', gap: 'var(--uix-space-2)', maxWidth: '26rem' }}>
+    <section id="pickers" aria-label="Pickers" style={{ display: 'grid', gap: 'var(--uix-space-4)', maxWidth: '26rem' }}>
       <Field label="Owner" htmlFor="owner"><EntityPicker id="owner" label="Owner" value={owner} onValueChange={setOwner} onSearch={findStaff} delay={0} /></Field>
       <Field label="Approver" htmlFor="approver" error="Choose an approver." required>
         <EntityPicker id="approver" label="Approver" value={approver} onValueChange={setApprover} onSearch={findStaff} invalid />

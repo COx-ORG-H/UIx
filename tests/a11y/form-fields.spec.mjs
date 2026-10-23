@@ -40,6 +40,8 @@ test.describe('sizes (HAR-1812)', () => {
       expect(select.top).toBe(input.top);
       expect(button.top).toBe(input.top);
     }
+    // N3: the lg trigger keeps 44 px for its chevron, not 64 px of text room
+    expect(await page.locator('#sel-lg').evaluate((el) => parseFloat(getComputedStyle(el).paddingRight))).toBe(44);
   });
 
   test('lg text is larger than md, and an lg InputGroup keeps its text clear of both icons', async ({ page }, testInfo) => {
@@ -98,7 +100,7 @@ test.describe('CheckboxGroup (HAR-1799)', () => {
 
   test('three columns in a wide card, one at 320 px; long words wrap inside their column', async ({ page }, testInfo) => {
     await open(page, testInfo, 'checkbox-group');
-    const columns = () => page.locator('#tags .uix-checkbox-group__options').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    const columns = () => page.locator('#curated-tags .uix-checkbox-group__options').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
     expect(await columns()).toBe(3);
     await page.setViewportSize({ width: 320, height: 800 });
     expect(await columns()).toBe(1);
@@ -112,7 +114,7 @@ test.describe('CheckboxGroup (HAR-1799)', () => {
     });
     expect(narrow).toBeLessThanOrEqual(0);
     // the box stays on the first line of a label that wraps
-    const label = page.locator('#tags .uix-checkbox', { hasText: 'Zeitgeschichte' });
+    const label = page.locator('#curated-tags .uix-checkbox', { hasText: 'Zeitgeschichte' });
     const [boxTop, labelTop, labelHeight] = await label.evaluate((el) => [el.querySelector('.uix-checkbox__box').getBoundingClientRect().top, el.getBoundingClientRect().top, el.getBoundingClientRect().height]);
     expect(labelHeight).toBeGreaterThan(30);
     expect(boxTop - labelTop).toBeLessThan(6);
@@ -145,6 +147,52 @@ test.describe('PasswordInput and OtpInput (HAR-1376)', () => {
     await expect(field).toHaveAttribute('type', 'password');
     await expect(page.locator('#password-lg ~ .uix-input-group__action')).toHaveAccessibleName('Prikaži lozinku');
     await expect(page.locator('#password-off ~ .uix-input-group__action')).toBeDisabled();
+  });
+
+  test('B1: typing goes on at the caret after the toggle (Chrome resets the selection when type changes)', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    const field = page.locator('#password');
+    const toggle = page.locator('#password ~ .uix-input-group__action');
+    await field.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('X');
+    await toggle.click();
+    await page.keyboard.type('Y');
+    await expect(field).toHaveValue('correct horse batteryXY');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await toggle.click();
+    await page.keyboard.type('Z');
+    await expect(field).toHaveValue('cZorrect horse batteryXY');
+  });
+
+  test('S2: at lg the toggle is a 44 px target that looks 36 px', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    const hit = await page.locator('#password-lg ~ .uix-input-group__action').evaluate((button) => {
+      const r = button.getBoundingClientRect();
+      const y = r.top + r.height / 2;
+      const x = r.left + r.width / 2;
+      const at = (px, py) => button.contains(document.elementFromPoint(px, py));
+      return { size: Math.round(r.width), left: at(r.left - 3, y), top: at(x, r.top - 3), bottom: at(x, r.bottom + 3) };
+    });
+    expect(hit).toEqual({ size: 36, left: true, top: true, bottom: true });
+  });
+
+  test('S5 / N1: the code reads left to right in an RTL page; 8 cells fit a 240 px card', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+    await page.locator('#otp').focus();
+    await page.keyboard.type('12');
+    const [first, second] = await page.locator('#otp ~ .uix-otp__cell').evaluateAll((cells) => cells.slice(0, 2).map((c) => ({ x: c.getBoundingClientRect().left, t: c.textContent })));
+    expect(first.t).toBe('1');
+    expect(first.x).toBeLessThan(second.x);
+    await page.evaluate(() => { document.documentElement.dir = 'ltr'; });
+    const overflow = await page.locator('#otp-alpha').evaluate((input) => {
+      const box = input.parentElement;
+      box.style.width = '240px';
+      return box.scrollWidth - box.clientWidth;
+    });
+    expect(overflow).toBeLessThanOrEqual(0);
   });
 
   test('submitting the form hides a revealed password first and posts the value', async ({ page }, testInfo) => {
@@ -422,7 +470,7 @@ test.describe('TagInput (HAR-1377)', () => {
   test('type, Enter, comma, a suggestion, a refusal; submit posts each tag', async ({ page }, testInfo) => {
     await open(page, testInfo, 'tag-input');
     const field = page.getByRole('combobox', { name: 'Labels' });
-    await expect(field).toHaveAccessibleDescription('Enter or a comma adds a label.');
+    await expect(field).toHaveAccessibleDescription('Enter or a comma adds a label. 3 added');
     await field.click();
     await page.keyboard.type('printer');
     await page.keyboard.press('Enter');

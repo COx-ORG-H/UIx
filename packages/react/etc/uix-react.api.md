@@ -1353,6 +1353,7 @@ export interface DateTimePickerLabels extends DatePickerLabels {
 // @public (undocumented)
 export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'onValueChange' | 'labels' | 'min' | 'max'> {
     defaultTime?: string;
+    hour12?: boolean;
     // (undocumented)
     labels?: Partial<DateTimePickerLabels>;
     // (undocumented)
@@ -2636,6 +2637,9 @@ export function isDateUnavailable(date: string, options: {
 
 // @public
 export function isFilterEmpty(value: FilterValue | undefined): boolean;
+
+// @public
+export const isOvernightRange: (min?: string, max?: string) => boolean;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
@@ -5928,7 +5932,9 @@ export function TagInput(input: TagInputProps): react.JSX.Element;
 // @public
 export interface TagInputLabels {
     added: string;
+    count: string;
     duplicate: string;
+    list: string;
     max: string;
     remove: string;
     removed: string;
@@ -6162,7 +6168,7 @@ export interface TimeGridSegment {
 }
 
 // @public
-export type TimeInputProblem = 'format' | 'early' | 'late';
+export type TimeInputProblem = 'format' | 'early' | 'late' | 'outside';
 
 // @public
 export function Timeline(input: TimelineProps): react.JSX.Element;
@@ -6252,6 +6258,7 @@ export interface TimePickerLabels {
     list: string;
     open: string;
     openSelected: string;
+    outside: string;
     tooEarly: string;
     tooLate: string;
 }

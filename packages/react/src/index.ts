@@ -421,7 +421,7 @@ export type { DatePart } from './date-field-model.js';
 export { TimePicker, DEFAULT_TIME_PICKER_LABELS } from './components/TimePicker.js';
 export type { TimeInputProblem, TimePickerLabels, TimePickerProps } from './components/TimePicker.js';
 export {
-  formatTimeKey, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes, uses12Hour,
+  formatTimeKey, isOvernightRange, isTimeOutOfRange, isValidTimeKey, minutesToTime, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes, uses12Hour,
 } from './time-field-model.js';
 export {
   addCalendarDays, addCalendarMonths, addZonedDays, buildMonthGrid, cachedDateTimeFormat, enumerateDateKeys, enumerateDateSpan,

@@ -26,6 +26,10 @@ export interface TagInputLabels {
   max: string;
   /** Name of the suggestion list. */
   suggestions: string;
+  /** Name of the list of chips. */
+  list: string;
+  /** Part of the field's description: how many tags there are; `{count}`. */
+  count: string;
 }
 
 export const DEFAULT_TAG_INPUT_LABELS: TagInputLabels = {
@@ -35,6 +39,8 @@ export const DEFAULT_TAG_INPUT_LABELS: TagInputLabels = {
   duplicate: '{tag} is already added.',
   max: 'You can add up to {max}.',
   suggestions: 'Suggestions',
+  list: 'Tags',
+  count: '{count} added',
 };
 
 export interface TagInputProps {
@@ -114,26 +120,35 @@ export function TagInput({
    * one that mounts with its text in it is often not read). */
   const refuse = (reason: string) => { setMessage(reason); setAnnouncement(reason); };
 
-  /** Add one or more tags; returns whether the field may be emptied. */
-  const add = (raw: readonly string[]): boolean => {
+  /**
+   * Add one or more tags, in order, up to the first refusal (a duplicate, `maxTags`, `validate`):
+   * those before it are added, and the refused one with the rest comes back as the text to keep
+   * in the field. Returns that text ('' when every piece was added).
+   */
+  const add = (raw: readonly string[]): string => {
     let next = [...value];
     const added: string[] = [];
-    for (const piece of raw) {
-      const tag = piece.trim();
+    let refusedAt = -1;
+    let reason = '';
+    for (let i = 0; i < raw.length; i += 1) {
+      const tag = raw[i]!.trim();
       if (!tag) continue;
-      if (next.some((v) => same(v, tag))) { refuse(fillLabel(labels.duplicate, { tag })); return false; }
-      if (maxTags != null && next.length >= maxTags) { refuse(fillLabel(labels.max, { max: maxTags })); return false; }
-      const refusal = validate?.(tag, next);
-      if (refusal) { refuse(refusal); return false; }
+      if (next.some((v) => same(v, tag))) reason = fillLabel(labels.duplicate, { tag });
+      else if (maxTags != null && next.length >= maxTags) reason = fillLabel(labels.max, { max: maxTags });
+      else reason = validate?.(tag, next) || '';
+      if (reason) { refusedAt = i; break; }
       next = [...next, tag];
       added.push(tag);
     }
-    if (!added.length) return true;
-    setMessage(null);
-    setOpen(false);
-    setAnnouncement(fillLabel(labels.added, { tag: added.join(', ') }));
-    onValueChange(next);
-    return true;
+    if (added.length) {
+      setOpen(false);
+      setAnnouncement(fillLabel(labels.added, { tag: added.join(', ') }));
+      onValueChange(next);
+    }
+    if (refusedAt < 0) { setMessage(null); return ''; }
+    refuse(reason);
+    const joiner = separators.includes(',') ? ', ' : ' ';
+    return raw.slice(refusedAt).map((piece) => piece.trim()).filter(Boolean).join(joiner);
   };
 
   const remove = (index: number) => {
@@ -157,7 +172,8 @@ export function TagInput({
   }, [focusChip, value]);
 
   const commitText = (extra: readonly string[] = []) => {
-    if (add([text, ...extra])) { setText(''); setActive(-1); }
+    setText(add([text, ...extra]));
+    setActive(-1);
   };
 
   const onInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -180,7 +196,7 @@ export function TagInput({
     if (separators.includes(key)) {
       if (key === 'Enter' && showing && active >= 0) {
         event.preventDefault();
-        if (add([matches[active]!])) { setText(''); setActive(-1); }
+        if (!add([matches[active]!])) { setText(''); setActive(-1); }
         return;
       }
       // Enter in an empty field is left to the form.
@@ -219,8 +235,8 @@ export function TagInput({
     if (!split.test(pasted)) return;
     event.preventDefault();
     const pieces = pasted.split(split);
-    // The text already typed joins the first piece.
-    if (add([`${text}${pieces[0] ?? ''}`, ...pieces.slice(1)])) setText('');
+    // The text already typed joins the first piece; what is refused stays in the field.
+    setText(add([`${text}${pieces[0] ?? ''}`, ...pieces.slice(1)]));
   };
 
   /* ---- the suggestion popup: the top layer, sized to the field, placed by useAnchoredPosition */
@@ -244,7 +260,8 @@ export function TagInput({
   }, [showing, active]);
 
   const isInvalid = !!invalid || ariaInvalid === true || ariaInvalid === 'true';
-  const describedBy = [ariaDescribedBy, message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
+  const countId = `${uid}-count`;
+  const describedBy = [ariaDescribedBy, message ? messageId : undefined, value.length ? countId : undefined].filter(Boolean).join(' ') || undefined;
   // `popover` is a valid HTML attribute but absent from React 18's DOM types.
   const popoverAttr = { popover: 'manual' } as Record<string, string>;
 
@@ -259,8 +276,10 @@ export function TagInput({
         onMouseDown={(event) => { if (event.target === event.currentTarget) { event.preventDefault(); inputRef.current?.focus(); } }}
         onBlur={(event) => { if (!boxRef.current?.contains(event.relatedTarget as Node | null)) { setOpen(false); setActive(-1); } }}
       >
+        {/* the chips are a named list (display: contents keeps them in the field's wrapping row) */}
+        {value.length > 0 && <span role="list" aria-label={labels.list} className="uix-taginput__tags">
         {value.map((tag, index) => (
-          <span key={`${tag}-${index}`} className="uix-tag">
+          <span key={`${tag}-${index}`} className="uix-tag" role="listitem">
             {tag}
             {!disabled && (
               <button
@@ -278,6 +297,7 @@ export function TagInput({
             )}
           </span>
         ))}
+        </span>}
         <input
           ref={inputRef}
           id={id}
@@ -304,7 +324,7 @@ export function TagInput({
             // a comma typed (or a separator pasted on a phone keyboard) adds what came before it
             if (separators.includes(',') && next.includes(',')) {
               const pieces = next.split(',');
-              if (add([pieces[0]!])) setText(pieces.slice(1).join(',').trimStart()); else setText(next.replace(/,/g, ''));
+              if (!add([pieces[0]!])) setText(pieces.slice(1).join(',').trimStart()); else setText(next.replace(/,/g, ''));
               return;
             }
             setText(next);
@@ -319,6 +339,7 @@ export function TagInput({
       </div>
       {name && value.map((tag, index) => <input key={`${tag}-${index}`} type="hidden" name={name} value={tag} disabled={disabled} />)}
       {message && <span id={messageId} className="uix-field__warning uix-taginput__message">{message}</span>}
+      {value.length > 0 && <span id={countId} className="uix-visually-hidden">{fillLabel(labels.count, { count: value.length })}</span>}
       <span className="uix-visually-hidden" role="status" aria-live="polite">{announcement}</span>
       {suggestions && (
         <div ref={popupRef} className="uix-select__popup uix-taginput__popup" hidden={!showing} {...popoverAttr} onMouseDown={(event) => event.preventDefault()}>
@@ -332,7 +353,7 @@ export function TagInput({
                 className="uix-listbox__option"
                 data-active={index === active || undefined}
                 onPointerMove={() => { if (index !== active) setActive(index); }}
-                onClick={() => { if (add([suggestion])) { setText(''); setActive(-1); inputRef.current?.focus(); } }}
+                onClick={() => { if (!add([suggestion])) { setText(''); setActive(-1); } inputRef.current?.focus(); }}
               >
                 <span className="uix-listbox__label">{suggestion}</span>
               </div>

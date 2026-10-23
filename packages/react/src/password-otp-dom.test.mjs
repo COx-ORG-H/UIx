@@ -110,7 +110,7 @@ test('OtpInput: one input with the code attributes, cells hidden from assistive 
   assert.equal(input.getAttribute('autocomplete'), 'one-time-code');
   assert.equal(input.getAttribute('inputmode'), 'numeric');
   assert.equal(input.getAttribute('pattern'), '[0-9]{6}');
-  assert.equal(input.maxLength, 6);
+  assert.equal(input.hasAttribute('maxlength'), false, 'no maxLength: autofill is cleaned, not cut');
   assert.equal(input.name, 'otp');
   const cells = host.querySelectorAll('.uix-otp__cell');
   assert.equal(cells.length, 6);

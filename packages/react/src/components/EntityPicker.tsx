@@ -144,7 +144,8 @@ export function EntityPicker({
     // Any change makes the search in flight stale: its answer is dropped (a query that is gone, or a
     // picker that was disabled meanwhile, never shows rows).
     const run = ++latest.current;
-    if (!editing || disabled) return;
+    // Disabled (or closed) mid-search: the search is dropped, so nothing is busy any more.
+    if (!editing || disabled) { setStatus((s) => (s === 'loading' ? 'idle' : s)); return; }
     const q = query.trim();
     if (q.length < minQueryLength) { setStatus('idle'); setResults([]); setHasMore(false); return; }
     // Busy from the keystroke, not from the end of the debounce: Enter on the last answer's rows

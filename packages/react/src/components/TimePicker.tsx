@@ -8,7 +8,7 @@ import { ClockIcon } from '../icons/components.js';
 import { useUixLabels } from '../labels-context.js';
 import type { Placement } from '../overlay-position.js';
 import {
-  formatTimeKey, isTimeOutOfRange, isValidTimeKey, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes,
+  formatTimeKey, isOvernightRange, isTimeOutOfRange, isValidTimeKey, parseTimeInput, stepTime, timePartEnds, timeSlots, timeToMinutes,
 } from '../time-field-model.js';
 import { useFieldPopover } from './DateFieldParts.js';
 import { Popover } from './Popover.js';
@@ -30,6 +30,8 @@ export interface TimePickerLabels {
   tooEarly: string;
   /** Shown when the typed time is after `max`; `{max}`. */
   tooLate: string;
+  /** Shown when the typed time is outside an overnight range (`min` after `max`); `{min}`, `{max}`. */
+  outside: string;
 }
 
 export const DEFAULT_TIME_PICKER_LABELS: TimePickerLabels = {
@@ -39,10 +41,11 @@ export const DEFAULT_TIME_PICKER_LABELS: TimePickerLabels = {
   invalidTime: 'Enter a time like {example}.',
   tooEarly: 'Choose {min} or later.',
   tooLate: 'Choose {max} or earlier.',
+  outside: 'Choose a time from {min} to {max}.',
 };
 
 /** Why typed text was refused: not a time, or a time before `min` / after `max`. */
-export type TimeInputProblem = 'format' | 'early' | 'late';
+export type TimeInputProblem = 'format' | 'early' | 'late' | 'outside';
 
 export interface TimePickerProps {
   /** The time as `HH:mm` (24-hour), or `null` for none. */
@@ -50,7 +53,10 @@ export interface TimePickerProps {
   onValueChange: (value: string | null) => void;
   /** Minutes the arrow keys step the minutes by, and between the times in the list. Default 15. */
   minuteStep?: number;
-  /** First and last time that can be chosen (`HH:mm`, inclusive). */
+  /**
+   * First and last time that can be chosen (`HH:mm`, inclusive). A `min` after `max` (22:00 to
+   * 06:00) is an overnight range: it wraps round midnight, in the keys, the list and the check.
+   */
   min?: string;
   max?: string;
   /**
@@ -117,7 +123,14 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   const step = Math.max(1, Math.round(minuteStep));
   const current = isValidTimeKey(value) ? value : null;
 
-  const format = (time: string) => formatTimeKey(time, locale, hour12);
+  // With no locale from a prop or the provider, the server's locale is not the viewer's: the first
+  // render (server and hydration) writes a neutral 24-hour 14:30, and the viewer's clock follows
+  // once mounted, so the markup the server sent and the first client render agree.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const shownLocale = locale ?? (mounted ? undefined : 'en-GB');
+  const shownHour12 = hour12 ?? (locale || mounted ? undefined : false);
+  const format = (time: string) => formatTimeKey(time, shownLocale, shownHour12);
   const [text, setText] = useState(() => (current ? format(current) : ''));
   const [problem, setProblemState] = useState<TimeInputProblem | null>(null);
   const reported = useRef<TimeInputProblem | null>(null);
@@ -130,7 +143,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     setText(current ? format(current) : '');
     setProblem(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, locale, hour12]);
+  }, [current, locale, hour12, mounted]);
 
   const { open, show, hide, triggerProps } = useFieldPopover(popoverId, () => inputRef.current?.focus({ preventScroll: true }), onOpenChange);
   const locked = !!disabled || !!readOnly;
@@ -147,7 +160,10 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     if (current && typed === format(current)) { setProblem(null); return true; }
     const parsed = parseTimeInput(typed, locale);
     if (!parsed) { setProblem('format'); return false; }
-    if (isTimeOutOfRange(parsed, min, max)) { setProblem(min && isValidTimeKey(min) && parsed < min ? 'early' : 'late'); return false; }
+    if (isTimeOutOfRange(parsed, min, max)) {
+      setProblem(isOvernightRange(min, max) ? 'outside' : min && isValidTimeKey(min) && parsed < min ? 'early' : 'late');
+      return false;
+    }
     setProblem(null);
     setText(format(parsed));
     if (parsed !== value) onValueChange(parsed);
@@ -162,7 +178,8 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   };
 
   const onInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (locked) return;
+    // An IME is composing (CJK input): its Enter and arrows belong to the composition.
+    if (locked || event.nativeEvent.isComposing || event.keyCode === 229) return;
     const { key, altKey } = event;
     if (key === 'ArrowDown' && altKey) {
       event.preventDefault();
@@ -177,7 +194,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
       const caret = input.selectionStart ?? 0;
       // Where the hour ends: from the locale's own parts when the field shows the formatted time
       // ("오후 2:30" puts the day period first), else the first run of digits of a typed draft.
-      const ends = base && input.value === format(base) ? timePartEnds(base, locale, hour12) : null;
+      const ends = base && input.value === format(base) ? timePartEnds(base, shownLocale, shownHour12) : null;
       const hourEnd = ends?.hour ?? /^\s*\d{1,2}/.exec(input.value)?.[0].length ?? 0;
       // The caret up to the hour's end means the hour; past it, the minutes.
       const onHour = key === 'PageUp' || key === 'PageDown' || (!!base && caret <= hourEnd);
@@ -196,7 +213,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
       requestAnimationFrame(() => {
         const el = inputRef.current;
         if (!el || el.ownerDocument.activeElement !== el) return;
-        const moved = timePartEnds(next, locale, hour12);
+        const moved = timePartEnds(next, shownLocale, shownHour12);
         const at = moved ? (onHour ? moved.hour : moved.minute) : el.value.length;
         try { el.setSelectionRange(at, at); } catch { /* not a text field */ }
       });
@@ -253,7 +270,8 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     {problem && <span id={errorId} className="uix-field__error uix-date-picker__error" role="alert">
       {problem === 'format'
         ? fillLabel(labels.invalidTime, { example })
-        : problem === 'early' ? fillLabel(labels.tooEarly, { min: format(min ?? '') }) : fillLabel(labels.tooLate, { max: format(max ?? '') })}
+        : problem === 'outside' ? fillLabel(labels.outside, { min: format(min ?? ''), max: format(max ?? '') })
+          : problem === 'early' ? fillLabel(labels.tooEarly, { min: format(min ?? '') }) : fillLabel(labels.tooLate, { max: format(max ?? '') })}
     </span>}
     <Popover
       id={popoverId} anchor={anchorRef} placement={placement} className="uix-time-picker__popover"

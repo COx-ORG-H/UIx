@@ -25,8 +25,12 @@ export interface OtpInputProps
   style?: CSSProperties;
 }
 
-const clean = (text: string, mode: 'numeric' | 'alphanumeric', length: number): string =>
-  (mode === 'numeric' ? text.replace(/\D+/g, '') : text.replace(/[^0-9a-z]+/gi, '').toUpperCase()).slice(0, length);
+/** Only the characters the mode allows (full-width digits read as digits), upper-cased for letters. */
+const allowed = (text: string, mode: 'numeric' | 'alphanumeric'): string => {
+  const plain = text.normalize('NFKC');
+  return mode === 'numeric' ? plain.replace(/\D+/g, '') : plain.replace(/[^0-9a-z]+/gi, '').toUpperCase();
+};
+const clean = (text: string, mode: 'numeric' | 'alphanumeric', length: number): string => allowed(text, mode).slice(0, length);
 
 /**
  * A one-time code (HAR-1376): ONE native input, so screen readers, the phone's code autofill
@@ -96,18 +100,25 @@ export const OtpInput = forwardRef<HTMLInputElement, OtpInputProps>(function Otp
         autoCorrect="off"
         spellCheck={false}
         pattern={mode === 'numeric' ? `[0-9]{${length}}` : `[0-9A-Za-z]{${length}}`}
-        maxLength={length}
+        // No maxLength: autofill would cut "ABCD-EFGH" before the dash is cleaned out.
+        // Digits run left to right in every script.
+        dir="ltr"
         value={value}
         disabled={disabled}
         aria-invalid={isInvalid || undefined}
         onChange={(event) => update(event.target.value)}
-        // A paste longer than the cells (a code with a dash or spaces) would be cut by maxLength
-        // before it is cleaned: clean the whole clipboard text instead.
+        // A paste is cleaned as a whole ("123 456", "123-456"). It replaces the code only when the whole
+        // code is selected (or there is none yet); otherwise it goes in at the caret, up to `length`.
+        // Text with nothing usable in it ("abc" in a numeric code) changes nothing.
         onPaste={(event) => {
-          const text = event.clipboardData?.getData('text');
-          if (!text) return;
+          const usable = allowed(event.clipboardData?.getData('text') ?? '', mode);
           event.preventDefault();
-          update(clean(text, mode, length));
+          if (!usable) return;
+          const input = event.currentTarget;
+          const start = input.selectionStart ?? value.length;
+          const end = input.selectionEnd ?? value.length;
+          const whole = start === 0 && end === value.length;
+          update(whole ? usable : `${value.slice(0, start)}${usable}${value.slice(end)}`);
         }}
         onFocus={(event: FocusEvent<HTMLInputElement>) => { setFocused(true); toEnd(); onFocus?.(event); }}
         onBlur={(event: FocusEvent<HTMLInputElement>) => { setFocused(false); onBlur?.(event); }}

@@ -15,7 +15,7 @@
   .uix-select:disabled { opacity: .55; cursor: not-allowed; background-color: var(--uix-bg-subtle); }
   .uix-select--sm { height: 28px; font-size: var(--uix-text-meta); }
   /* lg: 44 px, beside Input and Button lg on a public page (HAR-1812) */
-  .uix-select--lg { height: 44px; padding: 0 var(--uix-space-10) 0 var(--uix-space-4); background-position: right 14px center; font-size: var(--uix-text-h3); }
+  .uix-select--lg { height: 44px; padding: 0 calc(var(--uix-space-8) + var(--uix-space-1)) 0 var(--uix-space-4); background-position: right 14px center; font-size: var(--uix-text-h3); }
 
   /* command-palette-style rich select: a trigger that opens a .uix-cmdk popover (search + options) */
   .uix-select-trigger { display: inline-flex; align-items: center; gap: var(--uix-space-2); height: var(--uix-control-h); padding: 0 var(--uix-space-3); min-width: 220px;
