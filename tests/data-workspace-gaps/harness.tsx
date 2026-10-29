@@ -256,6 +256,8 @@ function Plain() {
   const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
     { id: 'title', header: 'Title', cell: (r) => r.title },
     { id: 'author', header: 'Author', cell: (r) => r.author },
+    // a long column and a visually hidden label in a cell (TENSOR's incident list, HAR-2632)
+    { id: 'note', header: 'Note', cell: (r) => <span style={{ whiteSpace: 'nowrap' }}>Shelved in the reading room until the end of the term <span className="uix-visually-hidden">{`Copy note for ${r.title}`}</span></span> },
   ], []);
   const rowLabel = useCallback((r: Book) => r.title, []);
   return <DataWorkspace<Book> id="plain" label="Linked books" rows={rows} getRowId={(r) => r.id} rowLabel={rowLabel} columns={columns} selection={selection} onSelectionChange={setSelection} />;

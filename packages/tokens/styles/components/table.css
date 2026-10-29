@@ -5,7 +5,11 @@
   /* TENSOR RX-125 (UIX-07): no height cap by default — a nested scroller hid rows
      below 460px on every table. Opt in with .uix-table-wrap--scroll or set
      --uix-table-max-height. */
-  .uix-table-wrap { overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  /* position: relative (HAR-2632): the wrap is the frame for anything absolute in a cell (a
+     visually hidden label), which otherwise sat at its place in the scrolled table, outside the
+     wrap, and widened the page (TENSOR: 1377 px of content in a 1032 px main). Sticky headers and
+     frozen cells, the sticky busy bar and the top-layer menus and popovers do not depend on it. */
+  .uix-table-wrap { position: relative; overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
   .uix-table-wrap--scroll { max-height: var(--uix-table-max-height, 460px); }
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
 

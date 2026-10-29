@@ -286,3 +286,11 @@ test('HAR-2632: a workspace with nothing for its toolbar starts with its table; 
   expect(gap, 'no band and no gap above the table').toBe(0);
   await expect(plain.getByRole('checkbox', { name: 'Select The Hobbit' })).toBeVisible();
 });
+
+test('HAR-2632: a visually hidden label in a body cell of a table wider than a 320 px page stays in the wrap: no sideways page scroll', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 320, height: 900 });
+  const wrap = page.locator('#plain .uix-table-wrap');
+  expect(await wrap.evaluate((el) => el.scrollWidth > el.clientWidth), 'the table is wider than its wrap').toBe(true);
+  expect(await wrap.evaluate((el) => getComputedStyle(el).position)).toBe('relative');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
