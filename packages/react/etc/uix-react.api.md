@@ -1515,12 +1515,14 @@ export interface DataWorkspaceIdColumn<T> {
     // (undocumented)
     header: ReactNode;
     href?: (row: T) => string;
+    id?: string;
     linkId?: boolean;
     minWidth?: string;
     onPeek?: (row: T) => void;
     render?: (row: T) => ReactNode;
     // (undocumented)
     renderLink?: UixRenderLink;
+    sortable?: boolean;
     text: (row: T) => string;
     width?: string;
 }
@@ -1580,8 +1582,8 @@ export interface DataWorkspaceLabels {
     view: string;
 }
 
-// @public (undocumented)
-export type DataWorkspacePagination = {
+// @public
+export type DataWorkspacePagination = ({
     mode: 'offset';
     page: number;
     pageSize: number;
@@ -1600,6 +1602,8 @@ export type DataWorkspacePagination = {
     pageSize?: number;
     pageSizes?: readonly number[];
     onPageSizeChange?: (size: number) => void;
+}) & {
+    labels?: Partial<PaginationLabels>;
 };
 
 // @public (undocumented)
@@ -1661,7 +1665,8 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     // (undocumented)
     pagination?: DataWorkspacePagination;
     refreshing?: boolean;
-    rowActions?: (row: T) => ReactNode;
+    rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
+    rowLabel?: (row: T) => string;
     rowNavigation?: boolean;
     // (undocumented)
     rows: readonly T[];
@@ -1689,6 +1694,12 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     viewMenu?: ViewMenuProps;
     virtualize?: boolean | DataWorkspaceVirtualize;
     zebra?: boolean;
+}
+
+// @public
+export interface DataWorkspaceRowActionsContext {
+    compact: boolean;
+    ladder: 'cards' | 'priority' | 'priority-mid' | null;
 }
 
 // @public (undocumented)
@@ -2560,6 +2571,16 @@ export interface EntityPickerSearchResult {
     options: readonly SearchSuggestOption[];
 }
 
+// @public (undocumented)
+export const ENUM_FILTER_OPERATORS: readonly EnumFilterOperator[];
+
+// @public
+export function enumColumnFilter(field: string, value: {
+    kind: 'enum';
+    values: readonly string[];
+    operator?: 'is-any-of' | 'is-none-of';
+}): ColumnFilter;
+
 // @public
 export function enumerateDateKeys(span: ZonedDaySpan, options?: {
     limit?: number;
@@ -2570,6 +2591,9 @@ export function enumerateDateKeys(span: ZonedDaySpan, options?: {
 
 // @public @deprecated
 export function enumerateDateSpan(span: ZonedDateSpan, limit?: number): string[];
+
+// @public
+export type EnumFilterOperator = 'is-any-of' | 'is-none-of';
 
 // @public
 export function ErrorState(input: ErrorStateProps): react.JSX.Element;
@@ -2829,6 +2853,7 @@ export interface FilterEditorLabels {
     clear: string;
     date?: string;
     dateOperators?: Partial<Record<DateFilterOperator, string>>;
+    enumOperators?: Partial<Record<EnumFilterOperator, string>>;
     // (undocumented)
     from: string;
     // (undocumented)
@@ -2881,6 +2906,7 @@ export interface FilterEditorProps {
 // @public (undocumented)
 export interface FilterField {
     dateOperators?: readonly DateFilterOperator[];
+    enumOperators?: readonly EnumFilterOperator[];
     // (undocumented)
     falseLabel?: string;
     // (undocumented)
@@ -2957,6 +2983,7 @@ export interface FilterSummaryLabels {
     more: string;
     // (undocumented)
     no: string;
+    noneOf?: string;
     on?: string;
     // (undocumented)
     operators: Record<TextFilterOperator | NumberFilterOperator, string>;
@@ -2971,6 +2998,7 @@ export interface FilterSummaryLabels {
 export type FilterValue = {
     kind: 'enum';
     values: string[];
+    operator?: EnumFilterOperator;
 } | {
     kind: 'text';
     operator: TextFilterOperator;
@@ -7440,7 +7468,6 @@ export type TableDensity = 'compact' | 'standard' | 'comfortable';
 
 // @public (undocumented)
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
-    // (undocumented)
     density?: TableDensity;
     fixed?: boolean;
     pinnedActions?: boolean;
@@ -8276,6 +8303,7 @@ export interface UixLabels {
     fileUpload?: Partial<FileUploadLabels>;
     // (undocumented)
     filterEditor?: Partial<FilterEditorLabels>;
+    filterSummary?: Partial<FilterSummaryLabels>;
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;

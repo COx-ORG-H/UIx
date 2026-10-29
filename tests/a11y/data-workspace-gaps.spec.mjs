@@ -253,3 +253,149 @@ test('nit: a mouse scroll that moves the focused row out of the window parks foc
   await wrap.evaluate((el) => { el.scrollTop = 0; });
   await expect.poll(() => focusedRowId(page)).toBe('BK-1002');
 });
+
+/* ── 2.51 (HAR-2631, HAR-2632) ─────────────────────────────────────────────────────────────── */
+
+test('HAR-2631: a table that asks for standard keeps 56 px rows under a page-wide comfortable density; one that names none follows it', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  await page.evaluate(() => { document.documentElement.dataset.density = 'comfortable'; });
+  const height = (sel) => page.locator(sel).first().evaluate((td) => td.getBoundingClientRect().height);
+  expect(await height('#groups tbody tr:not(.uix-data-workspace__group-head) td')).toBe(56);
+  expect(await height('#sorting tbody td')).toBe(68);
+});
+
+test('HAR-2631: the id header sorts with the mouse and Shift + Enter, and keeps its ordinal and aria-sort', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const ws = page.locator('#cards');
+  const idTh = ws.locator('thead th[data-col="id"]');
+  await idTh.getByRole('button', { name: /^Book/ }).click();
+  await expect(idTh).toHaveAttribute('aria-sort', 'ascending');
+  await expect.poll(() => page.evaluate(() => window.__dw.log.filter((l) => l.startsWith('sort:')).at(-1))).toBe('sort:title:ascending');
+  await ws.locator('thead th[data-col="author"]').getByRole('button').focus();
+  await page.keyboard.press('Shift+Enter');
+  await expect(ws.locator('thead th[data-sort-order]')).toHaveCount(2);
+  await expect(idTh).toHaveAttribute('data-sort-order', '1');
+  await expect(idTh.getByRole('button', { name: /^Book\W+Sort priority 1$/ })).toBeVisible();
+});
+
+test('HAR-2632: a workspace with nothing for its toolbar starts with its table; a row is named by rowLabel', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const plain = page.locator('#plain');
+  await expect(plain.locator('[role="toolbar"]')).toHaveCount(0);
+  const gap = await plain.evaluate((section) => section.firstElementChild.getBoundingClientRect().top - section.getBoundingClientRect().top);
+  expect(gap, 'no band and no gap above the table').toBe(0);
+  await expect(plain.getByRole('checkbox', { name: 'Select The Hobbit' })).toBeVisible();
+});
+
+test('HAR-2632: a visually hidden label in a body cell of a table wider than a 320 px page stays in the wrap: no sideways page scroll', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 320, height: 900 });
+  const wrap = page.locator('#plain .uix-table-wrap');
+  expect(await wrap.evaluate((el) => el.scrollWidth > el.clientWidth), 'the table is wider than its wrap').toBe(true);
+  expect(await wrap.evaluate((el) => getComputedStyle(el).position)).toBe('relative');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+/* ── HAR-2634 ──────────────────────────────────────────────────────────────────────────────── */
+
+test('HAR-2634: at 360 px word actions are not frozen over the row: the id is what a tap at its centre hits', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 360, height: 800 });
+  const ws = page.locator('#shelves');
+  await expect(ws.locator('table')).toHaveClass(/uix-table--priority-mid/);
+  await expect(ws.locator('table')).not.toHaveClass(/uix-table--pinned-actions/);
+  await ws.scrollIntoViewIfNeeded();
+  const hits = await ws.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => {
+    const link = tr.querySelector('a.uix-id-cell__btn');
+    const r = link.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { id: link.textContent, hitsLink: link.contains(hit), hit: hit?.textContent?.slice(0, 30) };
+  }));
+  for (const h of hits) expect(h.hitsLink, `${h.id} is covered by "${h.hit}"`).toBe(true);
+  // the actions scroll in with their row; no frozen divider is left behind
+  const wrap = ws.locator('.uix-table-wrap');
+  await wrap.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
+  const last = ws.locator('tbody tr').first().locator('td.uix-table__actions');
+  expect(await last.evaluate((td) => getComputedStyle(td).position)).toBe('static');
+  await expect(last.getByRole('button', { name: 'Deaktiviraj' })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('HAR-2634: compact actions at 360 px: one peek per row, still frozen, the id still hit-testable', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 360, height: 800 });
+  const ws = page.locator('#shelves-compact');
+  await expect(ws.locator('table')).toHaveClass(/uix-table--pinned-actions/);
+  await expect(ws.locator('tbody tr').first().locator('td.uix-table__actions button')).toHaveCount(2); // a peek and a kebab
+  await ws.scrollIntoViewIfNeeded();
+  const covered = await ws.locator('tbody tr').evaluateAll((trs) => trs.filter((tr) => {
+    const link = tr.querySelector('a.uix-id-cell__btn');
+    const r = link.getBoundingClientRect();
+    return !link.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+  }).length);
+  expect(covered).toBe(0);
+  // wider than the narrow step, the full set comes back
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(ws.locator('tbody tr').first().getByRole('button', { name: 'Deaktiviraj' })).toBeVisible();
+});
+
+test('HAR-2634: at 1280 px word verbs in an overflowing table unfreeze: the Status cell beside them is what a tap at its centre hits', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const ws = page.locator('#shelves');
+  const wrap = ws.locator('.uix-table-wrap');
+  expect(await wrap.evaluate((el) => el.scrollWidth > el.clientWidth), 'the table overflows its wrap').toBe(true);
+  await expect(ws.locator('table')).not.toHaveClass(/uix-table--pinned-actions/);
+  await ws.scrollIntoViewIfNeeded();
+  const hits = await ws.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => {
+    const cell = tr.querySelector('td[data-col="status"]');
+    const r = cell.getBoundingClientRect();
+    const wrapRect = cell.closest('.uix-table-wrap').getBoundingClientRect();
+    if (r.left + r.width / 2 > wrapRect.right) return { offscreen: true };
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { hitsCell: cell.contains(hit), hit: hit?.textContent?.slice(0, 30) };
+  }));
+  expect(hits.filter((h) => !h.offscreen).length, 'the Status cells are in view').toBe(5);
+  for (const h of hits) expect(h.hitsCell, `covered by "${h.hit}"`).toBe(true);
+});
+
+test('HAR-2631 item 3: in cards at 390 px a compact or standard density does not pin the row height: a two-line id stays inside its card', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 390, height: 900 });
+  for (const id of ['#cards-dense-compact', '#cards-dense-standard']) {
+    const table = page.locator(`${id} table`);
+    await expect(table).toHaveClass(/uix-table--cards/);
+    const cells = await table.locator('tbody tr').evaluateAll((trs) => trs.flatMap((tr) => {
+      const card = tr.getBoundingClientRect();
+      return [...tr.children].filter((td) => getComputedStyle(td).display !== 'none').map((td) => {
+        const r = td.getBoundingClientRect();
+        return { col: td.getAttribute('data-col'), insideTop: r.top >= card.top - 0.5, insideBottom: r.bottom <= card.bottom + 0.5, overflow: td.scrollHeight - td.clientHeight, height: r.height };
+      });
+    }));
+    for (const c of cells) {
+      expect(c, `${id} ${c.col}`).toMatchObject({ insideTop: true, insideBottom: true });
+      expect(c.overflow, `${id} ${c.col} overflows its cell`).toBeLessThanOrEqual(1);
+    }
+    const idCell = cells.find((c) => c.col === 'id');
+    expect(idCell.height, `${id}: the two-line id cell is taller than a pinned row`).toBeGreaterThan(44);
+  }
+});
+
+/* ── PR #179 review ──────────────────────────────────────────────────────────────────────── */
+
+test('review: verbs that arrive after the rows are measured again: the cell unfreezes once they are there', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const table = page.locator('#late table');
+  // a peek alone at first: compact, frozen
+  await expect(table).toHaveClass(/uix-table--pinned-actions/);
+  await expect(page.locator('#late tbody tr').first().getByRole('button', { name: 'Deaktiviraj' })).toBeVisible();
+  // the words came without a workspace render: the actions cell resized and was measured
+  await expect(table).not.toHaveClass(/uix-table--pinned-actions/);
+});
+
+test('review: a group header row stays as tall as its content at density="standard"', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const heights = await page.locator('#groups').evaluate((ws) => ({
+    head: ws.querySelector('tr.uix-data-workspace__group-head').getBoundingClientRect().height,
+    row: ws.querySelector('tbody tr:not(.uix-data-workspace__group-head)').getBoundingClientRect().height,
+    density: ws.querySelector('table').getAttribute('data-density'),
+  }));
+  expect(heights.density).toBe('standard');
+  expect(heights.row).toBe(56);
+  expect(heights.head, 'the header is not pinned to the 56 px standard row').toBeLessThan(56);
+});

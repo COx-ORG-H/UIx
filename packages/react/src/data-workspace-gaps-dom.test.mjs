@@ -144,11 +144,12 @@ test('HAR-2622 id cell: render puts rich content in the same peek button; text s
 
 test('HAR-2622 id cell: href with linkId and no onPeek makes the whole id the link, the ↗ inside it', () => {
   const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ idColumn: { header: 'ID', text: (r) => r.id, href: (r) => `/books/${r.id}`, linkId: true } })));
-  assert.match(html, /<a href="\/books\/BK-100" class="uix-id-cell__btn uix-data-workspace__id-link">BK-100<svg class="uix-id-cell__arrow"/);
+  // the id text in its own box (a fixed-width column ends it in an ellipsis), the ↗ inside the link after it
+  assert.match(html, /<a href="\/books\/BK-100" class="uix-id-cell__btn uix-data-workspace__id-link"><span class="uix-data-workspace__id-label">BK-100<\/span><svg class="uix-id-cell__arrow"[^>]*>[\s\S]*?<\/svg><\/a>/);
   assert.doesNotMatch(html, /uix-data-workspace__open/, 'no second link');
   // without linkId the id stays text and the ↗ is the link (2.49 behaviour)
   const before = renderToStaticMarkup(h(ui.DataWorkspace, base({ idColumn: { header: 'ID', text: (r) => r.id, href: (r) => `/books/${r.id}` } })));
-  assert.match(before, /<span class="uix-cell-strong">BK-100<\/span><a href="\/books\/BK-100" class="uix-data-workspace__open" aria-label="Open BK-100">/);
+  assert.match(before, /<span class="uix-cell-strong uix-data-workspace__id-label">BK-100<\/span><a href="\/books\/BK-100" class="uix-data-workspace__open" aria-label="Open BK-100">/);
 });
 
 test('HAR-2622 states: emptyAction, filteredEmptyAction beside Clear filters, stateOverride with the toolbar kept and no footer', () => {

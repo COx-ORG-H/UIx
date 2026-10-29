@@ -43,6 +43,10 @@ export type TableDensity = 'compact' | 'standard' | 'comfortable';
 export type SortDirection = 'ascending' | 'descending' | 'none';
 
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
+  /**
+   * The row height. Named, the table holds it, `standard` included, whatever the page sets
+   * `--uix-row-h` to (a density preference); left out, the table follows `--uix-row-h`.
+   */
   density?: TableDensity;
   zebra?: boolean;
   pinnedCol?: boolean;
@@ -59,7 +63,7 @@ export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
 }
 
 export function Table({
-  density = 'standard',
+  density,
   zebra = true,
   pinnedCol,
   pinnedActions,
@@ -80,7 +84,9 @@ export function Table({
         fixed && 'uix-table--fixed',
         className,
       )}
-      data-density={density !== 'standard' ? density : undefined}
+      // A table that names a density holds it (HAR-2631: standard too, against a page-wide
+      // --uix-row-h re-point); one that names none follows the page.
+      data-density={density}
       data-uix-rowpeek={rowPeek || undefined}
       data-uix-table-v2={v2 || undefined}
       {...props}

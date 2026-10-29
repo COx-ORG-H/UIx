@@ -17,9 +17,14 @@ export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 
  * `dateFilterBounds` turns each into the half-open range a query needs.
  */
 export type DateFilterOperator = 'on' | 'before' | 'after' | 'between';
+/**
+ * An `enum` condition (HAR-2631): the row's value is one of the chosen values, or none of them
+ * ("status is none of Withdrawn, Lost"). Absent means `is-any-of`.
+ */
+export type EnumFilterOperator = 'is-any-of' | 'is-none-of';
 
 export type FilterValue =
-  | { kind: 'enum'; values: string[] }
+  | { kind: 'enum'; values: string[]; operator?: EnumFilterOperator }
   | { kind: 'text'; operator: TextFilterOperator; text: string }
   | { kind: 'number'; operator: NumberFilterOperator; value?: number; to?: number }
   | { kind: 'date-range'; from?: string; to?: string }
@@ -61,6 +66,11 @@ export interface FilterField {
   operators?: readonly (TextFilterOperator | NumberFilterOperator)[];
   /** `date`: the conditions offered, in order. Default: on, before, after, between. */
   dateOperators?: readonly DateFilterOperator[];
+  /**
+   * `enum`: the conditions offered, in order (HAR-2631). Default: `is-any-of` alone, so the editor
+   * shows no condition control; with both, it shows one above the options.
+   */
+  enumOperators?: readonly EnumFilterOperator[];
   /** `number`: a unit shown after the value, e.g. "days". */
   unit?: string;
   /** `boolean`: words for true and false, e.g. Escalated / Not escalated. Default from labels. */
@@ -88,6 +98,8 @@ export interface FilterSummaryLabels {
   more: string;
   /** An `enum` value equal to a preset: `{label}` (the preset), `{field}`. Default `{label}`. */
   preset?: string;
+  /** An `enum` value that excludes (`is-none-of`, HAR-2631): `{values}`. Default "not {values}" ("Status: not Open, Closed"). */
+  noneOf?: string;
   /** `date` conditions (HAR-1832), `{date}`. Default "{date}", "before {date}", "after {date}". */
   on?: string;
   before?: string;
@@ -106,6 +118,7 @@ export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
   until: 'until {to}',
   more: '{first} +{count}',
   preset: '{label}',
+  noneOf: 'not {values}',
   on: '{date}',
   before: 'before {date}',
   after: 'after {date}',
@@ -114,6 +127,7 @@ export const DEFAULT_FILTER_SUMMARY_LABELS: FilterSummaryLabels = {
 export const TEXT_FILTER_OPERATORS: readonly TextFilterOperator[] = ['contains', 'not-contains', 'is', 'is-not', 'starts-with'];
 export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[] = ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'between'];
 export const DATE_FILTER_OPERATORS: readonly DateFilterOperator[] = ['on', 'before', 'after', 'between'];
+export const ENUM_FILTER_OPERATORS: readonly EnumFilterOperator[] = ['is-any-of', 'is-none-of'];
 
 /** The empty value for a field kind (what Clear resets to). */
 export function emptyFilterValue(kind: FilterValueKind): FilterValue {
@@ -209,7 +223,8 @@ export async function resolveFilterLabels(field: FilterField, value: FilterValue
  * `enum` value can match a preset.
  */
 export function matchFilterPreset(field: FilterField, value: FilterValue | undefined): FilterPreset | undefined {
-  if (value?.kind !== 'enum' || !field.presets?.length) return undefined;
+  // a preset is a selection to include: an excluding value never matches one
+  if (value?.kind !== 'enum' || value.operator === 'is-none-of' || !field.presets?.length) return undefined;
   const chosen = new Set(value.values);
   return field.presets.find((preset) => {
     const wanted = new Set(preset.values);
@@ -250,7 +265,11 @@ export function summarizeFilter(field: FilterField, input: FilterValue | undefin
       const preset = matchFilterPreset(field, value);
       if (preset) return fill(labels.preset ?? DEFAULT_FILTER_SUMMARY_LABELS.preset!, { label: preset.label, field: field.label });
       const byValue = new Map((field.options ?? []).map((o) => [o.value, o.label]));
-      return `${field.label}: ${list(value.values.map((v) => byValue.get(v) ?? v))}`;
+      const named = list(value.values.map((v) => byValue.get(v) ?? v));
+      // a field that offers one condition applies it, also to a value saved without one
+      const condition = value.operator ?? (field.enumOperators?.length === 1 ? field.enumOperators[0] : 'is-any-of');
+      if (condition === 'is-none-of') return `${field.label}: ${fill(labels.noneOf ?? DEFAULT_FILTER_SUMMARY_LABELS.noneOf!, { values: named, field: field.label })}`;
+      return `${field.label}: ${named}`;
     }
     case 'reference': return `${field.label}: ${list(value.values.map((v) => v.label))}`;
     case 'tags': return `${field.label}: ${list(value.values)}`;

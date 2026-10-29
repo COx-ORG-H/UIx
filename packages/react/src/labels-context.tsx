@@ -9,6 +9,7 @@ import type { DatePickerLabels, DateTimePickerLabels } from './components/DatePi
 import type { SchedulingTimelineLabels } from './components/SchedulingTimeline.js';
 import type { TextDiffLabels } from './components/TextDiff.js';
 import type { FilterEditorLabels } from './components/FilterEditor.js';
+import type { FilterSummaryLabels } from './filter-model.js';
 import type { SelectLabels } from './components/Select.js';
 import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 import type { FileUploadLabels } from './components/FileUpload.js';
@@ -115,6 +116,11 @@ export interface UixLabels {
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
+  /**
+   * `summarizeFilter` as a filter chip shows it (DataWorkspace): the operators, ranges and the
+   * "not {values}" of an excluding enum value (HAR-2631). A product's `filters.summary.labels` wins.
+   */
+  filterSummary?: Partial<FilterSummaryLabels>;
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;
   fileUpload?: Partial<FileUploadLabels>;

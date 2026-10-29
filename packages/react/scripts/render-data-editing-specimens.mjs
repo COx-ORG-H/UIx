@@ -236,14 +236,18 @@ const BUILDERS = [
       label: 'Books by status', rows: [], getRowId: (r) => r.id, columns, mobile: 'cards',
       groups: [group('On loan'), group('Available'), group('Lost')], collapsedGroups: new Set(['Lost']), onCollapsedGroupsChange() {},
       idColumn: {
-        header: 'Book', text: (r) => r.title, linkId: true, href: (r) => `#book-${r.id}`,
+        header: 'Book', id: 'title', sortable: true, text: (r) => r.title, linkId: true, href: (r) => `#book-${r.id}`,
         render: (r) => [h(ui.CellStrong, { key: 't' }, r.title), h(ui.CellSub, { key: 's', tabular: true }, r.id)],
       },
-      sort: [{ columnId: 'author', direction: 'ascending' }, { columnId: 'year', direction: 'descending' }], onSortChange() {},
+      sort: [{ columnId: 'title', direction: 'ascending' }, { columnId: 'author', direction: 'ascending' }, { columnId: 'year', direction: 'descending' }], onSortChange() {},
       selection: new Set(['BK-1001']), onSelectionChange() {}, maxSelection: 50,
       bulkActions: () => h(ui.Button, { size: 'sm' }, 'Lend'),
       beforeBody: h(ui.Alert, { tone: 'info' }, 'Showing the main branch only.'),
       search: { value: '', onChange() {}, label: 'Search books', maxLength: 60 },
+      filters: {
+        fields: [{ id: 'status', label: 'Status', kind: 'enum', enumOperators: ['is-any-of', 'is-none-of'], options: [{ value: 'lost', label: 'Lost' }, { value: 'withdrawn', label: 'Withdrawn' }] }],
+        values: { status: { kind: 'enum', values: ['lost', 'withdrawn'], operator: 'is-none-of' } }, onChange() {},
+      },
       onSaveViewAs() {}, saveViewAs: 'always',
     }));
     // The cards a phone gets: the ladder measures the workspace, which jsdom cannot, so this one
@@ -266,7 +270,7 @@ const BUILDERS = [
     }));
     return {
       'examples-data-display': [
-        caption(`Data workspace, 2.50 (HAR-2622..2626, ADR-0005 addendum) — two sort keys with their priority badges; the id cell as the record's own link with a title over its id; Save as without a change; a notice above the rows (<code>beforeBody</code>); rows grouped by status, each header with its toggle, a count and the copies' sum under its column, one group collapsed and one partly selected (a tri-state box); the same rows as cards, as a workspace under 768 px wide shows them (<code>mobile="cards"</code>: each value labelled, the checkbox and the actions on the card); and the product's empty body with its first action`),
+        caption(`Data workspace, 2.50 (HAR-2622..2626, ADR-0005 addendum) — three sort keys with their ordinals, the first the id column itself (<code>idColumn.sortable</code>, 2.51); an enum filter that excludes ("Status: not Lost, Withdrawn", <code>enumOperators</code>, 2.51); the id cell as the record's own link with a title over its id; Save as without a change; a notice above the rows (<code>beforeBody</code>); rows grouped by status, each header with its toggle, a count and the copies' sum under its column, one group collapsed and one partly selected (a tri-state box); the same rows as cards, as a workspace under 768 px wide shows them (<code>mobile="cards"</code>: each value labelled, the checkbox and the actions on the card); and the product's empty body with its first action, in a workspace with nothing for its toolbar, so it has none (2.51)`),
         `<div data-data-workspace-gaps-example class="uix-stack">${html(workspace)}<div data-data-workspace-cards-example style="max-inline-size:24rem">${html(cards)}</div>${html(empty)}</div>`,
       ].join('\n'),
     };

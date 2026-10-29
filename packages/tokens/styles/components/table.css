@@ -5,7 +5,11 @@
   /* TENSOR RX-125 (UIX-07): no height cap by default — a nested scroller hid rows
      below 460px on every table. Opt in with .uix-table-wrap--scroll or set
      --uix-table-max-height. */
-  .uix-table-wrap { overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+  /* position: relative (HAR-2632): the wrap is the frame for anything absolute in a cell (a
+     visually hidden label), which otherwise sat at its place in the scrolled table, outside the
+     wrap, and widened the page (TENSOR: 1377 px of content in a 1032 px main). Sticky headers and
+     frozen cells, the sticky busy bar and the top-layer menus and popovers do not depend on it. */
+  .uix-table-wrap { position: relative; overflow: auto; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
   .uix-table-wrap--scroll { max-height: var(--uix-table-max-height, 460px); }
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
 
@@ -53,13 +57,24 @@
   .uix-table--no-zebra tbody tr:where(:nth-child(even)) { --uix-row-bg: var(--uix-row); }
   .uix-table tbody tr:where([data-pinned]) { --uix-row-bg: var(--uix-row-pinned-bg); }
   .uix-table tbody tr:where([data-selected]) { --uix-row-bg: var(--uix-row-selected-bg); }
+  /* Muted text in a selected row reads on the selection tint at AA (HAR-2635: 4.36:1 before). It is
+     derived, not a fixed colour: the table keeps the muted colour of its scope (a theme, more
+     contrast, print), and a selected row moves it 30 % toward that scope's text, so any scope that
+     sets --uix-text-muted gets a darker (light) or lighter (dark) muted on its selection, never a
+     weaker one. */
+  .uix-table { --uix-table-muted: var(--uix-text-muted); }
+  .uix-table tbody tr:where([data-selected], [aria-selected="true"]) { --uix-text-muted: color-mix(in srgb, var(--uix-table-muted) 70%, var(--uix-text)); }
   @media (hover: hover) { .uix-table tbody tr:where(:hover) { --uix-row-bg: var(--uix-bg-hover); } }
   /* Row links stay calm on hover/focus: the row tint is the affordance, so neither the base
      layer's `a:hover` underline nor link.css reaches them. `:not(.uix-btn)` keeps buttons
      styled; the global :focus-visible ring still marks keyboard focus. */
   .uix-table tbody a:not(.uix-btn):is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: none; }
-  .uix-table[data-density="compact"] td, .uix-table--compact td { height: var(--uix-row-h-compact); }
-  .uix-table[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
+  /* not in cards: a card's cells are as tall as their content (HAR-2631 item 3, the density rules
+     outranked the cards reset and a two-line id ran over the card's top border) */
+  .uix-table:not(.uix-table--cards)[data-density="compact"] td, .uix-table--compact:not(.uix-table--cards) td { height: var(--uix-row-h-compact); }
+  .uix-table:not(.uix-table--cards)[data-density="comfortable"] td { height: var(--uix-row-h-comfortable); }
+  /* a table that asks for standard keeps it under a page-wide --uix-row-h re-point (HAR-2631) */
+  .uix-table:not(.uix-table--cards)[data-density="standard"] td { height: var(--uix-row-h-standard); }
 
   .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   /* Hidden until hover only where hover exists; a touch screen always shows the pin. The

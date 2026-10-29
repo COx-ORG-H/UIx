@@ -347,7 +347,7 @@ export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableContro
 export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataWorkspace.js';
 export type {
   DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
-  DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize,
+  DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize, DataWorkspaceRowActionsContext,
 } from './components/DataWorkspace.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
@@ -355,11 +355,11 @@ export type { FilterEditorProps, FilterEditorLabels } from './components/FilterE
 export {
   DEFAULT_FILTER_SUMMARY_LABELS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isFilterEmpty, matchFilterPreset, summarizeFilter,
   // HAR-1832: date conditions, labels for restored reference ids
-  DATE_FILTER_OPERATORS, dateFilterBounds, isUnresolvedChoice, resolveFilterLabels,
+  DATE_FILTER_OPERATORS, ENUM_FILTER_OPERATORS, dateFilterBounds, isUnresolvedChoice, resolveFilterLabels,
 } from './filter-model.js';
 export type {
   FilterChoice, FilterField, FilterPreset, FilterValueKind, FilterSummaryLabels, FilterValue, NumberFilterOperator, SummarizeFilterOptions, TextFilterOperator,
-  DateFilterOperator,
+  DateFilterOperator, EnumFilterOperator,
 } from './filter-model.js';
 export type {
   ViewMenuProps, ViewMenuColumn, ViewMenuColumnLabels, FilterPopoverProps, FilterOption, SavedViewMenuProps, SavedViewItem, SavedViewSection,

@@ -54,6 +54,11 @@
   .uix-data-workspace__id-text { display: inline-flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; text-align: start; }
   .uix-data-workspace__id-text > * { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-data-workspace__id-link { color: var(--uix-text); text-decoration: none; }
+  /* in a fixed layout the id column has a width: a long id ends in an ellipsis there, not drawn
+     over the next column (an auto layout grows the column instead) */
+  .uix-data-workspace .uix-table--fixed td.uix-id-cell { overflow: hidden; }
+  .uix-data-workspace__id .uix-id-cell__btn { min-inline-size: 0; max-inline-size: 100%; }
+  .uix-data-workspace__id-label { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* row groups: each group is a tbody under its header row. The zebra restarts under every header
      with a plain row: the group swaps the two row colours its rows read (no selector here outranks
@@ -65,6 +70,9 @@
     height: auto; padding-block: var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
     background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface);
   }
+  /* a group header is as tall as its content at every density: the density heights on the table
+     (0,3,1) outrank the rule above, so this one names the header row at a higher weight */
+  .uix-data-workspace .uix-table tbody tr.uix-data-workspace__group-head > :is(th, td) { height: auto; }
   .uix-data-workspace__group-label { font-weight: 400; text-align: start; }
   /* the label spans several columns: its words stay in view while the table scrolls sideways,
      the cell itself does not stick (it would slide over the aggregates) */
@@ -125,7 +133,7 @@
   .uix-data-workspace .uix-table--cards td[data-col="actions"] .uix-rowact { opacity: 1; }
   /* the id's words wrap in a card rather than run under the actions */
   .uix-data-workspace .uix-table--cards .uix-data-workspace__id, .uix-data-workspace .uix-table--cards .uix-id-cell__btn { white-space: normal; text-align: start; }
-  .uix-data-workspace .uix-table--cards .uix-data-workspace__id-text > * { white-space: normal; overflow-wrap: anywhere; }
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__id-text > *, .uix-data-workspace .uix-table--cards .uix-data-workspace__id-label { white-space: normal; overflow-wrap: anywhere; }
   /* a group's header in cards: one line above its cards (checkbox, toggle, name, count, then the aggregates) */
   .uix-data-workspace .uix-table--cards tbody tr.uix-data-workspace__group-head {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-3);

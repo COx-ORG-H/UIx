@@ -16,7 +16,7 @@ import { createRoot } from 'react-dom/client';
 import {
   Alert, Button, CellStrong, CellSub, DataWorkspace, EmptyState, ErrorState, Highlighted, Menu, MenuItem, StatusPill,
 } from '../../packages/react/src/index.js';
-import type { DataWorkspaceColumn, DataWorkspaceGroup, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
+import type { DataWorkspaceColumn, DataWorkspaceGroup, DataWorkspaceRowActionsContext, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
 
 declare global { interface Window { __dw: { log: string[]; activated: string[]; requests: number } } }
 
@@ -33,7 +33,7 @@ const book = (i: number): Book => ({
 const BOOKS: Book[] = Array.from({ length: 36 }, (_, i) => book(i));
 const LONG: Book[] = Array.from({ length: 2000 }, (_, i) => book(i));
 const FIELDS: FilterField[] = [
-  { id: 'status', label: 'Status', kind: 'enum', options: Object.entries(STATUS).map(([value, label]) => ({ value, label })) },
+  { id: 'status', label: 'Status', kind: 'enum', enumOperators: ['is-any-of', 'is-none-of'], options: Object.entries(STATUS).map(([value, label]) => ({ value, label })) },
   { id: 'genre', label: 'Genre', kind: 'enum', options: [...new Set(GENRES)].map((g) => ({ value: g, label: g })) },
 ];
 const log = (entry: string) => window.__dw.log.push(entry);
@@ -79,29 +79,40 @@ function Cards() {
   const [filters, setFilters] = useState<Record<string, FilterValue | undefined>>({});
   const [page, setPage] = useState(1);
   const [selection, setSelection] = useState<Set<string>>(new Set());
-  const { shown, refreshing } = useServer({ search, filters, page }, ({ search: q, filters: f, page: p }) => {
+  const [sort, setSort] = useState<DataWorkspaceSort[]>([]);
+  const { shown, refreshing } = useServer({ search, filters, page, sort }, ({ search: q, filters: f, page: p, sort: s }) => {
     let rows = BOOKS.filter((b) => !q || `${b.title} ${b.author} ${b.id}`.toLowerCase().includes(q.toLowerCase()));
     const st = f.status;
-    if (st?.kind === 'enum' && st.values.length) rows = rows.filter((b) => st.values.includes(b.status));
+    if (st?.kind === 'enum' && st.values.length) rows = rows.filter((b) => st.values.includes(b.status) !== (st.operator === 'is-none-of'));
+    if (s.length) {
+      rows = [...rows].sort((a, b) => {
+        for (const k of s) {
+          const c = String(a[k.columnId as keyof Book]).localeCompare(String(b[k.columnId as keyof Book]), 'en', { numeric: true });
+          if (c) return k.direction === 'ascending' ? c : -c;
+        }
+        return 0;
+      });
+    }
     const ge = f.genre;
     if (ge?.kind === 'enum' && ge.values.length) rows = rows.filter((b) => ge.values.includes(b.genre));
     return { rows: rows.slice((p - 1) * 8, p * 8), total: rows.length };
   });
   const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
-    { id: 'author', header: 'Author', cell: (r) => <Highlighted text={r.author} query={search} />, priority: 'mid' },
+    { id: 'author', header: 'Author', cell: (r) => <Highlighted text={r.author} query={search} />, priority: 'mid', sortable: true },
     { id: 'genre', header: 'Genre', cell: (r) => r.genre, priority: 'low' },
     { id: 'year', header: 'Year', cell: (r) => String(r.year), align: 'end', priority: 'low' },
     { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill> },
     { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), align: 'end' },
   ], [search]);
   const idColumn = useMemo(() => ({
-    header: 'Book', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/books/${r.id}`,
+    header: 'Book', id: 'title', sortable: true, text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/books/${r.id}`,
     render: (r: Book) => <><CellStrong><Highlighted text={r.title} query={search} /></CellStrong><CellSub tabular>{r.id}</CellSub></>,
   }), [search]);
   return (
     <DataWorkspace<Book>
       id="cards" label="Books" mobile="cards" status={shown ? 'ready' : 'loading'} refreshing={shown != null && refreshing} loadingRows={5}
       rows={shown?.rows ?? []} getRowId={(r) => r.id} columns={columns} idColumn={idColumn}
+      sort={sort} onSortChange={(next) => { for (const k of next) log(`sort:${k.columnId}:${k.direction}`); setSort(next); setPage(1); }}
       selection={selection} onSelectionChange={setSelection} maxSelection={5}
       bulkActions={(ids) => <Button size="sm" onClick={() => log(`lend:${ids.join(',')}`)}>Lend</Button>}
       rowActions={wordActions} rowNavigation
@@ -173,7 +184,7 @@ function Groups() {
   const idColumn = useMemo(() => ({ header: 'ID', text: (r: Book) => r.id, onPeek: (r: Book) => log(`peek:${r.id}`) }), []);
   return (
     <DataWorkspace<Book>
-      id="groups" label="Books by status" mobile="cards" rows={[]} groups={groups} collapsedGroups={collapsed} onCollapsedGroupsChange={setCollapsed}
+      id="groups" label="Books by status" mobile="cards" density="standard" rows={[]} groups={groups} collapsedGroups={collapsed} onCollapsedGroupsChange={setCollapsed}
       getRowId={(r) => r.id} columns={columns} idColumn={idColumn} selection={selection} onSelectionChange={setSelection}
       bulkActions={(ids) => <Button size="sm" onClick={() => log(`bulk:${ids.length}`)}>Lend</Button>} rowActions={bookActions}
     />
@@ -183,7 +194,10 @@ function Groups() {
 /** 2,000 unpaged rows, windowed; j / k move the active row (the product's own chords). */
 function Long() {
   const [active, setActive] = useState<string | null>(null);
-  const [rows, setRows] = useState(LONG);
+  const [all, setRows] = useState(LONG);
+  // the id column is the sort key here (HAR-2631)
+  const [sort, setSort] = useState<DataWorkspaceSort | null>(null);
+  const rows = useMemo(() => (sort ? [...all].sort((a, b) => a.id.localeCompare(b.id) * (sort.direction === 'ascending' ? 1 : -1)) : all), [all, sort]);
   const [refreshing, setRefreshing] = useState(false);
   const ids = useMemo(() => rows.map((r) => r.id), [rows]);
   useEffect(() => {
@@ -203,12 +217,12 @@ function Long() {
     { id: 'author', header: 'Author', cell: (r) => r.author },
     { id: 'year', header: 'Year', cell: (r) => String(r.year), align: 'end' },
   ], []);
-  const idColumn = useMemo(() => ({ header: 'ID', text: (r: Book) => r.id }), []);
+  const idColumn = useMemo(() => ({ header: 'ID', id: 'id', sortable: true, text: (r: Book) => r.id }), []);
   const activate = useCallback((r: Book) => window.__dw.activated.push(r.id), []);
   const refetch = () => { setRefreshing(true); setTimeout(() => { setRows((all) => all.map((r) => ({ ...r }))); setRefreshing(false); }, 300); };
   return (
     <DataWorkspace<Book>
-      id="long" label="Every copy" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} density="compact"
+      id="long" label="Every copy" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} density="compact" sort={sort} onSortChange={setSort}
       virtualize={{ maxHeight: 480 }} refreshing={refreshing}
       onRowActivate={activate} activeRowId={active} onActiveRowChange={setActive}
       toolbarEnd={<Button size="sm" variant="secondary" onClick={refetch}>Refresh</Button>}
@@ -238,6 +252,91 @@ function States() {
   );
 }
 
+/** MOTUS shelves (HAR-2634): a priority table with word verbs. `compact` renders only the peek at the narrow step. */
+function Shelves({ id, compact }: { id: string; compact: boolean }) {
+  const rows = useMemo(() => BOOKS.slice(0, 5), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author, priority: 'mid', className: 'uix-col--w-lg uix-col--truncate' },
+    { id: 'genre', header: 'Genre', cell: (r) => r.genre, priority: 'low', className: 'uix-col--w-md' },
+    { id: 'location', header: 'Location', cell: () => 'Main branch, reading room, east wall', priority: 'low', className: 'uix-col--w-xl uix-col--truncate' },
+    { id: 'note', header: 'Note', cell: () => 'Labels reprinted after the move', priority: 'low', className: 'uix-col--w-xl uix-col--truncate' },
+    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), align: 'end', className: 'uix-col--w-xs' },
+    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill>, className: 'uix-col--w-md' },
+  ], []);
+  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/shelves/${r.id}`, width: '14rem' }), []);
+  const actions = useCallback((r: Book, context: DataWorkspaceRowActionsContext) => (compact && context.compact
+    ? (
+      // the always-on controls: a peek and a kebab
+      <>
+        <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+        <Menu trigger={<button type="button" className="uix-rowact" aria-label={`More for ${r.title}`}>⋯</button>} placement="bottom-end">
+          <MenuItem onSelect={() => log(`edit:${r.id}`)}>Uredi</MenuItem>
+        </Menu>
+      </>
+    )
+    : (
+      <>
+        <Button size="sm" variant="ghost" onClick={() => log(`edit:${r.id}`)}>Uredi</Button>
+        <Button size="sm" variant="ghost" onClick={() => log(`deactivate:${r.id}`)}>Deaktiviraj</Button>
+        <Button size="sm" variant="ghost" onClick={() => log(`label:${r.id}`)}>Štampaj naljepnicu</Button>
+        <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+      </>
+    )), [compact]);
+  return <DataWorkspace<Book> id={id} label={compact ? 'Shelves (compact actions)' : 'Shelves'} mobile="priority" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} rowActions={actions} />;
+}
+
+/** Cards at a density (HAR-2631 item 3): a two-line id must stay inside its card. */
+function DenseCards({ id, density }: { id: string; density: 'compact' | 'standard' }) {
+  const rows = useMemo(() => BOOKS.slice(0, 3), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author },
+    { id: 'year', header: 'Year', cell: (r) => String(r.year), align: 'end' },
+  ], []);
+  const idColumn = useMemo(() => ({
+    header: 'Revision', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/revisions/${r.id}`,
+    render: (r: Book) => <><CellStrong>{r.title}</CellStrong><CellSub tabular>{r.id} · {r.author}</CellSub></>,
+  }), []);
+  return <DataWorkspace<Book> id={id} label={`Revisions (${density})`} mobile="cards" density={density} rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} />;
+}
+
+/** Row verbs that arrive late (permissions loaded after the rows): only a peek at first, then words. */
+function LateVerbs({ book }: { book: Book }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 700); return () => clearTimeout(t); }, []);
+  return (
+    <>
+      {ready && <Button size="sm" variant="ghost">Uredi</Button>}
+      {ready && <Button size="sm" variant="ghost">Deaktiviraj</Button>}
+      {ready && <Button size="sm" variant="ghost">Štampaj naljepnicu</Button>}
+      <button type="button" className="uix-rowact" aria-label={`Peek ${book.title}`}><EyeIcon /></button>
+    </>
+  );
+}
+function Late() {
+  const rows = useMemo(() => BOOKS.slice(0, 3), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author },
+    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill> },
+  ], []);
+  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title }), []);
+  // inline on purpose: a new function every render
+  return <DataWorkspace<Book> id="late" label="Shelves, verbs arriving late" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} rowActions={(r) => <LateVerbs book={r} />} />;
+}
+
+/** TENSOR's plain table (HAR-2632): no toolbar parts, rows keyed by UUIDs, named by rowLabel. */
+function Plain() {
+  const [selection, setSelection] = useState<Set<string>>(new Set());
+  const rows = useMemo(() => BOOKS.slice(0, 4).map((b, i) => ({ ...b, id: `3f2a9c0e-77d4-4b1e-9c2a-00000000000${i}` })), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'title', header: 'Title', cell: (r) => r.title },
+    { id: 'author', header: 'Author', cell: (r) => r.author },
+    // a long column and a visually hidden label in a cell (TENSOR's incident list, HAR-2632)
+    { id: 'note', header: 'Note', cell: (r) => <span style={{ whiteSpace: 'nowrap' }}>Shelved in the reading room until the end of the term <span className="uix-visually-hidden">{`Copy note for ${r.title}`}</span></span> },
+  ], []);
+  const rowLabel = useCallback((r: Book) => r.title, []);
+  return <DataWorkspace<Book> id="plain" label="Linked books" rows={rows} getRowId={(r) => r.id} rowLabel={rowLabel} columns={columns} selection={selection} onSelectionChange={setSelection} />;
+}
+
 function Harness() {
   return (
     <>
@@ -247,6 +346,12 @@ function Harness() {
       <section><h2>By status</h2><Groups /></section>
       <section><h2>Every copy</h2><Long /></section>
       <section id="states"><h2>States</h2><States /></section>
+      <section><h2>Plain table</h2><Plain /></section>
+      <section><h2>Shelves</h2><Shelves id="shelves" compact={false} /></section>
+      <section><h2>Shelves, compact actions</h2><Shelves id="shelves-compact" compact /></section>
+      <section><h2>Late verbs</h2><Late /></section>
+      <section><h2>Revisions, compact cards</h2><DenseCards id="cards-dense-compact" density="compact" /></section>
+      <section><h2>Revisions, standard cards</h2><DenseCards id="cards-dense-standard" density="standard" /></section>
     </>
   );
 }
