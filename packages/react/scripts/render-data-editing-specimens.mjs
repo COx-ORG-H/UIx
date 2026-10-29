@@ -255,7 +255,8 @@ const BUILDERS = [
       label: 'Books on a phone', rows: books.slice(0, 2), getRowId: (r) => r.id, columns: [...columns, { id: 'status', header: 'Status', cell: (r) => h(ui.StatusPill, { tone: tone[r.status], treatment: 'dot' }, r.status) }], mobile: 'cards',
       idColumn: { header: 'Book', text: (r) => r.title, linkId: true, href: (r) => `#book-${r.id}`, render: (r) => [h(ui.CellStrong, { key: 't' }, r.title), h(ui.CellSub, { key: 's', tabular: true }, r.id)] },
       selection: new Set(['BK-1001']), onSelectionChange() {},
-      rowActions: (r) => h('button', { type: 'button', className: 'uix-rowact', 'aria-label': `Actions for ${r.title}` }, '⋯'),
+      rowActions: (r) => h('button', { type: 'button', className: 'uix-rowact', 'aria-label': `Actions for ${r.title}` },
+        h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', 'aria-hidden': 'true', focusable: 'false' }, [5, 12, 19].map((cx) => h('circle', { key: cx, cx, cy: 12, r: 1.75 })))),
     }));
     proto.getBoundingClientRect = rect;
     const empty = mount(h(ui.DataWorkspace, {

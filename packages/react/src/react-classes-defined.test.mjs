@@ -43,7 +43,6 @@ const HOOKS = new Map([
   ['uix-audit-log__filter', 'AuditLog filter chip wrapper (HAR-987): the popover anchor; styled by .uix-chip'],
   ['uix-audit-log__region', 'AuditLog list region (HAR-987): styled by .uix-busy-region; a hook for tests'],
   ['uix-data-workspace__toolbar', 'DataWorkspace toolbar (HAR-1388): styled by .uix-toolbar; a hook for consumers and tests'],
-  ['uix-data-workspace__table', 'DataWorkspace table wrap (HAR-1388): styled by .uix-table-wrap; a hook for consumers and tests'],
   ['uix-filter-editor__searching', 'FilterEditor search live region (PR #168 review): styled by .uix-filter-editor__note, visually hidden while silent; a hook for tests'],
   ['uix-data-workspace__state', 'DataWorkspace empty states (PR #168 review): the BusyRegion around them, busy during a refetch; styled by .uix-busy-region; a hook for tests'],
   ['uix-data-workspace__loading', 'DataWorkspace first-load skeleton (HAR-1388): styled by LoadingState; a hook for tests'],

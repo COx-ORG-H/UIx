@@ -99,11 +99,11 @@
      focus never shifts the layout and the wrap's edge never clips it */
   .uix-data-workspace__grid--rows tbody tr[data-uix-row-id] { cursor: pointer; }
   /* The frozen cells paint over a row's outline, so every cell draws its edge of the ring too
-     (forced colours drop box-shadow and keep the outline). */
+     (forced colours drop box-shadow and keep the outline). A card has no frozen cells: its outline is enough. */
   .uix-data-workspace__grid--rows tbody tr:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
-  .uix-data-workspace__table .uix-data-workspace__grid--rows tbody tr[data-uix-row-id]:focus-visible > td { box-shadow: inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
-  .uix-data-workspace__table .uix-data-workspace__grid--rows tbody tr[data-uix-row-id]:focus-visible > td:first-child { box-shadow: inset 2px 0 0 var(--uix-ring), inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
-  .uix-data-workspace__table .uix-data-workspace__grid--rows tbody tr[data-uix-row-id]:focus-visible > td:last-child { box-shadow: inset -2px 0 0 var(--uix-ring), inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
+  .uix-data-workspace__table .uix-data-workspace__grid--rows:not(.uix-table--cards) tbody tr[data-uix-row-id]:focus-visible > td { box-shadow: inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
+  .uix-data-workspace__table .uix-data-workspace__grid--rows:not(.uix-table--cards) tbody tr[data-uix-row-id]:focus-visible > td:first-child { box-shadow: inset 2px 0 0 var(--uix-ring), inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
+  .uix-data-workspace__table .uix-data-workspace__grid--rows:not(.uix-table--cards) tbody tr[data-uix-row-id]:focus-visible > td:last-child { box-shadow: inset -2px 0 0 var(--uix-ring), inset 0 2px 0 var(--uix-ring), inset 0 -1px 0 var(--uix-ring); border-bottom-color: var(--uix-ring); }
   /* windowing: the rows outside the window are two plain spacers */
   .uix-table tbody tr:where(.uix-data-workspace__spacer) { --uix-row-bg: transparent; }
   .uix-data-workspace__spacer > td { padding: 0; border: 0; }
