@@ -559,3 +559,13 @@ test('HAR-2626 rows are memoised: another row\'s selection does not re-render a 
   assert.ok(calls.includes('BK-102'));
   t.unmount();
 });
+
+test('HAR-2713: RowAction with an href is an <a class="uix-rowact">; renderLink, target and rel pass through; without one it is a button', () => {
+  const plain = renderToStaticMarkup(h(ui.RowAction, { href: '/labels/BK-1.pdf', target: '_blank', rel: 'noopener', className: 'x' }, 'Print labels'));
+  assert.match(plain, /^<a target="_blank" rel="noopener" href="\/labels\/BK-1.pdf" class="uix-rowact x">Print labels<\/a>$/);
+  const routed = renderToStaticMarkup(h(ui.RowAction, { href: '/books/BK-1', renderLink: (p) => h('a', { ...p, 'data-router': 'yes' }) }, 'Open'));
+  assert.match(routed, /data-router="yes"/);
+  assert.match(routed, /class="uix-rowact"/);
+  const button = renderToStaticMarkup(h(ui.RowAction, { 'aria-label': 'Peek' }, 'P'));
+  assert.equal(button, '<button type="button" class="uix-rowact" aria-label="Peek">P</button>');
+});
