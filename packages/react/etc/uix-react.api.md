@@ -5996,12 +5996,22 @@ export interface RoutedEdge {
 export type Row = Record<string, unknown>;
 
 // @public
-export function RowAction(input: RowActionProps): react.JSX.Element;
+export function RowAction(props: RowActionProps | RowActionLinkProps): react.JSX.Element;
+
+// @public
+export interface RowActionLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+    // (undocumented)
+    children?: ReactNode;
+    // (undocumented)
+    href: string;
+    renderLink?: UixRenderLink;
+}
 
 // @public (undocumented)
 export interface RowActionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     // (undocumented)
     children?: ReactNode;
+    href?: undefined;
 }
 
 // @public
