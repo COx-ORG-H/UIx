@@ -95,15 +95,24 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
   sortDirection?: SortDirection;
   /** 1-based ordinal shown when this column is a secondary key in a multi-sort */
   sortOrder?: number;
+  /**
+   * The ordinal in words for assistive tech, e.g. "Sort priority 2" (2.50, HAR-2623). The visible
+   * ordinal is CSS content with empty alt text, so without this it is not announced at all.
+   */
+  sortOrderLabel?: string;
   onSort?: () => void;
 }
 
-export function Th({ sortable, sortDirection, sortOrder, onSort, className, children, onClick, ...props }: ThProps) {
+export function Th({ sortable, sortDirection, sortOrder, sortOrderLabel, onSort, className, children, onClick, ...props }: ThProps) {
+  const ordinal = sortOrder != null && sortOrder > 0 && sortOrderLabel
+    ? <span className="uix-visually-hidden">{`, ${sortOrderLabel}`}</span>
+    : null;
   return (
     <th
       className={className}
       data-sort={sortable || undefined}
       data-sort-order={sortOrder != null && sortOrder > 0 ? sortOrder : undefined}
+      data-sort-labelled={(ordinal != null) || undefined}
       aria-sort={sortDirection && sortDirection !== 'none' ? sortDirection : undefined}
       // Sort clicks go through the real <button> below so keyboard users can reach them
       // (UIX-A11Y-2); generic onClick keeps its old non-sort semantics — it is dropped
@@ -112,9 +121,9 @@ export function Th({ sortable, sortDirection, sortOrder, onSort, className, chil
       {...props}
     >
       {sortable ? (
-        <button type="button" className="uix-th__sortbtn" onClick={onSort}>{children}</button>
+        <button type="button" className="uix-th__sortbtn" onClick={onSort}>{children}{ordinal}</button>
       ) : (
-        children
+        <>{children}{ordinal}</>
       )}
     </th>
   );

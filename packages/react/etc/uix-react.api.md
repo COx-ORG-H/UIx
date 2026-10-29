@@ -1478,20 +1478,36 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 export type DashboardGridSpan = 1 | 2 | 'full';
 
 // @public
-export function DataWorkspace<T>(input: DataWorkspaceProps<T>): react.JSX.Element;
+export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>(input: DataWorkspaceProps<T, S>): react.JSX.Element;
 
 // @public (undocumented)
 export interface DataWorkspaceColumn<T> {
     align?: 'start' | 'end';
     // (undocumented)
     cell: (row: T) => ReactNode;
+    className?: string;
     // (undocumented)
     header: ReactNode;
     // (undocumented)
     id: string;
+    label?: string;
+    minWidth?: string;
+    priority?: 'high' | 'mid' | 'low';
     // (undocumented)
     sortable?: boolean;
     width?: string;
+}
+
+// @public
+export interface DataWorkspaceGroup<T> {
+    aggregates?: Readonly<Record<string, ReactNode>>;
+    count?: number;
+    // (undocumented)
+    id: string;
+    label: ReactNode;
+    name?: string;
+    // (undocumented)
+    rows: readonly T[];
 }
 
 // @public
@@ -1499,10 +1515,14 @@ export interface DataWorkspaceIdColumn<T> {
     // (undocumented)
     header: ReactNode;
     href?: (row: T) => string;
+    linkId?: boolean;
+    minWidth?: string;
     onPeek?: (row: T) => void;
+    render?: (row: T) => ReactNode;
     // (undocumented)
     renderLink?: UixRenderLink;
     text: (row: T) => string;
+    width?: string;
 }
 
 // @public
@@ -1513,16 +1533,20 @@ export interface DataWorkspaceLabels {
     bulkActions: string;
     // (undocumented)
     clearFilters: string;
+    collapseGroup: string;
     // (undocumented)
     empty: string;
     // (undocumented)
     emptyDetail: string;
     // (undocumented)
     error: string;
+    expandGroup: string;
     // (undocumented)
     filteredEmpty: string;
     // (undocumented)
     filteredEmptyDetail: string;
+    groupCount: string;
+    groupCountOne: string;
     // (undocumented)
     loading: string;
     // (undocumented)
@@ -1549,7 +1573,9 @@ export interface DataWorkspaceLabels {
     // (undocumented)
     selectAll: string;
     selected: string;
+    selectGroup: string;
     selectRow: string;
+    sortPriority: string;
     // (undocumented)
     view: string;
 }
@@ -1577,63 +1603,92 @@ export type DataWorkspacePagination = {
 };
 
 // @public (undocumented)
-export interface DataWorkspaceProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    activateOnClick?: boolean;
+    activeRowId?: string | null;
+    beforeBody?: ReactNode;
     bulkActions?: (selectedIds: string[]) => ReactNode;
+    collapsedGroups?: ReadonlySet<string>;
     // (undocumented)
     columns: readonly DataWorkspaceColumn<T>[];
     // (undocumented)
     density?: TableDensity;
+    empty?: ReactNode;
+    emptyAction?: ReactNode;
+    error?: ReactNode;
+    filteredEmpty?: ReactNode;
+    filteredEmptyAction?: ReactNode;
     filters?: {
         fields: readonly FilterField[];
         values: Readonly<Record<string, FilterValue | undefined>>;
         onChange: (fieldId: string, value: FilterValue | undefined) => void;
         counts?: Readonly<Record<string, number>>;
         summary?: SummarizeFilterOptions;
+        onClearAll?: (scope: {
+            search: boolean;
+        }) => void;
     };
+    fixed?: boolean;
+    freezeFirstColumn?: boolean;
     // (undocumented)
     getRowId: (row: T) => string;
     getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
+    groups?: readonly DataWorkspaceGroup<T>[];
     // (undocumented)
     idColumn?: DataWorkspaceIdColumn<T>;
     label: string;
     // (undocumented)
     labels?: Partial<DataWorkspaceLabels>;
+    loadingRows?: number;
     maximized?: boolean;
+    maxSelection?: number;
+    mobile?: 'priority' | 'cards';
+    multiSort?: boolean;
+    onActiveRowChange?: (rowId: string) => void;
+    onCollapsedGroupsChange?: (collapsed: Set<string>) => void;
     // (undocumented)
     onMaximizedChange?: (maximized: boolean) => void;
     // (undocumented)
     onRetry?: () => void;
+    onRowActivate?: (row: T) => void;
     // (undocumented)
     onSaveView?: () => void;
     // (undocumented)
     onSaveViewAs?: () => void;
     // (undocumented)
     onSelectionChange?: (selection: Set<string>) => void;
-    // (undocumented)
-    onSortChange?: (sort: DataWorkspaceSort | null) => void;
+    onSortChange?: (sort: DataWorkspaceSortValue<S>) => void;
     // (undocumented)
     pagination?: DataWorkspacePagination;
     refreshing?: boolean;
     rowActions?: (row: T) => ReactNode;
+    rowNavigation?: boolean;
     // (undocumented)
     rows: readonly T[];
     savedViews?: {
         current: ReactNode;
         menu: SavedViewMenuProps;
+        note?: ReactNode;
     };
+    saveViewAs?: 'changed' | 'always';
     search?: {
         value: string;
         onChange: (value: string) => void;
         label?: string;
         placeholder?: string;
+        onSubmit?: (value: string) => void;
+        onClear?: () => void;
+        maxLength?: number;
     };
     selection?: ReadonlySet<string>;
-    // (undocumented)
-    sort?: DataWorkspaceSort | null;
+    sort?: S;
+    stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
     toolbarEnd?: ReactNode;
     viewChanged?: boolean;
     viewMenu?: ViewMenuProps;
+    virtualize?: boolean | DataWorkspaceVirtualize;
+    zebra?: boolean;
 }
 
 // @public (undocumented)
@@ -1642,6 +1697,20 @@ export interface DataWorkspaceSort {
     columnId: string;
     // (undocumented)
     direction: 'ascending' | 'descending';
+}
+
+// @public
+export type DataWorkspaceSortState = DataWorkspaceSort | readonly DataWorkspaceSort[] | null;
+
+// @public
+export type DataWorkspaceSortValue<S> = S extends readonly DataWorkspaceSort[] ? DataWorkspaceSort[] : DataWorkspaceSort | null;
+
+// @public
+export interface DataWorkspaceVirtualize {
+    estimatedRowHeight?: number;
+    maxHeight?: number;
+    overscan?: number;
+    threshold?: number;
 }
 
 // @public (undocumented)
@@ -6739,6 +6808,7 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     label: string;
     labels?: Partial<SearchBarLabels>;
     landmark?: boolean;
+    maxLength?: number;
     name?: string;
     onClear?: () => void;
     onSubmit?: (value: string) => void;
@@ -7653,6 +7723,7 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     sortDirection?: SortDirection;
     sortOrder?: number;
+    sortOrderLabel?: string;
 }
 
 // @public (undocumented)

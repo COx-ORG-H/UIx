@@ -27,6 +27,10 @@
   /* multi-column sort ordinal (⇧+click adds a secondary key) */
   .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent); }
 
+  /* With Th sortOrderLabel the ordinal is said in words inside the button (2.50, HAR-2623), so the
+     drawn number gets empty alt text; an engine without the alt syntax keeps the rule above. */
+  .uix-table th[data-sort-order][data-sort-labelled]::before { content: attr(data-sort-order) / ""; }
+
   /* sortable header's real <button> (UIX-A11Y-2): visually indistinguishable from the old
      plain-text th — inherited font/colour, no chrome — with an inset overlay so the whole
      cell stays the click target (the sticky th is its containing block). The sort arrow and

@@ -179,6 +179,8 @@ test('toggleSortKeys: additive appends/updates a secondary key, drops on cycle-o
   const two = toggleSortKeys(one, 'b', true);
   assert.deepEqual(two, [{ field: 'a', dir: 'asc' }, { field: 'b', dir: 'desc' }]);
   assert.deepEqual(toggleSortKeys(two, 'b', true), [{ field: 'a', dir: 'asc' }]);
+  // 2.50 (HAR-2623): an existing key turns in place; it keeps its priority
+  assert.deepEqual(toggleSortKeys(two, 'a', true), [{ field: 'a', dir: 'desc' }, { field: 'b', dir: 'desc' }]);
 });
 
 test('searchRows: any field / restricted fields / blank returns a copy', () => {

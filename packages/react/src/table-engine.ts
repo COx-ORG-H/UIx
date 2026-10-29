@@ -59,15 +59,18 @@ export function nextSortDir(current: SortDir | 'none' | undefined): SortDir | 'n
 
 /**
  * Toggle a field within a multi-sort key list. Without shift, it replaces the
- * list with just this field (cycling its direction); with shift, it adds/updates
- * the field as a secondary key (removing it when it cycles back to none).
+ * list with just this field (cycling its direction); with shift, a new field is
+ * appended as the last key, an existing key turns in place (it keeps its priority,
+ * as TanStack Table and TENSOR's DataTable do; 2.50, HAR-2623) and is removed when
+ * it cycles back to none.
  */
 export function toggleSort(keys: readonly SortKey[], field: string, additive = false): SortKey[] {
   const existing = keys.find((k) => k.field === field);
   const dir = nextSortDir(existing?.dir);
   if (!additive) return dir === 'none' ? [] : [{ field, dir }];
-  const rest = keys.filter((k) => k.field !== field);
-  return dir === 'none' ? rest : [...rest, { field, dir }];
+  if (dir === 'none') return keys.filter((k) => k.field !== field);
+  if (!existing) return [...keys, { field, dir }];
+  return keys.map((k) => (k.field === field ? { field, dir } : k));
 }
 
 /* ── typed filters ───────────────────────────────────────────────────────────── */

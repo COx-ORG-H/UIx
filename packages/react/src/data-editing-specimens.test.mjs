@@ -53,6 +53,19 @@ test('every state named in a caption is on the page', () => {
   assert.equal((dataWs.match(/class="uix-id-cell__btn"/g) ?? []).length, 3);
   assert.match(dataWs, /<span class="uix-data-workspace__range">1–3 of 3<\/span>/);
   assert.match(dataWs, />Save changes</);
+  // data workspace 2.50 (HAR-2622..2626): two sort badges, the id as the record's link, beforeBody,
+  // three groups (one collapsed) with counts and the copies' sum, a tri-state group box, the empty action
+  const gaps = dataWs.slice(dataWs.indexOf('data-data-workspace-gaps-example'));
+  assert.deepEqual([...gaps.matchAll(/data-sort-order="(\d)" data-sort-labelled="true"[\s\S]*?<span class="uix-visually-hidden">, (Sort priority \d)<\/span>/g)].map((m) => [m[1], m[2]]), [['1', 'Sort priority 1'], ['2', 'Sort priority 2']]);
+  assert.match(gaps, /<a href="#book-BK-1001" class="uix-id-cell__btn uix-data-workspace__id-link"><span class="uix-data-workspace__id-text"><span class="uix-cell-strong">A Wizard of Earthsea<\/span>/);
+  assert.match(gaps, /<div class="uix-data-workspace__before"><div class="uix-alert/);
+  assert.equal((gaps.match(/<tbody class="uix-data-workspace__group"/g) ?? []).length, 3);
+  assert.match(gaps, /aria-label="Expand group Lost"/);
+  assert.match(gaps, /2 rows<\/span>/);
+  assert.match(gaps, /class="uix-data-workspace__group-agg uix-col--num">5 copies</);
+  assert.match(gaps, />Save as…</);
+  assert.match(gaps, /No books on the wish list[\s\S]*>Add the first book</);
+  assert.match(gaps, /data-data-workspace-cards-example[\s\S]*<table class="uix-table uix-table--cards"[\s\S]*<td data-col="author" data-priority="mid" data-label="Author">Ursula K. Le Guin<\/td>/);
   // audit log: the filter bar with one set filter, three entries, a Details disclosure, older entries
   const crm = specimens['examples-crm-itsm'];
   assert.match(crm, /data-audit-log-example[\s\S]*<section class="uix-audit-log" aria-label="Access history">/);
