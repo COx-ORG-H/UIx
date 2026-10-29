@@ -87,9 +87,9 @@
       "brotli": 1343
     },
     "styles/components/checkbox.css": {
-      "raw": 3130,
-      "gzip": 1137,
-      "brotli": 898
+      "raw": 3241,
+      "gzip": 1191,
+      "brotli": 944
     },
     "styles/components/code-display.css": {
       "raw": 2818,
@@ -372,9 +372,9 @@
       "brotli": 1037
     },
     "styles/components/radio.css": {
-      "raw": 4143,
-      "gzip": 1210,
-      "brotli": 991
+      "raw": 4256,
+      "gzip": 1275,
+      "brotli": 1054
     },
     "styles/components/reactions.css": {
       "raw": 4546,
@@ -477,9 +477,9 @@
       "brotli": 1099
     },
     "styles/components/switch.css": {
-      "raw": 1198,
-      "gzip": 499,
-      "brotli": 387
+      "raw": 1309,
+      "gzip": 558,
+      "brotli": 436
     },
     "styles/components/table-toolbar.css": {
       "raw": 6021,
