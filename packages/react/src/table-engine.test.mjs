@@ -87,6 +87,12 @@ test('toggleSort: additive appends/updates a secondary key and removes on cycle-
   assert.deepEqual(three, [{ field: 'a', dir: 'ascending' }]);
 });
 
+test('toggleSort: additive on an existing key turns it in place; its priority stays (2.50, HAR-2623)', () => {
+  const keys = [{ field: 'a', dir: 'ascending' }, { field: 'b', dir: 'ascending' }];
+  assert.deepEqual(toggleSort(keys, 'a', true), [{ field: 'a', dir: 'descending' }, { field: 'b', dir: 'ascending' }]);
+  assert.deepEqual(toggleSort([{ field: 'a', dir: 'descending' }, { field: 'b', dir: 'ascending' }], 'a', true), [{ field: 'b', dir: 'ascending' }]);
+});
+
 /* ── typed filters (every op) ────────────────────────────────────────────────── */
 
 test('matchFilter: enum isAnyOf / isNoneOf', () => {

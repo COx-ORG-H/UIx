@@ -6,6 +6,7 @@ import type {
   MouseEvent as ReactMouseEvent, ReactNode,
 } from 'react';
 import { cx } from '../cx.js';
+import { toggleSort } from '../table-engine.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
 import { renderUixLink } from '../link.js';
@@ -120,9 +121,15 @@ export interface DataWorkspaceColumn<T> {
   align?: 'start' | 'end';
   /** A CSS width for the column, e.g. `12rem`. */
   width?: string;
-  /** The column's minimum width, e.g. `14rem`: a squeezed table scrolls rather than narrow it (HAR-2624). */
+  /**
+   * The column's floor, e.g. `14rem` (HAR-2624). In a fixed layout the table's own min-width is
+   * the sum of its columns' floors, so a squeezed table scrolls rather than narrow them.
+   */
   minWidth?: string;
-  /** A class on the column's header and body cells, e.g. `uix-col--truncate` (HAR-2624). */
+  /**
+   * A class on the column's header and body cells, e.g. `uix-col--truncate` (HAR-2624). A width
+   * tier (`uix-col--w-md`) or `uix-col--flex` also sizes the column's `<col>` in a fixed layout.
+   */
   className?: string;
   /**
    * The responsive ladder (`mobile`, HAR-2622): `low` columns go below 900 px of workspace width,
@@ -161,6 +168,10 @@ export interface DataWorkspaceIdColumn<T> {
    * own record is the way in (HAR-2622). Off: the id is text and the ↗ is the link.
    */
   linkId?: boolean;
+  /** The column's width in a fixed layout (`fixed`), e.g. `16rem`. */
+  width?: string;
+  /** The column's floor in a fixed layout. Default: the `md` column tier. */
+  minWidth?: string;
   renderLink?: UixRenderLink;
 }
 
@@ -209,6 +220,11 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   sort?: S;
   /** Receives the same shape `sort` holds: a list for a list, else one key or `null`. */
   onSortChange?: (sort: DataWorkspaceSortValue<S>) => void;
+  /**
+   * List mode even while `sort` is `null` or one key, for a product whose sort state starts
+   * empty. Type `sort` as a list (`[]` for none): `onSortChange` then receives a list.
+   */
+  multiSort?: boolean;
   /** The selected row ids. Kept by id, so a refresh or a new page keeps them. */
   selection?: ReadonlySet<string>;
   onSelectionChange?: (selection: Set<string>) => void;
@@ -226,8 +242,17 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   density?: TableDensity;
   /** Zebra rows (the `Table` default, on). The View menu's toggle (HAR-2624). */
   zebra?: boolean;
-  /** Freeze the first column without an id column; with selection the checkbox is frozen too (HAR-2624). */
+  /**
+   * Freeze the first column without an id column; with selection the checkbox is frozen too
+   * (HAR-2624). With `mobile`, nothing is frozen from the narrowest step (under 600 px).
+   */
   freezeFirstColumn?: boolean;
+  /**
+   * `table-layout: fixed` with a `<colgroup>` from the columns' widths and tiers, and the table's
+   * min-width at the sum of the columns' floors (TENSOR HAR-997), so a truncating column clips
+   * instead of growing. Default: on when a column has `className` or `minWidth`. Not in cards.
+   */
+  fixed?: boolean;
   /**
    * The responsive ladder, from the workspace's own width (HAR-2622): `priority` drops `low`
    * columns below 900 px and `mid` ones below 600 px; `cards` turns the rows into cards below
@@ -315,15 +340,23 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   virtualize?: boolean | DataWorkspaceVirtualize;
   /**
    * The keyboard row model (HAR-2626): one row in the tab order, ↑ / ↓ / Home / End move between
-   * rows, Enter or a click on the row (not on a control in it) calls this.
+   * rows, Enter opens the row (`onRowActivate`, else its id: the peek or the link), Space does not
+   * scroll the page. Default: on with `onRowActivate`.
    */
+  rowNavigation?: boolean;
+  /** A row's primary action: Enter on the row, and a click on the row (not on a control in it or its cell). Turns on `rowNavigation`. */
   onRowActivate?: (row: T) => void;
+  /** `false`: only Enter activates a row, not a pointer click. Default `true`. */
+  activateOnClick?: boolean;
   /** The row with the tab stop, to drive it from the product's own shortcuts (j / k). Changing it focuses that row. */
   activeRowId?: string | null;
   /** The tab stop moved to another row (a key, a click, focus entering a row). */
   onActiveRowChange?: (rowId: string) => void;
   labels?: Partial<DataWorkspaceLabels>;
 }
+
+/** A layout effect in the browser, an effect on the server (no warning there). */
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 const ArrowUpRight = () => (
   <svg className="uix-id-cell__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M7 17 17 7M8 7h9v9" /></svg>
@@ -358,7 +391,7 @@ const hiddenBy = (ladder: Ladder, priority: DataWorkspaceColumn<unknown>['priori
 /** The row heights of the three densities (`--uix-row-h*`), for the first windowed paint. */
 const ROW_HEIGHT: Record<TableDensity, number> = { compact: 44, standard: 56, comfortable: 68 };
 /** What a click on a row leaves alone: it belongs to the control. */
-const CONTROLS = 'a, button, input, select, textarea, label, summary, [role="button"], [role="menuitem"], [contenteditable="true"], [popover]';
+const CONTROLS = 'a, button, input, select, textarea, label, summary, dialog, [role="button"], [role="menuitem"], [contenteditable="true"], [popover], td.uix-table__selcell, td.uix-table__actions';
 const RESERVED_COLS = new Set(['select', 'id', 'actions', 'expand']);
 const textOf = (node: ReactNode) => (typeof node === 'string' ? node : undefined);
 const columnLabel = <T,>(column: DataWorkspaceColumn<T>) => column.label ?? textOf(column.header);
@@ -385,11 +418,11 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
  */
 export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
   label, rows, getRowId, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions,
-  getRowProps, density, zebra, freezeFirstColumn = false, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
+  getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
-  error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, onRowActivate, activeRowId,
-  onActiveRowChange, labels: labelOverrides, className, ...props
+  error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
+  activateOnClick = true, activeRowId, onActiveRowChange, multiSort = false, labels: labelOverrides, className, ...props
 }: DataWorkspaceProps<T, S>) {
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...useUixLabels().dataWorkspace, ...labelOverrides };
   const id = useId();
@@ -428,7 +461,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       const root = rootRef.current;
       const target = event.target as Element | null;
       const owner = target?.closest?.('[popover], [role="dialog"], [role="menu"], [role="listbox"], [aria-expanded="true"]');
-      if (owner && root?.contains(owner)) return;
+      if (owner && root?.contains(owner) && (owner.getAttribute('aria-expanded') !== 'true' || stillExpanded(owner))) return;
       if (root && openInside(root)) return;
       onMaximizedChange(false);
     };
@@ -441,10 +474,15 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   // paint, then on every resize; only a change of step re-renders. No layout (jsdom, a hidden
   // tab) means no step.
   const [ladder, setLadder] = useState<Ladder>(null);
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
     if (!mobile || !root) { setLadder(null); return; }
-    const read = () => setLadder(ladderFor(mobile, root.getBoundingClientRect().width));
+    // the content box: a maximized workspace has padding the table does not get
+    const read = () => {
+      const style = getComputedStyle(root);
+      const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+      setLadder(ladderFor(mobile, root.getBoundingClientRect().width - padding));
+    };
     read();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(read);
@@ -531,8 +569,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   };
 
   // Sorting: one key, or (when `sort` is a list) an ordered list of keys.
-  const multi = Array.isArray(sort);
-  const keys: readonly DataWorkspaceSort[] = multi ? sort as readonly DataWorkspaceSort[] : sort ? [sort as DataWorkspaceSort] : [];
+  const multi = multiSort || Array.isArray(sort);
+  const keys: readonly DataWorkspaceSort[] = Array.isArray(sort) ? sort as readonly DataWorkspaceSort[] : sort ? [sort as DataWorkspaceSort] : [];
   const sortFor = (column: DataWorkspaceColumn<T>) => keys.find((key) => key.columnId === column.id)?.direction ?? 'none';
   const cycleSort = (column: DataWorkspaceColumn<T>, additive: boolean) => {
     if (!onSortChange) return;
@@ -542,11 +580,10 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       onSortChange((turned ? { columnId: column.id, direction: turned } : null) as DataWorkspaceSortValue<S>);
       return;
     }
-    let next: DataWorkspaceSort[];
-    if (!additive) next = turned ? [{ columnId: column.id, direction: turned }] : [];
-    else if (current === 'none') next = [...keys, { columnId: column.id, direction: 'ascending' }];
-    // Shift turns a key in place (its priority stays) and removes it after descending.
-    else next = turned ? keys.map((key) => (key.columnId === column.id ? { columnId: column.id, direction: turned } : key)) : keys.filter((key) => key.columnId !== column.id);
+    // The kit's one multi-sort rule (table-engine toggleSort): Shift adds a key last, turns an
+    // existing one in place (its priority stays) and removes it after descending.
+    const next = toggleSort(keys.map((key) => ({ field: key.columnId, dir: key.direction })), column.id, additive)
+      .map((key): DataWorkspaceSort => ({ columnId: key.field, direction: key.dir === 'descending' ? 'descending' : 'ascending' }));
     onSortChange(next as DataWorkspaceSortValue<S>);
   };
 
@@ -612,11 +649,13 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       <WorkspaceGrid<T>
         label={label} rows={shownRows} ids={ids} groups={shownGroups} collapsed={collapsed} onToggleGroup={toggleGroupOpen}
         getRowId={getRowId} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
-        freezeFirstColumn={freezeFirstColumn} ladderOn={mobile != null} ladder={ladder} refreshing={refreshing}
+        freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
+        ladderOn={mobile != null} ladder={ladder} refreshing={refreshing}
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
         actionsByRow={actionsByRow} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
-        virtualize={pagination || shownGroups || cards ? undefined : virtualize}
-        onRowActivate={onRowActivate} activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels}
+        virtualize={pagination || shownGroups ? undefined : virtualize}
+        rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
+        activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels}
       />
     );
   }
@@ -658,6 +697,7 @@ interface WorkspaceGridProps<T> {
   density?: TableDensity;
   zebra?: boolean;
   freezeFirstColumn: boolean;
+  fixed: boolean;
   ladderOn: boolean;
   ladder: Ladder;
   refreshing: boolean;
@@ -675,7 +715,9 @@ interface WorkspaceGridProps<T> {
   sortFor: (column: DataWorkspaceColumn<T>) => DataWorkspaceSort['direction'] | 'none';
   cycleSort: (column: DataWorkspaceColumn<T>, additive: boolean) => void;
   virtualize?: boolean | DataWorkspaceVirtualize;
+  rowNavigation: boolean;
   onRowActivate?: (row: T) => void;
+  activateOnClick: boolean;
   activeRowId?: string | null;
   onActiveRowChange?: (rowId: string) => void;
   labels: DataWorkspaceLabels;
@@ -693,7 +735,8 @@ interface RowHandlers {
 /**
  * The table: header, rows (flat, grouped or windowed) and the keyboard row model. A component of
  * its own so the windowing hook mounts with the scrolling wrap it observes; without `virtualize`
- * the hook does not run at all (no scroll listener, no observer).
+ * the hook does not run at all (no scroll listener, no observer). The cards step does not change
+ * which component renders, so crossing it keeps the rows, their focus and the scroll.
  */
 function WorkspaceGrid<T>(props: WorkspaceGridProps<T>) {
   return props.virtualize ? <WindowedGrid<T> {...props} /> : <WorkspaceTable<T> {...props} windowing={null} virtual={null} />;
@@ -705,25 +748,44 @@ function WindowedGrid<T>(props: WorkspaceGridProps<T>) {
   const virtual = useVirtualRows(props.rows, {
     rowHeight: windowing.estimatedRowHeight ?? ROW_HEIGHT[props.density ?? 'standard'],
     overscan: windowing.overscan ?? 8,
-    threshold,
+    // windowed at `threshold` rows or more (the hook windows above its own threshold)
+    threshold: Math.max(0, threshold - 1),
     estimatedViewportHeight: windowing.maxHeight ?? 640,
     measureRows: 'tbody > tr[data-uix-row-id]',
-    enabled: props.rows.length > threshold,
+    // cards are not windowed: a card's height is its content's
+    enabled: props.rows.length >= threshold && props.ladder !== 'cards',
   });
   return <WorkspaceTable<T> {...props} windowing={windowing} virtual={virtual} />;
 }
 
+/** A column's floor in a fixed layout: its `minWidth`, its fixed `width`, its width tier, the title floor, or a small tier. */
+const columnFloor = (width?: string, minWidth?: string, className?: string) => {
+  if (minWidth) return minWidth;
+  if (width && !width.trim().endsWith('%')) return width;
+  const classes = className?.split(/\s+/) ?? [];
+  for (const cls of classes) {
+    const tier = /^uix-col--w-(xs|sm|md|lg|xl)$/.exec(cls)?.[1];
+    if (tier) return `var(--uix-col-w-${tier})`;
+  }
+  if (classes.includes('uix-col--flex') || classes.includes('uix-col--primary')) return 'var(--uix-col-title-min)';
+  return 'var(--uix-col-w-sm)';
+};
+const isFlex = (className?: string) => /(^|\s)uix-col--(flex|primary)(\s|$)/.test(className ?? '');
+/** The classes of a column that size a `<col>` (a tier, the flex column). */
+const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
+
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, hasActions, keys, sortable,
-  multi, sortFor, cycleSort, onRowActivate, activeRowId, onActiveRowChange, labels, windowing, virtual,
+  fixed, ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, hasActions, keys, sortable,
+  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const baseId = useId();
 
   // ── windowing (HAR-2626) ────────────────────────────────────────────────────────────────
   const maxHeight = windowing?.maxHeight ?? 640;
-  const long = windowing != null && rows.length > (windowing.threshold ?? 100);
+  const long = windowing != null && !cards && rows.length >= (windowing.threshold ?? 100);
   const containerRef = virtual?.containerRef;
   const setWrap = useCallback((node: HTMLDivElement | null) => {
     wrapRef.current = node;
@@ -734,7 +796,10 @@ function WorkspaceTable<T>({
   const mountedRows = virtual && windowed ? virtual.rows : rows;
 
   // ── the keyboard row model (HAR-2626) ───────────────────────────────────────────────────
-  const nav = onRowActivate != null;
+  // `rowNavigation` turns on the roving tab stop (on by default with `onRowActivate`); a click on
+  // the row activates it only with `onRowActivate`, and `activateOnClick={false}` keeps that to Enter.
+  const nav = rowNavigation;
+  const clickActivates = onRowActivate != null && activateOnClick;
   const [ownActive, setOwnActive] = useState<string | null>(null);
   const active = activeRowId !== undefined ? activeRowId : ownActive;
   /** The rows ↑ / ↓ walk: every row on screen in order (a collapsed group's rows are not). */
@@ -747,7 +812,7 @@ function WorkspaceTable<T>({
   const mountedIds = useMemo(() => new Set(windowed ? ids.slice(start, start + mountedRows.length) : navIds), [windowed, ids, start, mountedRows.length, navIds]);
   /** The tab stop must be a row in the DOM: the active one, else the first mounted one. */
   const tabStop = active != null && mountedIds.has(active) ? active : navIds.find((rowId) => mountedIds.has(rowId)) ?? null;
-  /** A row to focus once the window has rendered it. */
+  /** A row outside the window, scrolled to and focused once the window has rendered it. */
   const pendingFocus = useRef<string | null>(null);
   /** The row that had focus, while focus is in a row: a refetch that drops it hands focus to the tab stop. */
   const focusedRow = useRef<string | null>(null);
@@ -773,39 +838,58 @@ function WorkspaceTable<T>({
     if (activeRowId === undefined) setOwnActive(rowId);
     onActiveRowChange?.(rowId);
   };
-  const focusRow = (rowId: string) => {
+  /** Moves the tab stop and focus to a row on screen; a row that is not (gone, or in a collapsed group) is left alone. */
+  const focusRow = (rowId: string, { take = true } = {}) => {
+    if (!navIds.includes(rowId)) return;
     setActive(rowId);
+    if (!take) return;
     const el = rowElement(rowId);
     if (el) { el.focus({ preventScroll: true }); reveal(el); return; }
     // Windowed and outside the window: scroll it in, focus it after the render.
     const index = ids.indexOf(rowId);
-    pendingFocus.current = rowId;
-    if (index >= 0 && wrapRef.current && virtual) wrapRef.current.scrollTop = index * virtual.rowHeight;
+    if (index >= 0 && wrapRef.current && virtual && windowed) {
+      pendingFocus.current = rowId;
+      wrapRef.current.scrollTop = index * virtual.rowHeight;
+    }
   };
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!nav) return;
     const pending = pendingFocus.current;
     if (pending != null) {
+      if (!ids.includes(pending)) { pendingFocus.current = null; return; }
       const el = rowElement(pending);
       if (el) { pendingFocus.current = null; el.focus({ preventScroll: true }); reveal(el); }
       return;
     }
-    // Focus was on a row that is gone (a new page, a refetch without it, scrolled out of the
-    // window): the page would drop it on <body>. Hand it to the tab stop instead.
     const had = focusedRow.current;
-    if (had != null && !rowElement(had) && (document.activeElement == null || document.activeElement === document.body) && tabStop != null) {
+    if (had == null) return;
+    const wrap = wrapRef.current;
+    const focused = typeof document !== 'undefined' ? document.activeElement : null;
+    const el = rowElement(had);
+    // Parked on the wrap while the window had scrolled the row away: it is back, so is focus.
+    if (el && wrap && focused === wrap) { el.focus({ preventScroll: true }); return; }
+    if (el || !(focused == null || focused === document.body)) return;
+    // Focus was on a row that is no longer in the DOM; the page would drop it on <body>.
+    if (windowed && ids.includes(had) && wrap) {
+      // Only scrolled out of the window: park focus on the scrolling body, the row stays active.
+      wrap.focus({ preventScroll: true });
+    } else if (tabStop != null) {
+      // A new page or a refetch without it: the tab stop (the first row) takes focus.
       rowElement(tabStop)?.focus({ preventScroll: true });
     }
   });
-  // A product that moves the active row from its own shortcut (j / k) moves focus with it.
+  // A product that moves the active row from its own shortcut (j / k) moves focus with it, when
+  // focus is in the table or nowhere; a person typing in the search keeps their field.
   const lastActiveProp = useRef(activeRowId);
   useEffect(() => {
     if (!nav || activeRowId === lastActiveProp.current) return;
     lastActiveProp.current = activeRowId;
     if (activeRowId == null) return;
+    const focused = document.activeElement;
     const el = rowElement(activeRowId);
-    if (el && el.contains(document.activeElement)) return;
-    focusRow(activeRowId);
+    if (el && el.contains(focused)) return;
+    const mayTake = focused == null || focused === document.body || (wrapRef.current?.contains(focused) ?? false);
+    focusRow(activeRowId, { take: mayTake });
   });
 
   const latest = {
@@ -822,12 +906,21 @@ function WorkspaceTable<T>({
       } else if (event.key === 'Enter') {
         event.preventDefault();
         const row = rows[ids.indexOf(rowId)];
-        if (row !== undefined) onRowActivate?.(row);
+        if (onRowActivate) { if (row !== undefined) onRowActivate(row); return; }
+        // Without onRowActivate, Enter opens what the row already offers: its id (peek or link).
+        const el = event.currentTarget;
+        (el.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el.querySelector<HTMLElement>('a[href]'))?.click();
+      } else if (event.key === ' ') {
+        // Space on a row is not a page scroll.
+        event.preventDefault();
       }
     },
     click: (rowId: string, event: ReactMouseEvent<HTMLTableRowElement>) => {
-      // A click on a control in the row (the checkbox, the id, an action, a link) is the control's;
-      // a drag that selected text is not a click on the row.
+      if (!clickActivates) return;
+      // A click that bubbled through React from a portal (a menu, a dialog) is not on the row.
+      if (!event.currentTarget.contains(event.target as Node)) return;
+      // A click on a control in the row (the checkbox and its cell, the id, an action and its
+      // cell, a link) is the control's; a drag that selected text is not a click on the row.
       const control = (event.target as Element).closest?.(CONTROLS);
       if (control && control !== event.currentTarget && event.currentTarget.contains(control)) return;
       if (typeof window !== 'undefined' && (window.getSelection?.()?.toString() ?? '') !== '') return;
@@ -861,7 +954,7 @@ function WorkspaceTable<T>({
     groupAnchor.current = header ? { id: groupId, top: header.getBoundingClientRect().top } : null;
     onToggleGroup(groupId);
   };
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const was = groupAnchor.current;
     if (!was) return;
     groupAnchor.current = null;
@@ -880,11 +973,41 @@ function WorkspaceTable<T>({
   const additive = useRef(false);
 
   // ── layout ──────────────────────────────────────────────────────────────────────────────
-  const frozen = !cards && (idColumn != null || freezeFirstColumn);
+  // Frozen columns stop at the narrowest step (priority-mid): on a phone-wide table the checkbox
+  // and the id would take most of the wrap.
+  const frozen = !cards && ladder !== 'priority-mid' && (idColumn != null || freezeFirstColumn);
   const shown = columns.filter((column) => !hiddenBy(ladder, column.priority));
   const colCount = (selectable ? 1 : 0) + (idColumn ? 1 : 0) + shown.length + (hasActions ? 1 : 0);
   const selectRowLabel = labels.selectRow;
   const openLabel = labels.open;
+
+  // Fixed layout (HAR-2624, TENSOR HAR-997): the <colgroup> sizes the columns, so a truncating
+  // column clips instead of growing, and the table never gets narrower than its columns' floors
+  // (fixed layout ignores a cell's min-width): narrower than that, the wrap scrolls.
+  const fixedOn = fixed && !cards;
+  const [actionsWidth, setActionsWidth] = useState<number | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    if (!fixedOn || !hasActions) return;
+    // The actions column is as wide as its widest row's actions (words, not only a ⋯).
+    let widest = 0;
+    for (const td of Array.from(wrapRef.current?.querySelectorAll<HTMLElement>('tbody td.uix-table__actions') ?? [])) {
+      const range = document.createRange();
+      range.selectNodeContents(td);
+      const content = range.getBoundingClientRect().width;
+      const style = getComputedStyle(td);
+      widest = Math.max(widest, content + parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0'));
+    }
+    const next = widest > 0 ? Math.ceil(widest) : null;
+    if (next !== actionsWidth) setActionsWidth(next);
+  });
+  const actionsCol = actionsWidth != null ? `${actionsWidth}px` : '5.25rem';
+  const floors = fixedOn ? [
+    ...(selectable ? ['var(--uix-selcol-w)'] : []),
+    ...(idColumn ? [columnFloor(idColumn.width, idColumn.minWidth, undefined)] : []),
+    ...shown.map((column) => columnFloor(column.width, column.minWidth, column.className)),
+    ...(hasActions ? [actionsCol] : []),
+  ] : [];
+  const tableStyle = fixedOn && floors.length ? { minWidth: floors.length === 1 ? floors[0] : `calc(${floors.join(' + ')})` } : undefined;
 
   const renderRow = (row: T, index: number) => {
     const rowId = ids[index];
@@ -904,7 +1027,7 @@ function WorkspaceTable<T>({
   let tbody: ReactNode;
   if (groups) {
     let offset = 0;
-    tbody = groups.map((group) => {
+    tbody = groups.map((group, groupIndex) => {
       const first = offset;
       offset += group.rows.length;
       const open = !collapsed.has(group.id);
@@ -912,6 +1035,8 @@ function WorkspaceTable<T>({
       const groupIds = ids.slice(first, first + group.rows.length);
       const on = groupIds.filter((rowId) => selected.has(rowId)).length;
       const count = group.count ?? group.rows.length;
+      const nameId = `${baseId}-g${groupIndex}-name`;
+      const countId = `${baseId}-g${groupIndex}-count`;
       // The header's label spans up to the first column with an aggregate; each aggregate sits under its column.
       const firstAgg = shown.findIndex((column) => group.aggregates?.[column.id] != null);
       const lead = (idColumn ? 1 : 0) + (firstAgg < 0 ? shown.length + (hasActions ? 1 : 0) : firstAgg);
@@ -922,13 +1047,14 @@ function WorkspaceTable<T>({
             {selectable && (
               <td className="uix-table__selcell" data-col={ladderOn ? 'select' : undefined}>
                 <Checkbox
-                  aria-label={fillLabel(labels.selectGroup, { name })} disabled={group.rows.length === 0}
+                  aria-label={fillLabel(labels.selectGroup, { name })} disabled={group.rows.length === 0 || (atCap && on === 0)}
                   checked={on > 0 && on === groupIds.length} indeterminate={on > 0 && on < groupIds.length}
                   onChange={() => toggleMany(groupIds, on < groupIds.length && !atCap)}
                 />
               </td>
             )}
-            <th scope="rowgroup" colSpan={Math.max(1, lead)} className="uix-data-workspace__group-label">
+            {/* Named by the group's name and count only: the toggle's words change with its state. */}
+            <th scope="rowgroup" colSpan={Math.max(1, lead)} className="uix-data-workspace__group-label" aria-labelledby={`${nameId} ${countId}`}>
               <span className="uix-data-workspace__group-title">
                 <button
                   type="button" className="uix-data-workspace__group-toggle" aria-expanded={open}
@@ -937,13 +1063,13 @@ function WorkspaceTable<T>({
                 >
                   <ChevronIcon />
                 </button>
-                <span className="uix-data-workspace__group-name">{group.label}</span>
-                <span className="uix-data-workspace__group-count">{fillLabel(count === 1 ? labels.groupCountOne : labels.groupCount, { count })}</span>
+                <span className="uix-data-workspace__group-name" id={nameId}>{group.label}</span>
+                <span className="uix-data-workspace__group-count" id={countId}>{fillLabel(count === 1 ? labels.groupCountOne : labels.groupCount, { count })}</span>
                 {leadAgg}
               </span>
             </th>
             {firstAgg >= 0 && shown.slice(lead === 0 ? 1 : firstAgg).map((column) => (
-              <td key={column.id} className={cx('uix-data-workspace__group-agg', column.align === 'end' && 'uix-col--num', column.className)} data-label={ladderOn ? columnLabel(column) : undefined}>
+              <td key={column.id} className={cx('uix-data-workspace__group-agg', column.align === 'end' && 'uix-col--num', column.className)}>
                 {group.aggregates?.[column.id]}
               </td>
             ))}
@@ -973,37 +1099,55 @@ function WorkspaceTable<T>({
   const wrapStyle = long ? { '--uix-table-max-height': `${maxHeight}px` } as CSSProperties : undefined;
   return (
     <TableWrap
-      ref={setWrap} refreshing={refreshing} style={wrapStyle}
+      ref={setWrap} refreshing={refreshing} style={wrapStyle} tabIndex={windowing != null && nav ? -1 : undefined}
       className={cx('uix-data-workspace__table', long && 'uix-table-wrap--scroll', cards && 'uix-data-workspace__table--cards')}
     >
       {/* With selection, the checkbox and the id (or the first column) are both frozen (the id at the checkbox's width). */}
       <Table
-        density={density} zebra={zebra} pinnedCol={frozen} pinnedActions={hasActions && !cards}
+        density={density} zebra={zebra} pinnedCol={frozen} pinnedActions={hasActions && !cards} fixed={fixedOn || undefined} style={tableStyle}
         className={cx(
           selectable && frozen && 'uix-data-workspace__grid--pin-id',
           ladder && `uix-table--${ladder}`,
           groups && zebra !== false && 'uix-data-workspace__grid--grouped',
           nav && 'uix-data-workspace__grid--rows',
-          selectable && cards && 'uix-data-workspace__grid--select',
+          clickActivates && 'uix-data-workspace__grid--click',
         )}
         aria-label={label} aria-rowcount={windowed ? ids.length + 1 : undefined}
       >
+        {fixedOn && (
+          <colgroup>
+            {selectable && <col style={{ width: 'var(--uix-selcol-w)' }} />}
+            {idColumn && <col style={idColumn.width ? { width: idColumn.width } : undefined} />}
+            {/* A flex column (uix-col--flex) takes the slack; every other column holds its width or its floor. */}
+            {shown.map((column) => {
+              const width = column.width ?? (isFlex(column.className) ? undefined : columnFloor(undefined, column.minWidth, column.className));
+              return <col key={column.id} className={colClasses(column.className)} style={width ? { width } : undefined} />;
+            })}
+            {hasActions && <col style={{ width: actionsCol }} />}
+          </colgroup>
+        )}
         <thead>
           <tr aria-rowindex={windowed ? 1 : undefined}>
             {selectable && (
               <th className="uix-table__selcol" scope="col" data-col={ladderOn ? 'select' : undefined}>
-                <Checkbox aria-label={labels.selectAll} checked={onPage > 0 && onPage === ids.length} indeterminate={onPage > 0 && onPage < ids.length} onChange={() => toggleMany(ids, onPage < ids.length && !atCap)} />
+                <Checkbox
+                  aria-label={labels.selectAll} checked={onPage > 0 && onPage === ids.length} indeterminate={onPage > 0 && onPage < ids.length}
+                  disabled={atCap && onPage === 0} onChange={() => toggleMany(ids, onPage < ids.length && !atCap)}
+                />
               </th>
             )}
             {idColumn && <Th scope="col" data-col={ladderOn ? 'id' : undefined}>{idColumn.header}</Th>}
             {columns.map((column) => {
               const order = keys.findIndex((key) => key.columnId === column.id);
               const canSort = column.sortable && sortable;
-              const style = column.width || column.minWidth ? { width: column.width, minWidth: column.minWidth } : undefined;
+              // fixed layout: the <col> holds the width and the table the floors
+              const style = !fixedOn && (column.width || column.minWidth) ? { width: column.width, minWidth: column.minWidth } : undefined;
+              const ordinal = keys.length > 1 && order >= 0 ? order + 1 : undefined;
               return (
                 <Th
                   key={column.id} scope="col" className={cx(column.align === 'end' && 'uix-col--num', column.className) || undefined} style={style}
                   sortable={canSort} sortDirection={sortFor(column)}
+                  sortOrder={ordinal} sortOrderLabel={ordinal != null ? fillLabel(labels.sortPriority, { n: ordinal }) : undefined}
                   onSort={() => { cycleSort(column, multi && additive.current); additive.current = false; }}
                   {...(canSort && multi ? {
                     onKeyDownCapture: (event: ReactKeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') shiftKey.current = event.shiftKey; },
@@ -1013,9 +1157,6 @@ function WorkspaceTable<T>({
                   {...ladderAttrs(ladderOn, column, false)}
                 >
                   {column.header}
-                  {keys.length > 1 && order >= 0 && (
-                    <span className="uix-data-workspace__sort-priority" role="img" aria-label={fillLabel(labels.sortPriority, { n: order + 1 })}>{order + 1}</span>
-                  )}
                 </Th>
               );
             })}
@@ -1187,7 +1328,18 @@ function openInside(root: HTMLElement): boolean {
   try {
     if (root.querySelector(':popover-open')) return true;
   } catch { /* a browser without :popover-open */ }
-  return root.querySelector('dialog[open], [aria-expanded="true"]') != null;
+  if (root.querySelector('dialog[open]')) return true;
+  // A trigger still says aria-expanded="true" until its popover's toggle event arrives, after the
+  // Escape that closed it: a trigger whose own popover is closed does not hold the next Escape.
+  return Array.from(root.querySelectorAll('[aria-expanded="true"]')).some(stillExpanded);
+}
+
+/** An `aria-expanded="true"` that is current: not a trigger whose own popover has already closed. */
+function stillExpanded(el: Element): boolean {
+  const controls = el.getAttribute('aria-controls');
+  const target = controls ? document.getElementById(controls) : null;
+  if (!target?.hasAttribute('popover')) return true;
+  try { return target.matches(':popover-open'); } catch { return true; }
 }
 
 /** Set filters as chips (summary, ×, click to edit) and "+ Filter" listing the unset ones. */

@@ -23,7 +23,7 @@ declare global { interface Window { __dw: { log: string[]; activated: string[]; 
 type Book = { id: string; title: string; author: string; genre: string; year: number; copies: number; status: 'available' | 'loaned' | 'lost' };
 const STATUS = { available: 'Available', loaned: 'On loan', lost: 'Lost' } as const;
 const TONE = { available: 'success', loaned: 'info', lost: 'danger' } as const;
-const TITLES = ['The Hobbit', 'A Wizard of Earthsea', 'The Left Hand of Darkness', 'Der Prozess', 'Na Drini ćuprija', 'The Name of the Rose', 'Murder on the Orient Express', 'The Remains of the Day', 'Kindred', 'Gilead', 'The Master and Margarita', 'Beloved'];
+const TITLES = ['The Hobbit', 'A Wizard of Earthsea', 'The Left Hand of Darkness: A Novel of the Hainish Cycle', 'Der Prozess', 'Na Drini ćuprija', 'The Name of the Rose', 'Murder on the Orient Express', 'The Remains of the Day', 'Kindred', 'Gilead', 'The Master and Margarita', 'Beloved'];
 const AUTHORS = ['J. R. R. Tolkien', 'Ursula K. Le Guin', 'Ursula K. Le Guin', 'Franz Kafka', 'Ivo Andrić', 'Umberto Eco', 'Agatha Christie', 'Kazuo Ishiguro', 'Octavia E. Butler', 'Marilynne Robinson', 'Mikhail Bulgakov', 'Toni Morrison'];
 const GENRES = ['Fantasy', 'Fantasy', 'Science fiction', 'Literary', 'Literary', 'Crime', 'Crime', 'Literary', 'Science fiction', 'Literary', 'Literary', 'Literary'];
 const book = (i: number): Book => ({
@@ -59,7 +59,21 @@ const bookActions = (r: Book) => (
   </Menu>
 );
 
-/** MOTUS: record cards on a phone, the rich id cell as the record's own link. */
+const EyeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" />
+  </svg>
+);
+/** MOTUS's row verbs are words (Produži · Vrati) and a peek: wider than one ⋯. */
+const wordActions = (r: Book) => (
+  <>
+    <Button size="sm" variant="ghost" onClick={() => log(`renew:${r.id}`)}>Renew</Button>
+    <Button size="sm" variant="ghost" onClick={() => log(`return:${r.id}`)}>Return</Button>
+    <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+  </>
+);
+
+/** MOTUS: record cards on a phone, the rich id cell as the record's own link, word actions, Enter opens the record. */
 function Cards() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, FilterValue | undefined>>({});
@@ -90,7 +104,7 @@ function Cards() {
       rows={shown?.rows ?? []} getRowId={(r) => r.id} columns={columns} idColumn={idColumn}
       selection={selection} onSelectionChange={setSelection} maxSelection={5}
       bulkActions={(ids) => <Button size="sm" onClick={() => log(`lend:${ids.join(',')}`)}>Lend</Button>}
-      rowActions={bookActions}
+      rowActions={wordActions} rowNavigation
       search={{ value: search, onChange: (v) => { setSearch(v); setPage(1); }, onSubmit: (v) => log(`submit:${v}`), onClear: () => log('clear'), maxLength: 60, label: 'Search books' }}
       filters={{ fields: FIELDS, values: filters, onChange: (fid, v) => { setFilters((f) => ({ ...f, [fid]: v })); setPage(1); }, onClearAll: (scope) => { log(`clearAll:${scope.search}`); setFilters({}); if (scope.search) setSearch(''); setPage(1); } }}
       savedViews={{ current: 'All books', note: 'Saved views could not be loaded.', menu: { items: [{ id: 'all', label: 'All books', active: true }], onSelect: () => {} } }}
@@ -121,7 +135,7 @@ function Sorting() {
     return { rows: rows.slice((p - 1) * 10, p * 10), total: rows.length };
   });
   const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
-    { id: 'title', header: 'Title', cell: (r) => r.title, sortable: true, minWidth: '14rem', className: 'uix-col--truncate' },
+    { id: 'title', header: 'Title', cell: (r) => r.title, sortable: true, minWidth: '14rem', className: 'uix-col--truncate uix-col--flex' },
     { id: 'author', header: 'Author', cell: (r) => r.author, sortable: true },
     { id: 'genre', header: 'Genre', cell: (r) => r.genre, sortable: true, priority: 'mid' },
     { id: 'year', header: 'Year', cell: (r) => String(r.year), sortable: true, align: 'end', priority: 'low' },

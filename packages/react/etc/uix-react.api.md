@@ -1516,11 +1516,13 @@ export interface DataWorkspaceIdColumn<T> {
     header: ReactNode;
     href?: (row: T) => string;
     linkId?: boolean;
+    minWidth?: string;
     onPeek?: (row: T) => void;
     render?: (row: T) => ReactNode;
     // (undocumented)
     renderLink?: UixRenderLink;
     text: (row: T) => string;
+    width?: string;
 }
 
 // @public
@@ -1602,6 +1604,7 @@ export type DataWorkspacePagination = {
 
 // @public (undocumented)
 export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
     bulkActions?: (selectedIds: string[]) => ReactNode;
@@ -1625,6 +1628,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
             search: boolean;
         }) => void;
     };
+    fixed?: boolean;
     freezeFirstColumn?: boolean;
     // (undocumented)
     getRowId: (row: T) => string;
@@ -1639,6 +1643,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     maximized?: boolean;
     maxSelection?: number;
     mobile?: 'priority' | 'cards';
+    multiSort?: boolean;
     onActiveRowChange?: (rowId: string) => void;
     onCollapsedGroupsChange?: (collapsed: Set<string>) => void;
     // (undocumented)
@@ -1657,6 +1662,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     pagination?: DataWorkspacePagination;
     refreshing?: boolean;
     rowActions?: (row: T) => ReactNode;
+    rowNavigation?: boolean;
     // (undocumented)
     rows: readonly T[];
     savedViews?: {
@@ -7717,6 +7723,7 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     sortDirection?: SortDirection;
     sortOrder?: number;
+    sortOrderLabel?: string;
 }
 
 // @public (undocumented)

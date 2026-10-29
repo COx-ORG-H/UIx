@@ -147,14 +147,15 @@ export const multiSort = (rows, keys, getField = (r, f) => r[f]) => {
 };
 
 /** Toggle a field in a multi-sort key list. Non-additive replaces the list with this
- *  field (cycling asc → desc → off); additive adds/updates it as a secondary key,
- *  dropping it when it cycles off. Mirrors the engine's toggleSort. */
+ *  field (cycling asc → desc → off); additive appends a new field as the last key and
+ *  turns an existing one in place (its priority stays), dropping it when it cycles off.
+ *  Mirrors the engine's toggleSort. */
 export const toggleSortKeys = (keys, field, additive = false) => {
   const cur = keys.find((k) => k.field === field)?.dir;
   const next = cur === 'asc' ? 'desc' : cur === 'desc' ? 'off' : 'asc';
   if (!additive) return next === 'off' ? [] : [{ field, dir: next }];
-  const rest = keys.filter((k) => k.field !== field);
-  return next === 'off' ? rest : [...rest, { field, dir: next }];
+  if (!cur) return [...keys, { field, dir: next }];
+  return next === 'off' ? keys.filter((k) => k.field !== field) : keys.map((k) => (k.field === field ? { field, dir: next } : k));
 };
 
 /** Rows where any of `fields` (default: every value) contains `query` (case-insensitive). */

@@ -60,11 +60,13 @@ test('keyboard rows: Tab lands on one row, ↓ moves, Enter activates; focus sta
 test('multi-sort: Shift + click and Shift + Enter add keys with a numbered badge; a plain Enter sorts by one column', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const ws = page.locator('#sorting');
-  const badges = () => ws.locator('.uix-data-workspace__sort-priority');
+  const badges = () => ws.locator('th[data-sort-order]');
   await expect(badges()).toHaveCount(2);
   await ws.getByRole('button', { name: /^Title/ }).click({ modifiers: ['Shift'] });
   await expect(badges()).toHaveCount(3);
-  await expect(ws.getByRole('img', { name: 'Sort priority 3' })).toBeVisible();
+  // the drawn ordinal is CSS (empty alt text); its words are in the header button's name
+  await expect(ws.getByRole('button', { name: /^Title\W+Sort priority 3$/ })).toBeVisible();
+  expect(await ws.locator('th[data-sort-order="3"]').evaluate((th) => getComputedStyle(th, '::before').content)).toMatch(/3/);
   await expect(ws.locator('th[aria-sort]')).toHaveCount(3);
   await ws.getByRole('button', { name: /^Author/ }).focus();
   await page.keyboard.press('Shift+Enter');
@@ -109,7 +111,7 @@ test('responsive ladder: cards at 390 px (labelled values, the checkbox and acti
   await expect(box).toBeVisible();
   await box.check();
   await expect(page.locator('#cards .uix-bulkbar__count')).toHaveText('1 selected');
-  await expect(page.locator('#cards tbody tr').first().getByRole('button', { name: /^Actions for/ })).toBeVisible();
+  await expect(page.locator('#cards tbody tr').first().getByRole('button', { name: 'Renew' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
   const visible = (sel) => page.locator(sel).evaluateAll((ths) => ths.filter((th) => getComputedStyle(th).display !== 'none').map((th) => th.textContent.trim()));
   // the catalogue (mobile="priority"): 390 drops mid and low, 760 drops low, 1280 shows all
@@ -148,6 +150,8 @@ test('virtualize: 2,000 rows mount a bounded window with the true size; End scro
   await settle();
   expect(parity(await paint()), 'the same colours for the same rows after an odd jump').toEqual(top);
   await wrap.evaluate((el) => { el.scrollTop = 0; });
+  // the window follows the scroll a frame later: wait for it before taking a row
+  await expect.poll(() => ws.locator('tbody tr[data-uix-row-id]').first().getAttribute('data-uix-row-id')).toBe('BK-1000');
   await ws.locator('tbody tr[data-uix-row-id]').first().focus();
   await page.keyboard.press('End');
   await expect.poll(() => focusedRowId(page)).toBe('BK-2999');
@@ -175,4 +179,77 @@ test('at 320 px the page never scrolls sideways; axe over every section', async 
   const results = await new AxeBuilder({ page }).include('#root').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
+});
+
+/* ── PR #176 review ───────────────────────────────────────────────────────────────────────── */
+
+test('review 1: a truncating column clips in a fixed layout; the table stays inside its wrap at 1280 px and scrolls at its floors', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const geo = await page.evaluate(() => {
+    const wrap = document.querySelector('#sorting .uix-table-wrap');
+    const table = wrap.querySelector('table');
+    const cell = wrap.querySelector('tbody td.uix-col--truncate');
+    cell.textContent = 'An extremely long title that goes on and on to see whether the truncation class ever truncates anything at all';
+    return { layout: getComputedStyle(table).tableLayout, wrap: wrap.clientWidth, table: table.scrollWidth, cell: cell.clientWidth, text: cell.scrollWidth };
+  });
+  expect(geo.layout).toBe('fixed');
+  expect(geo.table, 'the table fits its wrap').toBeLessThanOrEqual(geo.wrap + 1);
+  expect(geo.text, 'the title is clipped, not the column grown').toBeGreaterThan(geo.cell);
+  // narrower than the columns' floors, the wrap scrolls and the title keeps its 14rem
+  await page.setViewportSize({ width: 760, height: 900 });
+  await expect(page.locator('#sorting table')).toHaveClass(/uix-table--priority/);
+  const narrow = await page.evaluate(() => {
+    const wrap = document.querySelector('#sorting .uix-table-wrap');
+    const title = wrap.querySelector('tbody td.uix-col--truncate');
+    return { overflow: wrap.scrollWidth - wrap.clientWidth, title: title.getBoundingClientRect().width, rem: parseFloat(getComputedStyle(document.documentElement).fontSize) };
+  });
+  expect(narrow.title).toBeGreaterThanOrEqual(14 * narrow.rem - 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('review 2: word actions on a card stay in flow beside a long title at 320 px, nothing overlaps', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 320, height: 900 });
+  await expect(page.locator('#cards table')).toHaveClass(/uix-table--cards/);
+  const overlaps = await page.evaluate(() => [...document.querySelectorAll('#cards tbody tr')].map((tr) => {
+    const id = tr.querySelector('td[data-col="id"] .uix-data-workspace__id').getBoundingClientRect();
+    const box = tr.querySelector('td[data-col="select"] input').closest('label').getBoundingClientRect();
+    const card = tr.getBoundingClientRect();
+    const actions = [...tr.querySelectorAll('td[data-col="actions"] button')].map((b) => b.getBoundingClientRect());
+    const area = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    return {
+      text: tr.querySelector('td[data-col="id"]').textContent,
+      idActions: actions.reduce((n, a) => n + area(id, a), 0), idBox: area(id, box),
+      outside: actions.filter((a) => a.right > card.right + 0.5 || a.left < card.left - 0.5).length, shown: actions.length,
+    };
+  }));
+  for (const card of overlaps) {
+    expect(card.shown, card.text).toBe(3);
+    expect(card.idActions, `the title runs under the actions: ${card.text}`).toBe(0);
+    expect(card.idBox, card.text).toBe(0);
+    expect(card.outside, card.text).toBe(0);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('review 3: rowNavigation without onRowActivate: a click on the card does nothing, Enter opens the record link', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const row = page.locator('#cards tbody tr').first();
+  await row.locator('td[data-col="copies"]').click();
+  expect(await page.evaluate(() => location.hash)).toBe('');
+  await row.focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/books/BK-1000');
+});
+
+test('nit: a mouse scroll that moves the focused row out of the window parks focus on the body and brings it back', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const ws = page.locator('#long');
+  await ws.locator('tbody tr[data-uix-row-id]').nth(2).focus();
+  expect(await focusedRowId(page)).toBe('BK-1002');
+  const wrap = ws.locator('.uix-table-wrap');
+  await wrap.evaluate((el) => { el.scrollTop = 20_000; });
+  await expect.poll(() => page.evaluate(() => document.activeElement?.classList.contains('uix-table-wrap'))).toBe(true);
+  expect(await ws.locator('tbody tr[tabindex="0"]').count(), 'one tab stop on screen').toBe(1);
+  await wrap.evaluate((el) => { el.scrollTop = 0; });
+  await expect.poll(() => focusedRowId(page)).toBe('BK-1002');
 });

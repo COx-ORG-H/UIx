@@ -234,10 +234,10 @@ test('review: Escape that closes a popover or menu inside does not also restore 
   keydown(view.querySelector('input, button') ?? view, 'Escape');
   assert.ok(t.host.querySelector('.uix-data-workspace--maximized'), 'Escape in the View popover is the popover\'s');
   const trigger = view.parentElement.querySelector('button[aria-haspopup="dialog"]');
-  trigger.setAttribute('aria-expanded', 'true'); // as when the popover is open and focus is on the page
+  view.setAttribute('data-open', ''); trigger.setAttribute('aria-expanded', 'true'); // as when the popover is open and focus is on the page
   keydown(document.body, 'Escape');
   assert.ok(t.host.querySelector('.uix-data-workspace--maximized'), 'an open popover takes the first Escape');
-  trigger.setAttribute('aria-expanded', 'false');
+  view.removeAttribute('data-open'); trigger.setAttribute('aria-expanded', 'false');
   keydown(document.body, 'Escape');
   assert.equal(t.host.querySelector('.uix-data-workspace--maximized'), null, 'with nothing open, Escape restores');
   t.unmount();

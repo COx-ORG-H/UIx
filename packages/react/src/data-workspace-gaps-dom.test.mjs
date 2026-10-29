@@ -108,7 +108,7 @@ test('HAR-2622 ladder: mobile="cards" turns rows into cards below 768 px; no fro
   const t = mount(h(ui.DataWorkspace, base({ mobile: 'cards', idColumn: ID, selection: new Set(), onSelectionChange() {} })));
   const table = t.host.querySelector('table');
   assert.ok(table.classList.contains('uix-table--cards'));
-  assert.ok(table.classList.contains('uix-data-workspace__grid--select'), 'the checkbox sits before the id');
+  assert.deepEqual([...t.host.querySelector('tbody tr').children].map((td) => td.getAttribute('data-col')).filter((c) => ['select', 'id'].includes(c)), ['select', 'id'], 'the checkbox sits before the id');
   assert.ok(!table.classList.contains('uix-table--pinned-col') && !table.classList.contains('uix-data-workspace__grid--pin-id'), 'nothing frozen in a card');
   assert.ok(t.host.querySelector('.uix-table-wrap').classList.contains('uix-data-workspace__table--cards'));
   t.unmount();
@@ -240,11 +240,12 @@ test('HAR-2623 multi-sort: Shift + click adds a key, turns it in place, removes 
   const t = mount(h(MultiSort, { log }));
   click(header(t, 'Title'));
   assert.deepEqual(log.at(-1), [{ columnId: 'title', direction: 'ascending' }], 'a list in, a list out');
-  assert.equal(t.host.querySelector('.uix-data-workspace__sort-priority'), null, 'one key: no badge');
+  assert.equal(t.host.querySelector('th[data-sort-order]'), null, 'one key: no ordinal');
   click(header(t, 'Author'), { shiftKey: true });
   assert.deepEqual(log.at(-1), [{ columnId: 'title', direction: 'ascending' }, { columnId: 'author', direction: 'ascending' }]);
-  const badges = [...t.host.querySelectorAll('.uix-data-workspace__sort-priority')];
-  assert.deepEqual(badges.map((b) => [b.getAttribute('role'), b.getAttribute('aria-label'), b.textContent]), [['img', 'Sort priority 1', '1'], ['img', 'Sort priority 2', '2']]);
+  // one mechanism, Th sortOrder: the drawn ordinal (data-sort-order) and its words inside the button
+  const ordinals = [...t.host.querySelectorAll('th[data-sort-order]')];
+  assert.deepEqual(ordinals.map((th) => [th.getAttribute('data-sort-order'), th.hasAttribute('data-sort-labelled'), th.querySelector('button .uix-visually-hidden')?.textContent]), [['1', true, ', Sort priority 1'], ['2', true, ', Sort priority 2']]);
   assert.deepEqual([...t.host.querySelectorAll('th[aria-sort]')].map((th) => th.getAttribute('aria-sort')), ['ascending', 'ascending'], 'aria-sort stays on every sorted header');
   click(header(t, 'Title'), { shiftKey: true });
   assert.deepEqual(log.at(-1), [{ columnId: 'title', direction: 'descending' }, { columnId: 'author', direction: 'ascending' }], 'turned in place: still first');
@@ -284,14 +285,14 @@ test('HAR-2623 a single sort (not a list) ignores Shift and still hands back one
   click(header(t, 'Title'));
   click(header(t, 'Author'), { shiftKey: true });
   assert.deepEqual(log.at(-1), { columnId: 'author', direction: 'ascending' });
-  assert.equal(t.host.querySelector('.uix-data-workspace__sort-priority'), null);
+  assert.equal(t.host.querySelector('th[data-sort-order]'), null);
   t.unmount();
 });
 
 test('HAR-2623 the priority words come from UixLabelsProvider', () => {
   const html = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { dataWorkspace: { sortPriority: 'Sortierrang {n}' } } },
     h(ui.DataWorkspace, base({ sort: [{ columnId: 'title', direction: 'ascending' }, { columnId: 'year', direction: 'descending' }], onSortChange() {} }))));
-  assert.match(html, /aria-label="Sortierrang 2"/);
+  assert.match(html, /<span class="uix-visually-hidden">, Sortierrang 2<\/span>/);
 });
 
 /* ── HAR-2624 ─────────────────────────────────────────────────────────────────────────────── */
@@ -323,13 +324,35 @@ test('HAR-2624 zebra passes through; freezeFirstColumn freezes the first column 
   assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base())), /<table class="uix-table"/, 'off by default');
 });
 
-test('HAR-2624 a column\'s className and minWidth reach its header and body cells', () => {
-  const columns = [{ id: 'title', header: 'Title', cell: (r) => r.title, className: 'uix-col--truncate type-meta', minWidth: '14rem', width: '20rem' }, { id: 'n', header: 'N', cell: (r) => r.copies, align: 'end', className: 'x' }];
-  const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ columns })));
-  assert.match(html, /<th class="uix-col--truncate type-meta" scope="col" style="width:20rem;min-width:14rem">Title<\/th>/);
-  assert.match(html, /<td class="uix-col--truncate type-meta">Book 1<\/td>/);
-  assert.match(html, /<th class="uix-col--num x" scope="col">N<\/th>/);
-  assert.match(html, /<td class="uix-col--num x">1<\/td>/);
+test('HAR-2624 className or minWidth turns on a fixed layout: a <colgroup>, the floors as the table min-width, no per-cell min-width', () => {
+  const columns = [
+    { id: 'title', header: 'Title', cell: (r) => r.title, className: 'uix-col--truncate uix-col--flex type-meta', minWidth: '14rem' },
+    { id: 'genre', header: 'Genre', cell: (r) => r.author, className: 'uix-col--w-md' },
+    { id: 'n', header: 'N', cell: (r) => r.copies, align: 'end', width: '6rem' },
+  ];
+  const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ columns, selection: new Set(), onSelectionChange() {} })));
+  // review blocker 1: auto layout let a truncating column grow to its text (791 px in a 1246 px wrap)
+  assert.match(html, /<table class="uix-table uix-table--fixed" style="min-width:calc\(var\(--uix-selcol-w\) \+ 14rem \+ var\(--uix-col-w-md\) \+ 6rem\)"/);
+  assert.match(html, /<colgroup><col style="width:var\(--uix-selcol-w\)"\/><col class="uix-col--flex"\/><col class="uix-col--w-md"\/><col style="width:6rem"\/><\/colgroup>/);
+  assert.match(html, /<th class="uix-col--truncate uix-col--flex type-meta" scope="col">Title<\/th>/, 'no per-cell min-width: fixed layout ignores it');
+  assert.match(html, /<td class="uix-col--truncate uix-col--flex type-meta">Book 1<\/td>/);
+  assert.match(html, /<td class="uix-col--num">1<\/td>/);
+  // fixed={false} keeps the auto layout; `width` alone (2.49) does not turn it on
+  assert.doesNotMatch(renderToStaticMarkup(h(ui.DataWorkspace, base({ columns, fixed: false }))), /uix-table--fixed|<colgroup/);
+  const widthOnly = renderToStaticMarkup(h(ui.DataWorkspace, base({ columns: [{ id: 'n', header: 'N', cell: (r) => r.copies, width: '6rem' }] })));
+  assert.match(widthOnly, /<th scope="col" style="width:6rem">N<\/th>/);
+  assert.doesNotMatch(widthOnly, /uix-table--fixed/);
+  // row actions get a column of their own in the colgroup and the floors
+  const actions = renderToStaticMarkup(h(ui.DataWorkspace, base({ columns, rowActions: () => h('button', { type: 'button' }, 'Renew') })));
+  assert.match(actions, /<col style="width:5.25rem"\/><\/colgroup>/);
+  assert.match(actions, /min-width:calc\(14rem \+ var\(--uix-col-w-md\) \+ 6rem \+ 5.25rem\)/);
+  // a column the ladder drops has no <col> and no floor
+  workspaceWidth = 700;
+  const ladder = mount(h(ui.DataWorkspace, base({ mobile: 'priority', columns: [...columns, { id: 'year', header: 'Year', cell: (r) => r.year, priority: 'low', className: 'uix-col--w-sm' }] })));
+  assert.equal(ladder.host.querySelectorAll('colgroup col').length, 3);
+  assert.doesNotMatch(ladder.host.querySelector('table').getAttribute('style'), /--uix-col-w-sm/);
+  ladder.unmount();
+  workspaceWidth = 0;
 });
 
 /* ── HAR-2625 ─────────────────────────────────────────────────────────────────────────────── */
@@ -345,8 +368,8 @@ test('HAR-2625 groups: a tbody each, a header row with the toggle, the name, the
   assert.equal((html.match(/<tbody class="uix-data-workspace__group"/g) ?? []).length, 3);
   assert.match(html, /<table class="uix-table uix-table--pinned-col uix-table--pinned-actions uix-data-workspace__grid--pin-id uix-data-workspace__grid--grouped"/);
   // id + title + author + year come before the copies aggregate: the label spans 4 columns
-  assert.match(html, /<tr class="uix-data-workspace__group-head" data-group-id="fantasy"><td class="uix-table__selcell">[\s\S]*?aria-label="Select group Fantasy"[\s\S]*?<th scope="rowgroup" colSpan="4" class="uix-data-workspace__group-label">[\s\S]*?aria-expanded="true" aria-label="Collapse group Fantasy"[\s\S]*?<span class="uix-data-workspace__group-name">Fantasy<\/span><span class="uix-data-workspace__group-count">3 rows<\/span>[\s\S]*?<\/th><td class="uix-data-workspace__group-agg uix-col--num">6 copies<\/td><td class="uix-table__actions"><\/td><\/tr>/);
-  assert.match(html, /aria-label="Collapse group Crime"[\s\S]*?<span class="uix-data-workspace__group-count">1 row<\/span>/, 'name for a ReactNode label; one row');
+  assert.match(html, /<tr class="uix-data-workspace__group-head" data-group-id="fantasy"><td class="uix-table__selcell">[\s\S]*?aria-label="Select group Fantasy"[\s\S]*?<th scope="rowgroup" colSpan="4" class="uix-data-workspace__group-label" aria-labelledby="([^"]+-name) ([^"]+-count)">[\s\S]*?aria-expanded="true" aria-label="Collapse group Fantasy"[\s\S]*?<span class="uix-data-workspace__group-name" id="\1">Fantasy<\/span><span class="uix-data-workspace__group-count" id="\2">3 rows<\/span>[\s\S]*?<\/th><td class="uix-data-workspace__group-agg uix-col--num">6 copies<\/td><td class="uix-table__actions"><\/td><\/tr>/);
+  assert.match(html, /aria-label="Collapse group Crime"[\s\S]*?<span class="uix-data-workspace__group-count" id="[^"]+">1 row<\/span>/, 'name for a ReactNode label; one row');
   // without aggregates the label spans every column after the checkbox, actions included
   assert.match(html, /data-group-id="poetry">[\s\S]*?<th scope="rowgroup" colSpan="6"/);
 });
@@ -429,8 +452,13 @@ test('HAR-2626 virtualize: off with pagination, under the threshold, and without
   assert.equal(paged.host.querySelectorAll('tbody tr').length, 500);
   assert.equal(paged.host.querySelector('table').getAttribute('aria-rowcount'), null);
   paged.unmount();
-  const small = mount(h(ui.DataWorkspace, base({ rows: MANY.slice(0, 100), virtualize: true })));
-  assert.equal(small.host.querySelectorAll('tbody tr').length, 100, 'exactly the threshold: every row');
+  const small = mount(h(ui.DataWorkspace, base({ rows: MANY.slice(0, 99), virtualize: true })));
+  assert.equal(small.host.querySelectorAll('tbody tr').length, 99, 'under the threshold: every row');
+  small.unmount();
+  // windowed at the threshold, as TENSOR's virtualizeThreshold
+  const at = mount(h(ui.DataWorkspace, base({ rows: MANY.slice(0, 100), virtualize: true })));
+  assert.ok(at.host.querySelectorAll('tbody tr[data-uix-row-id]').length < 100, 'exactly the threshold: windowed');
+  at.unmount();
   small.unmount();
 });
 

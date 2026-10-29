@@ -49,15 +49,6 @@
   /* "Nothing matches" with the product's action beside Clear filters */
   .uix-data-workspace__state-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-2); }
 
-  /* a key's place in a multi-column sort, after the header's words (aria-sort stays on the th) */
-  .uix-data-workspace__sort-priority {
-    display: inline-grid; place-items: center; min-inline-size: 1.5em; block-size: 1.5em; margin-inline-start: var(--uix-space-1);
-    padding-inline: var(--uix-space-1); border-radius: var(--uix-radius-pill); vertical-align: .05em;
-    background: var(--uix-brand-muted); color: var(--uix-accent-text);
-    font-size: var(--uix-text-eyebrow); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1;
-  }
-  @media (forced-colors: active) { .uix-data-workspace__sort-priority { border: 1px solid CanvasText; } }
-
   /* the rich record-id cell: a strong line over a muted one, inside the same button or link */
   .uix-data-workspace__id { max-inline-size: 100%; }
   .uix-data-workspace__id-text { display: inline-flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; text-align: start; }
@@ -97,7 +88,8 @@
 
   /* the keyboard row model: one row in the tab order; its ring sits inside the row, so moving
      focus never shifts the layout and the wrap's edge never clips it */
-  .uix-data-workspace__grid--rows tbody tr[data-uix-row-id] { cursor: pointer; }
+  /* a row a click activates (onRowActivate) */
+  .uix-data-workspace__grid--click tbody tr[data-uix-row-id] { cursor: pointer; }
   /* The frozen cells paint over a row's outline, so every cell draws its edge of the ring too
      (forced colours drop box-shadow and keep the outline). A card has no frozen cells: its outline is enough. */
   .uix-data-workspace__grid--rows tbody tr:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
@@ -109,23 +101,31 @@
   .uix-data-workspace__spacer > td { padding: 0; border: 0; }
 
   /* cards (mobile="cards", under 768 px of workspace): the wrap drops its frame and each row is a
-     card. The checkbox sits before the id and the row's actions in the card's top corner, always
-     shown (a card has no hover to reveal them), so a phone can still select and act. */
+     card, a grid in flow. Its first line is the checkbox and the id; every value spans the card
+     below, labelled; the row's actions close the card, always shown (a card has no hover to
+     reveal them), so word actions ("Renew · Return") never run over a long title. */
   .uix-data-workspace__table--cards { border: 0; border-radius: 0; background: none; }
-  .uix-data-workspace .uix-table--cards tbody tr { position: relative; }
-  .uix-data-workspace .uix-table--cards td[data-col="select"] {
-    display: block; position: absolute; inset-block-start: var(--uix-space-4); inset-inline-start: var(--uix-space-4);
-    width: auto; padding: 0; border: 0;
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch;
+  }
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) > td { grid-column: 1 / -1; }
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) > td:is([data-col="select"], [data-col="id"]) {
+    grid-row: 1; padding: var(--uix-space-2) 0 var(--uix-space-3); border-bottom: 1px solid var(--uix-border);
+  }
+  /* placed with the same selector as the span-all rule above, so they outrank it */
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) > td[data-col="select"] { display: block; grid-column: 1; width: auto; }
+  /* no column gap: the line under the first line runs unbroken under the checkbox and the id */
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) > td[data-col="id"] { grid-column: 2 / -1; padding-inline-start: var(--uix-space-3); }
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head):not(:has(> td[data-col="select"])) > td[data-col="id"] { grid-column: 1 / -1; padding-inline-start: 0; }
+  .uix-data-workspace .uix-table--cards tbody tr:not(.uix-data-workspace__group-head) > td[data-col="actions"] {
+    display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--uix-space-1) var(--uix-space-2);
+    grid-column: 1 / -1; width: auto; min-inline-size: 0; padding: var(--uix-space-2) 0;
   }
   .uix-data-workspace .uix-table--cards td[data-col="select"]::before, .uix-data-workspace .uix-table--cards td[data-col="actions"]::before { content: none; }
-  .uix-data-workspace__grid--select.uix-table--cards td[data-col="id"] { padding-inline-start: var(--uix-space-7); }
-  .uix-data-workspace .uix-table--cards td[data-col="actions"] {
-    display: flex; position: absolute; inset-block-start: var(--uix-space-2); inset-inline-end: var(--uix-space-2);
-    width: auto; padding: 0; border: 0;
-  }
   .uix-data-workspace .uix-table--cards td[data-col="actions"] .uix-rowact { opacity: 1; }
-  .uix-data-workspace .uix-table--cards tr:has(> td[data-col="actions"]) > td[data-col="id"] { padding-inline-end: var(--uix-space-7); }
-  .uix-data-workspace .uix-table--cards td:has(+ td[data-col="actions"]) { border-bottom: 0; }
+  /* the id's words wrap in a card rather than run under the actions */
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__id, .uix-data-workspace .uix-table--cards .uix-id-cell__btn { white-space: normal; text-align: start; }
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__id-text > * { white-space: normal; overflow-wrap: anywhere; }
   /* a group's header in cards: one line above its cards (checkbox, toggle, name, count, then the aggregates) */
   .uix-data-workspace .uix-table--cards tbody tr.uix-data-workspace__group-head {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-3);
