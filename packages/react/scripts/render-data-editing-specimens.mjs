@@ -212,6 +212,63 @@ const BUILDERS = [
       },
     };
   },
+  // ── DataWorkspace 2.50 (HAR-2622..2626): multi-sort badges, the rich id cell as the record's
+  //    link, beforeBody, row groups with a count and an aggregate, and the product's empty body ─
+  ({ ui, mount, html, window }) => {
+    const books = [
+      { id: 'BK-1001', title: 'A Wizard of Earthsea', author: 'Ursula K. Le Guin', year: 1968, copies: 3, status: 'On loan' },
+      { id: 'BK-1005', title: 'The Name of the Rose', author: 'Umberto Eco', year: 1980, copies: 2, status: 'On loan' },
+      { id: 'BK-1000', title: 'The Hobbit', author: 'J. R. R. Tolkien', year: 1937, copies: 5, status: 'Available' },
+      { id: 'BK-1004', title: 'Na Drini ćuprija', author: 'Ivo Andrić', year: 1945, copies: 1, status: 'Available' },
+      { id: 'BK-1003', title: 'Der Prozess', author: 'Franz Kafka', year: 1925, copies: 1, status: 'Lost' },
+    ];
+    const tone = { Available: 'success', 'On loan': 'info', Lost: 'danger' };
+    const group = (status) => {
+      const rows = books.filter((b) => b.status === status);
+      return { id: status, name: status, label: h(ui.StatusPill, { tone: tone[status], treatment: 'dot' }, status), rows, aggregates: { copies: ((n) => `${n} ${n === 1 ? 'copy' : 'copies'}`)(rows.reduce((n, b) => n + b.copies, 0)) } };
+    };
+    const columns = [
+      { id: 'author', header: 'Author', cell: (r) => r.author, sortable: true, priority: 'mid' },
+      { id: 'year', header: 'Year', cell: (r) => String(r.year), sortable: true, align: 'end', priority: 'low' },
+      { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), sortable: true, align: 'end' },
+    ];
+    const workspace = mount(h(ui.DataWorkspace, {
+      label: 'Books by status', rows: [], getRowId: (r) => r.id, columns, mobile: 'cards',
+      groups: [group('On loan'), group('Available'), group('Lost')], collapsedGroups: new Set(['Lost']), onCollapsedGroupsChange() {},
+      idColumn: {
+        header: 'Book', text: (r) => r.title, linkId: true, href: (r) => `#book-${r.id}`,
+        render: (r) => [h(ui.CellStrong, { key: 't' }, r.title), h(ui.CellSub, { key: 's', tabular: true }, r.id)],
+      },
+      sort: [{ columnId: 'author', direction: 'ascending' }, { columnId: 'year', direction: 'descending' }], onSortChange() {},
+      selection: new Set(['BK-1001']), onSelectionChange() {}, maxSelection: 50,
+      bulkActions: () => h(ui.Button, { size: 'sm' }, 'Lend'),
+      beforeBody: h(ui.Alert, { tone: 'info' }, 'Showing the main branch only.'),
+      search: { value: '', onChange() {}, label: 'Search books', maxLength: 60 },
+      onSaveViewAs() {}, saveViewAs: 'always',
+    }));
+    // The cards a phone gets: the ladder measures the workspace, which jsdom cannot, so this one
+    // mount reports a 360 px workspace.
+    const proto = window.HTMLElement.prototype;
+    const rect = proto.getBoundingClientRect;
+    proto.getBoundingClientRect = function () { return this.classList.contains('uix-data-workspace') ? { x: 0, y: 0, top: 0, left: 0, right: 360, bottom: 0, width: 360, height: 0 } : rect.call(this); };
+    const cards = mount(h(ui.DataWorkspace, {
+      label: 'Books on a phone', rows: books.slice(0, 2), getRowId: (r) => r.id, columns: [...columns, { id: 'status', header: 'Status', cell: (r) => h(ui.StatusPill, { tone: tone[r.status], treatment: 'dot' }, r.status) }], mobile: 'cards',
+      idColumn: { header: 'Book', text: (r) => r.title, linkId: true, href: (r) => `#book-${r.id}`, render: (r) => [h(ui.CellStrong, { key: 't' }, r.title), h(ui.CellSub, { key: 's', tabular: true }, r.id)] },
+      selection: new Set(['BK-1001']), onSelectionChange() {},
+      rowActions: (r) => h('button', { type: 'button', className: 'uix-rowact', 'aria-label': `Actions for ${r.title}` }, '⋯'),
+    }));
+    proto.getBoundingClientRect = rect;
+    const empty = mount(h(ui.DataWorkspace, {
+      label: 'Wish list', rows: [], getRowId: (r) => r.id, columns: [{ id: 'title', header: 'Title', cell: (r) => r.title }],
+      emptyAction: h(ui.Button, { size: 'sm', variant: 'primary' }, 'Add the first book'),
+    }));
+    return {
+      'examples-data-display': [
+        caption(`Data workspace, 2.50 (HAR-2622..2626, ADR-0005 addendum) — two sort keys with their priority badges; the id cell as the record's own link with a title over its id; Save as without a change; a notice above the rows (<code>beforeBody</code>); rows grouped by status, each header with its toggle, a count and the copies' sum under its column, one group collapsed and one partly selected (a tri-state box); the same rows as cards, as a workspace under 768 px wide shows them (<code>mobile="cards"</code>: each value labelled, the checkbox and the actions on the card); and the product's empty body with its first action`),
+        `<div data-data-workspace-gaps-example class="uix-stack">${html(workspace)}<div data-data-workspace-cards-example style="max-inline-size:24rem">${html(cards)}</div>${html(empty)}</div>`,
+      ].join('\n'),
+    };
+  },
 ];
 
 /**
