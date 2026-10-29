@@ -65,11 +65,13 @@ export interface DataWorkspaceLabels {
   retry: string;
   /** A sorted header's place among two or more sort keys (HAR-2623): `{n}`. */
   sortPriority: string;
-  /** A group header's row count (HAR-2625): `{count}`. `groupCountOne` when it is 1. */
+  /** A group header's row count (HAR-2625): `{count}`. */
   groupCount: string;
+  /** The same for one row. */
   groupCountOne: string;
-  /** A group header's toggle: `{name}`. */
+  /** A group header's toggle while the group is open: `{name}`. */
   collapseGroup: string;
+  /** The same while it is collapsed. */
   expandGroup: string;
   /** A group header's checkbox: `{name}`. */
   selectGroup: string;
@@ -304,6 +306,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   groups?: readonly DataWorkspaceGroup<T>[];
   /** The collapsed group ids. Without it the workspace keeps them itself. */
   collapsedGroups?: ReadonlySet<string>;
+  /** A group was collapsed or opened: the new set of collapsed ids. */
   onCollapsedGroupsChange?: (collapsed: Set<string>) => void;
   /**
    * Window a long unpaged list (HAR-2626): only the rows in view are mounted, in a body that
@@ -317,6 +320,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   onRowActivate?: (row: T) => void;
   /** The row with the tab stop, to drive it from the product's own shortcuts (j / k). Changing it focuses that row. */
   activeRowId?: string | null;
+  /** The tab stop moved to another row (a key, a click, focus entering a row). */
   onActiveRowChange?: (rowId: string) => void;
   labels?: Partial<DataWorkspaceLabels>;
 }

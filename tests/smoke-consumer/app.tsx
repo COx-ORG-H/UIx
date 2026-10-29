@@ -7,6 +7,7 @@
 // in run.mjs instead of a typed import (keeps the smoke lean).
 import {
   BrandProfiles,
+  DataWorkspace,
   BuilderCanvas,
   Button,
   Card,
@@ -32,6 +33,7 @@ import {
   normalizeHex,
   stepMetricValue,
 } from '@tensor_1/react';
+import type { DataWorkspaceSort } from '@tensor_1/react';
 import type { BrandProfile, ButtonProps, LayeredLayout, RelationshipGraphLabels, RuleDefinition } from '@tensor_1/react';
 import { Chart, ChartMetric } from '@tensor_1/react/chart';
 import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset';
@@ -69,10 +71,18 @@ const layered: LayeredLayout = layoutLayeredGraph(
 const nextId: string | undefined = layeredNeighbor(layered, 'a', 'ArrowRight');
 const graphLabels: Partial<RelationshipGraphLabels> = { zoomIn: DEFAULT_RELATIONSHIP_GRAPH_LABELS.zoomIn };
 
+// DataWorkspace's sort (HAR-2623): one key in, one key (or null) out; a list in, a list out.
+type Book = { id: string; title: string };
+let single: DataWorkspaceSort | null = null;
+let several: DataWorkspaceSort[] = [];
+const sortOne = DataWorkspace<Book>({ label: 'Books', rows: [], getRowId: (r) => r.id, columns: [], sort: single, onSortChange: (s) => { single = s; void s?.columnId; } });
+const sortNone = DataWorkspace({ label: 'Books', rows: [] as Book[], getRowId: (r) => r.id, columns: [], sort: null, onSortChange: (s) => { void s?.direction; } });
+const sortMany = DataWorkspace({ label: 'Books', rows: [] as Book[], getRowId: (r) => r.id, columns: [], sort: several, onSortChange: (s) => { several = s; void s.length; } });
+
 export default {
   BrandProfiles, BuilderCanvas, Button, Card, ColorPicker, DateRangePicker,
   DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,
   PresetChart, ChartMetric, ChartLegend, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
-  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand, iconElements,
+  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand, iconElements, sortOne, sortNone, sortMany,
 };
