@@ -37,4 +37,87 @@
   }
   /* a phone: the search takes its own row */
   @media (max-width: 40rem) { .uix-data-workspace__search { flex: 1 1 100%; } }
+
+  /* ── 2.50: adoption gaps (HAR-2622..2626, ADR-0005 addendum) ─────────────────────────── */
+  /* the product's notices between the toolbar (and bulk bar) and the rows */
+  .uix-data-workspace__before { display: grid; gap: var(--uix-space-2); min-width: 0; }
+  /* a note above the saved-view list ("Saved views could not be loaded") */
+  .uix-data-workspace__views-note {
+    max-inline-size: 20rem; padding: var(--uix-space-2) var(--uix-space-3); border-bottom: 1px solid var(--uix-border);
+    color: var(--uix-text-muted); font-size: var(--uix-text-meta);
+  }
+  /* "Nothing matches" with the product's action beside Clear filters */
+  .uix-data-workspace__state-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-2); }
+
+  /* a key's place in a multi-column sort, after the header's words (aria-sort stays on the th) */
+  .uix-data-workspace__sort-priority {
+    display: inline-grid; place-items: center; min-inline-size: 1.5em; block-size: 1.5em; margin-inline-start: var(--uix-space-1);
+    padding-inline: var(--uix-space-1); border-radius: var(--uix-radius-pill); vertical-align: .05em;
+    background: var(--uix-brand-muted); color: var(--uix-accent-text);
+    font-size: var(--uix-text-eyebrow); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  @media (forced-colors: active) { .uix-data-workspace__sort-priority { border: 1px solid CanvasText; } }
+
+  /* the rich record-id cell: a strong line over a muted one, inside the same button or link */
+  .uix-data-workspace__id { max-inline-size: 100%; }
+  .uix-data-workspace__id-text { display: inline-flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; text-align: start; }
+  .uix-data-workspace__id-text > * { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .uix-data-workspace__id-link { color: var(--uix-text); text-decoration: none; }
+
+  /* row groups: each group is a tbody under its header row. The zebra restarts under every header
+     with a plain row: the group swaps the two row colours its rows read (no selector here outranks
+     a row state; table.css keeps their order). */
+  .uix-data-workspace__grid--grouped { --uix-dw-row: var(--uix-row); --uix-dw-row-alt: var(--uix-row-alt); }
+  .uix-data-workspace__grid--grouped .uix-data-workspace__group { --uix-row: var(--uix-dw-row-alt); --uix-row-alt: var(--uix-dw-row); }
+  .uix-table tbody tr:where(.uix-data-workspace__group-head) { --uix-row-bg: var(--uix-bg-subtle); }
+  .uix-data-workspace__group-head > :is(th, td) {
+    height: auto; padding-block: var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
+    background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface);
+  }
+  .uix-data-workspace__group-label { font-weight: 400; text-align: start; }
+  /* the label spans several columns: its words stay in view while the table scrolls sideways,
+     the cell itself does not stick (it would slide over the aggregates) */
+  .uix-data-workspace .uix-data-workspace__group-head > th { position: static; box-shadow: none; }
+  .uix-data-workspace__group-title {
+    position: sticky; inset-inline-start: var(--uix-space-4); display: inline-flex; flex-wrap: wrap; align-items: center;
+    gap: var(--uix-space-1) var(--uix-space-2); max-inline-size: 100%;
+  }
+  .uix-data-workspace__grid--pin-id .uix-data-workspace__group-title { inset-inline-start: calc(var(--uix-selcol-w) + var(--uix-space-4)); }
+  .uix-data-workspace__group-toggle {
+    display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; padding: 0; border: 0;
+    border-radius: var(--uix-radius-xs); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+  }
+  .uix-data-workspace__group-toggle svg { width: 16px; height: 16px; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-data-workspace__group-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .uix-data-workspace__group-toggle:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+  @media (hover: hover) and (pointer: fine) { .uix-data-workspace__group-toggle:hover { background: var(--uix-bg-active); color: var(--uix-text); } }
+  .uix-data-workspace__group-name { font-weight: 600; color: var(--uix-text); }
+  .uix-data-workspace__group-count, .uix-data-workspace__group-agg { color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .uix-data-workspace__group-toggle svg { transition: none; } }
+
+  /* the keyboard row model: one row in the tab order; its ring sits inside the row, so moving
+     focus never shifts the layout and the wrap's edge never clips it */
+  .uix-data-workspace__grid--rows tbody tr[data-uix-row-id] { cursor: pointer; }
+  .uix-data-workspace__grid--rows tbody tr:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  /* windowing: the rows outside the window are two plain spacers */
+  .uix-table tbody tr:where(.uix-data-workspace__spacer) { --uix-row-bg: transparent; }
+  .uix-data-workspace__spacer > td { padding: 0; border: 0; }
+
+  /* cards (mobile="cards", under 768 px of workspace): the wrap drops its frame and each row is a
+     card. The checkbox sits before the id and the row's actions stay at the card's foot, so a
+     phone can still select and act. */
+  .uix-data-workspace__table--cards { border: 0; border-radius: 0; background: none; }
+  .uix-data-workspace .uix-table--cards tbody tr { position: relative; }
+  .uix-data-workspace .uix-table--cards td[data-col="select"] {
+    display: block; position: absolute; inset-block-start: var(--uix-space-3); inset-inline-start: var(--uix-space-4);
+    width: auto; padding: 0; border: 0;
+  }
+  .uix-data-workspace .uix-table--cards td[data-col="select"]::before, .uix-data-workspace .uix-table--cards td[data-col="actions"]::before { content: none; }
+  .uix-data-workspace__grid--select.uix-table--cards td[data-col="id"] { padding-inline-start: var(--uix-space-7); }
+  .uix-data-workspace .uix-table--cards td[data-col="actions"] { display: flex; justify-content: flex-end; width: auto; }
+  .uix-data-workspace .uix-table--cards tbody tr.uix-data-workspace__group-head { padding: 0; border: 0; box-shadow: none; background: none; }
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__group-head > :is(th, td) { display: block; position: static; padding: var(--uix-space-2) 0; border: 0; background: none; text-align: start; }
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__group-head > td[data-col="select"] { inset-block-start: var(--uix-space-2); inset-inline-start: 0; }
+  .uix-data-workspace__grid--select.uix-table--cards .uix-data-workspace__group-label { padding-inline-start: var(--uix-space-7); }
+  .uix-data-workspace .uix-table--cards .uix-data-workspace__group-agg:empty { display: none; }
 }

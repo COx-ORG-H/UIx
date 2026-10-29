@@ -51,6 +51,8 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
   labels?: Partial<SearchBarLabels>;
   /** The field's `name`. */
   name?: string;
+  /** The longest text the field takes (HAR-2622). */
+  maxLength?: number;
   /** The field's `id`, e.g. for a "/" shortcut that focuses it. Default: generated. */
   inputId?: string;
   inputRef?: Ref<HTMLInputElement>;
@@ -84,7 +86,7 @@ const ClearIcon = () => (
  */
 export function SearchBar({
   label, value: valueProp, defaultValue = '', onValueChange, onSubmit, onClear, placeholder, size = 'md',
-  submitButton = false, submitVariant = 'primary', landmark = true, inputDescribedBy, labels: labelsProp, name, inputId, inputRef,
+  submitButton = false, submitVariant = 'primary', landmark = true, inputDescribedBy, labels: labelsProp, name, maxLength, inputId, inputRef,
   autoFocus, disabled, className, ...props
 }: SearchBarProps) {
   const uixLabels = useUixLabels();
@@ -143,6 +145,7 @@ export function SearchBar({
           id={fieldId}
           type="search"
           name={name}
+          maxLength={maxLength}
           className="uix-input"
           value={value}
           placeholder={placeholder}
