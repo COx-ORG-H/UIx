@@ -399,3 +399,25 @@ test('review: a group header row stays as tall as its content at density="standa
   expect(heights.row).toBe(56);
   expect(heights.head, 'the header is not pinned to the 56 px standard row').toBeLessThan(56);
 });
+
+test('row actions: an icon-only control sits on the same centre line as the word buttons beside it', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const cell = page.locator('#shelves tbody tr').first().locator('td[data-col="actions"]');
+  // the harness has word Buttons and a .uix-rowact peek; add an icon-only kit Button the way a
+  // product writes one (<Button icon>), so both icon controls are measured
+  await cell.evaluate((td) => {
+    const word = td.querySelector('.uix-btn');
+    const icon = word.cloneNode(false);
+    icon.classList.add('uix-btn--icon');
+    icon.setAttribute('aria-label', 'Icon-only');
+    icon.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4"/></svg>';
+    td.append(icon);
+  });
+  const centres = await cell.evaluate((td) => [...td.querySelectorAll('button')].map((b) => {
+    const r = b.getBoundingClientRect();
+    return { name: b.textContent.trim() || b.getAttribute('aria-label'), centre: r.top + r.height / 2 };
+  }));
+  expect(centres.length).toBeGreaterThanOrEqual(5);
+  const first = centres[0].centre;
+  for (const c of centres) expect(Math.abs(c.centre - first), `${c.name} is off the centre line`).toBeLessThanOrEqual(1);
+});
