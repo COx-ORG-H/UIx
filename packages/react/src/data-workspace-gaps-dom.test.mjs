@@ -333,7 +333,7 @@ test('HAR-2624 className or minWidth turns on a fixed layout: a <colgroup>, the 
   const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ columns, selection: new Set(), onSelectionChange() {} })));
   // review blocker 1: auto layout let a truncating column grow to its text (791 px in a 1246 px wrap)
   assert.match(html, /<table class="uix-table uix-table--fixed" style="min-width:calc\(var\(--uix-selcol-w\) \+ 14rem \+ var\(--uix-col-w-md\) \+ 6rem\)"/);
-  assert.match(html, /<colgroup><col style="width:var\(--uix-selcol-w\)"\/><col class="uix-col--flex"\/><col class="uix-col--w-md"\/><col style="width:6rem"\/><\/colgroup>/);
+  assert.match(html, /<colgroup><col style="width:var\(--uix-selcol-w\)"\/><col class="uix-col--flex"\/><col class="uix-col--w-md" style="width:var\(--uix-col-w-md\)"\/><col style="width:6rem"\/><\/colgroup>/, 'the flex column takes the slack; the others hold their floor');
   assert.match(html, /<th class="uix-col--truncate uix-col--flex type-meta" scope="col">Title<\/th>/, 'no per-cell min-width: fixed layout ignores it');
   assert.match(html, /<td class="uix-col--truncate uix-col--flex type-meta">Book 1<\/td>/);
   assert.match(html, /<td class="uix-col--num">1<\/td>/);
