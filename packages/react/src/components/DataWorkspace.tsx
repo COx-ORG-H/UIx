@@ -1016,6 +1016,10 @@ function WorkspaceTable<T>({
   const [actionsWidth, setActionsWidth] = useState<number | null>(null);
   useIsomorphicLayoutEffect(() => {
     if (!fixedOn || !hasActions) return;
+    // No layout to measure (jsdom's Range has no getBoundingClientRect; HAR-2632): keep the
+    // fallback width rather than throw in a consumer's test.
+    if (typeof document.createRange !== 'function' || typeof getComputedStyle !== 'function') return;
+    if (typeof document.createRange().getBoundingClientRect !== 'function') return;
     // The actions column is as wide as its widest row's actions (words, not only a ⋯).
     let widest = 0;
     for (const td of Array.from(wrapRef.current?.querySelectorAll<HTMLElement>('tbody td.uix-table__actions') ?? [])) {

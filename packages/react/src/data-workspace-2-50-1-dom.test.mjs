@@ -227,3 +227,16 @@ test('HAR-2631 the workspace pager takes UixLabelsProvider pagination; paginatio
     h(ui.DataWorkspace, base({ pagination: { mode: 'cursor', hasPrevious: true, hasNext: true, onPrevious() {}, onNext() {} } }))));
   assert.match(cursor, /aria-label="Vorherige Seite"/);
 });
+
+/* ── HAR-2632: a fixed-layout workspace with row actions mounts in plain jsdom ─────────────── */
+
+test('HAR-2632 a fixed-layout workspace with row actions mounts in jsdom with no Range shim (no layout, the fallback width)', () => {
+  // the JSDOM here exposes no Range layout methods, as in a consumer's test setup
+  assert.equal(typeof document.createRange().getBoundingClientRect, 'undefined');
+  const columns = [{ id: 'title', header: 'Title', cell: (r) => r.title, className: 'uix-col--truncate uix-col--flex' }];
+  let t;
+  assert.doesNotThrow(() => { t = mount(h(ui.DataWorkspace, base({ columns, rowActions: () => h('button', { type: 'button' }, 'Renew') }))); });
+  assert.ok(t.host.querySelector('table').classList.contains('uix-table--fixed'));
+  assert.equal(t.host.querySelector('colgroup col:last-child').style.width, '5.25rem', 'the fallback width');
+  t.unmount();
+});
