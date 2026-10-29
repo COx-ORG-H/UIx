@@ -172,6 +172,17 @@ export interface DataWorkspaceIdColumn<T> {
   width?: string;
   /** The column's floor in a fixed layout. Default: the `md` column tier. */
   minWidth?: string;
+  /**
+   * The sort key the id column answers to in `sort` / `onSortChange` (HAR-2631), e.g. `title`
+   * when the id shows the title. Default `'id'`. Keep it distinct from the data columns' ids.
+   */
+  id?: string;
+  /**
+   * The id header sorts like a data column (HAR-2631): a click cycles it, Shift + click (or
+   * Shift + Enter / Space) adds it as a further key in a multi-sort, with its ordinal and
+   * `aria-sort`. Off: the header is plain, as in 2.50.0.
+   */
+  sortable?: boolean;
   renderLink?: UixRenderLink;
 }
 
@@ -1009,6 +1020,25 @@ function WorkspaceTable<T>({
   ] : [];
   const tableStyle = fixedOn && floors.length ? { minWidth: floors.length === 1 ? floors[0] : `calc(${floors.join(' + ')})` } : undefined;
 
+  /** A header's sort props: the same for a data column and a sortable id column. */
+  const sortProps = (column: DataWorkspaceColumn<T>, columnSortable: boolean) => {
+    const order = keys.findIndex((key) => key.columnId === column.id);
+    const canSort = columnSortable && sortable;
+    const ordinal = keys.length > 1 && order >= 0 ? order + 1 : undefined;
+    return {
+      sortable: canSort, sortDirection: sortFor(column),
+      sortOrder: ordinal, sortOrderLabel: ordinal != null ? fillLabel(labels.sortPriority, { n: ordinal }) : undefined,
+      onSort: () => { cycleSort(column, multi && additive.current); additive.current = false; },
+      ...(canSort && multi ? {
+        onKeyDownCapture: (event: ReactKeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') shiftKey.current = event.shiftKey; },
+        // A click made by Enter or Space has no pointer (detail 0) and may not carry Shift itself.
+        onClickCapture: (event: ReactMouseEvent) => { additive.current = event.shiftKey || (event.detail === 0 && shiftKey.current); shiftKey.current = false; },
+      } : {}),
+    };
+  };
+  /** The id column as a sort key (HAR-2631): only its `id` is read. */
+  const idSortColumn: DataWorkspaceColumn<T> | null = idColumn ? { id: idColumn.id ?? 'id', header: idColumn.header, cell: () => null } : null;
+
   const renderRow = (row: T, index: number) => {
     const rowId = ids[index];
     const isSelected = selected.has(rowId);
@@ -1136,24 +1166,17 @@ function WorkspaceTable<T>({
                 />
               </th>
             )}
-            {idColumn && <Th scope="col" data-col={ladderOn ? 'id' : undefined}>{idColumn.header}</Th>}
+            {idColumn && (idColumn.sortable && idSortColumn
+              // a sortable id header is a sortable data column's header (HAR-2631)
+              ? <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...sortProps(idSortColumn, true)}>{idColumn.header}</Th>
+              : <Th scope="col" data-col={ladderOn ? 'id' : undefined}>{idColumn.header}</Th>)}
             {columns.map((column) => {
-              const order = keys.findIndex((key) => key.columnId === column.id);
-              const canSort = column.sortable && sortable;
               // fixed layout: the <col> holds the width and the table the floors
               const style = !fixedOn && (column.width || column.minWidth) ? { width: column.width, minWidth: column.minWidth } : undefined;
-              const ordinal = keys.length > 1 && order >= 0 ? order + 1 : undefined;
               return (
                 <Th
                   key={column.id} scope="col" className={cx(column.align === 'end' && 'uix-col--num', column.className) || undefined} style={style}
-                  sortable={canSort} sortDirection={sortFor(column)}
-                  sortOrder={ordinal} sortOrderLabel={ordinal != null ? fillLabel(labels.sortPriority, { n: ordinal }) : undefined}
-                  onSort={() => { cycleSort(column, multi && additive.current); additive.current = false; }}
-                  {...(canSort && multi ? {
-                    onKeyDownCapture: (event: ReactKeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') shiftKey.current = event.shiftKey; },
-                    // A click made by Enter or Space has no pointer (detail 0) and may not carry Shift itself.
-                    onClickCapture: (event: ReactMouseEvent) => { additive.current = event.shiftKey || (event.detail === 0 && shiftKey.current); shiftKey.current = false; },
-                  } : {})}
+                  {...sortProps(column, column.sortable === true)}
                   {...ladderAttrs(ladderOn, column, false)}
                 >
                   {column.header}
