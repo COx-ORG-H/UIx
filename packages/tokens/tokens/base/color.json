@@ -96,6 +96,7 @@
   "row":           { "$type": "color", "$value": "#FFFFFF" },
   "row-alt":       { "$type": "color", "$value": "#FAFAFA" },
   "row-pinned-bg":    { "$type": "color", "$value": "#F4F7FF" },
+  "text-muted-on-selected": { "$type": "color", "$value": "#666666", "$description": "Muted text inside a selected table row (HAR-2635): --uix-text-muted #6B6B6B is 4.36:1 on --uix-row-selected-bg #DBEAFE; this is 4.71:1. A selected row re-points --uix-text-muted to it, so every .uix-cell-sub there clears AA." },
   "row-selected-bg":  { "$type": "color", "$value": "#DBEAFE", "$description": "Dedicated row-selection background (table tr[aria-selected]). Distinct from --uix-row-pinned-bg (#F4F7FF, very pale blue) and --uix-brand-muted (dynamic accent tint). Enables bulk-selected rows to read apart from pinned rows and inbox unread tints in the same table." },
 
   "scrollbar-thumb":       { "$type": "color", "$value": "rgba(10,10,10,.20)" },

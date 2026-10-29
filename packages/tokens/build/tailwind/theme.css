@@ -88,6 +88,7 @@
   --color-uix-row: var(--uix-row);
   --color-uix-row-alt: var(--uix-row-alt);
   --color-uix-row-pinned-bg: var(--uix-row-pinned-bg);
+  --color-uix-text-muted-on-selected: var(--uix-text-muted-on-selected);
   --color-uix-row-selected-bg: var(--uix-row-selected-bg);
   --color-uix-scrollbar-thumb: var(--uix-scrollbar-thumb);
   --color-uix-scrollbar-thumb-hover: var(--uix-scrollbar-thumb-hover);

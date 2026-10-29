@@ -91,6 +91,7 @@ module.exports = {
       "uix-row": "var(--uix-row)",
       "uix-row-alt": "var(--uix-row-alt)",
       "uix-row-pinned-bg": "var(--uix-row-pinned-bg)",
+      "uix-text-muted-on-selected": "var(--uix-text-muted-on-selected)",
       "uix-row-selected-bg": "var(--uix-row-selected-bg)",
       "uix-scrollbar-thumb": "var(--uix-scrollbar-thumb)",
       "uix-scrollbar-thumb-hover": "var(--uix-scrollbar-thumb-hover)",

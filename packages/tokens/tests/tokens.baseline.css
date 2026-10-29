@@ -85,7 +85,7 @@
     --uix-row-h:56px; --uix-row-h-compact:44px; --uix-row-h-standard:56px; --uix-row-h-comfortable:68px; --uix-control-h:36px; --uix-sidebar-w:248px; --uix-sidebar-w-rail:56px; --uix-topbar-h:56px;
 
     /* rows / scrollbars / icons / peek */
-    --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF; --uix-row-selected-bg:#DBEAFE;
+    --uix-row:#FFFFFF; --uix-row-alt:#FAFAFA; --uix-row-pinned-bg:#F4F7FF; --uix-text-muted-on-selected:#666666; --uix-row-selected-bg:#DBEAFE;
     --uix-scrollbar-size:10px; --uix-scrollbar-thumb:rgba(10,10,10,.20); --uix-scrollbar-thumb-hover:rgba(10,10,10,.34); --uix-scrollbar-track:transparent;
     --uix-icon-sm:16px; --uix-icon-md:20px; --uix-icon-lg:24px; --uix-peek-w:420px;
 
@@ -126,7 +126,7 @@
     --uix-shadow-popover:0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05);
     --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05);
 
-    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
+    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-text-muted-on-selected:#A1A1A1; --uix-row-selected-bg:rgba(48,128,255,.16);
     --uix-scrollbar-thumb:rgba(255,255,255,.18); --uix-scrollbar-thumb-hover:rgba(255,255,255,.30);
   }
 }
