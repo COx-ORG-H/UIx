@@ -133,7 +133,9 @@ test('virtualize: 2,000 rows mount a bounded window with the true size; End scro
   expect(await mounted()).toBeLessThan(60);
   await expect(ws.locator('table')).toHaveAttribute('aria-rowcount', '2001');
   expect(await ws.locator('tbody tr[aria-hidden="true"]').count()).toBeGreaterThan(0);
-  const paint = () => ws.locator('tbody tr[data-uix-row-id]').evaluateAll((trs) => trs.map((tr) => [Number(tr.getAttribute('aria-rowindex')), getComputedStyle(tr).backgroundColor]));
+  // One synchronous read in the page: evaluateAll resolves the rows first, and a window that moves
+  // in between hands it detached rows with no computed colour.
+  const paint = () => page.evaluate(() => [...document.querySelectorAll('#long tbody tr[data-uix-row-id]')].map((tr) => [Number(tr.getAttribute('aria-rowindex')), getComputedStyle(tr).backgroundColor]));
   const parity = (rows) => { const by = new Map(); for (const [i, bg] of rows) { const k = i % 2; if (by.has(k) && by.get(k) !== bg) return null; by.set(k, bg); } return Object.fromEntries(by); };
   await page.mouse.move(0, 0);
   // settled: no row colour still easing in
