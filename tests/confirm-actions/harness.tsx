@@ -10,13 +10,15 @@
  *              pending blocks Escape and ×; focus returns to the opener
  *   #typed     a ConfirmDialog with type-to-confirm, a node label and confirmProps; #typed-long the
  *              same with a long German value, for the message that wraps at 320 px
+ *   #long-label a ConfirmDialog and a PromptDialog with a 35-character German confirm label, for
+ *              footer buttons that wrap at 320 px (HAR-2541)
  *   #tabs-pill a pill Tabs row with one long unbroken word, in a 288 px column
  *   #undo      an undo toast with a fixed 1.5 s timer (pauseOnHover: false)
  */
 import { StrictMode, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, ConfirmDialog, Drawer, Field, Popconfirm, Select, Textarea, Toaster, createToastApi, createToastStore,
+  Button, ConfirmDialog, Drawer, Field, Popconfirm, PromptDialog, Select, Textarea, Toaster, createToastApi, createToastStore,
 } from '../../packages/react/src/index.js';
 
 declare global {
@@ -134,6 +136,31 @@ function TypedLong() {
   );
 }
 
+function LongLabel() {
+  const [confirm, setConfirm] = useState(false);
+  const [prompt, setPrompt] = useState(false);
+  return (
+    <section id="long-label">
+      <h2>Lange Beschriftung</h2>
+      <div>
+        <Button id="open-long-confirm" onClick={() => setConfirm(true)}>Herabstufen</Button>
+        <Button id="open-long-prompt" onClick={() => setPrompt(true)}>Begründen</Button>
+      </div>
+      <ConfirmDialog
+        open={confirm} title="Einstufung ändern?" description="Die Meldepflicht nach DORA entfällt für diesen Vorfall."
+        confirmLabel="Auf nicht schwerwiegend herabstufen" cancelLabel="Abbrechen"
+        tertiaryLabel="Später entscheiden" onTertiary={() => setConfirm(false)}
+        onConfirm={() => setConfirm(false)} onCancel={() => setConfirm(false)}
+      />
+      <PromptDialog
+        open={prompt} title="Begründung" inputLabel="Warum?"
+        submitLabel="Geänderte Kriterien speichern und melden" cancelLabel="Abbrechen"
+        onSubmit={() => setPrompt(false)} onCancel={() => setPrompt(false)}
+      />
+    </section>
+  );
+}
+
 function Typed() {
   const [open, setOpen] = useState(false);
   return (
@@ -181,6 +208,7 @@ function Harness() {
       <Pending />
       <Typed />
       <TypedLong />
+      <LongLabel />
       <Undo />
     </>
   );

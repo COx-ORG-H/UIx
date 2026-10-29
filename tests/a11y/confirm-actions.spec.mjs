@@ -129,6 +129,28 @@ test('ConfirmDialog type-to-confirm at 320 px in German: a wrapping message does
   expect(Math.abs(after.y - before.y), 'the footer stays put').toBeLessThan(1);
 });
 
+// HAR-2541 — "Als DORA-schwerwiegend einstufen" started 7 px left of a 294 px dialog at 320 px:
+// the footer's buttons could not wrap. Every footer child now stays inside the dialog box.
+for (const [opener, name, role] of [['#open-long-confirm', 'Einstufung ändern?', 'alertdialog'], ['#open-long-prompt', 'Begründung', 'dialog']]) {
+  test(`${name} at 320 px in German: a 35-character label wraps inside the dialog`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.locator(opener).click();
+    const dialog = page.getByRole(role, { name });
+    await expect(dialog).toBeVisible();
+    await settleOverlay(dialog);
+    await settleAnimations(page);
+    const outside = await dialog.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      return [...el.querySelectorAll('.uix-dialog__footer, .uix-dialog__footer *')]
+        .map((child) => ({ child, r: child.getBoundingClientRect() }))
+        .filter(({ r }) => r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5))
+        .map(({ child, r }) => `${child.textContent?.trim()} [${Math.round(r.left)}..${Math.round(r.right)}] outside [${Math.round(box.left)}..${Math.round(box.right)}]`);
+    });
+    expect(outside).toEqual([]);
+    await axe(page);
+  });
+}
+
 test('ConfirmDialog pending: Escape and × do nothing; the caller unmounting it gives focus back to the opener', async ({ page }) => {
   const opener = page.locator('#open-confirm');
   await opener.focus();
