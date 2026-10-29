@@ -256,13 +256,24 @@ function States() {
 function Shelves({ id, compact }: { id: string; compact: boolean }) {
   const rows = useMemo(() => BOOKS.slice(0, 5), []);
   const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
-    { id: 'author', header: 'Author', cell: (r) => r.author, priority: 'mid' },
-    { id: 'genre', header: 'Genre', cell: (r) => r.genre, priority: 'low' },
-    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), align: 'end' },
+    { id: 'author', header: 'Author', cell: (r) => r.author, priority: 'mid', className: 'uix-col--w-lg uix-col--truncate' },
+    { id: 'genre', header: 'Genre', cell: (r) => r.genre, priority: 'low', className: 'uix-col--w-md' },
+    { id: 'location', header: 'Location', cell: () => 'Main branch, reading room, east wall', priority: 'low', className: 'uix-col--w-xl uix-col--truncate' },
+    { id: 'note', header: 'Note', cell: () => 'Labels reprinted after the move', priority: 'low', className: 'uix-col--w-xl uix-col--truncate' },
+    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), align: 'end', className: 'uix-col--w-xs' },
+    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill>, className: 'uix-col--w-md' },
   ], []);
-  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/shelves/${r.id}` }), []);
+  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/shelves/${r.id}`, width: '14rem' }), []);
   const actions = useCallback((r: Book, context: DataWorkspaceRowActionsContext) => (compact && context.compact
-    ? <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+    ? (
+      // the always-on controls: a peek and a kebab
+      <>
+        <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+        <Menu trigger={<button type="button" className="uix-rowact" aria-label={`More for ${r.title}`}>⋯</button>} placement="bottom-end">
+          <MenuItem onSelect={() => log(`edit:${r.id}`)}>Uredi</MenuItem>
+        </Menu>
+      </>
+    )
     : (
       <>
         <Button size="sm" variant="ghost" onClick={() => log(`edit:${r.id}`)}>Uredi</Button>
@@ -272,6 +283,20 @@ function Shelves({ id, compact }: { id: string; compact: boolean }) {
       </>
     )), [compact]);
   return <DataWorkspace<Book> id={id} label={compact ? 'Shelves (compact actions)' : 'Shelves'} mobile="priority" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} rowActions={actions} />;
+}
+
+/** Cards at a density (HAR-2631 item 3): a two-line id must stay inside its card. */
+function DenseCards({ id, density }: { id: string; density: 'compact' | 'standard' }) {
+  const rows = useMemo(() => BOOKS.slice(0, 3), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author },
+    { id: 'year', header: 'Year', cell: (r) => String(r.year), align: 'end' },
+  ], []);
+  const idColumn = useMemo(() => ({
+    header: 'Revision', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/revisions/${r.id}`,
+    render: (r: Book) => <><CellStrong>{r.title}</CellStrong><CellSub tabular>{r.id} · {r.author}</CellSub></>,
+  }), []);
+  return <DataWorkspace<Book> id={id} label={`Revisions (${density})`} mobile="cards" density={density} rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} />;
 }
 
 /** TENSOR's plain table (HAR-2632): no toolbar parts, rows keyed by UUIDs, named by rowLabel. */
@@ -300,6 +325,8 @@ function Harness() {
       <section><h2>Plain table</h2><Plain /></section>
       <section><h2>Shelves</h2><Shelves id="shelves" compact={false} /></section>
       <section><h2>Shelves, compact actions</h2><Shelves id="shelves-compact" compact /></section>
+      <section><h2>Revisions, compact cards</h2><DenseCards id="cards-dense-compact" density="compact" /></section>
+      <section><h2>Revisions, standard cards</h2><DenseCards id="cards-dense-standard" density="standard" /></section>
     </>
   );
 }

@@ -323,7 +323,7 @@ test('HAR-2634: compact actions at 360 px: one peek per row, still frozen, the i
   await open(page, testInfo, { width: 360, height: 800 });
   const ws = page.locator('#shelves-compact');
   await expect(ws.locator('table')).toHaveClass(/uix-table--pinned-actions/);
-  await expect(ws.locator('tbody tr').first().locator('td.uix-table__actions button')).toHaveCount(1);
+  await expect(ws.locator('tbody tr').first().locator('td.uix-table__actions button')).toHaveCount(2); // a peek and a kebab
   await ws.scrollIntoViewIfNeeded();
   const covered = await ws.locator('tbody tr').evaluateAll((trs) => trs.filter((tr) => {
     const link = tr.querySelector('a.uix-id-cell__btn');
@@ -334,4 +334,44 @@ test('HAR-2634: compact actions at 360 px: one peek per row, still frozen, the i
   // wider than the narrow step, the full set comes back
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(ws.locator('tbody tr').first().getByRole('button', { name: 'Deaktiviraj' })).toBeVisible();
+});
+
+test('HAR-2634: at 1280 px word verbs in an overflowing table unfreeze: the Status cell beside them is what a tap at its centre hits', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const ws = page.locator('#shelves');
+  const wrap = ws.locator('.uix-table-wrap');
+  expect(await wrap.evaluate((el) => el.scrollWidth > el.clientWidth), 'the table overflows its wrap').toBe(true);
+  await expect(ws.locator('table')).not.toHaveClass(/uix-table--pinned-actions/);
+  await ws.scrollIntoViewIfNeeded();
+  const hits = await ws.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => {
+    const cell = tr.querySelector('td[data-col="status"]');
+    const r = cell.getBoundingClientRect();
+    const wrapRect = cell.closest('.uix-table-wrap').getBoundingClientRect();
+    if (r.left + r.width / 2 > wrapRect.right) return { offscreen: true };
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { hitsCell: cell.contains(hit), hit: hit?.textContent?.slice(0, 30) };
+  }));
+  expect(hits.filter((h) => !h.offscreen).length, 'the Status cells are in view').toBe(5);
+  for (const h of hits) expect(h.hitsCell, `covered by "${h.hit}"`).toBe(true);
+});
+
+test('HAR-2631 item 3: in cards at 390 px a compact or standard density does not pin the row height: a two-line id stays inside its card', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 390, height: 900 });
+  for (const id of ['#cards-dense-compact', '#cards-dense-standard']) {
+    const table = page.locator(`${id} table`);
+    await expect(table).toHaveClass(/uix-table--cards/);
+    const cells = await table.locator('tbody tr').evaluateAll((trs) => trs.flatMap((tr) => {
+      const card = tr.getBoundingClientRect();
+      return [...tr.children].filter((td) => getComputedStyle(td).display !== 'none').map((td) => {
+        const r = td.getBoundingClientRect();
+        return { col: td.getAttribute('data-col'), insideTop: r.top >= card.top - 0.5, insideBottom: r.bottom <= card.bottom + 0.5, overflow: td.scrollHeight - td.clientHeight, height: r.height };
+      });
+    }));
+    for (const c of cells) {
+      expect(c, `${id} ${c.col}`).toMatchObject({ insideTop: true, insideBottom: true });
+      expect(c.overflow, `${id} ${c.col} overflows its cell`).toBeLessThanOrEqual(1);
+    }
+    const idCell = cells.find((c) => c.col === 'id');
+    expect(idCell.height, `${id}: the two-line id cell is taller than a pinned row`).toBeGreaterThan(44);
+  }
 });

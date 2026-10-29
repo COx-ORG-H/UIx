@@ -268,8 +268,9 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * them. Return `null` for a row without actions; with none on the page there is no column.
    * The second argument says where the row is shown (HAR-2634): at the narrowest step of the
    * ladder (`compact`, a workspace under 600 px with `mobile`), render only the always-on control,
-   * the peek or a kebab; the peek or the record carries the verbs. A frozen actions cell wider than
-   * half the table there is unfrozen, so it never covers the row.
+   * the peek or a kebab; the peek or the record carries the verbs. A frozen actions cell is for
+   * compact controls: word verbs (wider than a quarter of the table) unfreeze and scroll with
+   * their row, at any width.
    */
   rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
   /** More props for a row, e.g. a data attribute that marks it changed (see ChangeHighlight, PR #164). */
@@ -1030,24 +1031,27 @@ function WorkspaceTable<T>({
   // column clips instead of growing, and the table never gets narrower than its columns' floors
   // (fixed layout ignores a cell's min-width): narrower than that, the wrap scrolls.
   const fixedOn = fixed && !cards;
-  // A frozen actions cell must never cover the row (HAR-2634): with the ladder on (`mobile`), an
-  // actions cell wider than half the wrap is unfrozen and scrolls with its row: at the narrowest
-  // step, and also a step up at a large text size (word verbs at 200 % took two thirds of a
-  // 736 px wrap). Measured when the step or the rows change and when the wrap resizes, never
-  // while scrolling; unfreezing does not change the cell's width, so it cannot flip back and forth.
+  // A frozen actions cell is for compact controls (a peek, a kebab): it must never cover the row
+  // (HAR-2634). At any width, when the actions cell is wider than a quarter of the wrap (word
+  // verbs: MOTUS's 335 px in a 312 px wrap at 360 px, and 333 px at 1280 px, where it hid the
+  // Status column), the cell is unfrozen and scrolls with its row. A peek and a kebab (a 76 px
+  // cell) stay frozen down to a 304 px wrap; a kebab alone (52 px) down to 208 px. Measured when
+  // the step or the rows change and when the wrap resizes, never while scrolling; unfreezing does
+  // not change the cell's width, so it cannot flip back and forth. No layout (jsdom, a hidden
+  // tab): it stays frozen.
   const [actionsTooWide, setActionsTooWide] = useState(false);
-  const measureActions = ladderOn && !cards && hasActions;
+  const measureActions = !cards && hasActions;
   useIsomorphicLayoutEffect(() => {
     const wrap = wrapRef.current;
     if (!measureActions || !wrap) { setActionsTooWide(false); return; }
     const measure = () => {
       let widest = 0;
       for (const td of Array.from(wrap.querySelectorAll<HTMLElement>('tbody td.uix-table__actions'))) {
-        if (typeof td.getBoundingClientRect === 'function') widest = Math.max(widest, td.getBoundingClientRect().width);
+        // the cell as drawn: its own width, or its content where that overflows a fixed column
+        if (typeof td.getBoundingClientRect === 'function') widest = Math.max(widest, td.getBoundingClientRect().width, td.scrollWidth);
       }
-      // no layout (jsdom, a hidden tab): keep it frozen
       if (!(wrap.clientWidth > 0) || !(widest > 0)) return;
-      setActionsTooWide(widest > wrap.clientWidth / 2);
+      setActionsTooWide(widest > wrap.clientWidth / 4);
     };
     measure();
     if (typeof ResizeObserver === 'undefined') return;
@@ -1197,7 +1201,7 @@ function WorkspaceTable<T>({
     >
       {/* With selection, the checkbox and the id (or the first column) are both frozen (the id at the checkbox's width). */}
       <Table
-        density={density} zebra={zebra} pinnedCol={frozen} pinnedActions={hasActions && !cards && !(measureActions && actionsTooWide)} fixed={fixedOn || undefined} style={tableStyle}
+        density={density} zebra={zebra} pinnedCol={frozen} pinnedActions={hasActions && !cards && !actionsTooWide} fixed={fixedOn || undefined} style={tableStyle}
         className={cx(
           selectable && frozen && 'uix-data-workspace__grid--pin-id',
           ladder && `uix-table--${ladder}`,
