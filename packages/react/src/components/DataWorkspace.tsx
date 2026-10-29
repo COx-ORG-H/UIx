@@ -221,6 +221,12 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   label: string;
   rows: readonly T[];
   getRowId: (row: T) => string;
+  /**
+   * A row's name in words, where the kit names a row (its checkbox, HAR-2632) and there is no
+   * `idColumn.text`: a title or a person, never a key. Without it the row id is used, which is
+   * a UUID on many tables. Keep it stable (`useCallback`), as rows are memoised.
+   */
+  rowLabel?: (row: T) => string;
   columns: readonly DataWorkspaceColumn<T>[];
   idColumn?: DataWorkspaceIdColumn<T>;
   /**
@@ -428,7 +434,7 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
  * windowing (`virtualize`) and a keyboard row model (`onRowActivate`).
  */
 export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
-  label, rows, getRowId, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions,
+  label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions,
   getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
@@ -599,7 +605,11 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   };
 
   const showSaveAs = onSaveViewAs != null && (viewChanged || saveViewAs === 'always');
-  const toolbar = (
+  // No band when nothing would be in it (HAR-2632): a plain table on a detail or settings page
+  // gets no empty toolbar landmark and no gap above it.
+  const hasToolbar = savedViews != null || (viewChanged && onSaveView != null) || showSaveAs || filters != null || search != null
+    || viewMenu != null || onMaximizedChange != null || (toolbarEnd != null && toolbarEnd !== false);
+  const toolbar = hasToolbar && (
     <div className="uix-toolbar uix-data-workspace__toolbar" role="toolbar" aria-label={label}>
       {savedViews && (
         <PopoverButton id={`${id}-views`} label={savedViews.current} title={typeof savedViews.current === 'string' ? fillLabel(labels.savedView, { name: savedViews.current }) : undefined} variant="secondary">
@@ -659,7 +669,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     body = (
       <WorkspaceGrid<T>
         label={label} rows={shownRows} ids={ids} groups={shownGroups} collapsed={collapsed} onToggleGroup={toggleGroupOpen}
-        getRowId={getRowId} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
+        getRowId={getRowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
         freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
         ladderOn={mobile != null} ladder={ladder} refreshing={refreshing}
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
@@ -702,6 +712,7 @@ interface WorkspaceGridProps<T> {
   collapsed: ReadonlySet<string>;
   onToggleGroup: (groupId: string) => void;
   getRowId: (row: T) => string;
+  rowLabel?: (row: T) => string;
   columns: readonly DataWorkspaceColumn<T>[];
   idColumn?: DataWorkspaceIdColumn<T>;
   getRowProps?: DataWorkspaceProps<T>['getRowProps'];
@@ -786,7 +797,7 @@ const isFlex = (className?: string) => /(^|\s)uix-col--(flex|primary)(\s|$)/.tes
 const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
 
 function WorkspaceTable<T>({
-  label, rows, ids, groups, collapsed, onToggleGroup, getRowId, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
+  label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
   fixed, ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, hasActions, keys, sortable,
   multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
@@ -1044,7 +1055,7 @@ function WorkspaceTable<T>({
     const isSelected = selected.has(rowId);
     return (
       <WorkspaceRow<T>
-        key={rowId} row={row} rowId={rowId} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
+        key={rowId} row={row} rowId={rowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
         selectable={selectable} selected={isSelected} selectDisabled={!isSelected && atCap}
         hasActions={hasActions} actions={actionsByRow[index]} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
@@ -1195,6 +1206,7 @@ function WorkspaceTable<T>({
 interface WorkspaceRowProps<T> {
   row: T;
   rowId: string;
+  rowLabel?: (row: T) => string;
   columns: readonly DataWorkspaceColumn<T>[];
   idColumn?: DataWorkspaceIdColumn<T>;
   getRowProps?: DataWorkspaceProps<T>['getRowProps'];
@@ -1220,10 +1232,11 @@ interface WorkspaceRowProps<T> {
  * (`useMemo` / `useCallback`).
  */
 function WorkspaceRowInner<T>({
-  row, rowId, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, ladderOn,
+  row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, ladderOn,
   selectRowLabel, openLabel, marked, ariaRowIndex, nav, tabStop, handlers,
 }: WorkspaceRowProps<T>) {
-  const text = idColumn?.text(row) ?? rowId;
+  // the row's name: its id as shown, else the product's words for it, else (last) its key
+  const text = idColumn?.text(row) ?? rowLabel?.(row) ?? rowId;
   const extra = getRowProps?.(row);
   const navProps = nav ? {
     tabIndex: tabStop ? 0 : -1,

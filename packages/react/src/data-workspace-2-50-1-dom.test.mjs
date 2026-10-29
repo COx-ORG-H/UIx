@@ -150,3 +150,38 @@ test('HAR-2631 a sortable id header keeps its place in the frozen, fixed and lad
   t.unmount();
   workspaceWidth = 0;
 });
+
+/* ── HAR-2632: a row's name without an id column; no empty toolbar ────────────────────────── */
+
+test('HAR-2632 rowLabel names the row checkbox when there is no idColumn.text; idColumn.text still wins; without both, the row id', () => {
+  const uuid = (i) => `3f2a9c0e-${i}`;
+  const rows = ROWS.map((r, i) => ({ ...r, id: uuid(i) }));
+  const named = renderToStaticMarkup(h(ui.DataWorkspace, base({ rows, rowLabel: (r) => r.title, selection: new Set(), onSelectionChange() {} })));
+  assert.match(named, /aria-label="Select Book 1"/);
+  assert.doesNotMatch(named, /Select 3f2a9c0e/);
+  const both = renderToStaticMarkup(h(ui.DataWorkspace, base({ rows, rowLabel: (r) => r.title, idColumn: ID, selection: new Set(), onSelectionChange() {} })));
+  assert.match(both, /aria-label="Select 3f2a9c0e-0"/, 'idColumn.text (here the id) comes first');
+  const bare = renderToStaticMarkup(h(ui.DataWorkspace, base({ rows, selection: new Set(), onSelectionChange() {} })));
+  assert.match(bare, /aria-label="Select 3f2a9c0e-0"/, 'unchanged without rowLabel');
+});
+
+test('HAR-2632 a workspace with nothing for its toolbar renders no toolbar band; any one part brings it back as before', () => {
+  const bare = renderToStaticMarkup(h(ui.DataWorkspace, base()));
+  assert.doesNotMatch(bare, /role="toolbar"/);
+  assert.match(bare, /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-table-wrap/, 'the table comes first: no empty band, no gap above it');
+  const parts = {
+    search: { search: { value: '', onChange() {} } },
+    filters: { filters: { fields: [], values: {}, onChange() {} } },
+    savedViews: { savedViews: { current: 'All', menu: { items: [], onSelect() {} } } },
+    viewMenu: { viewMenu: { columns: [], onColumnVisibilityChange() {} } },
+    save: { viewChanged: true, onSaveView() {} },
+    saveAs: { saveViewAs: 'always', onSaveViewAs() {} },
+    maximize: { onMaximizedChange() {} },
+    toolbarEnd: { toolbarEnd: h('button', { type: 'button' }, 'New') },
+  };
+  for (const [name, extra] of Object.entries(parts)) {
+    assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base(extra))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-toolbar uix-data-workspace__toolbar" role="toolbar" aria-label="Books">/, name);
+  }
+  // a state body keeps working without the toolbar
+  assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base({ rows: [] }))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-busy-region uix-data-workspace__state">/);
+});
