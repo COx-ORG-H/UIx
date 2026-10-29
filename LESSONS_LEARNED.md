@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 6a65e33 routine: a state colour pair below AA (same family as the 1d66ae0 / 217df0e entries: check a state colour in every theme), now a row-state contrast matrix; and a (0,2,1) density rule outranking the (0,1,1) cards reset, the 2026-10-23 specificity lesson again, pinned by a Chromium spec -->
 <!-- lesson-skip: 727ea02 routine: a layout API (Range.getBoundingClientRect) called in a layout effect without a guard; TENSOR's jsdom suite named it, pinned by a jsdom mount with no shim -->
 <!-- lesson-skip: aa0d4ff routine review fixes on unreleased 2.50 code (fixed layout, cards in flow, row-click split, one sort rule, focus edge cases), each measured by the #176 review and pinned by a jsdom or Chromium test; the stale aria-expanded Escape is the same family as the c34ab3b entry (state that trails a queued toggle event) -->
 <!-- lesson-skip: 2974f47 routine: verify-components said the zero-tall drop line was hidden; the specimen now points at the drop target -->
