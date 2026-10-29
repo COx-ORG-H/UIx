@@ -54,6 +54,9 @@
   .uix-data-workspace__id-text { display: inline-flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; text-align: start; }
   .uix-data-workspace__id-text > * { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-data-workspace__id-link { color: var(--uix-text); text-decoration: none; }
+  /* in a fixed layout the id column has a width: a long id is clipped there, not drawn over the
+     next column (an auto layout grows the column instead) */
+  .uix-data-workspace .uix-table--fixed td.uix-id-cell { overflow: hidden; }
 
   /* row groups: each group is a tbody under its header row. The zebra restarts under every header
      with a plain row: the group swaps the two row colours its rows read (no selector here outranks
