@@ -300,3 +300,4 @@ missing or blank.
 <!-- lesson-skip: 65438f4 visual polish found in coordinator re-shoot: a plain-text id needs its own box to ellipsize in a flex link; no new failure class -->
 <!-- lesson-skip: d02300e review fixes inside the open PR #179 (scope-derived selected muted, group-head height, one actions observer, enum operator default); nothing released, no new failure class -->
 <!-- lesson-skip: 00427e1 CSS baseline alignment of an icon-only inline button; one-off visual defect, covered by a centre-line test -->
+<!-- lesson-skip: 46627d8 a 1px hidden input needs a positioned label as its containing block; one rule per control, covered by a scroll test -->
