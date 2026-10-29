@@ -56,7 +56,11 @@ test('every state named in a caption is on the page', () => {
   // data workspace 2.50 (HAR-2622..2626): two sort badges, the id as the record's link, beforeBody,
   // three groups (one collapsed) with counts and the copies' sum, a tri-state group box, the empty action
   const gaps = dataWs.slice(dataWs.indexOf('data-data-workspace-gaps-example'));
-  assert.deepEqual([...gaps.matchAll(/data-sort-order="(\d)" data-sort-labelled="true"[\s\S]*?<span class="uix-visually-hidden">, (Sort priority \d)<\/span>/g)].map((m) => [m[1], m[2]]), [['1', 'Sort priority 1'], ['2', 'Sort priority 2']]);
+  assert.deepEqual([...gaps.matchAll(/data-sort-order="(\d)" data-sort-labelled="true"[\s\S]*?<span class="uix-visually-hidden">, (Sort priority \d)<\/span>/g)].map((m) => [m[1], m[2]]), [['1', 'Sort priority 1'], ['2', 'Sort priority 2'], ['3', 'Sort priority 3']]);
+  // 2.51 (HAR-2631, HAR-2632): the id header sorts; an excluding enum chip; no toolbar on a bare workspace
+  assert.match(gaps, /data-sort-order="1" data-sort-labelled="true" aria-sort="ascending" scope="col" data-col="id"><button type="button" class="uix-th__sortbtn">Book/);
+  assert.match(gaps, /Status: not Lost, Withdrawn/);
+  assert.match(gaps, /<section class="uix-data-workspace" aria-label="Wish list"><div class="uix-busy-region/);
   assert.match(gaps, /<a href="#book-BK-1001" class="uix-id-cell__btn uix-data-workspace__id-link"><span class="uix-data-workspace__id-text"><span class="uix-cell-strong">A Wizard of Earthsea<\/span>/);
   assert.match(gaps, /<div class="uix-data-workspace__before"><div class="uix-alert/);
   assert.equal((gaps.match(/<tbody class="uix-data-workspace__group"/g) ?? []).length, 3);
