@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 727ea02 routine: a layout API (Range.getBoundingClientRect) called in a layout effect without a guard; TENSOR's jsdom suite named it, pinned by a jsdom mount with no shim -->
 <!-- lesson-skip: aa0d4ff routine review fixes on unreleased 2.50 code (fixed layout, cards in flow, row-click split, one sort rule, focus edge cases), each measured by the #176 review and pinned by a jsdom or Chromium test; the stale aria-expanded Escape is the same family as the c34ab3b entry (state that trails a queued toggle event) -->
 <!-- lesson-skip: 2974f47 routine: verify-components said the zero-tall drop line was hidden; the specimen now points at the drop target -->
 <!-- lesson-skip: 610b3fd routine: the API report and the class-defined gate named the two gaps -->
