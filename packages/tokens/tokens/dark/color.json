@@ -80,7 +80,6 @@
   "row":           { "$type": "color", "$value": "#111111" },
   "row-alt":       { "$type": "color", "$value": "#161616" },
   "row-pinned-bg":   { "$type": "color", "$value": "rgba(48,128,255,.08)" },
-  "text-muted-on-selected": { "$type": "color", "$value": "#A1A1A1", "$description": "Dark: the same as --uix-text-muted, which already clears AA on the dark selection wash (HAR-2635)." },
   "row-selected-bg": { "$type": "color", "$value": "rgba(48,128,255,.16)", "$description": "Dark-mode selection wash — stronger than row-pinned-bg (rgba(48,128,255,.08)) so selected rows read apart from pinned." },
 
   "scrollbar-thumb":       { "$type": "color", "$value": "rgba(255,255,255,.18)" },

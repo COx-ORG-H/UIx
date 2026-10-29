@@ -266,7 +266,9 @@ export function summarizeFilter(field: FilterField, input: FilterValue | undefin
       if (preset) return fill(labels.preset ?? DEFAULT_FILTER_SUMMARY_LABELS.preset!, { label: preset.label, field: field.label });
       const byValue = new Map((field.options ?? []).map((o) => [o.value, o.label]));
       const named = list(value.values.map((v) => byValue.get(v) ?? v));
-      if (value.operator === 'is-none-of') return `${field.label}: ${fill(labels.noneOf ?? DEFAULT_FILTER_SUMMARY_LABELS.noneOf!, { values: named, field: field.label })}`;
+      // a field that offers one condition applies it, also to a value saved without one
+      const condition = value.operator ?? (field.enumOperators?.length === 1 ? field.enumOperators[0] : 'is-any-of');
+      if (condition === 'is-none-of') return `${field.label}: ${fill(labels.noneOf ?? DEFAULT_FILTER_SUMMARY_LABELS.noneOf!, { values: named, field: field.label })}`;
       return `${field.label}: ${named}`;
     }
     case 'reference': return `${field.label}: ${list(value.values.map((v) => v.label))}`;

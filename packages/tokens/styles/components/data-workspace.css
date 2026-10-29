@@ -70,6 +70,9 @@
     height: auto; padding-block: var(--uix-space-2); border-bottom: 1px solid var(--uix-border);
     background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface);
   }
+  /* a group header is as tall as its content at every density: the density heights on the table
+     (0,3,1) outrank the rule above, so this one names the header row at a higher weight */
+  .uix-data-workspace .uix-table tbody tr.uix-data-workspace__group-head > :is(th, td) { height: auto; }
   .uix-data-workspace__group-label { font-weight: 400; text-align: start; }
   /* the label spans several columns: its words stay in view while the table scrolls sideways,
      the cell itself does not stick (it would slide over the aggregates) */

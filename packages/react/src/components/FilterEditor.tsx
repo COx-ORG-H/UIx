@@ -228,12 +228,15 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
     return q ? options.filter((o) => foldForSearch(o.label).text.includes(q)) : options;
   }, [options, query]);
   const selected = new Set(value.values);
-  // The values change, the condition stays (absent stays absent: a value saved before 2.50.1 is unchanged).
-  const withValues = (values: string[]): FilterValue => (value.operator ? { kind: 'enum', values, operator: value.operator } : { kind: 'enum', values });
+  const ops = (field.enumOperators ?? []).filter((op) => ENUM_FILTER_OPERATORS.includes(op));
+  // The values change, the condition stays. A field that offers one condition applies it (PR #179
+  // review: ['is-none-of'] alone showed no control and kept including). Is any of is written as no
+  // operator, so a value saved before 2.51 is unchanged.
+  const condition = value.operator ?? (ops.length === 1 ? ops[0] : undefined);
+  const withValues = (values: string[]): FilterValue => (condition && condition !== 'is-any-of' ? { kind: 'enum', values, operator: condition } : { kind: 'enum', values });
   const toggle = (v: string, on: boolean) => onChange(withValues(on ? [...value.values, v] : value.values.filter((x) => x !== v)));
   const presets = field.presets ?? [];
   const active = matchFilterPreset(field, value);
-  const ops = (field.enumOperators ?? []).filter((op) => ENUM_FILTER_OPERATORS.includes(op));
   const words = labels.enumOperators ?? {};
   return (
     <>
@@ -248,7 +251,8 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
       )}
       {presets.length > 0 && (
         <div className="uix-chip-group uix-filter-editor__presets" role="group" aria-label={labels.presets ?? DEFAULT_FILTER_EDITOR_LABELS.presets}>
-          {presets.map((p) => <Chip key={p.id} pressed={p === active} onPressedChange={() => onChange({ kind: 'enum', values: [...p.values] })}>{p.label}</Chip>)}
+          {/* a preset sets the values; the chosen condition stays (PR #179 review) */}
+          {presets.map((p) => <Chip key={p.id} pressed={p === active} onPressedChange={() => onChange(withValues([...p.values]))}>{p.label}</Chip>)}
         </div>
       )}
       {options.length > threshold && <Input type="search" size="sm" aria-label={labels.search} placeholder={labels.search} value={query} onChange={(e) => setQuery(e.currentTarget.value)} autoFocus />}

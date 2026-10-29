@@ -281,3 +281,22 @@ test('HAR-2634 one-argument rowActions callers are untouched', () => {
   assert.match(html, /<table class="uix-table uix-table--pinned-actions"/);
   assert.match(html, /<td class="uix-table__actions"><button type="button">Act BK-100<\/button><\/td>/);
 });
+
+test('PR #179 review: an inline rowActions does not re-measure the actions on every render', () => {
+  const proto = window.HTMLElement.prototype;
+  const rect = proto.getBoundingClientRect;
+  let reads = 0;
+  proto.getBoundingClientRect = function () { if (this.classList?.contains('uix-table__actions')) reads += 1; return rect.call(this); };
+  try {
+    const view = (n) => h(ui.DataWorkspace, base({ rowActions: (r) => h('button', { type: 'button' }, `Act ${r.id} ${n}`) }));
+    const t = mount(view(0));
+    const first = reads;
+    for (let n = 1; n <= 5; n += 1) t.render(view(n));
+    assert.equal(reads, first, `the same rows re-rendered five times: ${reads - first} extra reads`);
+    t.render(h(ui.DataWorkspace, base({ rows: ROWS.slice(0, 3), rowActions: (r) => h('button', { type: 'button' }, `Act ${r.id}`) })));
+    assert.ok(reads > first, 'a new row set is measured');
+    t.unmount();
+  } finally {
+    proto.getBoundingClientRect = rect;
+  }
+});

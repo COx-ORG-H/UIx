@@ -90,7 +90,6 @@
     --uix-row: #FFFFFF;
     --uix-row-alt: #FAFAFA;
     --uix-row-pinned-bg: #F4F7FF;
-    --uix-text-muted-on-selected: #666666;
     --uix-row-selected-bg: #DBEAFE;
     --uix-scrollbar-thumb: rgba(10,10,10,.20);
     --uix-scrollbar-thumb-hover: rgba(10,10,10,.34);
@@ -273,7 +272,6 @@
     --uix-row: #111111;
     --uix-row-alt: #161616;
     --uix-row-pinned-bg: rgba(48,128,255,.08);
-    --uix-text-muted-on-selected: #A1A1A1;
     --uix-row-selected-bg: rgba(48,128,255,.16);
     --uix-scrollbar-thumb: rgba(255,255,255,.18);
     --uix-scrollbar-thumb-hover: rgba(255,255,255,.30);

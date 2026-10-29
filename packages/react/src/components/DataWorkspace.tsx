@@ -1035,49 +1035,79 @@ function WorkspaceTable<T>({
   // (HAR-2634). At any width, when the actions cell is wider than a quarter of the wrap (word
   // verbs: MOTUS's 335 px in a 312 px wrap at 360 px, and 333 px at 1280 px, where it hid the
   // Status column), the cell is unfrozen and scrolls with its row. A peek and a kebab (a 76 px
-  // cell) stay frozen down to a 304 px wrap; a kebab alone (52 px) down to 208 px. Measured when
-  // the step or the rows change and when the wrap resizes, never while scrolling; unfreezing does
-  // not change the cell's width, so it cannot flip back and forth. No layout (jsdom, a hidden
-  // tab): it stays frozen.
+  // cell) stay frozen down to a 304 px wrap; a kebab alone (52 px) down to 208 px. In a fixed
+  // layout the actions column is as wide as its widest row's actions (words, not only a ⋯).
+  //
+  // One ResizeObserver for the table's life watches the wrap, the table, every actions cell and
+  // what is in it, so actions that change width later (verbs that load, a font swap, rows that
+  // mount) are measured again; a MutationObserver re-collects those targets when rows come and go.
+  // Measures are coalesced to one per frame and never run while scrolling or on a plain re-render
+  // (an inline rowActions builds new nodes every render). Unfreezing changes no width, so the
+  // measure cannot loop. No layout (jsdom, a hidden tab): the cell stays frozen and the fixed
+  // column keeps its fallback width (jsdom's Range has no getBoundingClientRect; HAR-2632).
   const [actionsTooWide, setActionsTooWide] = useState(false);
-  const measureActions = !cards && hasActions;
-  useIsomorphicLayoutEffect(() => {
-    const wrap = wrapRef.current;
-    if (!measureActions || !wrap) { setActionsTooWide(false); return; }
-    const measure = () => {
-      let widest = 0;
-      for (const td of Array.from(wrap.querySelectorAll<HTMLElement>('tbody td.uix-table__actions'))) {
-        // the cell as drawn: its own width, or its content where that overflows a fixed column
-        if (typeof td.getBoundingClientRect === 'function') widest = Math.max(widest, td.getBoundingClientRect().width, td.scrollWidth);
-      }
-      if (!(wrap.clientWidth > 0) || !(widest > 0)) return;
-      setActionsTooWide(widest > wrap.clientWidth / 4);
-    };
-    measure();
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(wrap);
-    return () => observer.disconnect();
-  }, [measureActions, actionsByRow, ladder]);
   const [actionsWidth, setActionsWidth] = useState<number | null>(null);
-  useIsomorphicLayoutEffect(() => {
-    if (!fixedOn || !hasActions) return;
-    // No layout to measure (jsdom's Range has no getBoundingClientRect; HAR-2632): keep the
-    // fallback width rather than throw in a consumer's test.
-    if (typeof document.createRange !== 'function' || typeof getComputedStyle !== 'function') return;
+  const measureActions = !cards && hasActions;
+  const measureConfig = useRef({ measureActions, fixedOn, hasActions });
+  measureConfig.current = { measureActions, fixedOn, hasActions };
+  const measureActionsNow = useRef<() => void>(() => {});
+  measureActionsNow.current = () => {
+    const wrap = wrapRef.current;
+    const { measureActions: on, fixedOn: fixedNow, hasActions: any } = measureConfig.current;
+    if (!wrap) return;
+    const cells = Array.from(wrap.querySelectorAll<HTMLElement>('tbody td.uix-table__actions'));
+    if (!on) setActionsTooWide(false);
+    else {
+      let widest = 0;
+      // the cell as drawn: its own width, or its content where that overflows a fixed column
+      for (const td of cells) if (typeof td.getBoundingClientRect === 'function') widest = Math.max(widest, td.getBoundingClientRect().width, td.scrollWidth);
+      if (wrap.clientWidth > 0 && widest > 0) setActionsTooWide(widest > wrap.clientWidth / 4);
+    }
+    if (!fixedNow || !any || typeof document.createRange !== 'function' || typeof getComputedStyle !== 'function') return;
     if (typeof document.createRange().getBoundingClientRect !== 'function') return;
-    // The actions column is as wide as its widest row's actions (words, not only a ⋯).
-    let widest = 0;
-    for (const td of Array.from(wrapRef.current?.querySelectorAll<HTMLElement>('tbody td.uix-table__actions') ?? [])) {
+    let content = 0;
+    for (const td of cells) {
       const range = document.createRange();
       range.selectNodeContents(td);
-      const content = range.getBoundingClientRect().width;
       const style = getComputedStyle(td);
-      widest = Math.max(widest, content + parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0'));
+      content = Math.max(content, range.getBoundingClientRect().width + parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0'));
     }
-    const next = widest > 0 ? Math.ceil(widest) : null;
-    if (next !== actionsWidth) setActionsWidth(next);
-  });
+    const next = content > 0 ? Math.ceil(content) : null;
+    setActionsWidth((current) => (current === next ? current : next));
+  };
+  useIsomorphicLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    let frame = 0;
+    const schedule = () => {
+      if (frame || typeof requestAnimationFrame !== 'function') return;
+      frame = requestAnimationFrame(() => { frame = 0; measureActionsNow.current(); });
+    };
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+    const collect = () => {
+      if (!resize) return;
+      resize.disconnect();
+      resize.observe(wrap);
+      const table = wrap.querySelector('table');
+      if (table) resize.observe(table);
+      for (const td of Array.from(wrap.querySelectorAll<HTMLElement>('tbody td.uix-table__actions'))) {
+        resize.observe(td);
+        for (const child of Array.from(td.children)) resize.observe(child);
+      }
+    };
+    collect();
+    const mutation = typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => { collect(); schedule(); });
+    mutation?.observe(wrap, { childList: true, subtree: true });
+    return () => {
+      resize?.disconnect();
+      mutation?.disconnect();
+      if (frame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);
+    };
+  }, []);
+  // A new step, layout or row set is measured before the paint; a plain re-render is not (the row
+  // set by its ids, as text: a getRowId written inline gives a new ids array every render).
+  const rowSet = ids.join(' ');
+  useIsomorphicLayoutEffect(() => { measureActionsNow.current(); }, [measureActions, fixedOn, ladder, rowSet]);
   const actionsCol = actionsWidth != null ? `${actionsWidth}px` : '5.25rem';
   const floors = fixedOn ? [
     ...(selectable ? ['var(--uix-selcol-w)'] : []),

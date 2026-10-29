@@ -375,3 +375,27 @@ test('HAR-2631 item 3: in cards at 390 px a compact or standard density does not
     expect(idCell.height, `${id}: the two-line id cell is taller than a pinned row`).toBeGreaterThan(44);
   }
 });
+
+/* ── PR #179 review ──────────────────────────────────────────────────────────────────────── */
+
+test('review: verbs that arrive after the rows are measured again: the cell unfreezes once they are there', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const table = page.locator('#late table');
+  // a peek alone at first: compact, frozen
+  await expect(table).toHaveClass(/uix-table--pinned-actions/);
+  await expect(page.locator('#late tbody tr').first().getByRole('button', { name: 'Deaktiviraj' })).toBeVisible();
+  // the words came without a workspace render: the actions cell resized and was measured
+  await expect(table).not.toHaveClass(/uix-table--pinned-actions/);
+});
+
+test('review: a group header row stays as tall as its content at density="standard"', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const heights = await page.locator('#groups').evaluate((ws) => ({
+    head: ws.querySelector('tr.uix-data-workspace__group-head').getBoundingClientRect().height,
+    row: ws.querySelector('tbody tr:not(.uix-data-workspace__group-head)').getBoundingClientRect().height,
+    density: ws.querySelector('table').getAttribute('data-density'),
+  }));
+  expect(heights.density).toBe('standard');
+  expect(heights.row).toBe(56);
+  expect(heights.head, 'the header is not pinned to the 56 px standard row').toBeLessThan(56);
+});

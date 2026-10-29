@@ -299,6 +299,30 @@ function DenseCards({ id, density }: { id: string; density: 'compact' | 'standar
   return <DataWorkspace<Book> id={id} label={`Revisions (${density})`} mobile="cards" density={density} rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} />;
 }
 
+/** Row verbs that arrive late (permissions loaded after the rows): only a peek at first, then words. */
+function LateVerbs({ book }: { book: Book }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 700); return () => clearTimeout(t); }, []);
+  return (
+    <>
+      {ready && <Button size="sm" variant="ghost">Uredi</Button>}
+      {ready && <Button size="sm" variant="ghost">Deaktiviraj</Button>}
+      {ready && <Button size="sm" variant="ghost">Štampaj naljepnicu</Button>}
+      <button type="button" className="uix-rowact" aria-label={`Peek ${book.title}`}><EyeIcon /></button>
+    </>
+  );
+}
+function Late() {
+  const rows = useMemo(() => BOOKS.slice(0, 3), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author },
+    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill> },
+  ], []);
+  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title }), []);
+  // inline on purpose: a new function every render
+  return <DataWorkspace<Book> id="late" label="Shelves, verbs arriving late" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} rowActions={(r) => <LateVerbs book={r} />} />;
+}
+
 /** TENSOR's plain table (HAR-2632): no toolbar parts, rows keyed by UUIDs, named by rowLabel. */
 function Plain() {
   const [selection, setSelection] = useState<Set<string>>(new Set());
@@ -325,6 +349,7 @@ function Harness() {
       <section><h2>Plain table</h2><Plain /></section>
       <section><h2>Shelves</h2><Shelves id="shelves" compact={false} /></section>
       <section><h2>Shelves, compact actions</h2><Shelves id="shelves-compact" compact /></section>
+      <section><h2>Late verbs</h2><Late /></section>
       <section><h2>Revisions, compact cards</h2><DenseCards id="cards-dense-compact" density="compact" /></section>
       <section><h2>Revisions, standard cards</h2><DenseCards id="cards-dense-standard" density="standard" /></section>
     </>

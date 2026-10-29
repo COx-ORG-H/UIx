@@ -142,9 +142,9 @@
       "brotli": 1186
     },
     "styles/components/data-workspace.css": {
-      "raw": 13595,
-      "gzip": 3529,
-      "brotli": 2998
+      "raw": 13889,
+      "gzip": 3608,
+      "brotli": 3068
     },
     "styles/components/date-picker.css": {
       "raw": 6855,
@@ -487,9 +487,9 @@
       "brotli": 1396
     },
     "styles/components/table.css": {
-      "raw": 23810,
-      "gzip": 6162,
-      "brotli": 5285
+      "raw": 24217,
+      "gzip": 6314,
+      "brotli": 5421
     },
     "styles/components/tabs.css": {
       "raw": 6954,

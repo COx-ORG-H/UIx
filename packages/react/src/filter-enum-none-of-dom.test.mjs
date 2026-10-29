@@ -99,3 +99,29 @@ test('HAR-2631 the table engine filters an excluding value with isNoneOf', () =>
   assert.equal(any.op, 'isAnyOf');
   assert.deepEqual(ui.applyFilters(rows, [any]).map((r) => r.id), [1, 2]);
 });
+
+test('PR #179 review: a preset chosen while "is none of" is set keeps the condition', () => {
+  const log = [];
+  const field = { ...status, presets: [{ id: 'done', label: 'Done', values: ['closed'] }] };
+  const t = mount(h(Harness, { field, initial: { kind: 'enum', values: ['open'], operator: 'is-none-of' }, log }));
+  click([...t.host.querySelectorAll('.uix-filter-editor__presets button')].find((b) => b.textContent === 'Done'));
+  assert.deepEqual(log.at(-1), { kind: 'enum', values: ['closed'], operator: 'is-none-of' });
+  t.unmount();
+});
+
+test('PR #179 review: a field that offers only "is none of" applies it with no control; its summary excludes', () => {
+  const log = [];
+  const only = { ...state, enumOperators: ['is-none-of'] };
+  const t = mount(h(Harness, { field: only, initial: undefined, log }));
+  assert.equal(t.host.querySelector('select'), null, 'one condition: no control');
+  click(t.host.querySelector('.uix-checkbox input'));
+  assert.deepEqual(log.at(-1), { kind: 'enum', values: ['open'], operator: 'is-none-of' });
+  t.unmount();
+  assert.equal(ui.summarizeFilter(only, { kind: 'enum', values: ['open'] }), 'State: not Open', 'a value saved without the operator');
+  // only "is any of" stays the 2.50 value: no operator written
+  const anyLog = [];
+  const a = mount(h(Harness, { field: { ...state, enumOperators: ['is-any-of'] }, initial: undefined, log: anyLog }));
+  click(a.host.querySelector('.uix-checkbox input'));
+  assert.deepEqual(anyLog.at(-1), { kind: 'enum', values: ['open'] });
+  a.unmount();
+});

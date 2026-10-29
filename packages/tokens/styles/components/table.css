@@ -57,8 +57,13 @@
   .uix-table--no-zebra tbody tr:where(:nth-child(even)) { --uix-row-bg: var(--uix-row); }
   .uix-table tbody tr:where([data-pinned]) { --uix-row-bg: var(--uix-row-pinned-bg); }
   .uix-table tbody tr:where([data-selected]) { --uix-row-bg: var(--uix-row-selected-bg); }
-  /* muted text in a selected row reads on the selection tint at AA (HAR-2635: 4.36:1 before) */
-  .uix-table tbody tr:where([data-selected], [aria-selected="true"]) { --uix-text-muted: var(--uix-text-muted-on-selected); }
+  /* Muted text in a selected row reads on the selection tint at AA (HAR-2635: 4.36:1 before). It is
+     derived, not a fixed colour: the table keeps the muted colour of its scope (a theme, more
+     contrast, print), and a selected row moves it 30 % toward that scope's text, so any scope that
+     sets --uix-text-muted gets a darker (light) or lighter (dark) muted on its selection, never a
+     weaker one. */
+  .uix-table { --uix-table-muted: var(--uix-text-muted); }
+  .uix-table tbody tr:where([data-selected], [aria-selected="true"]) { --uix-text-muted: color-mix(in srgb, var(--uix-table-muted) 70%, var(--uix-text)); }
   @media (hover: hover) { .uix-table tbody tr:where(:hover) { --uix-row-bg: var(--uix-bg-hover); } }
   /* Row links stay calm on hover/focus: the row tint is the affordance, so neither the base
      layer's `a:hover` underline nor link.css reaches them. `:not(.uix-btn)` keeps buttons
