@@ -46,7 +46,6 @@ const HOOKS = new Map([
   ['uix-filter-editor__searching', 'FilterEditor search live region (PR #168 review): styled by .uix-filter-editor__note, visually hidden while silent; a hook for tests'],
   ['uix-data-workspace__state', 'DataWorkspace empty states (PR #168 review): the BusyRegion around them, busy during a refetch; styled by .uix-busy-region; a hook for tests'],
   ['uix-data-workspace__loading', 'DataWorkspace first-load skeleton (HAR-1388): styled by LoadingState; a hook for tests'],
-  ['uix-id-cell', 'record-id cell (DataWorkspace, HAR-1388; tables.html): its parts .uix-id-cell__btn / __arrow are styled'],
 ]);
 
 const cssFiles = [];
