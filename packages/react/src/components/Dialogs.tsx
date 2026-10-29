@@ -148,13 +148,15 @@ export const ConfirmDialog = forwardRef<HTMLDialogElement, ConfirmDialogProps>(f
       closeLabel={closeLabel}
       role="alertdialog"
       aria-describedby={hasBody ? bodyId : undefined}
+      // The footer's buttons wrap (HAR-2541): a long confirm label ("Auf nicht schwerwiegend
+      // herabstufen") breaks onto a second line at 320 px instead of sticking out of the dialog.
       footer={(
         <>
           {tertiaryLabel != null && onTertiary && (
-            <Button type="button" className="uix-confirm__tertiary" onClick={() => void onTertiary()} disabled={pending}>{tertiaryLabel}</Button>
+            <Button type="button" wrap className="uix-confirm__tertiary" onClick={() => void onTertiary()} disabled={pending}>{tertiaryLabel}</Button>
           )}
-          <Button ref={cancelRef} type="button" onClick={onCancel} disabled={pending}>{cancelLabel}</Button>
-          <Button ref={confirmRef} type="button" variant={destructive ? 'danger' : 'primary'} loading={pending} {...confirm}>{confirmLabel}</Button>
+          <Button ref={cancelRef} type="button" wrap onClick={onCancel} disabled={pending}>{cancelLabel}</Button>
+          <Button ref={confirmRef} type="button" wrap variant={destructive ? 'danger' : 'primary'} loading={pending} {...confirm}>{confirmLabel}</Button>
         </>
       )}
     >
@@ -512,8 +514,8 @@ export function PromptDialog({
           : <Input {...field} onChange={(event) => setValue(event.currentTarget.value)} />}
         {error != null && <div id={errorId} className="uix-field__error" role="alert">{error}</div>}
         <div className="uix-dialog__footer uix-prompt__actions">
-          <Button type="button" onClick={onCancel} disabled={pending}>{cancelLabel}</Button>
-          <Button type="submit" variant={destructive ? 'danger' : 'primary'} loading={pending}>{submitLabel}</Button>
+          <Button type="button" wrap onClick={onCancel} disabled={pending}>{cancelLabel}</Button>
+          <Button type="submit" wrap variant={destructive ? 'danger' : 'primary'} loading={pending}>{submitLabel}</Button>
         </div>
       </form>
     </Modal>
