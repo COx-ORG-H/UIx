@@ -253,3 +253,36 @@ test('nit: a mouse scroll that moves the focused row out of the window parks foc
   await wrap.evaluate((el) => { el.scrollTop = 0; });
   await expect.poll(() => focusedRowId(page)).toBe('BK-1002');
 });
+
+/* ── 2.51 (HAR-2631, HAR-2632) ─────────────────────────────────────────────────────────────── */
+
+test('HAR-2631: a table that asks for standard keeps 56 px rows under a page-wide comfortable density; one that names none follows it', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  await page.evaluate(() => { document.documentElement.dataset.density = 'comfortable'; });
+  const height = (sel) => page.locator(sel).first().evaluate((td) => td.getBoundingClientRect().height);
+  expect(await height('#groups tbody tr:not(.uix-data-workspace__group-head) td')).toBe(56);
+  expect(await height('#sorting tbody td')).toBe(68);
+});
+
+test('HAR-2631: the id header sorts with the mouse and Shift + Enter, and keeps its ordinal and aria-sort', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const ws = page.locator('#cards');
+  const idTh = ws.locator('thead th[data-col="id"]');
+  await idTh.getByRole('button', { name: /^Book/ }).click();
+  await expect(idTh).toHaveAttribute('aria-sort', 'ascending');
+  await expect.poll(() => page.evaluate(() => window.__dw.log.filter((l) => l.startsWith('sort:')).at(-1))).toBe('sort:title:ascending');
+  await ws.locator('thead th[data-col="author"]').getByRole('button').focus();
+  await page.keyboard.press('Shift+Enter');
+  await expect(ws.locator('thead th[data-sort-order]')).toHaveCount(2);
+  await expect(idTh).toHaveAttribute('data-sort-order', '1');
+  await expect(idTh.getByRole('button', { name: /^Book\W+Sort priority 1$/ })).toBeVisible();
+});
+
+test('HAR-2632: a workspace with nothing for its toolbar starts with its table; a row is named by rowLabel', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const plain = page.locator('#plain');
+  await expect(plain.locator('[role="toolbar"]')).toHaveCount(0);
+  const gap = await plain.evaluate((section) => section.firstElementChild.getBoundingClientRect().top - section.getBoundingClientRect().top);
+  expect(gap, 'no band and no gap above the table').toBe(0);
+  await expect(plain.getByRole('checkbox', { name: 'Select The Hobbit' })).toBeVisible();
+});
