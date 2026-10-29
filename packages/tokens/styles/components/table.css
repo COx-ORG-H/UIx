@@ -180,6 +180,9 @@
 
   /* ── row hover actions + kebab ─────────────────────────────────────────────────── */
   .uix-table__actions { width: 84px; text-align: right; white-space: nowrap; }
+  /* the controls share one centre line: an icon-only button has no text baseline, so on the
+     baseline it sat a few px above the word buttons beside it */
+  .uix-table__actions :is(.uix-btn, .uix-rowact) { vertical-align: middle; }
   .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-rowact svg { width: 16px; height: 16px; display: block; }
   /* Row actions hide until hover only where hover exists: on a touch screen they stay visible, so
