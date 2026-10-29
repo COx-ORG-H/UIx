@@ -13,8 +13,8 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { foldForSearch } from '../search-suggest-model.js';
-import { DATE_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset, orderFilterRange } from '../filter-model.js';
-import type { DateFilterOperator, FilterChoice, FilterField, FilterValue, NumberFilterOperator, TextFilterOperator } from '../filter-model.js';
+import { DATE_FILTER_OPERATORS, ENUM_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset, orderFilterRange } from '../filter-model.js';
+import type { DateFilterOperator, EnumFilterOperator, FilterChoice, FilterField, FilterValue, NumberFilterOperator, TextFilterOperator } from '../filter-model.js';
 
 export interface FilterEditorLabels {
   apply: string;
@@ -50,6 +50,8 @@ export interface FilterEditorLabels {
   operators: Record<TextFilterOperator | NumberFilterOperator, string>;
   /** `date` conditions (HAR-1832). Optional, like `presets`. */
   dateOperators?: Partial<Record<DateFilterOperator, string>>;
+  /** `enum` conditions (HAR-2631), when the field offers both. Optional, like `presets`. */
+  enumOperators?: Partial<Record<EnumFilterOperator, string>>;
 }
 
 export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels = {
@@ -77,6 +79,7 @@ export const DEFAULT_FILTER_EDITOR_LABELS: FilterEditorLabels = {
   addTagHint: 'Enter or a comma adds it.',
   date: 'Date',
   dateOperators: { on: 'on', before: 'before', after: 'after', between: 'between' },
+  enumOperators: { 'is-any-of': 'is any of', 'is-none-of': 'is none of' },
   operators: {
     contains: 'contains', 'not-contains': 'does not contain', is: 'is', 'is-not': 'is not', 'starts-with': 'starts with',
     eq: 'equals', neq: 'does not equal', lt: 'less than', lte: 'at most', gt: 'more than', gte: 'at least', between: 'between',
@@ -117,6 +120,7 @@ export function FilterEditor({ field, value: valueProp, onValueChange, onApply, 
     ...DEFAULT_FILTER_EDITOR_LABELS, ...provided, ...labelOverrides,
     operators: { ...DEFAULT_FILTER_EDITOR_LABELS.operators, ...provided?.operators, ...labelOverrides?.operators },
     dateOperators: { ...DEFAULT_FILTER_EDITOR_LABELS.dateOperators, ...provided?.dateOperators, ...labelOverrides?.dateOperators },
+    enumOperators: { ...DEFAULT_FILTER_EDITOR_LABELS.enumOperators, ...provided?.enumOperators, ...labelOverrides?.enumOperators },
   };
   const id = useId();
   let value = valueProp?.kind === field.kind ? valueProp : emptyFilterValue(field.kind);
@@ -224,11 +228,24 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
     return q ? options.filter((o) => foldForSearch(o.label).text.includes(q)) : options;
   }, [options, query]);
   const selected = new Set(value.values);
-  const toggle = (v: string, on: boolean) => onChange({ kind: 'enum', values: on ? [...value.values, v] : value.values.filter((x) => x !== v) });
+  // The values change, the condition stays (absent stays absent: a value saved before 2.50.1 is unchanged).
+  const withValues = (values: string[]): FilterValue => (value.operator ? { kind: 'enum', values, operator: value.operator } : { kind: 'enum', values });
+  const toggle = (v: string, on: boolean) => onChange(withValues(on ? [...value.values, v] : value.values.filter((x) => x !== v)));
   const presets = field.presets ?? [];
   const active = matchFilterPreset(field, value);
+  const ops = (field.enumOperators ?? []).filter((op) => ENUM_FILTER_OPERATORS.includes(op));
+  const words = labels.enumOperators ?? {};
   return (
     <>
+      {ops.length > 1 && (
+        <div className="uix-filter-editor__row">
+          <Select
+            size="sm" aria-label={labels.operator} value={value.operator ?? 'is-any-of'}
+            options={ops.map((op) => ({ value: op, label: words[op] ?? DEFAULT_FILTER_EDITOR_LABELS.enumOperators![op]! }))}
+            onValueChange={(op) => onChange(op === 'is-none-of' ? { kind: 'enum', values: value.values, operator: 'is-none-of' } : { kind: 'enum', values: value.values })}
+          />
+        </div>
+      )}
       {presets.length > 0 && (
         <div className="uix-chip-group uix-filter-editor__presets" role="group" aria-label={labels.presets ?? DEFAULT_FILTER_EDITOR_LABELS.presets}>
           {presets.map((p) => <Chip key={p.id} pressed={p === active} onPressedChange={() => onChange({ kind: 'enum', values: [...p.values] })}>{p.label}</Chip>)}
@@ -237,8 +254,8 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
       {options.length > threshold && <Input type="search" size="sm" aria-label={labels.search} placeholder={labels.search} value={query} onChange={(e) => setQuery(e.currentTarget.value)} autoFocus />}
       <div className="uix-filter-editor__bulk">
         <span className="uix-filter-editor__count" aria-live="polite">{fillLabel(labels.selected, { count: value.values.length })}</span>
-        <Button type="button" variant="link" size="sm" onClick={() => onChange({ kind: 'enum', values: [...new Set([...value.values, ...shown.map((o) => o.value)])] })}>{labels.selectAll}</Button>
-        <Button type="button" variant="link" size="sm" onClick={() => onChange({ kind: 'enum', values: [] })}>{labels.selectNone}</Button>
+        <Button type="button" variant="link" size="sm" onClick={() => onChange(withValues([...new Set([...value.values, ...shown.map((o) => o.value)])]))}>{labels.selectAll}</Button>
+        <Button type="button" variant="link" size="sm" onClick={() => onChange(withValues([]))}>{labels.selectNone}</Button>
       </div>
       <div className="uix-filter-editor__list">
         {shown.length === 0 ? <p className="uix-filter-editor__note">{labels.noMatches}</p>

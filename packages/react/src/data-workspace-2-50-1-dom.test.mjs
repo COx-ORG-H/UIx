@@ -185,3 +185,15 @@ test('HAR-2632 a workspace with nothing for its toolbar renders no toolbar band;
   // a state body keeps working without the toolbar
   assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base({ rows: [] }))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-busy-region uix-data-workspace__state">/);
 });
+
+/* ── HAR-2631 · 2: an excluding enum filter on a DataWorkspace chip ───────────────────────── */
+
+test('HAR-2631 a DataWorkspace chip says "not …" for an is-none-of value, in the words of UixLabelsProvider filterSummary', () => {
+  const field = { id: 'state', label: 'Status', kind: 'enum', enumOperators: ['is-any-of', 'is-none-of'], options: [{ value: 'open', label: 'Open' }, { value: 'lost', label: 'Lost' }] };
+  const values = { state: { kind: 'enum', values: ['open', 'lost'], operator: 'is-none-of' } };
+  const en = renderToStaticMarkup(h(ui.DataWorkspace, base({ filters: { fields: [field], values, onChange() {} } })));
+  assert.match(en, /Status: not Open, Lost/);
+  const de = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { filterSummary: { noneOf: 'nicht {values}' } } },
+    h(ui.DataWorkspace, base({ filters: { fields: [field], values, onChange() {} } }))));
+  assert.match(de, /Status: nicht Open, Lost/);
+});

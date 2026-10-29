@@ -89,6 +89,14 @@ export interface ColumnFilter {
   value: Primitive | Primitive[];
 }
 
+/**
+ * An `enum` `FilterValue` (what `FilterEditor` and `DataWorkspace` filters hold) as the engine's
+ * `ColumnFilter` for `field` (HAR-2631): `is-none-of` maps to `isNoneOf`, anything else to `isAnyOf`.
+ */
+export function enumColumnFilter(field: string, value: { kind: 'enum'; values: readonly string[]; operator?: 'is-any-of' | 'is-none-of' }): ColumnFilter {
+  return { field, kind: 'enum', op: value.operator === 'is-none-of' ? 'isNoneOf' : 'isAnyOf', value: [...value.values] };
+}
+
 function asNum(v: unknown): number {
   return typeof v === 'number' ? v : Number(v);
 }

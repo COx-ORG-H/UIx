@@ -12,7 +12,7 @@ import { useUixLabels } from '../labels-context.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
-import type { FilterField, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
+import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
@@ -1356,7 +1356,10 @@ function PopoverButton({ id, label, title, variant, children }: { id: string; la
 /** A chip's text, with the names of ids restored from a URL or a saved view. */
 function ChipSummary({ field, value, options }: { field: FilterField; value: FilterValue | undefined; options?: SummarizeFilterOptions }) {
   const resolved = useResolvedFilterLabels(field, value);
-  return <>{summarizeFilter(resolved.field, resolved.value, options)}</>;
+  // the words: UixLabelsProvider filterSummary, then the product's own summary labels
+  const provided = useUixLabels().filterSummary;
+  const merged = provided ? { ...options, labels: { ...provided, ...options?.labels, operators: { ...provided.operators, ...options?.labels?.operators } as FilterSummaryLabels['operators'] } } : options;
+  return <>{summarizeFilter(resolved.field, resolved.value, merged)}</>;
 }
 
 /** An open popover, dialog or menu inside the workspace, which takes Escape before the workspace. */
