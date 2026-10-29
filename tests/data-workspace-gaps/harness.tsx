@@ -136,11 +136,11 @@ function Sorting() {
   });
   const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
     { id: 'title', header: 'Title', cell: (r) => r.title, sortable: true, minWidth: '14rem', className: 'uix-col--truncate uix-col--flex' },
-    { id: 'author', header: 'Author', cell: (r) => r.author, sortable: true },
-    { id: 'genre', header: 'Genre', cell: (r) => r.genre, sortable: true, priority: 'mid' },
-    { id: 'year', header: 'Year', cell: (r) => String(r.year), sortable: true, align: 'end', priority: 'low' },
-    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill>, priority: 'low' },
-    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), sortable: true, align: 'end' },
+    { id: 'author', header: 'Author', cell: (r) => r.author, sortable: true, className: 'uix-col--w-lg uix-col--truncate' },
+    { id: 'genre', header: 'Genre', cell: (r) => r.genre, sortable: true, priority: 'mid', className: 'uix-col--w-md' },
+    { id: 'year', header: 'Year', cell: (r) => String(r.year), sortable: true, align: 'end', priority: 'low', className: 'uix-col--w-xs' },
+    { id: 'status', header: 'Status', cell: (r) => <StatusPill tone={TONE[r.status]} treatment="dot">{STATUS[r.status]}</StatusPill>, priority: 'low', className: 'uix-col--w-md' },
+    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), sortable: true, align: 'end', className: 'uix-col--w-xs' },
   ], []);
   const activate = useCallback((r: Book) => window.__dw.activated.push(r.id), []);
   return (
