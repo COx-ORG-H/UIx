@@ -298,3 +298,4 @@ missing or blank.
 <!-- lesson-skip: 6afa2d2 timing polish caught by frame review, not a reusable trap -->
 <!-- lesson-skip: 96acfc2 Firefox-only cause unconfirmed (not reproducible here); revisit if CI confirms it -->
 <!-- lesson-skip: 65438f4 visual polish found in coordinator re-shoot: a plain-text id needs its own box to ellipsize in a flex link; no new failure class -->
+<!-- lesson-skip: d02300e review fixes inside the open PR #179 (scope-derived selected muted, group-head height, one actions observer, enum operator default); nothing released, no new failure class -->
