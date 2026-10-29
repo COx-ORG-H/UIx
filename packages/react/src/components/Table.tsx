@@ -1,8 +1,10 @@
 import type {
-  ReactNode, TableHTMLAttributes, HTMLAttributes, ThHTMLAttributes, TdHTMLAttributes, ButtonHTMLAttributes,
+  ReactNode, TableHTMLAttributes, HTMLAttributes, ThHTMLAttributes, TdHTMLAttributes, ButtonHTMLAttributes, AnchorHTMLAttributes,
 } from 'react';
 import { forwardRef } from 'react';
 import { cx } from '../cx.js';
+import { renderUixLink } from '../link.js';
+import type { UixRenderLink } from '../link.js';
 import { highlightSegments } from '../table-engine.js';
 import { BusyBar } from './BusyBar.js';
 import { TableOverflowProbe } from './TableOverflowProbe.js';
@@ -207,12 +209,31 @@ export function RowActions({ children, className, ...props }: RowActionsProps) {
 
 export interface RowActionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
+  /** A button has no `href`; pass one for the link form (`RowActionLinkProps`). */
+  href?: undefined;
 }
 
-/** A single hover-revealed row action button (icon inside). */
-export function RowAction({ children, className, type = 'button', ...props }: RowActionProps) {
+/**
+ * HAR-2713: a row verb that navigates (an in-app page, a `mailto:`, a PDF in a new tab) as an
+ * `<a class="uix-rowact">`, with the same hover reveal and weight as the button form. `renderLink`
+ * renders it with your router; `target` and `rel` pass through.
+ */
+export interface RowActionLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  href: string;
+  /** Renders the link with your router (`ButtonLink`, `idColumn.renderLink`). Default: a plain `<a>`. */
+  renderLink?: UixRenderLink;
+  children?: ReactNode;
+}
+
+/** A single hover-revealed row action: a button, or a link when it has an `href` (HAR-2713). */
+export function RowAction(props: RowActionProps | RowActionLinkProps) {
+  if (props.href != null) {
+    const { href, renderLink, className, children, ...rest } = props as RowActionLinkProps;
+    return <>{renderUixLink(renderLink, { ...rest, href, className: cx('uix-rowact', className), children })}</>;
+  }
+  const { children, className, type = 'button', href: _href, ...rest } = props as RowActionProps;
   return (
-    <button type={type} className={cx('uix-rowact', className)} {...props}>
+    <button type={type} className={cx('uix-rowact', className)} {...rest}>
       {children}
     </button>
   );

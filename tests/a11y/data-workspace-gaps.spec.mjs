@@ -421,3 +421,23 @@ test('row actions: an icon-only control sits on the same centre line as the word
   const first = centres[0].centre;
   for (const c of centres) expect(Math.abs(c.centre - first), `${c.name} is off the centre line`).toBeLessThanOrEqual(1);
 });
+
+test('HAR-2713: a link row verb hides at rest and shows on row hover and keyboard focus, like the button verb beside it', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 1280, height: 800 });
+  const row = page.locator('#link-verbs tbody tr').first();
+  const link = row.locator('a.uix-rowact');
+  const button = row.locator('button.uix-rowact');
+  await expect(link).toHaveAttribute('target', '_blank');
+  const opacity = (loc) => loc.evaluate((el) => Number(getComputedStyle(el).opacity));
+  await page.mouse.move(5, 5);
+  await expect.poll(() => opacity(link)).toBe(0);
+  await expect.poll(() => opacity(button)).toBe(0);
+  await row.locator('td').first().hover();
+  await expect.poll(() => opacity(link)).toBe(1);
+  await expect.poll(() => opacity(button)).toBe(1);
+  await page.mouse.move(5, 5);
+  await link.focus();
+  await expect.poll(() => opacity(link)).toBe(1);
+  const centres = await row.locator('td.uix-table__actions').evaluate((td) => [...td.querySelectorAll('.uix-rowact')].map((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; }));
+  expect(Math.abs(centres[0] - centres[1]), 'the link and the button share one centre line').toBeLessThanOrEqual(1);
+});

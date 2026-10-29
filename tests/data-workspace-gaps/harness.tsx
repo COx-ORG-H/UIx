@@ -14,7 +14,7 @@
 import { StrictMode, useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Alert, Button, CellStrong, CellSub, DataWorkspace, EmptyState, ErrorState, Highlighted, Menu, MenuItem, StatusPill,
+  Alert, Button, CellStrong, CellSub, DataWorkspace, EmptyState, ErrorState, Highlighted, Menu, MenuItem, RowAction, StatusPill,
 } from '../../packages/react/src/index.js';
 import type { DataWorkspaceColumn, DataWorkspaceGroup, DataWorkspaceRowActionsContext, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
 
@@ -337,6 +337,19 @@ function Plain() {
   return <DataWorkspace<Book> id="plain" label="Linked books" rows={rows} getRowId={(r) => r.id} rowLabel={rowLabel} columns={columns} selection={selection} onSelectionChange={setSelection} />;
 }
 
+/** HAR-2713: a link verb and a button verb in the same row share the hover reveal. */
+function LinkVerbs() {
+  const rows = useMemo(() => BOOKS.slice(0, 3), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [{ id: 'title', header: 'Title', cell: (r) => r.title }], []);
+  const actions = useCallback((r: Book) => (
+    <>
+      <RowAction href={`#labels/${r.id}.pdf`} target="_blank" rel="noopener">Print labels</RowAction>
+      <RowAction aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></RowAction>
+    </>
+  ), []);
+  return <DataWorkspace<Book> id="link-verbs" label="Link verbs" rows={rows} getRowId={(r) => r.id} columns={columns} rowActions={actions} />;
+}
+
 function Harness() {
   return (
     <>
@@ -347,6 +360,7 @@ function Harness() {
       <section><h2>Every copy</h2><Long /></section>
       <section id="states"><h2>States</h2><States /></section>
       <section><h2>Plain table</h2><Plain /></section>
+      <section><h2>Link verbs</h2><LinkVerbs /></section>
       <section><h2>Shelves</h2><Shelves id="shelves" compact={false} /></section>
       <section><h2>Shelves, compact actions</h2><Shelves id="shelves-compact" compact /></section>
       <section><h2>Late verbs</h2><Late /></section>
