@@ -64,7 +64,7 @@ test('every state named in a caption is on the page', () => {
   assert.match(gaps, /2 rows<\/span>/);
   assert.match(gaps, /class="uix-data-workspace__group-agg uix-col--num" data-label="Copies">5 copies</);
   assert.match(gaps, />Save as…</);
-  assert.match(gaps, /Nothing here yet[\s\S]*>Add the first book</);
+  assert.match(gaps, /No books on the wish list[\s\S]*>Add the first book</);
   assert.match(gaps, /data-data-workspace-cards-example[\s\S]*<table class="uix-table uix-table--cards uix-data-workspace__grid--select"[\s\S]*<td data-col="author" data-priority="mid" data-label="Author">Ursula K. Le Guin<\/td>/);
   // audit log: the filter bar with one set filter, three entries, a Details disclosure, older entries
   const crm = specimens['examples-crm-itsm'];

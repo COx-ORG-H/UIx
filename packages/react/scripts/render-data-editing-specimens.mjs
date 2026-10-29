@@ -261,7 +261,8 @@ const BUILDERS = [
     proto.getBoundingClientRect = rect;
     const empty = mount(h(ui.DataWorkspace, {
       label: 'Wish list', rows: [], getRowId: (r) => r.id, columns: [{ id: 'title', header: 'Title', cell: (r) => r.title }],
-      emptyAction: h(ui.Button, { size: 'sm', variant: 'primary' }, 'Add the first book'),
+      // the product's own empty body (`empty`), with its first action
+      empty: h(ui.EmptyState, { variant: 'inline', title: 'No books on the wish list', action: h(ui.Button, { size: 'sm', variant: 'primary' }, 'Add the first book') }, 'Add one from any book page.'),
     }));
     return {
       'examples-data-display': [
