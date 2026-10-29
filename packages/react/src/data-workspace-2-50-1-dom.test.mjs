@@ -197,3 +197,12 @@ test('HAR-2631 a DataWorkspace chip says "not …" for an is-none-of value, in t
     h(ui.DataWorkspace, base({ filters: { fields: [field], values, onChange() {} } }))));
   assert.match(de, /Status: nicht Open, Lost/);
 });
+
+/* ── HAR-2631 · 3: a table that asks for standard holds it ─────────────────────────────────── */
+
+test('HAR-2631 Table density="standard" names itself (data-density), so the standard row height holds; no density follows the page', () => {
+  assert.match(renderToStaticMarkup(h(ui.Table, { density: 'standard' })), /<table class="uix-table" data-density="standard">/);
+  assert.match(renderToStaticMarkup(h(ui.Table, {})), /<table class="uix-table"><\/table>/, 'no density: no attribute, the page decides');
+  assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base({ density: 'standard' }))), /<table class="uix-table" data-density="standard"/);
+  assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base())), /<table class="uix-table" aria-label="Books">/);
+});

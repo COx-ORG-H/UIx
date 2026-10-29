@@ -48,6 +48,8 @@
     font-size: 10pt;
     line-height: 1.45;
     --uix-row-h: var(--uix-row-h-compact);
+    /* the paper's rows are compact, also in a table that names standard (HAR-2631) */
+    --uix-row-h-standard: var(--uix-row-h-compact);
     background: var(--uix-print-paper);
     color: var(--uix-print-ink);
     box-shadow: var(--uix-shadow-md);

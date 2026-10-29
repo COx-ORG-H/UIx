@@ -8,6 +8,7 @@
 
   "row-h":             { "$type": "dimension", "$value": "56px" },
   "row-h-compact":     { "$type": "dimension", "$value": "44px" },
+  "row-h-standard":    { "$type": "dimension", "$value": "56px", "$description": "The standard row height, held by a table that asks for it (Table density=\"standard\", HAR-2631): a page-wide re-point of --uix-row-h (a density or spacing preference) does not reach it. A table that names no density follows --uix-row-h." },
   "row-h-comfortable": { "$type": "dimension", "$value": "68px" },
   "control-h":         { "$type": "dimension", "$value": "36px" },
   "sidebar-w":         { "$type": "dimension", "$value": "248px" },
