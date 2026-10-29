@@ -23,6 +23,7 @@ import { Chip } from './Chip.js';
 import { FilterEditor } from './FilterEditor.js';
 import { Menu, MenuItem } from './Menu.js';
 import { Pagination } from './Pagination.js';
+import type { PaginationLabels } from './Pagination.js';
 import { Popover } from './Popover.js';
 import { SearchBar } from './SearchBar.js';
 import { Select } from './Select.js';
@@ -212,9 +213,14 @@ export interface DataWorkspaceVirtualize {
   overscan?: number;
 }
 
-export type DataWorkspacePagination =
+/**
+ * The footer's pager. `labels` words the pager itself; without them it takes `UixLabelsProvider`
+ * `pagination`, then English (HAR-2631).
+ */
+export type DataWorkspacePagination = (
   | { mode: 'offset'; page: number; pageSize: number; total: number; onPageChange: (page: number) => void; pageSizes?: readonly number[]; onPageSizeChange?: (size: number) => void }
-  | { mode: 'cursor'; hasPrevious: boolean; hasNext: boolean; onFirst?: () => void; onPrevious: () => void; onNext: () => void; summary?: ReactNode; pageSize?: number; pageSizes?: readonly number[]; onPageSizeChange?: (size: number) => void };
+  | { mode: 'cursor'; hasPrevious: boolean; hasNext: boolean; onFirst?: () => void; onPrevious: () => void; onNext: () => void; summary?: ReactNode; pageSize?: number; pageSizes?: readonly number[]; onPageSizeChange?: (size: number) => void }
+) & { labels?: Partial<PaginationLabels> };
 
 export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
   /** Names the workspace region and the table. */
@@ -1304,6 +1310,9 @@ const cssEscape = (value: string) => (typeof CSS !== 'undefined' && CSS.escape ?
 
 /** "x–y of N", rows per page, and the pager. */
 function Footer({ pagination, labels, rowCount }: { pagination: DataWorkspacePagination; labels: DataWorkspaceLabels; rowCount: number }) {
+  // Pagination is server-safe and reads no context, so the workspace hands it the provider's words.
+  const provided = useUixLabels().pagination;
+  const pagerLabels = provided || pagination.labels ? { ...provided, ...pagination.labels } : undefined;
   const sizes = pagination.pageSizes;
   const size = pagination.mode === 'offset' ? pagination.pageSize : pagination.pageSize;
   const rangeText = pagination.mode === 'offset'
@@ -1324,8 +1333,8 @@ function Footer({ pagination, labels, rowCount }: { pagination: DataWorkspacePag
       )}
       <span className="uix-toolbar__spacer" />
       {pagination.mode === 'offset'
-        ? <Pagination mode="offset" page={pagination.page} pageCount={Math.max(1, Math.ceil(pagination.total / pagination.pageSize))} onChange={pagination.onPageChange} />
-        : <Pagination mode="cursor" hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} onFirst={pagination.onFirst} onPrevious={pagination.onPrevious} onNext={pagination.onNext} summary={pagination.summary} />}
+        ? <Pagination mode="offset" page={pagination.page} pageCount={Math.max(1, Math.ceil(pagination.total / pagination.pageSize))} onChange={pagination.onPageChange} labels={pagerLabels} />
+        : <Pagination mode="cursor" hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} onFirst={pagination.onFirst} onPrevious={pagination.onPrevious} onNext={pagination.onNext} summary={pagination.summary} labels={pagerLabels} />}
     </div>
   );
 }

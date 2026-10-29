@@ -1582,8 +1582,8 @@ export interface DataWorkspaceLabels {
     view: string;
 }
 
-// @public (undocumented)
-export type DataWorkspacePagination = {
+// @public
+export type DataWorkspacePagination = ({
     mode: 'offset';
     page: number;
     pageSize: number;
@@ -1602,6 +1602,8 @@ export type DataWorkspacePagination = {
     pageSize?: number;
     pageSizes?: readonly number[];
     onPageSizeChange?: (size: number) => void;
+}) & {
+    labels?: Partial<PaginationLabels>;
 };
 
 // @public (undocumented)

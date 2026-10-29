@@ -206,3 +206,24 @@ test('HAR-2631 Table density="standard" names itself (data-density), so the stan
   assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base({ density: 'standard' }))), /<table class="uix-table" data-density="standard"/);
   assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base())), /<table class="uix-table" aria-label="Books">/);
 });
+
+/* ── HAR-2631 · 4: the workspace pager in the provider's words ──────────────────────────────── */
+
+test('HAR-2631 the workspace pager takes UixLabelsProvider pagination; pagination.labels still wins; English without either', () => {
+  const pagination = { mode: 'offset', page: 2, pageSize: 6, total: 20, onPageChange() {} };
+  const en = renderToStaticMarkup(h(ui.DataWorkspace, base({ pagination })));
+  assert.match(en, /<nav aria-label="Pagination" class="uix-pagination"/);
+  assert.match(en, /aria-label="Previous page"/);
+  const de = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { pagination: { region: 'Seiten', previous: 'Vorherige Seite', next: 'Nächste Seite' } } },
+    h(ui.DataWorkspace, base({ pagination }))));
+  assert.match(de, /<nav aria-label="Seiten" class="uix-pagination"/);
+  assert.match(de, /aria-label="Vorherige Seite"/);
+  assert.match(de, /aria-label="Nächste Seite"/);
+  const own = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { pagination: { region: 'Seiten', next: 'Nächste Seite' } } },
+    h(ui.DataWorkspace, base({ pagination: { ...pagination, labels: { region: 'Bücherseiten' } } }))));
+  assert.match(own, /<nav aria-label="Bücherseiten" class="uix-pagination"/, 'the prop wins');
+  assert.match(own, /aria-label="Nächste Seite"/, 'the provider fills the rest');
+  const cursor = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { pagination: { previous: 'Vorherige Seite' } } },
+    h(ui.DataWorkspace, base({ pagination: { mode: 'cursor', hasPrevious: true, hasNext: true, onPrevious() {}, onNext() {} } }))));
+  assert.match(cursor, /aria-label="Vorherige Seite"/);
+});
