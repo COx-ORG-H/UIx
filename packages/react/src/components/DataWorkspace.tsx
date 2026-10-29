@@ -1331,6 +1331,8 @@ const WorkspaceRow = memo(WorkspaceRowInner) as typeof WorkspaceRowInner;
 /** The record-id cell: the id opens a peek and ↗ the record; or the whole id is the record's link. */
 function IdCell<T>({ row, text, idColumn, openLabel }: { row: T; text: string; idColumn: DataWorkspaceIdColumn<T>; openLabel: string }) {
   const rich = idColumn.render ? <span className="uix-data-workspace__id-text">{idColumn.render(row)}</span> : null;
+  // plain text in its own box, so a fixed-width id column ends it in an ellipsis
+  const label = <span className="uix-data-workspace__id-label">{text}</span>;
   const arrow = idColumn.href && renderUixLink(idColumn.renderLink, {
     href: idColumn.href(row), className: 'uix-data-workspace__open', 'aria-label': fillLabel(openLabel, { label: text }),
     children: <ArrowUpRight />,
@@ -1340,7 +1342,7 @@ function IdCell<T>({ row, text, idColumn, openLabel }: { row: T; text: string; i
       <span className="uix-data-workspace__id">
         {renderUixLink(idColumn.renderLink, {
           href: idColumn.href(row), className: 'uix-id-cell__btn uix-data-workspace__id-link',
-          children: <>{rich ?? text}<ArrowUpRight /></>,
+          children: <>{rich ?? label}<ArrowUpRight /></>,
         })}
       </span>
     );
@@ -1348,8 +1350,8 @@ function IdCell<T>({ row, text, idColumn, openLabel }: { row: T; text: string; i
   return (
     <span className="uix-data-workspace__id">
       {idColumn.onPeek
-        ? <button type="button" className="uix-id-cell__btn" aria-haspopup="dialog" onClick={() => idColumn.onPeek?.(row)}>{rich ?? text}</button>
-        : rich ?? <span className="uix-cell-strong">{text}</span>}
+        ? <button type="button" className="uix-id-cell__btn" aria-haspopup="dialog" onClick={() => idColumn.onPeek?.(row)}>{rich ?? label}</button>
+        : rich ?? <span className="uix-cell-strong uix-data-workspace__id-label">{text}</span>}
       {arrow}
     </span>
   );
