@@ -194,7 +194,10 @@ function Groups() {
 /** 2,000 unpaged rows, windowed; j / k move the active row (the product's own chords). */
 function Long() {
   const [active, setActive] = useState<string | null>(null);
-  const [rows, setRows] = useState(LONG);
+  const [all, setRows] = useState(LONG);
+  // the id column is the sort key here (HAR-2631)
+  const [sort, setSort] = useState<DataWorkspaceSort | null>(null);
+  const rows = useMemo(() => (sort ? [...all].sort((a, b) => a.id.localeCompare(b.id) * (sort.direction === 'ascending' ? 1 : -1)) : all), [all, sort]);
   const [refreshing, setRefreshing] = useState(false);
   const ids = useMemo(() => rows.map((r) => r.id), [rows]);
   useEffect(() => {
@@ -214,12 +217,12 @@ function Long() {
     { id: 'author', header: 'Author', cell: (r) => r.author },
     { id: 'year', header: 'Year', cell: (r) => String(r.year), align: 'end' },
   ], []);
-  const idColumn = useMemo(() => ({ header: 'ID', text: (r: Book) => r.id }), []);
+  const idColumn = useMemo(() => ({ header: 'ID', id: 'id', sortable: true, text: (r: Book) => r.id }), []);
   const activate = useCallback((r: Book) => window.__dw.activated.push(r.id), []);
   const refetch = () => { setRefreshing(true); setTimeout(() => { setRows((all) => all.map((r) => ({ ...r }))); setRefreshing(false); }, 300); };
   return (
     <DataWorkspace<Book>
-      id="long" label="Every copy" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} density="compact"
+      id="long" label="Every copy" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} density="compact" sort={sort} onSortChange={setSort}
       virtualize={{ maxHeight: 480 }} refreshing={refreshing}
       onRowActivate={activate} activeRowId={active} onActiveRowChange={setActive}
       toolbarEnd={<Button size="sm" variant="secondary" onClick={refetch}>Refresh</Button>}
