@@ -347,7 +347,7 @@ export { ViewMenu, FilterPopover, SavedViewMenu } from './components/TableContro
 export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataWorkspace.js';
 export type {
   DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
-  DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize,
+  DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize, DataWorkspaceRowActionsContext,
 } from './components/DataWorkspace.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';

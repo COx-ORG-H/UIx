@@ -240,3 +240,44 @@ test('HAR-2632 a fixed-layout workspace with row actions mounts in jsdom with no
   assert.equal(t.host.querySelector('colgroup col:last-child').style.width, '5.25rem', 'the fallback width');
   t.unmount();
 });
+
+/* ── HAR-2634: rowActions knows the ladder's step ──────────────────────────────────────────── */
+
+test('HAR-2634 rowActions gets { ladder, compact }: compact only at the narrowest table step; asked again when the step changes', () => {
+  const seen = [];
+  const rowActions = (r, context) => { seen.push(context); return context.compact ? h('button', { type: 'button', className: 'peek' }, 'Peek') : h('button', { type: 'button', className: 'renew' }, 'Renew'); };
+  workspaceWidth = 1200;
+  const t = mount(h(ui.DataWorkspace, base({ mobile: 'priority', rowActions })));
+  assert.deepEqual(seen.at(-1), { ladder: null, compact: false });
+  assert.equal(t.host.querySelectorAll('tbody .renew').length, 6);
+  const observer = observers.find((o) => o.targets.includes(t.host.querySelector('.uix-data-workspace')));
+  const calls = seen.length;
+  t.render(h(ui.DataWorkspace, base({ mobile: 'priority', rowActions })));
+  assert.equal(seen.length, calls, 'the same rows and step: not asked again');
+  workspaceWidth = 800;
+  act(() => observer.callback([]));
+  assert.deepEqual(seen.at(-1), { ladder: 'priority', compact: false });
+  workspaceWidth = 500;
+  act(() => observer.callback([]));
+  assert.deepEqual(seen.at(-1), { ladder: 'priority-mid', compact: true });
+  assert.equal(t.host.querySelectorAll('tbody .peek').length, 6, 'the compact set at the narrow step');
+  assert.equal(t.host.querySelectorAll('tbody .renew').length, 0);
+  t.unmount();
+  // cards keep the full set (the actions get their own line)
+  workspaceWidth = 390;
+  const c = mount(h(ui.DataWorkspace, base({ mobile: 'cards', rowActions })));
+  assert.deepEqual(seen.at(-1), { ladder: 'cards', compact: false });
+  c.unmount();
+  // without mobile: the full table
+  workspaceWidth = 390;
+  const plain = mount(h(ui.DataWorkspace, base({ rowActions })));
+  assert.deepEqual(seen.at(-1), { ladder: null, compact: false });
+  plain.unmount();
+  workspaceWidth = 0;
+});
+
+test('HAR-2634 one-argument rowActions callers are untouched', () => {
+  const html = renderToStaticMarkup(h(ui.DataWorkspace, base({ rowActions: (r) => h('button', { type: 'button' }, `Act ${r.id}`) })));
+  assert.match(html, /<table class="uix-table uix-table--pinned-actions"/);
+  assert.match(html, /<td class="uix-table__actions"><button type="button">Act BK-100<\/button><\/td>/);
+});

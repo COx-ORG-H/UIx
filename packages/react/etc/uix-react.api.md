@@ -1665,7 +1665,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     // (undocumented)
     pagination?: DataWorkspacePagination;
     refreshing?: boolean;
-    rowActions?: (row: T) => ReactNode;
+    rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
     rowLabel?: (row: T) => string;
     rowNavigation?: boolean;
     // (undocumented)
@@ -1694,6 +1694,12 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     viewMenu?: ViewMenuProps;
     virtualize?: boolean | DataWorkspaceVirtualize;
     zebra?: boolean;
+}
+
+// @public
+export interface DataWorkspaceRowActionsContext {
+    compact: boolean;
+    ladder: 'cards' | 'priority' | 'priority-mid' | null;
 }
 
 // @public (undocumented)

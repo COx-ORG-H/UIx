@@ -16,7 +16,7 @@ import { createRoot } from 'react-dom/client';
 import {
   Alert, Button, CellStrong, CellSub, DataWorkspace, EmptyState, ErrorState, Highlighted, Menu, MenuItem, StatusPill,
 } from '../../packages/react/src/index.js';
-import type { DataWorkspaceColumn, DataWorkspaceGroup, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
+import type { DataWorkspaceColumn, DataWorkspaceGroup, DataWorkspaceRowActionsContext, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
 
 declare global { interface Window { __dw: { log: string[]; activated: string[]; requests: number } } }
 
@@ -252,6 +252,28 @@ function States() {
   );
 }
 
+/** MOTUS shelves (HAR-2634): a priority table with word verbs. `compact` renders only the peek at the narrow step. */
+function Shelves({ id, compact }: { id: string; compact: boolean }) {
+  const rows = useMemo(() => BOOKS.slice(0, 5), []);
+  const columns = useMemo<DataWorkspaceColumn<Book>[]>(() => [
+    { id: 'author', header: 'Author', cell: (r) => r.author, priority: 'mid' },
+    { id: 'genre', header: 'Genre', cell: (r) => r.genre, priority: 'low' },
+    { id: 'copies', header: 'Copies', cell: (r) => String(r.copies), align: 'end' },
+  ], []);
+  const idColumn = useMemo(() => ({ header: 'Shelf', text: (r: Book) => r.title, linkId: true, href: (r: Book) => `#/shelves/${r.id}` }), []);
+  const actions = useCallback((r: Book, context: DataWorkspaceRowActionsContext) => (compact && context.compact
+    ? <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+    : (
+      <>
+        <Button size="sm" variant="ghost" onClick={() => log(`edit:${r.id}`)}>Uredi</Button>
+        <Button size="sm" variant="ghost" onClick={() => log(`deactivate:${r.id}`)}>Deaktiviraj</Button>
+        <Button size="sm" variant="ghost" onClick={() => log(`label:${r.id}`)}>Štampaj naljepnicu</Button>
+        <button type="button" className="uix-rowact" aria-label={`Peek ${r.title}`} onClick={() => log(`peek:${r.id}`)}><EyeIcon /></button>
+      </>
+    )), [compact]);
+  return <DataWorkspace<Book> id={id} label={compact ? 'Shelves (compact actions)' : 'Shelves'} mobile="priority" rows={rows} getRowId={(r) => r.id} columns={columns} idColumn={idColumn} rowActions={actions} />;
+}
+
 /** TENSOR's plain table (HAR-2632): no toolbar parts, rows keyed by UUIDs, named by rowLabel. */
 function Plain() {
   const [selection, setSelection] = useState<Set<string>>(new Set());
@@ -276,6 +298,8 @@ function Harness() {
       <section><h2>Every copy</h2><Long /></section>
       <section id="states"><h2>States</h2><States /></section>
       <section><h2>Plain table</h2><Plain /></section>
+      <section><h2>Shelves</h2><Shelves id="shelves" compact={false} /></section>
+      <section><h2>Shelves, compact actions</h2><Shelves id="shelves-compact" compact /></section>
     </>
   );
 }

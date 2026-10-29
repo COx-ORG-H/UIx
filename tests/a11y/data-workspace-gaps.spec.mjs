@@ -294,3 +294,44 @@ test('HAR-2632: a visually hidden label in a body cell of a table wider than a 3
   expect(await wrap.evaluate((el) => getComputedStyle(el).position)).toBe('relative');
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
+
+/* ── HAR-2634 ──────────────────────────────────────────────────────────────────────────────── */
+
+test('HAR-2634: at 360 px word actions are not frozen over the row: the id is what a tap at its centre hits', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 360, height: 800 });
+  const ws = page.locator('#shelves');
+  await expect(ws.locator('table')).toHaveClass(/uix-table--priority-mid/);
+  await expect(ws.locator('table')).not.toHaveClass(/uix-table--pinned-actions/);
+  await ws.scrollIntoViewIfNeeded();
+  const hits = await ws.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => {
+    const link = tr.querySelector('a.uix-id-cell__btn');
+    const r = link.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { id: link.textContent, hitsLink: link.contains(hit), hit: hit?.textContent?.slice(0, 30) };
+  }));
+  for (const h of hits) expect(h.hitsLink, `${h.id} is covered by "${h.hit}"`).toBe(true);
+  // the actions scroll in with their row; no frozen divider is left behind
+  const wrap = ws.locator('.uix-table-wrap');
+  await wrap.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
+  const last = ws.locator('tbody tr').first().locator('td.uix-table__actions');
+  expect(await last.evaluate((td) => getComputedStyle(td).position)).toBe('static');
+  await expect(last.getByRole('button', { name: 'Deaktiviraj' })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('HAR-2634: compact actions at 360 px: one peek per row, still frozen, the id still hit-testable', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 360, height: 800 });
+  const ws = page.locator('#shelves-compact');
+  await expect(ws.locator('table')).toHaveClass(/uix-table--pinned-actions/);
+  await expect(ws.locator('tbody tr').first().locator('td.uix-table__actions button')).toHaveCount(1);
+  await ws.scrollIntoViewIfNeeded();
+  const covered = await ws.locator('tbody tr').evaluateAll((trs) => trs.filter((tr) => {
+    const link = tr.querySelector('a.uix-id-cell__btn');
+    const r = link.getBoundingClientRect();
+    return !link.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+  }).length);
+  expect(covered).toBe(0);
+  // wider than the narrow step, the full set comes back
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(ws.locator('tbody tr').first().getByRole('button', { name: 'Deaktiviraj' })).toBeVisible();
+});
