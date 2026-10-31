@@ -205,7 +205,7 @@ Radial mode still shortens long labels to fit its ring, but every node carries i
 - **`Comment variant="system"`** marks a product event, such as a status change, apart from people. It has no speech bubble and a `systemLabel` byline (default "System").
 - **`Comment avatar={false}`** drops the avatar column (`.uix-comment--bare`), for a comment on a rail that already marks each row, such as a system event in a timeline.
 - **`Comment replyTo`** quotes the answered message above the body. Its label comes from `replyToLabel` (default "In reply to"). Mentions in a body use the `.uix-mention` class.
-- **`SaveStatus`** shows `idle`, `saving`, `saved` or `failed` for inline edits and autosave. It offers `onRetry` when a save fails, and every string comes from `labels`. The status text sits in a polite live region that stays mounted while idle, so keep one `SaveStatus` mounted and change its `state`. Mounting it only when a save starts means the first announcement is lost.
+- **`SaveStatus`** shows `idle`, `saving`, `saved` or `failed` for inline edits and autosave. It offers `onRetry` when a save fails, and every string comes from `labels`. The status text sits in a polite live region that stays mounted while idle, so keep one `SaveStatus` mounted and change its `state`. Mounting it only when a save starts means the first announcement is lost. A failed save's sentence wraps inside its container, with the retry beside or under it, so a long refusal stays readable in a narrow footer.
 - **`TabPanel keepMounted`** keeps an inactive panel in the DOM, `hidden` and out of the tab order, so switching back keeps its state and data. It is off by default.
 
 ```tsx
@@ -731,6 +731,52 @@ enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { d
   options shape. The model formats through it, so a 2,100-entry month builds at most a handful of formatters.
 - **Deprecated:** `zonedDateSpan` (end-inclusive, swaps inverted ends) and `enumerateDateSpan` (stops silently at
   370) are unchanged in 2.x. Use `zonedDaySpan` and `enumerateDateKeys`.
+
+### Two-axis grids: MatrixInput and MatrixHeatmap
+
+`MatrixInput` fills a grid of choices, one per row and column, from the keyboard alone. `MatrixHeatmap` shows how many items sit in each cell, each cell's named band, and a way to the items behind it. Neither has words of its own: `labels`, the axes, the options and the bands come from you.
+
+Both are a `role="grid"` table with one tab stop. Arrow keys move between cells, Home and End along a row, and Ctrl+Home and Ctrl+End to the corners. A wide grid scrolls inside its own container with both headers sticky, so it never widens the page.
+
+```tsx
+<MatrixInput
+  aria-label={t('impact')}
+  rows={criteria}             // { id, label, description? }
+  columns={horizons}
+  options={[
+    { value: 'na', label: t('notRated'), unrated: true },
+    { value: 'low', label: t('low'), tone: 'success' },
+    { value: 'high', label: t('high'), tone: 'danger' },
+  ]}
+  value={value}               // value[rowId][columnId]
+  onChange={(next, change) => setValue(next)}
+  rowAxisLabel={t('criterion')}
+  labels={{ empty: t('choose') }}
+  getCell={(rowId, columnId) => ({ help, error, disabled, readOnly })}
+/>
+```
+
+- Each cell is a `Select`: Enter, Space or a typed letter opens the choice, and focus returns to the cell. Keep `options` stable, because a new array redraws every cell.
+- A cell with no value shows `labels.empty`. An `unrated` option is a value, drawn apart from both a level and an empty cell.
+- `help` shows under the grid while the cell has focus or the pointer, and a corner mark says a cell has some. `error` shows in the cell.
+- `disabled` and `readOnly`, on the grid or one cell, keep the cell reachable and readable: the keys still move through it.
+
+```tsx
+<MatrixHeatmap
+  aria-label={t('risks')}
+  rows={impact}
+  columns={likelihood}
+  cells={[{ rowId: 'severe', columnId: 'likely', count: 12, band: { label: t('critical'), tone: 'danger' } }]}
+  onOpenCell={(cell) => openPeek(cell)}
+  rowAxisLabel={t('impact')}
+  columnAxisLabel={t('likelihood')}
+  labels={{ empty: t('noData') }}
+/>
+```
+
+- Each cell shows its count and its band, and is named by its two axes, band and count. Give a cell `href`, with `renderLink` for your router, to make it a link.
+- `count: 0` shows a zero. `hideCount` shows the band alone, for a zero you would rather not print. A row and column left out of `cells` is drawn empty (dashed, `labels.empty`), and can still be opened: `onOpenCell` gets only its `rowId` and `columnId`.
+- Tones are `neutral`, `info`, `success`, `warning`, `attention` and `danger`, always beside their words.
 
 ### FilterEditor (typed column filters)
 

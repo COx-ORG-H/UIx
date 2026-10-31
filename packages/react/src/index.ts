@@ -514,6 +514,15 @@ export type { AuditLogProps, AuditLogEvent, AuditLogAction, AuditLogFilters, Aud
 export { DEFAULT_MATCH_REVIEW_LABELS, MatchReview } from './components/MatchReview.js';
 export type { MatchReviewLabels, MatchReviewProps, MatchReviewField, MatchReviewCandidate, MatchReviewAction, MatchBulkResult } from './components/MatchReview.js';
 
+export { MatrixInput } from './components/MatrixInput.js';
+export type {
+  MatrixCellState, MatrixChange, MatrixInputLabels, MatrixInputProps, MatrixOption, MatrixValue,
+} from './components/MatrixInput.js';
+export { MatrixHeatmap } from './components/MatrixHeatmap.js';
+export type { MatrixBand, MatrixHeatmapCell, MatrixHeatmapLabels, MatrixHeatmapProps } from './components/MatrixHeatmap.js';
+export type { MatrixAxisItem, MatrixTone } from './components/MatrixParts.js';
+export { matrixStep } from './matrix-model.js';
+export type { MatrixPosition, MatrixSize, MatrixStepOptions } from './matrix-model.js';
 export { MetricInput } from './components/MetricInput.js';
 export type { MetricInputProps } from './components/MetricInput.js';
 export { clampMetricValue, parseMetricValue, stepMetricValue } from './metric-model.js';

@@ -67,6 +67,75 @@ export async function renderDisplaySpecimens() {
     const specimens = {};
     const add = (route, block) => { specimens[route] = specimens[route] ? `${specimens[route]}\n${block}` : block; };
 
+    // ── MatrixInput (HAR-2752): levels, "not rated", an empty cell, help and an error ───────
+    const criteria = [{ id: 'cost', label: 'Financial loss', description: 'Direct costs' }, { id: 'trust', label: 'Reputation' }, { id: 'law', label: 'Legal consequences' }];
+    const horizons = [{ id: 'h4', label: '4 hours' }, { id: 'd1', label: '1 day' }, { id: 'd3', label: '3 days' }, { id: 'w1', label: '1 week' }];
+    const levels = [
+      { value: 'na', label: 'Not rated', unrated: true },
+      { value: 'low', label: 'Low', tone: 'success' },
+      { value: 'mid', label: 'Medium', tone: 'warning' },
+      { value: 'high', label: 'High', tone: 'attention' },
+      { value: 'top', label: 'Critical', tone: 'danger' },
+    ];
+    const matrixCell = (row, column) => {
+      if (row === 'trust' && column === 'd1') return { help: 'Weigh the effect on customers and the press.' };
+      if (row === 'trust' && column === 'd3') return { error: 'Choose a level.' };
+      if (row === 'law' && column === 'h4') return { readOnly: true };
+      return undefined;
+    };
+    const matrixInput = mount(h(ui.MatrixInput, {
+      'aria-label': 'Impact per criterion over time',
+      rows: criteria,
+      columns: horizons,
+      options: levels,
+      value: { cost: { h4: 'low', d1: 'mid', d3: 'high', w1: 'top' }, trust: { h4: 'na' } },
+      rowAxisLabel: 'Criterion',
+      columnAxisLabel: 'Outage',
+      labels: { empty: 'Choose' },
+      getCell: matrixCell,
+      onChange: () => {},
+    }));
+    add('examples-data-display', [
+      caption('Matrix input (React <code>MatrixInput</code>, <code>.uix-matrix--input</code>) — a choice per row and column, filled from the keyboard: one tab stop, arrow keys between cells, Enter opens the choice. Here: levels with their words, "Not rated", an empty cell, a cell with help (the corner mark), one with an error and one read-only.'),
+      '<div data-matrix-example>',
+      html(matrixInput),
+      '</div>',
+    ].join('\n'));
+
+    // ── MatrixHeatmap (HAR-2753): every band, a zero, a hidden zero, empty cells ─────────────
+    const band = {
+      low: { label: 'Low', tone: 'success' },
+      mid: { label: 'Medium', tone: 'warning' },
+      high: { label: 'High', tone: 'attention' },
+      top: { label: 'Critical', tone: 'danger' },
+      none: { label: 'None', tone: 'neutral' },
+    };
+    const matrixHeatmap = mount(h(ui.MatrixHeatmap, {
+      'aria-label': 'Risks by impact and likelihood',
+      rows: [{ id: 'severe', label: 'Severe' }, { id: 'moderate', label: 'Moderate' }, { id: 'minor', label: 'Minor' }],
+      columns: [{ id: 'rare', label: 'Rare' }, { id: 'possible', label: 'Possible' }, { id: 'likely', label: 'Likely' }, { id: 'certain', label: 'Almost certain' }],
+      cells: [
+        { rowId: 'severe', columnId: 'rare', count: 2, band: band.mid },
+        { rowId: 'severe', columnId: 'possible', count: 5, band: band.high },
+        { rowId: 'severe', columnId: 'likely', count: 12, band: band.top },
+        { rowId: 'severe', columnId: 'certain', count: 4, band: band.top },
+        { rowId: 'moderate', columnId: 'rare', count: 0, band: band.low },
+        { rowId: 'moderate', columnId: 'possible', count: 3, band: band.mid },
+        { rowId: 'moderate', columnId: 'likely', count: 7, band: band.high },
+        { rowId: 'minor', columnId: 'rare', count: 0, band: band.none, hideCount: true },
+        { rowId: 'minor', columnId: 'possible', count: 1, band: band.low },
+      ],
+      rowAxisLabel: 'Impact',
+      columnAxisLabel: 'Likelihood',
+      labels: { empty: 'No data' },
+    }));
+    add('examples-data-display', [
+      caption('Matrix heatmap (React <code>MatrixHeatmap</code>, <code>.uix-matrix--heatmap</code>) — how many items sit in each cell, its named band, and a way to the items behind it. Every cell is one control. A zero shows as "0"; "None" is a zero the caller chose to hide; a dashed cell has no data at all.'),
+      '<div data-matrix-example>',
+      html(matrixHeatmap),
+      '</div>',
+    ].join('\n'));
+
     // ── QrCode (HAR-1251): the poster symbol, the smallest documented size, a voucher at H ────
     const poster = mount(h(ui.QrCode, { value: CAMPAIGN_URL, label: 'QR code: open the summer campaign', size: 160 }));
     const smallest = mount(h(ui.QrCode, { value: CAMPAIGN_URL, label: 'QR code: open the summer campaign', size: 90 }));

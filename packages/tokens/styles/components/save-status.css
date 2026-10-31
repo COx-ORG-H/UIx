@@ -3,13 +3,19 @@
  * sits in a polite live region the React component keeps mounted in every state. Colour
  * is never the only cue: each state has its own words. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-save-status { display: inline-flex; align-items: center; gap: var(--uix-space-1); min-height: var(--uix-icon-sm); color: var(--uix-text-muted); font-size: var(--uix-text-meta); white-space: nowrap; }
+  .uix-save-status { display: inline-flex; align-items: center; gap: var(--uix-space-1); min-height: var(--uix-icon-sm); color: var(--uix-text-muted); font-size: var(--uix-text-meta); white-space: nowrap; min-width: 0; max-width: 100%; }
   .uix-save-status__icon { width: var(--uix-space-2); height: var(--uix-space-2); flex-shrink: 0; border-radius: var(--uix-radius-pill); }
   .uix-save-status[data-state="idle"] .uix-save-status__icon { display: none; }
 
   .uix-save-status[data-state="saving"] .uix-save-status__icon { border: 1px solid var(--uix-border-strong); border-top-color: transparent; animation: uix-spin var(--uix-loop-spin) linear infinite; }
   .uix-save-status[data-state="saved"] .uix-save-status__icon { background: var(--uix-success); }
   .uix-save-status[data-state="failed"] { color: var(--uix-danger-text); }
+  /* A refusal is a sentence (HAR-2749): it wraps inside its container, however narrow. The text
+     starts from a small basis so it stays beside the icon, and the retry drops under it when
+     both no longer fit. */
+  .uix-save-status[data-state="failed"] { flex-wrap: wrap; align-items: baseline; white-space: normal; }
+  .uix-save-status[data-state="failed"] .uix-save-status__text { flex: 1 1 8rem; min-width: 0; overflow-wrap: anywhere; }
+  .uix-save-status[data-state="failed"] .uix-save-status__retry { flex: none; }
   .uix-save-status[data-state="failed"] .uix-save-status__icon { background: var(--uix-danger); }
 
   @media (prefers-reduced-motion: reduce) {

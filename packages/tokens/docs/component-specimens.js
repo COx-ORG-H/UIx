@@ -456,6 +456,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-utility",
     "selector": ".uix-code"
   },
+  "matrix": {
+    "route": "examples-data-display",
+    "selector": ".uix-matrix",
+    "container": "[data-matrix-example]"
+  },
   "data-workspace": {
     "route": "examples-data-display",
     "selector": ".uix-data-workspace",
