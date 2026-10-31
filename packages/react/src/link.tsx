@@ -3,7 +3,7 @@ import type { AnchorHTMLAttributes, ReactNode } from 'react';
 /**
  * What a `renderLink` callback receives (HAR-1348). Spread it onto your router's link
  * so it keeps client navigation and prefetch: `renderLink={(p) => <NextLink {...p} />}`.
- * Every UIx component that can render a link (`ButtonLink`, `Stat href`, `Pagination
+ * Every UIx component that can render a link (`ButtonLink`, `CardLink`, `Stat href`, `Pagination
  * hrefFor`, `DetailPage`) takes the same callback, so one adapter serves them all.
  */
 export interface UixLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
