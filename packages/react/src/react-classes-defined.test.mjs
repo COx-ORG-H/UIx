@@ -28,8 +28,6 @@ const HOOKS = new Map([
   ['uix-related-links', 'RelatedLinks root: layout comes from its children'],
   ['uix-rule-builder__value', 'structural wrapper; its controls are styled'],
   ['uix-rule-builder--readonly', 'read-only hook for consumers and tests; the controls themselves carry `disabled`'],
-  ['uix-save-status__text', 'SaveStatus live region: inherits the .uix-save-status text styles'],
-  ['uix-save-status__retry', 'styled by .uix-btn--link .uix-btn--sm'],
   ['uix-scheduling-calendar__grid--week', 'view hook; the week grid needs no override today'],
   ['uix-scheduling-timeline__row--summary', 'state hook: the one row of a collapsed group; it is drawn by the group row rules'],
   ['uix-empty--danger', 'ErrorState tone hook; the tone is on .uix-empty__icon--danger'],

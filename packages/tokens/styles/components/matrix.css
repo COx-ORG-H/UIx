@@ -39,10 +39,10 @@
     overflow-wrap: anywhere;
     hyphens: auto;
   }
-  .uix-matrix__corner, .uix-matrix__column { inset-block-start: 0; border-block-end: 1px solid var(--uix-border); z-index: 2; }
+  .uix-matrix__corner, .uix-matrix__column { inset-block-start: 0; border-block-end: 1px solid var(--uix-border); z-index: var(--uix-z-raised); }
   .uix-matrix__corner, .uix-matrix__row { inset-inline-start: 0; border-inline-end: 1px solid var(--uix-border); }
-  .uix-matrix__corner { width: var(--_head); z-index: 3; }
-  .uix-matrix__row { z-index: 1; color: var(--uix-text); }
+  .uix-matrix__corner { width: var(--_head); z-index: var(--uix-z-sticky); }
+  .uix-matrix__row { z-index: var(--uix-z-raised); color: var(--uix-text); }
   .uix-matrix__axis { display: block; }
   .uix-matrix__axis--column { text-align: end; }
   .uix-matrix__note { display: block; color: var(--uix-text-muted); font-weight: 400; }
