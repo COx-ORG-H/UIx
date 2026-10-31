@@ -175,6 +175,18 @@ jobs:
       - name: Install Playwright chromium
         run: npx playwright install chromium
 
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+
+      - name: Check packed token contrast in Chromium
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/uix-packed"
+          archive=$(cd packages/tokens && bun pm pack --quiet --ignore-scripts --destination "$RUNNER_TEMP")
+          tar -xzf "$archive" -C "$RUNNER_TEMP/uix-packed"
+          UIX_PACKED_TOKENS="$RUNNER_TEMP/uix-packed/package" node --test tests/smoke-consumer/packed-contrast.test.mjs
+
       - name: Accessibility (axe)
         run: npm run test:a11y
 

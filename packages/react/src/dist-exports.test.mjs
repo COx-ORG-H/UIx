@@ -19,10 +19,13 @@ import { manifestTargets, missingTargets } from '../scripts/check-dist.mjs';
 const PACKAGE = new URL('../', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('package.json', PACKAGE), 'utf8'));
 
-test('every exports target is in the built dist', () => {
+test('every exports target is present in the package', () => {
   const targets = manifestTargets(manifest);
-  // types + import + require for each subpath; a shorter list means the walk lost a branch.
-  assert.equal(targets.length, Object.keys(manifest.exports).length * 3);
+  // Code entries have types/import/require; data entries may export one file directly.
+  const codeEntries = Object.values(manifest.exports).filter((entry) => typeof entry === 'object');
+  const dataEntries = Object.values(manifest.exports).filter((entry) => typeof entry === 'string');
+  assert.equal(targets.length, codeEntries.length * 3 + dataEntries.length);
+  assert.ok(targets.some((target) => target.file === './component-inventory.json'));
   process.stdout.write(`dist-exports: ${targets.length} targets\n`);
   assert.deepEqual(missingTargets(manifest, PACKAGE).map((t) => `${t.problem}: ${t.file}`), []);
 });
@@ -40,7 +43,7 @@ test('a dist that lost its CJS bundles fails the check', () => {
 
     // What the racing clean left behind: every .cjs gone, everything else in place.
     const cjs = manifestTargets(manifest).filter((t) => t.file.endsWith('.cjs'));
-    assert.equal(cjs.length, Object.keys(manifest.exports).length);
+    assert.equal(cjs.length, Object.values(manifest.exports).filter((entry) => typeof entry === 'object').length);
     for (const { file } of cjs) rmSync(join(root, file));
     writeFileSync(join(root, 'dist/index.js'), '');
     assert.deepEqual(
@@ -48,6 +51,8 @@ test('a dist that lost its CJS bundles fails the check', () => {
       [...cjs.map((t) => `missing: ${t.file}`), 'empty: ./dist/index.js'].sort(),
     );
     assert.equal(missingTargets(manifest, rootUrl).find((t) => t.file === './dist/index.cjs').via, 'exports["."]["require"]');
+    rmSync(join(root, 'component-inventory.json'));
+    assert.equal(missingTargets(manifest, rootUrl).find((t) => t.file === './component-inventory.json').problem, 'missing');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -25,7 +25,7 @@
     "serve:styleguide": "serve -l 4178 .",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
-    "test:a11y": "playwright test tests/a11y",
+    "test:a11y": "node --test tests/display-preferences-inline.test.mjs tests/field-combobox.test.mjs tests/workspace-actions.test.mjs tests/theme-contrast.test.mjs tests/smoke-consumer/cleanup.test.mjs && playwright test tests/a11y",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
@@ -35,6 +35,7 @@
     "@changesets/cli": "^2.31.0",
     "@microsoft/api-extractor": "^7.58.9",
     "@playwright/test": "^1.61.0",
+    "esbuild": "^0.27.0",
     "react-hook-form": "^7.89.0",
     "serve": "^14.2.6"
   }

@@ -1,0 +1,1909 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "name": "AccountMenu",
+      "subpath": "."
+    },
+    {
+      "name": "Alert",
+      "subpath": "."
+    },
+    {
+      "name": "AppShell",
+      "subpath": "."
+    },
+    {
+      "name": "AsyncOperationStatus",
+      "subpath": "."
+    },
+    {
+      "name": "Attachment",
+      "subpath": "."
+    },
+    {
+      "name": "AttachmentList",
+      "subpath": "."
+    },
+    {
+      "name": "AuditLog",
+      "subpath": "."
+    },
+    {
+      "name": "Avatar",
+      "subpath": "."
+    },
+    {
+      "name": "AvatarGroup",
+      "subpath": "."
+    },
+    {
+      "name": "BrandProfileEditor",
+      "subpath": "."
+    },
+    {
+      "name": "BrandProfiles",
+      "subpath": "."
+    },
+    {
+      "name": "Breadcrumbs",
+      "subpath": "."
+    },
+    {
+      "name": "BuilderCanvas",
+      "subpath": "."
+    },
+    {
+      "name": "BulkBar",
+      "subpath": "."
+    },
+    {
+      "name": "Bullet",
+      "subpath": "."
+    },
+    {
+      "name": "BusyRegion",
+      "subpath": "."
+    },
+    {
+      "name": "Button",
+      "subpath": "."
+    },
+    {
+      "name": "ButtonGroup",
+      "subpath": "."
+    },
+    {
+      "name": "ButtonLink",
+      "subpath": "."
+    },
+    {
+      "name": "Card",
+      "subpath": "."
+    },
+    {
+      "name": "CardLink",
+      "subpath": "."
+    },
+    {
+      "name": "CellStrong",
+      "subpath": "."
+    },
+    {
+      "name": "CellSub",
+      "subpath": "."
+    },
+    {
+      "name": "ChangeHighlight",
+      "subpath": "."
+    },
+    {
+      "name": "Checkbox",
+      "subpath": "."
+    },
+    {
+      "name": "CheckboxGroup",
+      "subpath": "."
+    },
+    {
+      "name": "Chip",
+      "subpath": "."
+    },
+    {
+      "name": "ChipGroup",
+      "subpath": "."
+    },
+    {
+      "name": "CodeDisplay",
+      "subpath": "."
+    },
+    {
+      "name": "CollapsibleSection",
+      "subpath": "."
+    },
+    {
+      "name": "ColorPicker",
+      "subpath": "."
+    },
+    {
+      "name": "Combobox",
+      "subpath": "."
+    },
+    {
+      "name": "CommandGroup",
+      "subpath": "."
+    },
+    {
+      "name": "CommandItem",
+      "subpath": "."
+    },
+    {
+      "name": "CommandPalette",
+      "subpath": "."
+    },
+    {
+      "name": "Comment",
+      "subpath": "."
+    },
+    {
+      "name": "Comments",
+      "subpath": "."
+    },
+    {
+      "name": "Composer",
+      "subpath": "."
+    },
+    {
+      "name": "ComposerBar",
+      "subpath": "."
+    },
+    {
+      "name": "ConfirmDialog",
+      "subpath": "."
+    },
+    {
+      "name": "ContactCard",
+      "subpath": "."
+    },
+    {
+      "name": "ContentList",
+      "subpath": "."
+    },
+    {
+      "name": "ContentListItem",
+      "subpath": "."
+    },
+    {
+      "name": "CopyButton",
+      "subpath": "."
+    },
+    {
+      "name": "Count",
+      "subpath": "."
+    },
+    {
+      "name": "DashboardCanvas",
+      "subpath": "."
+    },
+    {
+      "name": "DashboardGrid",
+      "subpath": "."
+    },
+    {
+      "name": "DashboardGridItem",
+      "subpath": "."
+    },
+    {
+      "name": "DataWorkspace",
+      "subpath": "."
+    },
+    {
+      "name": "DatePicker",
+      "subpath": "."
+    },
+    {
+      "name": "DateRangePicker",
+      "subpath": "."
+    },
+    {
+      "name": "DateTimePicker",
+      "subpath": "."
+    },
+    {
+      "name": "DescriptionItem",
+      "subpath": "."
+    },
+    {
+      "name": "DescriptionList",
+      "subpath": "."
+    },
+    {
+      "name": "DetailLayout",
+      "subpath": "."
+    },
+    {
+      "name": "DetailPage",
+      "subpath": "."
+    },
+    {
+      "name": "DialogClose",
+      "subpath": "."
+    },
+    {
+      "name": "DiffViewer",
+      "subpath": "."
+    },
+    {
+      "name": "DisplayPreferences",
+      "subpath": "."
+    },
+    {
+      "name": "Drawer",
+      "subpath": "."
+    },
+    {
+      "name": "EmptyState",
+      "subpath": "."
+    },
+    {
+      "name": "EntityPicker",
+      "subpath": "."
+    },
+    {
+      "name": "ErrorState",
+      "subpath": "."
+    },
+    {
+      "name": "EventRow",
+      "subpath": "."
+    },
+    {
+      "name": "ExpandToggle",
+      "subpath": "."
+    },
+    {
+      "name": "FeaturedRundown",
+      "subpath": "."
+    },
+    {
+      "name": "FeaturedRundownItem",
+      "subpath": "."
+    },
+    {
+      "name": "FeaturedStage",
+      "subpath": "."
+    },
+    {
+      "name": "Field",
+      "subpath": "."
+    },
+    {
+      "name": "FileUpload",
+      "subpath": "."
+    },
+    {
+      "name": "FilteredEmptyState",
+      "subpath": "."
+    },
+    {
+      "name": "FilterEditor",
+      "subpath": "."
+    },
+    {
+      "name": "FilterPopover",
+      "subpath": "."
+    },
+    {
+      "name": "Flow",
+      "subpath": "."
+    },
+    {
+      "name": "FlowNode",
+      "subpath": "."
+    },
+    {
+      "name": "ForbiddenState",
+      "subpath": "."
+    },
+    {
+      "name": "Heartbeat",
+      "subpath": "."
+    },
+    {
+      "name": "Highlighted",
+      "subpath": "."
+    },
+    {
+      "name": "Inbox",
+      "subpath": "."
+    },
+    {
+      "name": "InboxDetail",
+      "subpath": "."
+    },
+    {
+      "name": "InboxItem",
+      "subpath": "."
+    },
+    {
+      "name": "InboxList",
+      "subpath": "."
+    },
+    {
+      "name": "InfoTip",
+      "subpath": "."
+    },
+    {
+      "name": "InlineEdit",
+      "subpath": "."
+    },
+    {
+      "name": "Input",
+      "subpath": "."
+    },
+    {
+      "name": "InputGroup",
+      "subpath": "."
+    },
+    {
+      "name": "Inset",
+      "subpath": "."
+    },
+    {
+      "name": "InsightCard",
+      "subpath": "."
+    },
+    {
+      "name": "Kanban",
+      "subpath": "."
+    },
+    {
+      "name": "KanbanCard",
+      "subpath": "."
+    },
+    {
+      "name": "KanbanColumn",
+      "subpath": "."
+    },
+    {
+      "name": "KanbanDropLine",
+      "subpath": "."
+    },
+    {
+      "name": "Kbd",
+      "subpath": "."
+    },
+    {
+      "name": "KbdCombo",
+      "subpath": "."
+    },
+    {
+      "name": "Label",
+      "subpath": "."
+    },
+    {
+      "name": "LicensePositionBar",
+      "subpath": "."
+    },
+    {
+      "name": "Lightbox",
+      "subpath": "."
+    },
+    {
+      "name": "List",
+      "subpath": "."
+    },
+    {
+      "name": "ListItem",
+      "subpath": "."
+    },
+    {
+      "name": "LiveIndicator",
+      "subpath": "."
+    },
+    {
+      "name": "LoadingState",
+      "subpath": "."
+    },
+    {
+      "name": "LocaleSwitcher",
+      "subpath": "."
+    },
+    {
+      "name": "Mark",
+      "subpath": "."
+    },
+    {
+      "name": "MatchReview",
+      "subpath": "."
+    },
+    {
+      "name": "MatrixHeatmap",
+      "subpath": "."
+    },
+    {
+      "name": "MatrixInput",
+      "subpath": "."
+    },
+    {
+      "name": "Menu",
+      "subpath": "."
+    },
+    {
+      "name": "MenuGroup",
+      "subpath": "."
+    },
+    {
+      "name": "MenuItem",
+      "subpath": "."
+    },
+    {
+      "name": "MenuItemCheckbox",
+      "subpath": "."
+    },
+    {
+      "name": "MenuItemRadio",
+      "subpath": "."
+    },
+    {
+      "name": "MenuRadioGroup",
+      "subpath": "."
+    },
+    {
+      "name": "MenuSeparator",
+      "subpath": "."
+    },
+    {
+      "name": "Meter",
+      "subpath": "."
+    },
+    {
+      "name": "MetricInput",
+      "subpath": "."
+    },
+    {
+      "name": "Modal",
+      "subpath": "."
+    },
+    {
+      "name": "MotionList",
+      "subpath": "."
+    },
+    {
+      "name": "NavFavourites",
+      "subpath": "."
+    },
+    {
+      "name": "NavGroup",
+      "subpath": "."
+    },
+    {
+      "name": "NavItem",
+      "subpath": "."
+    },
+    {
+      "name": "NewsLead",
+      "subpath": "."
+    },
+    {
+      "name": "Note",
+      "subpath": "."
+    },
+    {
+      "name": "NotFoundState",
+      "subpath": "."
+    },
+    {
+      "name": "NoticeQueue",
+      "subpath": "."
+    },
+    {
+      "name": "OrgChart",
+      "subpath": "."
+    },
+    {
+      "name": "OtpInput",
+      "subpath": "."
+    },
+    {
+      "name": "PageHeader",
+      "subpath": "."
+    },
+    {
+      "name": "PageIntro",
+      "subpath": "."
+    },
+    {
+      "name": "Pagination",
+      "subpath": "."
+    },
+    {
+      "name": "PasswordInput",
+      "subpath": "."
+    },
+    {
+      "name": "Peek",
+      "subpath": "."
+    },
+    {
+      "name": "Pipeline",
+      "subpath": "."
+    },
+    {
+      "name": "PipelineStage",
+      "subpath": "."
+    },
+    {
+      "name": "Popconfirm",
+      "subpath": "."
+    },
+    {
+      "name": "Popover",
+      "subpath": "."
+    },
+    {
+      "name": "PresenceDot",
+      "subpath": "."
+    },
+    {
+      "name": "PrintLayout",
+      "subpath": "."
+    },
+    {
+      "name": "PrintPageBreak",
+      "subpath": "."
+    },
+    {
+      "name": "PrintSignature",
+      "subpath": "."
+    },
+    {
+      "name": "Progress",
+      "subpath": "."
+    },
+    {
+      "name": "PromptDialog",
+      "subpath": "."
+    },
+    {
+      "name": "Prose",
+      "subpath": "."
+    },
+    {
+      "name": "QrCode",
+      "subpath": "."
+    },
+    {
+      "name": "QrScanner",
+      "subpath": "."
+    },
+    {
+      "name": "Radio",
+      "subpath": "."
+    },
+    {
+      "name": "RadioCard",
+      "subpath": "."
+    },
+    {
+      "name": "RadioGroup",
+      "subpath": "."
+    },
+    {
+      "name": "RelatedLinks",
+      "subpath": "."
+    },
+    {
+      "name": "RelationshipGraph",
+      "subpath": "."
+    },
+    {
+      "name": "RelativeTime",
+      "subpath": "."
+    },
+    {
+      "name": "ResourceGrid",
+      "subpath": "."
+    },
+    {
+      "name": "RowAction",
+      "subpath": "."
+    },
+    {
+      "name": "RowActions",
+      "subpath": "."
+    },
+    {
+      "name": "RuleBuilder",
+      "subpath": "."
+    },
+    {
+      "name": "SavedViewMenu",
+      "subpath": "."
+    },
+    {
+      "name": "SaveStatus",
+      "subpath": "."
+    },
+    {
+      "name": "SchedulingCalendar",
+      "subpath": "."
+    },
+    {
+      "name": "SchedulingTimeline",
+      "subpath": "."
+    },
+    {
+      "name": "SearchBar",
+      "subpath": "."
+    },
+    {
+      "name": "SearchSuggest",
+      "subpath": "."
+    },
+    {
+      "name": "SectionHead",
+      "subpath": "."
+    },
+    {
+      "name": "Segmented",
+      "subpath": "."
+    },
+    {
+      "name": "SegmentedOption",
+      "subpath": "."
+    },
+    {
+      "name": "Select",
+      "subpath": "."
+    },
+    {
+      "name": "Sidebar",
+      "subpath": "."
+    },
+    {
+      "name": "SidebarSection",
+      "subpath": "."
+    },
+    {
+      "name": "Skeleton",
+      "subpath": "."
+    },
+    {
+      "name": "SortableList",
+      "subpath": "."
+    },
+    {
+      "name": "Spinner",
+      "subpath": "."
+    },
+    {
+      "name": "StarButton",
+      "subpath": "."
+    },
+    {
+      "name": "Stat",
+      "subpath": "."
+    },
+    {
+      "name": "StatLine",
+      "subpath": "."
+    },
+    {
+      "name": "StatRow",
+      "subpath": "."
+    },
+    {
+      "name": "StatusPill",
+      "subpath": "."
+    },
+    {
+      "name": "StatusRow",
+      "subpath": "."
+    },
+    {
+      "name": "Step",
+      "subpath": "."
+    },
+    {
+      "name": "Steps",
+      "subpath": "."
+    },
+    {
+      "name": "SubNavItem",
+      "subpath": "."
+    },
+    {
+      "name": "SuccessState",
+      "subpath": "."
+    },
+    {
+      "name": "Switch",
+      "subpath": "."
+    },
+    {
+      "name": "Tab",
+      "subpath": "."
+    },
+    {
+      "name": "Table",
+      "subpath": "."
+    },
+    {
+      "name": "TableWrap",
+      "subpath": "."
+    },
+    {
+      "name": "TabPanel",
+      "subpath": "."
+    },
+    {
+      "name": "Tabs",
+      "subpath": "."
+    },
+    {
+      "name": "TagInput",
+      "subpath": "."
+    },
+    {
+      "name": "Td",
+      "subpath": "."
+    },
+    {
+      "name": "Textarea",
+      "subpath": "."
+    },
+    {
+      "name": "TextDiff",
+      "subpath": "."
+    },
+    {
+      "name": "Th",
+      "subpath": "."
+    },
+    {
+      "name": "ThemeSwitcher",
+      "subpath": "."
+    },
+    {
+      "name": "Timeline",
+      "subpath": "."
+    },
+    {
+      "name": "TimelineItem",
+      "subpath": "."
+    },
+    {
+      "name": "TimePicker",
+      "subpath": "."
+    },
+    {
+      "name": "Toast",
+      "subpath": "."
+    },
+    {
+      "name": "Toaster",
+      "subpath": "."
+    },
+    {
+      "name": "ToggleRow",
+      "subpath": "."
+    },
+    {
+      "name": "Tooltip",
+      "subpath": "."
+    },
+    {
+      "name": "Tr",
+      "subpath": "."
+    },
+    {
+      "name": "Tree",
+      "subpath": "."
+    },
+    {
+      "name": "UixLabelsProvider",
+      "subpath": "."
+    },
+    {
+      "name": "UserChip",
+      "subpath": "."
+    },
+    {
+      "name": "ViewMenu",
+      "subpath": "."
+    },
+    {
+      "name": "Chart",
+      "subpath": "./chart"
+    },
+    {
+      "name": "ChartLegend",
+      "subpath": "./chart"
+    },
+    {
+      "name": "ChartLegendItem",
+      "subpath": "./chart"
+    },
+    {
+      "name": "ChartMetric",
+      "subpath": "./chart"
+    },
+    {
+      "name": "Chart",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "ChartLegend",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "ChartLegendItem",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "ChartMetric",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "ChartPanels",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "CorrelationScatter",
+      "subpath": "./chart/analytic"
+    },
+    {
+      "name": "Chart",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "ChartLegend",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "ChartLegendItem",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "ChartMetric",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "EmojiPicker",
+      "subpath": "./emoji"
+    },
+    {
+      "name": "ReactionBar",
+      "subpath": "./emoji"
+    },
+    {
+      "name": "AccessibilityIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ActivityIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "AlertCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "AlertOctagonIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "AlertTriangleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArchiveIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowLeftIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowLeftRightIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowRightIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowUpDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ArrowUpRightIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "AwardIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BadgeCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BanknoteIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BarChart3Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BellIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BellOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BellRingIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BookmarkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BookOpenIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BotIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BoxesIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "BriefcaseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Building2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarClockIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarDaysIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CalendarXIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CameraIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChartColumnIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CheckCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CheckCircle2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CheckCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronLeftIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronRightIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronsDownUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronsLeftIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronsRightIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronsUpDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ChevronUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleAlertIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleCheckBigIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleDotIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleHelpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CirclePauseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CirclePlayIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleQuestionMarkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CircleXIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ClipboardCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ClipboardListIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ClockIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CloudIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CloudOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CoinsIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Columns3Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CommandIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ComponentIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CopyIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CornerUpLeftIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CreditCardIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "DatabaseBackupIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "DatabaseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "DoorOpenIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "DownloadIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "EllipsisIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "EllipsisVerticalIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ExternalLinkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "EyeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "EyeOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FaceSlightlySmilingIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileArchiveIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileBarChartIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileChartColumnIncreasingIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileCheck2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileCheckCornerIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileImageIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileInputIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileQuestionIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileQuestionMarkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileSearchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileSpreadsheetIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileTextIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FilterIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FlagIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FolderCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FolderKanbanIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FolderTreeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FunnelIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GanttChartSquareIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GaugeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitBranchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitBranchPlusIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitCompareArrowsIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitMergeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitPullRequestArrowIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitPullRequestClosedIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GlobeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GraduationCapIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Grid3x3Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GripVerticalIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HandHeartIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HeartIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HeartPulseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HexagonIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HistoryIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HourglassIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "HouseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "IdCardIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ImageIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "InboxIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "InfoIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "KeyIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "KeyRoundIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LanguagesIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LaptopIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LayersIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LayoutDashboardIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LayoutTemplateIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LibraryIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LifeBuoyIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LightbulbIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Link2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Link2OffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LinkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ListChecksIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ListFilterIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ListTreeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Loader2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LoaderCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LockIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LogInIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LogOutIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MailIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MapPinIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Maximize2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MegaphoneIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MenuIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MessageCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MessageSquareIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Minimize2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MinusIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MonitorCogIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MonitorIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MoonIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "MoreHorizontalIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "NewspaperIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "NotebookPenIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "OctagonAlertIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PackageIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PackageOpenIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PackageSearchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PaletteIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PanelLeftIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PaperclipIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PartyPopperIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PauseCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PauseIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PencilIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PenLineIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PhoneIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PlaneIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PlayCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PlayIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PlugIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PlusIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "PrinterIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "QrCodeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RadioIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RadioTowerIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ReceiptIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RefreshCwIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RotateCcwClockIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RotateCcwIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "RouteIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Rows2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Rows3Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Rows4Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SaveIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ScaleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ScanBarcodeIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ScanIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ScanSearchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ScrollTextIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SearchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SearchXIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SendIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ServerIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Settings2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SettingsIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShapesIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Share2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldAlertIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldHalfIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShieldXIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ShoppingCartIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SignpostIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SirenIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SlidersHorizontalIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SmileIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SparklesIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SquareChartGanttIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SquareIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "StampIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "StarIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "StarOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "StoreIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SunIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TagIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TagsIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ThumbsDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ThumbsUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TicketIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TimerIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TimerOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Trash2Icon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TrendingDownIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TrendingUpIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "TriangleAlertIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UnlinkIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UploadIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserCheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserCogIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserPlusIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserRoundIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UsersIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UsersRoundIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserXIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WalletIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WaypointsIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WebhookIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WifiIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WifiOffIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WorkflowIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "WrenchIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "XCircleIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "XIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "ZapIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "Markdown",
+      "subpath": "./markdown"
+    },
+    {
+      "name": "RichTextEditor",
+      "subpath": "./rich-text"
+    },
+    {
+      "name": "RichTextEditorFallback",
+      "subpath": "./rich-text"
+    }
+  ]
+}

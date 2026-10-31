@@ -65,6 +65,7 @@ export function Combobox({
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
   'aria-invalid': ariaInvalid,
+  'aria-required': ariaRequired,
   inputId,
   placement = 'bottom-start',
   ...props
@@ -243,6 +244,7 @@ export function Combobox({
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
         aria-invalid={invalid || undefined}
+        aria-required={ariaRequired}
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls={listboxId}

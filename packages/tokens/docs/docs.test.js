@@ -29,6 +29,16 @@ import { ADDITIONAL_EXAMPLES, SHOWCASE_PAGES } from './showcase-data.js';
 
 const docsDirectory = dirname(fileURLToPath(import.meta.url));
 
+test('documentation links and metadata follow the current package and catalogue', () => {
+  const html = readFileSync(resolve(docsDirectory, 'explorer.html'), 'utf8');
+  const source = readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8');
+  assert.equal(/v2\.13|81 CSS modules|58 React components|82 documented entries/.test(html + source), false, 'stale version or catalogue count');
+  assert.doesNotMatch(pageContent('motion'), /<code>ChangeHighlight<\/code>\s*<span[^>]*>coming<\/span>/);
+  assert.match(pageContent('theming'), /--uix-brand-fg: #000000/);
+  assert.match(source, /data-api-report/);
+  assert.match(html, /data-api-report/);
+});
+
 test('slugify: lowercases, hyphenates, trims edges', () => {
   assert.equal(slugify('Button'), 'button');
   assert.equal(slugify('Status Pill'), 'status-pill');
@@ -262,6 +272,26 @@ test('React availability mappings are explicit, unique, and catalogue-backed', (
   assert.equal(REACT_COMPONENT_SLUGS.length, 108);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
+});
+
+test('React availability mappings point to the shipped component inventory or an explicit hook', () => {
+  const inventory = JSON.parse(readFileSync(resolve(docsDirectory, '../../react/component-inventory.json'), 'utf8'));
+  const slug = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  const names = new Set(inventory.components.map((item) => item.name));
+  const slugs = new Set(inventory.components.map((item) => slug(item.name)));
+  const aliases = {
+    'editorial-home': 'PageIntro', form: 'Field', labels: 'UixLabelsProvider',
+    'stat-tile': 'Stat', states: 'LoadingState', 'rich-text': 'RichTextEditor',
+    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput',
+  };
+  for (const entry of REACT_COMPONENT_SLUGS) {
+    if (entry === 'drag') {
+      const api = readFileSync(resolve(docsDirectory, '../../react/etc/uix-react.api.md'), 'utf8');
+      assert.match(api, /export function useKeyboardGrab\b/, 'drag is supported by a hook, not a component');
+    } else {
+      assert.ok(aliases[entry] ? names.has(aliases[entry]) : slugs.has(entry), `No public React export for ${entry}`);
+    }
+  }
 });
 
 test('docs prose list rules never reach kit lists', () => {

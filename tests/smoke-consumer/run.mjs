@@ -13,10 +13,11 @@
  * Assumes the packages are built (CI runs build:all first). Run: npm run test:smoke
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, copyFileSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, copyFileSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { removeConsumer } from './cleanup.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -28,6 +29,8 @@ const step = (m) => console.log(`\n• ${m}`);
 // Invoke npm by running its CLI .js with node (npm_execpath is set by `npm run`).
 // No shell -> space-safe args, cross-platform, no .cmd spawn issue, no DEP0190.
 const NPM_CLI = process.env.npm_execpath;
+// The normal CI path keeps npm. Set UIX_SMOKE_BUN to a Bun executable for a Bun-only local run.
+const BUN_CLI = process.env.UIX_SMOKE_BUN;
 const npm = (args, opts) => NPM_CLI
   ? execFileSync(process.execPath, [NPM_CLI, ...args], opts)
   : execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { ...opts, shell: process.platform === 'win32' });
@@ -76,6 +79,12 @@ try {
 
   const pack = (dir) => {
     // execFile + arg array (no shell string interpolation); shell:true so npm.cmd resolves on Windows.
+    if (BUN_CLI) {
+      const out = execFileSync(BUN_CLI, ['pm', 'pack', '--destination', tmp, '--quiet', '--ignore-scripts'], { cwd: dir, encoding: 'utf8' });
+      const filename = basename(out.trim().split(/\r?\n/).at(-1) ?? '');
+      if (!filename || !existsSync(join(tmp, filename))) throw new Error('bun pack did not create the expected tarball');
+      return join(tmp, filename);
+    }
     const out = npm(['pack', fwd(dir), '--pack-destination', fwd(tmp), '--json'], { cwd: ROOT, encoding: 'utf8' });
     const json = parseFirstJsonValue(out);
     const result = Array.isArray(json) ? json[0] : Object.values(json)[0];
@@ -106,8 +115,9 @@ try {
   copyFileSync(join(HERE, 'app-rich-text.tsx'), join(tmp, 'app-rich-text.tsx'));
   copyFileSync(join(HERE, 'tsconfig.rich-text.json'), join(tmp, 'tsconfig.rich-text.json'));
 
-  step('npm install (isolated; tarballs, no symlinks)');
-  npm(['install', '--no-audit', '--no-fund', '--prefer-offline', '--silent'], { cwd: tmp, stdio: 'inherit' });
+  step(`${BUN_CLI ? 'bun' : 'npm'} install (isolated; tarballs, no symlinks)`);
+  if (BUN_CLI) execFileSync(BUN_CLI, ['install', '--no-save', '--silent'], { cwd: tmp, stdio: 'inherit' });
+  else npm(['install', '--no-audit', '--no-fund', '--prefer-offline', '--silent'], { cwd: tmp, stdio: 'inherit' });
 
   step('1. ESM bundle (esbuild)');
   // Bare specifier resolves from this module's dir up to the repo-root node_modules.
@@ -147,9 +157,9 @@ try {
     { cwd: tmp, stdio: 'inherit' });
 
   step('6. React 19 peer compatibility (install + types + runtime import)');
-  npm(['install', '--no-save', '--no-audit', '--no-fund', '--prefer-offline', '--silent',
-    'react@^19.0.0', 'react-dom@^19.0.0', '@types/react@^19.0.0', '@types/react-dom@^19.0.0'],
-  { cwd: tmp, stdio: 'inherit' });
+  const react19 = ['react@^19.0.0', 'react-dom@^19.0.0', '@types/react@^19.0.0', '@types/react-dom@^19.0.0'];
+  if (BUN_CLI) execFileSync(BUN_CLI, ['add', '--no-save', '--silent', ...react19], { cwd: tmp, stdio: 'inherit' });
+  else npm(['install', '--no-save', '--no-audit', '--no-fund', '--prefer-offline', '--silent', ...react19], { cwd: tmp, stdio: 'inherit' });
   execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.json')],
     { cwd: tmp, stdio: 'inherit' });
   execFileSync(process.execPath, ['--input-type=module', '-e',
@@ -161,8 +171,9 @@ try {
   const optional = Object.keys(manifest.peerDependenciesMeta ?? {}).filter((name) => name !== 'echarts' && manifest.peerDependenciesMeta[name].optional);
   const bad = optional.filter((name) => !/^\d+\.\d+\.\d+$/.test(manifest.peerDependencies[name]));
   if (bad.length) throw new Error(`optional peers must be exact pins: ${bad.join(', ')}`);
-  npm(['install', '--no-save', '--no-audit', '--no-fund', '--prefer-offline', '--silent',
-    ...optional.map((name) => `${name}@${manifest.peerDependencies[name]}`)], { cwd: tmp, stdio: 'inherit' });
+  const peers = optional.map((name) => `${name}@${manifest.peerDependencies[name]}`);
+  if (BUN_CLI) execFileSync(BUN_CLI, ['add', '--no-save', '--silent', ...peers], { cwd: tmp, stdio: 'inherit' });
+  else npm(['install', '--no-save', '--no-audit', '--no-fund', '--prefer-offline', '--silent', ...peers], { cwd: tmp, stdio: 'inherit' });
   execFileSync(process.execPath, ['--input-type=module', '-e',
     "import { RichTextEditor, roundTripMarkdown } from '@tensor_1/react/rich-text'; import { EmojiPicker, ReactionBar, loadEmojiData } from '@tensor_1/react/emoji'; const md = 'Grüße {{name}} 👩‍💻\\n\\n| a | b |\\n|:-|-:|\\n| 1 | 2 |\\n'; if (!RichTextEditor || !EmojiPicker || !ReactionBar || !loadEmojiData || (await roundTripMarkdown(md)) !== md) process.exit(7);"],
     { cwd: tmp, stdio: 'inherit' });
@@ -172,9 +183,41 @@ try {
   execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.rich-text.json')],
     { cwd: tmp, stdio: 'inherit' });
 
+  step('8. component inventory from the packed release (ESM + CJS)');
+  execFileSync(process.execPath, ['--input-type=module', '-e', `
+    import { readFileSync } from 'node:fs';
+    import { createRequire } from 'node:module';
+    const require = createRequire(import.meta.url);
+    const specifier = '@tensor_1/react/component-inventory.json';
+    const esm = JSON.parse(readFileSync(new URL(import.meta.resolve(specifier)), 'utf8'));
+    const cjs = JSON.parse(readFileSync(require.resolve(specifier), 'utf8'));
+    if (JSON.stringify(esm) !== JSON.stringify(cjs) || esm.schemaVersion !== 1) throw new Error('inventory mismatch');
+    for (const name of ['Button', 'DataWorkspace', 'ChangeHighlight']) {
+      if (!esm.components.some((item) => item.name === name && item.subpath === '.')) throw new Error('Missing ' + name);
+    }
+    for (const name of ['XIcon', 'XCircleIcon']) {
+      if (!esm.components.some((item) => item.name === name && item.subpath === './icons')) throw new Error('Missing ' + name);
+    }
+    const modules = new Map();
+    for (const { name, subpath } of esm.components) {
+      const path = '@tensor_1/react' + (subpath === '.' ? '' : subpath.slice(1));
+      if (!modules.has(path)) modules.set(path, [await import(path), require(path)]);
+      for (const module of modules.get(path)) {
+        if (!module[name] || !['function', 'object'].includes(typeof module[name])) throw new Error(path + ' missing component ' + name);
+      }
+    }
+  `], { cwd: tmp, stdio: 'inherit' });
+
+  if (process.env.UIX_SMOKE_BROWSER === '1') {
+    step('9. packed CSS contrast in Chromium');
+    execFileSync(process.execPath, ['--test', join(HERE, 'packed-contrast.test.mjs')], {
+      cwd: ROOT, stdio: 'inherit', env: { ...process.env, UIX_PACKED_TOKENS: join(tmp, 'node_modules', '@tensor_1', 'tokens') },
+    });
+  }
+
   ok = true;
 } finally {
-  try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best effort */ }
+  try { removeConsumer(tmp); } catch (error) { console.error(`Smoke directory kept at ${tmp}: ${error.message}`); }
 }
 
 console.log(ok ? '\n✓ smoke OK — packed packages install, import (ESM+CJS), resolve, and type-check with React 18 and 19 in an isolated consumer, including the rich-text/markdown/emoji subpaths.'

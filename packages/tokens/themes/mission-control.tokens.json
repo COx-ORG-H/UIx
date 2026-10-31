@@ -2,7 +2,7 @@
   "__comment": "Mission Control product skin. Warm-beige neutrals, Geist type, 8px radius, iOS-calibrated status (legible TEXT role + vivid SOLID role). Source of the dashboard's look — edit here, run `npm run build:themes`, and every consumer of @tensor_1/tokens/themes/mission-control updates. Values lifted from the dashboard's pre-migration tokens.css + globals.css override fence. nodata/stale are ABSENCE tokens (Project Hub R6): both alias the existing neutral chain rather than introducing new colour, because absence must be chroma-free — a missing value may never read as a heat state.",
 
   "brand":    { "light": "#0088ff", "dark": "#0091ff" },
-  "brand-fg": { "light": "#ffffff" },
+  "brand-fg": { "light": "#000000" },
 
   "bg-app":    { "light": "#f4f2f0", "dark": "#0E0D0C" },
   "bg-subtle": { "light": "#F4F2F0", "dark": "#1A1817" },

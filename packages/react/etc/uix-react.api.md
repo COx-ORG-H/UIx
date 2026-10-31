@@ -1667,6 +1667,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     pagination?: DataWorkspacePagination;
     refreshing?: boolean;
     rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
+    rowActionsColumn?: boolean;
     rowLabel?: (row: T) => string;
     rowNavigation?: boolean;
     // (undocumented)
@@ -2700,7 +2701,6 @@ export interface FieldProps {
     helpLabel?: string;
     // (undocumented)
     hint?: string;
-    // (undocumented)
     htmlFor?: string;
     // (undocumented)
     label?: string;
