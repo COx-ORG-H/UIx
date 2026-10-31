@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.53.0
+
+### Minor Changes
+
+- 35f7614: `CardLink` takes `renderLink` (HAR-2576), the same `UixRenderLink` adapter as `ButtonLink`, so a whole-card link keeps client navigation and prefetch with the router's link as its one anchor. Next.js consumers no longer need `<Link legacyBehavior>` round the card. With no `renderLink`, or one that returns nothing, it is the plain `<a>` it was.
+
 ## 2.52.0
 
 ### Minor Changes
