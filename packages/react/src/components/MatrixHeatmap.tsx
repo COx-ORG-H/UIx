@@ -44,7 +44,10 @@ export interface MatrixHeatmapProps extends Omit<HTMLAttributes<HTMLDivElement>,
   columns: readonly MatrixAxisItem[];
   /** The cells with data. A row and column left out is drawn as empty, and can still be opened. */
   cells: readonly MatrixHeatmapCell[];
-  /** The drill-through, for every cell. An empty cell comes with only its `rowId` and `columnId`. */
+  /**
+   * The drill-through, for every cell without an `href`. An empty cell comes with only its `rowId`
+   * and `columnId`. Without it, a cell with no `href` opens nothing and is marked `aria-disabled`.
+   */
   onOpenCell?: (cell: MatrixHeatmapCell) => void;
   /** Draws a cell's `href` with the app's router link. */
   renderLink?: UixRenderLink;
@@ -87,9 +90,10 @@ export function MatrixHeatmap({
         onFocus={onGridFocus}
         renderCell={(row, column, rowIndex, columnIndex) => {
           const cell = byCell.get(cellKey(row.id, column.id));
-          const empty = !cell;
           const figure = cell && !cell.hideCount && cell.count != null ? String(cell.count) : null;
-          const detail = empty ? labels.empty : [cell.band?.label, figure].filter(Boolean).join(', ');
+          // a cell with neither a figure nor a band has nothing to show, whatever the caller passed
+          const empty = figure == null && !cell?.band;
+          const detail = empty ? labels.empty : [cell?.band?.label, figure].filter(Boolean).join(', ');
           const name = `${row.label}, ${column.label}${detail ? `: ${detail}` : ''}`;
           const opened = cell ?? { rowId: row.id, columnId: column.id };
           const control = {
@@ -101,13 +105,14 @@ export function MatrixHeatmap({
             'data-column': columnIndex,
             'data-tone': cell?.band?.tone,
             'data-empty': empty || undefined,
+            'aria-disabled': (cell?.href == null && !onOpenCell) || undefined,
             onKeyDown: onCellKeyDown,
-            onClick: () => onOpenCell?.(opened),
+            onClick: cell?.href != null ? undefined : () => onOpenCell?.(opened),
           };
           const content = (
             <>
               {figure != null && <span className="uix-matrix__count">{figure}</span>}
-              <span className="uix-matrix__band">{empty ? labels.empty : cell.band?.label}</span>
+              <span className="uix-matrix__band">{empty ? labels.empty : cell?.band?.label}</span>
             </>
           );
           return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useId, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import type { HTMLAttributes, KeyboardEventHandler, PointerEvent as ReactPointerEvent, FocusEvent } from 'react';
 import { useMatrixGrid } from '../hooks/useMatrixGrid.js';
 import { MatrixFrame, matrixClass } from './MatrixParts.js';
@@ -10,6 +10,7 @@ import type { SelectOption } from './Select.js';
 
 /** One choice a cell offers. */
 export interface MatrixOption {
+  /** Not empty: an empty value is a cell with none. */
   value: string;
   /** Shown in the cell and the list: a level is always readable without its colour. */
   label: string;
@@ -24,7 +25,11 @@ export interface MatrixOption {
   disabled?: boolean;
 }
 
-/** The choices so far: `value[rowId][columnId]`. A cell without an entry shows `labels.empty`. */
+/**
+ * The choices so far: `value[rowId][columnId]`. A cell without an entry shows `labels.empty`, and
+ * so does one naming an option no longer in `options`: keep retired values among the options, marked
+ * `disabled`, for as long as stored data can hold them.
+ */
 export type MatrixValue = Readonly<Record<string, Readonly<Record<string, string | undefined>> | undefined>>;
 
 /** What one cell changed to. */
@@ -178,6 +183,14 @@ export function MatrixInput({
     if (cell && event.pointerType === 'mouse') showHelp(cell);
   };
   const onPointerLeave = () => showHelp(cellOf(document.activeElement));
+  const onBlur = (event: FocusEvent<HTMLElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) showHelp(null);
+  };
+  // A cell's help can follow its value, and choosing a value does not move the focus.
+  useEffect(() => {
+    const focused = cellOf(document.activeElement);
+    if (focused && gridRef.current?.contains(focused)) showHelp(focused);
+  });
 
   const anyHelp = !!getCell && rows.some((row) => columns.some((column) => getCell(row.id, column.id)?.help));
 
@@ -193,7 +206,7 @@ export function MatrixInput({
         ariaLabelledBy={ariaLabelledBy}
         readOnly={readOnly}
         onFocus={onFocus}
-        gridProps={{ onPointerOver, onPointerLeave }}
+        gridProps={{ onPointerOver, onPointerLeave, onBlur }}
         renderCell={(row, column, rowIndex, columnIndex) => {
           const state = getCell?.(row.id, column.id);
           const current = value[row.id]?.[column.id] ?? '';

@@ -2,12 +2,16 @@
  * tests/a11y/matrix.spec.mjs. window.__matrix records what was chosen and opened.
  *   - #bia: MatrixInput on TENSOR's business impact analysis: German, a "nicht bewertet" value,
  *     help on one cell, an error on another, one locked and one disabled cell;
- *   - #wide: twelve columns in a narrow frame, with the headers sticky;
+ *   - #wide: twelve columns and a capped height in a narrow frame, with both headers sticky;
+ *   - #shrink: a heatmap in a shrink-to-fit flex row;
  *   - #locked: the whole grid read-only, and #off the whole grid disabled;
  *   - #risk: MatrixHeatmap, buttons: every band, a zero, a hidden zero, empty cells;
  *   - #links: MatrixHeatmap whose cells are links through renderLink;
- *   - #refusal: SaveStatus with a long German refusal and a retry. */
+ *   - #refusal: SaveStatus with a long German refusal and a retry; #short: a short one with room;
+ *   - #saved: Saved beside a button in a tight row, which must not paint over it;
+ *   - #follow: help that follows the value. */
 import { StrictMode, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MatrixHeatmap, MatrixInput, SaveStatus } from '../../packages/react/src/index.js';
 import type { MatrixCellState, MatrixHeatmapCell, MatrixOption, MatrixValue } from '../../packages/react/src/index.js';
@@ -68,7 +72,7 @@ function Wide() {
   const rows = useMemo(() => Array.from({ length: 8 }, (_, i) => ({ id: `r${i}`, label: `Kriterium ${i + 1}` })), []);
   const [value, setValue] = useState<MatrixValue>({});
   return (
-    <div style={{ maxWidth: 420 }}>
+    <div style={{ maxWidth: 420, '--uix-matrix-max-height': '14rem' } as CSSProperties}>
       <MatrixInput id="wide" aria-label="Breites Raster" rows={rows} columns={columns} options={LEVELS} value={value} rowAxisLabel="Kriterium" labels={{ empty: 'Wählen' }} onChange={setValue} />
     </div>
   );
@@ -101,6 +105,24 @@ const CELLS: MatrixHeatmapCell[] = [
   { rowId: 'minor', columnId: 'possible', count: 4, band: band.info },
 ];
 
+function Follow() {
+  const [value, setValue] = useState<MatrixValue>({ finance: { h4: 'low' } });
+  return (
+    <MatrixInput
+      id="follow"
+      aria-label="Hilfe folgt dem Wert"
+      rows={CRITERIA.slice(0, 1)}
+      columns={HORIZONS.slice(0, 2)}
+      options={LEVELS}
+      value={value}
+      rowAxisLabel="Kriterium"
+      labels={{ empty: 'Wählen' }}
+      getCell={(rowId, columnId) => ({ help: `Hilfe zu ${value[rowId]?.[columnId] ?? 'leer'}` })}
+      onChange={setValue}
+    />
+  );
+}
+
 function App() {
   return (
     <>
@@ -126,6 +148,20 @@ function App() {
         <h2>Save refusal</h2>
         <div id="refusal" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: 8, border: '1px solid var(--uix-border)' }}>
           <SaveStatus state="failed" onRetry={() => {}} labels={{ failed: 'Nicht gespeichert: Das Ende muss nach dem Beginn liegen.', retry: 'Erneut versuchen' }} />
+        </div>
+        <div id="short" style={{ display: 'flex', justifyContent: 'flex-end', padding: 8 }}>
+          <SaveStatus state="failed" onRetry={() => {}} />
+        </div>
+        <div id="saved" style={{ display: 'flex', width: 120, gap: 8 }}>
+          <SaveStatus state="saved" labels={{ saved: 'Alle Änderungen gespeichert' }} />
+          <button type="button" style={{ flex: 'none' }}>Schließen</button>
+        </div>
+      </section>
+      <section><h2>Help follows the value</h2><Follow /></section>
+      <section>
+        <h2>Shrink to fit</h2>
+        <div id="shrink-row" style={{ display: 'flex' }}>
+          <MatrixHeatmap id="shrink" aria-label="Im Flex" rows={IMPACT.slice(0, 1)} columns={PROBABILITY.slice(0, 2)} cells={CELLS.slice(0, 2)} rowAxisLabel="Auswirkung" labels={{ empty: 'Keine Daten' }} onOpenCell={() => {}} />
         </div>
       </section>
     </>

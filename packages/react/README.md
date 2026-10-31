@@ -736,7 +736,7 @@ enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { d
 
 `MatrixInput` fills a grid of choices, one per row and column, from the keyboard alone. `MatrixHeatmap` shows how many items sit in each cell, each cell's named band, and a way to the items behind it. Neither has words of its own: `labels`, the axes, the options and the bands come from you.
 
-Both are a `role="grid"` table with one tab stop. Arrow keys move between cells, Home and End along a row, and Ctrl+Home and Ctrl+End to the corners. A wide grid scrolls inside its own container with both headers sticky, so it never widens the page.
+Both are a `role="grid"` table with one tab stop. Arrow keys move between cells, Home and End along a row, and Ctrl+Home and Ctrl+End to the corners. A wide grid scrolls inside its own container with the row headers sticky, so it never widens the page. Set `--uix-matrix-max-height` to keep the column headers in view down a long grid too; without it the page scrolls the grid and they scroll away with it.
 
 ```tsx
 <MatrixInput
@@ -757,7 +757,7 @@ Both are a `role="grid"` table with one tab stop. Arrow keys move between cells,
 ```
 
 - Each cell is a `Select`: Enter, Space or a typed letter opens the choice, and focus returns to the cell. Keep `options` stable, because a new array redraws every cell.
-- A cell with no value shows `labels.empty`. An `unrated` option is a value, drawn apart from both a level and an empty cell.
+- A cell with no value shows `labels.empty`, and so does one naming an option no longer in `options`: keep a retired option in the list, `disabled`, while stored data can hold it. An `unrated` option is a value, drawn apart from both a level and an empty cell.
 - `help` shows under the grid while the cell has focus or the pointer, and a corner mark says a cell has some. `error` shows in the cell.
 - `disabled` and `readOnly`, on the grid or one cell, keep the cell reachable and readable: the keys still move through it.
 
@@ -774,7 +774,7 @@ Both are a `role="grid"` table with one tab stop. Arrow keys move between cells,
 />
 ```
 
-- Each cell shows its count and its band, and is named by its two axes, band and count. Give a cell `href`, with `renderLink` for your router, to make it a link.
+- Each cell shows its count and its band, and is named by its two axes, band and count. Give a cell `href`, with `renderLink` for your router, to make it a link: it navigates and does not call `onOpenCell`.
 - `count: 0` shows a zero. `hideCount` shows the band alone, for a zero you would rather not print. A row and column left out of `cells` is drawn empty (dashed, `labels.empty`), and can still be opened: `onOpenCell` gets only its `rowId` and `columnId`.
 - Tones are `neutral`, `info`, `success`, `warning`, `attention` and `danger`, always beside their words.
 

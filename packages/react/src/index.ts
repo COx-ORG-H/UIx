@@ -521,8 +521,6 @@ export type {
 export { MatrixHeatmap } from './components/MatrixHeatmap.js';
 export type { MatrixBand, MatrixHeatmapCell, MatrixHeatmapLabels, MatrixHeatmapProps } from './components/MatrixHeatmap.js';
 export type { MatrixAxisItem, MatrixTone } from './components/MatrixParts.js';
-export { matrixStep } from './matrix-model.js';
-export type { MatrixPosition, MatrixSize, MatrixStepOptions } from './matrix-model.js';
 export { MetricInput } from './components/MetricInput.js';
 export type { MetricInputProps } from './components/MetricInput.js';
 export { clampMetricValue, parseMetricValue, stepMetricValue } from './metric-model.js';

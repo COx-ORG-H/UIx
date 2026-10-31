@@ -4220,33 +4220,7 @@ export interface MatrixOption {
     // (undocumented)
     tone?: MatrixTone;
     unrated?: boolean;
-    // (undocumented)
     value: string;
-}
-
-// @public (undocumented)
-export interface MatrixPosition {
-    // (undocumented)
-    column: number;
-    // (undocumented)
-    row: number;
-}
-
-// @public (undocumented)
-export interface MatrixSize {
-    // (undocumented)
-    columns: number;
-    // (undocumented)
-    rows: number;
-}
-
-// @public
-export function matrixStep(from: MatrixPosition, size: MatrixSize, key: string, options?: MatrixStepOptions): MatrixPosition | null;
-
-// @public (undocumented)
-export interface MatrixStepOptions {
-    corner?: boolean;
-    rtl?: boolean;
 }
 
 // @public

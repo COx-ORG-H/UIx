@@ -45,20 +45,32 @@ export function useMatrixGrid(rows: number, columns: number): MatrixGrid {
   const onCellKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
     const cell = event.currentTarget;
     if (cell.getAttribute('aria-expanded') === 'true') return;
+    // Modified keys stay where they were: Alt+ArrowLeft is the browser's Back, and Alt+ArrowDown
+    // opens a Select. Only Ctrl or Cmd with Home or End is the grid's.
+    const { key, altKey, shiftKey } = event;
+    const corner = event.ctrlKey || event.metaKey;
+    if (altKey || shiftKey || (corner && key !== 'Home' && key !== 'End')) return;
     const to = matrixStep(
       { row: Number(cell.dataset.row), column: Number(cell.dataset.column) },
       size.current,
-      event.key,
-      { corner: event.ctrlKey || event.metaKey, rtl: getComputedStyle(cell).direction === 'rtl' },
+      key,
+      { corner, rtl: getComputedStyle(cell).direction === 'rtl' },
     );
     if (!to) return;
     event.preventDefault();
     const next = gridRef.current?.querySelector<HTMLElement>(`${CELL}[data-row="${to.row}"][data-column="${to.column}"]`);
     if (!next || next === cell) return;
-    // The stylesheet's scroll-padding keeps the cell clear of the sticky headers; focus() alone
-    // would leave it under them. preventScroll stops the page moving as well.
+    // focus() alone would leave the cell under the sticky headers. The stylesheet's scroll-padding
+    // clears the row headers; the column headers' height depends on their words, so it is measured.
     next.focus({ preventScroll: true });
     next.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    const grid = gridRef.current;
+    // A header cell: it is the cells that stick, and the <thead> itself scrolls away.
+    const header = grid?.tHead?.rows[0]?.cells[0];
+    const scroller = grid?.parentElement;
+    if (!header || !scroller) return;
+    const under = header.getBoundingClientRect().bottom - next.getBoundingClientRect().top;
+    if (under > 0) scroller.scrollTop -= under;
   }, []);
 
   return { gridRef, onCellKeyDown, onGridFocus };

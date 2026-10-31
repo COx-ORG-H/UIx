@@ -6,7 +6,6 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const HARNESS = '/tests/matrix/harness.html';
-const GATED = new Set(['serious', 'critical']);
 
 const open = async (page, testInfo, viewport) => {
   if (viewport) await page.setViewportSize(viewport);
@@ -26,7 +25,7 @@ test('MatrixInput: one whole row is filled from the keyboard alone', async ({ pa
   await open(page, testInfo);
   const bia = page.locator('#bia');
   await bia.getByRole('combobox').first().focus();
-  // the third row's two editable cells are its last two: walk there, then fill them
+  // the second row has no locked cell: walk there, then fill it
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Home');
   expect(await position(page)).toBe('1,0');
@@ -101,6 +100,58 @@ test('a wide grid: the page does not scroll, and the focused cell stays clear of
   expect(Math.abs(row.x - box.x)).toBeLessThan(2);
 });
 
+test('--uix-matrix-max-height: the column headers stick, and the focused cell clears them going up', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const wide = page.locator('#wide');
+  const scroller = wide.locator('.uix-matrix__scroll');
+  await wide.getByRole('combobox').first().focus();
+  for (let i = 0; i < 7; i += 1) await page.keyboard.press('ArrowDown');
+  expect(await scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(50);
+  const measure = () => page.evaluate(() => {
+    const head = document.querySelector('#wide thead th').getBoundingClientRect();
+    const box = document.querySelector('#wide .uix-matrix__scroll').getBoundingClientRect();
+    return { stuck: Math.abs(head.top - box.top) < 2, clear: document.activeElement.getBoundingClientRect().top >= head.bottom - 1 };
+  });
+  expect(await measure()).toEqual({ stuck: true, clear: true });
+  for (let i = 0; i < 7; i += 1) {
+    await page.keyboard.press('ArrowUp');
+    expect(await measure()).toEqual({ stuck: true, clear: true });
+  }
+});
+
+test('modified keys stay the browser\'s and the Select\'s', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  await page.locator('#bia [data-uix-matrix-cell]').first().focus();
+  for (const key of ['Alt+ArrowRight', 'Shift+ArrowRight', 'Control+ArrowRight', 'Meta+ArrowRight']) {
+    await page.keyboard.press(key);
+    expect(await position(page), key).toBe('0,0');
+  }
+  await page.keyboard.press('Alt+ArrowDown');
+  await expect(page.locator(':focus')).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('the help line clears when focus leaves the grid, and follows a changed value', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const follow = page.locator('#follow');
+  const help = follow.locator('.uix-matrix__help');
+  await follow.locator('[data-uix-matrix-cell]').first().focus();
+  await expect(help).toHaveText('Hilfe zu low');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-uix-select-popup]:popover-open')).toHaveCount(0);
+  await expect(help).toHaveText('Hilfe zu mid');
+  await page.keyboard.press('Tab');
+  await expect(help).toBeEmpty();
+});
+
+test('a shrink-to-fit parent: the grid keeps its width', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const [row, grid] = await Promise.all(['#shrink-row', '#shrink'].map((s) => page.locator(s).boundingBox()));
+  expect(grid.width).toBeGreaterThan(200);
+  expect(grid.x + grid.width).toBeLessThanOrEqual(row.x + row.width + 1);
+});
+
 test('a read-only and a disabled grid: reachable, and nothing opens', async ({ page }, testInfo) => {
   await open(page, testInfo);
   for (const id of ['#locked', '#off']) {
@@ -143,8 +194,17 @@ test('a level and a band read without colour', async ({ page }, testInfo) => {
   await page.emulateMedia({ forcedColors: 'active' });
   const levels = await page.locator('#bia [data-uix-matrix-cell][data-row="0"]').allInnerTexts();
   expect(new Set(levels).size).toBe(4);
-  const bands = await page.locator('#risk [data-uix-matrix-cell][data-tone]').evaluateAll((els) => [...new Set(els.map((e) => [e.dataset.tone, e.querySelector('.uix-matrix__band').textContent]))]);
-  expect(new Set(bands.map(([, label]) => label)).size).toBe(new Set(bands.map(([tone]) => tone)).size);
+  // every tone has its own words, and forced colours keep the dashed edges of the two non-levels
+  const bands = await page.locator('#risk [data-uix-matrix-cell][data-tone]').evaluateAll((els) => {
+    const byTone = new Map();
+    for (const e of els) byTone.set(e.dataset.tone, e.querySelector('.uix-matrix__band').textContent);
+    return [...byTone.values()];
+  });
+  expect(bands.length).toBeGreaterThanOrEqual(5);
+  expect(new Set(bands).size).toBe(bands.length);
+  const dashed = (selector) => page.locator(selector).first().evaluate((e) => getComputedStyle(e).borderTopStyle);
+  expect(await dashed('#risk [data-empty]')).toBe('dashed');
+  expect(await dashed('#bia [data-unrated]')).toBe('dashed');
   // the hidden zero has its band, the empty cell has its words and a dashed edge
   await page.emulateMedia({ forcedColors: 'none' });
   await expect(page.locator('#risk').getByRole('button', { name: 'Gering, Selten: Keine' })).toHaveText('Keine');
@@ -183,9 +243,28 @@ test('SaveStatus: a long refusal wraps inside its container with the retry in re
   }
 });
 
-test('axe: no serious or critical violation in this theme', async ({ page }, testInfo) => {
+test('SaveStatus: a short refusal keeps its line, and Saved does not paint over its neighbour', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const short = await page.locator('#short').evaluate((box) => {
+    const text = box.querySelector('.uix-save-status__text').getBoundingClientRect();
+    const retry = box.querySelector('.uix-save-status__retry').getBoundingClientRect();
+    return { sameLine: retry.left >= text.right && Math.abs(retry.top + retry.height / 2 - (text.top + text.height / 2)) < retry.height / 2 };
+  });
+  expect(short).toEqual({ sameLine: true });
+  const saved = await page.locator('#saved').evaluate((box) => {
+    const text = box.querySelector('.uix-save-status__text').getBoundingClientRect();
+    const button = box.querySelector('button').getBoundingClientRect();
+    return text.right <= button.left + 1;
+  });
+  expect(saved).toBe(true);
+});
+
+test('axe: no violation in this theme, with the lists closed and open', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await page.locator('#bia [data-uix-matrix-cell]').first().focus();
-  const { violations } = await new AxeBuilder({ page }).include('#root').analyze();
-  expect(violations.filter((v) => GATED.has(v.impact)).map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+  const violations = async () => (await new AxeBuilder({ page }).include('#root').analyze()).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`);
+  expect(await violations()).toEqual([]);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-uix-select-popup]:popover-open')).toHaveCount(1);
+  expect(await violations()).toEqual([]);
 });

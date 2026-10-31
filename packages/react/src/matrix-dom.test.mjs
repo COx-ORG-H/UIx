@@ -1,6 +1,6 @@
-/* HAR-2752, HAR-2753 — MatrixInput and MatrixHeatmap in jsdom, and matrixStep on its own: where a
- * key goes, one tab stop, a choice reaching onChange, a change redrawing only its own cell, the
- * states of a cell, and no words of the kit's own.
+/* HAR-2752, HAR-2753 — MatrixInput and MatrixHeatmap in jsdom: where a key goes, one tab stop that
+ * survives a change of rows, a choice reaching onChange, moving redrawing nothing, the states of a
+ * cell, and no words of the kit's own.
  * Renders the BUILT dist — run `npm run build` first; CI does. */
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +10,6 @@ import { createElement as h, act, useState } from 'react';
 let dom;
 let createRoot;
 let ui;
-let matrixStep;
 const expose = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
 
 before(async () => {
@@ -31,7 +30,6 @@ before(async () => {
   window.HTMLElement.prototype.hidePopover = function hidePopover() {};
   ({ createRoot } = await import('react-dom/client'));
   ui = await import('../dist/index.js');
-  ({ matrixStep } = ui);
 });
 
 after(() => dom.window.close());
@@ -79,21 +77,47 @@ const Input = (props) => {
   });
 };
 
-test('matrixStep: the arrows, Home and End along a row, the corners, the edges, right to left', () => {
-  const size = { rows: 3, columns: 4 };
-  const at = { row: 1, column: 1 };
-  assert.deepEqual(matrixStep(at, size, 'ArrowUp'), { row: 0, column: 1 });
-  assert.deepEqual(matrixStep(at, size, 'ArrowDown'), { row: 2, column: 1 });
-  assert.deepEqual(matrixStep(at, size, 'ArrowLeft'), { row: 1, column: 0 });
-  assert.deepEqual(matrixStep(at, size, 'ArrowRight'), { row: 1, column: 2 });
-  assert.deepEqual(matrixStep(at, size, 'Home'), { row: 1, column: 0 });
-  assert.deepEqual(matrixStep(at, size, 'End'), { row: 1, column: 3 });
-  assert.deepEqual(matrixStep(at, size, 'Home', { corner: true }), { row: 0, column: 0 });
-  assert.deepEqual(matrixStep(at, size, 'End', { corner: true }), { row: 2, column: 3 });
-  assert.deepEqual(matrixStep({ row: 0, column: 0 }, size, 'ArrowUp'), { row: 0, column: 0 }, 'the grid has edges');
-  assert.deepEqual(matrixStep({ row: 2, column: 3 }, size, 'ArrowRight'), { row: 2, column: 3 });
-  assert.deepEqual(matrixStep(at, size, 'ArrowLeft', { rtl: true }), { row: 1, column: 2 });
-  assert.equal(matrixStep(at, size, 'a'), null, 'any other key is not the grid\'s');
+test('keys: the grid has edges, modified keys are not its own, and right to left the row runs the other way', () => {
+  const host = mount(h(Input));
+  act(() => cell(host, 0, 0).focus());
+  key(document.activeElement, 'ArrowUp');
+  key(document.activeElement, 'ArrowLeft');
+  assert.equal(focused(), '0,0', 'a move past an edge stays');
+  for (const init of [{ altKey: true }, { shiftKey: true }, { ctrlKey: true }, { metaKey: true }]) {
+    const event = new window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true, ...init });
+    act(() => { document.activeElement.dispatchEvent(event); });
+    assert.equal(focused(), '0,0', JSON.stringify(init));
+    assert.equal(event.defaultPrevented, false, JSON.stringify(init));
+  }
+  key(document.activeElement, 'End', { ctrlKey: true });
+  assert.equal(focused(), '1,2', 'Ctrl+End is the grid\'s');
+
+  host.querySelector('.uix-matrix').style.direction = 'rtl';
+  key(document.activeElement, 'ArrowLeft');
+  assert.equal(focused(), '1,2', 'at the end of the row, right to left');
+  key(document.activeElement, 'ArrowRight');
+  assert.equal(focused(), '1,1');
+});
+
+test('the tab stop survives a change of rows: exactly one, on a cell that exists', () => {
+  const Rows = ({ rows }) => h(ui.MatrixInput, {
+    'aria-label': 'Impact', rows, columns: COLUMNS, options: OPTIONS, value: {}, rowAxisLabel: 'Criterion', labels: { empty: 'Choose' }, onChange: () => {},
+  });
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  roots.push(root);
+  act(() => root.render(h(Rows, { rows: ROWS })));
+  act(() => cell(host, 1, 2).focus());
+  assert.equal(cell(host, 1, 2).tabIndex, 0);
+  act(() => root.render(h(Rows, { rows: ROWS.slice(0, 1) })));
+  const stops = host.querySelectorAll('[data-uix-matrix-cell][tabindex="0"]');
+  assert.equal(stops.length, 1);
+  assert.equal(stops[0].dataset.row, '0');
+  act(() => root.render(h(Rows, { rows: [{ id: 'new', label: 'New' }, ...ROWS] })));
+  assert.equal(host.querySelectorAll('[data-uix-matrix-cell][tabindex="0"]').length, 1);
+  act(() => root.render(h(Rows, { rows: [] })));
+  assert.equal(host.querySelectorAll('[data-uix-matrix-cell]').length, 0);
 });
 
 test('MatrixInput: a grid with one tab stop, each cell named by its row and column', () => {
@@ -234,6 +258,8 @@ test('MatrixHeatmap: each cell is one control, named by its two axes, its band a
   assert.equal(host.querySelectorAll('[data-uix-matrix-cell]').length, 6);
   assert.equal(host.querySelectorAll('[data-uix-matrix-cell][tabindex="0"]').length, 1);
   assert.equal(host.querySelector('[role="grid"]').getAttribute('aria-readonly'), 'true');
+  assert.equal(cell(host, 1, 1).getAttribute('aria-disabled'), 'true', 'without onOpenCell a button cell opens nothing, and says so');
+  assert.equal(cell(host, 1, 0).hasAttribute('aria-disabled'), false, 'a link still opens');
   assert.equal(cell(host, 0, 0).getAttribute('aria-label'), 'Finance, 4 h: Critical, 12');
   assert.equal(cell(host, 0, 0).textContent, '12Critical');
   assert.equal(host.querySelector('thead th').textContent, 'LikelihoodImpact');
@@ -252,9 +278,16 @@ test('MatrixHeatmap: a shown zero, a hidden zero and an empty cell stay apart', 
   assert.ok(empty.hasAttribute('data-empty'));
 });
 
+test('MatrixHeatmap: a cell with neither a figure nor a band is empty, not a blank tile', () => {
+  const host = mount(heatmap({ cells: [{ rowId: 'a', columnId: 'x', hideCount: true }] }));
+  assert.equal(cell(host, 0, 0).textContent, 'No data');
+  assert.ok(cell(host, 0, 0).hasAttribute('data-empty'));
+});
+
 test('MatrixHeatmap: the keyboard reaches and opens every cell', () => {
   const opened = [];
-  const host = mount(heatmap({ onOpenCell: (c) => opened.push(`${c.rowId}/${c.columnId}`) }));
+  const cells = HEAT_CELLS.map(({ href, ...rest }) => rest);
+  const host = mount(heatmap({ cells, onOpenCell: (c) => opened.push(`${c.rowId}/${c.columnId}`) }));
   act(() => cell(host, 0, 0).focus());
   for (let row = 0; row < ROWS.length; row += 1) {
     for (let column = 0; column < COLUMNS.length; column += 1) {
@@ -277,6 +310,10 @@ test('MatrixHeatmap: a cell with an href is a link through renderLink, and it jo
   assert.equal(link.getAttribute('href'), '/risks?cell=b-x');
   assert.ok(link.hasAttribute('data-router'));
   assert.ok(seen.includes('/risks?cell=b-x'));
+  const opened = [];
+  const withOpen = mount(heatmap({ renderLink, onOpenCell: (c) => opened.push(c.columnId) }));
+  act(() => cell(withOpen, 1, 0).dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })));
+  assert.deepEqual(opened, [], 'a link navigates, and does not fire the drill-through as well');
   act(() => link.focus());
   key(link, 'ArrowUp');
   assert.equal(focused(), '0,0');

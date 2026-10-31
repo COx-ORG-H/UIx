@@ -5,15 +5,22 @@
  * words. Nothing here moves: a choice lands in its cell, and a cell opens somewhere else.
  * Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-matrix { container-type: inline-size; min-width: 0; max-width: 100%; }
+  /* inline-size: a size container takes no width from its content, so in a shrink-to-fit parent
+     (a flex row) it would collapse to nothing */
+  .uix-matrix { container-type: inline-size; inline-size: 100%; min-width: 0; max-width: 100%; }
 
   .uix-matrix__scroll {
     --_head: clamp(7.5rem, 32cqi, 14rem);
     --_cell: 7rem;
+    /* The column headers stick only in a scroller that scrolls: set --uix-matrix-max-height to
+       keep them in view down a long grid. The page scrolls it otherwise. */
+    max-height: var(--uix-matrix-max-height, none);
     overflow: auto;
-    /* keeps a cell the arrow keys reach clear of the sticky headers */
+    /* the sticky layers stay inside the grid, under a page's own sticky bar */
+    isolation: isolate;
+    /* keeps a cell the arrow keys reach clear of the row headers; useMatrixGrid does the same
+       for the column headers, whose height depends on their words */
     scroll-padding-inline-start: var(--_head);
-    scroll-padding-block-start: var(--uix-space-8);
     border: 1px solid var(--uix-border);
     border-radius: var(--uix-radius-md);
   }
@@ -64,7 +71,8 @@
     width: 100%;
     height: auto;
     min-height: var(--uix-space-8);
-    padding: var(--uix-space-1) var(--uix-space-6) var(--uix-space-1) var(--uix-space-2);
+    padding-block: var(--uix-space-1);
+    padding-inline: var(--uix-space-2) var(--uix-space-6);
     border-color: transparent;
     background-color: var(--_tone-bg, transparent);
     color: var(--_tone-fg, var(--uix-text));
@@ -113,6 +121,7 @@
     cursor: pointer;
   }
   .uix-matrix__tile[data-tone="neutral"] { border-color: var(--uix-border-strong); }
+  .uix-matrix__tile[aria-disabled="true"] { cursor: default; }
   .uix-matrix__tile:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
   /* A cell the caller left out: no band and no figure, unlike a zero they chose to hide */
   .uix-matrix__tile[data-empty] { border: 1px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
