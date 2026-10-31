@@ -62,6 +62,30 @@ const click = (el) => act(() => el.dispatchEvent(new window.MouseEvent('click', 
 const key = (el, k) => act(() => el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })));
 const frame = () => act(() => new Promise((resolve) => setTimeout(resolve, 30)));
 
+test('HAR-2576: CardLink renders through renderLink as its one anchor, and a nullish renderLink falls back', () => {
+  const seen = [];
+  const routed = renderToStaticMarkup(h(ui.CardLink, {
+    href: '/records/1',
+    title: 'Record',
+    'aria-current': 'page',
+    renderLink: (p) => { seen.push(p); return h('a', { ...p, 'data-router': '' }); },
+  }, 'Body'));
+  assert.match(routed, /data-router=""/);
+  assert.equal((routed.match(/<a /g) ?? []).length, 1, 'the router link is the card, not a wrapper round it');
+  assert.equal(seen[0].href, '/records/1');
+  assert.equal(seen[0].className, 'uix-card uix-card--interactive');
+  assert.equal(seen[0]['aria-current'], 'page');
+  assert.match(routed, /uix-card__title/);
+  assert.match(routed, /uix-card__body/);
+
+  const fallback = renderToStaticMarkup(h(ui.CardLink, { href: '/y', renderLink: () => null }, 'Body'));
+  assert.match(fallback, /<a [^>]*href="\/y"/, 'a nullish renderLink falls back to a plain link');
+  assert.match(fallback, /uix-card--interactive/);
+
+  const plain = renderToStaticMarkup(h(ui.CardLink, { href: '/z' }, 'Body'));
+  assert.match(plain, /<a [^>]*href="\/z"/, 'with no renderLink it stays a plain link');
+});
+
 test('HAR-1348: ButtonLink renders a button-styled link, through renderLink, and a disabled link has no href', () => {
   const html = renderToStaticMarkup(h(ui.ButtonLink, { href: '/tickets/new', variant: 'primary', size: 'xs' }, 'New ticket'));
   assert.match(html, /^<a /);
