@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.54.1
+
+### Patch Changes
+
+- 2aae3ce: The change highlight has room and reads on dark. A highlighted value gets padding round it, given back as margin so nothing near it moves; a ring stands a little further off what it wraps; and the tint is twice as strong on a dark surface, where 14% was nearly invisible.
+
 ## 2.54.0
 
 ### Minor Changes
