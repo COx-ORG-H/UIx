@@ -788,6 +788,7 @@ export interface CardLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorEleme
     footer?: ReactNode;
     // (undocumented)
     headerAction?: ReactNode;
+    renderLink?: UixRenderLink;
     // (undocumented)
     subtitle?: ReactNode;
     // (undocumented)

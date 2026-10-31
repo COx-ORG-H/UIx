@@ -1,5 +1,6 @@
 import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { renderUixLink, type UixRenderLink } from '../link.js';
 import { InfoTip } from './InfoTip.js';
 import { hasHelp, helpLabelFor } from '../info-tip-model.js';
 
@@ -57,13 +58,19 @@ export interface CardLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorEleme
   headerAction?: ReactNode;
   footer?: ReactNode;
   children?: ReactNode;
+  /**
+   * Renders the card's anchor with your router's link (HAR-2576), so it keeps client navigation
+   * and prefetch: the same `UixRenderLink` adapter as `ButtonLink`. Default: `<a>`.
+   */
+  renderLink?: UixRenderLink;
 }
 
 /** A whole-card anchor with visible hover and keyboard focus affordances. */
-export function CardLink({ title, subtitle, headerAction, footer, children, className, ...props }: CardLinkProps) {
+export function CardLink({ title, subtitle, headerAction, footer, children, className, href, renderLink, ...props }: CardLinkProps) {
   const hasHeader = title != null || subtitle != null || headerAction != null;
-  return (
-    <a className={cx('uix-card', 'uix-card--interactive', className)} {...props}>
+  const classes = cx('uix-card', 'uix-card--interactive', className);
+  const body = (
+    <>
       {hasHeader && (
         <div className="uix-card__header">
           <div style={{ flex: 1 }}>
@@ -75,8 +82,12 @@ export function CardLink({ title, subtitle, headerAction, footer, children, clas
       )}
       {children != null && <div className="uix-card__body">{children}</div>}
       {footer != null && <div className="uix-card__footer">{footer}</div>}
-    </a>
+    </>
   );
+  if (renderLink && href !== undefined) {
+    return <>{renderUixLink(renderLink, { ...props, href, className: classes, children: body })}</>;
+  }
+  return <a className={classes} href={href} {...props}>{body}</a>;
 }
 
 export interface InsetProps extends HTMLAttributes<HTMLDivElement> {
