@@ -86,6 +86,11 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
+### 2026-10-31 · CSS sticky and size containers · `4fa9cb0`
+- **Rule:** `container-type: inline-size` takes the element's width from its parent only, so give it `inline-size: 100%` or it collapses to 0 px in a flex row. A `position: sticky` header needs a scroller with a height limit, and it is the `th` cells that stick, so measure a cell: the `<thead>` box scrolls away.
+- **Why:** a harness with a sized grid parent and a horizontal-only scroll test passed both defects; only a parent that shrinks to fit and a capped height show them.
+- **Gate:** `tests/a11y/matrix.spec.mjs` (a shrink-to-fit parent; the headers stuck and the focused cell clear while moving up a capped grid).  **Tag:** css, sticky, container-queries
+
 ### 2026-10-23 · a resize observer reacts a frame late · `5439e94`
 - **Rule:** keep a layout guarantee ("never wider than the page", "never outside its box") in CSS that holds at layout time (`overflow: clip`, sizes in relative units), not in a ResizeObserver or `resize` handler that repairs it. An observer runs at the next rendering update, so anything that reads layout right after a viewport change (a test, a scroll measurement) sees the broken state.  **Why:** a sliding indicator ended its slide from a ResizeObserver; the 320 px overflow spec passed 10/10 locally and still read 19 px of sideways scroll in CI.
 - **Gate:** `tests/a11y/feedback-kit.spec.mjs` asserts the row computes `overflow: clip` while it slides; `display-preferences.spec.mjs` measures the overflow.  **Tag:** layout, motion, ci-only, generalizable
