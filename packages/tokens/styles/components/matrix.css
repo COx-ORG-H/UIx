@@ -1,0 +1,134 @@
+/* uix matrix — two-axis grids (HAR-2752, HAR-2753): `.uix-matrix--input` holds a choice per cell,
+ * `.uix-matrix--heatmap` a count and a named band with a way to the items behind it. Both are a
+ * `role="grid"` table with sticky row and column headers, in a scroller of their own so a wide
+ * grid never widens the page. Colour is never the only cue: a level and a band always show their
+ * words. Nothing here moves: a choice lands in its cell, and a cell opens somewhere else.
+ * Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* inline-size: a size container takes no width from its content, so in a shrink-to-fit parent
+     (a flex row) it would collapse to nothing */
+  .uix-matrix { container-type: inline-size; inline-size: 100%; min-width: 0; max-width: 100%; }
+
+  .uix-matrix__scroll {
+    --_head: clamp(7.5rem, 32cqi, 14rem);
+    --_cell: 7rem;
+    /* The column headers stick only in a scroller that scrolls: set --uix-matrix-max-height to
+       keep them in view down a long grid. The page scrolls it otherwise. */
+    max-height: var(--uix-matrix-max-height, none);
+    overflow: auto;
+    /* the sticky layers stay inside the grid, under a page's own sticky bar */
+    isolation: isolate;
+    /* keeps a cell the arrow keys reach clear of the row headers; useMatrixGrid does the same
+       for the column headers, whose height depends on their words */
+    scroll-padding-inline-start: var(--_head);
+    border: 1px solid var(--uix-border);
+    border-radius: var(--uix-radius-md);
+  }
+  .uix-matrix--heatmap .uix-matrix__scroll { --_cell: 5.5rem; }
+
+  /* Fixed: a cell keeps its width when its words change */
+  .uix-matrix__grid {
+    table-layout: fixed;
+    width: max(100%, calc(var(--_head) + var(--uix-matrix-columns, 1) * var(--_cell)));
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--uix-text-meta);
+  }
+
+  .uix-matrix__corner, .uix-matrix__column, .uix-matrix__row {
+    position: sticky;
+    padding: var(--uix-space-2);
+    background: var(--uix-bg-subtle);
+    color: var(--uix-text-muted);
+    font-weight: 500;
+    text-align: start;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  .uix-matrix__corner, .uix-matrix__column { inset-block-start: 0; border-block-end: 1px solid var(--uix-border); z-index: var(--uix-z-raised); }
+  .uix-matrix__corner, .uix-matrix__row { inset-inline-start: 0; border-inline-end: 1px solid var(--uix-border); }
+  .uix-matrix__corner { width: var(--_head); z-index: var(--uix-z-sticky); }
+  .uix-matrix__row { z-index: var(--uix-z-raised); color: var(--uix-text); }
+  .uix-matrix__axis { display: block; }
+  .uix-matrix__axis--column { text-align: end; }
+  .uix-matrix__note { display: block; color: var(--uix-text-muted); font-weight: 400; }
+
+  /* relative: the containing block of the Select's hidden input and the visually hidden help,
+     which would otherwise escape the scroller and widen the page */
+  .uix-matrix__cell { position: relative; padding: var(--uix-space-1); vertical-align: top; }
+
+  /* A level's and a band's colour */
+  .uix-matrix [data-tone="neutral"] { --_tone-bg: var(--uix-neutral-bg); --_tone-fg: var(--uix-text); }
+  .uix-matrix [data-tone="info"] { --_tone-bg: var(--uix-info-bg); --_tone-fg: var(--uix-info-text); }
+  .uix-matrix [data-tone="success"] { --_tone-bg: var(--uix-success-bg); --_tone-fg: var(--uix-success-text); }
+  .uix-matrix [data-tone="warning"] { --_tone-bg: var(--uix-warning-bg); --_tone-fg: var(--uix-warning-text); }
+  .uix-matrix [data-tone="attention"] { --_tone-bg: var(--uix-attention-bg); --_tone-fg: var(--uix-attention-text); }
+  .uix-matrix [data-tone="danger"] { --_tone-bg: var(--uix-danger-bg); --_tone-fg: var(--uix-danger-text); }
+
+  /* MatrixInput: the cell is a Select, its value in the words of the level */
+  .uix-matrix__cell .uix-select {
+    width: 100%;
+    height: auto;
+    min-height: var(--uix-space-8);
+    padding-block: var(--uix-space-1);
+    padding-inline: var(--uix-space-2) var(--uix-space-6);
+    border-color: transparent;
+    background-color: var(--_tone-bg, transparent);
+    color: var(--_tone-fg, var(--uix-text));
+  }
+  /* a keyboard grid: where focus is must be plain, so the same solid ring as a heatmap tile */
+  .uix-matrix__cell .uix-select:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; box-shadow: none; }
+  .uix-matrix__cell .uix-select::after { inset-inline-end: var(--uix-space-1); }
+  .uix-matrix__cell .uix-select[aria-readonly="true"] { padding-inline-end: var(--uix-space-2); }
+  /* a level's words are never cut off: they wrap in the cell */
+  .uix-matrix__cell :is(.uix-select__value, .uix-select__text) { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  .uix-matrix__cell .uix-select[data-placeholder] { border-color: var(--uix-border); color: var(--uix-text-muted); }
+  /* "Not rated" is a value, so it is drawn apart from a level and from a cell with none */
+  .uix-matrix__cell .uix-select[data-unrated] { border: 1px dashed var(--uix-border-strong); color: var(--uix-text-muted); font-style: italic; }
+  .uix-matrix__cell .uix-select[data-locked] { opacity: .7; }
+  .uix-matrix__cell .uix-select[data-invalid] { border-color: var(--uix-danger-border); }
+  /* The corner mark says a cell has help to show, without colour */
+  .uix-matrix__cell:has([data-help])::after {
+    content: "";
+    position: absolute;
+    inset-block-start: var(--uix-space-1);
+    inset-inline-end: var(--uix-space-1);
+    border-block-start: var(--uix-space-2) solid var(--uix-border-strong);
+    border-inline-start: var(--uix-space-2) solid transparent;
+    border-start-end-radius: var(--uix-radius-sm);
+    pointer-events: none;
+  }
+  .uix-matrix__error { display: block; margin-block-start: var(--uix-space-1); color: var(--uix-danger-text); overflow-wrap: anywhere; }
+  .uix-matrix__help { min-height: 1lh; margin: var(--uix-space-2) 0 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+
+  /* MatrixHeatmap: the cell is one control */
+  .uix-matrix__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: calc(var(--uix-space-8) * 2);
+    padding: var(--uix-space-1);
+    border: 1px solid color-mix(in srgb, var(--_tone-fg, var(--uix-border-strong)) 30%, transparent);
+    border-radius: var(--uix-radius-sm);
+    background: var(--_tone-bg, transparent);
+    color: var(--_tone-fg, var(--uix-text));
+    font: inherit;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .uix-matrix__tile[data-tone="neutral"] { border-color: var(--uix-border-strong); }
+  .uix-matrix__tile[aria-disabled="true"] { cursor: default; }
+  .uix-matrix__tile:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+  /* A cell the caller left out: no band and no figure, unlike a zero they chose to hide */
+  .uix-matrix__tile[data-empty] { border: 1px dashed var(--uix-border-strong); color: var(--uix-text-muted); }
+  .uix-matrix__count { font-size: var(--uix-text-body); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .uix-matrix__band { overflow-wrap: anywhere; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .uix-matrix__tile:hover { border-color: currentColor; }
+  }
+}

@@ -4108,6 +4108,127 @@ export interface MatchReviewProps {
     selectedIds?: Set<string>;
 }
 
+// @public
+export interface MatrixAxisItem {
+    description?: ReactNode;
+    // (undocumented)
+    id: string;
+    label: string;
+}
+
+// @public
+export interface MatrixBand {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    tone?: MatrixTone;
+}
+
+// @public
+export interface MatrixCellState {
+    disabled?: boolean;
+    error?: string;
+    help?: string;
+    readOnly?: boolean;
+}
+
+// @public
+export interface MatrixChange {
+    // (undocumented)
+    columnId: string;
+    // (undocumented)
+    rowId: string;
+    // (undocumented)
+    value: string;
+}
+
+// @public
+export function MatrixHeatmap(input: MatrixHeatmapProps): react.JSX.Element;
+
+// @public
+export interface MatrixHeatmapCell {
+    // (undocumented)
+    band?: MatrixBand;
+    // (undocumented)
+    columnId: string;
+    count?: number;
+    hideCount?: boolean;
+    href?: string;
+    // (undocumented)
+    rowId: string;
+}
+
+// @public
+export interface MatrixHeatmapLabels {
+    empty: string;
+}
+
+// @public (undocumented)
+export interface MatrixHeatmapProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'aria-label' | 'aria-labelledby'> {
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    cells: readonly MatrixHeatmapCell[];
+    columnAxisLabel?: string;
+    // (undocumented)
+    columns: readonly MatrixAxisItem[];
+    // (undocumented)
+    labels: MatrixHeatmapLabels;
+    onOpenCell?: (cell: MatrixHeatmapCell) => void;
+    renderLink?: UixRenderLink;
+    rowAxisLabel: string;
+    // (undocumented)
+    rows: readonly MatrixAxisItem[];
+}
+
+// @public
+export function MatrixInput(input: MatrixInputProps): react.JSX.Element;
+
+// @public
+export interface MatrixInputLabels {
+    empty: string;
+}
+
+// @public (undocumented)
+export interface MatrixInputProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue' | 'children' | 'aria-label' | 'aria-labelledby'> {
+    'aria-label'?: string;
+    // (undocumented)
+    'aria-labelledby'?: string;
+    columnAxisLabel?: string;
+    // (undocumented)
+    columns: readonly MatrixAxisItem[];
+    disabled?: boolean;
+    getCell?: (rowId: string, columnId: string) => MatrixCellState | undefined;
+    // (undocumented)
+    labels: MatrixInputLabels;
+    onChange: (value: MatrixValue, change: MatrixChange) => void;
+    options: readonly MatrixOption[];
+    readOnly?: boolean;
+    rowAxisLabel: string;
+    // (undocumented)
+    rows: readonly MatrixAxisItem[];
+    // (undocumented)
+    value: MatrixValue;
+}
+
+// @public
+export interface MatrixOption {
+    description?: string;
+    // (undocumented)
+    disabled?: boolean;
+    label: string;
+    // (undocumented)
+    tone?: MatrixTone;
+    unrated?: boolean;
+    value: string;
+}
+
+// @public
+export type MatrixTone = 'neutral' | 'info' | 'success' | 'warning' | 'attention' | 'danger';
+
+// @public
+export type MatrixValue = Readonly<Record<string, Readonly<Record<string, string | undefined>> | undefined>>;
+
 // @public (undocumented)
 export function meetsContrast(background: string, foreground: string, minimum?: number): boolean;
 

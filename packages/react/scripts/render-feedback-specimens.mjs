@@ -64,11 +64,14 @@ export async function renderFeedbackSpecimens() {
     const saving = await mount(h(ui.SaveStatus, { state: 'saving', delay: 0 }));
     const savedStatus = await mount(h(ui.SaveStatus, { state: 'saved' }));
     const failed = await mount(h(ui.SaveStatus, { state: 'failed', onRetry: noop }));
+    const refusal = await mount(h(ui.SaveStatus, { state: 'failed', onRetry: noop, labels: { failed: 'Nicht gespeichert: Das Ende muss nach dem Beginn liegen.', retry: 'Erneut versuchen' } }));
     const saveStatus = [
       caption('SaveStatus — "Saving…" waits 300 ms (a fast save goes straight to "Saved") and then holds 500 ms; "Could not save" offers a retry'),
       '<div class="uix-cluster" style="--gap:24px" data-feedback-save-status>',
       saving.host.innerHTML, savedStatus.host.innerHTML, failed.host.innerHTML,
       '</div>',
+      caption('A refusal is a sentence: in a 320 px phone footer it wraps inside its container, and the retry stays in reach (HAR-2749)'),
+      `<div style="max-width:254px;padding:var(--uix-space-2);border:1px solid var(--uix-border);border-radius:var(--uix-radius-sm)" data-feedback-save-refusal>${refusal.host.innerHTML}</div>`,
     ].join('\n');
 
     // ── BusyRegion and TableWrap refreshing (HAR-2582) ───────────────────────────────────

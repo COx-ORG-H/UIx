@@ -286,6 +286,11 @@
       "gzip": 1614,
       "brotli": 1360
     },
+    "styles/components/matrix.css": {
+      "raw": 7310,
+      "gzip": 2325,
+      "brotli": 1941
+    },
     "styles/components/media.css": {
       "raw": 941,
       "gzip": 457,
@@ -397,9 +402,9 @@
       "brotli": 571
     },
     "styles/components/save-status.css": {
-      "raw": 1857,
-      "gzip": 730,
-      "brotli": 609
+      "raw": 2496,
+      "gzip": 963,
+      "brotli": 804
     },
     "styles/components/scheduling-calendar.css": {
       "raw": 62507,

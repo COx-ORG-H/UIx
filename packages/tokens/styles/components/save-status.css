@@ -10,6 +10,12 @@
   .uix-save-status[data-state="saving"] .uix-save-status__icon { border: 1px solid var(--uix-border-strong); border-top-color: transparent; animation: uix-spin var(--uix-loop-spin) linear infinite; }
   .uix-save-status[data-state="saved"] .uix-save-status__icon { background: var(--uix-success); }
   .uix-save-status[data-state="failed"] { color: var(--uix-danger-text); }
+  /* A refusal is a sentence (HAR-2749): it wraps inside its container, however narrow. The text
+     starts from its longest word, so it stays beside the icon and a short one keeps its line, and
+     the retry drops under it when both no longer fit. Saving and Saved stay one short line. */
+  .uix-save-status[data-state="failed"] { flex-wrap: wrap; align-items: baseline; min-width: 0; max-width: 100%; white-space: normal; }
+  .uix-save-status[data-state="failed"] .uix-save-status__text { flex: 1 1 min-content; min-width: 0; overflow-wrap: break-word; }
+  .uix-save-status[data-state="failed"] .uix-save-status__retry { flex: none; }
   .uix-save-status[data-state="failed"] .uix-save-status__icon { background: var(--uix-danger); }
 
   @media (prefers-reduced-motion: reduce) {
