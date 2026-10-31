@@ -13,11 +13,12 @@
  * Assumes the packages are built (CI runs build:all first). Run: npm run test:smoke
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, copyFileSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, copyFileSync, writeFileSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { removeConsumer } from './cleanup.mjs';
+import { COMPONENT_ITEMS } from '../../packages/tokens/docs/docs.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -118,6 +119,12 @@ try {
   step(`${BUN_CLI ? 'bun' : 'npm'} install (isolated; tarballs, no symlinks)`);
   if (BUN_CLI) execFileSync(BUN_CLI, ['install', '--no-save', '--silent'], { cwd: tmp, stdio: 'inherit' });
   else npm(['install', '--no-audit', '--no-fund', '--prefer-offline', '--silent'], { cwd: tmp, stdio: 'inherit' });
+
+  step('verify the packed CSS module catalogue');
+  const packedStyles = readdirSync(join(tmp, 'node_modules', '@tensor_1', 'tokens', 'styles', 'components'))
+    .filter((file) => file.endsWith('.css')).map((file) => file.slice(0, -4)).sort();
+  const documentedStyles = COMPONENT_ITEMS.filter((item) => !item.composite).map((item) => item.slug).sort();
+  if (JSON.stringify(packedStyles) !== JSON.stringify(documentedStyles)) throw new Error('Packed CSS modules differ from the documentation catalogue');
 
   step('1. ESM bundle (esbuild)');
   // Bare specifier resolves from this module's dir up to the repo-root node_modules.
