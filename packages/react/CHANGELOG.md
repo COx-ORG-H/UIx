@@ -1,5 +1,17 @@
 # @tensor_1/react
 
+## 2.55.0
+
+### Minor Changes
+
+- 44b9e84: Publish a versioned, machine-readable inventory of public React components and their import subpaths.
+- 44b9e84: Allow an unpaged virtualized DataWorkspace to keep its actions column while rendering actions only for mounted rows via the opt-in `rowActionsColumn` prop.
+
+### Patch Changes
+
+- 44b9e84: Associate Field labels and required state with the editable input of a Combobox, while preserving the wrapper ID and explicit input ID.
+- 44b9e84: Escape values embedded in the display preferences inline script so a caller-controlled storage key or defaults cannot terminate its script element. This matters when an application embeds untrusted values into server-rendered script text.
+
 ## 2.54.1
 
 ### Patch Changes
