@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.55.0
+
+### Minor Changes
+
+- 44b9e84: Improve primary button text contrast for shipped brand presets in both color modes, including hover.
+
 ## 2.54.1
 
 ### Patch Changes
