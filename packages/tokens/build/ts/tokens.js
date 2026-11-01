@@ -409,7 +409,7 @@ export const dark = {
   "text-hushed": "rgba(250,250,250,.64)",
   "text-muted": "#A1A1A1",
   "accent": "#2563EB",
-  "accent-hover": "color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF)",
+  "accent-hover": "color-mix(in srgb, var(--uix-accent) 94%, #FFFFFF)",
   "link": "#5B8DEF",
   "accent-text": "color-mix(in srgb, var(--uix-accent) 70%, #FFFFFF)",
   "ring": "#3080FF",

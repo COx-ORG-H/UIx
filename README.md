@@ -68,6 +68,24 @@ robust regardless). Copy-paste still works too — every file references the sam
 Theme: set `data-theme="dark"` (or class `.dark`) on `<html>`. Default follows `prefers-color-scheme`.
 The no-flash snippet in `packages/tokens/docs/explorer.html` shows how to apply the stored theme before paint.
 
+For an unpaged virtualized `DataWorkspace`, pass `rowActionsColumn` when an actions column should
+remain present even if the visible rows have no actions. This lets `rowActions` run only for the
+mounted rows and overscan; without the prop the workspace checks every row and hides an entirely
+empty column. Keep the renderer stable and update it when permissions change. Grouped, paginated,
+and card layouts retain their existing rendering behavior.
+
+```tsx
+<DataWorkspace label="Items" rows={rows} columns={columns} getRowId={getRowId}
+  virtualize rowActionsColumn rowActions={renderActions} />
+```
+
+`@tensor_1/react/component-inventory.json` exposes a machine-readable component inventory for the
+installed release. Schema version 1 lists `{ name, subpath }` entries; `.` means the root package,
+and other subpaths name their own entry point. Aliases are listed by their exported names, including
+subpath-only components and icons. Hooks, types, utilities, constants and classes are excluded.
+The inventory is checked against public TypeScript exports by the React test suite. Regenerate it
+after changing exports with `node packages/react/scripts/component-inventory.mjs --write`.
+
 ## Brand a project (override the theme)
 
 The house accent is blue. Override the write-only brand slots; accent, link, ring and brand-muted re-chain:
@@ -75,7 +93,7 @@ The house accent is blue. Override the write-only brand slots; accent, link, rin
 ```css
 :root {
   --uix-brand: #16A34A;       /* your accent */
-  --uix-brand-fg: #FFFFFF;    /* text on accent fills */
+  --uix-brand-fg: #000000;    /* text on accent fills */
 }
 :root:where(.dark,[data-theme="dark"]) { --uix-brand: #22C55E; }
 ```

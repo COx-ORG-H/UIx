@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Every file package.json promises a consumer is in dist/ after a build.
+ * Every file package.json promises a consumer is present after a build.
  *
  * tsup exits 0 once each config has written its files; it never looks at dist/ again. A
  * build can therefore be green with an entry missing: on 2026-10-08 the ESM config's
@@ -70,5 +70,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error('  The build did not produce them, or something removed them after it wrote them.\n  Rebuild with `npm run build -w @tensor_1/react`. If a config in tsup.config.ts has `clean` on again, that is the cause.');
     process.exit(1);
   }
-  console.log(`✓ check-dist: all ${targets.length} files that ${manifest.name} exports are in dist/`);
+  console.log(`✓ check-dist: all ${targets.length} files that ${manifest.name} exports are present`);
 }

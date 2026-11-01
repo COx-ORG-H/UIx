@@ -99,8 +99,10 @@ export function readSystemDisplayPreferences(): SystemDisplayPreferences {
  * It mirrors parseDisplayPreferences + resolveDisplayAttributes (tested to agree).
  */
 export function displayPreferencesScript(storageKey: string = DISPLAY_PREFERENCES_STORAGE_KEY, defaults: DisplayPreferenceValues = DEFAULT_DISPLAY_PREFERENCES): string {
-  return `(function(){try{var d=document.documentElement,p={};try{p=JSON.parse(localStorage.getItem(${JSON.stringify(storageKey)})||'{}')||{}}catch(e){}`
-    + `if(typeof p!=='object')p={};var D=${JSON.stringify(defaults)},O=${JSON.stringify(DISPLAY_PREFERENCE_OPTIONS)};for(var k in O)if(O[k].indexOf(p[k])<0)p[k]=D[k];`
+  // JSON is JavaScript syntax, but an HTML parser still recognizes </script> inside it.
+  const inlineJSON = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
+  return `(function(){try{var d=document.documentElement,p={};try{p=JSON.parse(localStorage.getItem(${inlineJSON(storageKey)})||'{}')||{}}catch(e){}`
+    + `if(typeof p!=='object')p={};var D=${inlineJSON(defaults)},O=${inlineJSON(DISPLAY_PREFERENCE_OPTIONS)};for(var k in O)if(O[k].indexOf(p[k])<0)p[k]=D[k];`
     + `var m=function(q){return !!(window.matchMedia&&window.matchMedia(q).matches)};`
     + `var s=function(n,v){if(v)d.setAttribute(n,v);else d.removeAttribute(n)};`
     + `s('data-theme',p.theme==='light'||p.theme==='dark'?p.theme:(m('(prefers-color-scheme: dark)')?'dark':'light'));`

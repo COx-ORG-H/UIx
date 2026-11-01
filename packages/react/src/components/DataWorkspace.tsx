@@ -273,6 +273,13 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * their row, at any width.
    */
   rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
+  /**
+   * Keep the actions column on an unpaged virtual list even if only off-screen rows have actions.
+   * Only mounted rows and overscan call `rowActions`. A stable renderer avoids unrelated rerenders;
+   * change its identity when permissions or other data used by the renderer change. Grouped,
+   * paginated and card layouts retain the normal all-row check.
+   */
+  rowActionsColumn?: boolean;
   /** More props for a row, e.g. a data attribute that marks it changed (see ChangeHighlight, PR #164). */
   getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
   density?: TableDensity;
@@ -453,7 +460,7 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
  * windowing (`virtualize`) and a keyboard row model (`onRowActivate`).
  */
 export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
-  label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions,
+  label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions, rowActionsColumn,
   getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
@@ -594,12 +601,13 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
 
   // Each row's actions, asked once per render; the column shows only when a row on the page has some.
   // The ladder is in the context (HAR-2634): asked again when the step changes (a resize), not per render.
+  const lazyRowActions = rowActionsColumn && virtualize && !pagination && !shownGroups && ladder !== 'cards' ? rowActions : undefined;
   const actionsByRow = useMemo(() => {
-    if (!rowActions) return [];
+    if (!rowActions || lazyRowActions) return [];
     const context: DataWorkspaceRowActionsContext = { ladder, compact: ladder === 'priority-mid' };
     return shownRows.map((row) => rowActions(row, context));
-  }, [shownRows, rowActions, ladder]);
-  const hasActions = actionsByRow.some((node) => node != null && node !== false);
+  }, [shownRows, rowActions, ladder, lazyRowActions]);
+  const hasActions = !!lazyRowActions || actionsByRow.some((node) => node != null && node !== false);
 
   const activeFilters = filters ? filters.fields.filter((field) => !isFilterEmpty(filters.values[field.id])) : [];
   const searching = (search?.value.trim() ?? '') !== '';
@@ -697,7 +705,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
         freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
         ladderOn={mobile != null} ladder={ladder} refreshing={refreshing}
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
-        actionsByRow={actionsByRow} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
+        actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
         rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
         activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels}
@@ -754,6 +762,7 @@ interface WorkspaceGridProps<T> {
   toggleRow: (rowId: string, on: boolean, event: ReactMouseEvent | null) => void;
   toggleMany: (rowIds: readonly string[], on: boolean) => void;
   actionsByRow: readonly ReactNode[];
+  lazyRowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
   hasActions: boolean;
   keys: readonly DataWorkspaceSort[];
   sortable: boolean;
@@ -822,7 +831,7 @@ const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) 
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  fixed, ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, hasActions, keys, sortable,
+  fixed, ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
   multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
@@ -1143,7 +1152,7 @@ function WorkspaceTable<T>({
       <WorkspaceRow<T>
         key={rowId} row={row} rowId={rowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
         selectable={selectable} selected={isSelected} selectDisabled={!isSelected && atCap}
-        hasActions={hasActions} actions={actionsByRow[index]} ladderOn={ladderOn}
+        hasActions={hasActions} actions={actionsByRow[index]} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
         marked={nav || windowing != null} ariaRowIndex={windowed ? index + 2 : undefined}
         nav={nav} tabStop={tabStop === rowId} handlers={handlers}
@@ -1301,6 +1310,8 @@ interface WorkspaceRowProps<T> {
   selectDisabled: boolean;
   hasActions: boolean;
   actions: ReactNode;
+  lazyRowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
+  ladder: DataWorkspaceRowActionsContext['ladder'];
   ladderOn: boolean;
   selectRowLabel: string;
   openLabel: string;
@@ -1318,9 +1329,11 @@ interface WorkspaceRowProps<T> {
  * (`useMemo` / `useCallback`).
  */
 function WorkspaceRowInner<T>({
-  row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, ladderOn,
+  row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, lazyRowActions, ladder, ladderOn,
   selectRowLabel, openLabel, marked, ariaRowIndex, nav, tabStop, handlers,
 }: WorkspaceRowProps<T>) {
+  const renderedActions = useMemo(() => lazyRowActions ? lazyRowActions(row, { ladder, compact: ladder === 'priority-mid' }) : actions,
+    [lazyRowActions, row, ladder, actions]);
   // the row's name: its id as shown, else the product's words for it, else (last) its key
   const text = idColumn?.text(row) ?? rowLabel?.(row) ?? rowId;
   const extra = getRowProps?.(row);
@@ -1352,7 +1365,7 @@ function WorkspaceRowInner<T>({
           {column.cell(row)}
         </Td>
       ))}
-      {hasActions && <RowActions data-col={ladderOn ? 'actions' : undefined}>{actions}</RowActions>}
+      {hasActions && <RowActions data-col={ladderOn ? 'actions' : undefined}>{renderedActions}</RowActions>}
     </Tr>
   );
 }

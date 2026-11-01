@@ -212,7 +212,7 @@
     --uix-text-hushed: rgba(250,250,250,.64);
     --uix-text-muted: #A1A1A1;
     --uix-accent: var(--uix-brand,#2563EB);
-    --uix-accent-hover: color-mix(in srgb, var(--uix-accent) 82%, #FFFFFF);
+    --uix-accent-hover: color-mix(in srgb, var(--uix-accent) 94%, #FFFFFF);
     --uix-link: color-mix(in srgb, var(--uix-brand,#5B8DEF) 70%, #FFFFFF);
     --uix-accent-text: color-mix(in srgb, var(--uix-accent) 70%, #FFFFFF);
     --uix-ring: var(--uix-brand,#3080FF);

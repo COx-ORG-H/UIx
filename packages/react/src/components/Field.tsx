@@ -2,6 +2,7 @@ import { cloneElement, isValidElement, useId } from 'react';
 import type { ReactNode, ReactElement } from 'react';
 import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
+import { Combobox } from './Combobox.js';
 import { hasHelp, helpLabelFor } from '../info-tip-model.js';
 
 export interface FieldProps {
@@ -26,7 +27,17 @@ export interface FieldProps {
   helpLabel?: string;
   children: ReactNode;
   className?: string;
+  /** Explicit label target. When a Combobox also supplies `inputId`, the two IDs must match. */
   htmlFor?: string;
+}
+
+/** Recognize a direct Combobox and React.memo wrappers without assuming anything about other controls. */
+function isComboboxElement(child: ReactElement): boolean {
+  let type: unknown = child.type;
+  while (type !== null && typeof type === 'object' && Reflect.get(type, '$$typeof') === Symbol.for('react.memo')) {
+    type = Reflect.get(type, 'type');
+  }
+  return type === Combobox;
 }
 
 export function Field({ label, hint, error, warning, success, required, help, helpLabel, children, className, htmlFor }: FieldProps) {
@@ -39,12 +50,15 @@ export function Field({ label, hint, error, warning, success, required, help, he
   // any existing aria-describedby on the control is preserved (UIX-FIX-04).
   // Also auto-associate the label: the control gets a generated id (its own id wins) that the
   // label's htmlFor defaults to, plus aria-required when the field is required (UIX-A11Y-3).
+  const isCombobox = isValidElement(children) && isComboboxElement(children);
   const controlId = isValidElement(children)
-    ? (((children.props as Record<string, unknown>).id as string | undefined) ?? `${uid}-ctl`)
+    ? (isCombobox
+      ? ((children.props as Record<string, unknown>).inputId as string | undefined) ?? htmlFor ?? `${uid}-ctl`
+      : ((children.props as Record<string, unknown>).id as string | undefined) ?? `${uid}-ctl`)
     : undefined;
   const control = isValidElement(children)
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
-        id: controlId,
+        ...(isCombobox ? { inputId: controlId } : { id: controlId }),
         'aria-describedby': [(children.props as Record<string, unknown>)['aria-describedby'], describedBy]
           .filter(Boolean).join(' ') || undefined,
         'aria-invalid': error ? true : (children.props as Record<string, unknown>)['aria-invalid'],
