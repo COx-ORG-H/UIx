@@ -15,7 +15,7 @@ import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { collect } from '../scripts/literal-a11y-text.mjs';
 import {
-  BuilderCanvas, BulkBar, DiffViewer, Drawer, MatchReview, Pagination, Toaster,
+  BuilderCanvas, BulkBar, DiffViewer, Drawer, MatchReview, Pagination, Toast, Toaster,
 } from '../dist/index.js';
 
 test('no component renders an untranslatable English literal', () => {
@@ -40,4 +40,11 @@ test('converted components render the labels they are given', () => {
     assert.ok(!html.includes(english), `no English "${english}" once translated`);
   }
   assert.ok(Drawer);
+});
+
+test('Toaster keeps its translated region and hand-managed toast in server output (HAR-2754)', () => {
+  const html = renderToStaticMarkup(h(Toaster, { regionLabel: 'Benachrichtigungen' },
+    h(Toast, { title: 'Änderung gespeichert' })));
+  assert.match(html, /aria-label="Benachrichtigungen"/);
+  assert.match(html, /Änderung gespeichert/);
 });

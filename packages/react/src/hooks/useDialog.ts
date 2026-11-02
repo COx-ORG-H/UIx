@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useLayoutEffect } from 'react';
 import { markKeyOpened, watchInputModality } from '../motion.js';
+import { registerModalLayer } from './dialog-layer.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -73,6 +74,7 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
       return;
     }
     if (!el.open) { markKeyOpened(el); el.showModal(); }
+    const leaveLayer = registerModalLayer(el);
     lockBodyScroll();
     /* A native close (Esc → cancel → close, or a method="dialog" form) bypasses React state, so
      * without this listener the scroll lock leaked whenever the consumer forgot onClose
@@ -92,6 +94,7 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
       if (keepOpenRef.current?.()) {
         try { el.showModal(); return; } catch { /* disconnected: fall through */ }
       }
+      leaveLayer();
       if (locked) { locked = false; unlockBodyScroll(); }
       onCloseRef.current?.();
     };
@@ -102,6 +105,7 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
     return () => {
       el.removeEventListener('close', handleClose);
       el.removeEventListener('cancel', handleCancel);
+      leaveLayer();
       if (locked) { locked = false; unlockBodyScroll(); }
       if (el.open) el.close();
     };

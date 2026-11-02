@@ -48,6 +48,15 @@ const mount = (element) => {
 };
 const click = (el) => act(() => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, button: 0 })));
 
+test('a polite toast queued before mount announces once when its portal is ready (HAR-2754)', () => {
+  const api = ui.createToastApi(ui.createToastStore());
+  api.success('Änderung gespeichert', { duration: null });
+  const view = mount(h(ui.Toaster, { store: api.store }));
+  try {
+    assert.equal(view.host.querySelector('[role="status"]').textContent, 'Änderung gespeichert');
+  } finally { view.unmount(); }
+});
+
 test('store: kinds get their default durations; an id replaces in place; update restarts and retimes', () => {
   const restore = useFakeTimers();
   try {

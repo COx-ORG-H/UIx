@@ -8,6 +8,8 @@ import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
 import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
+import { createPortal } from 'react-dom';
+import { subscribeModalLayer, topModalDialog } from '../hooks/dialog-layer.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
 
 export type ToastTone = 'success' | 'danger' | 'info' | 'warning';
@@ -262,6 +264,7 @@ function useToastTimers(store: ToastStore, visible: readonly ToastRecord[], paus
 export function Toaster({ children, regionLabel: regionLabelProp, store = defaultToast.store, limit = 3, position = 'bottom-end', className, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: ToasterProps) {
   const uixLabels = useUixLabels();
   const regionLabel = regionLabelProp ?? uixLabels.toaster?.region ?? 'Notifications';
+  const [portalHost, setPortalHost] = useState<HTMLDivElement | null>(null);
   // Positioning container + notifications landmark. The always-mounted visually-hidden region
   // below does the polite announcing for child toasts (see ToasterContext); it is cleared after
   // ~3s so an identical follow-up toast re-announces. aria-label is overridable via props spread.
@@ -279,7 +282,10 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
     if (clearTimer.current != null) clearTimeout(clearTimer.current);
   }, []);
 
-  const ctx = useMemo(() => ({ announce }), [announce]);
+  // Keep the translated landmark and hand-managed children in server output. The initial
+  // markup moves to the portal before paint; announce only from that mounted portal so a
+  // pre-existing polite toast is not spoken twice during hydration.
+  const ctx = useMemo(() => ({ announce: portalHost ? announce : () => {} }), [announce, portalHost]);
 
   const records = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   const visible = useMemo(() => records.slice(-Math.max(1, limit)), [records, limit]);
@@ -300,6 +306,50 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   // overlapping it for most of the glide. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
   // enter or exit transform does not count as movement.
   const regionRef = useRef<HTMLDivElement>(null);
+  const homeRef = useRef<HTMLSpanElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  // One stable portal target: moving its DOM host preserves the queue's React identity,
+  // announcements and event handlers. A popover escapes the dialog's clipping/transform;
+  // its host must also be INSIDE the active modal, because the rest of the page is inert.
+  useIsomorphicLayoutEffect(() => {
+    const host = document.createElement('div');
+    host.dataset.uixToastHost = '';
+    host.style.display = 'contents'; // a portal target must not add a flex/grid item to its original shell
+    homeRef.current?.after(host);
+    setPortalHost(host);
+    return () => { host.remove(); };
+  }, []);
+  useIsomorphicLayoutEffect(() => {
+    if (!portalHost) return;
+    const sync = () => {
+      const region = regionRef.current;
+      if (!region) return;
+      const active = document.activeElement;
+      const focusedElement = region.contains(active) ? active as HTMLElement : null;
+      const dialog = topModalDialog();
+      if (typeof region.hidePopover === 'function' && region.matches(':popover-open')) region.hidePopover();
+      if (dialog) {
+        dialog.append(portalHost);
+      } else {
+        homeRef.current?.after(portalHost);
+      }
+      if (dialog && typeof region.showPopover === 'function') {
+        region.setAttribute('popover', 'manual');
+        region.showPopover();
+      } else {
+        region.removeAttribute('popover');
+      }
+      // A DOM move can drop focus. Never move focus into a toast that did not already hold it.
+      focusedElement?.focus({ preventScroll: true });
+    };
+    sync();
+    return subscribeModalLayer(sync);
+  }, [portalHost]);
+  useIsomorphicLayoutEffect(() => {
+    if (focused && visible.every(record => record.leaving) && returnFocusRef.current?.isConnected) {
+      returnFocusRef.current.focus({ preventScroll: true });
+    }
+  }, [visible, focused]);
   const tops = useRef(new Map<string, number>());
   useIsomorphicLayoutEffect(() => {
     const region = regionRef.current;
@@ -333,7 +383,7 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
     store.dismiss(id, 'close');
   };
 
-  return (
+  const content = (
     <ToasterContext.Provider value={ctx}>
       <div
         ref={regionRef}
@@ -343,7 +393,10 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
         data-position={position === 'bottom-end' ? undefined : position}
         onMouseEnter={(e) => { setHovered(true); onMouseEnter?.(e); }}
         onMouseLeave={(e) => { setHovered(false); onMouseLeave?.(e); }}
-        onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+        onFocus={(e) => {
+          if (e.relatedTarget instanceof window.HTMLElement && !e.currentTarget.contains(e.relatedTarget)) returnFocusRef.current = e.relatedTarget;
+          setFocused(true); onFocus?.(e);
+        }}
         onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false); onBlur?.(e); }}
         onKeyDown={handleKeyDown}
         {...props}
@@ -355,4 +408,5 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
       </div>
     </ToasterContext.Provider>
   );
+  return <><span hidden ref={homeRef} />{portalHost ? createPortal(content, portalHost) : content}</>;
 }
