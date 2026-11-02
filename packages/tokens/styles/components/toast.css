@@ -54,14 +54,15 @@
   .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
   /* Keep an action from squeezing a failure sentence into a column of single words.
      The toaster's own width is the boundary, including embedded/narrow containers. */
-  @container (max-width: 20rem) {
+  @container (max-width: 24rem) {
     .uix-toast { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--uix-space-2); }
     .uix-toast__icon { grid-column: 1; grid-row: 1; }
     .uix-toast__body { grid-column: 1 / -2; grid-row: 1; }
     .uix-toast__icon ~ .uix-toast__body { grid-column: 2 / -2; }
     .uix-toast__close { grid-column: -2; grid-row: 1; }
-    .uix-toast__action-slot { grid-column: 1 / -2; grid-row: 2; justify-self: start; }
-    .uix-toast__icon ~ .uix-toast__action-slot { grid-column: 2 / -2; }
+    .uix-toast__action-slot { grid-column: 1 / -1; grid-row: 2; justify-self: start; min-width: 0; max-width: 100%; }
+    .uix-toast__icon ~ .uix-toast__action-slot { grid-column: 2 / -1; }
+    .uix-toast__action { max-width: 100%; white-space: normal; text-align: start; }
   }
 }
 

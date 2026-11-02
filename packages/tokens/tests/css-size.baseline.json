@@ -522,9 +522,9 @@
       "brotli": 384
     },
     "styles/components/toast.css": {
-      "raw": 5659,
-      "gzip": 1893,
-      "brotli": 1575
+      "raw": 5774,
+      "gzip": 1927,
+      "brotli": 1599
     },
     "styles/components/tooltip.css": {
       "raw": 3834,

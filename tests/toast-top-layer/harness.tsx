@@ -9,7 +9,7 @@ function Harness() {
   const notify = () => toast.error('Änderung nicht gespeichert', { id: 'result', duration: null,
     description: 'Bitte versuchen Sie es erneut.', action: { label: 'Erneut versuchen', onClick: () => setActions(n => n + 1) } });
   const samples = {
-    de: ['Änderung nicht gespeichert. Bitte erneut versuchen.', 'Details kopieren'],
+    de: ['Änderung nicht gespeichert. Bitte erneut versuchen.', 'Vollständige Fehlerdetails kopieren'],
     en: ['The change was not saved. Please try again.', 'Copy details'],
     bs: ['Promjena nije sačuvana. Pokušajte ponovo.', 'Kopiraj detalje'],
   } as const;
