@@ -1,6 +1,6 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Drawer, Modal, Toaster, createToastApi, createToastStore } from '../../packages/react/src/index.js';
+import { Button, Drawer, Modal, Toaster, UixLabelsProvider, createToastApi, createToastStore } from '../../packages/react/src/index.js';
 const toast = createToastApi(createToastStore());
 function Harness() {
   const [drawer, setDrawer] = useState(false);
@@ -26,7 +26,13 @@ function Harness() {
       {controls}<Button id="close-modal" onClick={() => setModal(false)}>Weiter bearbeiten</Button>
       <Button id="nested-drawer" onClick={() => setDrawer(true)}>Details öffnen</Button>
     </Modal>
-    <Toaster store={toast.store} regionLabel="Benachrichtigungen" />
+    <div id="toast-flow" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--uix-space-2)' }}>
+      <span id="flow-before" aria-hidden="true" />
+      <Toaster store={toast.store} regionLabel="Benachrichtigungen" />
+      <span id="flow-after" aria-hidden="true" />
+    </div>
   </>;
 }
-createRoot(document.getElementById('root')!).render(<StrictMode><Harness /></StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode>
+  <UixLabelsProvider labels={{ toast: { dismiss: 'Benachrichtigung schließen' } }}><Harness /></UixLabelsProvider>
+</StrictMode>);

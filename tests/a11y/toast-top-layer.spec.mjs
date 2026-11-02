@@ -14,11 +14,20 @@ async function hitToast(page) {
   });
   await test.info().attach('toast-pixels', { body: JSON.stringify(pixels), contentType: 'application/json' });
 }
+async function assertNoLayoutSlot(page) {
+  await expect(page.locator('[data-uix-toast-host]')).toHaveCount(1);
+  const flow = await page.locator('#toast-flow').evaluate(el => ({
+    distance: el.querySelector('#flow-after').getBoundingClientRect().top - el.querySelector('#flow-before').getBoundingClientRect().bottom,
+    gap: parseFloat(getComputedStyle(el).rowGap),
+  }));
+  expect(flow.distance).toBeCloseTo(flow.gap, 1);
+}
 for (const width of [1280, 320]) {
   test(`toast pixels and controls above drawer and nested modal at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(harness);
     await page.evaluate(theme => document.documentElement.dataset.theme = theme, info.project.name);
+    await assertNoLayoutSlot(page);
     await page.locator('#open-drawer').click();
     await page.screenshot({ path: info.outputPath('drawer-before.png') });
     await page.locator('#drawer').getByRole('button', { name: 'Fehler anzeigen', exact: true }).click();
@@ -41,7 +50,7 @@ for (const width of [1280, 320]) {
     await page.locator('#close-modal').click();
     await hitToast(page);
     await expect(page.getByRole('textbox', { name: 'Entwurf' })).toHaveValue('Ungespeicherter Text');
-    await page.locator('.uix-toast__close').focus();
+    await page.getByRole('button', { name: 'Benachrichtigung schließen', exact: true }).focus();
     await expect(page.locator('.uix-toast__close')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.locator('.uix-toast')).toHaveCount(0);
@@ -54,6 +63,7 @@ for (const width of [1280, 320]) {
     await page.locator('.uix-toast__close').click();
     await expect(page.locator('.uix-toast')).toHaveCount(0);
     await expect(page.locator('.uix-toaster')).toHaveCount(1);
+    await assertNoLayoutSlot(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     await page.screenshot({ path: info.outputPath('empty.png') });
   });

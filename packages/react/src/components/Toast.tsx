@@ -314,6 +314,7 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   useIsomorphicLayoutEffect(() => {
     const host = document.createElement('div');
     host.dataset.uixToastHost = '';
+    host.style.display = 'contents'; // a portal target must not add a flex/grid item to its original shell
     homeRef.current?.after(host);
     setPortalHost(host);
     return () => { host.remove(); };
