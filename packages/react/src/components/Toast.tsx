@@ -264,6 +264,7 @@ function useToastTimers(store: ToastStore, visible: readonly ToastRecord[], paus
 export function Toaster({ children, regionLabel: regionLabelProp, store = defaultToast.store, limit = 3, position = 'bottom-end', className, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: ToasterProps) {
   const uixLabels = useUixLabels();
   const regionLabel = regionLabelProp ?? uixLabels.toaster?.region ?? 'Notifications';
+  const [portalHost, setPortalHost] = useState<HTMLDivElement | null>(null);
   // Positioning container + notifications landmark. The always-mounted visually-hidden region
   // below does the polite announcing for child toasts (see ToasterContext); it is cleared after
   // ~3s so an identical follow-up toast re-announces. aria-label is overridable via props spread.
@@ -281,7 +282,10 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
     if (clearTimer.current != null) clearTimeout(clearTimer.current);
   }, []);
 
-  const ctx = useMemo(() => ({ announce }), [announce]);
+  // Keep the translated landmark and hand-managed children in server output. The initial
+  // markup moves to the portal before paint; announce only from that mounted portal so a
+  // pre-existing polite toast is not spoken twice during hydration.
+  const ctx = useMemo(() => ({ announce: portalHost ? announce : () => {} }), [announce, portalHost]);
 
   const records = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   const visible = useMemo(() => records.slice(-Math.max(1, limit)), [records, limit]);
@@ -307,7 +311,6 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   // One stable portal target: moving its DOM host preserves the queue's React identity,
   // announcements and event handlers. A popover escapes the dialog's clipping/transform;
   // its host must also be INSIDE the active modal, because the rest of the page is inert.
-  const [portalHost, setPortalHost] = useState<HTMLDivElement | null>(null);
   useIsomorphicLayoutEffect(() => {
     const host = document.createElement('div');
     host.dataset.uixToastHost = '';
@@ -404,5 +407,5 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
       </div>
     </ToasterContext.Provider>
   );
-  return <><span hidden ref={homeRef} />{portalHost ? createPortal(content, portalHost) : null}</>;
+  return <><span hidden ref={homeRef} />{portalHost ? createPortal(content, portalHost) : content}</>;
 }
