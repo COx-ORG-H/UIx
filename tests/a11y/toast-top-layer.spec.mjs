@@ -22,6 +22,49 @@ async function assertNoLayoutSlot(page) {
   }));
   expect(flow.distance).toBeCloseTo(flow.gap, 1);
 }
+async function readableToast(page) {
+  const samples = await page.locator('.uix-toast__title, .uix-toast__msg, .uix-toast__action').evaluateAll(elements => {
+    const lines = rects => new Set(Array.from(rects).filter(r => r.width > 0).map(r => Math.round(r.top))).size;
+    return elements.map(el => {
+      const range = document.createRange(); range.selectNodeContents(el);
+      const broken = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        for (const word of (node.nodeValue ?? '').matchAll(/\S+/g)) {
+          const r = document.createRange(); r.setStart(node, word.index); r.setEnd(node, word.index + word[0].length);
+          if (lines(r.getClientRects()) > 1) broken.push(word[0]);
+        }
+      }
+      return { text: el.textContent.trim(), lines: lines(range.getClientRects()), broken, clipped: el.scrollWidth > el.clientWidth };
+    });
+  });
+  for (const sample of samples) {
+    expect(sample.clipped, JSON.stringify(sample)).toBe(false);
+    expect(sample.broken, JSON.stringify(sample)).toEqual([]);
+    if (sample.lines > 1 && sample.text.length >= 12) expect(sample.text.length / sample.lines, JSON.stringify(sample)).toBeGreaterThanOrEqual(12);
+  }
+  const corner = await page.locator('.uix-toaster').evaluate(el => {
+    const r = el.getBoundingClientRect(); return { right: innerWidth - r.right, bottom: innerHeight - r.bottom };
+  });
+  expect(corner.right).toBeCloseTo(16, 0); expect(corner.bottom).toBeCloseTo(16, 0);
+}
+for (const width of [1280, 320]) {
+  test(`actionable DE EN BS toast text stays readable at ${width}px`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(harness);
+    await page.evaluate(theme => document.documentElement.dataset.theme = theme, info.project.name);
+    await page.locator('#open-drawer').click();
+    for (const language of ['de', 'en', 'bs']) {
+      await page.locator(`#drawer [data-toast-sample="${language}"]`).click();
+      await hitToast(page); await readableToast(page);
+      await page.screenshot({ path: info.outputPath(`readable-${language}.png`) });
+      await page.locator('.uix-toast__action').focus(); await page.keyboard.press('Enter');
+      await expect(page.locator('.uix-toast')).toHaveCount(0);
+    }
+    await expect(page.locator('#actions')).toHaveText('3');
+    await expect(page.getByRole('textbox', { name: 'Entwurf' })).toHaveValue('Ungespeicherter Text');
+  });
+}
 for (const width of [1280, 320]) {
   test(`toast pixels and controls above drawer and nested modal at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });

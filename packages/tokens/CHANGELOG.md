@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.55.2
+
+### Patch Changes
+
+- Keep actionable toast messages readable in narrow containers without changing modal-layer visibility, action behavior, or keyboard order.
+
 ## 2.55.1
 
 ### Patch Changes

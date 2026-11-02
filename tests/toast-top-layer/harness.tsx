@@ -8,10 +8,18 @@ function Harness() {
   const [actions, setActions] = useState(0);
   const notify = () => toast.error('Änderung nicht gespeichert', { id: 'result', duration: null,
     description: 'Bitte versuchen Sie es erneut.', action: { label: 'Erneut versuchen', onClick: () => setActions(n => n + 1) } });
+  const samples = {
+    de: ['Änderung nicht gespeichert. Bitte erneut versuchen.', 'Details kopieren'],
+    en: ['The change was not saved. Please try again.', 'Copy details'],
+    bs: ['Promjena nije sačuvana. Pokušajte ponovo.', 'Kopiraj detalje'],
+  } as const;
   const controls = <>
     <Button onClick={notify}>Fehler anzeigen</Button>
     <Button onClick={() => toast.loading('Wird gespeichert…', { id: 'result' })}>Speichern</Button>
     <Button onClick={() => toast.success('Änderung gespeichert', { id: 'result', duration: null })}>Erfolg anzeigen</Button>
+    {Object.entries(samples).map(([language, [message, label]]) => <Button key={language} data-toast-sample={language}
+      onClick={() => toast.error(message, { id: 'result', duration: null,
+        action: { label, onClick: () => setActions(n => n + 1) } })}>Lesbarkeit: {language}</Button>)}
   </>;
   return <>
     <h1>Benachrichtigungen</h1><output id="actions">{actions}</output>
