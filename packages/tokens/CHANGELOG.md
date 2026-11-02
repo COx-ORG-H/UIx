@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.55.1
+
+### Patch Changes
+
+- 22a0b00: Keep notifications visible and operable above modal dialogs and drawers, including nested dialogs. Preserve the toast queue while its stable host follows the active modal and restore keyboard focus when the last focused notification is dismissed.
+
 ## 2.55.0
 
 ### Minor Changes
