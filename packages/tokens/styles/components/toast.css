@@ -1,6 +1,6 @@
 /* uix toast / notification — depends only on --uix-* tokens. JS appends to .uix-toaster. */
 @layer uix.components {
-  .uix-toaster { position: fixed; bottom: 16px; right: 16px; z-index: var(--uix-z-toast); display: flex; flex-direction: column; gap: var(--uix-space-2); width: 340px; max-width: calc(100vw - 32px); }
+  .uix-toaster { position: fixed; bottom: 16px; right: 16px; z-index: var(--uix-z-toast); display: flex; flex-direction: column; gap: var(--uix-space-2); width: 340px; max-width: calc(100vw - 32px); container-type: inline-size; }
   /* A manual popover inside the active modal is both above it and non-inert (HAR-2754).
      Reset only the browser's popover frame; toast styling and placement stay unchanged. */
   .uix-toaster[popover] { inset: auto var(--uix-space-4) var(--uix-space-4) auto; margin: 0; padding: 0; border: 0; background: transparent; color: inherit; overflow: visible; }
@@ -52,6 +52,18 @@
   .uix-toaster[data-position="top-center"] { --uix-toast-from: translateY(calc(-1 * var(--uix-space-4))); }
   .uix-toaster[data-position$="start"] { left: var(--uix-space-4); right: auto; }
   .uix-toaster[data-position$="center"] { left: 50%; right: auto; transform: translateX(-50%); }
+  /* Keep an action from squeezing a failure sentence into a column of single words.
+     The toaster's own width is the boundary, including embedded/narrow containers. */
+  @container (max-width: 24rem) {
+    .uix-toast { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--uix-space-2); }
+    .uix-toast__icon { grid-column: 1; grid-row: 1; }
+    .uix-toast__body { grid-column: 1 / -2; grid-row: 1; }
+    .uix-toast__icon ~ .uix-toast__body { grid-column: 2 / -2; }
+    .uix-toast__close { grid-column: -2; grid-row: 1; }
+    .uix-toast__action-slot { grid-column: 1 / -1; grid-row: 2; justify-self: start; min-width: 0; max-width: 100%; }
+    .uix-toast__icon ~ .uix-toast__action-slot { grid-column: 2 / -1; }
+    .uix-toast__action { max-width: 100%; white-space: normal; text-align: start; }
+  }
 }
 
 /* The in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">) needs no rule here: toasts
