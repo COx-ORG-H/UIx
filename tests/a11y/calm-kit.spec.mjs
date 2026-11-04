@@ -67,8 +67,18 @@ test('new data never replays the arrival; a waiting stage plays when its data la
   await open(page, themeOf(testInfo), '?ready=0');
   await expect(stage(page)).toHaveAttribute('data-uix-arrive', 'wait');
   expect(await animations(page)).toEqual([]);
+  // the charts drawn while it waited draw in when it plays: the bars are still growing at first
+  const tallest = () => page.locator('#card-flow svg').evaluate((svg) => Math.max(...[...svg.querySelectorAll('path')].map((p) => p.getBBox().height)));
+  const before = await tallest();
   await page.locator('#load').click();
   await expect(stage(page)).toHaveAttribute('data-uix-arrive', 'play');
+  await page.waitForTimeout(520);
+  const growing = await tallest();
+  await expect(stage(page)).toHaveAttribute('data-uix-arrive', 'rest', { timeout: 3000 });
+  await page.waitForTimeout(300);
+  const grown = await tallest();
+  expect(growing).toBeLessThan(grown * 0.95);
+  expect(Math.round(grown)).toBe(Math.round(before));
 });
 
 test('reduced motion: the cards only fade, for at most 200 ms, and the marks are simply there', async ({ page }, testInfo) => {

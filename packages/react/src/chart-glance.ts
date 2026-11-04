@@ -156,7 +156,8 @@ export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, moti
       lineStyle: { width: 2, type: [4, 5], opacity: 0.75, cap: 'round' },
       itemStyle: { color },
       emphasis: { disabled: true },
-      animationDuration: motion.trace,
+      // the projection continues the measured line, at half its pace
+      animationDuration: Math.round(motion.trace / 2),
       animationDelay: motion.delay + motion.trace,
       animationEasing: 'cubicOut',
     });

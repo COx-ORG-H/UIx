@@ -118,6 +118,7 @@ test('at rest nothing animates; playing, a line traces and bars grow bucket by b
   assert.equal(line.series[0].animationDuration, 700);
   assert.equal(line.series[0].animationDelay, 195);
   assert.equal(line.series[1].animationDelay, 895, 'the forecast draws after the measured line');
+  assert.equal(line.series[1].animationDuration, 350);
 });
 
 test('the styleguide port draws the same options', () => {
