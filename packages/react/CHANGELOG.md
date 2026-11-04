@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.55.3
+
+### Patch Changes
+
+- 2158cf3: Keep Peek record titles on their own full row between navigation and keyboard hints. Optional header regions remain compact, and existing labels, callbacks and keyboard behavior stay unchanged. Fixes HAR-2859 for the TENSOR HAR-2812 consumer.
+
 ## 2.55.2
 
 ### Patch Changes
