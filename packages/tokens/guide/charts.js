@@ -2,7 +2,7 @@
    Requires window.echarts (loaded on demand by guide/app.js). */
 
 import { mergeChartTheme, uixChartAreaGradient, uixChartTheme, uixChartTokens } from './chart-theme.js';
-import { chartPanelsModel, correlationScatterModel } from './chart-analytic.js';
+import { chartPanelsModel, correlationScatterModel, glanceLineOption, pairedBarsOption, GLANCE_AT_REST } from './chart-analytic.js';
 import { ANALYTIC_EXAMPLE, DELIVERY_PANELS, DELIVERY_SCATTER } from './insight-examples.js';
 
 const instances = new Map();
@@ -109,10 +109,39 @@ const modelOptionFor = (type, el) => {
   return mergeChartTheme(uixChartTheme(el), model.option);
 };
 
-const knownType = (type) => Boolean(OPTIONS[type] || MODELS[type]);
+/* Glance charts (calm kit 2.56): the shipped ChartCard options (guide/chart-analytic.js is bundled
+   from packages/react/src/chart-glance.ts), drawn as GlanceLineChart / PairedBarChart draw them —
+   not merged under the analytic theme. They draw in with their card on the first paint and when
+   the arrival is replayed (docs.js), and sit at rest on a theme change. */
+const GLANCE = {
+  'glance-line': (k, motion) => glanceLineOption(k, {
+    categories: ['17. Aug.', '24. Aug.', '31. Aug.', '7. Sept.', '14. Sept.', '21. Sept.', '28. Sept.', '5. Okt.', '12. Okt.', '19. Okt.', '26. Okt.', '2. Nov.'],
+    values: [20, 21, 18, 19, 22, 22, 20, 19, 60, 75, 82, 85],
+    name: 'offen',
+    forecast: { categories: ['9. Nov.', '16. Nov.', '23. Nov.'], values: [102, 121, 140], name: 'erwartet', label: 'Prognose 140' },
+    tooltipTitle: (c) => `Woche ab ${c}`,
+  }, motion),
+  'glance-paired': (k, motion) => pairedBarsOption(k, {
+    categories: ['Do', 'Fr', 'Sa', 'So', 'Mo', 'Di', 'Mi'],
+    series: { name: 'eröffnet', values: [18, 22, 15, 9, 6, 21, 19] },
+    comparison: { name: 'gelöst', values: [14, 17, 16, 8, 5, 15, 13] },
+  }, motion),
+};
+
+/** The arrival timing for a glance chart in its card, from the tokens (as the React components read them). */
+const glanceMotion = (el) => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'reduce') return GLANCE_AT_REST;
+  const style = getComputedStyle(el);
+  const ms = (name, fallback) => { const v = style.getPropertyValue(name).trim(); const n = Number.parseFloat(v); return Number.isFinite(n) ? (v.endsWith('ms') ? n : n * 1000) : fallback; };
+  const index = Number.parseFloat(style.getPropertyValue('--uix-arrive-i')) || 0;
+  return { play: true, delay: index * ms('--uix-stagger-arrive', 45) + ms('--uix-delay-arrive-trace', 150), trace: ms('--uix-dur-arrive-trace', 700), grow: ms('--uix-dur-arrive-grow', 500), stagger: ms('--uix-stagger-arrive-grow', 25) };
+};
+
+const knownType = (type) => Boolean(OPTIONS[type] || MODELS[type] || GLANCE[type]);
 
 /** The themed option for one example, read from the element's own computed tokens. */
-const optionFor = (type, el) => {
+const optionFor = (type, el, motion = GLANCE_AT_REST) => {
+  if (GLANCE[type]) return GLANCE[type](uixChartTokens(el), motion);
   if (MODELS[type]) return modelOptionFor(type, el);
   const style = getComputedStyle(el);
   const status = Object.fromEntries(['success', 'attention', 'warning', 'danger']
@@ -129,7 +158,8 @@ export const initCharts = () => {
     if (!knownType(type)) return;
     if (MODELS[type]) el.style.height = `${MODELS[type](uixChartTokens(el)).height ?? 280}px`;
     const chart = ec.init(el, null, { renderer: 'svg' });
-    chart.setOption(optionFor(type, el));
+    chart.setOption(optionFor(type, el, GLANCE[type] ? glanceMotion(el) : undefined));
+    if (GLANCE[type]) el.addEventListener('uix-glance-replay', () => chart.setOption(optionFor(type, el, glanceMotion(el)), { notMerge: true }));
     instances.set(el, chart);
     let frame = 0;
     let width = el.clientWidth;

@@ -805,32 +805,36 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
   const last = input.values.length - 1;
   const forecast = input.forecast;
   const categories = [...input.categories, ...forecast?.categories ?? []];
-  const measured = [...input.values, ...forecast ? forecast.values.map(() => null) : []];
-  const projected = forecast ? [...input.values.map((v, i) => i === last ? v : null), ...forecast.values] : [];
+  const labelled = (value, text, color2, dot) => ({
+    value,
+    symbolSize: dot ? 8 : 0,
+    label: { show: true, position: "right", distance: 6, color: color2, fontFamily: k.fontSans, fontSize: 11, fontWeight: 600, formatter: () => text }
+  });
+  const showEnd = input.endLabel !== false && !forecast && last >= 0;
+  const measured = forecast ? [
+    ...input.values.map((v, i) => i === last ? { value: v, symbolSize: 8 } : v),
+    ...forecast.values.map(() => null)
+  ] : [
+    ...input.values.map((v, i) => showEnd && i === last ? labelled(v, format(v), k.text, true) : v)
+  ];
+  const projected = forecast ? [...input.values.map((v, i) => i === last ? v : null), ...forecast.values.map((v, i) => i === forecast.values.length - 1 ? labelled(v, forecast.label ?? format(v), k.textMuted, false) : v)] : [];
   const color = k.series;
   const base = uixGlanceBase(k, motion);
   const title = input.tooltipTitle ?? ((c) => c);
+  const endText = forecast ? forecast.label ?? format(forecast.values[forecast.values.length - 1] ?? 0) : showEnd ? format(input.values[last]) : "";
   const series = [{
     name: input.name,
     type: "line",
     data: measured,
     color,
-    showSymbol: false,
+    // symbols at size 0 so the last point can carry its dot and its label
+    showSymbol: true,
     symbol: "circle",
-    symbolSize: 8,
+    symbolSize: 0,
     lineStyle: { width: 2.2, cap: "round", join: "round" },
     itemStyle: { color, borderColor: k.surface, borderWidth: 2 },
     areaStyle: input.area === false ? void 0 : { color: k.seriesSoft, opacity: 1 },
     emphasis: { disabled: true },
-    endLabel: input.endLabel === false || forecast ? { show: false } : {
-      show: true,
-      color: k.text,
-      fontFamily: k.fontSans,
-      fontSize: 11,
-      fontWeight: 600,
-      distance: 6,
-      formatter: (p) => format(p.value)
-    },
     animationDuration: motion.trace,
     animationDelay: motion.delay,
     animationEasing: "cubicOut"
@@ -841,20 +845,12 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
       type: "line",
       data: projected,
       color,
-      showSymbol: false,
+      showSymbol: true,
+      symbolSize: 0,
       connectNulls: false,
       lineStyle: { width: 2, type: [4, 5], opacity: 0.75, cap: "round" },
       itemStyle: { color },
       emphasis: { disabled: true },
-      endLabel: {
-        show: true,
-        color: k.textMuted,
-        fontFamily: k.fontSans,
-        fontSize: 11,
-        fontWeight: 600,
-        distance: 6,
-        formatter: (p) => forecast.label ?? format(p.value)
-      },
       animationDuration: motion.trace,
       animationDelay: motion.delay + motion.trace,
       animationEasing: "cubicOut"
@@ -862,7 +858,8 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
   }
   return {
     ...base,
-    grid: { ...base.grid, right: input.endLabel === false && !forecast ? 12 : 56 },
+    // the gutter fits the end label ("Prognose 140"): about 6.5 px a character at 11 px
+    grid: { ...base.grid, right: endText ? Math.max(24, Math.ceil(endText.length * 6.5) + 14) : 12 },
     tooltip: {
       ...base.tooltip,
       axisPointer: { type: "line", lineStyle: { color: k.textMuted, type: [2, 3], width: 1 } },
@@ -870,7 +867,8 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
         const list = (Array.isArray(params) ? params : [params]).filter((p) => p.value != null);
         if (!list.length) return "";
         const point = list.find((p) => p.seriesIndex === 0) ?? list[0];
-        return tooltipHtml2(title(point.name), [{ color, name: point.seriesName, value: format(point.value) }]);
+        const value = typeof point.value === "object" && point.value !== null ? point.value.value : point.value;
+        return tooltipHtml2(title(point.name), [{ color, name: point.seriesName, value: format(value) }]);
       }
     },
     xAxis: { ...base.xAxis, data: categories, boundaryGap: false },

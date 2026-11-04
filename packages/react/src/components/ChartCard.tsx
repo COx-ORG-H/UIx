@@ -63,7 +63,7 @@ export function ChartCard({ question, headline, answer, action, note, empty, hea
               {arriving ? <ArriveIndexProvider index={arriveIndex}>{children}</ArriveIndexProvider> : children}
             </div>
           )}
-          {note != null && <p className="uix-chart-card__note">{note}</p>}
+          {note != null && <div className="uix-chart-card__note">{note}</div>}
         </>
       )}
     </section>

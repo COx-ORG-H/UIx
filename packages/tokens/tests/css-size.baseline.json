@@ -2,9 +2,9 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw, gzip or brotli size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. --update rewrites only the entries that are out of tolerance, new or gone, so an entry changes only in the PR that resized that file. The two bundles (build/css/styles.css, components.css) deliberately have no entry: they are checked against the sum of their inputs instead.",
   "sizes": {
     "build/css/tokens.css": {
-      "raw": 10313,
-      "gzip": 2627,
-      "brotli": 2195
+      "raw": 10643,
+      "gzip": 2706,
+      "brotli": 2277
     },
     "styles/base.css": {
       "raw": 4387,
@@ -25,6 +25,11 @@
       "raw": 1953,
       "gzip": 780,
       "brotli": 635
+    },
+    "styles/components/arrive.css": {
+      "raw": 4618,
+      "gzip": 1375,
+      "brotli": 1162
     },
     "styles/components/attachment.css": {
       "raw": 2516,
@@ -80,6 +85,11 @@
       "raw": 5469,
       "gzip": 1589,
       "brotli": 1338
+    },
+    "styles/components/chart-card.css": {
+      "raw": 6579,
+      "gzip": 1781,
+      "brotli": 1499
     },
     "styles/components/chart.css": {
       "raw": 5938,
@@ -302,9 +312,9 @@
       "brotli": 681
     },
     "styles/components/meter.css": {
-      "raw": 1522,
-      "gzip": 677,
-      "brotli": 552
+      "raw": 2304,
+      "gzip": 977,
+      "brotli": 811
     },
     "styles/components/metric-input.css": {
       "raw": 1629,
@@ -467,9 +477,9 @@
       "brotli": 1424
     },
     "styles/components/status-pill.css": {
-      "raw": 6054,
-      "gzip": 1618,
-      "brotli": 1371
+      "raw": 8066,
+      "gzip": 2098,
+      "brotli": 1770
     },
     "styles/components/stepper.css": {
       "raw": 1189,

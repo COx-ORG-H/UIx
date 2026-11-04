@@ -73,15 +73,22 @@ test('three dashed gridlines, no axis titles, sans axis digits, a dark tooltip',
 test('a line is labelled at its end; a forecast continues dashed from the last measured point', () => {
   const plain = glance.glanceLineOption(light, { ...LINE, forecast: undefined });
   assert.equal(plain.series.length, 1);
-  assert.equal(plain.series[0].endLabel.show, true);
-  assert.equal(plain.series[0].endLabel.formatter({ value: 85 }), '85');
+  const end = plain.series[0].data.at(-1);
+  assert.equal(end.value, 85);
+  assert.equal(end.label.show, true);
+  assert.equal(end.label.formatter(), '85');
+  assert.deepEqual(plain.series[0].data.slice(0, -1), [20, 21, 60]);
+  assert.equal(glance.glanceLineOption(light, { ...LINE, forecast: undefined, endLabel: false }).series[0].data.at(-1), 85);
   const o = glance.glanceLineOption(light, LINE);
   assert.deepEqual(o.xAxis.data, [...LINE.categories, ...LINE.forecast.categories]);
-  assert.deepEqual(o.series[0].data, [20, 21, 60, 85, null, null]);
-  assert.deepEqual(o.series[1].data, [null, null, null, 85, 102, 140]);
+  assert.deepEqual(o.series[0].data, [20, 21, 60, { value: 85, symbolSize: 8 }, null, null], 'the forecast carries the end label; the last measured point keeps its dot');
+  assert.equal(end.symbolSize, 8, 'the endpoint dot');
+  assert.equal(o.series[1].data.at(-1).symbolSize, 0);
+  assert.deepEqual(o.series[1].data.slice(0, -1), [null, null, null, 85, 102]);
+  assert.equal(o.series[1].data.at(-1).value, 140);
+  assert.equal(o.series[1].data.at(-1).label.formatter(), 'Prognose 140');
   assert.deepEqual(o.series[1].lineStyle.type, [4, 5]);
-  assert.equal(o.series[1].endLabel.formatter({ value: 140 }), 'Prognose 140');
-  assert.equal(o.series[0].endLabel.show, false, 'the forecast carries the end label');
+  for (const s of [...o.series, ...plain.series]) assert.equal(s.endLabel, undefined, 'no endLabel: it lands on NaN while a forecast draws in');
 });
 
 test('the tooltip names the point and its value, escaped', () => {
@@ -119,4 +126,10 @@ test('the styleguide port draws the same options', () => {
     assert.deepEqual(strip(port.glanceLineOption(k, LINE, PLAY)), strip(glance.glanceLineOption(k, LINE, PLAY)));
     assert.deepEqual(strip(port.pairedBarsOption(k, BARS)), strip(glance.pairedBarsOption(k, BARS)));
   }
+});
+
+test('the right gutter fits the end label', () => {
+  assert.equal(glance.glanceLineOption(light, LINE).grid.right, Math.ceil('Prognose 140'.length * 6.5) + 14);
+  assert.equal(glance.glanceLineOption(light, { ...LINE, forecast: undefined, endLabel: false }).grid.right, 12);
+  assert.equal(glance.glanceLineOption(light, { ...LINE, forecast: undefined }).grid.right, Math.ceil('85'.length * 6.5) + 14);
 });

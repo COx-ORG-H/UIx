@@ -39,7 +39,7 @@ test('ChartCard: the question names the card; headline, answer, plot and note in
   const id = /<section class="uix-chart-card" aria-labelledby="([^"]+)">/.exec(out)?.[1];
   assert.ok(id, out);
   assert.match(out, new RegExp(`<h3 class="uix-chart-card__question" id="${id}">Wächst der Rückstand\\?</h3>`));
-  assert.match(out, /<p class="uix-chart-card__answer"><span class="uix-chart-card__headline">85<\/span><span>offen<\/span><\/p><div class="uix-chart-card__plot"><div id="plot"><\/div><\/div><p class="uix-chart-card__note">Gestrichelt: Prognose\.<\/p>/);
+  assert.match(out, /<p class="uix-chart-card__answer"><span class="uix-chart-card__headline">85<\/span><span>offen<\/span><\/p><div class="uix-chart-card__plot"><div id="plot"><\/div><\/div><div class="uix-chart-card__note">Gestrichelt: Prognose\.<\/div>/);
   assert.match(out, /<div class="uix-chart-card__action"><a href="#r">Berichte<\/a><\/div>/);
 });
 

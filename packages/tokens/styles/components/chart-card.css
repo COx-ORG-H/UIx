@@ -48,9 +48,9 @@
     align-items: center; gap: var(--uix-space-3); font-size: var(--uix-text-meta);
   }
   .uix-bar-list__label { min-width: 0; color: var(--uix-text-hushed); overflow-wrap: anywhere; }
-  .uix-bar-list__track { height: 8px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); overflow: hidden; }
+  .uix-bar-list__track { display: block; height: 8px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); overflow: hidden; }
   .uix-bar-list__bar {
-    height: 100%; border-radius: inherit; background: var(--uix-chart-series);
+    display: block; height: 100%; border-radius: inherit; background: var(--uix-chart-series);
     transform-origin: left center; transform: scaleX(var(--val, 0));
     transition: transform var(--uix-dur) var(--uix-ease-out);
   }
