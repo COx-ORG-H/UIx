@@ -397,6 +397,23 @@ export const initShowcase = (options = {}) => {
         setTimeout(() => delete copyBtn.dataset.copied, 1200);
       }
     }
+    // .uix-copy-button specimen: same contract as the React CopyButton (check + announce on
+    // success, silent on failure)
+    const copyValue = e.target.closest('[data-uix-copy-value]');
+    if (copyValue && navigator.clipboard) {
+      const status = copyValue.parentElement?.querySelector('[data-uix-copy-status]');
+      const glyph = copyValue.innerHTML;
+      navigator.clipboard.writeText(copyValue.dataset.uixCopyValue).then(() => {
+        copyValue.dataset.copied = 'true';
+        copyValue.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+        if (status) status.textContent = 'Copied';
+        setTimeout(() => {
+          delete copyValue.dataset.copied;
+          copyValue.innerHTML = glyph;
+          if (status) status.textContent = '';
+        }, 1500);
+      }, () => {});
+    }
     const iconCell = e.target.closest('[data-icon-copy]');
     if (iconCell && navigator.clipboard) {
       navigator.clipboard.writeText(iconCell.dataset.iconCopy);

@@ -24,6 +24,10 @@ const PAGES = [
   { name: 'docs-color-picker-narrow', path: 'docs/explorer.html#color-picker', viewport: { width: 390, height: 844 }, openColorPicker: true },
   { name: 'docs-tag-input-narrow', path: 'docs/explorer.html#tag-input', viewport: { width: 390, height: 844 } },
   { name: 'docs-file-upload-narrow', path: 'docs/explorer.html#file-upload', viewport: { width: 390, height: 844 } },
+  // live React specimen (Tabs overflow="scroll", Stat tone × size × interactive, CopyButton),
+  // bundled from source in globalSetup; the narrow one holds 2.5× pseudo-localised tab labels
+  { name: 'operator-primitives', path: '/tests/operator-primitives/harness.html', ready: '[data-specimen="copy"]' },
+  { name: 'operator-primitives-narrow', path: '/tests/operator-primitives/harness.html', viewport: { width: 360, height: 800 }, ready: '[data-specimen="copy"]' },
 ];
 
 for (const pg of PAGES) {
@@ -38,6 +42,7 @@ for (const pg of PAGES) {
     // theme seeded correctly + webfonts resolved before we snapshot
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await page.evaluate(() => document.fonts.ready);
+    if (pg.ready) await expect(page.locator(pg.ready)).toBeVisible();
 
     // Charts initialize near the viewport to keep their renderer out of the critical
     // path. Exercise that real user path before the full-page capture so the lazy

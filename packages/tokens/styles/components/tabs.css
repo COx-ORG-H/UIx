@@ -34,7 +34,9 @@
   /* overflow="scroll" — one scrolling row inside .uix-tabs-scroller; edge buttons appear only
      on the side that has hidden tabs. Keyboard users move with Arrow/Home/End, so the buttons
      are pointer-only (aria-hidden, tabindex -1). */
-  .uix-tabs-scroller { position: relative; min-width: 0; max-width: 100%; }
+  /* inline-size containment: the row takes the width it is given and never widens its container
+     (a grid or flex item would otherwise grow to the full tab strip and scroll the page) */
+  .uix-tabs-scroller { position: relative; min-width: 0; max-width: 100%; contain: inline-size; }
   .uix-tabs--scroll {
     display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
     scrollbar-width: none; scroll-behavior: smooth; overscroll-behavior-x: contain;

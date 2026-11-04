@@ -90,6 +90,7 @@ export const COMPONENT_GUIDANCE = {
   markdown: ['Show stored markdown safely, including on the server.', 'Formatted headings, lists, tables and links; raw HTML stays text and URLs pass the host’s policy.'],
   reactions: ['Let people acknowledge content with lightweight feedback.', 'Toggle chips with counts and reactor names, plus an emoji picker; the app stores the user’s choice.'],
   media: ['Present an image or other media with supporting context.', 'A media frame with an appropriate alternative description and stable layout.'],
+  'copy-button': ['Copy a value such as an email address or record ID.', 'An icon button beside the value that shows a check for a moment and announces the copy; nothing happens visibly if the browser refuses.'],
   kbd: ['Explain a keyboard shortcut.', 'A visually distinct key label; rendering it does not register a shortcut.'],
   link: ['Navigate to another destination or related content.', 'Recognizable inline links or quiet links within already-interactive content rows.'],
   'utility-bits': ['Add small supporting content treatments.', 'Shared code, quotation, divider and activity treatments without a local visual dialect.'],

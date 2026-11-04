@@ -17,7 +17,7 @@ export default defineConfig({
   // covers tests/visual (VR) + tests/a11y (axe); the scripts filter by subdir. The
   // smoke-consumer fixtures aren't *.spec.* so they're never picked up.
   testDir: './tests',
-  // bundles the rich-text harness once (tests/a11y/rich-text.spec.mjs)
+  // bundles the React harnesses once (rich-text + operator-primitives specs)
   globalSetup: './tests/rich-text/global-setup.mjs',
   // flat, project- and platform-suffixed so light/dark/OS goldens never collide
   snapshotPathTemplate: 'tests/visual/__screenshots__/{projectName}-{arg}-{platform}{ext}',
