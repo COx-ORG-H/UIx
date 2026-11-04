@@ -93,6 +93,8 @@
     --uix-col-w-xs:92px; --uix-col-w-sm:112px; --uix-col-w-md:132px; --uix-col-w-lg:176px; --uix-col-w-xl:240px; --uix-col-title-min:340px;
     /* calm kit (2.56) */
     --uix-chart-series:var(--uix-chart-1); --uix-chart-series-soft:rgba(79,111,224,.14);
+    /* calm kit (2.56) */
+    --uix-dur-arrive:420ms; --uix-stagger-arrive:45ms; --uix-delay-arrive-trace:150ms; --uix-dur-arrive-trace:700ms; --uix-dur-arrive-grow:500ms; --uix-stagger-arrive-grow:25ms; --uix-dur-arrive-count:600ms; --uix-arrive-rise:8px;
   }
 
   :root:where(.dark,[data-theme="dark"]) {

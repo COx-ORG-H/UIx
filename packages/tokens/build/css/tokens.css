@@ -134,7 +134,15 @@
     --uix-loop-ping: 1600ms;
     --uix-loop-blink: 1100ms;
     --uix-loop-pulse: 2000ms;
+    --uix-dur-arrive: 420ms;
+    --uix-stagger-arrive: 45ms;
+    --uix-delay-arrive-trace: 150ms;
+    --uix-dur-arrive-trace: 700ms;
+    --uix-dur-arrive-grow: 500ms;
+    --uix-stagger-arrive-grow: 25ms;
+    --uix-dur-arrive-count: 600ms;
     --uix-lift: 4px;
+    --uix-arrive-rise: 8px;
     --uix-z-raised: 1;
     --uix-z-sticky: 3;
     --uix-z-dropdown: 10;

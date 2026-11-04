@@ -253,6 +253,8 @@ export { DEFAULT_PAGINATION_LABELS, Pagination } from './components/Pagination.j
 export type { PaginationLabels, PaginationProps } from './components/Pagination.js';
 
 export { StatusPill } from './components/StatusPill.js';
+export { StatusDot } from './components/StatusDot.js';
+export type { StatusDotProps, StatusDotTone } from './components/StatusDot.js';
 export type { StatusPillProps, PillTone, PillTreatment, PillSize } from './components/StatusPill.js';
 
 export { Progress } from './components/Progress.js';
@@ -328,6 +330,12 @@ export { BusyRegion } from './components/BusyRegion.js';
 export { ChangeHighlight } from './components/ChangeHighlight.js';
 export type { ChangeHighlightProps } from './components/ChangeHighlight.js';
 export { Count } from './components/Count.js';
+export { Arrive, ArriveItem, useArrive } from './components/Arrive.js';
+export type { ArriveProps, ArriveItemProps, ArriveState } from './components/Arrive.js';
+export { ChartCard } from './components/ChartCard.js';
+export type { ChartCardProps } from './components/ChartCard.js';
+export { BarList, StatusStrip, Sparkline } from './components/GlanceMarks.js';
+export type { BarListProps, BarListItem, StatusStripProps, StatusStripItem, StatusStripTone, SparklineProps } from './components/GlanceMarks.js';
 export { MotionList } from './components/MotionList.js';
 export type { MotionListProps } from './components/MotionList.js';
 export type { CountProps } from './components/Count.js';

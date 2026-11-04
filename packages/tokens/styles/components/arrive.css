@@ -1,0 +1,67 @@
+/* uix arrive — the first paint of a glance page (calm kit 2.56). Not .uix-arrival, which is the
+   "you are here" tint on a link target.
+
+   .uix-arrive is the stage. While it carries [data-uix-arrive="play"] (React <Arrive> sets it on
+   the first mount of a session and clears it once the sequence is over), every .uix-arrive__item
+   inside fades and rises 8 px, 45 ms after the one before (its --uix-arrive-i), over 420 ms; lines
+   inside an item trace in from the left 150 ms after their card starts (700 ms) and bars grow from
+   their baseline, 25 ms apart (500 ms). With any other value, or none, nothing moves: the resting
+   state is the finished page, so a refresh or a data change never replays it. Under reduced
+   motion each item only fades, for --uix-dur (160 ms), and charts appear drawn.
+
+   Hooks for drawn marks (used by Sparkline, BarList and Meter; any SVG of your own can opt in):
+     .uix-arrive__trace  an SVG stroke with pathLength="1"
+     .uix-arrive__grow   an element that grows on its inline axis from scaleX(0) to its own transform,
+                         with --uix-arrive-j as its index among its siblings
+     .uix-arrive__slide  a full-width fill that slides in from its start edge to its own transform
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-arrive { --uix-arrive-i: 0; }
+
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__item {
+    animation: uix-arrive-rise var(--uix-dur-arrive) var(--uix-ease-out) calc(var(--uix-arrive-i, 0) * var(--uix-stagger-arrive)) both;
+  }
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__trace {
+    stroke-dasharray: 1;
+    animation: uix-arrive-trace var(--uix-dur-arrive-trace) var(--uix-ease-out) calc(var(--uix-arrive-i, 0) * var(--uix-stagger-arrive) + var(--uix-delay-arrive-trace)) both;
+  }
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__grow {
+    transform-origin: left center;
+    animation: uix-arrive-grow var(--uix-dur-arrive-grow) var(--uix-ease-out) calc(var(--uix-arrive-i, 0) * var(--uix-stagger-arrive) + var(--uix-delay-arrive-trace) + var(--uix-arrive-j, 0) * var(--uix-stagger-arrive-grow)) both;
+  }
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__grow:dir(rtl) { transform-origin: right center; }
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__slide {
+    animation: uix-arrive-slide var(--uix-dur-arrive-grow) var(--uix-ease-out) calc(var(--uix-arrive-i, 0) * var(--uix-stagger-arrive) + var(--uix-delay-arrive-trace)) both;
+  }
+  .uix-arrive[data-uix-arrive="play"] .uix-arrive__slide:dir(rtl) { animation-name: uix-arrive-slide-rtl; }
+
+  @keyframes uix-arrive-rise {
+    from { opacity: 0; transform: translateY(var(--uix-arrive-rise)); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes uix-arrive-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  /* no `to`: each mark grows or slides to its own resting transform (a bar's scaleX(--val)) */
+  @keyframes uix-arrive-grow { from { transform: scaleX(0); } }
+  @keyframes uix-arrive-slide { from { transform: translateX(-100%); } }
+  @keyframes uix-arrive-slide-rtl { from { transform: translateX(100%); } }
+  @keyframes uix-arrive-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* !important: the reduced-motion policy (motion.css) ends every keyframe animation at once; a
+     layered !important wins over it, so the items still fade (feedback, not movement). Marks do
+     not draw in: they are simply there. The in-app preference gets the same. */
+  @media (prefers-reduced-motion: reduce) {
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__item { animation: uix-arrive-fade var(--uix-dur) var(--uix-ease-out) both !important; }
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__trace,
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__grow,
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__grow:dir(rtl),
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__slide,
+    .uix-arrive[data-uix-arrive="play"] .uix-arrive__slide:dir(rtl) { animation: none !important; stroke-dasharray: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-arrive[data-uix-arrive="play"] .uix-arrive__item { animation: uix-arrive-fade var(--uix-dur) var(--uix-ease-out) both !important; }
+    :root[data-motion="reduce"] .uix-arrive[data-uix-arrive="play"] :is(.uix-arrive__trace, .uix-arrive__grow, .uix-arrive__slide) { animation: none !important; stroke-dasharray: none; }
+  }
+  @media print {
+    .uix-arrive[data-uix-arrive="play"] :is(.uix-arrive__item, .uix-arrive__trace, .uix-arrive__grow, .uix-arrive__slide) { animation: none; }
+  }
+}

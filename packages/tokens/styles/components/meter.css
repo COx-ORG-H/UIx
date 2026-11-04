@@ -15,4 +15,16 @@
      --uix-accent-text, not --uix-accent: the raw accent of a bright brand is 2.62:1 on the track. */
   .uix-meter__fill[data-tone="neutral"]   { background: var(--uix-text-muted); }
   .uix-meter__fill[data-tone="accent"]    { background: var(--uix-accent-text); }
+
+  /* A target (calm kit 2.56): a thin ink mark across the track where the goal is ("Ziel 95 %"),
+     so "under target" reads from the bar itself. The track stops clipping so the mark can stand
+     a little proud of it; the fill keeps its rounded clip in __clip. --target is 0-1. */
+  .uix-meter--target { position: relative; overflow: visible; }
+  .uix-meter__clip { height: 100%; border-radius: inherit; overflow: hidden; }
+  .uix-meter__target {
+    position: absolute; top: calc(-1 * var(--uix-space-1)); bottom: calc(-1 * var(--uix-space-1));
+    inset-inline-start: calc(var(--target, 1) * 100%); width: 2px;
+    border-radius: var(--uix-radius-xs); background: var(--uix-text-hushed);
+  }
+  @media (forced-colors: active) { .uix-meter__target { background: CanvasText; } }
 }

@@ -37,7 +37,16 @@
   "loop-blink":    { "$type": "duration", "$value": "1100ms", "$description": "One caret blink cycle." },
   "loop-pulse":    { "$type": "duration", "$value": "2000ms", "$description": "One cycle of the reduced-motion opacity pulse that replaces spinners, shimmer and indeterminate progress, so a still-working indicator stays visibly alive without movement." },
 
+  "dur-arrive":          { "$type": "duration", "$value": "420ms", "$description": "Arrival (calm kit 2.56): how long one card of a glance page takes to fade and rise into place on the first paint of a session. Never on a refresh or a data change." },
+  "stagger-arrive":      { "$type": "duration", "$value": "45ms",  "$description": "Arrival: the gap between one card starting and the next, in reading order." },
+  "delay-arrive-trace":  { "$type": "duration", "$value": "150ms", "$description": "Arrival: how long after its card starts a chart begins to draw (a line traces, bars grow)." },
+  "dur-arrive-trace":    { "$type": "duration", "$value": "700ms", "$description": "Arrival: a line or sparkline tracing in from the left." },
+  "dur-arrive-grow":     { "$type": "duration", "$value": "500ms", "$description": "Arrival: one bar growing from its baseline (paired bars, a bar list, a meter)." },
+  "stagger-arrive-grow": { "$type": "duration", "$value": "25ms",  "$description": "Arrival: the gap between one bar (or bucket) starting to grow and the next." },
+  "dur-arrive-count":    { "$type": "duration", "$value": "600ms", "$description": "Arrival: a headline number counting up from zero (Count arrive). Later changes tick once instead." },
+
   "lift": { "$type": "dimension", "$value": "4px" },
+  "arrive-rise": { "$type": "dimension", "$value": "8px", "$description": "Arrival: how far a card rises while it fades in." },
 
   "z-raised":   { "$type": "number", "$value": "1",   "$description": "z-index ladder (semantic stacking order). raised = locally lifted within a component: a sticky table header & first column, a flow node title over its diamond, a heartbeat dot over its ping." },
   "z-sticky":   { "$type": "number", "$value": "3",   "$description": "A sticky plane that must outrank raised siblings — the pinned-column header corner, which sits above both the sticky row and the sticky column." },
