@@ -472,7 +472,9 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
     const sw = (token, name) => `<div class="uix-docs__swatch"><div class="uix-docs__swatch-color" style="--swatch:var(${token})"></div><div class="uix-docs__swatch-meta"><strong>${esc(name)}</strong><code>${token}</code></div></div>`;
     const palette = ['Blue · the series', 'Teal', 'Violet', 'Green', 'Plum', 'Olive', 'Cyan', 'Moss'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
     const roles = [
-      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind the data. Never dashed.'],
+      ['--uix-chart-series', 'Series', 'The one series colour of a glance chart (= chart-1). A second series is the grey comparison.'],
+      ['--uix-chart-series-soft', 'Series wash', 'The series colour as a faint fill: the area under a glance line.'],
+      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind analytic data. A glance chart (ChartCard) draws three dashed lines in the axis ink instead, and no axis titles.'],
       ['--uix-chart-axis', 'Axis', 'Axis line. Labels use --uix-text-muted.'],
       ['--uix-chart-reference', 'Reference', 'Neutral ink for target, budget and baseline lines.'],
       ['--uix-chart-zone-warning', 'Warning zone', 'Alpha fill for a warning threshold band.'],
