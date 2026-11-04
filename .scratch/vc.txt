@@ -1,0 +1,5 @@
+{
+  "failures": [],
+  "errors": []
+}
+PASS: 94 component previews in both themes, tag/file/color interactions, code view, and narrow/wide pages.

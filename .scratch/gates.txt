@@ -1,0 +1,36 @@
+=== npm ci --no-audit --no-fund
+exit 0
+=== npm run build:all
+exit 0
+=== npm test -w @tensor_1/react
+exit 0
+=== npm run typecheck -w @tensor_1/react
+exit 0
+=== npm run test:performance
+exit 0
+=== npm run test:size
+exit 0
+=== npm run test:parity
+exit 0
+=== npm run test:contract
+exit 0
+=== npm run test:tokens
+exit 0
+=== npm run test:api
+exit 0
+=== npm run test:smoke
+exit 0
+--- a11y job
+=== npm ci --no-audit --no-fund
+exit 0
+=== npm run build
+exit 0
+=== npm run test:a11y
+exit 0
+=== node --test packages/tokens/docs/docs.test.js packages/tokens/guide/app.test.js
+exit 0
+=== node tests/docs/verify-components.mjs
+exit 0
+=== npm run size:css -w @tensor_1/tokens
+exit 0
+DONE

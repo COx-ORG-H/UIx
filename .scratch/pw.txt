@@ -1,0 +1,28 @@
+npm notice run uix-monorepo@0.0.0 npx
+npm notice run playwright test tests/a11y/rich-text.spec.mjs --reporter=line
+
+Running 22 tests using 6 workers
+
+[1/22] [light] › tests\a11y\rich-text.spec.mjs:99:1 › toolbar: one tab stop, arrow keys, Home/End, pressed state
+[2/22] [light] › tests\a11y\rich-text.spec.mjs:58:1 › axe: editors, viewer and reactions at rest
+[3/22] [light] › tests\a11y\rich-text.spec.mjs:87:1 › no onChange on mount; typing emits markdown that keeps untouched blocks
+[4/22] [light] › tests\a11y\rich-text.spec.mjs:129:1 › markdown input rules and headingLevels
+[5/22] [light] › tests\a11y\rich-text.spec.mjs:157:1 › emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage
+[6/22] [light] › tests\a11y\rich-text.spec.mjs:62:1 › axe: open emoji picker, link dialog, suggestions and source mode
+[7/22] [light] › tests\a11y\rich-text.spec.mjs:194:1 › emoji picker: German names, grid navigation, Escape returns focus
+[8/22] [light] › tests\a11y\rich-text.spec.mjs:217:1 › reactions: pressed toggles with names, add via quick pick
+[9/22] [light] › tests\a11y\rich-text.spec.mjs:233:1 › viewer renders every corpus fixture as expected
+[10/22] [light] › tests\a11y\rich-text.spec.mjs:250:1 › narrow screens: the toolbar scrolls, the page does not
+[11/22] [light] › tests\a11y\rich-text.spec.mjs:263:1 › focus rings are visible on tools, chips and picker cells
+[12/22] [dark] › tests\a11y\rich-text.spec.mjs:58:1 › axe: editors, viewer and reactions at rest
+[13/22] [dark] › tests\a11y\rich-text.spec.mjs:62:1 › axe: open emoji picker, link dialog, suggestions and source mode
+[14/22] [dark] › tests\a11y\rich-text.spec.mjs:87:1 › no onChange on mount; typing emits markdown that keeps untouched blocks
+[15/22] [dark] › tests\a11y\rich-text.spec.mjs:99:1 › toolbar: one tab stop, arrow keys, Home/End, pressed state
+[16/22] [dark] › tests\a11y\rich-text.spec.mjs:157:1 › emoji: toolbar picker by keyboard, :shortcode suggestions, Unicode storage
+[17/22] [dark] › tests\a11y\rich-text.spec.mjs:129:1 › markdown input rules and headingLevels
+[18/22] [dark] › tests\a11y\rich-text.spec.mjs:194:1 › emoji picker: German names, grid navigation, Escape returns focus
+[19/22] [dark] › tests\a11y\rich-text.spec.mjs:217:1 › reactions: pressed toggles with names, add via quick pick
+[20/22] [dark] › tests\a11y\rich-text.spec.mjs:233:1 › viewer renders every corpus fixture as expected
+[21/22] [dark] › tests\a11y\rich-text.spec.mjs:250:1 › narrow screens: the toolbar scrolls, the page does not
+[22/22] [dark] › tests\a11y\rich-text.spec.mjs:263:1 › focus rings are visible on tools, chips and picker cells
+  22 passed (32.6s)

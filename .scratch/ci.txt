@@ -1,0 +1,44 @@
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+gates	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+gates	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+gates	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+gates	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+gates	pass	1m11s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+Refreshing checks status every 30 seconds. Press Ctrl+C to quit.
+
+gates	pass	1m11s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+a11y	pending	0	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+a11y	pass	2m46s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+gates	pass	1m11s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	
+a11y	pass	2m46s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061077	
+gates	pass	1m11s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220061152	
+visual	pass	54s	https://github.com/COx-ORG-H/UIx/actions/runs/35226713375/job/105220060719	
+[code]smith	skipping	0	https://backend.blacksmith.sh/track/enable-autofix?expires=1792243377&installation_model_id=430985&pr_number=36&repository=COx-ORG-H%2FUIx&return_to=https%3A%2F%2Fgithub.com%2FCOx-ORG-H%2FUIx%2Fpull%2F36&utm_campaign=COx-ORG-H%2FUIx&utm_source=codesmith-check&signature=69e051e8d42c07092f8b2d8ed7ebbe71575985f489137ada7299f84c9a48baef	

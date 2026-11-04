@@ -1,0 +1,16 @@
+npm notice run @tensor_1/tokens@2.18.0 build
+npm notice run npm run build:tokens && npm run build:themes && npm run build:styles
+npm notice run @tensor_1/tokens@2.18.0 build:tokens
+npm notice run node style-dictionary.config.mjs
+✓ tokens built — 152 base, 64 dark
+  build/css/tokens.css  build/tailwind/{theme.css,preset.cjs}  build/ts/{tokens.js,tokens.d.ts}
+npm notice run @tensor_1/tokens@2.18.0 build:themes
+npm notice run node scripts/build-themes.mjs
+✓ themes/mission-control.css
+✓ themes/posx.css
+✓ themes/shopx.css
+✓ themes/tensor.css
+npm notice run @tensor_1/tokens@2.18.0 build:styles
+npm notice run node scripts/build-styles.mjs
+✓ build/css/styles.css
+✓ build/css/components.css

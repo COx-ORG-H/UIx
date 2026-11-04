@@ -1,0 +1,97 @@
+✔ categories are localized and exclude skin-tone components (1.1994ms)
+✔ search finds English and German names, folding case and umlauts (30.3844ms)
+✔ names resolve with and without the emoji presentation selector (0.1797ms)
+✔ recent emoji are kept most-recent-first, deduplicated and capped (0.6648ms)
+✔ grid movement (0.1939ms)
+✔ formatLabel fills known placeholders only (0.196ms)
+✔ ReactionBar renders pressed toggle chips named after the reactors (10.8577ms)
+✔ ReactionBar truncates long name lists and localizes (0.9818ms)
+✔ EmojiPicker renders only its trigger until opened (0.5898ms)
+✔ emojiImageBaseUrl accepts same-origin paths only (0.5745ms)
+✔ emoji image files are named by lowercase hyphenated code points (0.3241ms)
+✔ emojiPattern finds whole sequences (38.2302ms)
+✔ never emits a <script> element from a raw <script> tag (8.583ms)
+✔ never emits an <img> without resolveImageSrc (markdown image or raw HTML) (2.1146ms)
+✔ drops javascript: URLs from markdown links (renders label, no anchor) (1.3965ms)
+✔ drops data:/vbscript:/file: URLs (0.6269ms)
+✔ allows http/https/mailto/relative/anchor schemes (0.9736ms)
+✔ rel/target hardening on external links only (0.9035ms)
+✔ case-bypass scheme (JaVaScRiPt:) is rejected (0.5982ms)
+✔ renders the supported block subset with headings demoted by two levels (1.9208ms)
+✔ empty / whitespace-only input renders nothing (0.7533ms)
+✔ single newlines become line breaks and blockquote lines are joined (0.96ms)
+✔ bare http(s) URLs are autolinked without trailing punctuation (0.6825ms)
+✔ the policy props replace the default URL rule (0.335ms)
+✔ strikethrough, task lists and tables (2.4717ms)
+✔ images render only when resolveImageSrc returns a URL (0.4767ms)
+✔ emoji, umlauts and template variables stay text (0.4094ms)
+✔ backslash escapes and character references are decoded as text (0.3723ms)
+✔ intraword underscores are not emphasis (0.3738ms)
+✔ nested lists follow indentation (0.4083ms)
+✔ ordered lists keep their start number (0.2692ms)
+✔ links may contain formatting and titles (0.1892ms)
+✔ horizontal rules and headings with closing hashes (0.2853ms)
+✔ headingOffset is capped at h6 (0.3285ms)
+✔ protocol-relative and backslash tricks are not same-app links (1.2644ms)
+✖ character references in link targets are decoded before the policy check (2.5059ms)
+✔ hostile nesting and unclosed brackets stay fast and do not throw (1443.7317ms)
+✔ corpus renders its expected text: headings (0.2628ms)
+✔ corpus renders its expected text: inline marks (0.2682ms)
+✔ corpus renders its expected text: nested bullet list (0.2552ms)
+✔ corpus renders its expected text: ordered list (0.1913ms)
+✔ corpus renders its expected text: task list (0.2274ms)
+✔ corpus renders its expected text: blockquote (0.1502ms)
+✔ corpus renders its expected text: fenced code (0.1489ms)
+✔ corpus renders its expected text: horizontal rule (0.1489ms)
+✔ corpus renders its expected text: links (0.2028ms)
+✔ corpus renders its expected text: image (0.1619ms)
+✔ corpus renders its expected text: template variables (0.1213ms)
+✔ corpus renders its expected text: umlauts (0.1492ms)
+✔ corpus renders its expected text: emoji including ZWJ sequences (0.1124ms)
+✔ corpus renders its expected text: plain punctuation stays readable (0.2871ms)
+✔ corpus renders its expected text: hard line break (0.2633ms)
+✔ corpus renders its expected text: aligned table (0.8799ms)
+✔ corpus renders its expected text: mixed document with blank-line runs and a trailing newline (0.4922ms)
+✔ corpus renders its expected text: alternative emphasis and escapes (0.2358ms)
+✔ corpus renders its expected text: raw html is literal text (0.5559ms)
+✔ corpus renders its expected text: reference definitions and footnotes (0.4605ms)
+✔ corpus renders its expected text: unsafe link (0.2793ms)
+✔ corpus renders its expected text: setext heading and indented code (0.182ms)
+✔ corpus renders its expected text: crlf line endings (0.1589ms)
+✔ corpus renders its expected text: empty (0.0834ms)
+✔ corpus renders its expected text: whitespace only (0.0744ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 61
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1670.7708
+
+✖ failing tests:
+
+test at src\markdown.test.mjs:161:1
+✖ character references in link targets are decoded before the policy check (2.5059ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   '/x&amp;y'
+  -   '/x&y'
+    ]
+  
+      at TestContext.<anonymous> (file:///E:/Development/Worktrees/uix-styleguide-rich-text/packages/react/src/markdown.test.mjs:162:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '/x&amp;y' ],
+    expected: [ '/x&y' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

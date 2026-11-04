@@ -1,0 +1,26 @@
+npm notice run uix-monorepo@0.0.0 test:smoke
+npm notice run node tests/smoke-consumer/run.mjs
+
+• temp consumer: C:\Users\haris\AppData\Local\Temp\uix-smoke-7wEJgQ
+
+• pack @tensor_1/tokens + @tensor_1/react
+
+• write consumer package.json + copy fixture
+
+• npm install (isolated; tarballs, no symlinks)
+
+• 1. ESM bundle (esbuild)
+
+• 2. ESM import (runtime)
+
+• 3. CJS require + 4. export resolution
+
+• 3b. ./markdown works with no optional peer installed (ESM + CJS)
+
+• 5. types (tsc --noEmit)
+
+• 6. React 19 peer compatibility (install + types + runtime import)
+
+• 7. ./rich-text and ./emoji with the exact optional peers the package declares
+
+✓ smoke OK — packed packages install, import (ESM+CJS), resolve, and type-check with React 18 and 19 in an isolated consumer, including the rich-text/markdown/emoji subpaths.

@@ -1,0 +1,13 @@
+✔ offline emoji list: the configured extension-emoji list contains no http string (339.6485ms)
+✔ egress: RichTextEditor (full, comment, template) makes no network request and adds no remote resource (5011.4201ms)
+✔ onChange fires for user edits only — never on mount or external value changes (463.7977ms)
+✔ egress: EmojiPicker and ReactionBar load, search and pick without network access (1036.2957ms)
+✔ egress: emojiImageBaseUrl only ever yields same-origin images (949.4556ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10127.0985

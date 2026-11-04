@@ -1,0 +1,10 @@
+import { createPipeline } from '../packages/react/dist/rich-text/pipeline.js';
+const p = createPipeline();
+const BS = String.fromCharCode(92);
+const md = '- .:-  \n#' + BS + BS + '=';
+console.log(JSON.stringify(md));
+console.log(JSON.stringify(p.read(md).doc.content, null, 1));
+const md2 = '- a  \n#' + BS + BS + '=';
+console.log(JSON.stringify(p.read(md2).doc.content));
+const md3 = '- a  \nb' + BS + BS + '=';
+console.log(JSON.stringify(p.read(md3).doc.content));
