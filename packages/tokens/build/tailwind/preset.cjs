@@ -78,6 +78,8 @@ module.exports = {
       "uix-chart-6": "var(--uix-chart-6)",
       "uix-chart-7": "var(--uix-chart-7)",
       "uix-chart-8": "var(--uix-chart-8)",
+      "uix-chart-series": "var(--uix-chart-series)",
+      "uix-chart-series-soft": "var(--uix-chart-series-soft)",
       "uix-chart-neutral": "var(--uix-chart-neutral)",
       "uix-chart-grid": "var(--uix-chart-grid)",
       "uix-chart-axis": "var(--uix-chart-axis)",
