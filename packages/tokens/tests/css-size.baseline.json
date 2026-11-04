@@ -327,9 +327,9 @@
       "brotli": 2818
     },
     "styles/components/page-header.css": {
-      "raw": 2516,
-      "gzip": 842,
-      "brotli": 709
+      "raw": 2785,
+      "gzip": 978,
+      "brotli": 812
     },
     "styles/components/pagination.css": {
       "raw": 1554,

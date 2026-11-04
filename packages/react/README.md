@@ -45,6 +45,15 @@ workflow surfaces, the main entry exports `Pipeline`/`PipelineStage` (compact or
 Large fixed-height tables can use `useVirtualRows(rows, { rowHeight })`; attach its `containerRef` to
 `TableWrap` and render the returned row window between spacer rows.
 
+`PageHeader` keeps complete record names readable in a narrow container: long words wrap,
+including a title passed as a React node, while the help control stays beside the heading
+and actions can move below it. Set the document's `lang` for language-aware hyphenation;
+no consumer CSS override or plain-string-only title is needed. The default and display
+presets are exercised with German names, help and actions in the live specimen at
+`tests/page-header/harness.html` (build it with `node tests/page-header/build.mjs` and
+serve the repo with `npm run serve:styleguide`). The browser regression checks the title's
+text fragments as well as page width, so clipping by an ancestor cannot hide an overflow.
+
 ## Rich text, markdown and emoji
 
 Three optional entries (RTE-01). None of them is imported by the root entry.
