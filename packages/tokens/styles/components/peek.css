@@ -24,8 +24,11 @@
   .uix-peek[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-peek[open]::backdrop { opacity: 0; } }
 
-  .uix-peek__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
-  .uix-peek__nav { display: inline-flex; gap: var(--uix-space-1); }
+  /* Navigation and close share the first row. The record name gets the full
+     next row when navigation exists; hints follow it. Without navigation the
+     title stays beside close, so optional regions never leave empty rows. */
+  .uix-peek__header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+  .uix-peek__nav { grid-column: 1; grid-row: 1; display: inline-flex; gap: var(--uix-space-1); }
   .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
   /* boundary nav uses aria-disabled (still focusable, so focus isn't stranded — UIX-A11Y-1);
@@ -34,12 +37,13 @@
   .uix-peek__navbtn[aria-disabled="true"]:hover { background: var(--uix-surface); }
   /* title is an <h2> for SR navigation (UIX-A11Y-1); inherits neutralize the base h2
      heading font/tracking/leading so it renders exactly like the old <div> */
-  .uix-peek__title { font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
+  .uix-peek__title { grid-column: 1; grid-row: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
+  .uix-peek__header:has(.uix-peek__nav) .uix-peek__title { grid-column: 1 / -1; grid-row: 2; }
   .uix-peek__title a { color: var(--uix-link); }
-  .uix-peek__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-peek__close { grid-column: 2; grid-row: 1; align-self: start; margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
-  .uix-peek__hint { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-peek__hint { grid-column: 1 / -1; min-width: 0; white-space: normal; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
   .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
 
   /* a table wired to open the peek (app.js sets data-uix-rowpeek): its rows read as clickable,
