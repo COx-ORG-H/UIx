@@ -308,3 +308,4 @@ missing or blank.
 <!-- lesson-skip: 46627d8 a 1px hidden input needs a positioned label as its containing block; one rule per control, covered by a scroll test -->
 <!-- lesson-skip: 913c002 raw z-index, the contract gate named the fix -->
 <!-- lesson-skip: 818fd2d new-component behaviour fix, specific to GlanceCharts + Arrive -->
+<!-- lesson-skip: 8bd4ea7 operator colour decisions; the all-slots chart-1 check is now a test -->

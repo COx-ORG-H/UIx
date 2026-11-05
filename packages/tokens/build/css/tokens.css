@@ -69,7 +69,7 @@
     --uix-neutral-text: var(--uix-text-hushed);
     --uix-neutral-bg: var(--uix-bg-active);
     --uix-neutral-border: var(--uix-border-strong);
-    --uix-chart-1: #4F6FE0;
+    --uix-chart-1: #0455E6;
     --uix-chart-2: #1F978A;
     --uix-chart-3: #8C72D6;
     --uix-chart-4: #4C9A5A;
@@ -78,7 +78,7 @@
     --uix-chart-7: #2F8FC2;
     --uix-chart-8: #5E7D3A;
     --uix-chart-series: var(--uix-chart-1);
-    --uix-chart-series-soft: rgba(79,111,224,.14);
+    --uix-chart-series-soft: rgba(4,85,230,.14);
     --uix-chart-neutral: #64748B;
     --uix-chart-grid: #EDEDED;
     --uix-chart-axis: #D4D4D4;
@@ -261,15 +261,15 @@
     --uix-info-solid: #7890E6;
     --uix-danger-solid: #DA6C64;
     --uix-neutral-solid: #868686;
-    --uix-chart-1: #6F88EA;
+    --uix-chart-1: #3280FC;
     --uix-chart-2: #22A093;
-    --uix-chart-3: #9580DE;
+    --uix-chart-3: #A580CF;
     --uix-chart-4: #4E9F62;
     --uix-chart-5: #C474AC;
     --uix-chart-6: #93993A;
-    --uix-chart-7: #3D96C8;
+    --uix-chart-7: #0A819D;
     --uix-chart-8: #6E9147;
-    --uix-chart-series-soft: rgba(111,136,234,.18);
+    --uix-chart-series-soft: rgba(50,128,252,.18);
     --uix-chart-neutral: #A1A1A1;
     --uix-chart-grid: #232323;
     --uix-chart-axis: #3A3A3A;

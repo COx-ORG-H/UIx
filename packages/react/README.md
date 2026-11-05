@@ -774,7 +774,7 @@ The option builders are public for your own glance charts: `glanceLineOption`, `
 </Arrive>
 ```
 
-**Tokens.** The status families are softer in light and dark (fills, words, dots and tints; overdue follows danger), all AA. Palette v2: `--uix-chart-1..8` are blue (the series), teal, violet, green, plum, olive, cyan, moss, with no red and no amber slot; `--uix-chart-series` (= chart-1) and `--uix-chart-series-soft` are new. The arrival timings are `--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count` and `--uix-arrive-rise`. Warm neutrals are opt-in for comparison: import `@tensor_1/tokens/themes/neutral-warm` and set `<html data-uix-neutral="warm">`; without the attribute it changes nothing.
+**Tokens.** The status families are softer in light and dark (fills, words, dots and tints; overdue follows danger), all AA. Palette v2: `--uix-chart-1..8` are blue (the series), teal, violet, green, plum, olive, cyan, moss, with no red and no amber slot; `--uix-chart-1` stays the brand blue (`#0455E6`, dark `#3280FC`); `--uix-chart-series` (= chart-1) and `--uix-chart-series-soft` are new. The arrival timings are `--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count` and `--uix-arrive-rise`.
 
 ### Two-axis grids: MatrixInput and MatrixHeatmap
 

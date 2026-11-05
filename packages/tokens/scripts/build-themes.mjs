@@ -58,22 +58,11 @@ for (const f of files) {
     if (modes.light != null) light.push(`--uix-${token}: ${modes.light};`);
     if (modes.dark != null) dark.push(`--uix-${token}: ${modes.dark};`);
   }
-  // `__attribute` scopes an opt-in skin to <html ATTR> (the warm neutrals, calm kit 2.56): importing
-  // the file changes nothing until a product sets the attribute. Both blocks have the same
-  // specificity, so the dark one, written second, wins in dark mode.
-  const attribute = typeof spec.__attribute === 'string' ? spec.__attribute : '';
-  if (attribute && !/^data-[a-z-]+="[a-z-]+"$/.test(attribute)) throw new Error(`themes/${f}: __attribute must look like data-x="y"`);
-  const lightSelector = attribute ? `:root[${attribute}]` : ':root';
-  const darkSelector = attribute ? `:root[${attribute}]:where(.dark,[data-theme="dark"])` : ':root:where(.dark,[data-theme="dark"])';
-  let css = attribute
-    ? `/* GENERATED — do not edit. Opt-in skin "${name}", active only under <html ${attribute}>. Source: themes/${f}; build: npm run build:themes. */
-${lightSelector} { ${light.join(' ')} }
-`
-    : `/* GENERATED — do not edit. Brand override for "${name}". Source: themes/${f}; build: npm run build:themes.
+  let css = `/* GENERATED — do not edit. Brand override for "${name}". Source: themes/${f}; build: npm run build:themes.
    Sets only the write-only brand slots; accent/link/ring/brand-muted re-chain via @tensor_1/tokens/css. */
-${lightSelector} { ${light.join(' ')} }
+:root { ${light.join(' ')} }
 `;
-  if (dark.length) css += `${darkSelector} { ${dark.join(' ')} }\n`;
+  if (dark.length) css += `:root:where(.dark,[data-theme="dark"]) { ${dark.join(' ')} }\n`;
   await writeFile(join(DIR, `${name}.css`), css);
   console.log(`✓ themes/${name}.css`);
 }
