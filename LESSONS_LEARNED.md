@@ -309,3 +309,4 @@ missing or blank.
 <!-- lesson-skip: 913c002 raw z-index, the contract gate named the fix -->
 <!-- lesson-skip: 818fd2d new-component behaviour fix, specific to GlanceCharts + Arrive -->
 <!-- lesson-skip: 8bd4ea7 operator colour decisions; the all-slots chart-1 check is now a test -->
+<!-- lesson-skip: 8afaf77 demo-only box-sizing/grid track overflow and a forced-colours rule; routine, caught by the 320 px overflow check -->
