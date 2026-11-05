@@ -146,12 +146,17 @@ test('FileDrop: the choose button is a tab stop that opens the real file chooser
   await open(page, themeOf(testInfo));
   const choose = page.getByRole('button', { name: 'Dateien auswählen' });
   await expect(choose).toHaveText('auswählen');
+  // a pointer lands on the button itself, not on the drag summary stacked over it
+  const hit = await choose.evaluate((el) => { const b = el.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) === el; });
+  expect(hit).toBe(true);
   await page.locator('#rest').focus();
   await page.keyboard.press('Tab');
   await expect(choose).toBeFocused();
   const outline = await choose.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).toBe('solid');
-  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.keyboard.press('Enter')]);
+  const chooserEvent = page.waitForEvent('filechooser');
+  await page.keyboard.press('Enter');
+  const chooser = await chooserEvent;
   expect(chooser.isMultiple()).toBe(true);
   await chooser.setFiles([{ name: 'screenshot-1340.png', mimeType: 'image/png', buffer: Buffer.from('x') }]);
   await expect(page.locator('#panel .uix-file-row', { hasText: 'screenshot-1340.png' })).toHaveAttribute('data-state', 'uploading');
@@ -164,7 +169,7 @@ test('FileDrop: a drag names the kinds before the drop and tints the row; the dr
   await dragOver(page, '#panel', 'dragenter', files);
   await expect(drop).toHaveAttribute('data-dragging', '');
   await expect(drop.locator('.uix-file-drop__summary')).toHaveText('2 Dateien: Bild, Protokoll');
-  await dragOver(page, '#panel', 'dragover', files, { x: 120, y: 18 });
+  await dragOver(page, '#drop', 'dragover', files, { x: 120, y: 18 });
   expect(await drop.evaluate((el) => el.style.getPropertyValue('--file-drop-x'))).toBe('120px');
   await expect.poll(() => drop.locator('.uix-file-drop__aura').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
   const aura = await drop.locator('.uix-file-drop__aura').evaluate((el) => getComputedStyle(el).backgroundImage);

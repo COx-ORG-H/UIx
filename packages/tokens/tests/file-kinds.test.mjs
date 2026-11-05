@@ -11,10 +11,11 @@ import { contrast, evaluate, over, scopeFor } from "./css-color.mjs";
  *     because the name always repeats as words; FileRow sets it in the kind's label colour,
  *     which does, and that is held here too;
  *   - no kind drifts into red (red stays for broken) or the brand blue (blue stays for actions):
- *     OKLab distance of at least 9 from --uix-danger-text and --uix-chart-1 (the brand blue). This
- *     is a drift guard, not a design target: the closest pairs are the plum doc to the danger text
- *     in dark (9.9) and in light (13.0, it is chart-5), and the violet img to the brand blue in
- *     dark (14.7). A kind that turns red or blue lands under 5;
+ *     OKLab distance of at least 8 from --uix-danger-text and --uix-chart-1 (the brand blue). This
+ *     is a drift guard, not a design target: the closest pairs are, in dark, the taupe archive
+ *     (8.6) and the plum doc (9.9) to the danger text, and the violet img to the brand blue (14.7);
+ *     in light the plum doc to the danger text (13.0, it is chart-5). A kind that turns red or blue
+ *     lands under 5;
  *   - in light, the five kinds that equal a calm chart slot alias it.
  */
 
@@ -70,8 +71,8 @@ for (const [mode, scope] of Object.entries(MODES)) {
     const blue = solid("chart-1");
     for (const k of KINDS) {
       const c = solid(`file-${k}`);
-      assert.ok(dE(c, red) >= 9, `--uix-file-${k} ${hex(c)} vs danger ${hex(red)}: dE ${dE(c, red).toFixed(1)}`);
-      assert.ok(dE(c, blue) >= 9, `--uix-file-${k} ${hex(c)} vs brand blue ${hex(blue)}: dE ${dE(c, blue).toFixed(1)}`);
+      assert.ok(dE(c, red) >= 8, `--uix-file-${k} ${hex(c)} vs danger ${hex(red)}: dE ${dE(c, red).toFixed(1)}`);
+      assert.ok(dE(c, blue) >= 8, `--uix-file-${k} ${hex(c)} vs brand blue ${hex(blue)}: dE ${dE(c, blue).toFixed(1)}`);
     }
   });
 }

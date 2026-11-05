@@ -119,7 +119,8 @@
   .uix-file-drop__icon { color: var(--uix-text-muted); }
   .uix-file-drop__line { flex: 1; min-width: 0; display: grid; }
   .uix-file-drop__line > * { grid-area: 1 / 1; min-width: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-file-drop__summary { opacity: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--uix-text); }
+  /* The summary sits over the sentence in the same cell; it must never take the button's clicks. */
+  .uix-file-drop__summary { pointer-events: none; opacity: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--uix-text); }
   .uix-file-drop[data-dragging] .uix-file-drop__text { opacity: 0; }
   .uix-file-drop[data-dragging] .uix-file-drop__summary { opacity: 1; }
   .uix-file-drop__choose {

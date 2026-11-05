@@ -202,9 +202,9 @@
       "brotli": 4206
     },
     "styles/components/file-kit.css": {
-      "raw": 13340,
-      "gzip": 2991,
-      "brotli": 2567
+      "raw": 13804,
+      "gzip": 3141,
+      "brotli": 2692
     },
     "styles/components/file-upload.css": {
       "raw": 3445,
