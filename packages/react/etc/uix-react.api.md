@@ -169,6 +169,35 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
 // @public
 export function ariaKeyShortcuts(keys: KeyShortcut, platform: KbdPlatform): string;
 
+// @public
+export function Arrive(input: ArriveProps): react.JSX.Element;
+
+// @public
+export function ArriveItem(input: ArriveItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ArriveItemProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    as?: 'div' | 'section' | 'article' | 'li' | 'header' | 'aside';
+    // (undocumented)
+    children?: ReactNode;
+    index?: number;
+}
+
+// @public (undocumented)
+export interface ArriveProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    disabled?: boolean;
+    name?: string;
+    ready?: boolean;
+}
+
+// @public (undocumented)
+export interface ArriveState {
+    playing: boolean;
+}
+
 // @public (undocumented)
 export type AsyncOperationState = 'queued' | 'running' | 'complete' | 'failed';
 
@@ -374,6 +403,27 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     src?: string;
     status?: boolean;
+}
+
+// @public
+export function BarList(input: BarListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BarListItem {
+    display?: ReactNode;
+    id?: string;
+    // (undocumented)
+    label: ReactNode;
+    tone?: 'series' | 'comparison' | 'warning';
+    // (undocumented)
+    value: number;
+}
+
+// @public (undocumented)
+export interface BarListProps extends HTMLAttributes<HTMLUListElement> {
+    // (undocumented)
+    items: BarListItem[];
+    max?: number;
 }
 
 // @public (undocumented)
@@ -842,6 +892,22 @@ export interface ChangeHighlightProps extends HTMLAttributes<HTMLElement> {
     disabled?: boolean;
     value: unknown;
     variant?: 'tint' | 'ring';
+}
+
+// @public
+export function ChartCard(input: ChartCardProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ChartCardProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    action?: ReactNode;
+    answer?: ReactNode;
+    arriveIndex?: number;
+    children?: ReactNode;
+    empty?: ReactNode;
+    headingLevel?: 2 | 3 | 4;
+    headline?: ReactNode;
+    note?: ReactNode;
+    question: ReactNode;
 }
 
 // @public
@@ -1350,6 +1416,7 @@ export function Count(input: CountProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    arrive?: boolean;
     format?: (value: number) => string;
     value: number;
 }
@@ -4359,6 +4426,8 @@ export function Meter(input: MeterProps): react.JSX.Element;
 // @public (undocumented)
 export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
     label?: string;
+    target?: number;
+    targetLabel?: string;
     tone?: MeterTone;
     toneLabels?: Partial<Record<Exclude<MeterTone, 'success' | 'neutral' | 'accent'>, string>>;
     value?: number;
@@ -7322,6 +7391,19 @@ export interface SortKey {
     field: string;
 }
 
+// @public
+export function Sparkline(input: SparklineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values'> {
+    height?: number;
+    label?: string;
+    tone?: 'ink' | 'series';
+    // (undocumented)
+    values: number[];
+    width?: number;
+}
+
 // @public (undocumented)
 export function Spinner(input: SpinnerProps): react.JSX.Element;
 
@@ -7424,6 +7506,22 @@ export interface StatTrend {
     sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
+// @public
+export function StatusDot(input: StatusDotProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatusDotProps extends HTMLAttributes<HTMLSpanElement> {
+    children: ReactNode;
+    quiet?: boolean;
+    // (undocumented)
+    size?: 'sm' | 'md';
+    // (undocumented)
+    tone?: StatusDotTone;
+}
+
+// @public
+export type StatusDotTone = 'neutral' | 'info' | 'success' | 'warning' | 'critical' | 'danger';
+
 // @public (undocumented)
 export function StatusPill(input: StatusPillProps): react.JSX.Element;
 
@@ -7447,6 +7545,31 @@ export interface StatusRowProps extends HTMLAttributes<HTMLDivElement> {
     meta?: ReactNode;
     name: ReactNode;
 }
+
+// @public
+export function StatusStrip(input: StatusStripProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatusStripItem {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: ReactNode;
+    state?: ReactNode;
+    // (undocumented)
+    tone: StatusStripTone;
+}
+
+// @public (undocumented)
+export interface StatusStripProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    items: StatusStripItem[];
+    listAffected?: boolean;
+    summary: string;
+}
+
+// @public (undocumented)
+export type StatusStripTone = 'ok' | 'warning' | 'critical' | 'unknown';
 
 // @public (undocumented)
 export function Step(input: StepProps): react.JSX.Element;
@@ -8539,6 +8662,9 @@ export interface UseAnchoredPositionOptions {
     placement?: Placement;
     shiftMainAxis?: boolean;
 }
+
+// @public
+export function useArrive(): ArriveState;
 
 // @public
 export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;

@@ -107,8 +107,8 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Matrix'],
-  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Change highlight', 'Count', 'List motion', 'Drag'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
+  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Print layout', 'Utility bits'],
@@ -159,6 +159,8 @@ export const REACT_COMPONENT_SLUGS = [
   'qr-code', 'code-display', 'contact-card', 'print-layout', 'qr-scanner',
   // two-axis grids (HAR-2752, HAR-2753)
   'matrix',
+  // the calm kit (2.56): glance cards and the first-paint arrival
+  'chart-card', 'arrive',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -468,9 +470,11 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
 
   'chart-tokens': () => {
     const sw = (token, name) => `<div class="uix-docs__swatch"><div class="uix-docs__swatch-color" style="--swatch:var(${token})"></div><div class="uix-docs__swatch-meta"><strong>${esc(name)}</strong><code>${token}</code></div></div>`;
-    const palette = ['Blue', 'Cyan', 'Green', 'Ochre', 'Orange', 'Red', 'Violet', 'Pink'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
+    const palette = ['Blue · the series', 'Teal', 'Violet', 'Green', 'Plum', 'Olive', 'Cyan', 'Moss'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
     const roles = [
-      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind the data. Never dashed.'],
+      ['--uix-chart-series', 'Series', 'The one series colour of a glance chart (= chart-1). A second series is the grey comparison.'],
+      ['--uix-chart-series-soft', 'Series wash', 'The series colour as a faint fill: the area under a glance line.'],
+      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind analytic data. A glance chart (ChartCard) draws three dashed lines in the axis ink instead, and no axis titles.'],
       ['--uix-chart-axis', 'Axis', 'Axis line. Labels use --uix-text-muted.'],
       ['--uix-chart-reference', 'Reference', 'Neutral ink for target, budget and baseline lines.'],
       ['--uix-chart-zone-warning', 'Warning zone', 'Alpha fill for a warning threshold band.'],
@@ -520,7 +524,7 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
       ['Restored, recovered, succeeded after a failure', 'Positive outcome worth noticing', 'success'],
       ['Due soon, at risk, waiting too long', 'Attention needed soon', 'warning'],
       ['Failed, breached, blocked', 'Actionable now', 'danger'],
-      ['SEV-1, critical incident', 'The one solid fill', 'critical'],
+      ['SEV-1, critical incident', 'Broken now: the danger tint and words, never a solid fill', 'critical'],
     ];
     const matrix = `<div class="uix-docs__status-table" data-status-matrix tabindex="0" role="region" aria-label="Status colour mapping matrix"><table class="uix-table"><thead><tr><th scope="col">State</th><th scope="col">Category</th><th scope="col">Table (dot)</th><th scope="col">Header (soft)</th><th scope="col">Flag (outline)</th></tr></thead><tbody>${MATRIX.map(([state, category, tone]) => `<tr><td>${esc(state)}</td><td>${esc(category)}</td><td>${pill(tone, tone, 'dot')}</td><td>${pill(tone, tone)}</td><td>${pill(tone, tone, 'outline')}</td></tr>`).join('')}</tbody></table></div>`;
     // One ITSM queue, twice: colour as the state (today) and colour as the exception (the policy).
@@ -1044,6 +1048,24 @@ const toggleTheme = () => {
   document.querySelector('[data-uix-theme-toggle]')?.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} theme`);
 };
 
+/* The calm kit specimens (calm-specimens.js): replay the arrival as <Arrive> plays it (the stage
+   attribute set to play, then back to rest), and switch the opt-in warm neutrals on the root. */
+const replayArrival = (button) => {
+  const stage = button.parentElement?.nextElementSibling?.querySelector('.uix-arrive');
+  if (!stage) return;
+  stage.setAttribute('data-uix-arrive', 'rest');
+  void stage.offsetWidth;
+  stage.setAttribute('data-uix-arrive', 'play');
+  document.querySelectorAll('[data-uix-chart^="glance-"]').forEach((el) => el.dispatchEvent(new CustomEvent('uix-glance-replay')));
+};
+const toggleWarmNeutrals = (button) => {
+  const root = document.documentElement;
+  const on = root.getAttribute('data-uix-neutral') !== 'warm';
+  if (on) root.setAttribute('data-uix-neutral', 'warm');
+  else root.removeAttribute('data-uix-neutral');
+  button.setAttribute('aria-pressed', String(on));
+};
+
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (event) => {
     const target = event.target;
@@ -1057,6 +1079,8 @@ if (typeof document !== 'undefined') {
     else if (searchResult) openSearchResult(Number(searchResult.dataset.searchResult));
     else if (target.closest('[data-docs-search-open]')) openSearch();
     else if (target.closest('[data-uix-theme-toggle]')) toggleTheme();
+    else if (target.closest('[data-calm-replay]')) replayArrival(target.closest('[data-calm-replay]'));
+    else if (target.closest('[data-neutral-toggle]')) toggleWarmNeutrals(target.closest('[data-neutral-toggle]'));
     else if (target.closest('[data-docs-menu]')) openMobileMenu();
     else if (target.closest('[data-docs-menu-close], [data-docs-backdrop]')) {
       const wasOpen = closeMobileMenu();

@@ -14,6 +14,14 @@
       "subpath": "."
     },
     {
+      "name": "Arrive",
+      "subpath": "."
+    },
+    {
+      "name": "ArriveItem",
+      "subpath": "."
+    },
+    {
       "name": "AsyncOperationStatus",
       "subpath": "."
     },
@@ -35,6 +43,10 @@
     },
     {
       "name": "AvatarGroup",
+      "subpath": "."
+    },
+    {
+      "name": "BarList",
       "subpath": "."
     },
     {
@@ -95,6 +107,10 @@
     },
     {
       "name": "ChangeHighlight",
+      "subpath": "."
+    },
+    {
+      "name": "ChartCard",
       "subpath": "."
     },
     {
@@ -674,6 +690,10 @@
       "subpath": "."
     },
     {
+      "name": "Sparkline",
+      "subpath": "."
+    },
+    {
       "name": "Spinner",
       "subpath": "."
     },
@@ -694,11 +714,19 @@
       "subpath": "."
     },
     {
+      "name": "StatusDot",
+      "subpath": "."
+    },
+    {
       "name": "StatusPill",
       "subpath": "."
     },
     {
       "name": "StatusRow",
+      "subpath": "."
+    },
+    {
+      "name": "StatusStrip",
       "subpath": "."
     },
     {
@@ -830,6 +858,14 @@
       "subpath": "./chart"
     },
     {
+      "name": "GlanceLineChart",
+      "subpath": "./chart"
+    },
+    {
+      "name": "PairedBarChart",
+      "subpath": "./chart"
+    },
+    {
       "name": "Chart",
       "subpath": "./chart/analytic"
     },
@@ -867,6 +903,14 @@
     },
     {
       "name": "ChartMetric",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "GlanceLineChart",
+      "subpath": "./chart/preset"
+    },
+    {
+      "name": "PairedBarChart",
       "subpath": "./chart/preset"
     },
     {

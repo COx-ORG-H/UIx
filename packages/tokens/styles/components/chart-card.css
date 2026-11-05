@@ -1,0 +1,87 @@
+/* uix chart card — the glance kit (calm kit 2.56): one card asks one question and answers it with
+   a number before it shows one chart. Also the small marks a glance card holds: a bar list, a
+   service status strip and a sparkline. For analysis with reading time use .uix-chart.
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-chart-card {
+    display: flex; flex-direction: column; gap: var(--uix-space-2); min-width: 0;
+    padding: var(--uix-space-4) var(--uix-space-5);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); color: var(--uix-text);
+  }
+  .uix-chart-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--uix-space-3); min-width: 0; }
+  /* the title is the question, in the quiet voice; the answer under it is the loud line */
+  .uix-chart-card__question {
+    margin: 0; min-width: 0; color: var(--uix-text-hushed);
+    font-size: var(--uix-text-meta); font-weight: 500; line-height: var(--uix-leading-meta);
+  }
+  .uix-chart-card__action { flex: none; font-size: var(--uix-text-meta); }
+  .uix-chart-card__answer {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--uix-space-2); margin: 0; min-width: 0;
+    font-size: var(--uix-text-h3); font-weight: 600; line-height: var(--uix-leading-h3); overflow-wrap: anywhere;
+  }
+  .uix-chart-card__headline {
+    font-size: var(--uix-text-h2); font-weight: 650; line-height: var(--uix-leading-h2);
+    letter-spacing: var(--uix-tracking-tight); font-variant-numeric: tabular-nums;
+  }
+  .uix-chart-card__plot { position: relative; min-width: 0; margin-top: var(--uix-space-1); }
+  .uix-chart-card__note { margin: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); }
+  /* an empty card is one sentence (proposal rule 7); it shrinks to fit it */
+  .uix-chart-card__empty { margin: 0; padding-block: var(--uix-space-2); color: var(--uix-text-muted); font-size: var(--uix-text-body); }
+
+  /* a Chart inside the card drops its own card chrome; the plot keeps its height */
+  .uix-chart-card .uix-chart { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+  /* axis digits in the UI face with tabular figures (ECharts' SVG text takes CSS) */
+  .uix-chart-card svg text { font-variant-numeric: tabular-nums; }
+
+  /* the glance tooltip: dark ink on light pages and light ink on dark ones, small, no border */
+  .uix-glance-tooltip { font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); font-variant-numeric: tabular-nums; }
+  .uix-glance-tooltip__title { opacity: .75; }
+  .uix-glance-tooltip__row { display: flex; align-items: center; gap: var(--uix-space-2); white-space: nowrap; }
+  .uix-glance-tooltip__swatch { width: 8px; height: 8px; flex: none; border-radius: var(--uix-radius-xs); background: var(--swatch); }
+  .uix-glance-tooltip__value { margin-inline-start: auto; font-weight: 650; padding-inline-start: var(--uix-space-3); }
+
+  /* ── bar list: one row per bucket, label | bar | value ─────────────────────────────────── */
+  .uix-bar-list { display: flex; flex-direction: column; gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; }
+  .uix-bar-list__row {
+    display: grid; grid-template-columns: minmax(4rem, max-content) minmax(0, 1fr) minmax(2rem, max-content);
+    align-items: center; gap: var(--uix-space-3); font-size: var(--uix-text-meta);
+  }
+  .uix-bar-list__label { min-width: 0; color: var(--uix-text-hushed); overflow-wrap: anywhere; }
+  .uix-bar-list__track { display: block; height: 8px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); overflow: hidden; }
+  .uix-bar-list__bar {
+    display: block; height: 100%; border-radius: inherit; background: var(--uix-chart-series);
+    transform-origin: left center; transform: scaleX(var(--val, 0));
+    transition: transform var(--uix-dur) var(--uix-ease-out);
+  }
+  .uix-bar-list__bar:dir(rtl) { transform-origin: right center; }
+  .uix-bar-list__row[data-tone="comparison"] .uix-bar-list__bar { background: var(--uix-chart-comparison); }
+  .uix-bar-list__row[data-tone="warning"] .uix-bar-list__bar { background: var(--uix-warning-solid); }
+  .uix-bar-list__value { text-align: end; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ── status strip: one cell per service, ok / degraded / down / unknown ───────────────── */
+  .uix-status-strip { display: flex; flex-direction: column; gap: var(--uix-space-2); min-width: 0; }
+  .uix-status-strip__cells { display: flex; gap: var(--uix-space-1); height: 8px; }
+  .uix-status-strip__cell { flex: 1 1 0; min-width: 2px; border-radius: var(--uix-radius-xs); background: var(--uix-neutral-solid); }
+  .uix-status-strip__cell[data-tone="ok"] { background: var(--uix-success-solid); }
+  .uix-status-strip__cell[data-tone="warning"] { background: var(--uix-warning-solid); }
+  .uix-status-strip__cell[data-tone="critical"] { background: var(--uix-danger-solid); }
+  .uix-status-strip__list { display: flex; flex-direction: column; gap: var(--uix-space-2); margin: var(--uix-space-1) 0 0; padding: 0; list-style: none; font-size: var(--uix-text-meta); }
+  .uix-status-strip__item { display: flex; align-items: baseline; gap: var(--uix-space-3); min-width: 0; }
+  .uix-status-strip__name { min-width: 0; overflow-wrap: anywhere; }
+  .uix-status-strip__state { margin-inline-start: auto; flex: none; color: var(--uix-text-muted); }
+
+  /* ── sparkline: an ink-grey line and an endpoint dot ───────────────────────────────────── */
+  .uix-sparkline { display: inline-block; flex: none; vertical-align: middle; overflow: visible; }
+  .uix-sparkline__line { fill: none; stroke: var(--uix-text-muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .uix-sparkline--series .uix-sparkline__line { stroke: var(--uix-chart-series); }
+  .uix-sparkline__end { fill: var(--uix-text); }
+  .uix-sparkline--series .uix-sparkline__end { fill: var(--uix-chart-series); }
+
+  @media (forced-colors: active) {
+    .uix-bar-list__bar, .uix-status-strip__cell { background: CanvasText; }
+    .uix-status-strip__cell[data-tone="ok"] { background: GrayText; }
+    .uix-sparkline__line { stroke: CanvasText; }
+    .uix-sparkline__end { fill: CanvasText; }
+  }
+}

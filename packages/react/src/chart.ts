@@ -1,3 +1,3 @@
-export { Chart, ChartLegend, ChartLegendItem, ChartMetric, DEFAULT_CHART_LABELS, mergeChartTheme, uixChartAreaGradient, uixChartPalette, uixChartTheme, uixChartTokens } from './components/Chart.js';
-export type { ChartTokenSource, UixChartTokens } from './components/Chart.js';
+export { Chart, GlanceLineChart, PairedBarChart, GLANCE_AT_REST, PAIRED_BARS_MAX_BUCKETS, glanceLineOption, pairedBarsOption, uixGlanceBase, ChartLegend, ChartLegendItem, ChartMetric, DEFAULT_CHART_LABELS, mergeChartTheme, uixChartAreaGradient, uixChartPalette, uixChartTheme, uixChartTokens } from './components/Chart.js';
+export type { ChartTokenSource, UixChartTokens, GlanceFormat, GlanceLineInput, GlanceMotion, PairedBarsInput, GlanceChartBaseProps, GlanceLineChartProps, PairedBarChartProps } from './components/Chart.js';
 export type { ChartEventHandler, ChartLabels, ChartLegendItemProps, ChartLegendProps, ChartMetricProps, ChartOption, ChartProps, ChartTable, ChartTableRow } from './components/Chart.js';

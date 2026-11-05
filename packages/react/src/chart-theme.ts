@@ -7,7 +7,8 @@
  * Rules carried here, from the dataviz method:
  * - the grid is a SOLID hairline; dashes mean projection or threshold, never "gridline";
  * - text wears text tokens (axis labels muted, tooltip text primary), never a series colour;
- * - categorical colour comes from --uix-chart-1..8 in fixed order.
+ * - categorical colour comes from --uix-chart-1..8 in fixed order (palette v2, calm kit 2.56: the
+ *   series blue, teal and violet first; red never encodes a series and amber is kept for attention).
  */
 import type { EChartsOption } from 'echarts';
 
@@ -23,7 +24,14 @@ function reader(source?: ChartTokenSource): (token: string) => string {
 
 /** The analytic chart roles: reference lines, threshold zones, forecast bands, events, partial periods. */
 export interface UixChartTokens {
+  /** The categorical palette, --uix-chart-1..8 (v2, calm kit 2.56): no red slot and no amber slot. */
   palette: string[];
+  /** THE series colour of a glance chart (--uix-chart-series, = chart-1). */
+  series: string;
+  /** The series colour as a faint wash (an area under a glance line). */
+  seriesSoft: string;
+  /** The three quiet category hues (blue, teal, violet) for a chart that truly needs more than one. */
+  categories: string[];
   neutral: string;
   grid: string;
   axis: string;
@@ -43,6 +51,10 @@ export interface UixChartTokens {
   border: string;
   fontSans: string;
   fontMono: string;
+  /** --uix-radius-md, for a glance tooltip. */
+  radius: string;
+  /** --uix-shadow-popover, for a glance tooltip. */
+  shadow: string;
 }
 
 /** Resolve the chart tokens once (current theme). */
@@ -52,6 +64,9 @@ export function uixChartTokens(source?: ChartTokenSource): UixChartTokens {
   const unquote = (font: string) => font.replace(/"/g, '');
   return {
     palette: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => t(`chart-${i}`)),
+    series: t('chart-series'),
+    seriesSoft: t('chart-series-soft'),
+    categories: [1, 2, 3].map((i) => t(`chart-${i}`)),
     neutral: t('chart-neutral'),
     grid: t('chart-grid'),
     axis: t('chart-axis'),
@@ -70,6 +85,8 @@ export function uixChartTokens(source?: ChartTokenSource): UixChartTokens {
     border: t('border-strong'),
     fontSans: unquote(t('font-sans')),
     fontMono: unquote(t('font-mono')),
+    radius: t('radius-md'),
+    shadow: t('shadow-popover'),
   };
 }
 

@@ -307,3 +307,4 @@ missing or blank.
 <!-- lesson-skip: 00427e1 CSS baseline alignment of an icon-only inline button; one-off visual defect, covered by a centre-line test -->
 <!-- lesson-skip: 46627d8 a 1px hidden input needs a positioned label as its containing block; one rule per control, covered by a scroll test -->
 <!-- lesson-skip: 913c002 raw z-index, the contract gate named the fix -->
+<!-- lesson-skip: 818fd2d new-component behaviour fix, specific to GlanceCharts + Arrive -->

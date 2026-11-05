@@ -734,6 +734,48 @@ enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { d
 - **Deprecated:** `zonedDateSpan` (end-inclusive, swaps inverted ends) and `enumerateDateSpan` (stops silently at
   370) are unchanged in 2.x. Use `zonedDaySpan` and `enumerateDateKeys`.
 
+### Calm kit: glance cards, quiet status and the arrival (2.56.0)
+
+For a home page that greets before it warns: one question per card, red only for what is broken now, and motion once on the first paint. Phase 1 of the TENSOR calm-home proposal (2026-11-04).
+
+**Status, quietly.** `StatusDot` is a dot and a word, no box: `neutral` (a fact, in ink), `info`, `warning`, `critical` (`danger` is an alias), and `success` for a service list. The word wears the tone's text colour and the dot its solid one; `quiet` keeps the word in ink. The `critical` StatusPill is now the danger tint with the danger words (semibold) instead of a solid red fill; the destructive `Button variant="danger"` is the one solid red left.
+
+```tsx
+<StatusDot tone="critical">Läuft gerade</StatusDot>
+<StatusDot tone="warning">SLA in 1 Std. 40 Min.</StatusDot>
+```
+
+**Glance cards.** `ChartCard` asks a question (`question`, a heading), answers it (`headline` large, `answer` short), holds one chart and a `note` line; `empty` replaces all of it with one sentence. The chart is one of:
+
+- `GlanceLineChart` (`@tensor_1/react/chart` or `/chart/preset`): one series in `--uix-chart-series`, labelled at its end, an optional dashed `forecast`, three dashed gridlines, sans tabular axis digits and a dark tooltip with a crosshair. Builds a hidden data table from the data; pass `ariaLabel` and `categoryLabel`.
+- `PairedBarChart` (same entries): per bucket the measure in blue beside its comparison in grey, up to 12 buckets (it warns above). Put the key in `note` with `ChartLegend`.
+- `BarList`: label, bar, value per bucket; every value written out.
+- `Meter target={95} targetLabel="Ziel 95 %"`: an ink mark at the goal, said after the value.
+- `StatusStrip`: one cell per service and only the affected ones listed, critical first.
+- `Sparkline`: an ink-grey line with a dot on the latest value; decoration unless you pass `label`.
+
+The option builders are public for your own glance charts: `glanceLineOption`, `pairedBarsOption`, `uixGlanceBase` (pure functions of `uixChartTokens()`).
+
+```tsx
+<ChartCard question="Wächst der Rückstand?" headline={<Count value={85} arrive />} answer="offen, Prognose 140 bis 23. Nov."
+  note="Gestrichelt: Prognose." arriveIndex={5}>
+  <GlanceLineChart ariaLabel="Offener Rückstand, 12 Wochen" categoryLabel="Woche" name="offen"
+    categories={weeks} values={backlog} forecast={{ categories, values, name: 'erwartet', label: 'Prognose 140' }} />
+</ChartCard>
+```
+
+**The arrival.** Wrap the page in `Arrive` and mark the cards in reading order with `ArriveItem index` (or `ChartCard arriveIndex`). On the first mount the cards fade and rise 8 px, 45 ms apart, over 420 ms; lines trace in (700 ms, 150 ms after their card), bars grow 25 ms apart (500 ms) and `Count arrive` counts up (600 ms). Then the stage rests: a re-render, a refetch or new data never replays it, and the resting state is the finished page. `name="home"` remembers it for the browser session (sessionStorage), so a reload or a route change back does not replay it either; `ready={!loading}` waits for the data. Under reduced motion each card only fades for 160 ms and the marks are drawn at once. `useArrive()` tells your own marks whether the stage is playing; plain markup opts in with `.uix-arrive__item`, `.uix-arrive__trace` (an SVG stroke with `pathLength="1"`), `.uix-arrive__grow` and `.uix-arrive__slide`.
+
+```tsx
+<Arrive name="home" ready={!loading}>
+  <ArriveItem index={0}><RunningNow /></ArriveItem>
+  <ArriveItem index={1}><Stat label="Warten auf Sie" value={<Count value={16} arrive />} /></ArriveItem>
+  …
+</Arrive>
+```
+
+**Tokens.** The status families are softer in light and dark (fills, words, dots and tints; overdue follows danger), all AA. Palette v2: `--uix-chart-1..8` are blue (the series), teal, violet, green, plum, olive, cyan, moss, with no red and no amber slot; `--uix-chart-series` (= chart-1) and `--uix-chart-series-soft` are new. The arrival timings are `--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count` and `--uix-arrive-rise`. Warm neutrals are opt-in for comparison: import `@tensor_1/tokens/themes/neutral-warm` and set `<html data-uix-neutral="warm">`; without the attribute it changes nothing.
+
 ### Two-axis grids: MatrixInput and MatrixHeatmap
 
 `MatrixInput` fills a grid of choices, one per row and column, from the keyboard alone. `MatrixHeatmap` shows how many items sit in each cell, each cell's named band, and a way to the items behind it. Neither has words of its own: `labels`, the axes, the options and the bands come from you.

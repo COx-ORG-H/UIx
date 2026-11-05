@@ -39,7 +39,8 @@
     "./themes/tensor": "./themes/tensor.css",
     "./themes/posx": "./themes/posx.css",
     "./themes/shopx": "./themes/shopx.css",
-    "./themes/mission-control": "./themes/mission-control.css"
+    "./themes/mission-control": "./themes/mission-control.css",
+    "./themes/neutral-warm": "./themes/neutral-warm.css"
   },
   "scripts": {
     "build:tokens": "node style-dictionary.config.mjs",
