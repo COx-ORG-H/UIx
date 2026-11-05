@@ -46,6 +46,9 @@ function tooltipHtml(title: string, rows: TooltipRow[]): string {
     .join('')}</div>`;
 }
 
+/** THE series colour: --uix-chart-series, or chart-1 for a tokens object that predates the calm kit. */
+const seriesColor = (k: UixChartTokens) => k.series ?? k.palette[0] ?? '';
+
 /** The shared frame: grid, dashed gridlines, sans axis digits and the dark tooltip. */
 export function uixGlanceBase(k: UixChartTokens, motion: GlanceMotion = GLANCE_AT_REST): EChartsOption {
   return {
@@ -61,7 +64,7 @@ export function uixGlanceBase(k: UixChartTokens, motion: GlanceMotion = GLANCE_A
       borderWidth: 0,
       padding: [6, 10],
       textStyle: { color: k.surface, fontFamily: k.fontSans, fontSize: 12 },
-      extraCssText: `border-radius:${k.radius};box-shadow:${k.shadow}`,
+      extraCssText: [k.radius ? `border-radius:${k.radius}` : '', k.shadow ? `box-shadow:${k.shadow}` : ''].filter(Boolean).join(';'),
       transitionDuration: 0,
     },
     xAxis: {
@@ -123,7 +126,7 @@ export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, moti
   const projected: unknown[] = forecast
     ? [...input.values.map((v, i) => (i === last ? v : null)), ...forecast.values.map((v, i) => (i === forecast.values.length - 1 ? labelled(v, forecast.label ?? format(v), k.textMuted, false) : v))]
     : [];
-  const color = k.series;
+  const color = seriesColor(k);
   const base = uixGlanceBase(k, motion) as Record<string, any>;
   const title = input.tooltipTitle ?? ((c: string) => c);
   const endText = forecast ? (forecast.label ?? format(forecast.values[forecast.values.length - 1] ?? 0)) : showEnd ? format(input.values[last]) : '';
@@ -138,7 +141,7 @@ export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, moti
     symbolSize: 0,
     lineStyle: { width: 2.2, cap: 'round', join: 'round' },
     itemStyle: { color, borderColor: k.surface, borderWidth: 2 },
-    areaStyle: input.area === false ? undefined : { color: k.seriesSoft, opacity: 1 },
+    areaStyle: input.area === false ? undefined : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 },
     emphasis: { disabled: true },
     animationDuration: motion.trace,
     animationDelay: motion.delay,
@@ -228,7 +231,7 @@ export function pairedBarsOption(k: UixChartTokens, input: PairedBarsInput, moti
     },
     xAxis: { ...base.xAxis, data: input.categories },
     series: [
-      bar(input.series.name, input.series.values, k.series, 0),
+      bar(input.series.name, input.series.values, seriesColor(k), 0),
       bar(input.comparison.name, input.comparison.values, k.comparison, motion.stagger),
     ],
   } as EChartsOption;

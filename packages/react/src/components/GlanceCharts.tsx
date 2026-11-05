@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { ECharts, EChartsOption } from 'echarts';
 import { ChartCore } from './ChartCore.js';
@@ -32,14 +32,16 @@ export interface GlanceChartBaseProps {
 }
 
 /**
- * The arrival timing for a chart in card `index` of a playing stage, from the tokens. Sticky: once
- * the stage has played, the chart keeps that motion, so the stage coming to rest never re-applies
- * an option in the middle of a draw-in (updates stay instant: animationDurationUpdate is 0).
+ * The arrival timing for a chart in card `index` of a playing stage, from the tokens. Sticky while
+ * the draw-in runs: the stage coming to rest never re-applies an option in the middle of it. Once
+ * the longest possible draw-in is over, the chart settles at rest for good, so data that arrives
+ * later (a new bar, a new point) appears at once instead of growing in after the page has settled.
  */
 function useGlanceMotion(): GlanceMotion {
   const { playing } = useArrive();
   const index = useArriveIndex();
   const played = useRef<GlanceMotion | null>(null);
+  const [settled, setSettled] = useState(false);
   if (playing && !played.current) {
     played.current = {
       play: true,
@@ -49,7 +51,14 @@ function useGlanceMotion(): GlanceMotion {
       stagger: tokenMs('--uix-stagger-arrive-grow', 25),
     };
   }
-  return played.current ?? GLANCE_AT_REST;
+  const motion = played.current;
+  useEffect(() => {
+    if (!motion || settled) return undefined;
+    const drawIn = motion.delay + Math.max(motion.trace, motion.grow + motion.stagger * (PAIRED_BARS_MAX_BUCKETS - 1));
+    const timer = setTimeout(() => setSettled(true), drawIn + 50);
+    return () => clearTimeout(timer);
+  }, [motion, settled]);
+  return motion && !settled ? motion : GLANCE_AT_REST;
 }
 
 /**

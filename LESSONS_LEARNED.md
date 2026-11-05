@@ -309,3 +309,13 @@ missing or blank.
 <!-- lesson-skip: 913c002 raw z-index, the contract gate named the fix -->
 <!-- lesson-skip: 818fd2d new-component behaviour fix, specific to GlanceCharts + Arrive -->
 <!-- lesson-skip: 8bd4ea7 operator colour decisions; the all-slots chart-1 check is now a test -->
+
+## A React context in a per-entry CommonJS bundle exists once per bundle
+
+The ESM build ships one file per module, so `Arrive` and the glance charts shared one stage
+context. The CommonJS build bundles each entry on its own (`index.cjs`, `chart.cjs`, ...), so
+`require('@tensor_1/react')` and `require('@tensor_1/react/chart')` each held their own copy of
+`createContext()`: the stage played, and the chart read the other copy's default and never drew
+in. Any context, store or module-level registry that crosses an entry boundary must be shared
+through a global registry (`Symbol.for('@tensor_1/react/…')`). Gate: calm-kit-dom.test.mjs
+requires both CJS bundles and asserts they reach the same registered context.
