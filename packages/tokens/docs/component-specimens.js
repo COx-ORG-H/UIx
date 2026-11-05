@@ -344,6 +344,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-attachments"
   },
+  "file-kit": {
+    "route": "examples-crm-itsm",
+    "selector": ".uix-file-drop",
+    "container": "[data-file-kit-example=\"panel\"]"
+  },
   "audit-log": {
     "route": "examples-crm-itsm",
     "selector": ".uix-audit"
