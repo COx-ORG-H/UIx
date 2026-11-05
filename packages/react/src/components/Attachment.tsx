@@ -7,7 +7,7 @@ import type { UixRenderLink } from '../link.js';
 import { DEFAULT_ATTACHMENT_LABELS } from '../attachment-labels.js';
 import type { AttachmentLabels } from '../attachment-labels.js';
 import { AttachmentRemoveButton, AttachmentText } from './AttachmentParts.js';
-import { FileIcon } from './FileIcon.js';
+import { FileGlyph } from './FileGlyph.js';
 
 export { DEFAULT_ATTACHMENT_LABELS };
 export type { AttachmentLabels };
@@ -73,7 +73,7 @@ export function Attachment({
     : <span className="uix-attachment__name">{name}</span>;
   return (
     <li className={cx('uix-attachment', className)} data-status={status === 'ready' ? undefined : status} aria-busy={status === 'loading' || undefined} {...props}>
-      <span className="uix-attachment__icon" aria-hidden="true">{thumbnail ?? <FileIcon name={name} type={type} />}</span>
+      <span className="uix-attachment__icon" aria-hidden="true">{thumbnail ?? <FileGlyph name={name} type={type} />}</span>
       <span className="uix-attachment__body">
         <span className="uix-attachment__line">
           {nameNode}

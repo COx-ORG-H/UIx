@@ -74,12 +74,14 @@ FileArchive
 FileBarChart
 FileCheck
 FileCheck2
+FileCode
 FileDown
 FileImage
 FileInput
 FileQuestion
 FileSearch
 FileSpreadsheet
+FileTerminal
 FileText
 FileUp
 Filter

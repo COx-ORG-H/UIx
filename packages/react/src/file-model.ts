@@ -73,8 +73,10 @@ export function partitionFiles<F extends { name: string; type?: string; size: nu
   return { accepted, rejected };
 }
 
-/** A coarse kind for a file icon. */
-export function fileKind(file: { name: string; type?: string }): 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other' {
+/** The coarse kinds of the object form of `fileKind`, read by `FileUpload` and `Attachment`. */
+export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
+
+function legacyFileKind(file: { name: string; type?: string }): LegacyFileKind {
   const type = (file.type ?? '').toLowerCase();
   const ext = file.name.toLowerCase().split('.').pop() ?? '';
   if (type.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return 'image';
@@ -84,4 +86,94 @@ export function fileKind(file: { name: string; type?: string }): 'image' | 'vide
   if (['zip', '7z', 'gz', 'tar', 'rar'].includes(ext) || type.includes('zip')) return 'archive';
   if (type.startsWith('text/') || ['txt', 'md', 'log', 'json', 'xml', 'doc', 'docx', 'odt', 'rtf'].includes(ext)) return 'text';
   return 'other';
+}
+
+/**
+ * What a service-desk agent does with a file, as one of eight kinds (file kit 2.57): `img`
+ * (Bild), `doc` (Dokument), `sheet` (Tabelle), `mail` (E-Mail), `code` (Code & Konfiguration),
+ * `log` (Protokoll), `archive` (Archiv) and `other` (Datei). Each has a colour
+ * (`--uix-file-<kind>`) and a glyph; `FileIcon`, `FileRow` and `FileDrop` read it.
+ */
+export type FileKind = 'img' | 'doc' | 'sheet' | 'mail' | 'code' | 'log' | 'archive' | 'other';
+
+/** The eight kinds in display order (`other` last). */
+export const FILE_KINDS: readonly FileKind[] = ['img', 'doc', 'sheet', 'mail', 'code', 'log', 'archive', 'other'];
+
+/** The extensions of each kind, lower case and without the dot. `other` has none. */
+export const FILE_KIND_EXTENSIONS: Readonly<Record<FileKind, readonly string[]>> = {
+  img: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'bmp', 'svg'],
+  doc: ['pdf', 'docx', 'doc', 'odt', 'rtf', 'pptx', 'ppt', 'md', 'txt'],
+  sheet: ['xlsx', 'xls', 'csv', 'ods', 'tsv'],
+  mail: ['eml', 'msg'],
+  code: ['json', 'yaml', 'yml', 'xml', 'ps1', 'sh', 'py', 'js', 'ts', 'ini', 'conf', 'toml'],
+  log: ['log', 'evtx', 'har', 'dmp', 'trace'],
+  archive: ['zip', '7z', 'rar', 'tar', 'gz', 'tgz'],
+  other: [],
+};
+
+const KIND_BY_EXTENSION = new Map<string, FileKind>();
+for (const kind of FILE_KINDS) for (const ext of FILE_KIND_EXTENSIONS[kind]) KIND_BY_EXTENSION.set(ext, kind);
+
+/** The words for each kind, German by default (`DEFAULT_FILE_KIND_LABELS`). */
+export type FileKindLabels = Record<FileKind, string>;
+
+export const DEFAULT_FILE_KIND_LABELS: FileKindLabels = {
+  img: 'Bild', doc: 'Dokument', sheet: 'Tabelle', mail: 'E-Mail', code: 'Code & Konfiguration',
+  log: 'Protokoll', archive: 'Archiv', other: 'Datei',
+};
+
+/** The English kind names, for `labels` or `UixLabelsProvider` (`fileKinds`). */
+export const FILE_KIND_LABELS_EN: FileKindLabels = {
+  img: 'Image', doc: 'Document', sheet: 'Spreadsheet', mail: 'Email', code: 'Code & configuration',
+  log: 'Log', archive: 'Archive', other: 'File',
+};
+
+/**
+ * The extension of a file name, lower case and without the dot: `"report.PDF"` → `"pdf"`,
+ * `"backup.tar.gz"` → `"gz"`. `""` when the name has none (`"README"`, `"archive."`).
+ */
+export function fileExtension(name: string): string {
+  const base = name.slice(Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\')) + 1);
+  const dot = base.lastIndexOf('.');
+  return dot < 0 ? '' : base.slice(dot + 1).toLowerCase();
+}
+
+/** The kind a MIME type names, or `other`. A drag event gives only the type, not the name. */
+function kindOfMime(mime: string): FileKind {
+  const m = mime.trim().toLowerCase();
+  if (!m) return 'other';
+  if (m.startsWith('image/')) return 'img';
+  if (/pdf|msword|wordprocessing|presentation|powerpoint|opendocument\.text|rtf|markdown/.test(m)) return 'doc';
+  if (/spreadsheet|excel|csv|tab-separated/.test(m)) return 'sheet';
+  if (/rfc822|outlook/.test(m)) return 'mail';
+  if (/x-log\b/.test(m)) return 'log';
+  if (/json|xml|yaml|x-sh|javascript|typescript|x-python|toml/.test(m)) return 'code';
+  if (/zip|x-7z|x-rar|vnd\.rar|gzip|x-tar|compressed-tar/.test(m)) return 'archive';
+  if (m === 'text/plain') return 'doc';
+  return 'other';
+}
+
+/**
+ * The kind of a file from its name and MIME type (file kit 2.57). A known extension wins,
+ * because it is the more specific of the two (a `.log` arrives as `text/plain`, a `.ts` as
+ * `video/mp2t`); then the MIME type; then `other`. Pass `''` as the name when only the type is
+ * known, as in a drag event before the drop.
+ *
+ * The object form (`fileKind({ name, type })`) is the older coarse mapping that `FileUpload`
+ * and `Attachment` use.
+ */
+export function fileKind(name: string, mime?: string): FileKind;
+/** @deprecated The coarse kinds of `FileUpload` and `Attachment`; use `fileKind(name, mime)`. */
+export function fileKind(file: { name: string; type?: string }): LegacyFileKind;
+export function fileKind(nameOrFile: string | { name: string; type?: string }, mime?: string): FileKind | LegacyFileKind {
+  if (typeof nameOrFile !== 'string') return legacyFileKind(nameOrFile);
+  return KIND_BY_EXTENSION.get(fileExtension(nameOrFile)) ?? kindOfMime(mime ?? '');
+}
+
+/**
+ * The short type label a `FileIcon` shows on its corner: the extension in capitals, at most
+ * four letters (`"PDF"`, `"XLSX"`, `"JPEG"`; `"markdown"` → `"MARK"`). `""` without one.
+ */
+export function fileTypeLabel(name: string): string {
+  return fileExtension(name).slice(0, 4).toUpperCase();
 }
