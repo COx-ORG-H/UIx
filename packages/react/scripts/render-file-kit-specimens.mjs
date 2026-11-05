@@ -68,7 +68,7 @@ export async function renderFileKitSpecimens() {
   // ── the Anhänge panel at its real width ──────────────────────────────────────────────────
   const panel = h('section', {
     'aria-label': 'Anhänge',
-    style: { width: '340px', maxWidth: '100%', display: 'grid', gap: 'var(--uix-space-3)', padding: 'var(--uix-space-4)', border: '1px solid var(--uix-border)', borderRadius: 'var(--uix-radius-lg)', background: 'var(--uix-surface)' },
+    style: { boxSizing: 'border-box', width: '340px', maxWidth: '100%', display: 'grid', gap: 'var(--uix-space-3)', padding: 'var(--uix-space-4)', border: '1px solid var(--uix-border)', borderRadius: 'var(--uix-radius-lg)', background: 'var(--uix-surface)' },
   },
   h('h3', { style: { margin: 0, fontSize: 'var(--uix-text-h3)' } }, 'Anhänge ', h('span', { style: { color: 'var(--uix-text-muted)', fontWeight: 500 } }, String(PANEL.length))),
   h(ui.FileDrop, { onFiles: noop }),

@@ -130,6 +130,12 @@
   .uix-file-drop[data-disabled] { cursor: not-allowed; opacity: .6; }
   .uix-file-drop__choose:disabled { cursor: not-allowed; }
 
+  /* Forced colours drop the label's fill and ring: an outline keeps it a label over the glyph. */
+  @media (forced-colors: active) {
+    .uix-file-icon__type { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+    .uix-file-row:not([data-state="done"]) .uix-file-row__fill { background: Highlight; opacity: .35; }
+  }
+
   /* Reduced motion keeps only the fades: the fill jumps (the global policy drops transform), and the check fades in and out instead of growing and drawing. */
   @media (prefers-reduced-motion: reduce) {
     .uix-file-row__check { animation: uix-file-check-fade calc(var(--uix-dur-change) + var(--uix-hold-result) + var(--uix-dur-exit)) linear both !important; }

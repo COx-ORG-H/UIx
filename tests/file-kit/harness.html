@@ -17,8 +17,8 @@
   <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
   <style>
     body { margin: 0; padding: var(--uix-space-5); background: var(--uix-bg-app); color: var(--uix-text); }
-    main { display: grid; gap: var(--uix-space-6); max-width: 76rem; margin: 0 auto; }
-    .panel { width: 340px; max-width: 100%; display: grid; gap: var(--uix-space-3); padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+    main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-6); max-width: 76rem; margin: 0 auto; }
+    .panel { box-sizing: border-box; width: 340px; max-width: 100%; display: grid; gap: var(--uix-space-3); padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
     .icons { display: flex; flex-wrap: wrap; gap: var(--uix-space-5); align-items: end; }
     .controls { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); }
   </style>

@@ -202,3 +202,12 @@ test('axe is clean, and nothing overflows from 320 to 1280 px', async ({ page },
     await testInfo.attach(`file-kit-${width}-${theme}.png`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
   }
 });
+
+test('forced colours: the type label keeps a box and the upload fill stays visible', async ({ page }, testInfo) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await open(page, themeOf(testInfo));
+  const label = page.locator('#live .uix-file-icon__type');
+  expect(await label.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe('1px');
+  expect(await page.locator('#live .uix-file-row__fill').evaluate((el) => Number(getComputedStyle(el).opacity))).toBeCloseTo(0.35, 2);
+  await testInfo.attach(`file-kit-forced-colors.png`, { body: await page.locator('#panel').screenshot(), contentType: 'image/png' });
+});
