@@ -1049,7 +1049,7 @@ const toggleTheme = () => {
 };
 
 /* The calm kit specimens (calm-specimens.js): replay the arrival as <Arrive> plays it (the stage
-   attribute set to play, then back to rest), and switch the opt-in warm neutrals on the root. */
+   attribute set to play, then back to rest). */
 const replayArrival = (button) => {
   const stage = button.parentElement?.nextElementSibling?.querySelector('.uix-arrive');
   if (!stage) return;
@@ -1057,13 +1057,6 @@ const replayArrival = (button) => {
   void stage.offsetWidth;
   stage.setAttribute('data-uix-arrive', 'play');
   document.querySelectorAll('[data-uix-chart^="glance-"]').forEach((el) => el.dispatchEvent(new CustomEvent('uix-glance-replay')));
-};
-const toggleWarmNeutrals = (button) => {
-  const root = document.documentElement;
-  const on = root.getAttribute('data-uix-neutral') !== 'warm';
-  if (on) root.setAttribute('data-uix-neutral', 'warm');
-  else root.removeAttribute('data-uix-neutral');
-  button.setAttribute('aria-pressed', String(on));
 };
 
 if (typeof document !== 'undefined') {
@@ -1080,7 +1073,6 @@ if (typeof document !== 'undefined') {
     else if (target.closest('[data-docs-search-open]')) openSearch();
     else if (target.closest('[data-uix-theme-toggle]')) toggleTheme();
     else if (target.closest('[data-calm-replay]')) replayArrival(target.closest('[data-calm-replay]'));
-    else if (target.closest('[data-neutral-toggle]')) toggleWarmNeutrals(target.closest('[data-neutral-toggle]'));
     else if (target.closest('[data-docs-menu]')) openMobileMenu();
     else if (target.closest('[data-docs-menu-close], [data-docs-backdrop]')) {
       const wasOpen = closeMobileMenu();

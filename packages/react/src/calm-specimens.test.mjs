@@ -21,7 +21,7 @@ test('every piece the captions name is on the page, and red appears only as the 
   const page = specimens['examples-data-display'];
   assert.match(page, /<div class="uix-arrive" data-uix-arrive="play"/);
   assert.equal((page.match(/class="uix-chart-card uix-arrive__item"/g) ?? []).length, 4);
-  for (const piece of ['uix-sparkline', 'uix-meter--target', 'uix-bar-list', 'uix-status-strip', 'data-uix-chart="glance-line"', 'data-uix-chart="glance-paired"', 'uix-status-dot--critical', 'uix-chart-card__empty', 'data-calm-replay', 'data-neutral-toggle']) {
+  for (const piece of ['uix-sparkline', 'uix-meter--target', 'uix-bar-list', 'uix-status-strip', 'data-uix-chart="glance-line"', 'data-uix-chart="glance-paired"', 'uix-status-dot--critical', 'uix-chart-card__empty', 'data-calm-replay']) {
     assert.ok(page.includes(piece), piece);
   }
   const home = page.slice(page.indexOf('<div data-calm-example>'), page.indexOf('<div data-calm-ladder>'));

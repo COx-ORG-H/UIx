@@ -74,7 +74,7 @@
   "neutral-bg":     { "$type": "color", "$value": "var(--uix-bg-active)", "$description": "Neutral status tint, alias of --uix-bg-active." },
   "neutral-border": { "$type": "color", "$value": "var(--uix-border-strong)", "$description": "Neutral status outline, alias of --uix-border-strong." },
 
-  "chart-1": { "$type": "color", "$value": "#4F6FE0", "$description": "Categorical palette v2 (calm kit 2.56), light. The first slot is THE series colour (--uix-chart-series); 2 teal and 3 violet are the three quiet category hues; 4-8 extend it for report charts. No red slot (red never encodes a series) and no amber slot (amber is reserved for attention). Validated on --uix-surface and --uix-bg-app: L 0.43-0.77, C >= 0.10, adjacent CVD dE >= 8, normal-vision dE >= 15, >= 3:1 (chart-palette.test.mjs)." },
+  "chart-1": { "$type": "color", "$value": "#0455E6", "$description": "Categorical palette v2 (calm kit 2.56), light. The first slot is THE series colour (--uix-chart-series) and the brand blue (#0455E6, unchanged from 2.55); 2 teal and 3 violet are the three quiet category hues; 4-8 extend it for report charts. No red slot (red never encodes a series) and no amber slot (amber is reserved for attention). Validated on --uix-surface and --uix-bg-app: L 0.43-0.77, C >= 0.10, adjacent CVD dE >= 8, normal-vision dE >= 15, >= 3:1 (chart-palette.test.mjs)." },
   "chart-2": { "$type": "color", "$value": "#1F978A" },
   "chart-3": { "$type": "color", "$value": "#8C72D6" },
   "chart-4": { "$type": "color", "$value": "#4C9A5A" },
@@ -83,7 +83,7 @@
   "chart-7": { "$type": "color", "$value": "#2F8FC2" },
   "chart-8": { "$type": "color", "$value": "#5E7D3A" },
   "chart-series": { "$type": "color", "$value": "var(--uix-chart-1)", "$description": "THE series colour of a glance chart (calm kit 2.56): one series in blue, any second one in --uix-chart-comparison grey. Alias of --uix-chart-1, so a theme that re-steps the palette moves it too." },
-  "chart-series-soft": { "$type": "color", "$value": "rgba(79,111,224,.14)", "$description": "The series colour as a faint wash: an area under a glance line, a highlighted bucket. Dark overrides." },
+  "chart-series-soft": { "$type": "color", "$value": "rgba(4,85,230,.14)", "$description": "The series colour as a faint wash: an area under a glance line, a highlighted bucket. Dark overrides." },
   "chart-neutral": { "$type": "color", "$value": "#64748B" },
   "chart-grid": { "$type": "color", "$value": "#EDEDED", "$description": "Chart gridline: a SOLID 1px hairline, recessive. Dashes are reserved for projections and thresholds (HAR-1552)." },
   "chart-axis": { "$type": "color", "$value": "#D4D4D4", "$description": "Chart axis line (labels use --uix-text-muted)." },

@@ -50,12 +50,6 @@ for (const cat of REQUIRED_CATEGORIES) {
 const themesDir = join(PKG, 'themes');
 for (const f of (await readdir(themesDir)).filter((n) => n.endsWith('.css'))) {
   const css = await readFile(join(themesDir, f), 'utf8');
-  // An opt-in skin (an `__attribute` theme, e.g. neutral-warm) is not a brand: it re-values
-  // neutrals under <html data-…> and is loaded beside a brand theme, never instead of one.
-  if (/^\/\* GENERATED — do not edit\. Opt-in skin /.test(css)) {
-    if (/--uix-brand(?:-fg)?\s*:/.test(css)) problems.push(`B theme ${f}: an opt-in skin must not set the brand`);
-    continue;
-  }
   if (!/--uix-brand\s*:/.test(css)) problems.push(`B theme ${f}: missing --uix-brand (light)`);
   if (!/--uix-brand-fg\s*:/.test(css)) problems.push(`B theme ${f}: missing --uix-brand-fg`);
   if (!/(?:\.dark|data-theme="dark")[^{]*\{[^}]*--uix-brand\s*:/s.test(css)) {

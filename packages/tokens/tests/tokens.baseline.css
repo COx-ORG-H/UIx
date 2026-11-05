@@ -33,7 +33,7 @@
 
     /* chart (categorical) */
     /* chart palette — harmonized, vibrant on white (Tailwind ~600 level), distinct hues */
-    --uix-chart-1:#4F6FE0; --uix-chart-2:#1F978A; --uix-chart-3:#8C72D6; --uix-chart-4:#4C9A5A;
+    --uix-chart-1:#0455E6; --uix-chart-2:#1F978A; --uix-chart-3:#8C72D6; --uix-chart-4:#4C9A5A;
     --uix-chart-5:#B45E9A; --uix-chart-6:#7F8A2E; --uix-chart-7:#2F8FC2; --uix-chart-8:#5E7D3A;
     --uix-chart-neutral:#64748B;
     /* chart analytic roles (HAR-1552) */
@@ -92,7 +92,7 @@
     /* table column-width scale — consumed by .uix-col--w-* / .uix-col--flex */
     --uix-col-w-xs:92px; --uix-col-w-sm:112px; --uix-col-w-md:132px; --uix-col-w-lg:176px; --uix-col-w-xl:240px; --uix-col-title-min:340px;
     /* calm kit (2.56) */
-    --uix-chart-series:var(--uix-chart-1); --uix-chart-series-soft:rgba(79,111,224,.14);
+    --uix-chart-series:var(--uix-chart-1); --uix-chart-series-soft:rgba(4,85,230,.14);
     /* calm kit (2.56) */
     --uix-dur-arrive:420ms; --uix-stagger-arrive:45ms; --uix-delay-arrive-trace:150ms; --uix-dur-arrive-trace:700ms; --uix-dur-arrive-grow:500ms; --uix-stagger-arrive-grow:25ms; --uix-dur-arrive-count:600ms; --uix-arrive-rise:8px;
   }
@@ -117,8 +117,8 @@
     --uix-success-solid:#5DB887; --uix-warning-solid:#D9A84A; --uix-info-solid:#7890E6; --uix-danger-solid:#DA6C64;
     --uix-neutral-solid:#868686;
 
-    --uix-chart-1:#6F88EA; --uix-chart-2:#22A093; --uix-chart-3:#9580DE; --uix-chart-4:#4E9F62;
-    --uix-chart-5:#C474AC; --uix-chart-6:#93993A; --uix-chart-7:#3D96C8; --uix-chart-8:#6E9147;
+    --uix-chart-1:#3280FC; --uix-chart-2:#22A093; --uix-chart-3:#A580CF; --uix-chart-4:#4E9F62;
+    --uix-chart-5:#C474AC; --uix-chart-6:#93993A; --uix-chart-7:#0A819D; --uix-chart-8:#6E9147;
     --uix-chart-neutral:#A1A1A1;
     --uix-chart-grid:#232323; --uix-chart-axis:#3A3A3A; --uix-chart-reference:#B3B3B3;
     --uix-chart-zone-warning:rgba(217,164,64,.10); --uix-chart-zone-danger:rgba(218,108,100,.10); --uix-chart-forecast-band:rgba(250,250,250,.06);
@@ -133,6 +133,6 @@
     --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
     --uix-scrollbar-thumb:rgba(255,255,255,.18); --uix-scrollbar-thumb-hover:rgba(255,255,255,.30);
     /* calm kit (2.56) */
-    --uix-chart-series-soft:rgba(111,136,234,.18);
+    --uix-chart-series-soft:rgba(50,128,252,.18);
   }
 }

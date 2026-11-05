@@ -60,6 +60,21 @@ for (const [mode, { band, scope }] of Object.entries(MODES)) {
     }
   });
 
+  // chart-1 is the brand blue and the one series colour of a glance chart, so it must stand apart
+  // from EVERY other slot, not only its neighbours: chart-7 (cyan) and chart-3 (violet) sit close in hue.
+  test(`${mode}: chart-1 (the brand series) stays apart from every other slot (dE >= 15, CVD >= 8)`, () => {
+    const a = palette[0];
+    for (let j = 1; j < palette.length; j++) {
+      const b = palette[j];
+      const pair = `chart-1 ${hex(a)} / chart-${j + 1} ${hex(b)}`;
+      assert.ok(dE(a, b) >= 15, `${pair}: normal dE ${dE(a, b).toFixed(1)}`);
+      for (const kind of ["protan", "deutan"]) {
+        const d = dE(simulate(a, kind), simulate(b, kind));
+        assert.ok(d >= 8, `${pair}: ${kind} dE ${d.toFixed(1)}`);
+      }
+    }
+  });
+
   test(`${mode}: every chart slot is >= 3:1 on --uix-surface and --uix-bg-app`, () => {
     for (const backdrop of ["surface", "bg-app"]) {
       const bg = evaluate(`var(--uix-${backdrop})`, scope);
@@ -82,4 +97,13 @@ test("chart reference and event ink clear 3:1 (non-text) on the surface in both 
 
 test("the checks reproduce the defect they guard: old light chart-5/6 normal dE 10.8", () => {
   assert.equal(dE(evaluate("#EA580C", {}), evaluate("#E11D48", {})).toFixed(1), "10.8");
+});
+
+test("chart-1 is the brand blue (#0455E6 light, #3280FC dark) and the series wash is derived from it", () => {
+  const light = evaluate("var(--uix-chart-1)", MODES.light.scope);
+  const dark = evaluate("var(--uix-chart-1)", MODES.dark.scope);
+  assert.deepEqual(light, evaluate("#0455E6", {}));
+  assert.deepEqual(dark, evaluate("#3280FC", {}));
+  assert.deepEqual(evaluate("var(--uix-chart-series-soft)", MODES.light.scope), evaluate("rgba(4,85,230,.14)", {}));
+  assert.deepEqual(evaluate("var(--uix-chart-series-soft)", MODES.dark.scope), evaluate("rgba(50,128,252,.18)", {}));
 });
