@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { checkCss, checkTs } from "../scripts/check-motion.mjs";
+import { LOOP_ALLOW, checkCss, checkTs } from "../scripts/check-motion.mjs";
 
 /*
  * The motion gate (scripts/check-motion.mjs, HAR-2578) — every rule blocks a seeded violation,
  * and the shape the contract asks for passes. Wrapped in the same @layer the components use.
  */
 const layer = (css) => `@layer uix.components { ${css} }`;
-const rules = (css) => checkCss(layer(css), "seed.css").problems.map((p) => p.match(/\[([a-z-]+)\]/)[1]);
+// rules 1-7 on their own: every selector counts as a loader here (rule 8 has its own tests below)
+const ANY_LOOP = [{ file: "*", selector: /./, what: "any" }];
+const rules = (css) => checkCss(layer(css), "seed.css", undefined, ANY_LOOP).problems.map((p) => p.match(/\[([a-z-]+)\]/)[1]);
+/** Rule 8 with the real allowlist, for a seeded stylesheet of that name. */
+const loops = (css, file) => checkCss(layer(css), `packages/tokens/styles/components/${file}`).problems.filter((p) => p.includes("[loop-not-loading]"));
 
 test("raw-time: a literal duration fails, a token or 0s passes", () => {
   assert.deepEqual(rules(".a { transition: opacity 200ms ease-out; }"), ["raw-time"]);
@@ -59,6 +63,28 @@ test("hover-ungated: :hover may move or reveal only inside the hover media query
   assert.deepEqual(rules(`tr:focus-within .act { opacity: 1; }
     @media (hover: hover) and (pointer: fine) { .act { opacity: 0; } tr:hover .act { opacity: 1; } }`), []);
   assert.deepEqual(rules(".btn:hover { background: var(--uix-bg-hover); color: var(--uix-text); }"), [], "a colour change on hover is fine");
+});
+
+test("loop-not-loading: only an indeterminate loader loops forever, by file and selector", () => {
+  const spin = "animation: uix-spin var(--uix-loop-spin) linear infinite;";
+  const pulse = "animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite;";
+  // the loaders pass, their reduced-motion pulse included
+  assert.deepEqual(loops(`.uix-spinner { ${spin} } @media (prefers-reduced-motion: reduce) { .uix-spinner { ${pulse} } }`, "spinner.css"), []);
+  assert.deepEqual(loops(`:root[data-motion="reduce"] .uix-skeleton { ${pulse} }`, "states.css"), []);
+  // a status that pulses, a decoration that loops, and a loader's selector in the wrong file all fail
+  assert.equal(loops(`.uix-status-dot--critical::before { ${pulse} }`, "status-pill.css").length, 1);
+  assert.equal(loops(".uix-flow:hover .uix-flow__edge { animation: march var(--uix-dur-slow) linear infinite; }", "flow.css").length, 1);
+  assert.equal(loops(`.uix-spinner { ${spin} }`, "badge.css").length, 1, "the allowlist is per file");
+  assert.equal(loops(`.uix-spinner, .uix-badge { ${spin} }`, "spinner.css").length, 1, "every selector of the rule must be a loader");
+  assert.equal(loops(".uix-badge { animation-iteration-count: infinite; }", "badge.css").length, 1);
+  assert.deepEqual(loops(".uix-badge { animation: pop var(--uix-dur) var(--uix-ease-out) 1; }", "badge.css"), [], "a one-shot animation is fine");
+  // motion-allow does not exempt it
+  assert.equal(loops(`.uix-badge { /* motion-allow: looks alive */ ${pulse} }`, "badge.css").length, 1);
+});
+
+test("loop-not-loading: the allowlist stays short, and every entry says why it may loop", () => {
+  assert.ok(LOOP_ALLOW.length <= 8, `${LOOP_ALLOW.length} loaders: a new one is a design decision, not a fix`);
+  for (const entry of LOOP_ALLOW) assert.ok(entry.what && entry.why?.length > 10, `${entry.file}: a loader needs its reason`);
 });
 
 test("motion-allow: a reasoned exemption passes and is reported", () => {

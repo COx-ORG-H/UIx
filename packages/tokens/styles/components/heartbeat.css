@@ -1,25 +1,12 @@
-/* uix heartbeat / live status indicator — a pulsing ping. Under reduced motion the ping (it grows) goes
-   and the dot itself breathes, so "live" is still visible. */
+/* uix heartbeat / live status indicator — a still dot in the state's colour (2.57, Rules for apps:
+   no pulsing or looping on status). "Live" is said by the words beside it (LiveIndicator), never by
+   motion. The ring span stays in the markup for compatibility and is not drawn. */
 @layer uix.components {
   .uix-heartbeat { position: relative; display: inline-grid; place-items: center; width: 8px; height: 8px; flex: none; }
   .uix-heartbeat__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uix-success); z-index: var(--uix-z-raised); }
-  .uix-heartbeat__ping { position: absolute; inset: 0; border-radius: 50%; background: var(--uix-success); animation: uix-ping var(--uix-loop-ping) var(--uix-ease-out) infinite; }
-  @keyframes uix-ping { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.8); opacity: 0; } }
-  .uix-heartbeat--warning .uix-heartbeat__dot, .uix-heartbeat--warning .uix-heartbeat__ping { background: var(--uix-warning); }
-  .uix-heartbeat--danger  .uix-heartbeat__dot, .uix-heartbeat--danger  .uix-heartbeat__ping { background: var(--uix-danger); }
+  .uix-heartbeat__ping { display: none; }
+  .uix-heartbeat--warning .uix-heartbeat__dot { background: var(--uix-warning); }
+  .uix-heartbeat--danger  .uix-heartbeat__dot { background: var(--uix-danger); }
   .uix-heartbeat--idle .uix-heartbeat__dot { background: var(--uix-text-muted); }
-  .uix-heartbeat--idle .uix-heartbeat__ping { display: none; }
-  @media (prefers-reduced-motion: reduce) {
-    .uix-heartbeat__ping { display: none; }
-    .uix-heartbeat:not(.uix-heartbeat--idle) .uix-heartbeat__dot { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
-  }
   .uix-live { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); }
-}
-
-/* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same rule */
-@layer uix.components {
-  @media (prefers-reduced-motion: no-preference) {
-    :root[data-motion="reduce"] .uix-heartbeat__ping { display: none; }
-    :root[data-motion="reduce"] .uix-heartbeat:not(.uix-heartbeat--idle) .uix-heartbeat__dot { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
-  }
 }

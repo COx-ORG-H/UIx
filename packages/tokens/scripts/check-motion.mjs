@@ -18,6 +18,10 @@
  *   7. hover-ungated   a `:hover` rule that moves (transform/translate/scale/rotate) or reveals
  *                      (opacity/visibility/display) outside `@media (hover: hover) and (pointer: fine)`.
  *                      Split the selector: keep :focus-visible/:focus-within outside, :hover inside.
+ *   8. loop-not-loading an infinite animation on anything but an indeterminate loading indicator
+ *                      (Rules for apps: no pulsing, looping or marching on data or status). The
+ *                      loaders are LOOP_ALLOW below, by file and selector; motion-allow does not
+ *                      exempt this rule. A new loader is a new LOOP_ALLOW line, reviewed as such.
  *
  * Escape hatch: a comment `motion-allow: <reason>` directly before a declaration exempts that
  * declaration; the reason is printed on every run so it stays visible. Use it rarely.
@@ -48,6 +52,22 @@ const LAYOUT = new Set([
   'grid-template', 'grid-template-columns', 'grid-template-rows', 'box-shadow',
 ]);
 
+/**
+ * The only things that may loop forever: indeterminate loading indicators (and the editor's text
+ * caret). Each entry is a stylesheet and the selector of its looping state; every selector of a
+ * looping rule must match one entry of its own file. Keep it short.
+ */
+export const LOOP_ALLOW = [
+  { file: 'spinner.css', selector: /\.uix-spinner\b/, what: 'Spinner', why: 'work of unknown length is under way' },
+  { file: 'states.css', selector: /\.uix-skeleton\b/, what: 'Skeleton', why: 'a first load is under way' },
+  { file: 'progress.css', selector: /\.uix-progress--indeterminate\b/, what: 'indeterminate Progress', why: 'a task with no measurable end is under way' },
+  { file: 'busy-region.css', selector: /\.uix-busy-bar\[data-shown\]/, what: 'BusyRegion bar', why: 'a list is being fetched again' },
+  { file: 'button.css', selector: /\.uix-btn(\[data-loading\]|:has\(> \[data-uix-btn-busy\]\))/, what: 'Button loading', why: 'the action the button started is running' },
+  { file: 'save-status.css', selector: /\.uix-save-status\[data-state="saving"\]/, what: 'SaveStatus saving', why: 'a save is in flight' },
+  { file: 'flow.css', selector: /\.uix-node--running\b/, what: 'a running Flow step', why: 'the step is executing now' },
+  { file: 'rich-text.css', selector: /\.ProseMirror-gapcursor\b/, what: 'the text caret', why: 'it marks where typing goes, as every caret blinks' },
+];
+
 const stripStrings = (v) => v.replace(/(["'])(?:\\.|(?!\1).)*\1/g, '""');
 const isTimed = (prop) => /^(transition|animation)(-|$)/.test(prop);
 const ancestors = (node) => { const out = []; for (let p = node.parent; p; p = p.parent) out.push(p); return out; };
@@ -74,7 +94,7 @@ function transitionProps(prop, value) {
  * Check one stylesheet. `movingKeyframes` is the set of @keyframes names (across every scanned
  * file) that move; pass the result of `collectMovingKeyframes` over all files.
  */
-export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css])) {
+export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css]), loopAllow = LOOP_ALLOW) {
   const root = postcss.parse(css);
   const problems = [];
   const exemptions = [];
@@ -114,6 +134,16 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
     if (isTimed(prop) && EASE_IN.test(value)) report('ease-in', d, `accelerating curve in '${prop}: ${d.value}' — exits use --uix-ease-out at a --uix-dur-exit-* duration`);
     // 4. keyframes
     if (inKeyframes && LAYOUT.has(prop)) report('layout', d, `@keyframes animates layout property '${prop}' — use transform/opacity`);
+
+    // 8. only a loader loops (its reduced-motion pulse included)
+    if ((prop === 'animation' || prop === 'animation-iteration-count') && d.parent.type === 'rule' && /\binfinite\b/.test(value)) {
+      const base = file.split('/').pop();
+      const own = loopAllow.filter((a) => a.file === base || a.file === '*');
+      const stray = splitSelectors(d.parent.selector).filter((sel) => !own.some((a) => a.selector.test(sel)));
+      if (stray.length) {
+        problems.push(`${file}:${d.source.start.line} [loop-not-loading] '${stray.join(', ')}' loops forever, and only an indeterminate loading indicator may (${loopAllow.map((a) => a.what).join(', ')}): play it once, or show the state in text`);
+      }
+    }
 
     // 5 + 6. loops and moving animations need a reduced-motion branch
     if ((prop === 'animation' || prop === 'animation-name' || prop === 'animation-iteration-count') && d.parent.type === 'rule') {
