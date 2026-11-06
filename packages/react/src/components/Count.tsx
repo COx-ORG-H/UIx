@@ -39,7 +39,10 @@ export function Count({ value, format, arrive = false, className, ...props }: Co
   const previous = useRef(value);
   const { playing } = useArrive();
   const [rolling, setRolling] = useState<number | null>(null);
-  const countUp = arrive && playing && Number.isFinite(value) && value !== 0;
+  // once the count-up has run (or was cut short by a new value), it never runs again: a value
+  // that goes 20 -> 0 -> 20 while the stage still plays ticks, it does not count up a second time
+  const counted = useRef(false);
+  const countUp = arrive && playing && !counted.current && Number.isFinite(value) && value !== 0;
 
   // the arrival count-up: once, from 0, starting when its card starts
   useEffect(() => {
@@ -54,11 +57,14 @@ export function Count({ value, format, arrive = false, className, ...props }: Co
     setRolling(0);
     const step = (now: number) => {
       if (!start) start = now + delay;
+      counted.current = true;
       const t = Math.max(0, Math.min(1, (now - start) / duration));
       setRolling(t >= 1 ? null : Math.round(target * easeOut(t)));
       if (t < 1) frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
+    // a cleanup before the first frame (React's strict-mode double effect) leaves `counted` false,
+    // so the re-run still counts up
     return () => { cancelAnimationFrame(frame); setRolling(null); };
     // only the first play: a value that changes mid-roll lands on the new value at the end
     // eslint-disable-next-line react-hooks/exhaustive-deps

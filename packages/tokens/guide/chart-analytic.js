@@ -765,6 +765,7 @@ var plain = (value) => value.toLocaleString();
 function tooltipHtml2(title, rows) {
   return `<div class="uix-glance-tooltip"><div class="uix-glance-tooltip__title">${escapeHtml3(title)}</div>${rows.map((row) => `<div class="uix-glance-tooltip__row"><span class="uix-glance-tooltip__swatch" style="--swatch:${escapeHtml3(row.color)}"></span>${escapeHtml3(row.name)}<span class="uix-glance-tooltip__value">${escapeHtml3(row.value)}</span></div>`).join("")}</div>`;
 }
+var seriesColor = (k) => k.series ?? k.palette[0] ?? "";
 function uixGlanceBase(k, motion = GLANCE_AT_REST) {
   return {
     backgroundColor: "transparent",
@@ -779,7 +780,7 @@ function uixGlanceBase(k, motion = GLANCE_AT_REST) {
       borderWidth: 0,
       padding: [6, 10],
       textStyle: { color: k.surface, fontFamily: k.fontSans, fontSize: 12 },
-      extraCssText: `border-radius:${k.radius};box-shadow:${k.shadow}`,
+      extraCssText: [k.radius ? `border-radius:${k.radius}` : "", k.shadow ? `box-shadow:${k.shadow}` : ""].filter(Boolean).join(";"),
       transitionDuration: 0
     },
     xAxis: {
@@ -818,7 +819,7 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
     ...input.values.map((v, i) => showEnd && i === last ? labelled(v, format(v), k.text, true) : v)
   ];
   const projected = forecast ? [...input.values.map((v, i) => i === last ? v : null), ...forecast.values.map((v, i) => i === forecast.values.length - 1 ? labelled(v, forecast.label ?? format(v), k.textMuted, false) : v)] : [];
-  const color = k.series;
+  const color = seriesColor(k);
   const base = uixGlanceBase(k, motion);
   const title = input.tooltipTitle ?? ((c) => c);
   const endText = forecast ? forecast.label ?? format(forecast.values[forecast.values.length - 1] ?? 0) : showEnd ? format(input.values[last]) : "";
@@ -833,7 +834,7 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
     symbolSize: 0,
     lineStyle: { width: 2.2, cap: "round", join: "round" },
     itemStyle: { color, borderColor: k.surface, borderWidth: 2 },
-    areaStyle: input.area === false ? void 0 : { color: k.seriesSoft, opacity: 1 },
+    areaStyle: input.area === false ? void 0 : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 },
     emphasis: { disabled: true },
     animationDuration: motion.trace,
     animationDelay: motion.delay,
@@ -907,7 +908,7 @@ function pairedBarsOption(k, input, motion = GLANCE_AT_REST) {
     },
     xAxis: { ...base.xAxis, data: input.categories },
     series: [
-      bar(input.series.name, input.series.values, k.series, 0),
+      bar(input.series.name, input.series.values, seriesColor(k), 0),
       bar(input.comparison.name, input.comparison.values, k.comparison, motion.stagger)
     ]
   };

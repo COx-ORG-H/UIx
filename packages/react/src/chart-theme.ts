@@ -22,16 +22,21 @@ function reader(source?: ChartTokenSource): (token: string) => string {
   return (token) => style.getPropertyValue(token).trim();
 }
 
-/** The analytic chart roles: reference lines, threshold zones, forecast bands, events, partial periods. */
+/**
+ * The analytic chart roles: reference lines, threshold zones, forecast bands, events, partial periods.
+ * The calm-kit fields (series, seriesSoft, categories, radius, shadow) are optional, so an object
+ * built for 2.55 still type-checks; `uixChartTokens()` always fills them, and the glance charts fall
+ * back to `palette[0]` when an object of your own leaves them out.
+ */
 export interface UixChartTokens {
   /** The categorical palette, --uix-chart-1..8 (v2, calm kit 2.56): no red slot and no amber slot. */
   palette: string[];
   /** THE series colour of a glance chart (--uix-chart-series, = chart-1). */
-  series: string;
+  series?: string;
   /** The series colour as a faint wash (an area under a glance line). */
-  seriesSoft: string;
+  seriesSoft?: string;
   /** The three quiet category hues (blue, teal, violet) for a chart that truly needs more than one. */
-  categories: string[];
+  categories?: string[];
   neutral: string;
   grid: string;
   axis: string;
@@ -52,13 +57,13 @@ export interface UixChartTokens {
   fontSans: string;
   fontMono: string;
   /** --uix-radius-md, for a glance tooltip. */
-  radius: string;
+  radius?: string;
   /** --uix-shadow-popover, for a glance tooltip. */
-  shadow: string;
+  shadow?: string;
 }
 
 /** Resolve the chart tokens once (current theme). */
-export function uixChartTokens(source?: ChartTokenSource): UixChartTokens {
+export function uixChartTokens(source?: ChartTokenSource): UixChartTokens & Required<Pick<UixChartTokens, 'series' | 'seriesSoft' | 'categories' | 'radius' | 'shadow'>> {
   const read = reader(source);
   const t = (name: string) => read(`--uix-${name}`);
   const unquote = (font: string) => font.replace(/"/g, '');

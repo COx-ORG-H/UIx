@@ -71,8 +71,10 @@
 
 /* StatusDot (calm kit 2.56): a dot and a word, no box, for the signal ladder on a glance page.
    neutral is ink, info the accent, warning amber and critical red: the word carries the meaning,
-   the dot is the glance. The words wear the tone's TEXT role (AA on the surface and on the tint);
-   the dot wears its SOLID role (>= 3:1). Never pulses. */
+   the dot is the glance. Word and dot wear the tone's TEXT role: AA on the surface, the app
+   background and the tone's own tint in both modes, so the dot clears 3:1 wherever the word can
+   sit (the SOLID role measured 2.78:1 for success and 2.91:1 for warning on their light tints).
+   Never pulses. */
 @layer uix.components {
   .uix-status-dot {
     display: inline-flex; align-items: baseline; gap: var(--uix-space-2);
@@ -80,13 +82,13 @@
   }
   .uix-status-dot::before {
     content: ""; flex: none; align-self: center; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--tone-dot, var(--uix-neutral-solid));
+    background: var(--tone-dot, var(--uix-text-hushed));
   }
-  .uix-status-dot--neutral  { --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-neutral-solid); font-weight: 500; }
-  .uix-status-dot--info     { --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info-solid); }
-  .uix-status-dot--success  { --tone-fg: var(--uix-success-text); --tone-dot: var(--uix-success-solid); }
-  .uix-status-dot--warning  { --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning-solid); }
-  .uix-status-dot--critical { --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger-solid); }
+  .uix-status-dot--neutral  { --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-text-hushed); font-weight: 500; }
+  .uix-status-dot--info     { --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info-text); }
+  .uix-status-dot--success  { --tone-fg: var(--uix-success-text); --tone-dot: var(--uix-success-text); }
+  .uix-status-dot--warning  { --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning-text); }
+  .uix-status-dot--critical { --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger-text); }
   /* quiet: the word in ink, only the dot keeps the hue (a list of services, a legend line) */
   .uix-status-dot--quiet { color: var(--uix-text-hushed); font-weight: 500; }
   .uix-status-dot--sm { gap: var(--uix-space-1); font-size: var(--uix-text-eyebrow); }
