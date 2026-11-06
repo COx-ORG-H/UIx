@@ -311,3 +311,4 @@ missing or blank.
 <!-- lesson-skip: 8bd4ea7 operator colour decisions; the all-slots chart-1 check is now a test -->
 <!-- lesson-skip: 8afaf77 demo-only box-sizing/grid track overflow and a forced-colours rule; routine, caught by the 320 px overflow check -->
 <!-- lesson-skip: d39cd90 a transparent stacked layer over a button; one component, now asserted by elementFromPoint in the spec -->
+<!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
