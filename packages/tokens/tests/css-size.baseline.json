@@ -202,9 +202,9 @@
       "brotli": 4206
     },
     "styles/components/file-kit.css": {
-      "raw": 13804,
-      "gzip": 3141,
-      "brotli": 2692
+      "raw": 15592,
+      "gzip": 3585,
+      "brotli": 3076
     },
     "styles/components/file-upload.css": {
       "raw": 3445,
@@ -222,9 +222,9 @@
       "brotli": 578
     },
     "styles/components/heartbeat.css": {
-      "raw": 1992,
-      "gzip": 687,
-      "brotli": 587
+      "raw": 1020,
+      "gzip": 477,
+      "brotli": 369
     },
     "styles/components/icon.css": {
       "raw": 3846,
