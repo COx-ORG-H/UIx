@@ -1,7 +1,8 @@
 /* Live harness for the file kit (2.57), bundled by build.mjs from source for
  * tests/a11y/file-kit.spec.mjs: the incident page's Anhänge panel at its real 340 px (FileDrop
- * over the whole panel, compact FileRows in every state), the same rows at full width, and the
- * kind icons in three sizes.
+ * over the whole panel, compact FileRows in every state), the same rows at full width, the same
+ * rows in a 226 px rail (#narrow, TENSOR's incident side rail: names wrap, resting actions float,
+ * 2.57.1), and the kind icons in three sizes.
  *   - #step advances the live upload by 20 %, #finish completes it (state "done");
  *   - a drop on the panel adds rows (uploading at 0 %);
  *   - window.__files lists what FileDrop handed over. */
@@ -23,13 +24,13 @@ const STATIC: { name: string; size: number; state?: FileRowState; meta?: string 
   { name: 'export-antraege-1340.csv', size: 1_100_000, state: 'failed' },
 ];
 
-function Rows({ compact, live, added }: { compact: boolean; live: { progress: number; state: FileRowState }; added: string[] }) {
+function Rows({ compact, live, added, liveId }: { compact: boolean; live: { progress: number; state: FileRowState }; added: string[]; liveId?: string }) {
   const density = compact ? 'compact' : 'default';
   const noop = () => {};
   return (
     <ul className="uix-file-rows">
       {added.map((name) => <FileRow key={name} as="li" density={density} name={name} size={500_000} state="uploading" progress={0} onCancel={noop} />)}
-      <FileRow as="li" density={density} id={compact ? 'live' : undefined} name="foerderportal-gateway-2026-11-05.log" size={8_700_000} meta="L. Brandt, 14:10"
+      <FileRow as="li" density={density} id={liveId} name="foerderportal-gateway-2026-11-05.log" size={8_700_000} meta="L. Brandt, 14:10"
         state={live.state} progress={live.progress} onCancel={noop} href="#download" onMoreActions={noop} />
       {STATIC.map((f) => (
         <FileRow key={f.name} as="li" density={density} name={f.name} size={f.size} meta={f.meta} state={f.state ?? 'idle'}
@@ -55,7 +56,10 @@ function App() {
           window.__files.push(...files.map((f) => f.name));
           setAdded((a) => [...files.map((f) => f.name), ...a]);
         }} />
-        <Rows compact live={live} added={added} />
+        <Rows compact live={live} added={added} liveId="live" />
+      </section>
+      <section id="narrow" className="panel" style={{ width: 260 }} aria-label="Anhänge, schmale Spalte">
+        <Rows compact live={live} added={[]} />
       </section>
       <section id="wide" aria-label="Anhänge, breit">
         <Rows compact={false} live={live} added={[]} />

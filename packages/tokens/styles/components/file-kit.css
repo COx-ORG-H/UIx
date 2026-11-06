@@ -40,6 +40,7 @@
   /* ── FileRow ── */
   .uix-file-rows { display: grid; gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; min-width: 0; }
   .uix-file-row {
+    container: uix-file-row / inline-size;
     position: relative; overflow: hidden; display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0;
     padding: var(--uix-space-2) var(--uix-space-2) var(--uix-space-2) var(--uix-space-3);
     border: 1px solid var(--file-kind-edge); border-radius: var(--uix-radius-md);
@@ -100,6 +101,28 @@
     .uix-file-row:hover .uix-file-row__actions > *,
     .uix-file-row:focus-within .uix-file-row__actions > *,
     .uix-file-row__actions > [aria-expanded="true"] { opacity: 1; }
+  }
+
+  /* A narrow rail (a row under 280 px, such as TENSOR's 226 px incident side rail, 2.57.1): the name
+     wraps to two lines and the meta line wraps, so a name is read instead of being cut to ten
+     letters. The row is its own size container, so this follows the row's width, not the screen's. */
+  @container uix-file-row (max-width: 280px) {
+    .uix-file-row__name { white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+    .uix-file-row__meta { white-space: normal; overflow-wrap: anywhere; }
+  }
+  /* With a fine pointer the resting actions are hidden until hover or focus, so in a narrow rail
+     they float over the row's end instead of keeping that width empty for the name. */
+  @media (hover: hover) and (pointer: fine) {
+    @container uix-file-row (max-width: 280px) {
+      .uix-file-row:is([data-state="idle"], [data-state="done"]) .uix-file-row__actions {
+        position: absolute; inset-block-start: var(--uix-space-1); inset-inline-end: var(--uix-space-1);
+        border-radius: var(--uix-radius-sm);
+      }
+      .uix-file-row:is([data-state="idle"], [data-state="done"]):is(:hover, :focus-within) .uix-file-row__actions,
+      .uix-file-row:is([data-state="idle"], [data-state="done"]) .uix-file-row__actions:has([aria-expanded="true"]) {
+        background: var(--uix-surface); box-shadow: var(--uix-shadow-sm);
+      }
+    }
   }
 
   /* ── FileDrop (slim) ── */

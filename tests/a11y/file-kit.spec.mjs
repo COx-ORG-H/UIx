@@ -7,7 +7,9 @@
  *   - resting actions wait for hover or focus with a fine pointer;
  *   - FileDrop: the choose button is one tab stop that opens the real chooser; a drag names the
  *     kinds from their MIME types before the drop and tints the row; the drop adds the files;
- *   - axe is clean at rest and while dragging; no horizontal overflow from 320 to 1280 px.
+ *   - axe is clean at rest and while dragging; no horizontal overflow from 320 to 1280 px;
+ *   - a row under 280 px (a 226 px rail, 2.57.1): the name wraps to two lines, the meta wraps, and
+ *     the resting actions take no width until hover or focus.
  * Token contrast is pinned in packages/tokens/tests/file-kinds.test.mjs. Screenshots at four widths
  * are attached to the report (file-kit-<width>-<theme>.png). */
 import { test, expect } from '@playwright/test';
@@ -203,9 +205,16 @@ test('axe is clean, and nothing overflows from 320 to 1280 px', async ({ page },
       return box.right > parent.right + 0.5 || box.left < parent.left - 0.5;
     }).length);
     expect(rows, `${width}px rows inside their list`).toBe(0);
-    // a long name ends in an ellipsis instead of widening the row
+    // a long name ends in an ellipsis instead of widening the row; in a row under 280 px it wraps to two lines
     const name = page.locator('#panel .uix-file-row__name', { hasText: 'Rückmeldung' });
-    expect(await name.evaluate((el) => el.scrollWidth > el.clientWidth && getComputedStyle(el).textOverflow === 'ellipsis')).toBe(true);
+    const fit = await name.evaluate((el) => {
+      const row = el.closest('.uix-file-row').getBoundingClientRect().width;
+      const style = getComputedStyle(el);
+      const lines = Math.round(el.getBoundingClientRect().height / parseFloat(style.lineHeight));
+      return { row, lines, ellipsis: el.scrollWidth > el.clientWidth && style.textOverflow === 'ellipsis', clamped: el.scrollHeight > el.clientHeight };
+    });
+    if (fit.row > 280) expect(fit.ellipsis, `${width}px: one line, ellipsis`).toBe(true);
+    else expect(fit.lines, `${width}px: two lines in a ${fit.row} px row`).toBe(2);
     await testInfo.attach(`file-kit-${width}-${theme}.png`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
   }
 });
@@ -217,4 +226,55 @@ test('forced colours: the type label keeps a box and the upload fill stays visib
   expect(await label.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe('1px');
   expect(await page.locator('#live .uix-file-row__fill').evaluate((el) => Number(getComputedStyle(el).opacity))).toBeCloseTo(0.35, 2);
   await testInfo.attach(`file-kit-forced-colors.png`, { body: await page.locator('#panel').screenshot(), contentType: 'image/png' });
+});
+
+test('a 226 px rail: names wrap to two lines, the meta wraps, and resting actions take no width until hover', async ({ page }, testInfo) => {
+  await open(page, themeOf(testInfo));
+  const rail = page.locator('#narrow');
+  const row = rail.locator('.uix-file-row', { hasText: 'Notfallhandbuch' });
+  const measure = () => row.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const name = el.querySelector('.uix-file-row__name');
+    const text = el.querySelector('.uix-file-row__text').getBoundingClientRect();
+    const actions = el.querySelector('.uix-file-row__actions');
+    const style = getComputedStyle(name);
+    return {
+      row: Math.round(box.width),
+      nameLines: Math.round(name.getBoundingClientRect().height / parseFloat(style.lineHeight)),
+      nameCut: name.scrollWidth > name.clientWidth + 0.5,
+      // how much of the row's inner end the text may use: the actions are lifted out of the flow
+      textEndGap: Math.round(box.right - text.right),
+      actionsPosition: getComputedStyle(actions).position,
+      actionsOpacity: getComputedStyle(actions.firstElementChild).opacity,
+      metaWraps: getComputedStyle(el.querySelector('.uix-file-row__meta')).whiteSpace,
+    };
+  });
+  await page.mouse.move(1, 1);
+  const rest = await measure();
+  expect(rest.row).toBeLessThanOrEqual(228);
+  expect(rest.nameLines).toBe(2);
+  expect(rest.nameCut).toBe(false);
+  expect(rest.metaWraps).toBe('normal');
+  expect(rest.actionsPosition).toBe('absolute');
+  expect(rest.actionsOpacity).toBe('0');
+  expect(rest.textEndGap, 'the text runs to the row padding, not to an empty action column').toBeLessThanOrEqual(12);
+  await row.hover();
+  await expect.poll(async () => (await measure()).actionsOpacity).toBe('1');
+  await page.mouse.move(1, 1);
+  await row.getByRole('link', { name: 'Notfallhandbuch_Förderportal_v4.pdf herunterladen' }).focus();
+  await expect.poll(async () => (await measure()).actionsOpacity).toBe('1');
+  // a state action keeps its place in the flow: the failed row's retry moves under its words
+  const failed = rail.locator('.uix-file-row[data-state="failed"]');
+  expect(await failed.locator('.uix-file-row__actions').evaluate((el) => getComputedStyle(el).position)).toBe('relative');
+  // nothing in the rail leaves the rail
+  const outside = await rail.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    // the upload's leading edge starts off the row on purpose; the row clips it
+    return [...el.querySelectorAll('.uix-file-row, .uix-file-row *')].filter((n) => {
+      const r = n.getBoundingClientRect();
+      return r.width > 0 && (r.right > box.right + 0.5 || r.left < box.left - 0.5);
+    }).map((n) => String(n.className?.baseVal ?? n.className)).filter((c) => c !== 'uix-file-row__edge');
+  });
+  expect(outside).toEqual([]);
+  await testInfo.attach(`file-kit-rail-226-${themeOf(testInfo)}.png`, { body: await rail.screenshot(), contentType: 'image/png' });
 });
