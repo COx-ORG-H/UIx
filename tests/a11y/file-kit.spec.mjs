@@ -143,6 +143,9 @@ test('resting actions wait for hover or focus; a state action is always there', 
 });
 
 test('FileDrop: the choose button is a tab stop that opens the real file chooser', async ({ page }, testInfo) => {
+  // Arm the chooser interception first: Playwright turns it on asynchronously when the wait
+  // starts, so a key press right after waitForEvent can open the native dialog un-intercepted.
+  const chooserEvent = page.waitForEvent('filechooser');
   await open(page, themeOf(testInfo));
   const choose = page.getByRole('button', { name: 'Dateien auswählen' });
   await expect(choose).toHaveText('auswählen');
@@ -154,7 +157,6 @@ test('FileDrop: the choose button is a tab stop that opens the real file chooser
   await expect(choose).toBeFocused();
   const outline = await choose.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).toBe('solid');
-  const chooserEvent = page.waitForEvent('filechooser');
   await page.keyboard.press('Enter');
   const chooser = await chooserEvent;
   expect(chooser.isMultiple()).toBe(true);
