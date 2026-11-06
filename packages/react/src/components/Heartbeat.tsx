@@ -5,8 +5,8 @@ export type HeartbeatState = 'live' | 'idle' | 'warning' | 'danger';
 
 export interface HeartbeatProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /**
-   * `live` (default): a green dot with a pulsing ring. `warning` / `danger`: the same in that
-   * tone. `idle`: a grey dot, no ring.
+   * `live` (default): a green dot. `warning` / `danger`: the same in that tone. `idle`: a grey
+   * dot. The dot is still (2.57): say the state in words beside it.
    */
   state?: HeartbeatState;
   /**
@@ -17,9 +17,9 @@ export interface HeartbeatProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'c
 }
 
 /**
- * The pulsing status dot over `.uix-heartbeat` (HAR-1606), so products stop hand-writing its
- * three spans. Decorative unless it has a `label`. The ring stops under
- * `prefers-reduced-motion` (the kit's global motion guard); the dot and its colour stay.
+ * The status dot over `.uix-heartbeat` (HAR-1606), so products stop hand-writing its spans.
+ * Decorative unless it has a `label`. Still since 2.57 (Rules for apps: no pulsing on status);
+ * the ring span is kept in the markup for compatibility and is not drawn.
  */
 export function Heartbeat({ state = 'live', label, className, ...props }: HeartbeatProps) {
   return (

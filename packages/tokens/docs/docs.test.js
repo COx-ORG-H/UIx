@@ -339,6 +339,20 @@ test('the status colour policy is a Foundations page with its rules, matrix and 
   assert.ok(hues.size <= 3, `at most three hues: ${[...hues]}`);
 });
 
+test('Rules for apps is a Foundations page with the five rule sets and the gates that enforce them', () => {
+  assert.equal(getPage('rules-for-apps'), 'rules-for-apps');
+  assert.match(readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8'), /\{ name: 'Rules for apps', slug: 'rules-for-apps', group: 'Foundations'/);
+  const html = pageContent('rules-for-apps');
+  for (const id of ['signal-budget', 'brand-neutrals', 'chart-grammar', 'motion-grammar', 'files', 'enforced']) assert.match(html, new RegExp(`id="${id}"`), id);
+  assert.match(html, /Red is never a series/);
+  assert.match(html, /never a solid fill/);
+  assert.match(html, /The only loops are indeterminate loading indicators/);
+  const gates = html.match(/data-app-rule-gates.*?<tbody>(.*?)<\/tbody>/s)[1];
+  for (const gate of ['check-motion', 'chart-palette.test.mjs', 'calm-kit.test.mjs']) assert.ok(gates.includes(gate), gate);
+  // the status policy points at the app rules for red
+  assert.match(pageContent('status-colour'), /href="#rules-for-apps"/);
+});
+
 test('the status-colour policy is linked from Status pill, Alert, Stat, SchedulingCalendar and SchedulingTimeline', () => {
   for (const slug of ['status-pill', 'alert', 'stat-tile', 'scheduling-calendar', 'scheduling-timeline']) {
     assert.match(pageContent(slug), /<a href="#status-colour">status colour policy<\/a>/, slug);

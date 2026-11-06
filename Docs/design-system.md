@@ -141,7 +141,8 @@ One policy maps every product's domain states to colour (HAR-1564; docs → Foun
 - **Neutral is the default** for every lifecycle state (new, draft, approved, scheduled, on hold, closed, cancelled,
   rejected, merged, archived, active, healthy). **Blue** (`progress`) is in flight; **green** a positive outcome worth
   noticing (never "on track" or "closed"); **amber** attention needed soon; **red** failed, breached or blocked and
-  actionable now. Cancel and reject are decisions, not failures. A **solid fill** (`critical`) is only for SEV-1.
+  actionable now. Cancel and reject are decisions, not failures. **Critical** (SEV-1, broken now) is the danger
+  tint with semibold danger words, never a solid fill (since 2.56).
 - **Treatment by surface:** a table cell uses `StatusPill treatment="dot"`, a record's own header `soft`, a flag
   among other chrome `outline`.
 - **Colour budget:** at most one filled hued pill per row, at most three hues on a screen outside charts, and if more
@@ -151,6 +152,38 @@ One policy maps every product's domain states to colour (HAR-1564; docs → Foun
   (`packages/tokens/tests/status-ramp.test.mjs`).
 
 The product still owns the meaning of its states; this policy decides how loud each kind of state is.
+
+#### Rules for apps
+
+These calm rules (calm kit, 2.56) hold for **every app that uses UIx**, not only one product. Docs → Foundations →
+**Rules for apps** (`explorer.html#rules-for-apps`) carries the same list; the portfolio UI lessons
+(`Docs/lessons/12` in the workspace) say the same in the same words. Keep the three in step.
+
+- **Signal budget.** Neutral by default, then info (the accent), attention (amber) and critical (red). Red only as a
+  dot plus words, for what is broken now. At most one red-tinted surface per screen. Tints, dots or coloured text
+  instead of fills.
+- **Brand and neutrals.** The brand blue is for actions, links, selection and `--uix-chart-1`, never a category or a
+  status. The cool neutrals stay.
+- **Chart grammar.** One question per chart; the headline number answers it. At most two series, the second a grey
+  comparison. Direct labels, at most three gridlines, no axis titles. Red is never a series. An empty chart is one
+  sentence. Draw-in on the first load only. On home and overview surfaces only: a number, a number with a sparkline,
+  an area or line, bars (at most 12), a bar list, progress to a target, service status.
+- **Motion grammar.** Arrive, respond and settle, with the timings in the motion tokens and the arrival helper
+  (`Arrive`). A refresh never replays the arrival. Reduced motion is a fade of 200 ms or less. No pulsing, shaking,
+  looping or overshoot on data or status. The only loops are indeterminate loading indicators (Spinner, Skeleton,
+  indeterminate progress). A state of unknown duration shows text.
+- **Files.** Colour a file by its kind, not its format (the file kit).
+
+What the kit enforces, each failing the build on a violation:
+
+| Rule | Gate |
+|---|---|
+| No loop outside a loader | `check-motion` rule `loop-not-loading` (`npm run test:contract`); its allowlist `LOOP_ALLOW` names the loaders, and `motion-allow` does not exempt it |
+| Red is never a series | `packages/tokens/tests/chart-palette.test.mjs`: no series token equals a danger role or sits within dE 10 of one |
+| Critical is not a solid fill | `packages/tokens/tests/calm-kit.test.mjs`: no critical or danger status paints a solid fill, in any treatment or mode |
+
+The rest (one question per chart, two series, one red surface per screen) are review rules: a test cannot see a
+whole screen of a product.
 
 ### Canvases — one interaction contract
 

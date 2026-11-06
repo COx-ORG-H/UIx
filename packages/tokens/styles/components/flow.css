@@ -118,13 +118,12 @@
   .uix-flow__edge-label { fill: var(--uix-text-muted); font-family: var(--uix-font-sans); font-size: var(--uix-text-eyebrow); }
   .uix-flow__edge-label--loop { fill: var(--uix-accent); }
 
-  /* hovering/focusing a diagram sets its edges "flowing" (marching dashes) to read direction */
+  /* the edges never march (2.57, Rules for apps: no decorative loops); the arrowheads give direction.
+     Hovering or focusing a diagram only thickens its edges, at once (no transition). */
   @media (hover: hover) and (pointer: fine) {
-    .uix-flow:hover .uix-flow__edge,
-    .uix-flow:focus-within .uix-flow__edge {
-      stroke-dasharray: 5 4; animation: uix-flow-march var(--uix-dur-slow) linear infinite;
-    }
+    .uix-flow:hover .uix-flow__edge { stroke-width: 2; }
   }
+  .uix-flow:focus-within .uix-flow__edge { stroke-width: 2; }
 
   /* ---- linear: flex row of nodes + pure-CSS connectors (no SVG) ---- */
   .uix-flow--linear .uix-flow__row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-1); }
@@ -206,13 +205,10 @@
 
   /* ============================================================ motion */
   @keyframes uix-flow-spin  { to { transform: rotate(360deg); } }
-  @keyframes uix-flow-march { to { stroke-dashoffset: -18; } }
 
   @media (prefers-reduced-motion: reduce) {
     /* a running node keeps showing it runs: the icon breathes instead of turning */
     .uix-node--running .uix-node__icon svg { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; }
-    .uix-flow:hover .uix-flow__edge,
-    .uix-flow:focus-within .uix-flow__edge { animation: none; }
   }
 
   @media (max-width: 720px) {

@@ -3,8 +3,9 @@
  *   - Reduced motion removes movement and keeps fades: a modal still fades, with no transform in
  *     its transitions; without the preference the same modal moves.
  *   - Looping "still working" indicators stay alive under reduced motion: Spinner, Button loading,
- *     Skeleton, indeterminate Progress, SaveStatus and Heartbeat run the `uix-pulse` opacity loop
- *     (--uix-loop-pulse) instead of freezing; without the preference they turn, sweep or ping.
+ *     Skeleton, indeterminate Progress and SaveStatus run the `uix-pulse` opacity loop
+ *     (--uix-loop-pulse) instead of freezing; without the preference they turn or sweep. Heartbeat
+ *     is a still dot (2.57): status never loops.
  *   - Keyboard-initiated surfaces open with zero duration: a Modal with `instant`, a Modal that
  *     holds a CommandPalette (it marks its dialog itself) and the legacy [data-uix-cmdk-dialog].
  *   - A Meter moves on transform, never width.
@@ -68,7 +69,6 @@ const LOOPS = [
   ['Skeleton', '#skeleton', 'uix-shimmer'],
   ['indeterminate Progress', '#progress', 'uix-progress-slide'],
   ['SaveStatus', '#save-status', 'uix-spin'],
-  ['Heartbeat', '#heartbeat', 'uix-ping'],
 ];
 
 test.describe('looping indicators stay alive', () => {

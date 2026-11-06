@@ -455,24 +455,22 @@ test.describe('Loading and progress', () => {
     }
   });
 
-  test('Heartbeat: decorative beside its text, named when alone, and the ring gives way to a pulse under reduced motion', async ({ page }, testInfo) => {
+  test('Heartbeat: decorative beside its text, named when alone, and a still dot in every state (status never loops)', async ({ page }, testInfo) => {
     await open(page, testInfo);
     await expect(page.locator('#live .uix-heartbeat')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.getByRole('img', { name: 'Connection lost' })).toBeVisible();
-    const ping = (id) => page.locator(`${id} .uix-heartbeat__ping`).evaluate((el) => {
-      const s = getComputedStyle(el);
-      return { display: s.display, running: el.getAnimations().filter((a) => a.playState === 'running').length, bg: s.backgroundColor };
-    });
-    expect((await ping('#live')).running, 'the live ring pulses').toBe(1);
-    expect((await ping('#idle')).display, 'idle has no ring').toBe('none');
-    expect((await ping('#warn')).bg).not.toBe((await ping('#live')).bg);
-
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.reload({ waitUntil: 'networkidle' });
-    await expect.poll(async () => (await ping('#live')).running, { message: 'under prefers-reduced-motion the growing ring stops' }).toBe(0);
+    const beat = (id) => page.locator(`${id} .uix-heartbeat`).evaluate((el) => ({
+      ring: getComputedStyle(el.querySelector('.uix-heartbeat__ping')).display,
+      dot: getComputedStyle(el.querySelector('.uix-heartbeat__dot')).backgroundColor,
+      animations: el.getAnimations({ subtree: true }).length,
+    }));
+    for (const id of ['#live', '#idle', '#warn']) {
+      const b = await beat(id);
+      expect(b.ring, `${id}: no ring is drawn`).toBe('none');
+      expect(b.animations, `${id}: nothing animates`).toBe(0);
+    }
+    expect((await beat('#warn')).dot, 'the state still has its colour').not.toBe((await beat('#live')).dot);
     await expect(page.locator('#live .uix-heartbeat__dot')).toBeVisible();
-    // ...and the dot breathes instead, so "live" is still visible without movement (HAR-2578)
-    expect(await page.locator('#live .uix-heartbeat__dot').evaluate((el) => el.getAnimations().map((a) => a.animationName))).toEqual(['uix-pulse']);
     expect(await axe(page, '#loading')).toEqual([]);
   });
 });

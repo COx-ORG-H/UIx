@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import postcss from "postcss";
 import { contrast, evaluate, oklch, over, scopeFor } from "./css-color.mjs";
 
 /*
@@ -68,6 +69,27 @@ test("the critical pill is the danger tint with danger words; only the destructi
   assert.match(rule, /--tone-fg: var\(--uix-danger-text\)/);
   assert.doesNotMatch(pill, /--tone-bg: var\(--uix-danger\)/, "no pill paints the solid danger fill");
   assert.match(read("button.css"), /\.uix-btn--danger\s*\{\s*background: var\(--uix-danger\); color: var\(--uix-danger-fg\);/);
+});
+
+// Rules for apps: red is a dot and words (or one tint), never a solid filled status. Every rule
+// that styles a critical or danger status, in any treatment, may only paint a tint: composited on
+// the surface it stays within 1.6:1 of the surface (the danger tint is ~1.1:1, a solid red > 3:1).
+test("critical and danger statuses never paint a solid fill, in any treatment or mode", () => {
+  const css = read("status-pill.css");
+  const red = /\.uix-(pill|status-dot)--(critical|danger|p1)\b/;
+  const painted = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (!postcss.list.comma(rule.selector).some((s) => red.test(s) && !/__dot\b/.test(s))) return;
+    rule.walkDecls(/^(background|background-color|--tone-bg)$/, (d) => painted.push([rule.selector.replace(/\s+/g, " "), d.prop, d.value]));
+  });
+  assert.ok(painted.length >= 3, `found ${painted.length} red status backgrounds: the selector scan broke`);
+  for (const [mode, scope] of MODES) {
+    const surface = c(scope, "surface");
+    for (const [selector, prop, value] of painted) {
+      const ratio = contrast(over(evaluate(value, scope), surface), surface);
+      assert.ok(ratio < 1.6, `${mode}: '${selector} { ${prop}: ${value} }' is a solid fill (${ratio.toFixed(2)}:1 on the surface): a critical status is a dot and words, or the danger tint`);
+    }
+  }
 });
 
 test("no chart slot is red or amber (OKLCH hue), in either mode", () => {
