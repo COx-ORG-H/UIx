@@ -214,8 +214,18 @@ export { FileUpload, DEFAULT_FILE_UPLOAD_LABELS } from './components/FileUpload.
 export type { FileUploadProps, FileUploadItem, FileUploadLabels, FileUploadStatus } from './components/FileUpload.js';
 export { Attachment, AttachmentList, DEFAULT_ATTACHMENT_LABELS } from './components/Attachment.js';
 export type { AttachmentProps, AttachmentListProps, AttachmentLabels } from './components/Attachment.js';
-export { fileKind, fileMatchesAccept, formatFileSize, partitionFiles } from './file-model.js';
-export type { FileRejection, FileRejectionReason, FileSizeOptions, FileSizeFormatter } from './file-model.js';
+export {
+  fileKind, fileMatchesAccept, formatFileSize, partitionFiles, fileExtension, fileTypeLabel,
+  FILE_KINDS, FILE_KIND_EXTENSIONS, DEFAULT_FILE_KIND_LABELS, FILE_KIND_LABELS_EN,
+} from './file-model.js';
+export type { FileRejection, FileRejectionReason, FileSizeOptions, FileSizeFormatter, FileKind, FileKindLabels, LegacyFileKind } from './file-model.js';
+// The file kit (2.57): a colour and a glyph per kind of file, the file row, the slim drop row
+export { FileKindIcon, FILE_KIND_GLYPHS } from './components/FileKindIcon.js';
+export type { FileKindIconProps, FileKindIconSize } from './components/FileKindIcon.js';
+export { FileRow, DEFAULT_FILE_ROW_LABELS, FILE_ROW_LABELS_EN } from './components/FileRow.js';
+export type { FileRowProps, FileRowLabels, FileRowState } from './components/FileRow.js';
+export { FileDrop, DEFAULT_FILE_DROP_LABELS, FILE_DROP_LABELS_EN } from './components/FileDrop.js';
+export type { FileDropProps, FileDropLabels } from './components/FileDrop.js';
 
 // Feedback
 export { Alert } from './components/Alert.js';
@@ -253,6 +263,8 @@ export { DEFAULT_PAGINATION_LABELS, Pagination } from './components/Pagination.j
 export type { PaginationLabels, PaginationProps } from './components/Pagination.js';
 
 export { StatusPill } from './components/StatusPill.js';
+export { StatusDot } from './components/StatusDot.js';
+export type { StatusDotProps, StatusDotTone } from './components/StatusDot.js';
 export type { StatusPillProps, PillTone, PillTreatment, PillSize } from './components/StatusPill.js';
 
 export { Progress } from './components/Progress.js';
@@ -328,6 +340,12 @@ export { BusyRegion } from './components/BusyRegion.js';
 export { ChangeHighlight } from './components/ChangeHighlight.js';
 export type { ChangeHighlightProps } from './components/ChangeHighlight.js';
 export { Count } from './components/Count.js';
+export { Arrive, ArriveItem, useArrive } from './components/Arrive.js';
+export type { ArriveProps, ArriveItemProps, ArriveState } from './components/Arrive.js';
+export { ChartCard } from './components/ChartCard.js';
+export type { ChartCardProps } from './components/ChartCard.js';
+export { BarList, StatusStrip, Sparkline } from './components/GlanceMarks.js';
+export type { BarListProps, BarListItem, StatusStripProps, StatusStripItem, StatusStripTone, SparklineProps } from './components/GlanceMarks.js';
 export { MotionList } from './components/MotionList.js';
 export type { MotionListProps } from './components/MotionList.js';
 export type { CountProps } from './components/Count.js';

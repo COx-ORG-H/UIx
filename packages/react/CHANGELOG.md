@@ -1,5 +1,58 @@
 # @tensor_1/react
 
+## 2.57.0
+
+### Minor Changes
+
+- d967db2: File kit: a colour and a glyph per kind of file, the file row with its upload fill, and the slim drop row (variation H of the 2026-11-05 attachments study).
+
+  - Tokens: `--uix-file-{img,doc,sheet,mail,code,log,archive,other}` with `-soft` (12 % / dark 15 %), `-strong` (22 % / 26 %), `-edge` (28 % / 32 % into the line colour) and `-label`, plus `--uix-file-label-fg` (white / dark `#0A0A0A`). In light, img, doc, mail, code and log alias the calm chart slots 3, 5, 7, 2 and 6. Every kind clears 3:1 as an icon stroke in both themes. White label text on the plain light kinds was only 3.6–4.2:1, so `--uix-file-<kind>-label` deepens the kind by 14 % black in light (4.66:1 or more); the kind colours themselves are unchanged.
+  - `fileKind(name, mime)` maps an extension (first) or a MIME type (then) to one of eight kinds; pass `''` as the name for a drag event. `FILE_KINDS`, `FILE_KIND_EXTENSIONS`, `fileExtension`, `fileTypeLabel`, German `DEFAULT_FILE_KIND_LABELS` and `FILE_KIND_LABELS_EN`. The object form `fileKind({ name, type })` keeps its coarse kinds for `FileUpload` and `Attachment` and is now deprecated.
+  - `FileKindIcon` (`name`, `mime`, `kind`, `typeLabel`, `size` `sm` 30 / `md` 34 / `lg` 52 px, `label`): the kind's Lucide glyph in its colour with the type as a solid label on the corner. Server-renderable. Named `FileKindIcon` because `FileIcon` is already the plain `file` glyph in `./icons`.
+  - `FileRow` (`name`, `size`, `meta`, `state`, `progress`, `loaded`, `message`, `href`/`download`/`onDownload`, `onMoreActions`, `actions`, `onCancel`, `onRetry`, `onDetails`, `density`, `as`, `labels`, `kindLabels`): the kind's tint on the left edge at rest; `uploading` fills to the real progress with a leading edge ("Wird hochgeladen · 62 % · 1,5 von 2,4 MB", Abbrechen); `done` draws a check and fades the fill; `scanning` is words only; `blocked` turns amber (Details), `failed` red (Erneut versuchen). The outcome is announced once. No state loops; reduced motion keeps only the fades.
+  - `FileDrop` (`onFiles`, `onReject`, `accept`, `multiple`, `disabled`, `targetRef`, `labels`): "Dateien ablegen oder auswählen" on one line, backed by a real file input; while files are dragged over it, it names their kinds from the MIME types ("2 Dateien: Bild, Protokoll") and tints itself from the pointer outwards. The choose button is the keyboard path.
+  - German default copy; English through `UixLabelsProvider` (`fileRow`, `fileDrop`, `fileKinds`) with `FILE_ROW_LABELS_EN`, `FILE_DROP_LABELS_EN`, `FILE_KIND_LABELS_EN`.
+  - Icons: `file-code` (`FileCodeIcon`) and `file-terminal` (`FileTerminalIcon`). New stylesheet `components/file-kit.css`.
+
+- 1ab2e98: Rules for apps: the calm-kit rules (signal budget, brand and neutrals, chart grammar, motion grammar, files) are now rules for every app that uses UIx, on a new docs page (Foundations → Rules for apps) and in `Docs/design-system.md`. The kit enforces the testable ones:
+
+  - `check-motion` rule `loop-not-loading` (in `test:contract`): an infinite animation fails unless it is an indeterminate loading indicator on the short `LOOP_ALLOW` list (Spinner, Skeleton, indeterminate Progress, BusyRegion bar, Button loading, SaveStatus saving, a running Flow step, the text caret). `motion-allow` does not exempt it.
+  - The chart palette test fails a series token that equals a danger role or sits within dE 10 of one.
+  - The status test fails a critical or danger status that paints a solid fill, in any treatment or mode.
+
+  Behaviour changes, so status never loops:
+
+  - `Heartbeat` / `LiveIndicator` is a still dot in its state's colour. The ring no longer pulses and, under reduced motion, the dot no longer breathes. The ring span stays in the markup and is not drawn. Say the state in words beside it (as `LiveIndicator` does).
+  - Flow diagram edges no longer march on hover or focus; they thicken at once instead.
+
+  Consumers pick these up on their next bump; no change is needed on their side.
+
+## 2.56.0
+
+### Minor Changes
+
+- 091b8d4: Calm kit, phase 1 of the TENSOR calm home: quieter status colours, quiet status, chart palette v2, glance cards and a first-paint arrival.
+
+  - Tokens: the danger, warning, success and info families are softer in light and dark (fills, text, dots, tints; overdue follows danger), every word AA on the surface and its tint. Palette v2: `--uix-chart-1..8` start with the series blue, teal and violet and have no red or amber slot; `--uix-chart-1` stays the brand blue (`#0455E6`, dark `#3280FC`); new `--uix-chart-series`, `--uix-chart-series-soft` and the arrival timings (`--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count`, `--uix-arrive-rise`).
+  - 470333b: In dark mode `--uix-chart-3` (`#A580CF`) and `--uix-chart-7` (`#0A819D`) step off the brand blue, so `--uix-chart-1` stands apart from every slot. UIx keeps its cool neutrals.
+  - `StatusDot` (a dot and a word). The `critical` StatusPill is now the danger tint with the danger words instead of a solid red fill.
+  - `ChartCard`, `BarList`, `StatusStrip`, `Sparkline`, `Meter target`/`targetLabel`; `GlanceLineChart` and `PairedBarChart` in `./chart` and `./chart/preset`, with the pure `glanceLineOption`, `pairedBarsOption` and `uixGlanceBase`. `UixChartTokens` gains `series`, `seriesSoft`, `categories`, `radius` and `shadow`.
+  - `Arrive`, `ArriveItem`, `useArrive` and `Count arrive`: cards rise in reading order, lines trace, bars grow and numbers count up on the first mount (or once per session with `name`), never on a refresh or new data; a fade under reduced motion.
+
+- 1788ea3: Calm kit review fixes, before 2.56.0 ships:
+
+  - `UixChartTokens`: the new `series`, `seriesSoft`, `categories`, `radius` and `shadow` fields are optional, so a tokens object built for 2.55 still type-checks. `uixChartTokens()` always fills them; the glance charts fall back to `palette[0]`.
+  - `GlanceLineChart` / `PairedBarChart` settle at rest once their draw-in is over: data that arrives later (a new bar, a new point) appears at once instead of growing in.
+  - The `Arrive` stage context is shared across the CommonJS bundles, so a chart from `@tensor_1/react/chart` draws in with a stage from `@tensor_1/react` (it already did under ESM).
+  - `Count arrive` counts up once: a value that changes while the stage still plays ticks instead of counting up again.
+  - `StatusDot`: the dot wears the tone's text colour like its word, so it clears 3:1 on the tone's own tint too (light success and warning dots were 2.78:1 and 2.91:1 there).
+
+## 2.55.3
+
+### Patch Changes
+
+- 2158cf3: Keep Peek record titles on their own full row between navigation and keyboard hints. Optional header regions remain compact, and existing labels, callbacks and keyboard behavior stay unchanged. Fixes HAR-2859 for the TENSOR HAR-2812 consumer.
+
 ## 2.55.2
 
 ### Patch Changes

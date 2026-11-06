@@ -265,6 +265,9 @@ export const FileCheckCornerIcon: UixIcon;
 export const FileCheckIcon: UixIcon;
 
 // @public (undocumented)
+export const FileCodeIcon: UixIcon;
+
+// @public (undocumented)
 export const FileDownIcon: UixIcon;
 
 // @public (undocumented)
@@ -287,6 +290,9 @@ export const FileSearchIcon: UixIcon;
 
 // @public (undocumented)
 export const FileSpreadsheetIcon: UixIcon;
+
+// @public (undocumented)
+export const FileTerminalIcon: UixIcon;
 
 // @public (undocumented)
 export const FileTextIcon: UixIcon;
@@ -450,12 +456,14 @@ export const ICON_GLYPHS: {
     readonly 'file-chart-column-increasing': IconNode;
     readonly 'file-check': IconNode;
     readonly 'file-check-corner': IconNode;
+    readonly 'file-code': IconNode;
     readonly 'file-down': IconNode;
     readonly 'file-image': IconNode;
     readonly 'file-input': IconNode;
     readonly 'file-question-mark': IconNode;
     readonly 'file-search': IconNode;
     readonly 'file-spreadsheet': IconNode;
+    readonly 'file-terminal': IconNode;
     readonly 'file-text': IconNode;
     readonly 'file-up': IconNode;
     readonly flag: IconNode;

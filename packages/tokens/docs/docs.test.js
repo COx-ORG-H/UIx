@@ -178,7 +178,7 @@ test('showcase-only compositions are explicit and never presented as CSS exports
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 122);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 125);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -269,7 +269,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 108);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 111);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });
@@ -282,7 +282,7 @@ test('React availability mappings point to the shipped component inventory or an
   const aliases = {
     'editorial-home': 'PageIntro', form: 'Field', labels: 'UixLabelsProvider',
     'stat-tile': 'Stat', states: 'LoadingState', 'rich-text': 'RichTextEditor',
-    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput',
+    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow',
   };
   for (const entry of REACT_COMPONENT_SLUGS) {
     if (entry === 'drag') {
@@ -337,6 +337,20 @@ test('the status colour policy is a Foundations page with its rules, matrix and 
   const family = { progress: 'blue', info: 'blue', p4: 'blue', warning: 'amber', attention: 'amber', p2: 'amber', p3: 'amber', 'sla-at-risk': 'amber', danger: 'red', critical: 'red', overdue: 'red', p1: 'red', 'sla-breached': 'red', success: 'green', 'sla-ok': 'green' };
   const hues = new Set(policy.flatMap((row) => [...row.matchAll(/class="uix-pill uix-pill--([a-z0-9-]+)/g)].map((m) => family[m[1]]).filter(Boolean)));
   assert.ok(hues.size <= 3, `at most three hues: ${[...hues]}`);
+});
+
+test('Rules for apps is a Foundations page with the five rule sets and the gates that enforce them', () => {
+  assert.equal(getPage('rules-for-apps'), 'rules-for-apps');
+  assert.match(readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8'), /\{ name: 'Rules for apps', slug: 'rules-for-apps', group: 'Foundations'/);
+  const html = pageContent('rules-for-apps');
+  for (const id of ['signal-budget', 'brand-neutrals', 'chart-grammar', 'motion-grammar', 'files', 'enforced']) assert.match(html, new RegExp(`id="${id}"`), id);
+  assert.match(html, /Red is never a series/);
+  assert.match(html, /never a solid fill/);
+  assert.match(html, /The only loops are indeterminate loading indicators/);
+  const gates = html.match(/data-app-rule-gates.*?<tbody>(.*?)<\/tbody>/s)[1];
+  for (const gate of ['check-motion', 'chart-palette.test.mjs', 'calm-kit.test.mjs']) assert.ok(gates.includes(gate), gate);
+  // the status policy points at the app rules for red
+  assert.match(pageContent('status-colour'), /href="#rules-for-apps"/);
 });
 
 test('the status-colour policy is linked from Status pill, Alert, Stat, SchedulingCalendar and SchedulingTimeline', () => {

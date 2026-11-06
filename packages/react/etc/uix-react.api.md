@@ -10,6 +10,7 @@ import { ButtonHTMLAttributes } from 'react';
 import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { FocusEvent as FocusEvent_2 } from 'react';
+import { ForwardRefExoticComponent } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
 import { KeyboardEvent as KeyboardEvent_2 } from 'react';
@@ -20,9 +21,11 @@ import * as react from 'react';
 import { ReactElement } from 'react';
 import { ReactNode } from 'react';
 import { Ref } from 'react';
+import { RefAttributes } from 'react';
 import { RefObject } from 'react';
 import { SelectHTMLAttributes } from 'react';
 import { SVGAttributes } from 'react';
+import { SVGProps } from 'react';
 import { SyntheticEvent } from 'react';
 import { TableHTMLAttributes } from 'react';
 import { TdHTMLAttributes } from 'react';
@@ -168,6 +171,35 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public
 export function ariaKeyShortcuts(keys: KeyShortcut, platform: KbdPlatform): string;
+
+// @public
+export function Arrive(input: ArriveProps): react.JSX.Element;
+
+// @public
+export function ArriveItem(input: ArriveItemProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ArriveItemProps extends HTMLAttributes<HTMLElement> {
+    // (undocumented)
+    as?: 'div' | 'section' | 'article' | 'li' | 'header' | 'aside';
+    // (undocumented)
+    children?: ReactNode;
+    index?: number;
+}
+
+// @public (undocumented)
+export interface ArriveProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    disabled?: boolean;
+    name?: string;
+    ready?: boolean;
+}
+
+// @public (undocumented)
+export interface ArriveState {
+    playing: boolean;
+}
 
 // @public (undocumented)
 export type AsyncOperationState = 'queued' | 'running' | 'complete' | 'failed';
@@ -374,6 +406,27 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     src?: string;
     status?: boolean;
+}
+
+// @public
+export function BarList(input: BarListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface BarListItem {
+    display?: ReactNode;
+    id?: string;
+    // (undocumented)
+    label: ReactNode;
+    tone?: 'series' | 'comparison' | 'warning';
+    // (undocumented)
+    value: number;
+}
+
+// @public (undocumented)
+export interface BarListProps extends HTMLAttributes<HTMLUListElement> {
+    // (undocumented)
+    items: BarListItem[];
+    max?: number;
 }
 
 // @public (undocumented)
@@ -842,6 +895,22 @@ export interface ChangeHighlightProps extends HTMLAttributes<HTMLElement> {
     disabled?: boolean;
     value: unknown;
     variant?: 'tint' | 'ring';
+}
+
+// @public
+export function ChartCard(input: ChartCardProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ChartCardProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+    action?: ReactNode;
+    answer?: ReactNode;
+    arriveIndex?: number;
+    children?: ReactNode;
+    empty?: ReactNode;
+    headingLevel?: 2 | 3 | 4;
+    headline?: ReactNode;
+    note?: ReactNode;
+    question: ReactNode;
 }
 
 // @public
@@ -1350,6 +1419,7 @@ export function Count(input: CountProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    arrive?: boolean;
     format?: (value: number) => string;
     value: number;
 }
@@ -1991,6 +2061,15 @@ export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels;
 
 // @public (undocumented)
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_FILE_DROP_LABELS: FileDropLabels;
+
+// @public (undocumented)
+export const DEFAULT_FILE_KIND_LABELS: FileKindLabels;
+
+// @public (undocumented)
+export const DEFAULT_FILE_ROW_LABELS: FileRowLabels;
 
 // @public (undocumented)
 export const DEFAULT_FILE_UPLOAD_LABELS: FileUploadLabels;
@@ -2712,10 +2791,88 @@ export interface FieldProps {
 }
 
 // @public
+export const FILE_DROP_LABELS_EN: FileDropLabels;
+
+// @public
+export const FILE_KIND_EXTENSIONS: Readonly<Record<FileKind, readonly string[]>>;
+
+// Warning: (ae-forgotten-export) The symbol "UixIcon" needs to be exported by the entry point index.d.ts
+//
+// @public
+export const FILE_KIND_GLYPHS: Readonly<Record<FileKind, UixIcon>>;
+
+// @public
+export const FILE_KIND_LABELS_EN: FileKindLabels;
+
+// @public
+export const FILE_KINDS: readonly FileKind[];
+
+// @public
+export const FILE_ROW_LABELS_EN: FileRowLabels;
+
+// @public
+export function FileDrop(input: FileDropProps): react.JSX.Element;
+
+// @public
+export interface FileDropLabels {
+    choose: string;
+    chooseLabel: string;
+    dragRelease: string;
+    dragSummary: string;
+    fileMany: string;
+    fileOne: string;
+    prompt: string;
+}
+
+// @public (undocumented)
+export interface FileDropProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'onDrop'> {
+    accept?: string;
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    kindLabels?: Partial<FileKindLabels>;
+    // (undocumented)
+    labels?: Partial<FileDropLabels>;
+    multiple?: boolean;
+    onFiles: (files: File[]) => void;
+    onReject?: (files: File[]) => void;
+    targetRef?: RefObject<HTMLElement | null>;
+}
+
+// @public
+export function fileExtension(name: string): string;
+
+// @public
+export type FileKind = 'img' | 'doc' | 'sheet' | 'mail' | 'code' | 'log' | 'archive' | 'other';
+
+// @public
+export function fileKind(name: string, mime?: string): FileKind;
+
+// @public @deprecated (undocumented)
 export function fileKind(file: {
     name: string;
     type?: string;
-}): 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
+}): LegacyFileKind;
+
+// @public
+export function FileKindIcon(input: FileKindIconProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface FileKindIconProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    kind?: FileKind;
+    label?: string;
+    mime?: string;
+    name?: string;
+    // (undocumented)
+    size?: FileKindIconSize;
+    typeLabel?: string;
+}
+
+// @public
+export type FileKindIconSize = 'sm' | 'md' | 'lg';
+
+// @public
+export type FileKindLabels = Record<FileKind, string>;
 
 // @public
 export function fileMatchesAccept(file: {
@@ -2735,6 +2892,64 @@ export interface FileRejection<F = File> {
 export type FileRejectionReason = 'type' | 'size' | 'count';
 
 // @public
+export function FileRow(input: FileRowProps): react.JSX.Element;
+
+// @public
+export interface FileRowLabels {
+    // (undocumented)
+    blocked: string;
+    cancel: string;
+    details: string;
+    done: string;
+    download: string;
+    // (undocumented)
+    failed: string;
+    more: string;
+    percent: string;
+    progress: string;
+    retry: string;
+    // (undocumented)
+    scanning: string;
+    transferred: string;
+    uploading: string;
+}
+
+// @public (undocumented)
+export interface FileRowProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actions?: ReactNode;
+    as?: 'div' | 'li';
+    density?: 'default' | 'compact';
+    download?: string;
+    // (undocumented)
+    formatSize?: FileSizeFormatter;
+    href?: string;
+    kind?: FileKind;
+    kindLabels?: Partial<FileKindLabels>;
+    labels?: Partial<FileRowLabels>;
+    loaded?: number;
+    // (undocumented)
+    locale?: string;
+    message?: ReactNode;
+    meta?: ReactNode;
+    mime?: string;
+    name: string;
+    onCancel?: () => void;
+    onDetails?: () => void;
+    onDownload?: () => void;
+    onMoreActions?: (event: MouseEvent_2<HTMLButtonElement>) => void;
+    onRetry?: () => void;
+    progress?: number;
+    size?: number;
+    sizeBase?: 1000 | 1024;
+    // (undocumented)
+    state?: FileRowState;
+    typeLabel?: string;
+}
+
+// @public
+export type FileRowState = 'idle' | 'uploading' | 'done' | 'scanning' | 'blocked' | 'failed';
+
+// @public
 export type FileSizeFormatter = (bytes: number, locale?: string) => string;
 
 // @public
@@ -2742,6 +2957,9 @@ export interface FileSizeOptions {
     base?: 1000 | 1024;
     units?: readonly [string, string, string, string, string];
 }
+
+// @public
+export function fileTypeLabel(name: string): string;
 
 // @public
 export function FileUpload(input: FileUploadProps): react.JSX.Element;
@@ -3751,6 +3969,9 @@ export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: 
 }): TimeGridDayLayout;
 
 // @public
+export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
+
+// @public
 export function LicensePositionBar(input: LicensePositionBarProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -4359,6 +4580,8 @@ export function Meter(input: MeterProps): react.JSX.Element;
 // @public (undocumented)
 export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
     label?: string;
+    target?: number;
+    targetLabel?: string;
     tone?: MeterTone;
     toneLabels?: Partial<Record<Exclude<MeterTone, 'success' | 'neutral' | 'accent'>, string>>;
     value?: number;
@@ -7322,6 +7545,19 @@ export interface SortKey {
     field: string;
 }
 
+// @public
+export function Sparkline(input: SparklineProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values'> {
+    height?: number;
+    label?: string;
+    tone?: 'ink' | 'series';
+    // (undocumented)
+    values: number[];
+    width?: number;
+}
+
 // @public (undocumented)
 export function Spinner(input: SpinnerProps): react.JSX.Element;
 
@@ -7424,6 +7660,22 @@ export interface StatTrend {
     sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
+// @public
+export function StatusDot(input: StatusDotProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatusDotProps extends HTMLAttributes<HTMLSpanElement> {
+    children: ReactNode;
+    quiet?: boolean;
+    // (undocumented)
+    size?: 'sm' | 'md';
+    // (undocumented)
+    tone?: StatusDotTone;
+}
+
+// @public
+export type StatusDotTone = 'neutral' | 'info' | 'success' | 'warning' | 'critical' | 'danger';
+
 // @public (undocumented)
 export function StatusPill(input: StatusPillProps): react.JSX.Element;
 
@@ -7447,6 +7699,31 @@ export interface StatusRowProps extends HTMLAttributes<HTMLDivElement> {
     meta?: ReactNode;
     name: ReactNode;
 }
+
+// @public
+export function StatusStrip(input: StatusStripProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface StatusStripItem {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: ReactNode;
+    state?: ReactNode;
+    // (undocumented)
+    tone: StatusStripTone;
+}
+
+// @public (undocumented)
+export interface StatusStripProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    items: StatusStripItem[];
+    listAffected?: boolean;
+    summary: string;
+}
+
+// @public (undocumented)
+export type StatusStripTone = 'ok' | 'warning' | 'critical' | 'unknown';
 
 // @public (undocumented)
 export function Step(input: StepProps): react.JSX.Element;
@@ -8431,6 +8708,9 @@ export interface UixLabels {
     };
     // (undocumented)
     entityPicker?: Partial<EntityPickerLabels>;
+    fileDrop?: Partial<FileDropLabels>;
+    fileKinds?: Partial<FileKindLabels>;
+    fileRow?: Partial<FileRowLabels>;
     // (undocumented)
     fileUpload?: Partial<FileUploadLabels>;
     // (undocumented)
@@ -8539,6 +8819,9 @@ export interface UseAnchoredPositionOptions {
     placement?: Placement;
     shiftMainAxis?: boolean;
 }
+
+// @public
+export function useArrive(): ArriveState;
 
 // @public
 export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;

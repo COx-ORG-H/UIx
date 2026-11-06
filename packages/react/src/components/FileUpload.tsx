@@ -10,7 +10,7 @@ import { useUixLabels } from '../labels-context.js';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
 import { Progress } from './Progress.js';
-import { FileIcon } from './FileIcon.js';
+import { FileGlyph } from './FileGlyph.js';
 
 export type FileUploadStatus = 'queued' | 'uploading' | 'done' | 'error';
 
@@ -200,7 +200,7 @@ export function FileUpload({
               <li key={item.id} className="uix-filelist__item uix-file-upload__item" data-status={item.status}>
                 {image
                   ? <img className="uix-file-upload__thumb" src={item.previewUrl} alt="" />
-                  : <span className="uix-attachment__icon"><FileIcon name={item.name} type={item.type} /></span>}
+                  : <span className="uix-attachment__icon"><FileGlyph name={item.name} type={item.type} /></span>}
                 <div className="uix-file-upload__body">
                   <span className="uix-file-upload__name">{item.name}</span>
                   <span className="uix-file-upload__meta">

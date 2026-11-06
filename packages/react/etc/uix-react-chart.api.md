@@ -124,8 +124,103 @@ export type ChartTokenSource = Element | ((token: string) => string);
 // @public (undocumented)
 export const DEFAULT_CHART_LABELS: ChartLabels;
 
+// @public (undocumented)
+export const GLANCE_AT_REST: GlanceMotion;
+
+// @public
+export interface GlanceChartBaseProps {
+    ariaLabel: string;
+    categoryLabel?: string;
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    empty?: ReactNode;
+    group?: string;
+    height?: number;
+    // (undocumented)
+    labels?: Partial<ChartLabels>;
+    // (undocumented)
+    loading?: boolean;
+    // (undocumented)
+    onEvents?: Record<string, ChartEventHandler>;
+    // (undocumented)
+    style?: CSSProperties;
+}
+
+// @public
+export type GlanceFormat = (value: number) => string;
+
+// @public
+export function GlanceLineChart(props: GlanceLineChartProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface GlanceLineChartProps extends GlanceLineInput, GlanceChartBaseProps {
+}
+
+// @public (undocumented)
+export interface GlanceLineInput {
+    area?: boolean;
+    categories: string[];
+    endLabel?: boolean;
+    forecast?: {
+        categories: string[];
+        values: number[];
+        name: string;
+        label?: string;
+    };
+    // (undocumented)
+    format?: GlanceFormat;
+    name: string;
+    tooltipTitle?: (category: string) => string;
+    // (undocumented)
+    values: number[];
+}
+
+// @public
+export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, motion?: GlanceMotion): EChartsOption;
+
+// @public
+export interface GlanceMotion {
+    delay: number;
+    grow: number;
+    // (undocumented)
+    play: boolean;
+    stagger: number;
+    trace: number;
+}
+
 // @public
 export function mergeChartTheme(theme: EChartsOption, option: EChartsOption): EChartsOption;
+
+// @public
+export const PAIRED_BARS_MAX_BUCKETS = 12;
+
+// @public
+export function PairedBarChart(props: PairedBarChartProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface PairedBarChartProps extends PairedBarsInput, GlanceChartBaseProps {
+}
+
+// @public (undocumented)
+export interface PairedBarsInput {
+    categories: string[];
+    comparison: {
+        name: string;
+        values: number[];
+    };
+    // (undocumented)
+    format?: GlanceFormat;
+    series: {
+        name: string;
+        values: number[];
+    };
+    // (undocumented)
+    tooltipTitle?: (category: string) => string;
+}
+
+// @public
+export function pairedBarsOption(k: UixChartTokens, input: PairedBarsInput, motion?: GlanceMotion): EChartsOption;
 
 // @public
 export function uixChartAreaGradient(color: string): {
@@ -152,6 +247,7 @@ export interface UixChartTokens {
     axis: string;
     // (undocumented)
     border: string;
+    categories?: string[];
     // (undocumented)
     comparison: string;
     // (undocumented)
@@ -168,12 +264,15 @@ export interface UixChartTokens {
     grid: string;
     // (undocumented)
     neutral: string;
-    // (undocumented)
     palette: string[];
     // (undocumented)
     partial: string;
+    radius?: string;
     // (undocumented)
     reference: string;
+    series?: string;
+    seriesSoft?: string;
+    shadow?: string;
     // (undocumented)
     surface: string;
     // (undocumented)
@@ -188,7 +287,10 @@ export interface UixChartTokens {
 }
 
 // @public
-export function uixChartTokens(source?: ChartTokenSource): UixChartTokens;
+export function uixChartTokens(source?: ChartTokenSource): UixChartTokens & Required<Pick<UixChartTokens, 'series' | 'seriesSoft' | 'categories' | 'radius' | 'shadow'>>;
+
+// @public
+export function uixGlanceBase(k: UixChartTokens, motion?: GlanceMotion): EChartsOption;
 
 // (No @packageDocumentation comment for this package)
 

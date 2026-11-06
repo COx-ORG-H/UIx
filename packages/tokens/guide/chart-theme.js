@@ -16,6 +16,9 @@ export function uixChartTokens(source) {
   const unquote = (font) => font.replace(/"/g, '');
   return {
     palette: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => t(`chart-${i}`)),
+    series: t('chart-series'),
+    seriesSoft: t('chart-series-soft'),
+    categories: [1, 2, 3].map((i) => t(`chart-${i}`)),
     neutral: t('chart-neutral'),
     grid: t('chart-grid'),
     axis: t('chart-axis'),
@@ -34,6 +37,8 @@ export function uixChartTokens(source) {
     border: t('border-strong'),
     fontSans: unquote(t('font-sans')),
     fontMono: unquote(t('font-mono')),
+    radius: t('radius-md'),
+    shadow: t('shadow-popover'),
   };
 }
 

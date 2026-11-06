@@ -20,6 +20,13 @@ export interface MeterProps extends HTMLAttributes<HTMLDivElement> {
   label?: string;
   /** TENSOR RX-125 (UIX-04): the spoken tone words; English defaults. */
   toneLabels?: Partial<Record<Exclude<MeterTone, 'success' | 'neutral' | 'accent'>, string>>;
+  /**
+   * A goal on the same 0–100 scale (calm kit 2.56): a thin ink mark across the track, so
+   * "42 %, target 95 %" reads from the bar itself. Clamped to 0–100.
+   */
+  target?: number;
+  /** How the target is said after the value, e.g. "Ziel 95 %". Default `target ${target}%`. */
+  targetLabel?: string;
 }
 
 /** Spoken tone suffix — the fill colour is the only visual tone cue (UIX-A11Y-4). */
@@ -30,11 +37,28 @@ const toneText: Record<SpokenMeterTone, string> = {
   overdue: 'overdue',
 };
 
-/** Horizontal utilization / threshold bar backed by `.uix-meter`. */
-export function Meter({ value = 0, tone, label, toneLabels, className, ...props }: MeterProps) {
+const clamp = (n: number) => Math.max(0, Math.min(100, n));
+
+/**
+ * Horizontal utilization / threshold bar backed by `.uix-meter`. Inside an `Arrive` stage the
+ * fill slides in from its start edge on the first paint (`.uix-arrive__slide`).
+ */
+export function Meter({ value = 0, tone, label, toneLabels, target, targetLabel, className, ...props }: MeterProps) {
   const spoken: Partial<Record<MeterTone, string>> = { ...toneText, ...toneLabels };
-  const pct = Math.max(0, Math.min(100, value));
+  const pct = clamp(value);
   const toneWord = tone ? spoken[tone] : undefined;
+  const hasTarget = typeof target === 'number' && Number.isFinite(target);
+  const goal = hasTarget ? clamp(target) : 0;
+  const goalWords = hasTarget ? (targetLabel ?? `target ${goal}%`) : undefined;
+  const valueText = [toneWord || goalWords ? `${pct}%` : null, toneWord, goalWords].filter(Boolean).join(', ');
+  const fill = (
+    <div
+      className="uix-meter__fill uix-arrive__slide"
+      // --val slides the fill on transform (meter.css); width never animates
+      style={{ '--val': pct / 100 } as CSSProperties}
+      {...(tone && tone !== 'success' ? { 'data-tone': tone } : {})}
+    />
+  );
   return (
     <div
       role="meter"
@@ -42,17 +66,18 @@ export function Meter({ value = 0, tone, label, toneLabels, className, ...props 
       aria-valuemin={0}
       aria-valuemax={100}
       // non-default tones are colour-only on screen; speak them via aria-valuetext (UIX-A11Y-4)
-      aria-valuetext={toneWord ? `${pct}%, ${toneWord}` : undefined}
+      aria-valuetext={valueText || undefined}
       aria-label={label}
-      className={cx('uix-meter', className)}
+      className={cx('uix-meter', hasTarget && 'uix-meter--target', className)}
       {...props}
+      style={hasTarget ? ({ '--target': goal / 100, ...props.style } as CSSProperties) : props.style}
     >
-      <div
-        className="uix-meter__fill"
-        // --val slides the fill on transform (meter.css); width never animates
-        style={{ '--val': pct / 100 } as CSSProperties}
-        {...(tone && tone !== 'success' ? { 'data-tone': tone } : {})}
-      />
+      {hasTarget ? (
+        <>
+          <div className="uix-meter__clip">{fill}</div>
+          <span className="uix-meter__target" aria-hidden="true" />
+        </>
+      ) : fill}
     </div>
   );
 }

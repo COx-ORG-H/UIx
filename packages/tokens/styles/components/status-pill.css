@@ -11,8 +11,11 @@
   .uix-pill--info    { --tone-bg: var(--uix-info-bg);    --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info); }
   .uix-pill--warning { --tone-bg: var(--uix-warning-bg); --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning); }
   .uix-pill--danger  { --tone-bg: var(--uix-danger-bg);  --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger); }
-  /* critical = the one SOLID fill (most urgent); muted = a quiet, chrome-less label */
-  .uix-pill--critical { --tone-bg: var(--uix-danger); --tone-fg: var(--uix-danger-fg); --tone-dot: var(--uix-danger-fg); }
+  /* critical (calm kit 2.56): no longer a solid red fill. The danger tint with the danger words
+     in semibold and the danger dot, so the one thing that is broken now reads apart from a plain
+     danger pill without shouting. A solid red fill is kept for the destructive button only. */
+  .uix-pill--critical { --tone-bg: var(--uix-danger-bg); --tone-fg: var(--uix-danger-text); --tone-dot: var(--uix-danger-solid); font-weight: 600; }
+  /* muted = a quiet, chrome-less label */
   .uix-pill--muted    { --tone-bg: transparent;       --tone-fg: var(--uix-text-muted); --tone-dot: var(--uix-text-muted); }
   /* time-pressure tones (U1 tokens — distinct from severity and validation-error) */
   .uix-pill--attention { --tone-bg: var(--uix-attention-bg); --tone-fg: var(--uix-attention-text); --tone-dot: var(--uix-attention); }
@@ -64,4 +67,33 @@
   .uix-pill--lg .uix-pill__dot { width: 9px; height: 9px; }
   /* the dot treatment has no box at any size: its label lines up with the cell's other text */
   .uix-pill--dot:is(.uix-pill--sm, .uix-pill--lg) { padding-inline: 0; }
+}
+
+/* StatusDot (calm kit 2.56): a dot and a word, no box, for the signal ladder on a glance page.
+   neutral is ink, info the accent, warning amber and critical red: the word carries the meaning,
+   the dot is the glance. Word and dot wear the tone's TEXT role: AA on the surface, the app
+   background and the tone's own tint in both modes, so the dot clears 3:1 wherever the word can
+   sit (the SOLID role measured 2.78:1 for success and 2.91:1 for warning on their light tints).
+   Never pulses. */
+@layer uix.components {
+  .uix-status-dot {
+    display: inline-flex; align-items: baseline; gap: var(--uix-space-2);
+    font-size: var(--uix-text-meta); font-weight: 600; line-height: 1.4; color: var(--tone-fg, var(--uix-text-hushed));
+  }
+  .uix-status-dot::before {
+    content: ""; flex: none; align-self: center; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--tone-dot, var(--uix-text-hushed));
+  }
+  .uix-status-dot--neutral  { --tone-fg: var(--uix-text-hushed);  --tone-dot: var(--uix-text-hushed); font-weight: 500; }
+  .uix-status-dot--info     { --tone-fg: var(--uix-info-text);    --tone-dot: var(--uix-info-text); }
+  .uix-status-dot--success  { --tone-fg: var(--uix-success-text); --tone-dot: var(--uix-success-text); }
+  .uix-status-dot--warning  { --tone-fg: var(--uix-warning-text); --tone-dot: var(--uix-warning-text); }
+  .uix-status-dot--critical { --tone-fg: var(--uix-danger-text);  --tone-dot: var(--uix-danger-text); }
+  /* quiet: the word in ink, only the dot keeps the hue (a list of services, a legend line) */
+  .uix-status-dot--quiet { color: var(--uix-text-hushed); font-weight: 500; }
+  .uix-status-dot--sm { gap: var(--uix-space-1); font-size: var(--uix-text-eyebrow); }
+  .uix-status-dot--sm::before { width: 6px; height: 6px; }
+  @media (forced-colors: active) {
+    .uix-status-dot::before { background: CanvasText; }
+  }
 }

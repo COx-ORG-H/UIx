@@ -743,6 +743,48 @@ enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { d
 - **Deprecated:** `zonedDateSpan` (end-inclusive, swaps inverted ends) and `enumerateDateSpan` (stops silently at
   370) are unchanged in 2.x. Use `zonedDaySpan` and `enumerateDateKeys`.
 
+### Calm kit: glance cards, quiet status and the arrival (2.56.0)
+
+For a home page that greets before it warns: one question per card, red only for what is broken now, and motion once on the first paint. Phase 1 of the TENSOR calm-home proposal (2026-11-04).
+
+**Status, quietly.** `StatusDot` is a dot and a word, no box: `neutral` (a fact, in ink), `info`, `warning`, `critical` (`danger` is an alias), and `success` for a service list. The word and the dot both wear the tone's text colour, so the dot clears 3:1 on the surface, the app background and the tone's own tint; `quiet` keeps the word in ink. The `critical` StatusPill is now the danger tint with the danger words (semibold) instead of a solid red fill; the destructive `Button variant="danger"` is the one solid red left.
+
+```tsx
+<StatusDot tone="critical">Läuft gerade</StatusDot>
+<StatusDot tone="warning">SLA in 1 Std. 40 Min.</StatusDot>
+```
+
+**Glance cards.** `ChartCard` asks a question (`question`, a heading), answers it (`headline` large, `answer` short), holds one chart and a `note` line; `empty` replaces all of it with one sentence. The chart is one of:
+
+- `GlanceLineChart` (`@tensor_1/react/chart` or `/chart/preset`): one series in `--uix-chart-series`, labelled at its end, an optional dashed `forecast`, three dashed gridlines, sans tabular axis digits and a dark tooltip with a crosshair. Builds a hidden data table from the data; pass `ariaLabel` and `categoryLabel`.
+- `PairedBarChart` (same entries): per bucket the measure in blue beside its comparison in grey, up to 12 buckets (it warns above). Put the key in `note` with `ChartLegend`.
+- `BarList`: label, bar, value per bucket; every value written out.
+- `Meter target={95} targetLabel="Ziel 95 %"`: an ink mark at the goal, said after the value.
+- `StatusStrip`: one cell per service and only the affected ones listed, critical first.
+- `Sparkline`: an ink-grey line with a dot on the latest value; decoration unless you pass `label`.
+
+The option builders are public for your own glance charts: `glanceLineOption`, `pairedBarsOption`, `uixGlanceBase` (pure functions of `uixChartTokens()`).
+
+```tsx
+<ChartCard question="Wächst der Rückstand?" headline={<Count value={85} arrive />} answer="offen, Prognose 140 bis 23. Nov."
+  note="Gestrichelt: Prognose." arriveIndex={5}>
+  <GlanceLineChart ariaLabel="Offener Rückstand, 12 Wochen" categoryLabel="Woche" name="offen"
+    categories={weeks} values={backlog} forecast={{ categories, values, name: 'erwartet', label: 'Prognose 140' }} />
+</ChartCard>
+```
+
+**The arrival.** Wrap the page in `Arrive` and mark the cards in reading order with `ArriveItem index` (or `ChartCard arriveIndex`). On the first mount the cards fade and rise 8 px, 45 ms apart, over 420 ms; lines trace in (700 ms, 150 ms after their card), bars grow 25 ms apart (500 ms) and `Count arrive` counts up (600 ms). Then the stage rests: a re-render, a refetch or new data never replays it, and the resting state is the finished page. `name="home"` remembers it for the browser session (sessionStorage), so a reload or a route change back does not replay it either; `ready={!loading}` waits for the data. Under reduced motion each card only fades for 160 ms and the marks are drawn at once. `useArrive()` tells your own marks whether the stage is playing; plain markup opts in with `.uix-arrive__item`, `.uix-arrive__trace` (an SVG stroke with `pathLength="1"`), `.uix-arrive__grow` and `.uix-arrive__slide`.
+
+```tsx
+<Arrive name="home" ready={!loading}>
+  <ArriveItem index={0}><RunningNow /></ArriveItem>
+  <ArriveItem index={1}><Stat label="Warten auf Sie" value={<Count value={16} arrive />} /></ArriveItem>
+  …
+</Arrive>
+```
+
+**Tokens.** The status families are softer in light and dark (fills, words, dots and tints; overdue follows danger), all AA. Palette v2: `--uix-chart-1..8` are blue (the series), teal, violet, green, plum, olive, cyan, moss, with no red and no amber slot; `--uix-chart-1` stays the brand blue (`#0455E6`, dark `#3280FC`); `--uix-chart-series` (= chart-1) and `--uix-chart-series-soft` are new. The arrival timings are `--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count` and `--uix-arrive-rise`.
+
 ### Two-axis grids: MatrixInput and MatrixHeatmap
 
 `MatrixInput` fills a grid of choices, one per row and column, from the keyboard alone. `MatrixHeatmap` shows how many items sit in each cell, each cell's named band, and a way to the items behind it. Neither has words of its own: `labels`, the axes, the options and the bands come from you.
@@ -888,6 +930,32 @@ A full-screen media viewer (HAR-1367; TENSOR's capture viewer, MOTUS's programme
 - **List:** each file shows its size and status. Uploads show a progress bar (indeterminate without `progress`), and failures show the reason and a Retry button. `previewUrl` shows a thumbnail, and `onAltChange` asks for alt text on images.
 - **Attachment:** the name is the link (`href`, `download`, `renderLink`). It has a quieter `meta` line, a `state` slot (e.g. a "Scanning" `StatusPill`), `actions`, `onRemove`, and `status` `loading` | `error` | `forbidden` (no link, and the reason shown). It's server-renderable.
 - Pure helpers: `formatFileSize`, `fileMatchesAccept`, `partitionFiles`, `fileKind`.
+
+### File kit: kinds, the file row and the slim drop row (2.57.0)
+
+Attachments that show what they are before you read the name, and an upload you can watch (variation H of the 2026-11-05 attachments study; TENSOR's Anhänge panel). Each kind of file has a hue (`--uix-file-<kind>`) and a Lucide glyph; a row's left edge carries the kind's tint, and that tint becomes the upload fill.
+
+```tsx
+<section ref={panel} aria-labelledby="files-h">
+  <h3 id="files-h">Anhänge</h3>
+  <FileDrop targetRef={panel} accept=".pdf,.log,image/*" onFiles={(files) => files.forEach(startUpload)} />
+  <ul className="uix-file-rows">
+    {files.map((f) => (
+      <FileRow key={f.id} as="li" density="compact" name={f.name} size={f.size} meta={`${f.by}, ${f.at}`}
+        state={f.state} progress={f.progress} href={f.url}
+        onMoreActions={(e) => openMenu(f, e.currentTarget)} onCancel={() => cancel(f)} onRetry={() => retry(f)} />
+    ))}
+  </ul>
+</section>
+```
+
+- **Kinds:** `fileKind(name, mime)` gives one of `img` Bild, `doc` Dokument, `sheet` Tabelle, `mail` E-Mail, `code` Code & Konfiguration, `log` Protokoll, `archive` Archiv, `other` Datei. A known extension wins over the MIME type (a `.log` arrives as `text/plain`); pass `''` as the name when only the type is known, as in a drag event. The lists are `FILE_KIND_EXTENSIONS`. None of the hues is red (red stays for broken) and none is the brand blue (blue stays for actions); in light five of them are the calm chart slots.
+- **`FileKindIcon`:** the glyph in the kind's colour with the extension (`fileTypeLabel`: at most four capitals) as a solid label on the corner, ringed in the surface colour. `size` `sm` 30 px (a compact row), `md` 34 px, `lg` 52 px. Decorative unless you pass `label`. It is server-renderable. (`FileIcon` in `./icons` is the plain `file` glyph, hence the name.)
+- **`FileRow` states:** `idle` (files that were already there), `uploading` (the fill scales to `progress`, 0 to 1, or `loaded / size`, with a thin leading edge; "Wird hochgeladen · 62 % · 1,5 von 2,4 MB" and Abbrechen with `onCancel`), `done` (just finished: a check draws on the icon and the fill fades over 1.2 s; render `idle` afterwards), `scanning` ("Wird auf Schadsoftware geprüft", no motion), `blocked` (amber, Details with `onDetails`) and `failed` (red, Erneut versuchen with `onRetry`). `message` replaces the words of the last two. The outcome of an upload is announced once, never the progress.
+- **Actions:** `href` makes the download a link (`download` sets the saved name), or pass `onDownload`; `onMoreActions` adds "Weitere Aktionen" for your `Menu`; `actions` replaces both. With a fine pointer they appear on hover and focus; on touch they are always there.
+- **`FileDrop`:** one dashed line, "Dateien ablegen oder auswählen", backed by a real file input. The choose button is the one tab stop and opens the chooser; a click anywhere on the row does too. While files are dragged over it (or over `targetRef`, such as the whole panel), it reads their MIME types and names them ("2 Dateien: Bild, Protokoll") and tints itself from the pointer outwards, one colour per kind. A drop hands the files that match `accept` to `onFiles` and the rest to `onReject`.
+- **Motion:** tokens only, transform and opacity, nothing loops. Under reduced motion the fill jumps and the check only fades.
+- **Words:** German by default. For English pass `FILE_ROW_LABELS_EN`, `FILE_DROP_LABELS_EN` and `FILE_KIND_LABELS_EN` to `UixLabelsProvider` (`fileRow`, `fileDrop`, `fileKinds`) or to one instance's `labels` / `kindLabels`. Sizes use `formatFileSize` in `locale` (default `de-DE`), `sizeBase` or `formatSize`.
 
 ### TextDiff
 

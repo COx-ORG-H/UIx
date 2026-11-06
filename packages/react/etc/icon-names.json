@@ -305,6 +305,10 @@
       "component": "FileCheck2Icon",
       "glyph": "file-check-corner"
     },
+    "FileCode": {
+      "component": "FileCodeIcon",
+      "glyph": "file-code"
+    },
     "FileDown": {
       "component": "FileDownIcon",
       "glyph": "file-down"
@@ -328,6 +332,10 @@
     "FileSpreadsheet": {
       "component": "FileSpreadsheetIcon",
       "glyph": "file-spreadsheet"
+    },
+    "FileTerminal": {
+      "component": "FileTerminalIcon",
+      "glyph": "file-terminal"
     },
     "FileText": {
       "component": "FileTextIcon",

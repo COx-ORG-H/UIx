@@ -34,6 +34,7 @@ function lab(rgb) {
 }
 const dE = (a, b) => { const [x, y] = [lab(a), lab(b)]; return 100 * Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]); };
 
+const DANGER_FLOOR = 10;
 const MODES = { light: { band: [0.43, 0.77], scope: scopeFor([], false) }, dark: { band: [0.48, 0.67], scope: scopeFor([], true) } };
 
 for (const [mode, { band, scope }] of Object.entries(MODES)) {
@@ -60,6 +61,34 @@ for (const [mode, { band, scope }] of Object.entries(MODES)) {
     }
   });
 
+  // chart-1 is the brand blue and the one series colour of a glance chart, so it must stand apart
+  // from EVERY other slot, not only its neighbours: chart-7 (cyan) and chart-3 (violet) sit close in hue.
+  test(`${mode}: chart-1 (the brand series) stays apart from every other slot (dE >= 15, CVD >= 8)`, () => {
+    const a = palette[0];
+    for (let j = 1; j < palette.length; j++) {
+      const b = palette[j];
+      const pair = `chart-1 ${hex(a)} / chart-${j + 1} ${hex(b)}`;
+      assert.ok(dE(a, b) >= 15, `${pair}: normal dE ${dE(a, b).toFixed(1)}`);
+      for (const kind of ["protan", "deutan"]) {
+        const d = dE(simulate(a, kind), simulate(b, kind));
+        assert.ok(d >= 8, `${pair}: ${kind} dE ${d.toFixed(1)}`);
+      }
+    }
+  });
+
+  // Rules for apps: red is never a series. No series token may equal a danger role or sit within
+  // dE 10 of one (today's closest: chart-5, 12.1 light / 10.5 dark; the 2.55 red slot was 8.6).
+  test(`${mode}: red is never a series: every series token is >= dE ${DANGER_FLOOR} from danger, danger-solid and danger-text`, () => {
+    const series = [...palette.map((c, i) => [`chart-${i + 1}`, c]), ["chart-series", evaluate("var(--uix-chart-series)", scope)]];
+    for (const role of ["danger", "danger-solid", "danger-text"]) {
+      const red = evaluate(`var(--uix-${role})`, scope);
+      for (const [name, c] of series) {
+        const d = dE(c, red);
+        assert.ok(d >= DANGER_FLOOR, `--uix-${name} ${hex(c)} is dE ${d.toFixed(1)} from --uix-${role} ${hex(red)}: red is never a series, pick a hue away from the danger family`);
+      }
+    }
+  });
+
   test(`${mode}: every chart slot is >= 3:1 on --uix-surface and --uix-bg-app`, () => {
     for (const backdrop of ["surface", "bg-app"]) {
       const bg = evaluate(`var(--uix-${backdrop})`, scope);
@@ -82,4 +111,17 @@ test("chart reference and event ink clear 3:1 (non-text) on the surface in both 
 
 test("the checks reproduce the defect they guard: old light chart-5/6 normal dE 10.8", () => {
   assert.equal(dE(evaluate("#EA580C", {}), evaluate("#E11D48", {})).toFixed(1), "10.8");
+});
+
+test("the danger floor catches the 2.55 red slot (#E11D48) against today's light danger", () => {
+  assert.ok(dE(evaluate("#E11D48", {}), evaluate("var(--uix-danger)", MODES.light.scope)) < DANGER_FLOOR);
+});
+
+test("chart-1 is the brand blue (#0455E6 light, #3280FC dark) and the series wash is derived from it", () => {
+  const light = evaluate("var(--uix-chart-1)", MODES.light.scope);
+  const dark = evaluate("var(--uix-chart-1)", MODES.dark.scope);
+  assert.deepEqual(light, evaluate("#0455E6", {}));
+  assert.deepEqual(dark, evaluate("#3280FC", {}));
+  assert.deepEqual(evaluate("var(--uix-chart-series-soft)", MODES.light.scope), evaluate("rgba(4,85,230,.14)", {}));
+  assert.deepEqual(evaluate("var(--uix-chart-series-soft)", MODES.dark.scope), evaluate("rgba(50,128,252,.18)", {}));
 });

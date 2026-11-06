@@ -344,6 +344,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-attachments"
   },
+  "file-kit": {
+    "route": "examples-crm-itsm",
+    "selector": ".uix-file-drop",
+    "container": "[data-file-kit-example=\"panel\"]"
+  },
   "audit-log": {
     "route": "examples-crm-itsm",
     "selector": ".uix-audit"
@@ -455,6 +460,16 @@ export const COMPONENT_SPECIMENS = {
   "utility-bits": {
     "route": "examples-utility",
     "selector": ".uix-code"
+  },
+  "chart-card": {
+    "route": "examples-data-display",
+    "selector": ".uix-chart-card",
+    "container": "[data-calm-example]"
+  },
+  "arrive": {
+    "route": "examples-data-display",
+    "selector": ".uix-arrive",
+    "container": "[data-calm-example]"
   },
   "matrix": {
     "route": "examples-data-display",

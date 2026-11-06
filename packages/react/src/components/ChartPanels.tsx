@@ -14,6 +14,11 @@ import type { CorrelationPoint, CorrelationScatterLabels, CorrelationScatterSpec
 /** Chart tokens as CSS custom properties: for the HTML parts (legend swatches), which re-theme by themselves. */
 const CSS_VAR_TOKENS: UixChartTokens = {
   palette: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `var(--uix-chart-${i})`),
+  series: 'var(--uix-chart-series)',
+  seriesSoft: 'var(--uix-chart-series-soft)',
+  categories: [1, 2, 3].map((i) => `var(--uix-chart-${i})`),
+  radius: 'var(--uix-radius-md)',
+  shadow: 'var(--uix-shadow-popover)',
   neutral: 'var(--uix-chart-neutral)',
   grid: 'var(--uix-chart-grid)',
   axis: 'var(--uix-chart-axis)',

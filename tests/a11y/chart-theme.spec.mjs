@@ -86,13 +86,15 @@ test('flipping data-theme recolours the mounted chart without a remount', async 
   expect(await page.evaluate(() => document.querySelector('#plain svg')?.dataset.mark)).toBe('kept');
 });
 
-test('docs chart examples: gridlines and the budget line are solid; nothing is dashed (dashes mean projection, HAR-1553)', async ({ page }, testInfo) => {
+test('docs analytic chart examples: gridlines and the budget line are solid; nothing is dashed (dashes mean projection, HAR-1553)', async ({ page }, testInfo) => {
   await page.addInitScript((t) => { try { localStorage.setItem('uix-theme', t); } catch {} }, testInfo.project.name);
   await page.goto('docs/explorer.html#examples-data-display', { waitUntil: 'networkidle' });
   await expect(page.locator('[data-uix-chart] svg path').first()).toBeAttached({ timeout: 15_000 });
   const grid = await tokenRgb(page, '--uix-chart-grid');
   const reference = await tokenRgb(page, '--uix-chart-reference');
-  const all = await page.evaluate(() => [...document.querySelectorAll('[data-uix-chart] svg path')].map((p) => {
+  // the analytic examples only: a glance chart (calm kit 2.56, data-uix-chart="glance-…") draws
+  // three dashed gridlines by its own grammar; tests/a11y/calm-kit.spec.mjs checks those
+  const all = await page.evaluate(() => [...document.querySelectorAll('[data-uix-chart]:not([data-uix-chart^="glance-"]) svg path')].map((p) => {
     const cs = getComputedStyle(p);
     return { stroke: cs.stroke, dash: cs.strokeDasharray };
   }));

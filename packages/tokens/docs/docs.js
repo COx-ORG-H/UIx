@@ -84,6 +84,7 @@ const NAV_ITEMS = [
   { name: 'Chart tokens', slug: 'chart-tokens', group: 'Foundations', summary: 'The categorical palette, analytic roles and the shipped ECharts theme.', keywords: ['chart', 'palette', 'echarts', 'threshold', 'forecast', 'dataviz'] },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
   { name: 'Status colour', slug: 'status-colour', group: 'Foundations', summary: 'Which state gets a colour, how loud it is on each surface, and the colour budget of a screen.', keywords: ['status', 'color', 'colour', 'policy', 'tone', 'neutral', 'badge', 'pill', 'dark mode'] },
+  { name: 'Rules for apps', slug: 'rules-for-apps', group: 'Foundations', summary: 'The calm rules every app built on UIx follows: the signal budget, brand and neutrals, chart grammar, motion grammar and files, and which ones the kit enforces.', keywords: ['rules', 'calm', 'signal budget', 'red', 'critical', 'chart grammar', 'motion grammar', 'loop', 'pulse', 'brand', 'neutrals', 'files', 'policy'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
   { name: 'Icons & assets', slug: 'icons-assets', group: 'Foundations', summary: 'Icon, emoji, image, and media usage across UIx products.', keywords: ['icons', 'emoji', 'images', 'media'] },
   { name: 'Accessibility', slug: 'accessibility', group: 'Foundations', summary: 'Keyboard, focus, contrast, and motion expectations.', keywords: ['a11y', 'wcag', 'screen reader'] },
@@ -107,9 +108,9 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Matrix'],
-  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Change highlight', 'Count', 'List motion', 'Drag'],
-  'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
+  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
+  'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'File kit', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Print layout', 'Utility bits'],
 };
@@ -159,6 +160,10 @@ export const REACT_COMPONENT_SLUGS = [
   'qr-code', 'code-display', 'contact-card', 'print-layout', 'qr-scanner',
   // two-axis grids (HAR-2752, HAR-2753)
   'matrix',
+  // the calm kit (2.56): glance cards and the first-paint arrival
+  'chart-card', 'arrive',
+  // the file kit (2.57): kind colours and glyphs, the file row, the slim drop row
+  'file-kit',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -468,9 +473,11 @@ import { Button, Field, Input, StatusPill } from "@tensor_1/react";`, 'tsx')}`)}
 
   'chart-tokens': () => {
     const sw = (token, name) => `<div class="uix-docs__swatch"><div class="uix-docs__swatch-color" style="--swatch:var(${token})"></div><div class="uix-docs__swatch-meta"><strong>${esc(name)}</strong><code>${token}</code></div></div>`;
-    const palette = ['Blue', 'Cyan', 'Green', 'Ochre', 'Orange', 'Red', 'Violet', 'Pink'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
+    const palette = ['Blue · the series', 'Teal', 'Violet', 'Green', 'Plum', 'Olive', 'Cyan', 'Moss'].map((name, i) => sw(`--uix-chart-${i + 1}`, `${i + 1} · ${name}`)).join('');
     const roles = [
-      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind the data. Never dashed.'],
+      ['--uix-chart-series', 'Series', 'The one series colour of a glance chart (= chart-1). A second series is the grey comparison.'],
+      ['--uix-chart-series-soft', 'Series wash', 'The series colour as a faint fill: the area under a glance line.'],
+      ['--uix-chart-grid', 'Grid', 'Solid 1 px hairline behind analytic data. A glance chart (ChartCard) draws three dashed lines in the axis ink instead, and no axis titles.'],
       ['--uix-chart-axis', 'Axis', 'Axis line. Labels use --uix-text-muted.'],
       ['--uix-chart-reference', 'Reference', 'Neutral ink for target, budget and baseline lines.'],
       ['--uix-chart-zone-warning', 'Warning zone', 'Alpha fill for a warning threshold band.'],
@@ -507,6 +514,49 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     ${section('rules', 'Rules', `<p><a class="uix-btn uix-btn--secondary" href="#examples-data-display">Open the chart examples</a></p>${compare('Draw the grid as a quiet solid hairline. Keep dashes for thresholds and projections, so a dashed line always means “not measured”. Label values and legends in text tokens.', 'Dash the gridlines, colour a target line with a series or status hue, or paint axis labels in the series colour.')}`)}`;
   },
 
+  'rules-for-apps': () => {
+    // The calm-kit rules (2.56) as rules for every app that uses UIx, not one product. The same list
+    // is in Docs/design-system.md and in the portfolio UI lessons; keep the three in step.
+    const RULES = [
+      ['signal-budget', 'Signal budget', [
+        'Neutral by default, then <strong>info</strong> (the accent), <strong>attention</strong> (amber) and <strong>critical</strong> (red), in that order of loudness.',
+        'Red only as a dot plus words (<a href="#status-pill">StatusDot</a>), for what is broken now.',
+        'At most one red-tinted surface per screen: the critical pill is the danger tint, never a solid fill.',
+        'Tints, dots or coloured text instead of fills. The <a href="#status-colour">status colour policy</a> maps each state to its tone.',
+      ]],
+      ['brand-neutrals', 'Brand and neutrals', [
+        'The brand blue is for actions, links, selection and <code>--uix-chart-1</code>, never a category or a status.',
+        'The cool neutrals stay: no warm or tinted greys for backgrounds, surfaces or text.',
+      ]],
+      ['chart-grammar', 'Chart grammar', [
+        'One question per chart; the headline number answers it (<a href="#chart-card">ChartCard</a>).',
+        'At most two series, the second a grey comparison. Direct labels, at most three gridlines, no axis titles.',
+        'Red is never a series. An empty chart is one sentence.',
+        'It draws in on the first load only.',
+        'On home and overview surfaces only these forms: a number, a number with a sparkline, an area or line, bars (at most 12), a bar list, progress to a target, service status.',
+      ]],
+      ['motion-grammar', 'Motion grammar', [
+        'Arrive, respond and settle, with the timings in the motion tokens and the arrival helper (<a href="#motion">Motion</a>, <code>Arrive</code>).',
+        'A refresh never replays the arrival.',
+        'Reduced motion is a fade of 200 ms or less.',
+        'No pulsing, shaking, looping or overshoot on data or status. The only loops are indeterminate loading indicators: Spinner, Skeleton, indeterminate progress.',
+        'A state of unknown duration shows text, not only motion.',
+      ]],
+      ['files', 'Files', [
+        'Colour a file by its kind, not its format: the file kit sets the kinds and their icons.',
+      ]],
+    ];
+    const GATES = [
+      ['No loop outside a loader', '<code>check-motion</code> (<code>npm run test:contract</code>), rule <code>loop-not-loading</code>: an infinite animation outside its short allowlist of loading indicators fails the build.'],
+      ['Red is never a series', '<code>packages/tokens/tests/chart-palette.test.mjs</code> (<code>npm run test:tokens</code>): a series token that equals a danger role, or sits within dE 10 of one, fails.'],
+      ['Critical is not a solid fill', '<code>packages/tokens/tests/calm-kit.test.mjs</code> (<code>npm run test:tokens</code>): a critical or danger status that paints a solid fill, in any treatment or mode, fails.'],
+      ['Reduced motion is a short fade', '<code>tests/a11y/calm-kit.spec.mjs</code> and the motion tokens test: the reduced arrival is a fade of 200 ms or less.'],
+    ];
+    const list = (items) => `<ul>${items.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+    return `${pageHeader('Foundations', 'Rules for apps', 'Every app built on UIx follows these rules, whatever its domain. The kit enforces the ones a test can see; the rest are review rules.', ['every app', 'calm by default', 'gated where testable'])}
+    <div data-app-rules>${RULES.map(([id, title, items]) => section(id, title, list(items))).join('')}</div>
+    ${section('enforced', 'What the kit enforces', `<p>Each of these fails the UIx build when a change breaks the rule, so an app that uses the kit components gets them for free. A product that styles its own status or chart colours is held to the same rules in review.</p><div class="uix-table-wrap" tabindex="0" role="region" aria-label="Rules the kit enforces"><table class="uix-table" data-app-rule-gates><thead><tr><th scope="col">Rule</th><th scope="col">Gate</th></tr></thead><tbody>${GATES.map(([rule, gate]) => `<tr><td>${esc(rule)}</td><td>${gate}</td></tr>`).join('')}</tbody></table></div>`)}`;
+  },
   'status-colour': () => {
     // The status colour policy (HAR-1564, colour K3 of the 2026-10-07 operator review).
     const pill = (tone, text, treatment = 'soft') => `<span class="uix-pill uix-pill--${tone}${treatment === 'soft' ? '' : ` uix-pill--${treatment}`}"><span class="uix-pill__dot"></span>${esc(text)}</span>`;
@@ -520,7 +570,7 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
       ['Restored, recovered, succeeded after a failure', 'Positive outcome worth noticing', 'success'],
       ['Due soon, at risk, waiting too long', 'Attention needed soon', 'warning'],
       ['Failed, breached, blocked', 'Actionable now', 'danger'],
-      ['SEV-1, critical incident', 'The one solid fill', 'critical'],
+      ['SEV-1, critical incident', 'Broken now: the danger tint and words, never a solid fill', 'critical'],
     ];
     const matrix = `<div class="uix-docs__status-table" data-status-matrix tabindex="0" role="region" aria-label="Status colour mapping matrix"><table class="uix-table"><thead><tr><th scope="col">State</th><th scope="col">Category</th><th scope="col">Table (dot)</th><th scope="col">Header (soft)</th><th scope="col">Flag (outline)</th></tr></thead><tbody>${MATRIX.map(([state, category, tone]) => `<tr><td>${esc(state)}</td><td>${esc(category)}</td><td>${pill(tone, tone, 'dot')}</td><td>${pill(tone, tone)}</td><td>${pill(tone, tone, 'outline')}</td></tr>`).join('')}</tbody></table></div>`;
     // One ITSM queue, twice: colour as the state (today) and colour as the exception (the policy).
@@ -534,7 +584,7 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     ];
     const queue = (policy) => `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="${policy ? 'Queue with the policy' : 'Queue with colour as the state'}" data-status-queue="${policy ? 'do' : 'dont'}"><table class="uix-table"><thead><tr><th scope="col">Incident</th><th scope="col">Status</th><th scope="col">SLA</th><th scope="col">Priority</th></tr></thead><tbody>${ROWS.map(([id, title, oldState, newState, oldSla, newSla, prio, sev]) => `<tr><td><strong>${esc(title)}</strong><span class="uix-cell-sub uix-cell-sub--tabular">${esc(id)}</span></td><td>${policy ? `${sev ? pill(sev[0], sev[1]) + ' ' : ''}${pill(newState[0], newState[1], 'dot')}` : pill(oldState[0], oldState[1])}</td><td>${policy ? (newSla ? pill(newSla[0], newSla[1], 'outline') : `<span class="uix-cell-sub--tabular">${esc(oldSla[1])}</span>`) : pill(oldSla[0], oldSla[1])}</td><td>${policy ? `<span>${esc(prio[1])}</span>` : pill(prio[0], prio[1])}</td></tr>`).join('')}</tbody></table></div>`;
     return `${pageHeader('Foundations', 'Status colour', 'Every product maps its domain states to colour by one policy: neutral first, colour only for what a person should notice, and a budget per screen.', ['neutral-first', 'treatment by surface', 'colour budget'])}
-    ${section('rules', 'The rules', `<ol data-status-rules><li><strong>Neutral is the default.</strong> Every lifecycle state is neutral: new, draft, submitted, approved, scheduled, on hold, closed, cancelled, rejected, merged, archived, active, healthy.</li><li><strong>Blue</strong> (<code>progress</code>) means in flight: in progress, in review, deploying.</li><li><strong>Green</strong> (<code>success</code>) means a positive outcome worth noticing, such as restored after a failure. It never means on track, active or closed.</li><li><strong>Amber</strong> (<code>warning</code>, <code>attention</code>) means attention needed soon.</li><li><strong>Red</strong> (<code>danger</code>) means failed, breached or blocked, and actionable now. Cancel and reject are decisions, not failures: they stay neutral.</li><li><strong>A solid fill</strong> (<code>critical</code>) is only for SEV-1 / critical.</li><li><strong>Colour budget:</strong> at most one filled hued pill per row; at most three hues on a screen outside charts; if more than 30% of the rows carry a filled hue, the mapping is wrong.</li><li><strong>Treatment by surface:</strong> a table cell uses <code>dot</code>, a record's own header uses <code>soft</code>, a flag among other chrome uses <code>outline</code> (<a href="#status-pill">Status pill</a>).</li><li><strong>Trends</strong> are coloured by sentiment, not by direction: a rise in breached SLAs is red (<a href="#stat-tile">Stat</a> <code>trend.sentiment</code>).</li><li><strong>Dark mode</strong> follows the targets below.</li></ol>`)}
+    ${section('rules', 'The rules', `<ol data-status-rules><li><strong>Neutral is the default.</strong> Every lifecycle state is neutral: new, draft, submitted, approved, scheduled, on hold, closed, cancelled, rejected, merged, archived, active, healthy.</li><li><strong>Blue</strong> (<code>progress</code>) means in flight: in progress, in review, deploying.</li><li><strong>Green</strong> (<code>success</code>) means a positive outcome worth noticing, such as restored after a failure. It never means on track, active or closed.</li><li><strong>Amber</strong> (<code>warning</code>, <code>attention</code>) means attention needed soon.</li><li><strong>Red</strong> (<code>danger</code>) means failed, breached or blocked, and actionable now. Cancel and reject are decisions, not failures: they stay neutral.</li><li><strong>Critical</strong> (<code>critical</code>, SEV-1: broken now) is the danger tint with semibold danger words, never a solid fill; at most one red-tinted surface per screen, and elsewhere red is a dot and words (<a href="#rules-for-apps">Rules for apps</a>).</li><li><strong>Colour budget:</strong> at most one filled hued pill per row; at most three hues on a screen outside charts; if more than 30% of the rows carry a filled hue, the mapping is wrong.</li><li><strong>Treatment by surface:</strong> a table cell uses <code>dot</code>, a record's own header uses <code>soft</code>, a flag among other chrome uses <code>outline</code> (<a href="#status-pill">Status pill</a>).</li><li><strong>Trends</strong> are coloured by sentiment, not by direction: a rise in breached SLAs is red (<a href="#stat-tile">Stat</a> <code>trend.sentiment</code>).</li><li><strong>Dark mode</strong> follows the targets below.</li></ol>`)}
     ${section('matrix', 'Mapping matrix', `<p>Map each domain state to a category first, then to the tone of that category. The treatment follows the surface, never the state.</p>${matrix}`)}
     ${section('do-dont', 'One queue, two mappings', `<p>The same six incidents. With colour as the state, every row shouts and the breach is one red among many. With the policy, the screen is calm, and the three things to act on — the SEV-1, the breach, the SLA due in 32 minutes — are the only colour.</p><div class="uix-stack" style="--gap:var(--uix-space-4)"><h3>Don’t: colour as the state</h3>${queue(false)}<h3>Do: neutral first, colour as the exception</h3>${queue(true)}${compare('Map lifecycle states to neutral and keep colour for what someone should act on; one filled pill per row at most.', 'Give every state its own hue, colour cancelled red, or colour “on track” green.')}</div>`)}
     ${section('budget', 'The colour budget', `<p>Count before you ship a screen. Outside charts: at most three hues, at most one filled hued pill per row, and filled hues on no more than 30% of the rows. The do-queue above uses three hues (blue, amber, red), one filled pill (the SEV-1) on one row of six (17%).</p>${callout('When the budget does not fit', 'If a screen needs more colour than the budget allows, the mapping is wrong: move lifecycle states back to neutral, and turn soft pills in a table into dots.', 'warning')}`)}
@@ -627,10 +677,10 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
 
 const reduce = useReducedMotion();
 graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in place, keep a loading indicator visibly alive, and land on the final state.', 'Freeze a spinner, hide a change behind movement, or keep sliding a panel when the user asked for less motion.')}`)}
-    ${section('gate', 'How the contract is enforced', `<p><code>npm run test:contract</code> runs <code>check-motion.mjs</code> over every UIx stylesheet and the React source. It fails on a raw time value, <code>transition: all</code>, an ease-in curve, an animated layout property, an infinite or moving animation with no <code>prefers-reduced-motion</code> rule for its selector, and a <code>:hover</code> that moves or reveals outside <code>@media (hover: hover) and (pointer: fine)</code>. <code>tests/a11y/motion-policy.spec.mjs</code> checks the reduced-motion behaviour and the instant surfaces in a real browser.</p>`)}
+    ${section('gate', 'How the contract is enforced', `<p><code>npm run test:contract</code> runs <code>check-motion.mjs</code> over every UIx stylesheet and the React source. It fails on a raw time value, <code>transition: all</code>, an ease-in curve, an animated layout property, an infinite or moving animation with no <code>prefers-reduced-motion</code> rule for its selector, a <code>:hover</code> that moves or reveals outside <code>@media (hover: hover) and (pointer: fine)</code>, and any infinite animation that is not an indeterminate loading indicator (<code>loop-not-loading</code>; the loaders are its allowlist, see <a href="#rules-for-apps">Rules for apps</a>). <code>tests/a11y/motion-policy.spec.mjs</code> checks the reduced-motion behaviour and the instant surfaces in a real browser.</p>`)}
     ${section('specimens', 'Specimens', `${demo(`<div class="uix-docs__motion-specimens">
   <div class="uix-stack uix-stack--compact"><strong>Enter, then a faster exit</strong><button class="uix-btn uix-btn--secondary uix-btn--sm" type="button" data-motion-toggle="motion-panel" aria-expanded="false" aria-controls="motion-panel">Show panel</button><div class="uix-docs__motion-panel" id="motion-panel" data-open="false"><span>Enters in 160 ms (<code>--uix-dur</code>), leaves in 110 ms (<code>--uix-dur-exit</code>).</span></div></div>
-  <div class="uix-stack uix-stack--compact"><strong>Looping indicators</strong><div class="uix-cluster"><span class="uix-spinner" role="status" aria-label="Loading"></span><button class="uix-btn uix-btn--primary uix-btn--sm" type="button" data-loading aria-label="Saving" disabled>Saving</button><span class="uix-heartbeat" aria-hidden="true"><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span></div><div class="uix-progress uix-progress--indeterminate" role="progressbar" aria-label="Importing"><div class="uix-progress__bar"></div></div><div class="uix-skeleton uix-skeleton--text"></div></div>
+  <div class="uix-stack uix-stack--compact"><strong>Looping indicators</strong><div class="uix-cluster"><span class="uix-spinner" role="status" aria-label="Loading"></span><button class="uix-btn uix-btn--primary uix-btn--sm" type="button" data-loading aria-label="Saving" disabled>Saving</button></div><div class="uix-progress uix-progress--indeterminate" role="progressbar" aria-label="Importing"><div class="uix-progress__bar"></div></div><div class="uix-skeleton uix-skeleton--text"></div></div>
   <div class="uix-stack uix-stack--compact"><strong>A value that moves on transform</strong><div class="uix-meter" role="meter" aria-label="Capacity" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35" data-motion-meter><div class="uix-meter__fill" style="--val:.35"></div></div><button class="uix-btn uix-btn--secondary uix-btn--sm" type="button" data-motion-meter-step>Change value</button></div>
   <div class="uix-stack uix-stack--compact"><strong>Hover lift (fine pointers only)</strong><a class="uix-card uix-card--interactive" href="#motion"><div class="uix-card__body">An interactive card</div></a></div>
 </div>`, `<div class="uix-progress uix-progress--indeterminate"><div class="uix-progress__bar"></div></div>
@@ -690,7 +740,7 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
   'status-pill': () => `${pageHeader('Components', 'Status pill', 'Compact labels communicate workflow, severity, priority, and time pressure with text, shape, and color together.', ['semantic tones', 'priority P1–P5', 'SLA states'])}
     ${section('status', 'Workflow status', demo(`<span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Draft</span><span class="uix-pill uix-pill--info"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Resolved</span><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Waiting</span><span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>Blocked</span>`))}
     ${section('priority', 'Priority and SLA', demo(`<span class="uix-pill uix-pill--p1"><span class="uix-pill__dot"></span>P1 Critical</span><span class="uix-pill uix-pill--p3"><span class="uix-pill__dot"></span>P3 Medium</span><span class="uix-pill uix-pill--sla-ok"><span class="uix-pill__dot"></span>SLA healthy</span><span class="uix-pill uix-pill--sla-at-risk"><span class="uix-pill__dot"></span>32m remaining</span><span class="uix-pill uix-pill--sla-breached"><span class="uix-pill__dot"></span>Breached 14m</span>`))}
-    ${section('treatments', 'Treatments: dot, soft and outline', `<p>One tone, three volumes. Pick by surface, not by state: a status in a table row is a <strong>dot</strong> beside a neutral label, the status of the record a page is about is <strong>soft</strong> (the tinted wash, the default), and a flag that sits among other chrome is an <strong>outline</strong>: a neutral hairline with a hushed label. Only <code>critical</code> keeps a toned border in the outline, and only <code>critical</code> is a solid fill. React: <code>&lt;StatusPill treatment="dot" | "soft" | "outline"&gt;</code>; <code>filled</code> is the old name of <code>soft</code>. <code>dot</code> and <code>outline</code> always draw the dot. The <a href="#status-colour">status colour policy</a> says which tone a state gets.</p>${demo(`<div class="uix-stack" data-pill-treatments style="--gap:16px"><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Dot (tables)</span><div class="uix-cluster" data-pill-treatment="dot"><span class="uix-pill uix-pill--neutral uix-pill--dot"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--dot"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--dot"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--dot"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--dot"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--dot"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Soft (headers)</span><div class="uix-cluster" data-pill-treatment="soft"><span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Outline (flags)</span><div class="uix-cluster" data-pill-treatment="outline"><span class="uix-pill uix-pill--neutral uix-pill--outline"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--outline"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--outline"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--outline"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--outline"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--outline"><span class="uix-pill__dot"></span>SEV-1</span></div></div></div>`, `<!-- a table cell -->
+    ${section('treatments', 'Treatments: dot, soft and outline', `<p>One tone, three volumes. Pick by surface, not by state: a status in a table row is a <strong>dot</strong> beside a neutral label, the status of the record a page is about is <strong>soft</strong> (the tinted wash, the default), and a flag that sits among other chrome is an <strong>outline</strong>: a neutral hairline with a hushed label. Only <code>critical</code> keeps a toned border in the outline; no treatment is a solid fill (critical is the danger tint). React: <code>&lt;StatusPill treatment="dot" | "soft" | "outline"&gt;</code>; <code>filled</code> is the old name of <code>soft</code>. <code>dot</code> and <code>outline</code> always draw the dot. The <a href="#status-colour">status colour policy</a> says which tone a state gets.</p>${demo(`<div class="uix-stack" data-pill-treatments style="--gap:16px"><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Dot (tables)</span><div class="uix-cluster" data-pill-treatment="dot"><span class="uix-pill uix-pill--neutral uix-pill--dot"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--dot"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--dot"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--dot"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--dot"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--dot"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Soft (headers)</span><div class="uix-cluster" data-pill-treatment="soft"><span class="uix-pill uix-pill--neutral"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical"><span class="uix-pill__dot"></span>SEV-1</span></div></div><div class="uix-stack" style="--gap:8px"><span class="uix-text-eyebrow">Outline (flags)</span><div class="uix-cluster" data-pill-treatment="outline"><span class="uix-pill uix-pill--neutral uix-pill--outline"><span class="uix-pill__dot"></span>Scheduled</span><span class="uix-pill uix-pill--progress uix-pill--outline"><span class="uix-pill__dot"></span>In progress</span><span class="uix-pill uix-pill--success uix-pill--outline"><span class="uix-pill__dot"></span>Restored</span><span class="uix-pill uix-pill--warning uix-pill--outline"><span class="uix-pill__dot"></span>Due in 2h</span><span class="uix-pill uix-pill--danger uix-pill--outline"><span class="uix-pill__dot"></span>Breached</span><span class="uix-pill uix-pill--critical uix-pill--outline"><span class="uix-pill__dot"></span>SEV-1</span></div></div></div>`, `<!-- a table cell -->
 <span class="uix-pill uix-pill--danger uix-pill--dot"><span class="uix-pill__dot"></span>Breached</span>
 <!-- the record's own header -->
 <span class="uix-pill uix-pill--progress"><span class="uix-pill__dot"></span>In progress</span>
@@ -1044,6 +1094,61 @@ const toggleTheme = () => {
   document.querySelector('[data-uix-theme-toggle]')?.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} theme`);
 };
 
+/* The calm kit specimens (calm-specimens.js): replay the arrival as <Arrive> plays it (the stage
+   attribute set to play, then back to rest). */
+const replayArrival = (button) => {
+  const stage = button.parentElement?.nextElementSibling?.querySelector('.uix-arrive');
+  if (!stage) return;
+  stage.setAttribute('data-uix-arrive', 'rest');
+  void stage.offsetWidth;
+  stage.setAttribute('data-uix-arrive', 'play');
+  document.querySelectorAll('[data-uix-chart^="glance-"]').forEach((el) => el.dispatchEvent(new CustomEvent('uix-glance-replay')));
+};
+
+/* The file kit specimens (file-kit-specimens.js): replay an upload as FileRow draws one. The fill
+   follows the progress in steps, then the row turns "done" (the markup of the <template> FileRow
+   rendered for that state): the check draws and the fill fades. Under reduced motion the steps
+   jump and only the fades remain, as in the component. */
+const fileKitTimers = new WeakMap();
+const replayUpload = (button) => {
+  const box = button.closest('[data-file-kit-example]');
+  const row = box?.querySelector('[data-file-kit-upload]');
+  const doneRow = box?.querySelector('template[data-file-kit-done]')?.content.querySelector('.uix-file-row');
+  if (!row || !doneRow) return;
+  clearInterval(fileKitTimers.get(row));
+  if (!row.dataset.docsStart) row.dataset.docsStart = row.innerHTML;
+  row.innerHTML = row.dataset.docsStart;
+  row.dataset.state = 'uploading';
+  const total = Number(row.dataset.docsBytes);
+  const mb = (bytes) => new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(bytes / 1e6);
+  const meta = row.querySelector('.uix-file-row__meta');
+  const bar = row.querySelector('[role="progressbar"]');
+  let progress = 0;
+  const show = () => {
+    row.style.setProperty('--file-progress', String(progress));
+    const percent = Math.round(progress * 100);
+    meta.textContent = `Wird hochgeladen · ${percent} % · ${mb(total * progress)} von ${mb(total)} MB`;
+    bar?.setAttribute('aria-valuenow', String(percent));
+  };
+  show();
+  fileKitTimers.set(row, setInterval(() => {
+    progress = Math.min(1, Math.round((progress + 0.1) * 10) / 10);
+    show();
+    if (progress < 1) return;
+    clearInterval(fileKitTimers.get(row));
+    setTimeout(() => {
+      row.dataset.state = 'done';
+      row.querySelector('.uix-file-row__edge')?.remove();
+      bar?.removeAttribute('role');
+      for (const name of ['aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow']) bar?.removeAttribute(name);
+      bar?.setAttribute('aria-hidden', 'true');
+      row.querySelector('.uix-file-row__icon').append(doneRow.querySelector('.uix-file-row__check').cloneNode(true));
+      meta.innerHTML = doneRow.querySelector('.uix-file-row__meta').innerHTML;
+      row.querySelector('.uix-file-row__actions')?.replaceWith(doneRow.querySelector('.uix-file-row__actions').cloneNode(true));
+    }, 260);
+  }, 240));
+};
+
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (event) => {
     const target = event.target;
@@ -1057,6 +1162,8 @@ if (typeof document !== 'undefined') {
     else if (searchResult) openSearchResult(Number(searchResult.dataset.searchResult));
     else if (target.closest('[data-docs-search-open]')) openSearch();
     else if (target.closest('[data-uix-theme-toggle]')) toggleTheme();
+    else if (target.closest('[data-calm-replay]')) replayArrival(target.closest('[data-calm-replay]'));
+    else if (target.closest('[data-file-kit-replay]')) replayUpload(target.closest('[data-file-kit-replay]'));
     else if (target.closest('[data-docs-menu]')) openMobileMenu();
     else if (target.closest('[data-docs-menu-close], [data-docs-backdrop]')) {
       const wasOpen = closeMobileMenu();
