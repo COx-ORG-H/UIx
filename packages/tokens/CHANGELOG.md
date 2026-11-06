@@ -1,5 +1,25 @@
 # @tensor_1/tokens
 
+## 2.56.0
+
+### Minor Changes
+
+- 091b8d4: Calm kit, phase 1 of the TENSOR calm home: quieter status colours, quiet status, chart palette v2, glance cards and a first-paint arrival.
+
+  - Tokens: the danger, warning, success and info families are softer in light and dark (fills, text, dots, tints; overdue follows danger), every word AA on the surface and its tint. Palette v2: `--uix-chart-1..8` start with the series blue, teal and violet and have no red or amber slot; `--uix-chart-1` stays the brand blue (`#0455E6`, dark `#3280FC`); new `--uix-chart-series`, `--uix-chart-series-soft` and the arrival timings (`--uix-dur-arrive`, `--uix-stagger-arrive`, `--uix-delay-arrive-trace`, `--uix-dur-arrive-trace`, `--uix-dur-arrive-grow`, `--uix-stagger-arrive-grow`, `--uix-dur-arrive-count`, `--uix-arrive-rise`).
+  - 470333b: In dark mode `--uix-chart-3` (`#A580CF`) and `--uix-chart-7` (`#0A819D`) step off the brand blue, so `--uix-chart-1` stands apart from every slot. UIx keeps its cool neutrals.
+  - `StatusDot` (a dot and a word). The `critical` StatusPill is now the danger tint with the danger words instead of a solid red fill.
+  - `ChartCard`, `BarList`, `StatusStrip`, `Sparkline`, `Meter target`/`targetLabel`; `GlanceLineChart` and `PairedBarChart` in `./chart` and `./chart/preset`, with the pure `glanceLineOption`, `pairedBarsOption` and `uixGlanceBase`. `UixChartTokens` gains `series`, `seriesSoft`, `categories`, `radius` and `shadow`.
+  - `Arrive`, `ArriveItem`, `useArrive` and `Count arrive`: cards rise in reading order, lines trace, bars grow and numbers count up on the first mount (or once per session with `name`), never on a refresh or new data; a fade under reduced motion.
+
+- 1788ea3: Calm kit review fixes, before 2.56.0 ships:
+
+  - `UixChartTokens`: the new `series`, `seriesSoft`, `categories`, `radius` and `shadow` fields are optional, so a tokens object built for 2.55 still type-checks. `uixChartTokens()` always fills them; the glance charts fall back to `palette[0]`.
+  - `GlanceLineChart` / `PairedBarChart` settle at rest once their draw-in is over: data that arrives later (a new bar, a new point) appears at once instead of growing in.
+  - The `Arrive` stage context is shared across the CommonJS bundles, so a chart from `@tensor_1/react/chart` draws in with a stage from `@tensor_1/react` (it already did under ESM).
+  - `Count arrive` counts up once: a value that changes while the stage still plays ticks instead of counting up again.
+  - `StatusDot`: the dot wears the tone's text colour like its word, so it clears 3:1 on the tone's own tint too (light success and warning dots were 2.78:1 and 2.91:1 there).
+
 ## 2.55.3
 
 ### Patch Changes

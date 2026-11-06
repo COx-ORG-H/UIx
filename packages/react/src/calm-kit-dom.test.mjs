@@ -7,7 +7,10 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createElement as h, act } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { createRequire } from 'node:module';
+import { useContext } from 'react';
 import { StatusDot, StatusPill, Meter, ChartCard, BarList, StatusStrip, Sparkline, Arrive, ArriveItem, Count } from '../dist/index.js';
+import { GlanceLineChartCore, PairedBarChartCore } from '../dist/components/GlanceCharts.js';
 
 const html = (el) => renderToStaticMarkup(el);
 
@@ -112,11 +115,12 @@ before(async () => {
   expose('cancelAnimationFrame', dom.window.cancelAnimationFrame.bind(dom.window));
   expose('matchMedia', (query) => ({ matches: reduce && /reduce/.test(query), media: query, addEventListener() {}, removeEventListener() {} }));
   expose('IS_REACT_ACT_ENVIRONMENT', true);
+  expose('ResizeObserver', class { observe() {} disconnect() {} });
   ({ createRoot } = await import('react-dom/client'));
 });
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'sessionStorage', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'matchMedia', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
+  for (const name of ['window', 'document', 'navigator', 'sessionStorage', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'matchMedia', 'IS_REACT_ACT_ENVIRONMENT', 'ResizeObserver']) delete globalThis[name];
 });
 afterEach(() => { mock.timers.reset(); reduce = false; document.body.replaceChildren(); });
 
@@ -182,4 +186,74 @@ test('Count arrive under reduced motion: the number is simply there', async () =
   const { host, render } = mount();
   await render(h(Arrive, null, h(Count, { value: 42, arrive: true })));
   assert.equal(host.querySelector('.uix-count').textContent, '42');
+});
+
+test('Count arrive counts up once: a value that goes 20 -> 0 -> 20 while the stage still plays does not count up again', async () => {
+  const { host, render } = mount();
+  // a late card (index 20) keeps the stage playing well past the count-up
+  const tree = (value) => h(Arrive, null, [h(ArriveItem, { index: 0, key: 0 }, h(Count, { value, arrive: true })), h(ArriveItem, { index: 20, key: 20 }, 'late')]);
+  await render(tree(20));
+  await act(async () => new Promise((r) => setTimeout(r, 900)));
+  assert.equal(host.querySelector('.uix-count').textContent, '20');
+  assert.equal(stage(host), 'play', 'the stage still plays (it rests after the whole arrival)');
+  await render(tree(0));
+  await render(tree(20));
+  await act(async () => new Promise((r) => setTimeout(r, 100)));
+  assert.equal(host.querySelector('.uix-count').textContent, '20');
+});
+
+// a stand-in ECharts: records every option ChartCore applies
+function recordingEngine() {
+  const applied = [];
+  return {
+    applied,
+    init(element) {
+      return { setOption: (option) => applied.push(option), getDom: () => element, isDisposed: () => false, clear() {}, dispose() {}, on() {}, off() {}, resize() {} };
+    },
+  };
+}
+
+test('a glance chart draws in with its stage, then settles: data that arrives later never grows in', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const engine = recordingEngine();
+  const { render } = mount();
+  const bars = (categories) => h(Arrive, null, h(ArriveItem, { index: 0 }, h(PairedBarChartCore, {
+    engine, ariaLabel: 'Eingang und Erledigt', categories,
+    series: { name: 'Eingang', values: categories.map(() => 4) }, comparison: { name: 'Erledigt', values: categories.map(() => 3) },
+  })));
+  await render(bars(['A']));
+  assert.equal(engine.applied.at(-1).animation, true, 'the first draw plays');
+  await act(async () => mock.timers.tick(5000));
+  assert.equal(engine.applied.at(-1).animation, false, 'after the draw-in the chart is at rest');
+  await render(bars(['A', 'B']));
+  const last = engine.applied.at(-1);
+  assert.deepEqual(last.xAxis.data, ['A', 'B']);
+  assert.equal(last.animation, false, 'the new bucket appears at once');
+
+  // a line settles the same way
+  const lineEngine = recordingEngine();
+  const line = mount();
+  await line.render(h(Arrive, null, h(GlanceLineChartCore, { engine: lineEngine, ariaLabel: 'Rückstand', name: 'offen', categories: ['1', '2'], values: [3, 4] })));
+  assert.equal(lineEngine.applied.at(-1).animation, true);
+  await act(async () => mock.timers.tick(5000));
+  assert.equal(lineEngine.applied.at(-1).animation, false);
+});
+
+test('CommonJS: every bundle shares one Arrive stage context, so a chart from @tensor_1/react/chart sees a stage from @tensor_1/react', async () => {
+  const require = createRequire(import.meta.url);
+  const key = Symbol.for('@tensor_1/react/arrive-contexts');
+  const index = require('../dist/index.cjs');
+  const registry = globalThis[key];
+  assert.ok(registry?.stage && registry?.index, 'the CJS index registers the contexts');
+  require('../dist/chart.cjs');
+  assert.equal(globalThis[key], registry, 'the chart bundle reuses them instead of creating its own');
+  for (const bundle of ['index.cjs', 'chart.cjs', 'chart-preset.cjs']) {
+    const source = require('node:fs').readFileSync(new URL(`../dist/${bundle}`, import.meta.url), 'utf8');
+    assert.match(source, /Symbol\.for\("@tensor_1\/react\/arrive-contexts"\)/, bundle);
+  }
+  let seen = null;
+  const Probe = () => { seen = useContext(registry.stage).playing; return null; };
+  const { render } = mount();
+  await render(h(index.Arrive, null, h(Probe)));
+  assert.equal(seen, true, 'the CJS stage provides the shared context');
 });

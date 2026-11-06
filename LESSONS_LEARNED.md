@@ -86,6 +86,9 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
+### 2026-11-06 · CommonJS entry bundles · `289fb84`
+- **Rule:** a React context, store or module-level registry used across package entries must live on a `Symbol.for(...)` global registry, not in a module.  **Why:** the ESM build is one file per module, but the CJS build bundles each entry on its own, so `require('@tensor_1/react')` and `require('@tensor_1/react/chart')` each create their own `createContext()` and a chart never sees its stage.  **Gate:** calm-kit-dom.test.mjs requires both CJS bundles and asserts they share the registered Arrive contexts.  **Tag:** build, react-context, cjs
+
 ### 2026-10-31 · CSS sticky and size containers · `4fa9cb0`
 - **Rule:** `container-type: inline-size` takes the element's width from its parent only, so give it `inline-size: 100%` or it collapses to 0 px in a flex row. A `position: sticky` header needs a scroller with a height limit, and it is the `th` cells that stick, so measure a cell: the `<thead>` box scrolls away.
 - **Why:** a harness with a sized grid parent and a horizontal-only scroll test passed both defects; only a parent that shrinks to fit and a capped height show them.

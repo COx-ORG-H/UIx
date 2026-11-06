@@ -738,7 +738,7 @@ enumerateDateKeys({ start: '2026-10-11', end: '2026-10-12' });            // { d
 
 For a home page that greets before it warns: one question per card, red only for what is broken now, and motion once on the first paint. Phase 1 of the TENSOR calm-home proposal (2026-11-04).
 
-**Status, quietly.** `StatusDot` is a dot and a word, no box: `neutral` (a fact, in ink), `info`, `warning`, `critical` (`danger` is an alias), and `success` for a service list. The word wears the tone's text colour and the dot its solid one; `quiet` keeps the word in ink. The `critical` StatusPill is now the danger tint with the danger words (semibold) instead of a solid red fill; the destructive `Button variant="danger"` is the one solid red left.
+**Status, quietly.** `StatusDot` is a dot and a word, no box: `neutral` (a fact, in ink), `info`, `warning`, `critical` (`danger` is an alias), and `success` for a service list. The word and the dot both wear the tone's text colour, so the dot clears 3:1 on the surface, the app background and the tone's own tint; `quiet` keeps the word in ink. The `critical` StatusPill is now the danger tint with the danger words (semibold) instead of a solid red fill; the destructive `Button variant="danger"` is the one solid red left.
 
 ```tsx
 <StatusDot tone="critical">Läuft gerade</StatusDot>

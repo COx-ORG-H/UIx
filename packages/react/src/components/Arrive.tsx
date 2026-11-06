@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import type { Context, CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { tokenMs } from '../motion.js';
 
@@ -38,14 +38,30 @@ export interface ArriveState {
   playing: boolean;
 }
 
-const ArriveContext = createContext<ArriveState>({ playing: false });
+/*
+ * The two contexts live on a global registry, not in this module: the CommonJS build bundles each
+ * entry on its own (`require('@tensor_1/react')` for the stage, `require('@tensor_1/react/chart')`
+ * for a chart), so a module-level context would exist once per bundle and a chart would never see
+ * its stage. Symbol.for makes every copy of this module find the same pair.
+ */
+interface ArriveContexts {
+  stage: Context<ArriveState>;
+  index: Context<number>;
+}
+const REGISTRY = Symbol.for('@tensor_1/react/arrive-contexts');
+const registry = globalThis as typeof globalThis & { [REGISTRY]?: ArriveContexts };
+const contexts: ArriveContexts = (registry[REGISTRY] ??= {
+  stage: createContext<ArriveState>({ playing: false }),
+  index: createContext(0),
+});
+const ArriveContext = contexts.stage;
 
 /** Whether the nearest `Arrive` stage is playing its arrival. Charts read it to draw in once. */
 export function useArrive(): ArriveState {
   return useContext(ArriveContext);
 }
 
-const ArriveIndexContext = createContext(0);
+const ArriveIndexContext = contexts.index;
 
 /** The reading-order index of the nearest `ArriveItem` (or `ChartCard arriveIndex`); 0 outside one. */
 export function useArriveIndex(): number {

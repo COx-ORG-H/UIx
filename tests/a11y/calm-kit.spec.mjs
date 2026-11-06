@@ -4,7 +4,7 @@
  *   - new data never replays it, and a stage waiting for its data plays when the data lands;
  *   - reduced motion: a fade of <= 200 ms, and marks are drawn at once;
  *   - the glance charts: dashed gridlines, a direct label, a dark tooltip on hover;
- *   - StatusDot words and the critical pill wear the text roles; only the destructive button is a
+ *   - StatusDot words and dots and the critical pill wear the text roles; only the destructive button is a
  *     solid red fill;
  *   - axe is clean.
  * The token values are pinned in packages/tokens/tests/calm-kit.test.mjs. Screenshots at four
@@ -119,7 +119,7 @@ test('glance charts: dashed gridlines, a direct label, a dark tooltip with the e
   await expect(page.locator('#card-flow table.uix-visually-hidden th')).toHaveText(['Tag', 'eröffnet', 'gelöst']);
 });
 
-test('status words wear the text roles; only the destructive button is a solid red fill', async ({ page }, testInfo) => {
+test('status words and dots wear the text roles; only the destructive button is a solid red fill', async ({ page }, testInfo) => {
   await open(page, themeOf(testInfo));
   const got = await page.evaluate(() => {
     const colour = (v) => { const p = document.createElement('span'); p.style.color = v; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; };
@@ -128,7 +128,8 @@ test('status words wear the text roles; only the destructive button is a solid r
     return {
       critical: [s('#dot-critical').color, colour('var(--uix-danger-text)')],
       warning: [s('#dot-warning').color, colour('var(--uix-warning-text)')],
-      dot: [getComputedStyle(document.querySelector('#dot-critical'), '::before').backgroundColor, bg('var(--uix-danger-solid)')],
+      // the dot wears the word's colour (>= 3:1 on the tone's own tint too), not the solid role
+      dot: [getComputedStyle(document.querySelector('#dot-critical'), '::before').backgroundColor, bg('var(--uix-danger-text)')],
       pill: [s('#pill-critical').backgroundColor, bg('var(--uix-danger-bg)'), s('#pill-critical').color, colour('var(--uix-danger-text)')],
       button: [s('#destroy').backgroundColor, bg('var(--uix-danger)')],
     };

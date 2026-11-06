@@ -18,28 +18,36 @@ const read = (f) => readFileSync(new URL(`../styles/components/${f}`, import.met
 const MODES = [["light", scopeFor([], false)], ["dark", scopeFor([], true)]];
 const c = (scope, name) => evaluate(`var(--uix-${name})`, scope);
 
-const DOT = { info: ["info-text", "info-solid"], success: ["success-text", "success-solid"], warning: ["warning-text", "warning-solid"], critical: ["danger-text", "danger-solid"] };
+// tone -> [its text role, its tint]; the word AND the dot wear the text role
+const DOT = { neutral: ["text-hushed", "neutral-bg"], info: ["info-text", "info-bg"], success: ["success-text", "success-bg"], warning: ["warning-text", "warning-bg"], critical: ["danger-text", "danger-bg"] };
 
-test("StatusDot: each tone's word is its TEXT role and its dot its SOLID role", () => {
+test("StatusDot: each tone's word and dot wear its TEXT role", () => {
   const css = read("status-pill.css");
-  for (const [tone, [text, solid]] of Object.entries(DOT)) {
-    assert.match(css, new RegExp(`\\.uix-status-dot--${tone}\\s*\\{\\s*--tone-fg: var\\(--uix-${text}\\);\\s*--tone-dot: var\\(--uix-${solid}\\);`), tone);
+  for (const [tone, [text]] of Object.entries(DOT)) {
+    assert.match(css, new RegExp(`\\.uix-status-dot--${tone}\\s*\\{\\s*--tone-fg: var\\(--uix-${text}\\);\\s*--tone-dot: var\\(--uix-${text}\\);`), tone);
   }
 });
 
 for (const [mode, scope] of MODES) {
-  test(`${mode}: StatusDot words are AA and dots >= 3:1 on the surface and the app background`, () => {
-    for (const [tone, [text, solid]] of Object.entries(DOT)) {
-      for (const bg of ["surface", "bg-app"]) {
-        const back = c(scope, bg);
-        const word = contrast(over(c(scope, text), back), back);
-        const dot = contrast(over(c(scope, solid), back), back);
-        assert.ok(word >= 4.5, `${tone} word ${word.toFixed(2)}:1 on ${bg}`);
-        assert.ok(dot >= 3, `${tone} dot ${dot.toFixed(2)}:1 on ${bg}`);
+  // the dot's own tint is the case that failed: light success-solid 2.78:1, warning-solid 2.91:1 on their -bg
+  test(`${mode}: StatusDot words are AA and dots >= 3:1 on the surface, the app background and the tone's own tint`, () => {
+    for (const [tone, [text, tint]] of Object.entries(DOT)) {
+      const surface = c(scope, "surface");
+      const backs = { surface, "bg-app": c(scope, "bg-app"), [tint]: over(c(scope, tint), surface) };
+      for (const [bg, back] of Object.entries(backs)) {
+        const ratio = contrast(over(c(scope, text), back), back);
+        assert.ok(ratio >= 4.5, `${tone} word ${ratio.toFixed(2)}:1 on ${bg}`);
+        assert.ok(ratio >= 3, `${tone} dot ${ratio.toFixed(2)}:1 on ${bg}`);
       }
     }
   });
 }
+
+test("the tint check reproduces the defect it guards: light success-solid on success-bg is under 3:1", () => {
+  const [, scope] = MODES[0];
+  const back = over(c(scope, "success-bg"), c(scope, "surface"));
+  assert.ok(contrast(c(scope, "success-solid"), back) < 3);
+});
 
 test("light status hues are calmer: fills, words and dots at chroma <= 0.16, tints <= 0.025", () => {
   const scope = MODES[0][1];

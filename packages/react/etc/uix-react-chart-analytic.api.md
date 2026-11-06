@@ -600,7 +600,7 @@ export interface UixChartTokens {
     axis: string;
     // (undocumented)
     border: string;
-    categories: string[];
+    categories?: string[];
     // (undocumented)
     comparison: string;
     // (undocumented)
@@ -620,12 +620,12 @@ export interface UixChartTokens {
     palette: string[];
     // (undocumented)
     partial: string;
-    radius: string;
+    radius?: string;
     // (undocumented)
     reference: string;
-    series: string;
-    seriesSoft: string;
-    shadow: string;
+    series?: string;
+    seriesSoft?: string;
+    shadow?: string;
     // (undocumented)
     surface: string;
     // (undocumented)
@@ -640,7 +640,7 @@ export interface UixChartTokens {
 }
 
 // @public
-export function uixChartTokens(source?: ChartTokenSource): UixChartTokens;
+export function uixChartTokens(source?: ChartTokenSource): UixChartTokens & Required<Pick<UixChartTokens, 'series' | 'seriesSoft' | 'categories' | 'radius' | 'shadow'>>;
 
 // (No @packageDocumentation comment for this package)
 
