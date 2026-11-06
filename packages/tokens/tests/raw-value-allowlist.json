@@ -38,6 +38,8 @@
     { "file":"search-suggest.css", "prop":"margin-top", "value":"2px", "why":"Optical nudge aligning a row icon with the cap height of the 1.35 line-height title. Sub-scale hairline below the 4px space scale." },
     { "file":"search-suggest.css", "prop":"gap", "value":"2px", "why":"Hairline gap between a row's title, breadcrumb and context lines — the line heights do the rhythm; 4px (space-1) reads as three separate items. Sub-scale optical value." },
     { "file":"steps.css", "prop":"margin-top", "value":"13px", "why":"Centres the horizontal connector line on the 26px step marker (26 / 2). Tied to the marker size in .uix-step__marker; component-intrinsic geometry, not a spacing-scale step (HAR-1362)." },
-    { "file":"rich-text.css", "prop":"margin-left", "value":"-1px", "why":"Pulls each toolbar group's 1px separator (its border-left) over the toolbar's left clip edge, so a group that wraps to the start of a row draws no stray line there. Equal to the border width; a hairline, not a spacing-scale step (TENSOR HAR-2511)." }
+    { "file":"rich-text.css", "prop":"margin-left", "value":"-1px", "why":"Pulls each toolbar group's 1px separator (its border-left) over the toolbar's left clip edge, so a group that wraps to the start of a row draws no stray line there. Equal to the border width; a hairline, not a spacing-scale step (TENSOR HAR-2511)." },
+    { "file":"file-kit.css", "prop":"font-size", "value":"7.5px", "why":"The type label on a 34 px FileKindIcon (file kit 2.57, the operator's chosen variation H): four capitals must fit on the icon's corner, so it sits below the type scale (which bottoms out at the 11px eyebrow). Icon-intrinsic, like an emoji glyph size; the extension also repeats in the file name beside it." },
+    { "file":"file-kit.css", "prop":"font-size", "value":"9px", "why":"The type label on the 52 px FileKindIcon: the same label scaled with the icon (7.5px at 34 px). Icon-intrinsic, below the type scale." }
   ]
 }

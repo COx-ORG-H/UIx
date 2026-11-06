@@ -110,7 +110,7 @@ export const COMPONENT_GROUPS = {
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
-  'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
+  'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'File kit', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Print layout', 'Utility bits'],
 };
@@ -162,6 +162,8 @@ export const REACT_COMPONENT_SLUGS = [
   'matrix',
   // the calm kit (2.56): glance cards and the first-paint arrival
   'chart-card', 'arrive',
+  // the file kit (2.57): kind colours and glyphs, the file row, the slim drop row
+  'file-kit',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -1103,6 +1105,50 @@ const replayArrival = (button) => {
   document.querySelectorAll('[data-uix-chart^="glance-"]').forEach((el) => el.dispatchEvent(new CustomEvent('uix-glance-replay')));
 };
 
+/* The file kit specimens (file-kit-specimens.js): replay an upload as FileRow draws one. The fill
+   follows the progress in steps, then the row turns "done" (the markup of the <template> FileRow
+   rendered for that state): the check draws and the fill fades. Under reduced motion the steps
+   jump and only the fades remain, as in the component. */
+const fileKitTimers = new WeakMap();
+const replayUpload = (button) => {
+  const box = button.closest('[data-file-kit-example]');
+  const row = box?.querySelector('[data-file-kit-upload]');
+  const doneRow = box?.querySelector('template[data-file-kit-done]')?.content.querySelector('.uix-file-row');
+  if (!row || !doneRow) return;
+  clearInterval(fileKitTimers.get(row));
+  if (!row.dataset.docsStart) row.dataset.docsStart = row.innerHTML;
+  row.innerHTML = row.dataset.docsStart;
+  row.dataset.state = 'uploading';
+  const total = Number(row.dataset.docsBytes);
+  const mb = (bytes) => new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(bytes / 1e6);
+  const meta = row.querySelector('.uix-file-row__meta');
+  const bar = row.querySelector('[role="progressbar"]');
+  let progress = 0;
+  const show = () => {
+    row.style.setProperty('--file-progress', String(progress));
+    const percent = Math.round(progress * 100);
+    meta.textContent = `Wird hochgeladen · ${percent} % · ${mb(total * progress)} von ${mb(total)} MB`;
+    bar?.setAttribute('aria-valuenow', String(percent));
+  };
+  show();
+  fileKitTimers.set(row, setInterval(() => {
+    progress = Math.min(1, Math.round((progress + 0.1) * 10) / 10);
+    show();
+    if (progress < 1) return;
+    clearInterval(fileKitTimers.get(row));
+    setTimeout(() => {
+      row.dataset.state = 'done';
+      row.querySelector('.uix-file-row__edge')?.remove();
+      bar?.removeAttribute('role');
+      for (const name of ['aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow']) bar?.removeAttribute(name);
+      bar?.setAttribute('aria-hidden', 'true');
+      row.querySelector('.uix-file-row__icon').append(doneRow.querySelector('.uix-file-row__check').cloneNode(true));
+      meta.innerHTML = doneRow.querySelector('.uix-file-row__meta').innerHTML;
+      row.querySelector('.uix-file-row__actions')?.replaceWith(doneRow.querySelector('.uix-file-row__actions').cloneNode(true));
+    }, 260);
+  }, 240));
+};
+
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (event) => {
     const target = event.target;
@@ -1117,6 +1163,7 @@ if (typeof document !== 'undefined') {
     else if (target.closest('[data-docs-search-open]')) openSearch();
     else if (target.closest('[data-uix-theme-toggle]')) toggleTheme();
     else if (target.closest('[data-calm-replay]')) replayArrival(target.closest('[data-calm-replay]'));
+    else if (target.closest('[data-file-kit-replay]')) replayUpload(target.closest('[data-file-kit-replay]'));
     else if (target.closest('[data-docs-menu]')) openMobileMenu();
     else if (target.closest('[data-docs-menu-close], [data-docs-backdrop]')) {
       const wasOpen = closeMobileMenu();

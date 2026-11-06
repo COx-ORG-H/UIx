@@ -294,6 +294,18 @@
       "subpath": "."
     },
     {
+      "name": "FileDrop",
+      "subpath": "."
+    },
+    {
+      "name": "FileKindIcon",
+      "subpath": "."
+    },
+    {
+      "name": "FileRow",
+      "subpath": "."
+    },
+    {
       "name": "FileUpload",
       "subpath": "."
     },
@@ -1258,6 +1270,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "FileCodeIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "FileDownIcon",
       "subpath": "./icons"
     },
@@ -1287,6 +1303,10 @@
     },
     {
       "name": "FileSpreadsheetIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileTerminalIcon",
       "subpath": "./icons"
     },
     {

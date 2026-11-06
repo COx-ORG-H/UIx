@@ -922,6 +922,32 @@ A full-screen media viewer (HAR-1367; TENSOR's capture viewer, MOTUS's programme
 - **Attachment:** the name is the link (`href`, `download`, `renderLink`). It has a quieter `meta` line, a `state` slot (e.g. a "Scanning" `StatusPill`), `actions`, `onRemove`, and `status` `loading` | `error` | `forbidden` (no link, and the reason shown). It's server-renderable.
 - Pure helpers: `formatFileSize`, `fileMatchesAccept`, `partitionFiles`, `fileKind`.
 
+### File kit: kinds, the file row and the slim drop row (2.57.0)
+
+Attachments that show what they are before you read the name, and an upload you can watch (variation H of the 2026-11-05 attachments study; TENSOR's Anhänge panel). Each kind of file has a hue (`--uix-file-<kind>`) and a Lucide glyph; a row's left edge carries the kind's tint, and that tint becomes the upload fill.
+
+```tsx
+<section ref={panel} aria-labelledby="files-h">
+  <h3 id="files-h">Anhänge</h3>
+  <FileDrop targetRef={panel} accept=".pdf,.log,image/*" onFiles={(files) => files.forEach(startUpload)} />
+  <ul className="uix-file-rows">
+    {files.map((f) => (
+      <FileRow key={f.id} as="li" density="compact" name={f.name} size={f.size} meta={`${f.by}, ${f.at}`}
+        state={f.state} progress={f.progress} href={f.url}
+        onMoreActions={(e) => openMenu(f, e.currentTarget)} onCancel={() => cancel(f)} onRetry={() => retry(f)} />
+    ))}
+  </ul>
+</section>
+```
+
+- **Kinds:** `fileKind(name, mime)` gives one of `img` Bild, `doc` Dokument, `sheet` Tabelle, `mail` E-Mail, `code` Code & Konfiguration, `log` Protokoll, `archive` Archiv, `other` Datei. A known extension wins over the MIME type (a `.log` arrives as `text/plain`); pass `''` as the name when only the type is known, as in a drag event. The lists are `FILE_KIND_EXTENSIONS`. None of the hues is red (red stays for broken) and none is the brand blue (blue stays for actions); in light five of them are the calm chart slots.
+- **`FileKindIcon`:** the glyph in the kind's colour with the extension (`fileTypeLabel`: at most four capitals) as a solid label on the corner, ringed in the surface colour. `size` `sm` 30 px (a compact row), `md` 34 px, `lg` 52 px. Decorative unless you pass `label`. It is server-renderable. (`FileIcon` in `./icons` is the plain `file` glyph, hence the name.)
+- **`FileRow` states:** `idle` (files that were already there), `uploading` (the fill scales to `progress`, 0 to 1, or `loaded / size`, with a thin leading edge; "Wird hochgeladen · 62 % · 1,5 von 2,4 MB" and Abbrechen with `onCancel`), `done` (just finished: a check draws on the icon and the fill fades over 1.2 s; render `idle` afterwards), `scanning` ("Wird auf Schadsoftware geprüft", no motion), `blocked` (amber, Details with `onDetails`) and `failed` (red, Erneut versuchen with `onRetry`). `message` replaces the words of the last two. The outcome of an upload is announced once, never the progress.
+- **Actions:** `href` makes the download a link (`download` sets the saved name), or pass `onDownload`; `onMoreActions` adds "Weitere Aktionen" for your `Menu`; `actions` replaces both. With a fine pointer they appear on hover and focus; on touch they are always there.
+- **`FileDrop`:** one dashed line, "Dateien ablegen oder auswählen", backed by a real file input. The choose button is the one tab stop and opens the chooser; a click anywhere on the row does too. While files are dragged over it (or over `targetRef`, such as the whole panel), it reads their MIME types and names them ("2 Dateien: Bild, Protokoll") and tints itself from the pointer outwards, one colour per kind. A drop hands the files that match `accept` to `onFiles` and the rest to `onReject`.
+- **Motion:** tokens only, transform and opacity, nothing loops. Under reduced motion the fill jumps and the check only fades.
+- **Words:** German by default. For English pass `FILE_ROW_LABELS_EN`, `FILE_DROP_LABELS_EN` and `FILE_KIND_LABELS_EN` to `UixLabelsProvider` (`fileRow`, `fileDrop`, `fileKinds`) or to one instance's `labels` / `kindLabels`. Sizes use `formatFileSize` in `locale` (default `de-DE`), `sizeBase` or `formatSize`.
+
 ### TextDiff
 
 A two-way diff of two texts (HAR-1368; TENSOR's knowledge-article version diff). `DiffViewer` stays the three-way configuration diff.

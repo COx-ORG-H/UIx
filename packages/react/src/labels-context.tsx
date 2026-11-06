@@ -14,6 +14,9 @@ import type { SelectLabels } from './components/Select.js';
 import type { RuleBuilderLabels } from './components/RuleBuilder.js';
 import type { FileUploadLabels } from './components/FileUpload.js';
 import type { AttachmentLabels } from './attachment-labels.js';
+import type { FileKindLabels } from './file-model.js';
+import type { FileRowLabels } from './components/FileRow.js';
+import type { FileDropLabels } from './components/FileDrop.js';
 import type { EntityPickerLabels } from './components/EntityPicker.js';
 import type { TreeLabels } from './components/Tree.js';
 import type { OrgChartLabels } from './components/OrgChart.js';
@@ -124,6 +127,12 @@ export interface UixLabels {
   select?: Partial<SelectLabels>;
   ruleBuilder?: Partial<RuleBuilderLabels>;
   fileUpload?: Partial<FileUploadLabels>;
+  /** `FileRow` (file kit 2.57): German by default; `FILE_ROW_LABELS_EN` for English. */
+  fileRow?: Partial<FileRowLabels>;
+  /** `FileDrop` (file kit 2.57): German by default; `FILE_DROP_LABELS_EN` for English. */
+  fileDrop?: Partial<FileDropLabels>;
+  /** The kind names `FileRow` and `FileDrop` show: German by default; `FILE_KIND_LABELS_EN` for English. */
+  fileKinds?: Partial<FileKindLabels>;
   attachment?: Partial<AttachmentLabels>;
   /** `TagInput` (HAR-1377): the chips' × names, the announcements and the refusals. */
   tagInput?: Partial<TagInputLabels>;

@@ -10,8 +10,8 @@ const PATHS: Record<ReturnType<typeof fileKind>, string> = {
   other: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5',
 };
 
-/** A decorative glyph for a file's kind (Lucide-style strokes). Internal to FileUpload and Attachment. */
-export function FileIcon({ name, type }: { name: string; type?: string }) {
+/** A decorative glyph for a file's kind (Lucide-style strokes). Internal to FileUpload and Attachment (the public kind icon is FileIcon, file kit 2.57). */
+export function FileGlyph({ name, type }: { name: string; type?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={PATHS[fileKind({ name, type })]} />

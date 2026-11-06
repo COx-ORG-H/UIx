@@ -1,0 +1,155 @@
+/* uix file kit (2.57) — FileKindIcon, FileRow, FileDrop. One hue per kind of file (--uix-file-<kind>):
+   the icon draws in it, a row's left edge carries its tint, an upload fills with it, and a drop row
+   takes the colours of what is dragged over it. Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* Kind plumbing: every piece reads --file-kind*. */
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="img"] { --file-kind: var(--uix-file-img); --file-kind-soft: var(--uix-file-img-soft); --file-kind-strong: var(--uix-file-img-strong); --file-kind-edge: var(--uix-file-img-edge); --file-kind-label: var(--uix-file-img-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="doc"] { --file-kind: var(--uix-file-doc); --file-kind-soft: var(--uix-file-doc-soft); --file-kind-strong: var(--uix-file-doc-strong); --file-kind-edge: var(--uix-file-doc-edge); --file-kind-label: var(--uix-file-doc-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="sheet"] { --file-kind: var(--uix-file-sheet); --file-kind-soft: var(--uix-file-sheet-soft); --file-kind-strong: var(--uix-file-sheet-strong); --file-kind-edge: var(--uix-file-sheet-edge); --file-kind-label: var(--uix-file-sheet-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="mail"] { --file-kind: var(--uix-file-mail); --file-kind-soft: var(--uix-file-mail-soft); --file-kind-strong: var(--uix-file-mail-strong); --file-kind-edge: var(--uix-file-mail-edge); --file-kind-label: var(--uix-file-mail-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="code"] { --file-kind: var(--uix-file-code); --file-kind-soft: var(--uix-file-code-soft); --file-kind-strong: var(--uix-file-code-strong); --file-kind-edge: var(--uix-file-code-edge); --file-kind-label: var(--uix-file-code-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="log"] { --file-kind: var(--uix-file-log); --file-kind-soft: var(--uix-file-log-soft); --file-kind-strong: var(--uix-file-log-strong); --file-kind-edge: var(--uix-file-log-edge); --file-kind-label: var(--uix-file-log-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="archive"] { --file-kind: var(--uix-file-archive); --file-kind-soft: var(--uix-file-archive-soft); --file-kind-strong: var(--uix-file-archive-strong); --file-kind-edge: var(--uix-file-archive-edge); --file-kind-label: var(--uix-file-archive-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="other"] { --file-kind: var(--uix-file-other); --file-kind-soft: var(--uix-file-other-soft); --file-kind-strong: var(--uix-file-other-strong); --file-kind-edge: var(--uix-file-other-edge); --file-kind-label: var(--uix-file-other-label); }
+
+  /* A blocked file is amber and a failed upload red, in place of the kind (icon included). */
+  .uix-file-row[data-state="blocked"], .uix-file-row[data-state="blocked"] .uix-file-icon {
+    --file-kind: var(--uix-warning-text); --file-kind-soft: var(--uix-warning-bg); --file-kind-strong: var(--uix-warning-bg);
+    --file-kind-edge: color-mix(in srgb, var(--uix-warning-border) 30%, var(--uix-border)); --file-kind-label: var(--uix-warning-text);
+  }
+  .uix-file-row[data-state="failed"], .uix-file-row[data-state="failed"] .uix-file-icon {
+    --file-kind: var(--uix-danger-text); --file-kind-soft: var(--uix-danger-bg); --file-kind-strong: var(--uix-danger-bg);
+    --file-kind-edge: color-mix(in srgb, var(--uix-danger-border) 28%, var(--uix-border)); --file-kind-label: var(--uix-danger-text);
+  }
+
+  /* ── FileKindIcon: the kind's glyph in its colour, the type as a solid label on the corner ── */
+  .uix-file-icon { position: relative; flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; color: var(--file-kind, var(--uix-file-other)); }
+  .uix-file-icon .uix-file-icon__glyph { width: 28px; height: 28px; transform: translateX(-3px); }
+  .uix-file-icon__type {
+    position: absolute; right: -4px; bottom: 3px; padding: calc(var(--uix-space-1) / 2) var(--uix-space-1);
+    border-radius: var(--uix-radius-xs); background: var(--file-kind-label, var(--uix-file-other-label)); color: var(--uix-file-label-fg);
+    font-family: var(--uix-font-sans); font-size: 7.5px; font-weight: 700; line-height: 1; letter-spacing: 0; text-transform: uppercase; white-space: nowrap;
+    box-shadow: 0 0 0 1.5px var(--uix-surface);
+  }
+  .uix-file-icon--sm { width: 30px; height: 30px; }
+  .uix-file-icon--sm .uix-file-icon__glyph { width: 25px; height: 25px; }
+  .uix-file-icon--lg { width: 52px; height: 52px; }
+  .uix-file-icon--lg .uix-file-icon__glyph { width: 42px; height: 42px; }
+  .uix-file-icon--lg .uix-file-icon__type { right: -2px; bottom: 5px; font-size: 9px; }
+
+  /* ── FileRow ── */
+  .uix-file-rows { display: grid; gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; min-width: 0; }
+  .uix-file-row {
+    position: relative; overflow: hidden; display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0;
+    padding: var(--uix-space-2) var(--uix-space-2) var(--uix-space-2) var(--uix-space-3);
+    border: 1px solid var(--file-kind-edge); border-radius: var(--uix-radius-md);
+    background: linear-gradient(to right, var(--file-kind-soft), transparent 55%) var(--uix-surface);
+    color: var(--uix-text);
+    transition: border-color var(--uix-dur-change) var(--uix-ease-out);
+  }
+  .uix-file-row:dir(rtl) { background: linear-gradient(to left, var(--file-kind-soft), transparent 55%) var(--uix-surface); }
+  .uix-file-row--compact { gap: var(--uix-space-2); padding: var(--uix-space-2) var(--uix-space-1) var(--uix-space-2) var(--uix-space-2); }
+  .uix-file-row > :is(.uix-file-row__icon, .uix-file-row__text, .uix-file-row__actions) { position: relative; }
+
+  /* The upload fill: the same tint, soft to strong, scaled to the real progress, with a thin leading edge. */
+  .uix-file-row__fill {
+    position: absolute; inset: 0; pointer-events: none; transform-origin: left center; transform: scaleX(var(--file-progress, 0));
+    background: linear-gradient(to right, var(--file-kind-soft), var(--file-kind-strong));
+    transition: transform var(--uix-dur-slow) linear, opacity var(--uix-dur-change) var(--uix-ease-out);
+  }
+  .uix-file-row__edge {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 100%; pointer-events: none;
+    border-right: 2px solid color-mix(in srgb, var(--file-kind) 55%, transparent);
+    transform: translateX(calc((var(--file-progress, 0) - 1) * 100%));
+    transition: transform var(--uix-dur-slow) linear;
+  }
+  .uix-file-row:dir(rtl) .uix-file-row__fill { transform-origin: right center; background: linear-gradient(to left, var(--file-kind-soft), var(--file-kind-strong)); }
+  .uix-file-row:dir(rtl) .uix-file-row__edge { left: auto; right: 0; border-right: 0; border-left: 2px solid color-mix(in srgb, var(--file-kind) 55%, transparent); transform: translateX(calc((1 - var(--file-progress, 0)) * 100%)); }
+  /* Done: the fill completes, then fades back to the resting edge. */
+  .uix-file-row[data-state="done"] .uix-file-row__fill { opacity: 0; }
+
+  .uix-file-row__icon { flex: none; display: grid; }
+  /* The check draws at the icon's corner, holds, and leaves. */
+  .uix-file-row__check {
+    position: absolute; right: -4px; top: -3px; width: 16px; height: 16px; display: grid; place-items: center;
+    border-radius: var(--uix-radius-pill); background: var(--uix-surface);
+    animation: uix-file-check-in var(--uix-dur-slower) var(--uix-ease-out) both, uix-file-check-out var(--uix-dur-exit) var(--uix-ease-out) calc(var(--uix-dur-change) + var(--uix-hold-result)) forwards;
+  }
+  .uix-file-row__check svg { width: 12px; height: 12px; fill: none; stroke: var(--uix-success-solid); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .uix-file-row__check path { stroke-dasharray: 1; stroke-dashoffset: 0; animation: uix-file-check-draw var(--uix-dur-slower) var(--uix-ease-out) var(--uix-dur-fast) both; }
+
+  /* The kit's title rhythm (HAR-1577): a name and its secondary line are --uix-space-1 apart. */
+  .uix-file-row__text { flex: 1; min-width: 0; display: grid; gap: var(--uix-space-1); }
+  .uix-file-row__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-body); font-weight: 600; }
+  .uix-file-row__meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
+  .uix-file-row__kind { color: var(--file-kind-label); font-weight: 600; }
+  /* A refusal is read whole: it wraps instead of ending in an ellipsis. */
+  .uix-file-row:is([data-state="blocked"], [data-state="failed"]) .uix-file-row__meta { white-space: normal; overflow-wrap: anywhere; }
+  /* In a narrow panel its button moves under the words rather than squeezing them to a column. */
+  .uix-file-row:is([data-state="blocked"], [data-state="failed"]) { flex-wrap: wrap; row-gap: var(--uix-space-2); }
+  .uix-file-row:is([data-state="blocked"], [data-state="failed"]) .uix-file-row__text { flex: 1 1 12rem; }
+  .uix-file-row:is([data-state="blocked"], [data-state="failed"]) .uix-file-row__actions { margin-inline-start: auto; }
+  .uix-file-row[data-state="blocked"] .uix-file-row__meta { color: var(--uix-warning-text); }
+  .uix-file-row[data-state="failed"] .uix-file-row__meta { color: var(--uix-danger-text); }
+  .uix-file-row--compact .uix-file-row__name { font-size: calc(var(--uix-text-body) * .9643); }
+
+  .uix-file-row__actions { flex: none; display: flex; align-items: center; gap: var(--uix-space-1); }
+  /* With a fine pointer the resting actions wait for hover or focus; touch always shows them. */
+  @media (hover: hover) and (pointer: fine) {
+    .uix-file-row__actions > :not(.uix-file-row__keep) { opacity: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+    .uix-file-row:hover .uix-file-row__actions > *,
+    .uix-file-row:focus-within .uix-file-row__actions > *,
+    .uix-file-row__actions > [aria-expanded="true"] { opacity: 1; }
+  }
+
+  /* ── FileDrop (slim) ── */
+  .uix-file-drop {
+    position: relative; display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0;
+    padding: var(--uix-space-2) var(--uix-space-3);
+    border: 1.5px dashed var(--uix-border-strong); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface); color: var(--uix-text-muted); font-size: var(--uix-text-meta); cursor: pointer;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-file-drop:not([data-disabled]):hover { border-color: var(--uix-text-muted); }
+  }
+  .uix-file-drop > :not(.uix-file-drop__aura) { position: relative; }
+  .uix-file-drop__aura { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity var(--uix-dur-slow) var(--uix-ease-out); }
+  .uix-file-drop[data-dragging] { border-color: color-mix(in srgb, var(--file-kind) 55%, var(--uix-border)); color: var(--uix-text); }
+  .uix-file-drop[data-dragging] .uix-file-drop__aura { opacity: 1; }
+  .uix-file-drop__icon { color: var(--uix-text-muted); }
+  .uix-file-drop__line { flex: 1; min-width: 0; display: grid; }
+  .uix-file-drop__line > * { grid-area: 1 / 1; min-width: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  /* The summary sits over the sentence in the same cell; it must never take the button's clicks. */
+  .uix-file-drop__summary { pointer-events: none; opacity: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--uix-text); }
+  .uix-file-drop[data-dragging] .uix-file-drop__text { opacity: 0; }
+  .uix-file-drop[data-dragging] .uix-file-drop__summary { opacity: 1; }
+  .uix-file-drop__choose {
+    margin: 0; padding: 0; border: 0; border-radius: var(--uix-radius-xs); background: none; font: inherit; font-weight: 600; color: var(--uix-link); cursor: pointer;
+    text-decoration: underline; text-underline-offset: .18em; text-decoration-color: color-mix(in srgb, var(--uix-link) 40%, transparent);
+  }
+  .uix-file-drop__choose:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-file-drop[data-disabled] { cursor: not-allowed; opacity: .6; }
+  .uix-file-drop__choose:disabled { cursor: not-allowed; }
+
+  /* Forced colours drop the label's fill and ring: an outline keeps it a label over the glyph. */
+  @media (forced-colors: active) {
+    .uix-file-icon__type { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+    .uix-file-row:not([data-state="done"]) .uix-file-row__fill { background: Highlight; opacity: .35; }
+  }
+
+  /* Reduced motion keeps only the fades: the fill jumps (the global policy drops transform), and the check fades in and out instead of growing and drawing. */
+  @media (prefers-reduced-motion: reduce) {
+    .uix-file-row__check { animation: uix-file-check-fade calc(var(--uix-dur-change) + var(--uix-hold-result) + var(--uix-dur-exit)) linear both !important; }
+    .uix-file-row__check path { animation: none !important; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-file-row__check { animation: uix-file-check-fade calc(var(--uix-dur-change) + var(--uix-hold-result) + var(--uix-dur-exit)) linear both !important; }
+    :root[data-motion="reduce"] .uix-file-row__check path { animation: none !important; }
+  }
+}
+
+@keyframes uix-file-check-in { from { opacity: 0; transform: scale(.6); } }
+@keyframes uix-file-check-draw { from { stroke-dashoffset: 1; } }
+@keyframes uix-file-check-out { to { opacity: 0; } }
+@keyframes uix-file-check-fade { 0% { opacity: 0; } 12% { opacity: 1; } 96% { opacity: 1; } 100% { opacity: 0; } }
