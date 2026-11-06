@@ -78,7 +78,8 @@
   .uix-file-row__check svg { width: 12px; height: 12px; fill: none; stroke: var(--uix-success-solid); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .uix-file-row__check path { stroke-dasharray: 1; stroke-dashoffset: 0; animation: uix-file-check-draw var(--uix-dur-slower) var(--uix-ease-out) var(--uix-dur-fast) both; }
 
-  .uix-file-row__text { flex: 1; min-width: 0; display: grid; }
+  /* The kit's title rhythm (HAR-1577): a name and its secondary line are --uix-space-1 apart. */
+  .uix-file-row__text { flex: 1; min-width: 0; display: grid; gap: var(--uix-space-1); }
   .uix-file-row__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-body); font-weight: 600; }
   .uix-file-row__meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
   .uix-file-row__kind { color: var(--file-kind-label); font-weight: 600; }
