@@ -1,7 +1,8 @@
 /* uix page header — title/subtitle/actions row. Depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-page-header { display: flex; align-items: flex-start; gap: var(--uix-space-5); flex-wrap: wrap; padding-bottom: var(--uix-space-6); margin-bottom: var(--uix-space-7); border-bottom: 1px solid var(--uix-border); }
-  .uix-page-header__titles { flex: 1 1 220px; min-width: 0; }
+  /* Give titles more room before sharing a row with actions when text is enlarged. */
+  .uix-page-header__titles { flex: 1 1 13.75rem; min-width: 0; }
   .uix-page-header__eyebrow { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; font-weight: 600; color: var(--uix-text-muted); margin-bottom: var(--uix-space-2); }
   /* A record name may be one long word, including inside a React node. Let the
      heading shrink beside help and wrap its text rather than disappear outside
