@@ -315,3 +315,4 @@ missing or blank.
 <!-- lesson-skip: 8afaf77 demo-only box-sizing/grid track overflow and a forced-colours rule; routine, caught by the 320 px overflow check -->
 <!-- lesson-skip: d39cd90 a transparent stacked layer over a button; one component, now asserted by elementFromPoint in the spec -->
 <!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
+<!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
