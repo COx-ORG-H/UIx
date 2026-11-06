@@ -75,12 +75,13 @@ for (const viewport of VIEWPORTS) {
 
     for (const key of ['Enter', 'Space']) {
       test(`${key} on the focused button opens the file chooser`, async ({ page }, testInfo) => {
+        // Give Playwright time to enable file chooser interception before pressing the key.
+        const chooser = page.waitForEvent('filechooser');
         const example = await open(page, testInfo, viewport);
         const button = example.getByRole('button', { name: 'Choose files' });
         await expect(button).toHaveAccessibleDescription(/Local preview only/);
         await button.focus();
         await expect(button).toBeFocused();
-        const chooser = page.waitForEvent('filechooser');
         await page.keyboard.press(key);
         expect((await chooser).isMultiple()).toBe(true);
       });
