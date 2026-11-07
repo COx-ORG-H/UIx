@@ -142,9 +142,9 @@
       "brotli": 547
     },
     "styles/components/dashboard-canvas.css": {
-      "raw": 5193,
-      "gzip": 1655,
-      "brotli": 1398
+      "raw": 5320,
+      "gzip": 1719,
+      "brotli": 1454
     },
     "styles/components/dashboard-grid.css": {
       "raw": 5174,

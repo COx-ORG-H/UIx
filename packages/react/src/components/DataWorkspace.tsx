@@ -22,6 +22,7 @@ import { Checkbox } from './Checkbox.js';
 import { Chip } from './Chip.js';
 import { FilterEditor } from './FilterEditor.js';
 import { Menu, MenuItem } from './Menu.js';
+import { MotionList } from './MotionList.js';
 import { Pagination } from './Pagination.js';
 import type { PaginationLabels } from './Pagination.js';
 import { Popover } from './Popover.js';
@@ -352,6 +353,17 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   status?: 'ready' | 'loading' | 'error';
   /** A refetch (filter, sort, page, saved view): the rows stay under `TableWrap refreshing`. */
   refreshing?: boolean;
+  /**
+   * Row motion (HAR-2755, list motion of the motion standard §2.5): a row that arrives (a live
+   * update, the "new items" pill) rises in; a row that leaves (a bulk close, a row handled
+   * elsewhere) fades out while the rows after it glide into its place, and the empty state waits
+   * for the last one; a re-sort glides. A new page, filter or view that replaces most rows swaps
+   * at once. Focus moves to a neighbour when its row leaves. Reduced motion keeps the fades only.
+   * Not for grouped or windowed bodies, which keep plain rows. A leaving row stays in the DOM
+   * (inert, `aria-hidden`) until its exit ends, so a test that counts rows right after a removal
+   * sees it for up to a second. Default `false`.
+   */
+  rowMotion?: boolean;
   onRetry?: () => void;
   /** Skeleton rows on a first load. Default 6. */
   loadingRows?: number;
@@ -436,6 +448,8 @@ const ROW_HEIGHT: Record<TableDensity, number> = { compact: 44, standard: 56, co
 /** What a click on a row leaves alone: it belongs to the control. */
 const CONTROLS = 'a, button, input, select, textarea, label, summary, dialog, [role="button"], [role="menuitem"], [contenteditable="true"], [popover], td.uix-table__selcell, td.uix-table__actions';
 const RESERVED_COLS = new Set(['select', 'id', 'actions', 'expand']);
+/** More rows than this arriving and leaving at once is a new list: it swaps, it does not animate. */
+const MOTION_ROW_LIMIT = 12;
 const textOf = (node: ReactNode) => (typeof node === 'string' ? node : undefined);
 const columnLabel = <T,>(column: DataWorkspaceColumn<T>) => column.label ?? textOf(column.header);
 /** The ladder's cell attributes: only with `mobile`, so a workspace without it renders as before. */
@@ -463,7 +477,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions, rowActionsColumn,
   getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarEnd, beforeBody, pagination,
-  status = 'ready', refreshing = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
+  status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
   activateOnClick = true, activeRowId, onActiveRowChange, multiSort = false, labels: labelOverrides, className, ...props
 }: DataWorkspaceProps<T, S>) {
@@ -548,6 +562,18 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const view = flat.length > 0 ? current : refreshing || source === settled.source ? settled : current;
   const shownRows = view.flat;
   const shownGroups = view.groups;
+
+  // The last rows leave visibly too (HAR-2755): when every row goes from a settled list (a bulk
+  // close, a live update; not a refetch, a new filter or a state the product sets), the table
+  // stays, with no rows, until their exit has run, and only then does the empty state show.
+  const [exitHold, setExitHold] = useState({ count: shownRows.length, filtered: view.filtered, refreshing, held: false });
+  if (exitHold.count !== shownRows.length || exitHold.filtered !== view.filtered || exitHold.refreshing !== refreshing) {
+    const held = rowMotion && shownRows.length === 0 && exitHold.count > 0 && exitHold.filtered === view.filtered
+      && !exitHold.refreshing && !refreshing && !shownGroups && status === 'ready' && stateOverride == null;
+    setExitHold({ count: shownRows.length, filtered: view.filtered, refreshing, held });
+  }
+  const holdingExit = exitHold.held && shownRows.length === 0;
+  const onRowsExited = useCallback(() => setExitHold((current) => (current.held ? { ...current, held: false } : current)), []);
 
   // Groups: the collapsed ones, kept by the product or here.
   const [ownCollapsed, setOwnCollapsed] = useState<ReadonlySet<string>>(() => new Set());
@@ -686,7 +712,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   if (stateOverride != null) body = busy(stateOverride);
   else if (status === 'loading') body = <LoadingState rows={loadingRows} label={labels.loading} className="uix-data-workspace__loading" />;
   else if (status === 'error') body = error != null ? busy(error) : <ErrorState title={labels.error} action={onRetry && <Button size="sm" onClick={onRetry}>{labels.retry}</Button>} />;
-  else if (shownRows.length === 0) {
+  else if (shownRows.length === 0 && !holdingExit) {
     // The empty states sit in a BusyRegion too, so a refetch from one of them is busy at once.
     const clear = <Button size="sm" onClick={clearAll}>{labels.clearFilters}</Button>;
     body = busy(view.filtered
@@ -703,12 +729,12 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
         label={label} rows={shownRows} ids={ids} groups={shownGroups} collapsed={collapsed} onToggleGroup={toggleGroupOpen}
         getRowId={getRowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
         freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
-        ladderOn={mobile != null} ladder={ladder} refreshing={refreshing}
+        ladderOn={mobile != null} ladder={ladder} refreshing={refreshing} rowMotion={rowMotion}
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
         actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
         rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
-        activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels}
+        activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels} onRowsExited={onRowsExited}
       />
     );
   }
@@ -755,6 +781,7 @@ interface WorkspaceGridProps<T> {
   ladderOn: boolean;
   ladder: Ladder;
   refreshing: boolean;
+  rowMotion: boolean;
   selectable: boolean;
   selected: ReadonlySet<string>;
   onPage: number;
@@ -776,6 +803,8 @@ interface WorkspaceGridProps<T> {
   activeRowId?: string | null;
   onActiveRowChange?: (rowId: string) => void;
   labels: DataWorkspaceLabels;
+  /** The last leaving row has gone: the workspace may now show its empty state. */
+  onRowsExited?: () => void;
 }
 
 /** The handlers every row shares: one object for the table's life, so a memoised row is not re-rendered by them. */
@@ -831,8 +860,8 @@ const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) 
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  fixed, ladderOn, ladder, refreshing, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
-  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual,
+  fixed, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
+  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1159,6 +1188,32 @@ function WorkspaceTable<T>({
       />
     );
   };
+  /** A row on its way out: as it was, but not selected, with no actions and out of the row model. */
+  const renderLeavingRow = (row: T) => {
+    const rowId = getRowId(row);
+    return (
+      <WorkspaceRow<T>
+        key={rowId} row={row} rowId={rowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
+        selectable={selectable} selected={false} selectDisabled
+        hasActions={hasActions} actions={null} ladder={ladder} ladderOn={ladderOn}
+        selectRowLabel={selectRowLabel} openLabel={openLabel}
+        marked={false} nav={false} tabStop={false} handlers={handlers}
+      />
+    );
+  };
+  const indexById = useMemo(() => new Map(ids.map((rowId, index) => [rowId, index])), [ids]);
+  // A body whose rows are mostly replaced (a new page, filter, sort key's first answer, saved view)
+  // is a new list, not a changed one: remount it so nothing enters or leaves. A few rows arriving
+  // or leaving, or the same rows in a new order, animate.
+  const motion = useRef<{ ids: readonly string[]; generation: number }>({ ids, generation: 0 });
+  if (motion.current.ids !== ids) {
+    const before = new Set(motion.current.ids);
+    const kept = ids.reduce((count, rowId) => count + (before.has(rowId) ? 1 : 0), 0);
+    const changed = ids.length - kept + (before.size - kept);
+    const replaced = before.size > 0 && ids.length > 0 && (kept === 0 || changed > MOTION_ROW_LIMIT);
+    motion.current = { ids, generation: motion.current.generation + (replaced ? 1 : 0) };
+  }
+  const motionGeneration = motion.current.generation;
 
   let tbody: ReactNode;
   if (groups) {
@@ -1222,13 +1277,24 @@ function WorkspaceTable<T>({
     const spacer = (height: number, key: string) => (
       <tr key={key} aria-hidden="true" className="uix-data-workspace__spacer"><td colSpan={colCount} style={{ height }} /></tr>
     );
-    tbody = (
+    tbody = windowed || !rowMotion ? (
       <tbody>
-        {virtual && windowed && start > 0 && spacer(virtual.padTop, 'pad-top')}
-        {windowed && start > 0 && start % 2 === 0 && spacer(0, 'pad-zebra')}
+        {virtual && start > 0 && spacer(virtual.padTop, 'pad-top')}
+        {start > 0 && start % 2 === 0 && spacer(0, 'pad-zebra')}
         {mountedRows.map((row, at) => renderRow(row, start + at))}
-        {virtual && windowed && virtual.padBottom > 0 && spacer(virtual.padBottom, 'pad-bottom')}
+        {virtual && virtual.padBottom > 0 && spacer(virtual.padBottom, 'pad-bottom')}
       </tbody>
+    ) : (
+      // Row motion (HAR-2755): a row a live update adds rises in, a row a bulk action removes fades
+      // out while the rows after it glide up, a re-sort glides. A new page, filter or view that
+      // replaces most rows remounts the body instead (`motionGeneration`), so it swaps at once.
+      <MotionList<T>
+        key={motionGeneration} as="tbody" items={rows} getKey={getRowId} onExited={onRowsExited}
+        renderItem={(row, { exiting }) => {
+          const index = exiting ? undefined : indexById.get(getRowId(row));
+          return index === undefined ? renderLeavingRow(row) : renderRow(row, index);
+        }}
+      />
     );
   }
 
@@ -1321,6 +1387,10 @@ interface WorkspaceRowProps<T> {
   nav: boolean;
   tabStop: boolean;
   handlers: RowHandlers;
+  /** Set by MotionList (HAR-2755): the row's key, and while it leaves, the exit marker and aria-hidden. */
+  'data-uix-key'?: string;
+  'data-uix-exiting'?: string;
+  'aria-hidden'?: boolean;
 }
 
 /**
@@ -1331,6 +1401,7 @@ interface WorkspaceRowProps<T> {
 function WorkspaceRowInner<T>({
   row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, lazyRowActions, ladder, ladderOn,
   selectRowLabel, openLabel, marked, ariaRowIndex, nav, tabStop, handlers,
+  'data-uix-key': motionKey, 'data-uix-exiting': motionExiting, 'aria-hidden': motionHidden,
 }: WorkspaceRowProps<T>) {
   const renderedActions = useMemo(() => lazyRowActions ? lazyRowActions(row, { ladder, compact: ladder === 'priority-mid' }) : actions,
     [lazyRowActions, row, ladder, actions]);
@@ -1345,7 +1416,10 @@ function WorkspaceRowInner<T>({
     onBlur: (event: ReactFocusEvent<HTMLTableRowElement>) => { extra?.onBlur?.(event); handlers.blur(rowId, event); },
   } : {};
   return (
-    <Tr selected={selected} data-uix-row-id={marked ? rowId : undefined} aria-rowindex={ariaRowIndex} {...extra} {...navProps}>
+    <Tr
+      selected={selected} data-uix-row-id={marked ? rowId : undefined} aria-rowindex={ariaRowIndex} {...extra} {...navProps}
+      data-uix-key={motionKey} data-uix-exiting={motionExiting} aria-hidden={motionHidden}
+    >
       {selectable && (
         <td className="uix-table__selcell" data-col={ladderOn ? 'select' : undefined}>
           <Checkbox

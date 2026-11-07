@@ -253,3 +253,79 @@ test('Tabs: the roving tab stop and keyboard still skip the indicator', async ()
   assert.equal(host.querySelector('.uix-tabs__indicator').tabIndex, -1);
   await unmount();
 });
+
+/* HAR-2755: MotionList says when its last leaving item has gone; DataWorkspace rows move. */
+test('MotionList onExited: called once the last leaving item has gone, not before', async () => {
+  const { host, render, unmount } = mount();
+  let exited = 0;
+  const el = (items) => h(ui.MotionList, { items, getKey: (i) => i.id, onExited: () => { exited += 1; }, renderItem: (i) => h('li', null, i.title) });
+  await render(el([{ id: 1, title: 'A' }, { id: 2, title: 'B' }]));
+  await render(el([]));
+  assert.equal(host.querySelectorAll('[data-uix-exiting]').length, 2);
+  assert.equal(exited, 0, 'called while items were still leaving');
+  await act(async () => animationEnd(host.querySelector('[data-uix-key="1"]')));
+  assert.equal(exited, 0, 'called with one item still leaving');
+  await act(async () => animationEnd(host.querySelector('[data-uix-key="2"]')));
+  assert.equal(host.querySelectorAll('li').length, 0);
+  assert.equal(exited, 1);
+  await unmount();
+});
+
+const WS_ROWS = [1, 2, 3, 4].map((id) => ({ id: String(id), title: `Row ${id}` }));
+const workspace = (rows, extra = {}) => h(ui.DataWorkspace, {
+  label: 'Queue', rows, getRowId: (r) => r.id, columns: [{ id: 'title', header: 'Title', cell: (r) => r.title }], ...extra,
+});
+
+test('DataWorkspace: no row motion unless asked; rowMotion makes the body a motion list', async () => {
+  const { host, render, unmount } = mount();
+  await render(workspace(WS_ROWS));
+  assert.equal(host.querySelector('tbody').classList.contains('uix-motion-list'), false, 'on by default');
+  await render(workspace(WS_ROWS.slice(1)));
+  assert.equal(host.querySelectorAll('tbody tr').length, 3, 'a removed row lingers without rowMotion');
+  await render(workspace(WS_ROWS, { rowMotion: true }));
+  assert.equal(host.querySelector('tbody').classList.contains('uix-motion-list'), true);
+  assert.deepEqual([...host.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-uix-key')), ['1', '2', '3', '4']);
+  await unmount();
+});
+
+test('DataWorkspace rowMotion: a removed row leaves (marked, inert, hidden); a new row enters; nothing on the first render', async () => {
+  const { host, render, unmount } = mount();
+  await render(workspace(WS_ROWS, { rowMotion: true }));
+  assert.equal(host.querySelectorAll('[data-uix-entering]').length, 0);
+  await render(workspace([WS_ROWS[0], ...WS_ROWS.slice(2)], { rowMotion: true }));
+  const leaving = host.querySelector('tbody tr[data-uix-key="2"]');
+  assert.ok(leaving.hasAttribute('data-uix-exiting'));
+  assert.equal(leaving.getAttribute('aria-hidden'), 'true');
+  assert.ok(leaving.hasAttribute('inert'));
+  await act(async () => animationEnd(leaving));
+  assert.equal(host.querySelector('tbody tr[data-uix-key="2"]'), null);
+  await render(workspace([{ id: '9', title: 'Row 9' }, WS_ROWS[0], ...WS_ROWS.slice(2)], { rowMotion: true }));
+  assert.ok(host.querySelector('tbody tr[data-uix-key="9"]').hasAttribute('data-uix-entering'));
+  await unmount();
+});
+
+test('DataWorkspace rowMotion: the empty state waits for the last rows to leave; a refetch answer does not wait', async () => {
+  const { host, render, unmount } = mount();
+  await render(workspace(WS_ROWS.slice(0, 2), { rowMotion: true }));
+  await render(workspace([], { rowMotion: true }));
+  assert.equal(host.querySelectorAll('tbody [data-uix-exiting]').length, 2, 'the last rows left at once');
+  assert.equal(host.querySelector('.uix-empty'), null, 'the empty state came before the rows left');
+  for (const tr of [...host.querySelectorAll('tbody tr')]) await act(async () => animationEnd(tr));
+  assert.ok(host.querySelector('.uix-empty'), 'no empty state after the rows left');
+  // a refetch that comes back empty is an answer, not a removal: no exit
+  await render(workspace(WS_ROWS.slice(0, 2), { rowMotion: true }));
+  await render(workspace(WS_ROWS.slice(0, 2), { rowMotion: true, refreshing: true }));
+  await render(workspace([], { rowMotion: true }));
+  assert.ok(host.querySelector('.uix-empty'));
+  await unmount();
+});
+
+test('DataWorkspace rowMotion: a body whose rows are all replaced (a new page) swaps at once', async () => {
+  const { host, render, unmount } = mount();
+  await render(workspace(WS_ROWS, { rowMotion: true }));
+  await render(workspace([5, 6, 7, 8].map((id) => ({ id: String(id), title: `Row ${id}` })), { rowMotion: true }));
+  assert.equal(host.querySelectorAll('[data-uix-exiting]').length, 0, 'the old page is leaving');
+  assert.equal(host.querySelectorAll('[data-uix-entering]').length, 0, 'the new page is entering');
+  assert.deepEqual([...host.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-uix-key')), ['5', '6', '7', '8']);
+  await unmount();
+});

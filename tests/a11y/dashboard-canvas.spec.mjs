@@ -153,3 +153,44 @@ test('no serious or critical axe violations', async ({ page }) => {
     .filter((v) => GATED.has(v.impact));
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 });
+
+test('a widget dragged by its move handle lifts while it is held, then settles (HAR-2755)', async ({ page }) => {
+  const m = await measure(page, '#editable');
+  const item = page.locator('#editable [data-canvas-id="sla"]');
+  const handle = item.locator('.uix-dashboard-canvas__move');
+  const box = await handle.boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - (m.row + m.rowGap), { steps: 4 });
+  await page.mouse.move(x, y - 2 * (m.row + m.rowGap), { steps: 4 });
+  await expect(page.locator('#editable .uix-dashboard-canvas__preview')).toBeVisible();
+  await expect(item).toHaveAttribute('data-uix-drag', 'lifted');
+  await expect(item).toHaveCSS('opacity', '1');
+  expect(await item.evaluate((el) => getComputedStyle(el).boxShadow), 'a lifted widget has a shadow').not.toBe('none');
+  // the landing is short: record it as it happens rather than racing it
+  await item.evaluate((el) => {
+    window.__settled = false;
+    new MutationObserver(() => { if (el.hasAttribute('data-uix-settle')) window.__settled = true; }).observe(el, { attributes: true });
+  });
+  await page.mouse.up();
+  await expect(item).not.toHaveAttribute('data-uix-drag', /.*/);
+  await expect.poll(() => page.evaluate(() => window.__settled), { message: 'the widget never settled' }).toBe(true);
+});
+
+test('a resize does not lift the widget; it only dims', async ({ page }) => {
+  const m = await measure(page, '#editable');
+  const item = page.locator('#editable [data-canvas-id="trend"]');
+  const box = await item.locator('.uix-dashboard-canvas__resize').boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - (m.width + m.colGap) / 12, y, { steps: 4 });
+  await page.mouse.move(x - 2 * (m.width + m.colGap) / 12, y, { steps: 4 });
+  await expect(page.locator('#editable .uix-dashboard-canvas__preview')).toBeVisible();
+  await expect(item).not.toHaveAttribute('data-uix-drag', /.*/);
+  await expect(item).toHaveCSS('opacity', '0.5');
+  await page.mouse.up();
+});

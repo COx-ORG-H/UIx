@@ -11,6 +11,8 @@
  *     a Count in a badge and a stat tile.
  *   - #optimistic: a star saved optimistically; with "and fails" it comes back and flashes.
  *   - #list: a MotionList queue (add, resolve = leave, shuffle) whose order is held while pointed at.
+ *   - #workspace: a DataWorkspace with rowMotion (add at top, close the second, close all) (HAR-2755).
+ *   - #changes also holds a cell flashed by the bare hook (`useChangeHighlight`, no wrapper class).
  *   - #tabs: line and pill Tabs, a Segmented, a CollapsibleSection.
  *   - #success: Submit swaps a form for the SuccessState.
  *   Review options: ?tint=attention swaps the highlight tint, ?length=long uses --uix-dur-highlight.
@@ -20,9 +22,9 @@ import { StrictMode, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  BusyRegion, Button, ChangeHighlight, CollapsibleSection, Count, Kanban, KanbanCard, KanbanColumn, KanbanDropLine,
+  BusyRegion, Button, ChangeHighlight, CollapsibleSection, Count, DataWorkspace, Kanban, KanbanCard, KanbanColumn, KanbanDropLine,
   LoadingState, Modal, MotionList, SaveStatus, Segmented, SegmentedOption, SortableList, Spinner, StarButton, Stat,
-  StatusPill, SuccessState, Tab, Table, TableWrap, TabPanel, Tabs, Td, Th, Tr, settleDrop, useDeferredReorder,
+  StatusPill, SuccessState, Tab, Table, TableWrap, TabPanel, Tabs, Td, Th, Tr, settleDrop, useChangeHighlight, useDeferredReorder,
   useKeyboardGrab, useOptimisticValue,
 } from '../../packages/react/src/index.js';
 import type { ButtonResult, SaveStatusState } from '../../packages/react/src/index.js';
@@ -193,6 +195,8 @@ function ChangesSection() {
   const [unread, setUnread] = useState(4);
   const [open, setOpen] = useState(42);
   const [status, tone] = STATUSES[step % STATUSES.length];
+  // the hook's own documented usage: a ref on a plain cell, no ChangeHighlight wrapper (HAR-2755)
+  const hookCell = useChangeHighlight<HTMLTableCellElement>(status);
   return (
     <section id="changes" aria-labelledby="changes-h">
       <h2 id="changes-h">ChangeHighlight and Count</h2>
@@ -216,6 +220,7 @@ function ChangesSection() {
               <Td><ChangeHighlight value={status} variant="ring" data-testid="changed-pill"><StatusPill tone={tone}>{status}</StatusPill></ChangeHighlight></Td>
             </ChangeHighlight>
             <Tr><Td>INC-0413</Td><Td>VPN drops every 20 minutes</Td><Td><StatusPill tone="neutral">New</StatusPill></Td></Tr>
+            <Tr><Td>INC-0414</Td><Td>Shared drive is read-only</Td><td ref={hookCell} data-testid="hook-cell">{status}</td></Tr>
           </tbody>
         </Table>
       </TableWrap>
@@ -267,6 +272,27 @@ function ListSection() {
       <p data-testid="held">{queue.held ? 'New order waiting — move the pointer away to apply' : 'Order is current'}</p>
       <MotionList {...queue.listProps} items={queue.items} getKey={(r) => r.id} className="uix-list" data-testid="queue" aria-label="My queue"
         renderItem={(r) => <li className="uix-list__item"><button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" data-testid={`row-${r.id}`}>INC-0{r.id}</button> {r.title}</li>} />
+    </section>
+  );
+}
+
+const WORKSPACE_COLUMNS = [
+  { id: 'title', header: 'Title', cell: (r: Ticket) => r.title },
+  { id: 'priority', header: 'Priority', cell: (r: Ticket) => `P${r.priority}` },
+];
+
+function WorkspaceSection() {
+  const [rows, setRows] = useState(TICKETS);
+  const [next, setNext] = useState(520);
+  return (
+    <section id="workspace" aria-labelledby="workspace-h">
+      <h2 id="workspace-h">DataWorkspace rowMotion</h2>
+      <div className="uix-cluster">
+        <Button data-testid="ws-add" onClick={() => { setRows((r) => [{ id: next, title: `New ticket ${next}`, priority: 3 }, ...r]); setNext((n) => n + 1); }}>Add at top</Button>
+        <Button data-testid="ws-close" onClick={() => setRows((r) => r.filter((_, i) => i !== 1))}>Close the second</Button>
+        <Button data-testid="ws-close-all" onClick={() => setRows([])}>Close all</Button>
+      </div>
+      <DataWorkspace<Ticket> label="Workspace queue" rows={rows} getRowId={(r) => String(r.id)} columns={WORKSPACE_COLUMNS} rowMotion data-testid="ws" />
     </section>
   );
 }
@@ -420,6 +446,7 @@ createRoot(document.getElementById('root')!).render(
     <ChangesSection />
     <OptimisticSection />
     <ListSection />
+    <WorkspaceSection />
     <TabsSection />
     <SuccessSection />
     <DragSection />
