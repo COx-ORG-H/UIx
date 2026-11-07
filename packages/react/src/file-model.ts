@@ -73,7 +73,11 @@ export function partitionFiles<F extends { name: string; type?: string; size: nu
   return { accepted, rejected };
 }
 
-/** The coarse kinds of the object form of `fileKind`, read by `FileUpload` and `Attachment`. */
+/**
+ * The coarse kinds of the object form of `fileKind`, read by `FileUpload` and `Attachment`. Older
+ * than the file kit and separate from `FileKind`: here `text` means any document (Word files
+ * included), there it means plain text only.
+ */
 export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
 
 function legacyFileKind(file: { name: string; type?: string }): LegacyFileKind {
@@ -105,9 +109,9 @@ export const FILE_KINDS: readonly FileKind[] = ['img', 'doc', 'sheet', 'slides',
 /** The extensions of each kind, lower case and without the dot. `other` has none. */
 export const FILE_KIND_EXTENSIONS: Readonly<Record<FileKind, readonly string[]>> = {
   img: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'bmp', 'svg'],
-  doc: ['docx', 'doc', 'docm', 'dotx', 'odt', 'rtf', 'pages'],
-  sheet: ['xlsx', 'xls', 'xlsm', 'csv', 'ods', 'tsv', 'numbers'],
-  slides: ['pptx', 'ppt', 'pptm', 'ppsx', 'pps', 'potx', 'odp'],
+  doc: ['docx', 'doc', 'docm', 'dotx', 'dotm', 'dot', 'odt', 'rtf', 'pages'],
+  sheet: ['xlsx', 'xls', 'xlsm', 'xlsb', 'xltx', 'xltm', 'csv', 'ods', 'tsv', 'numbers'],
+  slides: ['pptx', 'ppt', 'pptm', 'ppsx', 'ppsm', 'pps', 'potx', 'potm', 'pot', 'odp'],
   pdf: ['pdf'],
   mail: ['eml', 'msg'],
   code: ['json', 'yaml', 'yml', 'xml', 'ps1', 'sh', 'py', 'js', 'ts', 'ini', 'conf', 'toml'],
@@ -150,9 +154,9 @@ function kindOfMime(mime: string): FileKind {
   if (!m) return 'other';
   if (m.startsWith('image/')) return 'img';
   if (/\bpdf\b/.test(m)) return 'pdf';
-  if (/presentation|powerpoint/.test(m)) return 'slides';
-  if (/msword|wordprocessing|opendocument\.text|rtf/.test(m)) return 'doc';
-  if (/spreadsheet|excel|csv|tab-separated/.test(m)) return 'sheet';
+  if (/presentation|powerpoint|apple\.keynote/.test(m)) return 'slides';
+  if (/ms-?word|wordprocessing|opendocument\.text|rtf|apple\.pages/.test(m)) return 'doc';
+  if (/spreadsheet|excel|csv|tab-separated|apple\.numbers/.test(m)) return 'sheet';
   if (/markdown/.test(m)) return 'text';
   if (/rfc822|outlook/.test(m)) return 'mail';
   if (/x-log\b/.test(m)) return 'log';

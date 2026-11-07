@@ -19,7 +19,7 @@ test('the committed file kit specimens are exactly what the components render to
 
 test('every kind, every state and the drop row are on the page', () => {
   const page = specimens['examples-crm-itsm'];
-  for (const kind of ['img', 'doc', 'sheet', 'mail', 'code', 'log', 'archive', 'other']) assert.ok(page.includes(`data-file-kind="${kind}"`), kind);
+  for (const kind of ['img', 'doc', 'sheet', 'slides', 'pdf', 'mail', 'code', 'log', 'archive', 'text', 'other']) assert.ok(page.includes(`data-file-kind="${kind}"`), kind);
   for (const state of ['idle', 'uploading', 'done', 'scanning', 'blocked', 'failed']) assert.ok(page.includes(`data-state="${state}"`), state);
   for (const piece of ['class="uix-file-drop"', 'uix-file-row--compact', 'uix-file-icon--lg', 'uix-file-icon--sm', 'data-file-kit-replay', 'data-file-kit-upload', 'Wird hochgeladen · 62 % · 1,5 von 2,4 MB']) {
     assert.ok(page.includes(piece), piece);
