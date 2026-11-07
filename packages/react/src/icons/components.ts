@@ -165,6 +165,7 @@ export const PlaneIcon = /* @__PURE__ */ createIcon('PlaneIcon', g.glyphPlane);
 export const PlayIcon = /* @__PURE__ */ createIcon('PlayIcon', g.glyphPlay);
 export const PlugIcon = /* @__PURE__ */ createIcon('PlugIcon', g.glyphPlug);
 export const PlusIcon = /* @__PURE__ */ createIcon('PlusIcon', g.glyphPlus);
+export const PresentationIcon = /* @__PURE__ */ createIcon('PresentationIcon', g.glyphPresentation);
 export const PrinterIcon = /* @__PURE__ */ createIcon('PrinterIcon', g.glyphPrinter);
 export const QrCodeIcon = /* @__PURE__ */ createIcon('QrCodeIcon', g.glyphQrCode);
 export const RadioIcon = /* @__PURE__ */ createIcon('RadioIcon', g.glyphRadio);

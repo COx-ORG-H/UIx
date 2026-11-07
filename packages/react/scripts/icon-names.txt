@@ -166,6 +166,7 @@ Play
 PlayCircle
 Plug
 Plus
+Presentation
 Printer
 QrCode
 Radio

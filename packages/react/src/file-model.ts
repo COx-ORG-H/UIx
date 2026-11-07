@@ -73,7 +73,11 @@ export function partitionFiles<F extends { name: string; type?: string; size: nu
   return { accepted, rejected };
 }
 
-/** The coarse kinds of the object form of `fileKind`, read by `FileUpload` and `Attachment`. */
+/**
+ * The coarse kinds of the object form of `fileKind`, read by `FileUpload` and `Attachment`. Older
+ * than the file kit and separate from `FileKind`: here `text` means any document (Word files
+ * included), there it means plain text only.
+ */
 export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
 
 function legacyFileKind(file: { name: string; type?: string }): LegacyFileKind {
@@ -89,25 +93,31 @@ function legacyFileKind(file: { name: string; type?: string }): LegacyFileKind {
 }
 
 /**
- * What a service-desk agent does with a file, as one of eight kinds (file kit 2.57): `img`
- * (Bild), `doc` (Dokument), `sheet` (Tabelle), `mail` (E-Mail), `code` (Code & Konfiguration),
- * `log` (Protokoll), `archive` (Archiv) and `other` (Datei). Each has a colour
- * (`--uix-file-<kind>`) and a glyph; `FileIcon`, `FileRow` and `FileDrop` read it.
+ * What a service-desk agent does with a file, as one of eleven kinds (file kit 2.57, office
+ * formats split out in 2.59): `img` (Bild), `doc` (Dokument: Word and other word-processor
+ * files), `sheet` (Tabelle), `slides` (Präsentation), `pdf` (PDF), `mail` (E-Mail), `code`
+ * (Code & Konfiguration), `log` (Protokoll), `archive` (Archiv), `text` (Text) and `other`
+ * (Datei). Each has a colour (`--uix-file-<kind>`) and a glyph; `FileIcon`, `FileRow` and
+ * `FileDrop` read it. The office kinds take the colour people know from the program (Word
+ * blue, Excel green, PowerPoint orange, PDF red), tuned to stay clear of the status colours.
  */
-export type FileKind = 'img' | 'doc' | 'sheet' | 'mail' | 'code' | 'log' | 'archive' | 'other';
+export type FileKind = 'img' | 'doc' | 'sheet' | 'slides' | 'pdf' | 'mail' | 'code' | 'log' | 'archive' | 'text' | 'other';
 
-/** The eight kinds in display order (`other` last). */
-export const FILE_KINDS: readonly FileKind[] = ['img', 'doc', 'sheet', 'mail', 'code', 'log', 'archive', 'other'];
+/** The eleven kinds in display order (`other` last). */
+export const FILE_KINDS: readonly FileKind[] = ['img', 'doc', 'sheet', 'slides', 'pdf', 'mail', 'code', 'log', 'archive', 'text', 'other'];
 
 /** The extensions of each kind, lower case and without the dot. `other` has none. */
 export const FILE_KIND_EXTENSIONS: Readonly<Record<FileKind, readonly string[]>> = {
   img: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'bmp', 'svg'],
-  doc: ['pdf', 'docx', 'doc', 'odt', 'rtf', 'pptx', 'ppt', 'md', 'txt'],
-  sheet: ['xlsx', 'xls', 'csv', 'ods', 'tsv'],
+  doc: ['docx', 'doc', 'docm', 'dotx', 'dotm', 'dot', 'odt', 'rtf', 'pages'],
+  sheet: ['xlsx', 'xls', 'xlsm', 'xlsb', 'xltx', 'xltm', 'csv', 'ods', 'tsv', 'numbers'],
+  slides: ['pptx', 'ppt', 'pptm', 'ppsx', 'ppsm', 'pps', 'potx', 'potm', 'pot', 'odp'],
+  pdf: ['pdf'],
   mail: ['eml', 'msg'],
   code: ['json', 'yaml', 'yml', 'xml', 'ps1', 'sh', 'py', 'js', 'ts', 'ini', 'conf', 'toml'],
   log: ['log', 'evtx', 'har', 'dmp', 'trace'],
   archive: ['zip', '7z', 'rar', 'tar', 'gz', 'tgz'],
+  text: ['txt', 'md', 'markdown'],
   other: [],
 };
 
@@ -118,14 +128,14 @@ for (const kind of FILE_KINDS) for (const ext of FILE_KIND_EXTENSIONS[kind]) KIN
 export type FileKindLabels = Record<FileKind, string>;
 
 export const DEFAULT_FILE_KIND_LABELS: FileKindLabels = {
-  img: 'Bild', doc: 'Dokument', sheet: 'Tabelle', mail: 'E-Mail', code: 'Code & Konfiguration',
-  log: 'Protokoll', archive: 'Archiv', other: 'Datei',
+  img: 'Bild', doc: 'Dokument', sheet: 'Tabelle', slides: 'Präsentation', pdf: 'PDF', mail: 'E-Mail',
+  code: 'Code & Konfiguration', log: 'Protokoll', archive: 'Archiv', text: 'Text', other: 'Datei',
 };
 
 /** The English kind names, for `labels` or `UixLabelsProvider` (`fileKinds`). */
 export const FILE_KIND_LABELS_EN: FileKindLabels = {
-  img: 'Image', doc: 'Document', sheet: 'Spreadsheet', mail: 'Email', code: 'Code & configuration',
-  log: 'Log', archive: 'Archive', other: 'File',
+  img: 'Image', doc: 'Document', sheet: 'Spreadsheet', slides: 'Presentation', pdf: 'PDF', mail: 'Email',
+  code: 'Code & configuration', log: 'Log', archive: 'Archive', text: 'Text', other: 'File',
 };
 
 /**
@@ -143,13 +153,16 @@ function kindOfMime(mime: string): FileKind {
   const m = mime.trim().toLowerCase();
   if (!m) return 'other';
   if (m.startsWith('image/')) return 'img';
-  if (/pdf|msword|wordprocessing|presentation|powerpoint|opendocument\.text|rtf|markdown/.test(m)) return 'doc';
-  if (/spreadsheet|excel|csv|tab-separated/.test(m)) return 'sheet';
+  if (/\bpdf\b/.test(m)) return 'pdf';
+  if (/presentation|powerpoint|apple\.keynote/.test(m)) return 'slides';
+  if (/ms-?word|wordprocessing|opendocument\.text|rtf|apple\.pages/.test(m)) return 'doc';
+  if (/spreadsheet|excel|csv|tab-separated|apple\.numbers/.test(m)) return 'sheet';
+  if (/markdown/.test(m)) return 'text';
   if (/rfc822|outlook/.test(m)) return 'mail';
   if (/x-log\b/.test(m)) return 'log';
   if (/json|xml|yaml|x-sh|javascript|typescript|x-python|toml/.test(m)) return 'code';
   if (/zip|x-7z|x-rar|vnd\.rar|gzip|x-tar|compressed-tar/.test(m)) return 'archive';
-  if (m === 'text/plain') return 'doc';
+  if (m === 'text/plain') return 'text';
   return 'other';
 }
 

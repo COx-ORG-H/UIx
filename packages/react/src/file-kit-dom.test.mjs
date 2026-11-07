@@ -56,17 +56,23 @@ test('fileKind: every listed extension maps to its kind, in any case', () => {
       assert.equal(ui.fileKind(`DATEI.${ext.toUpperCase()}`), kind, ext.toUpperCase());
     }
   }
-  assert.deepEqual([...ui.FILE_KINDS], ['img', 'doc', 'sheet', 'mail', 'code', 'log', 'archive', 'other']);
+  assert.deepEqual([...ui.FILE_KINDS], ['img', 'doc', 'sheet', 'slides', 'pdf', 'mail', 'code', 'log', 'archive', 'text', 'other']);
   assert.deepEqual(ui.FILE_KIND_EXTENSIONS.other, []);
 });
 
 test('fileKind: MIME type alone, as a drag event gives it', () => {
   const cases = {
     'image/png': 'img', 'image/svg+xml': 'img', 'image/heic': 'img',
-    'application/pdf': 'doc', 'application/msword': 'doc', 'text/markdown': 'doc', 'text/plain': 'doc', 'application/rtf': 'doc',
+    'application/pdf': 'pdf', 'application/x-pdf': 'pdf',
+    'application/msword': 'doc', 'application/rtf': 'doc', 'text/rtf': 'doc',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'doc',
     'application/vnd.oasis.opendocument.text': 'doc',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'slides',
+    'application/vnd.ms-powerpoint': 'slides', 'application/vnd.oasis.opendocument.presentation': 'slides',
+    'application/vnd.ms-powerpoint.presentation.macroenabled.12': 'slides', 'application/vnd.apple.keynote': 'slides',
+    'application/vnd.ms-word.document.macroenabled.12': 'doc', 'application/vnd.apple.pages': 'doc',
+    'application/vnd.ms-excel.sheet.macroenabled.12': 'sheet', 'application/vnd.apple.numbers': 'sheet',
+    'text/markdown': 'text', 'text/plain': 'text',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'sheet', 'application/vnd.ms-excel': 'sheet',
     'text/csv': 'sheet', 'text/tab-separated-values': 'sheet', 'application/vnd.oasis.opendocument.spreadsheet': 'sheet',
     'message/rfc822': 'mail', 'application/vnd.ms-outlook': 'mail',
@@ -81,7 +87,8 @@ test('fileKind: MIME type alone, as a drag event gives it', () => {
 });
 
 test('fileKind: unknown types and names are "other"', () => {
-  for (const [name, mime] of [['', ''], ['', undefined], ['', 'application/octet-stream'], ['', 'video/mp4'], ['setup.exe', 'application/x-msdownload'], ['README', ''], ['archive.', ''], ['notes.unknownext', '']]) {
+  // .key is left out of Präsentation on purpose: in a ticket it is far more often a private key than a Keynote file.
+  for (const [name, mime] of [['server.key', ''], ['', ''], ['', undefined], ['', 'application/octet-stream'], ['', 'video/mp4'], ['setup.exe', 'application/x-msdownload'], ['README', ''], ['archive.', ''], ['notes.unknownext', '']]) {
     assert.equal(ui.fileKind(name, mime), 'other', `${name} ${mime}`);
   }
 });
@@ -115,9 +122,11 @@ test('fileExtension and fileTypeLabel', () => {
 
 test('kind names: German by default, English exported', () => {
   assert.deepEqual(ui.DEFAULT_FILE_KIND_LABELS, {
-    img: 'Bild', doc: 'Dokument', sheet: 'Tabelle', mail: 'E-Mail', code: 'Code & Konfiguration', log: 'Protokoll', archive: 'Archiv', other: 'Datei',
+    img: 'Bild', doc: 'Dokument', sheet: 'Tabelle', slides: 'Präsentation', pdf: 'PDF', mail: 'E-Mail',
+    code: 'Code & Konfiguration', log: 'Protokoll', archive: 'Archiv', text: 'Text', other: 'Datei',
   });
-  assert.equal(Object.keys(ui.FILE_KIND_LABELS_EN).length, 8);
+  assert.deepEqual(Object.keys(ui.FILE_KIND_LABELS_EN), [...ui.FILE_KINDS]);
+  assert.equal(ui.FILE_KIND_LABELS_EN.slides, 'Presentation');
 });
 
 // ── FileKindIcon ───────────────────────────────────────────────────────────────────────────────
@@ -134,7 +143,7 @@ test('FileKindIcon: the kind glyph and the type label, decorative unless named; 
   assert.match(named, /class="uix-file-icon uix-file-icon--lg"/);
   assert.match(named, /role="img"/);
   assert.match(named, /aria-label="PDF-Dokument"/);
-  assert.match(named, /^<span class="uix-file-icon uix-file-icon--lg" data-file-kind="doc" role="img" aria-label="PDF-Dokument">/, 'named: an image, not hidden');
+  assert.match(named, /^<span class="uix-file-icon uix-file-icon--lg" data-file-kind="pdf" role="img" aria-label="PDF-Dokument">/, 'named: an image, not hidden');
 
   const mimeOnly = renderToStaticMarkup(h(ui.FileKindIcon, { mime: 'application/zip', size: 'sm' }));
   assert.match(mimeOnly, /data-file-kind="archive"/);
@@ -145,13 +154,15 @@ test('FileKindIcon: the kind glyph and the type label, decorative unless named; 
   assert.match(custom, />EVEN</, 'four capitals at most');
 });
 
-test('FileKindIcon: each kind draws its own glyph (file-code and file-terminal included)', () => {
-  const paths = new Set();
+test('FileKindIcon: each kind draws its own glyph, except the page kinds (Dokument, PDF, Text) that share one', () => {
+  const paths = new Map();
   for (const kind of ui.FILE_KINDS) {
-    const html = renderToStaticMarkup(h(ui.FileKindIcon, { kind }));
-    paths.add(html.replace(/data-file-kind="[a-z]+"/, ''));
+    const html = renderToStaticMarkup(h(ui.FileKindIcon, { kind })).replace(/data-file-kind="[a-z]+"/, '');
+    paths.set(html, [...(paths.get(html) ?? []), kind]);
   }
-  assert.equal(paths.size, 8);
+  assert.equal(paths.size, 9);
+  assert.deepEqual([...paths.values()].filter((kinds) => kinds.length > 1), [['doc', 'pdf', 'text']], 'colour and the type label tell the page kinds apart');
+  assert.match(renderToStaticMarkup(h(ui.FileKindIcon, { kind: 'slides' })), /M2 3h20/, 'Präsentation draws the presentation board');
   assert.match(renderToStaticMarkup(h(ui.FileKindIcon, { kind: 'code' })), /m14 12\.5 2 2\.5-2 2\.5/);
   assert.match(renderToStaticMarkup(h(ui.FileKindIcon, { kind: 'log' })), /m8 16 2-2-2-2/);
 });
@@ -165,11 +176,11 @@ test('FileRow at rest: name, kind in its colour, size, who and when; download an
   }));
   const row = host.querySelector('.uix-file-row');
   assert.equal(row.tagName, 'DIV');
-  assert.equal(row.dataset.fileKind, 'doc');
+  assert.equal(row.dataset.fileKind, 'pdf');
   assert.equal(row.dataset.state, 'idle');
   assert.equal(row.querySelector('.uix-file-row__name').title, 'Notfallhandbuch_Förderportal_v4.pdf');
-  assert.equal(row.querySelector('.uix-file-row__meta').textContent, 'Dokument · 2,4 MB · D. Weber, 13:55');
-  assert.equal(row.querySelector('.uix-file-row__kind').textContent, 'Dokument');
+  assert.equal(row.querySelector('.uix-file-row__meta').textContent, 'PDF · 2,4 MB · D. Weber, 13:55');
+  assert.equal(row.querySelector('.uix-file-row__kind').textContent, 'PDF');
   assert.equal(row.querySelector('.uix-file-icon__type').textContent, 'PDF');
   const link = row.querySelector('a.uix-btn');
   assert.equal(link.getAttribute('href'), '/files/42');
@@ -381,7 +392,7 @@ test('FileDrop: a larger target takes the drop; English through UixLabelsProvide
   assert.equal(root.querySelector('.uix-file-drop__text').textContent, 'Drop files or choose');
   assert.equal(root.querySelector('button').getAttribute('aria-label'), 'Choose files');
   fire(panel, drag('dragenter', { items: ['application/pdf'] }));
-  assert.equal(root.querySelector('.uix-file-drop__summary').textContent, '1 file: Document');
+  assert.equal(root.querySelector('.uix-file-drop__summary').textContent, '1 file: PDF');
   fire(panel, drag('drop', { files: [file('a.pdf', 'application/pdf')] }));
   assert.deepEqual(got, [1]);
   unmount();
