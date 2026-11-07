@@ -68,9 +68,9 @@ function App() {
         {FILE_KINDS.map((kind) => (
           <figure key={kind} style={{ margin: 0, display: 'grid', justifyItems: 'center', gap: 'var(--uix-space-2)' }}>
             <span style={{ display: 'flex', gap: 'var(--uix-space-3)', alignItems: 'end' }}>
-              <FileKindIcon kind={kind} name={`x.${{ img: 'png', doc: 'pdf', sheet: 'xlsx', mail: 'msg', code: 'conf', log: 'log', archive: 'zip', other: 'bin' }[kind]}`} size="sm" />
-              <FileKindIcon kind={kind} name={`x.${{ img: 'jpeg', doc: 'docx', sheet: 'csv', mail: 'eml', code: 'json', log: 'evtx', archive: '7z', other: 'dat' }[kind]}`} />
-              <FileKindIcon kind={kind} name={`x.${{ img: 'heic', doc: 'pptx', sheet: 'ods', mail: 'msg', code: 'yaml', log: 'trace', archive: 'tgz', other: 'iso' }[kind]}`} size="lg" label={DEFAULT_FILE_KIND_LABELS[kind]} />
+              <FileKindIcon kind={kind} name={`x.${{ img: 'png', doc: 'docx', sheet: 'xlsx', slides: 'pptx', pdf: 'pdf', mail: 'msg', code: 'conf', log: 'log', archive: 'zip', text: 'txt', other: 'bin' }[kind]}`} size="sm" />
+              <FileKindIcon kind={kind} name={`x.${{ img: 'jpeg', doc: 'doc', sheet: 'csv', slides: 'ppt', pdf: 'pdf', mail: 'eml', code: 'json', log: 'evtx', archive: '7z', text: 'md', other: 'dat' }[kind]}`} />
+              <FileKindIcon kind={kind} name={`x.${{ img: 'heic', doc: 'odt', sheet: 'ods', slides: 'odp', pdf: 'pdf', mail: 'msg', code: 'yaml', log: 'trace', archive: 'tgz', text: 'txt', other: 'iso' }[kind]}`} size="lg" label={DEFAULT_FILE_KIND_LABELS[kind]} />
             </span>
             <figcaption style={{ fontSize: 'var(--uix-text-meta)', color: 'var(--uix-text-muted)' }}>{DEFAULT_FILE_KIND_LABELS[kind]}</figcaption>
           </figure>

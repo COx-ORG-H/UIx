@@ -67,7 +67,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Form | form.css | ✓ `Field` | Stable | no | Also `ToggleRow`; `FormGrid`/`Fieldset` still planned. |
 | Heartbeat | heartbeat.css | ✓ `Heartbeat` | Beta | no | The pulsing status dot (`live`, `idle`, `warning`, `danger`), decorative unless labelled; also `LiveIndicator` (dot + state text). Landed 2.32.0 (HAR-1606). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
-| Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 233 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |
+| Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 237 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |
 | InlineEdit | inline-edit.css | ✓ `InlineEdit` | Beta | no | A value edited in place: the value is a button, the editor has Save and Cancel, Enter / Escape, pending and error states, focus returns to the value. Custom editors through `renderEditor`. Landed 2.36.0 (HAR-1381). HAR-1833: any value type (`equals`, `renderView`), `commit` explicit / blur / change, controllable `editing` and `draft`, `renderError` with retry, `onStateChange`, `trigger="icon"`, `readOnlyReason`; pending shown after 300 ms; the stylesheet is in the bundle at last. |
 | Input | input.css | ✓ `Input` | Stable | no | Also `InputGroup`. |
 | Kanban | kanban.css | ✓ `Kanban` | Beta | no | Also `KanbanColumn`, `KanbanCard`. Capability; recently landed. |

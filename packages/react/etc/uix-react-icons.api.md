@@ -542,6 +542,7 @@ export const ICON_GLYPHS: {
     readonly play: IconNode;
     readonly plug: IconNode;
     readonly plus: IconNode;
+    readonly presentation: IconNode;
     readonly printer: IconNode;
     readonly 'qr-code': IconNode;
     readonly radio: IconNode;
@@ -817,6 +818,9 @@ export const PlugIcon: UixIcon;
 
 // @public (undocumented)
 export const PlusIcon: UixIcon;
+
+// @public (undocumented)
+export const PresentationIcon: UixIcon;
 
 // @public (undocumented)
 export const PrinterIcon: UixIcon;

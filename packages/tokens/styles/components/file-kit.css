@@ -1,4 +1,4 @@
-/* uix file kit (2.57) — FileKindIcon, FileRow, FileDrop. One hue per kind of file (--uix-file-<kind>):
+/* uix file kit (2.57; office kinds 2.59) — FileKindIcon, FileRow, FileDrop. One hue per kind of file (--uix-file-<kind>):
    the icon draws in it, a row's left edge carries its tint, an upload fills with it, and a drop row
    takes the colours of what is dragged over it. Depends only on --uix-* tokens. */
 @layer uix.components {
@@ -6,10 +6,13 @@
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="img"] { --file-kind: var(--uix-file-img); --file-kind-soft: var(--uix-file-img-soft); --file-kind-strong: var(--uix-file-img-strong); --file-kind-edge: var(--uix-file-img-edge); --file-kind-label: var(--uix-file-img-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="doc"] { --file-kind: var(--uix-file-doc); --file-kind-soft: var(--uix-file-doc-soft); --file-kind-strong: var(--uix-file-doc-strong); --file-kind-edge: var(--uix-file-doc-edge); --file-kind-label: var(--uix-file-doc-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="sheet"] { --file-kind: var(--uix-file-sheet); --file-kind-soft: var(--uix-file-sheet-soft); --file-kind-strong: var(--uix-file-sheet-strong); --file-kind-edge: var(--uix-file-sheet-edge); --file-kind-label: var(--uix-file-sheet-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="slides"] { --file-kind: var(--uix-file-slides); --file-kind-soft: var(--uix-file-slides-soft); --file-kind-strong: var(--uix-file-slides-strong); --file-kind-edge: var(--uix-file-slides-edge); --file-kind-label: var(--uix-file-slides-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="pdf"] { --file-kind: var(--uix-file-pdf); --file-kind-soft: var(--uix-file-pdf-soft); --file-kind-strong: var(--uix-file-pdf-strong); --file-kind-edge: var(--uix-file-pdf-edge); --file-kind-label: var(--uix-file-pdf-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="mail"] { --file-kind: var(--uix-file-mail); --file-kind-soft: var(--uix-file-mail-soft); --file-kind-strong: var(--uix-file-mail-strong); --file-kind-edge: var(--uix-file-mail-edge); --file-kind-label: var(--uix-file-mail-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="code"] { --file-kind: var(--uix-file-code); --file-kind-soft: var(--uix-file-code-soft); --file-kind-strong: var(--uix-file-code-strong); --file-kind-edge: var(--uix-file-code-edge); --file-kind-label: var(--uix-file-code-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="log"] { --file-kind: var(--uix-file-log); --file-kind-soft: var(--uix-file-log-soft); --file-kind-strong: var(--uix-file-log-strong); --file-kind-edge: var(--uix-file-log-edge); --file-kind-label: var(--uix-file-log-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="archive"] { --file-kind: var(--uix-file-archive); --file-kind-soft: var(--uix-file-archive-soft); --file-kind-strong: var(--uix-file-archive-strong); --file-kind-edge: var(--uix-file-archive-edge); --file-kind-label: var(--uix-file-archive-label); }
+  :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="text"] { --file-kind: var(--uix-file-text); --file-kind-soft: var(--uix-file-text-soft); --file-kind-strong: var(--uix-file-text-strong); --file-kind-edge: var(--uix-file-text-edge); --file-kind-label: var(--uix-file-text-label); }
   :is(.uix-file-icon, .uix-file-row, .uix-file-drop)[data-file-kind="other"] { --file-kind: var(--uix-file-other); --file-kind-soft: var(--uix-file-other-soft); --file-kind-strong: var(--uix-file-other-strong); --file-kind-edge: var(--uix-file-other-edge); --file-kind-label: var(--uix-file-other-label); }
 
   /* A blocked file is amber and a failed upload red, in place of the kind (icon included). */

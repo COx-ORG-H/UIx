@@ -1654,6 +1654,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "PresentationIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "PrinterIcon",
       "subpath": "./icons"
     },

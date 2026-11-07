@@ -1,0 +1,12 @@
+---
+'@tensor_1/tokens': minor
+'@tensor_1/react': minor
+---
+
+File kit: office files take the colour people know from the program (operator decision 2026-11-07). Word, PowerPoint, PDF and plain text were one rose "Dokument" kind; they are now their own kinds.
+
+- **Kinds:** `fileKind` adds `slides` (Präsentation: pptx, ppt, pptm, ppsx, pps, potx, odp), `pdf` (PDF) and `text` (Text: txt, md, markdown). `doc` (Dokument) now holds Word and other word-processor files (docx, doc, docm, dotx, odt, rtf, pages); `sheet` adds xlsm and numbers. MIME types follow: `application/pdf` is `pdf`, presentation and PowerPoint types are `slides`, `text/plain` and `text/markdown` are `text`. `.key` stays `other`, since in a ticket it is far more often a private key than a Keynote file. `FILE_KINDS`, `FILE_KIND_EXTENSIONS`, `DEFAULT_FILE_KIND_LABELS` and `FILE_KIND_LABELS_EN` list the eleven kinds. A `labels` or `kindLabels` object you pass is still partial, so existing code keeps compiling; a `Record<FileKind, …>` of your own needs the three new keys.
+- **Colours:** `--uix-file-doc` is the Word blue (`#2B579A`, dark `#3786C3`), deeper and greyer than the brand blue. New `--uix-file-slides` is a burnt PowerPoint orange (`#C26A1F` / `#B76B1C`), `--uix-file-pdf` a crimson (`#A8103F` / `#D04E7F`), and `--uix-file-text` the grey of `--uix-file-other`; each has `-soft`, `-strong`, `-edge` and `-label`. Excel green, e-mail blue and the other kinds are unchanged. The exact Office colours were not used: PowerPoint's orange-red is the danger red (dE 3) and Excel's green the success green (dE 2).
+- **Gates:** `file-kinds.test.mjs` now fails an office kind that leaves its hue band (Word blue, Excel green, PowerPoint orange, PDF red), and any kind within dE 8 of the danger text or the brand blue, or within dE 7 of the danger dot or the attention orange.
+- **Icons:** `PresentationIcon` (Lucide `presentation`) joins the set; `FileKindIcon` draws it for `slides`. `doc`, `pdf` and `text` share the page glyph; the colour and the type label on the corner tell them apart.
+- **Rules for apps:** the Files rule now reads "a file takes the colour people know from its program; every other file takes its kind's colour" (docs page, `Docs/design-system.md`).

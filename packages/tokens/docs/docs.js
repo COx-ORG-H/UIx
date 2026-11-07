@@ -543,13 +543,15 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
         'A state of unknown duration shows text, not only motion.',
       ]],
       ['files', 'Files', [
-        'Colour a file by its kind, not its format: the file kit sets the kinds and their icons.',
+        'A file takes the colour people know from its program: Word blue, Excel green, PowerPoint orange, PDF red. Every other file takes its kind’s colour; the file kit sets the kinds and their icons.',
+        'Each office colour is tuned so it never reads as the danger red, the attention orange or the brand blue.',
       ]],
     ];
     const GATES = [
       ['No loop outside a loader', '<code>check-motion</code> (<code>npm run test:contract</code>), rule <code>loop-not-loading</code>: an infinite animation outside its short allowlist of loading indicators fails the build.'],
       ['Red is never a series', '<code>packages/tokens/tests/chart-palette.test.mjs</code> (<code>npm run test:tokens</code>): a series token that equals a danger role, or sits within dE 10 of one, fails.'],
       ['Critical is not a solid fill', '<code>packages/tokens/tests/calm-kit.test.mjs</code> (<code>npm run test:tokens</code>): a critical or danger status that paints a solid fill, in any treatment or mode, fails.'],
+      ['Files keep their program colour', '<code>packages/tokens/tests/file-kinds.test.mjs</code> (<code>npm run test:tokens</code>): an office kind outside its hue band, or any kind within dE 8 of the danger text or the brand blue (dE 7 of the danger dot or the attention orange), fails.'],
       ['Reduced motion is a short fade', '<code>tests/a11y/calm-kit.spec.mjs</code> and the motion tokens test: the reduced arrival is a fade of 200 ms or less.'],
     ];
     const list = (items) => `<ul>${items.map((item) => `<li>${item}</li>`).join('')}</ul>`;

@@ -2844,7 +2844,7 @@ export interface FileDropProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chi
 export function fileExtension(name: string): string;
 
 // @public
-export type FileKind = 'img' | 'doc' | 'sheet' | 'mail' | 'code' | 'log' | 'archive' | 'other';
+export type FileKind = 'img' | 'doc' | 'sheet' | 'slides' | 'pdf' | 'mail' | 'code' | 'log' | 'archive' | 'text' | 'other';
 
 // @public
 export function fileKind(name: string, mime?: string): FileKind;

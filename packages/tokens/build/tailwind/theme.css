@@ -102,6 +102,16 @@
   --color-uix-file-sheet-strong: var(--uix-file-sheet-strong);
   --color-uix-file-sheet-edge: var(--uix-file-sheet-edge);
   --color-uix-file-sheet-label: var(--uix-file-sheet-label);
+  --color-uix-file-slides: var(--uix-file-slides);
+  --color-uix-file-slides-soft: var(--uix-file-slides-soft);
+  --color-uix-file-slides-strong: var(--uix-file-slides-strong);
+  --color-uix-file-slides-edge: var(--uix-file-slides-edge);
+  --color-uix-file-slides-label: var(--uix-file-slides-label);
+  --color-uix-file-pdf: var(--uix-file-pdf);
+  --color-uix-file-pdf-soft: var(--uix-file-pdf-soft);
+  --color-uix-file-pdf-strong: var(--uix-file-pdf-strong);
+  --color-uix-file-pdf-edge: var(--uix-file-pdf-edge);
+  --color-uix-file-pdf-label: var(--uix-file-pdf-label);
   --color-uix-file-mail: var(--uix-file-mail);
   --color-uix-file-mail-soft: var(--uix-file-mail-soft);
   --color-uix-file-mail-strong: var(--uix-file-mail-strong);
@@ -122,6 +132,11 @@
   --color-uix-file-archive-strong: var(--uix-file-archive-strong);
   --color-uix-file-archive-edge: var(--uix-file-archive-edge);
   --color-uix-file-archive-label: var(--uix-file-archive-label);
+  --color-uix-file-text: var(--uix-file-text);
+  --color-uix-file-text-soft: var(--uix-file-text-soft);
+  --color-uix-file-text-strong: var(--uix-file-text-strong);
+  --color-uix-file-text-edge: var(--uix-file-text-edge);
+  --color-uix-file-text-label: var(--uix-file-text-label);
   --color-uix-file-other: var(--uix-file-other);
   --color-uix-file-other-soft: var(--uix-file-other-soft);
   --color-uix-file-other-strong: var(--uix-file-other-strong);

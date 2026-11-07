@@ -4,18 +4,26 @@ import { fileKind, fileTypeLabel } from '../file-model.js';
 import type { FileKind } from '../file-model.js';
 import {
   FileArchiveIcon, FileCodeIcon, FileIcon, FileImageIcon, FileSpreadsheetIcon, FileTerminalIcon, FileTextIcon, MailIcon,
+  PresentationIcon,
 } from '../icons/components.js';
 import type { UixIcon } from '../icons/types.js';
 
-/** The Lucide glyph of each kind. E-Mail keeps the envelope: Lucide has no file-shaped mail icon. */
+/**
+ * The Lucide glyph of each kind. E-Mail keeps the envelope and Präsentation the presentation
+ * board: Lucide has no file-shaped icon for either. Dokument, PDF and Text share the page with
+ * lines; their colour and the type label on the corner tell them apart.
+ */
 export const FILE_KIND_GLYPHS: Readonly<Record<FileKind, UixIcon>> = {
   img: FileImageIcon,
   doc: FileTextIcon,
   sheet: FileSpreadsheetIcon,
+  slides: PresentationIcon,
+  pdf: FileTextIcon,
   mail: MailIcon,
   code: FileCodeIcon,
   log: FileTerminalIcon,
   archive: FileArchiveIcon,
+  text: FileTextIcon,
   other: FileIcon,
 };
 

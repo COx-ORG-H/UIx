@@ -25,11 +25,13 @@ const PANEL = [
   { name: 'WG Störung Förderportal – Rückmeldung LfA.msg', size: 96_000, meta: 'D. Weber, 14:02' },
   { name: 'Antragseingang_November.xlsx', size: 214_000, meta: 'D. Weber, 13:58' },
   { name: 'Notfallhandbuch_Förderportal_v4.pdf', size: 2_400_000, meta: 'D. Weber, 13:55' },
+  { name: 'Störungsbericht_SEPA-Clearing.docx', size: 48_000, meta: 'L. Brandt, 13:40' },
+  { name: 'Clearing-Ablauf_Schulung.pptx', size: 3_100_000, meta: 'D. Weber, 13:31' },
   { name: 'nginx-upstream.conf', size: 3_000, state: 'blocked' },
   { name: 'export-antraege-1340.csv', size: 1_100_000, state: 'failed' },
 ];
 
-const KIND_SAMPLES = { img: 'png', doc: 'pdf', sheet: 'xlsx', mail: 'msg', code: 'conf', log: 'log', archive: 'zip', other: 'bin' };
+const KIND_SAMPLES = { img: 'png', doc: 'docx', sheet: 'xlsx', slides: 'pptx', pdf: 'pdf', mail: 'msg', code: 'conf', log: 'log', archive: 'zip', text: 'txt', other: 'bin' };
 
 /** Render every specimen. Returns `{ [route]: html }`. */
 export async function renderFileKitSpecimens() {
@@ -44,7 +46,7 @@ export async function renderFileKitSpecimens() {
   });
 
   // ── the kinds ─────────────────────────────────────────────────────────────────────────────
-  const kinds = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr))', gap: 'var(--uix-space-3)' } },
+  const kinds = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 11rem), 1fr))', gap: 'var(--uix-space-3)' } },
     ...ui.FILE_KINDS.map((kind) => h('div', {
       key: kind,
       style: {
@@ -53,13 +55,13 @@ export async function renderFileKitSpecimens() {
         background: `linear-gradient(to right, var(--uix-file-${kind}-soft), transparent 55%) var(--uix-surface)`,
       },
     },
-    h('span', { style: { display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)' } },
+    h('span', { style: { display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)', minWidth: 0, maxWidth: '100%' } },
       h(ui.FileKindIcon, { kind, name: `x.${KIND_SAMPLES[kind]}`, size: 'lg' }),
-      h('b', null, ui.DEFAULT_FILE_KIND_LABELS[kind])),
+      h('b', { style: { minWidth: 0, overflowWrap: 'break-word' } }, ui.DEFAULT_FILE_KIND_LABELS[kind])),
     h('small', { style: { fontFamily: 'var(--uix-font-mono)', color: 'var(--uix-text-muted)', overflowWrap: 'anywhere' } },
       kind === 'other' ? 'alles andere' : ui.FILE_KIND_EXTENSIONS[kind].slice(0, 6).join(' ')))));
   add('examples-crm-itsm', [
-    caption('File kinds (React <code>fileKind(name, mime)</code>, <code>FileKindIcon</code>; tokens <code>--uix-file-&lt;kind&gt;</code> with <code>-soft</code>, <code>-strong</code>, <code>-edge</code>, <code>-label</code>) — eight kinds by what an agent does with the file, each with a Lucide glyph and a hue. None is red (red stays for broken) and none is the brand blue (blue stays for actions); five are the calm chart hues. The icon stroke clears 3:1 and the label text 4.5:1 in both themes.'),
+    caption('File kinds (React <code>fileKind(name, mime)</code>, <code>FileKindIcon</code>; tokens <code>--uix-file-&lt;kind&gt;</code> with <code>-soft</code>, <code>-strong</code>, <code>-edge</code>, <code>-label</code>) — eleven kinds, each with a Lucide glyph and a hue. The office kinds take the colour people know from the program: Word blue, Excel green, PowerPoint orange, PDF red, each tuned so it never reads as the danger red (red stays for broken), the attention orange or the brand blue (blue stays for actions). Dokument, PDF and Text share the page glyph; four kinds are the calm chart hues. The icon stroke clears 3:1 and the label text 4.5:1 in both themes.'),
     '<div data-file-kit-example="kinds">',
     html(kinds),
     '</div>',

@@ -172,7 +172,9 @@ These calm rules (calm kit, 2.56) hold for **every app that uses UIx**, not only
   (`Arrive`). A refresh never replays the arrival. Reduced motion is a fade of 200 ms or less. No pulsing, shaking,
   looping or overshoot on data or status. The only loops are indeterminate loading indicators (Spinner, Skeleton,
   indeterminate progress). A state of unknown duration shows text.
-- **Files.** Colour a file by its kind, not its format (the file kit).
+- **Files.** A file takes the colour people know from its program: Word blue, Excel green, PowerPoint orange, PDF
+  red; every other file takes its kind's colour (the file kit, 2.59). Each office colour is tuned so it never reads as
+  the danger red, the attention orange or the brand blue (operator decision 2026-11-07).
 
 What the kit enforces, each failing the build on a violation:
 
@@ -181,6 +183,7 @@ What the kit enforces, each failing the build on a violation:
 | No loop outside a loader | `check-motion` rule `loop-not-loading` (`npm run test:contract`); its allowlist `LOOP_ALLOW` names the loaders, and `motion-allow` does not exempt it |
 | Red is never a series | `packages/tokens/tests/chart-palette.test.mjs`: no series token equals a danger role or sits within dE 10 of one |
 | Critical is not a solid fill | `packages/tokens/tests/calm-kit.test.mjs`: no critical or danger status paints a solid fill, in any treatment or mode |
+| Files keep their program colour, off the signal colours | `packages/tokens/tests/file-kinds.test.mjs`: an office kind outside its hue band (Word blue, Excel green, PowerPoint orange, PDF red), or any kind within dE 8 of the danger text or the brand blue, or within dE 7 of the danger dot or the attention orange, fails |
 
 The rest (one question per chart, two series, one red surface per screen) are review rules: a test cannot see a
 whole screen of a product.

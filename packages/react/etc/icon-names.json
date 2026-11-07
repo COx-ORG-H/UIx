@@ -673,6 +673,10 @@
       "component": "PlusIcon",
       "glyph": "plus"
     },
+    "Presentation": {
+      "component": "PresentationIcon",
+      "glyph": "presentation"
+    },
     "Printer": {
       "component": "PrinterIcon",
       "glyph": "printer"
