@@ -1739,6 +1739,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
     rowActionsColumn?: boolean;
     rowLabel?: (row: T) => string;
+    rowMotion?: boolean;
     rowNavigation?: boolean;
     // (undocumented)
     rows: readonly T[];
@@ -4951,6 +4952,7 @@ export interface MotionListProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'c
     // Warning: (ae-forgotten-export) The symbol "Key_2" needs to be exported by the entry point index.d.ts
     getKey: (item: T) => Key_2;
     items: readonly T[];
+    onExited?: () => void;
     renderItem: (item: T, state: {
         exiting: boolean;
     }) => ReactElement;

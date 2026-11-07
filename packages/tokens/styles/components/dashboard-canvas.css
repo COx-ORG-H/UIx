@@ -54,7 +54,8 @@
     outline-offset: 2px;
     border-radius: var(--uix-radius-md);
   }
-  .uix-dashboard-canvas__item--dragging { opacity: 0.5; }
+  /* a resize dims the widget; a move lifts it ([data-uix-drag="lifted"], drag.css) and keeps it solid */
+  .uix-dashboard-canvas__item--dragging:not([data-uix-drag]) { opacity: 0.5; }
 
   .uix-dashboard-canvas__handle {
     position: absolute;

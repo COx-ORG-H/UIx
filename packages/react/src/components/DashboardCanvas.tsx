@@ -154,7 +154,7 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
   const instructionsId = useId();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<Drag | null>(null);
-  const [preview, setPreview] = useState<{ id: string; placement: DashboardCanvasPlacement } | null>(null);
+  const [preview, setPreview] = useState<{ id: string; kind: 'move' | 'resize'; placement: DashboardCanvasPlacement } | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const layout = useMemo(() => normalizeCanvas(items), [items]);
   const order = useMemo(() => new Map(canvasReadingOrder(layout).map((item, index) => [item.id, index])), [layout]);
@@ -239,7 +239,7 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
       const placed = placeCanvasItem(live.current.layout, item.id, targetFor(move)).find((candidate) => candidate.id === item.id);
       if (!placed) return;
       last = { col: placed.col, row: placed.row, w: placed.w, h: placed.h };
-      setPreview({ id: item.id, placement: last });
+      setPreview({ id: item.id, kind, placement: last });
     };
     const finish = (drop: boolean) => {
       drag.stop();
@@ -301,10 +301,14 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
       {layout.map((item) => {
         const name = itemLabel(item);
         const dragging = preview?.id === item.id;
+        // A widget in the pointer's hand is lifted (the kit's drag affordance, HAR-2755) while the
+        // dashed preview shows where it lands; a resize is not picked up, so it only dims.
+        const lifted = dragging && preview.kind === 'move';
         return (
           <div
             key={item.id}
             className={cx('uix-dashboard-canvas__item', dragging && 'uix-dashboard-canvas__item--dragging')}
+            data-uix-drag={lifted ? 'lifted' : undefined}
             style={placementStyle(item, order.get(item.id) ?? 0)}
             data-canvas-id={item.id}
           >

@@ -603,3 +603,55 @@ test('SortableList: a click on the grip without a move does not land', async ({ 
   await page.waitForTimeout(50);
   await expect(page.getByTestId('sortable').locator('[data-uix-settle]')).toHaveCount(0);
 });
+
+/* HAR-2755: the hook paints on its own, and DataWorkspace rows move. */
+test('useChangeHighlight on a bare element (its documented usage) tints it, then clears', async ({ page }) => {
+  const cell = page.getByTestId('hook-cell');
+  await expect(cell).not.toHaveAttribute('data-uix-changed', /.*/);
+  await page.getByTestId('live-update').click();
+  await expect(cell).toHaveAttribute('data-uix-changed', '');
+  expect(await animations(cell), 'the bare hook painted nothing').toEqual(['uix-changed']);
+  const tint = await cell.evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(tint, 'no tint at the start of the highlight').not.toBe('rgba(0, 0, 0, 0)');
+  // with an animation there is an animationend, so the attribute goes again
+  await expect(cell).not.toHaveAttribute('data-uix-changed', /.*/, { timeout: 5000 });
+});
+
+test('DataWorkspace rowMotion: a new row rises in; a closed row fades in place, then the rows below glide up', async ({ page }) => {
+  await slowMotion(page);
+  const body = page.getByTestId('ws').locator('tbody');
+  await expect(body).toHaveClass(/uix-motion-list/);
+  await expect(body.locator('[data-uix-entering]')).toHaveCount(0);
+  await page.getByTestId('ws-add').click();
+  const added = body.locator('tr').first();
+  await expect(added).toHaveAttribute('data-uix-entering', '');
+  expect(await running(added)).toContain('uix-list-enter');
+  await expect(body.locator('[data-uix-moving]')).toHaveCount(0, { timeout: 10000 });
+
+  await page.getByTestId('ws-close').click();
+  const leaving = body.locator('[data-uix-exiting]');
+  await expect(leaving).toHaveCount(1);
+  await expect(leaving).toHaveAttribute('aria-hidden', 'true');
+  await expect(leaving).toHaveAttribute('inert', '');
+  expect(await running(leaving)).toContain('uix-list-exit');
+  const below = body.locator('tr', { hasText: 'VPN drops every 20 minutes' });
+  const start = (await below.boundingBox()).y;
+  await expect(leaving).toHaveCount(0, { timeout: 8000 });
+  await expect(below).toHaveAttribute('data-uix-moving', '');
+  const mid = (await below.boundingBox()).y;
+  const end = await below.evaluate((el) => el.offsetTop + el.offsetParent.getBoundingClientRect().top);
+  expect(mid, 'the row below jumped instead of gliding').toBeGreaterThan(end + 1);
+  expect(mid).toBeLessThanOrEqual(start + 1);
+});
+
+test('DataWorkspace rowMotion: the last rows leave visibly before the empty state shows', async ({ page }) => {
+  await slowMotion(page);
+  const ws = page.getByTestId('ws');
+  await page.getByTestId('ws-close-all').click();
+  const leaving = ws.locator('tbody [data-uix-exiting]');
+  await expect(leaving).toHaveCount(4);
+  expect(await running(leaving.first())).toContain('uix-list-exit');
+  await expect(ws.locator('.uix-empty')).toHaveCount(0);
+  await expect(ws.locator('.uix-empty')).toHaveCount(1, { timeout: 8000 });
+  await expect(ws.locator('tbody')).toHaveCount(0);
+});

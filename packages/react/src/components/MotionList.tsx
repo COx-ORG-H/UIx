@@ -29,6 +29,12 @@ export interface MotionListProps<T> extends Omit<HTMLAttributes<HTMLElement>, 'c
   renderItem: (item: T, state: { exiting: boolean }) => ReactElement;
   /** The list element (default `ul`). */
   as?: 'ul' | 'ol' | 'div' | 'tbody';
+  /**
+   * Called once the last leaving item has gone (its exit ended, or its deadline passed). A list
+   * that shows an empty state in its place keeps rendering the list, with no items, until this
+   * fires, so its last item leaves visibly too (HAR-2755).
+   */
+  onExited?: () => void;
 }
 
 interface Entry<T> { key: Key; item: T; exiting: boolean }
@@ -47,7 +53,7 @@ interface ListState<T> { items: readonly T[]; entries: Entry<T>[]; exiting: Map<
  * Reduced motion keeps the fades and drops every glide and rise. For a list that re-sorts
  * itself (live data), hold the order while the person is pointing at it: `useDeferredReorder`.
  */
-export function MotionList<T>({ items, getKey, renderItem, as = 'ul', className, ...props }: MotionListProps<T>) {
+export function MotionList<T>({ items, getKey, renderItem, as = 'ul', onExited, className, ...props }: MotionListProps<T>) {
   const containerRef = useRef<HTMLElement>(null);
   // Leaving items, derived while rendering (not in an effect): the removed item stays in place
   // in the same commit that drops it from `items`, so nothing beside it jumps and jumps back.
@@ -152,6 +158,14 @@ export function MotionList<T>({ items, getKey, renderItem, as = 'ul', className,
   const deadlines = useRef<Map<Key, number>>(new Map());
   const exitingKeys = entries.filter((e) => e.exiting).map((e) => e.key);
   const exitingSignature = exitingKeys.join('\n');
+  const exitedRef = useRef(onExited);
+  exitedRef.current = onExited;
+  const wasExiting = useRef(false);
+  useEffect(() => {
+    const leaving = exitingSignature !== '';
+    if (wasExiting.current && !leaving) exitedRef.current?.();
+    wasExiting.current = leaving;
+  }, [exitingSignature]);
   useEffect(() => {
     const container = containerRef.current;
     const now = Date.now();
