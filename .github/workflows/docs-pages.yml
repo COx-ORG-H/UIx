@@ -8,6 +8,8 @@ on:
       - .github/workflows/docs-pages.yml
       - packages/tokens/**
       - packages/react/etc/**
+      # the Motion page's live playground bundles the React components from source
+      - packages/react/src/**
       - tests/docs/docs-artifact.test.mjs
       - package.json
       - package-lock.json
@@ -43,6 +45,9 @@ jobs:
 
       - name: Build the UIx contract
         run: npm run build
+
+      - name: Build the live motion playground
+        run: node packages/tokens/docs/live/build.mjs
 
       - name: Assemble the static site
         shell: bash
