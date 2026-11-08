@@ -85,6 +85,7 @@
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
+<!-- lesson-skip: 9d095c8 unconfirmed until select-cross-browser is green: glide layer reshaped to transform-only after mouse-only WebKit failures; settleOverlay now waits for the subtree -->
 <!-- lesson-skip: 5ebab16 unconfirmed hypothesis (a subject-less :has() hanging Linux WebKit in select-cross-browser); upgrade to a rule only if that job goes green on this head -->
 
 
