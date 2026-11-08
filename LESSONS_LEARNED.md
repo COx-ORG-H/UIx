@@ -90,6 +90,9 @@
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
 
 
+### 2026-11-08 · animated filter in software-rendered WebKit · `4482168`
+- **Rule:** never animate `filter` (a blur) in kit motion, not even on one small label; arrivals fade and move. A constant `backdrop-filter` is fine, an animated one is not.  **Why:** a 4 px blur keyframe on the Select's value stalled Linux WebKit 26.5 (no GPU) long enough that later page loads in the same run timed out; bisected locally, 71/71 twice without it, failures every run with it. VDI desktops without a GPU render the same way.  **Gate:** ⚠ TODO check-motion rejects `filter`/`backdrop-filter` in transitions and @keyframes; the `select-cross-browser` job.  **Tag:** css, motion, filter, blur, webkit, performance
+
 ### 2026-11-08 · a CSS rule that crashes Linux WebKit · `85526af`
 - **Rule:** when only the WebKit cross-browser job fails (timeouts, "element is not stable", "Page crashed"), stop guessing from CI logs: run Linux WebKit locally (WSL: a user-local Node, `apt-get download` + `dpkg -x` the libraries Playwright lists, linked into `minibrowser-wpe/sys/lib`, `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1`), count crashes over 40+ page loads, and bisect the CSS by file, then by rule, against master's. Windows WebKit never reproduced it. Also: no universal descendant rule (`.x *`) in kit CSS.  **Why:** `.uix-icon[data-animate] * { transform-box: fill-box }` crashed WPE WebKit 26.5 about 3 loads in 40 on pages with no matching element; four plausible fixes before the bisect changed nothing.  **Gate:** ⚠ TODO a contract rule rejecting a bare `*` after a combinator in `styles/components`; the `select-cross-browser` job.  **Tag:** webkit, css, crash, ci, bisect
 
