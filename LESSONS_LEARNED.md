@@ -86,6 +86,9 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 
+### 2026-11-08 · transient motion inside a scroll container · `da81988`
+- **Rule:** anything that moves or scales for a moment inside a scroll container (rows sliding in, a FLIP-scaled background, and a top-layer popover counts: the UA gives it `overflow: auto`) must not create scrollable overflow. Clip the axis that never scrolls (`overflow-x: hidden`, or `overflow: visible` on a box that never scrolls), and never size a layer from `scrollWidth`/`scrollHeight` it then feeds back into.  **Why:** classic-scrollbar engines (Linux WebKit, Windows) flash a real scrollbar that shifts the rows or grows the box, so clicks miss and an anchored overlay is placed too high; headless Chromium draws overlay scrollbars, so it stays green locally.  **Gate:** `tests/a11y/motion-glide.spec.mjs` asserts the clipped axis and an unchanged scroll size after hovers, plus the tooltip's `overflow: visible` (mutation-checked); the `select-cross-browser` WebKit job.  **Tag:** css, motion, overflow, scrollbar, webkit, popover
+
 ### 2026-11-06 · CommonJS entry bundles · `289fb84`
 - **Rule:** a React context, store or module-level registry used across package entries must live on a `Symbol.for(...)` global registry, not in a module.  **Why:** the ESM build is one file per module, but the CJS build bundles each entry on its own, so `require('@tensor_1/react')` and `require('@tensor_1/react/chart')` each create their own `createContext()` and a chart never sees its stage.  **Gate:** calm-kit-dom.test.mjs requires both CJS bundles and asserts they share the registered Arrive contexts.  **Tag:** build, react-context, cjs
 
