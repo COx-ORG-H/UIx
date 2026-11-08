@@ -85,7 +85,9 @@
      (--uix-dur-overlay, --uix-ease-soft; their 4 px blur runs in script) */
   .uix-listbox__option[data-just-chosen] .uix-listbox__check path { stroke-dasharray: 1; animation: uix-check-draw var(--uix-dur-draw) var(--uix-ease-leave) both; }
   button.uix-select[data-leaving]::before {
-    content: attr(data-leaving); position: absolute; inset: 0; box-sizing: border-box; padding: inherit; pointer-events: none;
+    /* empty alternative text: the old value is seen leaving, never read as part of the trigger's
+       name or value. An engine without `content` alt text drops the declaration: no old value. */
+    content: attr(data-leaving) / ""; position: absolute; inset: 0; box-sizing: border-box; padding: inherit; pointer-events: none;
     display: flex; align-items: center; overflow: hidden; white-space: nowrap; opacity: 0;
     filter: blur(var(--uix-leaving-blur, 0px));
   }

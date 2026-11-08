@@ -115,14 +115,34 @@ export function useHoverGlide(
     });
     active?.observe(container, { subtree: true, attributes: true, attributeFilter: ['data-active'] });
 
-    const onLeave = (event: PointerEvent) => { if (event.pointerType !== 'touch' && !keyboardInitiated()) hide(); };
+    // the row the keyboard holds: the focused row, or a listbox's [data-active] option
+    const keyRow = (): HTMLElement | null => {
+      const focused = document.activeElement;
+      if (focused instanceof HTMLElement && focused !== container && container.contains(focused) && focused.matches(itemSelector)) return focused;
+      const active = container.querySelector<HTMLElement>(`${itemSelector}[data-active]`);
+      return active && container.contains(active) ? active : null;
+    };
+    // the pointer leaves: back to the keyboard's row when there is one, else gone
+    const onLeave = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return;
+      const row = keyRow();
+      if (row && !forced()) show(row); else hide();
+    };
+    // focus leaves the list (Tab out): a mark the keyboard put there goes with it
+    const onFocusOut = (event: FocusEvent) => {
+      const next = event.relatedTarget as Node | null;
+      if (next && container.contains(next)) return;
+      if (!container.matches(':hover')) hide();
+    };
     const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => { if (current) hide(); });
     resized?.observe(container);
 
     container.addEventListener('pointerover', onOver);
     container.addEventListener('pointerleave', onLeave);
     container.addEventListener('focusin', onFocus);
+    container.addEventListener('focusout', onFocusOut);
     return () => {
+      container.removeEventListener('focusout', onFocusOut);
       resized?.disconnect();
       active?.disconnect();
       container.removeEventListener('pointerover', onOver);
