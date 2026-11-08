@@ -23,10 +23,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 const row = (page, name) => page.locator('#nav .uix-navitem', { hasText: name });
-const clipTop = (page) => page.locator('#nav > .uix-glide').evaluate((el) => {
-  const m = /inset\(\s*([\d.]+)px/.exec(getComputedStyle(el).clipPath);
-  return m ? Number(m[1]) : NaN;
-});
+const clipTop = (page) => page.locator('#nav > .uix-glide').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m42);
 
 test('the sidebar hover mark glides between rows; reduced motion jumps', async ({ page }) => {
   await row(page, 'Übersicht').hover();
@@ -42,7 +39,7 @@ test('the sidebar hover mark glides between rows; reduced motion jumps', async (
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const property = await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).transitionProperty);
-  expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('clip-path');
+  expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('transform');
 });
 
 test('the glide layer never makes a list scroll (no overflow of its own)', async ({ page }) => {

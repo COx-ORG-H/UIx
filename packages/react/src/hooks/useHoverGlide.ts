@@ -12,14 +12,15 @@ import type { RefObject } from 'react';
  * mark travels with it on `--uix-ease-glide`, so the eye follows one shape instead of a flicker of
  * rows lighting up and going out.
  *
- * The layer covers the container's scroll box and is cut to the row with `clip-path: inset()`, so
- * a taller row (a two-line nav item) changes the shape without stretching its corners, and a new
- * target retargets a running glide from where it is. Nothing animates width, height or position.
+ * The layer is the row's own size and travels on `transform` alone (the Tabs indicator's way): it
+ * never reads or changes the list's scroll size, so it cannot add overflow or a scrollbar under the
+ * pointer, and a new target retargets a running glide from where it is. A taller row (a two-line nav
+ * item) takes its height at once; nothing animates width, height or position.
  *
  * - Pointer only (mouse and pen). Touch has no hover; the keyboard keeps each row's own focus and
  *   active styles (arrow keys are the 100×-a-day path, §2.2), so a key press hides the layer.
  * - The first row the pointer enters fades in where it is; only row-to-row moves glide.
- * - Reduced motion: the global policy drops clip-path from transitions, so the mark jumps and fades.
+ * - Reduced motion: the global policy drops transform from transitions, so the mark jumps and fades.
  * - Forced colours: CSS hides the layer and the rows' own system-colour hover returns.
  * - While the layer shows, the container carries `data-uix-glide`; the component's CSS uses it to
  *   take each row's own hover background away (`[data-uix-glide] > .row:hover { background: none }`).
@@ -45,19 +46,14 @@ export function useHoverGlide(
     };
 
     const place = (item: HTMLElement) => {
-      // The layer spans the rows' scroll height, so it scrolls with the rows it marks, but it must
-      // never add overflow of its own: a rounded-up pixel would raise a classic scrollbar, shift the
-      // rows under the pointer and move the mark again. So it is as wide as the list's client box,
-      // and its height is the scroll height measured with the layer collapsed.
-      layer.style.height = '0px';
-      const w = container.clientWidth;
-      const h = container.scrollHeight;
+      // The row's box, in the list's scroll coordinates: the layer sits inside it, so it scrolls with
+      // the rows and never reaches past them (no overflow, no scrollbar under the pointer).
       const top = offsetWithin(item, container, 'top');
       const left = offsetWithin(item, container, 'left');
-      const radius = window.getComputedStyle(item).borderTopLeftRadius || '0px';
-      layer.style.width = `${w}px`;
-      layer.style.height = `${h}px`;
-      layer.style.clipPath = `inset(${top}px ${Math.max(0, w - left - item.offsetWidth)}px ${Math.max(0, h - top - item.offsetHeight)}px ${left}px round ${radius})`;
+      layer.style.width = `${item.offsetWidth}px`;
+      layer.style.height = `${item.offsetHeight}px`;
+      layer.style.borderRadius = window.getComputedStyle(item).borderTopLeftRadius || '0px';
+      layer.style.transform = `translate(${left}px, ${top}px)`;
     };
 
     const target = (event: Event): HTMLElement | null => {

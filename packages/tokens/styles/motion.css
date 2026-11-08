@@ -84,21 +84,22 @@
     .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
   }
 
-  /* The glide highlight (useHoverGlide, 2.60): one layer under a list's rows, cut to the pointer's
-     row with clip-path. It fades in where the pointer enters, glides between rows on --uix-ease-glide
-     and fades out when the pointer leaves. The list (its parent) is its containing block; isolation
-     keeps the layer's z-index -1 above the list's own background and beneath the rows. Under reduced
-     motion the global policy drops clip-path from the transition: the mark jumps, the fade stays. */
+  /* The glide highlight (useHoverGlide, 2.60): one row-sized layer under a list's rows, moved to the
+     pointer's row with transform alone. It fades in where the pointer enters, glides between rows on
+     --uix-ease-glide and fades out when the pointer leaves. The list (its parent) is its containing
+     block; isolation keeps the layer's z-index -1 above the list's own background and beneath the
+     rows. Under reduced motion the global policy drops transform from the transition: the mark jumps,
+     the fade stays. */
   /* The hosts are named, never found with :has(): a subject-less :has() makes every element a
      candidate, and WebKit then restyles the page on every DOM change (CI timed out on it). */
   :where(.uix-sidebar, .uix-select__listbox, .uix-menu) { isolation: isolate; }
   .uix-glide {
-    position: absolute; top: 0; left: 0; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none;
+    position: absolute; top: 0; left: 0; transform-origin: 0 0; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none;
     background: var(--uix-glide-bg, var(--uix-bg-hover)); opacity: 0;
     transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out);
   }
   .uix-glide[data-shown] { opacity: 1; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fast) var(--uix-ease-out), clip-path var(--uix-dur-glide) var(--uix-ease-glide); }
+  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-glide) var(--uix-ease-glide); }
   @media (forced-colors: active) { .uix-glide { display: none; } }
 
   /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces open and close with no animation — the

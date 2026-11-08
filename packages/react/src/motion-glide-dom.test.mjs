@@ -78,7 +78,7 @@ test('the sidebar keeps one glide layer and one current-page mark, both hidden f
   const [a, b, off] = nav.querySelectorAll('.uix-navitem');
   await pointer('pointerover', b);
   assert.ok(nav.hasAttribute('data-uix-glide'), 'the nav says the layer is showing');
-  assert.match(glide.style.clipPath, /^inset\(/, 'the layer is cut to the row');
+  assert.match(glide.style.transform, /^translate\(/, 'the layer is moved to the row by transform alone');
   // touch has no hover
   await pointer('pointerleave', nav);
   assert.ok(!nav.hasAttribute('data-uix-glide'));
