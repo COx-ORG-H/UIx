@@ -1,12 +1,96 @@
 "use client";
 
-import { useId, useRef } from 'react';
-import type { ReactNode, HTMLAttributes } from 'react';
+import { useEffect, useId, useRef } from 'react';
+import type { ReactNode, HTMLAttributes, PointerEvent as ReactPointerEvent } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { isBackdropClick } from '../hooks/backdropDismiss.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
 import type { DialogCloseEvent, DiscardPromptLabels } from './DiscardPrompt.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
+
+/* Swipe to dismiss (2.60, the animate-ui study). On a touch screen or with a pen, the panel follows
+ * a drag toward its own edge (right for `end`, left for `start`, down for `bottom`) and the backdrop
+ * lightens with it; released past a third of the panel, or flung faster than SWIPE_VELOCITY that
+ * way, it carries on out and closes. Otherwise it settles back. A drag the other way does not move
+ * it. The mouse keeps the close button, Escape and the backdrop: a mouse drag in a drawer selects
+ * text. A drag never starts on a control, and on a bottom sheet only from the header or from a body
+ * scrolled to its top, so scrolling stays scrolling. With unsaved changes (`dirty`) it settles back
+ * and asks first, like every other way out; while `pending` it settles back. The same constants as
+ * the Toast swipe. */
+const SWIPE_VELOCITY = 0.11; // px per ms
+const SWIPE_SLOP = 6; // px of travel before a press becomes a drag
+const SWIPE_WINDOW = 100; // ms of movement the release velocity is measured over
+const NOT_A_HANDLE = 'button, a, input, textarea, select, label, [role="button"], [role="slider"], [contenteditable=""], [contenteditable="true"]';
+
+interface DrawerDrag { id: number; x0: number; y0: number; d: number; samples: { p: number; t: number }[]; active: boolean }
+
+function useDrawerSwipe(side: 'end' | 'start' | 'bottom', canClose: boolean, dismiss: (event: ReactPointerEvent<HTMLDialogElement>) => boolean) {
+  const drag = useRef<DrawerDrag | null>(null);
+  const vertical = side === 'bottom';
+  const sign = side === 'start' ? -1 : 1;
+  const along = (e: { clientX: number; clientY: number }, d: DrawerDrag) => (vertical ? e.clientY - d.y0 : e.clientX - d.x0) * sign;
+  const across = (e: { clientX: number; clientY: number }, d: DrawerDrag) => (vertical ? e.clientX - d.x0 : e.clientY - d.y0);
+  const place = (el: HTMLElement, d: number) => {
+    el.style.translate = vertical ? `0 ${d}px` : `${d * sign}px 0`;
+    const size = vertical ? el.offsetHeight : el.offsetWidth;
+    el.style.setProperty('--uix-drawer-swipe', String(Math.min(1, d / Math.max(1, size))));
+  };
+  const settle = (el: HTMLElement) => {
+    el.removeAttribute('data-swiping');
+    el.style.translate = '';
+    el.style.removeProperty('--uix-drawer-swipe');
+  };
+  const end = (e: ReactPointerEvent<HTMLDialogElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d?.active) return;
+    const el = e.currentTarget;
+    const recent = d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW);
+    const v = recent.length ? (along(e, d) - recent[0].p) / Math.max(1, e.timeStamp - recent[0].t) : 0;
+    const size = vertical ? el.offsetHeight : el.offsetWidth;
+    if (e.type === 'pointerup' && (v > SWIPE_VELOCITY || d.d > size / 3) && dismiss(e)) {
+      // carry on out from where it was let go; under reduced motion it fades where it is
+      el.removeAttribute('data-swiping');
+      if (!prefersReducedMotion()) place(el, size + 32);
+      return;
+    }
+    settle(el);
+  };
+  return {
+    settle,
+    handlers: {
+      onPointerDown: (e: ReactPointerEvent<HTMLDialogElement>) => {
+        if (!canClose || e.pointerType === 'mouse' || !e.isPrimary || e.target === e.currentTarget) return;
+        const target = e.target as Element;
+        if (target.closest(NOT_A_HANDLE)) return;
+        if (vertical) {
+          const body = e.currentTarget.querySelector('.uix-drawer__body');
+          if (!target.closest('.uix-drawer__header') && body && body.contains(target) && body.scrollTop > 0) return;
+        }
+        drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, d: 0, samples: [{ p: 0, t: e.timeStamp }], active: false };
+      },
+      onPointerMove: (e: ReactPointerEvent<HTMLDialogElement>) => {
+        const d = drag.current;
+        if (!d || d.id !== e.pointerId) return;
+        const a = along(e, d);
+        if (!d.active) {
+          if (Math.abs(a) < SWIPE_SLOP) return;
+          // the other axis, or toward the screen's middle: not a dismiss gesture
+          if (Math.abs(across(e, d)) > Math.abs(a) || a < 0) { drag.current = null; return; }
+          d.active = true;
+          try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* a pointer the browser no longer tracks */ }
+          e.currentTarget.setAttribute('data-swiping', '');
+        }
+        d.samples = [...d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW), { p: a, t: e.timeStamp }];
+        d.d = Math.max(0, a);
+        place(e.currentTarget, d.d);
+      },
+      onPointerUp: end,
+      onPointerCancel: end,
+    },
+  };
+}
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -63,6 +147,14 @@ export function Drawer({
   // inherit resets neutralize the base h2 heading font/tracking/leading so it renders exactly
   // like the old <div> (UIX-A11Y-1).
   const titleId = useId();
+  const swipe = useDrawerSwipe(side, !!onClose && !pending, (event) => {
+    // only a clean close carries the panel out; unsaved changes settle it back and ask first
+    if (dirty) { guard.requestClose(null, event); return false; }
+    guard.requestClose(null, event);
+    return true;
+  });
+  // a panel thrown out stays out until the dialog has closed; reopening starts clean
+  useEffect(() => { const el = guard.ref.current; if (open && el) swipe.settle(el); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <dialog
@@ -75,6 +167,10 @@ export function Drawer({
         if (dismissOnBackdrop && onClose && isBackdropClick(event)) guard.requestClose(null, event);
       }}
       onKeyDown={(event) => { onKeyDown?.(event); guard.onKeyDown(event); }}
+      onPointerDown={(event) => { rest.onPointerDown?.(event); swipe.handlers.onPointerDown(event); }}
+      onPointerMove={(event) => { rest.onPointerMove?.(event); swipe.handlers.onPointerMove(event); }}
+      onPointerUp={(event) => { rest.onPointerUp?.(event); swipe.handlers.onPointerUp(event); }}
+      onPointerCancel={(event) => { rest.onPointerCancel?.(event); swipe.handlers.onPointerCancel(event); }}
     >
       {guard.provide(
         <>

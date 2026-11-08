@@ -9,6 +9,7 @@ import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import type { KeyShortcut } from './Kbd.js';
 
 /**
@@ -80,6 +81,9 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
   /** Which item gets focus when the menu opens. */
   const focusOnOpen = useRef<'first' | 'last'>('first');
   const typeahead = useRef({ text: '', at: 0 });
+  // one hover mark that glides from item to item under the pointer (2.60)
+  const glideRef = useRef<HTMLSpanElement>(null);
+  useHoverGlide(glideRef, '.uix-menu__item', open);
 
   const setOpen = (next: boolean) => {
     if (controlledOpen === undefined) setInternalOpen(next);
@@ -183,7 +187,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
         className={cx('uix-menu', className)}
         onKeyDown={onMenuKeyDown}
       >
-        {open ? children : null}
+        {open ? <><span ref={glideRef} className="uix-glide" aria-hidden="true" />{children}</> : null}
       </Popover>
     </MenuContext.Provider>
   );

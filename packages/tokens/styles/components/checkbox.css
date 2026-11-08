@@ -9,14 +9,21 @@
     border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
+  /* 2.60: the tick draws itself from its short arm to its long one (stroke-dashoffset over a
+     pathLength of 1) as the box fills; unticking fades it at the exit pace and resets the stroke once
+     it is gone. The dash grows from its centre. Reduced motion keeps the fade: the tick appears whole. */
   .uix-checkbox__box svg {
-    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0; transform: scale(.5);
-    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0;
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out);
   }
+  .uix-checkbox__box polyline { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0s linear var(--uix-dur-exit-fast); }
+  .uix-checkbox__box rect { transform-box: fill-box; transform-origin: center; transform: scaleX(0); transition: transform 0s linear var(--uix-dur-exit-fast); }
   .uix-checkbox > input:checked + .uix-checkbox__box,
   .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
   .uix-checkbox > input:checked + .uix-checkbox__box svg,
-  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transform: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transition: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
+  .uix-checkbox > input:checked + .uix-checkbox__box polyline { stroke-dashoffset: 0; transition: stroke-dashoffset var(--uix-dur) var(--uix-ease-out); }
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box rect { transform: none; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-checkbox > input:disabled ~ * { opacity: .5; }
 }

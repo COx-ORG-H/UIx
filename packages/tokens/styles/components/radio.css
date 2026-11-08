@@ -13,10 +13,11 @@
   }
   .uix-radio__dot::after {
     content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-accent);
-    opacity: 0; transform: scale(.4); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+    opacity: 0; transform: scale(.4); transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out);
   }
   .uix-radio > input:checked + .uix-radio__dot { border-color: var(--uix-accent); }
-  .uix-radio > input:checked + .uix-radio__dot::after { opacity: 1; transform: none; }
+  /* 2.60: the dot grows in on the pop spring (a 3 % overshoot, was the 1.56 bezier's ~10 %) and leaves at the exit pace */
+  .uix-radio > input:checked + .uix-radio__dot::after { opacity: 1; transform: none; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-pop) var(--uix-ease-pop); }
   .uix-radio > input:focus-visible + .uix-radio__dot { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-radio > input:disabled ~ * { opacity: .5; }
 }

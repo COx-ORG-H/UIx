@@ -171,6 +171,12 @@ export const cssVar = {
   "ease-in": "var(--uix-ease-in)",
   "ease-in-out": "var(--uix-ease-in-out)",
   "ease-spring": "var(--uix-ease-spring)",
+  "ease-glide": "var(--uix-ease-glide)",
+  "ease-pop": "var(--uix-ease-pop)",
+  "scrim-blur": "var(--uix-scrim-blur)",
+  "stagger-rows": "var(--uix-stagger-rows)",
+  "dur-glide": "var(--uix-dur-glide)",
+  "dur-pop": "var(--uix-dur-pop)",
   "dur-fast": "var(--uix-dur-fast)",
   "dur": "var(--uix-dur)",
   "dur-slow": "var(--uix-dur-slow)",
@@ -433,6 +439,12 @@ export const light = {
   "ease-in": "cubic-bezier(.4,0,1,1)",
   "ease-in-out": "cubic-bezier(.77,0,.175,1)",
   "ease-spring": "cubic-bezier(.34,1.56,.64,1)",
+  "ease-glide": "linear(0, 0.043, 0.141, 0.263, 0.388, 0.504, 0.608, 0.695, 0.768, 0.826, 0.872, 0.907, 0.934, 0.954, 0.968, 0.979, 0.986, 0.992, 0.995, 0.998, 1)",
+  "ease-pop": "linear(0, 0.064, 0.209, 0.383, 0.551, 0.697, 0.814, 0.9, 0.96, 0.998, 1.019, 1.029, 1.031, 1.028, 1.023, 1.018, 1.013, 1.009, 1.005, 1.003, 1)",
+  "scrim-blur": "4px",
+  "stagger-rows": "30ms",
+  "dur-glide": "280ms",
+  "dur-pop": "280ms",
   "dur-fast": "120ms",
   "dur": "160ms",
   "dur-slow": "240ms",
@@ -669,6 +681,7 @@ export const dark = {
 };
 
 export const num = {
+  "scrim-blur": 4,
   "lift": 4,
   "arrive-rise": 8,
   "radius-xs": 4,

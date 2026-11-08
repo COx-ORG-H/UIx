@@ -16,7 +16,9 @@ import { expect } from '@playwright/test';
  */
 export const settleOverlay = (overlay) => expect.poll(() => overlay.evaluate((el) => {
   const transform = getComputedStyle(el).transform;
-  return !el.hasAttribute('data-uix-placing') && el.getAnimations().length === 0 && (transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)');
+  // subtree: an overlay's rows may still be arriving (2.60 row stagger) after the overlay settled;
+  // infinite ones (a spinner in the list) never finish and are skipped, as in settleAnimations
+  return !el.hasAttribute('data-uix-placing') && el.getAnimations({ subtree: true }).filter((a) => a.effect?.getComputedTiming().endTime !== Infinity).length === 0 && (transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)');
 }), { message: 'the overlay is still held or moving' }).toBe(true);
 
 export const settleAnimations = (page) => expect.poll(() => page.evaluate(() => document.getAnimations()

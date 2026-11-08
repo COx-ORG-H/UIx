@@ -1,36 +1,61 @@
 /* uix drawer / side sheet — native <dialog> sliding from the right edge. */
 @layer uix.components {
+  /* 2.60 (operator's pick): a side drawer floats --uix-drawer-gap in from the screen's edges with
+     large corners, over the blurred scrim. The bottom sheet stays edge to edge. */
   .uix-drawer {
-    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(420px, 100vw); padding: 0; color: var(--uix-text);
-    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
+    --uix-drawer-gap: var(--uix-space-2);
+    margin: var(--uix-drawer-gap) var(--uix-drawer-gap) var(--uix-drawer-gap) auto;
+    height: calc(100dvh - 2 * var(--uix-drawer-gap)); max-height: calc(100dvh - 2 * var(--uix-drawer-gap));
+    width: min(420px, calc(100vw - 2 * var(--uix-drawer-gap))); padding: 0; color: var(--uix-text);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
-    transform: translateX(100%);
-    /* the closed state's durations are the exit's (--uix-dur-exit-slow); [open] carries the enter */
-    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
+    transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0;
+    /* the closed state's timings are the exit's (--uix-dur-exit-slow); [open] carries the enter. The
+       fade keeps a drawer visible arriving under reduced motion, where the slide drops out. `translate`
+       is the swipe (Drawer.tsx): the release settles back or carries on out at the exit pace. */
+    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out), opacity var(--uix-dur-exit-slow) var(--uix-ease-out),
+                translate var(--uix-dur-exit-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
+    touch-action: pan-y;
     /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
     display: none;
   }
-  .uix-drawer[open] { transform: none; display: flex; flex-direction: column; transition-duration: var(--uix-dur-slow); }
-  @starting-style { .uix-drawer[open] { transform: translateX(100%); } }
-  .uix-drawer::backdrop {
-    background: var(--uix-scrim); opacity: 0;
-    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
+  /* 2.60: the panel arrives on the glide spring (95 % in about 175 ms, no overshoot) and fades in */
+  .uix-drawer[open] {
+    transform: none; opacity: 1; display: flex; flex-direction: column;
+    transition: transform var(--uix-dur-glide) var(--uix-ease-glide), opacity var(--uix-dur) var(--uix-ease-out),
+                translate var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-glide) allow-discrete, display var(--uix-dur-glide) allow-discrete;
   }
-  .uix-drawer[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }
+  @starting-style { .uix-drawer[open] { transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0; } }
+  /* a drag in progress follows the finger exactly */
+  .uix-drawer[data-swiping] { transition: none; user-select: none; }
+  /* 2.60: the page behind softens under --uix-scrim-blur while the dim fades in; a swipe in progress
+     lightens it with the panel's travel (--uix-drawer-swipe, 0 → 1, set by Drawer.tsx). The blur
+     radius itself never animates: a changing radius re-renders a full-page blur every frame, which
+     starves software rendering (CI WebKit, VDI desktops without a GPU). Only the opacity moves. */
+  .uix-drawer::backdrop {
+    background: var(--uix-scrim); opacity: 0; backdrop-filter: blur(var(--uix-scrim-blur));
+    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
+  }
+  .uix-drawer[open]::backdrop { opacity: calc(1 - var(--uix-drawer-swipe, 0)); transition-duration: var(--uix-dur-slow); }
+  .uix-drawer[data-swiping]::backdrop { transition: none; }
   @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
   /* side="start" — the phone navigation drawer, from the left edge (HAR-1351) */
-  .uix-drawer--start { margin: 0 auto 0 0; border-left: 0; border-right: 1px solid var(--uix-border); transform: translateX(-100%); }
+  .uix-drawer--start { margin: var(--uix-drawer-gap) auto var(--uix-drawer-gap) var(--uix-drawer-gap); transform: translateX(calc(-100% - 2 * var(--uix-drawer-gap))); }
   .uix-drawer--start[open] { transform: none; }
-  @starting-style { .uix-drawer--start[open] { transform: translateX(-100%); } }
+  @starting-style { .uix-drawer--start[open] { transform: translateX(calc(-100% - 2 * var(--uix-drawer-gap))); opacity: 0; } }
   /* side="bottom" — a bottom sheet: full width, content height, capped at 85% of the viewport */
   .uix-drawer--bottom {
     margin: auto 0 0 0; width: 100%; max-width: 100%; height: fit-content; max-height: 85dvh;
-    border-left: 0; border-top: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg) var(--uix-radius-lg) 0 0;
-    padding-bottom: env(safe-area-inset-bottom); transform: translateY(100%);
+    border: 0; border-top: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg) var(--uix-radius-lg) 0 0;
+    padding-bottom: env(safe-area-inset-bottom); transform: translateY(100%); touch-action: auto;
   }
   .uix-drawer--bottom[open] { transform: none; }
-  @starting-style { .uix-drawer--bottom[open] { transform: translateY(100%); } }
+  @starting-style { .uix-drawer--bottom[open] { transform: translateY(100%); opacity: 0; } }
+  /* the sheet is dragged down by its header (or a body scrolled to the top): no browser pan there */
+  .uix-drawer--bottom .uix-drawer__header { touch-action: none; }
   .uix-drawer__header { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
   .uix-drawer__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
   .uix-drawer__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }

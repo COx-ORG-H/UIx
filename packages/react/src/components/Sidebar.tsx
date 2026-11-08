@@ -7,6 +7,9 @@ import { useUixLabels } from '../labels-context.js';
 import { SearchIcon } from '../icons/components.js';
 import { useInShellDrawer } from '../shell-context.js';
 import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
+import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
+import { markKeyOpened, watchInputModality } from '../motion.js';
 import type { KeyShortcut } from './Kbd.js';
 
 const ChevronIcon = () => (
@@ -60,8 +63,27 @@ export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, actions, 
   const inDrawer = useInShellDrawer();
   const isCollapsed = !inDrawer && (collapsed ?? nav === 'rail');
   const platform = useKbdPlatform();
+  // 2.60: one hover mark glides from row to row under the pointer, and a click on another page
+  // slides the current-page tint from the old row to the new one (keyboard and reduced motion jump)
+  const navRef = useRef<HTMLElement>(null);
+  const glideRef = useRef<HTMLSpanElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
+  useHoverGlide(glideRef, '.uix-navitem');
+  useSlidingIndicator(navRef, markRef, '.uix-navitem[aria-current="page"]');
+  // expanding from the rail, the labels clear in after the width settles (not on first render)
+  const lastCollapsed = useRef(isCollapsed);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el || lastCollapsed.current === isCollapsed) return undefined;
+    lastCollapsed.current = isCollapsed;
+    el.setAttribute('data-uix-toggled', '');
+    const t = setTimeout(() => el.removeAttribute('data-uix-toggled'), 600);
+    return () => { clearTimeout(t); el.removeAttribute('data-uix-toggled'); };
+  }, [isCollapsed]);
   return (
-    <nav className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={inDrawer ? undefined : nav} {...props}>
+    <nav ref={navRef} className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={inDrawer ? undefined : nav} {...props}>
+      <span ref={glideRef} className="uix-glide" aria-hidden="true" />
+      <span ref={markRef} className="uix-sidebar__mark" aria-hidden="true" hidden />
       {(brand != null || onToggle || actions != null) && (
         <div className="uix-sidebar__head">
           {brand && <div className="uix-sidebar__brand">{brand}</div>}
@@ -188,12 +210,15 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => { watchInputModality(); }, []);
   useEffect(() => {
     panelRef.current?.toggleAttribute('inert', !expanded);
     if (!expanded && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
   }, [expanded]);
 
   const setExpanded = (next: boolean) => {
+    // a key press opens the group at once (the rows' arrival is pointer-only, 2.60)
+    markKeyOpened(panelRef.current);
     if (!next && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
     if (controlledExpanded == null) setInternalExpanded(next);
     onExpandedChange?.(next);

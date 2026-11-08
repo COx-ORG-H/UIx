@@ -18,13 +18,34 @@
     /* grows out of the trigger (--uix-anchor-origin); the closed state carries the faster exit. The
        React Tooltip waits --uix-delay-tooltip before it opens on hover, and a neighbour hovered within
        --uix-delay-tooltip-skip of one closing opens at once with [data-uix-instant] (no fade). */
-    opacity: 0; transform: scale(.97); transform-origin: var(--uix-anchor-origin, bottom center);
+    opacity: 0; transform: scale(.9); transform-origin: var(--uix-anchor-origin, bottom center);
     transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out);
+    isolation: isolate;
+    /* the UA gives a popover overflow:auto; a tooltip never scrolls, and during the glide to a
+       narrower neighbour its scaled background must not raise a scrollbar (which made the bubble
+       10 px taller for a frame and placed it that much too high) */
+    overflow: visible;
   }
   /* rich content (HAR-1349): a short list or a few lines, never interactive */
   .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-left: 1.1em; }
   .uix-tooltip__bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: var(--uix-space-1); }
-  .uix-tooltip__bubble:popover-open { opacity: 1; transform: none; transition-duration: var(--uix-dur-fast); }
+  /* 2.60: grows from .9 on the pop spring (95 % in about 110 ms), fades in at --uix-dur-fast */
+  .uix-tooltip__bubble:popover-open { opacity: 1; transform: none; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-pop) var(--uix-ease-pop); }
+  /* The glide to a neighbour (2.60, Tooltip.tsx): the bubble travels from the one it replaces
+     (a transform the overlay engine can map), its background is drawn by ::before and scales from the old size, so the text never
+     stretches; the content is clipped to that background as it grows and fades in (no blur: an
+     animated filter stalls software-rendered WebKit).
+     Reduced motion never sets [data-morph]. */
+  .uix-tooltip__bubble[data-morph] { background: transparent; box-shadow: none; }
+  .uix-tooltip__bubble[data-morph]::before {
+    content: ""; position: absolute; inset: 0; z-index: calc(-1 * var(--uix-z-raised)); border-radius: inherit;
+    background: var(--uix-text); box-shadow: var(--uix-shadow-popover);
+    transform: scale(var(--uix-morph-sx, 1), var(--uix-morph-sy, 1));
+  }
+  .uix-tooltip__bubble[data-morphing] { transition: transform var(--uix-dur-glide) var(--uix-ease-glide); }
+  .uix-tooltip__bubble[data-morphing]::before { transition: transform var(--uix-dur-glide) var(--uix-ease-glide); }
+  .uix-tooltip__content { display: block; }
+  .uix-tooltip__bubble[data-morphing] .uix-tooltip__content { transition: clip-path var(--uix-dur-glide) var(--uix-ease-glide); animation: uix-fade-in var(--uix-dur) var(--uix-ease-out); }
   /* A shortcut in the bubble (HAR-2031: Tooltip `shortcut`, Button `shortcut`): after the text,
      the keys drawn as outlines in the bubble's own colour, so they keep its contrast in both
      themes. A Button's hint bubble is one line: the name of an icon button, then the keys. */
@@ -32,7 +53,7 @@
   .uix-tooltip__shortcut:first-child { margin-inline-start: 0; }
   .uix-tooltip__shortcut .uix-kbd { color: inherit; background: transparent; border-color: color-mix(in srgb, currentColor 45%, transparent); }
   .uix-tooltip__bubble--hint { white-space: nowrap; }
-  @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; transform: scale(.97); } }
+  @starting-style { .uix-tooltip__bubble:popover-open { opacity: 0; transform: scale(.9); } }
 
   /* legacy CSS-only tooltip — clipped by overflow ancestors; superseded by .uix-tooltip__bubble */
   [data-uix-tip] { position: relative; }

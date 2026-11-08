@@ -1,6 +1,15 @@
 /* uix sidebar nav — items, favorites, collapsible sub-items, collapsed rail. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-sidebar { width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-2); overflow-x: hidden; overflow-y: auto; }
+  .uix-sidebar { position: relative; width: var(--uix-sidebar-w); background: var(--uix-bg-subtle); display: flex; flex-direction: column; gap: var(--uix-space-1); padding: var(--uix-space-2); overflow-x: hidden; overflow-y: auto; }
+  /* 2.60: while the glide layer marks the pointer's row (useHoverGlide), rows hand it their hover tint;
+     the current page keeps its own. */
+  .uix-sidebar[data-uix-glide] .uix-navitem:hover:not([aria-current="page"]) { background: transparent; }
+  /* The current-page tint slides to a newly clicked row (useSlidingIndicator, as Tabs): only during the
+     slide does this mark carry it, while the new row's own tint steps aside. */
+  .uix-sidebar__mark { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; background: var(--uix-brand-muted); border-radius: var(--uix-radius-sm); }
+  .uix-sidebar__mark[data-moving] { transition: transform var(--uix-dur-glide) var(--uix-ease-glide); }
+  .uix-sidebar[data-uix-indicator] .uix-navitem[aria-current="page"] { background: transparent; }
+  @media (forced-colors: active) { .uix-sidebar__mark { display: none; } }
   .uix-sidebar__eyebrow {
     font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase;
     color: var(--uix-text-muted); padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-1);
@@ -107,6 +116,26 @@
   /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree (UIX-A11Y-2) */
   .uix-navgroup__panel > div { overflow: hidden; visibility: visible; }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; }
+  /* 2.60: opening a group, its rows arrive (fade in, settle 4 px, a 2 px blur clears) while the panel
+     opens at once: nothing animates its height. Closing is instant. Opened from the keyboard
+     ([data-uix-key-opened]) the rows are simply there; reduced motion keeps only the fade. */
+  .uix-navgroup__panel .uix-subitem { transition: opacity var(--uix-dur-slower) var(--uix-ease-out), translate var(--uix-dur-slower) var(--uix-ease-out); }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel .uix-subitem { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; transition: none; }
+  :dir(rtl) .uix-navgroup__panel .uix-subitem { --uix-row-from: calc(-1 * var(--uix-space-2)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(2) { transition-delay: calc(1 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(3) { transition-delay: calc(2 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(4) { transition-delay: calc(3 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(5) { transition-delay: calc(4 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(6) { transition-delay: calc(5 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(7) { transition-delay: calc(6 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(8) { transition-delay: calc(7 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(9) { transition-delay: calc(8 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
+  .uix-navgroup__panel[data-uix-key-opened] .uix-subitem { transition: none; }
+  /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels fade in;
+     the width itself changes at once (a sidebar never animates its width). */
+  .uix-sidebar[data-uix-toggled]:not([data-collapsed]) :is(.uix-navitem__label, .uix-navitem__badge, .uix-sidebar__eyebrow, .uix-sidebar__brand, .uix-navgroup__chevron) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) backwards; }
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 

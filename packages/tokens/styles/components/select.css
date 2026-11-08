@@ -69,13 +69,20 @@
   /* grows out of the trigger (--uix-anchor-origin from useAnchoredPosition) at --uix-dur-fast; the
      closed state carries the faster exit. Opened from the keyboard it does not animate (motion.css). */
   [popover].uix-select__popup {
-    opacity: 0; transform: scale(.95); transform-origin: var(--uix-anchor-origin, top left);
+    opacity: 0; transform: scale(.9); transform-origin: var(--uix-anchor-origin, top left);
     transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out),
                 overlay var(--uix-dur-exit-fast) allow-discrete, display var(--uix-dur-exit-fast) allow-discrete;
   }
   [popover].uix-select__popup:popover-open { opacity: 1; transform: none; transition-duration: var(--uix-dur-fast); }
-  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.95); } }
-  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; }
+  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.9); } }
+  /* 2.60: the option just picked draws its check (pathLength 1); the trigger's new value rises in */
+  .uix-listbox__option[data-just-chosen] .uix-listbox__check path { stroke-dasharray: 1; animation: uix-check-draw var(--uix-dur-slow) var(--uix-ease-out) both; }
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .uix-select__value[data-changed] { animation: uix-value-in var(--uix-dur-slow) var(--uix-ease-out); }
+  }
+  /* overflow-x: the list never scrolls sideways; rows arriving 8 px from the inline end (2.60) must not
+     raise a horizontal scrollbar on engines with classic scrollbars, which shifted rows mid-click */
+  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; position: relative; }
   .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .uix-select__popup .uix-listbox:focus { outline: none; }
   .uix-select__search { flex: none; margin-bottom: var(--uix-space-1); }

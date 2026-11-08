@@ -9,6 +9,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { markKeyOpened, watchInputModality } from '../motion.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -215,7 +216,7 @@ function labelText(trigger: HTMLElement, own: readonly (Node | null)[], ariaLabe
 
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5" />
+    <path d="M20 6 9 17l-5-5" pathLength={1} />
   </svg>
 );
 
@@ -251,6 +252,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const proxyRef = useRef<HTMLSelectElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // one hover mark that glides from option to option under the pointer (2.60)
+  const glideRef = useRef<HTMLSpanElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /* ---- items */
@@ -278,6 +281,19 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   /* ---- open state */
   const [open, setOpen] = useState(false);
+  const [justChosen, setJustChosen] = useState<string | null>(null);
+  useEffect(() => {
+    if (justChosen == null) return undefined;
+    const t = setTimeout(() => setJustChosen(null), 600);
+    return () => clearTimeout(t);
+  }, [justChosen]);
+  // the trigger's value rises in when it changes, never on the first render (2.60): the value span is
+  // keyed by the value, so only a new value makes a new element, and only those carry the mark
+  const valueKey = values.join('|');
+  const lastValueKey = useRef(valueKey);
+  const valueChanged = useRef(false);
+  if (lastValueKey.current !== valueKey) { lastValueKey.current = valueKey; valueChanged.current = true; }
+  useHoverGlide(glideRef, '.uix-listbox__option', open);
   const [mode, setMode] = useState<'popover' | 'sheet'>('popover');
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
@@ -480,6 +496,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   const choose = (entry: SelectEntry | undefined, closeAfter = !multiple) => {
     if (!entry || entry.disabled) return;
+    // 2.60: the option just picked draws its check (seen while a multiple list stays open)
+    setJustChosen(entry.option.value);
     if (multiple) {
       commit(toggleValue(valuesRef.current, entry.option.value), entry.option);
       setActive(entry.index);
@@ -741,6 +759,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         aria-selected={selected}
         aria-disabled={entry.disabled || undefined}
         data-active={(open && isActive) || undefined}
+        data-just-chosen={(selected && justChosen === o.value) || undefined}
         onMouseDown={(e) => e.preventDefault()}
         onPointerMove={() => { if (!isActive && !entry.disabled) setActive(entry.index); }}
         onClick={(e) => { e.preventDefault(); choose(entry); }}
@@ -775,6 +794,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       hidden={entries.length === 0 || undefined}
       onKeyDown={mode === 'sheet' && !isSearchable ? (e) => onOpenKey(e, false) : undefined}
     >
+      <span ref={glideRef} className="uix-glide" aria-hidden="true" />
       {listModel.sections.map((section, i) => (section.label != null ? (
         <div key={`g${i}`} role="group" className="uix-listbox__group" aria-labelledby={`${uid}-group-${i}`} aria-disabled={section.disabled || undefined}>
           <div id={`${uid}-group-${i}`} role="presentation" className="uix-listbox__group-label">{section.label}</div>
@@ -848,7 +868,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <span className="uix-select__value">{display}</span>
+        <span key={valueKey} className="uix-select__value" data-changed={valueChanged.current || undefined}>{display}</span>
         {more > 0 && (
           <span className="uix-select__more">
             <span aria-hidden="true">+{more}</span>

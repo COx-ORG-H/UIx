@@ -14,5 +14,5 @@ export interface IconByNameProps extends IconProps {
  * only the glyphs you use.
  */
 export const Icon = forwardRef<SVGSVGElement, IconByNameProps>(function Icon({ name, ...props }, ref) {
-  return renderIcon(ICON_GLYPHS[name], props, ref);
+  return renderIcon(ICON_GLYPHS[name], props, ref, name);
 });
