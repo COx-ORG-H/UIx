@@ -30,11 +30,17 @@ export function useArrivalBlur(
     if (el.hasAttribute(KEY_OPENED) || el.closest('[data-uix-instant]')) return undefined;
     const stagger = tokenMs('--uix-stagger-rows', 30);
     // only the rows a person can see, at most twelve: a long list never blurs rows scrolled out of
-    // view. Each row's delay is its CSS one (--uix-row-i, set by position), so a list opened
-    // scrolled to its value clears the rows it shows in step with their arrival.
+    // view. "In view" is inside the window, the list itself (once it has a height) and every
+    // clipping ancestor (a scrolled sidebar). Each row's delay is its CSS one (--uix-row-i, set by
+    // position), so a list opened scrolled to its value clears the rows it shows in step with them.
+    let top = 0;
+    let bottom = window.innerHeight;
+    const clip = (r: DOMRect) => { top = Math.max(top, r.top); bottom = Math.min(bottom, r.bottom); };
     const box = el.getBoundingClientRect();
-    const top = box.height >= 1 ? box.top : 0;
-    const bottom = box.height >= 1 ? box.bottom : window.innerHeight;
+    if (box.height >= 1) clip(box);
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      if (window.getComputedStyle(a).overflowY !== 'visible') clip(a.getBoundingClientRect());
+    }
     const shown = Array.from(el.querySelectorAll<HTMLElement>(rows)).filter((row) => {
       const r = row.getBoundingClientRect();
       return r.bottom > top && r.top < bottom;

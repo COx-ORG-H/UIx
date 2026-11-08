@@ -25,17 +25,40 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 const row = (page, name) => page.locator('#nav .uix-navitem', { hasText: name });
 const clipTop = (page) => page.locator('#nav > .uix-glide').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m42);
+/**
+ * Record `read()` (a function body run in the page) every animation frame for `ms`, timed in the page:
+ * a sample taken after a Playwright sleep is late by however long the machine took, and on a loaded
+ * one the motion has already ended. Start it, act, then `await` the returned promise.
+ */
+const record = async (page, read, ms = 700) => {
+  await page.evaluate(([body, span]) => {
+    const fn = new Function(body);
+    window.__frames = [];
+    const t0 = performance.now();
+    const tick = () => {
+      const t = performance.now() - t0;
+      window.__frames.push({ t, v: fn() });
+      if (t < span) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [read, ms]);
+  return async () => {
+    await page.waitForFunction((span) => window.__frames.length && window.__frames.at(-1).t >= span, ms);
+    return page.evaluate(() => window.__frames);
+  };
+};
 
 test('the sidebar hover mark glides between rows; reduced motion jumps', async ({ page }) => {
   await row(page, 'Übersicht').hover();
   await expect(page.locator('#nav')).toHaveAttribute('data-uix-glide', '');
+  // the layer has faded in before it can glide
+  await expect(page.locator('#nav > .uix-glide')).toHaveAttribute('data-shown', '');
   const start = await clipTop(page);
+  const frames = await record(page, "return new DOMMatrixReadOnly(getComputedStyle(document.querySelector('#nav > .uix-glide')).transform).m42;", 600);
   await row(page, 'Teams').hover();
   const end = await row(page, 'Teams').evaluate((el) => el.offsetTop);
-  await page.waitForTimeout(60);
-  const mid = await clipTop(page);
-  expect(mid, 'part way there after 60 ms').toBeGreaterThan(start + 1);
-  expect(mid).toBeLessThan(end - 1);
+  const tops = (await frames()).map((f) => f.v);
+  expect(tops.some((y) => y > start + 1 && y < end - 1), `part way there on some frame: ${tops.map(Math.round).join(' ')}`).toBe(true);
   await expect.poll(() => clipTop(page)).toBeCloseTo(end, 0);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
