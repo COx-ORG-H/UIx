@@ -9,6 +9,7 @@ import { useInShellDrawer } from '../shell-context.js';
 import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
+import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import { markKeyOpened, watchInputModality } from '../motion.js';
 import type { KeyShortcut } from './Kbd.js';
 
@@ -211,6 +212,8 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { watchInputModality(); }, []);
+  // the group's own rows: a nested group's rows arrive when that group opens
+  useArrivalBlur(() => panelRef.current, ':scope > div > .uix-subitem', expanded, true);
   useEffect(() => {
     panelRef.current?.toggleAttribute('inert', !expanded);
     if (!expanded && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
@@ -225,7 +228,7 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   };
 
   return (
-    <div className="uix-navgroup">
+    <div className="uix-navgroup" data-plain={icon ? undefined : ''}>
       <button
         ref={triggerRef}
         type="button"

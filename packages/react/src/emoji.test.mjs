@@ -79,7 +79,7 @@ test('ReactionBar renders pressed toggle chips named after the reactors', () => 
   assert.match(html, /<button type="button" class="uix-reaction" aria-pressed="true" aria-label="Ana, Ben reacted with 👍" data-mine="true"/);
   assert.match(html, /aria-pressed="false" aria-label="1 reacted with 🎉"/);
   assert.ok(!html.includes('👀'), 'zero-count chips are hidden');
-  assert.match(html, /role="tooltip"[^>]*><span class="uix-tooltip__content">Ana, Ben reacted with 👍</);
+  assert.match(html, /role="tooltip"[^>]*><span class="uix-tooltip__content"><span class="uix-tooltip__label">Ana, Ben reacted with 👍</);
   assert.match(html, /<button type="button" class="uix-reaction-add" aria-label="Add reaction" title="Add reaction" aria-haspopup="dialog" aria-expanded="false"/);
 });
 

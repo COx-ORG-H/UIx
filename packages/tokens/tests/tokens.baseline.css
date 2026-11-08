@@ -89,6 +89,15 @@
     --uix-stagger-rows: 30ms;
     --uix-dur-glide: 280ms;
     --uix-dur-pop: 280ms;
+    --uix-ease-tooltip: linear(0, 0.049, 0.164, 0.307, 0.454, 0.59, 0.707, 0.802, 0.876, 0.93, 0.969, 0.994, 1.009, 1.018, 1.021, 1.021, 1.019, 1.016, 1.013, 1.01, 1.007, 1.005, 1.003, 1.002, 1);
+    --uix-dur-tooltip: 410ms;
+    --uix-ease-enter: cubic-bezier(.25,.1,.35,1);
+    --uix-ease-leave: cubic-bezier(0,0,.58,1);
+    --uix-dur-swap-in: 340ms;
+    --uix-dur-swap-out: 130ms;
+    --uix-swap-shift: 40px;
+    --uix-arrive-blur: 4px;
+    --uix-swap-blur: 6px;
     --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms; --uix-dur-slower:320ms;
     --uix-dur-exit-fast:80ms; --uix-dur-exit:110ms; --uix-dur-exit-slow:160ms; --uix-dur-highlight:2400ms;
     --uix-dur-change:1200ms;
