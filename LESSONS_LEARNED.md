@@ -92,6 +92,9 @@
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
 
 
+### 2026-11-08 · sizing from a box an ancestor is still scaling · `a3cf190c`
+- **Rule:** to copy an element's size into CSS (a list as wide as its trigger), read `offsetWidth`/`offsetHeight`, not `getBoundingClientRect()`. The rect includes every ancestor's transform, so inside a popover or drawer that is still growing in (or held at its start scale while it is placed) it is smaller than the element will be; `offsetWidth` ignores transforms and CSS zoom (Chromium and WebKit).  **Why:** a Select in a popover held at `scale(.95)` locked its list's min-width to 226 px for a 238 px trigger; only CI's slower click landed inside the hold.  **Gate:** select.spec "not clipped inside a Popover" (select-cross-browser); ⚠ TODO no lint for rect-based sizing.  **Tag:** layout, transform, popover, zoom, ci-only
+
 ### 2026-11-08 · a motion sample taken after a sleep · `81221eac`
 - **Rule:** to assert that something moves (a glide part way, rows arriving top to bottom), record it every animation frame in the page (`requestAnimationFrame`, `performance.now()`) and assert on the recording; never sample once after `page.waitForTimeout(n)`. The sleep plus the round trip is late by however long the machine took.  **Why:** the sidebar glide test sampled 60 ms after a hover and the row test 80 ms after a click; under a full parallel run on a shared machine both read the finished motion and failed, though nothing was wrong. With an in-page recorder, 72 runs (repeat 4, both themes) passed.  **Gate:** `record()` in `tests/a11y/motion-glide.spec.mjs`; ⚠ TODO no lint for a `waitForTimeout` followed by a motion read.  **Tag:** test, motion, timing, flaky, playwright
 
