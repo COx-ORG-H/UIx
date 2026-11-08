@@ -116,7 +116,8 @@
   /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree (UIX-A11Y-2) */
   .uix-navgroup__panel > div { overflow: hidden; visibility: visible; }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; }
-  /* 2.60: opening a group, its rows arrive (fade in, settle 4 px, a 2 px blur clears) while the panel
+  /* 2.60: opening a group, its rows arrive (fade in, slide 8 px; their blur clears in script,
+     useArrivalBlur) while the panel
      opens at once: nothing animates its height. Closing is instant. Opened from the keyboard
      ([data-uix-key-opened]) the rows are simply there; reduced motion keeps only the fade. */
   .uix-navgroup__panel .uix-subitem { transition: opacity var(--uix-dur-slower) var(--uix-ease-out), translate var(--uix-dur-slower) var(--uix-ease-out); }
@@ -136,8 +137,9 @@
   /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels fade in;
      the width itself changes at once (a sidebar never animates its width). */
   .uix-sidebar[data-uix-toggled]:not([data-collapsed]) :is(.uix-navitem__label, .uix-navitem__badge, .uix-sidebar__eyebrow, .uix-sidebar__brand, .uix-navgroup__chevron) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) backwards; }
-  .uix-subitem { padding-left: var(--uix-space-5); }
-  .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
+  /* a group's row starts where its parent's label starts (no bullet, as in animate-ui's sidebar):
+     the parent's padding, its icon and the gap after it */
+  .uix-subitem { padding-inline-start: calc(2 * var(--uix-space-3) + var(--uix-icon-md)); }
 
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }

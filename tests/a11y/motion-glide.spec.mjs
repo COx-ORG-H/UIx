@@ -3,7 +3,8 @@
  * that reduced motion and the keyboard get none of it:
  *   - the sidebar's hover mark glides (clip-path on the glide spring) and the current-page tint slides;
  *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
- *   - a select list's rows arrive staggered from a pointer, all at once from the keyboard;
+ *   - a select list's rows arrive staggered from a pointer, clearing from a short blur; all at once and
+ *     sharp from the keyboard;
  *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
  *   - an `animate`d icon plays on hover only; an icon without it never moves;
  *   - axe finds nothing serious in either theme.
@@ -113,18 +114,22 @@ test('under reduced motion a neighbour swaps at once', async ({ page }) => {
 });
 
 const opacities = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => Number(getComputedStyle(e).opacity)));
+const filters = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => getComputedStyle(e).filter));
 
-test('select rows arrive top to bottom from a pointer, all at once from the keyboard', async ({ page }) => {
+test('select rows arrive top to bottom from a pointer, clearing from a blur; all at once and sharp from the keyboard', async ({ page }) => {
   await page.locator('#team').click();
   await page.waitForTimeout(80);
   const staggered = await opacities(page);
   expect(staggered[0], 'the first row is on its way').toBeGreaterThan(staggered[staggered.length - 1]);
+  expect((await filters(page)).at(-1), 'a row still arriving is blurred').toContain('blur');
   await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
+  expect(new Set(await filters(page)), 'at rest every row is sharp').toEqual(new Set(['none']));
   await page.keyboard.press('Escape');
   await page.locator('#team').focus();
   await page.keyboard.press('ArrowDown');
   await expect(page.locator('.uix-select__popup')).toBeVisible();
   expect(Math.min(...(await opacities(page))), 'opened from the keyboard: every row is there').toBe(1);
+  expect(new Set(await filters(page)), 'opened from the keyboard: no blur').toEqual(new Set(['none']));
 });
 
 test('the side drawer floats 8 px in from the edges and still fades under reduced motion', async ({ page }) => {

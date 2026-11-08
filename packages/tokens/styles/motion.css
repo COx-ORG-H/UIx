@@ -45,16 +45,20 @@
 }
 @keyframes uix-slide-in-right { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
-/* a row of a list that just opened: in from the inline end (2.60). No blur here: a filter on every
-   arriving row is costly where there is no GPU; single elements (a tooltip label, a value) keep it. */
+/* a row of a list that just opened: in from the inline end (2.60). Its blur (--uix-arrive-blur) clears
+   in script, frame by frame, on the same timing (useArrivalBlur): Linux WebKit's renderer crashes on
+   a CSS-animated filter, so no kit CSS animates one (check-motion). */
 @keyframes uix-row-in { from { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; } }
 /* a check that draws itself (pathLength 1) and a changed value rising into its field (2.60) */
 @keyframes uix-check-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes uix-value-in { from { opacity: 0; translate: 0 6px; } }
+/* a tooltip's labels when the bubble travels to a neighbour (2.60): the new one in from the way it
+   goes, the old one out the way it came, --uix-swap-shift along the axis Tooltip.tsx sets */
+@keyframes uix-swap-in { from { opacity: 0; translate: calc(var(--uix-swap-x, 0) * var(--uix-swap-shift)) calc(var(--uix-swap-y, 0) * var(--uix-swap-shift)); } }
+@keyframes uix-swap-out { to { opacity: 0; translate: calc(var(--uix-swap-x, 0) * -1 * var(--uix-swap-shift)) calc(var(--uix-swap-y, 0) * -1 * var(--uix-swap-shift)); } }
 /* a step of a multi-step form arriving from the side the person is heading (2.60) */
-/* No filter in any 2.60 animation: an animated blur, even on one small label, stalled software-rendered
-   WebKit for seconds (measured on the select-cross-browser job; VDI desktops without a GPU render the
-   same way). Opacity and movement carry every arrival. */
+/* No CSS animation or transition of `filter` anywhere in the kit: Linux WebKit's renderer crashes on
+   one (2.60, measured). A blur that clears is driven per frame from script (motion.ts blurIn). */
 @keyframes uix-step-in { from { opacity: 0; transform: translateX(calc(var(--uix-step-from, 16px) * var(--uix-step-dir, 1))); } to { opacity: 1; transform: none; } }
 @keyframes uix-spin { to { transform: rotate(1turn); } }
 @keyframes uix-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
@@ -112,7 +116,8 @@
 }
 
 /* Row arrival (2.60, the animate-ui study): when a select's list or a menu opens, its rows arrive top
-   to bottom --uix-stagger-rows apart, each fading and sliding 8 px in from the inline end. Rows ten and later arrive with the tenth (the first child is the glide layer). A keyboard
+   to bottom --uix-stagger-rows apart, each fading and sliding 8 px in from the inline end and clearing
+   from --uix-arrive-blur (in script, useArrivalBlur). Rows ten and later arrive with the tenth (the first child is the glide layer). A keyboard
    open ([data-uix-key-opened]) shows the rows at once; reduced motion never runs it. */
 @layer uix.motion {
   @media (prefers-reduced-motion: no-preference) {

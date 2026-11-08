@@ -99,11 +99,11 @@ test('menus and select lists carry the glide layer as their first child', async 
   assert.match(html, /role="listbox"[^>]*><span class="uix-glide" aria-hidden="true"><\/span>/, 'the listbox starts with the hidden glide layer');
 });
 
-test('the tooltip wraps its content so the glide can clip and unblur it; keys keep their ids', () => {
+test('the tooltip wraps its label in a clip window so the hand-over can slide it; keys keep their ids', () => {
   const plain = renderToStaticMarkup(h(ui.Tooltip, { label: 'Kopieren' }, h('button', { type: 'button' }, 'C')));
-  assert.match(plain, /class="uix-tooltip__content">Kopieren<\/span>/);
+  assert.match(plain, /class="uix-tooltip__content"><span class="uix-tooltip__label">Kopieren<\/span><\/span>/);
   const keyed = renderToStaticMarkup(h(ui.Tooltip, { label: 'Suchen', shortcut: ['Mod', 'K'] }, h('button', { type: 'button' }, 'S')));
-  assert.match(keyed, /class="uix-tooltip__content"><span id="[^"]+-text">Suchen<\/span><span class="uix-tooltip__shortcut">/);
+  assert.match(keyed, /class="uix-tooltip__content"><span class="uix-tooltip__label"><span id="[^"]+-text">Suchen<\/span><span class="uix-tooltip__shortcut">/);
 });
 
 test('the checkbox tick and the select check are drawn strokes (pathLength 1)', () => {

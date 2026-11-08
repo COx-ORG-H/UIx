@@ -129,11 +129,16 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
       if (names.includes('all')) report('transition-all', d, `'${prop}: ${d.value}' — list the properties`);
       const layout = names.filter((n) => LAYOUT.has(n));
       if (layout.length) report('layout', d, `transition animates layout (${layout.join(', ')}) — use transform/opacity`);
+      // 9. Linux WebKit's renderer crashes on a CSS-animated filter (2.60, measured): a blur that
+      //    clears runs per frame in script (motion.ts blurIn); a constant backdrop blur is fine
+      const filters = names.filter((n) => n === 'filter' || n === 'backdrop-filter' || n === '-webkit-backdrop-filter');
+      if (filters.length) report('filter-motion', d, `transition animates ${filters.join(', ')} — Linux WebKit crashes on it; drive a blur per frame with blurIn (motion.ts)`);
     }
     // 3. ease-in
     if (isTimed(prop) && EASE_IN.test(value)) report('ease-in', d, `accelerating curve in '${prop}: ${d.value}' — exits use --uix-ease-out at a --uix-dur-exit-* duration`);
     // 4. keyframes
     if (inKeyframes && LAYOUT.has(prop)) report('layout', d, `@keyframes animates layout property '${prop}' — use transform/opacity`);
+    if (inKeyframes && /^(-webkit-)?(backdrop-)?filter$/.test(prop)) report('filter-motion', d, `@keyframes animates '${prop}' — Linux WebKit's renderer crashes on it; drive a blur per frame with blurIn (motion.ts)`);
 
     // 8. only a loader loops (its reduced-motion pulse included)
     if ((prop === 'animation' || prop === 'animation-iteration-count') && d.parent.type === 'rule' && /\binfinite\b/.test(value)) {
