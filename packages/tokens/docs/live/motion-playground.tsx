@@ -12,7 +12,7 @@ import { StrictMode, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select, Sidebar, SidebarSection,
+  Button, Checkbox, DialogClose, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select, Sidebar, SidebarSection,
   SubNavItem, Tooltip,
 } from '../../../react/src/index.js';
 import {
@@ -123,7 +123,7 @@ function DrawerDemo() {
       <Button onClick={() => setOpen(true)}>Details öffnen</Button>
       <Checkbox label="Mit ungespeicherter Änderung" checked={dirty} onChange={(e) => setDirty(e.currentTarget.checked)} />
       <Drawer open={open} dirty={dirty} title="INC-0417 · Citrix-Sitzungen trennen sich" onClose={() => setOpen(false)}
-        footer={<Button variant="secondary" onClick={() => setOpen(false)}>Schließen</Button>}>
+        footer={<DialogClose variant="secondary">Schließen</DialogClose>}>
         <p>Seit 08:10 trennen sich Citrix-Sitzungen am Standort Mostar nach etwa zehn Minuten.</p>
         <p>Auf einem Touchgerät lässt sich die Schublade zum Rand ziehen, um sie zu schließen. Mit ungespeicherter Änderung springt sie zurück und fragt zuerst.</p>
       </Drawer>
@@ -154,7 +154,7 @@ function StepsDemo() {
 function Playground() {
   return (
     <div className="uix-docs__live-grid">
-      <Demo title="Sidebar" hint="Move the pointer down the rows, click another page, open Einstellungen. Arrow keys and Tab move the highlight too.">
+      <Demo title="Sidebar" hint="Move the pointer down the rows, click another page, open Einstellungen. Tab moves the highlight too.">
         <SidebarDemo />
       </Demo>
       <div className="uix-docs__live-col">
