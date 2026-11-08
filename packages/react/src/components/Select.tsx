@@ -291,7 +291,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   }, [justChosen]);
   /** After a pick the list holds open --uix-hold-pick so its check is seen drawing (animate-ui). */
   const holdTimer = useRef<number | null>(null);
-  const clearHold = () => { if (holdTimer.current != null) { clearTimeout(holdTimer.current); holdTimer.current = null; } };
+  // a key pressed while the list holds open means the person is still choosing: the hold ends and
+  // the list stays (the delayed close must never overtake a key move)
+  const onHoldKey = () => clearHold();
+  const clearHold = () => {
+    document.removeEventListener('keydown', onHoldKey, true);
+    if (holdTimer.current != null) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+  };
   useEffect(() => clearHold, []);
   // the trigger's value rises in when it changes, never on the first render (2.60): the value span is
   // keyed by the value, so only a new value makes a new element, and only those carry the mark
@@ -518,7 +524,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     const hold = mode === 'popover' && pointer && !prefersReducedMotion() ? tokenMs('--uix-hold-pick', 250) : 0;
     if (hold > 0) {
       clearHold();
-      holdTimer.current = setTimeout(() => { holdTimer.current = null; close({ focus: true }); }, hold) as unknown as number;
+      holdTimer.current = setTimeout(() => { clearHold(); close({ focus: true }); }, hold) as unknown as number;
+      document.addEventListener('keydown', onHoldKey, true);
       return;
     }
     close({ focus: true });
@@ -662,7 +669,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       const zoom = zoomOf(trigger);
       const r = trigger.getBoundingClientRect();
       const room = Math.max(r.top, window.innerHeight - r.bottom) / zoom - OFFSET - EDGE;
-      popup.style.minWidth = `${Math.round(r.width / zoom)}px`;
+      // its layout width: an ancestor still scaling in (a popover held at .95 while it is placed, or
+      // growing) shrinks the box, not offsetWidth, which also ignores CSS zoom (Chromium, WebKit)
+      popup.style.minWidth = `${Math.round(trigger.offsetWidth || r.width / zoom)}px`;
       popup.style.maxHeight = `${Math.max(96, Math.min(MAX_HEIGHT, Math.floor(room)))}px`;
       // 2.60: from the keyboard too it grows in and its rows arrive (operator, as animate-ui)
       try { if (!isOpen()) popup.showPopover(); } catch { /* no Popover API: `hidden` drives it */ }

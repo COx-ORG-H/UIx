@@ -143,6 +143,10 @@
   .uix-navgroup__panel > div > .uix-subitem:nth-child(9) { --uix-row-i: 8; }
   .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { --uix-row-i: 9; }
   .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { --uix-row-i: 9; }
+  /* focus inside a group that is still opening (a quick Tab): it finishes at once, so a focused link
+     is never clipped, faded or blurred */
+  .uix-navgroup__panel:focus-within, .uix-navgroup__panel:focus-within > div, .uix-navgroup__panel:focus-within .uix-subitem { transition: none; }
+  .uix-navgroup__panel:focus-within .uix-subitem { filter: none !important; }
   @media (prefers-reduced-motion: reduce) { .uix-navgroup__panel, .uix-navgroup__panel > div { transition: none; } }
   :root[data-motion="reduce"] :is(.uix-navgroup__panel, .uix-navgroup__panel > div) { transition: none; }
   /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels fade in;
