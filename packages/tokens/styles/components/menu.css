@@ -7,6 +7,8 @@
   }
   .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }
+  /* 2.60: the glide layer (useHoverGlide) marks the pointer's item; a keyboard focus keeps its own tint */
+  .uix-menu[data-uix-glide] .uix-menu__item:hover:not(:focus-visible) { background: transparent; }
   .uix-menu__item--danger { color: var(--uix-danger-text); }
   .uix-menu__item--danger svg { color: var(--uix-danger-text); }
   .uix-menu__item .uix-kbd { margin-left: auto; }

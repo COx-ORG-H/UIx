@@ -45,6 +45,10 @@
 }
 @keyframes uix-slide-in-right { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
+/* a label or row that clears from a short blur as it arrives (2.60: tooltip glide, sidebar group rows) */
+@keyframes uix-blur-in { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+/* a step of a multi-step form arriving from the side the person is heading (2.60) */
+@keyframes uix-step-in { from { opacity: 0; transform: translateX(calc(var(--uix-step-from, 16px) * var(--uix-step-dir, 1))); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes uix-spin { to { transform: rotate(1turn); } }
 @keyframes uix-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 /* The reduced-motion stand-in for every looping indicator: no movement, a slow breath of opacity. */
@@ -54,12 +58,18 @@
   .uix-anim-fade { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out); }
   .uix-anim-pop  { animation: uix-pop-in var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-anim-up   { animation: uix-slide-in-up var(--uix-dur) var(--uix-ease-out); }
+  /* Step entrances (2.60): key the panel by its step so it remounts, and pick the class by direction.
+     The old step leaves at once; the new one slides 16 px from the way the person is going and
+     clears from a 4 px blur. In RTL the travel mirrors. */
+  .uix-anim-step-forward, .uix-anim-step-back { animation: uix-step-in var(--uix-dur-slow) var(--uix-ease-out); }
+  .uix-anim-step-back { --uix-step-from: -16px; }
+  :dir(rtl):is(.uix-anim-step-forward, .uix-anim-step-back) { --uix-step-dir: -1; }
   @media (prefers-reduced-motion: reduce) {
     /* the entrance helpers keep their fade and lose their travel */
-    .uix-anim-fade, .uix-anim-pop, .uix-anim-up { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    .uix-anim-fade, .uix-anim-pop, .uix-anim-up, .uix-anim-step-forward, .uix-anim-step-back { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
   }
   @media (prefers-reduced-motion: no-preference) {
-    :root[data-motion="reduce"] :is(.uix-anim-fade, .uix-anim-pop, .uix-anim-up) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
+    :root[data-motion="reduce"] :is(.uix-anim-fade, .uix-anim-pop, .uix-anim-up, .uix-anim-step-forward, .uix-anim-step-back) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) !important; }
   }
 
   /* Hover-lift affordance for interactive cards/tiles. Gated so touch devices don't get a stuck hover.
@@ -68,6 +78,21 @@
   @media (hover: hover) and (pointer: fine) {
     .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
   }
+
+  /* The glide highlight (useHoverGlide, 2.60): one layer under a list's rows, cut to the pointer's
+     row with clip-path. It fades in where the pointer enters, glides between rows on --uix-ease-glide
+     and fades out when the pointer leaves. The list (its parent) is its containing block; isolation
+     keeps the layer's z-index -1 above the list's own background and beneath the rows. Under reduced
+     motion the global policy drops clip-path from the transition: the mark jumps, the fade stays. */
+  :where(:has(> .uix-glide)) { isolation: isolate; }
+  .uix-glide {
+    position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none;
+    background: var(--uix-glide-bg, var(--uix-bg-hover)); opacity: 0;
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out);
+  }
+  .uix-glide[data-shown] { opacity: 1; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fast) var(--uix-ease-out), clip-path var(--uix-dur-glide) var(--uix-ease-glide); }
+  @media (forced-colors: active) { .uix-glide { display: none; } }
 
   /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces open and close with no animation — the
      frequency budget is "none". [data-uix-instant] is a standing choice (Modal `instant`, CommandPalette,

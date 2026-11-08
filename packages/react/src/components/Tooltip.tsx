@@ -8,13 +8,23 @@ import type { Placement } from '../overlay-position.js';
 import { KbdCombo, isKeyShortcut, spokenKeys, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
 import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 
 /* The delay group (HAR-2578). A tooltip waits --uix-delay-tooltip before it opens on hover, so a
  * pointer passing over a toolbar does not flash a bubble per button. Once one has been shown, its
  * neighbours open at once: while any is open, and for --uix-delay-tooltip-skip after the last one
  * closed; the one it replaces goes at once, so two bubbles never overlap. Shared by every Tooltip
  * on the page. */
-const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null } = { open: 0, lastClosed: -Infinity, current: null };
+const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null; bubble: HTMLElement | null; lastRect: DOMRect | null } = { open: 0, lastClosed: -Infinity, current: null, bubble: null, lastRect: null };
+
+/* The glide between neighbours (2.60): when the pointer moves to a neighbour inside the delay
+ * group, the new bubble starts where the old one was and glides to its trigger on
+ * --uix-ease-glide, its background growing or shrinking from the old size, while its text clears
+ * from a short blur. The eye follows one bubble along the toolbar instead of watching one vanish
+ * and another appear. Pointer only: focus moves and reduced motion swap at once. */
+const MORPH_FALLBACK_MS = 1000;
+/** How far a bubble may glide: a toolbar's neighbours, not a tooltip from across the page. */
+const MORPH_MAX_TRAVEL_PX = 320;
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -59,6 +69,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const closeTimer = useRef<number | null>(null);
   const openTimer = useRef<number | null>(null);
   const shown = useRef(false);
+  /** Where the bubble this one replaces stood, when it should glide from there (pointer, warm group). */
+  const morphFrom = useRef<DOMRect | null>(null);
   const [open, setOpen] = useState(false);
   const id = useId();
   const platform = useKbdPlatform();
@@ -67,6 +79,53 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const keys = own && own.length > 0 ? own : null;
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
+
+  // The glide from the replaced neighbour, played back from where it stood (FLIP on transform,
+  // and on the background's scale through two custom properties: the text itself never scales).
+  useIsomorphicLayoutEffect(() => {
+    const from = morphFrom.current;
+    const b = bubbleRef.current;
+    morphFrom.current = null;
+    if (!open || !from || !b || prefersReducedMotion()) return undefined;
+    const to = b.getBoundingClientRect();
+    if (!to.width || !to.height) return undefined;
+    const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+    const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+    // the delay group is page-wide: only a neighbour glides; a bubble from across the page swaps
+    if (Math.hypot(dx, dy) > MORPH_MAX_TRAVEL_PX) return undefined;
+    // the start is placed while the bubble is still [data-uix-instant] (no transitions), so its own
+    // grow-in never runs towards the start offset; the glide takes over after one reflow
+    b.setAttribute('data-uix-instant', '');
+    b.setAttribute('data-morph', '');
+    // a transform, not `translate`: the overlay engine maps a transform when it re-measures mid-glide
+    b.style.transform = `translate(${dx}px, ${dy}px)`;
+    b.style.setProperty('--uix-morph-sx', String(from.width / to.width));
+    b.style.setProperty('--uix-morph-sy', String(from.height / to.height));
+    // the content is cut to the growing background, so a longer label never spills past it
+    const content = b.querySelector<HTMLElement>('.uix-tooltip__content');
+    const cs = getComputedStyle(b);
+    const px = parseFloat(cs.paddingLeft) || 0;
+    const py = parseFloat(cs.paddingTop) || 0;
+    if (content) content.style.clipPath = `inset(${(to.height - from.height) / 2 - py}px ${(to.width - from.width) / 2 - px}px)`;
+    void b.offsetWidth;
+    b.removeAttribute('data-uix-instant');
+    b.setAttribute('data-morphing', '');
+    b.style.transform = '';
+    b.style.removeProperty('--uix-morph-sx');
+    b.style.removeProperty('--uix-morph-sy');
+    if (content) content.style.clipPath = `inset(${-py}px ${-px}px)`;
+    const end = () => {
+      clearTimeout(timer);
+      b.removeEventListener('transitionend', onEnd);
+      b.removeAttribute('data-morph');
+      b.removeAttribute('data-morphing');
+      if (content) content.style.clipPath = '';
+    };
+    const onEnd = (event: TransitionEvent) => { if (event.target === b && !event.pseudoElement && event.propertyName === 'transform') end(); };
+    b.addEventListener('transitionend', onEnd);
+    const timer = setTimeout(end, MORPH_FALLBACK_MS);
+    return end;
+  }, [open]);
 
   useEffect(() => { watchInputModality(); }, []);
 
@@ -79,8 +138,14 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   /** `instant`: inside the delay group — no fade either. */
   const reveal = (instant: boolean) => {
     cancelOpen();
+    // glide from the neighbour still showing, or from the one that closed within the skip window
+    const prev = group.current && group.current !== self && group.bubble?.matches(':popover-open')
+      ? group.bubble.getBoundingClientRect()
+      : group.lastRect;
+    morphFrom.current = instant && prev && prev.width > 0 ? prev : null;
     if (group.current && group.current !== self) group.current.current(true);
     group.current = self;
+    group.bubble = bubbleRef.current;
     const b = bubbleRef.current;
     if (b && !b.matches(':popover-open')) {
       b.toggleAttribute('data-uix-instant', instant);
@@ -104,11 +169,13 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     cancelOpen();
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) {
+      group.lastRect = b.getBoundingClientRect();
       b.toggleAttribute('data-uix-instant', instant);
       try { b.hidePopover(); } catch { /* already closed */ }
     }
     if (shown.current) { shown.current = false; group.open -= 1; group.lastClosed = performance.now(); }
-    if (group.current === self) group.current = null;
+    if (group.current === self) { group.current = null; group.bubble = null; }
+    morphFrom.current = null;
     setOpen(false);
   };
   // A stable handle on this tooltip's latest `hide`, for the delay group.
@@ -197,15 +264,17 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
         onMouseLeave={scheduleHide}
         {...bubbleAttr}
       >
-        {keys ? (
-          <>
-            {text != null && <span id={`${id}-text`}>{text}</span>}
-            <span className="uix-tooltip__shortcut">
-              <span id={`${id}-keys`} className="uix-visually-hidden">{spokenKeys(keys, platform)}</span>
-              <KbdCombo keys={[...keys]} platform={platform} aria-hidden="true" />
-            </span>
-          </>
-        ) : text}
+        <span className="uix-tooltip__content">
+          {keys ? (
+            <>
+              {text != null && <span id={`${id}-text`}>{text}</span>}
+              <span className="uix-tooltip__shortcut">
+                <span id={`${id}-keys`} className="uix-visually-hidden">{spokenKeys(keys, platform)}</span>
+                <KbdCombo keys={[...keys]} platform={platform} aria-hidden="true" />
+              </span>
+            </>
+          ) : text}
+        </span>
       </span>
     </span>
   );

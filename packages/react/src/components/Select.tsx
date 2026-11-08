@@ -9,6 +9,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { markKeyOpened, watchInputModality } from '../motion.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -251,6 +252,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const proxyRef = useRef<HTMLSelectElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // one hover mark that glides from option to option under the pointer (2.60)
+  const glideRef = useRef<HTMLSpanElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /* ---- items */
@@ -278,6 +281,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   /* ---- open state */
   const [open, setOpen] = useState(false);
+  useHoverGlide(glideRef, '.uix-listbox__option', open);
   const [mode, setMode] = useState<'popover' | 'sheet'>('popover');
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
@@ -775,6 +779,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       hidden={entries.length === 0 || undefined}
       onKeyDown={mode === 'sheet' && !isSearchable ? (e) => onOpenKey(e, false) : undefined}
     >
+      <span ref={glideRef} className="uix-glide" aria-hidden="true" />
       {listModel.sections.map((section, i) => (section.label != null ? (
         <div key={`g${i}`} role="group" className="uix-listbox__group" aria-labelledby={`${uid}-group-${i}`} aria-disabled={section.disabled || undefined}>
           <div id={`${uid}-group-${i}`} role="presentation" className="uix-listbox__group-label">{section.label}</div>
