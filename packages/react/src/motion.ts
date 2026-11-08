@@ -7,6 +7,8 @@
  * - Timers that pair with a CSS transition read the same token (`--uix-dur-exit`,
  *   `--uix-delay-tooltip`, …) instead of a second number in JavaScript. */
 
+import { prefersReducedMotion } from './hooks/useReducedMotion.js';
+
 export const KEY_OPENED = 'data-uix-key-opened';
 
 let keyboard = false;
@@ -133,13 +135,11 @@ export function blurIn(
   const start = view.performance.now();
   let frame = 0;
   let stopped = false;
-  // reduced motion switched on mid-arrival (the OS setting or <html data-motion="reduce">): the CSS
-  // motion stops at once, and so does the blur
-  const reduce = view.matchMedia?.('(prefers-reduced-motion: reduce)');
-  const reduced = () => !!reduce?.matches || document.documentElement.getAttribute('data-motion') === 'reduce';
+  // reduced motion switched on mid-arrival (the kit's one rule: the OS setting or
+  // <html data-motion="reduce">): the CSS motion stops at once, and so does the blur
   const tick = () => {
     if (stopped) return;
-    if (reduced()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
+    if (prefersReducedMotion()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
     const now = view.performance.now();
     let busy = false;
     els.forEach((el, i) => {
