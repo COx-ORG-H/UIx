@@ -85,6 +85,7 @@
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
+<!-- lesson-skip: 882ac4b routine: the shortcut hint shares .uix-tooltip__bubble and inherited the tooltip's new top-layer exit; command-palette-items caught it; scoped to the hint modifier; review fixes pinned by unit and a11y specs -->
 <!-- lesson-skip: 04d0a48 not the CI cause (85526af was); kept: a constant backdrop blur and no per-row blur are cheaper without a GPU -->
 <!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
