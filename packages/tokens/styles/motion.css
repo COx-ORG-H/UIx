@@ -89,7 +89,9 @@
      and fades out when the pointer leaves. The list (its parent) is its containing block; isolation
      keeps the layer's z-index -1 above the list's own background and beneath the rows. Under reduced
      motion the global policy drops clip-path from the transition: the mark jumps, the fade stays. */
-  :where(:has(> .uix-glide)) { isolation: isolate; }
+  /* The hosts are named, never found with :has(): a subject-less :has() makes every element a
+     candidate, and WebKit then restyles the page on every DOM change (CI timed out on it). */
+  :where(.uix-sidebar, .uix-select__listbox, .uix-menu) { isolation: isolate; }
   .uix-glide {
     position: absolute; top: 0; left: 0; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none;
     background: var(--uix-glide-bg, var(--uix-bg-hover)); opacity: 0;
@@ -126,5 +128,5 @@
     :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(10) { --uix-row-i: 8; }
     :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(n+11) { --uix-row-i: 9; }
   }
-  :dir(rtl) { --uix-row-from: calc(-1 * var(--uix-space-2)); }
+  :where(.uix-select__listbox, .uix-menu):dir(rtl) { --uix-row-from: calc(-1 * var(--uix-space-2)); }
 }
