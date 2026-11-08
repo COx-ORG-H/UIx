@@ -674,7 +674,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
       ['<code>--uix-ease-in</code>', '', 'Kept for compatibility. Do not use: an accelerating curve on something the user watches reads as lag.'],
     ])}`)}
     ${section('mechanics', 'Mechanics', `<ul><li><strong>Tokens only.</strong> Durations and easings come from <code>--uix-dur-*</code>, <code>--uix-delay-*</code>, <code>--uix-loop-*</code> and <code>--uix-ease-*</code>; no raw times in CSS or JS.</li><li><strong>Easing.</strong> Enter with a strong ease-out. Move on screen with ease-in-out. Exit faster than the enter (about two-thirds) and never with ease-in; the exceptions are the operator’s 2.60 picks from animate-ui (a menu or select list shrinks away at its enter pace, a drawer leaves speeding up). Constant motion (indeterminate progress) is linear or in-out. No bounce in staff UI.</li><li><strong>Properties.</strong> Animate <code>transform</code> and <code>opacity</code> (and <code>filter</code> / <code>clip-path</code> when needed). Never <code>width</code>, <code>height</code>, <code>grid-template-*</code>, <code>top</code>/<code>left</code>, <code>margin</code>, <code>padding</code> or <code>box-shadow</code>, and never <code>transition: all</code>. A shadow steps; a meter slides on <code>transform</code>.</li><li><strong>Interruptible.</strong> Anything that can re-trigger quickly (toasts, suggestions, the bulk bar, a row highlight) uses transitions or <code>@starting-style</code>, not keyframes that restart from zero. Nothing animates on a page’s first render.</li><li><strong>Origin.</strong> Popovers, menus and tooltips grow from their trigger (<code>transform-origin</code>), from <code>scale(.95)</code> (menus, the select list and tooltips from <code>.9</code>) plus opacity, never <code>scale(0)</code>. Modals stay centred.</li><li><strong>Tooltips.</strong> Open after a delay; then neighbours open instantly (a delay group). Keyboard focus opens at once.</li><li><strong>Hover.</strong> Movement and reveal-on-hover sit inside <code>@media (hover: hover) and (pointer: fine)</code>; hover is never the only path to an action. Row actions stay visible on a touch screen.</li><li><strong>Instant surfaces.</strong> An overlay opened from the keyboard, and the command palette, open and close with no animation: set <code>[data-uix-instant]</code> (React: <code>Modal instant</code>; <code>CommandPalette</code> sets it itself).</li><li><strong>Concurrency.</strong> At most two or three things move on a screen at once, and one salient signal per region.</li></ul>`)}
-    ${section('glide', 'Springs, glides and arrivals (2.60)', `<p>UIx renders springs as CSS <code>linear()</code> curves (the browser runs them on the compositor, with no animation library), so the kit can move like a native app while staying tokens-only. The patterns below came from a study of animate-ui and were rebuilt in UIx’s own code.</p>${table(['Pattern', 'Where', 'Motion'], [
+    ${section('glide', 'Springs, glides and arrivals (2.60)', `<p>UIx renders springs as CSS <code>linear()</code> curves (the browser runs them on the compositor, with no animation library), so the kit can move like a native app while staying tokens-only. The patterns below came from a study of animate-ui and were rebuilt in UIx’s own code. <a href="#try-motion" data-toc-link>Try them live below →</a></p>${table(['Pattern', 'Where', 'Motion'], [
       ['One gliding hover mark', 'Sidebar, Menu, Select lists (<code>useHoverGlide</code>)', 'One layer under the rows, moved with <code>transform</code> and reaching rows of another size by <code>scale</code>; glides on <code>--uix-ease-glide</code>, fades in and out over <code>--uix-dur-fade</code>. The pointer’s row, or the row the arrow keys or Tab reach.'],
       ['Current-page tint slides', 'Sidebar (<code>useSlidingIndicator</code>, as Tabs)', 'A click on another page slides the tint from the old row. Keyboard and reduced motion jump.'],
       ['Rows arrive', 'Select list, Menu, a sidebar group', 'Top to bottom, <code>--uix-stagger-rows</code> apart: 8 px in from the inline end, clearing from <code>--uix-arrive-blur</code> (in script). Opened from the keyboard, the rows are simply there. A sidebar group’s rows carry no bullet: they start under the parent’s label.'],
@@ -686,6 +686,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
       ['Step entrance', '<code>.uix-anim-step-forward</code> / <code>-back</code> on a panel keyed by its step', 'Fades and slides 24 px from the way the person is going over <code>--uix-dur-row</code> on <code>--uix-ease-enter</code>; mirrored in RTL.'],
       ['Animated icons', 'Any icon with <code>animate</code>', 'Plays one short motion when the pointer moves onto its control. See <a href="#icons-assets">Icons</a>.'],
     ])}<p>Studied and left out on purpose: a sliding pagination pill (tens of times a day, and the numbers re-window), a tilting alert dialog (too theatrical for a delete), a long count-up spring (Count ticks once), a collapsed toast deck (it hides the second message), and any visible bounce on something crossing the screen.</p>`)}
+    ${section('try-motion', 'Try it: the 2.60 motion, live', `<p>Every other preview on this site is HTML and CSS. These demos mount the real <code>@tensor_1/react</code> components, because the 2.60 motion is driven by the components themselves: the gliding highlight, the tooltip passing to its neighbour, rows clearing from a blur, the drawer's swipe. What moves here is what your app gets.</p><div class="uix-docs__live" data-motion-playground><p class="uix-docs__live-status" data-motion-playground-status role="status">Loading the live demos…</p></div><p>Turn on reduced motion in the operating system (or emulate it in DevTools): the travel, the springs and the blur drop away, and the fades stay. Opened from the keyboard, Select, Menu and a sidebar group still animate and the highlight follows the arrow keys; the tooltip swaps at once.</p>`)}
     ${section('continuity', 'Never make a change invisible', `<ul><li><strong>Keep previous data while refetching.</strong> A filter, sort, page or saved-view change keeps the rows, dims them, shows an indeterminate bar and sets <code>aria-busy</code>. A skeleton is for first load only.</li><li><strong>An in-place update carries three cues:</strong> a signal (the highlight), the location (on the row or field that changed) and the description (the new text, and where useful who changed it).</li><li><strong>Never re-sort under the pointer.</strong> A live re-sort waits, or animates and says so.</li><li><strong>Items leave visibly.</strong> A handled row fades and collapses before the list closes the gap; neighbours glide, they do not jump.</li></ul>`)}
     ${section('optimism', 'Optimism, honesty and recovery', `<ul><li><strong>Optimistic</strong> only for reversible, high-success, personal actions: star, pin, reaction, mark read, density, reordering your own saved views. On failure, roll back visibly and say what was restored.</li><li><strong>Pessimistic</strong> (Button <code>loading</code>, then confirm) for anything the server can refuse or an auditor reads: state transitions, assignment, approvals, priority changes, deletes. A pill that flips and flips back teaches people the UI lies.</li><li>Every mutation confirms its outcome, and every failure offers a way to recover.</li></ul>`)}
     ${section('state-changes', 'Which motion for which state change', `${table(['State change', 'UIx primitive', 'Motion'], [
@@ -723,7 +724,7 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
     ${section('animated-icons', 'Animated icons', `<p>An icon can answer its control (2.60): with <code>animate</code>, hovering the button, link, menu item or tab around it plays one short motion. The arrow and chevron nudge forward, plus and close turn a quarter, the gear turns one tooth, refresh turns half, the bell tips, send lifts off, download and upload move their arrow, the bin lifts its lid, copy shifts its front sheet, and the star pops. A check draws itself when it appears, for example after Copy. Every motion ends on the still icon.</p>${codeBlock(`import { DownloadIcon, CheckIcon } from "@tensor_1/react/icons";
 
 <Button variant="secondary"><DownloadIcon animate />Export</Button>
-{copied && <CheckIcon animate />}`, 'tsx')}<ul><li>Off by default. Use it on occasional actions, never on rows people pass a hundred times a day (navigation, table rows).</li><li>Hover only: keyboard focus and touch never move an icon. Reduced motion keeps every icon still and shows a check whole.</li><li>Icons without a motion of their own stay still with <code>animate</code>.</li></ul>`)}
+{copied && <CheckIcon animate />}`, 'tsx')}<ul><li>Off by default. Use it on occasional actions, never on rows people pass a hundred times a day (navigation, table rows).</li><li>Hover only: keyboard focus and touch never move an icon. Reduced motion keeps every icon still and shows a check whole.</li><li>Icons without a motion of their own stay still with <code>animate</code>.</li></ul><p><a href="#motion">Hover them live on the Motion page (Try it) →</a></p>`)}
     ${section('emoji', 'Emoji and reactions', `<p>Use the curated work-appropriate set for warmth or acknowledgement, never as the only carrier of meaning and never as the status model for formal or destructive workflows.</p><p><a href="#examples-emoji">Open emoji and reaction examples →</a></p>`)}
     ${section('images', 'Images and media', `<ul><li>Write alternative text for the image’s purpose in context; use empty alt text when the image is decorative.</li><li>Keep avatar upload, empty, failure, and replacement states available without pointer-only interaction.</li><li>Open detail imagery with a real button and a focus-managed dialog; retain the source image’s description.</li><li>Use optimized product assets and reserve layout space to avoid content shift.</li></ul><p><a href="#examples-images">Open avatar, asset-card, and lightbox examples →</a></p>`)}`,
 
@@ -969,6 +970,25 @@ export const pageContent = (slug) => {
   return PAGES[slug] ? PAGES[slug]() : component ? renderComponentReference(component) : null;
 };
 
+/* The live 2.60 motion (Motion page, "Try it"): the real React components, bundled by
+   docs/live/build.mjs into docs/live/dist/ and imported only when the page opens. The docs site
+   workflow builds it; a repository preview without a build says how to make one. */
+let unmountPlayground = null;
+const mountMotionPlayground = (host) => {
+  const el = host.querySelector('[data-motion-playground]');
+  if (!el) return;
+  import('./live/dist/motion-playground.js')
+    .then(({ mount }) => {
+      if (!el.isConnected) return;
+      el.textContent = '';
+      unmountPlayground = mount(el);
+    })
+    .catch(() => {
+      const status = el.querySelector('[data-motion-playground-status]');
+      if (status) status.innerHTML = 'The live demos are not built in this preview. Run <code>node packages/tokens/docs/live/build.mjs</code>, then reload.';
+    });
+};
+
 const renderPage = () => {
   codeCounter = 0;
   const requested = normalizeHash(location.hash);
@@ -979,6 +999,8 @@ const renderPage = () => {
   const example = SHOWCASE_PAGES.find((item) => item.slug === slug);
   const content = pageContent(slug) ?? renderShowcasePage(example);
   disposeShowcase();
+  unmountPlayground?.();
+  unmountPlayground = null;
   host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
   document.querySelectorAll('[data-api-report]').forEach((link) => {
     link.href = location.pathname.includes('/packages/tokens/docs/') ? '../../react/etc/uix-react.api.md' : '../react/etc/uix-react.api.md';
@@ -991,6 +1013,7 @@ const renderPage = () => {
   if (source === 'advanced') initAdvancedShowcase();
   initFormSpecimens(host);
   initFeedbackDemos(host);
+  mountMotionPlayground(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);
