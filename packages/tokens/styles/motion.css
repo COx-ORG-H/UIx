@@ -47,8 +47,9 @@
 @keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
 /* a label or row that clears from a short blur as it arrives (2.60: tooltip glide, sidebar group rows) */
 @keyframes uix-blur-in { from { opacity: 0; filter: blur(var(--uix-blur-from, 4px)); } to { opacity: 1; filter: none; } }
-/* a row of a list that just opened: in from the inline end, clearing from a blur (2.60) */
-@keyframes uix-row-in { from { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; filter: blur(4px); } }
+/* a row of a list that just opened: in from the inline end (2.60). No blur here: a filter on every
+   arriving row is costly where there is no GPU; single elements (a tooltip label, a value) keep it. */
+@keyframes uix-row-in { from { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; } }
 /* a check that draws itself (pathLength 1) and a changed value rising into its field (2.60) */
 @keyframes uix-check-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes uix-value-in { from { opacity: 0; translate: 0 6px; filter: blur(4px); } }
@@ -110,8 +111,7 @@
 }
 
 /* Row arrival (2.60, the animate-ui study): when a select's list or a menu opens, its rows arrive top
-   to bottom --uix-stagger-rows apart, each sliding 8 px in from the inline end and clearing from a
-   4 px blur. Rows ten and later arrive with the tenth (the first child is the glide layer). A keyboard
+   to bottom --uix-stagger-rows apart, each fading and sliding 8 px in from the inline end. Rows ten and later arrive with the tenth (the first child is the glide layer). A keyboard
    open ([data-uix-key-opened]) shows the rows at once; reduced motion never runs it. */
 @layer uix.motion {
   @media (prefers-reduced-motion: no-preference) {

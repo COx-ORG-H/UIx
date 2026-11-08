@@ -30,16 +30,18 @@
   @starting-style { .uix-drawer[open] { transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0; } }
   /* a drag in progress follows the finger exactly */
   .uix-drawer[data-swiping] { transition: none; user-select: none; }
-  /* 2.60: the scrim and its blur (--uix-scrim-blur) grow from nothing together; a swipe in progress
-     lightens them with the panel's travel (--uix-drawer-swipe, 0 → 1, set by Drawer.tsx) */
+  /* 2.60: the page behind softens under --uix-scrim-blur while the dim fades in; a swipe in progress
+     lightens it with the panel's travel (--uix-drawer-swipe, 0 → 1, set by Drawer.tsx). The blur
+     radius itself never animates: a changing radius re-renders a full-page blur every frame, which
+     starves software rendering (CI WebKit, VDI desktops without a GPU). Only the opacity moves. */
   .uix-drawer::backdrop {
-    background: var(--uix-scrim); opacity: 0; backdrop-filter: blur(0);
-    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), backdrop-filter var(--uix-dur-exit-slow) var(--uix-ease-out),
+    background: var(--uix-scrim); opacity: 0; backdrop-filter: blur(var(--uix-scrim-blur));
+    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out),
                 overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
   }
-  .uix-drawer[open]::backdrop { opacity: calc(1 - var(--uix-drawer-swipe, 0)); backdrop-filter: blur(var(--uix-scrim-blur)); transition-duration: var(--uix-dur-slow); }
+  .uix-drawer[open]::backdrop { opacity: calc(1 - var(--uix-drawer-swipe, 0)); transition-duration: var(--uix-dur-slow); }
   .uix-drawer[data-swiping]::backdrop { transition: none; }
-  @starting-style { .uix-drawer[open]::backdrop { opacity: 0; backdrop-filter: blur(0); } }
+  @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
   /* side="start" — the phone navigation drawer, from the left edge (HAR-1351) */
   .uix-drawer--start { margin: var(--uix-drawer-gap) auto var(--uix-drawer-gap) var(--uix-drawer-gap); transform: translateX(calc(-100% - 2 * var(--uix-drawer-gap))); }
   .uix-drawer--start[open] { transform: none; }
