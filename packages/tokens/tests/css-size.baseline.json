@@ -442,14 +442,14 @@
       "brotli": 1492
     },
     "styles/components/select.css": {
-      "raw": 11996,
-      "gzip": 3307,
-      "brotli": 2798
+      "raw": 12198,
+      "gzip": 3392,
+      "brotli": 2862
     },
     "styles/components/sidebar.css": {
-      "raw": 18071,
-      "gzip": 4322,
-      "brotli": 3682
+      "raw": 18472,
+      "gzip": 4428,
+      "brotli": 3771
     },
     "styles/components/sla.css": {
       "raw": 516,
