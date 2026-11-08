@@ -80,7 +80,9 @@
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion="reduce"]) .uix-select__value[data-changed] { animation: uix-value-in var(--uix-dur-slow) var(--uix-ease-out); }
   }
-  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; }
+  /* overflow-x: the list never scrolls sideways; rows arriving 8 px from the inline end (2.60) must not
+     raise a horizontal scrollbar on engines with classic scrollbars, which shifted rows mid-click */
+  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; position: relative; }
   .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .uix-select__popup .uix-listbox:focus { outline: none; }
   .uix-select__search { flex: none; margin-bottom: var(--uix-space-1); }

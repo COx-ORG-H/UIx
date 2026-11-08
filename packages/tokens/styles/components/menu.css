@@ -38,4 +38,7 @@
 /* 2.60: a menu grows from .9 like the select's list (the generic popover keeps .95) */
 @layer uix.components {
   [popover].uix-popover.uix-menu { --popover-from: scale(.9); }
+  /* the UA's popover overflow:auto would let rows arriving from the inline end raise a horizontal
+     scrollbar on classic-scrollbar engines; a menu never scrolls sideways */
+  .uix-menu { overflow-x: hidden; }
 }

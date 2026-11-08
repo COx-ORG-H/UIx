@@ -45,8 +45,12 @@ export function useHoverGlide(
     };
 
     const place = (item: HTMLElement) => {
-      // the layer spans the scroll box, so it scrolls with the rows it marks
-      const w = container.scrollWidth;
+      // The layer spans the rows' scroll height, so it scrolls with the rows it marks, but it must
+      // never add overflow of its own: a rounded-up pixel would raise a classic scrollbar, shift the
+      // rows under the pointer and move the mark again. So it is as wide as the list's client box,
+      // and its height is the scroll height measured with the layer collapsed.
+      layer.style.height = '0px';
+      const w = container.clientWidth;
       const h = container.scrollHeight;
       const top = offsetWithin(item, container, 'top');
       const left = offsetWithin(item, container, 'left');

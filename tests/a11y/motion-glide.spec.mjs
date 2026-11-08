@@ -45,6 +45,22 @@ test('the sidebar hover mark glides between rows; reduced motion jumps', async (
   expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('clip-path');
 });
 
+test('the glide layer never makes a list scroll (no overflow of its own)', async ({ page }) => {
+  const size = (sel) => page.locator(sel).evaluate((el) => `${el.scrollWidth}x${el.scrollHeight} ${el.clientWidth}x${el.clientHeight}`);
+  const nav = await size('#nav');
+  for (const name of ['Übersicht', 'Teams', 'Posteingang']) await row(page, name).hover();
+  expect(await size('#nav')).toBe(nav);
+  await page.locator('#team').click();
+  await expect(page.locator('.uix-select__popup')).toBeVisible();
+  // rows arriving 8 px from the inline end overflow for a moment: the list must clip sideways, so no
+  // classic scrollbar ever appears (it shifted the rows mid-click in Linux WebKit)
+  expect(await page.locator('.uix-select__listbox').evaluate((el) => getComputedStyle(el).overflowX)).toBe('hidden');
+  await expect.poll(() => page.locator('.uix-select__popup').evaluate((el) => el.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length)).toBe(0);
+  const list = await size('.uix-select__listbox');
+  for (const o of ['Netzwerk', 'Telefonie', 'Service Desk']) await page.locator('.uix-select__popup [role="option"]', { hasText: o }).hover();
+  expect(await size('.uix-select__listbox')).toBe(list);
+});
+
 test('the current-page tint slides to a clicked row and hands back at rest; the keyboard jumps', async ({ page }) => {
   const mark = page.locator('#nav > .uix-sidebar__mark');
   await row(page, 'Teams').click();
