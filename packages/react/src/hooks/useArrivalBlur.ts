@@ -29,11 +29,25 @@ export function useArrivalBlur(
     if (!open || !el || (first && skipMount) || prefersReducedMotion()) return undefined;
     if (el.hasAttribute(KEY_OPENED) || el.closest('[data-uix-instant]')) return undefined;
     const stagger = tokenMs('--uix-stagger-rows', 30);
-    return blurIn(Array.from(el.querySelectorAll<HTMLElement>(rows)), {
+    // only the rows a person can see, at most twelve: a long list never blurs rows scrolled out of
+    // view. Each row's delay is its CSS one (--uix-row-i, set by position), so a list opened
+    // scrolled to its value clears the rows it shows in step with their arrival.
+    const box = el.getBoundingClientRect();
+    const top = box.height >= 1 ? box.top : 0;
+    const bottom = box.height >= 1 ? box.bottom : window.innerHeight;
+    const shown = Array.from(el.querySelectorAll<HTMLElement>(rows)).filter((row) => {
+      const r = row.getBoundingClientRect();
+      return r.bottom > top && r.top < bottom;
+    }).slice(0, 12);
+    const order = shown.map((row, i) => {
+      const n = parseFloat(window.getComputedStyle(row).getPropertyValue('--uix-row-i'));
+      return Number.isFinite(n) ? n : Math.min(i, 9);
+    });
+    return blurIn(shown, {
       from: tokenPx('--uix-arrive-blur', 4),
       duration: tokenMs('--uix-dur-slower', 320),
       ease: tokenEase('--uix-ease-out'),
-      delay: (i) => Math.min(i, 9) * stagger,
+      delay: (i) => order[i] * stagger,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

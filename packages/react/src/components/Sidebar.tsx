@@ -227,7 +227,7 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   };
 
   return (
-    <div className="uix-navgroup">
+    <div className="uix-navgroup" data-plain={icon ? undefined : ''}>
       <button
         ref={triggerRef}
         type="button"

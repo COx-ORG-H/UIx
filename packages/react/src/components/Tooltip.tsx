@@ -16,7 +16,7 @@ import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
  * neighbours open at once: while any is open, and for --uix-delay-tooltip-skip after the last one
  * closed; the one it replaces goes at once, so two bubbles never overlap. Shared by every Tooltip
  * on the page. */
-const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null; bubble: HTMLElement | null; lastRect: DOMRect | null } = { open: 0, lastClosed: -Infinity, current: null, bubble: null, lastRect: null };
+const group: { open: number; lastClosed: number; current: { current: (instant: boolean) => void } | null; bubble: HTMLElement | null } = { open: 0, lastClosed: -Infinity, current: null, bubble: null };
 
 /* The hand-over between neighbours (2.60, animate-ui's tooltip rebuilt natively): when the pointer
  * moves to a neighbour while a bubble is open, the new bubble starts exactly where the old one is
@@ -209,7 +209,6 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     cancelOpen();
     const b = bubbleRef.current;
     if (b && b.matches(':popover-open')) {
-      group.lastRect = b.getBoundingClientRect();
       b.toggleAttribute('data-uix-instant', instant);
       try { b.hidePopover(); } catch { /* already closed */ }
     }

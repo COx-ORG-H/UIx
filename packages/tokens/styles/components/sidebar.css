@@ -140,6 +140,9 @@
   /* a group's row starts where its parent's label starts (no bullet, as in animate-ui's sidebar):
      the parent's padding, its icon and the gap after it */
   .uix-subitem { padding-inline-start: calc(2 * var(--uix-space-3) + var(--uix-icon-md)); }
+  /* a group without an icon ([data-plain], NavGroup): its label starts at the row's padding, so its
+     rows step in by one gap past it */
+  .uix-navgroup[data-plain] .uix-subitem { padding-inline-start: calc(2 * var(--uix-space-3)); }
 
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
