@@ -133,8 +133,13 @@ export function blurIn(
   const start = view.performance.now();
   let frame = 0;
   let stopped = false;
+  // reduced motion switched on mid-arrival (the OS setting or <html data-motion="reduce">): the CSS
+  // motion stops at once, and so does the blur
+  const reduce = view.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const reduced = () => !!reduce?.matches || document.documentElement.getAttribute('data-motion') === 'reduce';
   const tick = () => {
     if (stopped) return;
+    if (reduced()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
     const now = view.performance.now();
     let busy = false;
     els.forEach((el, i) => {
