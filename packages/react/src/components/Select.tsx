@@ -216,7 +216,7 @@ function labelText(trigger: HTMLElement, own: readonly (Node | null)[], ariaLabe
 
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5" />
+    <path d="M20 6 9 17l-5-5" pathLength={1} />
   </svg>
 );
 
@@ -281,6 +281,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   /* ---- open state */
   const [open, setOpen] = useState(false);
+  const [justChosen, setJustChosen] = useState<string | null>(null);
+  useEffect(() => {
+    if (justChosen == null) return undefined;
+    const t = setTimeout(() => setJustChosen(null), 600);
+    return () => clearTimeout(t);
+  }, [justChosen]);
+  // the trigger's value rises in when it changes, never on the first render (2.60)
+  const valueShown = useRef(false);
+  useEffect(() => { valueShown.current = true; }, []);
   useHoverGlide(glideRef, '.uix-listbox__option', open);
   const [mode, setMode] = useState<'popover' | 'sheet'>('popover');
   const [active, setActive] = useState(-1);
@@ -484,6 +493,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   const choose = (entry: SelectEntry | undefined, closeAfter = !multiple) => {
     if (!entry || entry.disabled) return;
+    // 2.60: the option just picked draws its check (seen while a multiple list stays open)
+    setJustChosen(entry.option.value);
     if (multiple) {
       commit(toggleValue(valuesRef.current, entry.option.value), entry.option);
       setActive(entry.index);
@@ -745,6 +756,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         aria-selected={selected}
         aria-disabled={entry.disabled || undefined}
         data-active={(open && isActive) || undefined}
+        data-just-chosen={(selected && justChosen === o.value) || undefined}
         onMouseDown={(e) => e.preventDefault()}
         onPointerMove={() => { if (!isActive && !entry.disabled) setActive(entry.index); }}
         onClick={(e) => { e.preventDefault(); choose(entry); }}
@@ -853,7 +865,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <span className="uix-select__value">{display}</span>
+        <span key={values.join('|')} className="uix-select__value" data-changed={valueShown.current || undefined}>{display}</span>
         {more > 0 && (
           <span className="uix-select__more">
             <span aria-hidden="true">+{more}</span>

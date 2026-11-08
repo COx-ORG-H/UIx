@@ -70,6 +70,16 @@ export function Sidebar({ collapsed, nav, onToggle, brand, toggleIcon, actions, 
   const markRef = useRef<HTMLSpanElement>(null);
   useHoverGlide(glideRef, '.uix-navitem');
   useSlidingIndicator(navRef, markRef, '.uix-navitem[aria-current="page"]');
+  // expanding from the rail, the labels clear in after the width settles (not on first render)
+  const lastCollapsed = useRef(isCollapsed);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el || lastCollapsed.current === isCollapsed) return undefined;
+    lastCollapsed.current = isCollapsed;
+    el.setAttribute('data-uix-toggled', '');
+    const t = setTimeout(() => el.removeAttribute('data-uix-toggled'), 600);
+    return () => { clearTimeout(t); el.removeAttribute('data-uix-toggled'); };
+  }, [isCollapsed]);
   return (
     <nav ref={navRef} className={cx('uix-sidebar', className)} data-collapsed={isCollapsed || undefined} data-nav={inDrawer ? undefined : nav} {...props}>
       <span ref={glideRef} className="uix-glide" aria-hidden="true" />

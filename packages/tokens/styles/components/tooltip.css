@@ -21,6 +21,10 @@
     opacity: 0; transform: scale(.9); transform-origin: var(--uix-anchor-origin, bottom center);
     transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out);
     isolation: isolate;
+    /* the UA gives a popover overflow:auto; a tooltip never scrolls, and during the glide to a
+       narrower neighbour its scaled background must not raise a scrollbar (which made the bubble
+       10 px taller for a frame and placed it that much too high) */
+    overflow: visible;
   }
   /* rich content (HAR-1349): a short list or a few lines, never interactive */
   .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-left: 1.1em; }

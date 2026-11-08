@@ -34,3 +34,8 @@
   .uix-menu__item .uix-menu__check svg { width: 100%; height: 100%; color: inherit; }
   .uix-menu__item[aria-checked="true"] { font-weight: 500; }
 }
+
+/* 2.60: a menu grows from .9 like the select's list (the generic popover keeps .95) */
+@layer uix.components {
+  [popover].uix-popover.uix-menu { --popover-from: scale(.9); }
+}

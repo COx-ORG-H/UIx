@@ -46,7 +46,12 @@
 @keyframes uix-slide-in-right { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes uix-slide-in-up    { from { opacity: 0; transform: translateY(8px); }   to { opacity: 1; transform: none; } }
 /* a label or row that clears from a short blur as it arrives (2.60: tooltip glide, sidebar group rows) */
-@keyframes uix-blur-in { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+@keyframes uix-blur-in { from { opacity: 0; filter: blur(var(--uix-blur-from, 4px)); } to { opacity: 1; filter: none; } }
+/* a row of a list that just opened: in from the inline end, clearing from a blur (2.60) */
+@keyframes uix-row-in { from { opacity: 0; translate: var(--uix-row-from, 8px) 0; filter: blur(4px); } }
+/* a check that draws itself (pathLength 1) and a changed value rising into its field (2.60) */
+@keyframes uix-check-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes uix-value-in { from { opacity: 0; translate: 0 6px; filter: blur(4px); } }
 /* a step of a multi-step form arriving from the side the person is heading (2.60) */
 @keyframes uix-step-in { from { opacity: 0; transform: translateX(calc(var(--uix-step-from, 16px) * var(--uix-step-dir, 1))); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes uix-spin { to { transform: rotate(1turn); } }
@@ -99,4 +104,27 @@
      a tooltip opened inside its delay group); [data-uix-key-opened] is set per open or close by the React
      overlays (Modal, Drawer, Peek, Popover and Menu, Select) when a key press led to it. */
   :is([data-uix-instant], [data-uix-key-opened]), :is([data-uix-instant], [data-uix-key-opened])::backdrop { transition: none !important; animation: none !important; }
+}
+
+/* Row arrival (2.60, the animate-ui study): when a select's list or a menu opens, its rows arrive top
+   to bottom --uix-stagger-rows apart, each sliding 8 px in from the inline end and clearing from a
+   4 px blur. Rows ten and later arrive with the tenth (the first child is the glide layer). A keyboard
+   open ([data-uix-key-opened]) shows the rows at once; reduced motion never runs it. */
+@layer uix.motion {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) :is(
+      [popover].uix-select__popup:popover-open:not([data-uix-key-opened]) .uix-listbox > :is(.uix-listbox__option, .uix-listbox__group),
+      .uix-menu:popover-open:not([data-uix-key-opened]) > :is(.uix-menu__item, .uix-menu__label, .uix-menu__sep, [role="group"])
+    ) { animation: uix-row-in var(--uix-dur-slower) var(--uix-ease-out) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows)) backwards; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(3) { --uix-row-i: 1; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(4) { --uix-row-i: 2; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(5) { --uix-row-i: 3; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(6) { --uix-row-i: 4; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(7) { --uix-row-i: 5; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(8) { --uix-row-i: 6; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(9) { --uix-row-i: 7; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(10) { --uix-row-i: 8; }
+    :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(n+11) { --uix-row-i: 9; }
+  }
+  :dir(rtl) { --uix-row-from: -8px; }
 }
