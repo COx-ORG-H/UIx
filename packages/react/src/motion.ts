@@ -116,32 +116,39 @@ export function tokenEase(name: string): Ease {
  */
 export function blurIn(
   elements: readonly HTMLElement[],
-  options: { from: number; duration: number; ease: Ease; delay?: (index: number) => number; leave?: boolean },
+  options: { from: number; duration: number; ease: Ease; delay?: (index: number) => number; leave?: boolean; property?: string },
 ): () => void {
   const els = elements.slice();
   if (typeof window === 'undefined' || els.length === 0 || options.from <= 0 || options.duration <= 0) return () => {};
-  const { from, duration, ease, delay = () => 0, leave = false } = options;
-  const paint = (el: HTMLElement, p: number) => {
-    const r = leave ? from * ease(p) : from * (1 - ease(p));
-    el.style.filter = r > 0.05 ? `blur(${r.toFixed(2)}px)` : '';
+  const { from, duration, ease, delay = () => 0, leave = false, property } = options;
+  // `property`: write the radius into a custom property (a pseudo-element's blur reads it) instead
+  // of the element's own filter
+  const write = (el: HTMLElement, r: number) => {
+    if (property) { if (r > 0.05) el.style.setProperty(property, `${r.toFixed(2)}px`); else el.style.removeProperty(property); }
+    else el.style.filter = r > 0.05 ? `blur(${r.toFixed(2)}px)` : '';
   };
+  const paint = (el: HTMLElement, p: number) => write(el, leave ? from * ease(p) : from * (1 - ease(p)));
   els.forEach((el) => paint(el, 0));
-  const start = window.performance.now();
+  const view = window;
+  const start = view.performance.now();
   let frame = 0;
+  let stopped = false;
   const tick = () => {
-    const now = window.performance.now();
+    if (stopped) return;
+    const now = view.performance.now();
     let busy = false;
     els.forEach((el, i) => {
       const p = Math.min(1, Math.max(0, (now - start - delay(i)) / duration));
       if (p < 1) busy = true;
       paint(el, p);
     });
-    if (busy) frame = window.requestAnimationFrame(tick);
-    else if (leave) els.forEach((el) => { el.style.filter = ''; });
+    if (busy) frame = view.requestAnimationFrame(tick);
+    else if (leave) els.forEach((el) => write(el, 0));
   };
-  frame = window.requestAnimationFrame(tick);
+  frame = view.requestAnimationFrame(tick);
   return () => {
-    window.cancelAnimationFrame(frame);
-    els.forEach((el) => { el.style.filter = ''; });
+    stopped = true;
+    view.cancelAnimationFrame(frame);
+    els.forEach((el) => write(el, 0));
   };
 }

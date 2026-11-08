@@ -48,10 +48,11 @@
 /* a row of a list that just opened: in from the inline end (2.60). Its blur (--uix-arrive-blur) clears
    in script, frame by frame, on the same timing (useArrivalBlur): Linux WebKit's renderer crashes on
    a CSS-animated filter, so no kit CSS animates one (check-motion). */
-@keyframes uix-row-in { from { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; } }
+@keyframes uix-row-in { from { translate: var(--uix-row-from, var(--uix-space-2)) 0; } }
 /* a check that draws itself (pathLength 1) and a changed value rising into its field (2.60) */
 @keyframes uix-check-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes uix-value-in { from { opacity: 0; translate: 0 6px; } }
+@keyframes uix-value-out { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 -6px; } }
 /* a tooltip's labels when the bubble travels to a neighbour (2.60): the new one in from the way it
    goes, the old one out the way it came, --uix-swap-shift along the axis Tooltip.tsx sets */
 @keyframes uix-swap-in { from { opacity: 0; translate: calc(var(--uix-swap-x, 0) * var(--uix-swap-shift)) calc(var(--uix-swap-y, 0) * var(--uix-swap-shift)); } }
@@ -59,7 +60,7 @@
 /* a step of a multi-step form arriving from the side the person is heading (2.60) */
 /* No CSS animation or transition of `filter` anywhere in the kit: Linux WebKit's renderer crashes on
    one (2.60, measured). A blur that clears is driven per frame from script (motion.ts blurIn). */
-@keyframes uix-step-in { from { opacity: 0; transform: translateX(calc(var(--uix-step-from, 16px) * var(--uix-step-dir, 1))); } to { opacity: 1; transform: none; } }
+@keyframes uix-step-in { from { opacity: 0; transform: translateX(calc(var(--uix-step-from, 24px) * var(--uix-step-dir, 1))); } to { opacity: 1; transform: none; } }
 @keyframes uix-spin { to { transform: rotate(1turn); } }
 @keyframes uix-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 /* The reduced-motion stand-in for every looping indicator: no movement, a slow breath of opacity. */
@@ -72,8 +73,8 @@
   /* Step entrances (2.60): key the panel by its step so it remounts, and pick the class by direction.
      The old step leaves at once; the new one fades and slides 16 px from the way the person is going.
      In RTL the travel mirrors. */
-  .uix-anim-step-forward, .uix-anim-step-back { animation: uix-step-in var(--uix-dur-slow) var(--uix-ease-out); }
-  .uix-anim-step-back { --uix-step-from: -16px; }
+  .uix-anim-step-forward, .uix-anim-step-back { animation: uix-step-in var(--uix-dur-row) var(--uix-ease-enter); }
+  .uix-anim-step-back { --uix-step-from: -24px; }
   :dir(rtl):is(.uix-anim-step-forward, .uix-anim-step-back) { --uix-step-dir: -1; }
   @media (prefers-reduced-motion: reduce) {
     /* the entrance helpers keep their fade and lose their travel */
@@ -102,10 +103,12 @@
   .uix-glide {
     position: absolute; top: 0; left: 0; transform-origin: 0 0; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none;
     background: var(--uix-glide-bg, var(--uix-bg-hover)); opacity: 0;
-    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out);
+    transition: opacity var(--uix-dur-fade) var(--uix-ease-fade);
   }
-  .uix-glide[data-shown] { opacity: 1; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-glide) var(--uix-ease-glide); }
+  /* 2.60 (animate-ui's highlight): fades in and out over --uix-dur-fade; between rows it glides and
+     resizes (a scale from the first row's size, useHoverGlide) */
+  .uix-glide[data-shown] { opacity: 1; transition: opacity var(--uix-dur-fade) var(--uix-ease-fade); }
+  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fade) var(--uix-ease-fade), transform var(--uix-dur-glide) var(--uix-ease-glide); }
   @media (forced-colors: active) { .uix-glide { display: none; } }
 
   /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces open and close with no animation — the
@@ -124,7 +127,8 @@
     :root:not([data-motion="reduce"]) :is(
       [popover].uix-select__popup:popover-open:not([data-uix-key-opened]) .uix-listbox > :is(.uix-listbox__option, .uix-listbox__group),
       .uix-menu:popover-open:not([data-uix-key-opened]) > :is(.uix-menu__item, .uix-menu__label, .uix-menu__sep, [role="group"])
-    ) { animation: uix-row-in var(--uix-dur-slower) var(--uix-ease-out) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows)) backwards; }
+    ) { animation: uix-row-in var(--uix-dur-row) var(--uix-ease-soft) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows)) backwards,
+                   uix-fade-in var(--uix-dur-fade-in) var(--uix-ease-out) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows)) backwards; }
     :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(3) { --uix-row-i: 1; }
     :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(4) { --uix-row-i: 2; }
     :is(.uix-select__popup .uix-listbox, .uix-menu) > :nth-child(5) { --uix-row-i: 3; }

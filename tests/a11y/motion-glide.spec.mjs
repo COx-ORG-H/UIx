@@ -3,8 +3,8 @@
  * that reduced motion and the keyboard get none of it:
  *   - the sidebar's hover mark glides (clip-path on the glide spring) and the current-page tint slides;
  *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
- *   - a select list's rows arrive staggered from a pointer, clearing from a short blur; all at once and
- *     sharp from the keyboard;
+ *   - a select list's rows arrive staggered, clearing from a short blur, from a pointer and from the
+ *     keyboard (operator, 2026-11-08);
  *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
  *   - an `animate`d icon plays on hover only; an icon without it never moves;
  *   - axe finds nothing serious in either theme.
@@ -116,20 +116,26 @@ test('under reduced motion a neighbour swaps at once', async ({ page }) => {
 const opacities = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => Number(getComputedStyle(e).opacity)));
 const filters = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => getComputedStyle(e).filter));
 
-test('select rows arrive top to bottom from a pointer, clearing from a blur; all at once and sharp from the keyboard', async ({ page }) => {
+test('select rows arrive top to bottom, clearing from a blur, from a pointer and from the keyboard', async ({ page }) => {
   await page.locator('#team').click();
   await page.waitForTimeout(80);
   const staggered = await opacities(page);
   expect(staggered[0], 'the first row is on its way').toBeGreaterThan(staggered[staggered.length - 1]);
   expect((await filters(page)).at(-1), 'a row still arriving is blurred').toContain('blur');
   await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
-  expect(new Set(await filters(page)), 'at rest every row is sharp').toEqual(new Set(['none']));
+  // the fade takes --uix-dur-fade-in, the blur the whole arrival: wait for it to clear
+  await expect.poll(async () => [...new Set(await filters(page))], { message: 'at rest every row is sharp' }).toEqual(['none']);
   await page.keyboard.press('Escape');
   await page.locator('#team').focus();
+  // the list holds open --uix-hold-pick after a pointer pick; an Escape closed it at once
+  await expect(page.locator('.uix-select__popup')).toBeHidden();
   await page.keyboard.press('ArrowDown');
-  await expect(page.locator('.uix-select__popup')).toBeVisible();
-  expect(Math.min(...(await opacities(page))), 'opened from the keyboard: every row is there').toBe(1);
-  expect(new Set(await filters(page)), 'opened from the keyboard: no blur').toEqual(new Set(['none']));
+  await page.waitForTimeout(80);
+  // 2.60 (operator 2026-11-08, as animate-ui): the keyboard gets the same arrival
+  const fromKeys = await opacities(page);
+  expect(fromKeys[0], 'opened from the keyboard, the rows arrive too').toBeGreaterThan(fromKeys[fromKeys.length - 1]);
+  expect((await filters(page)).at(-1), 'and clear from a blur').toContain('blur');
+  await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
 });
 
 test('the side drawer floats 8 px in from the edges and still fades under reduced motion', async ({ page }) => {
@@ -152,10 +158,12 @@ test('the side drawer floats 8 px in from the edges and still fades under reduce
 });
 
 const animations = (page, id) => page.locator(`#${id} svg`).evaluate((svg) => svg.getAnimations({ subtree: true }).length);
+/** Does the hover rule give the icon (or a part of it) an animation? Steadier than counting running ones. */
+const playing = (page, id) => page.locator(`#${id} svg`).evaluate((svg) => [svg, ...svg.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none'));
 
 test('an animated icon plays on hover only; a still icon and the keyboard never move one', async ({ page }) => {
   await page.locator('#icon-refresh').hover();
-  expect(await animations(page, 'icon-refresh')).toBeGreaterThan(0);
+  expect(await playing(page, 'icon-refresh')).toBe(true);
   await page.locator('#icon-still').hover();
   expect(await animations(page, 'icon-still')).toBe(0);
   await page.mouse.move(5, 5);
@@ -163,7 +171,7 @@ test('an animated icon plays on hover only; a still icon and the keyboard never 
   expect(await animations(page, 'icon-next'), 'keyboard focus is not a hover').toBe(0);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.locator('#icon-refresh').hover();
-  expect(await animations(page, 'icon-refresh')).toBe(0);
+  expect(await playing(page, 'icon-refresh')).toBe(false);
 });
 
 test('nothing serious for axe, at rest and with a list open', async ({ page }) => {

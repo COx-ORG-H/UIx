@@ -8,7 +8,7 @@ import { prefersReducedMotion } from './useReducedMotion.js';
  * The rows of a list that just opened clear from a short blur as they arrive (2.60, the
  * animate-ui study): a Select's options, a Menu's items, a sidebar group's rows. The fade and the
  * slide are CSS (`uix-row-in`, the sidebar's row transition); the blur runs per frame in script with
- * the same timing (--uix-dur-slower, --uix-ease-out, --uix-stagger-rows; the first ten step), because
+ * the same timing (--uix-dur-row, --uix-ease-soft, --uix-stagger-rows; the first ten step), because
  * Linux WebKit's renderer crashes on a CSS-animated `filter` (motion.ts `blurIn`).
  *
  * Pointer opens only: none when `host` carries [data-uix-key-opened] or [data-uix-instant], and none
@@ -31,8 +31,8 @@ export function useArrivalBlur(
     const stagger = tokenMs('--uix-stagger-rows', 30);
     return blurIn(Array.from(el.querySelectorAll<HTMLElement>(rows)), {
       from: tokenPx('--uix-arrive-blur', 4),
-      duration: tokenMs('--uix-dur-slower', 320),
-      ease: tokenEase('--uix-ease-out'),
+      duration: tokenMs('--uix-dur-row', 300),
+      ease: tokenEase('--uix-ease-soft'),
       delay: (i) => Math.min(i, 9) * stagger,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
