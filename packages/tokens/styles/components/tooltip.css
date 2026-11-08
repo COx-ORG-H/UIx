@@ -33,7 +33,8 @@
   .uix-tooltip__bubble:popover-open { opacity: 1; transform: none; transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-pop) var(--uix-ease-pop); }
   /* The glide to a neighbour (2.60, Tooltip.tsx): the bubble travels from the one it replaces
      (a transform the overlay engine can map), its background is drawn by ::before and scales from the old size, so the text never
-     stretches; the content is clipped to that background as it grows and clears from a 4 px blur.
+     stretches; the content is clipped to that background as it grows and fades in (no blur: an
+     animated filter stalls software-rendered WebKit).
      Reduced motion never sets [data-morph]. */
   .uix-tooltip__bubble[data-morph] { background: transparent; box-shadow: none; }
   .uix-tooltip__bubble[data-morph]::before {
@@ -44,7 +45,7 @@
   .uix-tooltip__bubble[data-morphing] { transition: transform var(--uix-dur-glide) var(--uix-ease-glide); }
   .uix-tooltip__bubble[data-morphing]::before { transition: transform var(--uix-dur-glide) var(--uix-ease-glide); }
   .uix-tooltip__content { display: block; }
-  .uix-tooltip__bubble[data-morphing] .uix-tooltip__content { transition: clip-path var(--uix-dur-glide) var(--uix-ease-glide); animation: uix-blur-in var(--uix-dur) var(--uix-ease-out); }
+  .uix-tooltip__bubble[data-morphing] .uix-tooltip__content { transition: clip-path var(--uix-dur-glide) var(--uix-ease-glide); animation: uix-fade-in var(--uix-dur) var(--uix-ease-out); }
   /* A shortcut in the bubble (HAR-2031: Tooltip `shortcut`, Button `shortcut`): after the text,
      the keys drawn as outlines in the bubble's own colour, so they keep its contrast in both
      themes. A Button's hint bubble is one line: the name of an icon button, then the keys. */

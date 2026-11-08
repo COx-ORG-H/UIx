@@ -133,9 +133,9 @@
   .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
   .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
   .uix-navgroup__panel[data-uix-key-opened] .uix-subitem { transition: none; }
-  /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels clear in
-     from a 2 px blur; the width itself changes at once (a sidebar never animates its width). */
-  .uix-sidebar[data-uix-toggled]:not([data-collapsed]) :is(.uix-navitem__label, .uix-navitem__badge, .uix-sidebar__eyebrow, .uix-sidebar__brand, .uix-navgroup__chevron) { --uix-blur-from: calc(var(--uix-space-1) / 2); animation: uix-blur-in var(--uix-dur) var(--uix-ease-out) backwards; }
+  /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels fade in;
+     the width itself changes at once (a sidebar never animates its width). */
+  .uix-sidebar[data-uix-toggled]:not([data-collapsed]) :is(.uix-navitem__label, .uix-navitem__badge, .uix-sidebar__eyebrow, .uix-sidebar__brand, .uix-navgroup__chevron) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) backwards; }
   .uix-subitem { padding-left: var(--uix-space-5); }
   .uix-subitem .uix-navitem__label::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--uix-text-muted); margin-right: var(--uix-space-3); vertical-align: middle; }
 
