@@ -84,13 +84,21 @@ test('the sidebar keeps one glide layer and one current-page mark, both hidden f
   assert.ok(!nav.hasAttribute('data-uix-glide'));
   await pointer('pointerover', a, { pointerType: 'touch' });
   assert.ok(!nav.hasAttribute('data-uix-glide'), 'a touch never shows the hover mark');
-  // a disabled row is not a target, and a key press hides the mark
+  // a disabled row is not a target
   await pointer('pointerover', off);
   assert.ok(!nav.hasAttribute('data-uix-glide'), 'a disabled row is not marked');
   await pointer('pointerover', a);
   assert.ok(nav.hasAttribute('data-uix-glide'));
-  await act(async () => { a.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })); });
-  assert.ok(!nav.hasAttribute('data-uix-glide'), 'the keyboard keeps the rows\' own tint');
+  const atA = glide.style.transform;
+  // the keyboard takes the mark too (operator, 2026-11-08, as animate-ui): a row reached by a key
+  await act(async () => { a.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true })); });
+  await act(async () => { b.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true })); });
+  assert.ok(nav.hasAttribute('data-uix-glide'), 'a row reached from the keyboard keeps the mark');
+  assert.match(glide.style.transform, /^translate\([^)]*\) scale\(/, 'it travels by translate and scale');
+  assert.equal(glide.hasAttribute('data-gliding'), true, 'and glides there');
+  assert.ok(atA, 'it had been on the first row');
+  // back to the pointer for the tests that follow
+  await act(async () => { window.document.dispatchEvent(new window.Event('pointerdown')); });
   await m.unmount();
 });
 

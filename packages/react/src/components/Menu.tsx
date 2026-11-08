@@ -180,6 +180,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
       <Popover
         id={menuId}
         popover="manual"
+        data-uix-animate-keys=""
         anchor={triggerRef}
         placement={placement}
         capHeight
