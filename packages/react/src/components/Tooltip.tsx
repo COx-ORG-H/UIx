@@ -103,7 +103,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     b.style.setProperty('--uix-morph-sy', String(from.height / to.height));
     // the content is cut to the growing background, so a longer label never spills past it
     const content = b.querySelector<HTMLElement>('.uix-tooltip__content');
-    const cs = getComputedStyle(b);
+    const cs = window.getComputedStyle(b);
     const px = parseFloat(cs.paddingLeft) || 0;
     const py = parseFloat(cs.paddingTop) || 0;
     if (content) content.style.clipPath = `inset(${(to.height - from.height) / 2 - py}px ${(to.width - from.width) / 2 - px}px)`;

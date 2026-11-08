@@ -84,7 +84,7 @@ export const initFormSpecimens = (root) => {
  * initSelectSpecimens() drives it with the same APG keyboard model, so the page shows the real
  * component's markup and behaviour rather than a docs-only look. */
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const SELECT_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
+const SELECT_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" pathLength="1"></path></svg>';
 
 /** Markup of one Select, as the React adapter renders it closed. `value` is a list. */
 export const selectMarkup = ({ id, items, value = [], multiple = false, placeholder, disabled = false, readOnly = false, invalid = false, size, name, ariaLabel }) => {
@@ -108,7 +108,7 @@ export const selectMarkup = ({ id, items, value = [], multiple = false, placehol
   const toolbar = multiple && chosen.length ? `<div class="uix-select__toolbar"><span>${chosen.length} selected</span><button type="button" class="uix-btn uix-btn--link uix-btn--sm" tabindex="-1">Clear</button></div>` : '';
   return `<button${ariaLabel ? ` aria-label="${escHtml(ariaLabel)}"` : ''} id="${id}" type="button" role="combobox" class="uix-select${size && size !== 'md' ? ` uix-select--${size}` : ''}"${disabled ? ' disabled=""' : ''} aria-haspopup="listbox" aria-expanded="false" aria-controls="${list}"${invalid ? ' aria-invalid="true"' : ''}${readOnly ? ' aria-readonly="true"' : ''}${invalid ? ' data-invalid="true"' : ''}${showPlaceholder ? ' data-placeholder="true"' : ''} data-state="closed"><span class="uix-select__value">${display}</span>${more ? `<span class="uix-select__more"><span aria-hidden="true">+${more}</span><span class="uix-visually-hidden">, ${chosen.length} selected</span></span>` : ''}</button>`
     + `<select data-uix-select-proxy="" class="uix-select__proxy" aria-hidden="true" tabindex="-1"${name ? ` name="${escHtml(name)}"` : ''}${disabled ? ' disabled=""' : ''}${multiple ? ' multiple=""' : ''}>${proxyOptions}</select>`
-    + `<div class="uix-select__popup" data-uix-select-popup="" hidden="" popover="manual">${toolbar}<div id="${list}" role="listbox" class="uix-listbox uix-select__listbox"${placeholder ? ` aria-label="${escHtml(placeholder)}"` : ''}${multiple ? ' aria-multiselectable="true"' : ''} tabindex="-1">${body}</div></div>`;
+    + `<div class="uix-select__popup" data-uix-select-popup="" hidden="" popover="manual">${toolbar}<div id="${list}" role="listbox" class="uix-listbox uix-select__listbox"${placeholder ? ` aria-label="${escHtml(placeholder)}"` : ''}${multiple ? ' aria-multiselectable="true"' : ''} tabindex="-1"><span class="uix-glide" aria-hidden="true"></span>${body}</div></div>`;
 };
 
 /** Inputs of the docs Select specimens (the React parity test renders the same ones). */

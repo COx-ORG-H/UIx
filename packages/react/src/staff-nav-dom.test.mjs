@@ -57,7 +57,8 @@ test('Sidebar: head actions beside the brand, a search row with its shortcut, a 
   assert.match(html, /<span class="uix-sidebar__search-label">Pretraga<\/span><span class="uix-kbd-combo uix-sidebar__search-keys" aria-hidden="true">/);
   assert.match(html, /<a class="uix-navitem" href="#a">.*<\/a><div class="uix-sidebar__foot"><span id="me">me<\/span><\/div><\/nav>$/);
   // without the new props the sidebar is what it was
-  assert.equal(renderToStaticMarkup(h(ui.Sidebar, { brand: 'B' })), '<nav class="uix-sidebar"><div class="uix-sidebar__head"><div class="uix-sidebar__brand">B</div></div></nav>');
+  // 2.60: two hidden layers lead the nav, the gliding hover mark and the sliding current-page tint
+  assert.equal(renderToStaticMarkup(h(ui.Sidebar, { brand: 'B' })), '<nav class="uix-sidebar"><span class="uix-glide" aria-hidden="true"></span><span class="uix-sidebar__mark" aria-hidden="true" hidden=""></span><div class="uix-sidebar__head"><div class="uix-sidebar__brand">B</div></div></nav>');
 });
 
 test('AccountMenu: the person names the trigger; initials are hidden from assistive tech', () => {

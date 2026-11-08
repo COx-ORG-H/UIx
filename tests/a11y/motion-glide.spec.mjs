@@ -1,0 +1,157 @@
+/* The 2.60 motion in a real browser (the animate-ui study, rebuilt natively in UIx). The harness is
+ * tests/motion-glide/harness.tsx. Each check proves what moves, that it settles where it should, and
+ * that reduced motion and the keyboard get none of it:
+ *   - the sidebar's hover mark glides (clip-path on the glide spring) and the current-page tint slides;
+ *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
+ *   - a select list's rows arrive staggered from a pointer, all at once from the keyboard;
+ *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
+ *   - an `animate`d icon plays on hover only; an icon without it never moves;
+ *   - axe finds nothing serious in either theme.
+ * The markup contract is unit-tested in packages/react/src/motion-glide-dom.test.mjs. */
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+const HARNESS = '/tests/motion-glide/harness.html';
+
+test.beforeEach(async ({ page }, testInfo) => {
+  const theme = testInfo.project.name;
+  await page.addInitScript((t) => { try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ } }, theme);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(HARNESS);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+  await expect(page.locator('#nav')).toBeVisible();
+});
+
+const row = (page, name) => page.locator('#nav .uix-navitem', { hasText: name });
+const clipTop = (page) => page.locator('#nav > .uix-glide').evaluate((el) => {
+  const m = /inset\(\s*([\d.]+)px/.exec(getComputedStyle(el).clipPath);
+  return m ? Number(m[1]) : NaN;
+});
+
+test('the sidebar hover mark glides between rows; reduced motion jumps', async ({ page }) => {
+  await row(page, 'Übersicht').hover();
+  await expect(page.locator('#nav')).toHaveAttribute('data-uix-glide', '');
+  const start = await clipTop(page);
+  await row(page, 'Teams').hover();
+  const end = await row(page, 'Teams').evaluate((el) => el.offsetTop);
+  await page.waitForTimeout(60);
+  const mid = await clipTop(page);
+  expect(mid, 'part way there after 60 ms').toBeGreaterThan(start + 1);
+  expect(mid).toBeLessThan(end - 1);
+  await expect.poll(() => clipTop(page)).toBeCloseTo(end, 0);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const property = await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).transitionProperty);
+  expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('clip-path');
+});
+
+test('the current-page tint slides to a clicked row and hands back at rest; the keyboard jumps', async ({ page }) => {
+  const mark = page.locator('#nav > .uix-sidebar__mark');
+  await row(page, 'Teams').click();
+  await expect(mark).toBeVisible();
+  await expect(mark).toBeHidden({ timeout: 1500 });
+  await expect(row(page, 'Teams')).toHaveAttribute('aria-current', 'page');
+  await row(page, 'Störungen').focus();
+  await page.keyboard.press('Enter');
+  await expect(row(page, 'Störungen')).toHaveAttribute('aria-current', 'page');
+  await expect(mark).toBeHidden();
+});
+
+const bubbleTop = (page) => page.evaluate(() => {
+  const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
+  return b ? { top: Math.round(b.getBoundingClientRect().top), morph: b.hasAttribute('data-morph') } : null;
+});
+
+test('a tooltip glides to its neighbour and lands where a fresh one would', async ({ page }) => {
+  const button = (name) => page.locator('#toolbar').getByRole('button', { name });
+  // where a freshly opened "Kopieren" sits
+  await button('Kopieren').hover();
+  await expect.poll(async () => (await bubbleTop(page))?.top ?? null).not.toBeNull();
+  await page.waitForTimeout(400);
+  const fresh = (await bubbleTop(page)).top;
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(800);
+  // wider → narrower (the case that used to jump 10 px up)
+  await button('Link einfügen').hover();
+  await page.waitForTimeout(700);
+  await button('Kopieren').hover();
+  await page.waitForTimeout(40);
+  expect((await bubbleTop(page)).morph, 'gliding from the neighbour').toBe(true);
+  // The jump came from the UA's popover overflow:auto: the scaled background raised a classic
+  // scrollbar (10 px) mid-glide and the engine placed the bubble that much higher. Headless Chromium
+  // draws overlay scrollbars (no height), so check the cause directly: the bubble never scrolls.
+  const overflow = await page.evaluate(() => {
+    const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
+    return `${getComputedStyle(b).overflowX} ${getComputedStyle(b).overflowY}`;
+  });
+  expect(overflow).toBe('visible visible');
+  await expect.poll(async () => (await bubbleTop(page)).morph).toBe(false);
+  expect((await bubbleTop(page)).top).toBe(fresh);
+});
+
+test('under reduced motion a neighbour swaps at once', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const button = (name) => page.locator('#toolbar').getByRole('button', { name });
+  await button('Suchen').hover();
+  await page.waitForTimeout(700);
+  await button('Link einfügen').hover();
+  await page.waitForTimeout(30);
+  expect((await bubbleTop(page)).morph).toBe(false);
+});
+
+const opacities = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => Number(getComputedStyle(e).opacity)));
+
+test('select rows arrive top to bottom from a pointer, all at once from the keyboard', async ({ page }) => {
+  await page.locator('#team').click();
+  await page.waitForTimeout(80);
+  const staggered = await opacities(page);
+  expect(staggered[0], 'the first row is on its way').toBeGreaterThan(staggered[staggered.length - 1]);
+  await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
+  await page.keyboard.press('Escape');
+  await page.locator('#team').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.locator('.uix-select__popup')).toBeVisible();
+  expect(Math.min(...(await opacities(page))), 'opened from the keyboard: every row is there').toBe(1);
+});
+
+test('the side drawer floats 8 px in from the edges and still fades under reduced motion', async ({ page }) => {
+  await page.locator('#open-drawer').click();
+  const dialog = page.locator('dialog.uix-drawer');
+  await expect(dialog).toHaveJSProperty('open', true);
+  await page.waitForTimeout(400);
+  const box = await dialog.boundingBox();
+  expect(Math.round(box.y)).toBe(8);
+  expect(Math.round(1280 - (box.x + box.width))).toBe(8);
+  // an Escape close is a keyboard close: instant ([data-uix-key-opened]), so reopen with the pointer
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveJSProperty('open', false);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('#open-drawer').click();
+  await expect(dialog).toHaveJSProperty('open', true);
+  const property = await dialog.evaluate((el) => getComputedStyle(el).transitionProperty);
+  expect(property, 'reduced motion keeps the fade').toContain('opacity');
+  expect(property, 'and drops the slide').not.toContain('transform');
+});
+
+const animations = (page, id) => page.locator(`#${id} svg`).evaluate((svg) => svg.getAnimations({ subtree: true }).length);
+
+test('an animated icon plays on hover only; a still icon and the keyboard never move one', async ({ page }) => {
+  await page.locator('#icon-refresh').hover();
+  expect(await animations(page, 'icon-refresh')).toBeGreaterThan(0);
+  await page.locator('#icon-still').hover();
+  expect(await animations(page, 'icon-still')).toBe(0);
+  await page.mouse.move(5, 5);
+  await page.locator('#icon-next').focus();
+  expect(await animations(page, 'icon-next'), 'keyboard focus is not a hover').toBe(0);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('#icon-refresh').hover();
+  expect(await animations(page, 'icon-refresh')).toBe(0);
+});
+
+test('nothing serious for axe, at rest and with a list open', async ({ page }) => {
+  await page.locator('#team').click();
+  await expect(page.locator('.uix-select__popup')).toBeVisible();
+  const { violations } = await new AxeBuilder({ page }).analyze();
+  const gated = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
+  expect(gated).toEqual([]);
+});

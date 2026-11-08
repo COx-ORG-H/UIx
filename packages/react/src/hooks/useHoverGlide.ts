@@ -38,7 +38,7 @@ export function useHoverGlide(
 
     const hide = () => {
       current = null;
-      cancelAnimationFrame(raf);
+      window.cancelAnimationFrame(raf);
       layer.removeAttribute('data-shown');
       layer.removeAttribute('data-gliding');
       container.removeAttribute('data-uix-glide');
@@ -50,7 +50,7 @@ export function useHoverGlide(
       const h = container.scrollHeight;
       const top = offsetWithin(item, container, 'top');
       const left = offsetWithin(item, container, 'left');
-      const radius = getComputedStyle(item).borderTopLeftRadius || '0px';
+      const radius = window.getComputedStyle(item).borderTopLeftRadius || '0px';
       layer.style.width = `${w}px`;
       layer.style.height = `${h}px`;
       layer.style.clipPath = `inset(${top}px ${Math.max(0, w - left - item.offsetWidth)}px ${Math.max(0, h - top - item.offsetHeight)}px ${left}px round ${radius})`;
@@ -65,7 +65,7 @@ export function useHoverGlide(
 
     const onOver = (event: PointerEvent) => {
       // touch has no hover; forced colours paint their own system hover
-      if (event.pointerType === 'touch' || matchMedia?.('(forced-colors: active)').matches) return;
+      if (event.pointerType === 'touch' || window.matchMedia?.('(forced-colors: active)').matches) return;
       const item = target(event);
       if (!item) { if (current) hide(); return; }
       if (item === current) return;
@@ -76,8 +76,8 @@ export function useHoverGlide(
         layer.removeAttribute('data-gliding');
         place(item);
         container.setAttribute('data-uix-glide', '');
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => { layer.setAttribute('data-shown', ''); });
+        window.cancelAnimationFrame(raf);
+        raf = window.requestAnimationFrame(() => { layer.setAttribute('data-shown', ''); });
         return;
       }
       layer.setAttribute('data-gliding', '');

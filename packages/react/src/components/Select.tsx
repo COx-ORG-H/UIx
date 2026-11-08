@@ -287,9 +287,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     const t = setTimeout(() => setJustChosen(null), 600);
     return () => clearTimeout(t);
   }, [justChosen]);
-  // the trigger's value rises in when it changes, never on the first render (2.60)
-  const valueShown = useRef(false);
-  useEffect(() => { valueShown.current = true; }, []);
+  // the trigger's value rises in when it changes, never on the first render (2.60): the value span is
+  // keyed by the value, so only a new value makes a new element, and only those carry the mark
+  const valueKey = values.join('|');
+  const lastValueKey = useRef(valueKey);
+  const valueChanged = useRef(false);
+  if (lastValueKey.current !== valueKey) { lastValueKey.current = valueKey; valueChanged.current = true; }
   useHoverGlide(glideRef, '.uix-listbox__option', open);
   const [mode, setMode] = useState<'popover' | 'sheet'>('popover');
   const [active, setActive] = useState(-1);
@@ -865,7 +868,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <span key={values.join('|')} className="uix-select__value" data-changed={valueShown.current || undefined}>{display}</span>
+        <span key={valueKey} className="uix-select__value" data-changed={valueChanged.current || undefined}>{display}</span>
         {more > 0 && (
           <span className="uix-select__more">
             <span aria-hidden="true">+{more}</span>

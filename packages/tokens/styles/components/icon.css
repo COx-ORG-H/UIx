@@ -57,7 +57,7 @@
 @layer uix.components {
   .uix-icon[data-animate] * { transform-box: fill-box; transform-origin: center; }
   .uix-icon[data-icon="bell"][data-animate] { transform-origin: 50% 12%; }
-  .uix-icon[data-icon="trash-2"][data-animate] > :nth-child(n+4) { transform-box: view-box; transform-origin: 3px 6px; }
+  .uix-icon[data-icon="trash-2"][data-animate] > :nth-child(n+4) { transform-box: view-box; transform-origin: 12.5% 25%; }
   .uix-icon[data-icon="check"][data-animate] > path { stroke-dasharray: 23; animation: uix-icon-draw var(--uix-dur-slow) var(--uix-ease-out) both; }
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon:is([data-icon="arrow-right"], [data-icon="chevron-right"])[data-animate],

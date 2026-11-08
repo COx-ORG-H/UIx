@@ -633,6 +633,7 @@ export type IconNode = ReadonlyArray<readonly [string, Readonly<Record<string, s
 
 // @public (undocumented)
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
+    animate?: boolean;
     label?: string;
     size?: IconSize | number | string;
     strokeWidth?: number | string;

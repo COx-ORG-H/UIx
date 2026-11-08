@@ -37,7 +37,7 @@
      Reduced motion never sets [data-morph]. */
   .uix-tooltip__bubble[data-morph] { background: transparent; box-shadow: none; }
   .uix-tooltip__bubble[data-morph]::before {
-    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    content: ""; position: absolute; inset: 0; z-index: calc(-1 * var(--uix-z-raised)); border-radius: inherit;
     background: var(--uix-text); box-shadow: var(--uix-shadow-popover);
     transform: scale(var(--uix-morph-sx, 1), var(--uix-morph-sy, 1));
   }

@@ -189,9 +189,10 @@ test.describe('exits are faster than enters', () => {
     expect((await transitionsAfter(page, '#modal .uix-dialog__close', '#modal')).opacity).toBe(160);
   });
 
-  test('drawer: 240 ms in, 160 ms out', async ({ page }) => {
+  // 2.60: the drawer arrives on the glide spring (--uix-dur-glide, 280 ms; reads as ~175 ms)
+  test('drawer: 280 ms glide in, 160 ms out', async ({ page }) => {
     await open(page);
-    expect((await transitionsAfter(page, '#open-drawer', '#drawer')).transform).toBe(240);
+    expect((await transitionsAfter(page, '#open-drawer', '#drawer')).transform).toBe(280);
     await page.waitForTimeout(400);
     expect((await transitionsAfter(page, '#drawer .uix-drawer__close', '#drawer')).transform).toBe(160);
   });
@@ -208,7 +209,7 @@ test.describe('exits are faster than enters', () => {
   });
 });
 
-test('a menu grows out of its trigger: scale(.95) about the anchor point', async ({ page }) => {
+test('a menu grows out of its trigger: scale(.9) about the anchor point', async ({ page }) => {
   await open(page);
   const resume = await freeze(page);
   await page.locator('#menu-trigger').click();
@@ -230,7 +231,7 @@ test('a menu grows out of its trigger: scale(.95) about the anchor point', async
   if (!read.anchored) expect(Math.abs(x - read.expectX)).toBeLessThanOrEqual(1);
   expect(x).toBeGreaterThan(0);
   expect(y).toBe(0); // it opens below its trigger, so it grows from its top edge
-  expect(read.from).toMatch(/^(scale\(0\.95\)|matrix\(0\.95, 0, 0, 0\.95)/);
+  expect(read.from).toMatch(/^(scale\(0\.9\)|matrix\(0\.9, 0, 0, 0\.9)/); // 2.60: menus grow from .9
 });
 
 test.describe('keyboard-opened surfaces open with no animation', () => {
@@ -275,7 +276,8 @@ test.describe('tooltip delay group', () => {
 
     await page.locator('#tip-b').hover();
     expect(await isOpen(bubble(page, 'tip-b')), 'a neighbour opens at once').toBe(true);
-    await expect(bubble(page, 'tip-b')).toHaveAttribute('data-uix-instant', '');
+    // 2.60: no fade from nothing; it either glides from the neighbour (within 320 px) or appears at once
+    expect(await bubble(page, 'tip-b').evaluate((el) => el.hasAttribute('data-morph') || el.hasAttribute('data-uix-instant'))).toBe(true);
 
     await page.mouse.move(5, 5);
     await page.waitForTimeout(800); // past the close delay and --uix-delay-tooltip-skip
