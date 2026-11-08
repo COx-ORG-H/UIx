@@ -212,7 +212,8 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { watchInputModality(); }, []);
-  useArrivalBlur(() => panelRef.current, '.uix-subitem', expanded, true);
+  // the group's own rows: a nested group's rows arrive when that group opens
+  useArrivalBlur(() => panelRef.current, ':scope > div > .uix-subitem', expanded, true);
   useEffect(() => {
     panelRef.current?.toggleAttribute('inert', !expanded);
     if (!expanded && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();

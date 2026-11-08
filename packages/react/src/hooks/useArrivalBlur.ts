@@ -41,10 +41,15 @@ export function useArrivalBlur(
     for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
       if (window.getComputedStyle(a).overflowY !== 'visible') clip(a.getBoundingClientRect());
     }
-    const shown = Array.from(el.querySelectorAll<HTMLElement>(rows)).filter((row) => {
+    // a row folded away (inside a collapsed group: visibility hidden, a zero-height panel) is not shown
+    const shown: HTMLElement[] = [];
+    for (const row of Array.from(el.querySelectorAll<HTMLElement>(rows))) {
       const r = row.getBoundingClientRect();
-      return r.bottom > top && r.top < bottom;
-    }).slice(0, 12);
+      if (r.bottom <= top || r.top >= bottom || r.height < 1) continue;
+      if (window.getComputedStyle(row).visibility === 'hidden') continue;
+      shown.push(row);
+      if (shown.length === 12) break;
+    }
     const order = shown.map((row, i) => {
       const n = parseFloat(window.getComputedStyle(row).getPropertyValue('--uix-row-i'));
       return Number.isFinite(n) ? n : Math.min(i, 9);
