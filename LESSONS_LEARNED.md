@@ -85,10 +85,13 @@
 <!-- lesson-skip: 629184a routine: an extension folded into the digits; pinned by a test -->
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
-<!-- lesson-skip: 04d0a48 pending select-cross-browser: animated backdrop-filter radius and per-row blur starving software-rendered WebKit (measured: overlay tests 40-100 % slower); record as a rule once CI confirms -->
-<!-- lesson-skip: 9d095c8 unconfirmed until select-cross-browser is green: glide layer reshaped to transform-only after mouse-only WebKit failures; settleOverlay now waits for the subtree -->
-<!-- lesson-skip: 5ebab16 unconfirmed hypothesis (a subject-less :has() hanging Linux WebKit in select-cross-browser); upgrade to a rule only if that job goes green on this head -->
+<!-- lesson-skip: 04d0a48 not the CI cause (85526af was); kept: a constant backdrop blur and no per-row blur are cheaper without a GPU -->
+<!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
+<!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
 
+
+### 2026-11-08 · a CSS rule that crashes Linux WebKit · `85526af`
+- **Rule:** when only the WebKit cross-browser job fails (timeouts, "element is not stable", "Page crashed"), stop guessing from CI logs: run Linux WebKit locally (WSL: a user-local Node, `apt-get download` + `dpkg -x` the libraries Playwright lists, linked into `minibrowser-wpe/sys/lib`, `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1`), count crashes over 40+ page loads, and bisect the CSS by file, then by rule, against master's. Windows WebKit never reproduced it. Also: no universal descendant rule (`.x *`) in kit CSS.  **Why:** `.uix-icon[data-animate] * { transform-box: fill-box }` crashed WPE WebKit 26.5 about 3 loads in 40 on pages with no matching element; four plausible fixes before the bisect changed nothing.  **Gate:** ⚠ TODO a contract rule rejecting a bare `*` after a combinator in `styles/components`; the `select-cross-browser` job.  **Tag:** webkit, css, crash, ci, bisect
 
 ### 2026-11-08 · transient motion inside a scroll container · `da81988`
 - **Rule:** anything that moves or scales for a moment inside a scroll container (rows sliding in, a FLIP-scaled background, and a top-layer popover counts: the UA gives it `overflow: auto`) must not create scrollable overflow. Clip the axis that never scrolls (`overflow-x: hidden`, or `overflow: visible` on a box that never scrolls), and never size a layer from `scrollWidth`/`scrollHeight` it then feeds back into.  **Why:** classic-scrollbar engines (Linux WebKit, Windows) flash a real scrollbar that shifts the rows or grows the box, so clicks miss and an anchored overlay is placed too high; headless Chromium draws overlay scrollbars, so it stays green locally.  **Gate:** `tests/a11y/motion-glide.spec.mjs` asserts the clipped axis and an unchanged scroll size after hovers, plus the tooltip's `overflow: visible` (mutation-checked); the `select-cross-browser` WebKit job.  **Tag:** css, motion, overflow, scrollbar, webkit, popover
