@@ -86,11 +86,15 @@
 <!-- lesson-skip: 2acc765 routine: the glyph guard and the contract gate named the line; the column is a stacking context now -->
 <!-- lesson-skip: cb5a6d4 routine: a hand-written docs specimen still had the old list markup; the text-stacks sweep named the route -->
 <!-- lesson-skip: e69d1879 routine: review found folded nested rows counted as shown; scoped the selector and skip hidden rows -->
+<!-- lesson-skip: bd470232 routine: review found the script blur ignored reduced motion switched on mid-arrival; checked per frame now -->
 <!-- lesson-skip: 882ac4bb routine: the shortcut hint shares .uix-tooltip__bubble and inherited the tooltip's new top-layer exit; command-palette-items caught it; scoped to the hint modifier; review fixes pinned by unit and a11y specs -->
 <!-- lesson-skip: 04d0a48 not the CI cause (85526af was); kept: a constant backdrop blur and no per-row blur are cheaper without a GPU -->
 <!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
 
+
+### 2026-11-08 · sizing from a box an ancestor is still scaling · `a3cf190c`
+- **Rule:** to copy an element's size into CSS (a list as wide as its trigger), read `offsetWidth`/`offsetHeight`, not `getBoundingClientRect()`. The rect includes every ancestor's transform, so inside a popover or drawer that is still growing in (or held at its start scale while it is placed) it is smaller than the element will be; `offsetWidth` ignores transforms and CSS zoom (Chromium and WebKit).  **Why:** a Select in a popover held at `scale(.95)` locked its list's min-width to 226 px for a 238 px trigger; only CI's slower click landed inside the hold.  **Gate:** select.spec "not clipped inside a Popover" (select-cross-browser); ⚠ TODO no lint for rect-based sizing.  **Tag:** layout, transform, popover, zoom, ci-only
 
 ### 2026-11-08 · a motion sample taken after a sleep · `81221eac`
 - **Rule:** to assert that something moves (a glide part way, rows arriving top to bottom), record it every animation frame in the page (`requestAnimationFrame`, `performance.now()`) and assert on the recording; never sample once after `page.waitForTimeout(n)`. The sleep plus the round trip is late by however long the machine took.  **Why:** the sidebar glide test sampled 60 ms after a hover and the row test 80 ms after a click; under a full parallel run on a shared machine both read the finished motion and failed, though nothing was wrong. With an in-page recorder, 72 runs (repeat 4, both themes) passed.  **Gate:** `record()` in `tests/a11y/motion-glide.spec.mjs`; ⚠ TODO no lint for a `waitForTimeout` followed by a motion read.  **Tag:** test, motion, timing, flaky, playwright

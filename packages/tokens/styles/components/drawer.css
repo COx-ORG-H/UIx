@@ -10,22 +10,27 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
     background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
     transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0;
-    /* the closed state's timings are the exit's (--uix-dur-exit-slow); [open] carries the enter. The
-       fade keeps a drawer visible arriving under reduced motion, where the slide drops out. `translate`
-       is the swipe (Drawer.tsx): the release settles back or carries on out at the exit pace. */
-    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out), opacity var(--uix-dur-exit-slow) var(--uix-ease-out),
+    /* the closed state's timings are the exit's; [open] carries the enter. 2.60 (animate-ui's drawer,
+       operator 2026-11-08): it leaves in --uix-dur-drawer-out, speeding up as it goes, and stays in the
+       top layer for --uix-dur-overlay so the scrim can fade out behind it. The fade, at the very end of
+       the slide, keeps a drawer leaving visibly under reduced motion, where the slide drops out.
+       `translate` is the swipe (Drawer.tsx): the release settles back or carries on out at the exit pace. */
+    /* motion-allow: the operator chose animate-ui's accelerating drawer exit (2026-11-08) */
+    transition: transform var(--uix-dur-drawer-out) var(--uix-ease-in),
+                opacity var(--uix-dur-fade-in) var(--uix-ease-out) calc(var(--uix-dur-drawer-out) - var(--uix-dur-fade-in)),
                 translate var(--uix-dur-exit-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
+                overlay var(--uix-dur-overlay) allow-discrete, display var(--uix-dur-overlay) allow-discrete;
     touch-action: pan-y;
     /* Author display values for both states required for the slide-in (see peek.css). Closed = none. */
     display: none;
   }
-  /* 2.60: the panel arrives on the glide spring (95 % in about 175 ms, no overshoot) and fades in */
+  /* 2.60 (animate-ui's drawer): the panel slides in over --uix-dur-drawer on --uix-ease-drawer, landing
+     with a 1 % overshoot; it is opaque almost at once (the fade is what reduced motion keeps) */
   .uix-drawer[open] {
     transform: none; opacity: 1; display: flex; flex-direction: column;
-    transition: transform var(--uix-dur-glide) var(--uix-ease-glide), opacity var(--uix-dur) var(--uix-ease-out),
+    transition: transform var(--uix-dur-drawer) var(--uix-ease-drawer), opacity var(--uix-dur-fade-in) var(--uix-ease-out),
                 translate var(--uix-dur-exit-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-glide) allow-discrete, display var(--uix-dur-glide) allow-discrete;
+                overlay var(--uix-dur-drawer) allow-discrete, display var(--uix-dur-drawer) allow-discrete;
   }
   @starting-style { .uix-drawer[open] { transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0; } }
   /* a drag in progress follows the finger exactly */
@@ -36,10 +41,11 @@
      starves software rendering (CI WebKit, VDI desktops without a GPU). Only the opacity moves. */
   .uix-drawer::backdrop {
     background: var(--uix-scrim); opacity: 0; backdrop-filter: blur(var(--uix-scrim-blur));
-    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
+    transition: opacity var(--uix-dur-overlay) var(--uix-ease-soft),
+                overlay var(--uix-dur-overlay) allow-discrete, display var(--uix-dur-overlay) allow-discrete;
   }
-  .uix-drawer[open]::backdrop { opacity: calc(1 - var(--uix-drawer-swipe, 0)); transition-duration: var(--uix-dur-slow); }
+  /* the scrim fades in and out over --uix-dur-overlay on --uix-ease-soft (animate-ui's backdrop) */
+  .uix-drawer[open]::backdrop { opacity: calc(1 - var(--uix-drawer-swipe, 0)); }
   .uix-drawer[data-swiping]::backdrop { transition: none; }
   @starting-style { .uix-drawer[open]::backdrop { opacity: 0; } }
   /* side="start" — the phone navigation drawer, from the left edge (HAR-1351) */

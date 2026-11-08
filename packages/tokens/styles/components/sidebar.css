@@ -106,34 +106,49 @@
 
   /* collapsible group */
   .uix-navgroup { }
-  .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur-disclosure) var(--uix-ease-soft); }
   .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
   .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
-  /* A nav group opens and closes instantly: it is toggled many times a day, and grid tracks never
-     animate. The chevron still turns, so the change is visible. */
-  .uix-navgroup__panel { display: grid; grid-template-rows: 1fr; }
+  /* 2.60 (animate-ui's sidebar, operator 2026-11-08): a group opens and closes in height over
+     --uix-dur-disclosure on --uix-ease-soft, from the keyboard too; the sidebar's own width still
+     changes at once. Opening, its rows arrive --uix-stagger-rows apart (visible over
+     --uix-dur-fade-in, sliding 8 px over --uix-dur-row; their blur clears in script, useArrivalBlur);
+     closing, they stay until the panel has folded. Reduced motion opens and closes at once. */
+  .uix-navgroup__panel {
+    display: grid; grid-template-rows: 1fr;
+    /* motion-allow: the operator chose animate-ui's group height animation (2026-11-08); it re-lays out one small panel, never the page */
+    transition: grid-template-rows var(--uix-dur-disclosure) var(--uix-ease-soft);
+  }
   .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel { grid-template-rows: 0fr; }
-  /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree (UIX-A11Y-2) */
-  .uix-navgroup__panel > div { overflow: hidden; visibility: visible; }
-  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; }
-  /* 2.60: opening a group, its rows arrive (fade in, slide 8 px; their blur clears in script,
-     useArrivalBlur) while the panel
-     opens at once: nothing animates its height. Closing is instant. Opened from the keyboard
-     ([data-uix-key-opened]) the rows are simply there; reduced motion keeps only the fade. */
-  .uix-navgroup__panel .uix-subitem { transition: opacity var(--uix-dur-slower) var(--uix-ease-out), translate var(--uix-dur-slower) var(--uix-ease-out); }
-  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel .uix-subitem { opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0; transition: none; }
+  /* visibility keeps the 0fr-collapsed links out of the tab order / accessibility tree (UIX-A11Y-2);
+     closing, it turns hidden once the panel has folded */
+  .uix-navgroup__panel > div { overflow: hidden; visibility: visible; transition: visibility 0s; }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel > div { visibility: hidden; transition: visibility 0s linear var(--uix-dur-disclosure); }
+  .uix-navgroup__panel .uix-subitem {
+    transition: opacity var(--uix-dur-fade-in) var(--uix-ease-out) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows)),
+                translate var(--uix-dur-row) var(--uix-ease-soft) calc(var(--uix-row-i, 0) * var(--uix-stagger-rows));
+  }
+  .uix-navgroup__trigger[aria-expanded="false"] + .uix-navgroup__panel .uix-subitem {
+    opacity: 0; translate: var(--uix-row-from, var(--uix-space-2)) 0;
+    transition: opacity 0s linear var(--uix-dur-disclosure), translate 0s linear var(--uix-dur-disclosure);
+  }
   :dir(rtl) .uix-navgroup__panel .uix-subitem { --uix-row-from: calc(-1 * var(--uix-space-2)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(2) { transition-delay: calc(1 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(3) { transition-delay: calc(2 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(4) { transition-delay: calc(3 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(5) { transition-delay: calc(4 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(6) { transition-delay: calc(5 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(7) { transition-delay: calc(6 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(8) { transition-delay: calc(7 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(9) { transition-delay: calc(8 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { transition-delay: calc(9 * var(--uix-stagger-rows)); }
-  .uix-navgroup__panel[data-uix-key-opened] .uix-subitem { transition: none; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(2) { --uix-row-i: 1; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(3) { --uix-row-i: 2; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(4) { --uix-row-i: 3; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(5) { --uix-row-i: 4; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(6) { --uix-row-i: 5; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(7) { --uix-row-i: 6; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(8) { --uix-row-i: 7; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(9) { --uix-row-i: 8; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { --uix-row-i: 9; }
+  .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { --uix-row-i: 9; }
+  /* focus inside a group that is still opening (a quick Tab): it finishes at once, so a focused link
+     is never clipped, faded or blurred */
+  .uix-navgroup__panel:focus-within, .uix-navgroup__panel:focus-within > div, .uix-navgroup__panel:focus-within .uix-subitem { transition: none; }
+  .uix-navgroup__panel:focus-within .uix-subitem { filter: none !important; }
+  @media (prefers-reduced-motion: reduce) { .uix-navgroup__panel, .uix-navgroup__panel > div { transition: none; } }
+  :root[data-motion="reduce"] :is(.uix-navgroup__panel, .uix-navgroup__panel > div) { transition: none; }
   /* Expanding from the rail ([data-uix-toggled], set for one toggle by Sidebar.tsx), the labels fade in;
      the width itself changes at once (a sidebar never animates its width). */
   .uix-sidebar[data-uix-toggled]:not([data-collapsed]) :is(.uix-navitem__label, .uix-navitem__badge, .uix-sidebar__eyebrow, .uix-sidebar__brand, .uix-navgroup__chevron) { animation: uix-fade-in var(--uix-dur) var(--uix-ease-out) backwards; }

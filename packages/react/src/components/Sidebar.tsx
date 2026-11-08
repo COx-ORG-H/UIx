@@ -10,7 +10,7 @@ import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
 import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
-import { markKeyOpened, watchInputModality } from '../motion.js';
+import { watchInputModality } from '../motion.js';
 import type { KeyShortcut } from './Kbd.js';
 
 const ChevronIcon = () => (
@@ -220,8 +220,7 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
   }, [expanded]);
 
   const setExpanded = (next: boolean) => {
-    // a key press opens the group at once (the rows' arrival is pointer-only, 2.60)
-    markKeyOpened(panelRef.current);
+    // 2.60: from the keyboard too the group slides open and its rows arrive (operator, as animate-ui)
     if (!next && panelRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
     if (controlledExpanded == null) setInternalExpanded(next);
     onExpandedChange?.(next);
