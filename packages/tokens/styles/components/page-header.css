@@ -15,7 +15,7 @@
      word and wraps with it. The end padding is the ? hit area's overhang (info-tip.css, inset -9px),
      so the row's scrollWidth matches its width even when the ? ends a full line. */
   .uix-page-header__title-row { display: block; min-width: 0; padding-inline-end: 9px; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); }
-  .uix-page-header__title-row > .uix-page-header__title { display: inline; }
+  .uix-page-header__title-row > :is(.uix-page-header__title, .uix-page-title) { display: inline; }
   .uix-page-header__title-row > .uix-info-tip { margin-inline-start: var(--uix-space-1); }
   .uix-page-header__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin-top: var(--uix-space-2); max-width: 70ch; }
   .uix-page-header__actions { display: flex; gap: var(--uix-space-2); align-items: center; flex-wrap: wrap; }
