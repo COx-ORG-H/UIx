@@ -22,6 +22,15 @@ function Harness() {
           actions={<Button variant="secondary" onClick={() => setSaved(true)}>Wiederherstellen</Button>}
         />
       )))}
+      {/* HAR-2538: a title of ordinary German words that wraps at 320 px, the ? after its last word */}
+      <PageHeader
+        id="words-help"
+        size="display"
+        eyebrow="Service-Anfrage · REQ-1039"
+        title="SAP-Anzeigeberechtigung für das Förderreporting"
+        help="Wer die Anfrage erfüllt, sieht hier die Schritte."
+        helpLabel="Hilfe zur Anfrage"
+      />
       <p role="status">{saved ? 'CI wiederhergestellt.' : ''}</p>
     </>
   );

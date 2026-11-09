@@ -25,7 +25,7 @@ async function assertTitlesFit(page) {
       charsPerLine: title.textContent.trim().length / Math.max(1, lines),
     };
   }));
-  expect(samples).toHaveLength(5);
+  expect(samples).toHaveLength(6);
   for (const sample of samples) {
     expect(sample.scrollWidth, `${sample.id}: title is not silently clipped`).toBeLessThanOrEqual(sample.width + 1);
     expect(sample.outside, `${sample.id}: every rendered text fragment fits`).toBe(0);
@@ -41,6 +41,40 @@ for (const width of [320, 1280]) {
   test(`long nested titles fit at ${width}px, with help/actions and both size presets`, async ({ page }) => {
     await page.setViewportSize({ width, height: 950 });
     await assertTitlesFit(page);
+  });
+}
+
+/* HAR-2538: the ? follows the title's last word, on its line or the next one, and the row with the
+ * ? is never wider than its box (the ? hit area used to stick out 9 px past a full line). */
+for (const width of [320, 1280]) {
+  test(`the ? follows the last word of the title at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 950 });
+    const rows = await page.locator('.uix-page-header__title-row').evaluateAll(rowEls => rowEls.map(row => {
+      const title = row.querySelector('.uix-page-header__title');
+      const glyph = row.querySelector('.uix-info-tip__button').getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      const rects = [...range.getClientRects()].filter(rect => rect.width > 0);
+      const last = rects.reduce((a, b) => (b.bottom > a.bottom || (b.bottom === a.bottom && b.right > a.right) ? b : a));
+      const rowBox = row.getBoundingClientRect();
+      return {
+        id: row.closest('header').id,
+        scrollWidth: row.scrollWidth, clientWidth: row.clientWidth,
+        glyphWidth: glyph.width,
+        sameLine: glyph.bottom > last.top && glyph.top < last.bottom,
+        gapAfterLastWord: Math.round(glyph.left - last.right),
+        nextLineStart: glyph.top >= last.bottom - 1 && glyph.left - rowBox.left < 2,
+        insideRow: glyph.right <= rowBox.right + 0.5,
+      };
+    }));
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    for (const row of rows) {
+      expect(row.scrollWidth, `${row.id}: the row with its ? fits its box`).toBeLessThanOrEqual(row.clientWidth);
+      expect(row.glyphWidth, `${row.id}: the ? keeps its size`).toBeGreaterThanOrEqual(7);
+      expect(row.insideRow, `${row.id}: the ? stays inside the row`).toBe(true);
+      expect(row.sameLine ? row.gapAfterLastWord >= 0 && row.gapAfterLastWord <= 12 : row.nextLineStart,
+        `${row.id}: the ? sits right after the last word (gap ${row.gapAfterLastWord}px) or starts the next line`).toBe(true);
+    }
   });
 }
 
