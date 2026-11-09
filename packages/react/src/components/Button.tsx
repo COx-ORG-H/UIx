@@ -70,9 +70,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * `aria-disabled="true"`, takes no press, shows the reason in a `Tooltip` and is described by
    * it, so a keyboard or screen-reader user learns why as well. A disabled button looks the same
    * with or without a reason (muted text, no fill, a hairline); the reason is what tells a person
-   * what to do instead. Ignored without `disabled`.
+   * what to do instead. While the button is enabled the reason is silent. Pass the prop for as
+   * long as the button can become unavailable (`undefined` only when it never can): the button
+   * then sits in the Tooltip's inline wrapper the whole time, so turning `disabled` on or off
+   * never remounts it and focus stays on it. Give a full-width button's wrapper its width with
+   * `disabledReasonClassName`.
    */
   disabledReason?: string;
+  /** Class for the Tooltip wrapper `disabledReason` adds, e.g. to make it full width. */
+  disabledReasonClassName?: string;
   children?: ReactNode;
 }
 
@@ -82,7 +88,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, disabledReason, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, disabledReason, disabledReasonClassName, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -119,7 +125,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </button>
     );
-    return explained ? <Tooltip label={disabledReason}>{button}</Tooltip> : button;
+    // The wrapper stays while the prop is passed, so toggling `disabled` keeps the same <button>.
+    return disabledReason !== undefined
+      ? <Tooltip label={explained ? disabledReason : undefined} className={disabledReasonClassName}>{button}</Tooltip>
+      : button;
   },
 );
 Button.displayName = 'Button';

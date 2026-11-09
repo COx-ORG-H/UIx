@@ -17,13 +17,13 @@
      button takes no click, so it keeps pointer events for the cursor; an aria-disabled one
      ignores the pointer unless it carries a reason (React guards its click). A pending or
      loading button is disabled too but keeps its full colour and its spinner (below). */
-  .uix-btn:disabled:not([data-loading]), .uix-btn[aria-disabled="true"]:not([data-pending], [data-loading]) {
+  .uix-btn:disabled:not([data-pending], [data-loading]), .uix-btn[aria-disabled="true"]:not([data-pending], [data-loading]) {
     background: transparent; border-color: var(--uix-disabled-border); color: var(--uix-disabled-text);
     box-shadow: none; cursor: not-allowed;
   }
   .uix-btn:is(:disabled, [aria-disabled="true"]):not([data-pending], [data-loading]):hover { background: transparent; }
   .uix-btn:is(:disabled, [aria-disabled="true"]):active { transform: none; }
-  .uix-btn--link:is(:disabled, [aria-disabled="true"]) { border-color: transparent; }
+  .uix-btn.uix-btn--link:is(:disabled, [aria-disabled="true"]) { border-color: transparent; }
   .uix-btn[aria-disabled="true"]:not([data-disabled-reason]) { pointer-events: none; }
   .uix-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }

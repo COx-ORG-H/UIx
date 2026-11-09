@@ -109,7 +109,7 @@ for (const [themeName, blocks] of Object.entries(themes)) {
     }));
 
     for (const [role, { text, tint }] of Object.entries(STATUS)) {
-      test(`${label}: ${role} words are AA on surface, bg-app and the ${role} tint; its dot >= 3:1`, gated(`${label}: ${role}`, () => {
+      test(`${label}: ${role} words are AA on surface, bg-app and the ${role} tint (the dot wears the words' token)`, gated(`${label}: ${role}`, () => {
         for (const layer of ["surface", "bg-app"]) {
           const bg = color(layer);
           const plain = contrast(on(text, layer), bg);
@@ -117,8 +117,6 @@ for (const [themeName, blocks] of Object.entries(themes)) {
           const tinted = over(color(tint), bg);
           const onTint = contrast(over(color(text), tinted), tinted);
           assert.ok(onTint >= AA, `--uix-${text} on --uix-${tint} over --uix-${layer} ${onTint.toFixed(2)}:1`);
-          // StatusDot paints its dot in the text role (status-pill.css), so the dot clears 3:1 too.
-          assert.ok(plain >= NON_TEXT);
         }
       }));
     }
@@ -134,7 +132,7 @@ const rules = (source, selector) => {
 };
 
 test("a disabled button drops its fill and keeps a hairline instead of fading (no colour-only cue)", () => {
-  const disabled = rules(button, '.uix-btn:disabled:not([data-loading]), .uix-btn[aria-disabled="true"]:not([data-pending], [data-loading])');
+  const disabled = rules(button, '.uix-btn:disabled:not([data-pending], [data-loading]), .uix-btn[aria-disabled="true"]:not([data-pending], [data-loading])');
   assert.equal(disabled.background, "transparent");
   assert.equal(disabled.color, "var(--uix-disabled-text)");
   assert.equal(disabled["border-color"], "var(--uix-disabled-border)");
@@ -143,7 +141,9 @@ test("a disabled button drops its fill and keeps a hairline instead of fading (n
   assert.doesNotMatch(button, /:disabled[^{]*\{[^}]*opacity:\s*\.5/, "the old 50 % fade is gone");
   // a reason keeps the pointer so the tooltip can show; without one, aria-disabled ignores it
   assert.equal(rules(button, '.uix-btn[aria-disabled="true"]:not([data-disabled-reason])')["pointer-events"], "none");
-  // a pending button is aria-disabled but keeps its full colour
+  // a link button stays a bare link: its border reset outranks the disabled hairline (0,3,0, later)
+  assert.equal(rules(button, '.uix-btn.uix-btn--link:is(:disabled, [aria-disabled="true"])')["border-color"], "transparent");
+  // a pending button is aria-disabled (or natively disabled too) but keeps its full colour
   assert.equal(rules(button, ".uix-btn[data-pending], .uix-btn:has(> [data-uix-btn-busy])").opacity, "1");
 });
 

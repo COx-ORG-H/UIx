@@ -31,9 +31,10 @@ test('a disabled Button without a reason stays a native disabled button', () => 
   assert.equal(out, '<button class="uix-btn uix-btn--secondary" disabled="">Speichern</button>');
 });
 
-test('disabledReason without disabled changes nothing', () => {
+test('disabledReason on an enabled button is silent: a plain button in an empty, undescribing wrapper', () => {
   const out = renderToStaticMarkup(h(Button, { disabledReason: 'Nur Administratoren' }, 'Löschen'));
-  assert.equal(out, '<button class="uix-btn uix-btn--secondary">Löschen</button>');
+  assert.match(out, /^<span class="uix-tooltip"><button class="uix-btn uix-btn--secondary">Löschen<\/button>/);
+  assert.doesNotMatch(out, /aria-describedby|aria-disabled|tabindex|Nur Administratoren/);
 });
 
 test('a disabled Button with a reason stays focusable, takes no press and is described by the reason', async () => {
@@ -60,6 +61,18 @@ test('a disabled Button with a reason stays focusable, takes no press and is des
     assert.equal(dom.window.document.getElementById(describedBy)?.textContent, 'Nur Administratoren können Lizenzen löschen');
     await act(async () => { button.click(); });
     assert.equal(clicks, 0, 'the press is swallowed');
+    // enabling it keeps the same element (no remount, focus stays), and the reason goes silent
+    button.focus();
+    await act(async () => {
+      root.render(h(Button, { disabled: false, disabledReason: 'Nur Administratoren können Lizenzen löschen', variant: 'danger', onClick: () => { clicks += 1; } }, 'Löschen'));
+    });
+    const same = dom.window.document.querySelector('button');
+    assert.equal(same, button, 'the same <button> node');
+    assert.equal(dom.window.document.activeElement, button, 'focus stays on it');
+    assert.equal(same.hasAttribute('aria-disabled'), false);
+    assert.equal(same.hasAttribute('aria-describedby'), false, 'an enabled button has no reason to describe');
+    await act(async () => { same.click(); });
+    assert.equal(clicks, 1, 'an enabled button takes the press');
   } finally {
     await act(async () => root.unmount());
     for (const [key, desc] of Object.entries(saved)) {

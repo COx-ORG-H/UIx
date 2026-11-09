@@ -198,7 +198,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   /** Keyboard focus opens at once; a pointer waits the delay unless the group is warm. */
   const show = (via: 'pointer' | 'focus') => {
     cancelClose();
-    if (shown.current) return;
+    if (shown.current || !hasText) return;
     const warm = group.open > 0 || performance.now() - group.lastClosed < tokenMs('--uix-delay-tooltip-skip', 300);
     if (via === 'focus' || warm) { reveal(via === 'pointer' && group.open > 0); return; }
     if (openTimer.current == null) openTimer.current = window.setTimeout(() => reveal(false), tokenMs('--uix-delay-tooltip', 400));
@@ -274,9 +274,11 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   // hidden, and a description taken from a hidden element also reads its aria-hidden glyphs
   // ("Shift+? Shift ?"). The keys are said once (HAR-2416).
   const text = content ?? label;
+  /** A Tooltip with no text and no keys says nothing: it never opens and describes nothing. */
+  const hasText = keys != null || (text != null && text !== '');
   const description = keys ? [text != null ? `${id}-text` : null, `${id}-keys`].filter(Boolean).join(' ') : id;
   const single = isValidElement(children);
-  const child = single
+  const child = single && hasText
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
         'aria-describedby': [((children as ReactElement).props as Record<string, unknown>)['aria-describedby'], description]
           .filter(Boolean).join(' '),
@@ -287,8 +289,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
     <span
       ref={triggerRef}
       className={cx('uix-tooltip', className)}
-      aria-describedby={single ? undefined : description}
-      tabIndex={single ? undefined : 0}
+      aria-describedby={single || !hasText ? undefined : description}
+      tabIndex={single || !hasText ? undefined : 0}
       onMouseEnter={() => show('pointer')}
       onMouseLeave={scheduleHide}
       onFocus={() => show('focus')}

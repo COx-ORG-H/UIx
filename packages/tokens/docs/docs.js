@@ -389,7 +389,7 @@ const buttonProps = [
   { name: 'size', type: "'sm' | 'md' | 'lg'", default: 'md', description: 'Sets the control height and horizontal padding.' },
   { name: 'icon', type: 'boolean', default: 'false', description: 'Creates a square icon-only control.' },
   { name: 'loading', type: 'boolean', default: 'false', description: 'Shows progress and disables interaction.' },
-  { name: 'disabledReason', type: 'string', default: '—', description: 'With disabled: keeps the button focusable as aria-disabled, takes no press, and shows and announces why in a Tooltip (Usage roles).' },
+  { name: 'disabledReason', type: 'string', default: '—', description: 'With disabled: keeps the button focusable as aria-disabled, takes no press, and shows and announces why in a Tooltip (Usage roles). Silent while enabled; pass it for as long as the button can become unavailable, so toggling disabled keeps the same button and its focus.' },
 ];
 
 const PAGES = {
