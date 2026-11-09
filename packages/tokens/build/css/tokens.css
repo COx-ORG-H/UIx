@@ -69,6 +69,10 @@
     --uix-neutral-text: var(--uix-text-hushed);
     --uix-neutral-bg: var(--uix-bg-active);
     --uix-neutral-border: var(--uix-border-strong);
+    --uix-selected-bg: var(--uix-surface);
+    --uix-selected-border: var(--uix-text-muted);
+    --uix-disabled-text: var(--uix-text-muted);
+    --uix-disabled-border: var(--uix-border);
     --uix-chart-1: #0455E6;
     --uix-chart-2: #1F978A;
     --uix-chart-3: #8C72D6;

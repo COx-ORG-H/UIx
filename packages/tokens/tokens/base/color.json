@@ -74,6 +74,11 @@
   "neutral-bg":     { "$type": "color", "$value": "var(--uix-bg-active)", "$description": "Neutral status tint, alias of --uix-bg-active." },
   "neutral-border": { "$type": "color", "$value": "var(--uix-border-strong)", "$description": "Neutral status outline, alias of --uix-border-strong." },
 
+  "selected-bg":     { "$type": "color", "$value": "var(--uix-surface)", "$description": "SELECTED usage role (HAR-2816): the chosen option of a segmented control, filter or pill tab. Surface plus the --uix-selected-border hairline, never a hue alone. Alias, no dark override needed." },
+  "selected-border": { "$type": "color", "$value": "var(--uix-text-muted)", "$description": "SELECTED usage role (HAR-2816): the hairline that marks the chosen option, >= 3:1 on the track (--uix-bg-subtle) in both themes (usage-roles.test.mjs). Alias of --uix-text-muted." },
+  "disabled-text":   { "$type": "color", "$value": "var(--uix-text-muted)", "$description": "DISABLED usage role (HAR-2816): the label of an unavailable control. Muted text, no fill and a reason, so disabled differs from enabled without colour alone. Alias of --uix-text-muted." },
+  "disabled-border": { "$type": "color", "$value": "var(--uix-border)", "$description": "DISABLED usage role (HAR-2816): the hairline an unavailable control keeps so it still reads as a control. Alias of --uix-border." },
+
   "chart-1": { "$type": "color", "$value": "#0455E6", "$description": "Categorical palette v2 (calm kit 2.56), light. The first slot is THE series colour (--uix-chart-series) and the brand blue (#0455E6, unchanged from 2.55); 2 teal and 3 violet are the three quiet category hues; 4-8 extend it for report charts. No red slot (red never encodes a series) and no amber slot (amber is reserved for attention). Validated on --uix-surface and --uix-bg-app: L 0.43-0.77, C >= 0.10, adjacent CVD dE >= 8, normal-vision dE >= 15, >= 3:1 (chart-palette.test.mjs)." },
   "chart-2": { "$type": "color", "$value": "#1F978A" },
   "chart-3": { "$type": "color", "$value": "#8C72D6" },

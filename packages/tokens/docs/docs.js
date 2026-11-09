@@ -83,6 +83,7 @@ const NAV_ITEMS = [
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
   { name: 'Chart tokens', slug: 'chart-tokens', group: 'Foundations', summary: 'The categorical palette, analytic roles and the shipped ECharts theme.', keywords: ['chart', 'palette', 'echarts', 'threshold', 'forecast', 'dataviz'] },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
+  { name: 'Usage roles', slug: 'usage-roles', group: 'Foundations', summary: 'What each colour is for: surfaces, text, controls, selected, disabled and the five status roles by meaning.', keywords: ['roles', 'usage', 'neutral', 'info', 'success', 'warning', 'critical', 'disabled', 'selected', 'interactive', 'surface', 'contrast'] },
   { name: 'Status colour', slug: 'status-colour', group: 'Foundations', summary: 'Which state gets a colour, how loud it is on each surface, and the colour budget of a screen.', keywords: ['status', 'color', 'colour', 'policy', 'tone', 'neutral', 'badge', 'pill', 'dark mode'] },
   { name: 'Rules for apps', slug: 'rules-for-apps', group: 'Foundations', summary: 'The calm rules every app built on UIx follows: the signal budget, brand and neutrals, chart grammar, motion grammar and files, and which ones the kit enforces.', keywords: ['rules', 'calm', 'signal budget', 'red', 'critical', 'chart grammar', 'motion grammar', 'loop', 'pulse', 'brand', 'neutrals', 'files', 'policy'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
@@ -388,6 +389,7 @@ const buttonProps = [
   { name: 'size', type: "'sm' | 'md' | 'lg'", default: 'md', description: 'Sets the control height and horizontal padding.' },
   { name: 'icon', type: 'boolean', default: 'false', description: 'Creates a square icon-only control.' },
   { name: 'loading', type: 'boolean', default: 'false', description: 'Shows progress and disables interaction.' },
+  { name: 'disabledReason', type: 'string', default: '—', description: 'With disabled: keeps the button focusable as aria-disabled, takes no press, and shows and announces why in a Tooltip (Usage roles).' },
 ];
 
 const PAGES = {
@@ -558,6 +560,54 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     return `${pageHeader('Foundations', 'Rules for apps', 'Every app built on UIx follows these rules, whatever its domain. The kit enforces the ones a test can see; the rest are review rules.', ['every app', 'calm by default', 'gated where testable'])}
     <div data-app-rules>${RULES.map(([id, title, items]) => section(id, title, list(items))).join('')}</div>
     ${section('enforced', 'What the kit enforces', `<p>Each of these fails the UIx build when a change breaks the rule, so an app that uses the kit components gets them for free. A product that styles its own status or chart colours is held to the same rules in review.</p><div class="uix-table-wrap" tabindex="0" role="region" aria-label="Rules the kit enforces"><table class="uix-table" data-app-rule-gates><thead><tr><th scope="col">Rule</th><th scope="col">Gate</th></tr></thead><tbody>${GATES.map(([rule, gate]) => `<tr><td>${esc(rule)}</td><td>${gate}</td></tr>`).join('')}</tbody></table></div>`)}`;
+  },
+  'usage-roles': () => {
+    // HAR-2816: the usage roles, approved 2026-11-09 as drawn (TENSOR har-2816-entwurf.png).
+    const pill = (tone, text) => `<span class="uix-pill uix-pill--${tone}"><span class="uix-pill__dot"></span>${esc(text)}</span>`;
+    const dot = (tone, text) => `<span class="uix-status-dot uix-status-dot--${tone}">${esc(text)}</span>`;
+    const ROLES = [
+      ['neutral', 'Neutral', 'The default: facts, counts, lifecycle states, priorities and routine absences.', 'Inaktiv seit 92 Tagen'],
+      ['info', 'Info', 'Worth noticing with no pressure to act: in flight, new, unread.', 'Neue Version verfügbar'],
+      ['success', 'Success', 'The one achieved outcome a person waits for.', 'Prüflauf bestanden'],
+      ['warning', 'Warning', 'Act soon: a deadline near, a value drifting.', 'Support endet in 42 Tagen'],
+      ['critical', 'Critical', 'Broken or breached now, and rare: a dot and words, at most one red surface per screen.', 'Lizenz um 3 überbucht'],
+    ];
+    const roles = `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="Status roles"><table class="uix-table" data-status-roles><thead><tr><th scope="col">Role</th><th scope="col">Use it for</th><th scope="col">Example</th></tr></thead><tbody>${ROLES.map(([role, name, use, text]) => `<tr data-role="${role}"><td>${dot(role, name)}</td><td>${esc(use)}</td><td>${pill(role, text)}</td></tr>`).join('')}</tbody></table></div>`;
+    const APPLIED = [
+      ['Member not signed in for 92 days', 'neutral', pill('neutral', 'Inaktiv · 92 Tage')],
+      ['Support ends in 42 days', 'warning', pill('warning', 'Supportende in 42 Tagen')],
+      ['Support end passed', 'critical', dot('critical', 'Supportende seit 12 Tagen überschritten')],
+      ['Control run: object not applicable', 'neutral', pill('neutral', 'Nicht anwendbar')],
+      ['Delete a licence', 'destructive', '<span class="uix-text-muted">under “Mehr”; red only on the confirm button</span>'],
+    ];
+    const applied = `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="Roles applied in a product"><table class="uix-table" data-roles-applied><thead><tr><th scope="col">Situation</th><th scope="col">Role</th><th scope="col">Shown as</th></tr></thead><tbody>${APPLIED.map(([situation, role, shown]) => `<tr><td>${esc(situation)}</td><td>${esc(role)}</td><td>${shown}</td></tr>`).join('')}</tbody></table></div>`;
+    const tokens = (rows) => `<table class="uix-docs__token-table uix-docs__token-table--prose"><thead><tr><th>Token</th><th>Role</th></tr></thead><tbody>${rows.map(([t, r]) => `<tr><td><code>--uix-${t}</code></td><td>${r}</td></tr>`).join('')}</tbody></table>`;
+    return `${pageHeader('Foundations', 'Usage roles', 'What each colour is for and when not to use it: surfaces, text, controls, selection, disabled and the five status roles.', ['five status roles', 'colour is never the only cue', 'tested in both themes'])}
+    ${section('status-roles', 'Status by meaning', `<p>Pick the role from what the state means for the person reading it, never from how important the screen feels. Neutral is the default; most of a screen is neutral. The <a href="#status-colour">status colour policy</a> maps domain states onto these roles and sets the treatment per surface.</p>${roles}${callout('Words first', 'Every status carries words (and a dot or an icon); colour is never the only cue. Red only when something is broken now, at most one red surface per screen; elsewhere a critical state is a dot and words.', 'warning')}`)}
+    ${section('controls', 'Controls: interactive, selected and disabled', `<p>One primary action per decision area; secondary is the default; ghost for low-emphasis actions in toolbars. Selected is a surface and a hairline on its track, never a hue alone. Disabled is muted text, no fill and a hairline, with the not-allowed cursor and a reason, so it differs from enabled without relying on colour.</p>${demo(`<div class="uix-stack" style="--gap:var(--uix-space-4)"><div class="uix-cluster"><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Zugewiesen">Zuweisen</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Vorschau geöffnet">Vorschau</button><button class="uix-btn uix-btn--ghost" type="button" data-demo-action="Abgebrochen">Abbrechen</button><button class="uix-btn uix-btn--secondary" type="button" disabled title="Keine Änderungen zum Speichern">Speichern</button></div><div class="uix-segmented" role="group" aria-label="Filter"><button class="uix-segmented__option" type="button" aria-pressed="true">Alle</button><button class="uix-segmented__option" type="button" aria-pressed="false">Ruhend</button></div></div>`, `<Button variant="primary">Zuweisen</Button>
+<Button>Vorschau</Button>
+<Button variant="ghost">Abbrechen</Button>
+<Button disabled disabledReason="Keine Änderungen zum Speichern">Speichern</Button>`)}${tokens([
+      ['accent', 'interactive: the primary action; with <code>--uix-ring</code> the focus ring. Never a status.'],
+      ['link', 'interactive: a link in prose'],
+      ['selected-bg', 'selected: the chosen option on its track'],
+      ['selected-border', 'selected: the hairline that marks it (&ge; 3:1 on the track)'],
+      ['disabled-text', 'disabled: the label of an unavailable control'],
+      ['disabled-border', 'disabled: the hairline it keeps so it still reads as a control'],
+    ])}<p>React: <code>&lt;Button disabled disabledReason="…"&gt;</code> keeps the button focusable as <code>aria-disabled</code>, takes no press, and shows and announces the reason in a Tooltip.</p>`)}
+    ${section('surfaces-text', 'Surfaces and text', tokens([
+      ['bg-app', 'surface: the page behind everything'],
+      ['surface', 'surface: cards, panels, tables'],
+      ['bg-subtle', 'surface: a track, a quiet band, a secondary button'],
+      ['text', 'text: content and labels'],
+      ['text-hushed', 'text: secondary text and the neutral status words'],
+      ['text-muted', 'text: hints, metadata and disabled labels'],
+    ]))}
+    ${section('applied', 'Applied in a product', `<p>TENSOR, in German: a routine absence stays neutral and only a true breach is critical.</p>${applied}`)}
+    ${section('react', 'Fold a pill tone onto a role', `<p>A product that keeps the finer <code>StatusPill</code> vocabulary (SLA, priority, time pressure) folds it onto the five roles with <code>statusRoleOf</code>, for a <code>StatusDot</code> or a surface.</p>${codeBlock(`import { StatusDot, statusRoleOf } from "@tensor_1/react";
+
+<StatusDot tone={statusRoleOf("sla-breached")}>SLA seit 2 Std. überschritten</StatusDot>`, 'tsx')}`)}
+    ${section('gates', 'How it is tested', `<p><code>packages/tokens/tests/usage-roles.test.mjs</code> (<code>npm run test:tokens</code>) measures every pair a role promises in light and dark, for the default palette and every product theme: text AA on each surface layer, the primary label and links AA, the focus ring and the selected hairline &ge; 3:1, the disabled label readable and &ge; 2:1 away from the enabled one, and each status role's words AA on the surface and on its tint. It also fails a disabled button that fades instead of dropping its fill. <code>packages/react/src/usage-roles-dom.test.mjs</code> holds <code>statusRoleOf</code> and the disabled reason.</p>`)}`;
   },
   'status-colour': () => {
     // The status colour policy (HAR-1564, colour K3 of the 2026-10-07 operator review).
@@ -749,7 +799,7 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
     ${section('hierarchy', 'Action hierarchy', `<ul><li><strong>Primary:</strong> the single strongest action in a local decision area.</li><li><strong>Secondary:</strong> the default for supporting actions.</li><li><strong>Outline and ghost:</strong> lower-emphasis controls in toolbars and compact surfaces.</li><li><strong>Danger:</strong> destructive intent that has an explicit confirmation or compensation path.</li><li><strong>Link:</strong> navigation-like action inside prose; use an anchor when the destination has a URL.</li></ul>${compare('Use one primary action per clear decision area and label it with a specific verb.', 'Use several primary buttons together or use color as the only indication of destructive intent.')}`)}
     ${section('states', 'Sizes and states', demo(`<button class="uix-btn uix-btn--primary uix-btn--sm" type="button" data-demo-action="Small action completed">Small</button><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Standard action completed">Standard</button><button class="uix-btn uix-btn--primary uix-btn--lg" type="button" data-demo-action="Large action completed">Large</button><button class="uix-btn uix-btn--secondary" type="button" disabled>Disabled</button><button class="uix-btn uix-btn--primary" type="button" data-loading aria-label="Saving" disabled>Saving</button>`))}
     ${section('react-api', 'React API', renderPropsTable(buttonProps))}
-    ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Use a native <code>&lt;button&gt;</code> for actions and an anchor for navigation.</li><li>Icon-only buttons require an accessible name.</li><li>Loading controls expose a busy label and prevent duplicate submission.</li><li>Do not disable a control without explaining what makes it available.</li></ul>`)}`,
+    ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Use a native <code>&lt;button&gt;</code> for actions and an anchor for navigation.</li><li>Icon-only buttons require an accessible name.</li><li>Loading controls expose a busy label and prevent duplicate submission.</li><li>Do not disable a control without explaining what makes it available: pass <code>disabledReason</code>. A disabled button is muted text with no fill, never a faded copy of the enabled one (<a href="#usage-roles">Usage roles</a>).</li></ul>`)}`,
 
   input: () => `${pageHeader('Components', 'Input & field', 'Fields pair a stable label, control, and message slot so guidance and validation remain understandable without layout shift.', ['CSS primitive', 'React Field + Input', 'validation states'])}
     ${section('example', 'Example', demo(`<div style="width:min(100%,380px)"><label class="uix-field"><span class="uix-field__label" data-required>Work email</span><input class="uix-input" type="email" placeholder="name@company.com" aria-describedby="email-hint"><span class="uix-field__msg"><span class="uix-field__hint" id="email-hint">We’ll only use this for account notifications.</span></span></label></div>`, `<label class="uix-field">

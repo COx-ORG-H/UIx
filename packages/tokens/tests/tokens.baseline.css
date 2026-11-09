@@ -30,6 +30,8 @@
     --uix-sev-5:var(--uix-text-muted); --uix-sev-5-bg:var(--uix-bg-active); --uix-sev-5-text:var(--uix-text-hushed);
     --uix-success-solid:#3FA373; --uix-warning-solid:#B8862C; --uix-info-solid:#5B7BE3; --uix-danger-solid:#D65A50;
     --uix-neutral-solid:#8A8A8A; --uix-neutral-text:var(--uix-text-hushed); --uix-neutral-bg:var(--uix-bg-active); --uix-neutral-border:var(--uix-border-strong);
+    /* usage roles (HAR-2816): selected + disabled, aliases */
+    --uix-selected-bg:var(--uix-surface); --uix-selected-border:var(--uix-text-muted); --uix-disabled-text:var(--uix-text-muted); --uix-disabled-border:var(--uix-border);
 
     /* chart (categorical) */
     /* chart palette — harmonized, vibrant on white (Tailwind ~600 level), distinct hues */

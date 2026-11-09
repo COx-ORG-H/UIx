@@ -8,6 +8,7 @@ import type { KeyShortcut } from './Kbd.js';
 import { ButtonFeedback } from './ButtonFeedback.js';
 import type { ButtonResult, ButtonResultLabels } from './ButtonFeedback.js';
 import { PENDING_DELAY_MS } from '../motion-timing.js';
+import { Tooltip } from './Tooltip.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
 /** `xs` is 24 px: the smallest hit area WCAG 2.5.8 allows, for dense tool rows (HAR-1348). */
@@ -63,6 +64,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * the product binds the key.
    */
   shortcut?: KeyShortcut;
+  /**
+   * Why the button is unavailable (HAR-2816), e.g. "Nur Administratoren können Lizenzen
+   * löschen". Use it with `disabled`: the button then stays focusable and hoverable as
+   * `aria-disabled="true"`, takes no press, shows the reason in a `Tooltip` and is described by
+   * it, so a keyboard or screen-reader user learns why as well. A disabled button looks the same
+   * with or without a reason (muted text, no fill, a hairline); the reason is what tells a person
+   * what to do instead. Ignored without `disabled`.
+   */
+  disabledReason?: string;
   children?: ReactNode;
 }
 
@@ -72,7 +82,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, disabledReason, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -83,18 +93,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       warnedIconButton = true;
       console.warn('uix: icon-only <Button> has no accessible name — pass aria-label or aria-labelledby.');
     }
-    return (
+    // A disabled button with a reason stays focusable (aria-disabled) so its Tooltip can say why.
+    const explained = !!disabled && !!disabledReason;
+    const blocked = loading || explained;
+    const button = (
       <button
         ref={ref}
         className={buttonClasses(variant, size, icon, wrap, className)}
         // Only explicit `disabled` removes native semantics; `loading` keeps the button
         // focusable and announced as busy, with a click guard instead (UIX-A11Y-3). The
         // spinner itself is ButtonFeedback's delayed marker, not data-loading (HAR-2580).
-        disabled={disabled}
-        aria-disabled={loading || undefined}
+        disabled={explained ? undefined : disabled}
+        aria-disabled={blocked || undefined}
         aria-busy={loading || undefined}
         data-pending={loading || undefined}
-        onClick={loading || onClick ? (e) => { if (loading) { e.preventDefault(); return; } onClick?.(e); } : undefined}
+        data-disabled-reason={explained || undefined}
+        onClick={blocked || onClick ? (e) => { if (blocked) { e.preventDefault(); return; } onClick?.(e); } : undefined}
         {...props}
       >
         {loading !== undefined || result !== undefined ? (
@@ -105,6 +119,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </button>
     );
+    return explained ? <Tooltip label={disabledReason}>{button}</Tooltip> : button;
   },
 );
 Button.displayName = 'Button';
