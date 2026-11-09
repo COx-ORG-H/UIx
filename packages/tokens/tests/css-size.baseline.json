@@ -67,9 +67,9 @@
       "brotli": 1103
     },
     "styles/components/button.css": {
-      "raw": 8065,
-      "gzip": 2339,
-      "brotli": 1960
+      "raw": 9313,
+      "gzip": 2730,
+      "brotli": 2286
     },
     "styles/components/calendar.css": {
       "raw": 3635,

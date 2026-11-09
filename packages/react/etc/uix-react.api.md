@@ -751,6 +751,8 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     // (undocumented)
     children?: ReactNode;
+    disabledReason?: string;
+    disabledReasonClassName?: string;
     // (undocumented)
     icon?: boolean;
     loading?: boolean;
@@ -7663,6 +7665,9 @@ export interface StatTrend {
 }
 
 // @public
+export const STATUS_ROLES: readonly StatusRole[];
+
+// @public
 export function StatusDot(input: StatusDotProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -7691,6 +7696,12 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     tone?: PillTone;
     treatment?: PillTreatment;
 }
+
+// @public
+export type StatusRole = 'neutral' | 'info' | 'success' | 'warning' | 'critical';
+
+// @public
+export function statusRoleOf(tone: PillTone | null | undefined): StatusRole;
 
 // @public
 export function StatusRow(input: StatusRowProps): react.JSX.Element;
