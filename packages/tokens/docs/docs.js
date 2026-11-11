@@ -109,7 +109,7 @@ const NAV_ITEMS = [
 export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
-  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
+  'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'Status pill', 'Overflow row', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
   'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'File kit', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
@@ -165,6 +165,8 @@ export const REACT_COMPONENT_SLUGS = [
   'chart-card', 'arrive',
   // the file kit (2.57): kind colours and glyphs, the file row, the slim drop row
   'file-kit',
+  // a row of badges that shows the ones that fit whole and counts the rest (HAR-3072)
+  'overflow-row',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS

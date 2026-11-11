@@ -156,7 +156,7 @@ ${compactSection('gap-sec-links', 'Related records', '1 link', '<p>CHG-1042 bloc
 ${STAT_ROW_TILES.map(statRowTile).join('\n')}
 </div>
 <div class="uix-guide__subhead" data-tensor-gaps>OverflowRow: a member's roles on one line, at two widths (React <code>OverflowRow</code>, <code>.uix-overflow-row</code>) — the badges that fit whole, then one count for the rest; its tooltip and its screen-reader text name the hidden ones. A row never wraps and no badge is cut mid-word.</div>
-<div class="uix-stack" style="--gap:12px">
+<div class="uix-stack" style="--gap:12px" data-overflow-row-example>
 ${[
   { width: '20rem', shown: 1, roles: ['Change-Genehmigende (CAB)', 'Mandantenadministration'] },
   { width: '20rem', shown: 2, roles: ['Interne Revision', 'Change-Management', 'Mitarbeitende', 'Servicedesk-Leitung'] },
