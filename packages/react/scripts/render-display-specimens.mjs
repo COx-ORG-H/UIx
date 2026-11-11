@@ -287,6 +287,17 @@ export async function renderDisplaySpecimens() {
       `<div data-graph-gaps-example style="max-width:44rem">${html(k3)}</div>`,
     ].join('\n'));
 
+    // ── ListSummary (HAR-3069): a long list collapsed, the same list open, a short one whole ──
+    const roles = ['API integration', 'Internal audit', 'Change approvers (CAB)', 'Change management', 'Compliance officers', 'Data protection officers', 'Deployment administration', 'External audit', 'Incident management', 'Infrastructure administration', 'Network administration', 'Platform owners', 'Problem management', 'Service desk agents', 'Service desk leads', 'Vulnerability management'];
+    const countRoles = (n) => `${n} roles`;
+    const collapsedRoles = mount(h(ui.ListSummary, { items: roles, count: countRoles }));
+    const openRoles = mount(h(ui.ListSummary, { items: roles, count: countRoles, defaultExpanded: true }));
+    const fewRoles = mount(h(ui.ListSummary, { items: roles.slice(0, 4), count: countRoles }));
+    add('examples-data-display', [
+      caption('List summary (React <code>ListSummary</code>, <code>.uix-list-summary</code>) — a long list of names in a cell: a count, the first three names, the words for the rest and one button that shows the whole list in place. Here: 16 roles collapsed, the same list open, and 4 roles, shown whole because hiding one name saves no space.'),
+      `<div data-list-summary-example style="display:grid;gap:var(--uix-space-4);max-width:28rem">${html(collapsedRoles)}${html(openRoles)}${html(fewRoles)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return specimens;
   } finally {
