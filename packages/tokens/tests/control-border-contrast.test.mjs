@@ -17,10 +17,12 @@ const BACKDROPS = ["bg-app", "bg-subtle", "surface", "surface-2", "surface-3"];
 for (const [theme, themeBlocks] of Object.entries(themes)) {
   test(`${theme} dark: a control edge clears 3:1 on every dark surface, resting and under the pointer`, () => {
     const scope = scopeFor(themeBlocks, true);
+    // the control's background extends under its border, so the edge is painted over --uix-surface
+    const fill = evaluate("var(--uix-surface)", scope);
     for (const token of ["control-border", "control-border-hover"]) {
       for (const backdrop of BACKDROPS) {
         const page = evaluate(`var(--uix-${backdrop})`, scope);
-        const edge = over(evaluate(`var(--uix-${token})`, scope), page);
+        const edge = over(evaluate(`var(--uix-${token})`, scope), fill);
         const ratio = contrast(edge, page);
         assert.ok(ratio >= NON_TEXT, `--uix-${token} ${ratio.toFixed(2)}:1 on --uix-${backdrop} (need ${NON_TEXT})`);
       }
