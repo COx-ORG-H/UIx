@@ -72,6 +72,12 @@ test("an unchecked checkbox, radio and radio-card check draw their edge with --u
   }
 });
 
+test("more contrast does not alias the choice border to --uix-border-strong", () => {
+  // unlayered product themes override --uix-border-strong, so an alias would take the weak theme edge
+  assert.ok(SCOPES[" more contrast"]["choice-border"], "more contrast re-points --uix-choice-border");
+  assert.doesNotMatch(SCOPES[" more contrast"]["choice-border"], /--uix-border-strong/);
+});
+
 test("checked, indeterminate and invalid boxes keep their own edge colour", () => {
   assert.match(checkboxCss, /input:indeterminate \+ \.uix-checkbox__box \{ background: var\(--uix-accent\); border-color: var\(--uix-accent\);/);
   assert.match(checkboxCss, /\.uix-checkbox-group\[data-invalid\] \.uix-checkbox__box \{ border-color: var\(--uix-danger\); \}/);

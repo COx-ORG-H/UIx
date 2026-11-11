@@ -12,7 +12,9 @@
     --uix-text-muted: color-mix(in srgb, var(--uix-text) 74%, var(--uix-surface));
     --uix-border: color-mix(in srgb, var(--uix-text) 45%, var(--uix-surface));
     --uix-border-strong: color-mix(in srgb, var(--uix-text) 60%, var(--uix-surface));
-    --uix-choice-border: var(--uix-border-strong);
+    /* not an alias of --uix-border-strong: unlayered product themes override that token, so the edge
+       is mixed from the theme's own text and surface and keeps its contrast in every product theme */
+    --uix-choice-border: color-mix(in srgb, var(--uix-text) 60%, var(--uix-surface));
   }
 
   /* every --uix-text-* size is in rem, so the root size scales the whole type ramp */
