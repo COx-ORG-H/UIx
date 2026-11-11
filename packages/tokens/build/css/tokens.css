@@ -12,6 +12,8 @@
     --uix-surface-3: #FAFAFA;
     --uix-border: #E5E5E5;
     --uix-border-strong: #D4D4D4;
+    --uix-control-border: var(--uix-border);
+    --uix-control-border-hover: var(--uix-border-strong);
     --uix-text: #0A0A0A;
     --uix-text-hushed: rgba(10,10,10,.62);
     --uix-text-muted: #6B6B6B;
@@ -315,6 +317,8 @@
     --uix-surface-3: #262626;
     --uix-border: rgba(255,255,255,.08);
     --uix-border-strong: rgba(255,255,255,.14);
+    --uix-control-border: rgba(255,255,255,.36);
+    --uix-control-border-hover: rgba(255,255,255,.48);
     --uix-text: #FAFAFA;
     --uix-text-hushed: rgba(250,250,250,.64);
     --uix-text-muted: #A1A1A1;

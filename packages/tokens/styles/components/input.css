@@ -18,12 +18,12 @@
 
   .uix-input {
     height: var(--uix-control-h); width: 100%;
-    padding: 0 var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    padding: 0 var(--uix-space-3); border: 1px solid var(--uix-control-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body);
     transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-input::placeholder { color: var(--uix-text-muted); }
-  .uix-input:hover { border-color: var(--uix-border-strong); }
+  .uix-input:hover { border-color: var(--uix-control-border-hover); }
   .uix-input:focus { outline: none; border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-input:disabled { opacity: .55; cursor: not-allowed; background: var(--uix-bg-subtle); }
   .uix-input[readonly] { background: var(--uix-bg-subtle); }
@@ -91,14 +91,14 @@
   .uix-otp__input:disabled { cursor: not-allowed; }
   .uix-otp__cell {
     display: grid; place-items: center; flex: 1 1 0; min-width: 20px; height: 44px;
-    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+    border: 1px solid var(--uix-control-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
     color: var(--uix-text); font-size: var(--uix-text-h3); font-weight: 600; font-variant-numeric: tabular-nums;
     /* no transition: the active cell moves on every keystroke, and typing gets no animation */
   }
   .uix-otp__cell[data-active] { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   /* the caret of the cell being typed into: a static bar (typing is frequent, so it does not blink) */
   .uix-otp__cell[data-active]:empty::after { content: ""; width: 1px; height: 1.2em; background: var(--uix-text); }
-  @media (hover: hover) { .uix-otp:hover:not(:has(> .uix-otp__input:disabled)) > .uix-otp__cell:not([data-active]) { border-color: var(--uix-border-strong); } }
+  @media (hover: hover) { .uix-otp:hover:not(:has(> .uix-otp__input:disabled)) > .uix-otp__cell:not([data-active]) { border-color: var(--uix-control-border-hover); } }
   .uix-otp:has(> .uix-otp__input[aria-invalid="true"]) > .uix-otp__cell { border-color: var(--uix-danger); }
   .uix-otp:has(> .uix-otp__input[aria-invalid="true"]) > .uix-otp__cell[data-active] { box-shadow: 0 0 0 3px var(--uix-danger-bg); }
   .uix-otp:has(> .uix-otp__input:disabled) > .uix-otp__cell { opacity: .55; background: var(--uix-bg-subtle); }

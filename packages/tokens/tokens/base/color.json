@@ -8,6 +8,8 @@
   "surface-3": { "$type": "color", "$value": "#FAFAFA" },
   "border":        { "$type": "color", "$value": "#E5E5E5" },
   "border-strong": { "$type": "color", "$value": "#D4D4D4" },
+  "control-border":       { "$type": "color", "$value": "var(--uix-border)", "$description": "The edge of a form control (input, textarea, select, tag input, OTP cell). Light: the hairline, unchanged. Dark: its own value, because the hairline is 1.2:1 there and the edge is the only thing that shows where to type (WCAG 1.4.11)." },
+  "control-border-hover": { "$type": "color", "$value": "var(--uix-border-strong)", "$description": "A form control's edge under the pointer: one step stronger than --uix-control-border." },
 
   "text":                { "$type": "color", "$value": "#0A0A0A" },
   "text-hushed":         { "$type": "color", "$value": "rgba(10,10,10,.62)" },
