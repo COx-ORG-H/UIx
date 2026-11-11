@@ -13,6 +13,8 @@
     --uix-border: color-mix(in srgb, var(--uix-text) 45%, var(--uix-surface));
     --uix-border-strong: color-mix(in srgb, var(--uix-text) 60%, var(--uix-surface));
     --uix-choice-border: var(--uix-border-strong);
+    --uix-control-border: var(--uix-border);
+    --uix-control-border-hover: var(--uix-border-strong);
   }
 
   /* every --uix-text-* size is in rem, so the root size scales the whole type ramp */

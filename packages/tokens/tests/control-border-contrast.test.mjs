@@ -44,6 +44,25 @@ test("light keeps the hairline: the control edge is --uix-border, its hover --ui
   assert.equal(tokens["control-border-hover"].$value, "var(--uix-border-strong)");
 });
 
+/** The `--uix-*` declarations of the first rule for `selector` in a stylesheet. */
+const declarationsOf = (file, selector) => {
+  const css = readFileSync(new URL(`../styles/components/${file}`, import.meta.url), "utf8");
+  const at = css.indexOf(`${selector} {`);
+  assert.ok(at >= 0, `${selector} not found in ${file}`);
+  const body = css.slice(css.indexOf("{", at) + 1, css.indexOf("}", at));
+  return Object.fromEntries([...body.matchAll(/--uix-([\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
+};
+
+// The dark edge is a fixed value, so a scope that re-points the hairline re-points the edge too.
+test("more contrast and print draw the control edge from their own hairline", () => {
+  const more = declarationsOf("display-preferences.css", ':root[data-contrast="more"]');
+  assert.equal(more["control-border"], "var(--uix-border)");
+  assert.equal(more["control-border-hover"], "var(--uix-border-strong)");
+  const print = declarationsOf("print-layout.css", ".uix-print-layout");
+  assert.equal(print["control-border"], print.border);
+  assert.equal(print["control-border-hover"], print["border-strong"]);
+});
+
 test("every form control draws its edge from the control tokens, not the hairline", () => {
   const rules = {
     "input.css": [".uix-input {", ".uix-otp__cell {"],
