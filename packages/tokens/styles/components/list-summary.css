@@ -1,0 +1,19 @@
+/* uix list summary — a long list of names read as a count, the first few names and the words for
+   the rest, with a button that shows the whole list in place (HAR-3069). React's ListSummary
+   renders it. The toggle sits in the text flow: underlined, so colour is not its only cue, and a
+   24 px hit area (WCAG 2.5.8) that leaves the line height alone. Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-list-summary { min-width: 0; }
+  .uix-list-summary__count { margin: 0; font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-list-summary__items { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: break-word; }
+  .uix-list-summary__toggle {
+    position: relative;
+    padding: 0; border: 0; background: transparent;
+    font: inherit; color: var(--uix-link);
+    text-decoration: underline; text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .uix-list-summary__toggle::before { content: ""; position: absolute; inset: -5px -4px; }
+  .uix-list-summary__toggle:hover { text-decoration-thickness: 2px; }
+  .uix-list-summary__toggle:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-sm); }
+}
