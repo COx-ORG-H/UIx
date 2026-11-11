@@ -217,9 +217,9 @@
       "brotli": 2874
     },
     "styles/components/form.css": {
-      "raw": 1993,
-      "gzip": 718,
-      "brotli": 578
+      "raw": 2724,
+      "gzip": 981,
+      "brotli": 784
     },
     "styles/components/heartbeat.css": {
       "raw": 1020,

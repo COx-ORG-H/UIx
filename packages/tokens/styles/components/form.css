@@ -9,6 +9,15 @@
   fieldset.uix-radio-group { border: 0; margin: 0; padding: 0; min-inline-size: auto; }
   .uix-radio-group__legend { padding: 0; margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
   .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
+  /* A form's field stack (TENSOR HAR-2974): every .uix-field reserves its message line, so a small
+     gap gives one even rhythm (30 px between controls). Anything else in the stack keeps 16 px
+     below it; a title opens a group of fields with 16 px above and below. */
+  .uix-form-stack { display: flex; flex-direction: column; gap: var(--uix-space-1); }
+  .uix-form-stack > :not(.uix-field, .uix-form-stack__title):not(:last-child) { margin-block-end: var(--uix-space-3); }
+  .uix-form-stack__title {
+    margin: 0; padding-block: var(--uix-space-4) var(--uix-space-3);
+    font-family: var(--uix-font-heading); font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); font-weight: 600; color: var(--uix-text);
+  }
   .uix-validation-summary {
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
     border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
