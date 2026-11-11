@@ -590,6 +590,7 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
 <Button disabled disabledReason="Keine Änderungen zum Speichern">Speichern</Button>`)}${tokens([
       ['accent', 'interactive: the primary action; with <code>--uix-ring</code> the focus ring. Never a status.'],
       ['link', 'interactive: a link in prose'],
+      ['choice-border', 'interactive: the edge of an unchecked checkbox or radio, the only thing that draws it (&ge; 3:1 on every row and surface)'],
       ['selected-bg', 'selected: the chosen option on its track'],
       ['selected-border', 'selected: the hairline that marks it (&ge; 3:1 on the track)'],
       ['disabled-text', 'disabled: the label of an unavailable control'],
@@ -607,7 +608,7 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     ${section('react', 'Fold a pill tone onto a role', `<p>A product that keeps the finer <code>StatusPill</code> vocabulary (SLA, priority, time pressure) folds it onto the five roles with <code>statusRoleOf</code>, for a <code>StatusDot</code> or a surface.</p>${codeBlock(`import { StatusDot, statusRoleOf } from "@tensor_1/react";
 
 <StatusDot tone={statusRoleOf("sla-breached")}>SLA seit 2 Std. überschritten</StatusDot>`, 'tsx')}`)}
-    ${section('gates', 'How it is tested', `<p><code>packages/tokens/tests/usage-roles.test.mjs</code> (<code>npm run test:tokens</code>) measures every pair a role promises in light and dark, for the default palette and every product theme: text AA on each surface layer, the primary label and links AA, the focus ring and the selected hairline &ge; 3:1, the disabled label readable and &ge; 2:1 away from the enabled one, and each status role's words AA on the surface and on its tint. It also fails a disabled button that fades instead of dropping its fill. <code>packages/react/src/usage-roles-dom.test.mjs</code> holds <code>statusRoleOf</code> and the disabled reason.</p>`)}`;
+    ${section('gates', 'How it is tested', `<p><code>packages/tokens/tests/usage-roles.test.mjs</code> (<code>npm run test:tokens</code>) measures every pair a role promises in light and dark, for the default palette and every product theme: text AA on each surface layer, the primary label and links AA, the focus ring and the selected hairline &ge; 3:1, the disabled label readable and &ge; 2:1 away from the enabled one, and each status role's words AA on the surface and on its tint. It also fails a disabled button that fades instead of dropping its fill. <code>packages/tokens/tests/choice-border-contrast.test.mjs</code> holds the unchecked checkbox and radio edge at &ge; 3:1 on the surfaces, the plain, zebra and hovered row and the app background, in every theme, both modes, more contrast and print. <code>packages/react/src/usage-roles-dom.test.mjs</code> holds <code>statusRoleOf</code> and the disabled reason.</p>`)}`;
   },
   'status-colour': () => {
     // The status colour policy (HAR-1564, colour K3 of the 2026-10-07 operator review).
