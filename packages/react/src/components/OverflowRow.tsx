@@ -5,7 +5,12 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 
 export interface OverflowRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
-  /** The items, in order: each child is one item (a pill, a chip, a short label). */
+  /**
+   * The items, in order: each child is one item (a pill, a badge, a short label). Children must be
+   * non-interactive display items: an item that is hidden for lack of room is removed from the
+   * layout and the accessibility tree and can't be reached, so a linked, toggleable, or removable
+   * control would lose its action. Not enforced by the component.
+   */
   children?: ReactNode;
   /** The counter's text; `{count}` is the number of hidden items. Default "+{count}". */
   more?: string;
