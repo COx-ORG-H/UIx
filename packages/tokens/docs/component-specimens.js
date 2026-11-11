@@ -178,6 +178,10 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-data-display",
     "selector": ".uix-list"
   },
+  "list-summary": {
+    "route": "examples-data-display",
+    "selector": ".uix-list-summary"
+  },
   "description-list": {
     "route": "examples-overlays",
     "selector": ".uix-dl",

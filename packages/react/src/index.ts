@@ -171,6 +171,8 @@ export type { ListProps, ListItemProps } from './components/List.js';
 
 export { DescriptionList, DescriptionItem } from './components/DescriptionList.js';
 export type { DescriptionListProps, DescriptionListItem, DescriptionItemProps } from './components/DescriptionList.js';
+export { ListSummary } from './components/ListSummary.js';
+export type { ListSummaryProps } from './components/ListSummary.js';
 
 export { Tabs, Tab, TabPanel } from './components/Tabs.js';
 export type { TabsProps, TabProps, TabPanelProps } from './components/Tabs.js';

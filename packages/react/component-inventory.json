@@ -426,6 +426,10 @@
       "subpath": "."
     },
     {
+      "name": "ListSummary",
+      "subpath": "."
+    },
+    {
       "name": "LiveIndicator",
       "subpath": "."
     },
