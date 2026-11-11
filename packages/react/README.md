@@ -831,6 +831,25 @@ Both are a `role="grid"` table with one tab stop. Arrow keys move between cells,
 - `count: 0` shows a zero. `hideCount` shows the band alone, for a zero you would rather not print. A row and column left out of `cells` is drawn empty (dashed, `labels.empty`), and can still be opened: `onOpenCell` gets only its `rowId` and `columnId`.
 - Tones are `neutral`, `info`, `success`, `warning`, `attention` and `danger`, always beside their words.
 
+### ListSummary: long lists of names
+
+A cell that lists sixteen roles makes every row of its table tall. `ListSummary` shows a count, the first `max` names (default 3) and the words for the rest, with one button that shows the whole list in place and hides it again (`aria-expanded`, `aria-controls`). A list only one name longer than `max` is shown whole, because hiding a single name saves no space. Every word is a prop; the defaults are English.
+
+```tsx
+import { ListSummary } from '@tensor_1/react';
+
+<ListSummary
+  items={roles.map((r) => r.name)}
+  count={(n) => `${n} Rollen`}
+  more={(n) => `und ${n} weitere`}
+  expandLabel="Alle anzeigen"
+  collapseLabel="Weniger anzeigen"
+  empty="Keine Rolle"
+/>
+```
+
+The toggle sits in the line of names: underlined, so colour is not its only cue, with a 24 px hit area that leaves the line height alone (`.uix-list-summary__toggle`).
+
 ### FilterEditor (typed column filters)
 
 `FilterEditor` is the content of one column-filter popover with a typed value (HAR-1365; TENSOR's

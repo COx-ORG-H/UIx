@@ -34,6 +34,7 @@
     --uix-bg-hover: var(--uix-print-paper-quiet);
     --uix-border: var(--uix-print-line);
     --uix-border-strong: var(--uix-print-ink-quiet);
+    --uix-choice-border: var(--uix-print-ink-quiet);
     --uix-link: var(--uix-print-ink);
     --uix-accent-text: var(--uix-print-ink);
     --uix-row: var(--uix-print-paper);

@@ -291,6 +291,11 @@
       "gzip": 693,
       "brotli": 598
     },
+    "styles/components/list-summary.css": {
+      "raw": 1223,
+      "gzip": 605,
+      "brotli": 487
+    },
     "styles/components/list.css": {
       "raw": 1224,
       "gzip": 536,
