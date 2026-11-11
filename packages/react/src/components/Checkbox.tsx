@@ -6,7 +6,7 @@ import { cx } from '../cx.js';
 
 const CheckIcon = () => (
   <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="1.5,6 4.5,9 10.5,3" />
+    <polyline points="1.5,6 4.5,9 10.5,3" pathLength={1} />
   </svg>
 );
 

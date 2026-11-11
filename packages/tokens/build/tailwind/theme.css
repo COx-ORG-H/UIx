@@ -67,6 +67,10 @@
   --color-uix-neutral-text: var(--uix-neutral-text);
   --color-uix-neutral-bg: var(--uix-neutral-bg);
   --color-uix-neutral-border: var(--uix-neutral-border);
+  --color-uix-selected-bg: var(--uix-selected-bg);
+  --color-uix-selected-border: var(--uix-selected-border);
+  --color-uix-disabled-text: var(--uix-disabled-text);
+  --color-uix-disabled-border: var(--uix-disabled-border);
   --color-uix-chart-1: var(--uix-chart-1);
   --color-uix-chart-2: var(--uix-chart-2);
   --color-uix-chart-3: var(--uix-chart-3);

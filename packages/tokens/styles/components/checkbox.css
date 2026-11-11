@@ -7,16 +7,35 @@
   .uix-checkbox__box {
     width: 18px; height: 18px; flex: none; display: grid; place-items: center;
     border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
-    transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out);
+    /* positioned for its growing fill (::before); it never takes the click, which belongs to the
+       hidden input under it (and to the label around both) */
+    position: relative; pointer-events: none;
+    transition: background-color 0s linear, border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
+  /* 2.60 (animate-ui's checkbox): the fill grows from .7 and fades in over --uix-dur-draw on
+     --uix-ease-fill (the box takes the solid colour once it is full), then the tick draws itself from
+     its short arm to its long one (stroke-dashoffset over a pathLength of 1), --uix-delay-draw later;
+     unticking erases the stroke over --uix-dur-draw while the fill shrinks away. The dash grows from
+     its centre. Reduced motion keeps the fades. */
+  .uix-checkbox__box::before {
+    content: ""; position: absolute; inset: -1px; border-radius: inherit; background: var(--uix-accent);
+    opacity: 0; transform: scale(.7);
+    transition: opacity var(--uix-dur-draw) var(--uix-ease-fill), transform var(--uix-dur-draw) var(--uix-ease-fill);
+  }
+  .uix-checkbox > input:is(:checked, :indeterminate) + .uix-checkbox__box::before { opacity: 1; transform: none; }
   .uix-checkbox__box svg {
-    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0; transform: scale(.5);
-    transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-spring);
+    position: relative;
+    width: 13px; height: 13px; color: var(--uix-accent-fg); opacity: 0;
+    transition: opacity 0s linear var(--uix-dur-draw);
   }
+  .uix-checkbox__box polyline { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--uix-dur-draw) var(--uix-ease-leave); }
+  .uix-checkbox__box rect { transform-box: fill-box; transform-origin: center; transform: scaleX(0); transition: transform 0s linear var(--uix-dur-exit-fast); }
   .uix-checkbox > input:checked + .uix-checkbox__box,
-  .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); }
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box { background: var(--uix-accent); border-color: var(--uix-accent); transition: background-color 0s linear var(--uix-dur-draw), border-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-checkbox > input:checked + .uix-checkbox__box svg,
-  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transform: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box svg { opacity: 1; transition: none; } /* indeterminate shows its dash icon, not just the filled box (UIX-A11Y-3) */
+  .uix-checkbox > input:checked + .uix-checkbox__box polyline { stroke-dashoffset: 0; transition: stroke-dashoffset var(--uix-dur-draw) var(--uix-ease-leave) var(--uix-delay-draw); }
+  .uix-checkbox > input:indeterminate + .uix-checkbox__box rect { transform: none; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-checkbox > input:focus-visible + .uix-checkbox__box { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-checkbox > input:disabled ~ * { opacity: .5; }
 }

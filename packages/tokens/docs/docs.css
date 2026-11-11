@@ -515,6 +515,30 @@ body[data-docs-menu-open] { overflow: hidden; }
    --uix-dur-exit: the closed rule carries the exit duration, so closing runs faster than opening. */
 .uix-docs__motion-specimens { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--uix-space-5); width: 100%; align-items: start; }
 .uix-docs__motion-specimens .uix-btn { justify-self: start; align-self: start; }
+/* The live 2.60 motion playground (Motion → Try it): real React components, mounted by docs.js. */
+.uix-docs__live { margin: var(--uix-space-5) 0; }
+.uix-docs__live-status { margin: 0; padding: var(--uix-space-5); border: 1px dashed var(--uix-border); border-radius: var(--uix-radius-lg); color: var(--uix-text-hushed); }
+.uix-docs__live-grid { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: var(--uix-space-4); align-items: start; }
+.uix-docs__live-grid > .uix-docs__live-demo:nth-child(n + 3) { grid-column: 1 / -1; }
+.uix-docs__live-col { display: grid; gap: var(--uix-space-4); min-width: 0; }
+.uix-docs__live-demo { display: grid; min-width: 0; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+.uix-docs__live-head { display: grid; gap: var(--uix-space-1); padding: var(--uix-space-3) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+.uix-docs__live-head span { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+.uix-docs__live-stage { padding: var(--uix-space-4); min-width: 0; }
+.uix-docs__live-sidebar { display: flex; height: 26rem; overflow: hidden; border-radius: var(--uix-radius-md); border: 1px solid var(--uix-border); }
+.uix-docs__live-sidebar > * { flex: 1 1 auto; min-width: 0; }
+.uix-docs__live-row { display: flex; align-items: center; gap: var(--uix-space-3); min-width: 0; }
+.uix-docs__live-row--top { align-items: flex-start; gap: var(--uix-space-6); flex-wrap: wrap; }
+.uix-docs__live-row--wrap { flex-wrap: wrap; }
+.uix-docs__live-select { width: min(100%, 15rem); }
+.uix-docs__live-toolbar { display: flex; gap: var(--uix-space-1); padding-top: var(--uix-space-6); }
+.uix-docs__live-steps { overflow: hidden; padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface-2); }
+.uix-docs__live-step { display: grid; gap: var(--uix-space-1); }
+.uix-docs__live-step-count { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+@media (max-width: 720px) {
+  .uix-docs__live-grid { grid-template-columns: minmax(0, 1fr); }
+  .uix-docs__live-sidebar { height: 22rem; }
+}
 .uix-docs__token-table--prose + p { margin-top: var(--uix-space-4); }
 .uix-docs__motion-panel {
   padding: var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);

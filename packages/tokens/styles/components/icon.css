@@ -34,3 +34,69 @@
   .uix-glyph--arrow-up-down { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-4 4-4-4'/%3E%3Cpath d='M17 20V4'/%3E%3Cpath d='m3 8 4-4 4 4'/%3E%3Cpath d='M7 4v16'/%3E%3C/svg%3E"); }
   .uix-glyph--x { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E"); }
 }
+
+/* Animated icons (2.60, IconProps `animate`). The motion belongs to the glyph: an icon with
+   [data-animate] plays it once when the pointer moves onto the control around it (a button, link,
+   menu item, tab, option) or onto the icon itself. Parts move by their place in the glyph (Lucide
+   path order, packages/react/src/icons/glyphs.ts). Everything returns to rest, or turns by the
+   glyph's own symmetry (a quarter for plus and close, one tooth of six for the gear, half for
+   refresh), so the end frame is the still icon. Hover only, so keyboard focus and touch never move
+   it; reduced motion never does either. A check draws itself (from the short arm) when it appears. */
+@keyframes uix-icon-nudge-up { 40% { transform: translateY(-2px); } }
+@keyframes uix-icon-nudge-down { 40% { transform: translateY(2px); } }
+@keyframes uix-icon-nudge-out { 40% { transform: translate(1.5px, -1.5px); } }
+@keyframes uix-icon-nudge-back { 40% { transform: translate(-1px, -1px); } }
+@keyframes uix-icon-nudge-x { 40% { transform: translateX(2px); } }
+@keyframes uix-icon-turn-quarter { to { transform: rotate(90deg); } }
+@keyframes uix-icon-turn-half { to { transform: rotate(180deg); } }
+@keyframes uix-icon-swing { 15% { transform: rotate(20deg); } 35% { transform: rotate(-10deg); } 55% { transform: rotate(10deg); } 75% { transform: rotate(-5deg); } 90% { transform: rotate(3deg); } }
+@keyframes uix-icon-lid { 45% { transform: translateY(-1.5px) rotate(-10deg); } }
+@keyframes uix-icon-pop { 45% { transform: scale(1.18); } }
+@keyframes uix-icon-bump { 50% { transform: scale(1.1); } }
+@keyframes uix-icon-draw { from { stroke-dashoffset: -23; } to { stroke-dashoffset: 0; } }
+/* 2.60 (animate-ui's icons, operator 2026-11-08): an arrow or chevron leans the way it points while its
+   control is hovered (25 % / 17 % of the glyph, --uix-dur-icon) and eases back; close and plus turn a
+   quarter (--uix-dur-icon-turn); the gear turns half a revolution (--uix-dur-icon-spin); the bell swings
+   (--uix-dur-icon-swing); a check draws itself with a small bump (--uix-dur-icon-draw). */
+@layer uix.components {
+  .uix-icon[data-icon="bell"][data-animate] { transform-origin: 50% 12%; }
+  .uix-icon[data-icon="trash-2"][data-animate] > :nth-child(n+4) { transform-box: view-box; transform-origin: 12.5% 25%; }
+  .uix-icon[data-icon="check"][data-animate] > path { stroke-dasharray: 23; animation: uix-icon-draw var(--uix-dur-icon-draw) var(--uix-ease-out) both; }
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .uix-icon[data-icon="check"][data-animate] { animation: uix-icon-bump var(--uix-dur-icon-draw) var(--uix-ease-in-out); }
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .uix-icon:is([data-icon="arrow-right"], [data-icon="chevron-right"])[data-animate] { transition: translate var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="arrow-right"][data-animate],
+    .uix-icon[data-icon="arrow-right"][data-animate]:hover { translate: 25% 0; }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="chevron-right"][data-animate],
+    .uix-icon[data-icon="chevron-right"][data-animate]:hover { translate: 17% 0; }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="log-out"][data-animate] > :nth-child(-n+2),
+    .uix-icon[data-icon="log-out"][data-animate]:hover > :nth-child(-n+2) { animation: uix-icon-nudge-x var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="external-link"][data-animate] > :nth-child(-n+2),
+    .uix-icon[data-icon="external-link"][data-animate]:hover > :nth-child(-n+2) { animation: uix-icon-nudge-out var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="send"][data-animate],
+    .uix-icon[data-icon="send"][data-animate]:hover { animation: uix-icon-nudge-out var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="download"][data-animate] > :is(:nth-child(1), :nth-child(3)),
+    .uix-icon[data-icon="download"][data-animate]:hover > :is(:nth-child(1), :nth-child(3)) { animation: uix-icon-nudge-down var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="upload"][data-animate] > :nth-child(-n+2),
+    .uix-icon[data-icon="upload"][data-animate]:hover > :nth-child(-n+2) { animation: uix-icon-nudge-up var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="copy"][data-animate] > :nth-child(1),
+    .uix-icon[data-icon="copy"][data-animate]:hover > :nth-child(1) { animation: uix-icon-nudge-back var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon:is([data-icon="plus"], [data-icon="x"])[data-animate],
+    .uix-icon:is([data-icon="plus"], [data-icon="x"])[data-animate]:hover { animation: uix-icon-turn-quarter var(--uix-dur-icon-turn) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="settings"][data-animate],
+    .uix-icon[data-icon="settings"][data-animate]:hover { animation: uix-icon-turn-half var(--uix-dur-icon-spin) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="refresh-cw"][data-animate],
+    .uix-icon[data-icon="refresh-cw"][data-animate]:hover { animation: uix-icon-turn-half var(--uix-dur-icon-turn) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="bell"][data-animate],
+    .uix-icon[data-icon="bell"][data-animate]:hover { animation: uix-icon-swing var(--uix-dur-icon-swing) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="trash-2"][data-animate] > :nth-child(n+4),
+    .uix-icon[data-icon="trash-2"][data-animate]:hover > :nth-child(n+4) { animation: uix-icon-lid var(--uix-dur-icon) var(--uix-ease-in-out); }
+    :is(a, button, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):not(:disabled, [aria-disabled="true"]):hover .uix-icon[data-icon="star"][data-animate],
+    .uix-icon[data-icon="star"][data-animate]:hover { animation: uix-icon-pop var(--uix-dur-icon) var(--uix-ease-in-out); }
+  }
+  /* reduced motion: the icons stay still (the check appears whole) */
+  @media (prefers-reduced-motion: reduce) { .uix-icon[data-animate], .uix-icon[data-animate] * { animation: none !important; } }
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] :is(.uix-icon[data-animate], .uix-icon[data-animate] *) { animation: none !important; } }
+}

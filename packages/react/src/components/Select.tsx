@@ -8,7 +8,10 @@ import type {
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
-import { markKeyOpened, watchInputModality } from '../motion.js';
+import { blurIn, keyboardInitiated, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
+import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
+import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -215,7 +218,7 @@ function labelText(trigger: HTMLElement, own: readonly (Node | null)[], ariaLabe
 
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5" />
+    <path d="M20 6 9 17l-5-5" pathLength={1} />
   </svg>
 );
 
@@ -251,6 +254,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const proxyRef = useRef<HTMLSelectElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // one hover mark that glides from option to option under the pointer (2.60)
+  const glideRef = useRef<HTMLSpanElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /* ---- items */
@@ -278,6 +283,29 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   /* ---- open state */
   const [open, setOpen] = useState(false);
+  const [justChosen, setJustChosen] = useState<string | null>(null);
+  useEffect(() => {
+    if (justChosen == null) return undefined;
+    const t = setTimeout(() => setJustChosen(null), 600);
+    return () => clearTimeout(t);
+  }, [justChosen]);
+  /** After a pick the list holds open --uix-hold-pick so its check is seen drawing (animate-ui). */
+  const holdTimer = useRef<number | null>(null);
+  // a key pressed while the list holds open means the person is still choosing: the hold ends and
+  // the list stays (the delayed close must never overtake a key move)
+  const onHoldKey = () => clearHold();
+  const clearHold = () => {
+    document.removeEventListener('keydown', onHoldKey, true);
+    if (holdTimer.current != null) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+  };
+  useEffect(() => clearHold, []);
+  // the trigger's value rises in when it changes, never on the first render (2.60): the value span is
+  // keyed by the value, so only a new value makes a new element, and only those carry the mark
+  const valueKey = values.join('|');
+  const lastValueKey = useRef(valueKey);
+  const valueChanged = useRef(false);
+  if (lastValueKey.current !== valueKey) { lastValueKey.current = valueKey; valueChanged.current = true; }
+  useHoverGlide(glideRef, '.uix-listbox__option', open);
   const [mode, setMode] = useState<'popover' | 'sheet'>('popover');
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
@@ -466,6 +494,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   };
 
   const close = (opts: { revert?: boolean; focus?: boolean } = {}) => {
+    clearHold();
     if (opts.revert && multiple) {
       const was = snapshot.current;
       const now = valuesRef.current;
@@ -480,6 +509,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   const choose = (entry: SelectEntry | undefined, closeAfter = !multiple) => {
     if (!entry || entry.disabled) return;
+    // 2.60: the option just picked draws its check (seen while a multiple list stays open)
+    setJustChosen(entry.option.value);
     if (multiple) {
       commit(toggleValue(valuesRef.current, entry.option.value), entry.option);
       setActive(entry.index);
@@ -487,6 +518,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       return;
     }
     if (entry.option.value !== current) commit([entry.option.value], entry.option);
+    // a pointer pick holds the list open a moment so the check is seen drawing, then it shrinks away
+    // (animate-ui). A key pick closes at once: the next key must reach the trigger, not the list.
+    const pointer = !keyboardInitiated() && !!window.matchMedia?.('(hover: hover)').matches;
+    const hold = mode === 'popover' && pointer && !prefersReducedMotion() ? tokenMs('--uix-hold-pick', 250) : 0;
+    if (hold > 0) {
+      clearHold();
+      holdTimer.current = setTimeout(() => { clearHold(); close({ focus: true }); }, hold) as unknown as number;
+      document.addEventListener('keydown', onHoldKey, true);
+      return;
+    }
     close({ focus: true });
   };
 
@@ -628,19 +669,20 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       const zoom = zoomOf(trigger);
       const r = trigger.getBoundingClientRect();
       const room = Math.max(r.top, window.innerHeight - r.bottom) / zoom - OFFSET - EDGE;
-      popup.style.minWidth = `${Math.round(r.width / zoom)}px`;
+      // its layout width: an ancestor still scaling in (a popover held at .95 while it is placed, or
+      // growing) shrinks the box, not offsetWidth, which also ignores CSS zoom (Chromium, WebKit)
+      popup.style.minWidth = `${Math.round(trigger.offsetWidth || r.width / zoom)}px`;
       popup.style.maxHeight = `${Math.max(96, Math.min(MAX_HEIGHT, Math.floor(room)))}px`;
-      // Opened from the keyboard (Alt+↓, Enter, typing): no enter motion (motion.css).
-      if (!isOpen()) markKeyOpened(popup);
+      // 2.60: from the keyboard too it grows in and its rows arrive (operator, as animate-ui)
       try { if (!isOpen()) popup.showPopover(); } catch { /* no Popover API: `hidden` drives it */ }
       if (isSearchable) searchRef.current?.focus({ preventScroll: true });
     } else {
-      if (isOpen()) markKeyOpened(popup);
       try { if (isOpen()) popup.hidePopover(); } catch { /* no Popover API */ }
     }
   }, [showing, isSearchable]);
   useEffect(() => { watchInputModality(); }, []);
   useAnchoredPosition(triggerRef, popupRef, { open: showing, placement, offset: OFFSET, padding: EDGE });
+  useArrivalBlur(() => popupRef.current, '.uix-listbox > :is(.uix-listbox__option, .uix-listbox__group)', showing);
 
   /* ---- the phone sheet: the listbox takes focus */
   useEffect(() => {
@@ -702,6 +744,37 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           <span className="uix-select__text">{firstSelected?.label}</span>
         </>
       );
+  // 2.60 (animate-ui's value swap): the old value rises out while the new one rises in, both over
+  // --uix-dur-overlay on --uix-ease-soft (CSS), their 4 px blur written per frame (motion.ts blurIn).
+  // The old value is the trigger's ::before (`content: attr(data-leaving)`), never a second element,
+  // so the trigger's text and accessible name only ever hold the current value.
+  const valueRef = useRef<HTMLSpanElement>(null);
+  const shownText = useRef<string | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    const trigger = triggerRef.current;
+    const was = shownText.current;
+    shownText.current = valueRef.current?.textContent ?? '';
+    if (!trigger || was == null || was === shownText.current || prefersReducedMotion()) return undefined;
+    trigger.setAttribute('data-leaving', was);
+    trigger.removeAttribute('data-swap');
+    void trigger.offsetWidth;
+    trigger.setAttribute('data-swap', '');
+    const blur = tokenPx('--uix-arrive-blur', 4);
+    const duration = tokenMs('--uix-dur-overlay', 400);
+    const ease = tokenEase('--uix-ease-soft');
+    const stops = [
+      valueRef.current ? blurIn([valueRef.current], { from: blur, duration, ease }) : () => {},
+      blurIn([trigger], { from: blur, duration, ease, leave: true, property: '--uix-leaving-blur' }),
+    ];
+    const t = setTimeout(() => { trigger.removeAttribute('data-leaving'); trigger.removeAttribute('data-swap'); }, duration);
+    return () => {
+      clearTimeout(t);
+      stops.forEach((stop) => stop());
+      trigger.removeAttribute('data-leaving');
+      trigger.removeAttribute('data-swap');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueKey]);
   const more = multiple && values.length > 1 ? values.length - 1 : 0;
   const isInvalid = !!invalid || formInvalid || (ariaInvalid != null && ariaInvalid !== false && ariaInvalid !== 'false');
   // `popover` is a valid HTML attribute but absent from React 18's DOM types.
@@ -741,6 +814,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         aria-selected={selected}
         aria-disabled={entry.disabled || undefined}
         data-active={(open && isActive) || undefined}
+        data-just-chosen={(selected && justChosen === o.value) || undefined}
         onMouseDown={(e) => e.preventDefault()}
         onPointerMove={() => { if (!isActive && !entry.disabled) setActive(entry.index); }}
         onClick={(e) => { e.preventDefault(); choose(entry); }}
@@ -775,6 +849,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       hidden={entries.length === 0 || undefined}
       onKeyDown={mode === 'sheet' && !isSearchable ? (e) => onOpenKey(e, false) : undefined}
     >
+      <span ref={glideRef} className="uix-glide" aria-hidden="true" />
       {listModel.sections.map((section, i) => (section.label != null ? (
         <div key={`g${i}`} role="group" className="uix-listbox__group" aria-labelledby={`${uid}-group-${i}`} aria-disabled={section.disabled || undefined}>
           <div id={`${uid}-group-${i}`} role="presentation" className="uix-listbox__group-label">{section.label}</div>
@@ -848,7 +923,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <span className="uix-select__value">{display}</span>
+        <span key={valueKey} ref={valueRef} className="uix-select__value" data-changed={valueChanged.current || undefined}>{display}</span>
         {more > 0 && (
           <span className="uix-select__more">
             <span aria-hidden="true">+{more}</span>

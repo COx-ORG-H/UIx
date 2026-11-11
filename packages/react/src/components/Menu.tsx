@@ -9,6 +9,8 @@ import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { useHoverGlide } from '../hooks/useHoverGlide.js';
+import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import type { KeyShortcut } from './Kbd.js';
 
 /**
@@ -80,6 +82,9 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
   /** Which item gets focus when the menu opens. */
   const focusOnOpen = useRef<'first' | 'last'>('first');
   const typeahead = useRef({ text: '', at: 0 });
+  // one hover mark that glides from item to item under the pointer (2.60)
+  const glideRef = useRef<HTMLSpanElement>(null);
+  useHoverGlide(glideRef, '.uix-menu__item', open);
 
   const setOpen = (next: boolean) => {
     if (controlledOpen === undefined) setInternalOpen(next);
@@ -116,6 +121,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
     return () => document.removeEventListener('pointerdown', onPointer, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, menuId]);
+  useArrivalBlur(menu, ':scope > :is(.uix-menu__item, .uix-menu__label, .uix-menu__sep, [role="group"])', open);
 
   const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const list = items();
@@ -174,6 +180,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
       <Popover
         id={menuId}
         popover="manual"
+        data-uix-animate-keys=""
         anchor={triggerRef}
         placement={placement}
         capHeight
@@ -183,7 +190,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
         className={cx('uix-menu', className)}
         onKeyDown={onMenuKeyDown}
       >
-        {open ? children : null}
+        {open ? <><span ref={glideRef} className="uix-glide" aria-hidden="true" />{children}</> : null}
       </Popover>
     </MenuContext.Provider>
   );

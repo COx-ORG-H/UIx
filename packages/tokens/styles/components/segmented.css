@@ -25,7 +25,7 @@
      1.09:1 in light, so an inset --uix-text-muted hairline (4.9:1 light, 7:1 dark on the track) makes
      it a 3:1 boundary (WCAG 1.4.11). No weight change: a bolder label would widen the option and
      shift its neighbours on every selection. */
-  .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) { background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); }
+  .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) { background: var(--uix-selected-bg); color: var(--uix-text); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-selected-border); }
   .uix-segmented__option:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 
   /* Sliding indicator (React Segmented, HAR-2589). At rest the chosen option shows its own lift.

@@ -359,3 +359,18 @@ test('the status-colour policy is linked from Status pill, Alert, Stat, Scheduli
   }
 });
 
+
+test('Usage roles is a Foundations page: five status roles in order, one critical in the applied table (HAR-2816)', () => {
+  assert.equal(getPage('usage-roles'), 'usage-roles');
+  assert.match(readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8'), /\{ name: 'Usage roles', slug: 'usage-roles', group: 'Foundations'/);
+  const html = pageContent('usage-roles');
+  for (const id of ['status-roles', 'controls', 'surfaces-text', 'applied', 'react', 'gates']) assert.match(html, new RegExp(`id="${id}"`), id);
+  const roles = [...html.match(/data-status-roles.*?<tbody>(.*?)<\/tbody>/s)[1].matchAll(/data-role="([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(roles, ['neutral', 'info', 'success', 'warning', 'critical']);
+  const applied = html.match(/data-roles-applied.*?<tbody>(.*?)<\/tbody>/s)[1];
+  assert.equal((applied.match(/uix-pill--danger|uix-pill--critical|uix-status-dot--critical/g) ?? []).length, 1, 'one critical, as a dot');
+  assert.match(applied, /uix-status-dot--critical">Supportende seit 12 Tagen überschritten/);
+  assert.match(html, /<button class="uix-btn uix-btn--secondary" type="button" disabled/);
+  assert.match(html, /usage-roles\.test\.mjs/);
+  assert.match(pageContent('button'), /disabledReason/);
+});

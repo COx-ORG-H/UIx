@@ -115,7 +115,8 @@ export function Popover({
     watchInputModality();
     const el = ref.current;
     if (!el) return;
-    const mark = () => markKeyOpened(el);
+    // a Menu animates from the keyboard too (2.60, operator): it passes data-uix-animate-keys
+    const mark = () => { if (el.hasAttribute('data-uix-animate-keys')) el.removeAttribute('data-uix-key-opened'); else markKeyOpened(el); };
     el.addEventListener('beforetoggle', mark);
     return () => el.removeEventListener('beforetoggle', mark);
   }, []);

@@ -83,6 +83,7 @@ const NAV_ITEMS = [
   { name: 'Design tokens', slug: 'design-tokens', group: 'Foundations', summary: 'The stable --uix-* contract and generated outputs.', keywords: ['css variables', 'dtcg', 'style dictionary'], featured: true },
   { name: 'Chart tokens', slug: 'chart-tokens', group: 'Foundations', summary: 'The categorical palette, analytic roles and the shipped ECharts theme.', keywords: ['chart', 'palette', 'echarts', 'threshold', 'forecast', 'dataviz'] },
   { name: 'Theming', slug: 'theming', group: 'Foundations', summary: 'Light, dark, and product brand profiles.', keywords: ['color mode', 'brand', 'dark mode'] },
+  { name: 'Usage roles', slug: 'usage-roles', group: 'Foundations', summary: 'What each colour is for: surfaces, text, controls, selected, disabled and the five status roles by meaning.', keywords: ['roles', 'usage', 'neutral', 'info', 'success', 'warning', 'critical', 'disabled', 'selected', 'interactive', 'surface', 'contrast'] },
   { name: 'Status colour', slug: 'status-colour', group: 'Foundations', summary: 'Which state gets a colour, how loud it is on each surface, and the colour budget of a screen.', keywords: ['status', 'color', 'colour', 'policy', 'tone', 'neutral', 'badge', 'pill', 'dark mode'] },
   { name: 'Rules for apps', slug: 'rules-for-apps', group: 'Foundations', summary: 'The calm rules every app built on UIx follows: the signal budget, brand and neutrals, chart grammar, motion grammar and files, and which ones the kit enforces.', keywords: ['rules', 'calm', 'signal budget', 'red', 'critical', 'chart grammar', 'motion grammar', 'loop', 'pulse', 'brand', 'neutrals', 'files', 'policy'] },
   { name: 'Motion', slug: 'motion', group: 'Foundations', summary: 'Duration, easing, transition, and reduced-motion contracts.', keywords: ['animation', 'transition', 'easing'] },
@@ -388,6 +389,7 @@ const buttonProps = [
   { name: 'size', type: "'sm' | 'md' | 'lg'", default: 'md', description: 'Sets the control height and horizontal padding.' },
   { name: 'icon', type: 'boolean', default: 'false', description: 'Creates a square icon-only control.' },
   { name: 'loading', type: 'boolean', default: 'false', description: 'Shows progress and disables interaction.' },
+  { name: 'disabledReason', type: 'string', default: '—', description: 'With disabled: keeps the button focusable as aria-disabled, takes no press, and shows and announces why in a Tooltip (Usage roles). Silent while enabled; pass it for as long as the button can become unavailable, so toggling disabled keeps the same button and its focus.' },
 ];
 
 const PAGES = {
@@ -559,6 +561,54 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     <div data-app-rules>${RULES.map(([id, title, items]) => section(id, title, list(items))).join('')}</div>
     ${section('enforced', 'What the kit enforces', `<p>Each of these fails the UIx build when a change breaks the rule, so an app that uses the kit components gets them for free. A product that styles its own status or chart colours is held to the same rules in review.</p><div class="uix-table-wrap" tabindex="0" role="region" aria-label="Rules the kit enforces"><table class="uix-table" data-app-rule-gates><thead><tr><th scope="col">Rule</th><th scope="col">Gate</th></tr></thead><tbody>${GATES.map(([rule, gate]) => `<tr><td>${esc(rule)}</td><td>${gate}</td></tr>`).join('')}</tbody></table></div>`)}`;
   },
+  'usage-roles': () => {
+    // HAR-2816: the usage roles, approved 2026-11-09 as drawn (TENSOR har-2816-entwurf.png).
+    const pill = (tone, text) => `<span class="uix-pill uix-pill--${tone}"><span class="uix-pill__dot"></span>${esc(text)}</span>`;
+    const dot = (tone, text) => `<span class="uix-status-dot uix-status-dot--${tone}">${esc(text)}</span>`;
+    const ROLES = [
+      ['neutral', 'Neutral', 'The default: facts, counts, lifecycle states, priorities and routine absences.', 'Inaktiv seit 92 Tagen'],
+      ['info', 'Info', 'Worth noticing with no pressure to act: in flight, new, unread.', 'Neue Version verfügbar'],
+      ['success', 'Success', 'The one achieved outcome a person waits for.', 'Prüflauf bestanden'],
+      ['warning', 'Warning', 'Act soon: a deadline near, a value drifting.', 'Support endet in 42 Tagen'],
+      ['critical', 'Critical', 'Broken or breached now, and rare: a dot and words, at most one red surface per screen.', 'Lizenz um 3 überbucht'],
+    ];
+    const roles = `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="Status roles"><table class="uix-table" data-status-roles><thead><tr><th scope="col">Role</th><th scope="col">Use it for</th><th scope="col">Example</th></tr></thead><tbody>${ROLES.map(([role, name, use, text]) => `<tr data-role="${role}"><td>${dot(role, name)}</td><td>${esc(use)}</td><td>${pill(role, text)}</td></tr>`).join('')}</tbody></table></div>`;
+    const APPLIED = [
+      ['Member not signed in for 92 days', 'neutral', pill('neutral', 'Inaktiv · 92 Tage')],
+      ['Support ends in 42 days', 'warning', pill('warning', 'Supportende in 42 Tagen')],
+      ['Support end passed', 'critical', dot('critical', 'Supportende seit 12 Tagen überschritten')],
+      ['Control run: object not applicable', 'neutral', pill('neutral', 'Nicht anwendbar')],
+      ['Delete a licence', 'destructive', '<span class="uix-text-muted">under “Mehr”; red only on the confirm button</span>'],
+    ];
+    const applied = `<div class="uix-table-wrap" tabindex="0" role="region" aria-label="Roles applied in a product"><table class="uix-table" data-roles-applied><thead><tr><th scope="col">Situation</th><th scope="col">Role</th><th scope="col">Shown as</th></tr></thead><tbody>${APPLIED.map(([situation, role, shown]) => `<tr><td>${esc(situation)}</td><td>${esc(role)}</td><td>${shown}</td></tr>`).join('')}</tbody></table></div>`;
+    const tokens = (rows) => `<table class="uix-docs__token-table uix-docs__token-table--prose"><thead><tr><th>Token</th><th>Role</th></tr></thead><tbody>${rows.map(([t, r]) => `<tr><td><code>--uix-${t}</code></td><td>${r}</td></tr>`).join('')}</tbody></table>`;
+    return `${pageHeader('Foundations', 'Usage roles', 'What each colour is for and when not to use it: surfaces, text, controls, selection, disabled and the five status roles.', ['five status roles', 'colour is never the only cue', 'tested in both themes'])}
+    ${section('status-roles', 'Status by meaning', `<p>Pick the role from what the state means for the person reading it, never from how important the screen feels. Neutral is the default; most of a screen is neutral. The <a href="#status-colour">status colour policy</a> maps domain states onto these roles and sets the treatment per surface.</p>${roles}${callout('Words first', 'Every status carries words (and a dot or an icon); colour is never the only cue. Red only when something is broken now, at most one red surface per screen; elsewhere a critical state is a dot and words.', 'warning')}`)}
+    ${section('controls', 'Controls: interactive, selected and disabled', `<p>One primary action per decision area; secondary is the default; ghost for low-emphasis actions in toolbars. Selected is a surface and a hairline on its track, never a hue alone. Disabled is muted text, no fill and a hairline, with the not-allowed cursor and a reason, so it differs from enabled without relying on colour.</p>${demo(`<div class="uix-stack" style="--gap:var(--uix-space-4)"><div class="uix-cluster"><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Zugewiesen">Zuweisen</button><button class="uix-btn uix-btn--secondary" type="button" data-demo-action="Vorschau geöffnet">Vorschau</button><button class="uix-btn uix-btn--ghost" type="button" data-demo-action="Abgebrochen">Abbrechen</button><button class="uix-btn uix-btn--secondary" type="button" disabled title="Keine Änderungen zum Speichern">Speichern</button></div><div class="uix-segmented" role="group" aria-label="Filter"><button class="uix-segmented__option" type="button" aria-pressed="true">Alle</button><button class="uix-segmented__option" type="button" aria-pressed="false">Ruhend</button></div></div>`, `<Button variant="primary">Zuweisen</Button>
+<Button>Vorschau</Button>
+<Button variant="ghost">Abbrechen</Button>
+<Button disabled disabledReason="Keine Änderungen zum Speichern">Speichern</Button>`)}${tokens([
+      ['accent', 'interactive: the primary action; with <code>--uix-ring</code> the focus ring. Never a status.'],
+      ['link', 'interactive: a link in prose'],
+      ['selected-bg', 'selected: the chosen option on its track'],
+      ['selected-border', 'selected: the hairline that marks it (&ge; 3:1 on the track)'],
+      ['disabled-text', 'disabled: the label of an unavailable control'],
+      ['disabled-border', 'disabled: the hairline it keeps so it still reads as a control'],
+    ])}<p>React: <code>&lt;Button disabled disabledReason="…"&gt;</code> keeps the button focusable as <code>aria-disabled</code>, takes no press, and shows and announces the reason in a Tooltip.</p>`)}
+    ${section('surfaces-text', 'Surfaces and text', tokens([
+      ['bg-app', 'surface: the page behind everything'],
+      ['surface', 'surface: cards, panels, tables'],
+      ['bg-subtle', 'surface: a track, a quiet band, a secondary button'],
+      ['text', 'text: content and labels'],
+      ['text-hushed', 'text: secondary text and the neutral status words'],
+      ['text-muted', 'text: hints, metadata and disabled labels'],
+    ]))}
+    ${section('applied', 'Applied in a product', `<p>TENSOR, in German: a routine absence stays neutral and only a true breach is critical.</p>${applied}`)}
+    ${section('react', 'Fold a pill tone onto a role', `<p>A product that keeps the finer <code>StatusPill</code> vocabulary (SLA, priority, time pressure) folds it onto the five roles with <code>statusRoleOf</code>, for a <code>StatusDot</code> or a surface.</p>${codeBlock(`import { StatusDot, statusRoleOf } from "@tensor_1/react";
+
+<StatusDot tone={statusRoleOf("sla-breached")}>SLA seit 2 Std. überschritten</StatusDot>`, 'tsx')}`)}
+    ${section('gates', 'How it is tested', `<p><code>packages/tokens/tests/usage-roles.test.mjs</code> (<code>npm run test:tokens</code>) measures every pair a role promises in light and dark, for the default palette and every product theme: text AA on each surface layer, the primary label and links AA, the focus ring and the selected hairline &ge; 3:1, the disabled label readable and &ge; 2:1 away from the enabled one, and each status role's words AA on the surface and on its tint. It also fails a disabled button that fades instead of dropping its fill. <code>packages/react/src/usage-roles-dom.test.mjs</code> holds <code>statusRoleOf</code> and the disabled reason.</p>`)}`;
+  },
   'status-colour': () => {
     // The status colour policy (HAR-1564, colour K3 of the 2026-10-07 operator review).
     const pill = (tone, text, treatment = 'soft') => `<span class="uix-pill uix-pill--${tone}${treatment === 'soft' ? '' : ` uix-pill--${treatment}`}"><span class="uix-pill__dot"></span>${esc(text)}</span>`;
@@ -655,10 +705,38 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
       ['<code>--uix-hold-result</code>', '1500 ms', 'An in-place result (success, error, copied) holds, then returns to rest'],
       ['<code>--uix-ease-out</code> / <code>--uix-ease-out-strong</code>', '', 'Entrances and exits'],
       ['<code>--uix-ease-in-out</code>', 'cubic-bezier(.77,0,.175,1)', 'Movement already on screen'],
-      ['<code>--uix-ease-spring</code>', '', 'A small confirmation (a check, a star); never layout, never staff-UI bounce'],
+      ['<code>--uix-ease-glide</code> / <code>--uix-dur-glide</code>', 'spring 550/43 as <code>linear()</code>, 280 ms', 'A mark gliding between items already on screen: the hover mark in a list, the current-page tint, a tooltip moving to its neighbour, a drawer arriving. No overshoot; reads as about 175 ms'],
+      ['<code>--uix-ease-pop</code> / <code>--uix-dur-pop</code>', 'spring 800/42 as <code>linear()</code>, 280 ms', 'A control growing in from its trigger (tooltip, the radio dot): a 3 % overshoot of the travel. Controls only, never data or status'],
+      ['<code>--uix-ease-tooltip</code> / <code>--uix-dur-tooltip</code>', 'spring 400/31 as <code>linear()</code>, 410 ms', 'A tooltip growing in from .7, shrinking away and travelling to its neighbour (animate-ui’s tooltip spring): a 2 % overshoot; reads as about 165 ms'],
+      ['<code>--uix-ease-enter</code> / <code>--uix-ease-leave</code>', 'cubic-bezier(.25,.1,.35,1) / (0,0,.58,1)', 'Content arriving in, or leaving, a surface that stays (a tooltip’s labels)'],
+      ['<code>--uix-dur-swap-in</code> / <code>--uix-dur-swap-out</code>', '340 ms / 130 ms', 'A tooltip’s new label sliding in and its old one sliding out, <code>--uix-swap-shift</code> (40 px) along the way the bubble travels'],
+      ['<code>--uix-arrive-blur</code> / <code>--uix-swap-blur</code>', '4 px / 6 px', 'The blur arriving list rows and swapping tooltip labels clear from. Driven per frame in script (<code>blurIn</code>), never by CSS: Linux WebKit crashes on a CSS-animated filter. 0px turns it off'],
+      ['<code>--uix-ease-soft</code> / <code>--uix-dur-menu</code> / <code>--uix-dur-row</code>', 'cubic-bezier(.215,.61,.355,1); 220 ms; 300 ms', 'animate-ui’s soft curve: a menu or select list growing in and out, list rows arriving, a sidebar group opening (<code>--uix-dur-disclosure</code>, 350 ms), a value swapping and a dim fading (<code>--uix-dur-overlay</code>, 400 ms)'],
+      ['<code>--uix-ease-drawer</code> / <code>--uix-dur-drawer</code> / <code>--uix-dur-drawer-out</code>', 'cubic-bezier(.34,1.2,.64,1); 400 ms; 160 ms', 'A drawer sliding in (a 1 % overshoot) and out (on <code>--uix-ease-in</code>, speeding up)'],
+      ['<code>--uix-ease-bounce</code> / <code>--uix-dur-bounce</code>', 'spring 200/16 as <code>linear()</code>, 880 ms', 'A radio dot springing in and out: an 11.6 % overshoot. Controls only'],
+      ['<code>--uix-ease-fill</code>, <code>--uix-dur-draw</code>, <code>--uix-delay-draw</code>', 'cubic-bezier(.4,0,.2,1); 300 ms; 200 ms', 'A checkbox filling from .7, then its tick drawing'],
+      ['<code>--uix-ease-fade</code> / <code>--uix-dur-fade</code>, <code>--uix-dur-fade-in</code>', 'cubic-bezier(.25,.1,.25,1), 200 ms; 100 ms', 'The hover highlight fading in and out; the opacity half of an arrival whose movement takes longer'],
+      ['<code>--uix-hold-pick</code>', '250 ms', 'A select list stays open this long after a mouse pick, so its check is seen drawing'],
+      ['<code>--uix-dur-icon</code>, <code>-turn</code>, <code>-draw</code>, <code>-swing</code>, <code>-spin</code>', '300, 400, 600, 900, 1250 ms', 'Animated icons: a lean, a quarter turn, a check drawing, a bell swinging, a gear turning'],
+      ['<code>--uix-stagger-rows</code>', '33 ms', 'Rows of a list that just opened arrive this far apart; the first ten step'],
+      ['<code>--uix-scrim-blur</code>', '4 px', 'How far a modal or drawer blurs the page behind its scrim. The radius is constant; only the dim fades. 0px turns it off'],
+      ['<code>--uix-ease-spring</code>', '', 'Kept for compatibility; new work uses <code>--uix-ease-pop</code>'],
       ['<code>--uix-ease-in</code>', '', 'Kept for compatibility. Do not use: an accelerating curve on something the user watches reads as lag.'],
     ])}`)}
-    ${section('mechanics', 'Mechanics', `<ul><li><strong>Tokens only.</strong> Durations and easings come from <code>--uix-dur-*</code>, <code>--uix-delay-*</code>, <code>--uix-loop-*</code> and <code>--uix-ease-*</code>; no raw times in CSS or JS.</li><li><strong>Easing.</strong> Enter with a strong ease-out. Move on screen with ease-in-out. Exit faster than the enter (about two-thirds) and never with ease-in. Constant motion (indeterminate progress) is linear or in-out. No bounce in staff UI.</li><li><strong>Properties.</strong> Animate <code>transform</code> and <code>opacity</code> (and <code>filter</code> / <code>clip-path</code> when needed). Never <code>width</code>, <code>height</code>, <code>grid-template-*</code>, <code>top</code>/<code>left</code>, <code>margin</code>, <code>padding</code> or <code>box-shadow</code>, and never <code>transition: all</code>. A shadow steps; a meter slides on <code>transform</code>.</li><li><strong>Interruptible.</strong> Anything that can re-trigger quickly (toasts, suggestions, the bulk bar, a row highlight) uses transitions or <code>@starting-style</code>, not keyframes that restart from zero. Nothing animates on a page’s first render.</li><li><strong>Origin.</strong> Popovers, menus and tooltips grow from their trigger (<code>transform-origin</code>), from <code>scale(.95)</code> plus opacity, never <code>scale(0)</code>. Modals stay centred.</li><li><strong>Tooltips.</strong> Open after a delay; then neighbours open instantly (a delay group). Keyboard focus opens at once.</li><li><strong>Hover.</strong> Movement and reveal-on-hover sit inside <code>@media (hover: hover) and (pointer: fine)</code>; hover is never the only path to an action. Row actions stay visible on a touch screen.</li><li><strong>Instant surfaces.</strong> An overlay opened from the keyboard, and the command palette, open and close with no animation: set <code>[data-uix-instant]</code> (React: <code>Modal instant</code>; <code>CommandPalette</code> sets it itself).</li><li><strong>Concurrency.</strong> At most two or three things move on a screen at once, and one salient signal per region.</li></ul>`)}
+    ${section('mechanics', 'Mechanics', `<ul><li><strong>Tokens only.</strong> Durations and easings come from <code>--uix-dur-*</code>, <code>--uix-delay-*</code>, <code>--uix-loop-*</code> and <code>--uix-ease-*</code>; no raw times in CSS or JS.</li><li><strong>Easing.</strong> Enter with a strong ease-out. Move on screen with ease-in-out. Exit faster than the enter (about two-thirds) and never with ease-in; the exceptions are the operator’s 2.60 picks from animate-ui (a menu or select list shrinks away at its enter pace, a drawer leaves speeding up). Constant motion (indeterminate progress) is linear or in-out. No bounce in staff UI.</li><li><strong>Properties.</strong> Animate <code>transform</code> and <code>opacity</code> (and <code>filter</code> / <code>clip-path</code> when needed). Never <code>width</code>, <code>height</code>, <code>grid-template-*</code>, <code>top</code>/<code>left</code>, <code>margin</code>, <code>padding</code> or <code>box-shadow</code>, and never <code>transition: all</code>. A shadow steps; a meter slides on <code>transform</code>.</li><li><strong>Interruptible.</strong> Anything that can re-trigger quickly (toasts, suggestions, the bulk bar, a row highlight) uses transitions or <code>@starting-style</code>, not keyframes that restart from zero. Nothing animates on a page’s first render.</li><li><strong>Origin.</strong> Popovers, menus and tooltips grow from their trigger (<code>transform-origin</code>), from <code>scale(.95)</code> (menus, the select list and tooltips from <code>.9</code>) plus opacity, never <code>scale(0)</code>. Modals stay centred.</li><li><strong>Tooltips.</strong> Open after a delay; then neighbours open instantly (a delay group). Keyboard focus opens at once.</li><li><strong>Hover.</strong> Movement and reveal-on-hover sit inside <code>@media (hover: hover) and (pointer: fine)</code>; hover is never the only path to an action. Row actions stay visible on a touch screen.</li><li><strong>Instant surfaces.</strong> An overlay opened from the keyboard, and the command palette, open and close with no animation: set <code>[data-uix-instant]</code> (React: <code>Modal instant</code>; <code>CommandPalette</code> sets it itself).</li><li><strong>Concurrency.</strong> At most two or three things move on a screen at once, and one salient signal per region.</li></ul>`)}
+    ${section('glide', 'Springs, glides and arrivals (2.60)', `<p>UIx renders springs as CSS <code>linear()</code> curves (the browser runs them on the compositor, with no animation library), so the kit can move like a native app while staying tokens-only. The patterns below came from a study of animate-ui and were rebuilt in UIx’s own code. <a href="#try-motion" data-toc-link>Try them live below →</a></p>${table(['Pattern', 'Where', 'Motion'], [
+      ['One gliding hover mark', 'Sidebar, Menu, Select lists (<code>useHoverGlide</code>)', 'One layer under the rows, moved with <code>transform</code> and reaching rows of another size by <code>scale</code>; glides on <code>--uix-ease-glide</code>, fades in and out over <code>--uix-dur-fade</code>. The pointer’s row, or the row the arrow keys or Tab reach.'],
+      ['Current-page tint slides', 'Sidebar (<code>useSlidingIndicator</code>, as Tabs)', 'A click on another page slides the tint from the old row. Keyboard and reduced motion jump.'],
+      ['Rows arrive', 'Select list, Menu, a sidebar group', 'Top to bottom, <code>--uix-stagger-rows</code> apart: 8 px in from the inline end, clearing from <code>--uix-arrive-blur</code> (in script). Opened from the keyboard, the rows are simply there. A sidebar group’s rows carry no bullet: they start under the parent’s label.'],
+      ['Tooltip hands over to its neighbour', 'Tooltip in a delay group', 'One bubble: it lingers 300 ms after the pointer leaves, so a neighbour takes it over. It travels there on <code>--uix-ease-tooltip</code>, its background resizing, while the old label slides out and the new one slides in 40 px along the way it goes, clipped to the background and clearing from a 6 px blur. Grows from .7 and shrinks back on close. Only within 320 px; focus moves swap at once.'],
+      ['Grow from the trigger', 'Tooltip (.7, tooltip spring), Select list and Menu (.9, 220 ms soft, both ways)', 'Opacity plus scale from the anchor; the generic Popover keeps .95. Select and Menu animate from the keyboard too.'],
+      ['A value swaps', 'Select trigger', 'The old value rises out while the new one rises in, 6 px, over <code>--uix-dur-overlay</code>, each through a 4 px blur; never on first render. A mouse pick holds the list open <code>--uix-hold-pick</code> so the check is seen drawing.'],
+      ['A check draws itself', 'Checkbox, a picked Select option, an <code>animate</code>d <code>CheckIcon</code>', 'The box fills from .7 first; the stroke draws over <code>--uix-dur-draw</code>, <code>--uix-delay-draw</code> later; unticking erases it. A radio dot springs in on <code>--uix-ease-bounce</code>.'],
+      ['Drawer', 'Drawer (side end/start)', 'Floats 8 px in from the screen edges; slides in over <code>--uix-dur-drawer</code> on <code>--uix-ease-drawer</code> and leaves in <code>--uix-dur-drawer-out</code>, speeding up; the dim fades over <code>--uix-dur-overlay</code> above a constant blur of the page behind. Touch or pen: drag toward the edge to close (a third of the panel, or a fling); with unsaved changes it settles back and asks.'],
+      ['Step entrance', '<code>.uix-anim-step-forward</code> / <code>-back</code> on a panel keyed by its step', 'Fades and slides 24 px from the way the person is going over <code>--uix-dur-row</code> on <code>--uix-ease-enter</code>; mirrored in RTL.'],
+      ['Animated icons', 'Any icon with <code>animate</code>', 'Plays one short motion when the pointer moves onto its control. See <a href="#icons-assets">Icons</a>.'],
+    ])}<p>Studied and left out on purpose: a sliding pagination pill (tens of times a day, and the numbers re-window), a tilting alert dialog (too theatrical for a delete), a long count-up spring (Count ticks once), a collapsed toast deck (it hides the second message), and any visible bounce on something crossing the screen.</p>`)}
+    ${section('try-motion', 'Try it: the 2.60 motion, live', `<p>Every other preview on this site is HTML and CSS. These demos mount the real <code>@tensor_1/react</code> components, because the 2.60 motion is driven by the components themselves: the gliding highlight, the tooltip passing to its neighbour, rows clearing from a blur, the drawer's swipe. What moves here is what your app gets.</p><div class="uix-docs__live" data-motion-playground><p class="uix-docs__live-status" data-motion-playground-status role="status">Loading the live demos…</p></div><p>Turn on reduced motion in the operating system (or emulate it in DevTools): the travel, the springs and the blur drop away, and the fades stay. Opened from the keyboard, Select, Menu and a sidebar group still animate and the highlight follows the arrow keys; the tooltip swaps at once.</p>`)}
     ${section('continuity', 'Never make a change invisible', `<ul><li><strong>Keep previous data while refetching.</strong> A filter, sort, page or saved-view change keeps the rows, dims them, shows an indeterminate bar and sets <code>aria-busy</code>. A skeleton is for first load only.</li><li><strong>An in-place update carries three cues:</strong> a signal (the highlight), the location (on the row or field that changed) and the description (the new text, and where useful who changed it).</li><li><strong>Never re-sort under the pointer.</strong> A live re-sort waits, or animates and says so.</li><li><strong>Items leave visibly.</strong> A handled row fades and collapses before the list closes the gap; neighbours glide, they do not jump.</li></ul>`)}
     ${section('optimism', 'Optimism, honesty and recovery', `<ul><li><strong>Optimistic</strong> only for reversible, high-success, personal actions: star, pin, reaction, mark read, density, reordering your own saved views. On failure, roll back visibly and say what was restored.</li><li><strong>Pessimistic</strong> (Button <code>loading</code>, then confirm) for anything the server can refuse or an auditor reads: state transitions, assignment, approvals, priority changes, deletes. A pill that flips and flips back teaches people the UI lies.</li><li>Every mutation confirms its outcome, and every failure offers a way to recover.</li></ul>`)}
     ${section('state-changes', 'Which motion for which state change', `${table(['State change', 'UIx primitive', 'Motion'], [
@@ -693,6 +771,10 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
     ${section('icons', 'Icons', `<p>Render Lucide glyphs as inline SVG using <code>currentColor</code>, a stroke width of 2, and round caps. Use the shared small, medium, and large icon sizes instead of drawing product-local glyphs.</p>${codeBlock(`<button class="uix-btn uix-btn--icon" type="button" aria-label="Search">
   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">…</svg>
 </button>`, 'html')}<p><a href="#examples-icons">Browse and copy the icon inventory →</a></p>`)}
+    ${section('animated-icons', 'Animated icons', `<p>An icon can answer its control (2.60): with <code>animate</code>, hovering the button, link, menu item or tab around it plays one short motion. The arrow and chevron nudge forward, plus and close turn a quarter, the gear turns one tooth, refresh turns half, the bell tips, send lifts off, download and upload move their arrow, the bin lifts its lid, copy shifts its front sheet, and the star pops. A check draws itself when it appears, for example after Copy. Every motion ends on the still icon.</p>${codeBlock(`import { DownloadIcon, CheckIcon } from "@tensor_1/react/icons";
+
+<Button variant="secondary"><DownloadIcon animate />Export</Button>
+{copied && <CheckIcon animate />}`, 'tsx')}<ul><li>Off by default. Use it on occasional actions, never on rows people pass a hundred times a day (navigation, table rows).</li><li>Hover only: keyboard focus and touch never move an icon. Reduced motion keeps every icon still and shows a check whole.</li><li>Icons without a motion of their own stay still with <code>animate</code>.</li></ul><p><a href="#motion">Hover them live on the Motion page (Try it) →</a></p>`)}
     ${section('emoji', 'Emoji and reactions', `<p>Use the curated work-appropriate set for warmth or acknowledgement, never as the only carrier of meaning and never as the status model for formal or destructive workflows.</p><p><a href="#examples-emoji">Open emoji and reaction examples →</a></p>`)}
     ${section('images', 'Images and media', `<ul><li>Write alternative text for the image’s purpose in context; use empty alt text when the image is decorative.</li><li>Keep avatar upload, empty, failure, and replacement states available without pointer-only interaction.</li><li>Open detail imagery with a real button and a focus-managed dialog; retain the source image’s description.</li><li>Use optimized product assets and reserve layout space to avoid content shift.</li></ul><p><a href="#examples-images">Open avatar, asset-card, and lightbox examples →</a></p>`)}`,
 
@@ -717,7 +799,7 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
     ${section('hierarchy', 'Action hierarchy', `<ul><li><strong>Primary:</strong> the single strongest action in a local decision area.</li><li><strong>Secondary:</strong> the default for supporting actions.</li><li><strong>Outline and ghost:</strong> lower-emphasis controls in toolbars and compact surfaces.</li><li><strong>Danger:</strong> destructive intent that has an explicit confirmation or compensation path.</li><li><strong>Link:</strong> navigation-like action inside prose; use an anchor when the destination has a URL.</li></ul>${compare('Use one primary action per clear decision area and label it with a specific verb.', 'Use several primary buttons together or use color as the only indication of destructive intent.')}`)}
     ${section('states', 'Sizes and states', demo(`<button class="uix-btn uix-btn--primary uix-btn--sm" type="button" data-demo-action="Small action completed">Small</button><button class="uix-btn uix-btn--primary" type="button" data-demo-action="Standard action completed">Standard</button><button class="uix-btn uix-btn--primary uix-btn--lg" type="button" data-demo-action="Large action completed">Large</button><button class="uix-btn uix-btn--secondary" type="button" disabled>Disabled</button><button class="uix-btn uix-btn--primary" type="button" data-loading aria-label="Saving" disabled>Saving</button>`))}
     ${section('react-api', 'React API', renderPropsTable(buttonProps))}
-    ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Use a native <code>&lt;button&gt;</code> for actions and an anchor for navigation.</li><li>Icon-only buttons require an accessible name.</li><li>Loading controls expose a busy label and prevent duplicate submission.</li><li>Do not disable a control without explaining what makes it available.</li></ul>`)}`,
+    ${section('accessibility-notes', 'Accessibility notes', `<ul><li>Use a native <code>&lt;button&gt;</code> for actions and an anchor for navigation.</li><li>Icon-only buttons require an accessible name.</li><li>Loading controls expose a busy label and prevent duplicate submission.</li><li>Do not disable a control without explaining what makes it available: pass <code>disabledReason</code>. A disabled button is muted text with no fill, never a faded copy of the enabled one (<a href="#usage-roles">Usage roles</a>).</li></ul>`)}`,
 
   input: () => `${pageHeader('Components', 'Input & field', 'Fields pair a stable label, control, and message slot so guidance and validation remain understandable without layout shift.', ['CSS primitive', 'React Field + Input', 'validation states'])}
     ${section('example', 'Example', demo(`<div style="width:min(100%,380px)"><label class="uix-field"><span class="uix-field__label" data-required>Work email</span><input class="uix-input" type="email" placeholder="name@company.com" aria-describedby="email-hint"><span class="uix-field__msg"><span class="uix-field__hint" id="email-hint">We’ll only use this for account notifications.</span></span></label></div>`, `<label class="uix-field">
@@ -938,6 +1020,25 @@ export const pageContent = (slug) => {
   return PAGES[slug] ? PAGES[slug]() : component ? renderComponentReference(component) : null;
 };
 
+/* The live 2.60 motion (Motion page, "Try it"): the real React components, bundled by
+   docs/live/build.mjs into docs/live/dist/ and imported only when the page opens. The docs site
+   workflow builds it; a repository preview without a build says how to make one. */
+let unmountPlayground = null;
+const mountMotionPlayground = (host) => {
+  const el = host.querySelector('[data-motion-playground]');
+  if (!el) return;
+  import('./live/dist/motion-playground.js')
+    .then(({ mount }) => {
+      if (!el.isConnected) return;
+      el.textContent = '';
+      unmountPlayground = mount(el);
+    })
+    .catch(() => {
+      const status = el.querySelector('[data-motion-playground-status]');
+      if (status) status.innerHTML = 'The live demos are not built in this preview. Run <code>node packages/tokens/docs/live/build.mjs</code>, then reload.';
+    });
+};
+
 const renderPage = () => {
   codeCounter = 0;
   const requested = normalizeHash(location.hash);
@@ -948,6 +1049,8 @@ const renderPage = () => {
   const example = SHOWCASE_PAGES.find((item) => item.slug === slug);
   const content = pageContent(slug) ?? renderShowcasePage(example);
   disposeShowcase();
+  unmountPlayground?.();
+  unmountPlayground = null;
   host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
   document.querySelectorAll('[data-api-report]').forEach((link) => {
     link.href = location.pathname.includes('/packages/tokens/docs/') ? '../../react/etc/uix-react.api.md' : '../react/etc/uix-react.api.md';
@@ -960,6 +1063,7 @@ const renderPage = () => {
   if (source === 'advanced') initAdvancedShowcase();
   initFormSpecimens(host);
   initFeedbackDemos(host);
+  mountMotionPlayground(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);

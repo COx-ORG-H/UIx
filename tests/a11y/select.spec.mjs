@@ -9,7 +9,7 @@
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { settleAnimations } from './settle.mjs';
+import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/select/harness.html';
 const themeOf = (name) => (name === 'dark' ? 'dark' : 'light');
@@ -165,6 +165,9 @@ test('long labels end in an ellipsis on the trigger', async ({ page }) => {
 const assertUnclipped = async (page, id) => {
   const popup = popupOf(page, id);
   await expect(popup).toBeVisible();
+  // the list grows from .9 (2.60): wait until it is placed and its transform is gone, not only until
+  // no animation runs (that is also true before the enter transition starts)
+  await settleOverlay(popup);
   await settleAnimations(page);
   const m = await page.evaluate((triggerId) => {
     const t = document.getElementById(triggerId);

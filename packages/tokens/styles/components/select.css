@@ -66,16 +66,39 @@
   }
   .uix-select__popup:not([hidden]) { display: flex; }
   [popover].uix-select__popup:not(:popover-open) { display: none; }
-  /* grows out of the trigger (--uix-anchor-origin from useAnchoredPosition) at --uix-dur-fast; the
-     closed state carries the faster exit. Opened from the keyboard it does not animate (motion.css). */
+  /* 2.60 (animate-ui's pace, operator 2026-11-08): grows out of the trigger (--uix-anchor-origin) from
+     .9 over --uix-dur-menu on --uix-ease-soft, visible at once (--uix-dur-fade-in), and shrinks away
+     the same way, from the keyboard too. */
   [popover].uix-select__popup {
-    opacity: 0; transform: scale(.95); transform-origin: var(--uix-anchor-origin, top left);
-    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out),
-                overlay var(--uix-dur-exit-fast) allow-discrete, display var(--uix-dur-exit-fast) allow-discrete;
+    opacity: 0; transform: scale(.9); transform-origin: var(--uix-anchor-origin, top left);
+    transition: opacity var(--uix-dur-menu) var(--uix-ease-soft), transform var(--uix-dur-menu) var(--uix-ease-soft),
+                overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
   }
-  [popover].uix-select__popup:popover-open { opacity: 1; transform: none; transition-duration: var(--uix-dur-fast); }
-  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.95); } }
-  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; }
+  [popover].uix-select__popup:popover-open {
+    opacity: 1; transform: none;
+    transition: opacity var(--uix-dur-fade-in) var(--uix-ease-out), transform var(--uix-dur-menu) var(--uix-ease-soft),
+                overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
+  }
+  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.9); } }
+  /* 2.60: the option just picked draws its check (pathLength 1) while the list holds open for
+     --uix-hold-pick (Select.tsx); the trigger's old value rises out and the new one rises in
+     (--uix-dur-overlay, --uix-ease-soft; their 4 px blur runs in script) */
+  .uix-listbox__option[data-just-chosen] .uix-listbox__check path { stroke-dasharray: 1; animation: uix-check-draw var(--uix-dur-draw) var(--uix-ease-leave) both; }
+  button.uix-select[data-leaving]::before {
+    /* empty alternative text: the old value is seen leaving, never read as part of the trigger's
+       name or value. An engine without `content` alt text drops the declaration: no old value. */
+    content: attr(data-leaving) / ""; position: absolute; inset: 0; box-sizing: border-box; padding: inherit; pointer-events: none;
+    display: flex; align-items: center; overflow: hidden; white-space: nowrap; opacity: 0;
+    filter: blur(var(--uix-leaving-blur, 0px));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .uix-select__value[data-changed] { animation: uix-value-in var(--uix-dur-overlay) var(--uix-ease-soft); }
+    :root:not([data-motion="reduce"]) button.uix-select[data-swap]::before { animation: uix-value-out var(--uix-dur-overlay) var(--uix-ease-soft) forwards; }
+  }
+
+  /* overflow-x: the list never scrolls sideways; rows arriving 8 px from the inline end (2.60) must not
+     raise a horizontal scrollbar on engines with classic scrollbars, which shifted rows mid-click */
+  .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; position: relative; }
   .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .uix-select__popup .uix-listbox:focus { outline: none; }
   .uix-select__search { flex: none; margin-bottom: var(--uix-space-1); }

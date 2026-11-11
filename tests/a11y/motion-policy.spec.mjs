@@ -181,7 +181,7 @@ const transitionsAfter = (page, act, target) => page.evaluate(([a, t]) => new Pr
   read();
 }), [act, target]);
 
-test.describe('exits are faster than enters', () => {
+test.describe('enter and exit timings', () => {
   test('modal: 240 ms in, 160 ms out', async ({ page }) => {
     await open(page);
     expect((await transitionsAfter(page, '#open-modal', '#modal')).opacity).toBe(240);
@@ -189,26 +189,29 @@ test.describe('exits are faster than enters', () => {
     expect((await transitionsAfter(page, '#modal .uix-dialog__close', '#modal')).opacity).toBe(160);
   });
 
-  test('drawer: 240 ms in, 160 ms out', async ({ page }) => {
+  // 2.60 (animate-ui's drawer, operator 2026-11-08): 400 ms in on --uix-ease-drawer, 160 ms out speeding up
+  test('drawer: 400 ms in, 160 ms out', async ({ page }) => {
     await open(page);
-    expect((await transitionsAfter(page, '#open-drawer', '#drawer')).transform).toBe(240);
-    await page.waitForTimeout(400);
+    expect((await transitionsAfter(page, '#open-drawer', '#drawer')).transform).toBe(400);
+    await page.waitForTimeout(700);
     expect((await transitionsAfter(page, '#drawer .uix-drawer__close', '#drawer')).transform).toBe(160);
   });
 
-  test('menu: 120 ms in, 80 ms out', async ({ page }) => {
+  // 2.60 (animate-ui's pace, operator 2026-11-08): grows over 220 ms, visible within 100 ms, and
+  // shrinks away over the same 220 ms
+  test('menu: 220 ms in and out', async ({ page }) => {
     await open(page);
     const menu = '[role="menu"]';
     const enter = await transitionsAfter(page, '#menu-trigger', menu);
-    expect(enter).toMatchObject({ opacity: 120, transform: 120 });
+    expect(enter).toMatchObject({ opacity: 100, transform: 220 });
     await expect(page.locator(menu)).toBeVisible();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400);
     const exit = await transitionsAfter(page, '#menu-trigger', menu);
-    expect(exit).toMatchObject({ opacity: 80, transform: 80 });
+    expect(exit).toMatchObject({ opacity: 220, transform: 220 });
   });
 });
 
-test('a menu grows out of its trigger: scale(.95) about the anchor point', async ({ page }) => {
+test('a menu grows out of its trigger: scale(.9) about the anchor point', async ({ page }) => {
   await open(page);
   const resume = await freeze(page);
   await page.locator('#menu-trigger').click();
@@ -230,18 +233,19 @@ test('a menu grows out of its trigger: scale(.95) about the anchor point', async
   if (!read.anchored) expect(Math.abs(x - read.expectX)).toBeLessThanOrEqual(1);
   expect(x).toBeGreaterThan(0);
   expect(y).toBe(0); // it opens below its trigger, so it grows from its top edge
-  expect(read.from).toMatch(/^(scale\(0\.95\)|matrix\(0\.95, 0, 0, 0\.95)/);
+  expect(read.from).toMatch(/^(scale\(0\.9\)|matrix\(0\.9, 0, 0, 0\.9)/); // 2.60: menus grow from .9
 });
 
-test.describe('keyboard-opened surfaces open with no animation', () => {
-  test('a menu opened with ↓ carries data-uix-key-opened and has no transition', async ({ page }) => {
+test.describe('keyboard-opened surfaces', () => {
+  // 2.60 (operator 2026-11-08, as animate-ui): a menu animates from the keyboard too
+  test('a menu opened with ↓ grows in like a click', async ({ page }) => {
     await open(page);
     await page.locator('#menu-trigger').focus();
     await page.keyboard.press('ArrowDown');
     const menu = page.locator('[role="menu"]');
     await expect(menu).toBeVisible();
-    await expect(menu).toHaveAttribute('data-uix-key-opened', '');
-    expect(await menu.evaluate((el) => getComputedStyle(el).transitionProperty)).toBe('none');
+    expect(await menu.evaluate((el) => el.hasAttribute('data-uix-key-opened'))).toBe(false);
+    expect(await menu.evaluate((el) => getComputedStyle(el).transitionProperty)).toContain('transform');
   });
 
   test('a menu opened with a click animates', async ({ page }) => {
@@ -275,7 +279,8 @@ test.describe('tooltip delay group', () => {
 
     await page.locator('#tip-b').hover();
     expect(await isOpen(bubble(page, 'tip-b')), 'a neighbour opens at once').toBe(true);
-    await expect(bubble(page, 'tip-b')).toHaveAttribute('data-uix-instant', '');
+    // 2.60: no fade from nothing; it either glides from the neighbour (within 320 px) or appears at once
+    expect(await bubble(page, 'tip-b').evaluate((el) => el.hasAttribute('data-morph') || el.hasAttribute('data-uix-instant'))).toBe(true);
 
     await page.mouse.move(5, 5);
     await page.waitForTimeout(800); // past the close delay and --uix-delay-tooltip-skip

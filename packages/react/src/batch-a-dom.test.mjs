@@ -109,9 +109,10 @@ test('HAR-1348: ButtonLink renders a button-styled link, through renderLink, and
 
 test('HAR-1349: Tooltip takes rich content and keeps label working', () => {
   const rich = renderToStaticMarkup(h(ui.Tooltip, { content: h('ul', null, h('li', null, 'Angry 2'), h('li', null, 'Calm 5')) }, h('button', null, 'Mood')));
-  assert.match(rich, /role="tooltip"[^>]*><ul><li>Angry 2<\/li><li>Calm 5<\/li><\/ul>/);
+  // 2.60: the content sits in .uix-tooltip__content > .uix-tooltip__label, so the hand-over to a neighbour can clip the window and slide the label
+  assert.match(rich, /role="tooltip"[^>]*><span class="uix-tooltip__content"><span class="uix-tooltip__label"><ul><li>Angry 2<\/li><li>Calm 5<\/li><\/ul>/);
   const plain = renderToStaticMarkup(h(ui.Tooltip, { label: 'Favourites' }, h('button', null, '★')));
-  assert.match(plain, /role="tooltip"[^>]*>Favourites</);
+  assert.match(plain, /role="tooltip"[^>]*><span class="uix-tooltip__content"><span class="uix-tooltip__label">Favourites</);
 });
 
 test('HAR-1350: Stat links render an <a> tile; haspopup is configurable', () => {

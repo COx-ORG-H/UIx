@@ -18,6 +18,9 @@
   /* hover / the keyboard's active option get the row tint; the chosen value is told apart by colour,
      weight and a check mark, never by the same tint (HAR-1572) */
   .uix-listbox__option:hover, .uix-listbox__option[data-active] { background: var(--uix-bg-hover); }
+  /* 2.60: the glide layer (useHoverGlide) marks the pointer's option; any key press hides it and the
+     keyboard's active option shows its own tint again */
+  .uix-listbox[data-uix-glide] .uix-listbox__option:is(:hover, [data-active]) { background: transparent; }
   .uix-listbox__option[aria-disabled="true"] { cursor: not-allowed; opacity: .55; }
   .uix-listbox__option[aria-disabled="true"]:hover { background: transparent; }
   .uix-listbox__option[aria-selected="true"] { color: var(--uix-link); font-weight: 500; }
