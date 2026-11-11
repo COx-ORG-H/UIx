@@ -10,10 +10,13 @@
   .uix-radio-group__legend { padding: 0; margin: 0 0 var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text); }
   .uix-form-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--uix-space-4); }
   /* A form's field stack (TENSOR HAR-2974): every .uix-field reserves its message line, so a small
-     gap gives one even rhythm (30 px between controls). Anything else in the stack keeps 16 px
-     below it; a title opens a group of fields with 16 px above and below. */
+     gap gives one even rhythm (30 px between controls). A filled message line, and anything that
+     is not a field, keep their own room; a title opens a group of fields. */
   .uix-form-stack { display: flex; flex-direction: column; gap: var(--uix-space-1); }
   .uix-form-stack > :not(.uix-field, .uix-form-stack__title):not(:last-child) { margin-block-end: var(--uix-space-3); }
+  /* a hint or error fills the message line: room below it, and before anything that is not a field */
+  .uix-form-stack > .uix-field > .uix-field__msg:not(:empty) { margin-block-end: var(--uix-space-2); }
+  .uix-form-stack > .uix-field + :not(.uix-field, .uix-form-stack__title) { margin-block-start: var(--uix-space-3); }
   .uix-form-stack__title {
     margin: 0; padding-block: var(--uix-space-4) var(--uix-space-3);
     font-family: var(--uix-font-heading); font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); font-weight: 600; color: var(--uix-text);

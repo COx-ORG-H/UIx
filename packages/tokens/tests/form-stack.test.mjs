@@ -30,3 +30,8 @@ test("a group title is set from tokens only", () => {
   for (const decl of title.split(";").map((d) => d.trim()).filter((d) => d.includes(":") && !d.startsWith(".")))
     assert.match(decl.split(":").slice(1).join(":").trim(), /^(0|600|var\(--uix-[\w-]+\)(\s+var\(--uix-[\w-]+\))?)$/, decl);
 });
+
+test("a filled message line and a non-field child after a field keep room, so a hint never touches the next label", () => {
+  assert.match(css, /\.uix-form-stack > \.uix-field > \.uix-field__msg:not\(:empty\) \{ margin-block-end: var\(--uix-space-2\); \}/);
+  assert.match(css, /\.uix-form-stack > \.uix-field \+ :not\(\.uix-field, \.uix-form-stack__title\) \{ margin-block-start: var\(--uix-space-3\); \}/);
+});
