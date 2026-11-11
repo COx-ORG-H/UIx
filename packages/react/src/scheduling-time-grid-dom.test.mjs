@@ -383,7 +383,7 @@ test('AC12 (NEW-1): the column "+N" is the consumer overflowCount and calls onSh
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, days: { '2026-10-07': { count: 6, overflowCount: 2, label: '6 items' } }, onShowMore: (date) => more.push(date) }));
   const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
   const button = head.querySelector(cls('more'));
-  assert.equal(button.textContent, '+2');
+  assert.equal(button.textContent, '+2 more', 'the head says what its count is: hidden entries');
   click(button);
   assert.deepEqual(more, ['2026-10-07']);
   assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-08"] ${cls('more')}`), null);
@@ -393,7 +393,7 @@ test('AC12 (NEW-1): the column "+N" is the consumer overflowCount and calls onSh
 test('without consumer counts the column "+N" is what the lanes could not show', () => {
   const entries = ['09:00', '09:10', '09:20', '09:30'].map((from, i) => item(`o${i}`, '2026-10-07', from, '11:00'));
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, maxLanes: 2, onShowMore: () => {} }));
-  assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"] ${cls('more')}`).textContent, '+2');
+  assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"] ${cls('more')}`).textContent, '+2 more');
   assert.equal(column(host, '2026-10-07').querySelectorAll('[data-item-id]').length, 2);
   unmount();
 });
@@ -433,6 +433,8 @@ test('AC13 (FG-UX-3): three windows over one week with two lanes — the third i
   assert.equal(host.querySelector('[data-overlay-id="c"]'), null);
   const button = host.querySelector(`${cls('tg-strip')} ${cls('rowmore')}`);
   assert.equal(button.textContent, '+1 windows');
+  assert.equal(button.style.gridColumn, '4', 'under Wednesday, the first day it hides');
+  assert.equal(host.querySelector(cls('tg-strip')).style.getPropertyValue('--uix-scheduling-calendar-lanes'), '3', 'a row of its own after the two lanes, never on top of a drawn window');
   click(button);
   assert.deepEqual(more, ['2026-10-07']);
   unmount();
@@ -683,7 +685,7 @@ test('a day head\'s "+N" adds what a narrow column could not draw to the consume
     const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, days, onShowMore: () => {} }));
     const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
     assert.equal(column(host, '2026-10-07').querySelectorAll(cls('tg-item')).length, 1, 'one lane drawn');
-    assert.equal(head.querySelector(cls('more')).textContent, '+2', 'the two the width hid are counted');
+    assert.equal(head.querySelector(cls('more')).textContent, '+2 more', 'the two the width hid are counted');
     unmount();
   } finally {
     proto.getBoundingClientRect = stub;

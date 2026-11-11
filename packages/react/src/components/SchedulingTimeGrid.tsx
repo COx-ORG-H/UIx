@@ -533,7 +533,7 @@ export function SchedulingTimeGrid({
         const info = dayInfo?.[date];
         const hiddenIds = dayInfo ? [] : [...columns[index]!.hidden, ...topHiddenOn(date)];
         const more = info ? info.overflowCount + hiddenByWidth[index]! : hiddenIds.length;
-        const moreText = fillLabel(labels.moreSpans, { count: more });
+        const moreText = fillLabel(labels.moreEntries, { count: more });
         const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
         // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
@@ -550,7 +550,7 @@ export function SchedulingTimeGrid({
       })}
     </div>
 
-    {(windowLanes > 0 || moreWindows > 0) && <div className="uix-scheduling-calendar__tg-strip" role="group" aria-label={labels.windows} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(windowLanes, 1) })}>
+    {(windowLanes > 0 || moreWindows > 0) && <div className="uix-scheduling-calendar__tg-strip" role="group" aria-label={labels.windows} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(windowLanes, 1) + (moreWindows > 0 ? 1 : 0) })}>
       {strip.placed.map((placed) => {
         const overlay = overlayById.get(placed.id);
         if (!overlay) return null;
@@ -565,8 +565,8 @@ export function SchedulingTimeGrid({
         </button>;
       })}
       {moreWindows > 0 && (onShowMore
-        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
-        : <span className="uix-scheduling-calendar__rowmore">{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
+        : <span className="uix-scheduling-calendar__rowmore" style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }}>{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
     </div>}
 
     {(topLanes > 0 || ghostSpan) && <div className="uix-scheduling-calendar__tg-strip uix-scheduling-calendar__tg-top" role="group" aria-label={labels.topLane} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(topLanes, 1) })}>

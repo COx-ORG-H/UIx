@@ -269,16 +269,16 @@
   .uix-scheduling-calendar__tg-dayhead { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; align-content:start; gap:0 var(--uix-space-1); min-width:0; padding:var(--uix-space-1); border-left:1px solid var(--calendar-chrome-grid); font-size:var(--uix-text-meta); overflow:hidden; }
   .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__date { grid-column:1 / -1; justify-self:start; width:auto; height:var(--calendar-head); padding-inline:var(--uix-space-1); margin-inline-start:calc(-1 * var(--uix-space-1)); border-radius:var(--uix-radius-xs); font-weight:600; text-align:left; white-space:nowrap; }
   .uix-scheduling-calendar__tg-dayhead[data-today] > .uix-scheduling-calendar__date { background:var(--calendar-chrome-now); color:var(--calendar-chrome-surface); }
-  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__count { grid-column:1; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--calendar-chrome-text-quiet); font-weight:400; white-space:nowrap; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__count { grid-column:1 / -1; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--calendar-chrome-text-quiet); font-weight:400; white-space:nowrap; }
   /* the day's signal says its words on a line of its own, so a narrow column never cuts them to a letter */
-  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__markers { grid-column:1 / -1; grid-row:3; min-width:0; max-width:100%; overflow:hidden; }
-  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__more { grid-column:2; grid-row:2; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__markers { grid-column:1 / -1; grid-row:4; min-width:0; max-width:100%; overflow:hidden; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__more { grid-column:1 / -1; grid-row:3; height:auto; margin-inline-start:calc(-1 * var(--uix-space-1)); font-weight:400; text-decoration:underline; text-underline-offset:.18em; }
   .uix-scheduling-calendar__marker-label { margin-left:var(--calendar-gap); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   /* the window strip and the top lane: one grid row per lane, a bounded height */
   .uix-scheduling-calendar__tg-strip { grid-auto-rows:var(--calendar-lane); align-items:center; padding:var(--calendar-gap) 0; border-top:1px solid var(--calendar-chrome-line); }
   .uix-scheduling-calendar__tg-strip > :is(.uix-scheduling-calendar__window,.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__tg-ghost,.uix-scheduling-calendar__rowmore) { grid-row:calc(var(--uix-scheduling-calendar-lane,0) + 1); align-self:center; height:calc(var(--calendar-lane) - var(--calendar-gap)); margin:0 var(--calendar-pad-inline); }
-  .uix-scheduling-calendar__tg-strip > .uix-scheduling-calendar__rowmore { grid-column:-2 / -1; grid-row:var(--uix-scheduling-calendar-lanes,1); justify-self:end; }
+  .uix-scheduling-calendar__tg-strip > .uix-scheduling-calendar__rowmore { grid-row:var(--uix-scheduling-calendar-lanes,1); justify-self:start; }
   .uix-scheduling-calendar__tg-top { min-height:calc(var(--calendar-lane) + 2 * var(--calendar-gap)); }
   :is(.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__window)[data-continues-before] { border-left-style:dashed; border-top-left-radius:0; border-bottom-left-radius:0; }
   :is(.uix-scheduling-calendar__tg-span,.uix-scheduling-calendar__window)[data-continues-after] { border-right-style:dashed; border-top-right-radius:0; border-bottom-right-radius:0; }
@@ -299,6 +299,7 @@
   .uix-scheduling-calendar__tg-item > [data-room="none"] { display:none; }
   .uix-scheduling-calendar__tg-from { flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; font-style:italic; }
   /* an item that crosses midnight: two parts with the shared edge left open */
+  .uix-scheduling-calendar__tg-item[data-status="done"] { border-style:solid; }
   .uix-scheduling-calendar__tg-item[data-part="start"] { border-bottom-style:dashed; border-bottom-left-radius:0; border-bottom-right-radius:0; }
   .uix-scheduling-calendar__tg-item[data-part="continuation"] { border-top-style:dashed; border-top-left-radius:0; border-top-right-radius:0; }
   :is(.uix-scheduling-calendar__tg-item,.uix-scheduling-calendar__tg-span)[data-movable] { cursor:grab; }
@@ -308,7 +309,7 @@
   .uix-scheduling-calendar__tg-column > .uix-scheduling-calendar__tg-ghost { position:absolute; left:0; right:0; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); height:max(calc(var(--uix-scheduling-calendar-length,1) * var(--calendar-hour)),0.875rem); }
   .uix-scheduling-calendar__tg-now { position:absolute; left:0; right:0; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); border-top:2px solid var(--calendar-chrome-now); pointer-events:none; }
   .uix-scheduling-calendar__tg-now::before { content:""; position:absolute; left:-0.3125rem; top:-0.4375rem; border:0.3125rem solid var(--calendar-chrome-now); border-radius:50%; }
-  .uix-scheduling-calendar__tg-nowtime { position:absolute; z-index:1; top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); right:var(--uix-space-1); padding:0 0.1875rem; border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-now); color:var(--calendar-chrome-surface); font-size:var(--uix-text-meta); font-weight:600; font-variant-numeric:tabular-nums; line-height:1.25; transform:translateY(-50%); pointer-events:none; }
+  .uix-scheduling-calendar__tg-nowtime { position:absolute; z-index:var(--uix-z-raised); top:calc(var(--uix-scheduling-calendar-offset,0) * var(--calendar-hour)); right:var(--uix-space-1); padding:0 0.1875rem; border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-now); color:var(--calendar-chrome-surface); font-size:var(--uix-text-meta); font-weight:600; font-variant-numeric:tabular-nums; line-height:1.25; transform:translateY(-50%); pointer-events:none; }
   /* a window that applies to everything also tints its hours, behind the items: a flat, quiet
      tint (the hatch stays on its bar in the strip) */
   .uix-scheduling-calendar__tg-shade[data-pattern] { grid-row:1; background-color:var(--calendar-window-surface); opacity:0.45; pointer-events:none; }
