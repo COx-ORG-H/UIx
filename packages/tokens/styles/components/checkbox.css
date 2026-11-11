@@ -6,7 +6,7 @@
   .uix-checkbox > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .uix-checkbox__box {
     width: 18px; height: 18px; flex: none; display: grid; place-items: center;
-    border: 1px solid var(--uix-border-strong); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
+    border: 1px solid var(--uix-choice-border); border-radius: var(--uix-radius-xs); background: var(--uix-surface);
     /* positioned for its growing fill (::before); it never takes the click, which belongs to the
        hidden input under it (and to the label around both) */
     position: relative; pointer-events: none;

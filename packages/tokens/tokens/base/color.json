@@ -8,6 +8,7 @@
   "surface-3": { "$type": "color", "$value": "#FAFAFA" },
   "border":        { "$type": "color", "$value": "#E5E5E5" },
   "border-strong": { "$type": "color", "$value": "#D4D4D4" },
+  "choice-border": { "$type": "color", "$value": "#808080", "$description": "CHOICE BORDER role (HAR-3071): the 1px edge of a control that is recognised only by its edge, an unchecked Checkbox or Radio. >= 3:1 against every layer it sits on, in both themes and every product theme (choice-border-contrast.test.mjs): 3.95:1 on --uix-surface and --uix-row, 3.78:1 on --uix-surface-3 and the zebra row, 3.43:1 on a hovered row. --uix-border-strong (1.5:1) stays the hairline of outline buttons, cards and dashed areas, which carry a label or sit inside one." },
   "control-border":       { "$type": "color", "$value": "var(--uix-border)", "$description": "The edge of a form control (input, textarea, select, tag input, OTP cell). Light: the hairline, unchanged. Dark: its own value, because the hairline is 1.2:1 there and the edge is the only thing that shows where to type (WCAG 1.4.11)." },
   "control-border-hover": { "$type": "color", "$value": "var(--uix-border-strong)", "$description": "A form control's edge under the pointer: one step stronger than --uix-control-border." },
 

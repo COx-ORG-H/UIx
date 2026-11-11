@@ -354,7 +354,7 @@ export const initShowcase = (options = {}) => {
 
   const buildTokenReference = () => {
     const surfaces = ['--uix-bg-app', '--uix-bg-subtle', '--uix-bg-hover', '--uix-bg-active',
-      '--uix-surface', '--uix-surface-2', '--uix-surface-3', '--uix-border', '--uix-border-strong'];
+      '--uix-surface', '--uix-surface-2', '--uix-surface-3', '--uix-border', '--uix-border-strong', '--uix-choice-border'];
     const text = ['--uix-text', '--uix-text-hushed', '--uix-text-muted'];
     const accent = ['--uix-accent', '--uix-accent-dark', '--uix-accent-light', '--uix-link', '--uix-ring', '--uix-brand-muted'];
     // Status families, neutral first: TEXT (labels), SOLID (dots, fills), BG (faint tint) per tone.

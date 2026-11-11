@@ -8,6 +8,7 @@
   "surface-3": { "$type": "color", "$value": "#262626" },
   "border":        { "$type": "color", "$value": "rgba(255,255,255,.08)" },
   "border-strong": { "$type": "color", "$value": "rgba(255,255,255,.14)" },
+  "choice-border": { "$type": "color", "$value": "rgba(255,255,255,.45)", "$description": "On dark, white at 45 % over the box's --uix-surface (about #7C7C7C): 4.5:1 on --uix-surface and --uix-row, 4.3:1 on the zebra row, 3.9:1 on a hovered row, 3.6:1 on --uix-surface-3 #262626. White .14 (--uix-border-strong) was 1.2-1.5:1." },
   "control-border":       { "$type": "color", "$value": "rgba(255,255,255,.36)", "$description": "Form control edge on dark: >= 3:1 on every dark surface, bg-app to surface-3, in every theme (tests/control-border-contrast.test.mjs). The hairline --uix-border (.08) measured 1.2:1." },
   "control-border-hover": { "$type": "color", "$value": "rgba(255,255,255,.48)", "$description": "Form control edge under the pointer on dark: stronger than the resting edge, as in light." },
 

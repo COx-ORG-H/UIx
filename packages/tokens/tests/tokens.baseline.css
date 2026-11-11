@@ -5,7 +5,7 @@
     /* surfaces */
     --uix-bg-app:#FAFAFA; --uix-bg-subtle:#F5F5F5; --uix-bg-hover:#EFEFEF; --uix-bg-active:#E5E5E5;
     --uix-surface:#FFFFFF; --uix-surface-2:#FFFFFF; --uix-surface-3:#FAFAFA;
-    --uix-border:#E5E5E5; --uix-border-strong:#D4D4D4;
+    --uix-border:#E5E5E5; --uix-border-strong:#D4D4D4; --uix-choice-border:#808080;
     --uix-control-border:var(--uix-border); --uix-control-border-hover:var(--uix-border-strong);
 
     /* text */
@@ -153,7 +153,7 @@
   :root:where(.dark,[data-theme="dark"]) {
     --uix-bg-app:#0A0A0A; --uix-bg-subtle:#171717; --uix-bg-hover:#1F1F1F; --uix-bg-active:#262626;
     --uix-surface:#111111; --uix-surface-2:#171717; --uix-surface-3:#262626;
-    --uix-border:rgba(255,255,255,.08); --uix-border-strong:rgba(255,255,255,.14);
+    --uix-border:rgba(255,255,255,.08); --uix-border-strong:rgba(255,255,255,.14); --uix-choice-border:rgba(255,255,255,.45);
     --uix-control-border:rgba(255,255,255,.36); --uix-control-border-hover:rgba(255,255,255,.48);
 
     --uix-text:#FAFAFA; --uix-text-hushed:rgba(250,250,250,.64); --uix-text-muted:#A1A1A1;

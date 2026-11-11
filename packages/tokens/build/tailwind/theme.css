@@ -10,6 +10,7 @@
   --color-uix-surface-3: var(--uix-surface-3);
   --color-uix-border: var(--uix-border);
   --color-uix-border-strong: var(--uix-border-strong);
+  --color-uix-choice-border: var(--uix-choice-border);
   --color-uix-control-border: var(--uix-control-border);
   --color-uix-control-border-hover: var(--uix-control-border-hover);
   --color-uix-text: var(--uix-text);
