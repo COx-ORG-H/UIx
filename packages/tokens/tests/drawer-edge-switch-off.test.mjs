@@ -6,11 +6,10 @@ import { contrast, evaluate, over, scopeFor, themes } from "./css-color.mjs";
 /*
  * Two quiet states the TENSOR council named twice (HAR-2974, round 5; operator: "one more round").
  *
- * 1. A drawer body that scrolls on below its footer shows a soft edge on its last visible line,
- *    and none once it is scrolled to the end or when it does not scroll: the footer's shadow on the
- *    body's scroll timeline. A background on the body (10 texts) and a ::before on the footer (its
- *    2 buttons) both made axe file text contrast as "incomplete"; a box-shadow does not.
- *    Checked in Chromium, also under reduced motion; without timeline support there is no edge.
+ * 1. No scroll edge on the drawer. Every way of drawing one failed a check: a background on the
+ *    body and a footer ::before blind axe-core's contrast scan; a scroll-timeline animation never
+ *    ends, so every "the drawer has settled" wait (getAnimations) hangs. The judges also kept
+ *    naming the cut-off field with the edge in place. The footer wraps instead (kit Buttons straight in).
  * 2. An off switch is read from its track's edge, not its 1.3:1 fill: the ring clears 3:1 against
  *    the surface beside it and the track inside it (WCAG 1.4.11), in every theme and mode.
  */
@@ -22,16 +21,10 @@ const rule = (css, selector) => {
   return css.slice(at, css.indexOf("}", at));
 };
 
-test("the drawer's scroll edge rides the body's scroll timeline and paints nothing behind the text", () => {
+test("the drawer draws no scroll-linked animation: overlay settle checks wait for animations to end", () => {
   const css = read("drawer.css");
-  assert.match(rule(css, ".uix-drawer__body"), /scroll-timeline:\s*--uix-drawer-body block/);
-  assert.doesNotMatch(rule(css, ".uix-drawer__body"), /background/, "a background under the fields blinds the contrast scan");
-  assert.match(css, /\.uix-drawer \{ timeline-scope: --uix-drawer-body; \}/, "the footer can read its sibling's timeline");
-  assert.match(css, /\.uix-drawer__footer \{ animation: uix-drawer-more linear both; animation-timeline: --uix-drawer-body; \}/);
-  assert.match(css, /@supports \(animation-timeline: scroll\(\)\)/);
-  const frames = css.slice(css.indexOf("@keyframes uix-drawer-more"));
-  assert.match(frames, /0%, 96% \{[^}]*box-shadow: [^}]*var\(--uix-border-strong\);\s*\}\s*100% \{[^}]*box-shadow: none;\s*\}/, "a shadow outside the footer, no pseudo element");
-  assert.doesNotMatch(css, /\.uix-drawer__footer::(before|after)/, "a pseudo element beside the buttons blinds the contrast scan");
+  assert.doesNotMatch(css, /animation-timeline|scroll-timeline|timeline-scope/);
+  assert.match(rule(css, ".uix-drawer__footer"), /flex-wrap:\s*wrap/, "kit Buttons passed straight in wrap at 320 px");
 });
 
 const OFF = /\.uix-switch > input:not\(:checked\) \+ \.uix-switch__track \{ box-shadow: inset 0 0 0 1px (var\(--uix-[\w-]+\)); \}/;
