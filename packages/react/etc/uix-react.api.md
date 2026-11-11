@@ -1385,8 +1385,10 @@ export function ContentListItem(input: ContentListItemProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    href?: string;
     // (undocumented)
     meta?: ReactNode;
+    renderLink?: UixRenderLink;
     // (undocumented)
     title: ReactNode;
     trailing?: ReactNode;

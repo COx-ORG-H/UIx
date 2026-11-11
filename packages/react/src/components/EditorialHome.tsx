@@ -1,5 +1,8 @@
 import type { ReactNode, HTMLAttributes, ButtonHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { renderUixLink } from '../link.js';
+import type { UixRenderLink } from '../link.js';
+import { ChevronRightIcon } from '../icons/components.js';
 import { InfoTip } from './InfoTip.js';
 import { hasHelp, helpLabelFor } from '../info-tip-model.js';
 
@@ -309,19 +312,30 @@ export function ContentList({ children, className, ...props }: ContentListProps)
 export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
   title: ReactNode;
   meta?: ReactNode;
-  /** Trailing slot — an arrow glyph, a pill. */
+  /** Trailing slot — an arrow glyph, a pill. A linked row (`href`) shows an arrow when this is unset. */
   trailing?: ReactNode;
+  /**
+   * Makes the whole row one link (HAR-3070): the title renders as the anchor, its hit area
+   * covers the row, and the row shows an arrow at rest plus hover and focus states. Pass a
+   * plain-text `title` with it, not a link of your own.
+   */
+  href?: string;
+  /** Renders the row's link with your router, as on `Breadcrumbs`. Default: `<a>`. */
+  renderLink?: UixRenderLink;
 }
 
-/** One content-list row — title + meta with an optional trailing slot. */
-export function ContentListItem({ title, meta, trailing, className, ...props }: ContentListItemProps) {
+/** One content-list row — title + meta with an optional trailing slot; with `href`, one link. */
+export function ContentListItem({ title, meta, trailing, href, renderLink, className, ...props }: ContentListItemProps) {
+  const linked = href !== undefined;
   return (
-    <li className={cx('uix-content-list__item', className)} {...props}>
+    <li className={cx('uix-content-list__item', linked && 'uix-content-list__item--link', className)} {...props}>
       <div>
-        <p className="uix-content-list__title">{title}</p>
+        <p className="uix-content-list__title">
+          {linked ? renderUixLink(renderLink, { href, className: 'uix-content-list__link', children: title }) : title}
+        </p>
         {meta != null && <p className="uix-content-list__meta">{meta}</p>}
       </div>
-      {trailing}
+      {trailing ?? (linked ? <span className="uix-content-list__go" aria-hidden="true"><ChevronRightIcon /></span> : null)}
     </li>
   );
 }
