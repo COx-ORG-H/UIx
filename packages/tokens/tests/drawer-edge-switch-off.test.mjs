@@ -7,9 +7,9 @@ import { contrast, evaluate, over, scopeFor, themes } from "./css-color.mjs";
  * Two quiet states the TENSOR council named twice (HAR-2974, round 5; operator: "one more round").
  *
  * 1. A drawer body that scrolls on below its footer shows a soft edge on its last visible line,
- *    and none once it is scrolled to the end or when it does not scroll: an opacity keyframe on
- *    the body's scroll timeline. (A background on the body did the same, but axe cannot measure
- *    text contrast over a background image: 10 drawer texts went from "pass" to "incomplete".)
+ *    and none once it is scrolled to the end or when it does not scroll: the footer's shadow on the
+ *    body's scroll timeline. A background on the body (10 texts) and a ::before on the footer (its
+ *    2 buttons) both made axe file text contrast as "incomplete"; a box-shadow does not.
  *    Checked in Chromium, also under reduced motion; without timeline support there is no edge.
  * 2. An off switch is read from its track's edge, not its 1.3:1 fill: the ring clears 3:1 against
  *    the surface beside it and the track inside it (WCAG 1.4.11), in every theme and mode.
@@ -27,12 +27,11 @@ test("the drawer's scroll edge rides the body's scroll timeline and paints nothi
   assert.match(rule(css, ".uix-drawer__body"), /scroll-timeline:\s*--uix-drawer-body block/);
   assert.doesNotMatch(rule(css, ".uix-drawer__body"), /background/, "a background under the fields blinds the contrast scan");
   assert.match(css, /\.uix-drawer \{ timeline-scope: --uix-drawer-body; \}/, "the footer can read its sibling's timeline");
-  const edge = rule(css, ".uix-drawer__footer::before");
-  assert.match(edge, /opacity:\s*0;/, "no edge while the body does not scroll");
-  assert.match(edge, /animation-timeline:\s*--uix-drawer-body/);
-  assert.match(edge, /pointer-events:\s*none/);
+  assert.match(css, /\.uix-drawer__footer \{ animation: uix-drawer-more linear both; animation-timeline: --uix-drawer-body; \}/);
   assert.match(css, /@supports \(animation-timeline: scroll\(\)\)/);
-  assert.match(css, /@keyframes uix-drawer-more \{ 0%, 96% \{ opacity: 1; \} 100% \{ opacity: 0; \} \}/, "opacity only");
+  const frames = css.slice(css.indexOf("@keyframes uix-drawer-more"));
+  assert.match(frames, /0%, 96% \{[^}]*box-shadow: [^}]*var\(--uix-border-strong\);\s*\}\s*100% \{[^}]*box-shadow: none;\s*\}/, "a shadow outside the footer, no pseudo element");
+  assert.doesNotMatch(css, /\.uix-drawer__footer::(before|after)/, "a pseudo element beside the buttons blinds the contrast scan");
 });
 
 const OFF = /\.uix-switch > input:not\(:checked\) \+ \.uix-switch__track \{ box-shadow: inset 0 0 0 1px (var\(--uix-[\w-]+\)); \}/;
