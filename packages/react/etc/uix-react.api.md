@@ -4108,6 +4108,22 @@ export interface ListProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export function ListSummary(input: ListSummaryProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ListSummaryProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    collapseLabel?: string;
+    count?: (total: number) => ReactNode;
+    defaultExpanded?: boolean;
+    empty?: ReactNode;
+    expandLabel?: string;
+    items: ReadonlyArray<string>;
+    max?: number;
+    more?: (hidden: number) => string;
+    separator?: string;
+}
+
+// @public
 export function LiveIndicator(input: LiveIndicatorProps): react.JSX.Element;
 
 // @public (undocumented)
