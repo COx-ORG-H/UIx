@@ -5211,6 +5211,19 @@ export interface OtpInputProps extends Omit<InputHTMLAttributes<HTMLInputElement
     value?: string;
 }
 
+// @public
+export function OverflowRow(input: OverflowRowProps): react.JSX.Element;
+
+// @public
+export function overflowRowFit(widths: readonly number[], available: number, gap: number, counterWidth: (hidden: number) => number): number;
+
+// @public (undocumented)
+export interface OverflowRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    children?: ReactNode;
+    more?: string;
+    moreLabel?: string;
+}
+
 // @public (undocumented)
 export interface PackedLanes {
     // (undocumented)

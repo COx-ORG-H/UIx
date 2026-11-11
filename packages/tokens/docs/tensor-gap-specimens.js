@@ -154,6 +154,19 @@ ${compactSection('gap-sec-links', 'Related records', '1 link', '<p>CHG-1042 bloc
 <div class="uix-guide__subhead" data-tensor-gaps>Stat tiles of unequal content in one row (React <code>Stat</code> with <code>onActivate</code>, <code>href</code>, <code>pending</code>) — a read-only tile, three buttons, a link and a pending tile; the row stretches them to one height and every label and value starts at the same line. The pending tile is busy, dimmed and still takes focus</div>
 <div data-stat-row-example class="uix-stat-row" style="width:100%">
 ${STAT_ROW_TILES.map(statRowTile).join('\n')}
+</div>
+<div class="uix-guide__subhead" data-tensor-gaps>OverflowRow: a member's roles on one line, at two widths (React <code>OverflowRow</code>, <code>.uix-overflow-row</code>) — the badges that fit whole, then one count for the rest; its tooltip and its screen-reader text name the hidden ones. A row never wraps and no badge is cut mid-word.</div>
+<div class="uix-stack" style="--gap:12px">
+${[
+  { width: '20rem', shown: 1, roles: ['Change-Genehmigende (CAB)', 'Mandantenadministration'] },
+  { width: '20rem', shown: 2, roles: ['Interne Revision', 'Change-Management', 'Mitarbeitende', 'Servicedesk-Leitung'] },
+  { width: '36rem', shown: 4, roles: ['Interne Revision', 'Change-Management', 'Mitarbeitende', 'Servicedesk-Leitung'] },
+].map(({ width, shown, roles }) => {
+  const hidden = roles.slice(shown);
+  const items = roles.map((role, i) => `<span class="uix-overflow-row__item"${i >= shown ? ' data-overflow-hidden aria-hidden="true"' : ''}><span class="uix-pill uix-pill--neutral">${role}</span></span>`).join('');
+  const more = hidden.length ? `<span class="uix-overflow-row__more" title="${hidden.join(', ')}"><span aria-hidden="true">+${hidden.length}</span><span class="uix-visually-hidden">${hidden.length} more: ${hidden.join(', ')}</span></span>` : '';
+  return `<div class="uix-overflow-row" style="width:${width}">${items}${more}<span class="uix-overflow-row__probe" aria-hidden="true">+${roles.length}</span></div>`;
+}).join('\n')}
 </div>`,
 
   'examples-overlays': `

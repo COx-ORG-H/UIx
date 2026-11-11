@@ -297,6 +297,8 @@ export type { ChartStatPoint, LinearFit, PredictionBandPoint } from './chart-sta
 
 export { Chip, ChipGroup } from './components/Chip.js';
 export type { ChipProps, ChipGroupProps } from './components/Chip.js';
+export { OverflowRow, overflowRowFit } from './components/OverflowRow.js';
+export type { OverflowRowProps } from './components/OverflowRow.js';
 
 export { Kbd, KbdCombo, ariaKeyShortcuts } from './components/Kbd.js';
 export type { KbdProps, KbdComboProps, KbdPlatform, KeyShortcut } from './components/Kbd.js';
