@@ -24,7 +24,10 @@ const rule = (css, selector) => {
 test("the drawer draws no scroll-linked animation: overlay settle checks wait for animations to end", () => {
   const css = read("drawer.css");
   assert.doesNotMatch(css, /animation-timeline|scroll-timeline|timeline-scope/);
-  assert.match(rule(css, ".uix-drawer__footer"), /flex-wrap:\s*wrap/, "kit Buttons passed straight in wrap at 320 px");
+  const footer = rule(css, ".uix-drawer__footer");
+  assert.match(footer, /display:\s*flex/, "the footer lays its actions out in a row");
+  assert.match(footer, /flex-wrap:\s*wrap/, "kit Buttons passed straight in wrap onto a second line");
+  assert.match(footer, /align-items:\s*center/, "a wrapped action keeps its own height");
 });
 
 const OFF = /\.uix-switch > input:not\(:checked\) \+ \.uix-switch__track \{ box-shadow: inset 0 0 0 1px (var\(--uix-[\w-]+\)); \}/;
