@@ -1385,8 +1385,10 @@ export function ContentListItem(input: ContentListItemProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    href?: string;
     // (undocumented)
     meta?: ReactNode;
+    renderLink?: UixRenderLink;
     // (undocumented)
     title: ReactNode;
     trailing?: ReactNode;
@@ -5225,6 +5227,19 @@ export interface OtpInputProps extends Omit<InputHTMLAttributes<HTMLInputElement
     // (undocumented)
     style?: CSSProperties;
     value?: string;
+}
+
+// @public
+export function OverflowRow(input: OverflowRowProps): react.JSX.Element;
+
+// @public
+export function overflowRowFit(widths: readonly number[], available: number, gap: number, counterWidth: (hidden: number) => number): number;
+
+// @public (undocumented)
+export interface OverflowRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    children?: ReactNode;
+    more?: string;
+    moreLabel?: string;
 }
 
 // @public (undocumented)

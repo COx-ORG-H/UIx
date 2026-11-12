@@ -52,9 +52,9 @@
       "brotli": 534
     },
     "styles/components/breadcrumbs.css": {
-      "raw": 953,
-      "gzip": 496,
-      "brotli": 370
+      "raw": 1239,
+      "gzip": 642,
+      "brotli": 505
     },
     "styles/components/builder-canvas.css": {
       "raw": 2479,
@@ -197,9 +197,9 @@
       "brotli": 1659
     },
     "styles/components/editorial-home.css": {
-      "raw": 22070,
-      "gzip": 4930,
-      "brotli": 4206
+      "raw": 22803,
+      "gzip": 5066,
+      "brotli": 4330
     },
     "styles/components/file-kit.css": {
       "raw": 16342,
@@ -345,6 +345,11 @@
       "raw": 13926,
       "gzip": 3351,
       "brotli": 2818
+    },
+    "styles/components/overflow-row.css": {
+      "raw": 1335,
+      "gzip": 620,
+      "brotli": 512
     },
     "styles/components/page-header.css": {
       "raw": 3118,

@@ -59,9 +59,9 @@
   .uix-notice__copy { margin: 0; font-size: var(--uix-text-body); }
   .uix-notice__copy strong { font-weight: 600; }
   .uix-notice__content { min-width: 0; }
-  .uix-notice__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); }
+  .uix-notice__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
   .uix-notice__actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--uix-space-2); }
-  .uix-notice__position { margin-right: var(--uix-space-1); color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); white-space: nowrap; }
+  .uix-notice__position { margin-right: var(--uix-space-1); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); white-space: nowrap; }
   .uix-notice__arrow--previous svg { transform: rotate(180deg); }
 
   /* ── featured briefing — ONE card: stage + rundown are zones inside it, split
@@ -114,7 +114,7 @@
   .uix-rundown__item[data-selected="true"] .uix-rundown__number { min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: var(--uix-radius-pill); background: var(--uix-text); color: var(--uix-bg-app); }
   .uix-rundown__topic,
   .uix-rundown__item-title { display: block; }
-  .uix-rundown__topic { color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); }
+  .uix-rundown__topic { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
   .uix-rundown__item-title { margin-top: var(--uix-space-1); font-weight: 600; line-height: 1.2; }
 
   /* ── section heads ─────────────────────────────────────────────────────────── */
@@ -149,6 +149,14 @@
   .uix-content-list__item > div { min-width: 0; }
   .uix-content-list__title { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
   .uix-content-list__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); min-width: 0; overflow-wrap: anywhere; }
+  /* HAR-3070: a linked row is one target (the anchor stretches over it) with an arrow at rest */
+  .uix-content-list__item--link { position: relative; }
+  .uix-content-list__link::after { content: ""; position: absolute; inset: 0; }
+  .uix-content-list__link:focus-visible { outline: none; }
+  .uix-content-list__item--link:has(.uix-content-list__link:focus-visible) { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-sm); }
+  .uix-content-list__go { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-content-list__go svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-content-list__item--link:hover .uix-content-list__go { color: var(--uix-text); }
 
   /* ── resource grid ─────────────────────────────────────────────────────────── */
   .uix-resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--uix-space-2); }

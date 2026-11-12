@@ -52,8 +52,13 @@ notice copy, `.uix-timeline__body`, `.uix-audit__detail`, notification copy), wh
 sentences and 1.4.1 applies; `.uix-alert` / `.uix-toast` / `.uix-peek__title`, where nothing else in the
 container signals that the link navigates, so the colour *is* the affordance; and `.uix-comment__author`,
 because a byline reads "Author · 22m ago" — the name is a phrase inside a text run, not the whole block
-(opt in with `.uix-link--quiet` for the GitHub-style quiet byline). Sidebar nav items, breadcrumbs and
-section links are already quiet by their own design and need no class.
+(opt in with `.uix-link--quiet` for the GitHub-style quiet byline). Sidebar nav items and section links
+are already quiet by their own design and need no class. Breadcrumb ancestors draw in `--uix-link` without an
+underline at rest, with a 24 × 24 px hit area (HAR-3070): a grey crumb read as a label, not as the way back.
+
+A `ContentListItem` with `href` (and `renderLink`) is one link for the whole row (HAR-3070): the title
+renders as the anchor, its `::after` covers the row, an arrow shows at rest unless `trailing` is set, and
+the focus ring draws around the row. Pass a plain-text `title` with it, not a link of your own.
 
 The registry is locked from both ends by `packages/react/src/quiet-link.test.mjs`: the wrappers must nest
 the anchor inside the slot-classed element, and every asserted slot must still appear in `link.css`.
