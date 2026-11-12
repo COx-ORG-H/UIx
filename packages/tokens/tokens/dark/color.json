@@ -1,13 +1,13 @@
 {
-  "bg-app":    { "$type": "color", "$value": "#0A0A0A" },
+  "bg-app":    { "$type": "color", "$value": "#070707", "$description": "HAR-3087 (dark): one step darker than #0A0A0A, so the page sits visibly below the card (#111111)." },
   "bg-subtle": { "$type": "color", "$value": "#171717" },
   "bg-hover":  { "$type": "color", "$value": "#1F1F1F" },
   "bg-active": { "$type": "color", "$value": "#262626" },
   "surface":   { "$type": "color", "$value": "#111111" },
-  "surface-2": { "$type": "color", "$value": "#171717" },
+  "surface-2": { "$type": "color", "$value": "#1A1A1A", "$description": "HAR-3087 (dark): the raised surface and the table header, a visible step above the card (#111111)." },
   "surface-3": { "$type": "color", "$value": "#262626" },
-  "border":        { "$type": "color", "$value": "rgba(255,255,255,.08)" },
-  "border-strong": { "$type": "color", "$value": "rgba(255,255,255,.14)" },
+  "border":        { "$type": "color", "$value": "rgba(255,255,255,.12)", "$description": "HAR-3087 (dark): row dividers, card edges and the header rule at 1.39:1 on the card (.08 drew 1.22:1, which a council judge could not see on near-black)." },
+  "border-strong": { "$type": "color", "$value": "rgba(255,255,255,.20)", "$description": "HAR-3087 (dark): one step above --uix-border (1.84:1 on the card; .14 drew 1.47:1)." },
   "choice-border": { "$type": "color", "$value": "rgba(255,255,255,.45)", "$description": "On dark, white at 45 % over the box's --uix-surface (about #7C7C7C): 4.5:1 on --uix-surface and --uix-row, 4.3:1 on the zebra row, 3.9:1 on a hovered row, 3.6:1 on --uix-surface-3 #262626. White .14 (--uix-border-strong) was 1.2-1.5:1." },
 
   "text":        { "$type": "color", "$value": "#FAFAFA" },
@@ -139,7 +139,8 @@
   "row":           { "$type": "color", "$value": "#111111" },
   "row-alt":       { "$type": "color", "$value": "#161616" },
   "row-pinned-bg":   { "$type": "color", "$value": "rgba(48,128,255,.08)" },
-  "row-selected-bg": { "$type": "color", "$value": "rgba(48,128,255,.16)", "$description": "Dark-mode selection wash — stronger than row-pinned-bg (rgba(48,128,255,.08)) so selected rows read apart from pinned." },
+  "row-selected-bg": { "$type": "color", "$value": "rgba(48,128,255,.28)", "$description": "Dark-mode selection wash (HAR-3088): at least 1.3:1 against a zebra row and apart from hover and pinned (rgba(48,128,255,.08)); .16 drew 1.1:1 against a zebra row." },
+  "scrim-peek": { "$type": "color", "$value": "rgba(0,0,0,.32)", "$description": "HAR-3085 (dark): the side peek dims the list beside it lightly, so its rows stay legible (muted text at least 3:1 on the dimmed row) while the page still reads as behind; .5 turned a #0A0A0A page almost black." },
 
   "scrollbar-thumb":       { "$type": "color", "$value": "rgba(255,255,255,.18)" },
   "scrollbar-thumb-hover": { "$type": "color", "$value": "rgba(255,255,255,.30)" }

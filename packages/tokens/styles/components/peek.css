@@ -17,8 +17,10 @@
   }
   .uix-peek[open] { transform: none; display: flex; flex-direction: column; transition-duration: var(--uix-dur-slow); }
   @starting-style { .uix-peek[open] { transform: translateX(100%); } }
+  /* its own scrim (HAR-3085): the list beside a peek is what the person steps through with the arrow
+     keys, so dark dims it lightly (--uix-scrim-peek); light keeps the --uix-scrim value */
   .uix-peek::backdrop {
-    background: var(--uix-scrim); opacity: 0;
+    background: var(--uix-scrim-peek); opacity: 0;
     transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
   }
   .uix-peek[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }

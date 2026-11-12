@@ -362,9 +362,9 @@
       "brotli": 516
     },
     "styles/components/peek.css": {
-      "raw": 4772,
-      "gzip": 1716,
-      "brotli": 1406
+      "raw": 4971,
+      "gzip": 1810,
+      "brotli": 1502
     },
     "styles/components/pipeline.css": {
       "raw": 6039,

@@ -75,7 +75,7 @@
     --uix-shadow-popover:0 8px 24px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.05);
     --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.18);
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,0);
-    --uix-scrim:rgba(0,0,0,.5); --uix-scrim-strong:rgba(0,0,0,.7);
+    --uix-scrim:rgba(0,0,0,.5); --uix-scrim-peek:rgba(0,0,0,.5); --uix-scrim-strong:rgba(0,0,0,.7);
     --uix-print-ink:#0A0A0A; --uix-print-ink-quiet:#525252; --uix-print-paper:#FFFFFF; --uix-print-paper-quiet:#F0F0F0; --uix-print-line:#8A8A8A; --uix-print-danger:#C40012;
 
     /* stacking — semantic z-index ladder */
@@ -150,9 +150,9 @@
   }
 
   :root:where(.dark,[data-theme="dark"]) {
-    --uix-bg-app:#0A0A0A; --uix-bg-subtle:#171717; --uix-bg-hover:#1F1F1F; --uix-bg-active:#262626;
-    --uix-surface:#111111; --uix-surface-2:#171717; --uix-surface-3:#262626;
-    --uix-border:rgba(255,255,255,.08); --uix-border-strong:rgba(255,255,255,.14); --uix-choice-border:rgba(255,255,255,.45);
+    --uix-bg-app:#070707; --uix-bg-subtle:#171717; --uix-bg-hover:#1F1F1F; --uix-bg-active:#262626;
+    --uix-surface:#111111; --uix-surface-2:#1A1A1A; --uix-surface-3:#262626;
+    --uix-border:rgba(255,255,255,.12); --uix-border-strong:rgba(255,255,255,.20); --uix-choice-border:rgba(255,255,255,.45);
 
     --uix-text:#FAFAFA; --uix-text-hushed:rgba(250,250,250,.64); --uix-text-muted:#A1A1A1;
 
@@ -190,12 +190,12 @@
     --uix-file-label-fg:#0A0A0A;
 
     --uix-highlight-top:inset 0 1px 0 rgba(255,255,255,.04);
-    --uix-shadow-sm:0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.04);
+    --uix-shadow-sm:0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.07);
     --uix-shadow-md:0 4px 12px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
     --uix-shadow-popover:0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05);
     --uix-shadow-overlay:0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05);
 
-    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.16);
+    --uix-row:#111111; --uix-row-alt:#161616; --uix-row-pinned-bg:rgba(48,128,255,.08); --uix-row-selected-bg:rgba(48,128,255,.28); --uix-scrim-peek:rgba(0,0,0,.32);
     --uix-scrollbar-thumb:rgba(255,255,255,.18); --uix-scrollbar-thumb-hover:rgba(255,255,255,.30);
     /* calm kit (2.56) */
     --uix-chart-series-soft:rgba(50,128,252,.18);

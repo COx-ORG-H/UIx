@@ -159,6 +159,7 @@ module.exports = {
       "uix-scrollbar-thumb-hover": "var(--uix-scrollbar-thumb-hover)",
       "uix-scrollbar-track": "var(--uix-scrollbar-track)",
       "uix-scrim": "var(--uix-scrim)",
+      "uix-scrim-peek": "var(--uix-scrim-peek)",
       "uix-scrim-strong": "var(--uix-scrim-strong)",
       "uix-print-ink": "var(--uix-print-ink)",
       "uix-print-ink-quiet": "var(--uix-print-ink-quiet)",

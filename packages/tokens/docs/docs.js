@@ -601,11 +601,13 @@ chart.setOption(mergeChartTheme(uixChartTheme(), {
     ${section('surfaces-text', 'Surfaces and text', tokens([
       ['bg-app', 'surface: the page behind everything'],
       ['surface', 'surface: cards, panels, tables'],
+      ['surface-2', 'surface: a raised panel and the table header; in dark a visible step above the card'],
+      ['border', 'surface: row dividers, card edges and the header rule; in dark &ge; 1.35:1 on the card and the page'],
       ['bg-subtle', 'surface: a track, a quiet band, a secondary button'],
       ['text', 'text: content and labels'],
       ['text-hushed', 'text: secondary text and the neutral status words'],
       ['text-muted', 'text: hints, metadata and disabled labels'],
-    ]))}
+    ]) + `<p>Dark separates by edges and steps, not by shadow: a black shadow cannot show on a near-black page. The page, the card and the table header are three visible steps, the card has a lit top edge, a selected row stays &ge; 1.3:1 from its neighbours, and the side peek dims the list beside it lightly (<code>--uix-scrim-peek</code>), so the rows a person steps through stay legible. <code>packages/tokens/tests/dark-separation.test.mjs</code> holds each value; light is pinned unchanged.</p>`)}
     ${section('applied', 'Applied in a product', `<p>TENSOR, in German: a routine absence stays neutral and only a true breach is critical.</p>${applied}`)}
     ${section('react', 'Fold a pill tone onto a role', `<p>A product that keeps the finer <code>StatusPill</code> vocabulary (SLA, priority, time pressure) folds it onto the five roles with <code>statusRoleOf</code>, for a <code>StatusDot</code> or a surface.</p>${codeBlock(`import { StatusDot, statusRoleOf } from "@tensor_1/react";
 
@@ -722,6 +724,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
       ['<code>--uix-hold-pick</code>', '250 ms', 'A select list stays open this long after a mouse pick, so its check is seen drawing'],
       ['<code>--uix-dur-icon</code>, <code>-turn</code>, <code>-draw</code>, <code>-swing</code>, <code>-spin</code>', '300, 400, 600, 900, 1250 ms', 'Animated icons: a lean, a quarter turn, a check drawing, a bell swinging, a gear turning'],
       ['<code>--uix-stagger-rows</code>', '33 ms', 'Rows of a list that just opened arrive this far apart; the first ten step'],
+      ['<code>--uix-scrim-peek</code>', 'light .5, dark .32', 'The dim behind the side peek. Lighter in dark than <code>--uix-scrim</code>, so the list beside the peek stays legible'],
       ['<code>--uix-scrim-blur</code>', '4 px', 'How far a modal or drawer blurs the page behind its scrim. The radius is constant; only the dim fades. 0px turns it off'],
       ['<code>--uix-ease-spring</code>', '', 'Kept for compatibility; new work uses <code>--uix-ease-pop</code>'],
       ['<code>--uix-ease-in</code>', '', 'Kept for compatibility. Do not use: an accelerating curve on something the user watches reads as lag.'],
