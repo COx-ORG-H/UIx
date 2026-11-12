@@ -1794,6 +1794,20 @@ like an icon (a Kbd legend, a diff sign) goes in `glyph-icons.allow.json` with a
   regular tabular h3 values.
 - `SectionHead size="compact"` (15 px / 1.3 / 600) and `as="h3"`; `CellSub tabular`.
 
+#### Eyebrow section labels that link, and 24 px link targets (HAR-3097, HAR-3084, HAR-3091)
+
+```tsx
+<SectionHead size="eyebrow" as="h3" title={t('incidents')} href="/settings/c/incidents" renderLink={(p) => <NextLink {...p} />} />
+<Peek open={open} onClose={close} title={title} footer={<NextLink href={recordHref}>{t('openRecord')}</NextLink>}>…</Peek>
+```
+
+- `SectionHead size="eyebrow"`: the 11 px / 700 uppercase hushed label over a group of tiles, on a 24 px row
+  (`.uix-section-head--eyebrow`; the text style alone is `.uix-eyebrow`). With `href` the title is the link
+  (`.uix-section-title__link`), a 24 px target; a linked and an unlinked label put their text in the same place.
+- A link that stands on its own in a kit slot is a 24 px target, with no utility classes: a sort button, a cell's
+  link (`.uix-cell-link` or a classless anchor), a link in the Peek footer (a classless anchor, or
+  `.uix-peek__footer-link` when it must carry a class) and `.uix-section-link`.
+
 #### Sidebar actions and search, AccountMenu, the rail hotkey and the phone nav tier (HAR-1371)
 
 ```tsx
