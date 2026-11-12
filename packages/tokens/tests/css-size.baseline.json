@@ -67,9 +67,9 @@
       "brotli": 1103
     },
     "styles/components/button.css": {
-      "raw": 9313,
-      "gzip": 2730,
-      "brotli": 2286
+      "raw": 9563,
+      "gzip": 2823,
+      "brotli": 2365
     },
     "styles/components/calendar.css": {
       "raw": 3635,
@@ -197,9 +197,9 @@
       "brotli": 1654
     },
     "styles/components/editorial-home.css": {
-      "raw": 22803,
-      "gzip": 5066,
-      "brotli": 4330
+      "raw": 23173,
+      "gzip": 5177,
+      "brotli": 4422
     },
     "styles/components/file-kit.css": {
       "raw": 16342,
@@ -247,9 +247,9 @@
       "brotli": 1023
     },
     "styles/components/input.css": {
-      "raw": 8701,
-      "gzip": 2456,
-      "brotli": 2060
+      "raw": 9487,
+      "gzip": 2646,
+      "brotli": 2235
     },
     "styles/components/insight-card.css": {
       "raw": 5786,
@@ -442,9 +442,9 @@
       "brotli": 5739
     },
     "styles/components/search-suggest.css": {
-      "raw": 9280,
-      "gzip": 2340,
-      "brotli": 1953
+      "raw": 9590,
+      "gzip": 2407,
+      "brotli": 2025
     },
     "styles/components/segmented.css": {
       "raw": 4511,

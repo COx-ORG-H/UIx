@@ -1,7 +1,8 @@
 /* uix button — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+    /* the icon-to-label gap is a spacing step (HAR-2985): .5em drew 7 px (6.25 at sm), off the 4 px grid */
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--uix-space-2);
     height: var(--uix-control-h); padding: 0 var(--uix-space-4); border: 1px solid transparent;
     border-radius: var(--uix-radius-md); font: inherit; font-size: var(--uix-text-body); font-weight: 500;
     line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
@@ -42,7 +43,8 @@
   .uix-btn--link:hover      { text-decoration: underline; }
 
   /* xs: the 24 px floor of WCAG 2.5.8, for dense tool rows (HAR-1348). */
-  .uix-btn--xs { height: 24px; padding: 0 var(--uix-space-2); gap: .25em; border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); }
+  /* xs: a 24 px button with a 12 px icon, so half the step */
+  .uix-btn--xs { height: 24px; padding: 0 var(--uix-space-2); gap: var(--uix-space-1); border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); }
   .uix-btn--xs svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-btn--sm { height: 28px; padding: 0 var(--uix-space-3); font-size: var(--uix-text-meta); }
   .uix-btn--lg { height: 44px; padding: 0 var(--uix-space-5); }
@@ -95,7 +97,7 @@
      crossfades in over the label (opacity only), holds, and fades back. Text and icon carry
      the meaning; colour only tints the icon. */
   .uix-btn__face { display: inline-grid; justify-items: center; align-items: center; }
-  .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: .5em; transition: opacity var(--uix-dur) var(--uix-ease-out); }
+  .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: var(--uix-space-2); transition: opacity var(--uix-dur) var(--uix-ease-out); }
   .uix-btn__result { opacity: 0; transition-duration: var(--uix-dur-exit); }
   .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; transition-duration: var(--uix-dur-exit-fast); }
   .uix-btn__face[data-result="success"] > [data-kind="success"],
@@ -107,7 +109,7 @@
   .uix-btn--outline .uix-btn__result[data-kind="error"] svg,
   .uix-btn--ghost .uix-btn__result[data-kind="error"] svg { color: var(--uix-danger-text); }
   .uix-btn--wrap .uix-btn__face > * { white-space: normal; }
-  .uix-btn--xs .uix-btn__face > * { gap: .25em; }
+  .uix-btn--xs .uix-btn__face > * { gap: var(--uix-space-1); }
   /* An icon-only button keeps its square: the result is the mark alone (the words are spoken). */
   .uix-btn--icon .uix-btn__result-text { display: none; }
 
