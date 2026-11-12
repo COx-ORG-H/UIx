@@ -18,13 +18,21 @@ async function open(page, which, theme) {
   });
 }
 
-/** The element's own box, and the box of its text (a Range over its text nodes). */
+/** The element's own box, and the box of its first text line. A range over the element's contents
+ *  would also return the border boxes of the elements inside it, so only text nodes are measured. */
 const measure = (el) => {
+  const textTopOf = (node) => {
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+      if (!t.nodeValue.trim()) continue;
+      const range = document.createRange(); range.selectNodeContents(t);
+      const rect = [...range.getClientRects()].find((r) => r.width > 0);
+      if (rect) return rect.top;
+    }
+    return NaN;
+  };
   const box = el.getBoundingClientRect();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  const text = [...range.getClientRects()].filter((r) => r.width > 0)[0];
-  return { width: box.width, height: box.height, textTop: text?.top ?? NaN, textBottom: text?.bottom ?? NaN, fontSize: parseFloat(getComputedStyle(el).fontSize) };
+  return { width: box.width, height: box.height, textTop: textTopOf(el), fontSize: parseFloat(getComputedStyle(el).fontSize) };
 };
 
 const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'light');
@@ -39,9 +47,7 @@ test('table: every sort button and every cell link is a 24 px target, and their 
   const header = await page.locator('thead').evaluate((thead, fn) => {
     const m = new Function(`return (${fn})`)();
     const plain = [...thead.querySelectorAll('th')].find((th) => !th.querySelector('button'));
-    const range = document.createRange(); range.selectNodeContents(plain);
-    const plainTop = [...range.getClientRects()].filter((r) => r.width > 0)[0].top;
-    return { plainTop, buttons: [...thead.querySelectorAll('.uix-th__sortbtn')].map((b) => ({ name: b.textContent, ...m(b) })) };
+    return { plainTop: m(plain).textTop, buttons: [...thead.querySelectorAll('.uix-th__sortbtn')].map((b) => ({ name: b.textContent, ...m(b) })) };
   }, measure.toString());
   expect(header.buttons).toHaveLength(3);
   for (const b of header.buttons) {
@@ -53,14 +59,13 @@ test('table: every sort button and every cell link is a 24 px target, and their 
     const m = new Function(`return (${fn})`)();
     return trs.map((tr) => {
       const plain = tr.querySelector('[data-text="plain-cell"]');
-      const range = document.createRange(); range.selectNodeContents(plain);
-      const plainTop = [...range.getClientRects()].filter((r) => r.width > 0)[0].top;
-      return { rowHeight: tr.getBoundingClientRect().height, plainTop, links: [...tr.querySelectorAll('[data-target]')].map((a) => ({ name: a.textContent, kind: a.dataset.target, ...m(a) })) };
+      const rowH = parseFloat(getComputedStyle(tr).getPropertyValue('--uix-row-h'));
+      return { rowHeight: tr.getBoundingClientRect().height, rowH, plainTop: m(plain).textTop, links: [...tr.querySelectorAll('[data-target]')].map((a) => ({ name: a.textContent, kind: a.dataset.target, ...m(a) })) };
     });
   }, measure.toString());
   for (const row of rows) {
-    // the row keeps the kit row height (40 px default density)
-    expect(row.rowHeight).toBeLessThanOrEqual(41);
+    // the row keeps the kit row height (--uix-row-h, plus its 1 px divider)
+    expect(row.rowHeight).toBeLessThanOrEqual(row.rowH + 1);
     for (const link of row.links) {
       expect(link.height, `${link.kind} "${link.name}" height`).toBeGreaterThanOrEqual(24);
       expect(Math.abs(link.textTop - row.plainTop), `${link.kind} "${link.name}" text moved`).toBeLessThanOrEqual(0.5);
@@ -75,7 +80,7 @@ test('section heads: a linked eyebrow label is a 24 px target and its text sits 
   const heads = await page.evaluate((fn) => {
     const m = new Function(`return (${fn})`)();
     const at = (c) => document.querySelector(`[data-case="${c}"]`);
-    const textOf = (el) => { const r = document.createRange(); r.selectNodeContents(el); return [...r.getClientRects()].filter((x) => x.width > 0)[0]; };
+    const textOf = (el) => ({ top: m(el).textTop });
     const unlinked = at('unlinked');
     const linked = at('linked');
     const head = (c) => at(c).querySelector('.uix-section-head').getBoundingClientRect();
