@@ -1566,10 +1566,12 @@ export interface DataWorkspaceColumn<T> {
     // (undocumented)
     id: string;
     label?: string;
+    lineClamp?: number;
     minWidth?: string;
     priority?: 'high' | 'mid' | 'low';
     // (undocumented)
     sortable?: boolean;
+    textWrap?: 'wrap' | 'nowrap' | 'truncate';
     width?: string;
 }
 
@@ -1974,6 +1976,9 @@ export interface DateRangeValue {
 }
 
 // @public
+export function DateTime(input: DateTimeProps): react.JSX.Element;
+
+// @public
 export const DateTimePicker: react.ForwardRefExoticComponent<DateTimePickerProps & react.RefAttributes<HTMLInputElement>>;
 
 // @public
@@ -2000,6 +2005,30 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
     timeZone?: string;
     timeZoneLabel?: string | null;
     value: string | null;
+}
+
+// @public (undocumented)
+export type DateTimePrecision = 'date' | 'minute';
+
+// Warning: (ae-forgotten-export) The symbol "Formatting" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export interface DateTimeProps extends Omit<HTMLAttributes<HTMLTimeElement>, 'children' | 'dateTime'>, Formatting {
+    invalidLabel?: ReactNode;
+    // (undocumented)
+    value: Date | number | string;
+}
+
+// @public
+export function DateTimeRange(input: DateTimeRangeProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface DateTimeRangeProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>, Formatting {
+    // (undocumented)
+    end: Date | number | string;
+    invalidLabel?: ReactNode;
+    // (undocumented)
+    start: Date | number | string;
 }
 
 // @public (undocumented)

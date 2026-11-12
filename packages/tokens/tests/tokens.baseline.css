@@ -142,7 +142,7 @@
     --uix-icon-sm:16px; --uix-icon-md:20px; --uix-icon-lg:24px; --uix-peek-w:420px;
 
     /* table column-width scale — consumed by .uix-col--w-* / .uix-col--flex */
-    --uix-col-w-xs:92px; --uix-col-w-sm:112px; --uix-col-w-md:132px; --uix-col-w-lg:176px; --uix-col-w-xl:240px; --uix-col-title-min:340px;
+    --uix-col-w-xs:92px; --uix-col-w-sm:112px; --uix-col-w-md:132px; --uix-col-w-lg:176px; --uix-col-w-lg-plus:208px; --uix-col-w-xl:240px; --uix-col-title-min:340px;
     /* calm kit (2.56) */
     --uix-chart-series:var(--uix-chart-1); --uix-chart-series-soft:rgba(4,85,230,.14);
     /* calm kit (2.56) */
