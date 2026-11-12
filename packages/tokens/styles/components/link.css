@@ -31,8 +31,8 @@
  *     inside a text run, not the whole block, and .uix-comment__meta is not interactive.
  *     It fails test (i) above. Products wanting the GitHub-style quiet byline opt in with
  *     .uix-link--quiet; that is what the utility is for.
- *   • .uix-navitem, .uix-breadcrumbs a, .uix-section-link are already quiet by their own
- *     design and need no class here.
+ *   • .uix-navitem, .uix-section-link are already quiet by their own design; .uix-breadcrumbs a
+ *     takes the link colour without an underline (breadcrumbs.css, HAR-3070).
  *
  * Five forms:
  *   1 · `.uix-link--quiet` — the opt-in utility, for block links outside the registry.

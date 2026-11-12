@@ -214,6 +214,21 @@ test('quiet-link contract: title-slot anchors render inside the title-classed el
   assert.match(event, /<p class="uix-event-row__title"><a href="\/events\/4">Summer all-hands<\/a><\/p>/);
 });
 
+test('ContentListItem href: the whole row is one link with an arrow; without href nothing changes (HAR-3070)', () => {
+  const linked = render(h(ContentListItem, { title: 'VPN reset', meta: 'Service desk', href: '/kb/1' }));
+  assert.match(linked, /<li class="uix-content-list__item uix-content-list__item--link">/);
+  assert.equal((linked.match(/<a /g) ?? []).length, 1);
+  assert.match(linked, /<p class="uix-content-list__title"><a href="\/kb\/1" class="uix-content-list__link">VPN reset<\/a><\/p>/);
+  assert.match(linked, /<span class="uix-content-list__go" aria-hidden="true"><svg/);
+  const pill = render(h(ContentListItem, { title: 'VPN reset', href: '/kb/1', trailing: h('span', { className: 'uix-pill' }, 'Neu') }));
+  assert.doesNotMatch(pill, /uix-content-list__go/);
+  assert.match(pill, /<span class="uix-pill">Neu<\/span>/);
+  const routed = render(h(ContentListItem, { title: 'VPN reset', href: '/kb/1', renderLink: (p) => h('a', { ...p, 'data-router': '1' }) }));
+  assert.match(routed, /data-router="1"/);
+  const plain = render(h(ContentListItem, { title: 'Berlin office day' }));
+  assert.equal(plain, '<li class="uix-content-list__item"><div><p class="uix-content-list__title">Berlin office day</p></div></li>');
+});
+
 test('all wrappers merge className and forward DOM props', () => {
   const html = render(h(SectionHead, { title: 'T', className: 'extra', 'data-x': '1' }));
   assert.match(html, /class="uix-section-head extra"/);
