@@ -11,6 +11,8 @@
   --color-uix-border: var(--uix-border);
   --color-uix-border-strong: var(--uix-border-strong);
   --color-uix-choice-border: var(--uix-choice-border);
+  --color-uix-control-border: var(--uix-control-border);
+  --color-uix-control-border-hover: var(--uix-control-border-hover);
   --color-uix-text: var(--uix-text);
   --color-uix-text-hushed: var(--uix-text-hushed);
   --color-uix-text-muted: var(--uix-text-muted);
@@ -152,6 +154,8 @@
   --color-uix-row-alt: var(--uix-row-alt);
   --color-uix-row-pinned-bg: var(--uix-row-pinned-bg);
   --color-uix-row-selected-bg: var(--uix-row-selected-bg);
+  --color-uix-row-selected-edge: var(--uix-row-selected-edge);
+  --color-uix-table-head-bg: var(--uix-table-head-bg);
   --color-uix-scrollbar-thumb: var(--uix-scrollbar-thumb);
   --color-uix-scrollbar-thumb-hover: var(--uix-scrollbar-thumb-hover);
   --color-uix-scrollbar-track: var(--uix-scrollbar-track);
