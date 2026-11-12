@@ -23,7 +23,7 @@ function Harness() {
       <h1>Text, der passt</h1>
       <section aria-label="Schmale Zelle">
         <TableWrap>
-          <Table style={{ tableLayout: 'fixed', width: 'auto' }}>
+          <Table style={{ tableLayout: 'fixed', width: 240 }}>
             <thead><tr><Th style={{ width: 120 }}>Wann</Th><Th style={{ width: 120 }}>Zeitraum</Th></tr></thead>
             <tbody>
               <tr>
