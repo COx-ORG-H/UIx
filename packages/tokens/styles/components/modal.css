@@ -16,6 +16,15 @@
   }
   /* only the duration: a surface that sets `transition: none` (a command palette's dialog) stays instant */
   .uix-dialog[open] { opacity: 1; transform: none; display: block; transition-duration: var(--uix-dur-slow); }
+  /* The actions stay in view (HAR-3104, the UI climb rules): a dialog no taller than the viewport, with
+     its header and footer in place and only the body scrolling. Before, a long body made the whole
+     dialog scroll (the UA's overflow on a modal dialog) and carried the footer's "Save" out of view.
+     Only a dialog that has the kit's parts lays them out as a column; others keep display: block. */
+  .uix-dialog[open]:has(> :is(.uix-dialog__body, .uix-dialog__footer)) {
+    display: flex; flex-direction: column; max-height: calc(100dvh - 2 * var(--uix-space-5));
+  }
+  .uix-dialog[open] > :is(.uix-dialog__header, .uix-dialog__footer) { flex: none; }
+  .uix-dialog[open] > .uix-dialog__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   @starting-style { .uix-dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); } }
   /* 2.60: the page behind softens under --uix-scrim-blur while the dim fades in; only the opacity
      animates (see drawer.css: an animated blur radius starves software rendering) */
