@@ -56,6 +56,15 @@ because a byline reads "Author · 22m ago" — the name is a phrase inside a tex
 are already quiet by their own design and need no class. Breadcrumb ancestors draw in `--uix-link` without an
 underline at rest, with a 24 × 24 px hit area (HAR-3070): a grey crumb read as a label, not as the way back.
 
+**A link that stands on its own in a kit slot owns a 24 px target** (WCAG 2.5.8). The inline-text
+exception covers a link inside a sentence, not one that is the whole of its slot, so the kit sizes the
+element itself, which is what axe's `target-size` rule and the product probes measure: a sort button in a
+column header (a 24 px inline-flex box, HAR-3084), a data cell's link (`.uix-cell-link` or a classless
+anchor in a cell: vertical padding, which never changes a line's height, so rows and wrapped lines stay
+put, HAR-3084), a link in the Peek footer (`.uix-peek__footer > a`, `.uix-peek__footer-link`, a link
+`Button`; at the meta size, HAR-3091), a linked eyebrow section label (`SectionHead size="eyebrow"
+href`, `.uix-section-title__link`) and `.uix-section-link` (HAR-3097). The drawn text does not move.
+
 A `ContentListItem` with `href` (and `renderLink`) is one link for the whole row (HAR-3070): the title
 renders as the anchor, its `::after` covers the row, an arrow shows at rest unless `trailing` is set, and
 the focus ring draws around the row. Pass a plain-text `title` with it, not a link of your own.

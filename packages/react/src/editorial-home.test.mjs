@@ -55,6 +55,28 @@ test('SectionHead: h2 gets titleId, action lands after it', () => {
   assert.match(html, /<a class="uix-section-link" href="#">View all<\/a>/);
 });
 
+test('SectionHead eyebrow (HAR-3097): the size class, and href makes the title its link inside the heading', () => {
+  const plain = render(h(SectionHead, { title: 'Störungen', size: 'eyebrow', as: 'h3' }));
+  assert.match(plain, /<div class="uix-section-head uix-section-head--eyebrow"><h3 class="uix-section-title">Störungen<\/h3><\/div>/);
+  const linked = render(h(SectionHead, { title: 'Störungen', size: 'eyebrow', as: 'h3', href: '/settings/c/incidents' }));
+  assert.match(linked, /<h3 class="uix-section-title"><a href="\/settings\/c\/incidents" class="uix-section-title__link">Störungen<\/a><\/h3>/);
+  // renderLink receives the href, the class and the title, like every other kit link slot
+  const seen = [];
+  const routed = render(h(SectionHead, {
+    title: 'CMDB', size: 'eyebrow', href: '/settings/c/cmdb',
+    renderLink: (p) => { seen.push(p); return h('a', { ...p, 'data-router': '' }); },
+  }));
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].href, '/settings/c/cmdb');
+  assert.equal(seen[0].className, 'uix-section-title__link');
+  assert.match(routed, /data-router=""/);
+  // a renderLink that returns nothing falls back to a plain anchor
+  const fallback = render(h(SectionHead, { title: 'CMDB', href: '/x', renderLink: () => null }));
+  assert.match(fallback, /<a href="\/x" class="uix-section-title__link">CMDB<\/a>/);
+  // the default size keeps its markup
+  assert.doesNotMatch(render(h(SectionHead, { title: 'T' })), /--eyebrow|__link/);
+});
+
 test('NoticeQueue: copy strong/summary, polite live region, position + actions', () => {
   const html = render(h(NoticeQueue, {
     title: 'Office access changes on Monday.',

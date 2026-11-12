@@ -197,9 +197,9 @@
       "brotli": 1659
     },
     "styles/components/editorial-home.css": {
-      "raw": 22803,
-      "gzip": 5066,
-      "brotli": 4330
+      "raw": 24259,
+      "gzip": 5410,
+      "brotli": 4608
     },
     "styles/components/file-kit.css": {
       "raw": 16342,
@@ -282,9 +282,9 @@
       "brotli": 1602
     },
     "styles/components/link.css": {
-      "raw": 6952,
-      "gzip": 2668,
-      "brotli": 2193
+      "raw": 7506,
+      "gzip": 2877,
+      "brotli": 2380
     },
     "styles/components/list-motion.css": {
       "raw": 1989,
@@ -362,9 +362,9 @@
       "brotli": 516
     },
     "styles/components/peek.css": {
-      "raw": 4772,
-      "gzip": 1716,
-      "brotli": 1406
+      "raw": 5450,
+      "gzip": 1976,
+      "brotli": 1625
     },
     "styles/components/pipeline.css": {
       "raw": 6039,
@@ -517,9 +517,9 @@
       "brotli": 1396
     },
     "styles/components/table.css": {
-      "raw": 24598,
-      "gzip": 6442,
-      "brotli": 5533
+      "raw": 24985,
+      "gzip": 6593,
+      "brotli": 5653
     },
     "styles/components/tabs.css": {
       "raw": 6954,
