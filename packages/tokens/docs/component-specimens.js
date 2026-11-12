@@ -480,6 +480,11 @@ export const COMPONENT_SPECIMENS = {
     "selector": ".uix-matrix",
     "container": "[data-matrix-example]"
   },
+  "overflow-row": {
+    "route": "examples-data-display",
+    "selector": ".uix-overflow-row",
+    "container": "[data-overflow-row-example]"
+  },
   "data-workspace": {
     "route": "examples-data-display",
     "selector": ".uix-data-workspace",

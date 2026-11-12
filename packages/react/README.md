@@ -1061,6 +1061,21 @@ The layout grid for dashboard widgets (HAR-1555; TENSOR's role dashboards). Pure
 - Refs reach the grid and item `<div>`s, and other props pass through. For an element you render yourself (a drag-and-drop library's sortable node, a server template), use `dashboardGridClassName(columns, gap)` and `dashboardGridItemClassName(span)`.
 - Plain HTML: `.uix-dashboard-grid` with `--cols-N` / `--{sm,md,lg,xl}-cols-N` and `--gap-sm|lg`, items `.uix-dashboard-grid__item` with `--span-2` / `--full`. Every direct child of the grid is a cell.
 
+### OverflowRow
+
+One line of items that never wraps (HAR-3072; TENSOR's member roles). It shows, in order, the items that fit whole and replaces the rest with one counter, so a table row keeps one height and no badge is cut mid-word.
+
+```tsx
+<OverflowRow more="+{count}" moreLabel="{count} weitere: {items}">
+  {roles.map((r) => <StatusPill key={r.key} tone="neutral">{r.name}</StatusPill>)}
+</OverflowRow>
+```
+
+- **What it shows:** every item when they fit side by side; otherwise the most that fit whole beside the counter, never fewer than one (`overflowRowFit(widths, available, gap, counterWidth)` is the rule, exported for tests). The first item may shrink, so a single item wider than the row is clipped at its edge: give it its own truncating text for an ellipsis.
+- **Accessible:** the hidden items stay in the DOM for measuring but out of the layout and the accessibility tree; the counter's screen-reader text (`moreLabel`, `{count}` and `{items}`) and its `title` name them, so each item is heard once.
+- **Measures** with a ResizeObserver and on every render. Before it can (a server render, no ResizeObserver) every item shows and the row clips. In a table cell, give the column or the row a width (`max-width`): a cell sized by its content would grow to fit every item.
+- Plain HTML: `.uix-overflow-row` > `.uix-overflow-row__item` (`[data-overflow-hidden]` for a hidden one), `.uix-overflow-row__more`, and the hidden `.uix-overflow-row__probe` holding the widest counter text.
+
 ### OrgChart
 
 Reporting lines as a top-down chart (HAR-1807; TENSOR's People directory). Managers sit above their direct reports, joined by lines; each person is a card with photo or initials, name, title, team, location and the number of direct reports, which is also the control that shows or hides them. Data fetching stays in the product: the chart asks for a person's reports through `loadChildren` the first time they are opened.
