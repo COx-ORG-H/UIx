@@ -178,6 +178,13 @@ function StepsDemo() {
 function RowsDemo() {
   const [rows, setRows] = useState(QUEUE);
   const [next, setNext] = useState(0);
+  // each press flips the order (worst priority first, then best first), so every press moves rows
+  const [descending, setDescending] = useState(false);
+  const resort = () => {
+    const dir = descending ? 1 : -1;
+    setDescending(!descending);
+    setRows((r) => [...r].sort((a, b) => dir * (a.priority - b.priority || a.id.localeCompare(b.id))));
+  };
   const add = () => {
     setRows((r) => [{ id: `INC-${String(520 + next).padStart(4, '0')}`, title: NEW_TITLES[next % NEW_TITLES.length], priority: 2 + (next % 3) }, ...r]);
     setNext((n) => n + 1);
@@ -187,7 +194,7 @@ function RowsDemo() {
       <div className="uix-cluster">
         <Button variant="secondary" onClick={add}>Neue Meldung</Button>
         <Button variant="secondary" disabled={rows.length < 2} onClick={() => setRows((r) => r.filter((_, i) => i !== 1))}>Zweite erledigen</Button>
-        <Button variant="secondary" disabled={rows.length < 2} onClick={() => setRows((r) => [...r].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id)).reverse())}>Umsortieren</Button>
+        <Button variant="secondary" disabled={rows.length < 2} onClick={resort}>Umsortieren</Button>
         <Button variant="secondary" onClick={() => setRows((r) => (r.length ? [] : QUEUE))}>{rows.length ? 'Alle erledigen' : 'Zurücksetzen'}</Button>
       </div>
       <DataWorkspace<Ticket> label="Störungen" rows={rows} getRowId={(t) => t.id} columns={QUEUE_COLUMNS} rowMotion
