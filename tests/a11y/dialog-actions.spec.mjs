@@ -50,13 +50,40 @@ for (const which of ['modal', 'drawer']) {
       const after = await measure();
       check(after, 'scrolled to the end');
       expect(after.footer.top, 'the footer did not move').toBeCloseTo(before.footer.top, 0);
-      // keyboard: from the last field, Tab lands on the first action, which is in view
+      // keyboard: from the last field, Tab lands on the first action, which is in view, and the footer
+      // did not have to move for it (the panel itself never scrolled)
       await panel.getByLabel('Feld 14').focus();
       await page.keyboard.press('Tab');
       const focused = await page.evaluate(() => { const r = document.activeElement.getBoundingClientRect(); return { action: document.activeElement.dataset.action ?? null, top: r.top, bottom: r.bottom }; });
       expect(focused.action).toBe('cancel');
       expect(focused.bottom).toBeLessThanOrEqual(viewport.height);
+      const tabbed = await measure();
+      expect(tabbed.panelScrolls, 'the panel itself still does not scroll').toBe(false);
+      expect(tabbed.footer.top, 'the footer did not move for the focus').toBeCloseTo(before.footer.top, 0);
       await testInfo.attach(`${which}-${viewport.width}`, { body: await page.screenshot(), contentType: 'image/png' });
     });
   }
 }
+
+// Below 30rem of height (a phone on its side, 400 % zoom) pinning would squeeze the body to a strip, so
+// the Modal keeps the whole dialog scrolling there (#240 review): the body is not its own scroller, and
+// scrolling the dialog brings the actions into view.
+test('modal at 320×256 (400 % zoom): the whole dialog scrolls, the body is not squeezed, the actions are reachable', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 256 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.addInitScript((t) => localStorage.setItem('uix-theme', t), themeOf(testInfo));
+  await page.goto(`${HARNESS}?case=modal`, { waitUntil: 'networkidle' });
+  const panel = page.getByRole('dialog');
+  await expect(panel).toBeVisible();
+  const state = await panel.evaluate((el) => {
+    const body = el.querySelector('.uix-dialog__body');
+    return { bodyScrolls: body.scrollHeight > body.clientHeight + 1, panelScrolls: el.scrollHeight > el.clientHeight + 1, bodyHeight: body.getBoundingClientRect().height };
+  });
+  expect(state.bodyScrolls).toBe(false);
+  expect(state.panelScrolls).toBe(true);
+  expect(state.bodyHeight).toBeGreaterThan(256);
+  await panel.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  const save = await panel.locator('[data-action="save"]').evaluate((b) => { const r = b.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; });
+  expect(save.top).toBeGreaterThanOrEqual(0);
+  expect(save.bottom).toBeLessThanOrEqual(256);
+});
