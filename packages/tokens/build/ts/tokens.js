@@ -625,7 +625,7 @@ export const dark = {
   "bg-app": "#070707",
   "bg-subtle": "#171717",
   "bg-hover": "#232323",
-  "bg-active": "#262626",
+  "bg-active": "#2A2A2A",
   "surface": "#111111",
   "surface-2": "#171717",
   "surface-3": "#262626",

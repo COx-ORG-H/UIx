@@ -151,7 +151,7 @@
   }
 
   :root:where(.dark,[data-theme="dark"]) {
-    --uix-bg-app:#070707; --uix-bg-subtle:#171717; --uix-bg-hover:#232323; --uix-bg-active:#262626;
+    --uix-bg-app:#070707; --uix-bg-subtle:#171717; --uix-bg-hover:#232323; --uix-bg-active:#2A2A2A;
     --uix-surface:#111111; --uix-surface-2:#171717; --uix-surface-3:#262626;
     --uix-border:rgba(255,255,255,.12); --uix-border-strong:rgba(255,255,255,.20); --uix-choice-border:rgba(255,255,255,.45);
     --uix-control-border:rgba(255,255,255,.36); --uix-control-border-hover:rgba(255,255,255,.48);

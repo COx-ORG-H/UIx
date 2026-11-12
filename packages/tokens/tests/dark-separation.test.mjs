@@ -50,6 +50,9 @@ test("dark: the keyboard position in a menu, listbox or palette (bg-hover on sur
   // .uix-menu__item[data-active], .uix-listbox__option[data-active], .uix-cmdk__item[data-active]
   assert.ok(step("var(--uix-surface-2)", "var(--uix-bg-hover)", dark) >= 1.088, "bg-hover on surface-2");
   assert.ok(step("var(--uix-surface)", "var(--uix-bg-hover)", dark) >= 1.15, "bg-hover on the card");
+  // a control that hovers to bg-active inside a hovered row (row actions, pin, expand, an editable
+  // cell), and a bg-active fill (neutral pill, track) on a hovered row: no weaker than in 2.62 (1.089)
+  assert.ok(step("var(--uix-bg-hover)", "var(--uix-bg-active)", dark) >= 1.089, "bg-active on bg-hover");
 });
 
 test("dark: the card's top highlight is a visible lit edge, since a black shadow cannot show on the page", () => {

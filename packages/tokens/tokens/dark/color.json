@@ -2,7 +2,7 @@
   "bg-app":    { "$type": "color", "$value": "#070707", "$description": "HAR-3087 (dark): one step darker than #0A0A0A, so the page sits visibly below the card (#111111)." },
   "bg-subtle": { "$type": "color", "$value": "#171717" },
   "bg-hover":  { "$type": "color", "$value": "#232323", "$description": "HAR-3087 (dark, #237 review): a hovered row or option at least 1.14:1 on a card, a menu or the table header band; #1F1F1F was 1.06:1 on the header band." },
-  "bg-active": { "$type": "color", "$value": "#262626" },
+  "bg-active": { "$type": "color", "$value": "#2A2A2A", "$description": "HAR-3087 (dark, #237 review): one step above --uix-bg-hover (#232323), so a control that hovers to bg-active inside a hovered row (row actions, pin, expand, an editable cell) and a bg-active fill (a neutral pill, a track) still read on it; #262626 was 1.04:1 on the new hover." },
   "surface":   { "$type": "color", "$value": "#111111" },
   "surface-2": { "$type": "color", "$value": "#171717" },
   "surface-3": { "$type": "color", "$value": "#262626" },
