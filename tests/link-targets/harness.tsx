@@ -6,7 +6,7 @@
  * German, as the TENSOR screens that found them. */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Peek, SectionHead, Table, TableWrap, Td, Th, Tr } from '../../packages/react/src/index.js';
+import { Button, CellStrong, CellSub, Peek, SectionHead, Table, TableWrap, Td, Th, Tr } from '../../packages/react/src/index.js';
 
 const rows = [
   { id: 'CVE-2024-6387', asset: 'SRV-RZN-0107', open: 12, state: 'Offen' },
@@ -14,17 +14,19 @@ const rows = [
   { id: 'CVE-2024-3094', asset: 'WS-MUC-0441', open: 1, state: 'Behoben' },
 ];
 
-function TableCase() {
+function TableCase({ cards = false }: { cards?: boolean }) {
   return (
     <section aria-label="Befunde">
       <TableWrap>
-        <Table>
+        <Table className={cards ? 'uix-table--cards' : undefined}>
           <thead>
             <tr>
               <Th sortable sortDirection="none" onSort={() => {}}>Befund</Th>
               <Th sortable sortDirection="none" onSort={() => {}}>Quell-Asset</Th>
               <Th sortable sortDirection="descending" onSort={() => {}}>Offene Befunde</Th>
               <Th>Status</Th>
+              <Th sortable sortDirection="none" onSort={() => {}}>Offen <abbr title="Service Level Agreement">SLA</abbr></Th>
+              <Th>Verantwortlich</Th>
             </tr>
           </thead>
           <tbody>
@@ -34,6 +36,8 @@ function TableCase() {
                 <Td><a href={`#${row.asset}`} data-target="plain-cell-link">{row.asset}</a></Td>
                 <Td className="uix-col--num" data-text="plain-cell">{row.open}</Td>
                 <Td data-text="plain-cell">{row.state}</Td>
+                <Td data-text="plain-cell">{row.open > 2 ? 'ja' : 'nein'}</Td>
+                <Td><CellStrong>Elif Yılmaz</CellStrong><CellSub><a href={`#team-${row.id}`} data-target="sub-cell-link">Team Netzwerk</a></CellSub></Td>
               </Tr>
             ))}
           </tbody>
@@ -82,11 +86,15 @@ function PeekCase() {
 }
 
 function Harness() {
-  const which = new URLSearchParams(location.search).get('case') ?? 'table';
+  const params = new URLSearchParams(location.search);
+  const which = params.get('case') ?? 'table';
+  // the small text scale of the display preferences (93.75 %): a 24 px target at any text size
+  if (params.get('scale')) document.documentElement.setAttribute('data-text-scale', params.get('scale')!);
   return (
     <>
       <h1>Ziele von 24 px</h1>
       {which === 'table' && <TableCase />}
+      {which === 'cards' && <TableCase cards />}
       {which === 'heads' && <HeadsCase />}
       {which === 'peek' && <PeekCase />}
     </>

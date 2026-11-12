@@ -9,9 +9,9 @@ import AxeBuilder from '@axe-core/playwright';
 
 const HARNESS = '/tests/link-targets/harness.html';
 
-async function open(page, which, theme) {
+async function open(page, which, theme, extra = '') {
   await page.addInitScript((t) => localStorage.setItem('uix-theme', t), theme);
-  await page.goto(`${HARNESS}?case=${which}`, { waitUntil: 'networkidle' });
+  await page.goto(`${HARNESS}?case=${which}${extra}`, { waitUntil: 'networkidle' });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.allSettled(document.getAnimations().filter((a) => Number.isFinite(a.effect?.getComputedTiming().iterations)).map((a) => a.finished));
@@ -42,14 +42,16 @@ async function noTargetSizeViolations(page) {
   expect(results.violations.map((v) => v.nodes.map((n) => n.target.join(' '))).flat()).toEqual([]);
 }
 
-test('table: every sort button and every cell link is a 24 px target, and their text stays on the plain text line (HAR-3084)', async ({ page }, testInfo) => {
-  await open(page, 'table', themeOf(testInfo));
+for (const scale of ['', 'sm']) test(`table${scale ? ` at the ${scale} text scale` : ''}: every sort button and every cell link is a 24 px target, and their text stays on the plain text line (HAR-3084)`, async ({ page }, testInfo) => {
+  await open(page, 'table', themeOf(testInfo), scale ? `&scale=${scale}` : '');
   const header = await page.locator('thead').evaluate((thead, fn) => {
     const m = new Function(`return (${fn})`)();
     const plain = [...thead.querySelectorAll('th')].find((th) => !th.querySelector('button'));
-    return { plainTop: m(plain).textTop, buttons: [...thead.querySelectorAll('.uix-th__sortbtn')].map((b) => ({ name: b.textContent, ...m(b) })) };
+    return { plainTop: m(plain).textTop, buttons: [...thead.querySelectorAll('.uix-th__sortbtn')].map((b) => ({ name: b.textContent, shown: b.innerText, ...m(b) })) };
   }, measure.toString());
-  expect(header.buttons).toHaveLength(3);
+  expect(header.buttons).toHaveLength(4);
+  // a label of a word and an <abbr> keeps the space between them (#236 review: inline-flex dropped it)
+  expect(header.buttons[3].shown).toBe('Offen SLA');
   for (const b of header.buttons) {
     expect(b.height, `sort button "${b.name}" height`).toBeGreaterThanOrEqual(24);
     expect(Math.abs(b.textTop - header.plainTop), `sort button "${b.name}" text moved`).toBeLessThanOrEqual(0.5);
@@ -68,11 +70,29 @@ test('table: every sort button and every cell link is a 24 px target, and their 
     expect(row.rowHeight).toBeLessThanOrEqual(row.rowH + 1);
     for (const link of row.links) {
       expect(link.height, `${link.kind} "${link.name}" height`).toBeGreaterThanOrEqual(24);
-      expect(Math.abs(link.textTop - row.plainTop), `${link.kind} "${link.name}" text moved`).toBeLessThanOrEqual(0.5);
+      // a meta-size link under a name sits on its own second line; the others share the plain text's line
+      if (link.kind !== 'sub-cell-link') expect(Math.abs(link.textTop - row.plainTop), `${link.kind} "${link.name}" text moved`).toBeLessThanOrEqual(0.5);
     }
   }
   await noTargetSizeViolations(page);
   await testInfo.attach('table', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+});
+
+test('card mode: a cell link does not grow its row, where the card layout makes it a flex item (#236 review)', async ({ page }, testInfo) => {
+  await open(page, 'cards', themeOf(testInfo));
+  const cards = await page.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => {
+    const cells = [...tr.querySelectorAll('td')];
+    const height = (td) => td.getBoundingClientRect().height;
+    const link = cells.find((td) => td.querySelector('[data-target="cell-link"]'));
+    const plain = cells.find((td) => td.matches('[data-text="plain-cell"]') && !td.classList.contains('uix-col--num'));
+    return { link: height(link), plain: height(plain), box: link.querySelector('a').getBoundingClientRect().height };
+  }));
+  expect(cards.length).toBe(3);
+  for (const c of cards) {
+    expect(Math.abs(c.link - c.plain), 'the link cell is as tall as a plain one').toBeLessThanOrEqual(1);
+    expect(c.box).toBeGreaterThanOrEqual(24);
+  }
+  await testInfo.attach('cards', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 });
 
 test('section heads: a linked eyebrow label is a 24 px target and its text sits where the unlinked one does; a section link is 24 px (HAR-3097)', async ({ page }, testInfo) => {
