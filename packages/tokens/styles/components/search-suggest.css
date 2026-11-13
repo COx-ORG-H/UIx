@@ -5,9 +5,10 @@
 
   /* field: leading magnifier, trailing spinner / clear / shortcut hint */
   .uix-search-suggest__field { position: relative; display: flex; align-items: center; }
-  .uix-search-suggest__input { padding-left: 38px; padding-right: 44px; }
+  /* the field-icon geometry of input.css (HAR-3098): icon at space-3, text at 40 px; 48 px at lg */
+  .uix-search-suggest__input { padding-left: calc(var(--uix-space-3) + var(--uix-icon-md) + var(--uix-space-2)); padding-right: 44px; }
   .uix-search-suggest__lead {
-    position: absolute; left: 12px; display: inline-flex; color: var(--uix-text-muted); pointer-events: none;
+    position: absolute; left: var(--uix-space-3); display: inline-flex; color: var(--uix-text-muted); pointer-events: none;
   }
   .uix-search-suggest__lead svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-search-suggest__trail {
@@ -22,10 +23,11 @@
   .uix-search-suggest__clear:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-search-suggest__clear:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 
-  .uix-search-suggest--lg .uix-search-suggest__input { height: calc(var(--uix-control-h) + 8px); padding-left: 44px; font-size: var(--uix-text-h3); }
+  .uix-search-suggest--lg .uix-search-suggest__input { height: calc(var(--uix-control-h) + 8px); font-size: var(--uix-text-h3); }
+  .uix-search-suggest--lg .uix-search-suggest__input { padding-left: calc(var(--uix-space-4) + var(--uix-icon-lg) + var(--uix-space-2)); }
   /* free text (HAR-2465): a value field, not a search, so no magnifier and no room for one */
   .uix-search-suggest--free-text .uix-search-suggest__input { padding-left: var(--uix-space-3); }
-  .uix-search-suggest--lg .uix-search-suggest__lead { left: 14px; }
+  .uix-search-suggest--lg .uix-search-suggest__lead { left: var(--uix-space-4); }
   .uix-search-suggest--lg .uix-search-suggest__lead svg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
 
   /* the suggestion list */

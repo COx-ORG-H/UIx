@@ -33,11 +33,16 @@
   /* lg: 44 px, the touch-target floor of a public page, as tall as .uix-btn--lg (HAR-1812) */
   .uix-input--lg { height: 44px; padding: 0 var(--uix-space-4); font-size: var(--uix-text-h3); }
 
-  /* leading/trailing adornments */
+  /* leading/trailing adornments — one geometry for every field with an icon (HAR-3098): the icon
+     sits --uix-space-3 in (--uix-space-4 at lg, --uix-space-2 at sm), --uix-icon-md (lg, sm) wide,
+     and the text padding is that inset, the icon and --uix-space-2: 40 px, 48 px at lg, 32 px at sm.
+     Like every kit padding it is measured inside the field's 1 px border, so the drawn gap from icon
+     to text is the step plus the border. search-suggest.css and the editorial .uix-searchbar use the
+     same numbers, so fields stacked in a form line their icons and text up. */
   .uix-input-group { position: relative; display: flex; align-items: center; }
-  .uix-input-group__icon { position: absolute; left: 10px; color: var(--uix-text-muted); display: inline-flex; pointer-events: none; }
+  .uix-input-group__icon { position: absolute; left: var(--uix-space-3); color: var(--uix-text-muted); display: inline-flex; pointer-events: none; }
   .uix-input-group__icon svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
-  .uix-input-group--has-leading .uix-input { padding-left: 38px; }
+  .uix-input-group--has-leading .uix-input { padding-left: calc(var(--uix-space-3) + var(--uix-icon-md) + var(--uix-space-2)); }
   /* validation microinteractions */
   .uix-input[data-valid] { border-color: var(--uix-success); }
   .uix-input[data-valid]:focus { box-shadow: 0 0 0 3px var(--uix-success-bg); }
@@ -45,13 +50,20 @@
      Invalid wins when both are set. */
   .uix-input[data-warning]:not([aria-invalid="true"]) { border-color: var(--uix-warning); }
   .uix-input[data-warning]:not([aria-invalid="true"]):focus { box-shadow: 0 0 0 3px var(--uix-warning-bg); }
-  .uix-input-group--has-trailing .uix-input { padding-right: 38px; }
-  .uix-input-group__icon--trailing { left: auto; right: 10px; }
+  .uix-input-group--has-trailing .uix-input { padding-right: calc(var(--uix-space-3) + var(--uix-icon-md) + var(--uix-space-2)); }
+  .uix-input-group__icon--trailing { left: auto; right: var(--uix-space-3); }
   /* lg: the icons move in with the field's wider padding, and the text clears them */
-  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon { left: 14px; }
-  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon--trailing { left: auto; right: 14px; }
-  .uix-input-group--has-leading > .uix-input--lg { padding-left: 44px; }
-  .uix-input-group--has-trailing > .uix-input--lg { padding-right: 44px; }
+  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon { left: var(--uix-space-4); }
+  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon svg { width: var(--uix-icon-lg); height: var(--uix-icon-lg); }
+  .uix-input-group:has(> .uix-input--lg) .uix-input-group__icon--trailing { left: auto; right: var(--uix-space-4); }
+  .uix-input-group--has-leading > .uix-input--lg { padding-left: calc(var(--uix-space-4) + var(--uix-icon-lg) + var(--uix-space-2)); }
+  .uix-input-group--has-trailing > .uix-input--lg { padding-right: calc(var(--uix-space-4) + var(--uix-icon-lg) + var(--uix-space-2)); }
+  /* sm (28 px, meta text): a 16 px icon --uix-space-2 in, the text --uix-space-2 after it (#242 review) */
+  .uix-input-group:has(> .uix-input--sm) .uix-input-group__icon { left: var(--uix-space-2); }
+  .uix-input-group:has(> .uix-input--sm) .uix-input-group__icon svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-input-group:has(> .uix-input--sm) .uix-input-group__icon--trailing { left: auto; right: var(--uix-space-2); }
+  .uix-input-group--has-leading > .uix-input--sm { padding-left: calc(var(--uix-space-2) + var(--uix-icon-sm) + var(--uix-space-2)); }
+  .uix-input-group--has-trailing > .uix-input--sm { padding-right: calc(var(--uix-space-2) + var(--uix-icon-sm) + var(--uix-space-2)); }
 
   /* trailing action (HAR-1376): a real button inside the field's end (a reveal toggle, a clear),
      square, as tall as the field less a 4 px inset: 28 px at md, 36 px at lg, 24 px at sm */

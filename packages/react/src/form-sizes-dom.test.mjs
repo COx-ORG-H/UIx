@@ -32,8 +32,9 @@ test('the lg rules are 44 px, as .uix-btn--lg is, and InputGroup clears its icon
   assert.match(css('button'), /\.uix-btn--lg \{ height: 44px;/);
   assert.match(css('input'), /\.uix-input--lg \{ height: 44px;/);
   assert.match(css('select'), /\.uix-select--lg \{ height: 44px;/);
-  assert.match(css('input'), /\.uix-input-group--has-leading > \.uix-input--lg \{ padding-left: 44px; \}/);
-  assert.match(css('input'), /\.uix-input-group--has-trailing > \.uix-input--lg \{ padding-right: 44px; \}/);
+  // the lg icon sits --uix-space-4 in and is --uix-icon-lg wide; the text starts --uix-space-2 after it (HAR-3098)
+  assert.match(css('input'), /\.uix-input-group--has-leading > \.uix-input--lg \{ padding-left: calc\(var\(--uix-space-4\) \+ var\(--uix-icon-lg\) \+ var\(--uix-space-2\)/);
+  assert.match(css('input'), /\.uix-input-group--has-trailing > \.uix-input--lg \{ padding-right: calc\(var\(--uix-space-4\) \+ var\(--uix-icon-lg\) \+ var\(--uix-space-2\)/);
   // the textarea's own floor (84 px) already clears 44 px; lg must not lower it
   assert.match(css('textarea'), /\.uix-textarea \{[^}]*min-height: 84px/);
   assert.doesNotMatch(/\.uix-textarea--lg \{[^}]*\}/.exec(css('textarea'))[0], /min-height|height:/);

@@ -79,3 +79,12 @@ test('every state named in a caption is on the page', () => {
   assert.match(data, /aria-label="Datum ändern, Sonntag, 22. November 2026"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });
+
+test('the 4 px grid specimen shows each field with a leading icon at both sizes, and icon buttons (HAR-2985, HAR-3098)', () => {
+  const grid = specimens['examples-form-controls'].slice(specimens['examples-form-controls'].indexOf('data-four-px-grid-example'));
+  assert.equal((grid.match(/class="uix-input-group__icon/g) ?? []).length >= 2, true, 'two InputGroups with a leading icon');
+  assert.match(grid, /id="ff-grid-group-lg"/);
+  assert.match(grid, /id="ff-grid-suggest-lg"/);
+  assert.equal((grid.match(/class="uix-searchbar[ "]/g) ?? []).length, 2);
+  for (const size of ['xs', 'sm', 'lg']) assert.match(grid, new RegExp(`uix-btn--${size}`));
+});
