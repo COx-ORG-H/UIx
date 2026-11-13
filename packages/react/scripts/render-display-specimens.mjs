@@ -331,6 +331,28 @@ export async function renderDisplaySpecimens() {
       `<div data-peek-footer-example class="uix-card" style="max-width:28rem">${html(peekFooter)}</div>`,
     ].join('\n'));
 
+    // ── Text that fits (HAR-3094, HAR-3099, HAR-3201): whole dates, a range that breaks after its dash, clamped notes ──
+    const berlin = { locale: 'de-DE', timeZone: 'Europe/Berlin' };
+    const fitRows = [
+      ['CHG-0412', '2026-11-11T08:00:00.000Z', '2026-11-11T11:00:00.000Z', 'Firmware der Kernswitches im RZ Nord, mit Rückfallplan und Abstimmung mit dem Netzbetrieb.'],
+      ['CHG-0415', '2026-11-12T16:30:00.000Z', '2026-11-13T06:00:00.000Z', 'Datenbank-Wartung.'],
+    ];
+    const fitTable = mount(h(ui.TableWrap, null, h(ui.Table, null,
+      h('thead', null, h('tr', null,
+        h(ui.Th, null, 'Change'),
+        h(ui.Th, { className: 'uix-col--w-lg-plus uix-col--nowrap' }, 'Geplant'),
+        h(ui.Th, null, 'Fenster'),
+        h(ui.Th, null, 'Notiz'))),
+      h('tbody', null, fitRows.map(([id, start, end, note]) => h(ui.Tr, { key: id },
+        h(ui.Td, null, id),
+        h(ui.Td, { className: 'uix-col--w-lg-plus uix-col--nowrap' }, h(ui.DateTime, { value: start, ...berlin })),
+        h(ui.Td, null, h(ui.DateTimeRange, { start, end, ...berlin })),
+        h(ui.Td, null, h('span', { className: 'uix-cell-clamp', style: { '--uix-clamp': 2 } }, note))))))));
+    add('examples-data-display', [
+      caption('Text that fits (React <code>DateTime</code>, <code>DateTimeRange</code>, DataWorkspace column <code>textWrap</code> and <code>lineClamp</code>; <code>.uix-time</code>, <code>.uix-col--nowrap</code>, <code>.uix-cell-clamp</code>, the <code>lg-plus</code> width tier; HAR-3094, HAR-3099, HAR-3201) — a date never breaks inside itself; a range breaks only after its dash and prints a one-day date once; a long note stops after two lines with an ellipsis. In a DataWorkspace, <code>textWrap: \'nowrap\'</code> and <code>lineClamp: 2</code> on a column put these classes on its cells. The date follows the date fields\' app-wide format from <code>UixLabelsProvider</code>.'),
+      `<div data-text-fit-example style="max-width:44rem">${html(fitTable)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return specimens;
   } finally {
