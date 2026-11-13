@@ -8,8 +8,9 @@ import { contrast, evaluate, over, scopeFor, themes } from "./css-color.mjs";
  * input is filled with the surface it sits on, so its border is the only thing that shows where to
  * type: a graphical object that needs 3:1 against its surroundings (WCAG 1.4.11). The hairline
  * --uix-border measured 1.2:1 in both themes. Dark: the operator chose the 3:1 edge (2026-11-11).
- * Light: the operator chose the lightest edge that clears 3:1, rgba(0,0,0,.44), from a picture of
- * three (2026-11-13); this test pins that choice.
+ * Light: the operator chose the lightest edge that clears 3:1, from a picture of three (2026-11-13).
+ * Painted over the white fill, .44 measured 2.92:1 on mission-control's off-white, so the lightest
+ * edge that clears it is rgba(0,0,0,.45); this test pins that choice.
  */
 
 const NON_TEXT = 3;
@@ -19,10 +20,12 @@ for (const [theme, themeBlocks] of Object.entries(themes)) {
   for (const dark of [false, true]) {
     test(`${theme} ${dark ? "dark" : "light"}: a control edge clears 3:1 on every surface, resting and under the pointer`, () => {
       const scope = scopeFor(themeBlocks, dark);
+      // The edge paints over the control's own fill (--uix-surface), not over the page around it.
+      const fill = evaluate("var(--uix-surface)", scope);
       for (const token of ["control-border", "control-border-hover"]) {
         for (const backdrop of BACKDROPS) {
           const page = evaluate(`var(--uix-${backdrop})`, scope);
-          const edge = over(evaluate(`var(--uix-${token})`, scope), page);
+          const edge = over(evaluate(`var(--uix-${token})`, scope), fill);
           const ratio = contrast(edge, page);
           assert.ok(ratio >= NON_TEXT, `${dark ? "dark" : "light"} --uix-${token} ${ratio.toFixed(2)}:1 on --uix-${backdrop} (need ${NON_TEXT})`);
         }
@@ -41,9 +44,9 @@ for (const [theme, themeBlocks] of Object.entries(themes)) {
   });
 }
 
-test("light is the operator's edge: rgba(0,0,0,.44) resting, .56 under the pointer (2026-11-13)", () => {
+test("light is the operator's edge: rgba(0,0,0,.45) resting, .56 under the pointer", () => {
   const tokens = JSON.parse(readFileSync(new URL("../tokens/base/color.json", import.meta.url), "utf8"));
-  assert.equal(tokens["control-border"].$value, "rgba(0,0,0,.44)");
+  assert.equal(tokens["control-border"].$value, "rgba(0,0,0,.45)");
   assert.equal(tokens["control-border-hover"].$value, "rgba(0,0,0,.56)");
 });
 

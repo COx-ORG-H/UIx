@@ -324,7 +324,7 @@ export const light = {
   "border": "#E5E5E5",
   "border-strong": "#D4D4D4",
   "choice-border": "#808080",
-  "control-border": "rgba(0,0,0,.44)",
+  "control-border": "rgba(0,0,0,.45)",
   "control-border-hover": "rgba(0,0,0,.56)",
   "text": "#0A0A0A",
   "text-hushed": "rgba(10,10,10,.62)",
