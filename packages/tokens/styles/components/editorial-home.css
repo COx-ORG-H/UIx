@@ -59,9 +59,9 @@
   .uix-notice__copy { margin: 0; font-size: var(--uix-text-body); }
   .uix-notice__copy strong { font-weight: 600; }
   .uix-notice__content { min-width: 0; }
-  .uix-notice__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); }
+  .uix-notice__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
   .uix-notice__actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--uix-space-2); }
-  .uix-notice__position { margin-right: var(--uix-space-1); color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); white-space: nowrap; }
+  .uix-notice__position { margin-right: var(--uix-space-1); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); white-space: nowrap; }
   .uix-notice__arrow--previous svg { transform: rotate(180deg); }
 
   /* ── featured briefing — ONE card: stage + rundown are zones inside it, split
@@ -114,14 +114,15 @@
   .uix-rundown__item[data-selected="true"] .uix-rundown__number { min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: var(--uix-radius-pill); background: var(--uix-text); color: var(--uix-bg-app); }
   .uix-rundown__topic,
   .uix-rundown__item-title { display: block; }
-  .uix-rundown__topic { color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); }
+  .uix-rundown__topic { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); }
   .uix-rundown__item-title { margin-top: var(--uix-space-1); font-weight: 600; line-height: 1.2; }
 
   /* ── section heads ─────────────────────────────────────────────────────────── */
   .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-4); }
   .uix-section-title { margin: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); font-weight: 400; letter-spacing: var(--uix-tracking-tight); }
   .uix-section-head__title-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); }
-  .uix-section-link { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); text-decoration: none; }
+  /* inline-flex + min-height: the link stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3097) */
+  .uix-section-link { display: inline-flex; align-items: center; min-height: 24px; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); text-decoration: none; }
   /* already a quiet link by its own design — hover/focus parity with link.css */
   .uix-section-link:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
 
@@ -149,6 +150,14 @@
   .uix-content-list__item > div { min-width: 0; }
   .uix-content-list__title { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
   .uix-content-list__meta { margin: var(--uix-space-1) 0 0; color: var(--uix-text-hushed); font-size: var(--uix-text-meta); min-width: 0; overflow-wrap: anywhere; }
+  /* HAR-3070: a linked row is one target (the anchor stretches over it) with an arrow at rest */
+  .uix-content-list__item--link { position: relative; }
+  .uix-content-list__link::after { content: ""; position: absolute; inset: 0; }
+  .uix-content-list__link:focus-visible { outline: none; }
+  .uix-content-list__item--link:has(.uix-content-list__link:focus-visible) { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-sm); }
+  .uix-content-list__go { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-content-list__go svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-content-list__item--link:hover .uix-content-list__go { color: var(--uix-text); }
 
   /* ── resource grid ─────────────────────────────────────────────────────────── */
   .uix-resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--uix-space-2); }
@@ -241,4 +250,21 @@
   .uix-section-head--compact { min-height: 0; margin-bottom: var(--uix-space-2); }
   :is(.uix-section-head--compact .uix-section-title, .uix-section-title--compact),
   .uix-section-head--compact .uix-section-head__title-row { font-family: var(--uix-font-sans); font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); font-weight: 600; letter-spacing: normal; }
+}
+
+/* Eyebrow section label (HAR-3097): the small uppercase heading over a group of tiles or rows
+   (a settings category, "Recently viewed"). .uix-eyebrow is the text style on its own;
+   .uix-section-head--eyebrow is the section head at that size. Its row is 24 px tall whether or not
+   the title links, so a linked and an unlinked label put their text in the same place, and a linked
+   title (.uix-section-title__link) owns the whole 24 px row height as its target (WCAG 2.5.8). */
+@layer uix.components {
+  .uix-eyebrow,
+  :is(.uix-section-head--eyebrow .uix-section-title, .uix-section-head--eyebrow .uix-section-head__title-row) {
+    font-family: var(--uix-font-sans); font-size: var(--uix-text-eyebrow); line-height: var(--uix-leading-eyebrow);
+    font-weight: 700; letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-hushed);
+  }
+  .uix-section-head--eyebrow { min-height: 24px; margin-bottom: var(--uix-space-1); }
+  .uix-section-title__link { display: inline-flex; align-items: center; min-height: 24px; color: inherit; text-decoration: none; }
+  .uix-section-title__link:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
+  .uix-section-title__link:focus-visible { border-radius: var(--uix-radius-xs); }
 }

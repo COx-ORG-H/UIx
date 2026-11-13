@@ -44,7 +44,14 @@
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
   .uix-peek__hint { grid-column: 1 / -1; min-width: 0; white-space: normal; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-peek__footer { display: flex; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
+  .uix-peek__footer { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
+  /* A link in the footer stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3091). A plain
+     anchor (a framework <Link> without a class), .uix-peek__footer-link (one that must carry a class)
+     and a link Button all get it, at the meta size with the link colour and underline: the product
+     passes a label and an href, nothing else. */
+  .uix-peek__footer > a:not([class]),
+  .uix-peek__footer-link { display: inline-flex; align-items: center; min-height: 24px; font-size: var(--uix-text-meta); color: var(--uix-link); text-decoration: underline; text-underline-offset: .2em; }
+  .uix-peek__footer > .uix-btn--link { min-height: 24px; }
 
   /* a table wired to open the peek (app.js sets data-uix-rowpeek): its rows read as clickable,
      since clicking a ticket row is the queue's primary way to open the side-peek. */

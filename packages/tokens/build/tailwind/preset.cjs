@@ -14,6 +14,8 @@ module.exports = {
       "uix-border": "var(--uix-border)",
       "uix-border-strong": "var(--uix-border-strong)",
       "uix-choice-border": "var(--uix-choice-border)",
+      "uix-control-border": "var(--uix-control-border)",
+      "uix-control-border-hover": "var(--uix-control-border-hover)",
       "uix-text": "var(--uix-text)",
       "uix-text-hushed": "var(--uix-text-hushed)",
       "uix-text-muted": "var(--uix-text-muted)",

@@ -79,3 +79,17 @@ test('every state named in a caption is on the page', () => {
   assert.doesNotMatch(graph.slice(graph.indexOf('data-graph-gaps-example')), /data-root/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });
+
+test('the 24 px target specimens show each form the captions name (HAR-3084, HAR-3091, HAR-3097)', () => {
+  const table = specimens['examples-data-display'].slice(specimens['examples-data-display'].indexOf('data-link-targets-example'));
+  assert.equal((table.match(/class="uix-th__sortbtn"/g) ?? []).length, 3);
+  assert.match(table, /<a class="uix-cell-link" href="#CVE-2024-6387">/);
+  assert.match(table, /<a href="#SRV-RZN-0107">SRV-RZN-0107<\/a>/);
+  const heads = specimens['examples-editorial-home'].slice(specimens['examples-editorial-home'].indexOf('data-eyebrow-head-example'));
+  assert.equal((heads.match(/uix-section-head uix-section-head--eyebrow/g) ?? []).length, 2);
+  assert.match(heads, /<h3 class="uix-section-title">Persönlich<\/h3>/);
+  assert.match(heads, /<h3 class="uix-section-title"><a href="#settings-incidents" class="uix-section-title__link">Störungen<\/a><\/h3>/);
+  const footer = specimens['examples-overlays'].slice(specimens['examples-overlays'].indexOf('data-peek-footer-example'));
+  assert.match(footer, /<div class="uix-peek__footer"><a href="#INC-0173">Datensatz öffnen<\/a><a class="uix-peek__footer-link"/);
+  assert.match(footer, /uix-btn--link/);
+});

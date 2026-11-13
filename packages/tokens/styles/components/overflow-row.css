@@ -1,0 +1,14 @@
+/* uix overflow-row — one line of items that never wraps (HAR-3072): React's OverflowRow shows
+   the items that fit whole and replaces the rest with one counter ("+3"). Hidden items keep
+   their width for measuring ([data-overflow-hidden]: out of the layout, invisible, so also out
+   of the accessibility tree); the probe holds the widest counter text for the same reason.
+   The first item may shrink, so a single item wider than the row is clipped at its edge.
+   Depends only on --uix-* tokens. */
+@layer uix.components {
+  .uix-overflow-row { position: relative; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--uix-space-1); min-width: 0; max-width: 100%; overflow: hidden; }
+  .uix-overflow-row__item { flex: 0 0 auto; min-width: 0; white-space: nowrap; }
+  .uix-overflow-row__item:first-child { flex-shrink: 1; overflow: hidden; }
+  .uix-overflow-row__item[data-overflow-hidden], .uix-overflow-row__probe { position: absolute; inset-block-start: 0; inset-inline-start: 0; visibility: hidden; pointer-events: none; white-space: nowrap; }
+  .uix-overflow-row__more { flex: 0 0 auto; white-space: nowrap; font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; color: var(--uix-text-hushed); }
+  .uix-overflow-row__probe { font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; }
+}

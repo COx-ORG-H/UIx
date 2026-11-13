@@ -1,5 +1,8 @@
 import type { ReactNode, HTMLAttributes, ButtonHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
+import { renderUixLink } from '../link.js';
+import type { UixRenderLink } from '../link.js';
+import { ChevronRightIcon } from '../icons/components.js';
 import { InfoTip } from './InfoTip.js';
 import { hasHelp, helpLabelFor } from '../info-tip-model.js';
 
@@ -74,18 +77,27 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
   action?: ReactNode;
   /**
    * `compact` is the in-card section preset (HAR-1815): a 15 px / 1.3 / 600 title in place of
-   * the 24 px editorial h2. Default `default`.
+   * the 24 px editorial h2. `eyebrow` is the small uppercase label over a group of tiles or rows
+   * (HAR-3097): an 11 px / 700 hushed title on a 24 px row. Default `default`.
    */
-  size?: 'default' | 'compact';
+  size?: 'default' | 'compact' | 'eyebrow';
   /** Heading level of the title. Default `h2`; an in-card section is often an `h3`. */
   as?: 'h2' | 'h3';
+  /**
+   * The page the section stands for (HAR-3097). The title becomes its link
+   * (`.uix-section-title__link`), a 24 px target on its own row; the heading stays the heading.
+   */
+  href?: string;
+  /** The consumer's router link for `href` (the same `UixRenderLink` adapter as `CardLink`). Default: `<a>`. */
+  renderLink?: UixRenderLink;
 }
 
 /** Section head — title row (+ optional `help` ?) with an optional trailing action (`.uix-section-head`). */
-export function SectionHead({ title, titleId, help, helpLabel, action, size = 'default', as: Heading = 'h2', className, ...props }: SectionHeadProps) {
-  const heading = <Heading className="uix-section-title" id={titleId}>{title}</Heading>;
+export function SectionHead({ title, titleId, help, helpLabel, action, size = 'default', as: Heading = 'h2', href, renderLink, className, ...props }: SectionHeadProps) {
+  const label = href !== undefined ? renderUixLink(renderLink, { href, className: 'uix-section-title__link', children: title }) : title;
+  const heading = <Heading className="uix-section-title" id={titleId}>{label}</Heading>;
   return (
-    <div className={cx('uix-section-head', size === 'compact' && 'uix-section-head--compact', className)} {...props}>
+    <div className={cx('uix-section-head', size === 'compact' && 'uix-section-head--compact', size === 'eyebrow' && 'uix-section-head--eyebrow', className)} {...props}>
       {hasHelp(help) ? (
         <div className="uix-section-head__title-row">
           {heading}
@@ -309,19 +321,30 @@ export function ContentList({ children, className, ...props }: ContentListProps)
 export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
   title: ReactNode;
   meta?: ReactNode;
-  /** Trailing slot — an arrow glyph, a pill. */
+  /** Trailing slot — an arrow glyph, a pill. A linked row (`href`) shows an arrow when this is unset. */
   trailing?: ReactNode;
+  /**
+   * Makes the whole row one link (HAR-3070): the title renders as the anchor, its hit area
+   * covers the row, and the row shows an arrow at rest plus hover and focus states. Pass a
+   * plain-text `title` with it, not a link of your own.
+   */
+  href?: string;
+  /** Renders the row's link with your router, as on `Breadcrumbs`. Default: `<a>`. */
+  renderLink?: UixRenderLink;
 }
 
-/** One content-list row — title + meta with an optional trailing slot. */
-export function ContentListItem({ title, meta, trailing, className, ...props }: ContentListItemProps) {
+/** One content-list row — title + meta with an optional trailing slot; with `href`, one link. */
+export function ContentListItem({ title, meta, trailing, href, renderLink, className, ...props }: ContentListItemProps) {
+  const linked = href !== undefined;
   return (
-    <li className={cx('uix-content-list__item', className)} {...props}>
+    <li className={cx('uix-content-list__item', linked && 'uix-content-list__item--link', className)} {...props}>
       <div>
-        <p className="uix-content-list__title">{title}</p>
+        <p className="uix-content-list__title">
+          {linked ? renderUixLink(renderLink, { href, className: 'uix-content-list__link', children: title }) : title}
+        </p>
         {meta != null && <p className="uix-content-list__meta">{meta}</p>}
       </div>
-      {trailing}
+      {trailing ?? (linked ? <span className="uix-content-list__go" aria-hidden="true"><ChevronRightIcon /></span> : null)}
     </li>
   );
 }

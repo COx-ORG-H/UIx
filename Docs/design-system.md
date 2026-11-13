@@ -52,8 +52,22 @@ notice copy, `.uix-timeline__body`, `.uix-audit__detail`, notification copy), wh
 sentences and 1.4.1 applies; `.uix-alert` / `.uix-toast` / `.uix-peek__title`, where nothing else in the
 container signals that the link navigates, so the colour *is* the affordance; and `.uix-comment__author`,
 because a byline reads "Author · 22m ago" — the name is a phrase inside a text run, not the whole block
-(opt in with `.uix-link--quiet` for the GitHub-style quiet byline). Sidebar nav items, breadcrumbs and
-section links are already quiet by their own design and need no class.
+(opt in with `.uix-link--quiet` for the GitHub-style quiet byline). Sidebar nav items and section links
+are already quiet by their own design and need no class. Breadcrumb ancestors draw in `--uix-link` without an
+underline at rest, with a 24 × 24 px hit area (HAR-3070): a grey crumb read as a label, not as the way back.
+
+**A link that stands on its own in a kit slot owns a 24 px target** (WCAG 2.5.8). The inline-text
+exception covers a link inside a sentence, not one that is the whole of its slot, so the kit sizes the
+element itself, which is what axe's `target-size` rule and the product probes measure: a sort button in a
+column header (a 24 px inline-flex box, HAR-3084), a data cell's link (`.uix-cell-link` or a classless
+anchor in a cell: vertical padding, which never changes a line's height, so rows and wrapped lines stay
+put, HAR-3084), a link in the Peek footer (`.uix-peek__footer > a`, `.uix-peek__footer-link`, a link
+`Button`; at the meta size, HAR-3091), a linked eyebrow section label (`SectionHead size="eyebrow"
+href`, `.uix-section-title__link`) and `.uix-section-link` (HAR-3097). The drawn text does not move.
+
+A `ContentListItem` with `href` (and `renderLink`) is one link for the whole row (HAR-3070): the title
+renders as the anchor, its `::after` covers the row, an arrow shows at rest unless `trailing` is set, and
+the focus ring draws around the row. Pass a plain-text `title` with it, not a link of your own.
 
 The registry is locked from both ends by `packages/react/src/quiet-link.test.mjs`: the wrappers must nest
 the anchor inside the slot-classed element, and every asserted slot must still appear in `link.css`.

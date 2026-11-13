@@ -1,10 +1,12 @@
 /* uix breadcrumbs — depends only on --uix-* tokens. */
 @layer uix.components {
   .uix-breadcrumbs { display: flex; align-items: center; gap: var(--uix-space-2); flex-wrap: wrap; margin: 0; padding: 0; list-style: none; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-breadcrumbs a { color: var(--uix-text-muted); text-decoration: none; }
-  /* already a quiet link by its own design — hover/focus parity with the quiet-link
-     contract in link.css, so the keyboard state matches the pointer state. */
-  .uix-breadcrumbs a:is(:hover, :focus-visible) { color: var(--uix-text); text-decoration: underline; }
+  /* HAR-3070: ancestors in the link colour (a grey crumb read as a label), no underline at rest */
+  .uix-breadcrumbs a { position: relative; color: var(--uix-link); text-decoration: none; }
+  /* a 24 px hit area (WCAG 2.5.8) that does not move the trail */
+  .uix-breadcrumbs a::before { content: ""; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; inline-size: max(100%, 24px); block-size: max(100%, 24px); }
+  /* hover/focus add the underline, so the keyboard state matches the pointer state */
+  .uix-breadcrumbs a:is(:hover, :focus-visible) { color: var(--uix-link); text-decoration: underline; }
   /* a long unbroken title (a German compound, a file name) wraps instead of widening a phone page */
   .uix-breadcrumbs > li { min-inline-size: 0; overflow-wrap: anywhere; }
   .uix-breadcrumbs__sep { opacity: .55; }

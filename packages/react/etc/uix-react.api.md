@@ -1385,8 +1385,10 @@ export function ContentListItem(input: ContentListItemProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface ContentListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    href?: string;
     // (undocumented)
     meta?: ReactNode;
+    renderLink?: UixRenderLink;
     // (undocumented)
     title: ReactNode;
     trailing?: ReactNode;
@@ -5227,6 +5229,19 @@ export interface OtpInputProps extends Omit<InputHTMLAttributes<HTMLInputElement
     value?: string;
 }
 
+// @public
+export function OverflowRow(input: OverflowRowProps): react.JSX.Element;
+
+// @public
+export function overflowRowFit(widths: readonly number[], available: number, gap: number, counterWidth: (hidden: number) => number): number;
+
+// @public (undocumented)
+export interface OverflowRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    children?: ReactNode;
+    more?: string;
+    moreLabel?: string;
+}
+
 // @public (undocumented)
 export interface PackedLanes {
     // (undocumented)
@@ -7303,7 +7318,9 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
     as?: 'h2' | 'h3';
     help?: string | null;
     helpLabel?: string;
-    size?: 'default' | 'compact';
+    href?: string;
+    renderLink?: UixRenderLink;
+    size?: 'default' | 'compact' | 'eyebrow';
     // (undocumented)
     title: ReactNode;
     titleId?: string;

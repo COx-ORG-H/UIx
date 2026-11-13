@@ -31,8 +31,8 @@
  *     inside a text run, not the whole block, and .uix-comment__meta is not interactive.
  *     It fails test (i) above. Products wanting the GitHub-style quiet byline opt in with
  *     .uix-link--quiet; that is what the utility is for.
- *   • .uix-navitem, .uix-breadcrumbs a, .uix-section-link are already quiet by their own
- *     design and need no class here.
+ *   • .uix-navitem, .uix-section-link are already quiet by their own design; .uix-breadcrumbs a
+ *     takes the link colour without an underline (breadcrumbs.css, HAR-3070).
  *
  * Five forms:
  *   1 · `.uix-link--quiet` — the opt-in utility, for block links outside the registry.
@@ -92,6 +92,17 @@
      is written down. base.css supplies the ring; the radius keeps it hugging the text. */
   .uix-cell-link:is(:hover, :focus-visible) { color: inherit; text-decoration: none; }
   .uix-cell-link:focus-visible { border-radius: var(--uix-radius-xs); }
+
+  /* A data cell's link stands on its own (it is the cell's whole value), so it owns a 24 px target
+     (WCAG 2.5.8, HAR-3084): one text line drew a 20 px box. Vertical padding on an inline box grows
+     the area the pointer hits, and that axe and the product probes measure, without changing the line
+     height, so rows and wrapped lines do not move and a truncating cell keeps its ellipsis.
+     The padding is half of what 1em leaves of 24 px (at least --uix-space-1): an inline box is at
+     least 1em tall, so the target is 24 px at any text size (a smaller text scale, a meta-size line).
+     The equal negative margin keeps a link that a flex or grid parent blockifies (a card-mode row, a
+     stacked cell) from growing its row; on an inline box it does nothing (#236 review). */
+  .uix-cell-link,
+  :is(.uix-table td, .uix-dl dd) a:not([class]) { padding-block: max(var(--uix-space-1), calc((24px - 1em) / 2)); margin-block: calc(-1 * max(var(--uix-space-1), calc((24px - 1em) / 2))); }
 
   /* Container anchors never underline: the anchor wraps the whole block, so an underline
      would strike through every word in it. They take the kit's standard row-hover tint
