@@ -4,7 +4,7 @@
  * SchedulingCalendar and not exported. Geometry comes from real instants (a day column is as
  * long as its day), so no day length is written down here. Every move is a proposal handed to
  * the consumer: this file never applies, refuses or cancels one. */
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { zonedDateKey, zonedHourSlots, zonedTimeOfDay } from '../calendar-model.js';
 import type { ZonedHourSlot } from '../calendar-model.js';
@@ -22,6 +22,15 @@ const LINES_PER_HOUR = 3;
 /** Pointer travel (px) before a press becomes a drag. Below it the press is a click. */
 const DRAG_THRESHOLD = 4;
 const DEFAULT_STEP = 15;
+/** Where the hours open when no item starts earlier: the start of a working day. */
+const DEFAULT_OPEN_HOUR = 8;
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+/** `HH:MM` as hours, or null when it is not a time of day. */
+const hoursOf = (time: string | undefined): number | null => {
+  const match = time === undefined ? null : /^([01]\d|2[0-3]):([0-5]\d)$/.exec(time);
+  return match ? Number(match[1]) + Number(match[2]) / MINUTES_PER_HOUR : null;
+};
 
 export interface TimeGridEntryContext {
   /** Whole text lines that fit in the item: 0 shows the markers only. */
@@ -61,6 +70,7 @@ export interface SchedulingTimeGridProps {
   topLaneCap: number;
   windowLaneCap: number;
   maxLanes: number;
+  scrollToTime?: string;
   emptyNote?: ReactNode;
   nothingToShow: boolean;
 }
@@ -156,7 +166,7 @@ const GridItem = memo(function GridItem({ entry, segment, column, alone, name, s
 export function SchedulingTimeGrid({
   view, days, timeZone, entries: givenEntries, overlays: givenOverlays, dayInfo, labels, gridLabel, dateText, formatInstant, entryName, entryStatus, entryMarkers, overlayName,
   renderEntry, renderMarker, onSelectEntry, onSelectOverlay, onSelectDate, onShowMore, now, canMove, step: givenStep, onProposeMove,
-  topLaneCrossMidnightMinutes, topLaneCap, windowLaneCap, maxLanes, emptyNote, nothingToShow,
+  topLaneCrossMidnightMinutes, topLaneCap, windowLaneCap, maxLanes, scrollToTime, emptyNote, nothingToShow,
 }: SchedulingTimeGridProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const hintId = useId();
@@ -201,6 +211,12 @@ export function SchedulingTimeGrid({
   const entryById = useMemo(() => new Map(entries.map((entry) => [entry.id, entry])), [entries]);
   const overlayById = useMemo(() => new Map(overlays.map((overlay) => [overlay.id, overlay])), [overlays]);
   const columns = useMemo<TimeGridDayLayout[]>(() => days.map((date) => layoutTimeGridDay(entries, date, timeZone, { ...laneOptions, maxLanes: lanes })), [days, entries, timeZone, laneOptions, lanes]);
+  // A consumer's "+N" counts what `maxLanes` lanes leave out. A narrow column draws fewer lanes, and
+  // what those hide is added to it, so the head never says fewer than the column leaves out.
+  const hiddenByWidth = useMemo(() => {
+    if (lanes >= maxLanes) return days.map(() => 0);
+    return days.map((date, index) => Math.max(0, columns[index]!.hidden.length - layoutTimeGridDay(entries, date, timeZone, { ...laneOptions, maxLanes }).hidden.length));
+  }, [days, entries, timeZone, laneOptions, lanes, maxLanes, columns]);
   const slots = useMemo(() => days.map((date) => zonedHourSlots(date, timeZone)), [days, timeZone]);
   const top = useMemo(() => layoutDaySpans(entries.filter((entry) => placesInTopLane(entry, timeZone, laneOptions)), days, { timeZone, laneCap: Math.max(0, topLaneCap) }), [entries, days, timeZone, laneOptions, topLaneCap]);
   const drawable = useMemo(() => overlays.filter((overlay) => new Date(overlay.end).getTime() >= new Date(overlay.start).getTime()), [overlays]);
@@ -449,6 +465,41 @@ export function SchedulingTimeGrid({
   };
   const nowAt = now === undefined ? null : new Date(now).getTime();
   const nowColumn = nowAt === null || Number.isNaN(nowAt) ? -1 : days.indexOf(zonedDateKey(new Date(nowAt), timeZone));
+  // The hours open at the work, not at midnight (TENSOR HAR-2954 climb): the grid scrolls inside its
+  // own height and opens at `scrollToTime`, or else at the earlier of 08:00 and the first item that
+  // starts on screen. It opens again when the days or the view change, never after the user scrolled.
+  const openHour = useMemo(() => {
+    const given = hoursOf(scrollToTime);
+    if (given !== null) return Math.floor(given);
+    let first: number = DEFAULT_OPEN_HOUR;
+    for (const column of columns) for (const segment of column.segments) if (segment.part !== 'continuation') first = Math.min(first, segment.offsetHours);
+    return Math.max(0, Math.floor(first));
+  }, [scrollToTime, columns]);
+  const scrollKey = `${view}|${days[0]}|${days.length}`;
+  const opened = useRef<{ key: string; top: number | null; byUser: boolean }>({ key: '', top: null, byUser: false });
+  useIsomorphicLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const state = opened.current;
+    if (state.key !== scrollKey) { state.key = scrollKey; state.byUser = false; }
+    if (state.byUser) return;
+    const height = root.querySelector<HTMLElement>('[data-tg-column]')?.getBoundingClientRect().height ?? 0;
+    const hours = columns[0]?.dayHours ?? 0;
+    if (!(height > 0) || !(hours > 0)) return;
+    root.scrollTop = Math.round(openHour * (height / hours));
+    state.top = root.scrollTop;
+  }, [scrollKey, openHour, columns]);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const byUser = () => { opened.current.byUser = true; };
+    // A scroll the grid did not make (the scrollbar, a focused item brought into view) is the user's.
+    const onScroll = () => { const { top } = opened.current; if (top !== null && Math.abs(root.scrollTop - top) > 2) byUser(); };
+    root.addEventListener('wheel', byUser, { passive: true });
+    root.addEventListener('touchmove', byUser, { passive: true });
+    root.addEventListener('scroll', onScroll, { passive: true });
+    return () => { root.removeEventListener('wheel', byUser); root.removeEventListener('touchmove', byUser); root.removeEventListener('scroll', onScroll); };
+  }, []);
   const topHiddenOn = (date: string) => top.hidden.filter((id) => { const entry = entryById.get(id); return entry ? layoutDaySpans([entry], [date], { timeZone }).placed.length > 0 : false; });
   const windowLanes = lanesIn(strip.placed);
   const topLanes = lanesIn(top.placed);
@@ -475,21 +526,22 @@ export function SchedulingTimeGrid({
     onFocus={onGridFocus}
     onClickCapture={(event) => { if (suppressClick.current) { suppressClick.current = false; event.preventDefault(); event.stopPropagation(); } }}
   >
+    <div className="uix-scheduling-calendar__tg-sticky">
     <div className="uix-scheduling-calendar__tg-head">
       <div className="uix-scheduling-calendar__tg-zone">{fillLabel(labels.timeZone, { timeZone })}</div>
       {days.map((date, index) => {
         const info = dayInfo?.[date];
         const hiddenIds = dayInfo ? [] : [...columns[index]!.hidden, ...topHiddenOn(date)];
-        const more = info ? info.overflowCount : hiddenIds.length;
-        const moreText = fillLabel(labels.moreSpans, { count: more });
+        const more = info ? info.overflowCount + hiddenByWidth[index]! : hiddenIds.length;
+        const moreText = fillLabel(labels.moreEntries, { count: more });
         const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
         // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
         const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}`;
-        return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date}>
+        return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date} data-today={index === nowColumn || undefined}>
           <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
             onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
-          {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{info.count}</span>}
+          {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{fillLabel(labels.dayCount, { count: info.count })}</span>}
           {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <span key={marker.id}>{renderMarker(marker, true)}</span>)}</span>}
           {more > 0 && (onShowMore
             ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, hiddenIds.map((id) => entryById.get(id)!).filter(Boolean))}>{moreText}</button>
@@ -498,7 +550,7 @@ export function SchedulingTimeGrid({
       })}
     </div>
 
-    {(windowLanes > 0 || moreWindows > 0) && <div className="uix-scheduling-calendar__tg-strip" role="group" aria-label={labels.windows} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(windowLanes, 1) })}>
+    {(windowLanes > 0 || moreWindows > 0) && <div className="uix-scheduling-calendar__tg-strip" role="group" aria-label={labels.windows} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(windowLanes, 1) + (moreWindows > 0 ? 1 : 0) })}>
       {strip.placed.map((placed) => {
         const overlay = overlayById.get(placed.id);
         if (!overlay) return null;
@@ -513,8 +565,8 @@ export function SchedulingTimeGrid({
         </button>;
       })}
       {moreWindows > 0 && (onShowMore
-        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
-        : <span className="uix-scheduling-calendar__rowmore">{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
+        : <span className="uix-scheduling-calendar__rowmore" style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }}>{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
     </div>}
 
     {(topLanes > 0 || ghostSpan) && <div className="uix-scheduling-calendar__tg-strip uix-scheduling-calendar__tg-top" role="group" aria-label={labels.topLane} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(topLanes, 1) })}>
@@ -539,8 +591,10 @@ export function SchedulingTimeGrid({
       {ghostSpan && <div className="uix-scheduling-calendar__tg-ghost" aria-hidden="true" data-sent={ghost?.source === 'sent' || undefined} style={{ gridColumn: gridColumns(ghostSpan), ...vars({ '--uix-scheduling-calendar-lane': ghostLane }) }} />}
     </div>}
 
+    </div>
+
     <div className="uix-scheduling-calendar__tg-body">
-      <div className="uix-scheduling-calendar__tg-gutter" aria-hidden="true">{hourLabels(gutterIndex, false)}</div>
+      <div className="uix-scheduling-calendar__tg-gutter" aria-hidden="true">{hourLabels(gutterIndex, false)}{nowColumn >= 0 && now !== undefined && <div className="uix-scheduling-calendar__tg-nowtime" style={vars({ '--uix-scheduling-calendar-offset': (nowAt! - columns[nowColumn]!.dayStart) / HOUR_MS })}>{zonedTimeOfDay(now, timeZone)}</div>}</div>
       {shades.map((placed) => {
         const overlay = overlayById.get(placed.id)!;
         const first = columns[placed.startCol]!;

@@ -181,23 +181,34 @@ const contrasts = (page, selector) => page.locator(selector).evaluateAll((els) =
   return els.map((el) => {
     const bg = backdrop(el);
     const item = el.closest('[data-item-id]') ?? el;
+    const cell = item.parentElement ? backdrop(item.parentElement) : null;
+    const fill = backdrop(item);
+    // The bottom edge is the one every status draws (a finished item keeps only that rule). It
+    // has the cell on one side and the item's own fill on the other: the weaker ratio counts.
+    const style = getComputedStyle(item);
+    const edge = rgba(style.borderBottomColor);
     return {
       id: item.getAttribute('data-item-id') ?? el.className,
       text: ratio(over(rgba(getComputedStyle(el).color), bg), bg),
-      fill: item.parentElement ? ratio(backdrop(item), backdrop(item.parentElement)) : null,
+      fill: cell ? ratio(fill, cell) : null,
+      edge: cell && style.borderBottomStyle !== 'none' && parseFloat(style.borderBottomWidth) > 0 ? Math.min(ratio(over(edge, cell), cell), ratio(over(edge, fill), fill)) : null,
     };
   });
 });
 
-test('AC12: the high band fill is 3:1 on the cell and every item text is 4.5:1 on what it sits on', async ({ page }) => {
+test('AC12: the high band edge is 3:1 on the cell and on its tint, and every item text is 4.5:1 on what it sits on', async ({ page }) => {
   await open(page, 'case=encodings');
   const texts = await contrasts(page, '.uix-scheduling-calendar__entry .uix-scheduling-calendar__entry-text, .uix-scheduling-calendar__window-name');
   expect(texts.length).toBeGreaterThanOrEqual(15);
   expect(texts.filter((t) => t.text < 4.5), JSON.stringify(texts)).toEqual([]);
   const high = texts.filter((t) => /^(band-high|high-)/.test(t.id));
   expect(high.map((t) => t.id)).toEqual(['band-high', 'high-tentative', 'high-done']);
-  expect(high.filter((t) => t.fill < 3), JSON.stringify(high)).toEqual([]);
-  // The fill is a real fill: the untinted bands sit on the cell colour.
+  // The high band is a tint behind a heavy edge in its hue (HAR-2964), not a solid block. The tint
+  // alone is about 1.1:1 on the cell, so the edge is what tells the band: it is 3:1 on the cell
+  // and on the tint, in every status. A missing edge reads as null and fails here too.
+  expect(high.filter((t) => !(t.edge >= 3)), JSON.stringify(high)).toEqual([]);
+  // The tint is drawn, and only for this band: the untinted bands sit on the cell colour.
+  expect(high.filter((t) => !(t.fill > 1)), JSON.stringify(high)).toEqual([]);
   const plain = texts.filter((t) => /^band-(none|low|medium)$/.test(t.id));
   expect(plain.map((t) => t.fill)).toEqual([1, 1, 1]);
 });
@@ -272,14 +283,17 @@ test('AC13: tentative is dashed at full weight, dead is dotted and struck throug
   expect(done.border).toBe('none');
   expect(done.color).not.toBe(committed.color);
   expect(done.strike).toBe('none');
-  // On the filled band the fill hides dimming, so each status keeps a line the fill cannot hide.
+  // On the tinted band the tint hides dimming, so each status keeps its own line in the band's
+  // edge colour: a committed item is outlined all round, a finished one keeps the rule under it,
+  // a tentative one is dashed.
   const onFill = (id) => page.locator(`[data-item-id="${id}"]`).evaluate((el) => {
     const item = getComputedStyle(el);
     return { fill: item.backgroundColor, top: item.borderTopStyle, bottom: item.borderBottomStyle, rule: item.borderBottomColor };
   });
   const [high, highDone, highTentative] = await Promise.all(['band-high', 'high-done', 'high-tentative'].map(onFill));
   expect(highDone.fill).toBe(high.fill);
-  expect(high.rule, 'a committed high item has no visible rule').toBe(high.fill);
+  expect([high.top, high.bottom], 'a committed high item is outlined all round').toEqual(['solid', 'solid']);
+  expect(high.rule, 'in the edge colour, which is not the tint').not.toBe(high.fill);
   expect([highDone.top, highDone.bottom]).toEqual(['none', 'solid']);
   expect(highDone.rule, 'done on the fill shows a rule in the text colour').not.toBe(highDone.fill);
   expect(highTentative.top).toBe('dashed');

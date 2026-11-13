@@ -151,11 +151,18 @@ for (const view of ['month', 'week', 'agenda']) {
     const by = Object.fromEntries(report.map((r) => [r.id, r]));
     expect(by.partner.weight).toBeGreaterThan(by.picked.weight);
     expect(by.rest.weight).toBeLessThanOrEqual(by.picked.weight);
-    // Only the band has a hue: no emphasis colours text, and a dimmed high-band item has no fill.
-    for (const r of report) expect(r.textChroma, `${r.id} text is neutral`).toBeLessThan(12);
+    // Only the band has a hue. In the grids the high band tints its item and writes it in its own
+    // hue (HAR-2964); no emphasis adds one, and a dimmed high-band item gives up both.
+    const banded = (r) => view !== 'agenda' && r.band === 'high' && !r.dim;
+    for (const r of report.filter((x) => !banded(x))) expect(r.textChroma, `${r.id} text is neutral`).toBeLessThan(12);
+    for (const r of report.filter(banded)) expect(r.textChroma, `${r.id} is written in the band's hue, the same as with no emphasis`).toBe(by['plain-high'].textChroma);
     for (const r of report.filter((x) => x.band !== 'high' || x.dim)) expect(r.fillChroma, `${r.id} has no coloured fill`).toBeLessThan(12);
     if (view !== 'agenda') {
-      expect(by['partner-high'].fillChroma, 'a highlighted high-band item keeps its fill').toBeGreaterThan(60);
+      expect(by['plain-high'].textChroma, 'the high band has a hue').toBeGreaterThan(60);
+      // The tint is quiet by design (about 1.1:1 on the cell), so it is compared with the plain item
+      // beside it, not with a fixed strength: a highlight keeps the band's tint as it was.
+      expect(by['plain-high'].fillChroma, 'the high band is tinted').toBeGreaterThan(by.picked.fillChroma);
+      expect(Math.abs(by['partner-high'].fillChroma - by['plain-high'].fillChroma), 'a highlighted high-band item keeps its tint').toBeLessThanOrEqual(2);
       expect(by.partner.border).toBe('2px');
       expect(by.picked.border).toBe('1px');
       // Emphasis leaves the other channels alone. A highlighted medium band keeps a leading edge

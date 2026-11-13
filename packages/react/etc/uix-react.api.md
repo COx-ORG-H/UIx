@@ -6923,6 +6923,7 @@ export interface SchedulingCalendarProps {
     resourceListBelow?: number;
     resources?: SchedulingResource[];
     resourceSpans?: SchedulingResourceSpan[];
+    scrollToTime?: string;
     selectedSlot?: {
         resourceId: string;
         start: string;

@@ -186,8 +186,11 @@ test('HAR-1541: on paper nothing is told by a fill or a pattern alone, and nothi
   assert.equal(printMap['--calendar-band-high-fill'], 'var(--uix-print-paper)', 'the high band is not a fill on paper');
   assert.equal(printMap['--calendar-band-high-edge'], 'var(--uix-print-danger)');
   const screen = rules(source).filter(({ at }) => !/@media print\b/.test(at ?? ''));
-  assert.match(screen.find(({ selector }) => /\[data-band="high"\]$/.test(selector)).body, /border-color:var\(--calendar-band-high-fill\);\s*background:var\(--calendar-band-high-fill\)/, 'on a screen the edge and the fill of the high band are one name, as before');
-  assert.deepEqual(screen.slice(1).filter(({ body }) => body.includes('--calendar-band-high-edge')).map(({ selector }) => selector), [], 'no screen rule reads the edge name');
+  // On a screen (TENSOR HAR-2954) the high band is a tint behind a heavy edge in its hue, not a solid
+  // block: the edge reads the edge name and the fill the tint, so a risky plan does not read as a failure.
+  assert.match(screen.find(({ selector }) => /\[data-band="high"\]$/.test(selector)).body, /border-color:var\(--calendar-band-high-edge\);\s*border-left-width:3px;\s*background:var\(--calendar-band-high-fill\)/, 'on a screen the high band is a tint behind its own edge');
+  const screenMap = Object.fromEntries(declarations(screen[0].body).map(({ prop, value }) => [prop, value]));
+  assert.equal(screenMap['--calendar-band-high-fill'], 'var(--uix-danger-bg)', 'the fill is the tint, not the solid hue');
   // Every print rule that draws the edge of the high band reads that name: with the fill name it would be paper on paper.
   const highRules = print.filter(({ selector }) => /\[data-band="high"\]/.test(selector));
   assert.ok(highRules.length >= 3, `only ${highRules.length} print rules for the high band`);
