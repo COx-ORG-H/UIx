@@ -13,7 +13,14 @@ const committed = readFileSync(SPECIMEN_MODULE, 'utf8');
 const specimens = await renderFormFieldSpecimens();
 
 test('the committed specimens are exactly what the components render today', () => {
-  assert.equal(formFieldSpecimenModule(specimens), committed, 'packages/tokens/docs/form-field-specimens.js is out of date — run node packages/react/scripts/render-form-field-specimens.mjs');
+  const rendered = formFieldSpecimenModule(specimens);
+  if (rendered === committed) return;
+  // The module is one long line per route, so a plain diff is cut off before the change: say where
+  // it is, with the text around it, so a difference that only shows under load can be read (#245).
+  let at = 0;
+  while (at < rendered.length && rendered[at] === committed[at]) at += 1;
+  const around = (text) => JSON.stringify(text.slice(Math.max(0, at - 160), at + 160));
+  assert.fail(`packages/tokens/docs/form-field-specimens.js is out of date — run node packages/react/scripts/render-form-field-specimens.mjs\n  first difference at ${at} (rendered ${rendered.length}, committed ${committed.length} characters)\n  rendered:  ${around(rendered)}\n  committed: ${around(committed)}`);
 });
 
 test('the comparison can fail: a changed class is a different module', () => {
@@ -78,6 +85,16 @@ test('every state named in a caption is on the page', () => {
   assert.doesNotMatch(data, /<input[^>]*type="date"/);
   assert.match(data, /aria-label="Datum ändern, Sonntag, 22. November 2026"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
+});
+
+test('the field-system specimen shows a number field, a labelled rich-text region and the ? named from the provider (HAR-3100)', () => {
+  const forms = specimens['examples-form-controls'];
+  const block = forms.slice(forms.indexOf('data-field-system-example'), forms.indexOf('data-free-text-example'));
+  assert.match(block, /<input[^>]*type="number"[^>]*inputmode="decimal"|<input[^>]*inputmode="decimal"[^>]*type="number"/);
+  assert.match(block, /id="ff-quantity"[^>]*value="25"|value="25"[^>]*id="ff-quantity"/);
+  assert.match(block, /aria-label="Info: Menge"/);
+  assert.match(block, /<label id="ff-note-label" class="uix-field__label" for="ff-note">Notiz<\/label>/);
+  assert.match(block, /role="textbox"[^>]*aria-labelledby="ff-note-label"/);
 });
 
 test('the 4 px grid specimen shows each field with a leading icon at both sizes, and icon buttons (HAR-2985, HAR-3098)', () => {

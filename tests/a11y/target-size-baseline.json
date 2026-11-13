@@ -1,0 +1,122 @@
+{
+  "about": "Controls under 24 px per page that tests/a11y/target-size.spec.mjs allows: axe = axe-core target-size (WCAG 2.5.8), ownBox = the TENSOR council probe rule. It only shrinks: see that file.",
+  "pages": {
+    "tables": {
+      "ownBox": 192
+    },
+    "docs": {
+      "ownBox": 3
+    },
+    "docs-status": {
+      "ownBox": 130
+    },
+    "docs-chart": {
+      "ownBox": 3
+    },
+    "docs-pipeline": {
+      "ownBox": 3
+    },
+    "docs-flow": {
+      "ownBox": 3
+    },
+    "docs-calendar-model": {
+      "ownBox": 3
+    },
+    "examples-foundations": {
+      "ownBox": 3
+    },
+    "examples-motion": {
+      "ownBox": 3
+    },
+    "examples-form-controls": {
+      "axe": 2,
+      "ownBox": 16
+    },
+    "examples-navigation": {
+      "ownBox": 6
+    },
+    "examples-data-display": {
+      "axe": 6,
+      "ownBox": 88
+    },
+    "examples-overlays": {
+      "ownBox": 3
+    },
+    "examples-crm-itsm": {
+      "ownBox": 7
+    },
+    "examples-workflows-pipelines": {
+      "ownBox": 5
+    },
+    "examples-editorial-home": {
+      "ownBox": 7
+    },
+    "examples-icons": {
+      "ownBox": 3
+    },
+    "examples-emoji": {
+      "ownBox": 3
+    },
+    "examples-images": {
+      "ownBox": 3
+    },
+    "examples-prose": {
+      "ownBox": 3
+    },
+    "examples-utility": {
+      "ownBox": 6
+    },
+    "examples-rule-builder": {
+      "ownBox": 3
+    },
+    "examples-builder-canvas": {
+      "ownBox": 9
+    },
+    "examples-scheduling-calendar": {
+      "ownBox": 59
+    },
+    "examples-date-range-picker": {
+      "ownBox": 3
+    },
+    "examples-relationship-graph": {
+      "ownBox": 4
+    },
+    "examples-match-review": {
+      "ownBox": 5
+    },
+    "examples-metrics": {
+      "axe": 2,
+      "ownBox": 5
+    },
+    "examples-brand-profiles": {
+      "ownBox": 3
+    },
+    "examples-diff-viewer": {
+      "ownBox": 3
+    },
+    "examples-text-diff": {
+      "ownBox": 3
+    },
+    "examples-dashboard-grid": {
+      "ownBox": 3
+    },
+    "examples-dashboard-canvas": {
+      "ownBox": 3
+    },
+    "examples-insight-charts": {
+      "ownBox": 3
+    },
+    "examples-org-chart": {
+      "ownBox": 3
+    },
+    "examples-color-picker": {
+      "ownBox": 3
+    },
+    "examples-rich-text": {
+      "ownBox": 5
+    },
+    "examples-workspace": {
+      "ownBox": 12
+    }
+  }
+}

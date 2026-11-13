@@ -148,6 +148,13 @@ export interface UixLabels {
   pagination?: Partial<PaginationLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */
   bulkBar?: { region?: string };
+  /**
+   * The accessible name of every ? help button (`InfoTip`, and the `help` slot of `Field`,
+   * `PageHeader`, `Card` and `SectionHead`) that has no `helpLabel` of its own (HAR-3100).
+   * `about`: for a text title, `{title}` is replaced by it; default `"About: {title}"`.
+   * `more`: for a title that is not text; default `"More information"`.
+   */
+  infoTip?: { about?: string; more?: string };
 }
 
 /**
