@@ -119,6 +119,7 @@ export interface MarkdownProps {
     isSafeUrl?: (url: string) => boolean;
     resolveImageSrc?: (src: string) => string | null;
     resolveMention?: (id: string, storedLabel: string) => string | undefined;
+    variant?: 'inline' | 'document';
 }
 
 // @public
