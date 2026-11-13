@@ -2,6 +2,9 @@
 @layer uix.components {
   .uix-prose { max-width: 66ch; color: var(--uix-text); }
   .uix-prose > * + * { margin-top: var(--uix-space-3); }
+  /* h2 is reached by a document's `#` (Markdown variant="document", HAR-3096): the size of the h3 below
+     it, the heading face; the prose owns it rather than the page's base h2 */
+  .uix-prose h2 { font-size: var(--uix-text-h2); font-weight: 600; }
   .uix-prose h3 { font-size: var(--uix-text-h2); font-weight: 600; }
   .uix-prose h4 { font-size: var(--uix-text-h3); font-weight: 600; margin-top: var(--uix-space-5); }
   .uix-prose p { line-height: var(--uix-leading-body); color: var(--uix-text-hushed); }
@@ -12,6 +15,9 @@
   .uix-prose blockquote { border-left: 3px solid var(--uix-border-strong); padding-left: var(--uix-space-3); color: var(--uix-text-muted); }
   /* markdown constructs written by the rich-text editor (RTE-01) */
   .uix-prose h5, .uix-prose h6 { font-size: var(--uix-text-body); font-weight: 600; }
+  /* A document's sections (HAR-3096): each h2 and h3 has a section's room above it, so "Ursache" and
+     "Lösung" read as the parts of the article, not as bold lines in the text */
+  .uix-prose--document > :is(h2, h3):not(:first-child) { margin-top: var(--uix-space-6); }
   .uix-prose ul { list-style: disc; }
   .uix-prose ol { list-style: decimal; }
   .uix-prose li > :where(ul, ol) { margin-top: var(--uix-space-1); }

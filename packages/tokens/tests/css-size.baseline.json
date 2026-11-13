@@ -387,9 +387,9 @@
       "brotli": 682
     },
     "styles/components/prose.css": {
-      "raw": 4221,
-      "gzip": 1128,
-      "brotli": 939
+      "raw": 4749,
+      "gzip": 1375,
+      "brotli": 1151
     },
     "styles/components/qr-code.css": {
       "raw": 1113,

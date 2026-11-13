@@ -47,6 +47,7 @@ export async function renderDisplaySpecimens() {
   try {
     const { createRoot } = await import('react-dom/client');
     const ui = await import(pathToFileURL(join(here, '../dist/index.js')).href);
+    const { Markdown } = await import(pathToFileURL(join(here, '../dist/markdown.js')).href);
     const roots = [];
     const mount = (element) => {
       const host = window.document.createElement('div');
@@ -209,6 +210,16 @@ export async function renderDisplaySpecimens() {
     add('examples-prose', [
       caption('Print layout (React <code>PrintLayout</code>, <code>PrintSignature</code>, <code>PrintPageBreak</code>, <code>.uix-print-layout</code>) — an A4 or A5 page with the paper’s margins, ink on paper in both themes; when printed, only the documents print, the header and footer repeat on every page, the page number sits in the margin, and <code>singlePage</code> keeps a poster or readout in one piece (outlined here when it does not fit). This preview is an A5 single page'),
       `<div data-print-layout-example>${html(printed)}</div>`,
+    ].join('\n'));
+
+    // ── Markdown as a document (HAR-3096): the article's sections above "Related articles" ──
+    const articleText = 'If the VPN client drops after a while, power saving is the usual cause.\n\n## Symptom\n\nThe connection drops after about 30 minutes.\n\n## Fix\n\nTurn off power saving for the wireless adapter.';
+    const article = mount(h('div', null,
+      h(Markdown, { variant: 'document' }, articleText),
+      h(ui.SectionHead, { title: 'Related articles' })));
+    add('examples-prose', [
+      caption('Markdown as a document (React <code>Markdown variant="document"</code>, <code>.uix-prose--document</code>; HAR-3096) — the body of a page that is the article, below the page <code>&lt;h1&gt;</code>: <code>#</code> renders as <code>&lt;h2&gt;</code> and <code>##</code> as <code>&lt;h3&gt;</code>, so the article’s own sections (“Symptom”, “Fix”) are at least as prominent as the <code>SectionHead</code> after the body, each with a section’s room above it. Inline Markdown (a comment, a note) keeps <code>#</code> at <code>&lt;h3&gt;</code>.'),
+      `<div data-markdown-document-example style="max-width:40rem">${html(article)}</div>`,
     ].join('\n'));
 
     // ── QrScanner (HAR-1254): idle (the explainer first), camera blocked, no camera API ──────

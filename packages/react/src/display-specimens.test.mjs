@@ -109,3 +109,11 @@ test('the Timeline entry specimen shows ten events with title, detail, badge and
   assert.equal((feed.match(/<p class="uix-timeline__detail">/g) ?? []).length, 4);
   assert.equal((feed.match(/<span class="uix-timeline__badge"><span class="uix-pill/g) ?? []).length, 4);
 });
+
+test('the Markdown document specimen renders the sections as <h3> in .uix-prose--document, above a SectionHead (HAR-3096)', () => {
+  const prose = specimens['examples-prose'].slice(specimens['examples-prose'].indexOf('data-markdown-document-example'));
+  assert.match(prose, /<div class="uix-prose uix-prose--document uix-markdown" data-component="markdown">/);
+  assert.match(prose, /<h3>Symptom<\/h3>/);
+  assert.match(prose, /<h3>Fix<\/h3>/);
+  assert.match(prose, /uix-section-title[^>]*>Related articles</);
+});
