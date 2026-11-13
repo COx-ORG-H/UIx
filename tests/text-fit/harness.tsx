@@ -1,6 +1,6 @@
 /* Live harness for text that fits (HAR-3094, HAR-3099, HAR-3201), bundled by build.mjs from source
  * for tests/a11y/text-fit.spec.mjs. German, as the TENSOR screens that found them:
- *   - a 120 px cell holding RelativeTime, DateTime and a one-day DateTimeRange;
+ *   - 120 px cells holding RelativeTime, DateTime, a one-day DateTimeRange and, in a nowrap cell, a two-day one;
  *   - a DataWorkspace with a nowrap date column, a two-line clamped note and a truncating title;
  *   - a StatusPill "Wartet auf Zustimmung" in an lg-plus column. */
 import { StrictMode } from 'react';
@@ -11,6 +11,7 @@ const de = { locale: 'de-DE', timeZone: 'Europe/Berlin' } as const;
 const NINE = '2026-11-11T08:00:00.000Z';
 const NOON = '2026-11-11T11:00:00.000Z';
 const NOW = '2026-11-11T08:03:00.000Z';
+const NEXT_DAY = '2026-11-12T16:30:00.000Z';
 
 const rows = [
   { id: 'CHG-1042', when: NINE, note: 'Ledger-Fix im Wartungsfenster einspielen, danach die Abstimmung mit dem Fachbereich und die Freigabe durch das CAB abwarten.', title: 'Zahlungsverkehr: Wartungsfenster für den Ledger-Fix' },
@@ -23,8 +24,8 @@ function Harness() {
       <h1>Text, der passt</h1>
       <section aria-label="Schmale Zelle">
         <TableWrap>
-          <Table style={{ tableLayout: 'fixed', width: 240 }}>
-            <thead><tr><Th style={{ width: 120 }}>Wann</Th><Th style={{ width: 120 }}>Zeitraum</Th></tr></thead>
+          <Table style={{ tableLayout: 'fixed', width: 360 }}>
+            <thead><tr><Th style={{ width: 120 }}>Wann</Th><Th style={{ width: 120 }}>Zeitraum</Th><Th style={{ width: 120 }}>Fenster</Th></tr></thead>
             <tbody>
               <tr>
                 <Td data-cell="instants">
@@ -32,6 +33,8 @@ function Harness() {
                   <div><DateTime value={NINE} {...de} data-fit="instant" /></div>
                 </Td>
                 <Td data-cell="range"><DateTimeRange start={NINE} end={NOON} {...de} data-fit="range" /></Td>
+                {/* a nowrap cell keeps even a two-day range on one line (#241 review) */}
+                <Td data-cell="range-nowrap" className="uix-col--nowrap"><DateTimeRange start={NINE} end={NEXT_DAY} {...de} data-fit="range-nowrap" /></Td>
               </tr>
             </tbody>
           </Table>

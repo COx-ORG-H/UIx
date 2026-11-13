@@ -39,6 +39,7 @@ test('in a 120 px cell a time stays on one line with tabular digits, and a range
       relative: { lines: lines(at('relative')).length, numeric: getComputedStyle(at('relative')).fontVariantNumeric },
       instant: { lines: lines(at('instant')).length, numeric: getComputedStyle(at('instant')).fontVariantNumeric, text: at('instant').textContent },
       range: { start: lines(start), end: lines(end), sep: lines(sep), text: range.textContent },
+      nowrapRange: lines(at('range-nowrap')).length,
     };
   }, linesOf.toString());
   expect(got.cellWidth).toBeLessThanOrEqual(121);
@@ -51,6 +52,8 @@ test('in a 120 px cell a time stays on one line with tabular digits, and a range
   expect(got.range.end).toHaveLength(1);
   expect(got.range.end[0]).toBeGreaterThan(got.range.start[0]);
   expect(got.range.sep[0]).toBe(got.range.start[0]);
+  // a range inherits its cell's wrapping: in a nowrap cell it never breaks, not even after the dash
+  expect(got.nowrapRange).toBe(1);
   await testInfo.attach('cell', { body: await page.locator('section[aria-label="Schmale Zelle"]').screenshot(), contentType: 'image/png' });
 });
 

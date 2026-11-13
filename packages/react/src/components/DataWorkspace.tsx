@@ -868,9 +868,16 @@ const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) 
 /** The classes of a column's header and body cells: alignment, the product's class and its text wrapping (HAR-3201). */
 const cellClasses = <T,>(column: DataWorkspaceColumn<T>) => cx(column.align === 'end' && 'uix-col--num', column.className, column.textWrap && `uix-col--${column.textWrap}`) || undefined;
 /** A body cell's content, inside the clamping box when the column clamps its lines (HAR-3201). */
-const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => column.lineClamp != null && column.lineClamp > 0
-  ? <span className="uix-cell-clamp" style={{ '--uix-clamp': String(Math.floor(column.lineClamp)) } as CSSProperties}>{column.cell(row)}</span>
-  : column.cell(row);
+const clampLines = (lineClamp: number | undefined) => {
+  const lines = Math.floor(lineClamp ?? 0);
+  return Number.isFinite(lines) && lines >= 1 ? lines : null;
+};
+const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
+  const lines = clampLines(column.lineClamp);
+  return lines != null
+    ? <span className="uix-cell-clamp" style={{ '--uix-clamp': String(lines) } as CSSProperties}>{column.cell(row)}</span>
+    : column.cell(row);
+};
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,

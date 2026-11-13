@@ -7,7 +7,8 @@
      tabular so a column of times lines up. A range breaks only after its dash (the no-break space
      before the dash is in the markup), so the end moves to the next line whole. */
   .uix-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .uix-time-range { white-space: normal; font-variant-numeric: tabular-nums; }
+  /* a range inherits its cell's wrapping: it breaks after its dash in a wrapping cell, never in a nowrap one */
+  .uix-time-range { font-variant-numeric: tabular-nums; }
 
   /* --- DatePicker: a text input with a calendar button inside its trailing edge ------------- */
   .uix-date-picker { display: grid; gap: var(--uix-space-1); width: 100%; min-width: 0; max-width: 11rem; }
