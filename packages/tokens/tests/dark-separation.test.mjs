@@ -138,3 +138,16 @@ test("the gate catches the defect it guards: each 2.62 dark value fails its chec
   const strong = paintOnSurface("rgba(48,128,255,.28)", dark);
   assert.ok(contrast(color("var(--uix-accent)", dark), strong) < 3, "a .28 tint is too strong for the accent");
 });
+
+test("a print document keeps paper and ink: the header band and selection edge are re-mapped inside .uix-print-layout", () => {
+  // The print layout reads ink on paper in both themes (print-layout.css re-maps the surface tokens).
+  // A token the tables paint from must be re-mapped there too, or the dark band shows on the paper
+  // under quiet ink (2.22:1, the a11y print-layout spec in dark, #237).
+  const print = read("../styles/components/print-layout.css");
+  const scope = print.slice(print.indexOf(".uix-print-layout {"), print.indexOf("}", print.indexOf(".uix-print-layout {")));
+  assert.match(scope, /--uix-table-head-bg:\s*var\(--uix-print-paper\);/);
+  assert.match(scope, /--uix-row-selected-edge:\s*transparent;/);
+  for (const token of table.matchAll(/var\((--uix-(?:table-head-bg|row-selected-edge|row-selected-bg|row-pinned-bg))\)/g)) {
+    assert.match(scope, new RegExp(`${token[1]}:`), `${token[1]} is painted by table.css and must be re-mapped for paper`);
+  }
+});
