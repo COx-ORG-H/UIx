@@ -2779,8 +2779,7 @@ export interface FieldProps {
     children: ReactNode;
     // (undocumented)
     className?: string;
-    // (undocumented)
-    error?: string;
+    error?: ReactNode;
     help?: string | null;
     helpLabel?: string;
     // (undocumented)
@@ -2789,6 +2788,7 @@ export interface FieldProps {
     // (undocumented)
     label?: string;
     labelId?: string;
+    messageId?: string;
     // (undocumented)
     required?: boolean;
     // (undocumented)
@@ -5142,6 +5142,7 @@ export const NumberInput: react.ForwardRefExoticComponent<NumberInputProps & rea
 
 // @public (undocumented)
 export interface NumberInputProps extends Omit<InputProps, 'type' | 'value' | 'defaultValue'> {
+    defaultValue?: number;
     onValueChange?: (value: number) => void;
     value?: number | null;
 }

@@ -3,12 +3,13 @@ import type { ReactNode, ReactElement } from 'react';
 import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
 import { Combobox } from './Combobox.js';
-import { hasHelp } from '../info-tip-model.js';
+import { hasHelp, helpTopic } from '../info-tip-model.js';
 
 export interface FieldProps {
   label?: string;
   hint?: string;
-  error?: string;
+  /** The error under the control, announced at once (`role="alert"`). Text, or a node such as a sentence with a link. */
+  error?: ReactNode;
   /**
    * A value to check, not an error (HAR-1814): shown under the control in the warning colour,
    * announced politely, and marks the control `data-warning`. `error` wins over it; it wins
@@ -34,6 +35,11 @@ export interface FieldProps {
    * needs none: the label's `htmlFor` names it.
    */
   labelId?: string;
+  /**
+   * The id of the message line (HAR-3100), which the control's `aria-describedby` points at. Default:
+   * a generated one. Pass it when a product's tests or other elements need a fixed id.
+   */
+  messageId?: string;
   children: ReactNode;
   className?: string;
   /** Explicit label target. When a Combobox also supplies `inputId`, the two IDs must match. */
@@ -49,9 +55,9 @@ function isComboboxElement(child: ReactElement): boolean {
   return type === Combobox;
 }
 
-export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, children, className, htmlFor }: FieldProps) {
+export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, messageId, children, className, htmlFor }: FieldProps) {
   const uid = useId();
-  const msgId = `${uid}-msg`;
+  const msgId = messageId ?? `${uid}-msg`;
   const describedBy = (error || warning || success || hint) ? msgId : undefined;
 
   // Wire the message to the control for assistive tech: aria-describedby (so it's announced) and
@@ -84,7 +90,7 @@ export function Field({ label, hint, error, warning, success, required, help, he
       {label && hasHelp(help) ? (
         <div className="uix-field__label-row">
           <label id={labelId} className="uix-field__label" htmlFor={htmlFor ?? controlId}>{label}</label>
-          <InfoTip content={help} label={helpLabel} topic={label} />
+          <InfoTip content={help} label={helpLabel} topic={helpTopic(label)} />
           {required && <span className="uix-field__required" aria-hidden="true">*</span>}
         </div>
       ) : label && (

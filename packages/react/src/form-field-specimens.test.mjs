@@ -13,7 +13,14 @@ const committed = readFileSync(SPECIMEN_MODULE, 'utf8');
 const specimens = await renderFormFieldSpecimens();
 
 test('the committed specimens are exactly what the components render today', () => {
-  assert.equal(formFieldSpecimenModule(specimens), committed, 'packages/tokens/docs/form-field-specimens.js is out of date — run node packages/react/scripts/render-form-field-specimens.mjs');
+  const rendered = formFieldSpecimenModule(specimens);
+  if (rendered === committed) return;
+  // The module is one long line per route, so a plain diff is cut off before the change: say where
+  // it is, with the text around it, so a difference that only shows under load can be read (#245).
+  let at = 0;
+  while (at < rendered.length && rendered[at] === committed[at]) at += 1;
+  const around = (text) => JSON.stringify(text.slice(Math.max(0, at - 160), at + 160));
+  assert.fail(`packages/tokens/docs/form-field-specimens.js is out of date — run node packages/react/scripts/render-form-field-specimens.mjs\n  first difference at ${at} (rendered ${rendered.length}, committed ${committed.length} characters)\n  rendered:  ${around(rendered)}\n  committed: ${around(committed)}`);
 });
 
 test('the comparison can fail: a changed class is a different module', () => {

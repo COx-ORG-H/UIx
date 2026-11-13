@@ -66,7 +66,8 @@ function InfoTipControl({
   paragraphs, label: ownLabel, topic, placement = 'bottom-start', className, ...props
 }: Omit<InfoTipProps, 'content'> & { paragraphs: string[] }) {
   const { infoTip } = useUixLabels();
-  const label = ownLabel ?? helpLabelFrom(topic, infoTip);
+  // a blank own label is no label: fall back to the template, as a blank template falls back to English
+  const label = ownLabel?.trim() ? ownLabel : helpLabelFrom(topic, infoTip);
   const wrapRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const timer = useRef<number | null>(null);

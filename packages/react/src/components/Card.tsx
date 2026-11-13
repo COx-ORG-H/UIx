@@ -2,7 +2,7 @@ import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink, type UixRenderLink } from '../link.js';
 import { InfoTip } from './InfoTip.js';
-import { hasHelp } from '../info-tip-model.js';
+import { hasHelp, helpTopic } from '../info-tip-model.js';
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode;
@@ -38,7 +38,7 @@ export function Card({ title, titleAs: TitleTag = 'div', titleId, subtitle, help
             {heading && hasHelp(help) ? (
               <div className="uix-card__title-row">
                 {heading}
-                <InfoTip content={help} label={helpLabel} topic={title} />
+                <InfoTip content={help} label={helpLabel} topic={helpTopic(title)} />
               </div>
             ) : heading}
             {subtitle && <div className="uix-card__subtitle">{subtitle}</div>}

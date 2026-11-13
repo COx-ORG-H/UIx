@@ -128,3 +128,37 @@ test('NumberInput: null is empty, a number is shown, undefined leaves the field 
   assert.equal(changed, 1);
   unmount();
 });
+
+test('#245 review: NumberInput takes defaultValue, steps any, stays a number field, and a form value from undefined to a number never switches it', () => {
+  const html = renderToStaticMarkup(h(ui.NumberInput, { defaultValue: 7 }));
+  assert.match(html, /value="7"/);
+  assert.match(html, /step="any"/, 'a decimal is never a step mismatch');
+  assert.match(renderToStaticMarkup(h(ui.NumberInput, { type: 'text', value: 1, onValueChange: () => {} })), /type="number"/, 'a stray type cannot make it a text field');
+  const errors = [];
+  const error = console.error;
+  console.error = (...args) => { errors.push(args.join(' ')); };
+  try {
+    function Form() {
+      const [value, setValue] = useState(undefined);
+      return h(ui.NumberInput, { 'aria-label': 'Menge', value, onValueChange: setValue });
+    }
+    const { host, unmount } = mount(h(Form));
+    const input = host.querySelector('input');
+    assert.equal(input.value, '', 'undefined shows an empty, controlled field');
+    type(input, '3');
+    assert.equal(input.value, '3');
+    unmount();
+  } finally {
+    console.error = error;
+  }
+  assert.deepEqual(errors.filter((e) => /uncontrolled|controlled/.test(e)), [], 'no controlled/uncontrolled switch warning');
+});
+
+test('#245 review: a number title names its ?, a blank helpLabel falls back, messageId fixes the message line, error can be a node', () => {
+  assert.match(renderToStaticMarkup(h(ui.SectionHead, { title: 2026, help: 'The year.' })), /aria-label="About: 2026"/);
+  assert.match(renderToStaticMarkup(h(ui.Card, { title: 'Kosten', help: 'Wie.', helpLabel: '  ' }, 'x')), /aria-label="About: Kosten"/);
+  const field = renderToStaticMarkup(h(ui.Field, { label: 'Code', messageId: 'field-code-msg', error: h('span', null, 'Too long. ', h('a', { href: '#rules' }, 'The rules')) }, h(ui.Input, { id: 'field-code' })));
+  assert.match(field, /<div class="uix-field__msg" id="field-code-msg"><span class="uix-field__error" role="alert"><span>Too long. <a href="#rules">The rules<\/a><\/span><\/span><\/div>/);
+  assert.match(field, /aria-describedby="field-code-msg"/);
+  assert.match(field, /aria-invalid="true"/);
+});

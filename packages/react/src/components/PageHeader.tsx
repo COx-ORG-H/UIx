@@ -1,7 +1,7 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
-import { hasHelp } from '../info-tip-model.js';
+import { hasHelp, helpTopic } from '../info-tip-model.js';
 
 export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   eyebrow?: ReactNode;
@@ -41,7 +41,7 @@ export function PageHeader({ eyebrow, title, subtitle, help, helpLabel, actions,
         {hasHelp(help) ? (
           <div className="uix-page-header__title-row">
             {heading}
-            <InfoTip content={help} label={helpLabel} topic={title} />
+            <InfoTip content={help} label={helpLabel} topic={helpTopic(title)} />
           </div>
         ) : heading}
         {subtitle != null && <p className="uix-page-header__subtitle">{subtitle}</p>}

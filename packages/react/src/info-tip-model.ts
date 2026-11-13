@@ -16,6 +16,10 @@ export const hasHelp = (help: unknown): help is string => helpParagraphs(help).l
 /** Default accessible name for a `help` slot: "About: <title>" for text titles. */
 export const helpLabelFor = (thing: ReactNode): string => helpLabelFrom(thing);
 
+/** A title as the topic of a ?: text only, so an element title is never sent to the client twice. */
+export const helpTopic = (thing: ReactNode): string | number | undefined =>
+  typeof thing === 'string' || typeof thing === 'number' ? thing : undefined;
+
 /**
  * The accessible name of a ? for `thing` from a localised template (HAR-3100): `about` with its
  * `{title}` replaced for a text title, `more` for any other. A blank template falls back to the
