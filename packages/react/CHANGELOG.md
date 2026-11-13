@@ -1,5 +1,27 @@
 # @tensor_1/react
 
+## 2.65.0
+
+### Minor Changes
+
+- 00b32b3: HAR-3095 — `LinkTile`, a navigation tile: a whole-card link to another page that the kit lays out. A 16 px `icon` and a trailing chevron (hushed, both `aria-hidden`) sit on the title's first line; the `title` names the link and the `description` (meta size, `descriptionLines` to clamp it) describes it; `titleAs` picks the title element (default `h3`); `renderLink` keeps router navigation, as on `CardLink`. Built on the interactive card (`.uix-card--interactive`, its hover and focus) with the card body's inset and nothing more (`.uix-link-tile`, `__body`, `__icon`, `__title`, `__description`, `__arrow`), so a page never builds the tile's inside or doubles its padding.
+- 6795739: HAR-3109 — a `StatusPill` that explains itself. `description` (and `descriptionPlacement`, default `'top'`) shows what the pill means in the kit `Tooltip`, on hover and on keyboard focus: the pill becomes a focus stop (`.uix-pill--described`, `tabIndex` 0, the kit focus ring and the help cursor) but no button, since pressing it does nothing, and screen readers hear the label and then the description once. A product no longer wraps a pill in its own `<button>` to explain it. Without `description` the pill renders exactly as before.
+- da12d75: HAR-3874: the page rules every product can run, and the severity ramp they point at.
+
+  - **`uix-page-rules`**, a new bin in `@tensor_1/react` that you can also import from `@tensor_1/react/page-rules`. It checks how a product's pages use the kit, with no dependencies. It carries the rules from the TENSOR UI council climbs:
+
+    - severity through a generic tone helper, or "high" mapped to red;
+    - labels broken mid-word;
+    - the page title said twice;
+    - unnamed row menus;
+    - lists joined in a table cell;
+    - raw buttons, tables and form controls;
+    - literal font sizes.
+
+    A product adds a config and seeds a baseline. The baseline counts findings per rule and per file, and it only shrinks. The check fails on new debt, on paid debt left in the baseline and on stale exemptions. `page-rules/README.md` has the setup.
+
+  - **`severityTone(severity)`** gives a severity's `StatusPill` tone on the one severity ramp: `critical` is red, `high` is amber (`warning`), and medium, low and anything else are neutral. Use it instead of a generic status map, which turns every "High" red.
+
 ## 2.64.0
 
 ### Minor Changes
