@@ -123,3 +123,10 @@ test('the described StatusPill specimen is a focus stop described by its tooltip
   assert.match(block, /<span class="uix-pill uix-pill--warning uix-pill--described" tabindex="0"[^>]*aria-describedby="[^"]+"/);
   assert.match(block, /role="tooltip"/);
 });
+
+test('the LinkTile specimen shows three tiles, each one anchor named by its title (HAR-3095)', () => {
+  const block = specimens['examples-navigation'].slice(specimens['examples-navigation'].indexOf('data-link-tile-example'));
+  assert.equal((block.match(/<a class="uix-card uix-card--interactive uix-link-tile"/g) ?? []).length, 3);
+  assert.equal((block.match(/aria-labelledby="dsp-/g) ?? []).length, 3);
+  assert.match(block, /data-clamped="" style="--uix-link-tile-lines: 2;"/);
+});

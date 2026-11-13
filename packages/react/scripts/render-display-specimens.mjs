@@ -47,6 +47,7 @@ export async function renderDisplaySpecimens() {
   try {
     const { createRoot } = await import('react-dom/client');
     const ui = await import(pathToFileURL(join(here, '../dist/index.js')).href);
+    const icons = await import(pathToFileURL(join(here, '../dist/icons.js')).href);
     const { Markdown } = await import(pathToFileURL(join(here, '../dist/markdown.js')).href);
     const roots = [];
     const mount = (element) => {
@@ -395,6 +396,16 @@ export async function renderDisplaySpecimens() {
     add('examples-data-display', [
       caption('A pill that explains itself (React <code>StatusPill description</code>, <code>.uix-pill--described</code>; HAR-3109) — the description opens in the kit tooltip on hover and on keyboard focus. The pill is a focus stop with the kit ring, but no button: pressing it does nothing. Screen readers hear the label, then the description once. Tab to the pill or point at it.'),
       `<div data-described-pill-example>${html(describedPill)}</div>`,
+    ].join(String.fromCharCode(10)));
+
+    // ── LinkTile (HAR-3095): a grid of navigation tiles, as a settings hub shows them ──────────
+    const tiles = mount(h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', gap: 'var(--uix-space-4)' } },
+      h(ui.LinkTile, { href: '#settings-users', icon: h(icons.UsersIcon), title: 'Users', description: 'Invite members, assign roles and lock access.' }),
+      h(ui.LinkTile, { href: '#settings-roles', icon: h(icons.ShieldIcon), title: 'Roles and permissions', description: 'What each role may see and change, with the separation of duties DORA and the internal control system ask for, and the exceptions.', descriptionLines: 2 }),
+      h(ui.LinkTile, { href: '#settings-notifications', icon: h(icons.BellIcon), title: 'Notifications', description: 'Who hears about what, and when.' })));
+    add('examples-navigation', [
+      caption('Navigation tile (React <code>LinkTile</code>, <code>.uix-link-tile</code>; HAR-3095) — a whole-card link to another page: a 16 px icon and a trailing chevron on the title’s first line, the title (the link’s name), a short description at the meta size (the link’s description, <code>descriptionLines</code> to clamp it), and the card body’s inset, nothing more. Hover and focus are the interactive card’s.'),
+      `<div data-link-tile-example>${html(tiles)}</div>`,
     ].join(String.fromCharCode(10)));
 
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
