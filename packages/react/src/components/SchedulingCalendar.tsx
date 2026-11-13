@@ -421,6 +421,13 @@ export interface SchedulingCalendarProps {
   /** Lanes side by side in one day column of the time grid, at most. Fewer are used when the column is narrow. Default 4. */
   maxLanes?: number;
   /**
+   * The local time (`HH:MM` in `timeZone`) the time grid's hours open at. The grid scrolls inside
+   * its own height (`--uix-scheduling-calendar-tg-height`, default `min(70vh, 46rem)`) with the day
+   * heads kept on top. Unset opens at the earlier of 08:00 and the first item that starts on screen.
+   * It opens there again when the days or the view change, never after the user scrolled.
+   */
+  scrollToTime?: string;
+  /**
    * With `view="day"`, one column per resource (a practitioner, a room) instead of the time grid
    * (HAR-983). Their stretches of the day come from `resourceSpans`; a time no span covers is
    * shown as "no schedule", never as free.
@@ -495,7 +502,7 @@ export function SchedulingCalendar({
   onSelectEntry, overlays = EMPTY_OVERLAYS, onSelectOverlay, filter, renderEntry, locale, weekStartsOn = 1, formatDate, formatInstant: formatInstantProp,
   maxEntriesPerDay, onShowMore, renderDayBadge, days: dayInfo, dayEntries, spanLayout, windowLaneCap, spanLaneCap,
   legend, legendCaption, showHeader = true, notice, emptyNote, onSelectDate, agendaGroups, agendaHeadingLevel = 3, virtualizeAbove = 200, monthDensity = 'full', timeGrid = false, now, canMove = false, step = 15, onProposeMove,
-  topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4,
+  topLaneCrossMidnightMinutes = TOP_LANE_CROSS_MIDNIGHT_MINUTES, topLaneCap = 3, maxLanes = 4, scrollToTime,
   resources, resourceSpans = EMPTY_SPANS, slotMinutes, dayStart, dayEnd, onSelectSlot, selectedSlot, resourceLayout = 'auto', resourceListBelow = 480,
   loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
@@ -850,7 +857,7 @@ export function SchedulingCalendar({
         entryName={entryName} entryStatus={statusOf} entryMarkers={markersOf} overlayName={overlayName} renderEntry={renderEntry} renderMarker={renderMarker}
         onSelectEntry={onSelectEntry} onSelectOverlay={onSelectOverlay} onSelectDate={onSelectDate} onShowMore={onShowMore}
         now={now} canMove={canMove} step={step} onProposeMove={onProposeMove}
-        topLaneCrossMidnightMinutes={topLaneCrossMidnightMinutes} topLaneCap={topLaneCap} windowLaneCap={windowLaneCap ?? DEFAULT_LANE_CAP} maxLanes={maxLanes}
+        topLaneCrossMidnightMinutes={topLaneCrossMidnightMinutes} topLaneCap={topLaneCap} windowLaneCap={windowLaneCap ?? DEFAULT_LANE_CAP} maxLanes={maxLanes} scrollToTime={scrollToTime}
         emptyNote={emptyNote} nothingToShow={nothingToShow}
       />
       : <div ref={gridRef} className={cx('uix-scheduling-calendar__grid', view === 'week' && 'uix-scheduling-calendar__grid--week')} data-fixed={fixed || undefined} data-density={countsOnly ? 'counts' : undefined} style={gridStyle} onKeyDown={onGridKeyDown} onFocus={onGridFocus} role="group" aria-label={fillLabel(labels.grid, { view: viewLabel[view] })}>

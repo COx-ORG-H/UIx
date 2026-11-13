@@ -383,7 +383,7 @@ test('AC12 (NEW-1): the column "+N" is the consumer overflowCount and calls onSh
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, days: { '2026-10-07': { count: 6, overflowCount: 2, label: '6 items' } }, onShowMore: (date) => more.push(date) }));
   const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
   const button = head.querySelector(cls('more'));
-  assert.equal(button.textContent, '+2');
+  assert.equal(button.textContent, '+2 more', 'the head says what its count is: hidden entries');
   click(button);
   assert.deepEqual(more, ['2026-10-07']);
   assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-08"] ${cls('more')}`), null);
@@ -393,7 +393,7 @@ test('AC12 (NEW-1): the column "+N" is the consumer overflowCount and calls onSh
 test('without consumer counts the column "+N" is what the lanes could not show', () => {
   const entries = ['09:00', '09:10', '09:20', '09:30'].map((from, i) => item(`o${i}`, '2026-10-07', from, '11:00'));
   const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, maxLanes: 2, onShowMore: () => {} }));
-  assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"] ${cls('more')}`).textContent, '+2');
+  assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"] ${cls('more')}`).textContent, '+2 more');
   assert.equal(column(host, '2026-10-07').querySelectorAll('[data-item-id]').length, 2);
   unmount();
 });
@@ -433,6 +433,8 @@ test('AC13 (FG-UX-3): three windows over one week with two lanes — the third i
   assert.equal(host.querySelector('[data-overlay-id="c"]'), null);
   const button = host.querySelector(`${cls('tg-strip')} ${cls('rowmore')}`);
   assert.equal(button.textContent, '+1 windows');
+  assert.equal(button.style.gridColumn, '4', 'under Wednesday, the first day it hides');
+  assert.equal(host.querySelector(cls('tg-strip')).style.getPropertyValue('--uix-scheduling-calendar-lanes'), '3', 'a row of its own after the two lanes, never on top of a drawn window');
   click(button);
   assert.deepEqual(more, ['2026-10-07']);
   unmount();
@@ -454,7 +456,8 @@ test('AC17 (R12 AC2): a day header shows the consumer count and the marker with 
   assert.equal(head.getAttribute('role'), 'group');
   // HAR-1527: the label is the count and the signal; the name always starts with the date (labels.dayName).
   assert.match(head.getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 6 items, 1 needs attention$/);
-  assert.equal(head.querySelector(cls('count')).textContent, '6');
+  // The count says what it counts (labels.dayCount): a bare "6" next to a date read as part of the date.
+  assert.equal(head.querySelector(cls('count')).textContent, '6 entries');
   assert.ok(head.querySelector(`${cls('marker')} [data-test-icon]`), 'the icon');
   assert.equal(head.querySelector(cls('marker-label')).textContent, 'Needs attention', 'and the text, visible');
   unmount();
@@ -627,5 +630,74 @@ test('focus follows an item the consumer moves to another day after a keyboard m
   const moved = host.querySelector('[data-item-id="a"]');
   assert.equal(moved.closest('[data-tg-column]').getAttribute('data-tg-column'), '2026-10-08', 'the consumer applied the move');
   assert.equal(document.activeElement, moved, 'and focus is on the item in its new column');
+  unmount();
+});
+
+// TENSOR HAR-2954 (UI hill-climb, round 1): the week opened at midnight on an empty grid, a narrow
+// column hid more than its "+N" said, and "now" was hard to find.
+const grid = (host) => host.querySelector(cls('timegrid'));
+
+test('the hours open at 08:00 when nothing starts earlier, inside the grid\'s own scroll area', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: [item('a', '2026-10-07', '13:00', '14:00')] }));
+  assert.equal(grid(host).scrollTop, 8 * HOUR_PX);
+  assert.ok(host.querySelector(`${cls('timegrid')} > ${cls('tg-sticky')} > ${cls('tg-head')}`), 'the day heads stay on top of the scrolling hours');
+  unmount();
+});
+
+test('the hours open at the first item that starts earlier than 08:00; a continuation from the day before does not pull them up', () => {
+  const entries = [item('early', '2026-10-08', '06:30', '07:30'), item('night', '2026-10-06', '22:00', '01:00')];
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries }));
+  assert.equal(grid(host).scrollTop, 6 * HOUR_PX);
+  unmount();
+});
+
+test('scrollToTime opens the hours exactly there', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, scrollToTime: '17:30', entries: [item('a', '2026-10-07', '06:00', '07:00')] }));
+  assert.equal(grid(host).scrollTop, 17 * HOUR_PX);
+  unmount();
+});
+
+test('after the user scrolled, new entries do not move the hours; another week opens again', () => {
+  const { host, root, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries: [] }));
+  const el = grid(host);
+  assert.equal(el.scrollTop, 8 * HOUR_PX);
+  act(() => { el.dispatchEvent(new window.WheelEvent('wheel', { bubbles: true })); });
+  el.scrollTop = 2 * HOUR_PX;
+  act(() => root.render(h(ui.SchedulingCalendar, { ...base, entries: [item('a', '2026-10-07', '05:00', '06:00')] })));
+  assert.equal(grid(host).scrollTop, 2 * HOUR_PX, 'the user\'s place is kept');
+  act(() => root.render(h(ui.SchedulingCalendar, { ...base, anchorDate: '2026-10-14', entries: [item('b', '2026-10-14', '05:00', '06:00')] })));
+  assert.equal(grid(host).scrollTop, 5 * HOUR_PX, 'a new week opens at its own first item');
+  unmount();
+});
+
+test('a day head\'s "+N" adds what a narrow column could not draw to the consumer\'s count', () => {
+  // A probe (an item showing "HH:MM" and six characters) of 60 px fits one lane in a 100 px column.
+  const proto = window.HTMLElement.prototype;
+  const stub = proto.getBoundingClientRect;
+  proto.getBoundingClientRect = function rect() {
+    if (this.classList.contains('uix-scheduling-calendar__tg-probe')) return { left: 0, right: 60, top: 0, bottom: 0, width: 60, height: 0, x: 0, y: 0, toJSON() {} };
+    return stub.call(this);
+  };
+  globalThis.ResizeObserver = class { observe() {} disconnect() {} };
+  try {
+    const entries = ['a', 'b', 'c'].map((id) => item(id, '2026-10-07', '09:00', '10:00'));
+    const days = { '2026-10-07': { count: 3, overflowCount: 0 } };
+    const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, entries, days, onShowMore: () => {} }));
+    const head = host.querySelector(`${cls('tg-dayhead')}[data-date="2026-10-07"]`);
+    assert.equal(column(host, '2026-10-07').querySelectorAll(cls('tg-item')).length, 1, 'one lane drawn');
+    assert.equal(head.querySelector(cls('more')).textContent, '+2 more', 'the two the width hid are counted');
+    unmount();
+  } finally {
+    proto.getBoundingClientRect = stub;
+    delete globalThis.ResizeObserver;
+  }
+});
+
+test('today\'s head is marked and the gutter says the time of the now line', () => {
+  const { host, unmount } = mount(h(ui.SchedulingCalendar, { ...base, now: '2026-10-07T07:40:00Z' }));
+  assert.equal(host.querySelector(`${cls('tg-dayhead')}[data-today]`)?.getAttribute('data-date'), '2026-10-07');
+  assert.equal(host.querySelectorAll(`${cls('tg-dayhead')}[data-today]`).length, 1);
+  assert.equal(host.querySelector(cls('tg-nowtime')).textContent, '09:40');
+  assert.equal(host.querySelector(cls('tg-nowtime')).closest(cls('tg-gutter')).getAttribute('aria-hidden'), 'true');
   unmount();
 });

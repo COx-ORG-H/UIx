@@ -258,11 +258,11 @@ test('AC7: fewer lanes below the minimum lane width, every label at least four c
     return { probe, items, more: document.querySelector(`${prefix}tg-dayhead[data-date="2026-10-07"] ${prefix}more`)?.textContent ?? null };
   }, P);
 
-  // One wide day column: all four lanes the cap allows, the fifth item behind "+1".
+  // One wide day column: all four lanes the cap allows, the fifth item behind "+1 more".
   await open(page, 'case=lanes&view=day', { width: 1280, height: 800 });
   const wide = await report();
   expect(wide.items).toHaveLength(4);
-  expect(wide.more).toBe('+1');
+  expect(wide.more).toBe('+1 more');
 
   // Seven columns at 1600: about 215 px each, room for two readable lanes but not four.
   await open(page, 'case=lanes', { width: 1600, height: 800 });
@@ -277,7 +277,7 @@ test('AC7: fewer lanes below the minimum lane width, every label at least four c
   await expect.poll(async () => (await report()).items.length).toBeLessThan(week.items.length);
   const narrow = await report();
   expect(narrow.items.length).toBeGreaterThanOrEqual(1);
-  expect(narrow.more).toBe(`+${5 - narrow.items.length}`);
+  expect(narrow.more).toBe(`+${5 - narrow.items.length} more`);
 
   for (const state of [wide, week, narrow]) {
     for (const drawn of state.items) {
@@ -344,19 +344,28 @@ test('AC8: a 350-event week stays under 3,000 elements and inside the page', asy
   expect(scroll.scroll).toBeLessThanOrEqual(scroll.client);
 });
 
-test('AC12 / AC17: a day header shows the consumer count, its marker with text and "+N", and names itself', async ({ page }) => {
+test('AC12 / AC17: a day header shows the consumer count with its label, its marker with text and "+N more", and names itself', async ({ page }) => {
   await open(page, 'case=timegrid');
   const head = page.locator(`${P}tg-dayhead[data-date="2026-10-07"]`);
   // The name is the date and the label of the consumer (the count and the signal), HAR-1527.
   await expect(head).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
   await expect(head.locator(`${P}date`)).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
-  await expect(head.locator(`${P}count`)).toHaveText('6');
+  // The count says what it counts (labels.dayCount): a bare "6" beside a date read as part of the date.
+  await expect(head.locator(`${P}count`)).toHaveText('6 entries');
   await expect(head.locator(`${P}marker-label`)).toBeVisible();
   await expect(head.locator(`${P}date`)).toBeVisible();
   const date = await head.locator(`${P}date`).evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(date.scroll, 'the date is not cut').toBeLessThanOrEqual(date.client);
+  // "+N more" is the consumer's two, plus what this column was too narrow to draw (never fewer).
   const more = head.locator(`${P}more`);
-  await expect(more).toHaveText('+2');
+  await expect(more).toHaveText(/^\+\d+ more$/);
+  const hidden = Number((await more.textContent()).match(/\d+/)[0]);
+  expect(hidden).toBeGreaterThanOrEqual(2);
+  await expect(more).toHaveAccessibleName(new RegExp(`^${hidden} more entries on `));
+  // The count, the "+N more" and the signal each have a line of their own under the date.
+  const lines = await head.evaluate((el, prefix) => ['date', 'count', 'more', 'markers'].map((part) => Math.round(el.querySelector(`${prefix}${part}`).getBoundingClientRect().top)), P);
+  expect(lines, JSON.stringify(lines)).toEqual([...lines].sort((a, b) => a - b));
+  expect(new Set(lines).size, JSON.stringify(lines)).toBe(4);
   await more.click();
   expect((await calls(page)).more).toEqual(['2026-10-07']);
   await head.locator(`${P}date`).click();
@@ -396,10 +405,29 @@ test('AC14: with the window strip and the top lane full, the first hour row is a
   const lanes = await page.locator(`${P}tg-top [data-item-id]`).evaluateAll((els) => new Set(els.map((el) => Math.round(el.getBoundingClientRect().top))).size);
   expect(lanes, 'the top lane is at its cap of three rows').toBe(3);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
-  const first = await box(page.locator(`${P}tg-gutter [data-hour="00"]`));
-  const second = await box(page.locator(`${P}tg-gutter [data-hour="01"]`));
-  expect(first.top).toBeGreaterThan(0);
-  expect(second.top, 'the whole first hour row is on screen').toBeLessThan(800);
+  // The hours scroll inside the grid's own height and open at the work, not at midnight (HAR-2964):
+  // the day heads and the strips stay on top, and the first hour row under them is whole and above
+  // the fold. Midnight is scrolled away, so "the first hour row" is the one the grid opens at.
+  const hour = await hourHeight(page);
+  const seen = await page.evaluate((prefix) => {
+    const grid = document.querySelector(`${prefix}timegrid`);
+    const sticky = document.querySelector(`${prefix}tg-sticky`).getBoundingClientRect();
+    return {
+      scrollTop: grid.scrollTop,
+      headsTop: sticky.top - grid.getBoundingClientRect().top,
+      under: sticky.bottom,
+      fold: Math.min(grid.getBoundingClientRect().top + grid.clientTop + grid.clientHeight, window.innerHeight),
+      hours: [...document.querySelectorAll(`${prefix}tg-gutter [data-hour]`)].map((el) => ({ label: el.getAttribute('data-hour'), top: el.getBoundingClientRect().top })),
+    };
+  }, P);
+  expect(seen.scrollTop, 'the hours opened below midnight').toBeGreaterThan(0);
+  expect(seen.headsTop, 'the day heads stay at the top of the grid').toBeLessThanOrEqual(2);
+  const shown = seen.hours.filter((h) => h.top >= seen.under - 1.5);
+  expect(shown.length).toBeGreaterThanOrEqual(2);
+  expect(Number(shown[0].label), 'no later than the start of the working day').toBeLessThanOrEqual(8);
+  expect(shown[0].top - seen.under, 'the hours start right under the day heads and the strips').toBeLessThan(hour);
+  expect(shown[1].top, 'the whole first hour row is on screen').toBeLessThanOrEqual(seen.fold);
+  expect(seen.fold).toBeLessThanOrEqual(800);
 });
 
 test('AC14: at 375 px the week scrolls inside its own container; an empty week keeps seven columns and the note', async ({ page }) => {
