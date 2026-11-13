@@ -7346,7 +7346,9 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
     as?: 'h2' | 'h3';
     help?: string | null;
     helpLabel?: string;
-    size?: 'default' | 'compact';
+    href?: string;
+    renderLink?: UixRenderLink;
+    size?: 'default' | 'compact' | 'eyebrow';
     // (undocumented)
     title: ReactNode;
     titleId?: string;

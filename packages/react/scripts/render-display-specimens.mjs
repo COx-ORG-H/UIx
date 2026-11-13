@@ -298,6 +298,39 @@ export async function renderDisplaySpecimens() {
       `<div data-list-summary-example style="display:grid;gap:var(--uix-space-4);max-width:28rem">${html(collapsedRoles)}${html(openRoles)}${html(fewRoles)}</div>`,
     ].join('\n'));
 
+    // ── 24 px targets for links that stand on their own (HAR-3084, HAR-3091, HAR-3097) ──────
+    const targetRows = [['CVE-2024-6387', 'SRV-RZN-0107', 12, 'Offen'], ['CVE-2023-48795', 'SRV-RZN-0212', 4, 'In Bearbeitung']];
+    const targetTable = mount(h(ui.TableWrap, null, h(ui.Table, null,
+      h('thead', null, h('tr', null,
+        h(ui.Th, { sortable: true, sortDirection: 'none', onSort: () => {} }, 'Befund'),
+        h(ui.Th, { sortable: true, sortDirection: 'none', onSort: () => {} }, 'Quell-Asset'),
+        h(ui.Th, { sortable: true, sortDirection: 'descending', onSort: () => {}, className: 'uix-col--num' }, 'Offene Befunde'),
+        h(ui.Th, null, 'Status'))),
+      h('tbody', null, targetRows.map(([id, asset, open, state]) => h(ui.Tr, { key: id },
+        h(ui.Td, null, h('a', { className: 'uix-cell-link', href: `#${id}` }, id)),
+        h(ui.Td, null, h('a', { href: `#${asset}` }, asset)),
+        h(ui.Td, { className: 'uix-col--num' }, open),
+        h(ui.Td, null, state)))))));
+    add('examples-data-display', [
+      caption('Targets in a table (HAR-3084) — a sort button and a cell\'s link are each a 24 px target, measured on the element as axe and the product probes measure it, while the text stays on the line of the plain cells beside it. The header button centres its label in a 24 px box; a cell link (<code>.uix-cell-link</code>, or a plain <code>&lt;a&gt;</code> in a cell) takes vertical padding, which never changes a line\'s height.'),
+      `<div data-link-targets-example>${html(targetTable)}</div>`,
+    ].join('\n'));
+    const eyebrowHeads = mount(h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 14rem), 1fr))', gap: 'var(--uix-space-6)' } },
+      h('div', null, h(ui.SectionHead, { size: 'eyebrow', as: 'h3', title: 'Persönlich' }), h('p', { style: { margin: 0, color: 'var(--uix-text-muted)' } }, 'Profil, Sprache und Benachrichtigungen.')),
+      h('div', null, h(ui.SectionHead, { size: 'eyebrow', as: 'h3', title: 'Störungen', href: '#settings-incidents' }), h('p', { style: { margin: 0, color: 'var(--uix-text-muted)' } }, 'Kategorien, Prioritäten und Eskalation.'))));
+    add('examples-editorial-home', [
+      caption('Eyebrow section label (React <code>SectionHead size="eyebrow"</code> with <code>href</code>, <code>.uix-section-head--eyebrow</code>, <code>.uix-eyebrow</code>; HAR-3097) — the small uppercase heading over a group of tiles. With <code>href</code> the title is the link to the group\'s page and owns the 24 px row as its target; the unlinked label beside it puts its text in the same place. <code>.uix-section-link</code> is a 24 px target too.'),
+      `<div data-eyebrow-head-example>${html(eyebrowHeads)}</div>`,
+    ].join('\n'));
+    const peekFooter = mount(h('div', { className: 'uix-peek__footer' },
+      h('a', { href: '#INC-0173' }, 'Datensatz öffnen'),
+      h('a', { className: 'uix-peek__footer-link', href: '#INC-0173-history' }, 'Verlauf'),
+      h(ui.Button, { variant: 'link' }, 'Link kopieren')));
+    add('examples-overlays', [
+      caption('Peek footer links (<code>.uix-peek__footer</code>; HAR-3091) — a link in the footer stands on its own, so it is a 24 px target at the meta size in the link colour: a plain <code>&lt;a&gt;</code> (a framework link without a class), <code>.uix-peek__footer-link</code> for one that must carry a class, and a link <code>Button</code>. The product passes a label and an href.'),
+      `<div data-peek-footer-example class="uix-card" style="max-width:28rem">${html(peekFooter)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return specimens;
   } finally {
