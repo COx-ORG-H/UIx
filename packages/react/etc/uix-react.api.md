@@ -8303,13 +8303,16 @@ export function Timeline(input: TimelineProps): react.JSX.Element;
 // @public
 export function TimelineItem(input: TimelineItemProps): react.JSX.Element;
 
-// @public (undocumented)
-export interface TimelineItemProps extends HTMLAttributes<HTMLLIElement> {
+// @public
+export interface TimelineItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
+    badge?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    detail?: ReactNode;
     // (undocumented)
     meta?: ReactNode;
     node?: ReactNode;
+    title?: ReactNode;
 }
 
 // @public (undocumented)

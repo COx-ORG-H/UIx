@@ -353,6 +353,30 @@ export async function renderDisplaySpecimens() {
       `<div data-text-fit-example style="max-width:44rem">${html(fitTable)}</div>`,
     ].join('\n'));
 
+    // ── Timeline entry text (HAR-3086): a ten-entry activity feed of whole sentences ──────────
+    const feed = [
+      ['09:12', 'Daniel Fischer', 'hat den Status von Zugewiesen auf In Bearbeitung geändert.', null, null],
+      ['09:05', 'Miriam Hahn', 'hat einen internen Kommentar geschrieben.', 'Die Firewall-Regel wird erst nach dem Wartungsfenster aktiv.', 'Intern'],
+      ['08:58', 'System', 'hat die Priorität nach der SLA-Regel auf Hoch gesetzt.', null, 'Automatisch'],
+      ['08:51', 'Elif Yılmaz', 'hat das betroffene CI „SRV-RZN-0107“ verknüpft.', null, null],
+      ['08:47', 'Daniel Fischer', 'hat die Störung Julia Müller zugewiesen.', 'Von Servicedesk 1st Level an Netzwerkbetrieb', null],
+      ['08:40', 'Julia Müller', 'hat eine Datei angehängt.', 'vpn-log-2026-11-13.txt, 48 KB', null],
+      ['08:33', 'System', 'hat die Antwortfrist um 30 Minuten verlängert.', 'Grund: Kunde nicht erreichbar', 'Automatisch'],
+      ['08:21', 'Miriam Hahn', 'hat die Kategorie auf Netzwerk geändert.', null, null],
+      ['08:15', 'Julia Müller', 'hat die Störung über das Mitarbeiterportal gemeldet.', null, null],
+      ['08:14', 'System', 'hat die Störung INC-0173 angelegt.', null, 'Automatisch'],
+    ];
+    const timeline = mount(h(ui.Timeline, null, feed.map(([time, actor, text, detail, badge]) => h(ui.TimelineItem, {
+      key: time + actor, meta: `13.11.2026 ${time}`,
+      title: [h('strong', { key: 'a' }, actor), ` ${text}`],
+      ...(detail ? { detail } : {}),
+      ...(badge ? { badge: h(ui.StatusPill, { tone: 'neutral' }, badge) } : {}),
+    }))));
+    add('examples-data-display', [
+      caption('Timeline entry text (React <code>TimelineItem</code> <code>title</code>, <code>detail</code>, <code>badge</code>; <code>.uix-timeline__title</code>, <code>__detail</code>, <code>__badge</code>; HAR-3086) — the kit styles an entry’s words: the event quieter than body copy with the actor in the full text colour, the detail at the meta size, a kit pill beside the event. Ten sentences read as a list of events, not a block of paragraphs; every part is at least 4.5:1 in both themes.'),
+      `<div data-timeline-entry-example class="uix-card" style="max-width:34rem;padding:var(--uix-space-5)">${html(timeline)}</div>`,
+    ].join('\n'));
+
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return specimens;
   } finally {

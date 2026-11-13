@@ -542,9 +542,9 @@
       "brotli": 419
     },
     "styles/components/timeline.css": {
-      "raw": 1024,
-      "gzip": 489,
-      "brotli": 384
+      "raw": 2082,
+      "gzip": 844,
+      "brotli": 687
     },
     "styles/components/toast.css": {
       "raw": 5774,

@@ -101,3 +101,11 @@ test('the text-fit specimen shows a whole date, a one-day range printed once and
   assert.match(fit, />13\.11\.2026 07:00<\/time>/, 'a range across days prints both dates');
   assert.match(fit, /<span class="uix-cell-clamp" style="--uix-clamp: 2;">Firmware/);
 });
+
+test('the Timeline entry specimen shows ten events with title, detail, badge and meta (HAR-3086)', () => {
+  const feed = specimens['examples-data-display'].slice(specimens['examples-data-display'].indexOf('data-timeline-entry-example'));
+  assert.equal((feed.match(/<li class="uix-timeline__item">/g) ?? []).length, 10);
+  assert.equal((feed.match(/<p class="uix-timeline__title"><strong>/g) ?? []).length, 10);
+  assert.equal((feed.match(/<p class="uix-timeline__detail">/g) ?? []).length, 4);
+  assert.equal((feed.match(/<span class="uix-timeline__badge"><span class="uix-pill/g) ?? []).length, 4);
+});
