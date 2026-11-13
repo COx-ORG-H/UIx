@@ -9,4 +9,13 @@
   .uix-timeline__item:last-child .uix-timeline__line { display: none; }
   .uix-timeline__body { padding-bottom: var(--uix-space-5); }
   .uix-timeline__meta { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  /* An entry's text (HAR-3086): the event in the hushed text colour, so ten sentences read as a list
+     of events, not a block of paragraphs; the actor (<strong>) keeps the full text colour; the detail
+     line at the meta size, muted; a kit pill beside the event. All >= 4.5:1 in both themes. */
+  /* the badge keeps its place beside the event's first line, however long the sentence wraps */
+  .uix-timeline__head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--uix-space-2); min-width: 0; }
+  .uix-timeline__title { margin: 0; min-width: 0; font-size: var(--uix-text-body); line-height: var(--uix-leading-body); color: var(--uix-text-hushed); overflow-wrap: anywhere; }
+  .uix-timeline__title :where(strong, b) { font-weight: 600; color: var(--uix-text); }
+  .uix-timeline__badge { display: inline-flex; flex: none; }
+  .uix-timeline__detail { margin: var(--uix-space-1) 0 0; font-size: var(--uix-text-meta); line-height: var(--uix-leading-body); color: var(--uix-text-muted); overflow-wrap: anywhere; }
 }

@@ -102,6 +102,14 @@ test('the text-fit specimen shows a whole date, a one-day range printed once and
   assert.match(fit, /<span class="uix-cell-clamp" style="--uix-clamp: 2;">Firmware/);
 });
 
+test('the Timeline entry specimen shows ten events with title, detail, badge and meta (HAR-3086)', () => {
+  const feed = specimens['examples-data-display'].slice(specimens['examples-data-display'].indexOf('data-timeline-entry-example'));
+  assert.equal((feed.match(/<li class="uix-timeline__item">/g) ?? []).length, 10);
+  assert.equal((feed.match(/<p class="uix-timeline__title"><strong>/g) ?? []).length, 10);
+  assert.equal((feed.match(/<p class="uix-timeline__detail">/g) ?? []).length, 4);
+  assert.equal((feed.match(/<span class="uix-timeline__badge"><span class="uix-pill/g) ?? []).length, 4);
+});
+
 test('the Markdown document specimen renders the sections as <h3> in .uix-prose--document, above a SectionHead (HAR-3096)', () => {
   const prose = specimens['examples-prose'].slice(specimens['examples-prose'].indexOf('data-markdown-document-example'));
   assert.match(prose, /<div class="uix-prose uix-prose--document uix-markdown" data-component="markdown">/);
