@@ -247,9 +247,9 @@
       "brotli": 1023
     },
     "styles/components/input.css": {
-      "raw": 9517,
-      "gzip": 2649,
-      "brotli": 2234
+      "raw": 10430,
+      "gzip": 2822,
+      "brotli": 2377
     },
     "styles/components/insight-card.css": {
       "raw": 5786,

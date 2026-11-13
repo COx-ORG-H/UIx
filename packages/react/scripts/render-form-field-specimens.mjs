@@ -182,7 +182,17 @@ export async function renderFormFieldSpecimens() {
     const noAccess = mount(h(ui.Field, { label: 'Person', htmlFor: 'ff-no-access' },
       h(ui.EntityPicker, { id: 'ff-no-access', label: 'Person', value: null, onValueChange: noop, delay: 0, onSearch: () => Promise.reject({ retryable: false }) })));
     act(() => { noAccess.querySelector('input').focus(); });
-    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    // Wait until both pickers have settled, not a fixed time: on a loaded machine a 20 ms wait
+    // caught the Approver's search still running (aria-busy, no "0 results"), and the committed
+    // module stopped matching (#242). Up to 5 s, in 10 ms steps.
+    // Settled: nothing busy, the Approver's search has said "0 results" and the refused search its reason.
+    const settled = () => ![approver, noAccess].some((host) => host.querySelector('[aria-busy="true"]'))
+      && Boolean(approver.querySelector('[role="status"]')?.textContent)
+      && Boolean(noAccess.querySelector('.uix-search-suggest__state')?.textContent);
+    for (let waited = 0; !settled() && waited < 5000; waited += 10) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    }
+    if (!settled()) throw new Error('render-form-field-specimens: the EntityPicker searches did not settle within 5 s');
     // The page shows the open list in place: the picker floats it (fixed, placed from the field) in
     // an app, which a static page cannot do.
     const noAccessPopup = noAccess.querySelector('.uix-search-suggest__popup');

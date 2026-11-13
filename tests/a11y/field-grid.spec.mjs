@@ -18,9 +18,10 @@ async function open(page, theme) {
 const GEOMETRY = {
   md: { inset: 12, icon: 20, text: 40 },
   lg: { inset: 16, icon: 24, text: 48 },
+  sm: { inset: 8, icon: 16, text: 32 },
 };
 
-test('every field with a leading icon places the icon and the text the same way, at both sizes (HAR-3098)', async ({ page }, testInfo) => {
+test('every field with a leading icon places the icon and the text the same way, at every size (HAR-3098)', async ({ page }, testInfo) => {
   await open(page, themeOf(testInfo));
   const fields = await page.evaluate(() => [...document.querySelectorAll('[data-field]')].map((box) => {
     const input = box.querySelector('input');
@@ -35,9 +36,9 @@ test('every field with a leading icon places the icon and the text the same way,
       iconMiddle: Math.round(g.top + g.height / 2 - (i.top + i.height / 2)),
     };
   }));
-  expect(fields.map((f) => f.name)).toEqual(['group-md', 'suggest-md', 'bar-md', 'trailing-md', 'group-lg', 'suggest-lg', 'bar-lg', 'trailing-lg']);
+  expect(fields.map((f) => f.name)).toEqual(['group-md', 'suggest-md', 'bar-md', 'trailing-md', 'group-lg', 'suggest-lg', 'bar-lg', 'trailing-lg', 'group-sm', 'trailing-sm']);
   for (const f of fields) {
-    const size = f.name.endsWith('-lg') ? 'lg' : 'md';
+    const size = f.name.slice(-2);
     const want = GEOMETRY[size];
     expect(f.icon, `${f.name} icon size`).toBe(want.icon);
     expect(Math.abs(f.iconMiddle), `${f.name} icon centred`).toBeLessThanOrEqual(1);
@@ -87,7 +88,7 @@ test('the favourites heading gap and the empty state inset are 8 px (HAR-3092)',
   });
   expect(fav.gap).toBe('8px');
   expect(fav.empty).toEqual(['8px', '8px', '8px', '8px']);
-  // nothing in the sidebar's kit classes is off the 4 px grid
+  // nothing the favourites heading and its empty state draw is off the 4 px grid (the item menu is not open here)
   const offGrid = await page.evaluate(() => {
     const bad = [];
     for (const el of document.querySelectorAll('nav [class*="uix-"], nav [class*="uix-"] *')) {

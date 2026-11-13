@@ -43,7 +43,7 @@
   .uix-btn--link:hover      { text-decoration: underline; }
 
   /* xs: the 24 px floor of WCAG 2.5.8, for dense tool rows (HAR-1348). */
-  /* xs: a 24 px button with a 12 px icon, so half the step */
+  /* xs: a 24 px button with a 16 px icon, so half the step */
   .uix-btn--xs { height: 24px; padding: 0 var(--uix-space-2); gap: var(--uix-space-1); border-radius: var(--uix-radius-sm); font-size: var(--uix-text-meta); }
   .uix-btn--xs svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-btn--sm { height: 28px; padding: 0 var(--uix-space-3); font-size: var(--uix-text-meta); }

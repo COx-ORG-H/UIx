@@ -28,6 +28,8 @@ function Fields() {
       <div data-field="suggest-lg"><SearchSuggest size="lg" label="Einstellungen groß" placeholder="Einstellungen durchsuchen" value={b} onValueChange={setB} options={[]} /></div>
       <div data-field="bar-lg"><SearchBar label="Wissen groß" placeholder="Einstellungen durchsuchen" size="lg" /></div>
       <div data-field="trailing-lg"><InputGroup trailingIcon={<Glass />}><Input className="uix-input--lg" aria-label="Mit Symbol hinten groß" placeholder="Einstellungen durchsuchen" /></InputGroup></div>
+      <div data-field="group-sm"><InputGroup leadingIcon={<Glass />}><Input size="sm" aria-label="Suchen klein" placeholder="Einstellungen durchsuchen" /></InputGroup></div>
+      <div data-field="trailing-sm"><InputGroup trailingIcon={<Glass />}><Input size="sm" aria-label="Mit Symbol hinten klein" placeholder="Einstellungen durchsuchen" /></InputGroup></div>
     </div>
   );
 }
