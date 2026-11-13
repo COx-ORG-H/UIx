@@ -97,7 +97,15 @@ export function run(argv, io = {}) {
   const root = resolve(io.cwd ?? process.cwd(), args.root);
   try {
     const config = loadConfig(root, args.config);
-    const baseline = loadBaseline(root, config);
+    // A reseed may replace an unreadable baseline; every other command needs it intact.
+    const seeding = args.command === 'baseline' && args.seed;
+    let baseline;
+    try {
+      baseline = loadBaseline(root, config);
+    } catch (error) {
+      if (!(seeding && error instanceof ConfigError)) throw error;
+      baseline = { exists: false, rules: {} };
+    }
     const scan = scanProject(root, config);
     if (scan.filesScanned === 0) {
       err(`uix-page-rules: no source files under ${config.roots.join(', ')}; a gate that reads nothing proves nothing.`);
@@ -105,6 +113,11 @@ export function run(argv, io = {}) {
     }
 
     if (args.command === 'baseline') {
+      if (scan.problems.length) {
+        err('uix-page-rules: fix the config first; the baseline was not written:');
+        report(scan.problems, err);
+        return 1;
+      }
       const grown = baseline.exists ? growth(scan.counts, baseline) : [];
       if (!args.seed && !baseline.exists && scan.findings.length) {
         err(`uix-page-rules: ${config.baseline} does not exist. Seed it on purpose: uix-page-rules baseline --seed`);
@@ -117,11 +130,6 @@ export function run(argv, io = {}) {
       const doc = baselineDocument(scan.counts);
       writeFileSync(join(root, config.baseline), `${JSON.stringify(doc, null, 2)}\n`);
       out(`uix-page-rules: wrote ${config.baseline} (${doc.total} grandfathered finding(s) in ${scan.filesScanned} scanned files)`);
-      if (scan.problems.length) {
-        err('uix-page-rules: the config still needs fixing:');
-        report(scan.problems, err);
-        return 1;
-      }
       return 0;
     }
 
@@ -143,6 +151,8 @@ export function run(argv, io = {}) {
       err(`uix-page-rules: ${error.message}`);
       return 2;
     }
-    throw error;
+    // An unreadable directory or any other surprise is a broken run, never a verdict.
+    err(`uix-page-rules: internal error, nothing was checked: ${error?.stack ?? error}`);
+    return 2;
   }
 }

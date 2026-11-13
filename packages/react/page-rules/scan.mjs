@@ -45,7 +45,17 @@ const CONFIG_KEYS = new Set([
   'pageTitleComponents',
   'rowMenuComponents',
 ]);
-const SKIP_DIRS = new Set(['node_modules', '.next', 'dist', 'build', 'out', 'coverage', '.git', '.turbo', 'storybook-static', '.worktrees']);
+const SKIP_DIRS = new Set([
+  'node_modules', '.next', 'dist', 'build', 'out', 'coverage', '.git', '.turbo', 'storybook-static', '.worktrees',
+  // test code, like *.test.* files, is not a page
+  '__tests__', '__mocks__', '__fixtures__',
+]);
+
+/** A skip prefix covers a file or a whole directory, on a path-segment boundary (`src/legacy` never covers `src/legacy-new/`). */
+export const underPrefix = (rel, prefix) => {
+  const p = prefix.replace(/\/+$/, '');
+  return rel === p || rel.startsWith(`${p}/`);
+};
 const SOURCE_RE = /\.(tsx|jsx|ts|js|mjs|css)$/;
 const NOT_SOURCE_RE = /\.(test|spec|stories)\.[cm]?[jt]sx?$|\.d\.ts$/;
 
@@ -133,7 +143,7 @@ export function listSources(root, config) {
  */
 export function scanProject(root, config) {
   const all = listSources(root, config);
-  const skipped = (rel) => Object.keys(config.skip).some((p) => rel.startsWith(p));
+  const skipped = (rel) => Object.keys(config.skip).some((p) => underPrefix(rel, p));
   const files = all.filter((rel) => !skipped(rel));
   /** @type {import('./rules.mjs').Finding[]} */
   const findings = [];
@@ -141,7 +151,7 @@ export function scanProject(root, config) {
 
   const problems = [];
   for (const prefix of Object.keys(config.skip).sort()) {
-    if (!all.some((rel) => rel.startsWith(prefix))) {
+    if (!all.some((rel) => underPrefix(rel, prefix))) {
       problems.push(stale(RULE_STALE_EXEMPTION, `skip "${prefix}" matches no source file; delete it from the config.`));
     }
   }
@@ -185,6 +195,9 @@ export function loadBaseline(root, config) {
   if (rules === null || typeof rules !== 'object' || Array.isArray(rules)) throw new ConfigError(`${config.baseline} has no "rules" object.`);
   for (const [rule, files] of Object.entries(rules)) {
     if (!COUNTED_RULES.includes(rule)) throw new ConfigError(`${config.baseline} names an unknown rule "${rule}".`);
+    if (files === null || typeof files !== 'object' || Array.isArray(files)) {
+      throw new ConfigError(`${config.baseline}: "${rule}" must map files to counts.`);
+    }
     for (const n of Object.values(files)) {
       if (!Number.isInteger(n) || n < 1) throw new ConfigError(`${config.baseline}: every ${rule} count must be a whole number ≥ 1.`);
     }

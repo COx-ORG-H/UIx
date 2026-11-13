@@ -18,7 +18,11 @@ The tool ships inside `@tensor_1/react`, so a product already has it and the rul
 | `no-raw-form-control` | A raw `<input>`, `<select>` or `<textarea>`. `<input type="hidden">` is allowed. | no |
 | `no-arbitrary-font-size` | A literal font size, such as `text-[13px]` or `fontSize: 12`. Use the `--uix-text-*` tokens. | no |
 
-`.css` files are checked against `label-break-anywhere` only. `.ts`, `.js` and `.mjs` files are checked against that rule and the severity rule. `.tsx` and `.jsx` files are checked against every rule. Tests, stories and `.d.ts` files are not read.
+`.css` files are checked against `label-break-anywhere` only. `.ts`, `.js` and `.mjs` files are checked against that rule and the severity rule. `.tsx` and `.jsx` files are checked against every rule. These are not read: tests and stories (`*.test.*`, `*.spec.*`, `*.stories.*`), `.d.ts` files, and anything under `__tests__`, `__mocks__` or `__fixtures__`.
+
+Comments are never findings. That covers a trailing `// …`, a `{/* … */}` in JSX and a CSS block comment. The severity rules also match code that a formatter wrapped over several lines. Regex literals and URLs in JSX text are skipped whole, so neither can hide a tag.
+
+One known limit: two apostrophes on one line of raw JSX text read as a string, and a tag between them is not seen. Products that translate every string have no raw JSX text.
 
 The kit-control rules (`no-raw-*`, `no-arbitrary-font-size`) accept no inline ignore. If the kit cannot serve a case, build the missing piece in UIx first (workspace ADR-0038). For a structural exception, such as a printed document, add an `exempt` entry with its reason.
 
@@ -38,7 +42,7 @@ One rule is held back: `no-hand-built-pill` (`rounded-full` plus horizontal padd
 
    Optional keys:
 
-   - `skip`: path prefixes not to scan, each with its reason.
+   - `skip`: files or directories not to scan, each with its reason. A prefix matches on a path-segment boundary, so `src/legacy` never covers `src/legacy-new/`.
    - `exempt`: `{ "<rule>": { "<file>": "<reason>" } }`.
    - `genericToneHelpers`: default `["statusTone"]`.
    - `pageTitleComponents`: default `["PageHeader"]`.
@@ -57,7 +61,13 @@ One rule is held back: `no-hand-built-pill` (`rounded-full` plus horizontal padd
   - a finding the baseline does not grandfather, in a new file or as one more in a grandfathered file;
   - a baseline entry the tree no longer reaches (`stale-baseline`);
   - a `skip` prefix or an `exempt` entry that matches nothing (`stale-exemption`);
-- **2** when the config is missing or invalid, or when the roots hold no source files.
+- **2** when the run cannot judge the tree:
+  - the config is missing or invalid;
+  - the baseline is unreadable;
+  - the roots hold no source files;
+  - anything else goes wrong, such as an unreadable directory.
+
+`baseline` writes nothing while the config has a stale `skip` or `exempt` entry. `--seed` can replace an unreadable baseline.
 
 The baseline counts findings per rule, per file, and it only shrinks. After you fix a finding, run `npx uix-page-rules baseline` and commit the smaller file. That command refuses to write a baseline that grows. `--seed` writes it anyway, for the first baseline or a reviewed re-seed after files move. The PR diff then shows the growth.
 

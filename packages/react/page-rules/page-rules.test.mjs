@@ -4,7 +4,7 @@
 // non-zero. Pure strings for the rules; a temp product tree for the CLI.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -320,6 +320,86 @@ test('the bin runs as a process and its exit code is the gate', () => {
     const help = spawnSync(process.execPath, [CLI, 'rules'], { cwd: root, encoding: 'utf8' });
     assert.equal(help.status, 0);
     assert.match(help.stdout, /no-hand-built-pill .*HAR-3817/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── review findings, 2026-11-13 (each was a probe that misbehaved) ───────────
+
+test('the lexer skips regex literals and URLs, so they hide no tag', () => {
+  // `/\/*$/` used to open a block comment that swallowed the rest of the file.
+  assert.deepEqual(only('f.tsx', "const u = s.replace(/\\/*$/, '');\nexport const P = () => <button onClick={go}>Go</button>;", RULE_RAW_BUTTON), [2]);
+  // a backtick inside a regex used to start a template literal
+  assert.deepEqual(only('f.tsx', "const v = s.replace(/`/g, '');\n<button onClick={go}>Go</button>", RULE_RAW_BUTTON), [2]);
+  // `//` after a `:` is a URL in JSX text, not a comment
+  assert.deepEqual(only('f.tsx', '<p>see http://x.y <button onClick={go}>x</button></p>', RULE_RAW_BUTTON), [1]);
+  // division, `</tag>` and `/>` are not regexes
+  assert.deepEqual(only('f.tsx', 'const r = a / b / c;\n<br/>\n<table></table>\n<button onClick={go} />', RULE_RAW_BUTTON), [4]);
+  assert.deepEqual(only('f.tsx', 'const r = a / b / c;\n<br/>\n<table></table>\n<button onClick={go} />', RULE_RAW_TABLE), [3]);
+});
+
+test('comments are never findings, wherever they sit', () => {
+  assert.deepEqual(only('a.ts', 'const a = 1; // never use break-all', RULE_BREAK_ANYWHERE), []);
+  assert.deepEqual(only('a.tsx', '<div>{/* break-all */}</div>', RULE_BREAK_ANYWHERE), []);
+  assert.deepEqual(only('a.css', '/*\n  word-break: break-all is banned\n*/\n.x { color: red; }', RULE_BREAK_ANYWHERE), []);
+  assert.deepEqual(only('p.tsx', "<PageHeader title={t('title')} />\n{/* <h2>{t('title')}</h2> */}", RULE_HEADING_TWICE), []);
+  // and a real one after a comment still counts
+  assert.deepEqual(only('a.css', '/* note */ .x { overflow-wrap: anywhere; }', RULE_BREAK_ANYWHERE), [1]);
+});
+
+test('Prettier-wrapped severity code and TanStack getValue lists are found', () => {
+  assert.deepEqual(only('a.ts', "switch (s) {\n  case 'high':\n    return 'danger';\n}", RULE_SEVERITY_TONE), [2]);
+  assert.deepEqual(only('a.ts', "const t = statusTone(\n  'severity',\n  v,\n);", RULE_SEVERITY_TONE), [1]);
+  assert.deepEqual(only('l.tsx', "{ id: 'roles', cell: ({ getValue }) => getValue().join(', ') },", RULE_LIST_JOINED), [1]);
+  assert.deepEqual(only('l.tsx', "{ id: 'roles', cell: (info) => info.getValue<string[]>().join(', ') },", RULE_LIST_JOINED), [1]);
+});
+
+test('a visible submitter and a fontSize prop are caught', () => {
+  assert.deepEqual(only('f.tsx', '<button type="submit" hidden aria-hidden="false" />', RULE_RAW_BUTTON), [1]);
+  assert.deepEqual(only('f.tsx', '<button type="submit" hidden aria-hidden="true" />', RULE_RAW_BUTTON), []);
+  assert.deepEqual(only('f.tsx', '<Icon fontSize={12} />\n<Icon fontSize="12px" />\n<Icon fontSize="var(--uix-text-meta)" />', RULE_ARBITRARY_FONT_SIZE), [1, 2]);
+});
+
+test('skip matches on a path-segment boundary, test folders are not read, and a bad baseline fails closed', () => {
+  const root = product({
+    'uix-page-rules.config.json': JSON.stringify({ roots: ['src'], skip: { 'src/legacy': 'retired' } }),
+    'src/legacy/old.tsx': '<button />',
+    'src/legacy-new/b.tsx': '<button onClick={go} />',
+    'src/__tests__/a.tsx': '<button />',
+    'src/__mocks__/m.tsx': '<table />',
+  });
+  try {
+    const r = cli(root);
+    assert.equal(r.code, 1, r.text);
+    assert.match(r.text, /src\/legacy-new\/b\.tsx:1 {2}no-raw-button/);
+    assert.doesNotMatch(r.text, /src\/legacy\/old|__tests__|__mocks__/);
+    assert.match(r.text, /1 file\(s\) scanned/);
+
+    // a null rule entry is a config error (exit 2), not a crash
+    writeFileSync(join(root, 'uix-page-rules-baseline.json'), JSON.stringify({ rules: { 'no-raw-button': null } }));
+    const bad = cli(root);
+    assert.equal(bad.code, 2, bad.text);
+    assert.match(bad.text, /must map files to counts/);
+    // --seed repairs it; a plain `baseline` does not
+    assert.equal(cli(root, 'baseline').code, 2);
+    assert.equal(cli(root, 'baseline', '--seed').code, 0);
+    assert.equal(cli(root).code, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('baseline refuses to write while the config has a stale entry', () => {
+  const root = product({
+    'uix-page-rules.config.json': JSON.stringify({ roots: ['src'], exempt: { [RULE_RAW_TABLE]: { 'src/gone.tsx': 'was printed' } } }),
+    'src/a.tsx': '<button onClick={go} />',
+  });
+  try {
+    const r = cli(root, 'baseline', '--seed');
+    assert.equal(r.code, 1);
+    assert.match(r.text, /baseline was not written/);
+    assert.equal(existsSync(join(root, 'uix-page-rules-baseline.json')), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
