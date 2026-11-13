@@ -2,7 +2,7 @@ import type { ReactNode, HTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { renderUixLink, type UixRenderLink } from '../link.js';
 import { InfoTip } from './InfoTip.js';
-import { hasHelp, helpLabelFor } from '../info-tip-model.js';
+import { hasHelp, helpTopic } from '../info-tip-model.js';
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode;
@@ -20,7 +20,7 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
    * empty, whitespace-only or `null` renders no button.
    */
   help?: string | null;
-  /** Accessible name of the ? button. Default `"About: <title>"` when title is text; pass a localised one. */
+  /** Accessible name of the ? button. Default: the `UixLabelsProvider` `infoTip` template with the title (`"About: <title>"` without a provider). */
   helpLabel?: string;
   headerAction?: ReactNode;
   footer?: ReactNode;
@@ -38,7 +38,7 @@ export function Card({ title, titleAs: TitleTag = 'div', titleId, subtitle, help
             {heading && hasHelp(help) ? (
               <div className="uix-card__title-row">
                 {heading}
-                <InfoTip content={help} label={helpLabel ?? helpLabelFor(title)} />
+                <InfoTip content={help} label={helpLabel} topic={helpTopic(title)} />
               </div>
             ) : heading}
             {subtitle && <div className="uix-card__subtitle">{subtitle}</div>}

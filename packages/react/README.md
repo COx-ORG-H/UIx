@@ -439,7 +439,7 @@ A small ? next to a title or label opens a plain-text explanation. Use it for wh
 ```
 
 - **`help?: string | null`** on `PageHeader`, `Card`, `SectionHead` and `Field`. Empty, whitespace-only or `null` renders nothing, so pass the resolved string without a guard. Blank lines become paragraphs. The text is always plain, never HTML.
-- **`helpLabel`** is the ? button's accessible name. It defaults to `"About: <title>"` (English), so pass a translated one.
+- **`helpLabel`** is the ? button's accessible name. Without it the name comes from `UixLabelsProvider` `infoTip`: `about` (`"About: {title}"`, `{title}` replaced by a text title) and `more` (`"More information"`, for any other title), English without a provider. Set the template once, `<UixLabelsProvider labels={{ infoTip: { about: t('help.about') } }}>`, rather than a `helpLabel` on every ? (HAR-3100).
 - **Placement:** the ? is a fixed 9 px glyph, superscript at the top right of the title or label, whatever the text size. It sits beside the heading or `<label>`, never inside it, so the heading's name stays the title and clicking a field label still focuses the input.
 - **Behaviour:** hover opens it after about 300 ms, keyboard focus opens it at once, and a click or tap keeps it open. Esc closes it and keeps focus on the ?, and a press outside also closes it. The panel is the button's `aria-describedby`, so screen readers announce it on focus. It uses `popover="manual"`, so it never closes another open popover.
 
