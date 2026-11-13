@@ -16,7 +16,7 @@
      before the id frozen at --uix-selcol-w: an empty, 0-high block holds the column at that width
      (the checkbox itself stays as it is, centred, its input over its box). */
   .uix-data-workspace__grid--pin-id :is(th, td):first-child::after { content: ""; display: block; inline-size: calc(var(--uix-selcol-w) - var(--uix-space-3)); }
-  .uix-data-workspace__grid--pin-id thead th:nth-child(2) { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
+  .uix-data-workspace__grid--pin-id thead th:nth-child(2) { z-index: var(--uix-z-sticky); background: var(--uix-table-head-bg); }
   /* the row's state (--uix-row-bg, table.css) over the surface: opaque, and the same as the row
      (a zebra rule here outranked selected on every even row: operator review 2026-10-23) */
   .uix-data-workspace__grid--pin-id tbody tr td:nth-child(2) { background: linear-gradient(var(--uix-row-bg), var(--uix-row-bg)), var(--uix-surface); }
