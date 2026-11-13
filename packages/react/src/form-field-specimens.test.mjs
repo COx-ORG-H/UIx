@@ -89,3 +89,12 @@ test('the field-system specimen shows a number field, a labelled rich-text regio
   assert.match(block, /<label id="ff-note-label" class="uix-field__label" for="ff-note">Notiz<\/label>/);
   assert.match(block, /role="textbox"[^>]*aria-labelledby="ff-note-label"/);
 });
+
+test('the 4 px grid specimen shows each field with a leading icon at both sizes, and icon buttons (HAR-2985, HAR-3098)', () => {
+  const grid = specimens['examples-form-controls'].slice(specimens['examples-form-controls'].indexOf('data-four-px-grid-example'));
+  assert.equal((grid.match(/class="uix-input-group__icon/g) ?? []).length >= 2, true, 'two InputGroups with a leading icon');
+  assert.match(grid, /id="ff-grid-group-lg"/);
+  assert.match(grid, /id="ff-grid-suggest-lg"/);
+  assert.equal((grid.match(/class="uix-searchbar[ "]/g) ?? []).length, 2);
+  for (const size of ['xs', 'sm', 'lg']) assert.match(grid, new RegExp(`uix-btn--${size}`));
+});

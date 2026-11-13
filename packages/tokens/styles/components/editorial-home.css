@@ -18,10 +18,12 @@
      two and lift the button to the well's height so their edges line up (TENSOR portal
      services search: the button sat 8px short of the input, top-aligned). */
   .uix-searchbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--uix-space-2); align-items: center; }
-  .uix-searchbar .uix-input { min-height: 44px; padding-left: 42px; }
+  /* the field-icon geometry of input.css (HAR-3098): the 44 px well is the lg field (icon-lg at space-4, text at
+     48 px); the md SearchBar is the md field (icon-md at space-3, text at 40 px) */
+  .uix-searchbar .uix-input { min-height: 44px; padding-left: calc(var(--uix-space-4) + var(--uix-icon-lg) + var(--uix-space-2)); }
   .uix-searchbar .uix-btn { min-height: 44px; }
   .uix-searchbar__wrap { position: relative; }
-  .uix-searchbar__wrap > svg { position: absolute; top: 50%; left: 14px; z-index: var(--uix-z-raised); width: 17px; height: 17px; color: var(--uix-text-hushed); transform: translateY(-50%); pointer-events: none; }
+  .uix-searchbar__wrap > svg { position: absolute; top: 50%; left: var(--uix-space-4); z-index: var(--uix-z-raised); width: var(--uix-icon-lg); height: var(--uix-icon-lg); color: var(--uix-text-hushed); transform: translateY(-50%); pointer-events: none; }
 
   /* React SearchBar (HAR-2030). Without a submit button the field takes the whole row (an
      empty auto track would still leave the column gap). The clear button sits inside the
@@ -40,8 +42,8 @@
   .uix-searchbar__clear:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
   /* md: a control-height field for a header or a toolbar (the bare contract is the 44 px public size) */
   .uix-searchbar--md .uix-input, .uix-searchbar--md .uix-btn { min-height: 0; }
-  .uix-searchbar--md .uix-input { padding-left: 36px; }
-  .uix-searchbar--md .uix-searchbar__wrap > svg { left: 12px; width: var(--uix-icon-md); height: var(--uix-icon-md); }
+  .uix-searchbar--md .uix-input { padding-left: calc(var(--uix-space-3) + var(--uix-icon-md) + var(--uix-space-2)); }
+  .uix-searchbar--md .uix-searchbar__wrap > svg { left: var(--uix-space-3); width: var(--uix-icon-md); height: var(--uix-icon-md); }
   .uix-searchbar--md .uix-searchbar__wrap:has(> .uix-searchbar__clear) > .uix-input { padding-right: 36px; }
   .uix-searchbar--md .uix-searchbar__clear { right: 6px; width: 24px; height: 24px; }
 
