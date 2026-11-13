@@ -32,14 +32,39 @@ function isoDay(date: Date, timeZone?: string): string {
   return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
-function useFormat({ locale, timeZone }: Formatting) {
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+interface Resolved {
+  date: Date;
+  /** The zone the value is shown in: UTC for a calendar day, the given zone for an instant. */
+  zone?: string;
+  /** A `YYYY-MM-DD` calendar day, which has no time of day. */
+  dateOnly: boolean;
+}
+
+/** A calendar day stays on its own day in every zone; an instant is converted to `timeZone`. */
+function resolveValue(value: Date | number | string, timeZone?: string): Resolved | null {
+  if (typeof value === 'string') {
+    const match = DATE_ONLY.exec(value);
+    if (match) {
+      const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+      const date = new Date(Date.UTC(year, month - 1, day, 12));
+      if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+      return { date, zone: 'UTC', dateOnly: true };
+    }
+  }
+  const date = parseDateValue(value);
+  return date ? { date, zone: timeZone, dateOnly: false } : null;
+}
+
+function useFormat({ locale }: Pick<Formatting, 'locale'>) {
   const { dateFormat } = useUixLabels();
   const resolvedLocale = (locale ?? dateFormat?.locale) as string | string[] | undefined;
-  const day = (date: Date) => dateFormat?.formatDate
+  const day = (date: Date, timeZone?: string) => dateFormat?.formatDate
     ? dateFormat.formatDate(isoDay(date, timeZone))
     : new Intl.DateTimeFormat(resolvedLocale, { year: 'numeric', month: '2-digit', day: '2-digit', timeZone }).format(date);
-  const time = (date: Date) => new Intl.DateTimeFormat(resolvedLocale, { hour: '2-digit', minute: '2-digit', timeZone }).format(date);
-  return { day, time, sameDay: (a: Date, b: Date) => isoDay(a, timeZone) === isoDay(b, timeZone) };
+  const time = (date: Date, timeZone?: string) => new Intl.DateTimeFormat(resolvedLocale, { hour: '2-digit', minute: '2-digit', timeZone }).format(date);
+  return { day, time, sameDay: (a: Date, b: Date, timeZone?: string) => isoDay(a, timeZone) === isoDay(b, timeZone) };
 }
 
 export interface DateTimeProps extends Omit<HTMLAttributes<HTMLTimeElement>, 'children' | 'dateTime'>, Formatting {
@@ -50,11 +75,13 @@ export interface DateTimeProps extends Omit<HTMLAttributes<HTMLTimeElement>, 'ch
 
 /** An absolute date, or date and time, that never breaks inside itself (`<time class="uix-time">`). */
 export function DateTime({ value, precision = 'minute', locale, timeZone, invalidLabel = '—', className, ...props }: DateTimeProps) {
-  const format = useFormat({ locale, timeZone });
-  const date = parseDateValue(value);
-  if (!date) return <time className={cx('uix-time', className)} data-invalid="true" {...props}>{invalidLabel}</time>;
-  const text = precision === 'date' ? format.day(date) : `${format.day(date)} ${format.time(date)}`;
-  return <time className={cx('uix-time', className)} dateTime={precision === 'date' ? isoDay(date, timeZone) : date.toISOString()} {...props}>{text}</time>;
+  const format = useFormat({ locale });
+  const resolved = resolveValue(value, timeZone);
+  if (!resolved) return <time className={cx('uix-time', className)} data-invalid="true" {...props}>{invalidLabel}</time>;
+  const { date, zone, dateOnly } = resolved;
+  const dayOnly = precision === 'date' || dateOnly;
+  const text = dayOnly ? format.day(date, zone) : `${format.day(date, zone)} ${format.time(date, zone)}`;
+  return <time className={cx('uix-time', className)} dateTime={dayOnly ? isoDay(date, zone) : date.toISOString()} {...props}>{text}</time>;
 }
 
 export interface DateTimeRangeProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>, Formatting {
@@ -69,21 +96,24 @@ export interface DateTimeRangeProps extends Omit<HTMLAttributes<HTMLSpanElement>
  * once. Each end never breaks inside itself; the range breaks only after the dash.
  */
 export function DateTimeRange({ start, end, precision = 'minute', locale, timeZone, invalidLabel = '—', className, ...props }: DateTimeRangeProps) {
-  const format = useFormat({ locale, timeZone });
-  const from = parseDateValue(start);
-  const to = parseDateValue(end);
-  const instant = (date: Date | null, text: (d: Date) => string) => date
-    ? <time className="uix-time" dateTime={precision === 'date' ? isoDay(date, timeZone) : date.toISOString()}>{text(date)}</time>
+  const format = useFormat({ locale });
+  const from = resolveValue(start, timeZone);
+  const to = resolveValue(end, timeZone);
+  const instant = (r: Resolved | null, text: (r: Resolved) => string) => r
+    ? <time className="uix-time" dateTime={precision === 'date' || r.dateOnly ? isoDay(r.date, r.zone) : r.date.toISOString()}>{text(r)}</time>
     : <time className="uix-time" data-invalid="true">{invalidLabel}</time>;
-  const full = (d: Date) => (precision === 'date' ? format.day(d) : `${format.day(d)} ${format.time(d)}`);
-  const sameDay = from != null && to != null && format.sameDay(from, to);
-  if (precision === 'date' && sameDay) return <span className={cx('uix-time-range', className)} {...props}>{instant(from, format.day)}</span>;
+  const dayOnly = (r: Resolved) => precision === 'date' || r.dateOnly;
+  const full = (r: Resolved) => (dayOnly(r) ? format.day(r.date, r.zone) : `${format.day(r.date, r.zone)} ${format.time(r.date, r.zone)}`);
+  const sameDay = from != null && to != null && format.sameDay(from.date, to.date, from.zone);
+  if (precision === 'date' && sameDay) return <span className={cx('uix-time-range', className)} {...props}>{instant(from, (r) => format.day(r.date, r.zone))}</span>;
+  // a shared day shows once; a calendar day has no time to show
+  const shortenTo = sameDay && from != null && to != null && !from.dateOnly && !to.dateOnly;
   return (
     <span className={cx('uix-time-range', className)} {...props}>
       {instant(from, full)}
       {/* a no-break space before the dash, a normal one after it: the only break is after the dash */}
       <span className="uix-time-range__sep">{`${NBSP}– `}</span>
-      {instant(to, sameDay ? format.time : full)}
+      {instant(to, shortenTo ? (r) => format.time(r.date, r.zone) : full)}
     </span>
   );
 }
