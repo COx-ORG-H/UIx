@@ -47,3 +47,25 @@ export function statusRoleOf(tone: PillTone | null | undefined): StatusRole {
       return 'neutral';
   }
 }
+
+/**
+ * A severity's pill tone, on the one severity ramp (HAR-3874, workspace lessons/12):
+ * `critical` is the red tone, `high` is amber (`warning`), and `medium`, `low` and anything
+ * else are `neutral`. Any casing works. Use it instead of a generic status-tone map, which
+ * sends "high" to a red tone, so every High on the screen turns red and spends the red budget
+ * on the commonest value. The `uix-page-rules` gate flags a hand map that does.
+ *
+ * ```tsx
+ * <StatusPill tone={severityTone(finding.severity)} treatment="dot">{label}</StatusPill>
+ * ```
+ */
+export function severityTone(severity: string | null | undefined): PillTone {
+  switch (severity?.trim().toLowerCase()) {
+    case 'critical':
+      return 'critical';
+    case 'high':
+      return 'warning';
+    default:
+      return 'neutral';
+  }
+}

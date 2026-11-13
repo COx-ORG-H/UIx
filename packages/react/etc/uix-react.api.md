@@ -7501,6 +7501,9 @@ export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): R
 // @public
 export function settleDrop(el: HTMLElement | null | undefined): void;
 
+// @public
+export function severityTone(severity: string | null | undefined): PillTone;
+
 // @public (undocumented)
 export type ShellNav = 'full' | 'rail' | 'hidden';
 

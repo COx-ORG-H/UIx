@@ -272,7 +272,7 @@ export { StatusPill } from './components/StatusPill.js';
 export { StatusDot } from './components/StatusDot.js';
 export type { StatusDotProps, StatusDotTone } from './components/StatusDot.js';
 export type { StatusPillProps, PillTone, PillTreatment, PillSize } from './components/StatusPill.js';
-export { STATUS_ROLES, statusRoleOf } from './usage-roles.js';
+export { STATUS_ROLES, severityTone, statusRoleOf } from './usage-roles.js';
 export type { StatusRole } from './usage-roles.js';
 
 export { Progress } from './components/Progress.js';

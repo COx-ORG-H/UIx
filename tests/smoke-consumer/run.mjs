@@ -9,14 +9,15 @@
  *   3. CJS require     — node require()s @tensor_1/react (it ships a CJS build)
  *   4. export presence — require.resolve the CSS + theme + ./chart subpaths (files/exports)
  *   5. types           — tsc --noEmit type-checks app.tsx against the packed .d.ts
+ *   8b. page rules     — the packed uix-page-rules bin blocks a planted raw button
  *
  * Assumes the packages are built (CI runs build:all first). Run: npm run test:smoke
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, copyFileSync, writeFileSync, existsSync, readFileSync, readdirSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { removeConsumer } from './cleanup.mjs';
 import { COMPONENT_ITEMS } from '../../packages/tokens/docs/docs.js';
 
@@ -214,6 +215,26 @@ try {
       }
     }
   `], { cwd: tmp, stdio: 'inherit' });
+
+  step('8b. the uix-page-rules bin from the packed release fails a planted raw button, then passes (HAR-3874)');
+  const reactManifest = JSON.parse(readFileSync(join(tmp, 'node_modules', '@tensor_1', 'react', 'package.json'), 'utf8'));
+  const binTarget = reactManifest.bin?.['uix-page-rules'];
+  if (!binTarget) throw new Error('the packed @tensor_1/react declares no uix-page-rules bin');
+  const binName = process.platform === 'win32' ? 'uix-page-rules.cmd' : 'uix-page-rules';
+  if (!existsSync(join(tmp, 'node_modules', '.bin', binName))) throw new Error('the install linked no node_modules/.bin/uix-page-rules');
+  const cli = join(tmp, 'node_modules', '@tensor_1', 'react', binTarget);
+  mkdirSync(join(tmp, 'page-rules-src'));
+  writeFileSync(join(tmp, 'uix-page-rules.config.json'), JSON.stringify({ roots: ['page-rules-src'] }));
+  writeFileSync(join(tmp, 'page-rules-src', 'page.tsx'), 'export const P = () => <button onClick={go}>Go</button>;\n');
+  const planted = spawnSync(process.execPath, [cli], { cwd: tmp, encoding: 'utf8' });
+  if (planted.status !== 1 || !/page-rules-src\/page\.tsx:1 {2}no-raw-button/.test(planted.stderr)) {
+    throw new Error(`uix-page-rules did not block the planted raw button (exit ${planted.status}): ${planted.stderr}${planted.stdout}`);
+  }
+  writeFileSync(join(tmp, 'page-rules-src', 'page.tsx'), 'export const P = () => <Button onClick={go}>Go</Button>;\n');
+  const fixed = spawnSync(process.execPath, [cli], { cwd: tmp, encoding: 'utf8' });
+  if (fixed.status !== 0) throw new Error(`uix-page-rules failed a clean tree (exit ${fixed.status}): ${fixed.stderr}`);
+  const { scanSource } = await import(pathToFileURL(join(tmp, 'node_modules', '@tensor_1', 'react', reactManifest.exports['./page-rules'])).href);
+  if (typeof scanSource !== 'function') throw new Error('@tensor_1/react/page-rules exports no scanSource');
 
   if (process.env.UIX_SMOKE_BROWSER === '1') {
     step('9. packed CSS contrast in Chromium');

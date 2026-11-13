@@ -19,7 +19,8 @@ const sources = {
 // Components are public PascalCase values callable as React elements. Types, hooks, utilities,
 // constants and classes are excluded. Aliases get their own name; subpath exports retain their
 // subpath, even when another entry exports the same name. Check every package entry is classified.
-const entries = Object.keys(manifest.exports).filter((key) => key !== './component-inventory.json').sort();
+// ./page-rules is the Node page-rules gate (HAR-3874), not a component entry.
+const entries = Object.keys(manifest.exports).filter((key) => key !== './component-inventory.json' && key !== './page-rules').sort();
 if (JSON.stringify(entries) !== JSON.stringify(Object.keys(sources).sort())) throw new Error('Classify each public entry point in component-inventory.mjs');
 const components = [];
 const nonComponents = new Set(['.:QrCapacityError']);
