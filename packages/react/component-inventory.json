@@ -530,6 +530,10 @@
       "subpath": "."
     },
     {
+      "name": "NumberInput",
+      "subpath": "."
+    },
+    {
       "name": "OrgChart",
       "subpath": "."
     },

@@ -3,7 +3,7 @@ import type { ReactNode, ReactElement } from 'react';
 import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
 import { Combobox } from './Combobox.js';
-import { hasHelp, helpLabelFor } from '../info-tip-model.js';
+import { hasHelp } from '../info-tip-model.js';
 
 export interface FieldProps {
   label?: string;
@@ -23,8 +23,17 @@ export interface FieldProps {
    * Keep format or validation instructions in `hint`, where they stay visible.
    */
   help?: string | null;
-  /** Accessible name of the ? button. Default `"About: <label>"`; pass a localised one. */
+  /**
+   * Accessible name of the ? button. Default: the `UixLabelsProvider` `infoTip.about` template
+   * with the label (`"About: <label>"` without a provider).
+   */
   helpLabel?: string;
+  /**
+   * The label element's id (HAR-3100), so a control that is not a labelable element (a rich-text
+   * editor, a `role="textbox"` region) can name itself with `aria-labelledby`. A native control
+   * needs none: the label's `htmlFor` names it.
+   */
+  labelId?: string;
   children: ReactNode;
   className?: string;
   /** Explicit label target. When a Combobox also supplies `inputId`, the two IDs must match. */
@@ -40,7 +49,7 @@ function isComboboxElement(child: ReactElement): boolean {
   return type === Combobox;
 }
 
-export function Field({ label, hint, error, warning, success, required, help, helpLabel, children, className, htmlFor }: FieldProps) {
+export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, children, className, htmlFor }: FieldProps) {
   const uid = useId();
   const msgId = `${uid}-msg`;
   const describedBy = (error || warning || success || hint) ? msgId : undefined;
@@ -74,12 +83,12 @@ export function Field({ label, hint, error, warning, success, required, help, he
           (TENSOR HAR-743). The row then draws the required marker itself, after the ?. */}
       {label && hasHelp(help) ? (
         <div className="uix-field__label-row">
-          <label className="uix-field__label" htmlFor={htmlFor ?? controlId}>{label}</label>
-          <InfoTip content={help} label={helpLabel ?? helpLabelFor(label)} />
+          <label id={labelId} className="uix-field__label" htmlFor={htmlFor ?? controlId}>{label}</label>
+          <InfoTip content={help} label={helpLabel} topic={label} />
           {required && <span className="uix-field__required" aria-hidden="true">*</span>}
         </div>
       ) : label && (
-        <label className="uix-field__label" htmlFor={htmlFor ?? controlId} data-required={required || undefined}>
+        <label id={labelId} className="uix-field__label" htmlFor={htmlFor ?? controlId} data-required={required || undefined}>
           {label}
         </label>
       )}

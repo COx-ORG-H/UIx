@@ -14,5 +14,15 @@ export const helpParagraphs = (content: unknown): string[] =>
 export const hasHelp = (help: unknown): help is string => helpParagraphs(help).length > 0;
 
 /** Default accessible name for a `help` slot: "About: <title>" for text titles. */
-export const helpLabelFor = (thing: ReactNode): string =>
-  typeof thing === 'string' || typeof thing === 'number' ? `About: ${thing}` : 'More information';
+export const helpLabelFor = (thing: ReactNode): string => helpLabelFrom(thing);
+
+/**
+ * The accessible name of a ? for `thing` from a localised template (HAR-3100): `about` with its
+ * `{title}` replaced for a text title, `more` for any other. A blank template falls back to the
+ * English default, so a resolver still in flight never leaves the button without a name.
+ */
+export const helpLabelFrom = (thing: ReactNode, labels?: { about?: string; more?: string }): string => {
+  const about = labels?.about?.trim() ? labels.about : 'About: {title}';
+  const more = labels?.more?.trim() ? labels.more : 'More information';
+  return typeof thing === 'string' || typeof thing === 'number' ? about.split('{title}').join(String(thing)) : more;
+};

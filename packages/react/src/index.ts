@@ -57,6 +57,8 @@ export type { UixLinkProps, UixRenderLink } from './link.js';
 
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
+export { NumberInput } from './components/NumberInput.js';
+export type { NumberInputProps } from './components/NumberInput.js';
 export { PasswordInput, DEFAULT_PASSWORD_INPUT_LABELS } from './components/PasswordInput.js';
 export type { PasswordInputProps, PasswordInputLabels } from './components/PasswordInput.js';
 export { OtpInput } from './components/OtpInput.js';

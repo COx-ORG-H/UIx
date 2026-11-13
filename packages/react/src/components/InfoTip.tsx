@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
-import { helpParagraphs } from '../info-tip-model.js';
+import { helpLabelFrom, helpParagraphs } from '../info-tip-model.js';
+import { useUixLabels } from '../labels-context.js';
 import type { Placement } from '../overlay-position.js';
 import { Popover } from './Popover.js';
 
@@ -20,8 +21,14 @@ export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
    * Empty or whitespace-only text renders nothing, so a missing help string needs no guard.
    */
   content: string;
-  /** Accessible name of the ? button, e.g. "About: Incidents". The consumer localises it. */
-  label: string;
+  /**
+   * Accessible name of the ? button, e.g. "About: Incidents". Without it the name comes from
+   * `topic` and the `UixLabelsProvider` `infoTip` template (HAR-3100), so an app localises every
+   * ? once instead of at each one.
+   */
+  label?: string;
+  /** What the ? explains (a title), for the provider's `infoTip.about` template when `label` is not given. */
+  topic?: ReactNode;
   /** Preferred panel placement. Default `'bottom-start'`. */
   placement?: Placement;
 }
@@ -56,8 +63,10 @@ export function InfoTip({ content, ...props }: InfoTipProps) {
 }
 
 function InfoTipControl({
-  paragraphs, label, placement = 'bottom-start', className, ...props
+  paragraphs, label: ownLabel, topic, placement = 'bottom-start', className, ...props
 }: Omit<InfoTipProps, 'content'> & { paragraphs: string[] }) {
+  const { infoTip } = useUixLabels();
+  const label = ownLabel ?? helpLabelFrom(topic, infoTip);
   const wrapRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const timer = useRef<number | null>(null);

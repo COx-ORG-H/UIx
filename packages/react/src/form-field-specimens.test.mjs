@@ -79,3 +79,13 @@ test('every state named in a caption is on the page', () => {
   assert.match(data, /aria-label="Datum ändern, Sonntag, 22. November 2026"/);
   for (const html of Object.values(specimens)) assert.doesNotMatch(html, /:r[0-9a-z]+:|_r_[0-9a-z]+_|«r/);
 });
+
+test('the field-system specimen shows a number field, a labelled rich-text region and the ? named from the provider (HAR-3100)', () => {
+  const forms = specimens['examples-form-controls'];
+  const block = forms.slice(forms.indexOf('data-field-system-example'), forms.indexOf('data-free-text-example'));
+  assert.match(block, /<input[^>]*type="number"[^>]*inputmode="decimal"|<input[^>]*inputmode="decimal"[^>]*type="number"/);
+  assert.match(block, /id="ff-quantity"[^>]*value="25"|value="25"[^>]*id="ff-quantity"/);
+  assert.match(block, /aria-label="Info: Menge"/);
+  assert.match(block, /<label id="ff-note-label" class="uix-field__label" for="ff-note">Notiz<\/label>/);
+  assert.match(block, /role="textbox"[^>]*aria-labelledby="ff-note-label"/);
+});

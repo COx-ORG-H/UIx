@@ -237,7 +237,7 @@ CI dependency view shipped eight text buttons above a 22rem canvas and closed as
 Thin wrappers over the `.uix-*` classes (`cx('uix-…', className)` + props; pure presentation, zero app deps —
 this is what keeps UIx stack-neutral). Current set:
 
-- **Form:** Button, ButtonGroup, Input, InputGroup, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field
+- **Form:** Button, ButtonGroup, Input, InputGroup, NumberInput, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Field (`labelId` names a rich-text control through `aria-labelledby`; HAR-3100)
 - **Layout:** Card/CardLink, DashboardGrid (+Item; spans 1/2/full, container-query columns), **PageHeader**, **DetailLayout/DetailPage**, Breadcrumbs, RelatedLinks, CollapsibleSection, **List/ListItem**, AppShell (**`nav` full/rail/hidden tiers · `focus` immersive mode w/ Esc-exit · `mainBleed`**; `collapsed` kept as a back-compat alias), Sidebar (+Nav*), Tabs/Tab
 - **Overlays:** Modal, ConfirmDialog, PromptDialog, Drawer, Peek, **Popover**, **CommandPalette** (+Group/Item)
 - **Feedback / state:** Alert, Spinner, Toast/Toaster, **EmptyState**, **ErrorState**, **Skeleton**, **LoadingState**

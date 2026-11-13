@@ -2788,6 +2788,7 @@ export interface FieldProps {
     htmlFor?: string;
     // (undocumented)
     label?: string;
+    labelId?: string;
     // (undocumented)
     required?: boolean;
     // (undocumented)
@@ -3448,8 +3449,9 @@ export function InfoTip(input: InfoTipProps): react.JSX.Element | null;
 // @public (undocumented)
 export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content' | 'children'> {
     content: string;
-    label: string;
+    label?: string;
     placement?: Placement;
+    topic?: ReactNode;
 }
 
 // @public
@@ -5134,6 +5136,15 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+
+// @public
+export const NumberInput: react.ForwardRefExoticComponent<NumberInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public (undocumented)
+export interface NumberInputProps extends Omit<InputProps, 'type' | 'value' | 'defaultValue'> {
+    onValueChange?: (value: number) => void;
+    value?: number | null;
+}
 
 // @public (undocumented)
 export interface OptimisticRollback<T> {
@@ -8762,6 +8773,10 @@ export interface UixLabels {
     // (undocumented)
     filterEditor?: Partial<FilterEditorLabels>;
     filterSummary?: Partial<FilterSummaryLabels>;
+    infoTip?: {
+        about?: string;
+        more?: string;
+    };
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;
