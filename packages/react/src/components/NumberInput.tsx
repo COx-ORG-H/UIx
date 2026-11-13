@@ -29,6 +29,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     <Input
       ref={ref}
       type="number"
+      step="any"
       inputMode={inputMode}
       {...(value !== undefined ? { value: value === null || Number.isNaN(value) ? '' : value } : {})}
       onChange={(event) => {

@@ -128,3 +128,8 @@ test('NumberInput: null is empty, a number is shown, undefined leaves the field 
   assert.equal(changed, 1);
   unmount();
 });
+
+test('NumberInput defaults to step="any" so fractional values pass native validation; an explicit step wins', () => {
+  assert.match(renderToStaticMarkup(h(ui.NumberInput, {})), /step="any"/);
+  assert.match(renderToStaticMarkup(h(ui.NumberInput, { step: 0.5 })), /step="0.5"/);
+});
