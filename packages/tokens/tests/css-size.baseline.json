@@ -492,9 +492,9 @@
       "brotli": 1424
     },
     "styles/components/status-pill.css": {
-      "raw": 8066,
-      "gzip": 2098,
-      "brotli": 1770
+      "raw": 8530,
+      "gzip": 2293,
+      "brotli": 1938
     },
     "styles/components/stepper.css": {
       "raw": 1189,

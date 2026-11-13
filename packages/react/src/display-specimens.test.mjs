@@ -117,3 +117,9 @@ test('the Markdown document specimen renders the sections as <h3> in .uix-prose-
   assert.match(prose, /<h3>Fix<\/h3>/);
   assert.match(prose, /uix-section-title[^>]*>Related articles</);
 });
+
+test('the described StatusPill specimen is a focus stop described by its tooltip (HAR-3109)', () => {
+  const block = specimens['examples-data-display'].slice(specimens['examples-data-display'].indexOf('data-described-pill-example'));
+  assert.match(block, /<span class="uix-pill uix-pill--warning uix-pill--described" tabindex="0"[^>]*aria-describedby="[^"]+"/);
+  assert.match(block, /role="tooltip"/);
+});
