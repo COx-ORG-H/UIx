@@ -1,5 +1,17 @@
 # @tensor_1/react
 
+## 2.64.0
+
+### Minor Changes
+
+- 54cf85a: HAR-3086 — a Timeline entry has words the kit styles. `TimelineItem` takes `title` (the event, one sentence; wrap the actor in `<strong>`), `detail` (a second line, e.g. the comment or the old and new value) and `badge` (a kit `StatusPill` or `Badge` beside the event). The event is drawn in `--uix-text-hushed` with the actor in `--uix-text`, the detail at the meta size in `--uix-text-muted` (`.uix-timeline__head`, `__title`, `__detail`, `__badge`), so a feed of ten sentences reads as a list of events, not a block of paragraphs; every part is at least 4.5:1 on every feed surface in both themes. Entries without the new props render as before.
+- db48c99: HAR-3096 — `Markdown variant="document"` for the body of a page that is the document, such as a knowledge article whose title is the page `<h1>`. `#` renders as `<h2>` and `##` as `<h3>` (`.uix-prose--document`, 24 px at weight 600), so an article's own sections are at least as prominent as a `SectionHead` after the body ("Related articles", 24 px at weight 400), and each section has `--uix-space-6` above it. Before, `##` rendered as `<h4>` at 15 px and the related-articles head outranked the content. The default `inline` variant (comments, notes, descriptions) is unchanged: `#` is `<h3>`. An explicit `headingOffset` still wins. `.uix-prose h2` has its own rule, the size of the `<h3>` below it.
+- f601c17: HAR-3100 — what a product's own form needs from the kit `Field`, so it can render through `Field` instead of copying its markup.
+
+  - `Field` takes `labelId` and `messageId`, and `error` may be a node (a sentence with a link). `labelId` is the label's id, so a control that is not a labelable element (a rich-text editor, a `role="textbox"` region) can name itself with `aria-labelledby`; without it the label has no id, as before. `messageId` fixes the id of the message line the control's `aria-describedby` points at.
+  - Every ? help button without its own `helpLabel` takes its name from the new `UixLabelsProvider` `infoTip` labels: `about` (`"About: {title}"`, `{title}` replaced) for a text title, `more` (`"More information"`) for any other. An app localises every ? once. `InfoTip` takes `topic` (the thing it explains) as an alternative to `label`, and `Field`, `PageHeader`, `Card` and `SectionHead` pass their title as the topic. A blank template falls back to the English default.
+  - New `NumberInput`: `<input type="number">` (`inputMode="decimal"`) whose value is a number. `onValueChange` gets `valueAsNumber` on every change: a number, or `NaN` when the field is empty, never the typed text and never `0` for an emptied field. `NaN`, `null` or `undefined` as `value` shows an empty field, and passing `value` at all keeps the field controlled, so a form value that starts `undefined` never switches it; leave it out, or use `defaultValue`, for an uncontrolled field. `step` defaults to `any`, so a decimal is never a step mismatch.
+
 ## 2.63.0
 
 ### Minor Changes

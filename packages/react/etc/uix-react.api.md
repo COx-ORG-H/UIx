@@ -7778,6 +7778,8 @@ export function StatusPill(input: StatusPillProps): react.JSX.Element;
 export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     children?: ReactNode;
+    description?: ReactNode;
+    descriptionPlacement?: Placement;
     dot?: boolean;
     size?: PillSize;
     // (undocumented)

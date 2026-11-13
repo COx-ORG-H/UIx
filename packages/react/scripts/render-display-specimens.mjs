@@ -389,6 +389,15 @@ export async function renderDisplaySpecimens() {
       `<div data-timeline-entry-example class="uix-card" style="max-width:34rem;padding:var(--uix-space-5)">${html(timeline)}</div>`,
     ].join('\n'));
 
+    // ── A StatusPill that explains itself (HAR-3109): a focus stop with a kit tooltip ──────────
+    const describedPill = mount(h('div', { className: 'uix-cluster', style: { alignItems: 'center' } },
+      h('span', null, 'Stimmung'),
+      h(ui.StatusPill, { tone: 'warning', description: 'Aus den letzten drei Antworten geschätzt. Nur ein Hinweis, keine Bewertung.' }, 'Frustriert')));
+    add('examples-data-display', [
+      caption('A pill that explains itself (React <code>StatusPill description</code>, <code>.uix-pill--described</code>; HAR-3109) — the description opens in the kit tooltip on hover and on keyboard focus. The pill is a focus stop with the kit ring, but no button: pressing it does nothing. Screen readers hear the label, then the description once. Tab to the pill or point at it.'),
+      `<div data-described-pill-example>${html(describedPill)}</div>`,
+    ].join(String.fromCharCode(10)));
+
     // ── LinkTile (HAR-3095): a grid of navigation tiles, as a settings hub shows them ──────────
     const tiles = mount(h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', gap: 'var(--uix-space-4)' } },
       h(ui.LinkTile, { href: '#settings-users', icon: h(icons.UsersIcon), title: 'Users', description: 'Invite members, assign roles and lock access.' }),
