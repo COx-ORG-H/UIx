@@ -535,6 +535,9 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__live-steps { overflow: hidden; padding: var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface-2); }
 .uix-docs__live-step { display: grid; gap: var(--uix-space-1); }
 .uix-docs__live-step-count { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+.uix-docs__live-widget { display: grid; align-content: space-between; gap: var(--uix-space-2); height: 100%; padding: var(--uix-space-3) var(--uix-space-4); }
+.uix-docs__live-widget span { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+.uix-docs__live-widget strong { font-size: var(--uix-text-h2); line-height: 1; font-variant-numeric: tabular-nums; }
 @media (max-width: 720px) {
   .uix-docs__live-grid { grid-template-columns: minmax(0, 1fr); }
   .uix-docs__live-sidebar { height: 22rem; }

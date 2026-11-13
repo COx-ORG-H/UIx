@@ -43,6 +43,9 @@
     --uix-row-alt: var(--uix-print-paper-quiet);
     --uix-row-selected-bg: var(--uix-print-paper-quiet);
     --uix-row-pinned-bg: var(--uix-print-paper-quiet);
+    /* the dark theme's header band and selection edge (HAR-3087) stay paper and ink: a print document reads the same in both themes */
+    --uix-table-head-bg: var(--uix-print-paper);
+    --uix-row-selected-edge: transparent;
     color-scheme: light;
     box-sizing: border-box;
     width: var(--print-width);

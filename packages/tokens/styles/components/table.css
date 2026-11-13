@@ -14,7 +14,8 @@
   .uix-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--uix-text-body); }
 
   .uix-table thead th {
-    position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-surface); text-align: left;
+    /* --uix-table-head-bg: the card's own surface in light, a visible band above it in dark (HAR-3087) */
+    position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-table-head-bg); text-align: left;
     font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
     padding: 0 var(--uix-space-4); height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap;
   }
@@ -101,10 +102,18 @@
      on both axes and sits above the pinned body cells that scroll under it. */
   .uix-table--pinned-col th:first-child, .uix-table--pinned-col td:first-child { position: sticky; left: 0; z-index: var(--uix-z-raised); box-shadow: 1px 0 0 var(--uix-border); }
   .uix-table--pinned-actions th:last-child, .uix-table--pinned-actions td:last-child { position: sticky; right: 0; z-index: var(--uix-z-raised); box-shadow: -1px 0 0 var(--uix-border); }
-  .uix-table--pinned-col thead th:first-child, .uix-table--pinned-actions thead th:last-child { z-index: var(--uix-z-sticky); background: var(--uix-surface); }
+  .uix-table--pinned-col thead th:first-child, .uix-table--pinned-actions thead th:last-child { z-index: var(--uix-z-sticky); background: var(--uix-table-head-bg); }
   /* The dividers mark where rows scroll under a frozen column: a React TableWrap that measured no
      sideways overflow (data-overflow="false") draws none. Without the measurement they stay. */
   .uix-table-wrap[data-overflow="false"] :is(.uix-table--pinned-col :is(th, td):first-child, .uix-table--pinned-actions :is(th, td):last-child) { box-shadow: none; }
+
+  /* A selected row's leading edge (HAR-3088): 2 px of --uix-row-selected-edge, the accent in dark and
+     transparent in light, so a dark selection does not rest on a tint a near-black row barely shows.
+     An inset shadow on the first cell; a frozen first column keeps its divider beside it, with or
+     without sideways overflow. Card mode marks the whole card instead (below). */
+  .uix-table:not(.uix-table--cards) tbody tr:where([data-selected]) > :first-child { box-shadow: inset 2px 0 0 var(--uix-row-selected-edge); }
+  .uix-table.uix-table--pinned-col tbody tr:where([data-selected]) > td:first-child { box-shadow: inset 2px 0 0 var(--uix-row-selected-edge), 1px 0 0 var(--uix-border); }
+  .uix-table-wrap[data-overflow="false"] .uix-table--pinned-col tbody tr:where([data-selected]) > td:first-child { box-shadow: inset 2px 0 0 var(--uix-row-selected-edge); }
   /* A pinned cell paints its row's state itself and must be opaque, or the cells scrolling
      under it show through. The dark tints are translucent, so the row's --uix-row-bg is layered
      over the surface rather than painted bare. */

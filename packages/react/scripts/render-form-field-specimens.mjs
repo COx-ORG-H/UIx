@@ -182,7 +182,17 @@ export async function renderFormFieldSpecimens() {
     const noAccess = mount(h(ui.Field, { label: 'Person', htmlFor: 'ff-no-access' },
       h(ui.EntityPicker, { id: 'ff-no-access', label: 'Person', value: null, onValueChange: noop, delay: 0, onSearch: () => Promise.reject({ retryable: false }) })));
     act(() => { noAccess.querySelector('input').focus(); });
-    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    // Wait until both pickers have settled, not a fixed time: on a loaded machine a 20 ms wait
+    // caught the Approver's search still running (aria-busy, no "0 results"), and the committed
+    // module stopped matching (#242). Up to 5 s, in 10 ms steps.
+    // Settled: nothing busy, the Approver's search has said "0 results" and the refused search its reason.
+    const settled = () => ![approver, noAccess].some((host) => host.querySelector('[aria-busy="true"]'))
+      && Boolean(approver.querySelector('[role="status"]')?.textContent)
+      && Boolean(noAccess.querySelector('.uix-search-suggest__state')?.textContent);
+    for (let waited = 0; !settled() && waited < 5000; waited += 10) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    }
+    if (!settled()) throw new Error('render-form-field-specimens: the EntityPicker searches did not settle within 5 s');
     // The page shows the open list in place: the picker floats it (fixed, placed from the field) in
     // an app, which a static page cannot do.
     const noAccessPopup = noAccess.querySelector('.uix-search-suggest__popup');
@@ -194,6 +204,26 @@ export async function renderFormFieldSpecimens() {
       '<div data-entity-picker-states-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
       `<div style="flex:1 1 16rem;max-width:22rem">${html(approver)}</div>`,
       `<div style="flex:1 1 16rem;max-width:22rem;min-height:8rem">${html(noAccess)}</div>`,
+      '</div>',
+    ].join('\n'));
+
+    // ── The 4 px grid (HAR-2985, HAR-3092, HAR-3098): leading icons at both sizes, icon buttons ──────
+    const glass = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': 'true' }, h('circle', { cx: 11, cy: 11, r: 7 }), h('path', { d: 'm20 20-3.5-3.5' }));
+    const plus = () => h('svg', { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': 'true' }, h('path', { d: 'M12 5v14M5 12h14' }));
+    const gridFields = mount(h('div', { style: { display: 'grid', gap: 'var(--uix-space-3)' } },
+      h(ui.InputGroup, { leadingIcon: glass() }, h(ui.Input, { id: 'ff-grid-group', 'aria-label': 'Suchen', placeholder: 'Einstellungen durchsuchen' })),
+      h(ui.SearchSuggest, { inputId: 'ff-grid-suggest', label: 'Einstellungen', placeholder: 'Einstellungen durchsuchen', value: '', onValueChange: noop, options: [] }),
+      h(ui.SearchBar, { label: 'Wissen', placeholder: 'Einstellungen durchsuchen', size: 'md' }),
+      h(ui.InputGroup, { leadingIcon: glass() }, h(ui.Input, { id: 'ff-grid-group-lg', className: 'uix-input--lg', 'aria-label': 'Suchen groß', placeholder: 'Einstellungen durchsuchen' })),
+      h(ui.SearchSuggest, { inputId: 'ff-grid-suggest-lg', size: 'lg', label: 'Einstellungen groß', placeholder: 'Einstellungen durchsuchen', value: '', onValueChange: noop, options: [] }),
+      h(ui.SearchBar, { label: 'Wissen groß', placeholder: 'Einstellungen durchsuchen', size: 'lg' })));
+    const gridButtons = mount(h('div', { className: 'uix-cluster', style: { '--gap': '8px', alignItems: 'center' } },
+      ...['xs', 'sm', 'md', 'lg'].map((size) => h(ui.Button, { key: size, size }, plus(), 'Hinzufügen'))));
+    blocks.push([
+      caption('The 4 px grid (React <code>InputGroup leadingIcon</code>, <code>SearchSuggest</code>, <code>SearchBar</code>, <code>Button</code>; HAR-2985, HAR-3092, HAR-3098) — every field with a leading icon puts its text at the same place: 40 px from the edge at the default size, 48 px at <code>lg</code>, so fields stacked in a form line up. A button puts 8 px between its icon and label, 4 px at <code>xs</code>.'),
+      '<div data-four-px-grid-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(gridFields)}</div>`,
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(gridButtons)}</div>`,
       '</div>',
     ].join('\n'));
 
