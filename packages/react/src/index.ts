@@ -327,6 +327,8 @@ export type {
 
 export { RelativeTime } from './components/RelativeTime.js';
 export type { RelativeTimeProps, RelativeTimeFormatContext } from './components/RelativeTime.js';
+export { DateTime, DateTimeRange } from './components/DateTime.js';
+export type { DateTimeProps, DateTimeRangeProps, DateTimePrecision } from './components/DateTime.js';
 export { parseDateValue, relativeTimeValue } from './relative-time-model.js';
 export type { RelativeTimeUnit, RelativeTimeValue } from './relative-time-model.js';
 

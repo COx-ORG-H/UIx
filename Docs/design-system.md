@@ -96,10 +96,12 @@ scale (in `tokens/base/size.json`). This is the reusable replacement for the old
 | Class | Applies to | Behaviour |
 |---|---|---|
 | `.uix-table--fixed` | `<table>` | `table-layout: fixed; width: 100%` — column widths become authoritative and cell content no longer widens a column, so truncation is reliable. Use this (or emit a `<colgroup>`) whenever you set column widths. |
-| `.uix-col--w-xs … --w-xl` | `<col>` / `<th>` / `<td>` | Sets the column to a width tier. |
+| `.uix-col--w-xs … --w-xl` | `<col>` / `<th>` / `<td>` | Sets the column to a width tier: xs 92, sm 112, md 132, lg 176, lg-plus 208 (a status pill of about 165 px, HAR-3099), xl 240 px. |
 | `.uix-col--flex` (alias `.uix-col--primary`) | header cell (`<th>`) | `width: auto` (fills remaining space) **plus** a `min-width: var(--uix-col-title-min)` floor so the title never collapses; the table scrolls horizontally instead. |
 | `.uix-col--truncate` | `<th>` / `<td>` | One line + ellipsis. Needs a width source (a tier, the flex floor, or fixed layout). The primary/title column defaults to this. |
 | `.uix-col--wrap` | `<th>` / `<td>` | Allows the cell to break to multiple lines. |
+| `.uix-col--nowrap` | `<th>` / `<td>` | One line, never cut: a date, an ID, an amount (HAR-3201). The column's tier must fit it. DataWorkspace: `textWrap: 'nowrap'`. |
+| `.uix-cell-clamp` | cell content | At most `--uix-clamp` lines (default 2), then an ellipsis (HAR-3201). DataWorkspace: `lineClamp: 2` wraps each body cell in it. |
 | `.uix-col--num` | `<th>` / `<td>` | Tabular figures + right alignment for numeric columns. |
 | `.uix-id-cell__btn` / `.uix-id-cell__arrow` | cell content | The canonical row **click-through**: ID text + ↗ arrow as one button — a row click opens the side-peek, the arrow (revealed on row hover) opens the full record directly. |
 
@@ -141,6 +143,11 @@ cell carries the flex floor + truncate:
   </tbody>
 </table>
 ```
+
+**A shown date or time is one token** (HAR-3094). `RelativeTime`, `DateTime` and `DateTimeRange` render
+`<time class="uix-time">`, which never breaks inside itself and has tabular digits; a range breaks only after
+its dash and prints a one-day date once ("11.11.2026 09:00 – 12:00"). The date part follows the date fields'
+app-wide format (`UixLabelsProvider` `dateFormat`). Never print a formatted date string into a cell.
 
 Reconciling TENSOR's current `apps/web/lib/list-surfaces/column-widths.ts` onto the scale: `natural_id 132 → md`,
 `state 124 → md`, `priority 92 → xs`, `assignee 176 → lg`, `dates 128 → sm`, `sla 148 → md`. Widths snap to the

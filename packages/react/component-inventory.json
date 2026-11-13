@@ -222,7 +222,15 @@
       "subpath": "."
     },
     {
+      "name": "DateTime",
+      "subpath": "."
+    },
+    {
       "name": "DateTimePicker",
+      "subpath": "."
+    },
+    {
+      "name": "DateTimeRange",
       "subpath": "."
     },
     {

@@ -2,6 +2,14 @@
    The day cells are the range picker's (date-range-picker.css); this file adds the field, the
    popover's one-month calendar and the single selected day. Depends only on --uix-* tokens. */
 @layer uix.components {
+  /* --- A shown date or time (HAR-3094): RelativeTime, DateTime and DateTimeRange ------------- */
+  /* One token: "11.11.2026 09:00" or "vor 3 Minuten" never breaks inside itself, and its digits are
+     tabular so a column of times lines up. A range breaks only after its dash (the no-break space
+     before the dash is in the markup), so the end moves to the next line whole. */
+  .uix-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  /* a range inherits its cell's wrapping: it breaks after its dash in a wrapping cell, never in a nowrap one */
+  .uix-time-range { font-variant-numeric: tabular-nums; }
+
   /* --- DatePicker: a text input with a calendar button inside its trailing edge ------------- */
   .uix-date-picker { display: grid; gap: var(--uix-space-1); width: 100%; min-width: 0; max-width: 11rem; }
   .uix-date-picker__control { position: relative; display: flex; min-width: 0; }

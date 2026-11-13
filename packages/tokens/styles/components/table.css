@@ -134,11 +134,17 @@
   .uix-col--w-sm { width: var(--uix-col-w-sm); }
   .uix-col--w-md { width: var(--uix-col-w-md); }
   .uix-col--w-lg { width: var(--uix-col-w-lg); }
+  .uix-col--w-lg-plus { width: var(--uix-col-w-lg-plus); }
   .uix-col--w-xl { width: var(--uix-col-w-xl); }
   .uix-col--flex,
   .uix-col--primary { width: auto; min-width: var(--uix-col-title-min); }
   .uix-col--truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .uix-col--wrap { white-space: normal; overflow-wrap: anywhere; }
+  /* one line, never cut: a date, an ID, an amount (HAR-3201). The column's width tier must fit it. */
+  .uix-col--nowrap { white-space: nowrap; }
+  /* at most N lines, then an ellipsis (HAR-3201): DataWorkspace's lineClamp wraps the cell's content
+     in it, since a table cell cannot be the clamping box itself */
+  .uix-cell-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--uix-clamp, 2); line-clamp: var(--uix-clamp, 2); overflow: hidden; white-space: normal; overflow-wrap: break-word; }
   .uix-col--num { font-variant-numeric: tabular-nums; }
   .uix-table th.uix-col--num, .uix-table td.uix-col--num { text-align: right; }
 

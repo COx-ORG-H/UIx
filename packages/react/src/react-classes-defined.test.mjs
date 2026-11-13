@@ -22,6 +22,7 @@ const componentsDir = resolve(here, 'components');
 const HOOKS = new Map([
   ['uix-main', 'AppShell mainId default: an element id, not a class'],
   ['uix-builder-canvas__items', 'structural hook; the list is styled through its items'],
+  ['uix-time-range__sep', 'the dash of a DateTimeRange (HAR-3094): its no-break and normal spaces place the only break, so it needs no rule'],
   ['uix-link', 'DetailPage back link: base anchor styles + .uix-link--quiet'],
   ['uix-emoji-picker__search', 'styled by .uix-input; hook for tests'],
   ['uix-markdown', 'Markdown root: styled by .uix-prose; .uix-markdown__* children are defined'],
