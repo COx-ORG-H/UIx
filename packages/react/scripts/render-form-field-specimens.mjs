@@ -197,6 +197,26 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── The 4 px grid (HAR-2985, HAR-3092, HAR-3098): leading icons at both sizes, icon buttons ──────
+    const glass = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': 'true' }, h('circle', { cx: 11, cy: 11, r: 7 }), h('path', { d: 'm20 20-3.5-3.5' }));
+    const plus = () => h('svg', { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': 'true' }, h('path', { d: 'M12 5v14M5 12h14' }));
+    const gridFields = mount(h('div', { style: { display: 'grid', gap: 'var(--uix-space-3)' } },
+      h(ui.InputGroup, { leadingIcon: glass() }, h(ui.Input, { id: 'ff-grid-group', 'aria-label': 'Suchen', placeholder: 'Einstellungen durchsuchen' })),
+      h(ui.SearchSuggest, { inputId: 'ff-grid-suggest', label: 'Einstellungen', placeholder: 'Einstellungen durchsuchen', value: '', onValueChange: noop, options: [] }),
+      h(ui.SearchBar, { label: 'Wissen', placeholder: 'Einstellungen durchsuchen', size: 'md' }),
+      h(ui.InputGroup, { leadingIcon: glass() }, h(ui.Input, { id: 'ff-grid-group-lg', className: 'uix-input--lg', 'aria-label': 'Suchen groß', placeholder: 'Einstellungen durchsuchen' })),
+      h(ui.SearchSuggest, { inputId: 'ff-grid-suggest-lg', size: 'lg', label: 'Einstellungen groß', placeholder: 'Einstellungen durchsuchen', value: '', onValueChange: noop, options: [] }),
+      h(ui.SearchBar, { label: 'Wissen groß', placeholder: 'Einstellungen durchsuchen', size: 'lg' })));
+    const gridButtons = mount(h('div', { className: 'uix-cluster', style: { '--gap': '8px', alignItems: 'center' } },
+      ...['xs', 'sm', 'md', 'lg'].map((size) => h(ui.Button, { key: size, size }, plus(), 'Hinzufügen'))));
+    blocks.push([
+      caption('The 4 px grid (React <code>InputGroup leadingIcon</code>, <code>SearchSuggest</code>, <code>SearchBar</code>, <code>Button</code>; HAR-2985, HAR-3092, HAR-3098) — every field with a leading icon puts its text at the same place: 40 px from the edge at the default size, 48 px at <code>lg</code>, so fields stacked in a form line up. A button puts 8 px between its icon and label, 4 px at <code>xs</code>.'),
+      '<div data-four-px-grid-example class="uix-cluster" style="--gap:24px;align-items:flex-start">',
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(gridFields)}</div>`,
+      `<div style="flex:1 1 18rem;max-width:26rem">${html(gridButtons)}</div>`,
+      '</div>',
+    ].join('\n'));
+
     // ── FilterPopover type="date" (HAR-2432): the kit DatePicker, in German from one provider ──────
     const dataBlocks = [];
     const filterDate = mount(h(ui.UixLabelsProvider, { labels: { dateFormat: { locale: 'de' }, datePicker: { open: 'Datum wählen', openSelected: 'Datum ändern, {date}', calendar: 'Kalender' } } },
