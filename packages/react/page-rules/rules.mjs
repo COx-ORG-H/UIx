@@ -118,16 +118,22 @@ export const DEFAULT_OPTIONS = Object.freeze({
  *   strings — every string and template literal as { start, text }, a
  *             template's text parts joined by a space where `${…}` stood.
  * A quote that reaches the end of its line unclosed is JSX text (an apostrophe
- * in prose), not a string: it stays code and lexing goes on after it.
+ * in prose), not a string: it stays code and lexing goes on after it. A regex
+ * literal (`/\/*$/`, `/`/g`) is skipped whole, so its `/*` or backtick opens
+ * nothing, and `//` right after a `:` is a URL (`http://…`), not a comment.
+ * With `{ blankStrings: false }` only comments are blanked: the line rules read
+ * class strings but never a commented-out line.
+ * Known limit: two apostrophes on one line of raw JSX text read as a string.
  */
-export function lexSource(src) {
+export function lexSource(src, { blankStrings = true } = {}) {
   const chars = src.split('');
   const strings = [];
   const frames = [];
   const n = src.length;
-  const blank = (from, to) => {
+  const blankAll = (from, to) => {
     for (let k = from; k < to; k += 1) if (chars[k] !== '\n') chars[k] = ' ';
   };
+  const blank = blankStrings ? blankAll : () => {};
   const templateText = (frame, j) => {
     const from = j;
     let text = '';
@@ -163,19 +169,27 @@ export function lexSource(src) {
   while (i < n) {
     const ch = src[i];
     const next = src[i + 1];
-    if (ch === '/' && next === '/') {
+    if (ch === '/' && next === '/' && src[i - 1] !== ':') {
       const eol = src.indexOf('\n', i);
       const end = eol === -1 ? n : eol;
-      blank(i, end);
+      blankAll(i, end);
       i = end;
       continue;
     }
     if (ch === '/' && next === '*') {
       const close = src.indexOf('*/', i + 2);
       const end = close === -1 ? n : close + 2;
-      blank(i, end);
+      blankAll(i, end);
       i = end;
       continue;
+    }
+    if (ch === '/' && regexCanStart(src, i)) {
+      const end = regexLiteralEnd(src, i);
+      if (end > 0) {
+        blank(i + 1, end - 1);
+        i = end;
+        continue;
+      }
     }
     if (ch === "'" || ch === '"') {
       let j = i + 1;
@@ -216,6 +230,52 @@ export function lexSource(src) {
     i += 1;
   }
   return { code: chars.join(''), strings };
+}
+
+const REGEX_AFTER = new Set(['(', ',', '=', ':', '[', '!', '&', '|', '?', '{', ';', '+', '-', '*', '%', '~', '^']);
+const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'case', 'void', 'delete', 'in', 'of', 'yield', 'await', 'new', 'else', 'do']);
+
+/** True when a `/` at `i` starts a regex literal rather than a division or a JSX `</` / `/>`. */
+export function regexCanStart(src, i) {
+  if (src[i + 1] === '>' || src[i + 1] === '/' || src[i + 1] === '*') return false;
+  let k = i - 1;
+  while (k >= 0 && /\s/.test(src[k])) k -= 1;
+  if (k < 0) return true;
+  const prev = src[k];
+  if (REGEX_AFTER.has(prev)) return true;
+  if (/[\w$]/.test(prev)) {
+    let w = k;
+    while (w >= 0 && /[\w$]/.test(src[w])) w -= 1;
+    return REGEX_AFTER_WORD.has(src.slice(w + 1, k + 1));
+  }
+  return false;
+}
+
+/** The end offset (exclusive, flags included) of a regex literal at `i`, or -1 if it does not close on its line. */
+export function regexLiteralEnd(src, i) {
+  let inClass = false;
+  for (let j = i + 1; j < src.length; j += 1) {
+    const c = src[j];
+    if (c === '\n') return -1;
+    if (c === '\\') {
+      j += 1;
+      continue;
+    }
+    if (c === '[') inClass = true;
+    else if (c === ']') inClass = false;
+    else if (c === '/' && !inClass) {
+      let end = j + 1;
+      while (end < src.length && /[a-z]/.test(src[end])) end += 1;
+      return end;
+    }
+  }
+  return -1;
+}
+
+/** The source with comments blanked (strings kept), for rules that read lines. */
+export function withoutComments(rel, src) {
+  if (!/\.css$/.test(rel)) return lexSource(src, { blankStrings: false }).code;
+  return src.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
 }
 
 /** A function from a source offset to its 1-based line number. */
@@ -347,7 +407,8 @@ export function isHiddenSubmitter(attrs) {
   return (
     /(?:^|\s)type=(?:"submit"|'submit'|\{\s*["'`]submit["'`]\s*\})/.test(attrs) &&
     /(?:^|\s)hidden(?=\s|\/|$|=\{\s*true\s*\})/.test(attrs) &&
-    /(?:^|\s)aria-hidden(?=[\s=/]|$)/.test(attrs)
+    /(?:^|\s)aria-hidden(?=[\s=/]|$)/.test(attrs) &&
+    !/(?:^|\s)aria-hidden=(?:"false"|'false'|\{\s*false\s*\}|\{\s*["'`]false["'`]\s*\})/.test(attrs)
   );
 }
 
@@ -441,26 +502,30 @@ const CODE_TOKEN_RE = /\bfont-mono\b|<code\b|<pre\b/;
  */
 const HIGH = '(?:high|High|HIGH)';
 const RED_TONE = `['"\`](?:danger|critical|p1)['"\`]`;
+// Matched over the whole comment-blanked source, so a Prettier-wrapped
+// `case 'high':\n  return 'danger';` is one match.
 const HIGH_TO_RED_RES = [
-  new RegExp(`(?<![\\w:-])['"\`]?${HIGH}['"\`]?\\s*:\\s*${RED_TONE}`),
-  new RegExp(`['"\`]${HIGH}['"\`]\\s*\\)?\\s*\\?\\s*${RED_TONE}`),
-  new RegExp(`\\bcase\\s+['"\`]${HIGH}['"\`]\\s*:\\s*(?:return\\s+)?${RED_TONE}`),
+  new RegExp(`(?<![\\w:-])['"\`]?${HIGH}['"\`]?[ \\t]*:[ \\t]*${RED_TONE}`, 'g'),
+  new RegExp(`['"\`]${HIGH}['"\`]\\s*\\)?\\s*\\?\\s*${RED_TONE}`, 'g'),
+  new RegExp(`\\bcase\\s+['"\`]${HIGH}['"\`]\\s*:\\s*(?:return\\s+)?${RED_TONE}`, 'g'),
 ];
 const JOIN_COMMA_RE = /\.join\(\s*(['"`]),\s?\1\s*\)/;
 /**
- * A table row's data: TanStack's `row.original`, or `row.` on the line of a
- * column's `cell:` / `render:` renderer. A `row` from a plain `.map` in a
- * description list or a form value is not a cell.
+ * A table row's data: TanStack's `row.original`, or `row.` / `getValue()` on
+ * the line of a column's `cell:` / `render:` renderer. A `row` from a plain
+ * `.map` in a description list or a form value is not a cell.
  */
 const isRowCellData = (line) =>
-  /\brow\.original\b/.test(line) || (/\b(?:cell|render)\s*:/.test(line) && /\brow\.[A-Za-z_$]/.test(line));
+  /\brow\.original\b/.test(line) ||
+  (/\b(?:cell|render)\s*:/.test(line) && /\brow\.[A-Za-z_$]|\bgetValue\b/.test(line));
 /** A tooltip `title={….join(', ')}` holds the full list on purpose; the cell shows less. */
 const TOOLTIP_JOIN_RE = /\btitle=\{[^}]*\.join\(/;
 /** A row's cell or action renderer: TanStack `cell:`, `row.original`, DataWorkspace `rowActions` / `render: (row) =>`. */
 const ROW_CONTEXT_RE = /\bcell\s*:|\brow\.original\b|\browActions\s*[=:]|\brender\s*:\s*\(?\s*(?:row|item|record|r)\b/;
 const HORIZONTAL_PADDING = /^p[xlrse]-(?!0$)/;
 const LITERAL_FONT_SIZE = /^text-\[(?:length:)?(?:-?\d|-?\.\d|calc\(|clamp\(|min\(|max\()/;
-const INLINE_FONT_SIZE = /^\s*:\s*(?:-?\.?\d|(["'`])\s*-?\.?\d)/;
+/** After `fontSize`: a style key (`: 12`, `: '0.8rem'`) or a JSX prop (`={12}`, `="12px"`). */
+const INLINE_FONT_SIZE = /^\s*(?::\s*|=\{\s*|=)(?:-?\.?\d|(["'`])\s*-?\.?\d)/;
 
 /** Exported for the pill rule that waits on HAR-3817; not counted yet. */
 export const isHandBuiltPill = (text) => {
@@ -495,19 +560,35 @@ export function scanSource(rel, src, options = {}) {
     out.push({ rule, file: rel, line, text: (lines[line - 1] ?? '').trim().slice(0, 160), msg });
   };
 
-  const toneHelperRe = opts.genericToneHelpers.length
-    ? new RegExp(`\\b(?:${opts.genericToneHelpers.map(escapeRe).join('|')})\\(\\s*['"\`]severity['"\`]`)
-    : null;
+  // The line rules read the source with comments blanked (strings kept), so a
+  // trailing `// never use break-all`, a `{/* … */}` in JSX or the middle of a
+  // CSS block comment is not a finding. Ignore tags are read from `lines`.
+  const clean = withoutComments(rel, src);
+  const cleanLines = clean.split('\n');
+  const lineOf = lineIndex(src);
 
-  lines.forEach((text, i) => {
-    if (isCommentLine(text)) return;
-    if (kind !== 'css' && !hasIgnore(lines, i, RULE_SEVERITY_TONE)) {
-      if (toneHelperRe?.test(text)) {
-        push(RULE_SEVERITY_TONE, i + 1, 'A generic status-tone helper colours this severity, so "high" turns red; use severityTone(severity).');
-      } else if (HIGH_TO_RED_RES.some((re) => re.test(text))) {
-        push(RULE_SEVERITY_TONE, i + 1, '"high" is mapped to a red tone by hand; the severity ramp keeps high amber: use severityTone(severity).');
+  if (kind !== 'css') {
+    const toneHelperRe = opts.genericToneHelpers.length
+      ? new RegExp(`\\b(?:${opts.genericToneHelpers.map(escapeRe).join('|')})\\(\\s*['"\`]severity['"\`]`, 'g')
+      : null;
+    const seen = new Set();
+    const flag = (index, msg) => {
+      const line = lineOf(index);
+      if (seen.has(line) || hasIgnore(lines, line - 1, RULE_SEVERITY_TONE)) return;
+      seen.add(line);
+      push(RULE_SEVERITY_TONE, line, msg);
+    };
+    for (const m of toneHelperRe ? clean.matchAll(toneHelperRe) : []) {
+      flag(m.index, 'A generic status-tone helper colours this severity, so "high" turns red; use severityTone(severity).');
+    }
+    for (const re of HIGH_TO_RED_RES) {
+      for (const m of clean.matchAll(re)) {
+        flag(m.index, '"high" is mapped to a red tone by hand; the severity ramp keeps high amber: use severityTone(severity).');
       }
     }
+  }
+
+  cleanLines.forEach((text, i) => {
     if (BREAK_ANYWHERE_RE.test(text) && !CODE_TOKEN_RE.test(text) && !hasIgnore(lines, i, RULE_BREAK_ANYWHERE)) {
       push(RULE_BREAK_ANYWHERE, i + 1, 'A mid-word break (break-all / overflow-wrap: anywhere / wrap-anywhere) splits labels inside words.');
     }
@@ -522,9 +603,8 @@ export function scanSource(rel, src, options = {}) {
     }
   });
 
-  if (kind !== 'jsx') return out;
+  if (kind !== 'jsx') return out.sort((a, b) => a.line - b.line || COUNTED_RULES.indexOf(a.rule) - COUNTED_RULES.indexOf(b.rule));
 
-  const lineOf = lineIndex(src);
   const { code, strings } = lexSource(src);
 
   // heading said twice — judged against the first page-title component's title.
@@ -537,11 +617,10 @@ export function scanSource(rel, src, options = {}) {
       const inHeader = (off) => headerSpans.some(([a, b]) => off >= a && off < b);
       const titleNs = token.kind === 'key' ? namespaceAt(src, s) : null;
       for (const re of headingRepeatRes(token)) {
-        for (const m of src.matchAll(re)) {
+        for (const m of clean.matchAll(re)) {
           if (inHeader(m.index)) continue;
           if (token.kind === 'key' && namespaceAt(src, m.index) !== titleNs) continue;
           const line = lineOf(m.index);
-          if (isCommentLine(lines[line - 1] ?? '')) continue;
           if (hasIgnore(lines, line - 1, RULE_HEADING_TWICE, true)) continue;
           const said = token.kind === 'key' ? `t('${token.value}')` : `"${token.value}"`;
           push(RULE_HEADING_TWICE, line, `The page title (${said}) is said again as a heading or caption.`);
@@ -580,7 +659,7 @@ export function scanSource(rel, src, options = {}) {
       if (LITERAL_FONT_SIZE.test(t)) push(RULE_ARBITRARY_FONT_SIZE, lineOf(start), `A literal font size (${t}) off the kit type scale.`);
     }
   }
-  for (const m of code.matchAll(/\bfontSize\b/g)) {
+  for (const m of code.matchAll(/\bfontSize(?=\s*[:=])/g)) {
     if (INLINE_FONT_SIZE.test(src.slice(m.index + m[0].length, m.index + m[0].length + 24))) {
       push(RULE_ARBITRARY_FONT_SIZE, lineOf(m.index), 'A literal inline fontSize off the kit type scale.');
     }

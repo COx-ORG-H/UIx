@@ -20,6 +20,8 @@
 
     A product adds a config and seeds a baseline. The baseline counts findings per rule and per file, and it only shrinks. The check fails on new debt, on paid debt left in the baseline and on stale exemptions. `page-rules/README.md` has the setup.
 
+  - Before release, an independent review hardened the gate. A `skip` prefix now matches on a path-segment boundary, and regex literals and URLs no longer hide tags from the lexer. Comments are never findings, wrapped severity code and TanStack `getValue()` lists are found, `__tests__` folders are not read, and every unexpected error exits 2.
+
   - **`severityTone(severity)`** gives a severity's `StatusPill` tone on the one severity ramp: `critical` is red, `high` is amber (`warning`), and medium, low and anything else are neutral. Use it instead of a generic status map, which turns every "High" red.
 
 ## 2.64.0
