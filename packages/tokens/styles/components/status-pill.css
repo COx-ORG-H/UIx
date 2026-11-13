@@ -67,6 +67,10 @@
   .uix-pill--lg .uix-pill__dot { width: 9px; height: 9px; }
   /* the dot treatment has no box at any size: its label lines up with the cell's other text */
   .uix-pill--dot:is(.uix-pill--sm, .uix-pill--lg) { padding-inline: 0; }
+  /* A pill that explains itself (StatusPill description, HAR-3109): a focus stop with the kit ring and
+     the help cursor; nothing happens when it is pressed, so it is no button */
+  .uix-pill--described { cursor: help; }
+  .uix-pill--described:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
 }
 
 /* StatusDot (calm kit 2.56): a dot and a word, no box, for the signal ladder on a glance page.
