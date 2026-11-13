@@ -11,6 +11,8 @@
   --color-uix-border: var(--uix-border);
   --color-uix-border-strong: var(--uix-border-strong);
   --color-uix-choice-border: var(--uix-choice-border);
+  --color-uix-control-border: var(--uix-control-border);
+  --color-uix-control-border-hover: var(--uix-control-border-hover);
   --color-uix-text: var(--uix-text);
   --color-uix-text-hushed: var(--uix-text-hushed);
   --color-uix-text-muted: var(--uix-text-muted);

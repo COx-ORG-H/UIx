@@ -42,6 +42,12 @@
   /* letter-spacing and text-transform too: the UA button style resets them, so a sortable
      header lost the eyebrow tracking and case its neighbours keep (HAR-1814). */
   .uix-th__sortbtn { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: inherit; cursor: pointer; }
+  /* The button box itself is a 24 px target (WCAG 2.5.8, HAR-3084): the ::before overlay below makes
+     the whole cell clickable, but axe and the product probes measure the element, which drew 19 px
+     tall around an eyebrow-size label. A button centres its own content, so the label does not
+     move; it stays an inline-block (not inline-flex), so a space between a word and an <abbr> in
+     the label is kept (#236 review). */
+  .uix-th__sortbtn { min-height: 24px; }
   .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
