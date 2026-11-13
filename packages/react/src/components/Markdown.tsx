@@ -22,9 +22,19 @@ export interface MarkdownProps {
   resolveImageSrc?: (src: string) => string | null;
   /**
    * Added to markdown heading levels so content headings sit below the page's own
-   * (`#` → `<h3>` by default, as in TENSOR's original renderer). Capped at `<h6>`.
+   * (`#` → `<h3>` by default, as in TENSOR's original renderer; `<h2>` for `variant="document"`).
+   * Capped at `<h6>`.
    */
   headingOffset?: number;
+  /**
+   * `inline` (default): Markdown inside a page, a comment, a note or a description. `#` renders as
+   * `<h3>`, below the page's own headings.
+   * `document` (HAR-3096): the body of a page that is the document, such as an article whose title
+   * is the page `<h1>`. `#` renders as `<h2>` and `##` as `<h3>` (`.uix-prose--document`), so the
+   * article's own sections are at least as prominent as a `SectionHead` after the body
+   * ("Related articles"), and each section has room above it.
+   */
+  variant?: 'inline' | 'document';
   /**
    * The name to show for a mention (`@[Name](mention:<id>)`), e.g. the person's current
    * or masked name. Return `undefined` to show the name stored in the text. Without it
@@ -186,14 +196,14 @@ function renderBlock(block: MarkdownBlock, policy: Policy, headingOffset: number
  * Server-component safe.
  */
 export function Markdown({
-  children, className, isSafeUrl = defaultMarkdownIsSafeUrl, resolveImageSrc, headingOffset = 2, resolveMention,
+  children, className, isSafeUrl = defaultMarkdownIsSafeUrl, resolveImageSrc, variant = 'inline', headingOffset = variant === 'document' ? 1 : 2, resolveMention,
 }: MarkdownProps) {
   const source = typeof children === 'string' ? children : '';
   if (source.trim() === '') return null;
   const policy: Policy = { isSafeUrl, resolveImageSrc, resolveMention };
   const blocks = parseMarkdown(source);
   return (
-    <div className={cx('uix-prose', 'uix-markdown', className)} data-component="markdown">
+    <div className={cx('uix-prose', variant === 'document' && 'uix-prose--document', 'uix-markdown', className)} data-component="markdown">
       {blocks.map((block, i) => renderBlock(block, policy, headingOffset, i))}
     </div>
   );

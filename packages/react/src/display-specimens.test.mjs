@@ -101,3 +101,11 @@ test('the text-fit specimen shows a whole date, a one-day range printed once and
   assert.match(fit, />13\.11\.2026 07:00<\/time>/, 'a range across days prints both dates');
   assert.match(fit, /<span class="uix-cell-clamp" style="--uix-clamp: 2;">Firmware/);
 });
+
+test('the Markdown document specimen renders the sections as <h3> in .uix-prose--document, above a SectionHead (HAR-3096)', () => {
+  const prose = specimens['examples-prose'].slice(specimens['examples-prose'].indexOf('data-markdown-document-example'));
+  assert.match(prose, /<div class="uix-prose uix-prose--document uix-markdown" data-component="markdown">/);
+  assert.match(prose, /<h3>Symptom<\/h3>/);
+  assert.match(prose, /<h3>Fix<\/h3>/);
+  assert.match(prose, /uix-section-title[^>]*>Related articles</);
+});
