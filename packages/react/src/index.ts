@@ -57,6 +57,8 @@ export type { UixLinkProps, UixRenderLink } from './link.js';
 
 export { Input, InputGroup } from './components/Input.js';
 export type { InputProps, InputGroupProps } from './components/Input.js';
+export { NumberInput } from './components/NumberInput.js';
+export type { NumberInputProps } from './components/NumberInput.js';
 export { PasswordInput, DEFAULT_PASSWORD_INPUT_LABELS } from './components/PasswordInput.js';
 export type { PasswordInputProps, PasswordInputLabels } from './components/PasswordInput.js';
 export { OtpInput } from './components/OtpInput.js';
@@ -327,6 +329,8 @@ export type {
 
 export { RelativeTime } from './components/RelativeTime.js';
 export type { RelativeTimeProps, RelativeTimeFormatContext } from './components/RelativeTime.js';
+export { DateTime, DateTimeRange } from './components/DateTime.js';
+export type { DateTimeProps, DateTimeRangeProps, DateTimePrecision } from './components/DateTime.js';
 export { parseDateValue, relativeTimeValue } from './relative-time-model.js';
 export type { RelativeTimeUnit, RelativeTimeValue } from './relative-time-model.js';
 

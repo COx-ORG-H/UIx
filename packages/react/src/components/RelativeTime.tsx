@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
+import { cx } from '../cx.js';
 import { parseDateValue, relativeTimeValue } from '../relative-time-model.js';
 import { readRelativeClock, subscribeRelativeClock } from '../relative-time-clock.js';
 
@@ -23,7 +24,10 @@ export interface RelativeTimeProps extends Omit<HTMLAttributes<HTMLTimeElement>,
   formatter?: (context: RelativeTimeFormatContext) => ReactNode;
 }
 
-/** Locale-aware relative time with deterministic `now` support for SSR and tests. */
+/**
+ * Locale-aware relative time with deterministic `now` support for SSR and tests. It carries `.uix-time`
+ * (HAR-3094): it never breaks inside itself ("vor 3 Minuten" is one unit) and its digits are tabular.
+ */
 export function RelativeTime({
   value,
   now,
@@ -34,6 +38,7 @@ export function RelativeTime({
   refreshInterval = 30_000,
   formatter,
   title,
+  className,
   ...props
 }: RelativeTimeProps) {
   const interval = refreshInterval === false ? 0 : Math.max(0, refreshInterval);
@@ -44,7 +49,7 @@ export function RelativeTime({
   const clock = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const date = useMemo(() => parseDateValue(value), [value]);
-  if (!date) return <time data-invalid="true" suppressHydrationWarning {...props}>{invalidLabel}</time>;
+  if (!date) return <time className={cx('uix-time', className)} data-invalid="true" suppressHydrationWarning {...props}>{invalidLabel}</time>;
 
   const current = new Date(clock);
   const content = formatter
@@ -58,5 +63,5 @@ export function RelativeTime({
       })();
   const absolute = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(date);
 
-  return <time dateTime={date.toISOString()} title={title ?? absolute} suppressHydrationWarning {...props}>{content}</time>;
+  return <time className={cx('uix-time', className)} dateTime={date.toISOString()} title={title ?? absolute} suppressHydrationWarning {...props}>{content}</time>;
 }

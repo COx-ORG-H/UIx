@@ -1566,10 +1566,12 @@ export interface DataWorkspaceColumn<T> {
     // (undocumented)
     id: string;
     label?: string;
+    lineClamp?: number;
     minWidth?: string;
     priority?: 'high' | 'mid' | 'low';
     // (undocumented)
     sortable?: boolean;
+    textWrap?: 'wrap' | 'nowrap' | 'truncate';
     width?: string;
 }
 
@@ -1974,6 +1976,9 @@ export interface DateRangeValue {
 }
 
 // @public
+export function DateTime(input: DateTimeProps): react.JSX.Element;
+
+// @public
 export const DateTimePicker: react.ForwardRefExoticComponent<DateTimePickerProps & react.RefAttributes<HTMLInputElement>>;
 
 // @public
@@ -2000,6 +2005,30 @@ export interface DateTimePickerProps extends Omit<DatePickerProps, 'value' | 'on
     timeZone?: string;
     timeZoneLabel?: string | null;
     value: string | null;
+}
+
+// @public (undocumented)
+export type DateTimePrecision = 'date' | 'minute';
+
+// Warning: (ae-forgotten-export) The symbol "Formatting" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export interface DateTimeProps extends Omit<HTMLAttributes<HTMLTimeElement>, 'children' | 'dateTime'>, Formatting {
+    invalidLabel?: ReactNode;
+    // (undocumented)
+    value: Date | number | string;
+}
+
+// @public
+export function DateTimeRange(input: DateTimeRangeProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface DateTimeRangeProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>, Formatting {
+    // (undocumented)
+    end: Date | number | string;
+    invalidLabel?: ReactNode;
+    // (undocumented)
+    start: Date | number | string;
 }
 
 // @public (undocumented)
@@ -2779,8 +2808,7 @@ export interface FieldProps {
     children: ReactNode;
     // (undocumented)
     className?: string;
-    // (undocumented)
-    error?: string;
+    error?: ReactNode;
     help?: string | null;
     helpLabel?: string;
     // (undocumented)
@@ -2788,6 +2816,8 @@ export interface FieldProps {
     htmlFor?: string;
     // (undocumented)
     label?: string;
+    labelId?: string;
+    messageId?: string;
     // (undocumented)
     required?: boolean;
     // (undocumented)
@@ -3448,8 +3478,9 @@ export function InfoTip(input: InfoTipProps): react.JSX.Element | null;
 // @public (undocumented)
 export interface InfoTipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'content' | 'children'> {
     content: string;
-    label: string;
+    label?: string;
     placement?: Placement;
+    topic?: ReactNode;
 }
 
 // @public
@@ -5134,6 +5165,16 @@ export const NUMBER_FILTER_OPERATORS: readonly NumberFilterOperator[];
 
 // @public (undocumented)
 export type NumberFilterOperator = 'eq' | 'neq' | 'lt' | 'lte' | 'gt' | 'gte' | 'between';
+
+// @public
+export const NumberInput: react.ForwardRefExoticComponent<NumberInputProps & react.RefAttributes<HTMLInputElement>>;
+
+// @public (undocumented)
+export interface NumberInputProps extends Omit<InputProps, 'type' | 'value' | 'defaultValue'> {
+    defaultValue?: number;
+    onValueChange?: (value: number) => void;
+    value?: number | null;
+}
 
 // @public (undocumented)
 export interface OptimisticRollback<T> {
@@ -8763,6 +8804,10 @@ export interface UixLabels {
     // (undocumented)
     filterEditor?: Partial<FilterEditorLabels>;
     filterSummary?: Partial<FilterSummaryLabels>;
+    infoTip?: {
+        about?: string;
+        more?: string;
+    };
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;

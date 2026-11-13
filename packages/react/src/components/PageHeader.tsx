@@ -1,7 +1,7 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
-import { hasHelp, helpLabelFor } from '../info-tip-model.js';
+import { hasHelp, helpTopic } from '../info-tip-model.js';
 
 export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   eyebrow?: ReactNode;
@@ -15,7 +15,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
    * empty, whitespace-only or `null` renders no button.
    */
   help?: string | null;
-  /** Accessible name of the ? button. Default `"About: <title>"` when title is text; pass a localised one. */
+  /** Accessible name of the ? button. Default: the `UixLabelsProvider` `infoTip` template with the title (`"About: <title>"` without a provider). */
   helpLabel?: string;
   /** Right-aligned action area (buttons, menus). */
   actions?: ReactNode;
@@ -41,7 +41,7 @@ export function PageHeader({ eyebrow, title, subtitle, help, helpLabel, actions,
         {hasHelp(help) ? (
           <div className="uix-page-header__title-row">
             {heading}
-            <InfoTip content={help} label={helpLabel ?? helpLabelFor(title)} />
+            <InfoTip content={help} label={helpLabel} topic={helpTopic(title)} />
           </div>
         ) : heading}
         {subtitle != null && <p className="uix-page-header__subtitle">{subtitle}</p>}

@@ -1,6 +1,0 @@
----
-"@tensor_1/react": minor
-"@tensor_1/tokens": minor
----
-
-HAR-3084, HAR-3091, HAR-3097 — a link that stands on its own in a kit slot is a 24 px target (WCAG 2.5.8), measured on the element itself as axe and the product probes measure it, and its text does not move. A column header's sort button is a 24 px inline-flex box (it drew 19 px). A data cell's link (`.uix-cell-link`, or a classless anchor in a table cell or a description value) takes vertical padding, which never changes a line's height (it drew 20 px). A link in the Peek footer — a plain anchor, the new `.uix-peek__footer-link` for one that must carry a class, or a link `Button` — is 24 px tall at the meta size in the link colour, so a product passes a label and an href and no utility classes (it drew 18 px). `SectionHead` gains `size="eyebrow"` (the small uppercase label over a group of tiles, `.uix-section-head--eyebrow`, with the text style also as `.uix-eyebrow`) and `href` / `renderLink`: the title becomes its link, `.uix-section-title__link`, a 24 px target on a 24 px row, so a linked and an unlinked label put their text in the same place (it drew 14 px). `.uix-section-link` is a 24 px target too. Found by the TENSOR vulnerabilities, drawer and settings-hub council climbs (HAR-2981, HAR-2971, HAR-2980).

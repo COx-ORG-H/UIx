@@ -164,6 +164,18 @@ export async function renderFormFieldSpecimens() {
       '</div>',
     ].join('\n'));
 
+    // ── One field system (HAR-3100): a number field, a labelled rich-text region, the ? named once ──
+    const fieldSystem = mount(h(ui.UixLabelsProvider, { labels: { infoTip: { about: 'Info: {title}' } } },
+      h('div', { className: 'uix-form-stack' },
+        h(ui.Field, { label: 'Menge', help: 'Wie viele Lizenzen gekauft wurden.', hint: 'Leer lassen, wenn unbekannt.', required: true },
+          h(ui.NumberInput, { id: 'ff-quantity', value: 25, onValueChange: noop })),
+        h(ui.Field, { label: 'Notiz', labelId: 'ff-note-label', htmlFor: 'ff-note' },
+          h('div', { id: 'ff-note', className: 'uix-textarea', role: 'textbox', 'aria-multiline': 'true', 'aria-labelledby': 'ff-note-label', contentEditable: true, suppressContentEditableWarning: true }, 'Verlängerung im März prüfen.')))));
+    blocks.push([
+      caption('One field system (React <code>Field labelId</code>, <code>NumberInput</code>, <code>UixLabelsProvider infoTip</code>; HAR-3100) — <code>NumberInput</code> holds a number: <code>onValueChange</code> gets <code>valueAsNumber</code>, <code>NaN</code> when emptied, never the typed text. <code>labelId</code> lets a control that is not a form element, such as a rich-text editor, name itself with <code>aria-labelledby</code>. Every ? without its own <code>helpLabel</code> takes its name from the provider’s <code>infoTip.about</code> template, here “Info: Menge”'),
+      `<div data-field-system-example style="max-width:24rem">${html(fieldSystem)}</div>`,
+    ].join('\n'));
+
     // ── SearchSuggest freeText (HAR-2465): a value field with suggestions, open on a typed name ──
     const makers = [{ id: 'dell', title: 'Dell' }, { id: 'dell-tech', title: 'Dell Technologies' }];
     const freeText = mount(h('div', { className: 'uix-field' },

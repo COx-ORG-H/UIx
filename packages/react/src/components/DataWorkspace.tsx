@@ -134,6 +134,14 @@ export interface DataWorkspaceColumn<T> {
    */
   className?: string;
   /**
+   * How the column's text behaves (HAR-3201): `nowrap` keeps one line and never cuts it (a date, an
+   * ID, an amount; the column's width must fit it), `truncate` keeps one line and ends in an ellipsis,
+   * `wrap` breaks anywhere a long word needs. Default: the table's own wrapping.
+   */
+  textWrap?: 'wrap' | 'nowrap' | 'truncate';
+  /** At most this many lines of each body cell, then an ellipsis (HAR-3201), e.g. `2` for a description. */
+  lineClamp?: number;
+  /**
    * The responsive ladder (`mobile`, HAR-2622): `low` columns go below 900 px of workspace width,
    * `mid` ones below 600 px; `high` (the default) stay.
    */
@@ -848,7 +856,7 @@ const columnFloor = (width?: string, minWidth?: string, className?: string) => {
   if (width && !width.trim().endsWith('%')) return width;
   const classes = className?.split(/\s+/) ?? [];
   for (const cls of classes) {
-    const tier = /^uix-col--w-(xs|sm|md|lg|xl)$/.exec(cls)?.[1];
+    const tier = /^uix-col--w-(xs|sm|md|lg|lg-plus|xl)$/.exec(cls)?.[1];
     if (tier) return `var(--uix-col-w-${tier})`;
   }
   if (classes.includes('uix-col--flex') || classes.includes('uix-col--primary')) return 'var(--uix-col-title-min)';
@@ -856,7 +864,20 @@ const columnFloor = (width?: string, minWidth?: string, className?: string) => {
 };
 const isFlex = (className?: string) => /(^|\s)uix-col--(flex|primary)(\s|$)/.test(className ?? '');
 /** The classes of a column that size a `<col>` (a tier, the flex column). */
-const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
+const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|lg-plus|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
+/** The classes of a column's header and body cells: alignment, the product's class and its text wrapping (HAR-3201). */
+const cellClasses = <T,>(column: DataWorkspaceColumn<T>) => cx(column.align === 'end' && 'uix-col--num', column.className, column.textWrap && `uix-col--${column.textWrap}`) || undefined;
+/** A body cell's content, inside the clamping box when the column clamps its lines (HAR-3201). */
+const clampLines = (lineClamp: number | undefined) => {
+  const lines = Math.floor(lineClamp ?? 0);
+  return Number.isFinite(lines) && lines >= 1 ? lines : null;
+};
+const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
+  const lines = clampLines(column.lineClamp);
+  return lines != null
+    ? <span className="uix-cell-clamp" style={{ '--uix-clamp': String(lines) } as CSSProperties}>{column.cell(row)}</span>
+    : column.cell(row);
+};
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
@@ -1347,7 +1368,7 @@ function WorkspaceTable<T>({
               const style = !fixedOn && (column.width || column.minWidth) ? { width: column.width, minWidth: column.minWidth } : undefined;
               return (
                 <Th
-                  key={column.id} scope="col" className={cx(column.align === 'end' && 'uix-col--num', column.className) || undefined} style={style}
+                  key={column.id} scope="col" className={cellClasses(column)} style={style}
                   {...sortProps(column, column.sortable === true)}
                   {...ladderAttrs(ladderOn, column, false)}
                 >
@@ -1435,8 +1456,8 @@ function WorkspaceRowInner<T>({
         </Td>
       )}
       {columns.map((column) => (
-        <Td key={column.id} className={cx(column.align === 'end' && 'uix-col--num', column.className) || undefined} {...ladderAttrs(ladderOn, column, true)}>
-          {column.cell(row)}
+        <Td key={column.id} className={cellClasses(column)} {...ladderAttrs(ladderOn, column, true)}>
+          {cellContent(column, row)}
         </Td>
       ))}
       {hasActions && <RowActions data-col={ladderOn ? 'actions' : undefined}>{renderedActions}</RowActions>}

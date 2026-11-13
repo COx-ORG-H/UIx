@@ -157,9 +157,9 @@
       "brotli": 3068
     },
     "styles/components/date-picker.css": {
-      "raw": 6855,
-      "gzip": 1914,
-      "brotli": 1597
+      "raw": 7484,
+      "gzip": 2156,
+      "brotli": 1821
     },
     "styles/components/date-range-picker.css": {
       "raw": 5100,
@@ -517,9 +517,9 @@
       "brotli": 1396
     },
     "styles/components/table.css": {
-      "raw": 25979,
-      "gzip": 6826,
-      "brotli": 5859
+      "raw": 26660,
+      "gzip": 7068,
+      "brotli": 6071
     },
     "styles/components/tabs.css": {
       "raw": 6954,

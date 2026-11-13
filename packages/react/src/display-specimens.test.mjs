@@ -93,3 +93,11 @@ test('the 24 px target specimens show each form the captions name (HAR-3084, HAR
   assert.match(footer, /<div class="uix-peek__footer"><a href="#INC-0173">Datensatz öffnen<\/a><a class="uix-peek__footer-link"/);
   assert.match(footer, /uix-btn--link/);
 });
+
+test('the text-fit specimen shows a whole date, a one-day range printed once and a clamped note (HAR-3094, HAR-3201)', () => {
+  const fit = specimens['examples-data-display'].slice(specimens['examples-data-display'].indexOf('data-text-fit-example'));
+  assert.match(fit, /<td class="uix-col--w-lg-plus uix-col--nowrap"><time class="uix-time" datetime="2026-11-11T08:00:00.000Z">11\.11\.2026 09:00<\/time><\/td>/);
+  assert.match(fit, /<span class="uix-time-range"><time class="uix-time" datetime="2026-11-11T08:00:00.000Z">11\.11\.2026 09:00<\/time><span class="uix-time-range__sep">&nbsp;– <\/span><time class="uix-time" datetime="2026-11-11T11:00:00.000Z">12:00<\/time><\/span>/);
+  assert.match(fit, />13\.11\.2026 07:00<\/time>/, 'a range across days prints both dates');
+  assert.match(fit, /<span class="uix-cell-clamp" style="--uix-clamp: 2;">Firmware/);
+});
