@@ -126,6 +126,8 @@ export type { PeekProps } from './components/Peek.js';
 
 // Layout
 export { Card, CardLink, Inset } from './components/Card.js';
+export { LinkTile } from './components/LinkTile.js';
+export type { LinkTileProps } from './components/LinkTile.js';
 export type { CardProps, CardLinkProps, InsetProps } from './components/Card.js';
 
 export { DashboardGrid, DashboardGridItem, dashboardGridClassName, dashboardGridItemClassName } from './components/DashboardGrid.js';

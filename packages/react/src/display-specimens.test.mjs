@@ -117,3 +117,10 @@ test('the Markdown document specimen renders the sections as <h3> in .uix-prose-
   assert.match(prose, /<h3>Fix<\/h3>/);
   assert.match(prose, /uix-section-title[^>]*>Related articles</);
 });
+
+test('the LinkTile specimen shows three tiles, each one anchor named by its title (HAR-3095)', () => {
+  const block = specimens['examples-navigation'].slice(specimens['examples-navigation'].indexOf('data-link-tile-example'));
+  assert.equal((block.match(/<a class="uix-card uix-card--interactive uix-link-tile"/g) ?? []).length, 3);
+  assert.equal((block.match(/aria-labelledby="dsp-/g) ?? []).length, 3);
+  assert.match(block, /data-clamped="" style="--uix-link-tile-lines: 2;"/);
+});

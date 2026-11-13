@@ -47,6 +47,7 @@ export async function renderDisplaySpecimens() {
   try {
     const { createRoot } = await import('react-dom/client');
     const ui = await import(pathToFileURL(join(here, '../dist/index.js')).href);
+    const icons = await import(pathToFileURL(join(here, '../dist/icons.js')).href);
     const { Markdown } = await import(pathToFileURL(join(here, '../dist/markdown.js')).href);
     const roots = [];
     const mount = (element) => {
@@ -387,6 +388,16 @@ export async function renderDisplaySpecimens() {
       caption('Timeline entry text (React <code>TimelineItem</code> <code>title</code>, <code>detail</code>, <code>badge</code>; <code>.uix-timeline__title</code>, <code>__detail</code>, <code>__badge</code>; HAR-3086) — the kit styles an entry’s words: the event quieter than body copy with the actor in the full text colour, the detail at the meta size, a kit pill beside the event. Ten sentences read as a list of events, not a block of paragraphs; every part is at least 4.5:1 in both themes.'),
       `<div data-timeline-entry-example class="uix-card" style="max-width:34rem;padding:var(--uix-space-5)">${html(timeline)}</div>`,
     ].join('\n'));
+
+    // ── LinkTile (HAR-3095): a grid of navigation tiles, as a settings hub shows them ──────────
+    const tiles = mount(h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', gap: 'var(--uix-space-4)' } },
+      h(ui.LinkTile, { href: '#settings-users', icon: h(icons.UsersIcon), title: 'Users', description: 'Invite members, assign roles and lock access.' }),
+      h(ui.LinkTile, { href: '#settings-roles', icon: h(icons.ShieldIcon), title: 'Roles and permissions', description: 'What each role may see and change, with the separation of duties DORA and the internal control system ask for, and the exceptions.', descriptionLines: 2 }),
+      h(ui.LinkTile, { href: '#settings-notifications', icon: h(icons.BellIcon), title: 'Notifications', description: 'Who hears about what, and when.' })));
+    add('examples-navigation', [
+      caption('Navigation tile (React <code>LinkTile</code>, <code>.uix-link-tile</code>; HAR-3095) — a whole-card link to another page: a 16 px icon and a trailing chevron on the title’s first line, the title (the link’s name), a short description at the meta size (the link’s description, <code>descriptionLines</code> to clamp it), and the card body’s inset, nothing more. Hover and focus are the interactive card’s.'),
+      `<div data-link-tile-example>${html(tiles)}</div>`,
+    ].join(String.fromCharCode(10)));
 
     for (const { root, host } of roots) { act(() => root.unmount()); host.remove(); }
     return specimens;

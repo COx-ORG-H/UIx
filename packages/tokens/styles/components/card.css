@@ -13,6 +13,20 @@
   .uix-card--interactive:focus-visible { border-color: var(--uix-border-strong); box-shadow: var(--uix-shadow-md); text-decoration: none; }
   @media (hover: hover) and (pointer: fine) { .uix-card--interactive:hover { border-color: var(--uix-border-strong); box-shadow: var(--uix-shadow-md); text-decoration: none; transform: translateY(-1px); } }
   .uix-card--interactive:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  /* LinkTile (HAR-3095): a navigation tile, laid out by the kit. Icon, title and description, and a
+     trailing chevron that says the card opens a page; the card body's own inset, nothing more. The
+     icon and the arrow sit in a box one title line tall, so they align with the title's first line. */
+  .uix-link-tile { min-width: 0; }
+  .uix-link-tile__body { display: flex; align-items: flex-start; gap: var(--uix-space-3); }
+  .uix-link-tile__icon, .uix-link-tile__arrow { flex: none; display: inline-flex; align-items: center; height: calc(var(--uix-text-h3) * var(--uix-leading-body)); }
+  .uix-link-tile__icon { color: var(--uix-text-muted); }
+  .uix-link-tile__icon svg, .uix-link-tile__arrow svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-link-tile__arrow { margin-inline-start: auto; color: var(--uix-text-hushed); }
+  .uix-link-tile__arrow:dir(rtl) svg { transform: scaleX(-1); }
+  .uix-link-tile__text { display: grid; gap: var(--uix-space-1); flex: 1; min-width: 0; }
+  .uix-link-tile__title { margin: 0; font-family: inherit; font-size: var(--uix-text-h3); font-weight: 600; letter-spacing: inherit; line-height: var(--uix-leading-body); color: var(--uix-text); overflow-wrap: anywhere; }
+  .uix-link-tile__description { font-size: var(--uix-text-meta); line-height: var(--uix-leading-body); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-link-tile__description[data-clamped] { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--uix-link-tile-lines); line-clamp: var(--uix-link-tile-lines); overflow: hidden; }
   .uix-collapsible { border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
   .uix-collapsible__summary { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-3); padding: var(--uix-space-4) var(--uix-space-5); cursor: pointer; list-style: none; }
   .uix-collapsible__summary::-webkit-details-marker { display: none; }

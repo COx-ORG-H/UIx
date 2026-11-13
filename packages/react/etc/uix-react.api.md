@@ -4114,6 +4114,19 @@ export interface LinearFit {
 export function linearFit(points: readonly ChartStatPoint[]): LinearFit | null;
 
 // @public
+export function LinkTile(input: LinkTileProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface LinkTileProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'title'> {
+    description?: ReactNode;
+    descriptionLines?: number;
+    icon?: ReactNode;
+    renderLink?: UixRenderLink;
+    title: ReactNode;
+    titleAs?: 'h2' | 'h3' | 'h4' | 'span';
+}
+
+// @public
 export function List(input: ListProps): react.JSX.Element;
 
 // @public
