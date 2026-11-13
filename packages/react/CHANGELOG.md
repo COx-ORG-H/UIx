@@ -1,5 +1,26 @@
 # @tensor_1/react
 
+## 2.63.0
+
+### Minor Changes
+
+- 6bfc76f: SchedulingCalendar time grid (HAR-2964, from the TENSOR change-calendar UI council climb):
+
+  - **Opens at the work.** The Week/Day grid scrolls inside its own height (`--uix-scheduling-calendar-tg-height`, default `min(70vh, 46rem)`), with the day heads and strips kept on top. It opens at the earlier of 08:00 and the first item that starts on screen, or at the new `scrollToTime` prop, and again for another week or view, never after the user has scrolled.
+  - **Counts say what they count.** The day count has a label (`labels.dayCount`, "11 changes"). A day head's hidden count reads "+6 more" (`labels.moreEntries`) and adds what a narrow column could not draw to the consumer's count. It sits on a line of its own, under the count.
+  - **The windows strip's "+2 windows"** has a row of its own under the first day it hides, instead of sitting on top of the last drawn window.
+  - **Easier to read, especially in dark.** The day's signal has a line of its own. Today's date is a pill, and the gutter shows the time of the now line. Hour and day lines use the strong border. The high band is a tint behind a heavy edge in its hue instead of a solid red block. A finished item in the time grid keeps its full outline.
+  - **Sidebar:** a sidebar taller than its column fades out at its foot instead of cutting a row.
+
+- 8338276: HAR-3070 — `ContentListItem` takes `href` (and `renderLink`): the whole row becomes one link, with an arrow at rest and a focus ring on the row. Without `href` nothing changes. Breadcrumb links get a hit area of at least 24 × 24 px (a pseudo-element, the trail does not move) and draw in the link colour without an underline at rest, so a parent crumb reads as the way back. Found by the TENSOR knowledge-base council climb (HAR-2968).
+- 8980957: OverflowRow (HAR-3072): one line of items that never wraps. It shows, in order, the items that fit whole and replaces the rest with one counter ("+3"), so a table row keeps one height and no badge is cut mid-word; the first item always shows. The hidden items stay measurable but out of the layout and the accessibility tree, and the counter's screen-reader text and `title` name them. It re-measures on resize (ResizeObserver) and on every render; before it can, every item shows and the row clips. The fit rule is exported as `overflowRowFit`. CSS: `.uix-overflow-row` in `components/overflow-row.css`.
+- 155d7b3: HAR-3084, HAR-3091, HAR-3097 — a link that stands on its own in a kit slot is a 24 px target (WCAG 2.5.8), measured on the element itself as axe and the product probes measure it, and its text does not move. A column header's sort button is a 24 px inline-flex box (it drew 19 px). A data cell's link (`.uix-cell-link`, or a classless anchor in a table cell or a description value) takes vertical padding, which never changes a line's height (it drew 20 px). A link in the Peek footer — a plain anchor, the new `.uix-peek__footer-link` for one that must carry a class, or a link `Button` — is 24 px tall at the meta size in the link colour, so a product passes a label and an href and no utility classes (it drew 18 px). `SectionHead` gains `size="eyebrow"` (the small uppercase label over a group of tiles, `.uix-section-head--eyebrow`, with the text style also as `.uix-eyebrow`) and `href` / `renderLink`: the title becomes its link, `.uix-section-title__link`, a 24 px target on a 24 px row, so a linked and an unlinked label put their text in the same place (it drew 14 px). `.uix-section-link` is a 24 px target too. Found by the TENSOR vulnerabilities, drawer and settings-hub council climbs (HAR-2981, HAR-2971, HAR-2980).
+- fd59952: HAR-3094, HAR-3099, HAR-3201 — text that fits.
+
+  - A shown date or time is one token. `RelativeTime` carries the new `.uix-time` (never breaks inside itself, tabular digits). New `DateTime` (`precision="date" | "minute"`) and `DateTimeRange` render `<time>` elements in the app-wide date format of the date fields (`UixLabelsProvider` `dateFormat`, else the locale's numeric date), so a shown date matches the pickers. A range breaks only after its dash, and a range within one day prints its date once: "11.11.2026 09:00 – 12:00". A range takes its cell's wrapping, so a nowrap column keeps it on one line. A `YYYY-MM-DD` value is a calendar day: the same day in every time zone, never a time. A `locale` prop gives that locale's own date, also under a provider `formatDate`. Pass `timeZone` when rendering on the server.
+  - A table column width tier between `lg` (176 px) and `xl` (240 px): `--uix-col-w-lg-plus` 208 px, `.uix-col--w-lg-plus`, so a status pill of about 165 px ("Wartet auf Zustimmung") fits on one line without a 240 px column. DataWorkspace sizes its `<col>` and floor from it like the other tiers.
+  - `DataWorkspaceColumn` gets `textWrap` (`'nowrap'` — the new `.uix-col--nowrap`, one line and never cut — `'truncate'` or `'wrap'`) and `lineClamp` (at most N lines in `.uix-cell-clamp`, then an ellipsis), so a page never sets them on a cell by hand.
+
 ## 2.62.0
 
 ### Minor Changes
