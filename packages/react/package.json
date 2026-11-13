@@ -5,6 +5,9 @@
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
+  "bin": {
+    "uix-page-rules": "./page-rules/cli.mjs"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/COx-ORG-H/UIx.git",
@@ -13,7 +16,9 @@
   "files": [
     "dist",
     "component-inventory.json",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "page-rules",
+    "!page-rules/*.test.mjs"
   ],
   "publishConfig": {
     "access": "public"
@@ -59,7 +64,8 @@
       "types": "./dist/icons.d.ts",
       "import": "./dist/icons.js",
       "require": "./dist/icons.cjs"
-    }
+    },
+    "./page-rules": "./page-rules/index.mjs"
   },
   "scripts": {
     "build": "node scripts/clean-dist.mjs && tsup && node scripts/check-dist.mjs",

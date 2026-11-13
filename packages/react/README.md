@@ -54,6 +54,23 @@ presets are exercised with German names, help and actions in the live specimen a
 serve the repo with `npm run serve:styleguide`). The browser regression checks the title's
 text fragments as well as page width, so clipping by an ancestor cannot hide an overflow.
 
+## Page rules: a gate for how pages use the kit (2.65.0)
+
+The package ships `uix-page-rules`, a dependency-free checker for the page-level rules from
+the TENSOR UI council climbs:
+
+- severity through `severityTone`, never a generic map that turns "high" red;
+- no mid-word breaks;
+- no page title said twice;
+- row menus named for their row;
+- no comma-joined lists in cells;
+- no raw buttons, tables or form controls;
+- no literal font sizes.
+
+Add a `uix-page-rules.config.json`, seed the shrink-only baseline once
+(`npx uix-page-rules baseline --seed`) and run `uix-page-rules` as a required CI step. Setup,
+rules and exit codes: [`page-rules/README.md`](page-rules/README.md).
+
 ## Rich text, markdown and emoji
 
 Three optional entries (RTE-01). None of them is imported by the root entry.

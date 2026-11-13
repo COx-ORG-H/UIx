@@ -6,7 +6,17 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createElement as h, act } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Button, STATUS_ROLES, statusRoleOf } from '../dist/index.js';
+import { Button, STATUS_ROLES, severityTone, statusRoleOf } from '../dist/index.js';
+
+test('severityTone keeps the one ramp: critical red, high amber, medium and low neutral (HAR-3874)', () => {
+  const expected = { critical: 'critical', CRITICAL: 'critical', ' High ': 'warning', high: 'warning', medium: 'neutral', low: 'neutral', info: 'neutral', unknown: 'neutral' };
+  for (const [severity, tone] of Object.entries(expected)) assert.equal(severityTone(severity), tone, severity);
+  assert.equal(severityTone(null), 'neutral');
+  assert.equal(severityTone(undefined), 'neutral');
+  // On the five roles, only critical is critical: High never spends the red budget.
+  assert.equal(statusRoleOf(severityTone('critical')), 'critical');
+  assert.equal(statusRoleOf(severityTone('high')), 'warning');
+});
 
 test('STATUS_ROLES lists the five roles, quietest first', () => {
   assert.deepEqual([...STATUS_ROLES], ['neutral', 'info', 'success', 'warning', 'critical']);
