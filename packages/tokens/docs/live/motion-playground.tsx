@@ -12,9 +12,10 @@ import { StrictMode, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, DialogClose, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select, Sidebar, SidebarSection,
-  SubNavItem, Tooltip,
+  Button, Checkbox, DashboardCanvas, DataWorkspace, DialogClose, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select,
+  Sidebar, SidebarSection, SubNavItem, Tooltip,
 } from '../../../react/src/index.js';
+import type { DashboardCanvasItem, DataWorkspaceColumn } from '../../../react/src/index.js';
 import {
   AlertTriangleIcon, ArrowRightIcon, BellIcon, BookOpenIcon, CheckIcon, CopyIcon, DownloadIcon, InboxIcon, LinkIcon,
   PlusIcon, RefreshCwIcon, SearchIcon, SendIcon, SettingsIcon, StarIcon, Trash2Icon, UploadIcon, UsersIcon, XIcon,
@@ -33,6 +34,29 @@ const TOOLS: [string, ReactNode][] = [
   ['Als PDF herunterladen', <DownloadIcon key="d" />], ['Löschen', <Trash2Icon key="t" />],
 ];
 const STEPS = ['Melder', 'Störung beschreiben', 'Prüfen und senden'];
+
+type Ticket = { id: string; title: string; priority: number };
+const QUEUE: Ticket[] = [
+  { id: 'INC-0412', title: 'E-Mail-Ausfall im Büro Sarajevo', priority: 1 },
+  { id: 'INC-0413', title: 'VPN trennt alle 20 Minuten', priority: 2 },
+  { id: 'INC-0415', title: 'Drucker im 3. Stock blockiert', priority: 4 },
+  { id: 'INC-0418', title: 'Lohnexport ohne neue Mitarbeitende', priority: 2 },
+];
+const NEW_TITLES = ['Citrix-Sitzungen trennen sich', 'Telefonanlage ohne Freizeichen', 'Zertifikat läuft in 3 Tagen ab', 'Teams-Kalender synchronisiert nicht'];
+const QUEUE_COLUMNS: DataWorkspaceColumn<Ticket>[] = [
+  { id: 'id', header: 'Nummer', cell: (t) => t.id, width: '7rem' },
+  { id: 'title', header: 'Titel', cell: (t) => t.title },
+  { id: 'priority', header: 'Priorität', cell: (t) => `P${t.priority}` },
+];
+
+type Widget = DashboardCanvasItem & { title: string; value: string };
+const WIDGETS: Widget[] = [
+  { id: 'open', col: 0, row: 0, w: 4, h: 2, title: 'Offene Störungen', value: '17' },
+  { id: 'sla', col: 4, row: 0, w: 4, h: 2, title: 'SLA in Gefahr', value: '3' },
+  { id: 'new', col: 8, row: 0, w: 4, h: 2, title: 'Neu heute', value: '9' },
+  { id: 'mine', col: 0, row: 2, w: 6, h: 2, title: 'Mir zugewiesen', value: '5' },
+  { id: 'done', col: 6, row: 2, w: 6, h: 2, title: 'Diese Woche gelöst', value: '42' },
+];
 
 function Demo({ title, hint, children }: { title: string; hint: ReactNode; children: ReactNode }) {
   return (
@@ -151,6 +175,50 @@ function StepsDemo() {
   );
 }
 
+function RowsDemo() {
+  const [rows, setRows] = useState(QUEUE);
+  const [next, setNext] = useState(0);
+  // each press flips the order (worst priority first, then best first), so every press moves rows
+  const [descending, setDescending] = useState(false);
+  const resort = () => {
+    const dir = descending ? 1 : -1;
+    setDescending(!descending);
+    setRows((r) => [...r].sort((a, b) => dir * (a.priority - b.priority || a.id.localeCompare(b.id))));
+  };
+  const add = () => {
+    setRows((r) => [{ id: `INC-${String(520 + next).padStart(4, '0')}`, title: NEW_TITLES[next % NEW_TITLES.length], priority: 2 + (next % 3) }, ...r]);
+    setNext((n) => n + 1);
+  };
+  return (
+    <div className="uix-stack uix-stack--compact">
+      <div className="uix-cluster">
+        <Button variant="secondary" onClick={add}>Neue Meldung</Button>
+        <Button variant="secondary" disabled={rows.length < 2} onClick={() => setRows((r) => r.filter((_, i) => i !== 1))}>Zweite erledigen</Button>
+        <Button variant="secondary" disabled={rows.length < 2} onClick={resort}>Umsortieren</Button>
+        <Button variant="secondary" onClick={() => setRows((r) => (r.length ? [] : QUEUE))}>{rows.length ? 'Alle erledigen' : 'Zurücksetzen'}</Button>
+      </div>
+      <DataWorkspace<Ticket> label="Störungen" rows={rows} getRowId={(t) => t.id} columns={QUEUE_COLUMNS} rowMotion
+        labels={{ empty: 'Keine offenen Störungen', emptyDetail: 'Neue Meldungen erscheinen hier, sobald sie eingehen.' }} />
+    </div>
+  );
+}
+
+function CanvasDemo() {
+  const [items, setItems] = useState(WIDGETS);
+  return (
+    <DashboardCanvas<Widget>
+      items={items}
+      editable
+      rowHeight="3rem"
+      itemLabel={(w) => w.title}
+      onLayoutChange={(next) => setItems(next)}
+      renderItem={(w) => (
+        <div className="uix-docs__live-widget"><span>{w.title}</span><strong>{w.value}</strong></div>
+      )}
+    />
+  );
+}
+
 function Playground() {
   return (
     <div className="uix-docs__live-grid">
@@ -180,6 +248,12 @@ function Playground() {
       </Demo>
       <Demo title="Step entrance" hint="Weiter and Zurück: each step slides in from the way you are going.">
         <StepsDemo />
+      </Demo>
+      <Demo title="Rows that move (DataWorkspace rowMotion)" hint="Add a ticket: it rises in at the top. Erledigen: the row fades and the rows below glide up. Umsortieren glides every row to its new place. Alle erledigen: the empty state waits until the last rows have gone.">
+        <RowsDemo />
+      </Demo>
+      <Demo title="Card lift (DashboardCanvas)" hint="Drag a card by its move handle: it lifts and stays solid while the dashed outline shows where it lands, then it settles. Drag the resize corner: the card only dims.">
+        <CanvasDemo />
       </Demo>
     </div>
   );
