@@ -6,6 +6,7 @@
   .uix-switch__track {
     width: 36px; height: 20px; flex: none; border-radius: var(--uix-radius-pill);
     background: var(--uix-bg-active); position: relative;
+    pointer-events: none; /* HAR-4588 */
     transition: background-color var(--uix-dur) var(--uix-ease-out);
   }
   .uix-switch__track::after {

@@ -9,6 +9,7 @@
     width: 18px; height: 18px; flex: none; border-radius: 50%;
     border: 1px solid var(--uix-choice-border); background: var(--uix-surface);
     display: grid; place-items: center;
+    pointer-events: none; /* HAR-4588 */
     transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-radio__dot::after {
@@ -47,6 +48,7 @@
   .uix-radio-card__check {
     position: absolute; inset-block-start: var(--uix-space-3); inset-inline-end: var(--uix-space-3); display: grid; place-items: center;
     width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--uix-choice-border); background: var(--uix-surface); color: transparent;
+    pointer-events: none; /* HAR-4588 */
   }
   .uix-radio-card__check svg { width: 14px; height: 14px; }
   .uix-radio-card > input:checked ~ .uix-radio-card__check { border-color: var(--uix-accent); background: var(--uix-accent); color: var(--uix-accent-fg); }
