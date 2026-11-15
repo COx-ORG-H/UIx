@@ -28,6 +28,9 @@ export const AlertTriangleIcon: UixIcon;
 export const ArchiveIcon: UixIcon;
 
 // @public (undocumented)
+export const ArchiveRestoreIcon: UixIcon;
+
+// @public (undocumented)
 export const ArrowDownIcon: UixIcon;
 
 // @public (undocumented)
@@ -103,6 +106,9 @@ export const CalendarIcon: UixIcon;
 export const CalendarOffIcon: UixIcon;
 
 // @public (undocumented)
+export const CalendarSyncIcon: UixIcon;
+
+// @public (undocumented)
 export const CalendarXIcon: UixIcon;
 
 // @public (undocumented)
@@ -122,6 +128,9 @@ export const CheckCircleIcon: UixIcon;
 
 // @public (undocumented)
 export const CheckIcon: UixIcon;
+
+// @public (undocumented)
+export const CheckSquareIcon: UixIcon;
 
 // @public (undocumented)
 export const ChevronDownIcon: UixIcon;
@@ -247,6 +256,9 @@ export const EyeOffIcon: UixIcon;
 export const FaceSlightlySmilingIcon: UixIcon;
 
 // @public (undocumented)
+export const FaceSlightlySmilingPlusIcon: UixIcon;
+
+// @public (undocumented)
 export const FileArchiveIcon: UixIcon;
 
 // @public (undocumented)
@@ -278,6 +290,9 @@ export const FileImageIcon: UixIcon;
 
 // @public (undocumented)
 export const FileInputIcon: UixIcon;
+
+// @public (undocumented)
+export const FileKeyIcon: UixIcon;
 
 // @public (undocumented)
 export const FileQuestionIcon: UixIcon;
@@ -383,6 +398,7 @@ export const ICON_GLYPHS: {
     readonly accessibility: IconNode;
     readonly activity: IconNode;
     readonly archive: IconNode;
+    readonly 'archive-restore': IconNode;
     readonly 'arrow-down': IconNode;
     readonly 'arrow-left': IconNode;
     readonly 'arrow-left-right': IconNode;
@@ -407,6 +423,7 @@ export const ICON_GLYPHS: {
     readonly 'calendar-clock': IconNode;
     readonly 'calendar-days': IconNode;
     readonly 'calendar-off': IconNode;
+    readonly 'calendar-sync': IconNode;
     readonly 'calendar-x': IconNode;
     readonly camera: IconNode;
     readonly 'chart-column': IconNode;
@@ -451,6 +468,7 @@ export const ICON_GLYPHS: {
     readonly eye: IconNode;
     readonly 'eye-off': IconNode;
     readonly 'face-slightly-smiling': IconNode;
+    readonly 'face-slightly-smiling-plus': IconNode;
     readonly file: IconNode;
     readonly 'file-archive': IconNode;
     readonly 'file-chart-column-increasing': IconNode;
@@ -460,6 +478,7 @@ export const ICON_GLYPHS: {
     readonly 'file-down': IconNode;
     readonly 'file-image': IconNode;
     readonly 'file-input': IconNode;
+    readonly 'file-key': IconNode;
     readonly 'file-question-mark': IconNode;
     readonly 'file-search': IconNode;
     readonly 'file-spreadsheet': IconNode;
@@ -494,6 +513,8 @@ export const ICON_GLYPHS: {
     readonly info: IconNode;
     readonly key: IconNode;
     readonly 'key-round': IconNode;
+    readonly keyboard: IconNode;
+    readonly landmark: IconNode;
     readonly languages: IconNode;
     readonly laptop: IconNode;
     readonly layers: IconNode;
@@ -545,6 +566,7 @@ export const ICON_GLYPHS: {
     readonly presentation: IconNode;
     readonly printer: IconNode;
     readonly 'qr-code': IconNode;
+    readonly radar: IconNode;
     readonly radio: IconNode;
     readonly 'radio-tower': IconNode;
     readonly receipt: IconNode;
@@ -582,6 +604,7 @@ export const ICON_GLYPHS: {
     readonly sparkles: IconNode;
     readonly square: IconNode;
     readonly 'square-chart-gantt': IconNode;
+    readonly 'square-check-big': IconNode;
     readonly stamp: IconNode;
     readonly star: IconNode;
     readonly 'star-off': IconNode;
@@ -594,6 +617,7 @@ export const ICON_GLYPHS: {
     readonly ticket: IconNode;
     readonly timer: IconNode;
     readonly 'timer-off': IconNode;
+    readonly 'tower-control': IconNode;
     readonly 'trash-2': IconNode;
     readonly 'trending-down': IconNode;
     readonly 'trending-up': IconNode;
@@ -605,6 +629,7 @@ export const ICON_GLYPHS: {
     readonly 'user-cog': IconNode;
     readonly 'user-plus': IconNode;
     readonly 'user-round': IconNode;
+    readonly 'user-search': IconNode;
     readonly 'user-x': IconNode;
     readonly users: IconNode;
     readonly 'users-round': IconNode;
@@ -659,10 +684,16 @@ export const InboxIcon: UixIcon;
 export const InfoIcon: UixIcon;
 
 // @public (undocumented)
+export const KeyboardIcon: UixIcon;
+
+// @public (undocumented)
 export const KeyIcon: UixIcon;
 
 // @public (undocumented)
 export const KeyRoundIcon: UixIcon;
+
+// @public (undocumented)
+export const LandmarkIcon: UixIcon;
 
 // @public (undocumented)
 export const LanguagesIcon: UixIcon;
@@ -830,6 +861,9 @@ export const PrinterIcon: UixIcon;
 export const QrCodeIcon: UixIcon;
 
 // @public (undocumented)
+export const RadarIcon: UixIcon;
+
+// @public (undocumented)
 export const RadioIcon: UixIcon;
 
 // @public (undocumented)
@@ -935,10 +969,16 @@ export const SlidersHorizontalIcon: UixIcon;
 export const SmileIcon: UixIcon;
 
 // @public (undocumented)
+export const SmilePlusIcon: UixIcon;
+
+// @public (undocumented)
 export const SparklesIcon: UixIcon;
 
 // @public (undocumented)
 export const SquareChartGanttIcon: UixIcon;
+
+// @public (undocumented)
+export const SquareCheckBigIcon: UixIcon;
 
 // @public (undocumented)
 export const SquareIcon: UixIcon;
@@ -980,6 +1020,9 @@ export const TimerIcon: UixIcon;
 export const TimerOffIcon: UixIcon;
 
 // @public (undocumented)
+export const TowerControlIcon: UixIcon;
+
+// @public (undocumented)
 export const Trash2Icon: UixIcon;
 
 // @public (undocumented)
@@ -1014,6 +1057,9 @@ export const UserPlusIcon: UixIcon;
 
 // @public (undocumented)
 export const UserRoundIcon: UixIcon;
+
+// @public (undocumented)
+export const UserSearchIcon: UixIcon;
 
 // @public (undocumented)
 export const UsersIcon: UixIcon;

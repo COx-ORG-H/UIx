@@ -4,6 +4,7 @@ AlertCircle
 AlertOctagon
 AlertTriangle
 Archive
+ArchiveRestore
 ArrowDown
 ArrowLeft
 ArrowLeftRight
@@ -29,12 +30,14 @@ CalendarCheck
 CalendarClock
 CalendarDays
 CalendarOff
+CalendarSync
 CalendarX
 Camera
 Check
 CheckCheck
 CheckCircle
 CheckCircle2
+CheckSquare
 ChevronDown
 ChevronLeft
 ChevronRight
@@ -78,6 +81,7 @@ FileCode
 FileDown
 FileImage
 FileInput
+FileKey
 FileQuestion
 FileSearch
 FileSpreadsheet
@@ -115,7 +119,9 @@ Inbox
 Info
 Key
 KeyRound
+Keyboard
 Languages
+Landmark
 Laptop
 Layers
 LayoutDashboard
@@ -171,6 +177,7 @@ Printer
 QrCode
 Radio
 RadioTower
+Radar
 Receipt
 RefreshCw
 RotateCcw
@@ -203,6 +210,7 @@ Signpost
 Siren
 SlidersHorizontal
 Smile
+SmilePlus
 Sparkles
 Square
 Stamp
@@ -217,6 +225,7 @@ ThumbsUp
 Ticket
 Timer
 TimerOff
+TowerControl
 Trash2
 TrendingDown
 TrendingUp
@@ -228,6 +237,7 @@ UserCheck
 UserCog
 UserPlus
 UserRound
+UserSearch
 UserX
 Users
 UsersRound

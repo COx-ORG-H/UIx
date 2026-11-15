@@ -537,6 +537,11 @@ toast.dismiss(id);   // or toast.dismiss() for all
 - **Modal feedback (HAR-2754):** keep one `Toaster` in the shell. It moves its stable host into the most recently opened UIx modal (`Modal`, `Drawer`, `Peek`, `ConfirmDialog`) and promotes the region to a manual popover. Both are necessary: a page z-index cannot cover a modal, and a top-layer popover outside the modal remains inert. Closing a nested dialog returns the same queue to its parent; closing the last dialog returns it to its original shell location. No caller z-index or extra toaster is needed. The live [German modal-feedback specimen](../../tests/toast-top-layer/harness.html) exercises error, pending, success, retry and dismissal in a drawer and a nested modal; bundle it with `node tests/toast-top-layer/build.mjs` when serving the repository. Browser regression: `tests/a11y/toast-top-layer.spec.mjs` hit-tests toast pixels and operates its controls at desktop and 320 px in both themes.
 ### Icons (`@tensor_1/react/icons`)
 
+The TENSOR adoption set also includes `LandmarkIcon`, `KeyboardIcon`, `ArchiveRestoreIcon`,
+`CalendarSyncIcon`, `CheckSquareIcon` (an alias of `SquareCheckBigIcon`), `FileKeyIcon`,
+`RadarIcon`, `SmilePlusIcon`, `TowerControlIcon` and `UserSearchIcon`. They share the same
+size, stroke, tone and decorative/named accessibility behavior as the existing icons.
+
 The UIx icon set (HAR-996): 237 glyphs drawn in `currentColor` at the `--uix-icon-*` sizes. Icons come only from UIx
 (workspace ADR-0038); no product adds an icon library. The glyphs are Lucide's (ISC); the licence travels in
 `THIRD_PARTY_NOTICES.md`. Import the CSS once: `@tensor_1/tokens/components/icon` (also in the bundle).

@@ -982,6 +982,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "ArchiveRestoreIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "ArrowDownIcon",
       "subpath": "./icons"
     },
@@ -1082,6 +1086,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "CalendarSyncIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "CalendarXIcon",
       "subpath": "./icons"
     },
@@ -1107,6 +1115,10 @@
     },
     {
       "name": "CheckIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "CheckSquareIcon",
       "subpath": "./icons"
     },
     {
@@ -1270,6 +1282,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "FaceSlightlySmilingPlusIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "FileArchiveIcon",
       "subpath": "./icons"
     },
@@ -1311,6 +1327,10 @@
     },
     {
       "name": "FileInputIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "FileKeyIcon",
       "subpath": "./icons"
     },
     {
@@ -1462,11 +1482,19 @@
       "subpath": "./icons"
     },
     {
+      "name": "KeyboardIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "KeyIcon",
       "subpath": "./icons"
     },
     {
       "name": "KeyRoundIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "LandmarkIcon",
       "subpath": "./icons"
     },
     {
@@ -1690,6 +1718,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "RadarIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "RadioIcon",
       "subpath": "./icons"
     },
@@ -1830,11 +1862,19 @@
       "subpath": "./icons"
     },
     {
+      "name": "SmilePlusIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "SparklesIcon",
       "subpath": "./icons"
     },
     {
       "name": "SquareChartGanttIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "SquareCheckBigIcon",
       "subpath": "./icons"
     },
     {
@@ -1890,6 +1930,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "TowerControlIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "Trash2Icon",
       "subpath": "./icons"
     },
@@ -1931,6 +1975,10 @@
     },
     {
       "name": "UserRoundIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "UserSearchIcon",
       "subpath": "./icons"
     },
     {
