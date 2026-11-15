@@ -1,5 +1,11 @@
 # @tensor_1/react
 
+## 2.66.0
+
+### Minor Changes
+
+- 46d496c: Publish the ten additional named icons needed by TENSOR's current UIx adoption: Landmark, Keyboard, ArchiveRestore, CalendarSync, CheckSquare, FileKey, Radar, SmilePlus, TowerControl and UserSearch. Existing glyphs and exports remain unchanged; CheckSquare aliases SquareCheckBig. Each icon uses the shared sizing, stroke and accessible-name contract.
+
 ## 2.65.1
 
 ### Patch Changes
