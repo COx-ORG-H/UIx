@@ -39,6 +39,11 @@ separately.
 Omitting a size preserves the existing default. Invalid numeric sizes fall back to the default;
 use `label={null}` for a decorative dot whose state is already written beside it.
 
+For a nullable single condition, use `RuleBuilder` with `maxConditions={1}`, `conditionsOnly`,
+`allowGroups={false}`, `maxDepth={1}` and `checks={{ emptyGroup: false }}`. The limit counts
+condition leaves across all groups and prevents further appends; it never trims controlled input.
+See [the optional-condition example](Docs/optional-single-condition.md) for the German keyboard walk.
+
 Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind
 theme, and typed TS constants). Add it as a dependency and import what your stack needs:
 
