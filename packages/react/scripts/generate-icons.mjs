@@ -32,16 +32,26 @@ const pascal = (kebab) => kebab.split('-').map((p) => p[0].toUpperCase() + p.sli
 const camel = (kebab) => `glyph${pascal(kebab)}`;
 
 const wanted = readFileSync(join(here, 'icon-names.txt'), 'utf8').split(/\s+/).filter(Boolean);
+// Public UIx identities survive a canonical rename in the upstream package.
+const stableGlyphs = JSON.parse(readFileSync(join(here, 'icon-glyph-compat.json'), 'utf8'));
 const glyphs = new Map(); // glyph → node
 const names = new Map(); // requested export name → glyph
 for (const name of wanted) {
-  const glyph = exportToGlyph.get(name);
-  if (!glyph) throw new Error(`lucide-react ${version} has no export ${name}`);
+  const sourceGlyph = exportToGlyph.get(name);
+  if (!sourceGlyph) throw new Error(`lucide-react ${version} has no export ${name}`);
+  const glyph = stableGlyphs[name] ?? sourceGlyph;
   names.set(name, glyph);
   if (glyphs.has(glyph)) continue;
-  const src = readFileSync(join(lucide, 'dist/esm/icons', `${glyph}.mjs`), 'utf8');
-  const start = src.indexOf('const __iconNode = ') + 'const __iconNode = '.length;
-  const node = Function(`return (${src.slice(start, src.indexOf(';\nconst ', start))})`)();
+  const src = readFileSync(join(lucide, 'dist/esm/icons', `${sourceGlyph}.mjs`), 'utf8');
+  const dataFormat = src.includes('const __iconData = ');
+  const marker = dataFormat ? 'const __iconData = ' : 'const __iconNode = ';
+  const markerIndex = src.indexOf(marker);
+  const start = markerIndex + marker.length;
+  const end = src.indexOf(';\n', start);
+  if (markerIndex < 0 || end < 0) throw new Error(`Unsupported Lucide source format: ${sourceGlyph}`);
+  const data = Function(`return (${src.slice(start, end)})`)();
+  const node = dataFormat ? data.node : data;
+  if (!Array.isArray(node)) throw new Error(`Missing Lucide icon nodes: ${sourceGlyph}`);
   glyphs.set(glyph, node.map(([tag, { key, ...attrs }]) => [tag, attrs]));
 }
 const sortedGlyphs = [...glyphs.keys()].sort();

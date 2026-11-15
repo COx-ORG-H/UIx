@@ -156,3 +156,9 @@ default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove
 
 Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts
 in the docs shell. Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.
+The React icon entry is generated from Lucide 1.61.0. `scripts/icon-glyph-compat.json`
+preserves public UIx glyph identities when upstream renames an alias; `building-2`
+and `trash-2` remain valid. Regenerate with
+`node packages/react/scripts/generate-icons.mjs <installed-lucide-react-package>`.
+The generator also reads the earlier `__iconNode` format; Lucide is a generation
+input only and is never a runtime dependency of the package.

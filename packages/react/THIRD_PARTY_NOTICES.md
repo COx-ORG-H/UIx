@@ -2,9 +2,9 @@
 
 `@tensor_1/react` redistributes SVG path data from these projects. Their licences require this notice to travel with copies.
 
-## Lucide (lucide-react 1.39.0)
+## Lucide (lucide-react 1.39.0 and 1.61.0)
 
-Used by: the icon set (`@tensor_1/react/icons`, `dist/icons/**`) and the editor, emoji, reaction and table-control glyphs (`EditorIcons`). Source: https://lucide.dev
+Used by: the icon set (`@tensor_1/react/icons`, `dist/icons/**`, source 1.61.0) and the editor, emoji, reaction and table-control glyphs (`EditorIcons`, source 1.39.0). Source: https://lucide.dev
 
 ```text
 ISC License
