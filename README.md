@@ -33,6 +33,12 @@ separately.
 
 ## Use it in a project
 
+`Avatar` accepts named kit sizes or positive numeric pixels, for example
+`<Avatar size={28}>AM</Avatar>`. Numeric sizes keep width/height equal and scale initials.
+`<PresenceDot size={8} presence="busy" label="Beschäftigt" />` sizes a standalone marker.
+Omitting a size preserves the existing default. Invalid numeric sizes fall back to the default;
+use `label={null}` for a decorative dot whose state is already written beside it.
+
 For a nullable single condition, use `RuleBuilder` with `maxConditions={1}`, `conditionsOnly`,
 `allowGroups={false}`, `maxDepth={1}` and `checks={{ emptyGroup: false }}`. The limit counts
 condition leaves across all groups and prevents further appends; it never trims controlled input.

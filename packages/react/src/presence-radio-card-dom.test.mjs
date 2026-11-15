@@ -40,6 +40,38 @@ const parse = (html) => new dom.window.DOMParser().parseFromString(html, 'text/h
 
 // ── Avatar presence ──────────────────────────────────────────────────────────
 
+test('numeric Avatar sizes preserve pixel geometry, readable initials and caller attributes', () => {
+  for (const size of [24, 28, 32, 36, 40, 48]) {
+    const avatar = parse(renderToStaticMarkup(h(ui.Avatar, { size, title: 'Person', style: { marginLeft: 2 } }, 'AM')));
+    assert.equal(avatar.style.width, `${size}px`);
+    assert.equal(avatar.style.height, `${size}px`);
+    assert.equal(avatar.style.fontSize, `${Math.max(9, Math.round(size * 0.42))}px`);
+    assert.equal(avatar.style.marginLeft, '2px');
+    assert.equal(avatar.getAttribute('title'), 'Person');
+    assert.equal(avatar.classList.contains(`uix-avatar--${size}`), false);
+  }
+  for (const size of [0, -4, NaN, Infinity]) {
+    const html = renderToStaticMarkup(h(ui.Avatar, { size }, 'AM'));
+    assert.equal(html, '<span class="uix-avatar">AM</span>', 'invalid numeric sizes retain the default');
+  }
+});
+
+test('numeric PresenceDot retains translated/decorative accessibility and safe defaults', () => {
+  const dot = parse(renderToStaticMarkup(h(ui.PresenceDot, { size: 8, presence: 'busy', label: 'Beschäftigt' })));
+  assert.equal(dot.style.width, '8px');
+  assert.equal(dot.style.height, '8px');
+  assert.equal(dot.getAttribute('role'), 'img');
+  assert.equal(dot.getAttribute('aria-label'), 'Beschäftigt');
+  const decorative = parse(renderToStaticMarkup(h(ui.PresenceDot, { size: 8, presence: 'online', label: null })));
+  assert.equal(decorative.getAttribute('aria-hidden'), 'true');
+  assert.equal(decorative.hasAttribute('aria-label'), false);
+  for (const size of [0, -1, NaN, Infinity]) {
+    const invalid = parse(renderToStaticMarkup(h(ui.PresenceDot, { size, presence: 'offline', label: 'Abgemeldet' })));
+    assert.equal(invalid.style.width, '');
+    assert.equal(invalid.style.height, '');
+  }
+});
+
 test('Avatar status (boolean) renders exactly what it did: an online dot and the word "online"', () => {
   assert.equal(renderToStaticMarkup(h(ui.Avatar, { status: true }, 'AP')),
     '<span class="uix-avatar">AP<span class="uix-avatar__status" aria-hidden="true"></span><span class="uix-visually-hidden">online</span></span>');

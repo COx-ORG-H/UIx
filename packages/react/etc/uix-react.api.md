@@ -401,8 +401,7 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
     onlineLabel?: string;
     presence?: AvatarPresence;
     presenceLabels?: Partial<Record<AvatarPresence, string>>;
-    // (undocumented)
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | number;
     // (undocumented)
     src?: string;
     status?: boolean;
@@ -5724,6 +5723,7 @@ export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
     label?: string | null;
     // (undocumented)
     presence: AvatarPresence;
+    size?: number;
 }
 
 // @public (undocumented)
