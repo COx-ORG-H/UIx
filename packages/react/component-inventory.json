@@ -114,6 +114,10 @@
       "subpath": "."
     },
     {
+      "name": "ChartMetric",
+      "subpath": "."
+    },
+    {
       "name": "Checkbox",
       "subpath": "."
     },

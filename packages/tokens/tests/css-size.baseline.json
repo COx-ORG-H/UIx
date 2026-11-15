@@ -92,9 +92,9 @@
       "brotli": 1499
     },
     "styles/components/chart.css": {
-      "raw": 5938,
-      "gzip": 1620,
-      "brotli": 1343
+      "raw": 6062,
+      "gzip": 1648,
+      "brotli": 1359
     },
     "styles/components/checkbox.css": {
       "raw": 4978,

@@ -915,6 +915,21 @@ export interface ChartCardProps extends Omit<HTMLAttributes<HTMLElement>, 'title
     question: ReactNode;
 }
 
+// @public (undocumented)
+export function ChartMetric(input: ChartMetricProps): react.JSX.Element;
+
+// @public
+export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
+    align?: 'start' | 'end';
+    // (undocumented)
+    delta?: ReactNode;
+    deltaTone?: 'neutral' | 'positive' | 'negative' | 'warning';
+    // (undocumented)
+    label?: ReactNode;
+    // (undocumented)
+    value: ReactNode;
+}
+
 // @public
 export interface ChartStatPoint {
     // (undocumented)
@@ -4748,8 +4763,6 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     color?: string | undefined | undefined;
     title?: string | undefined | undefined;
     id?: string | undefined | undefined;
-    draggable?: (boolean | "false" | "true") | undefined;
-    style?: react.CSSProperties | undefined;
     defaultChecked?: boolean | undefined | undefined;
     defaultValue?: string | number | readonly string[] | undefined;
     suppressContentEditableWarning?: boolean | undefined | undefined;
@@ -4757,15 +4770,17 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     accessKey?: string | undefined | undefined;
     autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
     autoFocus?: boolean | undefined | undefined;
-    contentEditable?: "inherit" | (boolean | "false" | "true") | "plaintext-only" | undefined;
+    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
     contextMenu?: string | undefined | undefined;
     dir?: string | undefined | undefined;
+    draggable?: (boolean | "true" | "false") | undefined;
     enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
     hidden?: boolean | undefined | undefined;
     lang?: string | undefined | undefined;
     nonce?: string | undefined | undefined;
     slot?: string | undefined | undefined;
-    spellCheck?: (boolean | "false" | "true") | undefined;
+    spellCheck?: (boolean | "true" | "false") | undefined;
+    style?: react.CSSProperties | undefined;
     tabIndex?: number | undefined | undefined;
     translate?: "yes" | "no" | undefined | undefined;
     radioGroup?: string | undefined | undefined;
@@ -4796,11 +4811,11 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     exportparts?: string | undefined | undefined;
     part?: string | undefined | undefined;
     "aria-activedescendant"?: string | undefined | undefined;
-    "aria-atomic"?: (boolean | "false" | "true") | undefined;
+    "aria-atomic"?: (boolean | "true" | "false") | undefined;
     "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined | undefined;
     "aria-braillelabel"?: string | undefined | undefined;
     "aria-brailleroledescription"?: string | undefined | undefined;
-    "aria-busy"?: (boolean | "false" | "true") | undefined;
+    "aria-busy"?: (boolean | "true" | "false") | undefined;
     "aria-checked"?: boolean | "false" | "mixed" | "true" | undefined | undefined;
     "aria-colcount"?: number | undefined | undefined;
     "aria-colindex"?: number | undefined | undefined;
@@ -4811,37 +4826,37 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     "aria-describedby"?: string | undefined | undefined;
     "aria-description"?: string | undefined | undefined;
     "aria-details"?: string | undefined | undefined;
-    "aria-disabled"?: (boolean | "false" | "true") | undefined;
+    "aria-disabled"?: (boolean | "true" | "false") | undefined;
     "aria-dropeffect"?: "none" | "copy" | "execute" | "link" | "move" | "popup" | undefined | undefined;
     "aria-errormessage"?: string | undefined | undefined;
-    "aria-expanded"?: (boolean | "false" | "true") | undefined;
+    "aria-expanded"?: (boolean | "true" | "false") | undefined;
     "aria-flowto"?: string | undefined | undefined;
-    "aria-grabbed"?: (boolean | "false" | "true") | undefined;
+    "aria-grabbed"?: (boolean | "true" | "false") | undefined;
     "aria-haspopup"?: boolean | "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog" | undefined | undefined;
-    "aria-hidden"?: (boolean | "false" | "true") | undefined;
+    "aria-hidden"?: (boolean | "true" | "false") | undefined;
     "aria-invalid"?: boolean | "false" | "true" | "grammar" | "spelling" | undefined | undefined;
     "aria-keyshortcuts"?: string | undefined | undefined;
     "aria-label"?: string | undefined | undefined;
     "aria-labelledby"?: string | undefined | undefined;
     "aria-level"?: number | undefined | undefined;
     "aria-live"?: "off" | "assertive" | "polite" | undefined | undefined;
-    "aria-modal"?: (boolean | "false" | "true") | undefined;
-    "aria-multiline"?: (boolean | "false" | "true") | undefined;
-    "aria-multiselectable"?: (boolean | "false" | "true") | undefined;
+    "aria-modal"?: (boolean | "true" | "false") | undefined;
+    "aria-multiline"?: (boolean | "true" | "false") | undefined;
+    "aria-multiselectable"?: (boolean | "true" | "false") | undefined;
     "aria-orientation"?: "horizontal" | "vertical" | undefined | undefined;
     "aria-owns"?: string | undefined | undefined;
     "aria-placeholder"?: string | undefined | undefined;
     "aria-posinset"?: number | undefined | undefined;
     "aria-pressed"?: boolean | "false" | "mixed" | "true" | undefined | undefined;
-    "aria-readonly"?: (boolean | "false" | "true") | undefined;
+    "aria-readonly"?: (boolean | "true" | "false") | undefined;
     "aria-relevant"?: "additions" | "additions removals" | "additions text" | "all" | "removals" | "removals additions" | "removals text" | "text" | "text additions" | "text removals" | undefined | undefined;
-    "aria-required"?: (boolean | "false" | "true") | undefined;
+    "aria-required"?: (boolean | "true" | "false") | undefined;
     "aria-roledescription"?: string | undefined | undefined;
     "aria-rowcount"?: number | undefined | undefined;
     "aria-rowindex"?: number | undefined | undefined;
     "aria-rowindextext"?: string | undefined | undefined;
     "aria-rowspan"?: number | undefined | undefined;
-    "aria-selected"?: (boolean | "false" | "true") | undefined;
+    "aria-selected"?: (boolean | "true" | "false") | undefined;
     "aria-setsize"?: number | undefined | undefined;
     "aria-sort"?: "none" | "ascending" | "descending" | "other" | undefined | undefined;
     "aria-valuemax"?: number | undefined | undefined;

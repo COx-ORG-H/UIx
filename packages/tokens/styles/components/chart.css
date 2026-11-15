@@ -22,6 +22,8 @@
   .uix-chart__subtitle { color: var(--uix-text-muted); font-size: var(--uix-text-meta); line-height: var(--uix-leading-meta); }
   .uix-chart__title + .uix-chart__subtitle { margin-top: var(--uix-space-1); }
   .uix-chart__metric { flex: none; text-align: right; }
+  .uix-chart__metric[data-align="start"] { text-align: start; }
+  .uix-chart__metric[data-align="end"] { text-align: end; }
   .uix-chart__metric-value {
     color: var(--uix-text); font-family: var(--uix-font-mono); font-size: var(--uix-text-h2);
     font-weight: 600; letter-spacing: var(--uix-tracking-tight); line-height: var(--uix-leading-h2);

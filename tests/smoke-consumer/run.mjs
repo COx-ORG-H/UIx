@@ -130,6 +130,20 @@ try {
   step('1. ESM bundle (esbuild)');
   // Bare specifier resolves from this module's dir up to the repo-root node_modules.
   const esbuild = await import('esbuild');
+  step('metric-only public root bundle contains no chart engine');
+  writeFileSync(join(tmp, 'metric-only.ts'), "export { ChartMetric } from '@tensor_1/react';\n");
+  const metric = await esbuild.build({
+    absWorkingDir: tmp,
+    entryPoints: [join(tmp, 'metric-only.ts')],
+    bundle: true, format: 'esm', platform: 'browser', metafile: true, write: false,
+    external: ['react', 'react-dom', 'react/jsx-runtime'], logLevel: 'silent',
+  });
+  const engineBytes = Object.values(metric.metafile.outputs).flatMap((output) => Object.entries(output.inputs))
+    .filter(([name]) => /(?:^|[\\/])(?:echarts|zrender)[\\/]/.test(name))
+    .reduce((sum, [, input]) => sum + input.bytesInOutput, 0);
+  if (engineBytes !== 0) throw new Error(`metric-only bundle emitted ${engineBytes} chart-engine bytes`);
+  if (!metric.outputFiles.some((file) => file.text.includes('uix-chart__metric-value'))) throw new Error('metric-only bundle lost its component');
+  step(`metric-only bundle: ${metric.outputFiles.reduce((sum, file) => sum + file.contents.length, 0)} bytes, ${engineBytes} echarts/zrender bytes`);
   const res = await esbuild.build({
     absWorkingDir: tmp,
     entryPoints: [join(tmp, 'app.tsx')],
