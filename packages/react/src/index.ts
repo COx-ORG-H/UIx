@@ -570,6 +570,9 @@ export type { TextDiffLabels, TextDiffProps } from './components/TextDiff.js';
 export { diffText, diffTokens, textDiffRows, tokenizeText } from './text-diff-model.js';
 export type { TextDiffGranularity, TextDiffLine, TextDiffOp, TextDiffOptions, TextDiffResult, TextDiffRow, TextDiffSegment } from './text-diff-model.js';
 
+export { ChartMetric } from './components/ChartMetric.js';
+export type { ChartMetricProps } from './components/ChartMetric.js';
+
 export { ColorPicker, DEFAULT_COLOR_PICKER_LABELS } from './components/ColorPicker.js';
 export type { ColorPickerLabels, ColorPickerProps } from './components/ColorPicker.js';
 export { contrastRatio, hexToRgb, hsvToHex, hsvToRgb, meetsContrast, normalizeHex, rgbToHex, rgbToHsv } from './color-model.js';

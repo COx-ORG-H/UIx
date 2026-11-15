@@ -1,6 +1,6 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RuleBuilder, type RuleDefinition } from '@tensor_1/react';
+import { RuleBuilder, type RuleDefinition } from '../../packages/react/src/index.js';
 import { OPTIONAL_RULE_LABELS } from '../../packages/tokens/docs/rule-builder-labels.js';
 
 const empty: RuleDefinition = { when: { id: 'root', combinator: 'and', conditions: [] }, then: [] };

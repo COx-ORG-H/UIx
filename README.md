@@ -84,6 +84,12 @@ and card layouts retain their existing rendering behavior.
   virtualize rowActionsColumn rowActions={renderActions} />
 ```
 
+For dashboard bodies, `ChartMetric` is available from the lightweight `@tensor_1/react` root:
+`<ChartMetric value="1.234,5" label="Vorgänge pro Arbeitsstunde" delta="−12 %" deltaTone="positive" align="start" />`.
+It adds no card chrome or chart engine. Omit `align` to preserve the existing responsive
+chart-header alignment; `start` and `end` follow writing direction. `deltaTone` describes
+sentiment independently of the numerical direction. Existing chart-entry imports remain supported.
+
 `@tensor_1/react/component-inventory.json` exposes a machine-readable component inventory for the
 installed release. Schema version 1 lists `{ name, subpath }` entries; `.` means the root package,
 and other subpaths name their own entry point. Aliases are listed by their exported names, including

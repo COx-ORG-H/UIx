@@ -35,8 +35,10 @@ with `UixLabelsProvider`. A nullable consumer maps zero conditions to `null`
 and one condition back to its existing stored object; this API changes no schema.
 
 The executable specimen is `tests/optional-condition/harness.tsx`. It imports
-the public package entry and shows optional, pre-existing over-limit, read-only
-and default multi-condition cases together. To run its four browser cases:
+the actual component source, following the browser lane's tokens-only build convention,
+and shows optional, pre-existing over-limit, read-only and default multi-condition cases.
+The isolated packed-consumer smoke separately renders the public export at zero/one
+conditions and checks its declarations with React 18/19. To run the browser cases:
 
 ```sh
 npm run build:all
