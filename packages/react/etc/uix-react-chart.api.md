@@ -49,11 +49,11 @@ export interface ChartLegendProps extends HTMLAttributes<HTMLUListElement> {
 // @public (undocumented)
 export function ChartMetric(input: ChartMetricProps): react.JSX.Element;
 
-// @public (undocumented)
+// @public
 export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
+    align?: 'start' | 'end';
     // (undocumented)
     delta?: ReactNode;
-    // (undocumented)
     deltaTone?: 'neutral' | 'positive' | 'negative' | 'warning';
     // (undocumented)
     label?: ReactNode;

@@ -300,22 +300,8 @@ export function ChartCore({
   );
 }
 
-export interface ChartMetricProps extends HTMLAttributes<HTMLDivElement> {
-  value: ReactNode;
-  label?: ReactNode;
-  delta?: ReactNode;
-  deltaTone?: 'neutral' | 'positive' | 'negative' | 'warning';
-}
-
-export function ChartMetric({ value, label, delta, deltaTone = 'neutral', className, ...props }: ChartMetricProps) {
-  return (
-    <div className={cx('uix-chart__metric', className)} {...props}>
-      <div className="uix-chart__metric-value">{value}</div>
-      {label != null && <div className="uix-chart__metric-label">{label}</div>}
-      {delta != null && <div className="uix-chart__delta" data-tone={deltaTone}>{delta}</div>}
-    </div>
-  );
-}
+export { ChartMetric } from './ChartMetric.js';
+export type { ChartMetricProps } from './ChartMetric.js';
 
 export interface ChartLegendProps extends HTMLAttributes<HTMLUListElement> {
   children?: ReactNode;

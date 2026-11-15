@@ -11,6 +11,7 @@ import {
   BuilderCanvas,
   Button,
   Card,
+  ChartMetric,
   ColorPicker,
   DateRangePicker,
   DiffViewer,
@@ -35,7 +36,7 @@ import {
 } from '@tensor_1/react';
 import type { DataWorkspaceSort } from '@tensor_1/react';
 import type { BrandProfile, ButtonProps, LayeredLayout, RelationshipGraphLabels, RuleDefinition } from '@tensor_1/react';
-import { Chart, ChartMetric } from '@tensor_1/react/chart';
+import { Chart } from '@tensor_1/react/chart';
 import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset';
 import { cssVar, light, dark, num } from '@tensor_1/tokens/ts';
 import { Icon, ShieldCheckIcon, AlertTriangleIcon } from '@tensor_1/react/icons';
@@ -78,11 +79,12 @@ let several: DataWorkspaceSort[] = [];
 const sortOne = DataWorkspace<Book>({ label: 'Books', rows: [], getRowId: (r) => r.id, columns: [], sort: single, onSortChange: (s) => { single = s; void s?.columnId; } });
 const sortNone = DataWorkspace({ label: 'Books', rows: [] as Book[], getRowId: (r) => r.id, columns: [], sort: null, onSortChange: (s) => { void s?.direction; } });
 const sortMany = DataWorkspace({ label: 'Books', rows: [] as Book[], getRowId: (r) => r.id, columns: [], sort: several, onSortChange: (s) => { several = s; void s.length; } });
+const bodyMetric = <ChartMetric value={0} label="Vorgänge" delta="−12 %" deltaTone="positive" align="start" />;
 
 export default {
   BrandProfiles, BuilderCanvas, Button, Card, ColorPicker, DateRangePicker,
   DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,
   PresetChart, ChartMetric, ChartLegend, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
-  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand, iconElements, sortOne, sortNone, sortMany,
+  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, brand, iconElements, sortOne, sortNone, sortMany, bodyMetric,
 };
