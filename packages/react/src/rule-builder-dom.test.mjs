@@ -102,6 +102,41 @@ const change = (select, value) => act(() => {
   select.dispatchEvent(new window.Event('change', { bubbles: true }));
 });
 
+test('optional single condition hides Add at capacity and returns keyboard focus after add/remove', () => {
+  const t = mount({ maxConditions: 1, conditionsOnly: true, allowGroups: false, maxDepth: 1, hideCombinator: true, labels: GERMAN, checks: { emptyGroup: false } });
+  const add = button(t.host, 'Bedingung hinzufügen');
+  add.focus();
+  click(add);
+  assert.equal(t.emitted[0].when.conditions.length, 1);
+  assert.ok(!button(t.host, 'Bedingung hinzufügen'), 'Add is absent at capacity');
+  assert.ok(t.host.querySelector('.uix-rule-builder__condition').contains(document.activeElement), 'editing retains reachable focus when Add disappears');
+  click(t.host.querySelector('[aria-label="Bedingung entfernen"]'));
+  assert.equal(t.emitted.at(-1).when.conditions.length, 0);
+  assert.ok(document.activeElement === button(t.host, 'Bedingung hinzufügen'), 'focus returns to Add');
+  assert.deepEqual(english(t.host), []);
+  t.cleanup();
+});
+
+test('over-limit controlled conditions remain editable and removable; read-only and zero capacity cannot add', () => {
+  const t = mount({ maxConditions: 1, conditionsOnly: true, allowGroups: false }, TWO);
+  assert.equal(t.host.querySelectorAll('.uix-rule-builder__condition').length, 2);
+  assert.deepEqual(t.emitted, [], 'render never truncates or normalizes stored input');
+  assert.ok(!button(t.host, 'Add condition'), 'Add is absent above capacity');
+  assert.ok([...t.host.querySelectorAll('input')].every((input) => !input.disabled));
+  click(t.host.querySelector('[aria-label="Remove condition"]'));
+  assert.deepEqual(t.emitted.at(-1).when.conditions, [TWO.when.conditions[1]]);
+  assert.ok(!button(t.host, 'Add condition'), 'Add is absent above capacity');
+  click(t.host.querySelector('[aria-label="Remove condition"]'));
+  assert.ok(button(t.host, 'Add condition'));
+  t.cleanup();
+  for (const props of [{ maxConditions: 0 }, { maxConditions: 1, readOnly: true }]) {
+    const off = mount({ ...props, conditionsOnly: true, allowGroups: false }, EMPTY);
+    assert.ok(!button(off.host, 'Add condition'), 'read-only/zero capacity has no Add');
+    assert.deepEqual(off.emitted, []);
+    off.cleanup();
+  }
+});
+
 test('the acceptance case: every label German, conditions only, AND only, catch-all allowed — no English and no dead control', () => {
   const t = mount({ labels: GERMAN, conditionsOnly: true, combinator: 'and', allowGroups: false, maxDepth: 1, checks: { emptyGroup: false } });
   const builder = t.host.querySelector('.uix-rule-builder');

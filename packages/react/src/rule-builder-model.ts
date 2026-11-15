@@ -70,6 +70,11 @@ export function ruleDepth(group: RuleGroup): number {
   return 1 + Math.max(0, ...group.conditions.filter(isRuleGroup).map(ruleDepth));
 }
 
+/** Count condition leaves, including those in nested groups. */
+export function ruleConditionCount(node: RuleCondition | RuleGroup): number {
+  return isRuleGroup(node) ? node.conditions.reduce((sum, child) => sum + ruleConditionCount(child), 0) : 1;
+}
+
 export function findRuleNodeDepth(group: RuleGroup, id: string, depth = 1): number | undefined {
   if (group.id === id) return depth;
   for (const node of group.conditions) {
@@ -102,7 +107,10 @@ export function appendRuleNode(
   parentId: string,
   node: RuleCondition | RuleGroup,
   maxDepth = 3,
+  maxConditions = Number.POSITIVE_INFINITY,
 ): RuleGroup {
+  const capacity = Number.isNaN(maxConditions) ? 0 : Math.max(0, Math.floor(maxConditions));
+  if (capacity !== Number.POSITIVE_INFINITY && ruleConditionCount(group) + ruleConditionCount(node) > capacity) return group;
   const parentDepth = findRuleNodeDepth(group, parentId);
   if (parentDepth === undefined) return group;
   const addedDepth = isRuleGroup(node) ? ruleDepth(node) : 0;

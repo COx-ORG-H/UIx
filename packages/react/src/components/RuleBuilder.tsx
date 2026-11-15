@@ -1,11 +1,12 @@
 "use client";
 
 import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { cx } from '../cx.js';
 import type { JsonValue } from '../json-value.js';
 import {
   appendRuleNode, isRuleGroup, mapRuleGroup, moveRuleNode, removeRuleNode, setRuleCombinator,
-  summarizeRule, validateRuleDefinition,
+  ruleConditionCount, summarizeRule, validateRuleDefinition,
 } from '../rule-builder-model.js';
 import type { RuleAction, RuleCheck, RuleCondition, RuleDefinition, RuleGroup, RuleValidationIssue } from '../rule-builder-model.js';
 import { fillLabel } from '../fill-label.js';
@@ -145,6 +146,13 @@ export interface RuleBuilderProps {
   actions?: RuleActionDefinition[];
   maxDepth?: number;
   /**
+   * Maximum condition leaves across the whole definition (unlimited by default).
+   * At capacity, add actions are absent. Existing over-limit controlled input is
+   * preserved for editing/removal. Use 1 with conditionsOnly and allowGroups=false
+   * for an optional single condition; checks.emptyGroup=false permits the empty value.
+   */
+  maxConditions?: number;
+  /**
    * `true`: the same builder with every control disabled and no add, move or remove buttons.
    * `'summary'`: one sentence instead of the controls (what `readOnly` rendered up to 2.31.0;
    * its words are the `summary…`, `and` and `or` labels).
@@ -202,6 +210,7 @@ interface GroupEditorProps {
   fields: RuleFieldDefinition[];
   operators: RuleOperatorDefinition[];
   maxDepth: number;
+  maxConditions: number;
   disabled: boolean;
   onRootChange: (group: RuleGroup) => void;
   labels: RuleBuilderLabels;
@@ -211,18 +220,37 @@ interface GroupEditorProps {
   allowGroups: boolean;
 }
 
-function RuleGroupEditor({ group, depth, root, fields, operators, maxDepth, disabled, onRootChange, labels, combinator, hideCombinator, allowGroups }: GroupEditorProps) {
+function RuleGroupEditor({ group, depth, root, fields, operators, maxDepth, maxConditions, disabled, onRootChange, labels, combinator, hideCombinator, allowGroups }: GroupEditorProps) {
+  const groupRef = useRef<HTMLFieldSetElement>(null);
+  const addRef = useRef<HTMLButtonElement>(null);
+  const focusAfterMutation = useRef<'row' | 'add' | null>(null);
+  useLayoutEffect(() => {
+    if (focusAfterMutation.current === 'row') {
+      const target = groupRef.current?.querySelector<HTMLElement>('[role="combobox"]') ?? groupRef.current?.querySelector<HTMLElement>('select, input');
+      target?.focus();
+    } else if (focusAfterMutation.current === 'add') addRef.current?.focus();
+    focusAfterMutation.current = null;
+  }, [group.conditions]);
+  const canAdd = maxConditions === Number.POSITIVE_INFINITY || ruleConditionCount(root) < maxConditions;
   const updateNode = (id: string, update: (node: RuleCondition | RuleGroup) => RuleCondition | RuleGroup) => onRootChange(mapRuleGroup(root, id, update));
-  const addCondition = () => onRootChange(appendRuleNode(root, group.id, defaultCondition(fields, operators), maxDepth));
-  const addGroup = () => onRootChange(appendRuleNode(root, group.id, {
-    id: nextId('group'), combinator: combinator ?? 'and', conditions: [defaultCondition(fields, operators)],
-  }, maxDepth));
+  const append = (node: RuleCondition | RuleGroup) => {
+    if (disabled || !canAdd) return;
+    const next = appendRuleNode(root, group.id, node, maxDepth, maxConditions);
+    if (next === root) return;
+    if (maxConditions === 1) focusAfterMutation.current = 'row';
+    onRootChange(next);
+  };
+  const addCondition = () => append(defaultCondition(fields, operators));
+  const addGroup = () => append({ id: nextId('group'), combinator: combinator ?? 'and', conditions: [defaultCondition(fields, operators)] });
   const rowControls = (node: RuleCondition | RuleGroup, index: number, label: string) => (disabled ? null : (
     <RowControls labels={labels} label={label} first={index === 0} last={index === group.conditions.length - 1} disabled={false}
-      onUp={() => onRootChange(moveRuleNode(root, node.id, -1))} onDown={() => onRootChange(moveRuleNode(root, node.id, 1))} onRemove={() => onRootChange(removeRuleNode(root, node.id))} />
+      onUp={() => onRootChange(moveRuleNode(root, node.id, -1))} onDown={() => onRootChange(moveRuleNode(root, node.id, 1))} onRemove={() => {
+        if (maxConditions === 1) focusAfterMutation.current = ruleConditionCount(root) === ruleConditionCount(node) ? 'add' : 'row';
+        onRootChange(removeRuleNode(root, node.id));
+      }} />
   ));
 
-  return <fieldset className="uix-rule-builder__group" data-depth={depth}>
+  return <fieldset ref={groupRef} className="uix-rule-builder__group" data-depth={depth}>
     <legend className="uix-rule-builder__group-heading">
       <span>{depth === 1 ? labels.when : labels.group}</span>
       {!hideCombinator && (combinator
@@ -236,7 +264,7 @@ function RuleGroupEditor({ group, depth, root, fields, operators, maxDepth, disa
     <div className="uix-rule-builder__rows">
       {group.conditions.map((node, index) => isRuleGroup(node)
         ? <div className="uix-rule-builder__nested" key={node.id}>
-          <RuleGroupEditor {...{ group: node, depth: depth + 1, root, fields, operators, maxDepth, disabled, onRootChange, labels, combinator, hideCombinator, allowGroups }} />
+          <RuleGroupEditor {...{ group: node, depth: depth + 1, root, fields, operators, maxDepth, maxConditions, disabled, onRootChange, labels, combinator, hideCombinator, allowGroups }} />
           {rowControls(node, index, labels.itemGroup)}
         </div>
         : <ConditionRow key={node.id} labels={labels} condition={node} fields={fields} operators={operators} disabled={disabled}
@@ -245,8 +273,8 @@ function RuleGroupEditor({ group, depth, root, fields, operators, maxDepth, disa
         />)}
     </div>
     {/* Read-only: nothing can be added, so the buttons are left out rather than shown disabled. */}
-    {!disabled && <div className="uix-rule-builder__add">
-      <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={addCondition} disabled={fields.length === 0 || operators.length === 0}>{labels.addCondition}</button>
+    {!disabled && canAdd && <div className="uix-rule-builder__add">
+      <button ref={addRef} type="button" className="uix-btn uix-btn--secondary uix-btn--sm" onClick={addCondition} disabled={fields.length === 0 || operators.length === 0}>{labels.addCondition}</button>
       {allowGroups && <button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" onClick={addGroup} disabled={depth >= maxDepth}>{labels.addGroup}</button>}
     </div>}
   </fieldset>;
@@ -292,6 +320,7 @@ function RowControls({ labels, label, first, last, disabled, onUp, onDown, onRem
 /** Declarative controlled when-conditions-to-actions editor with bounded nesting. */
 export function RuleBuilder({
   value, onChange, fields, operators, actions = [], maxDepth = 3, readOnly = false, conditionsOnly = false,
+  maxConditions = Number.POSITIVE_INFINITY,
   combinator, hideCombinator = false, allowGroups = true, checks, validate,
   className, addConditionLabel, addGroupLabel, addActionLabel, labels: labelOverrides,
 }: RuleBuilderProps) {
@@ -335,10 +364,11 @@ export function RuleBuilder({
   }
 
   const disabled = readOnly === true;
+  const conditionLimit = Number.isNaN(maxConditions) ? 0 : Math.max(0, Math.floor(maxConditions));
   const emitWhen = (when: RuleGroup) => onChange({ ...value, when: combinator ? setRuleCombinator(when, combinator) : when });
   const updateActions = (next: RuleAction[]) => onChange({ ...value, then: next });
   return <section className={cx('uix-rule-builder', disabled && 'uix-rule-builder--readonly', className)} aria-label={labels.region}>
-    <RuleGroupEditor group={value.when} depth={1} root={value.when} fields={fields} operators={operators} maxDepth={maxDepth} disabled={disabled} onRootChange={emitWhen} labels={labels}
+    <RuleGroupEditor group={value.when} depth={1} root={value.when} fields={fields} operators={operators} maxDepth={maxDepth} maxConditions={conditionLimit} disabled={disabled} onRootChange={emitWhen} labels={labels}
       combinator={combinator} hideCombinator={hideCombinator} allowGroups={allowGroups && maxDepth > 1} />
     {!conditionsOnly && <fieldset className="uix-rule-builder__actions"><legend>{labels.then}</legend>
       {value.then.map((action, index) => {

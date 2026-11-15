@@ -162,6 +162,15 @@ try {
     { cwd: tmp, stdio: 'inherit' });
 
   step('3. CJS require + 4. export resolution');
+  step('packed public RuleBuilder handles zero/one conditions and read-only input');
+  execFileSync(process.execPath, ['--input-type=module', '-e',
+    "import assert from 'node:assert/strict'; import {createElement as h} from 'react'; import {renderToStaticMarkup} from 'react-dom/server'; import {RuleBuilder} from '@tensor_1/react';" +
+    "const base={fields:[{id:'priority',label:'Priorität'}],operators:[{id:'eq',label:'ist'}],onChange(){},maxConditions:1,conditionsOnly:true,allowGroups:false,maxDepth:1,checks:{emptyGroup:false},labels:{addCondition:'Bedingung hinzufügen'}};" +
+    "const empty={when:{id:'root',combinator:'and',conditions:[]},then:[]}; const one={...empty,when:{...empty.when,conditions:[{id:'c1',field:'priority',operator:'eq',value:'P1'}]}};" +
+    "assert.ok(renderToStaticMarkup(h(RuleBuilder,{...base,value:empty})).includes('Bedingung hinzufügen'));" +
+    "assert.ok(!renderToStaticMarkup(h(RuleBuilder,{...base,value:one})).includes('Bedingung hinzufügen'));" +
+    "assert.ok(!renderToStaticMarkup(h(RuleBuilder,{...base,value:empty,readOnly:true})).includes('Bedingung hinzufügen'));"],
+    { cwd: tmp, stdio: 'inherit' });
   execFileSync(process.execPath, ['-e',
     "const u=require('@tensor_1/react'); const required=['Button','Card','Breadcrumbs','Combobox','RelativeTime','CardLink','DetailPage','ConfirmDialog','PromptDialog','AsyncOperationStatus','ViewMenu','FilterPopover','SavedViewMenu','Pipeline','PipelineStage','Flow','FlowNode','RuleBuilder','BuilderCanvas','SchedulingCalendar','DateRangePicker','RelationshipGraph','MatchReview','MetricInput','LicensePositionBar','BrandProfiles','DiffViewer','ColorPicker']; if(required.some(k=>!u[k])) process.exit(4);" +
     "['@tensor_1/tokens/css','@tensor_1/tokens/styles','@tensor_1/tokens/bundle','@tensor_1/tokens/components/button','@tensor_1/tokens/utilities','@tensor_1/tokens/motion','@tensor_1/tokens/tailwind','@tensor_1/tokens/themes/tensor','@tensor_1/react/chart','@tensor_1/react/chart/preset','@tensor_1/react/rich-text','@tensor_1/react/markdown','@tensor_1/react/emoji','@tensor_1/react/icons','@tensor_1/tokens/components/icon']" +
