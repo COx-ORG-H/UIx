@@ -28,6 +28,19 @@ test('bounded nesting rejects groups beyond max depth', () => {
   assert.equal(ruleDepth(tooDeep), 2);
 });
 
+test('condition capacity rejects repeated appends and nested-group bypass without trimming stored input', () => {
+  const empty = { id: 'root', combinator: 'and', conditions: [] };
+  const condition = { id: 'one', field: 'priority', operator: 'eq', value: 'P1' };
+  const one = appendRuleNode(empty, 'root', condition, 1, 1);
+  assert.deepEqual(one.conditions, [condition]);
+  assert.equal(appendRuleNode(one, 'root', { ...condition, id: 'two' }, 1, 1), one);
+  assert.equal(appendRuleNode(empty, 'root', condition, 1, 0), empty);
+  const nested = { id: 'group', combinator: 'and', conditions: [condition, { ...condition, id: 'two' }] };
+  assert.equal(appendRuleNode(empty, 'root', nested, 3, 1), empty);
+  assert.equal(appendRuleNode(rule.when, 'root', condition, 3, 1), rule.when, 'over-limit stored data is returned intact');
+  assert.equal(appendRuleNode(one, 'root', { ...condition, id: 'two' }).conditions.length, 2, 'default stays unlimited');
+});
+
 test('validation and summaries remain domain neutral', () => {
   assert.deepEqual(validateRuleDefinition(rule), []);
   assert.equal(summarizeRule(rule, { fields: { amount: 'Amount' }, operators: { gt: 'is greater than' }, actions: { notify: 'Notify' } }), 'When Amount is greater than 10 AND state eq "open", then Notify.');

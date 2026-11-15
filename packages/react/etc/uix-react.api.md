@@ -117,7 +117,7 @@ export type Align = 'start' | 'center' | 'end';
 export function announcePolite(text: string, from?: Element | null): void;
 
 // @public (undocumented)
-export function appendRuleNode(group: RuleGroup, parentId: string, node: RuleCondition | RuleGroup, maxDepth?: number): RuleGroup;
+export function appendRuleNode(group: RuleGroup, parentId: string, node: RuleCondition | RuleGroup, maxDepth?: number, maxConditions?: number): RuleGroup;
 
 // @public (undocumented)
 export interface AppliedBrandProfileSnapshot {
@@ -6588,6 +6588,7 @@ export interface RuleBuilderProps {
     hideCombinator?: boolean;
     // (undocumented)
     labels?: Partial<RuleBuilderLabels>;
+    maxConditions?: number;
     // (undocumented)
     maxDepth?: number;
     // (undocumented)
