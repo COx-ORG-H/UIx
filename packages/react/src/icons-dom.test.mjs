@@ -17,6 +17,36 @@ const here = dirname(fileURLToPath(import.meta.url));
 const icons = await import('../dist/icons.js');
 const names = JSON.parse(readFileSync(resolve(here, '../etc/icon-names.json'), 'utf8')).names;
 
+test('current TENSOR glyphs are public named icons with the shared accessibility and sizing contract', () => {
+  const required = {
+    Landmark: 'landmark',
+    Keyboard: 'keyboard',
+    ArchiveRestore: 'archive-restore',
+    CalendarSync: 'calendar-sync',
+    CheckSquare: 'square-check-big',
+    FileKey: 'file-key',
+    Radar: 'radar',
+    SmilePlus: 'face-slightly-smiling-plus',
+    TowerControl: 'tower-control',
+    UserSearch: 'user-search',
+  };
+  for (const [name, glyph] of Object.entries(required)) {
+    const component = `${name}Icon`;
+    assert.deepEqual(names[name], { component, glyph }, `${name} keeps its existing glyph`);
+    assert.equal(typeof icons[component], 'object', `${component} is a public forward-ref component`);
+    const decorative = renderToStaticMarkup(h(icons[component]));
+    assert.match(decorative, /aria-hidden="true"/, component);
+    assert.equal(decorative, renderToStaticMarkup(h(icons.Icon, { name: glyph })), component);
+    const named = renderToStaticMarkup(h(icons[component], { label: name, size: 16, strokeWidth: 1.75 }));
+    assert.match(named, /role="img"/, component);
+    assert.match(named, new RegExp(`aria-label="${name}"`), component);
+    assert.match(named, /width:16px;height:16px/, component);
+    assert.match(named, /stroke-width="1.75"/, component);
+    assert.doesNotMatch(named, /aria-hidden/, component);
+  }
+  assert.equal(icons.CheckSquareIcon, icons.SquareCheckBigIcon, 'the legacy check-square alias is canonical');
+});
+
 test('every glyph renders through <Icon name> as a 24-unit stroked SVG with content', () => {
   const glyphs = Object.keys(icons.ICON_GLYPHS);
   assert.ok(glyphs.length >= 230, `the set covers the products' ${glyphs.length} glyphs`);

@@ -25,6 +25,10 @@
       "component": "ArchiveIcon",
       "glyph": "archive"
     },
+    "ArchiveRestore": {
+      "component": "ArchiveRestoreIcon",
+      "glyph": "archive-restore"
+    },
     "ArrowDown": {
       "component": "ArrowDownIcon",
       "glyph": "arrow-down"
@@ -125,6 +129,10 @@
       "component": "CalendarOffIcon",
       "glyph": "calendar-off"
     },
+    "CalendarSync": {
+      "component": "CalendarSyncIcon",
+      "glyph": "calendar-sync"
+    },
     "CalendarX": {
       "component": "CalendarXIcon",
       "glyph": "calendar-x"
@@ -148,6 +156,10 @@
     "CheckCircle2": {
       "component": "CheckCircle2Icon",
       "glyph": "circle-check"
+    },
+    "CheckSquare": {
+      "component": "CheckSquareIcon",
+      "glyph": "square-check-big"
     },
     "ChevronDown": {
       "component": "ChevronDownIcon",
@@ -321,6 +333,10 @@
       "component": "FileInputIcon",
       "glyph": "file-input"
     },
+    "FileKey": {
+      "component": "FileKeyIcon",
+      "glyph": "file-key"
+    },
     "FileQuestion": {
       "component": "FileQuestionIcon",
       "glyph": "file-question-mark"
@@ -468,6 +484,14 @@
     "KeyRound": {
       "component": "KeyRoundIcon",
       "glyph": "key-round"
+    },
+    "Keyboard": {
+      "component": "KeyboardIcon",
+      "glyph": "keyboard"
+    },
+    "Landmark": {
+      "component": "LandmarkIcon",
+      "glyph": "landmark"
     },
     "Languages": {
       "component": "LanguagesIcon",
@@ -685,6 +709,10 @@
       "component": "QrCodeIcon",
       "glyph": "qr-code"
     },
+    "Radar": {
+      "component": "RadarIcon",
+      "glyph": "radar"
+    },
     "Radio": {
       "component": "RadioIcon",
       "glyph": "radio"
@@ -821,6 +849,10 @@
       "component": "SmileIcon",
       "glyph": "face-slightly-smiling"
     },
+    "SmilePlus": {
+      "component": "SmilePlusIcon",
+      "glyph": "face-slightly-smiling-plus"
+    },
     "Sparkles": {
       "component": "SparklesIcon",
       "glyph": "sparkles"
@@ -877,6 +909,10 @@
       "component": "TimerOffIcon",
       "glyph": "timer-off"
     },
+    "TowerControl": {
+      "component": "TowerControlIcon",
+      "glyph": "tower-control"
+    },
     "Trash2": {
       "component": "Trash2Icon",
       "glyph": "trash-2"
@@ -920,6 +956,10 @@
     "UserRound": {
       "component": "UserRoundIcon",
       "glyph": "user-round"
+    },
+    "UserSearch": {
+      "component": "UserSearchIcon",
+      "glyph": "user-search"
     },
     "UserX": {
       "component": "UserXIcon",

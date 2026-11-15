@@ -5,6 +5,7 @@ import type { IconNode } from './types.js';
 export const glyphAccessibility: IconNode = [["circle",{"cx":"16","cy":"4","r":"1"}],["path",{"d":"m18 19 1-7-6 1"}],["path",{"d":"m5 8 3-3 5.5 3-2.36 3.5"}],["path",{"d":"M4.24 14.5a5 5 0 0 0 6.88 6"}],["path",{"d":"M13.76 17.5a5 5 0 0 0-6.88-6"}]];
 export const glyphActivity: IconNode = [["path",{"d":"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]];
 export const glyphArchive: IconNode = [["rect",{"width":"20","height":"5","x":"2","y":"3","rx":"1"}],["path",{"d":"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"}],["path",{"d":"M10 12h4"}]];
+export const glyphArchiveRestore: IconNode = [["rect",{"width":"20","height":"5","x":"2","y":"3","rx":"1"}],["path",{"d":"M4 8v11a2 2 0 0 0 2 2h2"}],["path",{"d":"M20 8v11a2 2 0 0 1-2 2h-2"}],["path",{"d":"m9 15 3-3 3 3"}],["path",{"d":"M12 12v9"}]];
 export const glyphArrowDown: IconNode = [["path",{"d":"M12 5v14"}],["path",{"d":"m19 12-7 7-7-7"}]];
 export const glyphArrowLeft: IconNode = [["path",{"d":"m12 19-7-7 7-7"}],["path",{"d":"M19 12H5"}]];
 export const glyphArrowLeftRight: IconNode = [["path",{"d":"M8 3 4 7l4 4"}],["path",{"d":"M4 7h16"}],["path",{"d":"m16 21 4-4-4-4"}],["path",{"d":"M20 17H4"}]];
@@ -29,6 +30,7 @@ export const glyphCalendarCheck: IconNode = [["path",{"d":"M8 2v3"}],["path",{"d
 export const glyphCalendarClock: IconNode = [["path",{"d":"M16 14v2.2l1.6 1"}],["path",{"d":"M16 2v3"}],["path",{"d":"M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"}],["path",{"d":"M3 9h5.859"}],["path",{"d":"M8 2v3"}],["circle",{"cx":"16","cy":"16","r":"6"}]];
 export const glyphCalendarDays: IconNode = [["path",{"d":"M8 2v3"}],["path",{"d":"M16 2v3"}],["rect",{"x":"3","y":"3","width":"18","height":"18","rx":"2"}],["path",{"d":"M3 9h18"}],["path",{"d":"M8 13h.01"}],["path",{"d":"M12 13h.01"}],["path",{"d":"M16 13h.01"}],["path",{"d":"M8 17h.01"}],["path",{"d":"M12 17h.01"}],["path",{"d":"M16 17h.01"}]];
 export const glyphCalendarOff: IconNode = [["path",{"d":"M16 2v3"}],["path",{"d":"m2 2 20 20"}],["path",{"d":"M21 9h-5.5"}],["path",{"d":"M3 9h6"}],["path",{"d":"M3.586 3.586A2 2 0 003 5v14a2 2 0 002 2h14a2 2 0 001.414-.586"}],["path",{"d":"M8.656 3H19a2 2 0 012 2v10.344"}]];
+export const glyphCalendarSync: IconNode = [["path",{"d":"M11 10v4h4"}],["path",{"d":"m11 14 1.535-1.605a5 5 0 018 1.5"}],["path",{"d":"M16 2v3"}],["path",{"d":"m21 18-1.535 1.605a5 5 0 01-8-1.5"}],["path",{"d":"M21 22v-4h-4"}],["path",{"d":"M21 8.517V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h3.517"}],["path",{"d":"M3 9h4"}],["path",{"d":"M8 2v3"}]];
 export const glyphCalendarX: IconNode = [["path",{"d":"M8 2v3"}],["path",{"d":"M16 2v3"}],["rect",{"x":"3","y":"3","width":"18","height":"18","rx":"2"}],["path",{"d":"M3 9h18"}],["path",{"d":"m14 13-4 4"}],["path",{"d":"m10 13 4 4"}]];
 export const glyphCamera: IconNode = [["path",{"d":"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"}],["circle",{"cx":"12","cy":"13","r":"3"}]];
 export const glyphChartColumn: IconNode = [["path",{"d":"M3 3v16a2 2 0 0 0 2 2h16"}],["path",{"d":"M18 17V9"}],["path",{"d":"M13 17V5"}],["path",{"d":"M8 17v-3"}]];
@@ -73,6 +75,7 @@ export const glyphExternalLink: IconNode = [["path",{"d":"M15 3h6v6"}],["path",{
 export const glyphEye: IconNode = [["path",{"d":"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}],["circle",{"cx":"12","cy":"12","r":"3"}]];
 export const glyphEyeOff: IconNode = [["path",{"d":"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"}],["path",{"d":"M14.084 14.158a3 3 0 0 1-4.242-4.242"}],["path",{"d":"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"}],["path",{"d":"m2 2 20 20"}]];
 export const glyphFaceSlightlySmiling: IconNode = [["path",{"d":"M15 10V9"}],["path",{"d":"M16.472 15a6 6 0 01-8.943 0"}],["path",{"d":"M9 10V9"}],["circle",{"cx":"12","cy":"12","r":"10"}]];
+export const glyphFaceSlightlySmilingPlus: IconNode = [["path",{"d":"M13.267 2.08a10 10 0 108.653 8.653"}],["path",{"d":"M15 10V9"}],["path",{"d":"M16 5h6"}],["path",{"d":"M16.472 15a6 6 0 01-8.943 0"}],["path",{"d":"M19 2v6"}],["path",{"d":"M9 10V9"}]];
 export const glyphFile: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}]];
 export const glyphFileArchive: IconNode = [["path",{"d":"M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M8 12v-1"}],["path",{"d":"M8 18v-2"}],["path",{"d":"M8 7V6"}],["circle",{"cx":"8","cy":"20","r":"2"}]];
 export const glyphFileChartColumnIncreasing: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M8 18v-2"}],["path",{"d":"M12 18v-4"}],["path",{"d":"M16 18v-6"}]];
@@ -82,6 +85,7 @@ export const glyphFileCode: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 
 export const glyphFileDown: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M12 18v-6"}],["path",{"d":"m9 15 3 3 3-3"}]];
 export const glyphFileImage: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["circle",{"cx":"10","cy":"12","r":"2"}],["path",{"d":"m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"}]];
 export const glyphFileInput: IconNode = [["path",{"d":"M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M2 15h10"}],["path",{"d":"m9 18 3-3-3-3"}]];
+export const glyphFileKey: IconNode = [["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M4 12v6"}],["path",{"d":"M4 14h2"}],["path",{"d":"M9.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v4"}],["circle",{"cx":"4","cy":"20","r":"2"}]];
 export const glyphFileQuestionMark: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M12 17h.01"}],["path",{"d":"M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"}]];
 export const glyphFileSearch: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["circle",{"cx":"11.5","cy":"14.5","r":"2.5"}],["path",{"d":"M13.3 16.3 15 18"}]];
 export const glyphFileSpreadsheet: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M8 13h2"}],["path",{"d":"M14 13h2"}],["path",{"d":"M8 17h2"}],["path",{"d":"M14 17h2"}]];
@@ -116,6 +120,8 @@ export const glyphInbox: IconNode = [["polyline",{"points":"22 12 16 12 14 15 10
 export const glyphInfo: IconNode = [["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M12 16v-4"}],["path",{"d":"M12 8h.01"}]];
 export const glyphKey: IconNode = [["path",{"d":"m2 21 9.6-9.6"}],["path",{"d":"m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"}],["circle",{"cx":"15.5","cy":"7.5","r":"5.5"}]];
 export const glyphKeyRound: IconNode = [["path",{"d":"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"}],["circle",{"cx":"16.5","cy":"7.5","r":".5","fill":"currentColor"}]];
+export const glyphKeyboard: IconNode = [["path",{"d":"M10 8h.01"}],["path",{"d":"M12 12h.01"}],["path",{"d":"M14 8h.01"}],["path",{"d":"M16 12h.01"}],["path",{"d":"M18 8h.01"}],["path",{"d":"M6 8h.01"}],["path",{"d":"M7 16h10"}],["path",{"d":"M8 12h.01"}],["rect",{"width":"20","height":"16","x":"2","y":"4","rx":"2"}]];
+export const glyphLandmark: IconNode = [["path",{"d":"M10 18v-7"}],["path",{"d":"M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"}],["path",{"d":"M14 18v-7"}],["path",{"d":"M18 18v-7"}],["path",{"d":"M3 22h18"}],["path",{"d":"M6 18v-7"}]];
 export const glyphLanguages: IconNode = [["path",{"d":"m5 8 6 6"}],["path",{"d":"m4 14 6-6 2-3"}],["path",{"d":"M2 5h12"}],["path",{"d":"M7 2h1"}],["path",{"d":"m22 22-5-10-5 10"}],["path",{"d":"M14 18h6"}]];
 export const glyphLaptop: IconNode = [["path",{"d":"M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z"}],["path",{"d":"M20.054 15.987H3.946"}]];
 export const glyphLayers: IconNode = [["path",{"d":"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"}],["path",{"d":"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"}],["path",{"d":"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"}]];
@@ -167,6 +173,7 @@ export const glyphPlus: IconNode = [["path",{"d":"M5 12h14"}],["path",{"d":"M12 
 export const glyphPresentation: IconNode = [["path",{"d":"M2 3h20"}],["path",{"d":"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"}],["path",{"d":"m7 21 5-5 5 5"}]];
 export const glyphPrinter: IconNode = [["path",{"d":"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"}],["path",{"d":"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"}],["rect",{"x":"6","y":"14","width":"12","height":"8","rx":"1"}]];
 export const glyphQrCode: IconNode = [["rect",{"width":"5","height":"5","x":"3","y":"3","rx":"1"}],["rect",{"width":"5","height":"5","x":"16","y":"3","rx":"1"}],["rect",{"width":"5","height":"5","x":"3","y":"16","rx":"1"}],["path",{"d":"M21 16h-3a2 2 0 0 0-2 2v3"}],["path",{"d":"M21 21v.01"}],["path",{"d":"M12 7v3a2 2 0 0 1-2 2H7"}],["path",{"d":"M3 12h.01"}],["path",{"d":"M12 3h.01"}],["path",{"d":"M12 16v.01"}],["path",{"d":"M16 12h1"}],["path",{"d":"M21 12v.01"}],["path",{"d":"M12 21v-1"}]];
+export const glyphRadar: IconNode = [["path",{"d":"M19.07 4.93A10 10 0 0 0 6.99 3.34"}],["path",{"d":"M4 6h.01"}],["path",{"d":"M2.29 9.62A10 10 0 1 0 21.31 8.35"}],["path",{"d":"M16.24 7.76A6 6 0 1 0 8.23 16.67"}],["path",{"d":"M12 18h.01"}],["path",{"d":"M17.99 11.66A6 6 0 0 1 15.77 16.67"}],["circle",{"cx":"12","cy":"12","r":"2"}],["path",{"d":"m13.41 10.59 5.66-5.66"}]];
 export const glyphRadio: IconNode = [["path",{"d":"M16.247 7.761a6 6 0 0 1 0 8.478"}],["path",{"d":"M19.075 4.933a10 10 0 0 1 0 14.134"}],["path",{"d":"M4.925 19.067a10 10 0 0 1 0-14.134"}],["path",{"d":"M7.753 16.239a6 6 0 0 1 0-8.478"}],["circle",{"cx":"12","cy":"12","r":"2"}]];
 export const glyphRadioTower: IconNode = [["path",{"d":"M4.9 16.1C1 12.2 1 5.8 4.9 1.9"}],["path",{"d":"M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"}],["circle",{"cx":"12","cy":"9","r":"2"}],["path",{"d":"M16.2 4.8c2 2 2.26 5.11.8 7.47"}],["path",{"d":"M19.1 1.9a9.96 9.96 0 0 1 0 14.1"}],["path",{"d":"M9.5 18h5"}],["path",{"d":"m8 22 4-11 4 11"}]];
 export const glyphReceipt: IconNode = [["path",{"d":"M12 17V7"}],["path",{"d":"M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"}],["path",{"d":"M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"}]];
@@ -204,6 +211,7 @@ export const glyphSlidersHorizontal: IconNode = [["path",{"d":"M10 5H3"}],["path
 export const glyphSparkles: IconNode = [["path",{"d":"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"}],["path",{"d":"M20 2v4"}],["path",{"d":"M22 4h-4"}],["circle",{"cx":"4","cy":"20","r":"2"}]];
 export const glyphSquare: IconNode = [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}]];
 export const glyphSquareChartGantt: IconNode = [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}],["path",{"d":"M9 8h7"}],["path",{"d":"M8 12h6"}],["path",{"d":"M11 16h5"}]];
+export const glyphSquareCheckBig: IconNode = [["path",{"d":"M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344"}],["path",{"d":"m9 11 3 3L22 4"}]];
 export const glyphStamp: IconNode = [["path",{"d":"M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-6 0c0 2 1 2 1 3.5V13"}],["path",{"d":"M20 15.5a2.5 2.5 0 0 0-2.5-2.5h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1z"}],["path",{"d":"M5 22h14"}]];
 export const glyphStar: IconNode = [["path",{"d":"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"}]];
 export const glyphStarOff: IconNode = [["path",{"d":"m10.344 4.688 1.181-2.393a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.237 3.152"}],["path",{"d":"m17.945 17.945.43 2.505a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a8 8 0 0 0 .4-.099"}],["path",{"d":"m2 2 20 20"}]];
@@ -216,6 +224,7 @@ export const glyphThumbsUp: IconNode = [["path",{"d":"M15 5.88 14 10h5.83a2 2 0 
 export const glyphTicket: IconNode = [["path",{"d":"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"}],["path",{"d":"M13 5v2"}],["path",{"d":"M13 17v2"}],["path",{"d":"M13 11v2"}]];
 export const glyphTimer: IconNode = [["line",{"x1":"10","x2":"14","y1":"2","y2":"2"}],["line",{"x1":"12","x2":"15","y1":"14","y2":"11"}],["circle",{"cx":"12","cy":"14","r":"8"}]];
 export const glyphTimerOff: IconNode = [["path",{"d":"M10 2h4"}],["path",{"d":"M4.6 11a8 8 0 0 0 1.7 8.7 8 8 0 0 0 8.7 1.7"}],["path",{"d":"M7.4 7.4a8 8 0 0 1 10.3 1 8 8 0 0 1 .9 10.2"}],["path",{"d":"m2 2 20 20"}],["path",{"d":"M12 12v-2"}]];
+export const glyphTowerControl: IconNode = [["path",{"d":"M18.2 12.27 20 6H4l1.8 6.27a1 1 0 0 0 .95.73h10.5a1 1 0 0 0 .96-.73Z"}],["path",{"d":"M8 13v9"}],["path",{"d":"M16 22v-9"}],["path",{"d":"m9 6 1 7"}],["path",{"d":"m15 6-1 7"}],["path",{"d":"M12 6V2"}],["path",{"d":"M13 2h-2"}]];
 export const glyphTrash2: IconNode = [["path",{"d":"M10 11v6"}],["path",{"d":"M14 11v6"}],["path",{"d":"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}],["path",{"d":"M3 6h18"}],["path",{"d":"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]];
 export const glyphTrendingDown: IconNode = [["path",{"d":"M16 17h6v-6"}],["path",{"d":"m22 17-8.5-8.5-5 5L2 7"}]];
 export const glyphTrendingUp: IconNode = [["path",{"d":"M16 7h6v6"}],["path",{"d":"m22 7-8.5 8.5-5-5L2 17"}]];
@@ -227,6 +236,7 @@ export const glyphUserCheck: IconNode = [["path",{"d":"m16 11 2 2 4-4"}],["path"
 export const glyphUserCog: IconNode = [["path",{"d":"M10 15H6a4 4 0 0 0-4 4v2"}],["path",{"d":"m14.305 16.53.923-.382"}],["path",{"d":"m15.228 13.852-.923-.383"}],["path",{"d":"m16.852 12.228-.383-.923"}],["path",{"d":"m16.852 17.772-.383.924"}],["path",{"d":"m19.148 12.228.383-.923"}],["path",{"d":"m19.53 18.696-.382-.924"}],["path",{"d":"m20.772 13.852.924-.383"}],["path",{"d":"m20.772 16.148.924.383"}],["circle",{"cx":"18","cy":"15","r":"3"}],["circle",{"cx":"9","cy":"7","r":"4"}]];
 export const glyphUserPlus: IconNode = [["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}],["circle",{"cx":"9","cy":"7","r":"4"}],["line",{"x1":"19","x2":"19","y1":"8","y2":"14"}],["line",{"x1":"22","x2":"16","y1":"11","y2":"11"}]];
 export const glyphUserRound: IconNode = [["circle",{"cx":"12","cy":"8","r":"5"}],["path",{"d":"M20 21a8 8 0 0 0-16 0"}]];
+export const glyphUserSearch: IconNode = [["circle",{"cx":"10","cy":"7","r":"4"}],["path",{"d":"M10.3 15H7a4 4 0 0 0-4 4v2"}],["circle",{"cx":"17","cy":"17","r":"3"}],["path",{"d":"m21 21-1.9-1.9"}]];
 export const glyphUserX: IconNode = [["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}],["circle",{"cx":"9","cy":"7","r":"4"}],["line",{"x1":"17","x2":"22","y1":"8","y2":"13"}],["line",{"x1":"22","x2":"17","y1":"8","y2":"13"}]];
 export const glyphUsers: IconNode = [["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}],["path",{"d":"M16 3.128a4 4 0 0 1 0 7.744"}],["path",{"d":"M22 21v-2a4 4 0 0 0-3-3.87"}],["circle",{"cx":"9","cy":"7","r":"4"}]];
 export const glyphUsersRound: IconNode = [["path",{"d":"M18 21a8 8 0 0 0-16 0"}],["circle",{"cx":"10","cy":"8","r":"5"}],["path",{"d":"M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"}]];
@@ -245,6 +255,7 @@ export const ICON_GLYPHS = {
   'accessibility': glyphAccessibility,
   'activity': glyphActivity,
   'archive': glyphArchive,
+  'archive-restore': glyphArchiveRestore,
   'arrow-down': glyphArrowDown,
   'arrow-left': glyphArrowLeft,
   'arrow-left-right': glyphArrowLeftRight,
@@ -269,6 +280,7 @@ export const ICON_GLYPHS = {
   'calendar-clock': glyphCalendarClock,
   'calendar-days': glyphCalendarDays,
   'calendar-off': glyphCalendarOff,
+  'calendar-sync': glyphCalendarSync,
   'calendar-x': glyphCalendarX,
   'camera': glyphCamera,
   'chart-column': glyphChartColumn,
@@ -313,6 +325,7 @@ export const ICON_GLYPHS = {
   'eye': glyphEye,
   'eye-off': glyphEyeOff,
   'face-slightly-smiling': glyphFaceSlightlySmiling,
+  'face-slightly-smiling-plus': glyphFaceSlightlySmilingPlus,
   'file': glyphFile,
   'file-archive': glyphFileArchive,
   'file-chart-column-increasing': glyphFileChartColumnIncreasing,
@@ -322,6 +335,7 @@ export const ICON_GLYPHS = {
   'file-down': glyphFileDown,
   'file-image': glyphFileImage,
   'file-input': glyphFileInput,
+  'file-key': glyphFileKey,
   'file-question-mark': glyphFileQuestionMark,
   'file-search': glyphFileSearch,
   'file-spreadsheet': glyphFileSpreadsheet,
@@ -356,6 +370,8 @@ export const ICON_GLYPHS = {
   'info': glyphInfo,
   'key': glyphKey,
   'key-round': glyphKeyRound,
+  'keyboard': glyphKeyboard,
+  'landmark': glyphLandmark,
   'languages': glyphLanguages,
   'laptop': glyphLaptop,
   'layers': glyphLayers,
@@ -407,6 +423,7 @@ export const ICON_GLYPHS = {
   'presentation': glyphPresentation,
   'printer': glyphPrinter,
   'qr-code': glyphQrCode,
+  'radar': glyphRadar,
   'radio': glyphRadio,
   'radio-tower': glyphRadioTower,
   'receipt': glyphReceipt,
@@ -444,6 +461,7 @@ export const ICON_GLYPHS = {
   'sparkles': glyphSparkles,
   'square': glyphSquare,
   'square-chart-gantt': glyphSquareChartGantt,
+  'square-check-big': glyphSquareCheckBig,
   'stamp': glyphStamp,
   'star': glyphStar,
   'star-off': glyphStarOff,
@@ -456,6 +474,7 @@ export const ICON_GLYPHS = {
   'ticket': glyphTicket,
   'timer': glyphTimer,
   'timer-off': glyphTimerOff,
+  'tower-control': glyphTowerControl,
   'trash-2': glyphTrash2,
   'trending-down': glyphTrendingDown,
   'trending-up': glyphTrendingUp,
@@ -467,6 +486,7 @@ export const ICON_GLYPHS = {
   'user-cog': glyphUserCog,
   'user-plus': glyphUserPlus,
   'user-round': glyphUserRound,
+  'user-search': glyphUserSearch,
   'user-x': glyphUserX,
   'users': glyphUsers,
   'users-round': glyphUsersRound,
