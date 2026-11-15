@@ -42,6 +42,7 @@
    (packages/tokens/tests/presence-contrast.test.mjs holds all four to 3:1 on the surface). */
 @layer uix.components {
   .uix-presence { position: relative; display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--uix-success); }
+  .uix-presence--online { background: var(--uix-success); }
   .uix-avatar__status::after, .uix-presence::after { content: ""; position: absolute; left: 20%; right: 20%; top: calc(50% - 1px); height: 2px; border-radius: var(--uix-radius-pill); background: var(--uix-surface); display: none; }
   .uix-avatar__status[data-presence="busy"], .uix-presence--busy { background: var(--uix-danger); }
   .uix-avatar__status[data-presence="busy"]::after, .uix-presence--busy::after { display: block; }
