@@ -39,6 +39,12 @@ separately.
 Omitting a size preserves the existing default. Invalid numeric sizes fall back to the default;
 use `label={null}` for a decorative dot whose state is already written beside it.
 
+`UserChip` shrinks its name and secondary label within the available row width.
+Both labels stay on one line and truncate visually; their complete text remains
+in the DOM. Pass the existing `title` prop or a profile/peek affordance when the
+reader needs the full identity text. The avatar and trailing children retain
+their size.
+
 For a nullable single condition, use `RuleBuilder` with `maxConditions={1}`, `conditionsOnly`,
 `allowGroups={false}`, `maxDepth={1}` and `checks={{ emptyGroup: false }}`. The limit counts
 condition leaves across all groups and prevents further appends; it never trims controlled input.

@@ -22,7 +22,9 @@
   .uix-avatar-group { display: inline-flex; }
   .uix-avatar-group .uix-avatar { box-shadow: 0 0 0 2px var(--uix-surface); margin-left: calc(-1 * var(--uix-space-2)); }
   .uix-avatar-group .uix-avatar:first-child { margin-left: 0; }
-  .uix-user-chip { display: inline-flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-user-chip { display: inline-flex; align-items: center; gap: var(--uix-space-2); min-width: 0; max-width: 100%; }
+  .uix-user-chip__text { min-width: 0; }
+  .uix-user-chip__name, .uix-user-chip__sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-user-chip__name { font-size: var(--uix-text-body); font-weight: 500; }
   .uix-user-chip__sub { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
 
