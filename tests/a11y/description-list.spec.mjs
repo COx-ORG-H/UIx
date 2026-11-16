@@ -28,6 +28,33 @@ const open = async (page, testInfo, viewport) => {
   await page.evaluate(() => document.fonts.ready);
 };
 
+for (const width of [1440, 320]) test(`long German shortcut terms leave readable values at ${width}px`, async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page, info, { width, height: 1000 });
+  const list = page.locator('#shortcuts');
+  await list.scrollIntoViewIfNeeded();
+  for (const key of await list.locator('kbd').all()) {
+    const measured = await key.evaluate(element => {
+      const range = document.createRange(); range.selectNodeContents(element);
+      const value = element.closest('dd').getBoundingClientRect();
+      const rects = Array.from(range.getClientRects());
+      return { lines: new Set(rects.map(rect => Math.round(rect.top))).size,
+        contained: rects.every(rect => rect.left >= value.left - 0.5 && rect.right <= value.right + 0.5) };
+    });
+    expect(measured.lines, await key.textContent()).toBe(1);
+    expect(measured.contained, await key.textContent()).toBe(true);
+  }
+  expect(await list.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const labels = await list.locator('dt').evaluateAll(elements => elements.map(element => {
+    const range = document.createRange(); range.selectNodeContents(element);
+    const lines = new Set(Array.from(range.getClientRects()).map(rect => Math.round(rect.top))).size;
+    return { text: element.textContent, perLine: element.textContent.length / Math.max(1, lines) };
+  }));
+  for (const label of labels) expect(label.perLine, label.text).toBeGreaterThanOrEqual(12);
+  await page.screenshot({ path: info.outputPath('german-shortcuts.png') });
+});
+
 /** Every label/value pair of a list, as boxes. */
 const pairs = (page, id) => page.locator(`dl#${id}`).evaluate((dl) => {
   const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
