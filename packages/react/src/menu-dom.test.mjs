@@ -306,3 +306,47 @@ test('Chip onClick: a handler written for the old () => void signature still run
   assert.equal(calls, 1);
   unmount();
 });
+
+for (const controlled of [false, true]) {
+  test(`a ${controlled ? 'controlled' : 'uncontrolled'} Menu starts a fresh typeahead search on rapid reopening`, (t) => {
+    t.mock.method(Date, 'now', () => 1000);
+    function Example() {
+      const [open, setOpen] = useState(false);
+      return h('div', null,
+        controlled && h('button', { 'data-external-toggle': '', onClick: () => setOpen(!open) }, 'Sichtbarkeit umschalten'),
+        h(ui.Menu, { label: 'Aktionen', trigger: h(ui.Button, null, 'Menü öffnen'), ...(controlled ? { open, onOpenChange: setOpen } : {}) },
+          h(ui.MenuItem, null, 'Termine'),
+          h(ui.MenuItem, { disabled: true }, 'Oben ohne Berechtigung'),
+          h(ui.MenuItem, null, 'Oben anheften'),
+          h(ui.MenuItem, { tone: 'danger' }, 'Löschen')));
+    }
+    const { host, unmount } = mount(h(Example));
+    try {
+      const trigger = host.querySelector('.uix-btn');
+      const opener = controlled ? host.querySelector('[data-external-toggle]') : trigger;
+      for (let cycle = 0; cycle < 3; cycle += 1) {
+        click(opener);
+        const menu = menuOf(trigger);
+        assert.ok(menu, `cycle ${cycle}: menu opens`);
+        key(menu, 'End');
+        key(menu, 'o');
+        assert.ok(document.activeElement?.textContent === 'Oben anheften', `cycle ${cycle}: search must not append to the previous opening`);
+        if (controlled) click(opener);
+        else { key(menu, 'Escape'); assert.ok(document.activeElement === trigger, 'Escape returns focus'); }
+      }
+    } finally { unmount(); }
+  });
+}
+
+test('Menu retains multi-character typeahead within one opening', (t) => {
+  t.mock.method(Date, 'now', () => 1000);
+  const { host, unmount } = mount(h(ui.Menu, { trigger: h(ui.Button, null, 'Aktionen') },
+    h(ui.MenuItem, null, 'Termine'), h(ui.MenuItem, null, 'Teilen'), h(ui.MenuItem, null, 'Löschen')));
+  try {
+    const trigger = host.querySelector('.uix-btn');
+    click(trigger);
+    const menu = menuOf(trigger);
+    key(menu, 'End'); key(menu, 't'); key(menu, 'e'); key(menu, 'i');
+    assert.ok(document.activeElement?.textContent === 'Teilen', 'the accumulated prefix selects Teilen, not Termine');
+  } finally { unmount(); }
+});
