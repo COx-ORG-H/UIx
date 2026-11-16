@@ -1,5 +1,12 @@
 # @tensor_1/tokens
 
+## 2.67.3
+
+### Patch Changes
+
+- 3cb456c: Stack RuleBuilder fields and actions by the builder's own width, including narrow desktop drawers.
+  Keep controlled values, nested groups and optional single-condition behavior unchanged.
+
 ## 2.67.2
 
 ### Patch Changes
