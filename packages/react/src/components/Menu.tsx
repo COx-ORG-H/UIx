@@ -98,6 +98,8 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
   };
 
   useEffect(() => {
+    // A new opening is a new search, including externally controlled transitions.
+    typeahead.current = { text: '', at: 0 };
     const el = menu();
     if (!el) return;
     const shown = () => { try { return el.matches(':popover-open'); } catch { return false; } };
