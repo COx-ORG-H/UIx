@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.67.1
+
+### Patch Changes
+
+- 988a667: Reset Menu typeahead at each opening so rapidly reopening a controlled or uncontrolled menu starts a fresh search. Multi-character matching within an opening and existing focus/dismissal behavior remain unchanged.
+
 ## 2.67.0
 
 ### Minor Changes
