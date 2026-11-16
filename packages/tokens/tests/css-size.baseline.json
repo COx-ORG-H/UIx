@@ -422,9 +422,9 @@
       "brotli": 2907
     },
     "styles/components/rule-builder.css": {
-      "raw": 2654,
-      "gzip": 714,
-      "brotli": 611
+      "raw": 2562,
+      "gzip": 701,
+      "brotli": 599
     },
     "styles/components/save-status.css": {
       "raw": 2496,

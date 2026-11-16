@@ -13,7 +13,7 @@ window.__optionalRules = {};
 
 function Example({ id, title, initial, limit, readOnly = false }: { id: string; title: string; initial: RuleDefinition; limit?: number; readOnly?: boolean }) {
   const [value, setValue] = useState(initial);
-  return <section data-example={id} style={id === 'constrained' ? { width: '26rem', maxWidth: '100%' } : undefined}>
+  return <section data-example={id} style={id === 'constrained' || id === 'mid-width' ? { width: id === 'constrained' ? '26rem' : '45.5rem', maxWidth: '100%' } : undefined}>
     <h2>{title}</h2>
     <RuleBuilder value={value} onChange={(next) => { (window.__optionalRules[id] ??= []).push(next); setValue(next); }}
       fields={fields} operators={operators} maxConditions={limit} conditionsOnly combinator="and" hideCombinator allowGroups={false} maxDepth={1}
@@ -52,6 +52,7 @@ createRoot(document.getElementById('root')!).render(<StrictMode>
   <Example id="read-only" title="Schreibgeschützte Regel" initial={one} limit={1} readOnly />
   <Example id="default" title="Mehrere Bedingungen ohne Begrenzung" initial={empty} />
   <Example id="constrained" title="Bedingung im schmalen Bereich" initial={one} limit={1} />
+  <Example id="mid-width" title="Regel mit ausreichend Platz" initial={one} limit={1} />
   <ConstrainedActions />
   <IntrinsicExample />
 </StrictMode>);

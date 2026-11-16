@@ -30,6 +30,8 @@ for (const width of [1440, 320]) test(`RuleBuilder fits its container at ${width
   const wide = page.locator('[data-example="default"]');
   await wide.getByRole('button', { name: 'Bedingung hinzufügen', exact: true }).click();
   expect(await wide.locator('.uix-rule-builder__condition').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(width === 1440 ? 4 : 1);
+  const mid = page.locator('[data-example="mid-width"] .uix-rule-builder__condition');
+  expect(await mid.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(width === 1440 ? 4 : 1);
   const overflow = await page.locator('body *').evaluateAll(elements => elements.filter(element => {
     const box = element.getBoundingClientRect();
     return box.width > 0 && box.right > innerWidth + 1 && !element.closest('[aria-hidden="true"]');
