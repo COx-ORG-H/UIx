@@ -10,7 +10,7 @@
  *   - #wrapped: plain `.uix-dl` markup with each pair in a display:contents <div>, 20rem wide. */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Avatar, Card, DescriptionList } from '../../packages/react/src/index.js';
+import { Avatar, Card, DescriptionList, Kbd } from '../../packages/react/src/index.js';
 
 const ITEMS = [
   { term: 'Status', description: 'In Bearbeitung' },
@@ -22,7 +22,17 @@ const ITEMS = [
 function Harness() {
   return (
     <>
-      <h1>Beschreibungsliste</h1>
+      <h1>Werte im Detail</h1>
+      <section style={{ width: '32rem', maxWidth: '100%' }}>
+        <h2>Tastenkürzel</h2>
+        <DescriptionList id="shortcuts" items={[
+          { term: 'Befehlspalette und globale Suche öffnen', description: <Kbd>Ctrl+K</Kbd> },
+          { term: 'Von der aktuellen Sitzung abmelden', description: <Kbd>G dann Q</Kbd> },
+          { term: 'Breite der Seitenleiste umschalten (ausgeklappt / Symbolleiste / ausgeblendet)', description: <Kbd>G dann Z</Kbd> },
+          { term: 'Zwischen Kundenorganisationen wechseln', description: <Kbd>Ctrl+Shift+M</Kbd> },
+          { term: 'Alle geöffneten Detailansichten schließen', description: <Kbd>Shift+X</Kbd> },
+        ]} />
+      </section>
       <section>
         <h2>Karte</h2>
         <Card><DescriptionList id="card" items={ITEMS} /></Card>

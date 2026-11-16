@@ -22,6 +22,8 @@ import { cx } from '../cx.js';
  * compound child for hand-authored content. Both render `<dt>`/`<dd>` pairs as
  * direct children of the grid `<dl>`, so they align into the same columns.
  *
+ * In two columns, terms take at most half the list and wrap; short terms retain
+ * their natural width. This keeps long labels from crushing the value column.
  * Below 22rem of its own width (a phone, a side rail, a narrow column) each label
  * sits above its value and both take the full width (HAR-2032), so a long label
  * never squeezes the value. A `DetailLayout` side column always stacks.
