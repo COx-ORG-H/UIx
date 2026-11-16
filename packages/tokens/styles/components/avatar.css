@@ -27,6 +27,7 @@
   .uix-user-chip__name, .uix-user-chip__sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .uix-user-chip__name { font-size: var(--uix-text-body); font-weight: 500; }
   .uix-user-chip__sub { font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
+  .uix-user-chip__name + .uix-user-chip__sub { margin-top: var(--uix-space-1); }
 
   /* editable avatar — hover/focus overlay for "change photo"; empty = upload placeholder */
   .uix-avatar--editable { cursor: pointer; }

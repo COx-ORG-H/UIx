@@ -27,6 +27,10 @@ for (const width of [1440, 320]) test(`UserChip contains a long identity at ${wi
   await expect(page.locator('output')).toHaveText('Profil geöffnet');
   await expect(page.locator('[data-short]')).toContainText('Anne Müller');
   await expect(page.locator('[data-short]')).toContainText('Service-Desk');
+  for (const row of [chip, page.locator('[data-short] .uix-user-chip')]) {
+    const gap = await row.evaluate(element => element.querySelector('.uix-user-chip__sub').getBoundingClientRect().top - element.querySelector('.uix-user-chip__name').getBoundingClientRect().bottom);
+    expect(Math.abs(gap - 4), 'the name and subtitle keep the kit text rhythm').toBeLessThanOrEqual(0.5);
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('after.png') });
 });
