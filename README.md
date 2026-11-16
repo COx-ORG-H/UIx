@@ -50,6 +50,11 @@ For a nullable single condition, use `RuleBuilder` with `maxConditions={1}`, `co
 condition leaves across all groups and prevents further appends; it never trims controlled input.
 See [the optional-condition example](Docs/optional-single-condition.md) for the German keyboard walk.
 
+`RuleBuilder` stacks its fields and actions below 47.5rem of the builder's own width,
+so a narrow desktop drawer gets the same usable layout as a phone. When sized by
+its content in a flex row or popover, its intrinsic width is 12rem; give it a width
+or `flex: 1` through its containing layout when it should fill more room.
+
 Tokens now ship as the **`@tensor_1/tokens`** package (one DTCG source → CSS variables, a Tailwind
 theme, and typed TS constants). Add it as a dependency and import what your stack needs:
 

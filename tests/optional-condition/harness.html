@@ -5,7 +5,7 @@
   <title>Optionale Bedingung — UIx</title>
   <script>try { document.documentElement.dataset.theme = localStorage.getItem('uix-theme') || 'light'; } catch {}</script>
   <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
-  <style>body{padding:var(--uix-space-5);background:var(--uix-bg-app);color:var(--uix-text)}main{max-width:60rem;margin:auto;display:grid;gap:var(--uix-space-6)}section[data-example]{display:grid;gap:var(--uix-space-3);min-width:0}output{font-size:var(--uix-text-meta)}</style>
+  <style>body{margin:0;padding:var(--uix-space-5);background:var(--uix-bg-app);color:var(--uix-text)}main{max-width:60rem;margin:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--uix-space-6)}section[data-example]{display:grid;gap:var(--uix-space-3);min-width:0}output{font-size:var(--uix-text-meta)}</style>
 </head>
 <body><main id="root"></main><script type="module" src="dist/harness.js"></script></body>
 </html>
