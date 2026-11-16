@@ -1,5 +1,13 @@
 # @tensor_1/react
 
+## 2.67.2
+
+### Patch Changes
+
+- 334c49f: Keep long UserChip names and secondary identity labels within constrained rows while preserving avatars and trailing actions.
+- 0ccb8db: Keep DescriptionList values readable when long terms share a desktop-width list.
+  Terms wrap within half the list; narrow container stacking and semantic pairs remain unchanged.
+
 ## 2.67.1
 
 ### Patch Changes
