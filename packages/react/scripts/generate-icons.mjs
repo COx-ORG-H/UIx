@@ -6,6 +6,7 @@
  * each to its canonical Lucide glyph, and writes:
  *   src/icons/glyphs.ts      one `IconNode` const per glyph + ICON_GLYPHS (name → node)
  *   src/icons/components.ts  one component per glyph (`<Name>Icon`) + the alias names
+ *   src/icons/intrinsic-components.ts  the same family with native SVG sizing defaults
  *   etc/icon-names.json      Lucide export name → UIx component + glyph name (for codemods)
  * Lucide is ISC; its licence travels with the package in THIRD_PARTY_NOTICES.md. Run it
  * again with a newer lucide-react to refresh paths or add names; the output is committed,
@@ -66,15 +67,16 @@ writeFileSync(join(pkgRoot, 'src/icons/glyphs.ts'), glyphTs);
 
 // Component per glyph, named after the canonical Lucide export; product aliases point at it.
 const componentOf = (g) => `${pascal(g)}Icon`;
-let compTs = `${header}import { createIcon } from './Icon.js';\nimport * as g from './glyphs.js';\n\n`;
-for (const glyph of sortedGlyphs) compTs += `export const ${componentOf(glyph)} = /* @__PURE__ */ createIcon('${componentOf(glyph)}', g.${camel(glyph)});\n`;
+const componentHeader = `${header}import { createIcon } from './Icon.js';\nimport * as g from './glyphs.js';\n\n`;
+const bindings = (defaults = '') => sortedGlyphs.map((glyph) => `export const ${componentOf(glyph)} = /* @__PURE__ */ createIcon('${componentOf(glyph)}', g.${camel(glyph)}${defaults});\n`).join('');
 const aliasLines = [];
 for (const [name, glyph] of [...names].sort()) {
   const alias = `${name.replace(/Icon$/, '')}Icon`;
   if (alias !== componentOf(glyph) && !aliasLines.some((l) => l.startsWith(`export const ${alias} `))) aliasLines.push(`export const ${alias} = ${componentOf(glyph)};`);
 }
-if (aliasLines.length) compTs += `\n/* Older Lucide names the products import, kept so migration is a rename to <Name>Icon. */\n${aliasLines.join('\n')}\n`;
-writeFileSync(join(pkgRoot, 'src/icons/components.ts'), compTs);
+const aliases = aliasLines.length ? `\n/* Older Lucide names the products import, kept so migration is a rename to <Name>Icon. */\n${aliasLines.join('\n')}\n` : '';
+writeFileSync(join(pkgRoot, 'src/icons/components.ts'), componentHeader + bindings() + aliases);
+writeFileSync(join(pkgRoot, 'src/icons/intrinsic-components.ts'), componentHeader + bindings(", { size: 24, sizeMode: 'intrinsic' }") + aliases);
 
 const map = Object.fromEntries([...names].sort().map(([name, glyph]) => [name, { component: `${name.replace(/Icon$/, '')}Icon`, glyph }]));
 writeFileSync(join(pkgRoot, 'etc/icon-names.json'), `${JSON.stringify({ lucideReact: version, names: map }, null, 2)}\n`);

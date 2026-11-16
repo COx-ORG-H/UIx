@@ -14,6 +14,7 @@ const sources = {
   '.': 'index.ts', './chart': 'chart.ts', './chart/analytic': 'chart-analytic.tsx',
   './chart/preset': 'chart-preset.tsx', './rich-text': 'rich-text.ts',
   './markdown': 'markdown.ts', './emoji': 'emoji.ts', './icons': 'icons.ts',
+  './icons/intrinsic': 'icons-intrinsic.ts',
 };
 
 // Components are public PascalCase values callable as React elements. Types, hooks, utilities,

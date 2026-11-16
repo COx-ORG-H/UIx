@@ -2038,6 +2038,1078 @@
       "subpath": "./icons"
     },
     {
+      "name": "AccessibilityIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ActivityIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "AlertCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "AlertOctagonIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "AlertTriangleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArchiveIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArchiveRestoreIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowLeftIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowLeftRightIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowRightIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowUpDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ArrowUpRightIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "AwardIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BadgeCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BanknoteIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BarChart3Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BellIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BellOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BellRingIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BookmarkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BookOpenIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BotIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BoxesIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BriefcaseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Building2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarClockIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarDaysIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarSyncIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CalendarXIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CameraIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChartColumnIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CheckCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CheckCircle2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CheckCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CheckSquareIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronLeftIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronRightIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronsDownUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronsLeftIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronsRightIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronsUpDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ChevronUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleAlertIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleCheckBigIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleDotIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleHelpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CirclePauseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CirclePlayIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleQuestionMarkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CircleXIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ClipboardCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ClipboardListIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ClockIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CloudIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CloudOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CoinsIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Columns3Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CommandIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ComponentIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CopyIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CornerUpLeftIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "CreditCardIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "DatabaseBackupIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "DatabaseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "DoorOpenIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "DownloadIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "EllipsisIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "EllipsisVerticalIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ExternalLinkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "EyeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "EyeOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FaceSlightlySmilingIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FaceSlightlySmilingPlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileArchiveIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileBarChartIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileChartColumnIncreasingIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileCheck2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileCheckCornerIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileCodeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileImageIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileInputIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileKeyIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileQuestionIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileQuestionMarkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileSearchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileSpreadsheetIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileTerminalIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileTextIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FileUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FilterIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FlagIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FolderCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FolderKanbanIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FolderTreeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "FunnelIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GanttChartSquareIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GaugeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitBranchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitBranchPlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitCompareArrowsIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitMergeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitPullRequestArrowIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitPullRequestClosedIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GlobeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GraduationCapIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Grid3x3Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GripVerticalIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HandHeartIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HeartIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HeartPulseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HexagonIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HistoryIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HourglassIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "HouseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "IdCardIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ImageIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "InboxIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "InfoIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "KeyboardIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "KeyIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "KeyRoundIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LandmarkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LanguagesIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LaptopIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LayersIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LayoutDashboardIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LayoutTemplateIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LibraryIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LifeBuoyIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LightbulbIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Link2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Link2OffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LinkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ListChecksIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ListFilterIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ListTreeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Loader2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LoaderCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LockIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LogInIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "LogOutIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MailIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MapPinIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Maximize2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MegaphoneIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MenuIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MessageCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MessageSquareIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Minimize2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MinusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MonitorCogIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MonitorIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MoonIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "MoreHorizontalIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "NewspaperIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "NotebookPenIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "OctagonAlertIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PackageIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PackageOpenIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PackageSearchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PaletteIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PanelLeftIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PaperclipIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PartyPopperIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PauseCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PauseIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PencilIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PenLineIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PhoneIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PlaneIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PlayCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PlayIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PlugIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PresentationIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "PrinterIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "QrCodeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RadarIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RadioIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RadioTowerIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ReceiptIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RefreshCwIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RotateCcwClockIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RotateCcwIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "RouteIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Rows2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Rows3Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Rows4Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SaveIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ScaleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ScanBarcodeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ScanIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ScanSearchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ScrollTextIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SearchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SearchXIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SendIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ServerIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Settings2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SettingsIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShapesIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Share2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldAlertIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldHalfIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShieldXIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ShoppingCartIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SignpostIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SirenIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SlidersHorizontalIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SmileIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SmilePlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SparklesIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SquareChartGanttIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SquareCheckBigIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SquareIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "StampIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "StarIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "StarOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "StoreIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SunIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TagIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TagsIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ThumbsDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ThumbsUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TicketIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TimerIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TimerOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TowerControlIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "Trash2Icon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TrendingDownIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TrendingUpIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "TriangleAlertIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UnlinkIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UploadIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserCogIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserPlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserRoundIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserSearchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UsersIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UsersRoundIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "UserXIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WalletIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WaypointsIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WebhookIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WifiIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WifiOffIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WorkflowIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "WrenchIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "XCircleIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "XIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "ZapIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
       "name": "Markdown",
       "subpath": "./markdown"
     },

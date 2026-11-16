@@ -45,6 +45,7 @@ export default defineConfig([
       markdown: 'src/markdown.ts',
       emoji: 'src/emoji.ts',
       icons: 'src/icons.ts',
+      'icons-intrinsic': 'src/icons-intrinsic.ts',
     },
     format: ['cjs'],
     dts: true,
