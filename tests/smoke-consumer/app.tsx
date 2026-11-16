@@ -7,6 +7,8 @@
 // in run.mjs instead of a typed import (keeps the smoke lean).
 import {
   BrandProfiles,
+  Avatar,
+  PresenceDot,
   DataWorkspace,
   BuilderCanvas,
   Button,
@@ -62,6 +64,7 @@ const rule: RuleDefinition = {
   when: { id: 'root', combinator: 'and', conditions: [] },
   then: [],
 };
+const sizedPeople = [<Avatar key="avatar" size={28}>AM</Avatar>, <PresenceDot key="dot" size={8} presence="busy" label="Beschäftigt" />];
 const optionalRule = <RuleBuilder value={rule} onChange={() => {}} fields={[]} operators={[]} maxConditions={1} conditionsOnly allowGroups={false} maxDepth={1} checks={{ emptyGroup: false }} />;
 const brand: BrandProfile = {
   id: 'default', name: 'Default', brand: '#1447E6', brandForeground: '#FFFFFF',
@@ -90,5 +93,5 @@ export default {
   DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,
   PresetChart, ChartMetric, ChartLegend, buildThreeWayDiff, layoutRelationshipGraph, normalizeHex,
-  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, optionalRule, brand, iconElements, sortOne, sortNone, sortMany, bodyMetric,
+  stepMetricValue, layered, nextId, graphLabels, accent, body, space4, darkBg, renderButton, rule, optionalRule, brand, iconElements, sortOne, sortNone, sortMany, bodyMetric, sizedPeople,
 };

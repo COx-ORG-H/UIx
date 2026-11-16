@@ -15,7 +15,8 @@ export const DEFAULT_PRESENCE_LABELS: Record<AvatarPresence, string> = {
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   /** TENSOR RX-125 (UIX-04): translatable; English default. Still honoured for `online`. */
   onlineLabel?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  /** Named kit size, or positive pixels with proportional initials. Invalid numbers use md. */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | number;
   src?: string;
   alt?: string;
   /** Initials / fallback shown when there is no `src`. */
@@ -32,12 +33,17 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   presenceLabels?: Partial<Record<AvatarPresence, string>>;
 }
 
+const positivePixels = (size: unknown): number | undefined =>
+  typeof size === 'number' && Number.isFinite(size) && size > 0 ? size : undefined;
+
 /** Avatar over `.uix-avatar`. Renders an image when `src` is set, else children (initials). */
-export function Avatar({ size = 'md', src, alt, children, status, presence, presenceLabels, onlineLabel, className, ...props }: AvatarProps) {
+export function Avatar({ size = 'md', src, alt, children, status, presence, presenceLabels, onlineLabel, className, style, ...props }: AvatarProps) {
   const state = presence ?? (status ? 'online' : undefined);
   const word = state && (presenceLabels?.[state] ?? (state === 'online' ? onlineLabel : undefined) ?? DEFAULT_PRESENCE_LABELS[state]);
+  const pixels = positivePixels(size);
+  const resolvedStyle = pixels === undefined ? style : { width: pixels, height: pixels, fontSize: Math.max(9, Math.round(pixels * 0.42)), ...style };
   return (
-    <span className={cx('uix-avatar', size !== 'md' && `uix-avatar--${size}`, className)} {...props}>
+    <span className={cx('uix-avatar', typeof size === 'string' && size !== 'md' && `uix-avatar--${size}`, className)} style={resolvedStyle} {...props}>
       {src ? <img src={src} alt={alt ?? ''} /> : children}
       {/* the dot is a shape and a colour — pair it with hidden text so AT hears the state (UIX-A11Y-4) */}
       {state && <span className="uix-avatar__status" data-presence={state === 'online' ? undefined : state} aria-hidden="true" />}
@@ -48,6 +54,8 @@ export function Avatar({ size = 'md', src, alt, children, status, presence, pres
 
 export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   presence: AvatarPresence;
+  /** Positive pixel dimensions; invalid or omitted values keep the kit default. */
+  size?: number;
   /**
    * The state in words for assistive technology. Default: the English word. Pass `null` when
    * the state is already written next to the dot, to make the dot decorative.
@@ -56,14 +64,17 @@ export interface PresenceDotProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
 }
 
 /** The presence dot on its own, for a row or a menu that shows no avatar (HAR-1374). */
-export function PresenceDot({ presence, label, className, ...props }: PresenceDotProps) {
+export function PresenceDot({ presence, label, size, className, style, ...props }: PresenceDotProps) {
   const decorative = label === null;
+  const pixels = positivePixels(size);
+  const resolvedStyle = pixels === undefined ? style : { width: pixels, height: pixels, ...style };
   return (
     <span
       className={cx('uix-presence', `uix-presence--${presence}`, className)}
       role={decorative ? undefined : 'img'}
       aria-label={decorative ? undefined : (label ?? DEFAULT_PRESENCE_LABELS[presence])}
       aria-hidden={decorative ? true : undefined}
+      style={resolvedStyle}
       {...props}
     />
   );
