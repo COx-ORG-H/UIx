@@ -106,7 +106,7 @@ export function UserChip({ avatar, name, sub, className, children, ...props }: U
   return (
     <span className={cx('uix-user-chip', className)} {...props}>
       {avatar}
-      <span>
+      <span className="uix-user-chip__text">
         {name != null && <span className="uix-user-chip__name">{name}</span>}
         {sub != null && (
           <span className="uix-user-chip__sub" style={{ display: 'block' }}>
