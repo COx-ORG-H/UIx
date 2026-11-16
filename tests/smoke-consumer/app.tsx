@@ -43,6 +43,9 @@ import { Chart as PresetChart, ChartLegend } from '@tensor_1/react/chart/preset'
 import { cssVar, light, dark, num } from '@tensor_1/tokens/ts';
 import { Icon, ShieldCheckIcon, AlertTriangleIcon } from '@tensor_1/react/icons';
 import type { IconName, UixIcon } from '@tensor_1/react/icons';
+import { XIcon as IntrinsicXIcon } from '@tensor_1/react/icons/intrinsic';
+const intrinsicIcon = <IntrinsicXIcon size="1em" aria-label="Schließen" />;
+void intrinsicIcon;
 
 // The icon subpath (HAR-996): a typed name, a component type that replaces LucideIcon.
 const iconName: IconName = 'shield-check';

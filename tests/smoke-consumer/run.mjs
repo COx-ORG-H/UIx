@@ -187,6 +187,10 @@ try {
   execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '--project', join(tmp, 'tsconfig.json')],
     { cwd: tmp, stdio: 'inherit' });
 
+  execFileSync(process.execPath, ['--input-type=module', '-e',
+    "import React from 'react'; import {renderToStaticMarkup} from 'react-dom/server'; import {XIcon} from '@tensor_1/react/icons/intrinsic'; const svg=renderToStaticMarkup(React.createElement(XIcon)); if(!svg.includes('width=\"24\" height=\"24\"') || svg.includes('style=')) throw new Error(svg);"],
+    { cwd: tmp, stdio: 'inherit' });
+
   step('6. React 19 peer compatibility (install + types + runtime import)');
   const react19 = ['react@^19.0.0', 'react-dom@^19.0.0', '@types/react@^19.0.0', '@types/react-dom@^19.0.0'];
   if (BUN_CLI) execFileSync(BUN_CLI, ['add', '--no-save', '--silent', ...react19], { cwd: tmp, stdio: 'inherit' });
@@ -195,6 +199,11 @@ try {
     { cwd: tmp, stdio: 'inherit' });
   execFileSync(process.execPath, ['--input-type=module', '-e',
     "import React from 'react'; import { RuleBuilder, ColorPicker } from '@tensor_1/react'; if(!React.version.startsWith('19.')||!RuleBuilder||!ColorPicker) process.exit(5);"],
+    { cwd: tmp, stdio: 'inherit' });
+  // The following optional-peer install resolves the manifest's React 18 dependency again.
+  // Exercise the server condition while the consumer actually has React 19 installed.
+  execFileSync(process.execPath, ['--conditions=react-server', '--input-type=module', '-e',
+    "import React from 'react'; import { XIcon } from '@tensor_1/react/icons/intrinsic'; if (!React.version.startsWith('19.') || !XIcon) throw new Error('missing React 19 server icon');"],
     { cwd: tmp, stdio: 'inherit' });
 
   step('7. ./rich-text and ./emoji with the exact optional peers the package declares');
@@ -239,6 +248,19 @@ try {
     }
   `], { cwd: tmp, stdio: 'inherit' });
 
+  step('8a. intrinsic icons preserve native SVG dimensions and ESM/CJS exports');
+  execFileSync(process.execPath, ['--input-type=module', '-e', `
+    import React from 'react';
+    import { renderToStaticMarkup } from 'react-dom/server';
+    import { XIcon } from '@tensor_1/react/icons/intrinsic';
+    import { createRequire } from 'node:module';
+    const require = createRequire(import.meta.url);
+    if (!require('@tensor_1/react/icons/intrinsic').XIcon) throw new Error('missing CJS intrinsic icon');
+    for (const props of [{}, { size: undefined }]) {
+      const svg = renderToStaticMarkup(React.createElement(XIcon, props));
+      if (!svg.includes('width="24" height="24"') || svg.includes('style=')) throw new Error(svg);
+    }
+  `], { cwd: tmp, stdio: 'inherit' });
   step('8b. the uix-page-rules bin from the packed release fails a planted raw button, then passes (HAR-3874)');
   const reactManifest = JSON.parse(readFileSync(join(tmp, 'node_modules', '@tensor_1', 'react', 'package.json'), 'utf8'));
   const binTarget = reactManifest.bin?.['uix-page-rules'];

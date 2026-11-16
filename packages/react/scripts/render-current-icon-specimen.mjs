@@ -1,0 +1,21 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { createElement as h } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { CreditCardIcon, DoorOpenIcon, IdCardIcon } from '../dist/icons.js';
+const target = new URL('../../tokens/docs/showcase-data.js', import.meta.url);
+const start = '<!-- current-icon-paths:start -->';
+const end = '<!-- current-icon-paths:end -->';
+const icons = [['door-open', DoorOpenIcon, 'Tür öffnen'], ['id-card', IdCardIcon, 'Ausweis'], ['credit-card', CreditCardIcon, 'Zahlungskarte']];
+const markup = renderToStaticMarkup(h('ul', { className: 'uix-icon-grid', 'data-current-icon-paths': '' }, icons.map(([name, Component, label]) =>
+  h('li', { key: name, className: 'uix-icon-grid__item', 'data-current-glyph': name }, h(Component, { size: 24, label }), h(Component, { size: 16 }), h('code', null, label)))));
+const section = `${start}<h3>Current glyph paths</h3><p>DoorOpen, IdCard and CreditCard use the Lucide 1.61.0 drawings. Every existing component alias and public glyph key remains, including building-2 and trash-2. Each row pairs a German-labelled 24 px icon with a decorative 16 px icon.</p>${markup}${end}`;
+const source = readFileSync(target, 'utf8');
+const page = source.match(/"slug": "examples-icons"[\s\S]*?"html": ("(?:[^"\\]|\\.)*")/);
+if (!page) throw new Error('icons gallery not found');
+const html = JSON.parse(page[1]);
+const stripped = html.includes(start) ? html.slice(0, html.indexOf(start)) + html.slice(html.indexOf(end) + end.length) : html;
+const closing = stripped.lastIndexOf('</section>');
+if (closing < 0) throw new Error('icons closing section not found');
+const next = `${stripped.slice(0, closing).trimEnd()}\n${section}\n${stripped.slice(closing)}`;
+writeFileSync(target, source.replace(page[1], () => JSON.stringify(next)));
+console.log('Current three glyphs rendered from the public icon entry');

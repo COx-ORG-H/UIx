@@ -65,7 +65,12 @@
       "import": "./dist/icons.js",
       "require": "./dist/icons.cjs"
     },
-    "./page-rules": "./page-rules/index.mjs"
+    "./page-rules": "./page-rules/index.mjs",
+    "./icons/intrinsic": {
+      "types": "./dist/icons-intrinsic.d.ts",
+      "import": "./dist/icons-intrinsic.js",
+      "require": "./dist/icons-intrinsic.cjs"
+    }
   },
   "scripts": {
     "build": "node scripts/clean-dist.mjs && tsup && node scripts/check-dist.mjs",

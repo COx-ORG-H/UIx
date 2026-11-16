@@ -167,3 +167,20 @@ default — set your registry (`publishConfig`, e.g. GitHub Packages) and remove
 
 Fonts: **Inter** (body) + **IBM Plex Sans** (headings) + **IBM Plex Mono**, loaded via Google Fonts
 in the docs shell. Icons are **lucide**, inline SVG, `currentColor`, sized via `--uix-icon-*`.
+The React icon entry is generated from Lucide 1.61.0. `scripts/icon-glyph-compat.json`
+preserves public UIx glyph identities when upstream renames an alias; `building-2`
+and `trash-2` remain valid. Regenerate with
+`node packages/react/scripts/generate-icons.mjs <installed-lucide-react-package>`.
+The generator also reads the earlier `__iconNode` format; Lucide is a generation
+input only and is never a runtime dependency of the package.
+
+For migrations that already rely on native SVG presentation attributes, import
+named icons from `@tensor_1/react/icons/intrinsic`. These default to 24 SVG units;
+`size={14}` and `size="1em"` set SVG `width`/`height` attributes, so button, menu,
+and product CSS retain their existing priority. They keep forwarded SVG refs,
+raw ARIA attributes, and title children. The regular `./icons` entry keeps its
+token-sized default and explicit inline numeric dimensions. Both entries accept
+`sizeMode="intrinsic"` or `sizeMode="explicit"` to select the sizing contract;
+named `sm`/`md`/`lg` sizes always use the existing token classes. The intrinsic
+entry uses a separate class so component selectors for `.uix-icon` do not alter
+existing consumer geometry. Its `animate` prop shares the kit motion rules.

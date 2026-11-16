@@ -220,7 +220,7 @@ export const CopyIcon: UixIcon;
 export const CornerUpLeftIcon: UixIcon;
 
 // @public
-export function createIcon(displayName: string, node: IconNode): UixIcon;
+export function createIcon(displayName: string, node: IconNode, defaults?: Pick<IconProps, 'size' | 'sizeMode'>): UixIcon;
 
 // @public (undocumented)
 export const CreditCardIcon: UixIcon;
@@ -661,6 +661,7 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
     animate?: boolean;
     label?: string;
     size?: IconSize | number | string;
+    sizeMode?: 'explicit' | 'intrinsic';
     strokeWidth?: number | string;
     tone?: IconTone;
 }

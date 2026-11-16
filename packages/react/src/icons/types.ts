@@ -9,14 +9,21 @@ export type IconTone = 'current' | 'muted' | 'accent' | 'success' | 'warning' | 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
   /**
    * `sm` 16 px, `md` 20 px (default), `lg` 24 px — the `--uix-icon-*` tokens — or a CSS length
-   * / pixel number. A sizing class from the product (e.g. a Tailwind `size-4`) also wins.
+   * / pixel number. Presets use CSS; numeric/length values use inline dimensions by default.
    */
   size?: IconSize | number | string;
+  /**
+   * `intrinsic` emits numeric/CSS-length dimensions as SVG presentation attributes so
+   * control and product CSS retain their precedence. The named intrinsic entry defaults
+   * to this mode and 24 units. Existing icons keep `explicit` sizing by default.
+   */
+  sizeMode?: 'explicit' | 'intrinsic';
   /** Colour from a UIx token. Default `current`: inherits the text colour. */
   tone?: IconTone;
   /**
    * Accessible name. With it the icon is `role="img"`; without it the icon is decorative
-   * (`aria-hidden`). An icon-only button names the button instead, so leave this empty there.
+   * (`aria-hidden`). Intrinsic mode also honors raw ARIA attributes and title children.
+   * An icon-only button names the button instead, so leave this empty there.
    */
   label?: string;
   /** Stroke width in the 24-unit box. Default 2. */
