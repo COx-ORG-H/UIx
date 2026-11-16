@@ -1,5 +1,14 @@
 # @tensor_1/tokens
 
+## 2.67.0
+
+### Minor Changes
+
+- 44bde02: Expose ChartMetric from the engine-free root entry and add optional logical start/end alignment for dashboard bodies. Existing chart imports and responsive header alignment remain compatible.
+- 7b7cba0: Add the named icons/intrinsic entry with natural 24-unit SVG sizing and native CSS precedence for faithful migrations. Existing icons keep their sizing defaults. Refresh CreditCard, DoorOpen and IdCard paths from Lucide 1.61.0 while preserving all public aliases and glyph identities, including building-2 and trash-2.
+- 1e8bd23: Allow positive numeric Avatar and PresenceDot sizes while retaining named-size defaults and accessible presence. Numeric avatars scale their initials; invalid values safely retain the kit default.
+- 1757523: Support an optional single RuleBuilder condition with maxConditions, bounded append behavior and focus continuity when its Add/Remove controls disappear. Preserve over-limit controlled input and default unlimited editing.
+
 ## 2.66.0
 
 ### Minor Changes
