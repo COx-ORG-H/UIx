@@ -4,6 +4,8 @@ for (const width of [1440, 320]) test(`RuleBuilder fits its container at ${width
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.addInitScript(theme => localStorage.setItem('uix-theme', theme), info.project.name === 'dark' ? 'dark' : 'light');
   await page.goto('/tests/optional-condition/harness.html', { waitUntil: 'networkidle' });
+  // Reserve the classic scrollbar width even on overlay-scrollbar platforms.
+  await page.addStyleTag({ content: 'html { scrollbar-gutter: stable; }' });
   for (const id of ['constrained', 'constrained-actions']) {
     const example = page.locator(`[data-example="${id}"]`);
     const builder = example.locator('.uix-rule-builder');

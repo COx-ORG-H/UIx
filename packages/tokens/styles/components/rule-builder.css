@@ -16,5 +16,5 @@
   .uix-rule-builder__validation { padding:var(--uix-space-3); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); color:var(--uix-text-muted); }
   .uix-rule-builder__validation:has(ul),.uix-rule-builder__invalid { color:var(--uix-danger-text); background:var(--uix-danger-bg); }
   .uix-rule-builder--summary { padding:var(--uix-space-4); border:1px solid var(--uix-border); border-radius:var(--uix-radius-lg); background:var(--uix-surface); }
-  @container uix-rule-builder (max-width:44rem) { .uix-rule-builder__condition,.uix-rule-builder__action { grid-template-columns:minmax(0,1fr); } .uix-rule-builder__nested { grid-template-columns:minmax(0,1fr); } }
+  @container uix-rule-builder (max-width:44rem) { .uix-rule-builder__condition,.uix-rule-builder__action { grid-template-columns:minmax(0,1fr); } .uix-rule-builder__nested { grid-template-columns:minmax(0,1fr); } .uix-rule-builder__group-heading,.uix-rule-builder__group-heading label { flex-wrap:wrap; min-width:0; } }
 }
