@@ -2,12 +2,14 @@
    Native modal <dialog>; keyboard ↑/↓ navigates records (app.js). Since 2.68 (HAR-4659) its frame,
    slide, swipe and blurred scrim are the side drawer's (drawer.css styles .uix-peek with .uix-drawer),
    so a quick view on a list looks and behaves like every other side panel. This file holds only
-   what a peek adds: the record arrows, the hint line and its own header, body and footer. */
+   what a peek adds: the record arrows, the hint line and its own header, body and footer. The header
+   keeps its 16 px inset (not the drawer's 20 px): at 320 px a long German record title needs the
+   width to keep 18+ characters a line (peek-header.spec). */
 @layer uix.components {
   /* Navigation and close share the first row. The record name gets the full
      next row when navigation exists; hints follow it. Without navigation the
      title stays beside close, so optional regions never leave empty rows. */
-  .uix-peek__header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
+  .uix-peek__header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
   .uix-peek__nav { grid-column: 1; grid-row: 1; display: inline-flex; gap: var(--uix-space-1); }
   .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
@@ -24,7 +26,7 @@
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
   .uix-peek__hint { grid-column: 1 / -1; min-width: 0; white-space: normal; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-peek__footer { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
+  .uix-peek__footer { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
   /* A link in the footer stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3091). A plain
      anchor (a framework <Link> without a class), .uix-peek__footer-link (one that must carry a class)
      and a link Button all get it, at the meta size with the link colour and underline: the product
