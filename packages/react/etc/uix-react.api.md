@@ -5451,7 +5451,7 @@ export interface PasswordInputProps extends Omit<InputProps, 'type'> {
     revealed?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export function Peek(input: PeekProps): react.JSX.Element;
 
 // @public (undocumented)

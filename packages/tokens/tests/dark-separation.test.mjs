@@ -84,19 +84,13 @@ test("light: a checked checkbox keeps 3:1 on a selected row too, and the edge is
   assert.equal(light["row-selected-edge"], "transparent");
 });
 
-test("dark: the list beside a peek stays legible under its backdrop (HAR-3085)", () => {
-  const scrim = color("var(--uix-scrim-peek)", dark);
-  for (const [rowName, rowExpr] of [["plain", "var(--uix-row)"], ["zebra", "var(--uix-row-alt)"]]) {
-    const row = paintOnSurface(rowExpr, dark);
-    const dimmedRow = over(scrim, row);
-    for (const [textName, textExpr] of [["text", "var(--uix-text)"], ["muted", "var(--uix-text-muted)"]]) {
-      const ratio = contrast(over(scrim, over(color(textExpr, dark), row)), dimmedRow);
-      assert.ok(ratio >= 3, `${textName} on a dimmed ${rowName} row: ${ratio.toFixed(2)}:1`);
-    }
-  }
-  assert.ok(scrim[3] >= 0.25, `peek scrim alpha ${scrim[3]}`);
-  assert.match(read("../styles/components/peek.css"), /\.uix-peek::backdrop \{[^}]*background: var\(--uix-scrim-peek\)/);
-  assert.equal(dark.scrim, "rgba(0,0,0,.5)", "modal and drawer keep the heavier scrim");
+/* HAR-4659 supersedes HAR-3085: the operator chose one side panel, so the peek takes the drawer's
+ * blurred --uix-scrim instead of its own lighter dim, and peek.css paints no backdrop of its own. */
+test("the peek's backdrop is the drawer's: one rule, the blurred --uix-scrim (HAR-4659)", () => {
+  const drawerCss = read("../styles/components/drawer.css");
+  assert.match(drawerCss, /:is\(\.uix-drawer, \.uix-peek\)::backdrop \{[^}]*background: var\(--uix-scrim\);[^}]*backdrop-filter: blur\(var\(--uix-scrim-blur\)\)/);
+  assert.doesNotMatch(read("../styles/components/peek.css"), /::backdrop|--uix-scrim-peek/);
+  assert.equal(dark.scrim, "rgba(0,0,0,.5)", "modal, drawer and peek share the heavier scrim");
 });
 
 test("product themes: the header band never equals a hovered row", () => {
