@@ -25,7 +25,8 @@ const NOT_A_HANDLE = 'button, a, input, textarea, select, label, [role="button"]
 
 interface DrawerDrag { id: number; x0: number; y0: number; d: number; samples: { p: number; t: number }[]; active: boolean }
 
-function useDrawerSwipe(side: 'end' | 'start' | 'bottom', canClose: boolean, dismiss: (event: ReactPointerEvent<HTMLDialogElement>) => boolean) {
+/** Internal (not in index.ts): the side Peek swipes closed the same way since 2.68 (HAR-4659). */
+export function useDrawerSwipe(side: 'end' | 'start' | 'bottom', canClose: boolean, dismiss: (event: ReactPointerEvent<HTMLDialogElement>) => boolean) {
   const drag = useRef<DrawerDrag | null>(null);
   const vertical = side === 'bottom';
   const sign = side === 'start' ? -1 : 1;

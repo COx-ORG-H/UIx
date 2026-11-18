@@ -59,6 +59,33 @@ for (const [button, id, key] of [['open-drawer', 'drawer', 'drawer'], ['open-pee
   });
 }
 
+/* HAR-4659: the side peek is the drawer's panel. Same floating frame (gap on every edge, large
+ * corners, a border all round), the same blurred scrim behind it, the same box. */
+test('peek and drawer share one frame: gap, corners, border and the blurred scrim', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const frameOf = async (button, id) => {
+    const dialog = await openPanel(page, button, id);
+    const frame = await dialog.evaluate((d) => {
+      const s = getComputedStyle(d);
+      const b = getComputedStyle(d, '::backdrop');
+      const r = d.getBoundingClientRect();
+      return {
+        gapTop: r.top, gapRight: window.innerWidth - r.right, gapBottom: window.innerHeight - r.bottom, width: r.width,
+        radius: s.borderTopLeftRadius, borderLeft: s.borderLeftWidth, borderTop: s.borderTopWidth,
+        blur: b.backdropFilter, scrim: b.backgroundColor,
+      };
+    });
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveJSProperty('open', false);
+    return frame;
+  };
+  const drawer = await frameOf('open-drawer', 'drawer');
+  const peek = await frameOf('open-peek', 'peek');
+  expect(drawer.gapTop, 'the drawer floats off the edge').toBeGreaterThan(0);
+  expect(drawer.blur).toMatch(/blur/);
+  expect(peek).toEqual(drawer);
+});
+
 test('form drawer (dismissOnBackdrop={false}): the backdrop keeps it open; Escape still closes', async ({ page }) => {
   const dialog = await openPanel(page, 'open-form', 'form');
   const box = await dialog.boundingBox();

@@ -1,35 +1,13 @@
-/* uix side-peek drawer (the §5.8 peek pattern, reused by table rows + sidebar items).
-   Native <dialog>, slides from the right; keyboard ↑/↓ navigates records (app.js). */
+/* uix side-peek (the §5.8 peek pattern, reused by table rows + sidebar items).
+   Native modal <dialog>; keyboard ↑/↓ navigates records (app.js). Since 2.68 (HAR-4659) its frame,
+   slide, swipe and blurred scrim are the side drawer's (drawer.css styles .uix-peek with .uix-drawer),
+   so a quick view on a list looks and behaves like every other side panel. This file holds only
+   what a peek adds: the record arrows, the hint line and its own header, body and footer. */
 @layer uix.components {
-  .uix-peek {
-    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: var(--uix-peek-w); padding: 0; color: var(--uix-text);
-    border: 0; border-left: 1px solid var(--uix-border); border-radius: 0;
-    background: var(--uix-surface); box-shadow: var(--uix-shadow-overlay);
-    transform: translateX(100%);
-    /* the closed state's durations are the exit's (--uix-dur-exit-slow); [open] carries the enter */
-    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
-                overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
-    /* Author display values for BOTH states are required for the slide-in to animate: the
-       allow-discrete `display` transition only engages with author values, and that gating also
-       lets the @starting-style entrance fire. With only the UA dialog display, the panel stays
-       parked at translateX(100%). Closed = none; open = flex. */
-    display: none;
-  }
-  .uix-peek[open] { transform: none; display: flex; flex-direction: column; transition-duration: var(--uix-dur-slow); }
-  @starting-style { .uix-peek[open] { transform: translateX(100%); } }
-  /* its own scrim (HAR-3085): the list beside a peek is what the person steps through with the arrow
-     keys, so dark dims it lightly (--uix-scrim-peek); light keeps the --uix-scrim value */
-  .uix-peek::backdrop {
-    background: var(--uix-scrim-peek); opacity: 0;
-    transition: opacity var(--uix-dur-exit-slow) var(--uix-ease-out), overlay var(--uix-dur-exit-slow) allow-discrete, display var(--uix-dur-exit-slow) allow-discrete;
-  }
-  .uix-peek[open]::backdrop { opacity: 1; transition-duration: var(--uix-dur-slow); }
-  @starting-style { .uix-peek[open]::backdrop { opacity: 0; } }
-
   /* Navigation and close share the first row. The record name gets the full
      next row when navigation exists; hints follow it. Without navigation the
      title stays beside close, so optional regions never leave empty rows. */
-  .uix-peek__header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-bottom: 1px solid var(--uix-border); }
+  .uix-peek__header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-bottom: 1px solid var(--uix-border); }
   .uix-peek__nav { grid-column: 1; grid-row: 1; display: inline-flex; gap: var(--uix-space-1); }
   .uix-peek__navbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--uix-border); background: var(--uix-surface); color: var(--uix-text); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .uix-peek__navbtn:hover { background: var(--uix-bg-hover); }
@@ -46,7 +24,7 @@
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }
   .uix-peek__hint { grid-column: 1 / -1; min-width: 0; white-space: normal; font-size: var(--uix-text-meta); color: var(--uix-text-muted); }
-  .uix-peek__footer { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-4); border-top: 1px solid var(--uix-border); }
+  .uix-peek__footer { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-4) var(--uix-space-5); border-top: 1px solid var(--uix-border); }
   /* A link in the footer stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3091). A plain
      anchor (a framework <Link> without a class), .uix-peek__footer-link (one that must carry a class)
      and a link Button all get it, at the meta size with the link colour and underline: the product
