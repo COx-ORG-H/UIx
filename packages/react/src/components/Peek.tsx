@@ -1,11 +1,12 @@
 "use client";
 
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { backdropDismiss } from '../hooks/backdropDismiss.js';
+import { useDrawerSwipe } from './Drawer.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
@@ -42,7 +43,12 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
   hint?: string;
 }
 
-export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel: previousLabelProp, nextLabel: nextLabelProp, closeLabel: closeLabelProp, className, onClick, ...rest }: PeekProps) {
+/**
+ * The record quick view beside a list. Since 2.68 (HAR-4659) it is the side Drawer's panel: the same
+ * floating frame, slide, blurred scrim and swipe-to-close on touch (drawer.css styles `.uix-peek`
+ * with `.uix-drawer`), plus what a peek adds: the ↑/↓ record arrows, the hint line and the footer.
+ */
+export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel: previousLabelProp, nextLabel: nextLabelProp, closeLabel: closeLabelProp, className, onClick, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...rest }: PeekProps) {
   const uixLabels = useUixLabels();
   const previousLabel = previousLabelProp ?? uixLabels.peek?.previous ?? 'Previous record';
   const nextLabel = nextLabelProp ?? uixLabels.peek?.next ?? 'Next record';
@@ -51,9 +57,24 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
   const hasNav = onNavPrev != null || onNavNext != null;
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
   const titleId = useId();
+  // Swipe toward the right edge closes it, like the Drawer (touch and pen only; the mouse keeps
+  // the close button, Escape and the backdrop).
+  const swipe = useDrawerSwipe('end', !!onClose, () => { onClose?.(); return true; });
+  // a panel thrown out stays out until the dialog has closed; reopening starts clean
+  useEffect(() => { const el = ref.current; if (open && el) swipe.settle(el); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <dialog ref={ref} className={cx('uix-peek', className)} aria-labelledby={title ? titleId : undefined} {...rest} onClick={backdropDismiss(onClose, onClick)}>
+    <dialog
+      ref={ref}
+      className={cx('uix-peek', className)}
+      aria-labelledby={title ? titleId : undefined}
+      {...rest}
+      onClick={backdropDismiss(onClose, onClick)}
+      onPointerDown={(event) => { onPointerDown?.(event); swipe.handlers.onPointerDown(event); }}
+      onPointerMove={(event) => { onPointerMove?.(event); swipe.handlers.onPointerMove(event); }}
+      onPointerUp={(event) => { onPointerUp?.(event); swipe.handlers.onPointerUp(event); }}
+      onPointerCancel={(event) => { onPointerCancel?.(event); swipe.handlers.onPointerCancel(event); }}
+    >
       <div className="uix-peek__header">
         {hasNav && (
           <div className="uix-peek__nav">
