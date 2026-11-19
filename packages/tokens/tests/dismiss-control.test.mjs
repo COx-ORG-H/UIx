@@ -42,7 +42,8 @@ test("a 24 px circle in a 20 x 16 px footprint (HAR-3215), a round ring and a 12
   assert.equal(base.width, "24px");
   assert.equal(base.height, "24px");
   assert.equal(base["border-radius"], "var(--uix-radius-pill)");
-  assert.equal(base.padding, "0");
+  assert.equal(base.padding, "calc(var(--uix-space-1) / 2)");
+  assert.equal(base["background-clip"], "content-box");
   assert.equal(base["line-height"], "0");
   assert.equal(base.position, "relative");
   assert.equal(base["place-items"], "center");
