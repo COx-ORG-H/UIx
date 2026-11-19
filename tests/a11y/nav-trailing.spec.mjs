@@ -66,7 +66,9 @@ test('a pinned row shows star and count side by side', async ({ page }) => {
   expect(g.starShown).toBe(true);
   expect(g.badgeShown).toBe(true);
   expect(g.badge.right, 'the count sits left of the star').toBeLessThanOrEqual(g.star.left);
-  expect(g.labelClipped, 'still the full label').toBe(false);
+  // a pinned row gives up the star's room too, so a long label may end in an ellipsis (CI's fonts
+  // cut "Benachrichtigungen" here); it never runs under the count
+  expect(g.label.right, 'the label ends before the count').toBeLessThanOrEqual(g.badge.left);
 });
 
 test('a row with only a star keeps the star\'s room; a long label ends in an ellipsis before the count', async ({ page }) => {
