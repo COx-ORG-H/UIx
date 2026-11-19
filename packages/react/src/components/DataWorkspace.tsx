@@ -695,7 +695,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const hasLead = search != null || filters != null || savedViews != null || (viewChanged && onSaveView != null);
   const hasEnd = viewMenu != null || hasMenu || (toolbarEnd != null && toolbarEnd !== false);
   const toolbar = hasToolbar && (
-    <div className="uix-toolbar uix-toolbar--ranked uix-data-workspace__toolbar" role="toolbar" aria-label={label}>
+    <div className="uix-toolbar uix-data-workspace__toolbar" role="toolbar" aria-label={label}>
       {hasLead && <div className="uix-toolbar__lead">
         {search && (
           <SearchBar
