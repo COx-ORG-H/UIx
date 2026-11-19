@@ -154,7 +154,7 @@ const round = (n: number) => Number(n.toFixed(1));
  */
 export function Sparkline({
   values, width = 86, height = 24, tone = 'ink', label, valueText, showValue = false, target, threshold,
-  highlightLast = true, className, ...props
+  highlightLast = true, className, 'aria-describedby': describedBy, 'aria-labelledby': labelledBy, ...props
 }: SparklineProps) {
   const pad = 3;
   const known = values.filter(isValue);
@@ -183,6 +183,9 @@ export function Sparkline({
 
   const name = [label, valueText].filter(Boolean).join(': ');
   const grouped = showValue && Boolean(valueText);
+  // the naming and describing attributes belong on whichever element is exposed: the group when
+  // it writes the value, otherwise the svg itself
+  const relations = { 'aria-describedby': describedBy, 'aria-labelledby': labelledBy };
   const svg = (
     <svg
       className={cx('uix-sparkline', tone === 'series' && 'uix-sparkline--series', !grouped && className)}
@@ -191,6 +194,7 @@ export function Sparkline({
       height={height}
       {...(name && !grouped ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true })}
       focusable="false"
+      {...(grouped ? {} : relations)}
       {...props}
     >
       {isValue(target) && known.length > 0 && (
@@ -217,7 +221,7 @@ export function Sparkline({
   );
   if (!grouped) return svg;
   return (
-    <span className={cx('uix-sparkline-group', className)} role="img" aria-label={name}>
+    <span className={cx('uix-sparkline-group', className)} role="img" aria-label={name} {...relations}>
       {svg}
       <span className="uix-sparkline__value">{valueText}</span>
     </span>

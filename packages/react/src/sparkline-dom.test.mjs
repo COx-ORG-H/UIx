@@ -82,6 +82,15 @@ test('showValue writes the value beside the line; the group is one image with th
   assert.doesNotMatch(out, /<svg class="uix-sparkline x"/, 'the class goes on the outermost element');
 });
 
+test('aria-describedby and aria-labelledby go on the element a screen reader meets', () => {
+  const aria = { 'aria-describedby': 'note', 'aria-labelledby': 'head' };
+  const grouped = html(h(Sparkline, { values: [1, 2], label: 'Rückstand', valueText: '2 offen', showValue: true, ...aria }));
+  assert.match(grouped, /^<span class="uix-sparkline-group" role="img" aria-label="Rückstand: 2 offen" aria-describedby="note" aria-labelledby="head"><svg /);
+  assert.doesNotMatch(grouped.slice(grouped.indexOf('<svg')), /aria-describedby|aria-labelledby/, 'not on the hidden svg');
+  const plain = html(h(Sparkline, { values: [1, 2], label: 'Rückstand', ...aria }));
+  assert.match(plain, /^<svg class="uix-sparkline"[^>]* role="img" aria-label="Rückstand" focusable="false" aria-describedby="note" aria-labelledby="head">/);
+});
+
 test('a constant series is a flat middle line; all-null draws nothing but keeps the value', () => {
   const flat = paths(html(h(Sparkline, { values: [4, 4, 4] })));
   assert.deepEqual(ys(flat[0]), [12, 12, 12]);
