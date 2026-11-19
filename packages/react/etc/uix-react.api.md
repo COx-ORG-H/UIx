@@ -5131,6 +5131,7 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
     description?: ReactNode;
     // (undocumented)
     icon?: ReactNode;
+    renderLink?: UixRenderLink;
     trailing?: ReactNode;
 }
 
@@ -7949,6 +7950,7 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     badge?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    renderLink?: UixRenderLink;
     trailing?: ReactNode;
 }
 

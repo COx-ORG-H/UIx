@@ -23,6 +23,10 @@ function Harness() {
       <NavItem id="row-long" href="#arbeitsbereich" icon={<Bell />} badge="3" trailing={star('long', 'Arbeitsbereich-Einstellungen')}>Arbeitsbereich-Einstellungen und Benachrichtigungsregeln</NavItem>
       <SubNavItem id="row-sub" href="#offen" badge="7" trailing={star('sub', 'Offene Vorfälle')}>Offene Vorfälle</SubNavItem>
       <NavItem id="row-plain" href="#plain" icon={<Bell />} badge="5">Ohne Stern</NavItem>
+      <NavItem id="row-fit" href="#berechtigung" icon={<Bell />} trailing={star('fit', 'Berechtigungskonzept')}>Berechtigungskonzept</NavItem>
+      <NavItem id="row-control" href="#steuerung" icon={<Bell />} trailing={<button type="button" className="uix-btn uix-btn--ghost uix-btn--sm uix-btn--icon" aria-label="Aktion">A</button>}>Steuerelement-Zeile</NavItem>
+      <NavItem id="row-router-nohref" renderLink={(p) => <a {...p} data-router="yes" />}>Ohne Ziel</NavItem>
+      <NavItem id="row-router" href="#router" icon={<Bell />} badge="2" renderLink={(p) => <a {...p} data-router="yes" />} trailing={star('router', 'Über den Router')}>Über den Router</NavItem>
     </Sidebar>
   );
 }
