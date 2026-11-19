@@ -96,6 +96,24 @@ export async function renderCalmSpecimens() {
     '</div>',
   ].join('\n'));
 
+  // ── the sparkline's shapes (HAR-2880) ──────────────────────────────────────────────────────
+  const backlog = [20, 19, 22, 22, 20, 18, 60, 75, 80, 82, 85];
+  const shape = (name, line) => h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(6rem, 9rem) minmax(0, 1fr)', alignItems: 'center', gap: 'var(--uix-space-3)' } },
+    h('span', { style: { color: 'var(--uix-text-muted)', fontSize: 'var(--uix-text-meta)' } }, name), h('div', { style: { minWidth: 0 } }, line));
+  const sparklines = h('div', { className: 'uix-stack', style: { '--gap': 'var(--uix-space-3)', maxWidth: '36rem' } },
+    shape('Plain', h(ui.Sparkline, { values: backlog, label: 'Offener Rückstand, 11 Wochen', valueText: '85 offen', showValue: true })),
+    shape('With gaps', h(ui.Sparkline, { values: [99.9, 99.8, null, null, 99.1, 98.7, null, 99.4, 99.6], tone: 'series', label: 'Verfügbarkeit, 9 Tage', valueText: '99,6 %, drei Tage ohne Messung', showValue: true })),
+    shape('With target', h(ui.Sparkline, { values: [40, 48, 52, 58, 61, 57, 64], target: 60, label: 'Lösungsquote', valueText: '64 %, Ziel 60 %', showValue: true })),
+    shape('Past a threshold', h(ui.Sparkline, { values: [3, 4, 3, 5, 9, 12], threshold: { value: 8, direction: 'above' }, label: 'Wartende Anfragen', valueText: '12, über der Grenze 8', showValue: true })),
+    shape('No data', h(ui.Sparkline, { values: [null, null, null], label: 'Durchsatz', valueText: 'noch keine Messwerte', showValue: true })),
+    shape('Decoration', h('span', null, '85 offen ', h(ui.Sparkline, { values: backlog }))));
+  add('examples-data-display', [
+    caption('Sparkline (React <code>Sparkline</code>, <code>.uix-sparkline</code>) — a trend line beside a number, no axes. A missing value (<code>null</code>) breaks the line and is never drawn as zero; <code>target</code> is a dashed line under the data; a crossed <code>threshold</code> turns the last dot into an amber diamond, so the shape says it too. <code>valueText</code> keeps the value in text: a screen reader hears "label: value", and <code>showValue</code> writes it beside the line. Without <code>label</code> or <code>valueText</code> it is decoration: say the number in words next to it. Switch the theme to see it in dark.'),
+    '<div data-sparkline-specimen>',
+    html(sparklines),
+    '</div>',
+  ].join('\n'));
+
   return specimens;
 }
 

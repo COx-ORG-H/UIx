@@ -7669,13 +7669,25 @@ export interface SortKey {
 export function Sparkline(input: SparklineProps): react.JSX.Element;
 
 // @public (undocumented)
-export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values'> {
+export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values' | 'target'> {
     height?: number;
+    highlightLast?: boolean;
     label?: string;
+    showValue?: boolean;
+    target?: number;
+    threshold?: SparklineThreshold;
     tone?: 'ink' | 'series';
-    // (undocumented)
-    values: number[];
+    values: ReadonlyArray<number | null>;
+    valueText?: string;
     width?: number;
+}
+
+// @public
+export interface SparklineThreshold {
+    // (undocumented)
+    direction: 'above' | 'below';
+    // (undocumented)
+    value: number;
 }
 
 // @public (undocumented)
