@@ -1289,7 +1289,8 @@ export const initShowcase = (options = {}) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); i = peekStep(i, +1, records.length); show(); }
       if (e.key === 'ArrowUp') { e.preventDefault(); i = peekStep(i, -1, records.length); show(); }
     });
-    peek.querySelector('[data-peek-open-full-v2]')?.addEventListener('click', () => {
+    peek.querySelector('[data-peek-open-full-v2]')?.addEventListener('click', (e) => {
+      e.preventDefault();
       const r = records[i]; if (r) toast(`Opening ${r.id}…`);
     });
   };

@@ -7,10 +7,18 @@ import { useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { backdropDismiss } from '../hooks/backdropDismiss.js';
 import { useDrawerSwipe } from './Drawer.js';
+import { ButtonLink } from './Button.js';
+import type { UixRenderLink } from '../link.js';
 
 const CloseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
     <path d="M4 4l8 8M12 4l-8 8" />
+  </svg>
+);
+
+const OpenIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h2.5" />
   </svg>
 );
 
@@ -41,6 +49,17 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
   onNavPrev?: () => void;
   onNavNext?: () => void;
   hint?: string;
+  /**
+   * The record's ID (HAR-3089), shown with the title in the meta size with tabular figures, so the
+   * person previewing a row sees which record it is ("INC-1042"). It is part of the dialog's name.
+   */
+  recordId?: ReactNode;
+  /**
+   * Open the record in full (HAR-3089): a secondary link button in the header row, with the close
+   * control, right after the title in the Tab order. The product passes its words and the href;
+   * `renderLink` is the router's link, as on `ButtonLink`.
+   */
+  openAction?: { label: string; href: string; renderLink?: UixRenderLink; onClick?: () => void };
 }
 
 /**
@@ -48,7 +67,7 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
  * floating frame, slide, blurred scrim and swipe-to-close on touch (drawer.css styles `.uix-peek`
  * with `.uix-drawer`), plus what a peek adds: the ↑/↓ record arrows, the hint line and the footer.
  */
-export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, previousLabel: previousLabelProp, nextLabel: nextLabelProp, closeLabel: closeLabelProp, className, onClick, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...rest }: PeekProps) {
+export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavNext, hint, recordId, openAction, previousLabel: previousLabelProp, nextLabel: nextLabelProp, closeLabel: closeLabelProp, className, onClick, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...rest }: PeekProps) {
   const uixLabels = useUixLabels();
   const previousLabel = previousLabelProp ?? uixLabels.peek?.previous ?? 'Previous record';
   const nextLabel = nextLabelProp ?? uixLabels.peek?.next ?? 'Next record';
@@ -88,13 +107,30 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
             </button>
           </div>
         )}
-        {title && <h2 className="uix-peek__title" id={titleId}>{title}</h2>}
-        {hint && <span className="uix-peek__hint">{hint}</span>}
-        {onClose && (
-          <button type="button" className="uix-peek__close" onClick={onClose} aria-label={closeLabel}>
-            <CloseIcon />
-          </button>
+        {title && (
+          <h2 className="uix-peek__title" id={titleId}>
+            {recordId != null && <><span className="uix-peek__record-id">{recordId}</span>{' '}</>}
+            {title}
+          </h2>
         )}
+        {/* After the title in the DOM, so Tab reaches "open" right after it; the grid puts the
+            controls on the first row, at the end. */}
+        {(openAction || onClose) && (
+          <div className="uix-peek__controls">
+            {openAction && (
+              <ButtonLink className="uix-peek__open" href={openAction.href} renderLink={openAction.renderLink} onClick={openAction.onClick} variant="secondary" size="sm">
+                <OpenIcon />
+                {openAction.label}
+              </ButtonLink>
+            )}
+            {onClose && (
+              <button type="button" className="uix-peek__close" onClick={onClose} aria-label={closeLabel}>
+                <CloseIcon />
+              </button>
+            )}
+          </div>
+        )}
+        {hint && <span className="uix-peek__hint">{hint}</span>}
       </div>
       {children != null && <div className="uix-peek__body">{children}</div>}
       {footer != null && <div className="uix-peek__footer">{footer}</div>}
