@@ -41,6 +41,7 @@ const HOOKS = new Map([
   ['uix-match-review--adopt', 'MatchReview fieldMode="adopt" (HAR-1369): a mode hook; the adopt parts carry their own classes'],
   ['uix-audit-log__filter', 'AuditLog filter chip wrapper (HAR-987): the popover anchor; styled by .uix-chip'],
   ['uix-audit-log__region', 'AuditLog list region (HAR-987): styled by .uix-busy-region; a hook for tests'],
+  ['uix-toolbar--ranked', 'DataWorkspace ranked toolbar (HAR-3090): the lead and end zones (.uix-toolbar__lead/__end) carry the layout; a hook for consumers and tests'],
   ['uix-data-workspace__toolbar', 'DataWorkspace toolbar (HAR-1388): styled by .uix-toolbar; a hook for consumers and tests'],
   ['uix-filter-editor__searching', 'FilterEditor search live region (PR #168 review): styled by .uix-filter-editor__note, visually hidden while silent; a hook for tests'],
   ['uix-data-workspace__state', 'DataWorkspace empty states (PR #168 review): the BusyRegion around them, busy during a refetch; styled by .uix-busy-region; a hook for tests'],
