@@ -1,5 +1,20 @@
 # @tensor_1/tokens
 
+## 2.69.0
+
+### Minor Changes
+
+- 619e0a2: HAR-3081 — `PageHeader size="compact"` (`.uix-page-header--compact`) sets the title one step down the type scale, at the h3 size, so a page whose first content must read first (a home page's alert about something broken now) is not outranked by its greeting. The eyebrow, subtitle, help and actions keep the default header's sizes and layout.
+
+  HAR-3089 — `Peek` takes `recordId`, shown over the title in the meta size with tabular figures and part of the dialog's name, and `openAction` (`{ label, href, renderLink?, onClick? }`), a secondary link button in the header row beside close, next in the Tab order after the title. With `openAction` the title takes the next row whole, as it does with the record arrows.
+
+  HAR-3093 — `NavItem` and `SubNavItem` take `trailing`, usually a `StarButton` (`SubNavItem` also takes `badge`). The link ends in one slot (`.uix-navitem__end`) that the badge and the star share: an unpinned star is hidden at rest with the badge in its place, hover or keyboard focus shows it and the badge steps aside, and a pinned star (or any star where no hover exists) keeps its place with the badge beside it. The row is a `.uix-navrow` around the link, since a button cannot sit inside a link; the star there is a 24 px box. A row without `trailing` renders as before.
+
+- ba31ceb: HAR-3090 — the table toolbar ranks its controls. `DataWorkspace` leads with search, then the filter chips and "+ Filter", then the saved view with Save changes (`.uix-toolbar__lead`); the end (`.uix-toolbar__end`) holds View, now with a columns icon beside its word, one "More" menu and the product's own actions. "More" is the new `ToolbarMore` (the kit `Menu` behind a quiet trigger, word from `labels.more` / `UixLabelsProvider` `toolbar.more`): DataWorkspace puts Save as, the product's new `toolbarMenu` items (group by, export) and Maximize (a checkbox item) there. Products that draw their own toolbar compose `ToolbarMore` with the two zone classes. UIx ADR-0005 has an addendum. Maximize and Save as are no longer buttons in the row: tests that clicked them open "More" first (MOTUS's workspace e2e test does). `labels.restore` is no longer shown (Maximize carries its state as checked); an unset `labels.more` takes the provider's `toolbar.more`, so a product that translates only that gets it in the workspace too.
+- 2b03911: HAR-3215 — the kit's small controls reach a 24 px own box (WCAG 2.5.8) without moving the text beside them: the record-id cell button, row actions (`.uix-rowact`, button and link), the column pin, the row expander and a sort button over a one-letter header; the chip and tag remove × is a 24 px circle drawn in the footprint the 20 px one had; the column and saved-view grips are 24 px wide; the tree toggle is a 24 px box around its 16 px chevron; `MetricInput`'s − and + sit side by side at the control's full height instead of two 18 px halves; `ValidationSummary` error links own a 24 px line. axe `target-size` now finds nothing on any docs page, and the own-box count fell from 623 to 364 (tables 192 → 11, data display 88 → 27).
+
+  HAR-3209 — text the kit painted in a flat tone uses the tone's `-text` token, which reaches 4.5:1 in both themes: a selected reaction, the active step's number, a sort-order number, inserted audit text, a positive chart or KPI delta, a finished upload's status and a field's success line. A new token test fails on any component rule that colours text with flat `--uix-accent`, `--uix-warning`, `--uix-danger`, `--uix-success` or `--uix-info`; glyph-only rules (icons, the star, sort arrows) are listed with what they paint.
+
 ## 2.68.0
 
 ### Minor Changes
