@@ -69,13 +69,21 @@
      star is hidden and the badge is in its place; on hover or focus the star shows and the badge
      steps aside. A pinned star (and every star where no hover exists) keeps its own place, so the
      badge moves left of it. The label has all the other room. */
-  .uix-navrow { position: relative; }
+  /* One grid cell holds the link and the control: no positioned wrapper, so the link's offsetParent
+     stays the sidebar and the sliding current-page tint still reaches a row with a control (#277). */
+  .uix-navrow { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; }
+  .uix-navrow > * { grid-area: 1 / 1; }
   .uix-navitem__end { flex: none; display: inline-flex; align-items: center; justify-content: flex-end; min-width: 24px; }
-  .uix-navrow__trailing { position: absolute; inset-inline-end: var(--uix-space-3); top: 50%; translate: 0 -50%; display: inline-flex; }
+  .uix-navrow__trailing { justify-self: end; margin-inline-end: var(--uix-space-3); display: inline-flex; }
   /* in a row the star's own box is the 24 px target (WCAG 2.5.8): it sits beside the link */
   .uix-navrow__trailing .uix-navitem__star { width: 24px; height: 24px; }
-  .uix-navrow:has(> .uix-navitem[data-multiline]) > .uix-navrow__trailing { top: var(--uix-space-2); translate: none; }
+  .uix-navrow:has(> .uix-navitem[data-multiline]) > .uix-navrow__trailing { align-self: start; margin-block-start: var(--uix-space-2); }
+  /* the row keeps its hover tint while the pointer is on the control beside the link */
+  .uix-navrow:hover > .uix-navitem:not([aria-current="page"]) { background: var(--uix-bg-hover); color: var(--uix-text); }
+  .uix-sidebar[data-uix-glide] .uix-navrow:hover > .uix-navitem:not([aria-current="page"]) { background: transparent; }
   .uix-navrow:has(.uix-navitem__star[data-on]) .uix-navitem__end:has(> .uix-navitem__badge) { padding-inline-end: calc(24px + var(--uix-space-1)); }
+  /* a trailing control that is not the star is always shown, so the badge always sits beside it */
+  .uix-navrow:has(> .uix-navrow__trailing > :not(.uix-navitem__star)) .uix-navitem__end:has(> .uix-navitem__badge) { padding-inline-end: calc(24px + var(--uix-space-1)); }
   .uix-navrow .uix-navitem__badge { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navrow:focus-within .uix-navitem__star { opacity: 1; }
   @media (hover: hover) and (pointer: fine) {
@@ -157,16 +165,16 @@
     transition: opacity 0s linear var(--uix-dur-disclosure), translate 0s linear var(--uix-dur-disclosure);
   }
   :dir(rtl) .uix-navgroup__panel .uix-subitem { --uix-row-from: calc(-1 * var(--uix-space-2)); }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(2) { --uix-row-i: 1; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(3) { --uix-row-i: 2; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(4) { --uix-row-i: 3; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(5) { --uix-row-i: 4; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(6) { --uix-row-i: 5; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(7) { --uix-row-i: 6; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(8) { --uix-row-i: 7; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(9) { --uix-row-i: 8; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(10) { --uix-row-i: 9; }
-  .uix-navgroup__panel > div > .uix-subitem:nth-child(n+11) { --uix-row-i: 9; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(2) { --uix-row-i: 1; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(3) { --uix-row-i: 2; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(4) { --uix-row-i: 3; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(5) { --uix-row-i: 4; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(6) { --uix-row-i: 5; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(7) { --uix-row-i: 6; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(8) { --uix-row-i: 7; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(9) { --uix-row-i: 8; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(10) { --uix-row-i: 9; }
+  .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow):nth-child(n+11) { --uix-row-i: 9; }
   /* focus inside a group that is still opening (a quick Tab): it finishes at once, so a focused link
      is never clipped, faded or blurred */
   .uix-navgroup__panel:focus-within, .uix-navgroup__panel:focus-within > div, .uix-navgroup__panel:focus-within .uix-subitem { transition: none; }
@@ -181,7 +189,7 @@
   .uix-subitem { padding-inline-start: calc(2 * var(--uix-space-3) + var(--uix-icon-md)); }
   /* a group without an icon ([data-plain], NavGroup): its label starts at the row's padding, so its
      rows step in by one gap past it */
-  .uix-navgroup[data-plain] > .uix-navgroup__panel > div > .uix-subitem { padding-inline-start: calc(2 * var(--uix-space-3)); }
+  .uix-navgroup[data-plain] > .uix-navgroup__panel > div > :is(.uix-subitem, .uix-navrow > .uix-subitem) { padding-inline-start: calc(2 * var(--uix-space-3)); }
 
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }

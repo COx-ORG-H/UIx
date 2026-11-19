@@ -1254,6 +1254,17 @@ export const initShowcase = (options = {}) => {
       `<button class="uix-icon-cell" type="button" data-icon-copy="${esc(n)}">${icon(n)}<code>${esc(n)}</code></button>`).join('');
   };
 
+  // HAR-3093 specimen: the nav-row stars toggle their own pinned state (no favourites list)
+  const setupNavTrailing = () => {
+    document.querySelectorAll('[data-nav-trailing-example] .uix-navitem__star').forEach((star) => {
+      star.addEventListener('click', () => {
+        const on = !star.hasAttribute('data-on');
+        star.toggleAttribute('data-on', on);
+        star.setAttribute('aria-pressed', String(on));
+      });
+    });
+  };
+
   const setupPeekV2 = () => {
     const peek = document.querySelector('[data-uix-peek-dialog-v2]');
     if (!peek) return;
@@ -1352,6 +1363,7 @@ export const initShowcase = (options = {}) => {
     setupOverlays();
     setupPeek();
     setupPeekV2();
+    setupNavTrailing();
     setupCmdk();
     setupToasts();
     setupRichSelect();

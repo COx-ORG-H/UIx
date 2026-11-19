@@ -86,7 +86,7 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
     <dialog
       ref={ref}
       className={cx('uix-peek', className)}
-      aria-labelledby={title ? titleId : undefined}
+      aria-labelledby={title || recordId != null ? titleId : undefined}
       {...rest}
       onClick={backdropDismiss(onClose, onClick)}
       onPointerDown={(event) => { onPointerDown?.(event); swipe.handlers.onPointerDown(event); }}
@@ -107,7 +107,8 @@ export function Peek({ open, onClose, title, children, footer, onNavPrev, onNavN
             </button>
           </div>
         )}
-        {title && (
+        {/* The ID shows even before the title has loaded (#277 review). */}
+        {(title || recordId != null) && (
           <h2 className="uix-peek__title" id={titleId}>
             {recordId != null && <><span className="uix-peek__record-id">{recordId}</span>{' '}</>}
             {title}

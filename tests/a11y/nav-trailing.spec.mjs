@@ -66,8 +66,9 @@ test('a pinned row shows star and count side by side', async ({ page }) => {
   expect(g.starShown).toBe(true);
   expect(g.badgeShown).toBe(true);
   expect(g.badge.right, 'the count sits left of the star').toBeLessThanOrEqual(g.star.left);
-  // a pinned row gives up the star's room too, so a long label may end in an ellipsis (CI's fonts
-  // cut "Benachrichtigungen" here); it never runs under the count
+  // By design a pinned row shows star and count side by side, so its label has 28 px less room than
+  // at rest and a long one ends in an ellipsis; "reads in full" is the rest state (HAR-3093). The
+  // label never runs under the count.
   expect(g.label.right, 'the label ends before the count').toBeLessThanOrEqual(g.badge.left);
 });
 
@@ -95,4 +96,18 @@ test('no axe violations in the sidebar, star shown', async ({ page }) => {
   await page.locator('#row-count').hover();
   const results = await new AxeBuilder({ page }).include('.uix-sidebar').analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+});
+
+test('the row wrapper is not positioned: the link keeps the sidebar as its offset parent (sliding tint, #277 review)', async ({ page }) => {
+  const parent = await page.locator('#row-count').evaluate((el) => el.offsetParent?.className ?? '');
+  expect(parent).not.toMatch(/uix-navrow/);
+});
+
+test('the row keeps its hover tint while the pointer is on the star (#277 review)', async ({ page }) => {
+  const star = page.locator('#row-count').locator('xpath=..').locator('.uix-navitem__star');
+  await page.locator('#row-count').hover();
+  await star.hover();
+  await settle(page);
+  const bg = await page.locator('#row-count').evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(bg).not.toBe('rgba(0, 0, 0, 0)');
 });

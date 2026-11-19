@@ -151,7 +151,8 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
    * shows there and the badge steps aside; a pinned star (and every star where no hover exists)
    * keeps its own place, with the badge beside it. The label has all the other room and ends in an
    * ellipsis only when it is longer. The row is a `<div class="uix-navrow">` around the link, since
-   * a button cannot sit inside a link; the ref still reaches the link.
+   * a button cannot sit inside a link; the ref still reaches the link. The slot is sized for one
+   * 24 px control: a wider one needs its own room.
    */
   trailing?: ReactNode;
   children?: ReactNode;
