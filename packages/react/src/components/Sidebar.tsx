@@ -11,6 +11,8 @@ import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useSlidingIndicator } from '../hooks/useSlidingIndicator.js';
 import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import { watchInputModality } from '../motion.js';
+import { renderUixLink } from '../link.js';
+import type { UixLinkProps, UixRenderLink } from '../link.js';
 import type { KeyShortcut } from './Kbd.js';
 
 const ChevronIcon = () => (
@@ -155,7 +157,19 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
    * 24 px control: a wider one needs its own room.
    */
   trailing?: ReactNode;
+  /**
+   * Your router's link (`(p) => <NextLink {...p} />`), as on `ButtonLink` (2.69.1). The row's
+   * classes, `aria-current`, `href`, the ref and the children are passed in. Default: a plain `<a>`.
+   */
+  renderLink?: UixRenderLink;
   children?: ReactNode;
+}
+
+/** The row's link through the product's router when it passes `renderLink`, else a plain `<a>`. */
+function navLink(renderLink: UixRenderLink | undefined, ref: Ref<HTMLAnchorElement | HTMLButtonElement>, props: Record<string, unknown>, children: ReactNode) {
+  if (!renderLink) return <a ref={ref as Ref<HTMLAnchorElement>} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>{children}</a>;
+  // `ref` rides in the props: spread onto the router's link element, React attaches it.
+  return renderUixLink(renderLink, { ...props, ref, href: String(props.href ?? ''), children } as UixLinkProps);
 }
 
 /**
@@ -179,7 +193,7 @@ function withTrailing(link: ReactNode, trailing: ReactNode) {
  * attributes pass through with `as="button"`.
  */
 export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItemProps>(function NavItem(
-  { icon, badge, active, as: Tag = 'a', description, trailing, children, className, ...props },
+  { icon, badge, active, as: Tag = 'a', description, trailing, renderLink, children, className, ...props },
   ref,
 ) {
   const text = description == null
@@ -206,17 +220,13 @@ export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItem
   }
 
   return withTrailing(
-    <a
-      ref={ref as Ref<HTMLAnchorElement>}
-      className={cx('uix-navitem', className)}
-      aria-current={active ? 'page' : undefined}
-      data-multiline={multiline}
-      {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
-    >
-      {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
-      {text}
-      {endSlot(badge, trailing)}
-    </a>,
+    navLink(renderLink, ref, { className: cx('uix-navitem', className), 'aria-current': active ? 'page' : undefined, 'data-multiline': multiline, ...props }, (
+      <>
+        {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
+        {text}
+        {endSlot(badge, trailing)}
+      </>
+    )),
     trailing,
   );
 });
@@ -281,12 +291,14 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
   badge?: ReactNode;
   /** A control beside the link, usually a `StarButton`: as on `NavItem` (HAR-3093). */
   trailing?: ReactNode;
+  /** Your router's link, as on `NavItem` (2.69.1). */
+  renderLink?: UixRenderLink;
   children?: ReactNode;
 }
 
 /** A nested navigation row. Like `NavItem`, it forwards its ref to the `<a>` or `<button>` (HAR-1810). */
 export const SubNavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, SubNavItemProps>(function SubNavItem(
-  { active, as: Tag = 'a', badge, trailing, children, className, ...props },
+  { active, as: Tag = 'a', badge, trailing, renderLink, children, className, ...props },
   ref,
 ) {
   const cls = cx('uix-navitem uix-subitem', className);
@@ -301,10 +313,12 @@ export const SubNavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, SubN
     );
   }
   return withTrailing(
-    <a ref={ref as Ref<HTMLAnchorElement>} className={cls} aria-current={active ? 'page' : undefined} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>
-      <span className="uix-navitem__label">{children}</span>
-      {endSlot(badge, trailing)}
-    </a>,
+    navLink(renderLink, ref, { className: cls, 'aria-current': active ? 'page' : undefined, ...props }, (
+      <>
+        <span className="uix-navitem__label">{children}</span>
+        {endSlot(badge, trailing)}
+      </>
+    )),
     trailing,
   );
 });

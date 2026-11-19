@@ -111,3 +111,22 @@ test('the row keeps its hover tint while the pointer is on the star (#277 review
   const bg = await page.locator('#row-count').evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(bg).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('2.69.1: a star-only row gives its label the star\'s room at rest; hover brings the star back', async ({ page }) => {
+  const rest = await read(page, 'row-fit');
+  expect(rest.labelClipped, '"Berechtigungskonzept" reads in full at rest').toBe(false);
+  expect(await page.locator('#row-fit .uix-navitem__end').evaluate((el) => getComputedStyle(el).display)).toBe('none');
+  await page.locator('#row-fit').hover();
+  await settle(page);
+  const hovered = await read(page, 'row-fit');
+  expect(hovered.starShown).toBe(true);
+  expect(hovered.label.right, 'the label ends before the star').toBeLessThanOrEqual(hovered.star.left);
+});
+
+test('2.69.1: renderLink draws the row with the product\'s link and keeps the row\'s classes', async ({ page }) => {
+  const link = page.locator('#row-router');
+  await expect(link).toHaveAttribute('data-router', 'yes');
+  await expect(link).toHaveClass(/uix-navitem/);
+  await expect(link).toHaveAttribute('href', '#router');
+  await expect(link.locator('.uix-navitem__badge')).toHaveText('2');
+});

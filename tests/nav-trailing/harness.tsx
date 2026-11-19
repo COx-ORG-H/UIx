@@ -23,6 +23,8 @@ function Harness() {
       <NavItem id="row-long" href="#arbeitsbereich" icon={<Bell />} badge="3" trailing={star('long', 'Arbeitsbereich-Einstellungen')}>Arbeitsbereich-Einstellungen und Benachrichtigungsregeln</NavItem>
       <SubNavItem id="row-sub" href="#offen" badge="7" trailing={star('sub', 'Offene Vorfälle')}>Offene Vorfälle</SubNavItem>
       <NavItem id="row-plain" href="#plain" icon={<Bell />} badge="5">Ohne Stern</NavItem>
+      <NavItem id="row-fit" href="#berechtigung" icon={<Bell />} trailing={star('fit', 'Berechtigungskonzept')}>Berechtigungskonzept</NavItem>
+      <NavItem id="row-router" href="#router" icon={<Bell />} badge="2" renderLink={(p) => <a {...p} data-router="yes" />} trailing={star('router', 'Über den Router')}>Über den Router</NavItem>
     </Sidebar>
   );
 }

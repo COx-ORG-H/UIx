@@ -87,6 +87,10 @@
   .uix-navrow .uix-navitem__badge { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-navrow:focus-within .uix-navitem__star { opacity: 1; }
   @media (hover: hover) and (pointer: fine) {
+    /* A row with only a hidden star: at rest its label takes the star's room too (the empty slot and
+       its gap go away), so "Berechtigungskonzept" reads in full; hover or focus brings the slot and
+       the star back, and a long label then ends in an ellipsis before the star (2.69.1). */
+    .uix-navrow:not(:hover, :focus-within):not(:has(.uix-navitem__star[data-on])) .uix-navitem__end:not(:has(> *)) { display: none; }
     .uix-navrow:hover .uix-navitem__star { opacity: 1; }
     .uix-navrow:is(:hover, :focus-within):not(:has(.uix-navitem__star[data-on])) .uix-navitem__end > .uix-navitem__badge { opacity: 0; }
   }
