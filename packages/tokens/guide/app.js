@@ -1265,6 +1265,48 @@ export const initShowcase = (options = {}) => {
     });
   };
 
+  // HAR-3090 specimen: the static "More" menu behaves like the kit Menu — it opens on its first item
+  // (or the checked radio), ↓/↑ wrap, Home/End, Esc closes, a choice closes it, and focus goes back to
+  // the trigger; radio items keep one checked, the checkbox item toggles.
+  const setupRankedToolbarDemo = () => {
+    const menu = document.getElementById('demo-toolbar-more');
+    const trigger = document.querySelector('[popovertarget="demo-toolbar-more"]');
+    if (!menu || !trigger) return;
+    trigger.setAttribute('aria-haspopup', 'menu');
+    trigger.setAttribute('aria-expanded', 'false');
+    const items = () => [...menu.querySelectorAll('[role^="menuitem"]')];
+    items().forEach((item) => item.setAttribute('tabindex', '-1'));
+    const close = () => { try { menu.hidePopover(); } catch { /* closed */ } trigger.focus(); };
+    menu.addEventListener('toggle', (event) => {
+      const open = event.newState === 'open';
+      trigger.setAttribute('aria-expanded', String(open));
+      if (!open) return;
+      const list = items();
+      (list.find((item) => item.getAttribute('role') === 'menuitemradio' && item.getAttribute('aria-checked') === 'true') ?? list[0])?.focus();
+    });
+    menu.addEventListener('keydown', (event) => {
+      const list = items();
+      const at = list.indexOf(document.activeElement);
+      const move = (to) => { event.preventDefault(); list[(to + list.length) % list.length]?.focus(); };
+      if (event.key === 'ArrowDown') move(at + 1);
+      else if (event.key === 'ArrowUp') move(at - 1);
+      else if (event.key === 'Home') move(0);
+      else if (event.key === 'End') move(list.length - 1);
+      else if (event.key === 'Escape' || event.key === 'Tab') { event.preventDefault(); close(); }
+    });
+    menu.addEventListener('click', (event) => {
+      const item = event.target.closest('[role^="menuitem"]');
+      if (!item) return;
+      const role = item.getAttribute('role');
+      if (role === 'menuitemradio') {
+        items().filter((other) => other.getAttribute('role') === 'menuitemradio').forEach((other) => other.setAttribute('aria-checked', String(other === item)));
+      } else if (role === 'menuitemcheckbox') {
+        item.setAttribute('aria-checked', String(item.getAttribute('aria-checked') !== 'true'));
+      }
+      close();
+    });
+  };
+
   const setupPeekV2 = () => {
     const peek = document.querySelector('[data-uix-peek-dialog-v2]');
     if (!peek) return;
@@ -1364,6 +1406,7 @@ export const initShowcase = (options = {}) => {
     setupPeek();
     setupPeekV2();
     setupNavTrailing();
+    setupRankedToolbarDemo();
     setupCmdk();
     setupToasts();
     setupRichSelect();
