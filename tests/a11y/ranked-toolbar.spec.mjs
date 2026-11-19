@@ -90,6 +90,8 @@ test('the toolbar and its open menu pass axe', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await ws(page).getByRole('button', { name: 'Mehr' }).click();
   await expect(page.getByRole('menu', { name: 'Mehr' })).toBeVisible();
+  // the menu grows in over 140 ms; axe measures half-transparent text as low contrast mid-fade
+  await page.evaluate(() => Promise.allSettled(document.getAnimations().map((a) => a.finished)));
   const results = await new AxeBuilder({ page }).include('#incidents .uix-toolbar').include('[role="menu"]').analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 });
