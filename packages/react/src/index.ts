@@ -74,6 +74,8 @@ export { SearchSuggest } from './components/SearchSuggest.js';
 // One search field look and behaviour over .uix-searchbar (HAR-2030)
 export { SearchBar } from './components/SearchBar.js';
 export type { SearchBarProps, SearchBarLabels } from './components/SearchBar.js';
+export { ToolbarMore } from './components/ToolbarMore.js';
+export type { ToolbarMoreProps } from './components/ToolbarMore.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
 export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchError, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';

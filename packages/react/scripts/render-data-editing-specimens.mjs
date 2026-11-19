@@ -71,7 +71,7 @@ const BUILDERS = [
     }));
     return {
       'examples-data-display': [
-        caption('Data workspace (React <code>DataWorkspace</code>, <code>.uix-data-workspace</code>, HAR-1388, ADR-0005) — the kit\'s table pieces in one order: saved view, Save changes, filter chips and + Filter, search (Ctrl/⌘ + /), View, maximize, the product\'s actions; a selection with the bulk bar, the record-id cell (id → peek, ↗ → record), and the x–y of N footer'),
+        caption('Data workspace (React <code>DataWorkspace</code>, <code>.uix-data-workspace</code>, HAR-1388, ADR-0005) — the kit\'s table pieces, ranked (HAR-3090): search (Ctrl/⌘ + /), filter chips and + Filter, the saved view and Save changes lead; View, one More menu (Save as, the product\'s less frequent actions, Maximize) and the product\'s own actions end the row; a selection with the bulk bar, the record-id cell (id → peek, ↗ → record), and the x–y of N footer'),
         `<div data-data-workspace-example>${html(workspace)}</div>`,
       ].join('\n'),
     };
