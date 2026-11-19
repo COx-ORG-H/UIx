@@ -82,8 +82,9 @@ test('the id opens a peek; ↗ is a link to the record, named by the id', async 
 
 test('maximize takes the window; Escape restores it', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const toggle = ws(page).getByRole('button', { name: 'Maximieren' });
-  await toggle.click();
+  // HAR-3090: Maximize is a checkbox item in the toolbar's one "More" menu
+  await ws(page).getByRole('button', { name: 'Mehr' }).click();
+  await page.getByRole('menuitemcheckbox', { name: 'Maximieren' }).click();
   const box = await ws(page).boundingBox();
   const vp = page.viewportSize();
   expect(Math.round(box.width)).toBe(vp.width);
@@ -93,7 +94,8 @@ test('maximize takes the window; Escape restores it', async ({ page }, testInfo)
 
 test('Escape in the View popover closes it, not the maximized workspace (PR #168 review)', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  await ws(page).getByRole('button', { name: 'Maximieren' }).click();
+  await ws(page).getByRole('button', { name: 'Mehr' }).click();
+  await page.getByRole('menuitemcheckbox', { name: 'Maximieren' }).click();
   await ws(page).getByRole('button', { name: 'Ansicht' }).click();
   await expect(ws(page).locator('.uix-view-menu')).toBeVisible();
   await page.keyboard.press('Escape');

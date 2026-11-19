@@ -22,6 +22,16 @@
   .uix-peek__title { grid-column: 1; grid-row: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
   .uix-peek__header:has(.uix-peek__nav) .uix-peek__title { grid-column: 1 / -1; grid-row: 2; }
   .uix-peek__title a { color: var(--uix-link); }
+  /* The header's controls (HAR-3089): "open the record" and close, together at the end of the first
+     row. Only one accent fill on the screen stays the page's, so "open" is a secondary button. */
+  .uix-peek__controls { grid-column: 2; grid-row: 1; align-self: start; display: inline-flex; align-items: center; gap: var(--uix-space-1); }
+  .uix-peek__controls .uix-peek__close { grid-column: auto; grid-row: auto; margin-left: 0; align-self: auto; }
+  /* With "open" in the first row, the title takes the next row whole, as with the record arrows, so
+     a long German title is never squeezed beside two controls at 320 px (HAR-2859's own row). */
+  .uix-peek__header:has(.uix-peek__open) .uix-peek__title { grid-column: 1 / -1; grid-row: 2; }
+  .uix-peek__open { white-space: nowrap; }
+  /* The record's ID over the title: the meta size, tabular, muted, its own line (HAR-3089). */
+  .uix-peek__record-id { display: block; margin-bottom: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }
   .uix-peek__close { grid-column: 2; grid-row: 1; align-self: start; margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-peek__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-peek__body { padding: var(--uix-space-5); overflow-y: auto; flex: 1; }

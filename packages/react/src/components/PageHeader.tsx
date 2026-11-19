@@ -22,9 +22,12 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
   /**
    * `display` is the staff type preset (HAR-1815; TENSOR, MOTUS ADR-0047): a 40 px heading-font
    * title, a bold hushed eyebrow, a body-size hushed subtitle up to 42rem, and the actions
-   * aligned to the bottom of the titles. `default` is the 24 px header.
+   * aligned to the bottom of the titles. `default` is the 24 px header. `compact` (HAR-3081) sets
+   * the title one step down the scale, at the h3 size (15 px, semibold), with the same eyebrow,
+   * subtitle, help and actions: for a page whose first content (a Sev-1 alert, a live status)
+   * must read before its title, such as a greeting on a home page.
    */
-  size?: 'default' | 'display';
+  size?: 'default' | 'display' | 'compact';
 }
 
 /**
@@ -34,7 +37,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
 export function PageHeader({ eyebrow, title, subtitle, help, helpLabel, actions, as: TitleTag = 'h1', size = 'default', className, ...props }: PageHeaderProps) {
   const heading = <TitleTag className="uix-page-header__title">{title}</TitleTag>;
   return (
-    <header className={cx('uix-page-header', size === 'display' && 'uix-page-header--display', className)} {...props}>
+    <header className={cx('uix-page-header', size !== 'default' && `uix-page-header--${size}`, className)} {...props}>
       <div className="uix-page-header__titles">
         {eyebrow != null && <div className="uix-page-header__eyebrow">{eyebrow}</div>}
         {/* The ? sits beside the heading, not in it, so the heading's name stays the title. */}

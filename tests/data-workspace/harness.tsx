@@ -8,7 +8,7 @@
  *   - #first-load and #error: the states. */
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, DataWorkspace, Menu, MenuItem, StatusPill, UixLabelsProvider } from '../../packages/react/src/index.js';
+import { Button, DataWorkspace, Menu, MenuGroup, MenuItem, MenuItemRadio, MenuRadioGroup, MenuSeparator, StatusPill, UixLabelsProvider } from '../../packages/react/src/index.js';
 import type { DataWorkspaceColumn, DataWorkspaceSort, FilterField, FilterValue } from '../../packages/react/src/index.js';
 
 declare global { interface Window { __ws: { requests: string[]; peeks: string[]; bulk: string[] } } }
@@ -50,6 +50,7 @@ function Incidents() {
   const [density, setDensity] = useState('standard');
   const [visible, setVisible] = useState<Record<string, boolean>>({ title: true, state: true, priority: true, assignee: true, created: false });
   const [view, setView] = useState('mine');
+  const [groupBy, setGroupBy] = useState('none');
   const [shown, setShown] = useState<{ rows: Incident[]; total: number } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const key = JSON.stringify({ search, filters, sort, page, pageSize });
@@ -109,6 +110,22 @@ function Incidents() {
       }}
       viewChanged={search !== '' || Object.values(filters).some(Boolean)} onSaveView={() => window.__ws.bulk.push('save')} onSaveViewAs={() => window.__ws.bulk.push('save-as')}
       maximized={maximized} onMaximizedChange={setMaximized}
+      saveViewAs="always"
+      toolbarMenu={(
+        <>
+          <MenuRadioGroup label="Gruppieren nach" value={groupBy} onValueChange={(v) => { setGroupBy(v); window.__ws.bulk.push(`group:${v}`); }}>
+            <MenuItemRadio value="none">Keine Gruppierung</MenuItemRadio>
+            <MenuItemRadio value="state">Status</MenuItemRadio>
+            <MenuItemRadio value="assignee">Bearbeiter</MenuItemRadio>
+          </MenuRadioGroup>
+          <MenuSeparator />
+          <MenuGroup label="Exportieren">
+            <MenuItem onSelect={() => window.__ws.bulk.push('export:csv')}>Als CSV exportieren</MenuItem>
+            <MenuItem onSelect={() => window.__ws.bulk.push('export:xlsx')}>Als Excel exportieren</MenuItem>
+          </MenuGroup>
+          <MenuSeparator />
+        </>
+      )}
       toolbarEnd={<Button size="sm" variant="primary">Neuer Vorfall</Button>}
       pagination={{ mode: 'offset', page, pageSize, total: shown?.total ?? 0, onPageChange: setPage, pageSizes: [10, 25, 50], onPageSizeChange: (s) => { setPageSize(s); setPage(1); } }}
     />
@@ -120,7 +137,7 @@ function Harness() {
     <UixLabelsProvider labels={{
       dataWorkspace: {
         search: 'Suchen', addFilter: 'Filter', clearFilters: 'Filter zurücksetzen', view: 'Ansicht', saveView: 'Änderungen speichern', saveViewAs: 'Speichern als…',
-        maximize: 'Maximieren', restore: 'Verkleinern', selectAll: 'Alle Zeilen dieser Seite auswählen', selectRow: '{label} auswählen', selected: '{count} ausgewählt',
+        maximize: 'Maximieren', restore: 'Verkleinern', more: 'Mehr', selectAll: 'Alle Zeilen dieser Seite auswählen', selectRow: '{label} auswählen', selected: '{count} ausgewählt',
         bulkActions: 'Aktionen für die Auswahl', open: '{label} öffnen', rowActions: 'Aktionen', range: '{from}–{to} von {total}', rowsPerPage: 'Zeilen pro Seite',
         loading: 'Wird geladen', empty: 'Noch keine Vorfälle', emptyDetail: 'Neue Vorfälle erscheinen hier.', filteredEmpty: 'Keine Treffer', filteredEmptyDetail: 'Suche ändern oder einen Filter entfernen.',
         error: 'Die Liste konnte nicht geladen werden', retry: 'Erneut versuchen',

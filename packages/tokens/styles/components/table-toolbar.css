@@ -2,6 +2,13 @@
 @layer uix.components {
   .uix-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); margin-bottom: var(--uix-space-3); }
   .uix-toolbar__spacer { flex: 1; }
+  /* The ranked toolbar (HAR-3090): a lead zone for what a person uses on every visit (search, the
+     filters, the saved view) and an end zone for the quiet controls (View, one "More" menu, the
+     product's actions). Each zone wraps inside itself, so at 320 px the row folds without a
+     sideways scroll; the end zone keeps to the right edge. */
+  .uix-toolbar__lead { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-width: 0; }
+  .uix-toolbar__end { display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--uix-space-1); margin-inline-start: auto; min-width: 0; }
+  .uix-toolbar__more { white-space: nowrap; }
 
   /* responsive: the status + type groups sit on ONE line when they fit, wrap to two only when cramped */
   .uix-filterbar { display: flex; flex-wrap: wrap; gap: var(--uix-space-2) var(--uix-space-5); margin-bottom: var(--uix-space-3); }

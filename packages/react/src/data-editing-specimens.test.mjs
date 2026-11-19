@@ -67,7 +67,8 @@ test('every state named in a caption is on the page', () => {
   assert.match(gaps, /aria-label="Expand group Lost"/);
   assert.match(gaps, /2 rows<\/span>/);
   assert.match(gaps, /class="uix-data-workspace__group-agg uix-col--num">5 copies</);
-  assert.match(gaps, />Save as…</);
+  // HAR-3090: Save as sits in the toolbar's one "More" menu
+  assert.match(gaps, /class="uix-btn uix-btn--ghost uix-btn--sm uix-toolbar__more"[^>]*>[\s\S]*?More<\/button>/);
   assert.match(gaps, /No books on the wish list[\s\S]*>Add the first book</);
   assert.match(gaps, /data-data-workspace-cards-example[\s\S]*<table class="uix-table uix-table--cards"[\s\S]*<td data-col="author" data-priority="mid" data-label="Author">Ursula K. Le Guin<\/td>/);
   // audit log: the filter bar with one set filter, three entries, a Details disclosure, older entries

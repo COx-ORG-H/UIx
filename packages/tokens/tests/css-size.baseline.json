@@ -352,9 +352,9 @@
       "brotli": 512
     },
     "styles/components/page-header.css": {
-      "raw": 3118,
-      "gzip": 1108,
-      "brotli": 918
+      "raw": 3559,
+      "gzip": 1256,
+      "brotli": 1042
     },
     "styles/components/pagination.css": {
       "raw": 1554,
@@ -362,9 +362,9 @@
       "brotli": 516
     },
     "styles/components/peek.css": {
-      "raw": 4355,
-      "gzip": 1762,
-      "brotli": 1433
+      "raw": 5438,
+      "gzip": 2059,
+      "brotli": 1683
     },
     "styles/components/pipeline.css": {
       "raw": 6039,
@@ -457,9 +457,9 @@
       "brotli": 2862
     },
     "styles/components/sidebar.css": {
-      "raw": 19081,
-      "gzip": 4638,
-      "brotli": 3957
+      "raw": 22333,
+      "gzip": 5372,
+      "brotli": 4647
     },
     "styles/components/sla.css": {
       "raw": 516,
@@ -512,9 +512,9 @@
       "brotli": 523
     },
     "styles/components/table-toolbar.css": {
-      "raw": 6618,
-      "gzip": 1888,
-      "brotli": 1604
+      "raw": 7335,
+      "gzip": 2117,
+      "brotli": 1804
     },
     "styles/components/table.css": {
       "raw": 26660,

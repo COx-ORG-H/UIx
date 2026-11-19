@@ -1644,9 +1644,9 @@ export interface DataWorkspaceLabels {
     loading: string;
     // (undocumented)
     maximize: string;
+    more?: string;
     open: string;
     range: string;
-    // (undocumented)
     restore: string;
     // (undocumented)
     retry: string;
@@ -1783,6 +1783,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
     toolbarEnd?: ReactNode;
+    toolbarMenu?: ReactNode;
     viewChanged?: boolean;
     viewMenu?: ViewMenuProps;
     virtualize?: boolean | DataWorkspaceVirtualize;
@@ -5130,6 +5131,7 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
     description?: ReactNode;
     // (undocumented)
     icon?: ReactNode;
+    trailing?: ReactNode;
 }
 
 // @public
@@ -5338,7 +5340,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     eyebrow?: ReactNode;
     help?: string | null;
     helpLabel?: string;
-    size?: 'default' | 'display';
+    size?: 'default' | 'display' | 'compact';
     subtitle?: ReactNode;
     // (undocumented)
     title: ReactNode;
@@ -5472,7 +5474,14 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
     onNavPrev?: () => void;
     // (undocumented)
     open: boolean;
+    openAction?: {
+        label: string;
+        href: string;
+        renderLink?: UixRenderLink;
+        onClick?: () => void;
+    };
     previousLabel?: string;
+    recordId?: ReactNode;
     // (undocumented)
     title?: ReactNode;
 }
@@ -7925,8 +7934,10 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     active?: boolean;
     // (undocumented)
     as?: 'a' | 'button';
+    badge?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    trailing?: ReactNode;
 }
 
 // @public
@@ -8651,6 +8662,21 @@ export function toggleSort(keys: readonly SortKey[], field: string, additive?: b
 export function tokenizeText(text: string, granularity: TextDiffGranularity): string[];
 
 // @public
+export function ToolbarMore(input: ToolbarMoreProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ToolbarMoreProps {
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    label?: string;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    // (undocumented)
+    open?: boolean;
+}
+
+// @public
 export function Tooltip(input: TooltipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -8896,6 +8922,9 @@ export interface UixLabels {
     // (undocumented)
     toaster?: {
         region?: string;
+    };
+    toolbar?: {
+        more?: string;
     };
     // (undocumented)
     tree?: Partial<TreeLabels>;

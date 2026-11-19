@@ -26,6 +26,10 @@
   .uix-page-header--display .uix-page-header__eyebrow { color: var(--uix-text-hushed); font-weight: 700; }
   .uix-page-header--display :is(.uix-page-header__title, .uix-page-header__title-row) { font-family: var(--uix-font-heading); font-size: var(--uix-text-display); line-height: var(--uix-leading-display); font-weight: 600; letter-spacing: var(--uix-tracking-tight); }
   .uix-page-header--display .uix-page-header__subtitle { font-size: var(--uix-text-body); color: var(--uix-text-hushed); max-width: 42rem; }
+  /* compact (HAR-3081): the title one step down the type scale, the h3 size, so the page's first
+     content (an alert about something broken now) outranks it. Only the title row changes; the
+     eyebrow, subtitle, help ? and actions keep the default header's sizes and layout. */
+  .uix-page-header--compact :is(.uix-page-header__title, .uix-page-header__title-row) { font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); }
   /* a 40 px title is too wide for a phone: it steps down to the h2 size there */
   @media (max-width: 40rem) { .uix-page-header--display :is(.uix-page-header__title, .uix-page-header__title-row) { font-size: var(--uix-text-h2); line-height: var(--uix-leading-h2); } }
 }

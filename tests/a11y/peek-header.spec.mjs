@@ -95,3 +95,37 @@ test('open Peek has no serious or critical accessibility violations', async ({ p
   const { violations } = await new AxeBuilder({ page }).analyze();
   expect(violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => v.id)).toEqual([]);
 });
+
+/* HAR-3089: the record's ID with the title, and "open the record" as a header button beside close:
+ * next in the Tab order after the title, a 24 px target, never a second accent fill, and the header
+ * still fits at 320 px with an 80-character title. */
+for (const width of [1440, 320]) for (const variant of ['record', 'record-no-nav']) test(`${variant}: ID and open action in the header at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 900 });
+  const peek = await open(page, variant);
+  await expect(peek).toHaveAccessibleName(/^INC-0058\s*Kundenportal/);
+  const open_ = peek.getByRole('link', { name: 'Datensatz öffnen' });
+  await expect(open_).toBeVisible();
+  const box = await open_.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(24);
+  expect(box.width).toBeGreaterThanOrEqual(24);
+  const geometry = await peek.evaluate((el) => {
+    const r = (sel) => el.querySelector(sel).getBoundingClientRect();
+    const header = el.querySelector('.uix-peek__header');
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--uix-accent').trim();
+    const probe = document.createElement('i'); probe.style.color = accent; document.body.append(probe);
+    const accentRgb = getComputedStyle(probe).color; probe.remove();
+    const filled = [...el.querySelectorAll('a, button')].filter((n) => getComputedStyle(n).backgroundColor === accentRgb).length;
+    return { header: header.scrollWidth - header.clientWidth, open: r('.uix-peek__open'), close: r('.uix-peek__close'), title: r('.uix-peek__title'), id: r('.uix-peek__record-id'), filled };
+  });
+  expect(geometry.header, 'the header does not overflow').toBeLessThanOrEqual(0);
+  expect(geometry.filled, 'the peek adds no accent-filled action').toBe(0);
+  expect(geometry.id.top, 'the ID sits over the title text').toBeLessThanOrEqual(geometry.title.top + 1);
+  expect(Math.abs(geometry.open.top + geometry.open.height / 2 - (geometry.close.top + geometry.close.height / 2)), 'open sits in the close row').toBeLessThanOrEqual(4);
+  // Tab order: the record arrows (when present), then open, then close
+  const order = await peek.evaluate((el) => [...el.querySelectorAll('a[href], button')].map((n) => n.getAttribute('aria-label') ?? n.textContent.trim()));
+  const at = order.indexOf('Datensatz öffnen');
+  expect(order[at + 1]).toBe('Vorschau schließen');
+  expect(order.slice(0, at).every((name) => /Datensatz$/.test(name))).toBe(true);
+  const results = await new AxeBuilder({ page }).include('.uix-peek').analyze();
+  expect(results.violations.map((v) => v.id)).toEqual([]);
+});
