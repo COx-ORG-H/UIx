@@ -10,7 +10,7 @@
   .uix-step__label { font-size: var(--uix-text-meta); font-weight: 500; }
   .uix-step__connector { flex: 1; height: 1px; min-width: 28px; background: var(--uix-border); margin: 0 var(--uix-space-3); }
   .uix-step[data-state="active"] { color: var(--uix-text); }
-  .uix-step[data-state="active"] .uix-step__marker { border-color: var(--uix-accent); color: var(--uix-accent); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
+  .uix-step[data-state="active"] .uix-step__marker { border-color: var(--uix-accent); color: var(--uix-accent-text); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-step[data-state="done"] { color: var(--uix-text); }
   .uix-step[data-state="done"] .uix-step__marker { background: var(--uix-accent); border-color: var(--uix-accent); color: var(--uix-accent-fg); }
   .uix-step[data-state="done"] + .uix-step__connector,

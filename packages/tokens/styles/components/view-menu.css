@@ -39,7 +39,7 @@
   /* A required column has no checkbox; the box's width is kept so every name starts at the same x. */
   .uix-view-menu__col-box { flex: none; width: 18px; }
   .uix-view-menu__col-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .uix-view-menu__grip { display: grid; place-items: center; flex: none; width: 20px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
+  .uix-view-menu__grip { display: grid; place-items: center; flex: none; width: 24px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
   .uix-view-menu__grip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-view-menu__actions { display: flex; flex: none; align-items: center; }
   .uix-view-menu__row-menu { min-width: 160px; padding: var(--uix-space-1); }
@@ -63,7 +63,7 @@
   .uix-saved-views__row > .uix-menu__item { min-width: 0; flex: 1; }
   .uix-saved-views__row > .uix-menu__item:is(:hover, [data-active]) { background: transparent; }
   .uix-saved-views__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .uix-saved-views__grip { display: grid; place-items: center; flex: none; width: 20px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
+  .uix-saved-views__grip { display: grid; place-items: center; flex: none; width: 24px; height: 28px; padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted); cursor: grab; touch-action: none; }
   .uix-saved-views__grip svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   .uix-saved-views__actions { display: flex; flex: none; align-items: center; }
   /* Quiet affordances: grip and overflow are dimmed on purpose until the row is hovered or holds focus,

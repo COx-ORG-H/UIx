@@ -38,7 +38,7 @@
   .uix-insight__kpi-label { order: 0; color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   .uix-insight__kpi-value { order: -1; color: var(--uix-text); font-size: var(--uix-text-h2); font-weight: 600; line-height: 1.15; letter-spacing: var(--uix-tracking-tight); }
   .uix-insight__kpi-comparison { color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600; }
-  .uix-insight__kpi-comparison[data-tone="positive"] { color: var(--uix-success); }
+  .uix-insight__kpi-comparison[data-tone="positive"] { color: var(--uix-success-text); }
   .uix-insight__kpi-comparison[data-tone="negative"] { color: var(--uix-danger-text); }
   .uix-insight__kpi-comparison[data-tone="warning"] { color: var(--uix-warning-text); }
   .uix-insight__kpi-target { padding-top: var(--uix-space-1); }

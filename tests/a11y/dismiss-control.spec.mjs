@@ -2,7 +2,7 @@
  * `<Chip onRemove>` (`.uix-chip__remove`). jsdom has no layout, so every number in the issue's
  * acceptance criteria is measured here, in both themes, at 1280 and 320 px:
  *   - an icon, no text node; the glyph's ink centre on the button centre (±0.5 px)
- *   - a 20 px circle as the hover shape, a concentric hit area of at least 24 px
+ *   - a 20 px circle as the hover shape, drawn in a 24 px own box (HAR-3215) that is the hit area
  *   - the button centred on the pill (±0.5 px), 2 px from its trailing edge, pill height unchanged
  *   - a round focus ring; hover ≥ 1.4:1 against the pill; visible in forced colours.
  * The tag is measured on the docs specimen (explorer.html#tag-input) and in the harness; the chip
@@ -67,13 +67,15 @@ function geometry(btn) {
     textNodes: [...btn.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim()).length,
     svgs: btn.querySelectorAll('svg').length,
     size: [r.width, r.height],
+    // the drawn circle: the box less its padding (the fill is clipped to the content box, HAR-3215)
+    circle: [r.width - parseFloat(bs.paddingLeft) - parseFloat(bs.paddingRight), r.height - parseFloat(bs.paddingTop) - parseFloat(bs.paddingBottom)],
     radius: parseFloat(bs.borderTopLeftRadius),
     glyphDx: (ink.l + ink.r) / 2 - cx,
     glyphDy: (ink.t + ink.b) / 2 - cy,
     inkSize: [ink.r - ink.l, ink.b - ink.t],
     pillDy: cy - (p.top + p.height / 2),
     textDy: (ink.t + ink.b) / 2 - (text.top + text.height / 2),
-    trailingGap: p.right - parseFloat(ps.borderRightWidth) - r.right,
+    trailingGap: p.right - parseFloat(ps.borderRightWidth) - (r.right - parseFloat(bs.paddingRight)),
     height,
     bare,
     hit: [hitW, hitH],
@@ -120,7 +122,8 @@ function hoverContrast(btn) {
 const expectGeometry = (g, name) => {
   expect(g.textNodes, `${name}: no text glyph`).toBe(0);
   expect(g.svgs, `${name}: one svg icon`).toBe(1);
-  expect(g.size, `${name}: a 20 px box`).toEqual([20, 20]);
+  expect(g.size, `${name}: a 24 px own box`).toEqual([24, 24]);
+  expect(g.circle, `${name}: a 20 px circle drawn in it`).toEqual([20, 20]);
   expect(g.radius, `${name}: a circle`).toBeGreaterThanOrEqual(10);
   expect(Math.abs(g.glyphDx), `${name}: glyph centred (x)`).toBeLessThanOrEqual(0.5);
   expect(Math.abs(g.glyphDy), `${name}: glyph centred (y)`).toBeLessThanOrEqual(0.5);
@@ -184,6 +187,8 @@ test('hover is a visible circle on every pill (≥ 1.4:1) and the icon reads (�
       const c = await btn.evaluate(hoverContrast);
       report.push({ name: await btn.getAttribute('aria-label'), ...c });
       expect(c.hover, `${await btn.getAttribute('aria-label')}: hover vs pill`).toBeGreaterThanOrEqual(1.4);
+      // HAR-3215: the fill is the 20 px circle, clipped to the content box of the 24 px button
+      expect(await btn.evaluate((el) => getComputedStyle(el).backgroundClip)).toBe('content-box');
       expect(c.icon, `${await btn.getAttribute('aria-label')}: icon vs pill`).toBeGreaterThanOrEqual(3);
       await page.mouse.move(0, 0);
     }
@@ -215,7 +220,8 @@ test('the keyboard focus ring is round and concentric', async ({ page }, testInf
       expect(ring.visible).toBe(true);
       expect(ring.style).toBe('solid');
       expect(ring.width).toBe(2);
-      expect(ring.offset).toBe(1);
+      // -1 px on the 24 px box: the ring sits where it did around the 20 px circle
+      expect(ring.offset).toBe(-1);
       // the outline follows border-radius: a square box with a radius ≥ half its side is a circle
       expect(ring.square).toBe(true);
       expect(ring.radius).toBeGreaterThanOrEqual(10);

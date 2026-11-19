@@ -35,7 +35,7 @@
   .uix-file-upload__name { min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
   .uix-file-upload__meta { display: flex; flex-wrap: wrap; gap: var(--uix-space-1) var(--uix-space-3); color: var(--uix-text-muted); }
   .uix-file-upload__meta > * { white-space: nowrap; }
-  .uix-file-upload__item[data-status="done"] .uix-file-upload__status { color: var(--uix-success); }
+  .uix-file-upload__item[data-status="done"] .uix-file-upload__status { color: var(--uix-success-text); }
   .uix-file-upload__error { color: var(--uix-danger-text); overflow-wrap: anywhere; }
   .uix-file-upload__actions { display: flex; align-items: center; gap: var(--uix-space-1); flex: none; }
 }

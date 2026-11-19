@@ -27,7 +27,8 @@
   }
   .uix-validation-summary strong { color: var(--uix-danger-text); }
   .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
-  .uix-validation-summary a { color: var(--uix-danger-text); text-decoration: underline; }
+  /* each error link stands on its own line, so it owns a 24 px target (WCAG 2.5.8, HAR-3215) */
+  .uix-validation-summary a { display: inline-flex; align-items: center; min-height: 24px; color: var(--uix-danger-text); text-decoration: underline; }
   .uix-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-5); padding-block: var(--uix-space-3); }
   .uix-toggle-row + .uix-toggle-row { border-top: 1px solid var(--uix-border); }
   .uix-toggle-row__copy { min-width: 0; }
