@@ -25,7 +25,10 @@
   /* The header's controls (HAR-3089): "open the record" and close, together at the end of the first
      row. Only one accent fill on the screen stays the page's, so "open" is a secondary button. */
   .uix-peek__controls { grid-column: 2; grid-row: 1; align-self: start; display: inline-flex; align-items: center; gap: var(--uix-space-1); }
-  .uix-peek__controls .uix-peek__close { grid-column: auto; grid-row: auto; margin-left: 0; }
+  .uix-peek__controls .uix-peek__close { grid-column: auto; grid-row: auto; margin-left: 0; align-self: auto; }
+  /* With "open" in the first row, the title takes the next row whole, as with the record arrows, so
+     a long German title is never squeezed beside two controls at 320 px (HAR-2859's own row). */
+  .uix-peek__header:has(.uix-peek__open) .uix-peek__title { grid-column: 1 / -1; grid-row: 2; }
   .uix-peek__open { white-space: nowrap; }
   /* The record's ID over the title: the meta size, tabular, muted, its own line (HAR-3089). */
   .uix-peek__record-id { display: block; margin-bottom: var(--uix-space-1); font-size: var(--uix-text-meta); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--uix-text-muted); }

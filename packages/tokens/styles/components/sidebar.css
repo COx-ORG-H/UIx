@@ -63,6 +63,29 @@
   .uix-navitem__star[data-on] { opacity: 1; color: var(--uix-warning); }
   .uix-navitem__star[data-on] svg { fill: currentColor; }
 
+  /* A row with a trailing control (NavItem `trailing`, HAR-3093): the link ends in one slot the badge
+     and the star share, as wide as the star (24 px) or the badge, whichever is wider. The star sits
+     over that slot's end, outside the link (a button cannot be inside a link). At rest an unpinned
+     star is hidden and the badge is in its place; on hover or focus the star shows and the badge
+     steps aside. A pinned star (and every star where no hover exists) keeps its own place, so the
+     badge moves left of it. The label has all the other room. */
+  .uix-navrow { position: relative; }
+  .uix-navitem__end { flex: none; display: inline-flex; align-items: center; justify-content: flex-end; min-width: 24px; }
+  .uix-navrow__trailing { position: absolute; inset-inline-end: var(--uix-space-3); top: 50%; translate: 0 -50%; display: inline-flex; }
+  /* in a row the star's own box is the 24 px target (WCAG 2.5.8): it sits beside the link */
+  .uix-navrow__trailing .uix-navitem__star { width: 24px; height: 24px; }
+  .uix-navrow:has(> .uix-navitem[data-multiline]) > .uix-navrow__trailing { top: var(--uix-space-2); translate: none; }
+  .uix-navrow:has(.uix-navitem__star[data-on]) .uix-navitem__end:has(> .uix-navitem__badge) { padding-inline-end: calc(24px + var(--uix-space-1)); }
+  .uix-navrow .uix-navitem__badge { transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-navrow:focus-within .uix-navitem__star { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-navrow:hover .uix-navitem__star { opacity: 1; }
+    .uix-navrow:is(:hover, :focus-within):not(:has(.uix-navitem__star[data-on])) .uix-navitem__end > .uix-navitem__badge { opacity: 0; }
+  }
+  @media not ((hover: hover) and (pointer: fine)) {
+    .uix-navrow .uix-navitem__end:has(> .uix-navitem__badge) { padding-inline-end: calc(24px + var(--uix-space-1)); }
+  }
+
   /* controlled favourites disclosure */
   .uix-favourites { margin-bottom: var(--uix-space-1); }
   .uix-favourites__chevron { flex-shrink: 0; }
@@ -163,6 +186,8 @@
   /* collapsed rail */
   .uix-sidebar[data-collapsed], .uix-sidebar[data-nav="rail"] { width: var(--uix-sidebar-w-rail); }
   .uix-sidebar[data-collapsed] .uix-navitem__badge,
+  .uix-sidebar[data-collapsed] .uix-navitem__end,
+  .uix-sidebar[data-collapsed] .uix-navrow__trailing,
   .uix-sidebar[data-collapsed] .uix-navitem__star,
   .uix-sidebar[data-collapsed] .uix-sidebar__eyebrow,
   .uix-sidebar[data-collapsed] .uix-sidebar__brand,
@@ -170,6 +195,8 @@
   .uix-sidebar[data-collapsed] .uix-navgroup__panel,
   .uix-sidebar[data-collapsed] .uix-navitem__desc { display: none; }
   .uix-sidebar[data-nav="rail"] .uix-navitem__badge,
+  .uix-sidebar[data-nav="rail"] .uix-navitem__end,
+  .uix-sidebar[data-nav="rail"] .uix-navrow__trailing,
   .uix-sidebar[data-nav="rail"] .uix-navitem__star,
   .uix-sidebar[data-nav="rail"] .uix-sidebar__eyebrow,
   .uix-sidebar[data-nav="rail"] .uix-sidebar__brand,
