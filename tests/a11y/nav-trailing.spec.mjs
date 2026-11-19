@@ -130,3 +130,10 @@ test('2.69.1: renderLink draws the row with the product\'s link and keeps the ro
   await expect(link).toHaveAttribute('href', '#router');
   await expect(link.locator('.uix-navitem__badge')).toHaveText('2');
 });
+
+test('#284 review: a row whose control is not a star keeps the slot at rest; a row without href gets no href', async ({ page }) => {
+  expect(await page.locator('#row-control .uix-navitem__end').evaluate((el) => getComputedStyle(el).display)).not.toBe('none');
+  const nohref = page.locator('#row-router-nohref');
+  expect(await nohref.getAttribute('href')).toBeNull();
+  await expect(nohref).not.toHaveAttribute('data-router', 'yes');
+});

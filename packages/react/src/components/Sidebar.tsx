@@ -167,9 +167,10 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 
 /** The row's link through the product's router when it passes `renderLink`, else a plain `<a>`. */
 function navLink(renderLink: UixRenderLink | undefined, ref: Ref<HTMLAnchorElement | HTMLButtonElement>, props: Record<string, unknown>, children: ReactNode) {
-  if (!renderLink) return <a ref={ref as Ref<HTMLAnchorElement>} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>{children}</a>;
+  // without an href there is nowhere to route: a plain <a>, never href="" (which would reload the page)
+  if (!renderLink || props.href == null) return <a ref={ref as Ref<HTMLAnchorElement>} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>{children}</a>;
   // `ref` rides in the props: spread onto the router's link element, React attaches it.
-  return renderUixLink(renderLink, { ...props, ref, href: String(props.href ?? ''), children } as UixLinkProps);
+  return renderUixLink(renderLink, { ...props, ref, href: String(props.href), children } as UixLinkProps);
 }
 
 /**
