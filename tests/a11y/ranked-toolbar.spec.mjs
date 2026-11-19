@@ -17,11 +17,12 @@ async function open(page, testInfo, viewport = { width: 1440, height: 900 }) {
 
 /** The toolbar's controls in the order a person meets them, with their row. */
 const controls = (page) => ws(page).getByRole('toolbar', { name: 'Vorfälle' }).evaluate((bar) => {
-  const items = [...bar.querySelectorAll('input[type="search"], .uix-searchbar input, button, a[href]')]
-    .filter((el) => el.getClientRects().length > 0 && !el.closest('[popover]'));
+  const items = [...bar.querySelectorAll('input, button, a[href]')]
+    .filter((el) => el.getClientRects().length > 0 && !el.closest('[popover]') && !el.closest('.uix-searchbar__clear, [class*="clear"]'));
   return items.map((el) => {
     const r = el.getBoundingClientRect();
-    return { name: el.getAttribute('aria-label') ?? el.textContent.trim(), top: Math.round(r.top), bottom: Math.round(r.bottom) };
+    const name = el.getAttribute('aria-label') ?? el.labels?.[0]?.textContent.trim() ?? el.textContent.trim();
+    return { name, top: Math.round(r.top), bottom: Math.round(r.bottom), middle: Math.round(r.top + r.height / 2) };
   });
 });
 
@@ -46,8 +47,9 @@ test('at 1440 px the controls share one row', async ({ page }, testInfo) => {
   await expect(ws(page).getByRole('button', { name: 'Änderungen speichern' })).toBeVisible();
   const items = await controls(page);
   expect(items.length).toBeGreaterThanOrEqual(6);
-  const tops = new Set(items.map((c) => c.top));
-  expect(tops.size, `one row: ${JSON.stringify(items)}`).toBe(1);
+  // one row: every control's centre line within 2 px of the first's (they differ in height)
+  const middle = items[0].middle;
+  expect(items.every((c) => Math.abs(c.middle - middle) <= 2), `one row: ${JSON.stringify(items)}`).toBe(true);
 });
 
 test('at 320 px the row folds without a sideways scroll', async ({ page }, testInfo) => {
@@ -65,8 +67,12 @@ test('More is the kit menu: keyboard, Save as, group by, export, Maximize; focus
   await page.keyboard.press('ArrowDown');
   const menu = page.getByRole('menu', { name: 'Mehr' });
   await expect(menu).toBeVisible();
+  // the kit Menu opens on the checked radio item, as a native select opens on its value
+  const none = menu.getByRole('menuitemradio', { name: 'Keine Gruppierung' });
+  await expect(none).toHaveAttribute('aria-checked', 'true');
+  await expect(none).toBeFocused();
+  await page.keyboard.press('Home');
   await expect(menu.getByRole('menuitem', { name: 'Speichern als…' })).toBeFocused();
-  await expect(menu.getByRole('menuitemradio', { name: 'Keine Gruppierung' })).toHaveAttribute('aria-checked', 'true');
   await expect(menu.getByRole('menuitem', { name: 'Als CSV exportieren' })).toBeVisible();
   await expect(menu.getByRole('menuitemcheckbox', { name: 'Maximieren' })).toHaveAttribute('aria-checked', 'false');
   await page.keyboard.press('Escape');

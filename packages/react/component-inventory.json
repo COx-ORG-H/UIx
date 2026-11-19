@@ -858,6 +858,10 @@
       "subpath": "."
     },
     {
+      "name": "ToolbarMore",
+      "subpath": "."
+    },
+    {
       "name": "Tooltip",
       "subpath": "."
     },
