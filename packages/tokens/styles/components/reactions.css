@@ -7,7 +7,7 @@
     color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); cursor: pointer;
   }
   .uix-reaction:hover { border-color: var(--uix-border-strong); }
-  .uix-reaction[data-mine] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent); }
+  .uix-reaction[data-mine] { background: var(--uix-brand-muted); border-color: var(--uix-accent); color: var(--uix-accent-text); }
   .uix-reaction__count { font-variant-numeric: tabular-nums; }
   .uix-reaction-add {
     display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 24px;

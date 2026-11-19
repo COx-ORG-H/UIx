@@ -24,7 +24,7 @@
   .uix-tree__toggle { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--uix-text-muted); transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-tree__toggle svg { width: 14px; height: 14px; }
   /* UIX-09: the chevron is a button (pointer target for toggling without selecting). */
-  button.uix-tree__toggle { appearance: none; background: none; border: 0; padding: 0; cursor: pointer; border-radius: var(--uix-radius-sm); }
+  button.uix-tree__toggle { appearance: none; background: none; border: 0; padding: var(--uix-space-1); margin: calc(var(--uix-space-1) * -1); box-sizing: content-box; cursor: pointer; border-radius: var(--uix-radius-sm); }
   button.uix-tree__toggle:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-tree__item[aria-expanded="false"] > .uix-tree__row .uix-tree__toggle { transform: rotate(-90deg); }
   .uix-tree__item[aria-expanded="false"] > .uix-tree__group { display: none; }

@@ -33,7 +33,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1);
     margin-top: var(--uix-space-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 600;
   }
-  .uix-chart__delta[data-tone="positive"] { color: var(--uix-success); }
+  .uix-chart__delta[data-tone="positive"] { color: var(--uix-success-text); }
   .uix-chart__delta[data-tone="negative"] { color: var(--uix-danger-text); }
   .uix-chart__delta[data-tone="warning"] { color: var(--uix-warning-text); }
   .uix-chart__plot { position: relative; min-width: 0; }

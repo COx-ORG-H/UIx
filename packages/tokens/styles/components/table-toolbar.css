@@ -44,12 +44,12 @@
   .uix-chip__main:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   /* remove x (HAR-1569): one spec with .uix-tag__remove, pinned by tests/dismiss-control.test.mjs */
   .uix-chip__remove {
-    position: relative; display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px;
-    margin-block: calc(var(--uix-space-1) / -2); padding: 0; border: 0; border-radius: var(--uix-radius-pill);
+    position: relative; display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px;
+    margin: calc(var(--uix-space-1) / -2); margin-block: calc(var(--uix-space-1) * -1); padding: 0; border: 0; border-radius: var(--uix-radius-pill);
     background: transparent; color: inherit; font: inherit; line-height: 0; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  .uix-chip__remove::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
+  .uix-chip__remove::before { content: ""; position: absolute; inset: 0; border-radius: inherit; }
   .uix-chip__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
   .uix-chip__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); color: var(--uix-text); }
   .uix-chip__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }

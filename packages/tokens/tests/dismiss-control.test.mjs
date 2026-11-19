@@ -37,18 +37,20 @@ test("tag and chip remove share one rule set (only the resting colour differs)",
   assert.equal(chip[""].color, "inherit");
 });
 
-test("a 20 px circle with a concentric 24 px hit area, a round ring and a 12 px icon", () => {
+test("a 24 px circle in a 20 x 16 px footprint (HAR-3215), a round ring and a 12 px icon", () => {
   const base = tag[""];
-  assert.equal(base.width, "20px");
-  assert.equal(base.height, "20px");
+  assert.equal(base.width, "24px");
+  assert.equal(base.height, "24px");
   assert.equal(base["border-radius"], "var(--uix-radius-pill)");
   assert.equal(base.padding, "0");
   assert.equal(base["line-height"], "0");
   assert.equal(base.position, "relative");
   assert.equal(base["place-items"], "center");
-  // the overhang into the pill's padding is eaten by the margin, so the pill keeps its height
-  assert.equal(base["margin-block"], "calc(var(--uix-space-1) / -2)");
-  assert.equal(tag["::before"].inset, "-2px");
+  // its own box is the 24 px target (WCAG 2.5.8); the negative margin keeps the footprint the
+  // 20 px circle had, so the pill keeps its height and width
+  assert.equal(base.margin, "calc(var(--uix-space-1) / -2)");
+  assert.equal(base["margin-block"], "calc(var(--uix-space-1) * -1)");
+  assert.equal(tag["::before"].inset, "0");
   assert.equal(tag["::before"]["border-radius"], "inherit");
   assert.equal(tag[" svg"].width, "12px");
   assert.equal(tag[" svg"].height, "12px");

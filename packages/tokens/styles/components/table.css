@@ -30,7 +30,7 @@
   .uix-table th[aria-sort="ascending"]::after { opacity: 1; color: var(--uix-accent); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E"); }
   .uix-table th[aria-sort="descending"]::after { opacity: 1; color: var(--uix-accent); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E"); }
   /* multi-column sort ordinal (⇧+click adds a secondary key) */
-  .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent); }
+  .uix-table th[data-sort-order]::before { content: attr(data-sort-order); display: inline-block; margin-right: var(--uix-space-1); font-size: var(--uix-text-eyebrow); font-variant-numeric: tabular-nums; color: var(--uix-accent-text); }
 
   /* With Th sortOrderLabel the ordinal is said in words inside the button (2.50, HAR-2623), so the
      drawn number gets empty alt text; an engine without the alt syntax keeps the rule above. */
@@ -48,7 +48,7 @@
      tall around an eyebrow-size label. A button centres its own content, so the label does not
      move; it stays an inline-block (not inline-flex), so a space between a word and an <abbr> in
      the label is kept (#236 review). */
-  .uix-th__sortbtn { min-height: 24px; }
+  .uix-th__sortbtn { min-height: 24px; min-width: 24px; }
   .uix-th__sortbtn::before { content: ""; position: absolute; inset: 0; }
 
   .uix-table td { padding: 0 var(--uix-space-4); height: var(--uix-row-h); border-bottom: 1px solid var(--uix-border); color: var(--uix-text); vertical-align: middle; }
@@ -83,7 +83,7 @@
   /* a table that asks for standard keeps it under a page-wide --uix-row-h re-point (HAR-2631) */
   .uix-table:not(.uix-table--cards)[data-density="standard"] td { height: var(--uix-row-h-standard); }
 
-  .uix-table__pin { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table__pin { min-width: 24px; min-height: 24px; display: inline-grid; place-items: center; vertical-align: middle; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   /* Hidden until hover only where hover exists; a touch screen always shows the pin. The
      :focus-visible reveal mirrors .uix-rowact so keyboard users can find it (UIX-A11Y-2). */
   @media (hover: hover) and (pointer: fine) {
@@ -160,6 +160,8 @@
     border: 0; background: transparent; cursor: pointer; padding: 0;
     color: var(--uix-text); font: inherit;
     display: inline-flex; align-items: center; gap: var(--uix-space-1); white-space: nowrap;
+    /* a 24 px target (WCAG 2.5.8, HAR-3215): the row is taller than this, so nothing moves */
+    min-height: 24px;
   }
   /* No accent flip on hover: the row tint plus the revealed ↗ arrow are the affordance, and
      an id that turns brand-blue under the pointer reads as a state change on the record
@@ -204,10 +206,10 @@
   /* the controls share one centre line: an icon-only button has no text baseline, so on the
      baseline it sat a few px above the word buttons beside it */
   .uix-table__actions :is(.uix-btn, .uix-rowact) { vertical-align: middle; }
-  .uix-rowact { border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-rowact { min-width: 24px; min-height: 24px; display: inline-grid; place-items: center; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; padding: var(--uix-space-1); border-radius: var(--uix-radius-sm); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-rowact svg { width: 16px; height: 16px; display: block; }
   /* the link form (HAR-2713): an inline block like the button, no underline */
-  a.uix-rowact { display: inline-block; text-decoration: none; }
+  a.uix-rowact { display: inline-grid; text-decoration: none; }
   /* Row actions hide until hover only where hover exists: on a touch screen they stay visible, so
      hover is never the only way to reach them. A row the keyboard is in shows them too (HAR-1814). */
   @media (hover: hover) and (pointer: fine) {
@@ -218,7 +220,7 @@
   .uix-rowact:hover { background: var(--uix-bg-active); color: var(--uix-text); }
 
   /* ── expandable inline row ─────────────────────────────────────────────────────── */
-  .uix-table__expand { border: 0; background: transparent; cursor: pointer; color: var(--uix-text-muted); padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); display: inline-grid; place-items: center; }
+  .uix-table__expand { min-width: 24px; min-height: 24px; border: 0; background: transparent; cursor: pointer; color: var(--uix-text-muted); padding: var(--uix-space-1); border-radius: var(--uix-radius-xs); display: inline-grid; place-items: center; }
   .uix-table__expand svg { width: 16px; height: 16px; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-table__expand[aria-expanded="true"] svg { transform: rotate(90deg); }
   .uix-table__expand:hover { background: var(--uix-bg-active); color: var(--uix-text); }
