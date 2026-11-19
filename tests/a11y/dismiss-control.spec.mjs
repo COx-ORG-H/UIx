@@ -187,6 +187,8 @@ test('hover is a visible circle on every pill (â‰¥ 1.4:1) and the icon reads (â‰
       const c = await btn.evaluate(hoverContrast);
       report.push({ name: await btn.getAttribute('aria-label'), ...c });
       expect(c.hover, `${await btn.getAttribute('aria-label')}: hover vs pill`).toBeGreaterThanOrEqual(1.4);
+      // HAR-3215: the fill is the 20 px circle, clipped to the content box of the 24 px button
+      expect(await btn.evaluate((el) => getComputedStyle(el).backgroundClip)).toBe('content-box');
       expect(c.icon, `${await btn.getAttribute('aria-label')}: icon vs pill`).toBeGreaterThanOrEqual(3);
       await page.mouse.move(0, 0);
     }

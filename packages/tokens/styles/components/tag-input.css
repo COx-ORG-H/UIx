@@ -15,17 +15,20 @@
   .uix-tag:has(> .uix-tag__remove:last-child) { padding-inline-end: calc(var(--uix-space-1) / 2); }
   .uix-tag__remove {
     position: relative; display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px;
-    margin: calc(var(--uix-space-1) / -2); margin-block: calc(var(--uix-space-1) * -1); padding: calc(var(--uix-space-1) / 2); border: 0; border-radius: var(--uix-radius-pill);
     /* HAR-3215: a 24 px own box (WCAG 2.5.8, the council probe) that paints the 20 px circle it
-       always was: the fill is clipped to the content box, the margin keeps the old footprint */
-    background-clip: content-box;
+       always was. The margin keeps the old footprint: inline, the 2 px the box grew on each side;
+       block, those 2 px plus the 2 px overhang into the pill's padding the 20 px circle already had,
+       so the pill keeps its height. */
+    margin: calc(var(--uix-space-1) / -2); margin-block: calc(var(--uix-space-1) * -1); padding: calc(var(--uix-space-1) / 2); border: 0; border-radius: var(--uix-radius-pill);
     background: transparent; color: var(--uix-text-muted); font: inherit; line-height: 0; cursor: pointer;
+    /* after the shorthand, which resets it: the fill is the 20 px content box, not the 24 px box */
+    background-clip: content-box;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-tag__remove::before { content: ""; position: absolute; inset: 0; border-radius: inherit; }
   .uix-tag__remove svg { display: block; width: 12px; height: 12px; pointer-events: none; }
-  .uix-tag__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); color: var(--uix-text); }
-  .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); }
+  .uix-tag__remove:hover { background: color-mix(in srgb, var(--uix-text) 18%, transparent); background-clip: content-box; color: var(--uix-text); }
+  .uix-tag__remove:active { background: color-mix(in srgb, var(--uix-text) 26%, transparent); background-clip: content-box; }
   .uix-tag__remove:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -1px; }
 }
 
