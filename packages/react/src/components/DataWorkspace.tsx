@@ -48,9 +48,16 @@ export interface DataWorkspaceLabels {
   saveView: string;
   saveViewAs: string;
   maximize: string;
+  /**
+   * Unused since 2.69 (HAR-3090): Maximize is a checkbox item in the More menu, named by `maximize`
+   * with its state in `aria-checked`. Kept so existing label sets still type-check.
+   */
   restore: string;
-  /** The toolbar's overflow menu trigger (HAR-3090): Save as, the product's `toolbarMenu`, Maximize. */
-  more: string;
+  /**
+   * The toolbar's overflow menu trigger (HAR-3090): Save as, the product's `toolbarMenu`, Maximize.
+   * Unset, the trigger takes `UixLabelsProvider` `toolbar.more`, then "More".
+   */
+  more?: string;
   selectAll: string;
   /** `{label}`: the row's id. */
   selectRow: string;
@@ -95,7 +102,6 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   saveViewAs: 'Save as…',
   maximize: 'Maximize',
   restore: 'Restore size',
-  more: 'More',
   selectAll: 'Select all rows on this page',
   selectRow: 'Select {label}',
   selected: '{count} selected',
@@ -727,7 +733,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
           </PopoverButton>
         )}
         {hasMenu && (
-          <ToolbarMore label={labels.more}>
+          <ToolbarMore label={labels.more /* unset: the provider's toolbar.more, then "More" */}>
             {showSaveAs && <MenuItem onSelect={() => onSaveViewAs?.()}>{labels.saveViewAs}</MenuItem>}
             {toolbarMenu}
             {onMaximizedChange && (

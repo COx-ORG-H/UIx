@@ -1644,10 +1644,9 @@ export interface DataWorkspaceLabels {
     loading: string;
     // (undocumented)
     maximize: string;
-    more: string;
+    more?: string;
     open: string;
     range: string;
-    // (undocumented)
     restore: string;
     // (undocumented)
     retry: string;
