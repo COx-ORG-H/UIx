@@ -103,8 +103,18 @@ export function StatusStrip({ items, summary, listAffected = true, className, ..
 
 // ── Sparkline ──────────────────────────────────────────────────────────────────────────────
 
-export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values'> {
-  values: number[];
+/** A level the latest value should not cross (`above`: higher is bad; `below`: lower is bad). */
+export interface SparklineThreshold {
+  value: number;
+  direction: 'above' | 'below';
+}
+
+export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'values' | 'target'> {
+  /**
+   * The series, oldest first. `null` (or `NaN`) is a missing value: the line breaks there and it
+   * is never drawn as zero. A lone value between two gaps is a small dot.
+   */
+  values: ReadonlyArray<number | null>;
   /** Width in px. Default 86. */
   width?: number;
   /** Height in px. Default 24. */
@@ -112,35 +122,108 @@ export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, 'valu
   /** `ink` (default): a muted line with an ink endpoint. `series`: the series blue. */
   tone?: 'ink' | 'series';
   /**
-   * What the line says ("Rückstand der letzten 11 Wochen, von 20 auf 85"). Without it the
-   * sparkline is decoration (`aria-hidden`): say the number beside it in words.
+   * What the line shows ("Rückstand der letzten 11 Wochen"). With `valueText` the accessible name
+   * is "label: valueText". Without either the sparkline is decoration (`aria-hidden`): say the
+   * number beside it in words.
    */
   label?: string;
+  /**
+   * The current value in words or numbers ("85 offen, Ziel 60"). It joins the accessible name;
+   * with `showValue` it is also written beside the line. Mention the target or threshold here:
+   * the dashed line and the diamond are not read out on their own.
+   */
+  valueText?: string;
+  /** Write `valueText` beside the line (the group becomes one image with the same name). Default false. */
+  showValue?: boolean;
+  /** A horizontal dashed reference line at this value; the scale always includes it. */
+  target?: number;
+  /** When the latest value is past it, the last mark becomes an amber diamond (shape and colour). */
+  threshold?: SparklineThreshold;
+  /** Mark the latest known value with a dot. Default true. */
+  highlightLast?: boolean;
 }
 
-/** A trend line without axes, beside a number: an ink-grey line and a dot on the latest value. */
-export function Sparkline({ values, width = 86, height = 24, tone = 'ink', label, className, ...props }: SparklineProps) {
-  const finite = values.filter((v) => Number.isFinite(v));
+const isValue = (v: number | null | undefined): v is number => typeof v === 'number' && Number.isFinite(v);
+const round = (n: number) => Number(n.toFixed(1));
+
+/**
+ * A trend line without axes, beside a number: an ink-grey line and a dot on the latest value.
+ * Missing values are gaps, an optional dashed `target` sits under the data, a crossed `threshold`
+ * turns the last dot into a diamond, and `valueText` keeps the value in text. `className` goes
+ * on the outermost element; every other attribute goes on the `svg.uix-sparkline`.
+ */
+export function Sparkline({
+  values, width = 86, height = 24, tone = 'ink', label, valueText, showValue = false, target, threshold,
+  highlightLast = true, className, 'aria-describedby': describedBy, 'aria-labelledby': labelledBy, ...props
+}: SparklineProps) {
   const pad = 3;
-  const min = Math.min(...finite);
-  const max = Math.max(...finite);
+  const known = values.filter(isValue);
+  const domain = isValue(target) ? [...known, target] : known;
+  const min = Math.min(...domain);
+  const max = Math.max(...domain);
   const x = (i: number) => (values.length < 2 ? width / 2 : pad + (i * (width - 2 * pad)) / (values.length - 1));
-  const y = (v: number) => height - pad - ((v - min) / (max - min || 1)) * (height - 2 * pad);
-  const points = values.map((v, i) => [x(i), y(v)] as const).filter((_, i) => Number.isFinite(values[i]));
-  const d = points.map(([px, py], i) => `${i ? 'L' : 'M'}${px.toFixed(1)} ${py.toFixed(1)}`).join(' ');
-  const last = points[points.length - 1];
-  return (
+  const y = (v: number) => (max === min ? height / 2 : height - pad - ((v - min) / (max - min)) * (height - 2 * pad));
+
+  // consecutive known values form a segment; a missing one ends it
+  const segments: Array<Array<readonly [number, number]>> = [];
+  let run: Array<readonly [number, number]> | null = null;
+  let lastIndex = -1;
+  values.forEach((v, i) => {
+    if (!isValue(v)) { run = null; return; }
+    if (!run) { run = []; segments.push(run); }
+    run.push([x(i), y(v)]);
+    lastIndex = i;
+  });
+  const lastValue = lastIndex >= 0 ? (values[lastIndex] as number) : undefined;
+  const crossed = threshold != null && lastValue !== undefined
+    && (threshold.direction === 'above' ? lastValue > threshold.value : lastValue < threshold.value);
+  const end = lastValue !== undefined ? ([x(lastIndex), y(lastValue)] as const) : undefined;
+  const markEnd = end !== undefined && (highlightLast || crossed);
+  const fmt = (n: number) => n.toFixed(1);
+
+  const name = [label, valueText].filter(Boolean).join(': ');
+  const grouped = showValue && Boolean(valueText);
+  // the naming and describing attributes belong on whichever element is exposed: the group when
+  // it writes the value, otherwise the svg itself
+  const relations = { 'aria-describedby': describedBy, 'aria-labelledby': labelledBy };
+  const svg = (
     <svg
-      className={cx('uix-sparkline', tone === 'series' && 'uix-sparkline--series', className)}
+      className={cx('uix-sparkline', tone === 'series' && 'uix-sparkline--series', !grouped && className)}
       viewBox={`0 0 ${width} ${height}`}
       width={width}
       height={height}
-      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      {...(name && !grouped ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true })}
       focusable="false"
+      {...(grouped ? {} : relations)}
       {...props}
     >
-      {points.length > 1 && <path className="uix-sparkline__line uix-arrive__trace" d={d} pathLength={1} />}
-      {last && <circle className="uix-sparkline__end" cx={last[0]} cy={last[1]} r={2.5} />}
+      {isValue(target) && known.length > 0 && (
+        <line className="uix-sparkline__target" x1={pad} x2={width - pad} y1={round(y(target))} y2={round(y(target))} />
+      )}
+      {segments.map((points) => {
+        const [px, py] = points[0]!;
+        if (points.length > 1) {
+          const d = points.map(([sx, sy], i) => `${i ? 'L' : 'M'}${fmt(sx)} ${fmt(sy)}`).join(' ');
+          return <path key={`${px}`} className="uix-sparkline__line uix-arrive__trace" d={d} pathLength={1} />;
+        }
+        if (markEnd && end && px === end[0]) return null;
+        return <circle key={`${px}`} className="uix-sparkline__point" cx={round(px)} cy={round(py)} r={1.25} />;
+      })}
+      {markEnd && end && (crossed ? (
+        <path
+          className="uix-sparkline__end uix-sparkline__end--crossed"
+          d={`M${fmt(end[0])} ${fmt(end[1] - 3.5)} L${fmt(end[0] + 3.5)} ${fmt(end[1])} L${fmt(end[0])} ${fmt(end[1] + 3.5)} L${fmt(end[0] - 3.5)} ${fmt(end[1])} Z`}
+        />
+      ) : (
+        <circle className="uix-sparkline__end" cx={round(end[0])} cy={round(end[1])} r={2.5} />
+      ))}
     </svg>
+  );
+  if (!grouped) return svg;
+  return (
+    <span className={cx('uix-sparkline-group', className)} role="img" aria-label={name} {...relations}>
+      {svg}
+      <span className="uix-sparkline__value">{valueText}</span>
+    </span>
   );
 }

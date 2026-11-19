@@ -359,7 +359,7 @@ export type { ArriveProps, ArriveItemProps, ArriveState } from './components/Arr
 export { ChartCard } from './components/ChartCard.js';
 export type { ChartCardProps } from './components/ChartCard.js';
 export { BarList, StatusStrip, Sparkline } from './components/GlanceMarks.js';
-export type { BarListProps, BarListItem, StatusStripProps, StatusStripItem, StatusStripTone, SparklineProps } from './components/GlanceMarks.js';
+export type { BarListProps, BarListItem, StatusStripProps, StatusStripItem, StatusStripTone, SparklineProps, SparklineThreshold } from './components/GlanceMarks.js';
 export { MotionList } from './components/MotionList.js';
 export type { MotionListProps } from './components/MotionList.js';
 export type { CountProps } from './components/Count.js';

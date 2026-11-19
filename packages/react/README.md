@@ -783,7 +783,11 @@ For a home page that greets before it warns: one question per card, red only for
 - `BarList`: label, bar, value per bucket; every value written out.
 - `Meter target={95} targetLabel="Ziel 95 %"`: an ink mark at the goal, said after the value.
 - `StatusStrip`: one cell per service and only the affected ones listed, critical first.
-- `Sparkline`: an ink-grey line with a dot on the latest value; decoration unless you pass `label`.
+- `Sparkline`: an ink-grey line with a dot on the latest value. `null` is a gap (never zero), `target` a dashed reference line, and a crossed `threshold` turns the last dot into an amber diamond. `valueText` keeps the value in text ("label: value" for a screen reader) and `showValue` writes it beside the line. Decoration unless you pass `label` or `valueText`. Say the target or threshold in `valueText`: the marks are not read out on their own.
+
+  ```tsx
+  <Sparkline values={[99.9, 99.8, null, 99.1, 99.6]} target={99.5} label="Verfügbarkeit, 5 Tage" valueText="99,6 %, Ziel 99,5 %" showValue />
+  ```
 
 The option builders are public for your own glance charts: `glanceLineOption`, `pairedBarsOption`, `uixGlanceBase` (pure functions of `uixChartTokens()`).
 

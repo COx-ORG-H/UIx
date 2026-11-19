@@ -71,17 +71,33 @@
   .uix-status-strip__name { min-width: 0; overflow-wrap: anywhere; }
   .uix-status-strip__state { margin-inline-start: auto; flex: none; color: var(--uix-text-muted); }
 
-  /* ── sparkline: an ink-grey line and an endpoint dot ───────────────────────────────────── */
+  /* ── sparkline: an ink-grey line and an endpoint dot ───────────────────────────────────────
+     A missing value breaks the line (a lone value between gaps is a small dot); the target is a
+     thinner dashed line under the data; a crossed threshold turns the last dot into an amber
+     diamond, so the shape says it as well as the colour. With `showValue` the group writes the
+     value beside the line. Contrast: packages/tokens/tests/sparkline-contrast.test.mjs. */
   .uix-sparkline { display: inline-block; flex: none; vertical-align: middle; overflow: visible; }
   .uix-sparkline__line { fill: none; stroke: var(--uix-text-muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .uix-sparkline--series .uix-sparkline__line { stroke: var(--uix-chart-series); }
+  .uix-sparkline__point { fill: var(--uix-text-muted); }
+  .uix-sparkline--series .uix-sparkline__point { fill: var(--uix-chart-series); }
   .uix-sparkline__end { fill: var(--uix-text); }
   .uix-sparkline--series .uix-sparkline__end { fill: var(--uix-chart-series); }
+  .uix-sparkline__end--crossed { fill: var(--uix-warning-text); }
+  .uix-sparkline--series .uix-sparkline__end--crossed { fill: var(--uix-warning-text); }
+  .uix-sparkline__target { fill: none; stroke: var(--uix-text-muted); stroke-width: 1; stroke-dasharray: 2 2; }
+  /* the value wraps between words, never inside one: when line and value do not fit side by
+     side, the value moves under the line whole; only a word wider than the container breaks */
+  .uix-sparkline-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-2); max-width: 100%; vertical-align: middle; }
+  .uix-sparkline__value { max-width: 100%; color: var(--uix-text); font-size: var(--uix-text-meta); font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
 
   @media (forced-colors: active) {
     .uix-bar-list__bar, .uix-status-strip__cell { background: CanvasText; }
     .uix-status-strip__cell[data-tone="ok"] { background: GrayText; }
     .uix-sparkline__line { stroke: CanvasText; }
+    .uix-sparkline__point { fill: CanvasText; }
     .uix-sparkline__end { fill: CanvasText; }
+    .uix-sparkline__end--crossed { fill: CanvasText; }
+    .uix-sparkline__target { stroke: CanvasText; }
   }
 }
