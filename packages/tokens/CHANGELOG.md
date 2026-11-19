@@ -1,5 +1,24 @@
 # @tensor_1/tokens
 
+## 2.70.0
+
+### Minor Changes
+
+- 50ce3c0: HAR-2880 — `Sparkline` becomes the one inline trend line products put beside a number, so TENSOR can replace its two hand-built copies.
+
+  - `values` accepts `null`: a missing value breaks the line and is never drawn as zero (`NaN` counts as missing too). A lone value between two gaps is a small dot (`.uix-sparkline__point`).
+  - `target` draws a thinner dashed reference line under the data (`.uix-sparkline__target`), and the scale always includes it.
+  - `threshold={{ value, direction: 'above' | 'below' }}`: when the latest value is past it, the last dot becomes an amber diamond (`.uix-sparkline__end--crossed`, `--uix-warning-text`). The shape changes along with the colour, so colour is never the only cue.
+  - `highlightLast` (default `true`) marks the latest known value. Turn it off for a bare line.
+  - `valueText` keeps the value in text: the accessible name is "label: valueText". With `showValue` the value is also written beside the line, and the pair becomes one image (`.uix-sparkline-group`, `.uix-sparkline__value`). The value wraps between words, never inside one. When line and value don't fit side by side, the value moves under the line.
+  - A constant series is a flat line through the middle, not along the bottom. An all-null series draws no line and keeps its value text.
+
+  Nothing changes for existing calls: the root is still `svg.uix-sparkline`, and it is decoration without `label` or `valueText`. Only `showValue` wraps it in a `span`, and then `className` goes on that span. Every new mark is drawn in CanvasText under forced colours. Line, marks and target clear 3:1 and the written value clears 4.5:1 in every theme, light and dark (`sparkline-contrast.test.mjs`). Nothing animates outside a playing `Arrive` stage, and nothing animates under reduced motion.
+
+### Patch Changes
+
+- ec9d417: HAR-3093 follow-up from TENSOR's sidebar adoption. A nav row whose only trailing control is an unpinned star now gives its label the star's room at rest, where hover exists: the empty end slot and its gap go away until hover or keyboard focus brings the star back. In TENSOR's 248 px sidebar, "Berechtigungskonzept" and "Lebenszyklus EoL/EoS" read in full again. Rows with a badge, a pinned star, or no hover are unchanged. `NavItem` and `SubNavItem` take `renderLink` (as on `ButtonLink`), so a product can draw the row with its router's link; the row's classes, `aria-current`, `href`, the ref and the children are passed in.
+
 ## 2.69.0
 
 ### Minor Changes
