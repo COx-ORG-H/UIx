@@ -144,7 +144,32 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
    * and the row grows to fit (HAR-1355; TENSOR B31). Hidden in the rail.
    */
   description?: ReactNode;
+  /**
+   * A control at the row's end, beside the link: usually a `StarButton` (HAR-3093). The kit draws the
+   * row: the link keeps one end slot that the badge (a count, a marker) and the star share. At rest
+   * an unpinned star is hidden and the badge sits in its place; on hover or keyboard focus the star
+   * shows there and the badge steps aside; a pinned star (and every star where no hover exists)
+   * keeps its own place, with the badge beside it. The label has all the other room and ends in an
+   * ellipsis only when it is longer. The row is a `<div class="uix-navrow">` around the link, since
+   * a button cannot sit inside a link; the ref still reaches the link. The slot is sized for one
+   * 24 px control: a wider one needs its own room.
+   */
+  trailing?: ReactNode;
   children?: ReactNode;
+}
+
+/**
+ * The link's end slot and the row around it, when the row has a `trailing` control (HAR-3093).
+ * Without one, the badge renders as before, as the link's last child.
+ */
+function endSlot(badge: ReactNode, trailing: ReactNode) {
+  if (trailing == null) return badge != null ? <span className="uix-navitem__badge">{badge}</span> : null;
+  return <span className="uix-navitem__end">{badge != null && <span className="uix-navitem__badge">{badge}</span>}</span>;
+}
+
+function withTrailing(link: ReactNode, trailing: ReactNode) {
+  if (trailing == null) return link;
+  return <div className="uix-navrow">{link}<span className="uix-navrow__trailing">{trailing}</span></div>;
 }
 
 /**
@@ -154,7 +179,7 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
  * attributes pass through with `as="button"`.
  */
 export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItemProps>(function NavItem(
-  { icon, badge, active, as: Tag = 'a', description, children, className, ...props },
+  { icon, badge, active, as: Tag = 'a', description, trailing, children, className, ...props },
   ref,
 ) {
   const text = description == null
@@ -163,7 +188,7 @@ export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItem
   const multiline = description == null ? undefined : true;
   if (Tag === 'button') {
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
-    return (
+    return withTrailing(
       <button
         ref={ref as Ref<HTMLButtonElement>}
         type="button"
@@ -174,12 +199,13 @@ export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItem
       >
         {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
         {text}
-        {badge != null && <span className="uix-navitem__badge">{badge}</span>}
-      </button>
+        {endSlot(badge, trailing)}
+      </button>,
+      trailing,
     );
   }
 
-  return (
+  return withTrailing(
     <a
       ref={ref as Ref<HTMLAnchorElement>}
       className={cx('uix-navitem', className)}
@@ -189,8 +215,9 @@ export const NavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, NavItem
     >
       {icon && <span className="uix-navitem__icon" aria-hidden="true">{icon}</span>}
       {text}
-      {badge != null && <span className="uix-navitem__badge">{badge}</span>}
-    </a>
+      {endSlot(badge, trailing)}
+    </a>,
+    trailing,
   );
 });
 NavItem.displayName = 'NavItem';
@@ -250,27 +277,35 @@ export function NavGroup({ icon, label, children, defaultExpanded = true, expand
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   active?: boolean;
   as?: 'a' | 'button';
+  /** A count or marker at the row's end; it shares the end slot with `trailing` (HAR-3093). */
+  badge?: ReactNode;
+  /** A control beside the link, usually a `StarButton`: as on `NavItem` (HAR-3093). */
+  trailing?: ReactNode;
   children?: ReactNode;
 }
 
 /** A nested navigation row. Like `NavItem`, it forwards its ref to the `<a>` or `<button>` (HAR-1810). */
 export const SubNavItem = forwardRef<HTMLAnchorElement | HTMLButtonElement, SubNavItemProps>(function SubNavItem(
-  { active, as: Tag = 'a', children, className, ...props },
+  { active, as: Tag = 'a', badge, trailing, children, className, ...props },
   ref,
 ) {
   const cls = cx('uix-navitem uix-subitem', className);
   if (Tag === 'button') {
     const { href: _href, ...btnProps } = props as Record<string, unknown>;
-    return (
+    return withTrailing(
       <button ref={ref as Ref<HTMLButtonElement>} type="button" className={cls} aria-current={active ? 'page' : undefined} {...(btnProps as HTMLAttributes<HTMLButtonElement>)}>
         <span className="uix-navitem__label">{children}</span>
-      </button>
+        {endSlot(badge, trailing)}
+      </button>,
+      trailing,
     );
   }
-  return (
+  return withTrailing(
     <a ref={ref as Ref<HTMLAnchorElement>} className={cls} aria-current={active ? 'page' : undefined} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>
       <span className="uix-navitem__label">{children}</span>
-    </a>
+      {endSlot(badge, trailing)}
+    </a>,
+    trailing,
   );
 });
 SubNavItem.displayName = 'SubNavItem';

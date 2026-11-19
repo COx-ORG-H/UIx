@@ -10,7 +10,7 @@ function Harness() {
   return (
     <>
       <PageHeader id="short" title="Vorfälle" />
-      {(['default', 'display'] as const).flatMap(size => [false, true].map(withHelp => (
+      {(['default', 'display', 'compact'] as const).flatMap(size => [false, true].map(withHelp => (
         <PageHeader
           key={`${size}-${withHelp}`}
           id={`${size}-${withHelp ? 'help' : 'plain'}`}

@@ -5131,6 +5131,7 @@ export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
     description?: ReactNode;
     // (undocumented)
     icon?: ReactNode;
+    trailing?: ReactNode;
 }
 
 // @public
@@ -5339,7 +5340,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
     eyebrow?: ReactNode;
     help?: string | null;
     helpLabel?: string;
-    size?: 'default' | 'display';
+    size?: 'default' | 'display' | 'compact';
     subtitle?: ReactNode;
     // (undocumented)
     title: ReactNode;
@@ -5473,7 +5474,14 @@ export interface PeekProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'titl
     onNavPrev?: () => void;
     // (undocumented)
     open: boolean;
+    openAction?: {
+        label: string;
+        href: string;
+        renderLink?: UixRenderLink;
+        onClick?: () => void;
+    };
     previousLabel?: string;
+    recordId?: ReactNode;
     // (undocumented)
     title?: ReactNode;
 }
@@ -7926,8 +7934,10 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     active?: boolean;
     // (undocumented)
     as?: 'a' | 'button';
+    badge?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    trailing?: ReactNode;
 }
 
 // @public

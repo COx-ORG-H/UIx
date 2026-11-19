@@ -25,7 +25,7 @@ async function assertTitlesFit(page) {
       charsPerLine: title.textContent.trim().length / Math.max(1, lines),
     };
   }));
-  expect(samples).toHaveLength(6);
+  expect(samples).toHaveLength(8);
   for (const sample of samples) {
     expect(sample.scrollWidth, `${sample.id}: title is not silently clipped`).toBeLessThanOrEqual(sample.width + 1);
     expect(sample.outside, `${sample.id}: every rendered text fragment fits`).toBe(0);
@@ -110,4 +110,27 @@ test('enlarged text and reduced motion preserve readable titles', async ({ page 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   await assertTitlesFit(page);
+});
+
+/* HAR-3081: compact sets only the title one step down (the h3 size); eyebrow, subtitle and the
+ * header's box stay those of the default size. */
+test('compact: the title is the h3 size and nothing else changes', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 950 });
+  const read = (id) => page.locator(`#${id}`).evaluate((header) => {
+    const style = (sel) => { const el = header.querySelector(sel); return el ? getComputedStyle(el) : null; };
+    const root = getComputedStyle(document.documentElement);
+    return {
+      title: style('.uix-page-header__title').fontSize,
+      h3: parseFloat(root.getPropertyValue('--uix-text-h3')) * parseFloat(getComputedStyle(document.documentElement).fontSize),
+      eyebrow: style('.uix-page-header__eyebrow').fontSize,
+      padding: getComputedStyle(header).paddingBottom,
+      margin: getComputedStyle(header).marginBottom,
+      border: getComputedStyle(header).borderBottomWidth,
+    };
+  });
+  const compact = await read('compact-plain');
+  const standard = await read('default-plain');
+  expect(parseFloat(compact.title)).toBeCloseTo(compact.h3, 1);
+  expect(parseFloat(compact.title)).toBeLessThan(parseFloat(standard.title));
+  for (const key of ['eyebrow', 'padding', 'margin', 'border']) expect(compact[key], key).toBe(standard[key]);
 });
