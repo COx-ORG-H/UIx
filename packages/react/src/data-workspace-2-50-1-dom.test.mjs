@@ -180,7 +180,7 @@ test('HAR-2632 a workspace with nothing for its toolbar renders no toolbar band;
     toolbarEnd: { toolbarEnd: h('button', { type: 'button' }, 'New') },
   };
   for (const [name, extra] of Object.entries(parts)) {
-    assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base(extra))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-toolbar uix-data-workspace__toolbar" role="toolbar" aria-label="Books">/, name);
+    assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base(extra))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-toolbar uix-toolbar--ranked uix-data-workspace__toolbar" role="toolbar" aria-label="Books">/, name);
   }
   // a state body keeps working without the toolbar
   assert.match(renderToStaticMarkup(h(ui.DataWorkspace, base({ rows: [] }))), /^<section class="uix-data-workspace" aria-label="Books"><div class="uix-busy-region uix-data-workspace__state">/);

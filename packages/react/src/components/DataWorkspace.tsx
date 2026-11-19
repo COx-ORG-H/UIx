@@ -692,9 +692,11 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   // search first, then the filters and the saved view with its Save; the end zone holds the quiet
   // controls: View (columns, density), one "More" menu for Save as, the product's less frequent
   // actions and Maximize, then the product's own actions.
+  const hasLead = search != null || filters != null || savedViews != null || (viewChanged && onSaveView != null);
+  const hasEnd = viewMenu != null || hasMenu || (toolbarEnd != null && toolbarEnd !== false);
   const toolbar = hasToolbar && (
     <div className="uix-toolbar uix-toolbar--ranked uix-data-workspace__toolbar" role="toolbar" aria-label={label}>
-      <div className="uix-toolbar__lead">
+      {hasLead && <div className="uix-toolbar__lead">
         {search && (
           <SearchBar
             className="uix-data-workspace__search" landmark={false} label={search.label ?? labels.search} placeholder={search.placeholder ?? labels.searchPlaceholder}
@@ -717,8 +719,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
             must not move the search field under the person's fingers. Secondary: saving a view is
             not the page's primary action (that is the product's, at the end). */}
         {viewChanged && onSaveView && <Button size="sm" variant="secondary" onClick={onSaveView}>{labels.saveView}</Button>}
-      </div>
-      <div className="uix-toolbar__end">
+      </div>}
+      {hasEnd && <div className="uix-toolbar__end">
         {viewMenu && (
           <PopoverButton id={`${id}-view`} label={<><Columns3Icon size="sm" aria-hidden="true" />{labels.view}</>} name={labels.view} variant="ghost">
             {() => <ViewMenu {...viewMenu} />}
@@ -736,7 +738,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
           </ToolbarMore>
         )}
         {toolbarEnd}
-      </div>
+      </div>}
     </div>
   );
 

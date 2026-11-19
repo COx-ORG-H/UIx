@@ -46,6 +46,11 @@ const mount = (element) => {
 };
 const click = (el, init = {}) => act(() => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true, ...init })));
 const keydown = (target, key, init = {}) => act(() => target.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })));
+/** HAR-3090: Maximize is a checkbox item in the toolbar's "More" menu. */
+const maximizeItem = (host) => {
+  click(host.querySelector('.uix-toolbar__more'));
+  return [...host.querySelectorAll('[role="menuitemcheckbox"]')].find((el) => el.textContent.trim() === 'Maximize');
+};
 
 const ROWS = Array.from({ length: 6 }, (_, i) => ({ id: `INC-${100 + i}`, title: `Vorfall ${i + 1}`, priority: (i % 3) + 1 }));
 const COLUMNS = [
@@ -112,18 +117,21 @@ test('the table: id cell (peek and ↗), sortable headers, the frozen actions co
   t.unmount();
 });
 
-test('the toolbar: saved view and save first, filters, search (Ctrl + /), the product\'s actions; maximize and Escape', () => {
+test('the toolbar (HAR-3090): search, filters, then the saved view lead; More and the product\'s actions end; maximize and Escape', () => {
   const log = [];
   const t = mount(h(Workspace, { log, extra: { savedViews: { current: 'My open', menu: { items: [{ id: 'mine', label: 'My open', active: true }], onSelect: (id) => log.push(`view ${id}`) } } } }));
   const toolbar = t.host.querySelector('[role="toolbar"]');
-  const order = [...toolbar.children].map((el) => el.className || el.tagName);
-  assert.match(order[0], /uix-data-workspace__menu/, 'the saved view first');
-  assert.ok(order.indexOf('uix-toolbar__spacer') < order.findIndex((c) => /uix-searchbar/.test(c)), 'search after the spacer');
-  assert.equal(toolbar.lastElementChild.className, 'new');
+  const lead = [...toolbar.querySelector('.uix-toolbar__lead').children].map((el) => el.className || el.tagName);
+  assert.match(lead[0], /uix-searchbar/, 'search first');
+  assert.ok(lead.findIndex((c) => /uix-data-workspace__menu/.test(c)) > 0, 'the saved view after the search');
+  const end = toolbar.querySelector('.uix-toolbar__end');
+  assert.ok(end.querySelector('.uix-toolbar__more'), 'one More menu at the end');
+  assert.equal(end.lastElementChild.className, 'new');
   keydown(document.body, '/', { ctrlKey: true });
   assert.equal(document.activeElement, toolbar.querySelector('input[type="search"]'), 'Ctrl + / focuses the search');
-  const maximize = toolbar.querySelector('button[aria-label="Maximize"]');
-  assert.equal(maximize.getAttribute('aria-pressed'), 'false');
+  assert.equal(toolbar.querySelector('button[aria-label="Maximize"]'), null, 'no maximize button in the row');
+  const maximize = maximizeItem(t.host);
+  assert.equal(maximize.getAttribute('aria-checked'), 'false');
   click(maximize);
   assert.ok(t.host.querySelector('.uix-data-workspace--maximized'));
   keydown(document.body, 'Escape');
@@ -187,7 +195,8 @@ test('German words through UixLabelsProvider', () => {
   const html = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels: { dataWorkspace: { range: '{from}–{to} von {total}', addFilter: 'Filter hinzufügen', maximize: 'Maximieren' } } }, h(Workspace, { log: [] })));
   assert.match(html, /7–12 von 20/);
   assert.match(html, /Filter hinzufügen/);
-  assert.match(html, /aria-label="Maximieren"/);
+  // HAR-3090: Maximize is in the More menu; the trigger's word comes from the provider too
+  assert.doesNotMatch(html, /aria-label="Maximieren"/);
 });
 
 /* PR #168 review */
@@ -229,7 +238,7 @@ test('review: a refetch with nothing back yet keeps the last body, busy — neve
 test('review: Escape that closes a popover or menu inside does not also restore the maximized workspace', () => {
   const log = [];
   const t = mount(h(Workspace, { log, extra: { viewMenu: { columns: [{ id: 'title', label: 'Title', visible: true }], onColumnVisibilityChange() {} } } }));
-  click(t.host.querySelector('button[aria-label="Maximize"]'));
+  click(maximizeItem(t.host));
   const view = [...t.host.querySelectorAll('[popover]')].find((p) => p.querySelector('.uix-view-menu'));
   keydown(view.querySelector('input, button') ?? view, 'Escape');
   assert.ok(t.host.querySelector('.uix-data-workspace--maximized'), 'Escape in the View popover is the popover\'s');
