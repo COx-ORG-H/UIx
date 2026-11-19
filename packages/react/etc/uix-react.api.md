@@ -1644,9 +1644,9 @@ export interface DataWorkspaceLabels {
     loading: string;
     // (undocumented)
     maximize: string;
+    more?: string;
     open: string;
     range: string;
-    // (undocumented)
     restore: string;
     // (undocumented)
     retry: string;
@@ -1783,6 +1783,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
     toolbarEnd?: ReactNode;
+    toolbarMenu?: ReactNode;
     viewChanged?: boolean;
     viewMenu?: ViewMenuProps;
     virtualize?: boolean | DataWorkspaceVirtualize;
@@ -8651,6 +8652,21 @@ export function toggleSort(keys: readonly SortKey[], field: string, additive?: b
 export function tokenizeText(text: string, granularity: TextDiffGranularity): string[];
 
 // @public
+export function ToolbarMore(input: ToolbarMoreProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ToolbarMoreProps {
+    children?: ReactNode;
+    // (undocumented)
+    className?: string;
+    label?: string;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    // (undocumented)
+    open?: boolean;
+}
+
+// @public
 export function Tooltip(input: TooltipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -8896,6 +8912,9 @@ export interface UixLabels {
     // (undocumented)
     toaster?: {
         region?: string;
+    };
+    toolbar?: {
+        more?: string;
     };
     // (undocumented)
     tree?: Partial<TreeLabels>;

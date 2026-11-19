@@ -179,9 +179,10 @@ test('HAR-2622 search: onSubmit (Enter), onClear (Escape) and maxLength reach th
 
 test('HAR-2622 saveViewAs="always": Save as shows without a change; the default keeps it to a changed view', () => {
   const always = renderToStaticMarkup(h(ui.DataWorkspace, base({ onSaveViewAs() {}, onSaveView() {}, saveViewAs: 'always' })));
-  assert.match(always, />Save as…</);
+  // HAR-3090: Save as is an item of the toolbar's "More" menu, so the menu shows for it alone
+  assert.match(always, /class="[^"]*uix-toolbar__more"/);
   assert.doesNotMatch(always, />Save changes</, 'Save changes still needs a change');
-  assert.doesNotMatch(renderToStaticMarkup(h(ui.DataWorkspace, base({ onSaveViewAs() {} }))), />Save as…</);
+  assert.doesNotMatch(renderToStaticMarkup(h(ui.DataWorkspace, base({ onSaveViewAs() {} }))), /uix-toolbar__more/);
 });
 
 test('HAR-2622 filters.onClearAll: one call for all filters, from the toolbar and from "Nothing matches" (with the search)', () => {

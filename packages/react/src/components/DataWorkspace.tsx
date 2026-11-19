@@ -21,7 +21,9 @@ import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
 import { Chip } from './Chip.js';
 import { FilterEditor } from './FilterEditor.js';
-import { Menu, MenuItem } from './Menu.js';
+import { Menu, MenuItem, MenuItemCheckbox } from './Menu.js';
+import { ToolbarMore } from './ToolbarMore.js';
+import { Columns3Icon } from '../icons/components.js';
 import { MotionList } from './MotionList.js';
 import { Pagination } from './Pagination.js';
 import type { PaginationLabels } from './Pagination.js';
@@ -46,7 +48,16 @@ export interface DataWorkspaceLabels {
   saveView: string;
   saveViewAs: string;
   maximize: string;
+  /**
+   * Unused since 2.69 (HAR-3090): Maximize is a checkbox item in the More menu, named by `maximize`
+   * with its state in `aria-checked`. Kept so existing label sets still type-check.
+   */
   restore: string;
+  /**
+   * The toolbar's overflow menu trigger (HAR-3090): Save as, the product's `toolbarMenu`, Maximize.
+   * Unset, the trigger takes `UixLabelsProvider` `toolbar.more`, then "More".
+   */
+  more?: string;
   selectAll: string;
   /** `{label}`: the row's id. */
   selectRow: string;
@@ -352,6 +363,13 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   /** Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first. */
   maximized?: boolean;
   onMaximizedChange?: (maximized: boolean) => void;
+  /**
+   * Toolbar: the product's less frequent actions (group by, export, open in reports), as `Menu`
+   * items (`MenuItem`, `MenuRadioGroup`, `MenuGroup`, `MenuSeparator`). They join Save as and
+   * Maximize in the one "More" menu at the end of the row (HAR-3090), so search and the filters
+   * lead and nothing else competes with them.
+   */
+  toolbarMenu?: ReactNode;
   /** Toolbar: the product's own actions at the end ("New incident"). */
   toolbarEnd?: ReactNode;
   /** Between the toolbar (and bulk bar) and the rows: notices, a "3 new — show" pill, a truncation warning. */
@@ -484,7 +502,7 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
 export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
   label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions, rowActionsColumn,
   getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
-  onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarEnd, beforeBody, pagination,
+  onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarMenu, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
   activateOnClick = true, activeRowId, onActiveRowChange, multiSort = false, labels: labelOverrides, className, ...props
@@ -673,45 +691,60 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const showSaveAs = onSaveViewAs != null && (viewChanged || saveViewAs === 'always');
   // No band when nothing would be in it (HAR-2632): a plain table on a detail or settings page
   // gets no empty toolbar landmark and no gap above it.
-  const hasToolbar = savedViews != null || (viewChanged && onSaveView != null) || showSaveAs || filters != null || search != null
-    || viewMenu != null || onMaximizedChange != null || (toolbarEnd != null && toolbarEnd !== false);
+  const hasMenu = showSaveAs || onMaximizedChange != null || (toolbarMenu != null && toolbarMenu !== false);
+  const hasToolbar = savedViews != null || (viewChanged && onSaveView != null) || hasMenu || filters != null || search != null
+    || viewMenu != null || (toolbarEnd != null && toolbarEnd !== false);
+  // Ranked (HAR-3090, ADR-0005 addendum): the lead zone holds what a person uses on every visit,
+  // search first, then the filters and the saved view with its Save; the end zone holds the quiet
+  // controls: View (columns, density), one "More" menu for Save as, the product's less frequent
+  // actions and Maximize, then the product's own actions.
+  const hasLead = search != null || filters != null || savedViews != null || (viewChanged && onSaveView != null);
+  const hasEnd = viewMenu != null || hasMenu || (toolbarEnd != null && toolbarEnd !== false);
   const toolbar = hasToolbar && (
     <div className="uix-toolbar uix-data-workspace__toolbar" role="toolbar" aria-label={label}>
-      {savedViews && (
-        <PopoverButton id={`${id}-views`} label={savedViews.current} title={typeof savedViews.current === 'string' ? fillLabel(labels.savedView, { name: savedViews.current }) : undefined} variant="secondary">
-          {(close) => (
-            <>
-              {savedViews.note != null && <div className="uix-data-workspace__views-note">{savedViews.note}</div>}
-              <SavedViewMenu {...savedViews.menu} onSelect={(viewId) => { savedViews.menu.onSelect(viewId); close(); }} />
-            </>
-          )}
-        </PopoverButton>
-      )}
-      {/* Save sits with the view it saves, left of the spacer: appearing as the search changes, it
-          must not move the search field under the person's fingers. */}
-      {/* Secondary: saving a view is not the page's primary action (that is the product's, at the end). */}
-      {viewChanged && onSaveView && <Button size="sm" variant="secondary" onClick={onSaveView}>{labels.saveView}</Button>}
-      {showSaveAs && <Button size="sm" variant="ghost" onClick={onSaveViewAs}>{labels.saveViewAs}</Button>}
-      {filters && <FilterChips filters={filters} labels={labels} baseId={id} />}
-      <span className="uix-toolbar__spacer" />
-      {search && (
-        <SearchBar
-          className="uix-data-workspace__search" landmark={false} label={search.label ?? labels.search} placeholder={search.placeholder ?? labels.searchPlaceholder}
-          value={search.value} onValueChange={search.onChange} inputRef={searchRef}
-          onSubmit={search.onSubmit} onClear={search.onClear} maxLength={search.maxLength}
-        />
-      )}
-      {viewMenu && (
-        <PopoverButton id={`${id}-view`} label={labels.view} variant="ghost">
-          {() => <ViewMenu {...viewMenu} />}
-        </PopoverButton>
-      )}
-      {onMaximizedChange && (
-        <Button size="sm" variant="ghost" icon aria-label={maximized ? labels.restore : labels.maximize} aria-pressed={maximized} onClick={() => onMaximizedChange(!maximized)}>
-          <MaximizeIcon restore={maximized} />
-        </Button>
-      )}
-      {toolbarEnd}
+      {hasLead && <div className="uix-toolbar__lead">
+        {search && (
+          <SearchBar
+            className="uix-data-workspace__search" landmark={false} label={search.label ?? labels.search} placeholder={search.placeholder ?? labels.searchPlaceholder}
+            value={search.value} onValueChange={search.onChange} inputRef={searchRef}
+            onSubmit={search.onSubmit} onClear={search.onClear} maxLength={search.maxLength}
+          />
+        )}
+        {filters && <FilterChips filters={filters} labels={labels} baseId={id} />}
+        {savedViews && (
+          <PopoverButton id={`${id}-views`} label={savedViews.current} title={typeof savedViews.current === 'string' ? fillLabel(labels.savedView, { name: savedViews.current }) : undefined} variant="secondary">
+            {(close) => (
+              <>
+                {savedViews.note != null && <div className="uix-data-workspace__views-note">{savedViews.note}</div>}
+                <SavedViewMenu {...savedViews.menu} onSelect={(viewId) => { savedViews.menu.onSelect(viewId); close(); }} />
+              </>
+            )}
+          </PopoverButton>
+        )}
+        {/* Save sits with the view it saves, after the search: appearing as the search changes, it
+            must not move the search field under the person's fingers. Secondary: saving a view is
+            not the page's primary action (that is the product's, at the end). */}
+        {viewChanged && onSaveView && <Button size="sm" variant="secondary" onClick={onSaveView}>{labels.saveView}</Button>}
+      </div>}
+      {hasEnd && <div className="uix-toolbar__end">
+        {viewMenu && (
+          <PopoverButton id={`${id}-view`} label={<><Columns3Icon size="sm" aria-hidden="true" />{labels.view}</>} name={labels.view} variant="ghost">
+            {() => <ViewMenu {...viewMenu} />}
+          </PopoverButton>
+        )}
+        {hasMenu && (
+          <ToolbarMore label={labels.more /* unset: the provider's toolbar.more, then "More" */}>
+            {showSaveAs && <MenuItem onSelect={() => onSaveViewAs?.()}>{labels.saveViewAs}</MenuItem>}
+            {toolbarMenu}
+            {onMaximizedChange && (
+              <MenuItemCheckbox checked={maximized} onCheckedChange={(next) => onMaximizedChange(next)} closeOnSelect icon={<MaximizeIcon restore={maximized} />}>
+                {labels.maximize}
+              </MenuItemCheckbox>
+            )}
+          </ToolbarMore>
+        )}
+        {toolbarEnd}
+      </div>}
     </div>
   );
 
@@ -1530,7 +1563,7 @@ function Footer({ pagination, labels, rowCount }: { pagination: DataWorkspacePag
 }
 
 /** A toolbar button that opens a popover anchored to it. */
-function PopoverButton({ id, label, title, variant, children }: { id: string; label: ReactNode; title?: string; variant: 'secondary' | 'ghost'; children: (close: () => void) => ReactNode }) {
+function PopoverButton({ id, label, name, title, variant, children }: { id: string; label: ReactNode; name?: string; title?: string; variant: 'secondary' | 'ghost'; children: (close: () => void) => ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
   const popover = () => document.getElementById(id);
@@ -1545,7 +1578,7 @@ function PopoverButton({ id, label, title, variant, children }: { id: string; la
   return (
     <span ref={anchor} className="uix-data-workspace__menu">
       <Button size="sm" variant={variant} title={title} aria-haspopup="dialog" aria-expanded={open} aria-controls={id} onClick={() => popover()?.togglePopover?.()}>{label}</Button>
-      <Popover id={id} anchor={anchor} role="dialog" aria-label={title ?? (typeof label === 'string' ? label : undefined)}>
+      <Popover id={id} anchor={anchor} role="dialog" aria-label={title ?? name ?? (typeof label === 'string' ? label : undefined)}>
         {children(close)}
       </Popover>
     </span>

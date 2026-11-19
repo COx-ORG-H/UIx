@@ -59,6 +59,8 @@ export interface UixLabels {
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
   discardPrompt?: Partial<DiscardPromptLabels>;
   peek?: { previous?: string; next?: string; close?: string };
+  /** `ToolbarMore` (HAR-3090): the overflow menu's trigger word. */
+  toolbar?: { more?: string };
   /** `Lightbox` (HAR-1826): previous / next / close, the counter, the zoom toggle. */
   lightbox?: Partial<LightboxLabels>;
   toast?: { dismiss?: string };
