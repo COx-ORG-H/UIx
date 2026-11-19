@@ -112,18 +112,24 @@ test('the table: id cell (peek and ↗), sortable headers, the frozen actions co
   t.unmount();
 });
 
-test('the toolbar: saved view and save first, filters, search (Ctrl + /), the product\'s actions; maximize and Escape', () => {
+test('the toolbar: search and the saved view lead, the product\'s actions end; maximize in More and Escape', () => {
   const log = [];
   const t = mount(h(Workspace, { log, extra: { savedViews: { current: 'My open', menu: { items: [{ id: 'mine', label: 'My open', active: true }], onSelect: (id) => log.push(`view ${id}`) } } } }));
   const toolbar = t.host.querySelector('[role="toolbar"]');
-  const order = [...toolbar.children].map((el) => el.className || el.tagName);
-  assert.match(order[0], /uix-data-workspace__menu/, 'the saved view first');
-  assert.ok(order.indexOf('uix-toolbar__spacer') < order.findIndex((c) => /uix-searchbar/.test(c)), 'search after the spacer');
-  assert.equal(toolbar.lastElementChild.className, 'new');
+  const lead = toolbar.querySelector('.uix-toolbar__lead');
+  const end = toolbar.querySelector('.uix-toolbar__end');
+  const leadOrder = [...lead.children].map((el) => el.className || el.tagName);
+  const searchAt = leadOrder.findIndex((c) => /uix-searchbar/.test(c));
+  const viewAt = leadOrder.findIndex((c) => /uix-data-workspace__menu/.test(c));
+  assert.ok(searchAt >= 0 && viewAt > searchAt, 'search leads, then the saved view');
+  assert.equal(end.lastElementChild.className, 'new');
   keydown(document.body, '/', { ctrlKey: true });
   assert.equal(document.activeElement, toolbar.querySelector('input[type="search"]'), 'Ctrl + / focuses the search');
-  const maximize = toolbar.querySelector('button[aria-label="Maximize"]');
-  assert.equal(maximize.getAttribute('aria-pressed'), 'false');
+  const more = end.querySelector('button.uix-toolbar__more');
+  assert.ok(more, 'one More menu at the end');
+  click(more);
+  const maximize = [...t.host.querySelectorAll('[role="menuitemcheckbox"]')].find((m) => m.textContent === 'Maximize');
+  assert.equal(maximize.getAttribute('aria-checked'), 'false');
   click(maximize);
   assert.ok(t.host.querySelector('.uix-data-workspace--maximized'));
   keydown(document.body, 'Escape');
