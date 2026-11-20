@@ -3,7 +3,7 @@
  * reached and opened, focus kept clear of the sticky headers, 320 px without page overflow, a
  * level and a band told apart without colour, and axe in both themes. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/matrix/harness.html';
 

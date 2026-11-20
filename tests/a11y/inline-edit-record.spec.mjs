@@ -7,7 +7,7 @@
  * HAR-1381 until this issue (packages/tokens/tests/component-list.test.mjs guards the list).
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/inline-edit-record/harness.html';
 const GATED = new Set(['serious', 'critical']);

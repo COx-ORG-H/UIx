@@ -10,7 +10,7 @@
  *   - axe is clean on the Status pill, Stat tile, Alert and Data display pages.
  * The stylesheet rules are pinned in packages/tokens/tests/quiet-status.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const GATED = new Set(['serious', 'critical']);
 

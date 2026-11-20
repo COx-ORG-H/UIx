@@ -13,7 +13,7 @@
  * jsdom has no top layer, focus restoration or layout: confirm-actions-dom.test.mjs covers the rest.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/confirm-actions/harness.html';

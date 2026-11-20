@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { writeFile } from 'node:fs/promises';
 
 const HARNESS = '/tests/peek/harness.html';
