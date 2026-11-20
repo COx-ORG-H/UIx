@@ -130,6 +130,9 @@
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
 
+### 2026-11-20 · focus into a dialog a component mounts · `23474432`
+- **Rule:** to put focus on a control inside a `Modal` that a component mounts conditionally (`{open && <Modal …>}`, a phase switch), give the control the `autofocus` attribute (set it in a callback ref) so `showModal()` focuses it; a `focus()` in the parent's effect is not enough.  **Why:** in development StrictMode re-runs only the newly mounted subtree's effects, after the parent's effects ran, so the second `showModal()` moved focus to the dialog's first button.  **Gate:** `tests/a11y/session-timeout.spec.mjs` (a dev-build StrictMode harness asserting focus); a production-build demo never shows it.  **Tag:** focus, StrictMode, dialog
+
 ### 2026-11-20 · API reports of a new subpath entry · `069c7450`
 - **Rule:** after adding an entry point, run `npm run test:api` (what CI runs), not only `test:api:update`: the `--local` update prints API Extractor warnings and exits 0, CI fails on them. A `{@link X}` in a doc comment that the new entry reaches must name something that entry exports, or it is `ae-unresolved-link`.  **Why:** `--local` downgrades warnings; a link that resolves from the root entry does not from a subpath.  **Gate:** CI `gates` → `test:api`.  **Tag:** api-extractor, entry-points, tsdoc
 
