@@ -81,6 +81,94 @@ export interface AccountMenuUser {
     sub?: ReactNode;
 }
 
+// @public
+export const ACTION_PANEL_SHORTCUT_ID = "uix.action-panel";
+
+// @public
+export function ActionPanel(input: ActionPanelProps): react.JSX.Element;
+
+// @public
+export interface ActionPanelAction {
+    confirm?: boolean | ActionPanelConfirm;
+    description?: string;
+    destructive?: boolean;
+    disabled?: boolean;
+    group?: string;
+    icon?: ReactNode;
+    id: string;
+    keys?: ShortcutBinding;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    onSelect: () => void;
+    primary?: boolean;
+    undoable?: boolean;
+}
+
+// @public
+export interface ActionPanelConfirm {
+    confirmLabel?: string;
+    description?: string;
+    title?: string;
+}
+
+// @public
+export interface ActionPanelGroup {
+    // (undocumented)
+    actions: ActionPanelAction[];
+    destructive: boolean;
+    label: string | undefined;
+}
+
+// @public
+export interface ActionPanelLabels {
+    cancel: string;
+    confirmBody: string;
+    confirmTitle: string;
+    destructiveGroup: string;
+    empty: string;
+    open: string;
+    // (undocumented)
+    resultsMany: UixCountLabel;
+    resultsOne: string;
+    search: string;
+    title: string;
+    titleUnnamed: string;
+}
+
+// @public (undocumented)
+export interface ActionPanelProps {
+    actions: readonly ActionPanelAction[];
+    anchor?: HTMLElement | RefObject<HTMLElement | null> | null;
+    // (undocumented)
+    className?: string;
+    confirmId?: string | null;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name?: string;
+    onOpenChange: (open: boolean) => void;
+    onReturnFocusLost?: () => void;
+    open: boolean;
+    placement?: Placement;
+    returnFocus?: HTMLElement | null;
+    showPrimaryKey?: boolean;
+}
+
+// @public
+export const ActionPanelScope: react.ForwardRefExoticComponent<ActionPanelScopeProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public (undocumented)
+export interface ActionPanelScopeProps extends HTMLAttributes<HTMLDivElement> {
+    actions: readonly ActionPanelAction[];
+    // (undocumented)
+    children?: ReactNode;
+    enabled?: boolean;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name: string;
+    scopeLabel?: string;
+}
+
 // @public (undocumented)
 export function addCalendarDays(value: string, amount: number): string;
 
@@ -2088,6 +2176,7 @@ export type DataWorkspacePagination = ({
 
 // @public (undocumented)
 export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actionPanelTrigger?: boolean;
     activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
@@ -2114,6 +2203,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     };
     fixed?: boolean;
     freezeFirstColumn?: boolean;
+    getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
     // (undocumented)
     getRowId: (row: T) => string;
     getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
@@ -2452,6 +2542,9 @@ export function decayedFrecency(entry: CommandFrecencyEntry | undefined, now: nu
 
 // @public (undocumented)
 export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
+
+// @public (undocumented)
+export const DEFAULT_ACTION_PANEL_LABELS: ActionPanelLabels;
 
 // @public (undocumented)
 export const DEFAULT_AI_LABELS: AiLabels;
@@ -3964,6 +4057,9 @@ export type FormFieldErrors<V> = {
 export const FRECENCY_WEIGHT = 0.5;
 
 // @public
+export function groupActionPanelActions(actions: readonly ActionPanelAction[], query?: string): ActionPanelGroup[];
+
+// @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
 
 // @public
@@ -5421,56 +5517,13 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     ref: react.RefObject<HTMLElement>;
     className: string;
     onTransitionEnd: (event: TransitionEvent_2<HTMLElement>) => void;
-    slot?: string | undefined | undefined;
-    style?: react.CSSProperties | undefined;
-    title?: string | undefined | undefined;
-    rel?: string | undefined | undefined;
-    rev?: string | undefined | undefined;
-    dir?: string | undefined | undefined;
-    role?: react.AriaRole | undefined;
+    suppressHydrationWarning?: boolean | undefined | undefined;
     color?: string | undefined | undefined;
     id?: string | undefined | undefined;
-    defaultChecked?: boolean | undefined | undefined;
-    defaultValue?: string | number | readonly string[] | undefined;
-    suppressContentEditableWarning?: boolean | undefined | undefined;
-    suppressHydrationWarning?: boolean | undefined | undefined;
-    accessKey?: string | undefined | undefined;
-    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
-    autoFocus?: boolean | undefined | undefined;
-    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
-    contextMenu?: string | undefined | undefined;
-    draggable?: (boolean | "true" | "false") | undefined;
-    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
-    hidden?: boolean | undefined | undefined;
     lang?: string | undefined | undefined;
-    nonce?: string | undefined | undefined;
-    spellCheck?: (boolean | "true" | "false") | undefined;
+    style?: react.CSSProperties | undefined;
+    role?: react.AriaRole | undefined;
     tabIndex?: number | undefined | undefined;
-    translate?: "yes" | "no" | undefined | undefined;
-    radioGroup?: string | undefined | undefined;
-    about?: string | undefined | undefined;
-    content?: string | undefined | undefined;
-    datatype?: string | undefined | undefined;
-    inlist?: any;
-    prefix?: string | undefined | undefined;
-    property?: string | undefined | undefined;
-    resource?: string | undefined | undefined;
-    typeof?: string | undefined | undefined;
-    vocab?: string | undefined | undefined;
-    autoCorrect?: string | undefined | undefined;
-    autoSave?: string | undefined | undefined;
-    itemProp?: string | undefined | undefined;
-    itemScope?: boolean | undefined | undefined;
-    itemType?: string | undefined | undefined;
-    itemID?: string | undefined | undefined;
-    itemRef?: string | undefined | undefined;
-    results?: number | undefined | undefined;
-    security?: string | undefined | undefined;
-    unselectable?: "on" | "off" | undefined | undefined;
-    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
-    is?: string | undefined | undefined;
-    exportparts?: string | undefined | undefined;
-    part?: string | undefined | undefined;
     "aria-activedescendant"?: string | undefined | undefined;
     "aria-atomic"?: (boolean | "true" | "false") | undefined;
     "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined | undefined;
@@ -5684,6 +5737,49 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     onAnimationIteration?: react.AnimationEventHandler<HTMLElement> | undefined;
     onAnimationIterationCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
     onTransitionEndCapture?: react.TransitionEventHandler<HTMLElement> | undefined;
+    title?: string | undefined | undefined;
+    slot?: string | undefined | undefined;
+    hidden?: boolean | undefined | undefined;
+    content?: string | undefined | undefined;
+    defaultChecked?: boolean | undefined | undefined;
+    defaultValue?: string | number | readonly string[] | undefined;
+    suppressContentEditableWarning?: boolean | undefined | undefined;
+    accessKey?: string | undefined | undefined;
+    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
+    autoFocus?: boolean | undefined | undefined;
+    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
+    contextMenu?: string | undefined | undefined;
+    dir?: string | undefined | undefined;
+    draggable?: (boolean | "true" | "false") | undefined;
+    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
+    nonce?: string | undefined | undefined;
+    spellCheck?: (boolean | "true" | "false") | undefined;
+    translate?: "yes" | "no" | undefined | undefined;
+    radioGroup?: string | undefined | undefined;
+    about?: string | undefined | undefined;
+    datatype?: string | undefined | undefined;
+    inlist?: any;
+    prefix?: string | undefined | undefined;
+    property?: string | undefined | undefined;
+    rel?: string | undefined | undefined;
+    resource?: string | undefined | undefined;
+    rev?: string | undefined | undefined;
+    typeof?: string | undefined | undefined;
+    vocab?: string | undefined | undefined;
+    autoCorrect?: string | undefined | undefined;
+    autoSave?: string | undefined | undefined;
+    itemProp?: string | undefined | undefined;
+    itemScope?: boolean | undefined | undefined;
+    itemType?: string | undefined | undefined;
+    itemID?: string | undefined | undefined;
+    itemRef?: string | undefined | undefined;
+    results?: number | undefined | undefined;
+    security?: string | undefined | undefined;
+    unselectable?: "on" | "off" | undefined | undefined;
+    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
+    is?: string | undefined | undefined;
+    exportparts?: string | undefined | undefined;
+    part?: string | undefined | undefined;
 }, HTMLElement>;
 
 // @public (undocumented)
@@ -10252,6 +10348,7 @@ export type UixLabelPack = {
 // @public
 export interface UixLabels {
     accountMenu?: Partial<AccountMenuLabels>;
+    actionPanel?: Partial<ActionPanelLabels>;
     ai?: Partial<AiLabels>;
     alert?: {
         dismiss?: string;

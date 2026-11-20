@@ -52,6 +52,7 @@ import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
+import type { ActionPanelLabels } from './components/ActionPanel.js';
 import type { AiLabels } from './ai-labels.js';
 import type { UseTableLabels } from './hooks/useTable.js';
 import { countLabel } from './plural.js';
@@ -177,6 +178,8 @@ export interface UixLabels {
   ai?: Partial<AiLabels>;
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
+  /** `ActionPanel` (roadmap #10): the panel's title and search, the item's Mod+K, the confirm step. */
+  actionPanel?: Partial<ActionPanelLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   /**
    * `summarizeFilter` as a filter chip shows it (DataWorkspace): the operators, ranges and the
