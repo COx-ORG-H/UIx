@@ -143,6 +143,8 @@ export class ShortcutRegistry {
   }
 
   get platform(): KbdPlatform { return this.config.platform ?? detectPlatform(); }
+  /** The platform the provider fixed (tests, docs), else `undefined` (detected). */
+  get fixedPlatform(): KbdPlatform | undefined { return this.config.platform; }
   get preferences(): ShortcutPreferenceValues { return this.config.preferences; }
 
   // —— subscription (useSyncExternalStore)
@@ -396,7 +398,7 @@ export interface ShortcutPreferencesChangeDetail { storageKey: string; value: Sh
 export function writeShortcutPreferences(storageKey: string, value: ShortcutPreferenceValues) {
   try { window.localStorage.setItem(storageKey, JSON.stringify(value)); } catch { /* private mode */ }
   try {
-    window.dispatchEvent(new CustomEvent<ShortcutPreferencesChangeDetail>(SHORTCUT_PREFERENCES_CHANGE_EVENT, { detail: { storageKey, value } }));
+    window.dispatchEvent(new window.CustomEvent<ShortcutPreferencesChangeDetail>(SHORTCUT_PREFERENCES_CHANGE_EVENT, { detail: { storageKey, value } }));
   } catch { /* no window */ }
 }
 

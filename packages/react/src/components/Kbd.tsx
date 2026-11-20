@@ -1,10 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from 'react';
+import { useContext, useSyncExternalStore } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
-import { useDisplayedShortcut } from '../shortcut-hooks.js';
+import { ShortcutRegistryContext, useDisplayedShortcut } from '../shortcut-hooks.js';
 import type { KeySequence } from '../shortcut-model.js';
 
 export interface KbdProps extends HTMLAttributes<HTMLElement> {
@@ -49,13 +49,16 @@ const noSubscription = () => () => {};
 const serverPlatform = (): KbdPlatform => 'other';
 
 /**
- * The platform for glyphs and `aria-keyshortcuts`: `platform` when given, else the browser's. The
+ * The platform for glyphs and `aria-keyshortcuts`: `platform` when given, else a `ShortcutProvider`'s
+ * `platform`, else the browser's. The
  * server and the hydrating render use `other`; a component mounted later (a menu row on open)
  * reads the platform at once, so it never flashes Ctrl before ⌘.
  */
 export function useKbdPlatform(platform?: KbdPlatform): KbdPlatform {
   const detected = useSyncExternalStore(noSubscription, detectPlatform, serverPlatform);
-  return platform ?? detected;
+  // A ShortcutProvider that fixes the platform fixes it for every hint below it too.
+  const registry = useContext(ShortcutRegistryContext);
+  return platform ?? registry?.fixedPlatform ?? detected;
 }
 
 /**

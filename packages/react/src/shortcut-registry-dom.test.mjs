@@ -374,7 +374,7 @@ test('MenuItem shortcutId: keys and aria-keyshortcuts from the registry; a seque
   const app = mount(h(Menu));
   const m1 = app.host.querySelector('#m1');
   const m2 = app.host.querySelector('#m2');
-  assert.equal(m1.getAttribute('aria-keyshortcuts'), 'Control+D', 'jsdom has no Mac: KbdCombo detects, the registry was told mac');
+  assert.equal(m1.getAttribute('aria-keyshortcuts'), 'Meta+D', 'the provider fixed mac: the hints follow it, not the browser');
   assert.ok(m1.querySelector('.uix-kbd-combo'));
   assert.equal(m2.getAttribute('aria-keyshortcuts'), null);
   assert.match(m2.textContent, /G.*then.*I/);

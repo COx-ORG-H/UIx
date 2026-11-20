@@ -19,12 +19,18 @@ const EMPTY: ShortcutRegistrySnapshot = { version: -1, preferences: DEFAULT_SHOR
 const noSubscription = () => () => {};
 const emptySnapshot = () => EMPTY;
 
-/** The provider's registry, else the document's default one; `null` on the server. Internal. */
-export function useShortcutRegistryInstance(): ShortcutRegistry | null {
+/**
+ * The provider's registry, else the document's default one; `null` on the server. With
+ * `needed = false` (a hint with literal keys) no default registry is made. Internal.
+ */
+export function useShortcutRegistryInstance(needed = true): ShortcutRegistry | null {
   const own = useContext(ShortcutRegistryContext);
+  const wanted = needed && !own && typeof document !== 'undefined';
   // Outside a provider: the document's default registry, made on first use (none on a server).
-  const [fallback] = useState(() => (own || typeof document === 'undefined' ? null : defaultShortcutRegistry(document)));
-  return own ?? fallback ?? (typeof document === 'undefined' ? null : defaultShortcutRegistry(document));
+  const [fallback] = useState(() => (wanted ? defaultShortcutRegistry(document) : null));
+  if (own) return own;
+  if (!wanted) return null;
+  return fallback ?? defaultShortcutRegistry(document);
 }
 
 /** Re-render on every registry change. The server and the hydrating render see an empty registry. Internal. */
@@ -38,7 +44,7 @@ export function useShortcutSnapshot(registry: ShortcutRegistry | null): Shortcut
  * key disappears with the key). Use it to show a command's keys in your own UI.
  */
 export function useShortcutKeys(id: string | null | undefined): KeySequence | null {
-  const registry = useShortcutRegistryInstance();
+  const registry = useShortcutRegistryInstance(!!id);
   const snapshot = useShortcutSnapshot(registry);
   return useMemo(() => (registry && id && snapshot.version >= 0 ? registry.keysFor(id) : null), [registry, id, snapshot]);
 }

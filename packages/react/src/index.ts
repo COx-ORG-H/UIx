@@ -328,8 +328,8 @@ export type {
 export { ShortcutSheet, SHORTCUT_SHEET_ID, DEFAULT_SHORTCUT_LABELS } from './components/ShortcutSheet.js';
 export type { ShortcutSheetProps, ShortcutLabels } from './components/ShortcutSheet.js';
 export { useShortcutKeys } from './shortcut-hooks.js';
-export { createShortcutRegistry, ShortcutRegistry, DEFAULT_SEQUENCE_TIMEOUT_MS } from './shortcut-registry.js';
-export type { ShortcutDefinition, ShortcutScopeRef, ShortcutSheetGroup, ShortcutRegistryConfig, ShortcutRegistrySnapshot } from './shortcut-registry.js';
+export { createShortcutRegistry, DEFAULT_SEQUENCE_TIMEOUT_MS } from './shortcut-registry.js';
+export type { ShortcutRegistry, ShortcutDefinition, ShortcutScopeRef, ShortcutSheetGroup, ShortcutRegistryConfig, ShortcutRegistrySnapshot } from './shortcut-registry.js';
 export {
   parseShortcut, formatShortcut, canonicalKey, matchesChord, isCharacterKeyShortcut, isTypingTarget, findShortcutConflicts,
   parseShortcutPreferences, effectiveShortcut, DEFAULT_SHORTCUT_PREFERENCES, SHORTCUT_PREFERENCES_STORAGE_KEY,
