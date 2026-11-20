@@ -10,6 +10,7 @@ export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVir
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';
 export { useReducedMotion, prefersReducedMotion } from './hooks/useReducedMotion.js';
+export { useReducedTransparency, prefersReducedTransparency } from './hooks/useReducedTransparency.js';
 // Display preferences: theme, contrast, text size, motion, density (HAR-1372)
 export { DisplayPreferences, ThemeSwitcher, useDisplayPreferences, DEFAULT_DISPLAY_PREFERENCES_LABELS } from './components/DisplayPreferences.js';
 export type {
@@ -21,7 +22,7 @@ export {
 } from './display-preferences-model.js';
 export type {
   ContrastPreference, DensityPreference, DisplayAttributes, DisplayPreferenceValues, MotionPreference, SystemDisplayPreferences,
-  TextScalePreference, ThemePreference,
+  TextScalePreference, ThemePreference, TransparencyPreference,
 } from './display-preferences-model.js';
 export { useDelayedPending } from './hooks/useDelayedPending.js';
 export type { DelayedPendingOptions } from './hooks/useDelayedPending.js';

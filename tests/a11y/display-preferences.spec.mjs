@@ -9,6 +9,9 @@
  *     and row heights follow;
  *   - data-motion="reduce" without the OS setting: transitions keep only fades, the spinner pulses,
  *     useReducedMotion says so;
+ *   - data-transparency="reduce" (and data-contrast="more", which implies it): the dialog and drawer
+ *     scrims and the progress overlay stop blurring and turn firmer, a Select's options arrive
+ *     without the blur, and `system` follows prefers-reduced-transparency (CDP-emulated), live;
  *   - axe is clean with each setting on. */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -57,9 +60,9 @@ test('system follows prefers-color-scheme, live', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
 
-test('five named radio groups; a choice applies, is stored, and the ThemeSwitcher follows', async ({ page }) => {
+test('six named radio groups; a choice applies, is stored, and the ThemeSwitcher follows', async ({ page }) => {
   await open(page, null, { colorScheme: 'light' });
-  for (const name of ['Theme', 'Contrast', 'Text size', 'Motion', 'Density']) await expect(page.locator('#prefs').getByRole('radiogroup', { name })).toBeVisible();
+  for (const name of ['Theme', 'Contrast', 'Text size', 'Motion', 'Transparency', 'Density']) await expect(page.locator('#prefs').getByRole('radiogroup', { name })).toBeVisible();
   const theme = page.locator('#prefs').getByRole('radiogroup', { name: 'Theme' });
   await theme.getByRole('radio', { name: 'System' }).focus();
   await page.keyboard.press('ArrowLeft');
@@ -225,4 +228,102 @@ test('a slide cut short by a narrower window never widens the page', async ({ pa
   // here), so the clip itself is pinned too: an indicator left behind cannot reach the page.
   const clip = await group('Density').evaluate((el) => { const s = getComputedStyle(el.closest('.uix-segmented') ?? el); return `${s.overflowX} ${s.overflowY}`; });
   expect(clip).toBe('clip clip');
+});
+
+// ── reduced transparency ──────────────────────────────────────────────────────
+/** What the blur and scrim of each layer compute to: the dialog's and the drawer's ::backdrop (both
+ * opened for real) and the progress overlay. `alpha` is the scrim colour's alpha. */
+async function layers(page) {
+  await expect(page.locator('html')).not.toHaveAttribute('data-uix-switching', /.*/);
+  const tokens = await page.evaluate(() => Object.fromEntries(['--uix-scrim-blur', '--uix-arrive-blur', '--uix-swap-blur']
+    .map((n) => [n, getComputedStyle(document.documentElement).getPropertyValue(n).trim()])));
+  // rgba(r, g, b, a) and color(srgb r g b / a) both carry the alpha fourth; rgb() has none
+  const alpha = (c) => c.match(/[\d.]+/g)?.map(Number)[3] ?? 1;
+  const backdrop = async (button, dialog) => {
+    await page.locator(button).click();
+    await expect(page.locator(dialog)).toHaveAttribute('open', '');
+    const seen = await page.locator(dialog).evaluate((el) => { const s = getComputedStyle(el, '::backdrop'); return { filter: s.backdropFilter, background: s.backgroundColor }; });
+    await page.keyboard.press('Escape');
+    await expect(page.locator(dialog)).not.toHaveAttribute('open', '');
+    return { filter: seen.filter, alpha: alpha(seen.background) };
+  };
+  const modal = await backdrop('#open-modal', '#modal');
+  const drawer = await backdrop('#open-drawer', '#drawer');
+  const overlay = await page.locator('#overlay').evaluate((el) => { const s = getComputedStyle(el); return { filter: s.backdropFilter, background: s.backgroundColor }; });
+  return { tokens, modal, drawer, overlay: { filter: overlay.filter, alpha: alpha(overlay.background) }, clear: await page.locator('#clear').textContent() };
+}
+
+for (const theme of ['light', 'dark']) {
+  test(`${theme}: standard transparency keeps the blur; reduce (chosen, or implied by more contrast) removes it and firms the scrims`, async ({ page }) => {
+    await open(page, { theme, transparency: 'standard' });
+    const standard = await layers(page);
+    expect(standard.tokens).toEqual({ '--uix-scrim-blur': '4px', '--uix-arrive-blur': '4px', '--uix-swap-blur': '6px' });
+    expect(standard.modal.filter).toBe('blur(4px)');
+    expect(standard.drawer.filter).toBe('blur(4px)');
+    expect(standard.overlay.filter).toBe('blur(2px)');
+    expect(standard.clear).toBe('see-through');
+
+    for (const stored of [{ theme, transparency: 'reduce' }, { theme, contrast: 'more', transparency: 'standard' }]) {
+      await open(page, stored);
+      const reduced = await layers(page);
+      const label = JSON.stringify(stored);
+      expect(reduced.tokens, label).toEqual({ '--uix-scrim-blur': '0px', '--uix-arrive-blur': '0px', '--uix-swap-blur': '0px' });
+      for (const layer of ['modal', 'drawer']) {
+        expect(['none', 'blur(0px)'], `${label} ${layer}`).toContain(reduced[layer].filter);
+        // a sharp page behind needs a firmer scrim to keep the layer apart: .5 -> .6
+        expect(reduced[layer].alpha, `${label} ${layer}`).toBeGreaterThan(standard[layer].alpha + 0.05);
+      }
+      expect(reduced.overlay.filter, label).toBe('none');
+      expect(reduced.overlay.alpha, label).toBeGreaterThan(standard.overlay.alpha);
+      expect(reduced.clear, label).toBe('solid');
+      expect(await axe(page), label).toEqual([]);
+    }
+  });
+}
+
+/** Every distinct `filter` an option of the Select's list carries in the first 400 ms after a pointer open. */
+async function arrivalFilters(page) {
+  await expect(page.locator('html')).not.toHaveAttribute('data-uix-switching', /.*/);
+  const sampling = page.evaluate(() => new Promise((resolve) => {
+    const seen = new Set();
+    const start = performance.now();
+    const tick = () => {
+      for (const el of document.querySelectorAll('[role="option"]')) if (el.style.filter) seen.add(el.style.filter);
+      if (performance.now() - start < 400) requestAnimationFrame(tick); else resolve([...seen]);
+    };
+    requestAnimationFrame(tick);
+  }));
+  await page.locator('#queue').click();
+  const filters = await sampling;
+  await expect(page.getByRole('listbox')).toBeVisible();
+  await page.keyboard.press('Escape');
+  return filters;
+}
+
+test('a Select opened with the pointer: the options clear from a blur under standard, and never blur under reduce', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await open(page, { theme: 'light', transparency: 'standard' });
+  const standard = await arrivalFilters(page);
+  expect(standard.some((f) => /^blur\((?!0(\.00)?px)/.test(f)), `standard: ${standard}`).toBe(true);
+  await page.locator('#prefs').getByRole('radiogroup', { name: 'Transparency' }).getByRole('radio', { name: 'Reduce' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduce');
+  expect(await arrivalFilters(page)).toEqual([]);
+});
+
+test('system follows prefers-reduced-transparency before the first paint and live; standard overrides it', async ({ page }) => {
+  const cdp = await page.context().newCDPSession(page);
+  const emulate = (value) => cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value }] });
+  await emulate('reduce');
+  await open(page, null);
+  expect(await page.evaluate(() => window.__firstPaintTransparency), 'the head script resolved system').toBe('reduce');
+  await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduce');
+  await emulate('no-preference');
+  await expect(page.locator('html')).not.toHaveAttribute('data-transparency', /.*/);
+  await emulate('reduce');
+  await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduce');
+  await page.locator('#prefs').getByRole('radiogroup', { name: 'Transparency' }).getByRole('radio', { name: 'Standard' }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-transparency', /.*/);
+  expect(JSON.parse(await page.evaluate((k) => localStorage.getItem(k), KEY)).transparency).toBe('standard');
+  await page.reload({ waitUntil: 'networkidle' });
+  expect(await page.evaluate(() => window.__firstPaintTransparency), 'standard is kept across a reload').toBe(null);
 });

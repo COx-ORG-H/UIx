@@ -368,3 +368,4 @@ missing or blank.
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
 <!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
 <!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->
+<!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
