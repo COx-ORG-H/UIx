@@ -18,6 +18,8 @@ import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
 import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
+import { keepClearOfStickyLayers } from '../sticky-layers.js';
+import { useStickyInsets } from '../hooks/useStickyLayer.js';
 import { playArrival } from '../hooks/arrival.js';
 import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
@@ -1081,6 +1083,9 @@ function WorkspaceTable<T>({
     if (containerRef) (containerRef as { current: HTMLDivElement | null }).current = node;
   }, [containerRef]);
   const windowed = virtual?.virtualized ?? false;
+  // Room after the last windowed row as tall as the fixed layers' reach (toasts, the task tray):
+  // the body scrolls far enough for that row to stop clear of them (WCAG 2.2 SC 2.4.11). 0 with none.
+  const stickyRoom = useStickyInsets().bottom;
   const start = virtual && windowed ? virtual.startIndex : 0;
   const mountedRows = virtual && windowed ? virtual.rows : rows;
 
@@ -1112,7 +1117,8 @@ function WorkspaceTable<T>({
     }
     return null;
   };
-  /** Scroll the row into view by the least amount, clear of the sticky header in a windowed body. */
+  /** Scroll the row into view by the least amount, clear of the sticky header in a windowed body
+   *  and of the fixed layers (toasts, the task tray) over the wrap or the page (WCAG 2.2 SC 2.4.11). */
   const reveal = (el: HTMLElement) => {
     el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     const wrap = wrapRef.current;
@@ -1121,6 +1127,7 @@ function WorkspaceTable<T>({
       const under = head.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
       if (under > 0) wrap.scrollTop -= under;
     }
+    keepClearOfStickyLayers(el);
   };
   const setActive = (rowId: string) => {
     if (rowId === active) return;
@@ -1138,7 +1145,7 @@ function WorkspaceTable<T>({
     const index = ids.indexOf(rowId);
     if (index >= 0 && wrapRef.current && virtual && windowed) {
       pendingFocus.current = rowId;
-      wrapRef.current.scrollTop = index * virtual.rowHeight;
+      virtual.scrollToIndex(index);
     }
   };
   useIsomorphicLayoutEffect(() => {
@@ -1603,7 +1610,7 @@ function WorkspaceTable<T>({
         {virtual && start > 0 && spacer(virtual.padTop, 'pad-top')}
         {start > 0 && start % 2 === 0 && spacer(0, 'pad-zebra')}
         {mountedRows.map((row, at) => renderRow(row, start + at))}
-        {virtual && virtual.padBottom > 0 && spacer(virtual.padBottom, 'pad-bottom')}
+        {virtual && virtual.padBottom + (windowed ? stickyRoom : 0) > 0 && spacer(virtual.padBottom + (windowed ? stickyRoom : 0), 'pad-bottom')}
       </tbody>
     ) : (
       // Row motion (HAR-2755): a row a live update adds rises in, a row a bulk action removes fades
