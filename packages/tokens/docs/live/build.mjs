@@ -13,6 +13,7 @@ export async function buildDocsLive() {
     entryPoints: [
       'motion-playground.tsx',
       'task-tray-demo.tsx',
+      'ai-assistance-demo.tsx',
       'shortcut-demo.tsx',
       'toast-undo-demo.tsx',
       'form-errors-demo.tsx',
