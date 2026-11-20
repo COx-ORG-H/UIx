@@ -12,7 +12,7 @@ import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, Checkbox, DashboardCanvas, DataWorkspace, DialogClose, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select,
+  Button, Checkbox, DashboardCanvas, DataWorkspace, DialogClose, Drawer, Menu, MenuItem, Modal, NavGroup, NavItem, Radio, RadioGroup, Select,
   Sidebar, SidebarSection, SubNavItem, Toaster, Tooltip, createToastApi, createToastStore, useViewTransition,
 } from '../../../react/src/index.js';
 import type { DashboardCanvasItem, DataWorkspaceColumn } from '../../../react/src/index.js';
@@ -151,6 +151,24 @@ function DrawerDemo() {
         <p>Seit 08:10 trennen sich Citrix-Sitzungen am Standort Mostar nach etwa zehn Minuten.</p>
         <p>Auf einem Touchgerät lässt sich die Schublade zum Rand ziehen, um sie zu schließen. Mit ungespeicherter Änderung springt sie zurück und fragt zuerst.</p>
       </Drawer>
+    </div>
+  );
+}
+
+// EXPERIMENT (Modal origin="trigger"): today's centred rise next to the from-trigger prototype.
+function ModalOriginDemo() {
+  const [open, setOpen] = useState<'center' | 'trigger' | null>(null);
+  const close = () => setOpen(null);
+  return (
+    <div className="uix-docs__live-row uix-docs__live-row--wrap">
+      <Button variant="secondary" onClick={() => setOpen('center')}>Heute: zentriert</Button>
+      <Button onClick={() => setOpen('trigger')}>Experiment: vom Auslöser</Button>
+      {(['center', 'trigger'] as const).map((origin) => (
+        <Modal key={origin} origin={origin} open={open === origin} onClose={close} title="Neue Störung"
+          footer={<><DialogClose variant="secondary">Abbrechen</DialogClose><Button onClick={close}>Anlegen</Button></>}>
+          <p>Beschreiben Sie kurz, was nicht funktioniert und seit wann.</p>
+        </Modal>
+      ))}
     </div>
   );
 }
@@ -299,6 +317,9 @@ function Playground() {
       </Demo>
       <Demo title="Floating drawer" hint="Open it: it slides in 8 px from the edges over a blurred dim. On touch, drag it to the edge to close.">
         <DrawerDemo />
+      </Demo>
+      <Demo title="Modal from its trigger (experiment)" hint="Opt-in prototype, not the default. Open both with a click: today's dialog rises in the centre; the experiment grows out of its button toward the same place and returns there on close. From the keyboard both open at once.">
+        <ModalOriginDemo />
       </Demo>
       <Demo title="Swipe a toast away" hint="Show a message, then drag it sideways: past a third of its width, or flicked, it flies out and closes; otherwise it snaps back. The drawer's touch swipe uses the same slop, fling speed and window.">
         <ToastDemo />

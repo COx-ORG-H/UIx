@@ -5,6 +5,7 @@ import type { ForwardedRef, MutableRefObject, ReactNode, HTMLAttributes } from '
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
+import { useTriggerOrigin } from '../hooks/useTriggerOrigin.js';
 import type { DialogCloseEvent, DiscardPromptLabels } from './DiscardPrompt.js';
 
 const CloseIcon = () => (
@@ -41,22 +42,32 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
    * many-times-a-day dialog. A `CommandPalette` inside sets this on its own.
    */
   instant?: boolean;
+  /**
+   * EXPERIMENTAL — may change or go away. Where the dialog grows from. `"center"` (the default) is
+   * the calm centred rise. `"trigger"` grows the dialog out of the control a pointer pressed to open
+   * it (from `scale(.92)`, toward the same centred place) and returns it there on close while that
+   * control is on screen. A keyboard open stays instant and reduced motion keeps the fade.
+   */
+  origin?: 'center' | 'trigger';
 }
 
 /** A modal `<dialog>`; the ref reaches it (HAR-1831). */
 export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
   open, onClose, dirty = false, pending = false, discardLabels, title, children, footer, className, closeLabel: closeLabelProp,
-  role = 'dialog', instant = false, onKeyDown, ...rest
+  role = 'dialog', instant = false, origin = 'center', onKeyDown, ...rest
 }, ref) {
   const uixLabels = useUixLabels();
   const closeLabel = closeLabelProp ?? uixLabels.modal?.close ?? 'Close dialog';
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Before the guard: its layout effect calls showModal(), and the origin must already be set.
+  const originRef = useRef<HTMLDialogElement>(null);
+  useTriggerOrigin(originRef, open, origin === 'trigger' && !instant);
   // onClose also fires on a native close (Esc / method="dialog") via the hook, so the dialog
   // carries no onClose prop of its own — that would double-fire (UIX-A11Y-1).
   const guard = useGuardedDialog({ open, onClose, dirty, pending, labels: discardLabels, closeRef });
   // Accessible name: the title labels the dialog; an <h2> so SR users can navigate to it (UIX-A11Y-1).
   const titleId = useId();
-  const dialogRef = useMergedRef(guard.ref, ref);
+  const dialogRef = useMergedRef(guard.ref, originRef, ref);
 
   return (
     <dialog
@@ -97,11 +108,12 @@ export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
 });
 Modal.displayName = 'Modal';
 
-/** One callback ref that fills the dialog hook's ref and the consumer's. */
-function useMergedRef<T>(own: { current: T | null }, forwarded: ForwardedRef<T>) {
+/** One callback ref that fills the dialog hooks' refs and the consumer's. */
+function useMergedRef<T>(own: { current: T | null }, origin: { current: T | null }, forwarded: ForwardedRef<T>) {
   return useCallback((el: T | null) => {
     (own as MutableRefObject<T | null>).current = el;
+    (origin as MutableRefObject<T | null>).current = el;
     if (typeof forwarded === 'function') forwarded(el);
     else if (forwarded) forwarded.current = el;
-  }, [own, forwarded]);
+  }, [own, origin, forwarded]);
 }
