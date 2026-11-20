@@ -128,7 +128,8 @@ function measure(grid: HTMLElement): { colPitch: number; rowPitch: number } {
  *
  * After a pointer drop, the cards that moved glide to their new places on the glide spring
  * (`useViewTransition`, scoped to the canvas where the browser can); arrow-key steps, reduced
- * motion and a browser without view transitions jump.
+ * motion and a browser without view transitions jump. The morph shows the layout the product passes
+ * back while `onLayoutChange` runs; one that saves first and passes `items` later gets the jump.
  *
  * Owns interaction, never persistence: the product stores `items` and passes them back.
  *

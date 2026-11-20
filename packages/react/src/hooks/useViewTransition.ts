@@ -105,21 +105,29 @@ export function useViewTransition(): StartViewTransition {
 
   return useCallback<StartViewTransition>((update, options = {}) => {
     const { parts, scope, className } = options;
-    if (typeof document === 'undefined' || !viewTransitionSupported(scope) || prefersReducedMotion()
-      || keyboardInitiated() || document.visibilityState === 'hidden') {
+    if (typeof document === 'undefined') {
       update();
       return done();
     }
     const scoped = typeof (scope as Starter | null | undefined)?.startViewTransition === 'function';
     const root = scoped ? scope! : document.documentElement;
-    // a transition still running on this root ends where it is: its picture is gone, its names too
+    // a transition still running on this root ends where it is: its picture is gone, its names too.
+    // Also before an instant change (a key press mid-morph), or the old pictures would cover it.
     running.get(root)?.release();
+    if (!viewTransitionSupported(scope) || prefersReducedMotion() || keyboardInitiated() || document.visibilityState === 'hidden') {
+      update();
+      return done();
+    }
 
     const id = ++seq;
     const names = new Map<string, string>();
     const named: { el: HTMLElement | SVGElement; name: string; cls: string }[] = [];
     const classes = [VIEW_TRANSITION_CLASS, className].filter(Boolean).join(' ');
-    const name = () => {
+    // Names the parts; false when the caller's lookup threw (the error is reported, not swallowed).
+    const name = (): boolean => {
+      try { nameParts(); return true; } catch (error) { reportError(error); return false; }
+    };
+    const nameParts = () => {
       for (const [key, el] of parts?.() ?? []) {
         if (!el || !('style' in el)) continue;
         const target = el as HTMLElement | SVGElement;
@@ -154,7 +162,13 @@ export function useViewTransition(): StartViewTransition {
     };
 
     root.setAttribute(VIEW_TRANSITION_ATTR, '');
-    name();
+    if (!name()) {
+      // the lookup failed before the old picture: no morph, and nothing left marked or named
+      unname();
+      root.removeAttribute(VIEW_TRANSITION_ATTR);
+      update();
+      return done();
+    }
     let updateError: unknown;
     let ran = false;
     const run = () => {

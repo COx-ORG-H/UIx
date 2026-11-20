@@ -315,6 +315,49 @@ test('an update that throws is reported, not swallowed, and the names still go',
   t.unmount();
 });
 
+test('a parts lookup that throws after naming one part: the update runs, nothing stays marked, the error is reported', () => {
+  install(document);
+  const reported = [];
+  const before = globalThis.reportError;
+  globalThis.reportError = (error) => reported.push(error);
+  const api = {};
+  const t = mount(h(Records, { api }));
+  pointerDown();
+  let result;
+  act(() => {
+    result = api.go(true, { parts: function* parts() { yield ['row', t.host.querySelector('#row')]; throw new Error('lookup'); } });
+  });
+  assert.equal(result.animated, false);
+  assert.equal(started.length, 0, 'no transition starts on a failed lookup');
+  assert.ok(t.host.querySelector('#detail'), 'the change still happened');
+  assert.deepEqual(named(), []);
+  assert.equal(document.documentElement.hasAttribute('data-uix-view-transition'), false);
+  assert.deepEqual(reported.map((e) => e.message), ['lookup']);
+  globalThis.reportError = before;
+  t.unmount();
+});
+
+test('a key press in the middle of a morph ends it, so its pictures never cover the instant change', async () => {
+  install(document);
+  const api = {};
+  const t = mount(h(Records, { api }));
+  pointerDown();
+  let first;
+  act(() => { first = api.go(true); });
+  await act(async () => { await first.updated; });
+  keyDown('Enter');
+  let second;
+  act(() => { second = api.go(false); });
+  assert.equal(second.animated, false);
+  assert.equal(started[0].skipped, true, 'the running morph ended');
+  assert.equal(started.length, 1);
+  assert.ok(t.host.querySelector('#row'));
+  assert.deepEqual(named(), []);
+  assert.equal(document.documentElement.hasAttribute('data-uix-view-transition'), false);
+  await act(async () => { await first.finished; });
+  t.unmount();
+});
+
 test('an engine that refuses the call: the update still runs exactly once, nothing is left marked', async () => {
   function Counter({ api }) {
     const start = ui.useViewTransition();

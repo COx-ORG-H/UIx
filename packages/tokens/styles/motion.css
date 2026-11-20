@@ -37,6 +37,23 @@
   }
 }
 
+/* View transitions (useViewTransition) under reduced motion — UNLAYERED and !important, like the policy
+   above, so no product rule keeps a morph moving: the hook never starts one, and one already running
+   when the preference turns on ends at once. */
+@media (prefers-reduced-motion: reduce) {
+  [data-uix-view-transition]::view-transition-group(*),
+  [data-uix-view-transition]::view-transition-old(*),
+  [data-uix-view-transition]::view-transition-new(*) { animation: none !important; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-motion="reduce"][data-uix-view-transition]::view-transition-group(*),
+  :root[data-motion="reduce"][data-uix-view-transition]::view-transition-old(*),
+  :root[data-motion="reduce"][data-uix-view-transition]::view-transition-new(*),
+  :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-group(*),
+  :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-old(*),
+  :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-new(*) { animation: none !important; }
+}
+
 /* Keyframes (cascade-neutral). */
 @keyframes uix-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes uix-pop-in {
@@ -133,20 +150,6 @@
   [data-uix-view-transition]::view-transition-group(*.uix-morph) { overflow: clip; }
   [data-uix-view-transition]::view-transition-old(*.uix-morph),
   [data-uix-view-transition]::view-transition-new(*.uix-morph) { inline-size: auto; block-size: auto; inset-inline-start: 0; }
-  /* reduced motion turned on mid-morph ends it at once (the hook never starts one under it) */
-  @media (prefers-reduced-motion: reduce) {
-    [data-uix-view-transition]::view-transition-group(*),
-    [data-uix-view-transition]::view-transition-old(*),
-    [data-uix-view-transition]::view-transition-new(*) { animation: none; }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    :root[data-motion="reduce"][data-uix-view-transition]::view-transition-group(*),
-    :root[data-motion="reduce"][data-uix-view-transition]::view-transition-old(*),
-    :root[data-motion="reduce"][data-uix-view-transition]::view-transition-new(*),
-    :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-group(*),
-    :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-old(*),
-    :root[data-motion="reduce"] [data-uix-view-transition]::view-transition-new(*) { animation: none; }
-  }
 }
 
 /* Row arrival (2.60, the animate-ui study): when a select's list or a menu opens, its rows arrive top

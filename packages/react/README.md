@@ -335,7 +335,8 @@ const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next),
   can open into its detail. The box glides on the glide spring (280 ms); the pictures swap in
   160 ms and never scale. The keyboard, reduced motion and a browser without the API get the
   change at once; a second start ends the running one. DataWorkspace's Maximize (from the
-  pointer) and a DashboardCanvas pointer drop use it. Never on the Peek, a row or a tab.
+  pointer) and a DashboardCanvas pointer drop use it. Never on a 100×-a-day path: a queue row
+  opening its Peek, a tab. A record opened now and then (a touch-first list → detail) may morph.
 - **CollapsibleSection** opening fades the body in and settles it 4 px (on `::details-content`,
   where supported); an already open section, a keyboard open and closing are instant.
 
