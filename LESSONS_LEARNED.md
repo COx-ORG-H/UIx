@@ -351,3 +351,4 @@ missing or blank.
 <!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
