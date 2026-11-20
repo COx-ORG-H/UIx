@@ -315,6 +315,34 @@ test('an update that throws is reported, not swallowed, and the names still go',
   t.unmount();
 });
 
+test('an engine that refuses the call: the update still runs exactly once, nothing is left marked', async () => {
+  function Counter({ api }) {
+    const start = ui.useViewTransition();
+    const [n, setN] = useState(0);
+    const el = useRef(null);
+    api.go = () => start(() => { api.calls = (api.calls ?? 0) + 1; setN((v) => v + 1); }, { parts: () => [['c', el.current]] });
+    return h('div', { ref: el, id: 'count' }, String(n));
+  }
+  for (const engine of ['throws before the callback', 'runs the callback, then throws']) {
+    document.startViewTransition = (update) => {
+      if (engine !== 'throws before the callback') update();
+      throw new DOMException('refused', 'InvalidStateError');
+    };
+    const api = {};
+    const t = mount(h(Counter, { api }));
+    pointerDown();
+    let result;
+    act(() => { result = api.go(); });
+    assert.equal(api.calls, 1, `${engine}: one update`);
+    assert.equal(result.animated, false);
+    assert.equal(t.host.querySelector('#count').textContent, '1');
+    assert.deepEqual(named(), [], `${engine}: no name left`);
+    assert.equal(document.documentElement.hasAttribute('data-uix-view-transition'), false);
+    t.unmount();
+  }
+  uninstall(document);
+});
+
 /* ── the surfaces ─────────────────────────────────────────────────────────────────────────── */
 
 const ROWS = [{ id: 'INC-1', title: 'Eins' }, { id: 'INC-2', title: 'Zwei' }];

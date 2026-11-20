@@ -156,7 +156,9 @@ export function useViewTransition(): StartViewTransition {
     root.setAttribute(VIEW_TRANSITION_ATTR, '');
     name();
     let updateError: unknown;
+    let ran = false;
     const run = () => {
+      ran = true;
       unname();
       try { flushSync(update); } catch (error) { updateError = error; throw error; }
       // ended before the browser got here (a newer start, an unmount): commit, but name nothing
@@ -165,10 +167,13 @@ export function useViewTransition(): StartViewTransition {
     try {
       transition = ((scoped ? root : document) as unknown as Required<Starter>).startViewTransition(run);
     } catch {
-      // an engine that refuses the call: the change still has to happen
+      // an engine that refuses the call: the change still has to happen, once (it may already have
+      // run the callback before throwing)
+      live = false;
       unname();
       root.removeAttribute(VIEW_TRANSITION_ATTR);
-      update();
+      if (!ran) update();
+      else if (updateError !== undefined) throw updateError;
       return done();
     }
     running.set(root, { transition, release });
