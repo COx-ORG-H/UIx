@@ -38,10 +38,9 @@
   .uix-cmdk__item--retry .uix-cmdk__label { color: var(--uix-text-muted); }
   .uix-cmdk__retry { flex: none; margin-inline-start: auto; color: var(--uix-link); font-weight: 500; }
   /* the page trail above the field; ancestors are buttons that step back, in the link colour */
-  .uix-cmdk__crumbs { padding: var(--uix-space-3) var(--uix-space-4) 0; }
-  .uix-cmdk__crumb { position: relative; padding: 0; border: 0; background: none; color: var(--uix-link); font: inherit; cursor: pointer; }
-  /* a 24 px hit area (WCAG 2.5.8) that does not move the trail */
-  .uix-cmdk__crumb::before { content: ""; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; inline-size: max(100%, 24px); block-size: max(100%, 24px); }
+  .uix-cmdk__crumbs { padding: var(--uix-space-2) var(--uix-space-4) 0; }
+  /* a real 24 px target (WCAG 2.5.8): the button's own box, which is what a target-size check measures */
+  .uix-cmdk__crumb { display: inline-flex; align-items: center; min-block-size: 24px; min-inline-size: 24px; padding: 0; border: 0; background: none; color: var(--uix-link); font: inherit; cursor: pointer; }
   .uix-cmdk__crumb:is(:hover, :focus-visible) { text-decoration: underline; }
   .uix-cmdk__crumb:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; border-radius: var(--uix-radius-sm); }
   /* a list with nothing in it yet (a source still within its pending delay) takes no room */
