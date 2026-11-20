@@ -65,6 +65,14 @@ const focusReport = (page) => page.evaluate(async () => {
   let seen = 0;
   let total = 0;
   const covers = new Set();
+  // What belongs to the focused control itself: the control and its insides, its labels, its kit
+  // wrapper (.uix-checkbox draws the box over a visually hidden native input), and the boxes it sits
+  // in. A cover is never one of those: a sticky header cell, the bulk bar, a toast or the tray is
+  // beside the control, not around it. (A control inside a toast or the tray is part of that layer.)
+  const wrapper = el.closest('.uix-checkbox, .uix-radio, .uix-switch');
+  const labels = [...(el.labels ?? [])];
+  const own = (hit) => hit === el || el.contains(hit) || hit.contains(el)
+    || (wrapper != null && wrapper.contains(hit)) || labels.some((label) => label.contains(hit));
   // Hit-testing follows border-radius: a rounded button's corners belong to whatever is behind it.
   // The columns stay inside the rounding (at the radius in, every row of the box is the element's).
   const style = getComputedStyle(el);
@@ -79,7 +87,7 @@ const focusReport = (page) => page.evaluate(async () => {
       const y = top + 2 + ((bottom - top - 4) * j) / (rows - 1);
       const hit = document.elementFromPoint(x, y);
       total += 1;
-      if (hit && (hit === el || el.contains(hit))) seen += 1;
+      if (hit && own(hit)) seen += 1;
       else if (hit) covers.add(hit.closest('[class]')?.className.split(' ')[0] ?? hit.tagName);
     }
   }
