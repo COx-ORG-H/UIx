@@ -457,9 +457,9 @@
       "brotli": 3061
     },
     "styles/components/shortcut-sheet.css": {
-      "raw": 1757,
-      "gzip": 645,
-      "brotli": 499
+      "raw": 1913,
+      "gzip": 704,
+      "brotli": 561
     },
     "styles/components/sidebar.css": {
       "raw": 23371,

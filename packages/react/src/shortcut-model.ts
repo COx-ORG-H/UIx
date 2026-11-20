@@ -165,10 +165,31 @@ const SHIFTED_PUNCTUATION_CODES: Record<string, string> = {
   '{': 'BracketLeft', '}': 'BracketRight', '_': 'Minus', '+': 'Equal', '~': 'Backquote',
   '!': 'Digit1', '@': 'Digit2', '#': 'Digit3', $: 'Digit4', '%': 'Digit5', '^': 'Digit6', '&': 'Digit7', '*': 'Digit8', '(': 'Digit9', ')': 'Digit0',
 };
-/** Whether a keydown is the physical key that types `key` on a US layout, Shift included. */
-const isPhysicalPunctuation = (event: ShortcutKeyEvent, key: string) => (PUNCTUATION_CODES[key] != null
-  ? !event.shiftKey && event.code === PUNCTUATION_CODES[key]
-  : SHIFTED_PUNCTUATION_CODES[key] != null && event.shiftKey && event.code === SHIFTED_PUNCTUATION_CODES[key]);
+/** What each of those keys types unshifted on a US layout. */
+const US_BASE: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(PUNCTUATION_CODES).map(([char, code]) => [code, char])),
+  Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5', Digit6: '6', Digit7: '7', Digit8: '8', Digit9: '9', Digit0: '0',
+};
+
+/**
+ * The keyboard layout as `navigator.keyboard.getLayoutMap()` gives it: physical key code to the
+ * character it types unshifted (`Slash` to `-` on a German layout). Chromium only.
+ */
+export type KeyboardLayoutMap = ReadonlyMap<string, string>;
+
+/**
+ * Whether a keydown is the physical key that types `key`, Shift included, for an Alt chord whose
+ * character Alt changed. Only where the layout is known and that key types what it types on a US
+ * layout (so its shifted symbol is the US one too); with no layout map, never: on a German layout
+ * the US Slash key types `-`, and Alt+Shift on it must not run an `Alt+?` command.
+ */
+const isPhysicalPunctuation = (event: ShortcutKeyEvent, key: string, layout: KeyboardLayoutMap | null | undefined) => {
+  if (!layout) return false;
+  const shifted = PUNCTUATION_CODES[key] == null;
+  const code = shifted ? SHIFTED_PUNCTUATION_CODES[key] : PUNCTUATION_CODES[key];
+  if (!code || event.code !== code || event.shiftKey !== shifted) return false;
+  return layout.get(code) === US_BASE[code];
+};
 
 /** The fields of a keydown the matcher reads (a DOM `KeyboardEvent` has them all). */
 export interface ShortcutKeyEvent {
@@ -191,10 +212,12 @@ export interface ShortcutKeyEvent {
  *   it: Shift is never compared (`?` is Shift+/ on a US keyboard and Shift+ß on a German one). On
  *   its own (`?`, `[`), Ctrl+Alt (Windows AltGr) or Option may have typed it; ⌘ or a Ctrl without
  *   Alt never. With modifiers (`Mod+/`), exactly those: Ctrl+Alt+/ and ⌘⌥/ are not `Mod+/`. An Alt
- *   chord whose character Alt changes (Option+/ types ÷) falls back to the physical key.
+ *   chord whose character Alt changes (Option+/ types ÷) falls back to the physical key, but only
+ *   where `layout` (the browser's keyboard layout map) shows that key types the same character as
+ *   on a US layout; without a layout map it matches the character only. Prefer letters for Alt chords.
  * - A named key (Enter, Escape, an arrow, F1) must have exactly the chord's modifiers.
  */
-export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform): boolean {
+export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform, layout?: KeyboardLayoutMap | null): boolean {
   const key = chord[chord.length - 1];
   const wantMeta = platform === 'mac' && chord.includes('Mod');
   const wantCtrl = chord.includes('Ctrl') || (platform !== 'mac' && chord.includes('Mod'));
@@ -221,7 +244,7 @@ export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platfo
     if (event.ctrlKey !== wantCtrl || event.altKey !== wantAlt) return false;
     if (typed === key) return true;
     // Alt or Option types another character (Option+/ is ÷ on a Mac): the physical key decides.
-    return wantAlt && isPhysicalPunctuation(event, key);
+    return wantAlt && isPhysicalPunctuation(event, key, layout);
   }
   return typed === key && event.metaKey === wantMeta && event.ctrlKey === wantCtrl && event.altKey === wantAlt && event.shiftKey === wantShift;
 }

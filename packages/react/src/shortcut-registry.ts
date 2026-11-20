@@ -124,6 +124,8 @@ export class ShortcutRegistry {
   private reported = new Set<string>();
   private conflictCheck: ReturnType<typeof setTimeout> | null = null;
   private detach: (() => void) | null = null;
+  /** The browser's keyboard layout map, where it has one (Chromium), for Alt chords on punctuation. */
+  private layout: ReadonlyMap<string, string> | null = null;
   /** Preferences asked for and not yet handed back through `configure`: two changes in one tick build on each other. */
   private requested: ShortcutPreferenceValues | null = null;
 
@@ -181,7 +183,20 @@ export class ShortcutRegistry {
     this.detach?.();
     const onKey = (event: Event) => this.dispatch(event as KeyboardEvent);
     doc.addEventListener('keydown', onKey);
-    const detach = () => { doc.removeEventListener('keydown', onKey); if (this.detach === detach) this.detach = null; this.clearPending(); };
+    // The layout can change while the page is in the background: read it again when the window comes back.
+    const view = doc.defaultView;
+    const keyboard = (view?.navigator as (Navigator & { keyboard?: { getLayoutMap?: () => Promise<ReadonlyMap<string, string>> } }) | undefined)?.keyboard;
+    const readLayout = () => {
+      try { keyboard?.getLayoutMap?.().then((map) => { this.layout = map; }, () => { this.layout = null; }); } catch { this.layout = null; }
+    };
+    readLayout();
+    view?.addEventListener('focus', readLayout);
+    const detach = () => {
+      doc.removeEventListener('keydown', onKey);
+      view?.removeEventListener('focus', readLayout);
+      if (this.detach === detach) this.detach = null;
+      this.clearPending();
+    };
     this.detach = detach;
     return detach;
   }
@@ -362,7 +377,7 @@ export class ShortcutRegistry {
     const pending = this.pendingState;
     if (pending) {
       const step = pending.step;
-      const next = all.filter(({ entry, keys }) => pending.tokens.has(entry.token) && keys.length > step && matchesChord(event, keys[step], platform));
+      const next = all.filter(({ entry, keys }) => pending.tokens.has(entry.token) && keys.length > step && matchesChord(event, keys[step], platform, this.layout));
       clearTimeout(pending.timer);
       this.pendingState = null;
       const complete = next.filter(({ keys }) => keys.length === step + 1);
@@ -376,7 +391,7 @@ export class ShortcutRegistry {
     // In rank order (innermost scope first): the single chords ranked above the first sequence try
     // first; once a sequence is the best match left, it waits for its next key. So an inner scope's
     // G I is not swallowed by a global G.
-    const first = all.filter(({ keys }) => matchesChord(event, keys[0], platform));
+    const first = all.filter(({ keys }) => matchesChord(event, keys[0], platform, this.layout));
     if (!first.length) return false;
     const firstSequence = first.findIndex(({ keys }) => keys.length > 1);
     const before = firstSequence < 0 ? first : first.slice(0, firstSequence);

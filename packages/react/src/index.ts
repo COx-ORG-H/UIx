@@ -339,7 +339,7 @@ export {
   parseShortcutPreferences, effectiveShortcut, DEFAULT_SHORTCUT_PREFERENCES, SHORTCUT_PREFERENCES_STORAGE_KEY,
 } from './shortcut-model.js';
 export type {
-  KeySequence, ShortcutBinding, ShortcutKeyEvent, ShortcutConflict, ShortcutConflictEntry, CharacterKeyPreference, ShortcutPreferenceValues,
+  KeySequence, ShortcutBinding, ShortcutKeyEvent, KeyboardLayoutMap, ShortcutConflict, ShortcutConflictEntry, CharacterKeyPreference, ShortcutPreferenceValues,
 } from './shortcut-model.js';
 export type { KbdProps, KbdComboProps, KbdPlatform, KeyShortcut } from './components/Kbd.js';
 

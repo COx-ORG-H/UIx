@@ -93,7 +93,9 @@ test('isCharacterKeyShortcut is WCAG 2.1.4: printable characters with no modifie
 
 test('matchesChord: Mod per platform, exact modifiers on letters, the character decides on punctuation', () => {
   const ev = (key, init = {}) => ({ key, code: init.code ?? '', metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, ...init });
-  const m = (event, binding, platform = 'other') => ui.matchesChord(event, ui.parseShortcut(binding)[0], platform);
+  const US = new Map([['Slash', '/'], ['Digit1', '1'], ['BracketLeft', '[']]);
+  const DE = new Map([['Slash', '-'], ['Digit1', '1'], ['BracketLeft', 'ü']]);
+  const m = (event, binding, platform = 'other', layout = US) => ui.matchesChord(event, ui.parseShortcut(binding)[0], platform, layout);
   assert.equal(m(ev('k', { ctrlKey: true }), 'Mod+K'), true);
   assert.equal(m(ev('k', { metaKey: true }), 'Mod+K'), false, 'Windows: Mod is Ctrl');
   assert.equal(m(ev('k', { metaKey: true }), 'Mod+K', 'mac'), true);
@@ -129,6 +131,12 @@ test('matchesChord: Mod per platform, exact modifiers on letters, the character 
   assert.equal(m(ev('÷', { altKey: true, code: 'Slash' }), 'Alt+?', 'mac'), false);
   assert.equal(m(ev('¿', { altKey: true, shiftKey: true, code: 'Slash' }), 'Alt+/', 'mac'), false);
   assert.equal(m(ev('⁄', { altKey: true, shiftKey: true, code: 'Digit1' }), 'Alt+!', 'mac'), true);
+  // The fallback needs the layout: on a German layout the US Slash key types -, and with no layout map nothing is assumed.
+  assert.equal(m(ev('—', { altKey: true, shiftKey: true, code: 'Slash' }), 'Alt+?', 'mac', DE), false);
+  assert.equal(m(ev('–', { altKey: true, code: 'Slash' }), 'Alt+/', 'mac', DE), false);
+  assert.equal(m(ev('¿', { altKey: true, shiftKey: true, code: 'Slash' }), 'Alt+?', 'mac', null), false);
+  assert.equal(m(ev('÷', { altKey: true, code: 'Slash' }), 'Alt+/', 'mac', null), false);
+  assert.equal(m(ev('/', { altKey: true, code: 'Slash' }), 'Alt+/', 'other', null), true, 'the character itself always matches');
   assert.equal(m(ev('Enter', { ctrlKey: true }), 'Mod+Enter'), true);
   assert.equal(m(ev(' '), 'Space'), true);
 });
