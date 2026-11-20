@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { AriaAttributes, ChangeEvent, FocusEvent, HTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
+import { keepRowInView } from '../list-scroll.js';
 import { filterComboboxItems } from '../combobox-model.js';
 import type { ComboboxGroup, ComboboxOption } from '../combobox-model.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
@@ -203,10 +204,7 @@ export function Combobox({
     if (!open || !list || activeIndex < 0) return;
     const el = list.ownerDocument.getElementById(optionId(activeIndex));
     if (!el || !list.contains(el)) return;
-    const top = el.offsetTop;
-    const bottom = top + el.offsetHeight;
-    if (top < list.scrollTop) list.scrollTop = top;
-    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+    keepRowInView(list, el);
   }, [open, activeIndex]);
 
   // `popover` is a valid HTML attribute but absent from React 18's DOM types.
