@@ -4,8 +4,10 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
-import { KbdCombo, spokenKeys, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, spokenSequence, useKbdPlatform } from './Kbd.js';
 import type { KeyShortcut } from './Kbd.js';
+import { useUixLabels } from '../labels-context.js';
+import { useDisplayedShortcut } from '../shortcut-hooks.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -16,11 +18,20 @@ const isShown = (el: HTMLElement | null) => {
 const focusVisible = (el: Element) => {
   try { return el.matches(':focus-visible'); } catch { return true; }
 };
+/** The control a hint marker sits in (stable per marker ref). */
+const anchors = new WeakMap<object, () => Element | null>();
+const hintAnchor = (marker: { current: HTMLSpanElement | null }) => {
+  let get = anchors.get(marker);
+  if (!get) { get = () => marker.current?.parentElement ?? null; anchors.set(marker, get); }
+  return get;
+};
 /** React events from the portal reach the button's handlers through the component tree: stop them there. */
 const stop = (event: SyntheticEvent) => event.stopPropagation();
 
 export interface ShortcutHintProps {
-  keys: KeyShortcut;
+  keys?: KeyShortcut;
+  /** A registered shortcut's id: its current keys instead of `keys`, and no hint while it is not active. */
+  shortcutId?: string;
   /** Text before the keys, e.g. an icon button's name. */
   label?: string;
   /** The control's own `aria-describedby`: the spoken keys are added after it, never instead. */
@@ -44,7 +55,7 @@ export interface ShortcutHintProps {
  *
  * It is its own client component so that `Button`, which has no hooks, still renders on a server.
  */
-export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
+export function ShortcutHint({ keys: literal, shortcutId, label, describedBy }: ShortcutHintProps) {
   const markerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const anchorRef = useRef<HTMLElement | null>(null);
@@ -52,6 +63,12 @@ export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
   const [open, setOpen] = useState(false);
   const platform = useKbdPlatform();
   const spokenId = `${useId()}-keys`;
+  // A registered command's keys as they are at this button: none outside the command's scope.
+  const keys = useDisplayedShortcut(literal, shortcutId, hintAnchor(markerRef));
+  const then = useUixLabels().shortcuts?.then ?? 'then';
+  // With a registered shortcut the keys can come and go (the character-key switch): the marker
+  // stays, the description and the bubble follow.
+  const shows = keys != null;
 
   useAnchoredPosition(anchorRef, bubbleRef, { open, placement: 'top', offset: 6 });
 
@@ -68,7 +85,7 @@ export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
   // runs again whenever the control's own value changes, and puts that value back on cleanup.
   useIsomorphicLayoutEffect(() => {
     const control = anchorRef.current;
-    if (!host || !control) return undefined;
+    if (!host || !control || !shows) return undefined;
     const value = [describedBy, spokenId].filter(Boolean).join(' ');
     control.setAttribute('aria-describedby', value);
     return () => {
@@ -76,12 +93,12 @@ export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
       if (describedBy) control.setAttribute('aria-describedby', describedBy);
       else control.removeAttribute('aria-describedby');
     };
-  }, [host, describedBy, spokenId]);
+  }, [host, describedBy, spokenId, shows]);
 
   useEffect(() => {
     const button = anchorRef.current;
     const bubble = bubbleRef.current;
-    if (!host || !button || !bubble) return undefined;
+    if (!host || !button || !bubble || !shows) return undefined;
     let timer: number | undefined;
     const show = () => {
       window.clearTimeout(timer);
@@ -135,16 +152,16 @@ export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
       button.ownerDocument.removeEventListener('keydown', onKey, true);
       if (isShown(bubble)) { try { bubble.hidePopover(); } catch { /* noop */ } }
     };
-  }, [host]);
+  }, [host, shows]);
 
   // `popover` is a valid HTML attribute but absent from React 18's DOM types.
   const bubbleAttr = { popover: 'manual' } as Record<string, string>;
   return (
     <>
       <span ref={markerRef} hidden data-uix-shortcut-hint="" />
-      {host && createPortal(
+      {host && keys && createPortal(
         <>
-          <span id={spokenId} hidden>{spokenKeys(keys, platform)}</span>
+          <span id={spokenId} hidden>{spokenSequence(keys, platform, then)}</span>
           <span
             ref={bubbleRef}
             className="uix-tooltip__bubble uix-tooltip__bubble--hint"
@@ -159,7 +176,7 @@ export function ShortcutHint({ keys, label, describedBy }: ShortcutHintProps) {
             onMouseUp={stop}
           >
             {label && <span>{label}</span>}
-            <span className="uix-tooltip__shortcut"><KbdCombo keys={[...keys]} platform={platform} /></span>
+            <span className="uix-tooltip__shortcut"><KbdCombo keys={keys} platform={platform} thenLabel={then} /></span>
           </span>
         </>,
         host,

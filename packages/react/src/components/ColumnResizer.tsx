@@ -309,7 +309,7 @@ function WidthForm({ name, value, min, max, labels, onApply, onFit, onReset, onC
   const step = (direction: 1 | -1) => onApply(stepColumnWidth(value, direction, { min, max, coarse: true }), false);
   return (
     <div className="uix-col-resize__form">
-      <label className="uix-label" htmlFor={fieldId}>{fillLabel(labels.columnWidth, { column: name })}</label>
+      <label className="uix-field__label" htmlFor={fieldId}>{fillLabel(labels.columnWidth, { column: name })}</label>
       <div className="uix-col-resize__row">
         <Button size="sm" variant="secondary" icon aria-label={labels.narrower} disabled={value <= min} onClick={() => step(-1)}><MinusIcon size="sm" aria-hidden="true" /></Button>
         <NumberInput
