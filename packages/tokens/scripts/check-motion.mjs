@@ -31,11 +31,13 @@
  *                      (color, background-color, border-color, fill, stroke…) clamp at their range, so
  *                      an overshoot there sticks or flickers (Material 3 Expressive: spatial springs may
  *                      bounce, effects springs never do). Split the transition: the geometry keeps the
- *                      spring, the fade or colour takes --uix-ease-out / --uix-ease-glide. Checked on
- *                      transition shorthands and longhands, animations (by the properties their
- *                      @keyframes set), a local custom property holding such a curve, and in the
- *                      React source an inline transition string or a tokenEase() of such a token
- *                      (script-driven easing runs effects: blurIn's radius).
+ *                      spring, the fade or colour takes --uix-ease-out / --uix-ease-glide. Judged on
+ *                      each rule's effective lists (shorthands and longhands folded in order; a
+ *                      missing list comes from the same element's other rules in the file, else
+ *                      fails), animations by the properties their @keyframes set, custom-property
+ *                      aliases across every scanned file, and in the React source inline transition
+ *                      and animation strings and tokenEase() of such a token (script-driven easing
+ *                      runs effects: blurIn's radius).
  *
  * Escape hatch: a comment `motion-allow: <reason>` directly before a declaration exempts that
  * declaration; the reason is printed on every run so it stays visible. Use it rarely.
@@ -110,11 +112,54 @@ export const OVERSHOOT_TOKENS = overshootingTokens(
 /** What an overshooting curve may move: geometry (Material's spatial springs; clip-path is a shape). */
 export const SPATIAL_PROPS = new Set(['transform', 'translate', 'scale', 'rotate', 'clip-path']);
 
-/** The overshooting curve in a value (a token, a local alias of one, or a literal), or null. */
-function overshootIn(value, aliases) {
-  for (const m of value.matchAll(/var\(\s*(--[\w-]+)/g)) if (OVERSHOOT_TOKENS.includes(m[1]) || aliases.has(m[1])) return m[1];
+const isToken = (name) => OVERSHOOT_TOKENS.includes(name);
+
+/** The overshooting curve in a value (a var() that `isVar` says overshoots, or a literal), or null. */
+function overshootIn(value, isVar = isToken) {
+  for (const m of value.matchAll(/var\(\s*(--[\w-]+)/g)) if (isVar(m[1])) return m[1];
   for (const m of value.matchAll(/(cubic-bezier|linear)\([^)]*\)/gi)) if (curveOvershoots(m[0])) return m[0];
   return null;
+}
+
+/**
+ * Custom properties that hold an overshooting curve in any of `sources` (--x-ease: var(--uix-ease-pop),
+ * and aliases of aliases). Across files, since a custom property inherits: one stylesheet can define
+ * it and another use it. A name counts if any of its definitions overshoots (the gate cannot know
+ * which one an element sees); a rule that redefines it itself is judged by its own value instead.
+ */
+export function collectOvershootAliases(sources) {
+  const defs = [];
+  for (const css of sources) postcss.parse(css).walkDecls(/^--/, (d) => { defs.push([d.prop, stripStrings(d.value)]); });
+  const aliases = new Set();
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const [prop, value] of defs) {
+      if (!aliases.has(prop) && overshootIn(value, (n) => isToken(n) || aliases.has(n))) { aliases.add(prop); grew = true; }
+    }
+  }
+  return aliases;
+}
+
+/** What rule 10 needs to know about every scanned stylesheet at once. */
+export function collectMotionContext(sources) {
+  return { keyframeProps: collectKeyframeProps(sources), aliases: collectOvershootAliases(sources) };
+}
+
+/** The overshooting curve in a value as `rule` sees it: its own custom properties first (the last one wins), then the shared aliases. */
+function curveCheck(rule, aliases) {
+  const local = new Map();
+  rule.each((n) => { if (n.type === 'decl' && n.prop.startsWith('--')) local.set(n.prop, stripStrings(n.value)); });
+  const seen = new Set();
+  const isVar = (name) => {
+    if (isToken(name)) return true;
+    if (!local.has(name)) return aliases.has(name);
+    if (seen.has(name)) return false;
+    seen.add(name);
+    const hit = Boolean(overshootIn(local.get(name), isVar));
+    seen.delete(name);
+    return hit;
+  };
+  return (value) => overshootIn(value, isVar);
 }
 
 const stripStrings = (v) => v.replace(/(["'])(?:\\.|(?!\1).)*\1/g, '""');
@@ -143,14 +188,8 @@ function transitionProps(prop, value) {
  * Check one stylesheet. `movingKeyframes` is the set of @keyframes names (across every scanned
  * file) that move; pass the result of `collectMovingKeyframes` over all files.
  */
-export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css]), loopAllow = LOOP_ALLOW, keyframeProps = collectKeyframeProps([css])) {
+export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css]), loopAllow = LOOP_ALLOW, context = collectMotionContext([css])) {
   const root = postcss.parse(css);
-  // 10. a local custom property that holds an overshooting curve is one (--x-ease: var(--uix-ease-pop))
-  const aliases = new Set();
-  for (let grew = true; grew;) {
-    grew = false;
-    root.walkDecls(/^--/, (d) => { if (!aliases.has(d.prop) && overshootIn(stripStrings(d.value), aliases)) { aliases.add(d.prop); grew = true; } });
-  }
   const problems = [];
   const exemptions = [];
   const stats = { decls: 0, timed: 0, loops: 0, hoverRules: 0 };
@@ -195,12 +234,6 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
     if (inKeyframes && LAYOUT.has(prop)) report('layout', d, `@keyframes animates layout property '${prop}' — use transform/opacity`);
     if (inKeyframes && /^(-webkit-)?(backdrop-)?filter$/.test(prop)) report('filter-motion', d, `@keyframes animates '${prop}' — Linux WebKit's renderer crashes on it; drive a blur per frame with blurIn (motion.ts)`);
 
-    // 10. an overshooting curve moves geometry only
-    const effects = overshootEffects(d, prop, value, aliases, keyframeProps);
-    if (effects.length) {
-      report('overshoot-effect', d, `${effects.join('; ')} — an overshooting curve may move only ${[...SPATIAL_PROPS].join(', ')}; opacity and colour clamp at their range, so split the transition and give them --uix-ease-out or --uix-ease-glide`);
-    }
-
     // 8. only a loader loops (its reduced-motion pulse included)
     if ((prop === 'animation' || prop === 'animation-iteration-count') && d.parent.type === 'rule' && /\binfinite\b/.test(value)) {
       const base = file.split('/').pop();
@@ -225,6 +258,14 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
     }
   });
 
+  // 10. an overshooting curve moves geometry only — judged on each rule's effective transition and
+  //     animation (declarations folded in order, as the cascade does), not declaration by declaration
+  root.walkRules((r) => {
+    for (const [node, msg] of overshootEffects(r, root, context)) {
+      report('overshoot-effect', node, `${msg} — an overshooting curve may move only ${[...SPATIAL_PROPS].join(', ')}; opacity and colour clamp at their range, so split the transition and give them --uix-ease-out or --uix-ease-glide`);
+    }
+  });
+
   // 7. hover-only movement or reveal
   root.walkRules((r) => {
     if (!/:hover\b/.test(r.selector)) return;
@@ -242,59 +283,88 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
   return { problems, exemptions, stats };
 }
 
-/** The last declaration of one of `props` in the same block as `d`, or null (the cascade takes the last). */
-function sibling(d, props) {
-  let found = null;
-  d.parent.each((n) => { if (n.type === 'decl' && props.includes(n.prop.toLowerCase())) found = n; });
-  return found;
-}
+const isKeyframes = (a) => a.type === 'atrule' && /keyframes$/.test(a.name);
+const comma = (v) => postcss.list.comma(v).map((s) => s.trim());
 
 /**
- * Rule 10 for one declaration: each "<property> on <curve>" where an overshooting curve eases
- * something that is not geometry. A timing longhand repeats over its property list the way CSS
- * does; with no list in the same rule it applies to `all`, which is not geometry. An animation is
- * judged by the properties its @keyframes set (custom properties are skipped: their effect depends
- * on where they are read).
+ * A rule's effective transition and animation lists, its declarations folded in source order the
+ * way the cascade folds them: a shorthand resets both its property (or name) list and its timing
+ * list, a longhand replaces only its own. Each list remembers the declaration that last set it.
  */
-function overshootEffects(d, prop, value, aliases, keyframeProps) {
-  const out = [];
-  const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
-  const animationNames = (decl) => (decl.prop.toLowerCase() === 'animation-name'
-    ? postcss.list.comma(decl.value).map((s) => s.trim())
-    : postcss.list.comma(stripStrings(decl.value)).map((item) => postcss.list.space(item).find((t) => keyframeProps.has(t)) ?? null));
-  const pairs = (names, curves) => names.forEach((name, i) => {
-    const curve = overshootIn(curves[i % curves.length], aliases);
-    if (curve && name !== null) out.push(`${name} on ${curve}`);
+function motionLists(rule, keyframeProps) {
+  const s = {};
+  rule.each((d) => {
+    if (d.type !== 'decl') return;
+    const p = d.prop.toLowerCase();
+    const items = comma(stripStrings(d.value));
+    if (p === 'transition') { s.tProps = items.map((i) => transitionProps('transition', i)[0]); s.tTimings = items; s.tPropDecl = d; s.tTimingDecl = d; }
+    else if (p === 'transition-property') { s.tProps = items.map((i) => i.toLowerCase()); s.tPropDecl = d; }
+    else if (p === 'transition-timing-function') { s.tTimings = items; s.tTimingDecl = d; }
+    else if (p === 'animation') { s.aNames = items.map((i) => postcss.list.space(i).find((t) => keyframeProps.has(t)) ?? null); s.aTimings = items; s.aNameDecl = d; s.aTimingDecl = d; }
+    else if (p === 'animation-name') { s.aNames = items; s.aNameDecl = d; }
+    else if (p === 'animation-timing-function') { s.aTimings = items; s.aTimingDecl = d; }
   });
+  return s;
+}
 
-  if (prop === 'transition') {
-    for (const item of postcss.list.comma(value)) {
-      const curve = overshootIn(item, aliases);
-      const [name] = transitionProps('transition', item);
-      if (curve && !SPATIAL_PROPS.has(name)) out.push(`${name} on ${curve}`);
-    }
-  } else if (prop === 'animation') {
-    for (const item of postcss.list.comma(value)) {
-      const curve = overshootIn(item, aliases);
-      const name = curve && postcss.list.space(item).find((t) => keyframeProps.has(t));
-      const fx = name ? effectsOf(name) : [];
-      if (fx.length) out.push(`@keyframes ${name} animates ${fx.join(', ')} on ${curve}`);
-    }
-  } else if ((prop === 'transition-timing-function' || prop === 'animation-timing-function')
-    && postcss.list.comma(value).some((c) => overshootIn(c, aliases))) {
-    const curves = postcss.list.comma(value);
-    const frames = ancestors(d).find((a) => a.type === 'atrule' && /keyframes$/.test(a.name));
-    if (frames) {
-      const fx = effectsOf(frames.params.trim());
-      if (fx.length) out.push(`a frame of @keyframes ${frames.params.trim()} eases ${fx.join(', ')} on ${curves.map((c) => overshootIn(c, aliases)).find(Boolean)}`);
-    } else if (prop === 'transition-timing-function') {
-      const list = sibling(d, ['transition', 'transition-property']);
-      const names = list ? transitionProps(list.prop.toLowerCase(), stripStrings(list.value)) : ['all'];
-      pairs(names.map((n) => (SPATIAL_PROPS.has(n) ? null : n)), curves);
+/** `a` and `b` are one element's selectors: equal, or one is the other plus a state (`.x` / `.x[open]`, `.x:popover-open`). */
+const sameElement = (a, b) => a === b || (b.startsWith(a) && /^[[:.#]/.test(b.slice(a.length))) || (a.startsWith(b) && /^[[:.#]/.test(a.slice(b.length)));
+
+/** The `key` list ('tProps' or 'aNames') that other rules of this file set for the same element, merged; null if none does. */
+function cascadeList(rule, root, keyframeProps, key) {
+  const mine = splitSelectors(rule.selector);
+  const found = [];
+  root.walkRules((other) => {
+    if (other === rule || ancestors(other).some(isKeyframes)) return;
+    if (!splitSelectors(other.selector).some((s) => mine.some((m) => sameElement(m, s)))) return;
+    const list = motionLists(other, keyframeProps)[key];
+    if (list) found.push(...list);
+  });
+  return found.length ? [...new Set(found)] : null;
+}
+
+const later = (a, b) => (!a ? b : !b ? a : (a.source.start.offset ?? 0) >= (b.source.start.offset ?? 0) ? a : b);
+
+/**
+ * Rule 10 for one rule: [declaration, "what on which curve"] for each overshooting curve that eases
+ * something that is not geometry. Timings repeat over the property (or name) list the way CSS
+ * repeats them. With no list in the rule, the same element's other rules in this file supply it
+ * (every name they set is checked against the curve); with none there, a transition applies to
+ * `all`, which is not geometry, and an animation cannot be checked, so both fail. An animation is
+ * judged by the properties its @keyframes set; a frame's own timing by its keyframes' properties.
+ */
+function overshootEffects(rule, root, { keyframeProps, aliases }) {
+  const out = [];
+  const curveIn = curveCheck(rule, aliases);
+  const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
+  const frames = ancestors(rule).find(isKeyframes);
+  if (frames) {
+    const name = frames.params.trim();
+    rule.each((d) => {
+      if (d.type !== 'decl' || d.prop.toLowerCase() !== 'animation-timing-function') return;
+      const curve = curveIn(stripStrings(d.value));
+      if (curve && effectsOf(name).length) out.push([d, `a frame of @keyframes ${name} eases ${effectsOf(name).join(', ')} on ${curve}`]);
+    });
+    return out;
+  }
+  const s = motionLists(rule, keyframeProps);
+  // the curve for list entry i: its own timing, or, for a list merged from other rules, any overshooting timing
+  const curveFor = (timings, own) => (i) => (own ? curveIn(timings[i % timings.length]) : timings.map(curveIn).find(Boolean));
+
+  if (s.tTimings?.some(curveIn)) {
+    const props = s.tProps ?? cascadeList(rule, root, keyframeProps, 'tProps') ?? ['all'];
+    const curve = curveFor(s.tTimings, Boolean(s.tProps));
+    const bad = props.map((p, i) => [p, curve(i)]).filter(([p, c]) => c && !SPATIAL_PROPS.has(p));
+    if (bad.length) out.push([later(s.tPropDecl, s.tTimingDecl), bad.map(([p, c]) => `${p} on ${c}`).join(', ')]);
+  }
+  if (s.aTimings?.some(curveIn)) {
+    const names = s.aNames ?? cascadeList(rule, root, keyframeProps, 'aNames');
+    if (!names) {
+      out.push([s.aTimingDecl, `an overshooting animation-timing-function, and no rule for '${rule.selector.replace(/\s+/g, ' ')}' in this file names the animation (name it, so its @keyframes can be checked)`]);
     } else {
-      const list = sibling(d, ['animation', 'animation-name']);
-      if (!list) out.push(`${prop} with no animation named in the same rule (name it, so its @keyframes can be checked)`);
-      else pairs(animationNames(list).map((n) => (n && effectsOf(n).length ? `@keyframes ${n} (${effectsOf(n).join(', ')})` : null)), curves);
+      const curve = curveFor(s.aTimings, Boolean(s.aNames));
+      const bad = names.map((n, i) => [n, curve(i)]).filter(([n, c]) => n && c && effectsOf(n).length);
+      if (bad.length) out.push([later(s.aNameDecl, s.aTimingDecl), bad.map(([n, c]) => `@keyframes ${n} animates ${effectsOf(n).join(', ')} on ${c}`).join('; ')]);
     }
   }
   return out;
@@ -330,26 +400,37 @@ export function collectMovingKeyframes(sources) {
 }
 
 /**
- * TS/TSX source: literal times in transition/animation strings (rule 1), and rule 10 on an inline
- * transition string or a script-driven blur (blurIn: a filter, never geometry) eased by an
- * overshooting token.
+ * TS/TSX source: literal times in transition/animation strings (rule 1, line by line), and rule 10
+ * on an inline transition or animation string (read whole, so a template literal may span lines;
+ * an animation is judged by its @keyframes in `keyframeProps`) and on tokenEase() of an
+ * overshooting token (script-driven easing runs effects: blurIn's radius).
  */
-export function checkTs(src, file) {
+export function checkTs(src, file, keyframeProps = new Map()) {
   const problems = [];
-  const none = new Set();
-  src.split('\n').forEach((line, i) => {
+  const lines = src.split('\n');
+  const allowedAt = (n) => /motion-allow:/.test(lines[n - 1] ?? '') || /motion-allow:/.test(lines[n - 2] ?? '');
+  lines.forEach((line, i) => {
     if (/motion-allow:/.test(line)) return;
     if (/(transition|animation)\w*["'`]?\s*[:=]\s*["'`][^"'`]*(?<![\w.-])\d*\.?\d+m?s\b/i.test(line)) {
       problems.push(`${file}:${i + 1} [raw-time] literal time in an inline transition/animation — put motion in the stylesheet on tokens`);
     }
-    for (const m of line.matchAll(/transition["'`]?\s*[:=]\s*(["'`])([^"'`]*)\1/gi)) {
-      const bad = postcss.list.comma(m[2]).filter((item) => overshootIn(item, none) && !SPATIAL_PROPS.has(transitionProps('transition', item)[0]));
-      if (bad.length) problems.push(`${file}:${i + 1} [overshoot-effect] inline '${bad.join(', ')}' — an overshooting curve may move geometry only`);
-    }
     for (const m of line.matchAll(/\btokenEase\(\s*["'`](--[\w-]+)["'`]/g)) {
-      if (OVERSHOOT_TOKENS.includes(m[1])) problems.push(`${file}:${i + 1} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
+      if (isToken(m[1])) problems.push(`${file}:${i + 1} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
     }
   });
+  const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
+  for (const m of src.matchAll(/\b(transition|animation)["'`]?\s*[:=]\s*(["'`])((?:\\.|(?!\2)[\s\S])*)\2/gi)) {
+    const at = src.slice(0, m.index).split('\n').length;
+    if (allowedAt(at)) continue;
+    const items = postcss.list.comma(m[3].replace(/\s+/g, ' ').trim());
+    const bad = m[1].toLowerCase() === 'transition'
+      ? items.filter((item) => overshootIn(item) && !SPATIAL_PROPS.has(transitionProps('transition', item)[0]))
+      : items.filter((item) => {
+        const name = postcss.list.space(item).find((t) => keyframeProps.has(t));
+        return overshootIn(item) && name && effectsOf(name).length;
+      });
+    if (bad.length) problems.push(`${file}:${at} [overshoot-effect] inline ${m[1]} '${bad.join(', ')}' — an overshooting curve may move geometry only`);
+  }
   return problems;
 }
 
@@ -373,19 +454,19 @@ async function main() {
   ];
   const sources = await Promise.all(cssFiles.map((f) => readFile(f, 'utf8')));
   const moving = collectMovingKeyframes(sources);
-  const keyframeProps = collectKeyframeProps(sources);
+  const context = collectMotionContext(sources);
   if (OVERSHOOT_TOKENS.length === 0) { console.error('✗ motion gate found no overshooting --uix-ease-* token in tokens/base/effect.json — check the parser'); process.exit(1); }
   const problems = [];
   const exemptions = [];
   const totals = { decls: 0, timed: 0, loops: 0, hoverRules: 0 };
   cssFiles.forEach((f, i) => {
-    const r = checkCss(sources[i], relative(REPO, f).replace(/\\/g, '/'), moving, LOOP_ALLOW, keyframeProps);
+    const r = checkCss(sources[i], relative(REPO, f).replace(/\\/g, '/'), moving, LOOP_ALLOW, context);
     problems.push(...r.problems);
     exemptions.push(...r.exemptions);
     for (const k of Object.keys(totals)) totals[k] += r.stats[k];
   });
   const tsFiles = await listFiles(join(REPO, 'packages', 'react', 'src'), /\.(ts|tsx)$/, (n) => /\.test\./.test(n));
-  for (const f of tsFiles) problems.push(...checkTs(await readFile(f, 'utf8'), relative(REPO, f).replace(/\\/g, '/')));
+  for (const f of tsFiles) problems.push(...checkTs(await readFile(f, 'utf8'), relative(REPO, f).replace(/\\/g, '/'), context.keyframeProps));
 
   for (const e of exemptions) console.log(`ℹ motion-allow ${e}`);
   const scanned = `${cssFiles.length} stylesheets (${totals.decls} declarations, ${totals.timed} transition/animation, ${totals.loops} loops, ${totals.hoverRules} :hover rules, ${moving.size} moving @keyframes) + ${tsFiles.length} TS files`;

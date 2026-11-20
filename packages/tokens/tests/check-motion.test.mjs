@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { LOOP_ALLOW, OVERSHOOT_TOKENS, checkCss, checkTs, curveOvershoots } from "../scripts/check-motion.mjs";
+import { LOOP_ALLOW, OVERSHOOT_TOKENS, checkCss, checkTs, collectKeyframeProps, collectMotionContext, curveOvershoots } from "../scripts/check-motion.mjs";
 
 /*
  * The motion gate (scripts/check-motion.mjs, HAR-2578) — every rule blocks a seeded violation,
@@ -135,6 +135,32 @@ test("overshoot-effect: an animation is judged by what its @keyframes set", () =
   assert.deepEqual(rules(".a { animation-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "no animation named, nothing to check it against");
 });
 
+test("overshoot-effect: declarations fold in order, as the cascade folds them", () => {
+  // a later property list puts opacity on the spring; a later shorthand resets the spring timing
+  assert.deepEqual(rules(".a { transition: transform var(--uix-dur) var(--uix-ease-pop); transition-property: opacity; }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { transition-timing-function: var(--uix-ease-pop); transition: opacity var(--uix-dur) var(--uix-ease-out); }"), []);
+  assert.deepEqual(rules(".a { animation-timing-function: var(--uix-ease-pop); animation: uix-x var(--uix-dur) var(--uix-ease-out); } @keyframes uix-x { from { opacity: 0; } }"), []);
+});
+
+test("overshoot-effect: a list missing from the rule comes from the same element's other rules", () => {
+  const reduced = "@media (prefers-reduced-motion: reduce) { .a { animation: none; } }";
+  assert.deepEqual(rules(`@keyframes grow { from { transform: scale(.9); } } .a { animation-name: grow; } .a { animation-timing-function: var(--uix-ease-pop); } ${reduced}`), []);
+  assert.deepEqual(rules("@keyframes tint { from { opacity: 0; } } .a { animation-name: tint; } .a[open] { animation-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { transition-property: transform; } .a:popover-open { transition-timing-function: var(--uix-ease-pop); }"), []);
+  assert.deepEqual(rules(".a { transition-property: transform, opacity; } .a[open] { transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".ab { transition-property: transform; } .a { transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "another class is another element");
+});
+
+test("overshoot-effect: aliases resolve across files, and a rule's own redefinition wins", () => {
+  const shared = ":root { --x-ease: var(--uix-ease-pop); }";
+  const component = ".a { transition: opacity var(--uix-dur) var(--x-ease); }";
+  const r = checkCss(layer(component), "component.css", undefined, ANY_LOOP, collectMotionContext([shared, component]));
+  assert.equal(r.problems.filter((p) => p.includes("[overshoot-effect]")).length, 1, "an alias defined in another stylesheet");
+  assert.deepEqual(rules(".a { --x-ease: var(--uix-ease-pop); --x-ease: var(--uix-ease-out); transition: opacity var(--uix-dur) var(--x-ease); }"), [], "the rule's last value wins");
+  assert.deepEqual(rules(".a { --x-ease: var(--uix-ease-pop); } .b { --x-ease: var(--uix-ease-out); transition: opacity var(--uix-dur) var(--x-ease); }"), [], "the rule's own value, not another rule's");
+  assert.deepEqual(rules(".a { --x-ease: var(--uix-ease-pop); } .b { transition: opacity var(--uix-dur) var(--x-ease); }"), ["overshoot-effect"], "inherited: any definition counts");
+});
+
 test("overshoot-effect: motion-allow exempts with its reason", () => {
   const r = checkCss(layer(".a { /* motion-allow: the operator picked it */ transition: opacity var(--uix-dur) var(--uix-ease-pop); }"), "seed.css");
   assert.deepEqual(r.problems, []);
@@ -146,6 +172,15 @@ test("overshoot-effect: TS inline transitions and script-driven easing", () => {
   assert.equal(checkTs("const s = { transition: 'transform var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx").length, 0);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-bounce') });", "a.ts").length, 1);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-soft') });", "a.ts").length, 0);
+  // read whole: a template literal may span lines; the report names the line it starts on
+  const multi = checkTs("const x = 1;\nel.style.transition = `opacity var(--uix-dur)\n  var(--uix-ease-pop)`;", "a.ts");
+  assert.equal(multi.length, 1);
+  assert.match(multi[0], /^a\.ts:2 \[overshoot-effect\]/);
+  // an inline animation, judged by its @keyframes
+  const kf = collectKeyframeProps(["@keyframes uix-fade-in { from { opacity: 0; } } @keyframes uix-grow { from { transform: scale(.9); } }"]);
+  assert.equal(checkTs("const s = { animation: 'uix-fade-in var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx", kf).length, 1);
+  assert.equal(checkTs("const s = { animation: 'uix-grow var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx", kf).length, 0);
+  assert.equal(checkTs("// motion-allow: a seeded demo\nconst s = { animation: 'uix-fade-in var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx", kf).length, 0);
 });
 
 test("motion-allow: a reasoned exemption passes and is reported", () => {

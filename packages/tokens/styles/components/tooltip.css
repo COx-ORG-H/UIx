@@ -19,9 +19,7 @@
        back into it on the same spring, --uix-ease-tooltip. The React Tooltip waits --uix-delay-tooltip
        before it opens on hover; a neighbour hovered while one is open takes it over
        ([data-uix-instant], then [data-morph]); a key press opens and closes at once.
-       Only the scale takes the spring: its 2 % overshoot on opacity would clamp at 1 (check-motion
-       overshoot-effect), so the fade runs on the glide spring, which never passes 1 and is 95 %
-       there after about 175 ms, as the tooltip spring is after about 165 ms. */
+       Only the scale springs; the fade runs on glide, which never passes 1 (overshoot-effect). */
     opacity: 0; transform: scale(.7); transform-origin: var(--uix-anchor-origin, bottom center);
     transition: opacity var(--uix-dur-glide) var(--uix-ease-glide), transform var(--uix-dur-tooltip) var(--uix-ease-tooltip),
                 overlay var(--uix-dur-tooltip) allow-discrete, display var(--uix-dur-tooltip) allow-discrete;
