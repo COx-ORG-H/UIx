@@ -1544,7 +1544,7 @@ export interface DashboardCanvasChange {
     // (undocumented)
     readonly kind: 'move' | 'resize';
     // (undocumented)
-    readonly source: 'pointer' | 'keyboard';
+    readonly source: 'pointer' | 'keyboard' | 'buttons';
 }
 
 // @public
@@ -1570,12 +1570,27 @@ export interface DashboardCanvasItem {
 export interface DashboardCanvasLabels {
     atEdge: string;
     cancelled: string;
+    closeSteps: string;
     instructions: string;
     move: string;
     moved: string;
+    // (undocumented)
+    moveDown: string;
+    // (undocumented)
+    moveLeft: string;
+    // (undocumented)
+    moveRight: string;
+    moveUp: string;
+    narrower: string;
     region: string;
     resize: string;
     resized: string;
+    // (undocumented)
+    shorter: string;
+    // (undocumented)
+    taller: string;
+    // (undocumented)
+    wider: string;
 }
 
 // @public
@@ -1596,7 +1611,6 @@ export interface DashboardCanvasProps<T extends DashboardCanvasItem> extends Omi
     gap?: DashboardCanvasGap;
     itemLabel?: (item: T) => string;
     items: readonly T[];
-    // (undocumented)
     labels?: Partial<DashboardCanvasLabels>;
     onLayoutChange?: (items: T[], change: DashboardCanvasChange) => void;
     renderItem: (item: T) => ReactNode;
@@ -2221,6 +2235,9 @@ export const DEFAULT_INLINE_EDIT_LABELS: InlineEditLabels;
 
 // @public (undocumented)
 export const DEFAULT_INSIGHT_CARD_LABELS: InsightCardLabels;
+
+// @public (undocumented)
+export const DEFAULT_KANBAN_LABELS: KanbanLabels;
 
 // @public (undocumented)
 export const DEFAULT_KEYBOARD_GRAB_LABELS: KeyboardGrabLabels;
@@ -3993,10 +4010,17 @@ export function KanbanCard(input: KanbanCardProps): react.JSX.Element;
 export interface KanbanCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    column?: string;
+    disabledMoves?: readonly KanbanMoveDirection[];
     dragging?: boolean;
+    itemId?: string;
     // (undocumented)
     meta?: ReactNode;
+    moveColumns?: readonly KanbanMoveColumn[];
+    moveLabel?: string;
+    moveMenu?: boolean;
     onMove?: (dir: KanbanMoveDirection) => void;
+    onMoveTo?: (columnId: string) => void;
     // (undocumented)
     title?: ReactNode;
 }
@@ -4020,6 +4044,28 @@ export function KanbanDropLine(input: KanbanDropLineProps): react.JSX.Element;
 
 // @public (undocumented)
 export type KanbanDropLineProps = HTMLAttributes<HTMLDivElement>;
+
+// @public
+export interface KanbanLabels {
+    // (undocumented)
+    moveDown: string;
+    // (undocumented)
+    moveLeft: string;
+    moveMenu: string;
+    // (undocumented)
+    moveRight: string;
+    moveTo: string;
+    // (undocumented)
+    moveUp: string;
+}
+
+// @public
+export interface KanbanMoveColumn {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+}
 
 // @public (undocumented)
 export type KanbanMoveDirection = 'up' | 'down' | 'left' | 'right';
@@ -9520,6 +9566,7 @@ export interface UixLabels {
     };
     conflictNotice?: Partial<ConflictNoticeLabels>;
     contactCard?: Partial<ContactCardLabels>;
+    dashboardCanvas?: Partial<DashboardCanvasLabels>;
     dataWorkspace?: Partial<DataWorkspaceLabels>;
     dateFormat?: UixDateFormat;
     // (undocumented)
@@ -9552,6 +9599,7 @@ export interface UixLabels {
     };
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
+    kanban?: Partial<KanbanLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;
     leaveGuard?: Partial<LeaveGuardLabels>;
     lightbox?: Partial<LightboxLabels>;
@@ -9610,6 +9658,7 @@ export interface UixLabels {
     };
     // (undocumented)
     tree?: Partial<TreeLabels>;
+    viewMenu?: Partial<ViewMenuColumnLabels>;
 }
 
 // @public
@@ -9980,7 +10029,6 @@ export interface ViewMenuColumnLabels {
 export interface ViewMenuProps {
     // (undocumented)
     className?: string;
-    // (undocumented)
     columnLabels?: Partial<ViewMenuColumnLabels>;
     // (undocumented)
     columns?: readonly ViewMenuColumn[];
