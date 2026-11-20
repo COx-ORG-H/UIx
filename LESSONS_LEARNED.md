@@ -1,6 +1,7 @@
 # UIx engineering lessons
 
 <!-- lesson-skip: 17320c27 routine review fixes on unreleased form-errors code (server refusals on resubmit, announcement regions, title ownership, leave-attempt policy, prototype-safe key-path merge); each pinned by a jsdom test -->
+<!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->

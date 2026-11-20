@@ -11,7 +11,7 @@
   .uix-filelist { display: flex; flex-direction: column; gap: var(--uix-space-2); margin-top: var(--uix-space-3); }
   .uix-filelist:empty { display: none; }
   .uix-filelist__item { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); font-size: var(--uix-text-meta); color: var(--uix-text); }
-  .uix-filelist__size { margin-left: auto; color: var(--uix-text-muted); }
+  .uix-filelist__size { margin-inline-start: auto; color: var(--uix-text-muted); }
 }
 
 /* React `FileUpload` (HAR-984): validated picking, per-file progress, retry, alt text */
@@ -26,7 +26,7 @@
   .uix-file-upload .uix-dropzone > * { max-width: 100%; }
   .uix-file-upload[data-disabled] .uix-dropzone { opacity: .6; cursor: not-allowed; }
   .uix-file-upload__hint { font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
-  .uix-file-upload__errors { margin: 0; padding-left: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
+  .uix-file-upload__errors { margin: 0; padding-inline-start: 1.1em; color: var(--uix-danger-text); font-size: var(--uix-text-meta); overflow-wrap: anywhere; }
   .uix-file-upload__list { margin: 0; padding: 0; list-style: none; }
   .uix-file-upload__item { align-items: flex-start; }
   .uix-file-upload__item[data-status="error"] { border-color: var(--uix-danger-border); }
