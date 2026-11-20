@@ -13,7 +13,7 @@
  *
  * The rules on a mock clock: packages/react/src/session-timeout-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/session-timeout/harness.html';
