@@ -5,7 +5,7 @@ import type { ReactNode, HTMLAttributes, InputHTMLAttributes, KeyboardEvent } fr
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { usePluralLabel, useUixLabels, useUixLocale } from '../labels-context.js';
-import { useDialog } from '../hooks/useDialog.js';
+import { useDialogSync } from '../hooks/useDialog.js';
 import { filterCommandItems, groupCommandItems } from '../command-palette-model.js';
 import type { CommandPaletteItem } from '../command-palette-model.js';
 import { searchSegments } from '../search-suggest-model.js';
@@ -241,7 +241,7 @@ function CommandPaletteItems({
   useShortcut({
     id: COMMAND_PALETTE_SHORTCUT_ID, keys: shortcut ?? '', enabled: shortcut != null && open !== undefined && onOpenChange != null, scope: 'global',
     label: shortcutLabel ?? uixLabels.shortcuts?.openPalette ?? 'Open the command palette',
-    allowInInputs: true, allowInModal: true, handler: () => onOpenChange?.(!open),
+    allowInInputs: true, allowInModal: true, handler: () => toggleOpen(),
   });
   const labels = uixLabels.commandPalette;
   const inputLabel = inputLabelProp ?? labels?.input ?? 'Command palette';
@@ -258,7 +258,16 @@ function CommandPaletteItems({
   const setQuery = (next: string) => { if (queryProp === undefined) setQueryState(next); onQueryChange?.(next); };
 
   const inDialog = open !== undefined;
-  const ref = useDialog(inDialog ? open : false, () => onOpenChange?.(false));
+  const { ref, resync } = useDialogSync(inDialog ? open : false, () => onOpenChange?.(false));
+  /* The open key toggles from the dialog's real state, not from `open`: Escape closes the native
+   * dialog a task before React renders the `false` its `close` event asked for, and a press in that
+   * gap read a stale `true` and closed it again. Opening also re-syncs useDialog, because `true`
+   * batched with the pending `false` leaves `open` unchanged and the dialog would stay closed. */
+  function toggleOpen() {
+    if (ref.current?.open) { onOpenChange?.(false); return; }
+    onOpenChange?.(true);
+    resync();
+  }
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);

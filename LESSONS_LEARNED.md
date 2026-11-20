@@ -404,3 +404,6 @@ missing or blank.
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
 
 <!-- lesson-skip: 488ac745 routine: out-of-scope docs helper (the ReferenceError named it) plus a spec repair; docs.test.js now renders the Toast page -->
+
+<!-- lesson-records: Docs/lesson-records -->
+<!-- Frozen for new skip and record lines (2026-11-20): every PR that added its lesson-skip line at the top of this file conflicted with every other open PR that did. The lesson-capture hook now asks for one new file per decision in Docs/lesson-records/ (skip-<sha>.md, or <date>-<slug>.md for a rule). The entries above stay as they are. -->
