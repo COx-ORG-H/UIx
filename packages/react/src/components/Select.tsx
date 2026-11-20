@@ -744,8 +744,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           <span className="uix-select__text">{firstSelected?.label}</span>
         </>
       );
-  // 2.60 (animate-ui's value swap): the old value rises out while the new one rises in, both over
-  // --uix-dur-overlay on --uix-ease-soft (CSS), their 4 px blur written per frame (motion.ts blurIn).
+  // 2.60 (animate-ui's value swap): the old value rises out, then the new one rises in, on
+  // --uix-ease-soft (CSS), their 4 px blur written per frame (motion.ts blurIn). A text swap never
+  // shows both texts (Foundations → Motion): the old one leaves on --uix-dur-swap-out and the new
+  // one arrives over the rest of --uix-dur-overlay.
   // The old value is the trigger's ::before (`content: attr(data-leaving)`), never a second element,
   // so the trigger's text and accessible name only ever hold the current value.
   const valueRef = useRef<HTMLSpanElement>(null);
@@ -761,10 +763,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     trigger.setAttribute('data-swap', '');
     const blur = tokenPx('--uix-arrive-blur', 4);
     const duration = tokenMs('--uix-dur-overlay', 400);
+    const out = Math.min(tokenMs('--uix-dur-swap-out', 130), duration);
     const ease = tokenEase('--uix-ease-soft');
     const stops = [
-      valueRef.current ? blurIn([valueRef.current], { from: blur, duration, ease }) : () => {},
-      blurIn([trigger], { from: blur, duration, ease, leave: true, property: '--uix-leaving-blur' }),
+      valueRef.current ? blurIn([valueRef.current], { from: blur, duration: duration - out, delay: () => out, ease }) : () => {},
+      blurIn([trigger], { from: blur, duration: out, ease, leave: true, property: '--uix-leaving-blur' }),
     ];
     const t = setTimeout(() => { trigger.removeAttribute('data-leaving'); trigger.removeAttribute('data-swap'); }, duration);
     return () => {
