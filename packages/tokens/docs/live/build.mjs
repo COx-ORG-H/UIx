@@ -17,6 +17,7 @@ export async function buildDocsLive() {
       'shortcut-demo.tsx',
       'toast-undo-demo.tsx',
       'form-errors-demo.tsx',
+      'sla-timer-demo.tsx',
       'column-resize-demo.tsx',
     ].map((file) => join(here, file)),
     outdir: join(here, 'dist'),
