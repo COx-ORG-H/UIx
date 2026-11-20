@@ -49,12 +49,17 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
    * control is on screen. A keyboard open stays instant and reduced motion keeps the fade.
    */
   origin?: 'center' | 'trigger';
+  /**
+   * Draw the × in the header when there is an `onClose` (default `true`). `false` for a dialog
+   * whose footer holds every way out and where Escape means its primary action (`SessionTimeout`).
+   */
+  closeButton?: boolean;
 }
 
 /** A modal `<dialog>`; the ref reaches it (HAR-1831). */
 export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
   open, onClose, dirty = false, pending = false, discardLabels, title, children, footer, className, closeLabel: closeLabelProp,
-  role = 'dialog', instant = false, origin = 'center', onKeyDown, ...rest
+  role = 'dialog', instant = false, origin = 'center', closeButton = true, onKeyDown, ...rest
 }, ref) {
   const uixLabels = useUixLabels();
   const closeLabel = closeLabelProp ?? uixLabels.modal?.close ?? 'Close dialog';
@@ -81,10 +86,10 @@ export const Modal = forwardRef<HTMLDialogElement, ModalProps>(function Modal({
     >
       {guard.provide(
         <>
-          {(title != null || onClose) && (
+          {(title != null || (onClose && closeButton)) && (
             <div className="uix-dialog__header">
               {title && <h2 className="uix-dialog__title" id={titleId}>{title}</h2>}
-              {onClose && (
+              {onClose && closeButton && (
                 <button
                   ref={closeRef}
                   type="button"
