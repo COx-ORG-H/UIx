@@ -6,6 +6,7 @@
  * focus to the row in its place, with no cue. Under reduced motion the cue is the steady outline.
  * `?cue=0` (no `peekRowId`) is the queue before the experiment. */
 import { test, expect } from '@playwright/test';
+import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/peek-return/harness.html';
 
@@ -76,8 +77,7 @@ for (const route of ['close button', 'backdrop']) {
     await row(page, 'INC-20416').locator('.uix-id-cell__btn').click();
     const peek = page.getByRole('dialog');
     await expect(peek).toBeVisible();
-    // only clock-driven animations: a scroll edge (scroll-edge.css) follows the scroll and stays 'running'
-    await page.waitForFunction(() => document.getAnimations().filter((a) => a.timeline === document.timeline).every((a) => a.playState !== 'running' || !Number.isFinite(a.effect?.getComputedTiming().iterations)));
+    await settleAnimations(page); // the shared wait: finite, clock-driven animations only (settle.mjs)
     if (route === 'close button') await peek.getByRole('button', { name: 'Vorschau schließen' }).click();
     else await page.mouse.click(8, 450); // the scrim, left of the panel
     await expect(peek).toBeHidden();
