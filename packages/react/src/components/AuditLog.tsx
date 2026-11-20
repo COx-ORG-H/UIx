@@ -4,7 +4,9 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { ChevronDownIcon } from '../icons/components.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
@@ -63,8 +65,8 @@ export interface AuditLogLabels {
   loadMore: string;
   /** Polite status while more entries load. */
   loadingMore: string;
-  /** Polite status after more entries arrived. `{count}`. */
-  loaded: string;
+  /** Polite status after more entries arrived. `{count}`. Plural-aware: the forms or a function of the count. */
+  loaded: UixCountLabel;
   /** Shown (as an alert) when `loadMoreError` is set; the Show older entries button retries. */
   loadMoreFailed: string;
   loading: string;
@@ -168,6 +170,8 @@ export function AuditLog({
   hasMore = false, onLoadMore, loadingMore = false, loadMoreError = false, locale, formatExact, timeZone: zoneProp, formatDate, now, labels: labelOverrides, className, ...props
 }: AuditLogProps) {
   const labels = { ...DEFAULT_AUDIT_LOG_LABELS, ...useUixLabels().auditLog, ...labelOverrides };
+  // the plural forms follow the labels' language: the provider's locale, then this component's
+  const pluralLocale = useUixLocale() ?? (typeof locale === 'string' ? locale : locale?.[0]);
   const id = useId();
   const [announced, setAnnounced] = useState('');
   const countBefore = useRef<number | null>(null);
@@ -179,8 +183,8 @@ export function AuditLog({
     if (loadMoreError) { countBefore.current = null; setAnnounced(''); return; }
     if (events.length === before) return;
     countBefore.current = null;
-    if (events.length > before) setAnnounced(fillLabel(labels.loaded, { count: events.length - before }));
-  }, [events.length, loadingMore, loadMoreError, labels.loaded]);
+    if (events.length > before) setAnnounced(fillLabel(countLabel(labels.loaded, events.length - before, pluralLocale), { count: events.length - before }));
+  }, [events.length, loadingMore, loadMoreError, labels.loaded, pluralLocale]);
 
   const timeZone = knownTimeZone(zoneProp);
   const intlExact = new Intl.DateTimeFormat(locale as string | string[] | undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone });

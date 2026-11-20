@@ -10,7 +10,8 @@ import { addCalendarDays, zonedDateKey, zonedTimeOfDay } from '../calendar-model
 import { itemDaySpan } from '../scheduling-calendar-model.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { usePrinting } from '../hooks/usePrinting.js';
-import { fillLabel } from '../fill-label.js';
+import { fillCountLabel, fillLabel } from '../fill-label.js';
+import { useUixLocale } from '../labels-context.js';
 import { syncRovingStop } from '../roving.js';
 import type { RovingStop } from '../roving.js';
 import type {
@@ -78,6 +79,7 @@ function AgendaBody({
   groups, flat, timeZone, labels, headingLevel, dateText, formatInstant, entryName, entryStatus, entryStatusText, entryMarkers, overlayName,
   renderEntry, renderMarker, onSelectEntry, onSelectOverlay, onShowMore,
 }: SchedulingAgendaProps & { flat: boolean }) {
+  const locale = useUixLocale();
   const groupKeys = uniqueKeys(groups.map((group) => group.date));
   const flatRows: FlatRow[] = [];
   if (flat) {
@@ -270,12 +272,12 @@ function AgendaBody({
   };
 
   const hidden = (group: SchedulingAgendaGroup) => {
-    const text = fillLabel(labels.hiddenInDay, { count: group.hiddenCount ?? 0 });
+    const text = fillCountLabel(labels.hiddenInDay, { count: group.hiddenCount ?? 0 }, locale);
     return onShowMore
       ? <button type="button" className="uix-scheduling-calendar__agenda-more" onClick={() => onShowMore(group.date, group.rows)}>{text}</button>
       : <p className="uix-scheduling-calendar__agenda-more">{text}</p>;
   };
-  const continues = (group: SchedulingAgendaGroup) => <p className="uix-scheduling-calendar__agenda-continues">{fillLabel(labels.continuesInDay, { count: group.continuesCount ?? 0 })}</p>;
+  const continues = (group: SchedulingAgendaGroup) => <p className="uix-scheduling-calendar__agenda-continues">{fillCountLabel(labels.continuesInDay, { count: group.continuesCount ?? 0 }, locale)}</p>;
 
   if (groups.length === 0) return <div className="uix-scheduling-calendar__agenda" role="region" aria-label={labels.agenda}><p>{labels.agendaEmpty}</p></div>;
 

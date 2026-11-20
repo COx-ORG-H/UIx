@@ -3,8 +3,8 @@ export { cx } from './cx.js';
 
 // Hooks
 export { useDialog } from './hooks/useDialog.js';
-export { useTable } from './hooks/useTable.js';
-export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
+export { useTable, DEFAULT_USE_TABLE_LABELS } from './hooks/useTable.js';
+export type { UseTableLabels, UseTableOptions, UseTableResult } from './hooks/useTable.js';
 export { useVirtualRows } from './hooks/useVirtualRows.js';
 export type { UseVirtualRowsOptions, UseVirtualRowsResult } from './hooks/useVirtualRows.js';
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
@@ -54,8 +54,10 @@ export { Button, ButtonGroup, ButtonLink } from './components/Button.js';
 export type { ButtonProps, ButtonGroupProps, ButtonLinkProps, ButtonSize, ButtonVariant } from './components/Button.js';
 
 // Kit chrome strings for a subtree (HAR-1358)
-export { UixLabelsProvider, useUixLabels } from './labels-context.js';
-export type { UixDateFormat, UixLabels, UixLabelsProviderProps } from './labels-context.js';
+export { UixLabelsProvider, useUixLabels, useUixLocale, usePluralLabel } from './labels-context.js';
+export type { UixDateFormat, UixLabels, UixLabelPack, UixLabelsProviderProps } from './labels-context.js';
+export { countLabel, pluralCategory } from './plural.js';
+export type { UixCountLabel, UixPluralForms } from './plural.js';
 
 // Link adapter — one renderLink callback for every component that can render a link (HAR-1348)
 export { renderPlainLink } from './link.js';
