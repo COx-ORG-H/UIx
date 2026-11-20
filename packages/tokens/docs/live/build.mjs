@@ -1,4 +1,4 @@
-/* Bundles the docs' live demos (motion-playground.tsx, task-tray-demo.tsx, shortcut-demo.tsx and sla-timer-demo.tsx: React plus the real
+/* Bundles the docs' live demos (motion-playground.tsx, task-tray-demo.tsx, shortcut-demo.tsx, toast-undo-demo.tsx and sla-timer-demo.tsx: React plus the real
  * components, from source) into packages/tokens/docs/live/dist/. Not committed. The docs site workflow runs it
  * before assembling the site; run it locally to see the playground in the repository preview:
  *   node packages/tokens/docs/live/build.mjs */
@@ -10,7 +10,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export async function buildDocsLive() {
   await build({
-    entryPoints: [join(here, 'motion-playground.tsx'), join(here, 'task-tray-demo.tsx'), join(here, 'shortcut-demo.tsx'), join(here, 'sla-timer-demo.tsx')],
+    entryPoints: [join(here, 'motion-playground.tsx'), join(here, 'task-tray-demo.tsx'), join(here, 'shortcut-demo.tsx'), join(here, 'toast-undo-demo.tsx'), join(here, 'sla-timer-demo.tsx')],
     outdir: join(here, 'dist'),
     bundle: true,
     format: 'esm',
