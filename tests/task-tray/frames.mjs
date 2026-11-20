@@ -12,6 +12,25 @@ mkdirSync(out, { recursive: true });
 const url = (q) => `${base}/tests/task-tray/harness.html?${q}`;
 const browser = await chromium.launch();
 
+// the docs: the component page with its live demo running, and the static specimen on the overlays route
+if (process.argv.includes('--docs')) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto(`${base}/packages/tokens/docs/explorer.html#task-tray`);
+  await page.waitForSelector('[data-live-demo] button');
+  await page.locator('[data-live-demo] button').nth(0).click();
+  await page.locator('[data-live-demo] button').nth(2).click();
+  await page.waitForTimeout(2500);
+  await page.locator('[data-live-demo] .uix-task-tray__pill').click();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: join(out, 'docs-task-tray-live.png') });
+  await page.goto(`${base}/packages/tokens/docs/explorer.html#examples-overlays`);
+  await page.locator('[data-task-tray-example]').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await page.locator('[data-task-tray-example]').screenshot({ path: join(out, 'docs-task-tray-specimen.png') });
+  await browser.close();
+  process.exit(0);
+}
+
 async function shot(name, query, { width = 1280, height = 800, theme = 'light', reduced = false, contrast = false, forced = false } = {}) {
   const page = await browser.newPage({
     viewport: { width, height }, colorScheme: theme,

@@ -188,8 +188,9 @@ test('TaskTray: a landmark with a pill that counts, a panel that opens, and rows
     click(pill);
     assert.equal(pill.getAttribute('aria-expanded'), 'true');
     assert.equal(panel.hidden, false);
-    assert.equal(document.activeElement, pill, 'opening leaves focus on the pill');
+    assert.ok(document.activeElement === pill, 'opening leaves focus on the pill');
     const [disc, expRow] = rows(host);
+    assert.ok(disc.hasAttribute('data-uix-key'), 'MotionList reaches the row (its arrive, leave and focus hand-off)');
     assert.equal(disc.getAttribute('aria-busy'), 'true');
     const bar = expRow.querySelector('[role="progressbar"]');
     assert.deepEqual([bar.getAttribute('aria-valuenow'), bar.getAttribute('aria-valuemax'), bar.getAttribute('aria-label')], ['2480', '4000', 'Export 4,000 tickets']);
@@ -207,7 +208,7 @@ test('TaskTray: a landmark with a pill that counts, a panel that opens, and rows
 
     key(rows(host)[1].querySelector('a'), 'Escape');
     assert.equal(pill.getAttribute('aria-expanded'), 'false');
-    assert.equal(document.activeElement, pill, 'Escape collapses onto the pill');
+    assert.ok(document.activeElement === pill, 'Escape collapses onto the pill');
   } finally { unmount(); }
 });
 
@@ -228,11 +229,11 @@ test('TaskTray: Cancel hands focus to the same row; the last dismiss gives focus
     click(cancel);
     const dismiss = rows(host)[0].querySelector('.uix-task-tray__dismiss');
     assert.equal(rows(host)[0].dataset.status, 'cancelled');
-    assert.equal(document.activeElement, dismiss, 'focus moved to the row\'s Dismiss');
+    assert.ok(document.activeElement === dismiss, 'focus moved to the row\'s Dismiss');
     click(dismiss);
     tick(1000);
     assert.equal(host.querySelector('section'), null, 'the tray is gone with its last task');
-    assert.equal(document.activeElement, before, 'focus went back to where it came from');
+    assert.ok(document.activeElement === before, 'focus went back to where it came from');
   } finally { unmount(); before.remove(); restore(); }
 });
 
@@ -270,7 +271,7 @@ test('TaskTray: announces starts and endings politely, never progress, and not w
     act(() => task.complete({ message: '4,000 rows written' }));
     assert.equal(live(host), 'Started: Export 4,000 tickets Done: Export 4,000 tickets. 4,000 rows written');
     act(() => t.start('Import').fail({ message: '12 rows invalid' }));
-    assert.match(live(host), /Started: Import Failed: Import\. 12 rows invalid$/);
+    assert.match(live(host), /4,000 rows written Failed: Import\. 12 rows invalid$/, 'a task that starts and fails at once is announced once, as failed');
   } finally { unmount(); }
 });
 

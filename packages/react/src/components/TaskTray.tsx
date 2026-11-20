@@ -93,6 +93,8 @@ function summarize(records: readonly TaskRecord[]): Summary {
   return s;
 }
 
+const FOCUSABLE = 'a[href], button:not(:disabled)';
+
 /** Removed, or about to be: in a leaving row or a collapsed panel. */
 const gone = (el: Element) => !el.isConnected || !!el.closest('[data-uix-exiting], [hidden]');
 
@@ -114,7 +116,8 @@ function Mark({ status, fraction }: { status: TaskStatus; fraction: number | nul
   return <span className="uix-task-tray__mark" data-mark={status} aria-hidden="true">{status === 'done' ? CHECK : null}</span>;
 }
 
-function TaskRow({ record, store, labels }: { record: TaskRecord; store: TaskStore; labels: TaskTrayLabels }) {
+/** One task. Unknown props reach the `li`: MotionList marks its items with them (`data-uix-key`, `data-uix-exiting`). */
+function TaskRow({ record, store, labels, ...rest }: { record: TaskRecord; store: TaskStore; labels: TaskTrayLabels } & HTMLAttributes<HTMLLIElement>) {
   const titleId = useId();
   const running = record.status === 'running';
   const measurable = record.value != null && Number.isFinite(record.value);
@@ -130,7 +133,7 @@ function TaskRow({ record, store, labels }: { record: TaskRecord; store: TaskSto
     if (action && !action.keep) setTimeout(() => store.dismiss(record.id), 0);
   };
   return (
-    <li className="uix-task-tray__task" data-status={record.status} aria-busy={running || undefined}>
+    <li {...rest} className="uix-task-tray__task" data-status={record.status} aria-busy={running || undefined}>
       <Mark status={record.status} fraction={fraction} />
       <div className="uix-task-tray__body">
         <p className="uix-task-tray__title" id={titleId}>{record.title}</p>
@@ -238,8 +241,15 @@ export function TaskTray({
     const timer = window.setTimeout(() => { setShown(false); setLeaving(false); }, tokenMs('--uix-dur-exit', 110));
     return () => window.clearTimeout(timer);
   }, [records.length, shown]);
-  // nothing left to show: the panel closes, so the next task starts collapsed
-  useEffect(() => { if (!records.length && open) setOpen(false); }, [records.length, open, setOpen]);
+  // the last task went: the panel closes, so the next task starts collapsed (a tray that mounts
+  // empty keeps `defaultOpen`)
+  const hadTasks = useRef(records.length > 0);
+  useEffect(() => {
+    if (records.length) { hadTasks.current = true; return; }
+    if (!hadTasks.current) return;
+    hadTasks.current = false;
+    if (open) setOpen(false);
+  }, [records.length, open, setOpen]);
 
   // Announcements: one polite region, mounted before any task exists. Starts and endings, never
   // percentages; tasks already there when the tray mounted are not announced again.
@@ -276,11 +286,13 @@ export function TaskTray({
   // MotionList already moves it within the list; this catches the header and the last row.
   const returnFocus = useRef<HTMLElement | null>(null);
   const focused = useRef<HTMLElement | null>(null);
+  const focusedRow = useRef<string | null>(null);
   const handleFocus = (event: ReactFocusEvent<HTMLElement>) => {
     onFocus?.(event);
     const from = event.relatedTarget;
     if (from instanceof HTMLElement && !event.currentTarget.contains(from)) returnFocus.current = from;
     focused.current = event.target as HTMLElement;
+    focusedRow.current = (event.target as HTMLElement).closest('[data-uix-key]')?.getAttribute('data-uix-key') ?? null;
   };
   const handleBlur = (event: ReactFocusEvent<HTMLElement>) => {
     onBlur?.(event);
@@ -300,7 +312,12 @@ export function TaskTray({
     // focus already found a new home (MotionList moved it to the next row)
     if (active && active !== el && active !== document.body && active.isConnected && !gone(active)) return;
     focused.current = null;
-    const target = hasTasks && pillRef.current?.isConnected ? pillRef.current : returnFocus.current;
+    // the same row's next control, else the next row's, else the previous row's, else the pill
+    const rows = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('.uix-task-tray__list > [data-uix-key]') ?? []);
+    const at = rows.findIndex((row) => row.getAttribute('data-uix-key') === focusedRow.current);
+    const order = at < 0 ? [] : [rows[at], ...rows.slice(at + 1), ...rows.slice(0, at).reverse()];
+    const inRow = order.filter((row) => !gone(row)).map((row) => row.querySelector<HTMLElement>(FOCUSABLE)).find(Boolean);
+    const target = inRow ?? (hasTasks && pillRef.current?.isConnected ? pillRef.current : returnFocus.current);
     if (target?.isConnected) target.focus({ preventScroll: true });
   });
 
