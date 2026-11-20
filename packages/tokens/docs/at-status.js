@@ -18,8 +18,8 @@ export const AT_PAIRINGS = [
 
 /** The automated evidence, never counted as a pairing. */
 export const AT_AUTOMATED = [
-  { key: 'automated-tree', label: 'Accessibility tree (Playwright, Chromium)' },
-  { key: 'nvda-guidepup', label: 'NVDA speech capture (Guidepup, CI)' },
+  { key: 'automated-tree', label: 'Accessibility tree (Playwright, Chromium)', short: 'Accessibility tree' },
+  { key: 'nvda-guidepup', label: 'NVDA speech capture (Guidepup, CI)', short: 'NVDA speech (CI)' },
 ];
 
 const notRun = Object.fromEntries(AT_PAIRINGS.map(({ key }) => [key, 'not-run']));
