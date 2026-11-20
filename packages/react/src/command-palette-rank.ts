@@ -18,6 +18,7 @@ export const defaultCommandFold: CommandFold = (text) => [foldForSearch(text).te
 
 /** A found command, with what found it. */
 export interface RankedCommand {
+  /** The command found. */
   item: CommandPaletteItem;
   /** Higher is better: the match quality (1 for a label that starts with the query) times the boosts. */
   score: number;
@@ -25,6 +26,7 @@ export interface RankedCommand {
   alias?: string;
 }
 
+/** How `rankCommandItems` folds text and weighs the person's use. */
 export interface RankCommandOptions {
   /** How text is folded for matching. Default `defaultCommandFold`. */
   fold?: CommandFold;

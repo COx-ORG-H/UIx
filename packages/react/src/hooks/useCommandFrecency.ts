@@ -7,6 +7,7 @@ import {
 } from '../command-frecency.js';
 import type { CommandFrecencyEntries, CommandFrecencyStorage } from '../command-frecency.js';
 
+/** Where `useCommandFrecency` keeps the use, and how fast it fades. */
 export interface UseCommandFrecencyOptions {
   /**
    * Where the use is kept: your own adapter (the person's profile on the server), `null` for this

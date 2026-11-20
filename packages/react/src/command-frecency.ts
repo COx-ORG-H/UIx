@@ -25,8 +25,11 @@ export type CommandFrecencyEntries = Readonly<Record<string, CommandFrecencyEntr
  * hook another tab or device changed them.
  */
 export interface CommandFrecencyStorage {
+  /** The stored entries, or `null` for none. Called after mount and after every `subscribe` notice. */
   read: () => CommandFrecencyEntries | null;
+  /** Keep `entries` (every entry, after each change). */
   write: (entries: CommandFrecencyEntries) => void;
+  /** Call `onChange` when the stored entries change elsewhere; return the unsubscribe. */
   subscribe?: (onChange: () => void) => () => void;
 }
 
