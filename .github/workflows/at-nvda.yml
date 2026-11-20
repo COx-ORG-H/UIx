@@ -2,7 +2,7 @@ name: AT evidence (NVDA)
 
 # Real NVDA speech for the six AT-evidence widgets (Docs/a11y/scripts/, enterprise-UX study item #4),
 # on a GitHub Windows runner: Guidepup installs a portable NVDA, tests/at-nvda/run.mjs drives it
-# with Chrome for Testing over tests/at-evidence/harness.html and keeps what NVDA spoke as the
+# with Playwright's chromium (headed) over tests/at-evidence/harness.html and keeps what NVDA spoke as the
 # `nvda-transcript` artifact. Automated speech capture, not a human pass: the results files in
 # Docs/a11y/results/ cite a run of this workflow by date and run id.
 #

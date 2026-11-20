@@ -135,7 +135,7 @@ Two kinds of automated evidence sit next to the human runs. Neither ever fills a
   not prove any reader speaks them well.
 - **NVDA speech capture** (`.github/workflows/at-nvda.yml`, `tests/at-nvda/run.mjs`): Guidepup
   starts a portable NVDA on a GitHub Windows runner, presses each script's keys through NVDA in
-  Chrome for Testing, and keeps what NVDA spoke (`nvda-transcript` artifact). It is NVDA's real
+  Playwright's chromium (headed; the transcript names the build), and keeps what NVDA spoke (`nvda-transcript` artifact). It is NVDA's real
   output, but nobody listened, so it cannot judge verbosity, order or whether a pause in speech
   lost the user. A result file records it in its own `nvda-guidepup` key and quotes the run.
 

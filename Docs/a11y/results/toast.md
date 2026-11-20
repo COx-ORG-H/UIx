@@ -30,16 +30,16 @@ nvda-guidepup: pass
 
 - `automated-tree: pass`: `tests/a11y/at-evidence.spec.mjs` passed in Chromium, light and dark, at
   2.70.0 plus this change, on 2026-11-20 (local run and PR #302's CI).
-- `nvda-guidepup: pass`: [run 44725485902](https://github.com/COx-ORG-H/UIx/actions/runs/44725485902), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Chrome for Testing on a GitHub `windows-latest` runner. Scored against the script's "Must convey" for the steps it covers: the success toast spoken once ("Incident INC-1002 saved"), the error at once as an alert ("alert, Could not save INC-1002. Try again."). Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
+- `nvda-guidepup: pass`: [run 44734650775](https://github.com/COx-ORG-H/UIx/actions/runs/44734650775), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Playwright chromium 149.0.7827.55 (headed) on a GitHub `windows-latest` runner; earlier runs 44725485902, 44733256135 and 44734133463 heard the same. Scored against the script's "Must convey" for the steps it covers: the success toast spoken exactly once ("Incident INC-1002 saved"), the error at once as an alert, exactly once ("alert, Could not save INC-1002. Try again."). Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
 
 ## Transcript
 
-Nobody has run a pairing yet. The rows below are NVDA's own speech from the automated run, verbatim and in order ("on arrival" first), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
+Nobody has run a pairing yet. The rows below are NVDA's own speech from run 44734650775, one row per key or group of keys, verbatim and in order ("arrival" is what NVDA said on landing), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
 
 | Step | Pairing | Heard | Verdict |
 |------|---------|-------|---------|
-| Toast: Enter on "Show success toast", wait | NVDA (Guidepup, automated) + Chrome for Testing | "Show success toast, button, focused" / "Incident INC-1002 saved" | see header |
-| Toast: Enter on "Show error toast", wait | NVDA (Guidepup, automated) + Chrome for Testing | "Show error toast, button, focused" / "alert, Could not save INC-1002. Try again." | see header |
+| Toast: Enter | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "Show success toast, button, focused" / "Incident INC-1002 saved" | expected |
+| Toast: Enter | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "Show error toast, button, focused" / "alert, Could not save INC-1002. Try again." | expected |
 
 ## Checklist results
 

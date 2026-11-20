@@ -30,16 +30,17 @@ nvda-guidepup: fail
 
 - `automated-tree: pass`: `tests/a11y/at-evidence.spec.mjs` passed in Chromium, light and dark, at
   2.70.0 plus this change, on 2026-11-20 (local run and PR #302's CI).
-- `nvda-guidepup: fail`: [run 44725485902](https://github.com/COx-ORG-H/UIx/actions/runs/44725485902), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Chrome for Testing on a GitHub `windows-latest` runner. Scored against the script's "Must convey" for the steps it covers: the sort is spoken ("sorted ascending"), but a focused row is announced as "row, focused" and ArrowDown as "row", with none of its cells (script steps 5–6). Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
+- `nvda-guidepup: fail`: [run 44734650775](https://github.com/COx-ORG-H/UIx/actions/runs/44734650775), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Playwright chromium 149.0.7827.55 (headed) on a GitHub `windows-latest` runner; earlier runs 44725485902, 44733256135 and 44734133463 heard the same. Scored against the script's "Must convey" for the steps it covers: the sort is spoken ("sorted ascending") and the row checkbox with its state, but a focused row is announced as "row, focused" and ArrowDown as "row", with none of its cells (script steps 5–6). Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
 
 ## Transcript
 
-Nobody has run a pairing yet. The rows below are NVDA's own speech from the automated run, verbatim and in order ("on arrival" first), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
+Nobody has run a pairing yet. The rows below are NVDA's own speech from run 44734650775, one row per key or group of keys, verbatim and in order ("arrival" is what NVDA said on landing), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
 
 | Step | Pairing | Heard | Verdict |
 |------|---------|-------|---------|
-| DataWorkspace: the first row, ArrowDown, Tab to its checkbox, Space | NVDA (Guidepup, automated) + Chrome for Testing | "row, focused" / "row" / "Select all rows on this page, column 1, Select INC-1002, check box, not checked" / "checked" | see header |
-| DataWorkspace: Enter on the Priority header button | NVDA (Guidepup, automated) + Chrome for Testing | "Priority, button, focused" / "sorted ascending" | see header |
+| DataWorkspace: ArrowDown | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "row, focused" / "row" | known issue |
+| DataWorkspace: Tab, Space | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "Select all rows on this page, column 1, Select INC-1002, check box, not checked" / "checked" | expected |
+| DataWorkspace: Enter | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "Priority, button, focused" / "sorted ascending" | expected |
 
 ## Checklist results
 

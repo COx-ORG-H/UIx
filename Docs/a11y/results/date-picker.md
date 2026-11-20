@@ -30,15 +30,18 @@ nvda-guidepup: fail
 
 - `automated-tree: pass`: `tests/a11y/at-evidence.spec.mjs` passed in Chromium, light and dark, at
   2.70.0 plus this change, on 2026-11-20 (local run and PR #302's CI).
-- `nvda-guidepup: fail`: [run 44725485902](https://github.com/COx-ORG-H/UIx/actions/runs/44725485902), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Chrome for Testing on a GitHub `windows-latest` runner. Scored against the script's "Must convey" for the steps it covers: ArrowDown in the field spoke "Calendar, dialog", but neither the chosen day nor the day ArrowLeft moved to was named: "out of toggle button, toggle button, not pressed" (script steps 3–4). Escape returned to the field and NVDA read it. Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
+- `nvda-guidepup: fail`: [run 44734650775](https://github.com/COx-ORG-H/UIx/actions/runs/44734650775), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Playwright chromium 149.0.7827.55 (headed) on a GitHub `windows-latest` runner; earlier runs 44725485902, 44733256135 and 44734133463 heard the same. Scored against the script's "Must convey" for the steps it covers: the field with its hint and value, "Calendar, dialog" on opening, and focus back in the field after Escape; but in browse mode ArrowLeft is NVDA's own key and the focused day does not move (script steps 3–4). In focus mode (NVDA+Space) the arrows work and the full date and "current date" are spoken. Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
 
 ## Transcript
 
-Nobody has run a pairing yet. The rows below are NVDA's own speech from the automated run, verbatim and in order ("on arrival" first), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
+Nobody has run a pairing yet. The rows below are NVDA's own speech from run 44734650775, one row per key or group of keys, verbatim and in order ("arrival" is what NVDA said on landing), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
 
 | Step | Pairing | Heard | Verdict |
 |------|---------|-------|---------|
-| DatePicker: Due date, ArrowDown opens the calendar, ArrowLeft, Escape | NVDA (Guidepup, automated) + Chrome for Testing | "Due date, edit, focused, Weekdays only, 20 slash 11 slash 2026" / "Calendar, dialog" / "out of toggle button, toggle button, not pressed" / "Due date, edit, Weekdays only, 20 slash 11 slash 2026" | see header |
+| DatePicker: ArrowDown | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "Due date, edit, focused, Weekdays only, 20 slash 11 slash 2026" / "Calendar, dialog" | expected |
+| DatePicker: ArrowLeft | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "out of toggle button, toggle button, not pressed" | known issue |
+| DatePicker: NVDA+Space, ArrowLeft | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "Thursday, 19 November 2026, toggle button, not pressed" / "Wednesday, 18 November 2026, toggle button, not pressed, current date" | expected |
+| DatePicker: Escape | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "Due date, edit, Weekdays only, 20 slash 11 slash 2026" | expected |
 
 ## Checklist results
 
