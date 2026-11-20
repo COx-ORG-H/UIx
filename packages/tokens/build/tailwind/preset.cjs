@@ -179,6 +179,7 @@ module.exports = {
       "uix-lg": "var(--uix-radius-lg)",
       "uix-xl": "var(--uix-radius-xl)",
       "uix-pill": "var(--uix-radius-pill)",
+      "uix-inner": "var(--uix-radius-inner)",
       },
       fontFamily: {
       "uix-sans": "var(--uix-font-sans)",
