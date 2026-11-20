@@ -6,7 +6,7 @@
 import test, { before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, StrictMode } from 'react';
 
 let dom;
 let createRoot;
@@ -54,6 +54,15 @@ test('a polite toast queued before mount announces once when its portal is ready
   const view = mount(h(ui.Toaster, { store: api.store }));
   try {
     assert.equal(view.host.querySelector('[role="status"]').textContent, 'Änderung gespeichert');
+  } finally { view.unmount(); }
+});
+
+test('a polite toast is spoken once under StrictMode, which runs its announce effect twice', () => {
+  const api = ui.createToastApi(ui.createToastStore());
+  const view = mount(h(StrictMode, null, h(ui.Toaster, { store: api.store })));
+  try {
+    act(() => { api.success('Incident saved', { duration: null }); });
+    assert.equal(view.host.querySelector('[role="status"]').textContent, 'Incident saved');
   } finally { view.unmount(); }
 });
 

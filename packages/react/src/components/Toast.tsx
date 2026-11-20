@@ -109,11 +109,15 @@ export function Toast({
   const assertive = tone === 'danger';
   const toaster = useContext(ToasterContext);
   const bodyRef = useRef<HTMLDivElement>(null);
+  // StrictMode runs this effect twice on one instance, which spoke the toast twice ("Saved Saved").
+  // A ref survives that re-run; a toast that really remounts (moved into the Toaster's portal,
+  // HAR-2754) is a new instance and announces once there.
+  const announcedRef = useRef(false);
 
   useEffect(() => {
-    if (assertive || !toaster) return;
+    if (assertive || !toaster || announcedRef.current) return;
     const text = bodyRef.current?.textContent?.trim();
-    if (text) toaster.announce(text);
+    if (text) { announcedRef.current = true; toaster.announce(text); }
     // announce once, when the toast appears
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
