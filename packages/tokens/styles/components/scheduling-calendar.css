@@ -82,12 +82,12 @@
 
   /* The chips start below the lanes this row keeps for spans. */
   .uix-scheduling-calendar__entries { display:grid; gap:var(--calendar-gap); min-width:0; margin-top:calc(var(--uix-scheduling-calendar-lanes,0) * var(--calendar-lane)); }
-  .uix-scheduling-calendar__more { justify-self:start; display:inline-flex; align-items:center; height:var(--calendar-chip); padding:0 var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-size:var(--uix-text-meta); font-weight:600; text-align:left; white-space:nowrap; outline-offset:-2px; }
+  .uix-scheduling-calendar__more { justify-self:start; display:inline-flex; align-items:center; height:var(--calendar-chip); padding:0 var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-size:var(--uix-text-meta); font-weight:600; text-align:start; white-space:nowrap; outline-offset:-2px; }
   button.uix-scheduling-calendar__more { cursor:pointer; } button.uix-scheduling-calendar__more:hover { background:var(--calendar-chrome-surface-quiet); }
 
   /* An item: a chip in its day, or a span over several days. The default look is the
      `committed` status with no band: a plain outlined chip. */
-  .uix-scheduling-calendar__entry { display:flex; align-items:center; gap:var(--calendar-gap); min-width:0; height:var(--calendar-chip); padding:0 0.125rem; border:1px solid var(--calendar-status-edge); border-radius:var(--uix-radius-xs); background:var(--calendar-status-surface); color:var(--calendar-status-text); overflow:hidden; text-align:left; white-space:nowrap; font-size:var(--uix-text-meta); cursor:pointer; outline-offset:-2px; }
+  .uix-scheduling-calendar__entry { display:flex; align-items:center; gap:var(--calendar-gap); min-width:0; height:var(--calendar-chip); padding:0 0.125rem; border:1px solid var(--calendar-status-edge); border-radius:var(--uix-radius-xs); background:var(--calendar-status-surface); color:var(--calendar-status-text); overflow:hidden; text-align:start; white-space:nowrap; font-size:var(--uix-text-meta); cursor:pointer; outline-offset:-2px; }
   /* A long title is cut at the chip edge with no ellipsis: in a narrow day column the "…" would
      cost one and a half of the few title characters there is room for. */
   .uix-scheduling-calendar__entry-text { flex:1 1 auto; min-width:0; overflow:hidden; }
@@ -135,7 +135,7 @@
   .uix-scheduling-calendar__span,.uix-scheduling-calendar__window,.uix-scheduling-calendar__rowmore { grid-row:1; align-self:start; height:calc(var(--calendar-lane) - var(--calendar-gap)); margin-top:calc(var(--calendar-pad) + var(--calendar-head) + var(--uix-scheduling-calendar-lane,0) * var(--calendar-lane)); margin-inline:var(--calendar-pad-inline); }
   :is(.uix-scheduling-calendar__span,.uix-scheduling-calendar__window)[data-continues-before] { margin-left:0; border-left-style:dashed; border-top-left-radius:0; border-bottom-left-radius:0; }
   :is(.uix-scheduling-calendar__span,.uix-scheduling-calendar__window)[data-continues-after] { margin-right:0; border-right-style:dashed; border-top-right-radius:0; border-bottom-right-radius:0; }
-  .uix-scheduling-calendar__window { display:flex; align-items:center; min-width:0; padding:0 var(--uix-space-1); border:1px solid var(--calendar-window-edge); border-radius:var(--uix-radius-xs); background-color:var(--calendar-window-surface); color:var(--calendar-window-text); overflow:hidden; text-align:left; white-space:nowrap; font-size:var(--uix-text-meta); cursor:pointer; outline-offset:-2px; }
+  .uix-scheduling-calendar__window { display:flex; align-items:center; min-width:0; padding:0 var(--uix-space-1); border:1px solid var(--calendar-window-edge); border-radius:var(--uix-radius-xs); background-color:var(--calendar-window-surface); color:var(--calendar-window-text); overflow:hidden; text-align:start; white-space:nowrap; font-size:var(--uix-text-meta); cursor:pointer; outline-offset:-2px; }
   /* the label sits on its own patch of the window colour, so the hatch never runs under the words */
   .uix-scheduling-calendar__window-text { display:inline-flex; gap:var(--uix-space-1); min-width:0; max-width:100%; padding:0 var(--uix-space-1); border-radius:var(--uix-radius-xs); background:var(--calendar-window-surface); overflow:hidden; }
   .uix-scheduling-calendar__window-kind { flex:none; font-weight:600; }
@@ -163,7 +163,7 @@
   .uix-scheduling-calendar__empty { grid-column:1 / -1; position:sticky; left:0; padding:var(--uix-space-3); border-right:1px solid var(--calendar-chrome-line); border-bottom:1px solid var(--calendar-chrome-line); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text-quiet); }
 
   .uix-scheduling-calendar__agenda > ol { display:grid; gap:var(--uix-space-2); margin:0; padding:0; list-style:none; }
-  .uix-scheduling-calendar__agenda > ol > li > button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); padding:var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-md); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); text-align:left; }
+  .uix-scheduling-calendar__agenda > ol > li > button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--uix-space-3); padding:var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-md); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); text-align:start; }
   .uix-scheduling-calendar__agenda > ol > li > button > span:first-child { flex:1 1 auto; display:grid; gap:var(--uix-space-1); min-width:0; } .uix-scheduling-calendar__agenda > ol > li > button > span:first-child > span { color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
   .uix-scheduling-calendar__status { flex:none; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
 
@@ -192,7 +192,7 @@
   .uix-scheduling-calendar__agenda-rows > li { margin:0; border-bottom:1px solid var(--calendar-chrome-line); }
   /* a row scrolled to by the keyboard stops below the sticky heading, not behind it */
   .uix-scheduling-calendar__agenda-group :is(.uix-scheduling-calendar__agenda-row,.uix-scheduling-calendar__agenda-more) { scroll-margin-top:var(--uix-scheduling-calendar-agenda-head,3rem); }
-  .uix-scheduling-calendar__agenda-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:left; cursor:pointer; outline-offset:-2px; }
+  .uix-scheduling-calendar__agenda-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-2); width:100%; min-width:0; padding:var(--uix-space-2) var(--uix-space-1); border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); text-align:start; cursor:pointer; outline-offset:-2px; }
   .uix-scheduling-calendar__agenda-row:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda-row > .uix-scheduling-calendar__swatch { align-self:center; }
   .uix-scheduling-calendar__agenda-time { flex:none; min-width:6.25rem; color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; }
@@ -205,7 +205,7 @@
   .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker { flex:0 1 auto; min-width:0; }
   .uix-scheduling-calendar__agenda-row .uix-scheduling-calendar__marker-label { white-space:normal; overflow-wrap:break-word; }
   .uix-scheduling-calendar__agenda-more,.uix-scheduling-calendar__agenda-continues { margin:0; padding:var(--uix-space-2) var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); }
-  button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:left; text-decoration:underline; cursor:pointer; }
+  button.uix-scheduling-calendar__agenda-more { display:block; border:0; border-radius:var(--uix-radius-xs); background:transparent; color:var(--calendar-chrome-text); font-weight:600; text-align:start; text-decoration:underline; cursor:pointer; }
   button.uix-scheduling-calendar__agenda-more:hover { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__agenda--virtual { container:uix-scheduling-agenda / inline-size; max-height:min(70vh,40rem); overflow-y:auto; border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-sm); }
   /* the mounted rows; its padding stands in for the rows above and below them */
@@ -267,7 +267,7 @@
   .uix-scheduling-calendar__tg-head { background:var(--calendar-chrome-surface-quiet); }
   .uix-scheduling-calendar__tg-zone { align-self:center; padding:var(--uix-space-1); color:var(--calendar-chrome-text-quiet); font-size:var(--uix-text-meta); line-height:1.2; text-align:right; overflow-wrap:anywhere; }
   .uix-scheduling-calendar__tg-dayhead { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; align-content:start; gap:0 var(--uix-space-1); min-width:0; padding:var(--uix-space-1); border-left:1px solid var(--calendar-chrome-grid); font-size:var(--uix-text-meta); overflow:hidden; }
-  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__date { grid-column:1 / -1; justify-self:start; width:auto; height:var(--calendar-head); padding-inline:var(--uix-space-1); margin-inline-start:calc(-1 * var(--uix-space-1)); border-radius:var(--uix-radius-xs); font-weight:600; text-align:left; white-space:nowrap; }
+  .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__date { grid-column:1 / -1; justify-self:start; width:auto; height:var(--calendar-head); padding-inline:var(--uix-space-1); margin-inline-start:calc(-1 * var(--uix-space-1)); border-radius:var(--uix-radius-xs); font-weight:600; text-align:start; white-space:nowrap; }
   .uix-scheduling-calendar__tg-dayhead[data-today] > .uix-scheduling-calendar__date { background:var(--calendar-chrome-now); color:var(--calendar-chrome-surface); }
   .uix-scheduling-calendar__tg-dayhead > .uix-scheduling-calendar__count { grid-column:1 / -1; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--calendar-chrome-text-quiet); font-weight:400; white-space:nowrap; }
   /* the day's signal says its words on a line of its own, so a narrow column never cuts them to a letter */
@@ -356,7 +356,7 @@
   .uix-scheduling-calendar__rs-skeleton { position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot) + 1px); left:var(--calendar-gap); right:var(--calendar-gap); height:calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot) - 2px); }
   /* a free slot: exactly its slot, so a free span tiles into one sheet of paper */
   .uix-scheduling-calendar__rs-item { --calendar-rs-paper:var(--calendar-chrome-surface); position:absolute; top:calc(var(--uix-scheduling-calendar-rs-offset,0) * var(--calendar-slot)); left:0; right:0; height:calc(var(--uix-scheduling-calendar-rs-length,1) * var(--calendar-slot)); display:flex; align-items:flex-start; min-width:0; padding:var(--calendar-gap) var(--uix-space-2); overflow:hidden; border:0; border-radius:0;
-    background:linear-gradient(to bottom,var(--calendar-chrome-line) 0 1px,transparent 1px) 0 calc((var(--uix-scheduling-calendar-rs-hour-at,0) - var(--uix-scheduling-calendar-rs-offset,0)) * var(--calendar-slot)) / 100% var(--calendar-rs-hour) repeat-y,var(--calendar-rs-paper); color:var(--calendar-chrome-text); font:inherit; font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; line-height:1.35; text-align:left; cursor:pointer; }
+    background:linear-gradient(to bottom,var(--calendar-chrome-line) 0 1px,transparent 1px) 0 calc((var(--uix-scheduling-calendar-rs-hour-at,0) - var(--uix-scheduling-calendar-rs-offset,0)) * var(--calendar-slot)) / 100% var(--calendar-rs-hour) repeat-y,var(--calendar-rs-paper); color:var(--calendar-chrome-text); font:inherit; font-size:var(--uix-text-meta); font-variant-numeric:tabular-nums; line-height:1.35; text-align:start; cursor:pointer; }
   .uix-scheduling-calendar__rs-add { display:inline-flex; align-items:center; gap:var(--calendar-gap); visibility:hidden; white-space:nowrap; }
   .uix-scheduling-calendar__rs-add > svg { flex:none; width:1em; height:1em; }
   .uix-scheduling-calendar__rs-item:focus-visible,.uix-scheduling-calendar__rs-item[data-selected] { z-index:var(--uix-z-raised); --calendar-rs-paper:var(--calendar-chrome-ghost-surface); }
@@ -391,7 +391,7 @@
   .uix-scheduling-calendar__rs-heading { margin:0; font-size:inherit; font-weight:600; overflow-wrap:anywhere; }
   .uix-scheduling-calendar__rs-list { display:grid; gap:var(--calendar-gap); margin:0; padding:0; list-style:none; }
   .uix-scheduling-calendar__rs-list > li { min-width:0; }
-  .uix-scheduling-calendar__rs-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-3); width:100%; min-height:2.75rem; padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); font:inherit; text-align:left; }
+  .uix-scheduling-calendar__rs-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--uix-space-1) var(--uix-space-3); width:100%; min-height:2.75rem; padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--calendar-chrome-line); border-radius:var(--uix-radius-xs); background:var(--calendar-chrome-surface); color:var(--calendar-chrome-text); font:inherit; text-align:start; }
   button.uix-scheduling-calendar__rs-row { cursor:pointer; }
   .uix-scheduling-calendar__rs-row[data-kind="free"] { border-left:3px solid var(--calendar-chrome-line-strong); }
   .uix-scheduling-calendar__rs-row[data-kind="booked"] { border-color:var(--calendar-chrome-text); border-left-width:3px; background:var(--calendar-chrome-surface-quiet); }
