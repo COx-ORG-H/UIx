@@ -175,9 +175,13 @@
   --radius-uix-lg: var(--uix-radius-lg);
   --radius-uix-xl: var(--uix-radius-xl);
   --radius-uix-pill: var(--uix-radius-pill);
-  --radius-uix-inner: var(--uix-radius-inner);
 
   --font-uix-sans: var(--uix-font-sans);
   --font-uix-heading: var(--uix-font-heading);
   --font-uix-mono: var(--uix-font-mono);
+}
+
+/* resolved per element (not on :root), so rounded-uix-inner reads the nearest container's slots */
+@theme inline {
+  --radius-uix-inner: var(--uix-radius-inner);
 }

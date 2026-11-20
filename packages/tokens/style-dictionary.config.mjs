@@ -93,7 +93,9 @@ ${decls(elementBase, '    ')}
 const twLine = (ns, name, strip) =>
   `  --${ns}-${name.replace(strip, 'uix-')}: var(--${name});`;
 const twColors = base.filter(isColor).map((t) => twLine('color', t.name, /^uix-/));
-const twRadius = base.filter((t) => t.name.startsWith('uix-radius-')).map((t) => twLine('radius', t.name, /^uix-radius-/));
+const twRadius = base.filter((t) => t.name.startsWith('uix-radius-') && !perElement(t)).map((t) => twLine('radius', t.name, /^uix-radius-/));
+// a per-element radius must be inline: a plain @theme alias is emitted on :root, where it never sees a container's slots
+const twRadiusInline = base.filter((t) => t.name.startsWith('uix-radius-') && perElement(t)).map((t) => twLine('radius', t.name, /^uix-radius-/));
 const twFonts = base.filter((t) => t.name.startsWith('uix-font-')).map((t) => twLine('font', t.name, /^uix-font-/));
 
 const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Import AFTER @tensor_1/tokens/css so the
@@ -101,7 +103,12 @@ const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Imp
 @theme {
 ${[...twColors, '', ...twRadius, '', ...twFonts].join('\n')}
 }
-`;
+${twRadiusInline.length ? `
+/* resolved per element (not on :root), so rounded-uix-inner reads the nearest container's slots */
+@theme inline {
+${twRadiusInline.join('\n')}
+}
+` : ''}`;
 
 /* ---------- Tailwind v3 preset (same principle, config form) ---------- */
 const cjsMap = (toks, strip) =>
