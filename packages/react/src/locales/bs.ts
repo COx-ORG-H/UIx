@@ -89,6 +89,12 @@ export const bs: UixLabelPack = {
   },
   toast: {
     dismiss: 'Odbaci',
+    undoShortcut: 'Poništi posljednju radnju',
+    undone: (message) => (message ? `Poništeno: ${message}` : 'Poništeno'),
+    remaining: (seconds) => `${seconds} s`,
+    count: (count) => `×${count}`,
+    held: (count) => countLabel({ one: '{count} obavještenje čeka', few: '{count} obavještenja čekaju', other: '{count} obavještenja čeka' }, count, 'bs').replace('{count}', String(count)),
+    showHeld: 'Prikaži',
   },
   toaster: {
     region: 'Obavještenja',

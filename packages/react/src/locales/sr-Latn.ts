@@ -95,6 +95,12 @@ export const srLatn: UixLabelPack = {
   },
   toast: {
     dismiss: 'Zatvori',
+    undoShortcut: 'Poništi poslednju radnju',
+    undone: (message) => (message ? `Poništeno: ${message}` : 'Poništeno'),
+    remaining: (seconds) => `${seconds} s`,
+    count: (count) => `×${count}`,
+    held: (count) => countLabel({ one: '{count} obaveštenje čeka', few: '{count} obaveštenja čekaju', other: '{count} obaveštenja čeka' }, count, 'sr-Latn').replace('{count}', String(count)),
+    showHeld: 'Prikaži',
   },
   toaster: {
     region: 'Obaveštenja',
