@@ -10,7 +10,7 @@ async function open(page, variant = 'full') {
   await expect(peek).toBeVisible();
   await page.evaluate(async () => {
     await document.fonts.ready;
-    await Promise.allSettled(document.getAnimations().filter(a => Number.isFinite(a.effect?.getComputedTiming().iterations)).map(a => a.finished));
+    await Promise.allSettled(document.getAnimations().filter(a => a.timeline === document.timeline).filter(a => Number.isFinite(a.effect?.getComputedTiming().iterations)).map(a => a.finished));
   });
   return peek;
 }

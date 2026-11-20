@@ -76,7 +76,7 @@ test('Escape and a click outside close it; neither runs anything', async ({ page
 test('it opens at once: a keyboard-triggered, many-times-a-day surface has no animation', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await page.locator('#launch').click();
-  const running = await page.evaluate(() => document.getAnimations().length);
+  const running = await page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).length);
   expect(running).toBe(0);
 });
 
