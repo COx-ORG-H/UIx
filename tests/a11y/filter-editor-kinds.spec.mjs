@@ -3,7 +3,7 @@
  * resolve to names (in the editor and on the chip), Enter applying from any field, and each
  * editor in a popover at 320 px. German harness: tests/filter-editor-kinds/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/filter-editor-kinds/harness.html';
 const GATED = new Set(['serious', 'critical']);

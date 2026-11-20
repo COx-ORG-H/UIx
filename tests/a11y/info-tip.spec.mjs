@@ -6,7 +6,7 @@
  * paragraphs, plain text, label.control) is in packages/react/src/info-tip-dom.test.mjs.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/info-tip/harness.html';

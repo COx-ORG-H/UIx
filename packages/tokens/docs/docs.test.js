@@ -197,7 +197,7 @@ test('showcase-only compositions are explicit and never presented as CSS exports
     COMPONENT_ITEMS.filter((item) => item.composite).map((item) => item.name),
     COMPOSITE_PATTERNS,
   );
-  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 129);
+  assert.equal(Object.values(COMPONENT_GROUPS).flat().length, 130);
 });
 
 test('every retired style-guide section is preserved as a documentation route', () => {
@@ -288,7 +288,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 115);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 116);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });
@@ -302,6 +302,7 @@ test('React availability mappings point to the shipped component inventory or an
     'editorial-home': 'PageIntro', form: 'Field', labels: 'UixLabelsProvider',
     'stat-tile': 'Stat', states: 'LoadingState', 'rich-text': 'RichTextEditor',
     reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow',
+    'ai-assistance': 'ProposalReview',
   };
   for (const entry of REACT_COMPONENT_SLUGS) {
     if (entry === 'drag') {

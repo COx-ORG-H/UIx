@@ -11,7 +11,7 @@
  *   HAR-1829  useVirtualRows measureRows: the spacers and window follow the rows' real height.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/nav-primitives/harness.html';

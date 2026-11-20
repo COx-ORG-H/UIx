@@ -6,7 +6,7 @@
  * rule, composer, viewer-corpus and narrow-screen checks run once per theme.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { MARKDOWN_CORPUS } from '../../packages/react/src/fixtures/markdown-corpus.mjs';
 
 // A live editor, lazy emoji data and several axe passes per test: allow for a loaded CI runner.

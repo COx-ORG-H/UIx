@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './a11y/axe.mjs';
 
 test('Field labels, required state and descriptions reach the combobox input', async () => {
   const bundle = await build({ entryPoints: [fileURLToPath(new URL('./field-combobox-fixture.tsx', import.meta.url))], bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' } });

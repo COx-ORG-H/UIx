@@ -5,7 +5,7 @@
  * where a claimed Escape must really keep the native <dialog> open: jsdom cannot show that.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/lightbox-annotate/harness.html';
 const GATED = new Set(['serious', 'critical']);

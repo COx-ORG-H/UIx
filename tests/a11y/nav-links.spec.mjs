@@ -7,7 +7,7 @@
  * current page next to a toggle Segmented, forced colours, and 320 px.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/nav-links/harness.html';
 const GATED = new Set(['serious', 'critical']);

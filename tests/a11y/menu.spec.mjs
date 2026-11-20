@@ -4,7 +4,7 @@
  * focus, the real Popover API, layout at 320 × 640 and an axe scan of each open menu.
  * Harness: tests/overlay/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/overlay/harness.html';
