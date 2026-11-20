@@ -179,7 +179,8 @@ export function ActionPanel({
     if (document.activeElement == null || document.activeElement === document.body) giveFocusBack();
     latest.current.onOpenChange(false);
   });
-  useAnchoredPosition(anchor ?? null, ref, { open: open && anchor != null, placement, offset: 4, capHeight: true });
+  // No height cap on the dialog (it would clip the list's shadow): the list caps itself (command-palette.css).
+  useAnchoredPosition(anchor ?? null, ref, { open: open && anchor != null, placement, offset: 4 });
 
   /**
    * Close now, synchronously: the dialog, focus back on the item, then the state, then `run`. So an

@@ -80,6 +80,94 @@ export interface AccountMenuUser {
     sub?: ReactNode;
 }
 
+// @public
+export const ACTION_PANEL_SHORTCUT_ID = "uix.action-panel";
+
+// @public
+export function ActionPanel(input: ActionPanelProps): react.JSX.Element;
+
+// @public
+export interface ActionPanelAction {
+    confirm?: boolean | ActionPanelConfirm;
+    description?: string;
+    destructive?: boolean;
+    disabled?: boolean;
+    group?: string;
+    icon?: ReactNode;
+    id: string;
+    keys?: ShortcutBinding;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    onSelect: () => void;
+    primary?: boolean;
+    undoable?: boolean;
+}
+
+// @public
+export interface ActionPanelConfirm {
+    confirmLabel?: string;
+    description?: string;
+    title?: string;
+}
+
+// @public
+export interface ActionPanelGroup {
+    // (undocumented)
+    actions: ActionPanelAction[];
+    destructive: boolean;
+    label: string | undefined;
+}
+
+// @public
+export interface ActionPanelLabels {
+    cancel: string;
+    confirmBody: string;
+    confirmTitle: string;
+    destructiveGroup: string;
+    empty: string;
+    open: string;
+    // (undocumented)
+    resultsMany: string;
+    resultsOne: string;
+    search: string;
+    title: string;
+    titleUnnamed: string;
+}
+
+// @public (undocumented)
+export interface ActionPanelProps {
+    actions: readonly ActionPanelAction[];
+    anchor?: HTMLElement | RefObject<HTMLElement | null> | null;
+    // (undocumented)
+    className?: string;
+    confirmId?: string | null;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name?: string;
+    onOpenChange: (open: boolean) => void;
+    onReturnFocusLost?: () => void;
+    open: boolean;
+    placement?: Placement;
+    returnFocus?: HTMLElement | null;
+    showPrimaryKey?: boolean;
+}
+
+// @public
+export const ActionPanelScope: react.ForwardRefExoticComponent<ActionPanelScopeProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public (undocumented)
+export interface ActionPanelScopeProps extends HTMLAttributes<HTMLDivElement> {
+    actions: readonly ActionPanelAction[];
+    // (undocumented)
+    children?: ReactNode;
+    enabled?: boolean;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name: string;
+    scopeLabel?: string;
+}
+
 // @public (undocumented)
 export function addCalendarDays(value: string, amount: number): string;
 
@@ -1722,6 +1810,7 @@ export type DataWorkspacePagination = ({
 
 // @public (undocumented)
 export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actionPanelTrigger?: boolean;
     activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
@@ -1748,6 +1837,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     };
     fixed?: boolean;
     freezeFirstColumn?: boolean;
+    getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
     // (undocumented)
     getRowId: (row: T) => string;
     getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
@@ -2083,6 +2173,9 @@ export interface DaySpanLayout {
 
 // @public (undocumented)
 export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
+
+// @public (undocumented)
+export const DEFAULT_ACTION_PANEL_LABELS: ActionPanelLabels;
 
 // @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
@@ -3461,6 +3554,9 @@ export function formatShortcut(sequence: KeySequence): string;
 
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public
+export function groupActionPanelActions(actions: readonly ActionPanelAction[], query?: string): ActionPanelGroup[];
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
@@ -9313,6 +9409,7 @@ export interface UixDateFormat {
 // @public
 export interface UixLabels {
     accountMenu?: Partial<AccountMenuLabels>;
+    actionPanel?: Partial<ActionPanelLabels>;
     alert?: {
         dismiss?: string;
     };

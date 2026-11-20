@@ -28,4 +28,39 @@
   .uix-cmdk-dialog .uix-cmdk { width: min(560px, 92vw); }
   /* ⌘K is keyboard-triggered and high-frequency → open instantly, no animation (Emil's rule) */
   dialog[data-uix-cmdk-dialog], dialog[data-uix-cmdk-dialog]::backdrop { transition: none; }
+
+  /* The per-item action panel (React `ActionPanel`, `ActionPanelScope`, `DataWorkspace` `getRowActions`;
+     spec Docs/specs/2026-11-20-action-panel.md): this list, hosted in a modal native <dialog> anchored to
+     its item, narrower, destructive actions in a trailing group, a confirm step in place of the list.
+     Opens and closes with no animation (keyboard-first, many times a day). */
+  /* the dialog is only the host: the list (or the confirm step) is the visible box; no dimmed page,
+     it reads as a menu off its row (the page behind is still inert) */
+  dialog.uix-action-panel {
+    max-width: calc(100vw - 16px); padding: 0; border: 0; background: transparent; color: var(--uix-text); overflow: visible;
+  }
+  dialog.uix-action-panel::backdrop { background: transparent; }
+  dialog.uix-action-panel, dialog.uix-action-panel::backdrop { transition: none; }
+  .uix-action-panel .uix-cmdk { width: min(22rem, calc(100vw - 16px)); }
+  /* grows with the text size (200 %) instead of clipping it */
+  .uix-action-panel .uix-cmdk__input { height: auto; min-height: 40px; padding-block: var(--uix-space-2); padding-inline: var(--uix-space-3); font-size: var(--uix-text-body); }
+  /* room for a ticket's usual seven or eight actions; a phone or a long list scrolls inside */
+  .uix-action-panel .uix-cmdk__list { max-height: min(28rem, 60vh); padding: var(--uix-space-1); }
+  .uix-action-panel .uix-cmdk__item { padding-block: var(--uix-space-2); }
+  .uix-action-panel .uix-cmdk__empty { padding: var(--uix-space-4) var(--uix-space-3); }
+  /* destructive actions: danger text, last, under a rule */
+  .uix-action-panel__item--danger,
+  .uix-action-panel__item--danger .uix-cmdk__icon,
+  .uix-action-panel__item--danger svg { color: var(--uix-danger-text); }
+  .uix-action-panel__item--danger[aria-disabled="true"] { color: var(--uix-text-muted); }
+  .uix-action-panel__danger:not(:first-child) {
+    margin-block-start: var(--uix-space-1); padding-block-start: var(--uix-space-1); border-block-start: 1px solid var(--uix-border);
+  }
+  /* the confirm step, in place of the list */
+  .uix-action-panel__confirm {
+    display: grid; gap: var(--uix-space-2); width: min(22rem, calc(100vw - 16px)); padding: var(--uix-space-4);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay);
+  }
+  .uix-action-panel__question { margin: 0; font-weight: 600; color: var(--uix-text); overflow-wrap: anywhere; }
+  .uix-action-panel__body { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-action-panel__buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--uix-space-2); margin-block-start: var(--uix-space-2); }
 }

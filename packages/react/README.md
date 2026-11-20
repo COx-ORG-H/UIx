@@ -616,6 +616,33 @@ useShortcut({ id: 'nav.inbox', keys: 'G I', label: 'Go to the inbox', group: 'Na
 - **Without a provider** `useShortcut` uses the document's default registry with the default storage key.
 - **Words:** `UixLabelsProvider` `shortcuts`: `title`, `open`, `global`, `characterKeys`, `characterKeysHint`, `characterKeysOff`, `empty`, `then`, `openPalette`, `toggleNav`, `focusSearch`.
 
+### Row actions from the keyboard (`DataWorkspace` `getRowActions`, `ActionPanel`, `ActionPanelScope`)
+
+Raycast's action panel on a ticket row: Enter runs the row's primary action, Ctrl/⌘+K lists every
+action of the row with the keys it has now, and the first press stays local (Superhuman): a second
+Ctrl/⌘+K, or one with no row focused, reaches the global `CommandPalette`. Spec:
+`Docs/specs/2026-11-20-action-panel.md`.
+
+```tsx
+const getRowActions = useCallback((t: Ticket): ActionPanelAction[] => [
+  { id: 'ticket.open', label: 'Open ticket', primary: true, onSelect: () => peek(t) },          // Enter on the row
+  { id: 'ticket.assign', label: 'Assign to me', group: 'Ticket', keys: 'A', onSelect: () => assign(t) },
+  { id: 'ticket.archive', label: 'Archive', destructive: true, undoable: true, onSelect: () => archiveWithUndo(t) },
+  { id: 'ticket.delete', label: 'Delete ticket', destructive: true, keys: 'Mod+Backspace', onSelect: () => remove(t) }, // asks first
+], [peek, assign, archiveWithUndo, remove]);
+
+<DataWorkspace label="Ticket queue" rows={tickets} getRowId={(t) => t.id} columns={columns} getRowActions={getRowActions} />
+<ActionPanelScope name="Weekly report" actions={actions} tabIndex={0}>…any item…</ActionPanelScope>
+```
+
+- **First press local:** the row's Ctrl/⌘+K is `uix.action-panel`, registered in the rows' scope, which outranks the palette's global one; in the open panel the same keys close it, give focus back to the row and pass the key on, so the palette opens and later returns focus to the row. Off a row (a header, the toolbar, a field) the key is the palette's from the first press. A remap of `uix.action-panel` moves both presses.
+- **The panel:** a modal `<dialog>` anchored under the row (or the ⋯ button that opened it), named "Actions for {name}", with the palette's search, ranking and list (`.uix-cmdk`). The primary action leads with ↵, the others keep their `group`s, destructive ones are always last (also when searching), disabled ones are shown and skipped. Each action shows the keys it has now (after remaps and the switch). Enter or a click runs the action after the panel closed and focus is back on the row. Escape or a click outside closes it. It opens instantly.
+- **Destructive actions** confirm in the panel (Cancel has focus; `confirm: { title, description, confirmLabel }` sets the words) unless `undoable` (show your own `toast.undoable`). An action's key on the row opens the panel straight on its confirm step.
+- **Keys:** an action's `keys` are registered under its `id` in the rows' scope, read from the focused row: they work only with focus in the rows, the `?` sheet lists them under the workspace `label` with "Show actions", and the single-key switch and remaps apply (WCAG 2.1.4). The panel is the modifier path to every action. Give palette items the same `shortcutId` to run them from there.
+- **Pointer and touch:** each row with an enabled action gets a ⋯ button in its actions cell (`actionPanelTrigger={false}` to leave it out, e.g. when your `rowActions` already has a menu).
+- **Enter:** `onRowActivate`, when set, is the primary instead (no action shows ↵ then). `getRowActions` turns on `rowNavigation`; keep it stable (`useCallback`). Only the focused row's actions are asked for on render.
+- **Words:** `UixLabelsProvider` `actionPanel`: `title`, `titleUnnamed`, `search`, `empty`, `resultsOne`, `resultsMany`, `open`, `destructiveGroup`, `confirmTitle`, `confirmBody`, `cancel`.
+
 ### Icons (`@tensor_1/react/icons`)
 
 The TENSOR adoption set also includes `LandmarkIcon`, `KeyboardIcon`, `ArchiveRestoreIcon`,
