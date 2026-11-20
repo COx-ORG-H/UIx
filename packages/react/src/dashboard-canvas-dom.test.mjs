@@ -101,7 +101,13 @@ test('edit mode: each item has a named move handle and resize handle that descri
   assert.equal(move.getAttribute('aria-label'), 'Move Needs you');
   assert.equal(resize.getAttribute('aria-label'), 'Resize Needs you');
   const described = document.getElementById(move.getAttribute('aria-describedby'));
-  assert.match(described.textContent, /Arrow keys/);
+  // the keys, and the press that shows the step buttons (WCAG 2.5.7)
+  assert.match(described.textContent, /arrow keys/i);
+  assert.match(described.textContent, /^Press for buttons that move or resize one step/);
+  assert.equal(resize.getAttribute('aria-describedby'), move.getAttribute('aria-describedby'));
+  // a disclosure for its step buttons, closed until pressed
+  assert.equal(move.getAttribute('aria-expanded'), 'false');
+  assert.equal(resize.getAttribute('aria-expanded'), 'false');
   assert.equal(move.type, 'button');
   await unmount();
 });
