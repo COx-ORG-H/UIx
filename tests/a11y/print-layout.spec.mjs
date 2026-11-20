@@ -14,7 +14,7 @@
  *   - a single-page layout whose content does not fit says so (outline + onOverflowChange).
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { createRequire } from 'node:module';
 
 const HARNESS = '/tests/display/harness.html?case=print';

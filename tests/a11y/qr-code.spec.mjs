@@ -7,7 +7,7 @@
  * value too long for a QR code says so instead of drawing a broken square.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { createRequire } from 'node:module';
 
 const HARNESS = '/tests/display/harness.html?case=qr';

@@ -10,7 +10,7 @@
  *   - axe passes in every state.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/resource-day/harness.html';
 const GATED = new Set(['serious', 'critical']);

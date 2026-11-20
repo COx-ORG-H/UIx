@@ -4,7 +4,7 @@
  * choice, and a phone layout that keeps the table's semantics. Bosnian/German harness:
  * tests/diff-match-adopt/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/diff-match-adopt/harness.html';
 const GATED = new Set(['serious', 'critical']);
