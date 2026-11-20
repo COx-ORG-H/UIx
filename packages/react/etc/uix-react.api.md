@@ -10,6 +10,7 @@ import { ButtonHTMLAttributes } from 'react';
 import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { FocusEvent as FocusEvent_2 } from 'react';
+import { FormEvent } from 'react';
 import { ForwardRefExoticComponent } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
@@ -2325,6 +2326,9 @@ export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_CONFLICT_NOTICE_LABELS: ConflictNoticeLabels;
+
+// @public (undocumented)
 export const DEFAULT_CONTACT_CARD_LABELS: ContactCardLabels;
 
 // @public (undocumented)
@@ -2355,6 +2359,9 @@ export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels;
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_ERROR_SUMMARY_LABELS: ErrorSummaryLabels;
+
+// @public (undocumented)
 export const DEFAULT_FILE_DROP_LABELS: FileDropLabels;
 
 // @public (undocumented)
@@ -2380,6 +2387,9 @@ export const DEFAULT_INSIGHT_CARD_LABELS: InsightCardLabels;
 
 // @public (undocumented)
 export const DEFAULT_KEYBOARD_GRAB_LABELS: KeyboardGrabLabels;
+
+// @public (undocumented)
+export const DEFAULT_LEAVE_GUARD_LABELS: LeaveGuardLabels;
 
 // @public (undocumented)
 export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
@@ -3007,6 +3017,38 @@ export interface ErrorStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
 }
 
 // @public
+export const ErrorSummary: react.ForwardRefExoticComponent<ErrorSummaryProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public
+export interface ErrorSummaryItem {
+    key?: string;
+    message: ReactNode;
+    target?: string;
+}
+
+// @public
+export interface ErrorSummaryLabels {
+    errorPrefix: string;
+    title: string;
+}
+
+// @public (undocumented)
+export interface ErrorSummaryProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    autoFocus?: boolean;
+    children?: ReactNode;
+    errors: readonly ErrorSummaryItem[];
+    focusKey?: unknown;
+    headingLevel?: 2 | 3 | 4 | 5 | 6;
+    // (undocumented)
+    labels?: Partial<ErrorSummaryLabels>;
+    prefixTitle?: boolean;
+    title?: ReactNode;
+}
+
+// @public
+export function errorTitle(title: string, prefix?: string): string;
+
+// @public
 export function EventRow(input: EventRowProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -3115,6 +3157,8 @@ export interface FieldProps {
     // (undocumented)
     className?: string;
     error?: ReactNode;
+    errorAnnounce?: 'assertive' | 'polite' | 'off';
+    errorPrefix?: string;
     help?: string | null;
     helpLabel?: string;
     // (undocumented)
@@ -3691,6 +3735,46 @@ export function formatShortcut(sequence: KeySequence): string;
 
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public (undocumented)
+export interface FormErrorsApi<V extends object> {
+    control: (name: Extract<keyof V, string>) => FormErrorsControlProps;
+    errors: FormFieldErrors<V>;
+    failedSubmits: number;
+    field: (name: Extract<keyof V, string>) => FormErrorsFieldProps;
+    handleSubmit: (onValid: (values: V) => unknown) => (event?: FormEvent) => void;
+    reset: () => void;
+    setServerErrors: (errors: FormFieldErrors<V>, formErrors?: readonly ReactNode[]) => void;
+    summary: {
+        errors: ErrorSummaryItem[];
+        focusKey: number;
+    };
+}
+
+// @public
+export interface FormErrorsControlProps {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    onBlur: () => void;
+}
+
+// @public
+export interface FormErrorsFieldProps {
+    // (undocumented)
+    error: ReactNode | undefined;
+    // (undocumented)
+    errorAnnounce: 'polite' | 'off';
+    // (undocumented)
+    errorPrefix: string;
+}
+
+// @public
+export type FormFieldErrors<V> = {
+    [K in Extract<keyof V, string>]?: ReactNode;
+};
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
@@ -4353,6 +4437,20 @@ export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: 
     crossMidnightMinutes?: number;
 }): TimeGridDayLayout;
 
+// @public (undocumented)
+export interface LeaveGuardApi {
+    active: boolean;
+    confirm: (proceed: () => void, stay?: () => void) => boolean;
+    dialog: ReactNode;
+}
+
+// @public
+export interface LeaveGuardLabels {
+    failed: string;
+    fieldsAtRisk: string;
+    saving: string;
+}
+
 // @public
 export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
 
@@ -4993,6 +5091,9 @@ export function MenuSeparator(): react.JSX.Element;
 
 // @public
 export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
+
+// @public
+export function mergeRecordConflict(base: JsonValue | undefined, yours: JsonValue | undefined, theirs: JsonValue | undefined, resolutions?: Readonly<Record<string, DiffResolution>>): JsonValue | undefined;
 
 // @public
 export function Meter(input: MeterProps): react.JSX.Element;
@@ -6425,6 +6526,22 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
 
 // @public
 export function readSystemDisplayPreferences(): SystemDisplayPreferences;
+
+// @public
+export interface RecordConflictChange {
+    base: JsonValue | undefined;
+    keys: readonly string[];
+    overlap: boolean;
+    path: string;
+    theirs: JsonValue | undefined;
+    yours: JsonValue | undefined;
+}
+
+// @public
+export function recordConflictChanges(base: JsonValue | undefined, yours: JsonValue | undefined, theirs: JsonValue | undefined): RecordConflictChange[];
+
+// @public
+export function recordConflictEntries(changes: readonly RecordConflictChange[]): DiffEntry[];
 
 // @public
 export interface Rect {
@@ -9678,6 +9795,7 @@ export interface UixLabels {
         compensation?: string;
         typeToConfirmMismatch?: string;
     };
+    conflictNotice?: Partial<ConflictNoticeLabels>;
     contactCard?: Partial<ContactCardLabels>;
     dataWorkspace?: Partial<DataWorkspaceLabels>;
     dateFormat?: UixDateFormat;
@@ -9696,6 +9814,7 @@ export interface UixLabels {
     };
     // (undocumented)
     entityPicker?: Partial<EntityPickerLabels>;
+    errorSummary?: Partial<ErrorSummaryLabels>;
     fileDrop?: Partial<FileDropLabels>;
     fileKinds?: Partial<FileKindLabels>;
     fileRow?: Partial<FileRowLabels>;
@@ -9711,6 +9830,7 @@ export interface UixLabels {
     // (undocumented)
     inlineEdit?: Partial<InlineEditLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;
+    leaveGuard?: Partial<LeaveGuardLabels>;
     lightbox?: Partial<LightboxLabels>;
     matchReview?: Partial<MatchReviewLabels>;
     // (undocumented)
@@ -9893,6 +10013,22 @@ export interface UseDisplayPreferencesResult {
 }
 
 // @public
+export function useErrorTitle(active: boolean, prefix?: string): void;
+
+// @public
+export function useFormErrors<V extends object>(input: UseFormErrorsOptions<V>): FormErrorsApi<V>;
+
+// @public (undocumented)
+export interface UseFormErrorsOptions<V extends object> {
+    idPrefix?: string;
+    isEmpty?: (value: unknown, name: string) => boolean;
+    // (undocumented)
+    labels?: Partial<ErrorSummaryLabels>;
+    validate: (values: V) => FormFieldErrors<V>;
+    values: V;
+}
+
+// @public
 export function useKeyboardGrab(input: UseKeyboardGrabOptions): UseKeyboardGrabResult;
 
 // @public (undocumented)
@@ -9915,6 +10051,18 @@ export interface UseKeyboardGrabResult {
         onBlur: (event: FocusEvent_2<HTMLElement>) => void;
         'data-uix-drag'?: 'grabbed';
     };
+}
+
+// @public
+export function useLeaveGuard(input?: UseLeaveGuardOptions): LeaveGuardApi;
+
+// @public (undocumented)
+export interface UseLeaveGuardOptions {
+    dirty?: boolean;
+    fields?: readonly string[];
+    labels?: Partial<DiscardPromptLabels & LeaveGuardLabels>;
+    locale?: string;
+    saveState?: SaveStatusState;
 }
 
 // @public

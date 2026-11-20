@@ -26,9 +26,29 @@
     border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
   }
   .uix-validation-summary strong { color: var(--uix-danger-text); }
-  .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-left: var(--uix-space-5); }
+  .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-inline-start: var(--uix-space-5); }
   /* each error link stands on its own line, so it owns a 24 px target (WCAG 2.5.8, HAR-3215) */
   .uix-validation-summary a { display: inline-flex; align-items: center; min-height: 24px; color: var(--uix-danger-text); text-decoration: underline; }
+  /* ErrorSummary: the heading, an optional line, the list. Focus lands here after a failed submit
+     (tabindex="-1"), so the ring shows on every focus, as GOV.UK's does, not only keyboard focus. */
+  .uix-validation-summary__title { margin: 0; font-size: var(--uix-text-body); line-height: var(--uix-leading-body); font-weight: 600; color: var(--uix-danger-text); }
+  .uix-validation-summary__body { margin-block-start: var(--uix-space-1); }
+  .uix-validation-summary__list li + li { margin-block-start: var(--uix-space-1); }
+  .uix-validation-summary:focus { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  /* room for the ring (and a sticky header) when focus scrolls the summary or the banner into view */
+  .uix-validation-summary, .uix-conflict-notice > .uix-alert { scroll-margin-block: var(--uix-space-4); }
+  /* ConflictNotice: the warning banner, and the comparison under it */
+  .uix-conflict-notice { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-3); }
+  .uix-conflict-notice > .uix-alert:focus { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-conflict-notice__message { min-width: 0; }
+  .uix-conflict-notice__title { font-size: var(--uix-text-body); color: var(--uix-text); }
+  .uix-conflict-notice__line { margin: 0; }
+  .uix-conflict-notice__line + .uix-conflict-notice__line { margin-block-start: var(--uix-space-1); }
+  .uix-conflict-notice__fields { font-weight: 600; color: var(--uix-text); }
+  .uix-conflict-notice__actions { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); margin-block-start: var(--uix-space-3); }
+  .uix-conflict-notice__review { min-width: 0; }
+  .uix-conflict-notice__apply { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-3); margin-block-start: var(--uix-space-3); }
+  .uix-conflict-notice__pending { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   .uix-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-5); padding-block: var(--uix-space-3); }
   .uix-toggle-row + .uix-toggle-row { border-top: 1px solid var(--uix-border); }
   .uix-toggle-row__copy { min-width: 0; }
