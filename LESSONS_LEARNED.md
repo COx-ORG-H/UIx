@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 7a6f1333 routine: axe target-size (wcag22aa) counts an element's own box, not a ::before hit area; the a11y job named the crumb -->
 <!-- lesson-skip: 4e3f75a0 routine: the glyph guard named a text separator and a hand-drawn mask (icon set now), and a stray apostrophe broke a docs string; both named by CI gates -->
 <!-- lesson-skip: dd03ff1a routine: a source that answered with nothing kept its group heading; found by looking at the live demo, pinned by a jsdom test -->
 <!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
