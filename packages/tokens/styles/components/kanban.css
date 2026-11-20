@@ -13,6 +13,12 @@
   .uix-kanban__card[data-uix-drag="lifted"] { transform: scale(1.02); box-shadow: var(--uix-shadow-popover); }
   @media (prefers-reduced-motion: reduce) { .uix-kanban__card[data-uix-drag="lifted"] { transform: none; } }
   .uix-kanban__card-title { font-weight: 500; font-size: var(--uix-text-body); margin-bottom: var(--uix-space-2); }
+  /* The Move menu (WCAG 2.5.7: a card moves with clicks, never only by a drag): a ⋯ button in the
+     top corner; the card's first line keeps clear of it. */
+  .uix-kanban__card--movable { position: relative; }
+  .uix-kanban__card--movable > :first-child { padding-inline-end: var(--uix-space-7); }
+  .uix-kanban__card-move { position: absolute; inset-block-start: var(--uix-space-2); inset-inline-end: var(--uix-space-2); cursor: default; }
+  .uix-kanban__card-move > .uix-btn { color: var(--uix-text-muted); }
   .uix-kanban__card-meta { display: flex; align-items: center; gap: var(--uix-space-2); }
 }
 
