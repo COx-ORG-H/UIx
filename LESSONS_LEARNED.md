@@ -1,5 +1,8 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
+<!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->
+<!-- lesson-skip: 17320c27 routine review fixes on unreleased form-errors code (server refusals on resubmit, announcement regions, title ownership, leave-attempt policy, prototype-safe key-path merge); each pinned by a jsdom test -->
 <!-- lesson-skip: da85d925 routine: two PRs crossed (#311's namespace list landed while this PR added a namespace); the lane's own test named the missing key -->
 <!-- lesson-skip: 33e42718 routine: the target-size ratchet named the undersized mark and the catalogue link; the contrast flake is the known settle-before-axe pattern (task-tray.spec waits 400 ms) -->
 <!-- lesson-skip: ac833023 routine review fixes on unreleased AI primitives (URL scheme allow-list reuses url-policy, prototype-key fallback, effect order, stale state), each named by Qodo and pinned by jsdom or Chromium tests -->

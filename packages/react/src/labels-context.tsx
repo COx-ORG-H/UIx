@@ -22,6 +22,9 @@ import type { TreeLabels } from './components/Tree.js';
 import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
+import type { ErrorSummaryLabels } from './components/ErrorSummary.js';
+import type { ConflictNoticeLabels } from './components/ConflictNotice.js';
+import type { LeaveGuardLabels } from './hooks/useLeaveGuard.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { KeyboardGrabLabels } from './hooks/useKeyboardGrab.js';
 import type { LightboxLabels } from './components/Lightbox.js';
@@ -43,6 +46,7 @@ import type { TagInputLabels } from './components/TagInput.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { TaskTrayLabels } from './components/TaskTray.js';
+import type { SlaTimerLabelOverrides } from './components/SlaTimer.js';
 import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
@@ -76,6 +80,15 @@ export interface UixLabels {
   drawer?: { close?: string };
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
   discardPrompt?: Partial<DiscardPromptLabels>;
+  /**
+   * `ErrorSummary` and `useFormErrors`: the summary's heading, and the "Error:" before each field
+   * error and the page title while a summary shows.
+   */
+  errorSummary?: Partial<ErrorSummaryLabels>;
+  /** `useLeaveGuard`: the descriptions of the leave step; its title and buttons are `discardPrompt`'s. */
+  leaveGuard?: Partial<LeaveGuardLabels>;
+  /** `ConflictNotice`: the banner, its actions, and the comparison's version names and buttons. */
+  conflictNotice?: Partial<ConflictNoticeLabels>;
   peek?: { previous?: string; next?: string; close?: string };
   /** `ToolbarMore` (HAR-3090): the overflow menu's trigger word. */
   toolbar?: { more?: string };
@@ -86,6 +99,8 @@ export interface UixLabels {
   toaster?: { region?: string };
   /** `TaskTray`: the landmark's name, its buttons, the pill's count words and the announcements. */
   taskTray?: Partial<TaskTrayLabels>;
+  /** `SlaTimer`: the time words around `Intl`'s durations, the state words and the spoken text. `states` merges per key. */
+  slaTimer?: SlaTimerLabelOverrides;
   /** The shortcut registry: `ShortcutSheet`, the "then" of a sequence in `KbdCombo`, and the names of the kit's own shortcuts. */
   shortcuts?: Partial<ShortcutLabels>;
   /**

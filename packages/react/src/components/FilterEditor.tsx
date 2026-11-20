@@ -10,10 +10,10 @@ import { Select } from './Select.js';
 import { Chip } from './Chip.js';
 import { fillLabel } from '../fill-label.js';
 import { cx } from '../cx.js';
-import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels, useUixLocale } from '../labels-context.js';
 import type { UixCountLabel } from '../plural.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
-import { foldForSearch } from '../search-suggest-model.js';
+import { searchMatcher } from '../locale-text.js';
 import { DATE_FILTER_OPERATORS, ENUM_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset, orderFilterRange } from '../filter-model.js';
 import type { DateFilterOperator, EnumFilterOperator, FilterChoice, FilterField, FilterValue, NumberFilterOperator, TextFilterOperator } from '../filter-model.js';
 
@@ -225,10 +225,12 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
   const [query, setQuery] = useState('');
   const plural = usePluralLabel();
   const options = field.options ?? [];
+  const locale = useUixLocale();
   const shown = useMemo(() => {
-    const q = foldForSearch(query.trim()).text;
-    return q ? options.filter((o) => foldForSearch(o.label).text.includes(q)) : options;
-  }, [options, query]);
+    if (!query.trim()) return options;
+    const matches = searchMatcher(query, locale);
+    return options.filter((o) => matches(o.label));
+  }, [options, query, locale]);
   const selected = new Set(value.values);
   const ops = (field.enumOperators ?? []).filter((op) => ENUM_FILTER_OPERATORS.includes(op));
   // The values change, the condition stays. A field that offers one condition applies it (PR #179

@@ -591,6 +591,35 @@ await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update(
 - **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
 - **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
 
+### Form errors: summary, timing, leaving, conflicts
+
+GOV.UK's error summary with "reward early, punish late" timing over `Field`, a guard before unsaved
+work is left, and a banner when someone else saved first (the UIx enterprise UX study, "First five"
+#2). Docs: Patterns → Form errors. Spec: `Docs/specs/2026-11-20-form-errors.md`.
+
+```tsx
+const form = useFormErrors({ values, validate: (v) => ({ title: v.title.trim() ? undefined : 'Enter a title' }) });
+
+<form noValidate onSubmit={form.handleSubmit(save)}>
+  <ErrorSummary {...form.summary} />                                  // "There is a problem", focus, "Error: " title
+  <Field label="Title" {...form.field('title')}>
+    <Input {...form.control('title')} value={values.title} onChange={...} />
+  </Field>
+</form>
+
+form.setServerErrors({ title: 'An incident with this title is already open' });   // a 400 / 422
+
+const leave = useLeaveGuard({ dirty, saveState, fields: ['Impact'] });  // beforeunload + leave.confirm(proceed, stay)
+<ConflictNotice base={opened} yours={values} theirs={latest} changedBy="Alex" changedAt="14:02" onReload={load} onApply={load} />
+```
+
+- **Timing:** leaving a filled-in field shows its error (politely announced); an empty field waits for submit; a field showing an error clears on the keystroke that fixes it and then waits for the next blur. A failed submit shows every error, silent at the fields, and the summary takes focus.
+- **`ErrorSummary`:** always shown for a failed submit, even one error; entries in form order with the field's own words, linking to the control (`target`; none for a form-level error); following a link focuses the control and scrolls its field into view within any scroller. `role="alert"` sits inside the focus target (GOV.UK v4.4.0). `focusKey` re-focuses; `prefixTitle` (default on) prefixes the page title while it shows.
+- **`Field`:** `errorAnnounce` (`assertive` default, `polite`, `off`) and `errorPrefix` (visually hidden "Error:"), both opt-in; `useFormErrors` passes them.
+- **`useLeaveGuard`:** armed only while `dirty` or a save is `saving` / `failed`; the step is the "Discard changes?" one (`discardPrompt` words) with focus on Keep editing; `fields` names what is at risk. Wire any router to `confirm(proceed, stay)` (React Router: `useBlocker`).
+- **`ConflictNotice`:** a warning banner for a 409 / 412: who and when, "your changes are still here", the fields they changed, Reload latest (theirs with yours kept), Review changes in `DiffViewer` where only fields you both changed need a choice before Apply. `mergeRecordConflict` / `recordConflictChanges` are the model.
+- **Words:** `UixLabelsProvider` `errorSummary`, `leaveGuard`, `conflictNotice`.
+
 ### AI assistance (`AiLabel`, `AiSuggestion`, `Field ai`, `ProposalReview`, `AiOutputCard`, `uix-proposal`)
 
 Every AI value is disclosed, reversible, and, for consequential writes, approved by structure, not
@@ -684,6 +713,26 @@ const getRowActions = useCallback((t: Ticket): ActionPanelAction[] => [
 - **Pointer and touch:** each row with an enabled action gets a ⋯ button in its actions cell (`actionPanelTrigger={false}` to leave it out, e.g. when your `rowActions` already has a menu).
 - **Enter:** `onRowActivate`, when set, is the primary instead (no action shows ↵ then). `getRowActions` turns on `rowNavigation`; keep it stable (`useCallback`). Only the focused row's actions are asked for on render.
 - **Words:** `UixLabelsProvider` `actionPanel`: `title`, `titleUnnamed`, `search`, `empty`, `resultsOne`, `resultsMany`, `open`, `destructiveGroup`, `confirmTitle`, `confirmBody`, `cancel`.
+
+### SlaTimer: how long an SLA has left
+
+An SLA's clock in a queue cell or a record header (enterprise-UX study #17; spec `Docs/specs/2026-11-20-sla-timer.md`). The server owns the clock: pass the instants it computed through its business calendar, and the timer says where it stands.
+
+```tsx
+// a queue column, sorted most urgent first
+const rows = [...tickets].sort((a, b) => slaSortValue(a.sla) - slaSortValue(b.sla));
+{ id: 'sla', header: 'Resolution SLA', sortable: true, cell: (t) => <SlaTimer {...t.sla} /> }
+
+// the open record's header: its name, the time, the deadline; say a crossing once
+<SlaTimer variant="header" label="Resolution" startedAt={sla.startedAt} dueAt={sla.dueAt} announce />
+<SlaTimer variant="header" label="Resolution" dueAt={sla.dueAt} paused pausedAt={sla.pausedAt} pausedReason="Waiting for the requester" />
+```
+
+- **States:** `on-track` (ink, no mark), `notice` (a ring), `warning` (amber dot), `urgent` (the attention orange, a diamond), `breached` (red dot and words: "35 min over", "Breached 2 hr ago"), `paused` (two bars, the time frozen at `pausedAt`), `met`, `none` (`—`). Red is only the breach; the brief's 90 % "critical" is `urgent`, because critical is red in the calm kit.
+- **Thresholds:** up to three, each `{ level, elapsed }` (a share of `startedAt` → `dueAt`), `{ level, remaining }` (ms before `dueAt`) or `{ level, at }` (an instant the server projected). Default: warning at 75 %, urgent at 90 %; without `startedAt`, warning with 2 h left and urgent with 30 min. `breachedAt` (the server's breach) wins over the wall clock; `completedAt` stops it as `met`, or `breached` when late.
+- **Words:** `format` `compact` ("2 hr 14 min", `Intl` units, floored), `relative` ("in 2 hours") or `absolute`. The cell speaks "Due in 2 hours 14 minutes, warning. Deadline 20 Nov 2026, 15:30" from a hidden span; the deadline is also on hover. Translate through `UixLabelsProvider` `slaTimer` (`states` merges per state); `locale` defaults to the provider's (`useUixLocale()`); `slaTimer` is in every language pack.
+- **Time:** no fixed tick. One shared scheduler wakes each timer when its minute or state changes, on whole seconds so a queue re-renders together, and nothing while the tab is hidden. `now` fixes the clock for tests. Nothing animates. `announce` (off by default) says a crossing into a worse level once, politely; never for a queue.
+- **Model:** `slaStatus(input, now)` gives `{ state, level, remaining, deadline, stopped, nextChangeAt }`; `slaSortValue` the column's key (`SLA_SORT_LAST` for met and none, finite).
 
 ### Icons (`@tensor_1/react/icons`)
 
