@@ -50,6 +50,13 @@ export interface UseTableOptions {
   searchFields?: readonly string[];
   /** ids kept present + hoisted regardless of filter/sort. */
   initialPinned?: Iterable<string>;
+  /**
+   * The locale text sorts and searches in (roadmap #15): `multiSort` collates with it
+   * (Croatian č after c, "INC-2" before "INC-10"), search and text filters fold with it
+   * ("djordje" finds "Đorđe"; Serbian Cyrillic answers to Latin). Default: the
+   * `UixLabelsProvider` locale, then the runtime's.
+   */
+  locale?: string;
   /** The announcement's words. Default: `UixLabelsProvider` `table`, then English. */
   labels?: Partial<UseTableLabels>;
 }
@@ -99,6 +106,8 @@ export interface UseTableResult<T> {
  */
 export function useTable<T extends Row>(data: readonly T[], options: UseTableOptions = {}): UseTableResult<T> {
   const { idField = 'id', searchFields } = options;
+  const providerLocale = useUixLocale();
+  const locale = options.locale ?? providerLocale;
   const [sort, setSort] = useState<SortKey[]>(() => options.initialSort ?? []);
   const [filters, setFilters] = useState<ColumnFilter[]>(() => options.initialFilters ?? []);
   const [query, setQuery] = useState<string>(() => options.initialQuery ?? '');
@@ -109,10 +118,10 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   // avoid their no-op copies in the composed hot path. Pin changes no longer
   // repeat filtering, search, or sorting.
   const visibleRows = useMemo(() => {
-    const filtered = filters.length ? applyFilters(data, filters) : data;
-    const searched = query.trim() ? searchRows(filtered, query, searchFields) : filtered;
-    return sort.length ? multiSort(searched, sort) : searched;
-  }, [data, filters, query, searchFields, sort]);
+    const filtered = filters.length ? applyFilters(data, filters, locale) : data;
+    const searched = query.trim() ? searchRows(filtered, query, searchFields, locale) : filtered;
+    return sort.length ? multiSort(searched, sort, locale) : searched;
+  }, [data, filters, query, searchFields, sort, locale]);
 
   const rows = useMemo(
     () => pinned.size ? mergePinned(data, visibleRows, pinned, idField) : visibleRows.slice(),
@@ -137,7 +146,6 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   const [announcement, setAnnouncement] = useState('');
   const mounted = useRef(false);
   const labels: UseTableLabels = { ...DEFAULT_USE_TABLE_LABELS, ...useUixLabels().table, ...options.labels };
-  const locale = useUixLocale();
   // the latest words, read when a facet changes; a new labels object must not re-announce
   const words = useRef({ labels, locale });
   words.current = { labels, locale };
