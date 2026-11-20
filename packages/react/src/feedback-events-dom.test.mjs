@@ -8,7 +8,7 @@
 import test, { before, after, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act } from 'react';
+import { createElement as h, act, useState } from 'react';
 
 let dom;
 let createRoot;
@@ -251,25 +251,62 @@ test('a toast swiped away reports selection as it snaps off; one that snaps back
   await unmount();
 });
 
-test('a rich-text field reports limit once, the moment it goes over maxLength (the counter turns red)', async () => {
+/** Type into a controlled textarea the way a person does: the native value, then an input event. */
+const typeInto = (input, value) => act(async () => {
+  Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(input, value);
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+});
+
+/** A controlled fallback field; `set` changes the value from outside, as a product loading a draft. */
+function FallbackHost({ initial, expose: give }) {
+  const [value, setValue] = useState(initial);
+  give(setValue);
+  return h(rich.RichTextEditorFallback, { value, onChange: setValue, maxLength: 5, 'aria-label': 'Note' });
+}
+
+test('a rich-text field reports limit once per typed crossing of maxLength (the counter turns red), never for a loaded draft', async () => {
   const { host, render, unmount } = mount();
-  const field = (value) => h(rich.RichTextEditorFallback, { value, onChange() {}, maxLength: 5, 'aria-label': 'Note' });
+  let set;
   const events = await heard(async () => {
-    await render(field('abc'));
-    await render(field('abcde'));
-    await render(field('abcdef'));
-    await render(field('abcdefg'));
-    await render(field('abc'));
-    await render(field('abcdefgh'));
+    await render(h(FallbackHost, { initial: 'abc', expose: (fn) => { set = fn; } }));
+    const area = host.querySelector('textarea');
+    await typeInto(area, 'abcde');
+    await typeInto(area, 'abcdef');
+    await typeInto(area, 'abcdefg');
+    await typeInto(area, 'abc');
+    await typeInto(area, 'abcdefgh');
   });
   const counter = host.querySelector('.uix-rich-text__counter');
   assert.deepEqual(events.map(([kind]) => kind), ['limit', 'limit'], 'once per crossing, not per keystroke over it');
   assert.ok(events.every(([, target]) => target === counter));
   assert.ok(counter.hasAttribute('data-over'));
+  // the product clears the field, then loads a long saved draft into it: nobody typed
+  const loaded = await heard(async () => {
+    await act(async () => set(''));
+    await act(async () => set('a saved draft, too long'));
+  });
+  assert.deepEqual(loaded, []);
+  assert.ok(counter.hasAttribute('data-over'));
   await unmount();
-  // a field that is already over when it mounts (a loaded draft) stays quiet
+  // a field that is already over when it mounts stays quiet too
   const again = mount();
-  const quiet = await heard(() => again.render(field('abcdefgh')));
+  const quiet = await heard(() => again.render(h(FallbackHost, { initial: 'abcdefgh', expose() {} })));
   assert.deepEqual(quiet, []);
   await again.unmount();
+});
+
+test('inside a shadow root the limit event starts at the counter, so the shadow root hears it', async () => {
+  const outer = document.createElement('div');
+  document.body.append(outer);
+  const shadow = outer.attachShadow({ mode: 'open' });
+  const container = document.createElement('div');
+  shadow.append(container);
+  const r = createRoot(container);
+  const inside = [];
+  shadow.addEventListener('uix-feedback', (event) => inside.push([event.detail.kind, event.target]));
+  await act(async () => r.render(h(FallbackHost, { initial: 'abc', expose() {} })));
+  await typeInto(shadow.querySelector('textarea'), 'abcdefg');
+  assert.deepEqual(inside, [['limit', shadow.querySelector('.uix-rich-text__counter')]]);
+  await act(async () => r.unmount());
+  outer.remove();
 });
