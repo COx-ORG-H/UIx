@@ -177,6 +177,8 @@ export const REACT_COMPONENT_SLUGS = [
   'task-tray',
   // the shortcut registry: ShortcutProvider, useShortcut, ShortcutScope and the ? sheet
   'shortcut-sheet',
+  // an SLA's clock in a queue cell or a record header (roadmap #17)
+  'sla',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
