@@ -191,7 +191,7 @@ export interface UixDateFormat {
 }
 
 /**
- * A complete set of kit chrome words for one language: every namespace of {@link UixLabels}, every
+ * A complete set of kit chrome words for one language: every namespace of `UixLabels`, every
  * key, and the `locale` they are written in. A language pack (`@tensor_1/react/locales/de`, …) is
  * one; a pack that misses a key fails the type check.
  */
