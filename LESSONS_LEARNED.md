@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 8a8a97d6 routine review fixes on unreleased selection scope (a note state not reset by later picks, new keys leaking into the legacy selection path, a click on an inert cell landing on its row, a total offered mid-refetch), found by a fresh-context review; the first three pinned by jsdom tests -->
 <!-- lesson-skip: 81265f2c routine: a nowrap bulk count grew a restated filter and ran past the bar in Linux fonts only; the 8f4970d reflow lesson (write in the longest real label before measuring) again, pinned by the 320 px selection-scope spec -->
 <!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
