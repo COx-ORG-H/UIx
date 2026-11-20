@@ -2,7 +2,9 @@
 @layer uix.components {
   .uix-taginput {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-2); min-height: var(--uix-control-h); padding: var(--uix-space-1) var(--uix-space-2);
-    border: 1px solid var(--uix-control-border); border-radius: var(--uix-radius-md); background: var(--uix-surface);
+    border: 1px solid var(--uix-control-border); border-radius: var(--uix-radius-outer); background: var(--uix-surface);
+    /* concentric: a chip sits border + space-1 inside (the tighter inset at its corner) */
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1));
   }
   .uix-taginput:focus-within { border-color: var(--uix-ring); box-shadow: 0 0 0 3px var(--uix-brand-muted); }
   .uix-taginput__field { flex: 1; min-width: 80px; border: 0; outline: none; background: transparent; color: var(--uix-text); font: inherit; }
@@ -10,6 +12,7 @@
     display: inline-flex; align-items: center; gap: var(--uix-space-1); padding: var(--uix-space-1) var(--uix-space-1) var(--uix-space-1) var(--uix-space-2); border-radius: var(--uix-radius-sm);
     background: var(--uix-bg-active); color: var(--uix-text); font-size: var(--uix-text-meta);
   }
+  .uix-taginput .uix-tag { border-radius: var(--uix-radius-inner); }
   /* remove x (HAR-1569): one spec with .uix-chip__remove, pinned by tests/dismiss-control.test.mjs.
    * 20 px circle, 2 px from the trailing edge; ::before makes a concentric 24 px hit area. */
   .uix-tag:has(> .uix-tag__remove:last-child) { padding-inline-end: calc(var(--uix-space-1) / 2); }

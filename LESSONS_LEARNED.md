@@ -101,6 +101,11 @@
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · a token that reads variables set further down the tree · `802946fb`
+- **Rule:** a custom property whose value uses `var()` of something a container sets (`--uix-radius-inner` reads `--uix-radius-outer`) must be declared on the element that reads it: `:where(*)` in tokens.css, `@theme inline` in Tailwind v4. Never declare it on `:root` or in a plain `@theme` block.
+- **Why:** var() resolves where the property is declared, and children inherit that one result; plain `@theme` variables are emitted on `:root`, so `rounded-uix-inner` drew 0 everywhere.
+- **Gate:** `packages/tokens/tests/concentric-radius.test.mjs` (only `:where(*)` in tokens.css, only `@theme inline` in theme.css). **Tag:** css-variables, tailwind-v4, tokens
+
 ### 2026-11-20 · reading a CSS animation and clicking under a view transition · `5805c3f4`
 - **Rule:** in a browser test, read a CSS animation's timing function from `animation.effect.getKeyframes()[0].easing`; `getComputedTiming().easing` is the effect easing and reads `linear` in every engine. While a view transition runs, a named part is drawn from its snapshot and is not hit-testable: a click on a control inside it lands on the part's container (clicks elsewhere reach the live page if `::view-transition` has `pointer-events: none`), and the update commits a frame after the call, so read the new state only once `[data-uix-view-transition]` is gone.  **Why:** the first view-transition spec failed in Chromium, Firefox and WebKit on both (easing "linear", a Back click mid-morph lost), and the canvas drag specs read the layout before the drop's deferred commit.  **Gate:** `tests/a11y/view-transition.spec.mjs` (select-cross-browser), the wait in `dashboard-canvas.spec.mjs` `dragHandle`.  **Tag:** test, motion, view-transition, playwright, cross-browser
 

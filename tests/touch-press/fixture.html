@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Touch press fixture — UIx v2</title>
+  <!-- Static fixture for tests/a11y/touch-press.spec.mjs (the coarse-pointer press experiment). No React. -->
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+</head>
+<body>
+  <main>
+    <button id="btn" class="uix-btn uix-btn--primary" type="button">Save</button>
+    <button id="btn-disabled" class="uix-btn uix-btn--primary" type="button" disabled>Save</button>
+    <label id="sw-off" class="uix-switch"><input type="checkbox" role="switch"><span class="uix-switch__track"></span>Off</label>
+    <label id="sw-on" class="uix-switch"><input type="checkbox" role="switch" checked><span class="uix-switch__track"></span>On</label>
+    <label id="sw-disabled" class="uix-switch"><input type="checkbox" role="switch" disabled><span class="uix-switch__track"></span>Disabled</label>
+  </main>
+</body>
+</html>

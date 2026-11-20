@@ -202,4 +202,10 @@
     /* calm kit (2.56) */
     --uix-chart-series-soft:rgba(50,128,252,.18);
   }
+
+  /* concentric corners (experiment): resolved per element, reads the nearest container's
+     --uix-radius-outer / --uix-radius-inset (write-only slots, no root value) */
+  :where(*) {
+    --uix-radius-inner:max(var(--uix-radius-inner-min, 0px), calc(var(--uix-radius-outer) - var(--uix-radius-inset, 0px)));
+  }
 }
