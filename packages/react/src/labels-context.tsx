@@ -42,6 +42,7 @@ import type { TaskTrayLabels } from './components/TaskTray.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
+import type { AiLabels } from './ai-labels.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -121,6 +122,11 @@ export interface UixLabels {
   matchReview?: Partial<MatchReviewLabels>;
   /** `AuditLog` (HAR-987): the filters, Details, Show older entries, and every state. */
   auditLog?: Partial<AuditLogLabels>;
+  /**
+   * The AI primitives: `AiLabel` and its panel, `SourceList`, `AiSuggestion`, `Field ai`,
+   * `ProposalReview`, `AiOutputCard` and `AiActor`, and what the shared AI announcer says.
+   */
+  ai?: Partial<AiLabels>;
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
   filterEditor?: Partial<FilterEditorLabels>;

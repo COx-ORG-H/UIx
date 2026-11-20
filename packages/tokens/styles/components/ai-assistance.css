@@ -1,0 +1,159 @@
+/* uix AI assistance — the AI mark and its explanation panel, sources, the suggestion chip, the AI
+   state of a field, the proposal (approval) card, the output card and the AI actor (spec:
+   Docs/specs/2026-11-20-ai-proposals.md). AI styling identifies AI use and nothing else (Carbon for
+   AI): the mark takes the kit's info accent, never a glow, gradient or shimmer; a high-consequence
+   proposal takes attention amber because it needs the person, not because it is AI. Nothing here
+   moves: colour changes only, and the streaming caret is drawn, not blinked, and is dropped under
+   reduced motion. Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* ---- the AI mark ---- */
+  .uix-ai-label {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    min-height: 18px; padding: 0 var(--uix-space-1);
+    border: 1px solid color-mix(in srgb, var(--uix-info) 45%, transparent); border-radius: var(--uix-radius-sm);
+    background: var(--uix-info-bg); color: var(--uix-info-text);
+    font: inherit; font-size: var(--uix-text-meta); font-weight: 600; line-height: 1; letter-spacing: 0.02em;
+    vertical-align: middle;
+  }
+  .uix-ai-label--button {
+    position: relative; cursor: pointer;
+    transition: border-color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  /* a 24px hit area around the 18px mark (WCAG 2.5.8), without changing the layout */
+  .uix-ai-label--button::before { content: ""; position: absolute; inset: -3px; }
+  .uix-ai-label--button:hover,
+  .uix-ai-label-wrap[data-open] .uix-ai-label--button { border-color: var(--uix-info-text); }
+  .uix-ai-label--button:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-ai-label-wrap { display: inline-flex; flex: none; vertical-align: middle; }
+
+  /* ---- the explanation panel ---- */
+  .uix-popover.uix-ai-panel {
+    display: grid; gap: var(--uix-space-3);
+    width: max-content; max-width: min(360px, calc(100vw - 16px));
+    padding: var(--uix-space-4);
+    font-size: var(--uix-text-meta); line-height: var(--uix-leading-body); color: var(--uix-text);
+    overflow-wrap: anywhere;
+  }
+  .uix-ai-panel:focus { outline: none; }
+  .uix-ai-panel:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-ai-panel p { margin: 0; }
+  .uix-ai-panel__title { display: flex; align-items: center; gap: var(--uix-space-2); font-weight: 600; font-size: var(--uix-text-body); }
+  .uix-ai-panel__facts { display: grid; gap: var(--uix-space-2); margin: 0; }
+  .uix-ai-panel__facts dt { color: var(--uix-text-muted); font-weight: 500; }
+  .uix-ai-panel__facts dd { margin: 0; }
+  .uix-ai-panel__limitation { color: var(--uix-text-muted); border-top: 1px solid var(--uix-border); padding-top: var(--uix-space-3); }
+
+  /* ---- sources ---- */
+  .uix-source-list { display: grid; gap: var(--uix-space-2); font-size: var(--uix-text-meta); min-width: 0; }
+  .uix-source-list__title { margin: 0; color: var(--uix-text-muted); font-weight: 500; }
+  .uix-source-list__empty { margin: 0; color: var(--uix-text-muted); }
+  .uix-source-list__items { display: grid; gap: var(--uix-space-2); margin: 0; padding-inline-start: var(--uix-space-5); }
+  .uix-source-list__item::marker { color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
+  .uix-source-list__body { display: inline-flex; flex-direction: column; gap: var(--uix-space-0); min-width: 0; }
+  .uix-source-list__link { color: var(--uix-accent-text); }
+  .uix-source-list__meta { color: var(--uix-text-muted); }
+
+  /* ---- the suggestion chip ---- */
+  .uix-ai-suggestion {
+    display: inline-flex; align-items: center; gap: var(--uix-space-1); max-width: 100%;
+    padding: var(--uix-space-0) var(--uix-space-0) var(--uix-space-0) var(--uix-space-1);
+    border: 1px dashed var(--uix-border-strong); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface); color: var(--uix-text);
+    font-size: var(--uix-text-meta);
+  }
+  .uix-ai-suggestion__value { min-width: 0; padding-inline: var(--uix-space-1); overflow-wrap: anywhere; font-weight: 500; }
+  .uix-ai-suggestion .uix-btn { border-radius: var(--uix-radius-pill); }
+  .uix-ai-suggestion .uix-btn svg { width: 14px; height: 14px; }
+  .uix-ai-suggestion__accept { color: var(--uix-success-text); }
+
+  /* ---- the AI state of a field (with Input review's warning border) ---- */
+  .uix-field__label-row .uix-ai-label-wrap,
+  .uix-field__label-row > .uix-ai-label { align-self: center; }
+  .uix-field__revert { margin-inline-start: auto; }
+
+  /* ---- the proposal (approval) card ---- */
+  .uix-proposal {
+    display: grid; gap: var(--uix-space-3); min-width: 0;
+    padding: var(--uix-space-4);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface); color: var(--uix-text);
+  }
+  .uix-proposal[data-consequence="high"][data-status="proposed"],
+  .uix-proposal[data-consequence="high"][data-status="failed"] { border-color: var(--uix-warning-border); }
+  .uix-proposal > * { margin: 0; }
+  .uix-proposal__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2); min-width: 0; }
+  .uix-proposal__title { flex: 1 1 12rem; min-width: 0; margin: 0; font-size: var(--uix-text-body); font-weight: 600; overflow-wrap: anywhere; }
+  .uix-proposal__band {
+    padding: var(--uix-space-0) var(--uix-space-2); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface-2); color: var(--uix-text-hushed); font-size: var(--uix-text-meta); white-space: nowrap;
+  }
+  .uix-proposal__band[data-band="high"] { background: var(--uix-warning-bg); color: var(--uix-warning-text); }
+  .uix-proposal__gate { display: flex; align-items: center; gap: var(--uix-space-2); color: var(--uix-warning-text); font-size: var(--uix-text-meta); font-weight: 500; }
+  .uix-proposal__gate::before { content: ""; width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--uix-warning); }
+  .uix-proposal__description { color: var(--uix-text-hushed); }
+  .uix-proposal__changes { width: 100%; border-collapse: collapse; font-size: var(--uix-text-meta); }
+  .uix-proposal__changes caption { text-align: start; color: var(--uix-text-muted); font-weight: 500; padding-bottom: var(--uix-space-1); }
+  .uix-proposal__changes th,
+  .uix-proposal__changes td { padding: var(--uix-space-1) var(--uix-space-2); border-bottom: 1px solid var(--uix-border); text-align: start; vertical-align: top; overflow-wrap: anywhere; }
+  .uix-proposal__changes thead th { color: var(--uix-text-muted); font-weight: 500; }
+  .uix-proposal__changes tbody th { font-weight: 500; color: var(--uix-text-hushed); padding-inline-start: 0; }
+  .uix-proposal__changes thead td { padding-inline-start: 0; }
+  .uix-proposal__before { color: var(--uix-text-muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, currentColor 50%, transparent); }
+  .uix-proposal__after { font-weight: 500; }
+  .uix-proposal__affected { font-size: var(--uix-text-meta); }
+  .uix-proposal__key { color: var(--uix-text-muted); font-weight: 500; }
+  .uix-proposal__reversible { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-proposal__reversible:not([data-reversible]) { color: var(--uix-text); font-weight: 500; }
+  .uix-proposal__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); }
+  .uix-proposal__foot { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2); }
+  .uix-proposal__status { margin: 0 auto 0 0; font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-proposal__status:empty { display: none; }
+  .uix-proposal__actions { display: flex; flex-wrap: wrap; gap: var(--uix-space-2); margin-inline-start: auto; }
+
+  /* ---- the output card ---- */
+  .uix-ai-output {
+    display: grid; gap: var(--uix-space-3); min-width: 0;
+    padding: var(--uix-space-4);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface); color: var(--uix-text);
+  }
+  .uix-ai-output > * { margin: 0; }
+  .uix-ai-output__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2); }
+  .uix-ai-output__title { flex: 1 1 10rem; min-width: 0; margin: 0; font-size: var(--uix-text-body); font-weight: 600; }
+  .uix-ai-output__status { display: flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-ai-output__body { min-width: 0; overflow-wrap: anywhere; line-height: var(--uix-leading-body); }
+  .uix-ai-output__body > :first-child { margin-top: 0; }
+  .uix-ai-output__body > :last-child { margin-bottom: 0; }
+  .uix-ai-output__body:empty { display: none; }
+  /* the streaming caret: drawn, never blinked; React leaves data-streaming off under reduced motion */
+  .uix-ai-output__body[data-streaming]::after {
+    content: ""; display: inline-block; width: 2px; height: 1em; margin-inline-start: var(--uix-space-0);
+    vertical-align: text-bottom; background: var(--uix-text-muted);
+  }
+  :root[data-motion="reduce"] .uix-ai-output__body[data-streaming]::after { display: none; }
+  .uix-ai-output__note { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
+  .uix-ai-output__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); }
+  .uix-ai-output__actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2); }
+  .uix-ai-output__feedback { display: inline-flex; gap: var(--uix-space-1); margin-inline-start: auto; }
+  .uix-ai-output__feedback .uix-btn svg { width: 16px; height: 16px; }
+  .uix-ai-output__feedback .uix-btn[aria-pressed="true"] { color: var(--uix-accent-text); background: var(--uix-brand-muted); }
+  .uix-ai-output__sources { border-top: 1px solid var(--uix-border); padding-top: var(--uix-space-3); }
+
+  /* ---- the AI actor (audit and activity entries) ---- */
+  .uix-ai-actor { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-1); min-width: 0; }
+  .uix-ai-actor__mark {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--uix-info-bg); color: var(--uix-info-text);
+  }
+  .uix-ai-actor__mark svg { width: 14px; height: 14px; }
+  .uix-ai-actor__name { font-weight: 500; }
+  .uix-ai-actor__text { display: inline; }
+  .uix-ai-actor__text .uix-ai-label { margin-inline: var(--uix-space-1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @layer uix.components {
+    .uix-ai-output__body[data-streaming]::after { display: none; }
+  }
+}
