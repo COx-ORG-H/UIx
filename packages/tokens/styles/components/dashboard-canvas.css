@@ -11,7 +11,7 @@
 
    Edit mode (--editing) gives each item a move handle (top right) and a resize handle (bottom
    right corner) and outlines the cells. While a handle is dragged, a dashed preview shows where
-   the item will land. */
+   the item will land. A press on a handle shows its step buttons (__steps). */
 @layer uix.components {
   .uix-dashboard-canvas {
     --uix-dashboard-canvas-row: 5rem;
@@ -78,6 +78,48 @@
   .uix-dashboard-canvas--dragging .uix-dashboard-canvas__move { cursor: grabbing; }
   .uix-dashboard-canvas__resize { inset-block-end: var(--uix-space-1); inset-inline-end: var(--uix-space-1); cursor: nwse-resize; }
 
+  /* Step buttons (WCAG 2.5.7): a press on a handle without dragging shows four buttons in a cross
+     beside it, Done in the middle, that move or resize the item one cell per press. They sit
+     below the move handle and above the resize handle, over the widget; the item they belong to
+     is raised so they also cover a neighbour. */
+  .uix-dashboard-canvas__item[data-steps] { z-index: var(--uix-z-raised); }
+  .uix-dashboard-canvas__steps {
+    position: absolute;
+    z-index: var(--uix-z-raised);
+    inset-inline-end: var(--uix-space-1);
+    display: grid;
+    grid-template-columns: repeat(3, var(--uix-space-6));
+    grid-template-rows: repeat(3, var(--uix-space-6));
+    grid-template-areas: ". n ." "w c e" ". s .";
+    gap: var(--uix-space-1);
+    padding: var(--uix-space-1);
+    border: 1px solid var(--uix-border);
+    border-radius: var(--uix-radius-md);
+    background: var(--uix-surface);
+    box-shadow: var(--uix-shadow-popover);
+  }
+  .uix-dashboard-canvas__steps--move { inset-block-start: calc(var(--uix-space-6) + 2 * var(--uix-space-1)); }
+  .uix-dashboard-canvas__steps--resize { inset-block-end: calc(var(--uix-space-6) + 2 * var(--uix-space-1)); }
+  .uix-dashboard-canvas__step {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--uix-border);
+    border-radius: var(--uix-radius-sm);
+    background: var(--uix-surface);
+    color: var(--uix-text);
+    cursor: pointer;
+  }
+  .uix-dashboard-canvas__step > svg { inline-size: var(--uix-space-4); block-size: var(--uix-space-4); }
+  .uix-dashboard-canvas__step:hover:not(:disabled) { background: var(--uix-bg-hover); }
+  .uix-dashboard-canvas__step:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-dashboard-canvas__step:disabled { color: var(--uix-disabled-text); border-color: var(--uix-disabled-border); background: var(--uix-bg-subtle); cursor: not-allowed; }
+  .uix-dashboard-canvas__step:is([data-step="up"], [data-step="shorter"]) { grid-area: n; }
+  .uix-dashboard-canvas__step:is([data-step="left"], [data-step="narrower"]) { grid-area: w; }
+  .uix-dashboard-canvas__step:is([data-step="right"], [data-step="wider"]) { grid-area: e; }
+  .uix-dashboard-canvas__step:is([data-step="down"], [data-step="taller"]) { grid-area: s; }
+  .uix-dashboard-canvas__steps-done { grid-area: c; border-color: transparent; color: var(--uix-text-muted); }
+
   .uix-dashboard-canvas__preview {
     border: 2px dashed var(--uix-accent);
     border-radius: var(--uix-radius-md);
@@ -97,6 +139,7 @@
       order: var(--uix-dashboard-canvas-order, 0);
     }
     .uix-dashboard-canvas__handle,
+    .uix-dashboard-canvas__steps,
     .uix-dashboard-canvas__preview { display: none; }
   }
 
