@@ -375,6 +375,7 @@ const COARSE_BEYOND_SCALE = 64;
 /** Resized column widths in px, by column id: what `ViewState.widths` and a saved view hold. */
 export type ColumnWidths = Readonly<Record<string, number>>;
 
+/** A column's resize bounds in px: its floor and its cap. */
 export interface ColumnWidthBounds {
   /** Default `COLUMN_WIDTH_MIN`. */
   min?: number;
