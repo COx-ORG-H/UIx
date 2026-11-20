@@ -6,6 +6,7 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
+import { feedback } from '../feedback.js';
 import { SWIPE_SLOP, SWIPE_VELOCITY, SWIPE_WINDOW, releaseVelocity } from '../swipe-gesture.js';
 import type { SwipeSample } from '../swipe-gesture.js';
 import { XIcon } from '../icons/components.js';
@@ -51,6 +52,8 @@ function useSwipeToDismiss(onClose: (() => void) | undefined, own: {
     if (e.type === 'pointerup' && (fling || Math.abs(d.dx) > el.offsetWidth / 3)) {
       // Out the way it was thrown; under reduced motion it stays where it was let go and fades.
       if (!prefersReducedMotion()) el.style.translate = `${Math.sign(d.dx) * (el.offsetWidth + 32)}px 0`;
+      // the snap-off (experimental feedback events), while the toast is still in the document
+      feedback('selection', el);
       onClose();
     } else {
       el.style.translate = '';

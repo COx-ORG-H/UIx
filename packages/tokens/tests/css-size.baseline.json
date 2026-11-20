@@ -182,9 +182,9 @@
       "brotli": 710
     },
     "styles/components/display-preferences.css": {
-      "raw": 2858,
-      "gzip": 1091,
-      "brotli": 896
+      "raw": 3381,
+      "gzip": 1270,
+      "brotli": 1048
     },
     "styles/components/drag.css": {
       "raw": 3481,
@@ -472,14 +472,14 @@
       "brotli": 382
     },
     "styles/components/sortable-list.css": {
-      "raw": 3112,
-      "gzip": 1155,
-      "brotli": 943
+      "raw": 3751,
+      "gzip": 1416,
+      "brotli": 1176
     },
     "styles/components/spinner.css": {
-      "raw": 1413,
-      "gzip": 641,
-      "brotli": 509
+      "raw": 1707,
+      "gzip": 725,
+      "brotli": 589
     },
     "styles/components/stat-tile.css": {
       "raw": 6628,

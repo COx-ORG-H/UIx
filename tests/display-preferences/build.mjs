@@ -30,7 +30,7 @@ export async function buildDisplayPreferencesHarness() {
   });
   const model = await import(`data:text/javascript;base64,${Buffer.from(out.outputFiles[0].text).toString('base64')}`);
   mkdirSync(join(here, 'dist'), { recursive: true });
-  writeFileSync(join(here, 'dist/pre-paint.js'), `${model.displayPreferencesScript('uix-harness-display')}\nwindow.__firstPaint = { theme: document.documentElement.getAttribute('data-theme'), scale: document.documentElement.getAttribute('data-text-scale') };\n`);
+  writeFileSync(join(here, 'dist/pre-paint.js'), `${model.displayPreferencesScript('uix-harness-display')}\nwindow.__firstPaint = { theme: document.documentElement.getAttribute('data-theme'), scale: document.documentElement.getAttribute('data-text-scale') };\nwindow.__firstPaintTransparency = document.documentElement.getAttribute('data-transparency');\n`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await buildDisplayPreferencesHarness();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
@@ -8,6 +8,14 @@ import { useUixLabels } from '../labels-context.js';
 import { placeId, sameOrder, useRowDrag } from '../reorder.js';
 import { EditorIcon } from './EditorIcons.js';
 import { settleDrop } from '../hooks/useKeyboardGrab.js';
+import { useReducedMotion } from '../hooks/useReducedMotion.js';
+import { clearRows, endRoomGlide, flipRows, measureRows, releaseRows, useMakeRoomDrag } from '../make-room.js';
+
+// useLayoutEffect warns during SSR; fall back to useEffect on the server.
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+const ROW = '.uix-sortable__row';
+/** makeRoom: how long a dropped row waits for the consumer's new order before it glides back. */
+const DROP_HOLD_MS = 1000;
 
 /** Every word `SortableList` renders or announces. `{label}` is the row's name. */
 export interface SortableListLabels {
@@ -46,6 +54,16 @@ export interface SortableListProps<T> extends Omit<HTMLAttributes<HTMLUListEleme
   disabled?: boolean;
   /** Each word defaults to `UixLabelsProvider` `sortableList`, then to English. */
   labels?: Partial<SortableListLabels>;
+  /**
+   * EXPERIMENT (phone-OS motion study, Tier 3 item 16; not a settled default): while a row is
+   * dragged it follows the pointer and the rows between its place and where it would land move
+   * aside by its height, so a gap opens where it will land; on drop it glides into the gap. A
+   * keyboard move glides the two rows instead of swapping them at once. Transform only, on
+   * `--uix-dur` / `--uix-ease-glide`. Under reduced motion it does nothing: the rows reorder live
+   * as they do without it. `renderItem`'s `index` stays the row's old place until the drop.
+   * @experimental
+   */
+  makeRoom?: boolean;
 }
 
 const ArrowIcon = ({ dir }: { dir: 'up' | 'down' }) => (
@@ -62,11 +80,12 @@ type Part = 'grip' | 'up' | 'down' | 'row';
  * Move down buttons that are always there (a drag is never the only way). With focus anywhere
  * in a row, Alt+↑ / Alt+↓ move it; a focused grip moves with ↑ / ↓ alone. Focus stays with the
  * moved row, and a polite status says where it went. Keyboard moves are instant; a drag lifts
- * the row (drag.css), places it under the pointer frame by frame, and it settles when dropped. Shares its order model with `ViewMenu`,
- * `SavedViewMenu` and `NavFavourites`.
+ * the row (drag.css), places it under the pointer frame by frame, and it settles when dropped.
+ * `makeRoom` (experiment) lets the neighbours glide aside instead. Shares its order model with
+ * `ViewMenu`, `SavedViewMenu` and `NavFavourites`.
  */
 export function SortableList<T>({
-  items, getId, getLabel, renderItem, onReorder, disabled = false, labels: labelOverrides, className, ...props
+  items, getId, getLabel, renderItem, onReorder, disabled = false, labels: labelOverrides, makeRoom = false, className, ...props
 }: SortableListProps<T>) {
   const labels = { ...DEFAULT_SORTABLE_LIST_LABELS, ...useUixLabels().sortableList, ...labelOverrides };
   const ids = items.map(getId);
@@ -126,7 +145,7 @@ export function SortableList<T>({
   });
 
   const dragStart = useRef<readonly string[] | null>(null);
-  const { dragging, start } = useRowDrag('.uix-sortable__row', {
+  const rowDrag = useRowDrag(ROW, {
     over: (id, index) => {
       const next = placeId(order, id, index);
       if (next !== order) setDraft(next);
@@ -142,8 +161,73 @@ export function SortableList<T>({
     cancel: () => { dragStart.current = null; setDraft(null); },
   });
 
+  // makeRoom (experiment): the rows keep their order while dragged and move aside; the order is
+  // committed once, on drop, and every change of order glides (FLIP) from where the rows were drawn.
+  const reducedMotion = useReducedMotion();
+  const room = makeRoom && !reducedMotion;
+  /**
+   * A drop was committed but the items still show the old order: the rows hold where they were
+   * drawn, so a consumer that applies the order a moment later (after a request) lands the row from
+   * there. If the order has not changed within DROP_HOLD_MS, the consumer kept it: they glide back.
+   */
+  const hold = useRef<{ pending: boolean; timer?: ReturnType<typeof setTimeout> }>({ pending: false });
+  const endHold = () => { clearTimeout(hold.current.timer); hold.current = { pending: false }; };
+  useEffect(() => endHold, []);
+  const roomDrag = useMakeRoomDrag(ROW, {
+    drop: (id, index) => {
+      const next = placeId(order, id, index);
+      if (next === order) return false;
+      settle.current = { id, to: next.join('\u0000'), from: orderKey };
+      endHold();
+      hold.current.pending = true;
+      commit(next, id);
+      return true;
+    },
+  });
+  const { dragging, start } = room
+    ? { dragging: roomDrag.dragging, start: (event: Parameters<typeof roomDrag.start>[0], id: string) => { endHold(); roomDrag.start(event, id); } }
+    : rowDrag;
+  // Where every row was drawn before an order change, read while rendering (the DOM still shows
+  // the old order), so the layout effect can let each row glide from there.
+  const shownKey = useRef<string | null>(null);
+  const roomWasOn = useRef(false);
+  const drawnBefore = useRef<Map<string, number> | null>(null);
+  const renderKey = order.join('\u0000');
+  if (room && listRef.current && shownKey.current !== null && shownKey.current !== renderKey && !drawnBefore.current) {
+    drawnBefore.current = measureRows(listRef.current, ROW);
+  }
+  useIsomorphicLayoutEffect(() => {
+    const before = drawnBefore.current;
+    const changed = shownKey.current !== null && shownKey.current !== renderKey;
+    drawnBefore.current = null;
+    shownKey.current = renderKey;
+    const list = listRef.current;
+    const wasOn = roomWasOn.current;
+    roomWasOn.current = room;
+    if (!list) return;
+    if (!room) {
+      // makeRoom stopped applying (reduced motion turned on, the prop switched off): a drag in
+      // progress ends, a held drop lets go, and every row is back in its place at once.
+      if (wasOn) { if (roomDrag.dragging) roomDrag.cancel(); endHold(); clearRows(list, ROW); }
+      return;
+    }
+    if (changed && before) {
+      endHold();
+      // The order changed under a drag (a live update, the dragged row removed): the drag's places
+      // are stale, so it ends, and every row glides from where it is drawn to its new place.
+      if (roomDrag.dragging) roomDrag.cancel();
+      flipRows(list, ROW, before);
+    } else if (hold.current.pending && hold.current.timer === undefined) {
+      hold.current.timer = setTimeout(() => {
+        hold.current = { pending: false };
+        if (listRef.current) releaseRows(listRef.current, ROW);
+      }, DROP_HOLD_MS);
+    }
+  });
+
   const onRowKeyDown = (event: KeyboardEvent<HTMLLIElement>, id: string) => {
     if (disabled || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+    if (room && dragging) return; // the pointer is moving a row: keys do not reorder under it
     // In a text field Alt/Option + arrow moves the caret (macOS): the field keeps it.
     if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]')) return;
     event.preventDefault();
@@ -155,7 +239,10 @@ export function SortableList<T>({
 
   return (
     <>
-      <ul ref={listRef} className={cx('uix-sortable', className)} data-dragging={dragging ? '' : undefined} {...props}>
+      <ul
+        ref={listRef} className={cx('uix-sortable', className)} data-dragging={dragging ? '' : undefined} data-make-room={room ? '' : undefined} {...props}
+        onTransitionEnd={(event) => { endRoomGlide(listRef.current, event.target, event.propertyName); props.onTransitionEnd?.(event); }}
+      >
         {order.map((id, index) => {
           const item = byId.get(id);
           if (item === undefined) return null;
@@ -180,6 +267,7 @@ export function SortableList<T>({
                   onKeyDown={(event) => {
                     if (event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
                     event.preventDefault();
+                    if (room && dragging) return; // the pointer is moving a row: keys do not reorder under it
                     move(id, event.key === 'ArrowUp' ? -1 : 1, 'grip');
                   }}
                 >

@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
+<!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
 <!-- lesson-skip: cc6f28ba routine third-round review fix on the opt-in experiment (label-forwarded click), pinned by a spec -->
 <!-- lesson-skip: f5f6c3e5 routine second-round review fix on the opt-in experiment (click attribution), pinned by a spec -->
 <!-- lesson-skip: 8dbda6b6 missed edge cases in an opt-in experiment, caught by review -->
@@ -366,5 +368,7 @@ missing or blank.
 <!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: e258d63b review-caught missed cases (edit vs. loaded value, shadow-root target); routine -->
 <!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
 <!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->
+<!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
