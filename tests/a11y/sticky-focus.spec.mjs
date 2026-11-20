@@ -133,8 +133,10 @@ for (const scene of ['page', 'shell']) {
 
 test('virtual: ↓ through 2,000 windowed rows, then End, ↑ and Home; every row lands clear of the header and the layers over the scroller', async ({ page }, testInfo) => {
   await open(page, testInfo, 'scene=virtual');
-  await layersUp(page);
-  // the scroller runs under the layers and the page cannot scroll it clear (the case CSS cannot fix)
+  const reach = await layersUp(page);
+  // the scroller runs under the layers and the page's own content ends there: past it the page has
+  // only the trailing room the layers add (base.css), and the rows inside the scroller still need
+  // the scroller itself to move (useVirtualRows scrollToIndex, the registry's nudge)
   const geometry = await page.evaluate(() => {
     const wrap = document.querySelector('#tickets .uix-table-wrap');
     const tray = document.querySelector('.uix-task-tray__panel').getBoundingClientRect();
@@ -142,7 +144,7 @@ test('virtual: ↓ through 2,000 windowed rows, then End, ↑ and Home; every ro
     return { wrapBottom: wrap.getBoundingClientRect().bottom, trayTop: tray.top, pageRoom: page.scrollHeight - page.clientHeight - page.scrollTop, windowed: wrap.querySelectorAll('tbody tr[data-uix-row-id]').length };
   });
   expect(geometry.wrapBottom).toBeGreaterThan(geometry.trayTop + 100);
-  expect(geometry.pageRoom).toBeLessThan(100);
+  expect(geometry.pageRoom - reach).toBeLessThan(100);
   expect(geometry.windowed).toBeLessThan(200);
 
   // into the rows: the keyboard row model has one row in the tab order
