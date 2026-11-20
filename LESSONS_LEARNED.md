@@ -340,3 +340,4 @@ missing or blank.
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
 <!-- lesson-skip: 6bce92c8 MotionList renderItem prop pass-through is stated in its JSDoc -->
 <!-- lesson-skip: 6b0f1c20 missed CSS rule; the react-classes-defined gate named it -->
+<!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
