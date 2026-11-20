@@ -412,7 +412,14 @@ export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataW
 export type {
   DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
   DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize, DataWorkspaceRowActionsContext,
+  DataWorkspaceQuery, DataWorkspaceSelectionScope,
 } from './components/DataWorkspace.js';
+// Selection scope (roadmap #12): by id, or every record matching a query except some; plain JSON for a bulk endpoint
+export {
+  EMPTY_SELECTION_SCOPE, isInSelectionScope, isSelectionScopeEmpty, selectAllMatching, selectionQueryKey, selectionScopeCount,
+  selectionScopeMatcher, setInSelectionScope, toggleInSelectionScope,
+} from './selection-scope.js';
+export type { SelectionScope, SelectionScopeIds, SelectionScopeQuery } from './selection-scope.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';
