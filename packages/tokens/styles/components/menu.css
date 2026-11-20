@@ -3,7 +3,7 @@
   .uix-menu { min-width: 200px; margin: 0; padding: var(--uix-space-1); list-style: none; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer); box-shadow: var(--uix-shadow-popover);
     --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1)); }
   .uix-menu__item {
-    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; text-align: left; padding: var(--uix-space-2) var(--uix-space-3);
+    display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; text-align: start; padding: var(--uix-space-2) var(--uix-space-3);
     border: 0; background: transparent; border-radius: var(--uix-radius-inner, var(--uix-radius-sm)); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
   }
   .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
@@ -12,7 +12,7 @@
   .uix-menu[data-uix-glide] .uix-menu__item:is(:hover, :focus-visible, [data-active]) { background: transparent; }
   .uix-menu__item--danger { color: var(--uix-danger-text); }
   .uix-menu__item--danger svg { color: var(--uix-danger-text); }
-  .uix-menu__item .uix-kbd { margin-left: auto; }
+  .uix-menu__item .uix-kbd { margin-inline-start: auto; }
   .uix-menu__sep { height: 1px; background: var(--uix-border); margin: var(--uix-space-1) 0; }
   .uix-menu__label { font-size: var(--uix-text-eyebrow); letter-spacing: var(--uix-tracking-eyebrow); text-transform: uppercase; color: var(--uix-text-muted); padding: var(--uix-space-2) var(--uix-space-3) var(--uix-space-1); }
 }
@@ -22,7 +22,7 @@
   .uix-menu__icon { display: inline-flex; flex: none; color: var(--uix-text-muted); }
   .uix-menu__item--danger .uix-menu__icon { color: var(--uix-danger-text); }
   .uix-menu__text { flex: 1; min-width: 0; }
-  .uix-menu__shortcut { margin-left: auto; padding-left: var(--uix-space-4); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-menu__shortcut { margin-inline-start: auto; padding-inline-start: var(--uix-space-4); color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
   a.uix-menu__item { text-decoration: none; }
   .uix-menu__item:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: -2px; background: var(--uix-bg-hover); }
   .uix-menu__item[aria-disabled="true"] { opacity: .5; cursor: default; }

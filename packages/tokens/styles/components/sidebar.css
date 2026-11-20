@@ -29,7 +29,7 @@
   .uix-navitem {
     display: flex; align-items: center; gap: var(--uix-space-3); min-height: 36px; padding: 0 var(--uix-space-3);
     border-radius: var(--uix-radius-sm); color: var(--uix-text-hushed); cursor: pointer; text-decoration: none;
-    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: left;
+    border: 0; background: transparent; font: inherit; font-size: var(--uix-text-body); width: 100%; text-align: start;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-navitem:hover { background: var(--uix-bg-hover); color: var(--uix-text); text-decoration: none; }
@@ -112,7 +112,7 @@
   .uix-favourites__row { position: relative; display: flex; align-items: center; }
   .uix-favourites__link { min-width: 0; flex: 1; }
   .uix-favourites__menu-trigger {
-    margin-left: auto; display: inline-flex; height: 20px; width: 20px; flex-shrink: 0;
+    margin-inline-start: auto; display: inline-flex; height: 20px; width: 20px; flex-shrink: 0;
     align-items: center; justify-content: center; border: 0; border-radius: calc(var(--uix-radius-xs) / 2);
     background: transparent; cursor: pointer; color: var(--uix-text-muted);
     transition: opacity var(--uix-dur-fast) var(--uix-ease-out);
@@ -133,7 +133,7 @@
   .uix-favourites__menu-item {
     display: flex; width: 100%; align-items: center;
     padding: calc(var(--uix-space-1) * 1.5) var(--uix-space-3); border: 0;
-    background: transparent; cursor: pointer; text-align: left;
+    background: transparent; cursor: pointer; text-align: start;
     font-size: calc(var(--uix-text-body) * 0.9285714286);
     color: color-mix(in srgb, var(--uix-text) 85%, transparent);
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
@@ -142,7 +142,7 @@
 
   /* collapsible group */
   .uix-navgroup { }
-  .uix-navgroup__trigger .uix-navgroup__chevron { margin-left: auto; transition: transform var(--uix-dur-disclosure) var(--uix-ease-soft); }
+  .uix-navgroup__trigger .uix-navgroup__chevron { margin-inline-start: auto; transition: transform var(--uix-dur-disclosure) var(--uix-ease-soft); }
   .uix-navgroup__trigger[aria-expanded="false"] .uix-navgroup__chevron { transform: rotate(-90deg); }
   .uix-navgroup__chevron { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   /* 2.60 (animate-ui's sidebar, operator 2026-11-08): a group opens and closes in height over
