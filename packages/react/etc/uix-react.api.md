@@ -138,7 +138,7 @@ export function applyBrandProfile(profile: BrandProfile, target?: HTMLElement | 
 export function applyDisplayAttributes(root: Element, attributes: DisplayAttributes): void;
 
 // @public
-export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
+export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[], locale?: string): T[];
 
 // @public (undocumented)
 export function AppShell(input: AppShellProps): react.JSX.Element;
@@ -1304,6 +1304,9 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
 
 // @public
 export function compactCanvas<T extends DashboardCanvasItem>(items: readonly T[]): T[];
+
+// @public
+export function compareFor(locale?: string | readonly string[]): (a: string, b: string) => number;
 
 // @public
 export function Composer(input: ComposerProps): react.JSX.Element;
@@ -3156,13 +3159,13 @@ export interface FilterChoice {
 }
 
 // @public
-export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string): (ComboboxOption | ComboboxGroup)[];
-
-// @public (undocumented)
-export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
+export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string, locale?: string, foldOptions?: FoldOptions): (ComboboxOption | ComboboxGroup)[];
 
 // @public
-export function filterCommandItems(items: readonly CommandPaletteItem[], query: string): CommandPaletteItem[];
+export function filterComboboxOptions(options: readonly ComboboxOption[], query: string, locale?: string, foldOptions?: FoldOptions): ComboboxOption[];
+
+// @public
+export function filterCommandItems(items: readonly CommandPaletteItem[], query: string, locale?: string, options?: FoldOptions): CommandPaletteItem[];
 
 // @public
 export function FilteredEmptyState(props: EmptyStateProps): react.JSX.Element;
@@ -3442,7 +3445,12 @@ export interface FoldedText {
 }
 
 // @public
-export function foldForSearch(text: string): FoldedText;
+export function foldForSearch(text: string, locale?: string, options?: FoldOptions): FoldedText;
+
+// @public
+export interface FoldOptions {
+    crossScript?: boolean;
+}
 
 // @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
@@ -3497,6 +3505,7 @@ export function Highlighted(input: HighlightedProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface HighlightedProps {
+    locale?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -3504,7 +3513,7 @@ export interface HighlightedProps {
 }
 
 // @public
-export function highlightSegments(text: string, query: string): Segment[];
+export function highlightSegments(text: string, query: string, locale?: string): Segment[];
 
 // @public (undocumented)
 export const HOUR = 3600000;
@@ -4340,8 +4349,8 @@ export interface MatchBulkResult {
 // @public
 export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform, layout?: KeyboardLayoutMap | null): boolean;
 
-// @public (undocumented)
-export function matchFilter(row: Row, f: ColumnFilter): boolean;
+// @public
+export function matchFilter(row: Row, f: ColumnFilter, locale?: string): boolean;
 
 // @public
 export function matchFilterPreset(field: FilterField, value: FilterValue | undefined): FilterPreset | undefined;
@@ -5157,7 +5166,7 @@ export interface MoveProposal {
 export function moveRuleNode(group: RuleGroup, id: string, direction: -1 | 1): RuleGroup;
 
 // @public
-export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[]): T[];
+export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[], locale?: string | readonly string[]): T[];
 
 // @public (undocumented)
 export interface NavFavouriteItem {
@@ -7432,7 +7441,10 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 }
 
 // @public
-export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
+export function searchMatcher(query: string, locale?: string, options?: FoldOptions): (text: string) => boolean;
+
+// @public
+export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[], locale?: string): T[];
 
 // @public
 export interface SearchSegment {
@@ -7443,7 +7455,7 @@ export interface SearchSegment {
 }
 
 // @public
-export function searchSegments(text: string, query: string): SearchSegment[];
+export function searchSegments(text: string, query: string, locale?: string, options?: FoldOptions): SearchSegment[];
 
 // @public
 export function SearchSuggest(input: SearchSuggestProps): react.JSX.Element;
@@ -9653,6 +9665,7 @@ export interface UseTableOptions {
     initialQuery?: string;
     // (undocumented)
     initialSort?: SortKey[];
+    locale?: string;
     searchFields?: readonly string[];
 }
 
