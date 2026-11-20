@@ -116,7 +116,9 @@ test('forced colours keep every mark (CanvasText), and the words stay', async ({
 });
 
 test('on the page clock: the minute changes, a threshold is crossed and announced once', async ({ page }, testInfo) => {
-  await page.clock.install({ time: NOW });
+  // paused: only runFor moves time, so page load and expect's waits add nothing
+  await page.clock.install({ time: NOW - 1000 });
+  await page.clock.pauseAt(NOW);
   await open(page, themeOf(testInfo));
   const quiet = page.getByTestId('live-quiet');
   const loud = page.getByTestId('live-announce');
@@ -126,7 +128,7 @@ test('on the page clock: the minute changes, a threshold is crossed and announce
   const announcer = page.locator('body > [data-uix-announcer]');
   expect(await announcer.count() ? plain(await announcer.textContent()) : '').toBe('');
 
-  await page.clock.runFor(30_000);
+  await page.clock.runFor(31_000); // past the 2 h-left threshold, not on it
   await expect(quiet).toHaveAttribute('data-state', 'warning');
   await page.clock.runFor(MIN);
   await expect(quiet.locator('.uix-sla__time')).toHaveText('1 hr 59 mins');
