@@ -251,13 +251,13 @@ export type { SpinnerProps } from './components/Spinner.js';
 export { Heartbeat, LiveIndicator } from './components/Heartbeat.js';
 export type { HeartbeatProps, HeartbeatState, LiveIndicatorProps } from './components/Heartbeat.js';
 
-export { Toast, Toaster } from './components/Toast.js';
-export type { ToastProps, ToasterProps, ToastTone } from './components/Toast.js';
-// Imperative toast queue (HAR-1363): toast.success(…), toast.promise(…), toast.undoable(…)
-export { toast, createToastStore, createToastApi, TOAST_LEAVE_MS } from './toast-store.js';
+export { Toast, Toaster, TOAST_UNDO_SHORTCUT_ID, useToastQuiet } from './components/Toast.js';
+export type { ToastProps, ToasterProps, ToastTone, ToastLabels } from './components/Toast.js';
+// Imperative toast queue (HAR-1363): toast.success(…), toast.promise(…), toast.undoable(…); undo deltas (roadmap #23)
+export { toast, createToastStore, createToastApi, TOAST_LEAVE_MS, TOAST_UNDO_MS, DEFAULT_TOAST_RATE_LIMIT } from './toast-store.js';
 export type {
   ToastApi, ToastStore, ToastRecord, ToastKind, ToastOptions, ToastAction, ToastDismissReason,
-  ToastPromiseMessages, UndoableToastOptions,
+  ToastPromiseMessages, UndoableToastOptions, ToastPriority, ToastRateLimit, ToastStoreConfig, ToastUndoResult,
 } from './toast-store.js';
 // AI proposals v1 (enterprise-UX study #5/#6; spec Docs/specs/2026-11-20-ai-proposals.md)
 export { AiLabel, SourceList, useAiLabels } from './components/AiLabel.js';
