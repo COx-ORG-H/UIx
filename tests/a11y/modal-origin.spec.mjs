@@ -160,6 +160,20 @@ test.describe('origin="trigger"', () => {
     expect((await readDialog(page)).origin).toBeNull();
   });
 
+  test('a tap on a label whose control opens the dialog grows it from the label', async ({ page }) => {
+    await open(page);
+    const [cx, cy] = await centreOf(page, '#label-open');
+    const resume = await freeze(page);
+    // the label's text, not its checkbox: the browser forwards a detail-0 click to the control
+    await page.locator('#label-open').click({ position: { x: 40, y: 8 } });
+    await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+    const d = await readDialog(page);
+    await resume();
+    expect(d.origin).toBe('trigger');
+    expect(Math.abs(d.transformOrigin[0] - (cx - d.left))).toBeLessThanOrEqual(1.5);
+    expect(Math.abs(d.transformOrigin[1] - (cy - d.top))).toBeLessThanOrEqual(1.5);
+  });
+
   test('closed and reopened from inside the dialog ("Save and new"): the reopen is centred', async ({ page }) => {
     await open(page);
     await page.locator('#new').click();

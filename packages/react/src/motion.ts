@@ -34,9 +34,13 @@ export function watchInputModality(): void {
     if (lastPointer && !keyboard && event.pointerId === lastPointer.pointerId) lastPointer.activatedAt = Date.now();
   }, true);
   // A click no pointer produced (detail 0: `el.click()`, most assistive technology, Enter or Space)
-  // is not that press's click: whatever it opens was not opened by the press.
+  // is not that press's click: whatever it opens was not opened by the press. The one exception is
+  // the click a pressed <label> forwards to its control, which also has detail 0.
   document.addEventListener('click', (event) => {
-    if (lastPointer && event.detail === 0) lastPointer.activatedAt = null;
+    if (!lastPointer || event.detail !== 0) return;
+    const label = lastPointer.target?.closest('label');
+    if (label && label.control && label.control === event.target) return;
+    lastPointer.activatedAt = null;
   }, true);
 }
 

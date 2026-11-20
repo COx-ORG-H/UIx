@@ -7,7 +7,8 @@
  *   - #vanish: a button that is gone while #dialog is open (a menu item whose menu closed);
  *   - #soon / #later: open #dialog 400 ms / 1.5 s after the click (a fetch that resolved later);
  *   - #reopen (inside #dialog): closes it and opens it again 100 ms later ("Save and new");
- *   - #open-instant: opens #instant, a Modal with `instant`.
+ *   - #open-instant: opens #instant, a Modal with `instant`;
+ *   - #label-open: a <label> whose checkbox's change opens #dialog (the label forwards a detail-0 click).
  * `?only=lazy` renders nothing but #lazy, whose Modal (#lazy-dialog) mounts only when it opens, so
  * no dialog hook has run before the first press. */
 import { StrictMode, useState } from 'react';
@@ -44,6 +45,7 @@ function Harness() {
         <Button id="soon" variant="secondary" onClick={later(400)}>Gleich öffnen</Button>
         <Button id="later" variant="secondary" onClick={later(1500)}>Später öffnen</Button>
         <Button id="open-instant" variant="secondary" onClick={() => setOpen('instant')}>Notiz</Button>
+        <label id="label-open"><input type="checkbox" onChange={() => setOpen('dialog')} /> Mit Vorlage</label>
         <Button id="new" variant="primary" onClick={() => setOpen('dialog')}>Neue Störung</Button>
       </div>
       <div className="rows">
