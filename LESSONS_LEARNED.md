@@ -348,3 +348,4 @@ missing or blank.
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: e258d63b review-caught missed cases (edit vs. loaded value, shadow-root target); routine -->
