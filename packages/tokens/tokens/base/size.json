@@ -5,6 +5,12 @@
   "radius-lg":   { "$type": "dimension", "$value": "16px" },
   "radius-xl":   { "$type": "dimension", "$value": "24px", "$description": "Largest corner radius below pill: hero cards, sheets, large dialogs (HAR-1384, shipped with HAR-1562)." },
   "radius-pill": { "$type": "dimension", "$value": "999px" },
+  "radius-inner": {
+    "$type": "dimension",
+    "$value": "max(var(--uix-radius-inner-min, 0px), calc(var(--uix-radius-outer) - var(--uix-radius-inset, 0px)))",
+    "$description": "Concentric corners: the corner of a surface nested inside a rounded container, so the two curves stay parallel (outer radius minus the gap between them, never below 0). The container names its corner in --uix-radius-outer and the gap from its outer edge to the nested surface (its border plus padding) in --uix-radius-inset; the nested surface sets border-radius: var(--uix-radius-inner). A pill stays a pill (999px less a few px). --uix-radius-inner-min is an optional floor for a surface whose inset is as large as the corner. The three inputs are write-only slots like --uix-brand, so with no --uix-radius-outer above it the value is invalid and var(--uix-radius-inner, <fallback>) takes the fallback. Resolved on every element (the per-element rule in tokens.css), because a custom property resolved on :root would inherit as one fixed length.",
+    "$extensions": { "uix.scope": "element" }
+  },
 
   "row-h":             { "$type": "dimension", "$value": "56px" },
   "row-h-compact":     { "$type": "dimension", "$value": "44px" },

@@ -8,11 +8,12 @@
   .uix-combobox__popup { max-width: min(32rem, calc(100vw - 2 * var(--uix-space-4))); }
   .uix-listbox {
     list-style: none; margin: 0; padding: var(--uix-space-1); min-width: 200px;
-    background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer);
     box-shadow: var(--uix-shadow-popover);
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1));
   }
   .uix-listbox__option {
-    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-sm); font-size: var(--uix-text-body); color: var(--uix-text);
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-inner, var(--uix-radius-sm)); font-size: var(--uix-text-body); color: var(--uix-text);
     cursor: pointer; display: flex; align-items: center; gap: var(--uix-space-2);
   }
   /* hover / the keyboard's active option get the row tint; the chosen value is told apart by colour,

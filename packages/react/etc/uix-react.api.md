@@ -1761,6 +1761,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     onSortChange?: (sort: DataWorkspaceSortValue<S>) => void;
     // (undocumented)
     pagination?: DataWorkspacePagination;
+    peekRowId?: string | null;
     refreshing?: boolean;
     rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
     rowActionsColumn?: boolean;

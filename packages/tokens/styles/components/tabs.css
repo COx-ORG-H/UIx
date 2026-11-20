@@ -32,8 +32,10 @@
   .uix-tabs--enclosed .uix-tab[aria-selected="true"] { border-color: var(--uix-border); border-bottom-color: var(--uix-bg-app); background: var(--uix-bg-app); }
 
   /* pill */
-  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: var(--uix-space-1); border-radius: var(--uix-radius-md); }
-  .uix-tabs--pill .uix-tab { padding: var(--uix-space-2) var(--uix-space-4); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-tabs--pill { display: inline-flex; background: var(--uix-bg-subtle); padding: var(--uix-space-1); border-radius: var(--uix-radius-outer);
+    /* concentric corners: a tab sits the space-1 padding inside the track (no border) */
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: var(--uix-space-1); }
+  .uix-tabs--pill .uix-tab { padding: var(--uix-space-2) var(--uix-space-4); border-radius: var(--uix-radius-inner); }
   .uix-tabs--pill .uix-tab[aria-selected="true"] { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); }
 
   /* overflow="scroll" — one scrolling row inside .uix-tabs-scroller; edge buttons appear only
@@ -84,7 +86,7 @@
     background: var(--uix-accent); border-radius: var(--uix-radius-pill);
   }
   .uix-tabs--scroll.uix-tabs--line > .uix-tabs__indicator::after { bottom: 0; }
-  .uix-tabs--pill > .uix-tabs__indicator { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-tabs--pill > .uix-tabs__indicator { background: var(--uix-surface); box-shadow: var(--uix-shadow-sm); border-radius: var(--uix-radius-inner); }
   @media (forced-colors: none) {
     .uix-tabs--line[data-uix-indicator] .uix-tab::after { visibility: hidden; }
     .uix-tabs--pill[data-uix-indicator] .uix-tab[aria-selected="true"] { background: transparent; box-shadow: none; }
