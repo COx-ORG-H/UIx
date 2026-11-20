@@ -151,19 +151,30 @@ test("overshoot-effect: an overshooting timing longhand names its list in the sa
   assert.deepEqual(rules(`@keyframes grow { from { transform: scale(.9); } } .a { animation-name: grow; animation-timing-function: var(--uix-ease-pop); } ${reduced}`), []);
 });
 
-test("overshoot-effect: every longhand list for the same element meets the curve", () => {
-  // another state, a more specific or overlapping selector, a media query or !important can let it win
+test("overshoot-effect: every free longhand list in the kit meets the curve", () => {
+  // the gate cannot know which rules meet on one element: another state, an overlapping selector,
+  // a media query, !important, or another class on the same element can let a list win
   assert.deepEqual(rules(".a { transition-property: transform, opacity; } .a[open] { transition-property: transform, opacity; transition-timing-function: var(--uix-ease-pop), var(--uix-ease-out); }"), [], "paired by position");
   assert.deepEqual(rules(".a { transition-property: opacity, transform; } .a[open] { transition-property: transform, opacity; transition-timing-function: var(--uix-ease-pop), var(--uix-ease-out); }"), ["overshoot-effect"], "the base list puts opacity on the spring");
   assert.deepEqual(rules(".a { transition-property: opacity !important; } .a.special { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "an important broader list");
   assert.deepEqual(rules(".a.special { transition-property: transform; } .a:hover { transition-property: opacity; } .a.special:hover { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "an overlapping later state");
   assert.deepEqual(rules("@media (min-width: 40em) { .a { transition-property: opacity; } } .a { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "a list under a media query");
   assert.deepEqual(rules(".a { transition: transform var(--uix-dur) var(--uix-ease-pop); } .a[open] { transition-property: opacity; }"), ["overshoot-effect"], "a state that swaps the shorthand's properties");
-  assert.deepEqual(rules(".ab { transition-property: opacity; } .a { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), [], "another class is another element");
-  // a pseudo-element is its own element, with its own initial list
-  assert.deepEqual(rules(".a { transition-property: transform; } .a::before { transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"]);
-  assert.deepEqual(rules(".a { transition-property: opacity; } .a::before { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), [], "the element's list is not the pseudo-element's");
-  assert.deepEqual(rules(".a::before { transition-property: opacity; } .a:hover::before { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "the same pseudo-element in another state");
+  assert.deepEqual(rules(".b { transition-property: opacity !important; } .a { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "another class on the same element");
+  assert.deepEqual(rules(".a { transition-property: opacity; } .a::before { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "a pseudo-element too");
+  assert.deepEqual(rules(".a { transition-property: transform; } .a::before { transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "a timing longhand still names its own list");
+  // a longhand list that brings its own timings is self-contained, as a shorthand is
+  assert.deepEqual(rules(".b { transition-property: opacity; transition-timing-function: var(--uix-ease-out); } .a { transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), []);
+  assert.deepEqual(rules(".b { transition-property: opacity !important; transition-timing-function: var(--uix-ease-out); } .a { transition: transform var(--uix-dur) var(--uix-ease-pop); }"), ["overshoot-effect"], "an important list with normal timings is not");
+});
+
+test("overshoot-effect: the reduced-motion policy brings its own curve", () => {
+  // the policy swaps every element's property list, !important; a component's spring stays paired by position
+  const policy = (timing) => `@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-property: opacity, color !important; ${timing} } }`;
+  const component = ".drawer[open] { transition: transform var(--uix-dur-drawer) var(--uix-ease-drawer), opacity var(--uix-dur-fade-in) var(--uix-ease-out); }";
+  const check = (policyCss) => checkCss(layer(component), "drawer.css", undefined, ANY_LOOP, collectMotionContext([policyCss, component])).problems.filter((p) => p.includes("[overshoot-effect]"));
+  assert.equal(check(policy("")).length, 1, "opacity would fade on the drawer's curve");
+  assert.deepEqual(check(policy("transition-timing-function: var(--uix-ease-out) !important;")), []);
 });
 
 test("overshoot-effect: aliases resolve across files, and a rule's own redefinition wins", () => {

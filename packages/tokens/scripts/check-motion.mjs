@@ -34,10 +34,10 @@
  *                      spring, the fade or colour takes --uix-ease-out / --uix-ease-glide. Judged on
  *                      each rule's own lists (declarations folded in order, !important kept); an
  *                      overshooting timing longhand must name its properties or animation in the
- *                      same rule, and is also paired with every longhand list another rule in the
- *                      file sets for the same element (any state, media query or specificity: the
- *                      gate does not replay the cascade, so it checks every list that could meet
- *                      the curve). Animations by the properties their @keyframes set, custom-property
+ *                      same rule, and every overshooting timing is also paired with every free
+ *                      longhand list (one with no timings of its own) in the scanned stylesheets:
+ *                      the gate does not replay the cascade or know which classes share an element,
+ *                      so it checks every list that could meet the curve. Animations by the properties their @keyframes set, custom-property
  *                      aliases across every scanned file, and in the React source inline transition
  *                      and animation strings and tokenEase() of such a token (script-driven easing
  *                      runs effects: blurIn's radius).
@@ -145,7 +145,8 @@ export function collectOvershootAliases(sources) {
 
 /** What rule 10 needs to know about every scanned stylesheet at once. */
 export function collectMotionContext(sources) {
-  return { keyframeProps: collectKeyframeProps(sources), aliases: collectOvershootAliases(sources) };
+  const keyframeProps = collectKeyframeProps(sources);
+  return { keyframeProps, aliases: collectOvershootAliases(sources), freeLonghands: collectFreeLonghands(sources, keyframeProps) };
 }
 
 /** A CSS-wide keyword that leaves a custom property at its inherited value. */
@@ -275,10 +276,9 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
   });
 
   // 10. an overshooting curve moves geometry only — judged on each rule's own lists (declarations
-  //     folded in order) and on every longhand list another rule sets for the same element
-  const groups = longhandLists(root, context.keyframeProps);
+  //     folded in order) and on every free longhand list in the scanned stylesheets
   root.walkRules((r) => {
-    for (const [node, msg] of overshootEffects(r, groups, context)) {
+    for (const [node, msg] of overshootEffects(r, context)) {
       report('overshoot-effect', node, `${msg} — an overshooting curve may move only ${[...SPATIAL_PROPS].join(', ')}; opacity and colour clamp at their range, so split the transition and give them --uix-ease-out or --uix-ease-glide`);
     }
   });
@@ -330,45 +330,27 @@ function motionLists(rule, keyframeProps) {
 }
 
 /**
- * The element a selector styles, as rule 10 groups rules: the first simple selector of its subject
- * (the last compound; a leading :is()/:where() counts as one) plus its pseudo-element. `.a`,
- * `.a:hover`, `.a.special[open]` and `.list .a` are one element; `.a::before` and `.ab` are others.
- * Deliberately coarse: it groups every state, condition and specificity of an element together.
+ * Every free longhand list in `sources`: a transition-property or animation-name that does not
+ * bring its own timing list (in the same rule, at the same or a higher importance). Such a list
+ * keeps whatever timings the element got from another rule, paired by position, and the gate
+ * cannot tell which rules meet on one element (any class can share it with any other; a state, a
+ * media query, a selector's specificity or !important decides who wins), so rule 10 pairs every
+ * overshooting timing with every one of them. A list that brings its own timings is self-contained,
+ * as a shorthand is (the kit's reduced-motion policy is one: it sets both, !important).
  */
-function elementKey(selector) {
-  let depth = 0;
-  let start = 0;
-  for (let i = 0; i < selector.length; i++) {
-    const c = selector[i];
-    if (c === '(' || c === '[') depth++;
-    else if (c === ')' || c === ']') depth--;
-    else if (depth === 0 && /[\s>+~]/.test(c)) start = i + 1;
+export function collectFreeLonghands(sources, keyframeProps) {
+  const free = { tProps: [], aNames: [] };
+  for (const css of sources) {
+    postcss.parse(css).walkRules((rule) => {
+      if (ancestors(rule).some(isKeyframes)) return;
+      const s = motionLists(rule, keyframeProps);
+      const where = rule.selector.replace(/\s+/g, ' ');
+      const own = (timings, listImp, timingsImp) => timings && (timingsImp || !listImp);
+      if (s.tPropsDecl?.prop.toLowerCase() === 'transition-property' && !own(s.tTimings, s.tPropsImp, s.tTimingsImp)) free.tProps.push({ list: s.tProps, where });
+      if (s.aNamesDecl?.prop.toLowerCase() === 'animation-name' && !own(s.aTimings, s.aNamesImp, s.aTimingsImp)) free.aNames.push({ list: s.aNames, where });
+    });
   }
-  const subject = selector.slice(start);
-  const pseudo = /::[\w-]+(\([^)]*\))?|:(before|after|first-line|first-letter)\b/i.exec(subject)?.[0].replace(/^:+/, '::') ?? '';
-  const head = /^(:(is|where)\([^)]*\)|[.#]?[\w-]+|\*|\[[^\]]*\]|&)/i.exec(subject)?.[0] ?? subject;
-  return `${head}${pseudo}`;
-}
-
-/**
- * Every longhand property list (transition-property) and name list (animation-name) in the file, by
- * element. A longhand in any rule for the element can meet a timing set in another (a state, a
- * media query, a more specific selector or !important can let it win), so rule 10 checks each one.
- */
-function longhandLists(root, keyframeProps) {
-  const groups = new Map();
-  root.walkRules((rule) => {
-    if (ancestors(rule).some(isKeyframes)) return;
-    const s = motionLists(rule, keyframeProps);
-    const tProps = s.tPropsDecl?.prop.toLowerCase() === 'transition-property' ? s.tProps : null;
-    const aNames = s.aNamesDecl?.prop.toLowerCase() === 'animation-name' ? s.aNames : null;
-    if (!tProps && !aNames) return;
-    for (const key of new Set(splitSelectors(rule.selector).map(elementKey))) {
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push({ rule, tProps, aNames });
-    }
-  });
-  return groups;
+  return free;
 }
 
 const later = (a, b) => (!a ? b : !b ? a : (a.source.start.offset ?? 0) >= (b.source.start.offset ?? 0) ? a : b);
@@ -380,13 +362,12 @@ const later = (a, b) => (!a ? b : !b ? a : (a.source.start.offset ?? 0) >= (b.so
  *  - an overshooting timing longhand (transition-timing-function, animation-timing-function) names
  *    its properties or animation in the same rule; without them it fails, since what it eases is
  *    decided elsewhere;
- *  - its timings pair with that list by position, as CSS pairs them, and with every longhand list
- *    another rule sets for the same element (elementKey), whatever its state, media condition,
- *    specificity or importance, since any of them can be the one that meets the curve.
+ *  - its timings pair by position, as CSS pairs them, with that list and with every free longhand
+ *    list in the scanned stylesheets (collectFreeLonghands), since any of them can meet the curve.
  * An animation is judged by the properties its @keyframes set; a frame's own timing by its
  * keyframes' properties.
  */
-function overshootEffects(rule, groups, { keyframeProps, aliases }) {
+function overshootEffects(rule, { keyframeProps, aliases, freeLonghands }) {
   const out = [];
   const curveIn = curveCheck(rule, aliases);
   const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
@@ -402,20 +383,18 @@ function overshootEffects(rule, groups, { keyframeProps, aliases }) {
   }
   const s = motionLists(rule, keyframeProps);
   const selector = rule.selector.replace(/\s+/g, ' ');
-  // the longhand lists other rules set for this rule's elements
-  const others = (key) => [...new Set(splitSelectors(rule.selector).flatMap((sel) => (groups.get(elementKey(sel)) ?? [])
-    .filter((e) => e.rule !== rule && e[key]).map((e) => e[key])))];
   // entry i of a list takes timing i, the timings repeating as CSS repeats them
-  const paired = (lists, timings, keep, describe) => [...new Set(lists.flatMap((list) => list
+  const paired = (lists, timings, keep, describe) => [...new Set(lists.flatMap(({ list, where }) => list
     .map((entry, i) => [entry, curveIn(timings[i % timings.length])])
     .filter(([entry, curve]) => curve && keep(entry))
-    .map(([entry, curve]) => describe(entry, curve))))];
+    .map(([entry, curve]) => describe(entry, curve) + (where ? ` (the free list of '${where}')` : ''))))];
 
   if (s.tTimings?.some(curveIn)) {
     if (!s.tProps) {
       out.push([s.tTimingsDecl, `an overshooting transition-timing-function in '${selector}' with no transition-property in the same rule — name the properties next to the curve`]);
     } else {
-      const bad = paired([s.tProps, ...others('tProps')], s.tTimings, (p) => !SPATIAL_PROPS.has(p), (p, c) => `${p} on ${c}`);
+      const lists = [{ list: s.tProps }, ...freeLonghands.tProps];
+      const bad = paired(lists, s.tTimings, (p) => !SPATIAL_PROPS.has(p), (p, c) => `${p} on ${c}`);
       if (bad.length) out.push([later(s.tPropsDecl, s.tTimingsDecl), bad.join(', ')]);
     }
   }
@@ -423,7 +402,8 @@ function overshootEffects(rule, groups, { keyframeProps, aliases }) {
     if (!s.aNames) {
       out.push([s.aTimingsDecl, `an overshooting animation-timing-function in '${selector}' with no animation named in the same rule — name it next to the curve, so its @keyframes can be checked`]);
     } else {
-      const bad = paired([s.aNames, ...others('aNames')], s.aTimings, (n) => n && effectsOf(n).length, (n, c) => `@keyframes ${n} animates ${effectsOf(n).join(', ')} on ${c}`);
+      const lists = [{ list: s.aNames }, ...freeLonghands.aNames];
+      const bad = paired(lists, s.aTimings, (n) => n && effectsOf(n).length, (n, c) => `@keyframes ${n} animates ${effectsOf(n).join(', ')} on ${c}`);
       if (bad.length) out.push([later(s.aNamesDecl, s.aTimingsDecl), bad.join('; ')]);
     }
   }

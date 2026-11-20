@@ -3,7 +3,7 @@
    The contract (docs → Foundations → Motion) is checked by packages/tokens/scripts/check-motion.mjs. */
 
 /* Reduced-motion policy — UNLAYERED. `prefers-reduced-motion: reduce` removes MOVEMENT, not feedback:
-   - Transitions keep only fades and colour changes. Transform, translate, scale, rotate and any layout
+   - Transitions keep only fades and colour changes, on --uix-ease-out. Transform, translate, scale, rotate and any layout
      glide drop out of every transition list, so a popover or drawer still fades but no longer travels.
      allow-discrete keeps display/overlay exits painted while their fade runs.
    - Keyframe animations end at once (we cannot tell a product's keyframes from a fade). UIx's own
@@ -15,6 +15,7 @@
   *, *::before, *::after {
     transition-property: opacity, color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, visibility, overlay, display !important;
     transition-behavior: allow-discrete !important;
+    transition-timing-function: var(--uix-ease-out) !important;
     /* motion-allow: ends product keyframes at once while still firing animationend (a 0s duration is skipped by some engines' event paths) */
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
@@ -30,6 +31,7 @@
   :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
     transition-property: opacity, color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, visibility, overlay, display !important;
     transition-behavior: allow-discrete !important;
+    transition-timing-function: var(--uix-ease-out) !important;
     /* motion-allow: ends product keyframes at once while still firing animationend (the same policy as above) */
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
