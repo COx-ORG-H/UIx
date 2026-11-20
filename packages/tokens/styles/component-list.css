@@ -68,6 +68,7 @@
 @import "components/detail-layout.css";
 @import "components/comments.css";
 @import "components/save-status.css";
+@import "components/task-tray.css";
 @import "components/busy-region.css";
 @import "components/change-highlight.css";
 @import "components/count.css";
