@@ -65,6 +65,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    */
   shortcut?: KeyShortcut;
   /**
+   * A registered shortcut's id (`useShortcut`): the hint shows its current keys instead of
+   * `shortcut`, after remaps, and none while it is not active (the character-key switch), so the
+   * hint never disagrees with what the key does.
+   */
+  shortcutId?: string;
+  /**
    * Why the button is unavailable (HAR-2816), e.g. "Nur Administratoren können Lizenzen
    * löschen". Use it with `disabled`: the button then stays focusable and hoverable as
    * `aria-disabled="true"`, takes no press, shows the reason in a `Tooltip` and is described by
@@ -88,7 +94,7 @@ declare const process: { env: { NODE_ENV?: string } } | undefined;
 let warnedIconButton = false;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, disabledReason, disabledReasonClassName, className, children, disabled, onClick, ...props }, ref) => {
+  ({ variant = 'secondary', size = 'md', icon = false, loading, loadingDelay = PENDING_DELAY_MS, result, resultLabels, wrap = false, shortcut, shortcutId, disabledReason, disabledReasonClassName, className, children, disabled, onClick, ...props }, ref) => {
     // Dev-only nudge, once per page load: an icon-only button with no children and no
     // aria-label/aria-labelledby has no accessible name (UIX-A11Y-3).
     if (
@@ -120,8 +126,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading !== undefined || result !== undefined ? (
           <ButtonFeedback loading={!!loading} loadingDelay={loadingDelay} result={result} resultLabels={resultLabels}>{children}</ButtonFeedback>
         ) : children}
-        {shortcut && shortcut.length > 0 && (
-          <ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} />
+        {(shortcutId || (shortcut && shortcut.length > 0)) && (
+          <ShortcutHint keys={shortcut} shortcutId={shortcutId} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} />
         )}
       </button>
     );
@@ -154,6 +160,12 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
    * while `disabled`. The kit only shows the shortcut: the product binds the key.
    */
   shortcut?: KeyShortcut;
+  /**
+   * A registered shortcut's id (`useShortcut`): the hint shows its current keys instead of
+   * `shortcut`, after remaps, and none while it is not active (the character-key switch), so the
+   * hint never disagrees with what the key does.
+   */
+  shortcutId?: string;
   children?: ReactNode;
 }
 
@@ -161,13 +173,13 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
  * A link that looks like a `Button` (HAR-1348; TENSOR A4/B5, MOTUS C-3). Use it when the
  * action navigates; use `Button` when it acts in place.
  */
-export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, wrap = false, disabled = false, renderLink, shortcut, className, children, onClick, ...props }: ButtonLinkProps) {
+export function ButtonLink({ href, variant = 'secondary', size = 'md', icon = false, wrap = false, disabled = false, renderLink, shortcut, shortcutId, className, children, onClick, ...props }: ButtonLinkProps) {
   const classes = buttonClasses(variant, size, icon, wrap, className);
   if (disabled) {
     return <a {...props} className={classes} role="link" aria-disabled="true">{children}</a>;
   }
-  const content = shortcut && shortcut.length > 0
-    ? <>{children}<ShortcutHint keys={shortcut} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} /></>
+  const content = shortcutId || (shortcut && shortcut.length > 0)
+    ? <>{children}<ShortcutHint keys={shortcut} shortcutId={shortcutId} label={icon ? props['aria-label'] : undefined} describedBy={props['aria-describedby']} /></>
     : children;
   return <>{renderUixLink(renderLink, { ...props, href, onClick, className: classes, children: content })}</>;
 }

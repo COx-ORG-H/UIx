@@ -718,6 +718,18 @@
       "subpath": "."
     },
     {
+      "name": "ShortcutProvider",
+      "subpath": "."
+    },
+    {
+      "name": "ShortcutScope",
+      "subpath": "."
+    },
+    {
+      "name": "ShortcutSheet",
+      "subpath": "."
+    },
+    {
       "name": "Sidebar",
       "subpath": "."
     },
