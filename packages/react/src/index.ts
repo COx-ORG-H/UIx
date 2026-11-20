@@ -347,6 +347,11 @@ export type {
 
 export { RelativeTime } from './components/RelativeTime.js';
 export type { RelativeTimeProps, RelativeTimeFormatContext } from './components/RelativeTime.js';
+// SLA clock: time left, thresholds, pause, breach (roadmap #17); the model sorts a queue column
+export { SlaTimer, DEFAULT_SLA_TIMER_LABELS } from './components/SlaTimer.js';
+export type { SlaTimerProps, SlaTimerLabels } from './components/SlaTimer.js';
+export { slaStatus, slaSortValue, DEFAULT_SLA_THRESHOLDS, DEFAULT_SLA_REMAINING_THRESHOLDS, SLA_SORT_LAST } from './sla-model.js';
+export type { SlaInput, SlaStatus, SlaState, SlaLevel, SlaThreshold, SlaTime } from './sla-model.js';
 export { DateTime, DateTimeRange } from './components/DateTime.js';
 export type { DateTimeProps, DateTimeRangeProps, DateTimePrecision } from './components/DateTime.js';
 export { parseDateValue, relativeTimeValue } from './relative-time-model.js';

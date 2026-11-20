@@ -39,6 +39,7 @@ import type { TagInputLabels } from './components/TagInput.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { TaskTrayLabels } from './components/TaskTray.js';
+import type { SlaTimerLabels } from './components/SlaTimer.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
@@ -68,6 +69,8 @@ export interface UixLabels {
   toaster?: { region?: string };
   /** `TaskTray`: the landmark's name, its buttons, the pill's count words and the announcements. */
   taskTray?: Partial<TaskTrayLabels>;
+  /** `SlaTimer`: the time words around `Intl`'s durations, the state words and the spoken text. `states` merges per key. */
+  slaTimer?: Partial<Omit<SlaTimerLabels, 'states'>> & { states?: Partial<SlaTimerLabels['states']> };
   /**
    * `openNav`: the phone-tier button that opens the navigation drawer; `navigation`: that
    * drawer's title (HAR-1371).
