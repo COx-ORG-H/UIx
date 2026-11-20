@@ -35,7 +35,7 @@
     position: fixed; inset: 0; z-index: var(--uix-z-overlay); align-content: start; overflow: auto;
     padding: var(--uix-space-4); background: var(--uix-bg-app);
     /* it scrolls under the fixed layers like the page does (WCAG 2.2 SC 2.4.11, base.css) */
-    scroll-padding-block: var(--uix-sticky-top, 0px) var(--uix-sticky-bottom, 0px);
+    scroll-padding-block: var(--uix-sticky-top, 0) var(--uix-sticky-bottom, 0);
   }
   /* a phone: the search takes its own row */
   @media (max-width: 40rem) { .uix-data-workspace__search { flex: 1 1 100%; } }

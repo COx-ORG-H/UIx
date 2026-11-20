@@ -72,7 +72,7 @@
   /* the viewport shell's main scrolls under the fixed bottom layers (toasts, the task tray): a focused
      element stops clear of them (WCAG 2.2 SC 2.4.11). Its top is below the top bar, which is a row
      of its own and covers nothing. */
-  .uix-shell--viewport > .uix-shell__main { scroll-padding-bottom: var(--uix-sticky-bottom, 0px); }
+  .uix-shell--viewport > .uix-shell__main { scroll-padding-bottom: var(--uix-sticky-bottom, 0); }
   @media (min-width: 80rem) { .uix-shell--viewport > .uix-shell__main:not(.uix-shell__main--bleed) { padding-inline: var(--uix-space-8); } }
   /* one column and no sidebar at phone width come from the phone tier below ([data-phone-nav],
      the viewport default); with phoneNav="none" the sidebar column stays, as in the frame */

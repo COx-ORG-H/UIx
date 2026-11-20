@@ -20,7 +20,7 @@
      scrolls under (the Toaster, the TaskTray, a product's fixed header) keep their heights in these
      two properties (React: useStickyLayer), so a focused element and a #fragment stop
      clear of them. Unset, both are 0 and nothing changes. */
-  :root { scroll-padding-block: var(--uix-sticky-top, 0px) var(--uix-sticky-bottom, 0px); }
+  :root { scroll-padding-block: var(--uix-sticky-top, 0) var(--uix-sticky-bottom, 0); }
   /* default theme follows the OS until JS sets data-theme */
   @media (prefers-color-scheme: dark) { :root:not([data-theme]):not(.dark) { color-scheme: dark; } }
   :root[data-theme="dark"], :root.dark { color-scheme: dark; }

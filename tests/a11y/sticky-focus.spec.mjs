@@ -65,9 +65,17 @@ const focusReport = (page) => page.evaluate(async () => {
   let seen = 0;
   let total = 0;
   const covers = new Set();
+  // Hit-testing follows border-radius: a rounded button's corners belong to whatever is behind it.
+  // The columns stay inside the rounding (at the radius in, every row of the box is the element's).
+  const style = getComputedStyle(el);
+  const radius = Math.max(...['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius'].map((corner) => {
+    const value = style[corner].split(' ')[0];
+    return value.endsWith('%') ? (parseFloat(value) / 100) * rect.width : parseFloat(value) || 0;
+  }));
+  const inset = Math.min(Math.max(2, radius), (right - left) / 2);
   for (let i = 0; i < columns; i += 1) {
     for (let j = 0; j < rows; j += 1) {
-      const x = left + 2 + ((right - left - 4) * i) / (columns - 1);
+      const x = left + inset + ((right - left - 2 * inset) * i) / (columns - 1);
       const y = top + 2 + ((bottom - top - 4) * j) / (rows - 1);
       const hit = document.elementFromPoint(x, y);
       total += 1;
