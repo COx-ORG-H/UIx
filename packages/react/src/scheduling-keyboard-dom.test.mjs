@@ -140,20 +140,27 @@ test('AC2 (R18 AC2): a day cell is named with its date and the consumer label wh
   assert.equal(date(host, '2026-10-08').closest(cls('dayhead')).querySelector(cls('count')).hasAttribute('aria-hidden'), false);
   unmount();
   const grid = mount(h(ui.SchedulingCalendar, { ...base, view: 'week', timeGrid: true, entries: [], days }));
-  assert.match(date(grid.host, '2026-10-07').getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/);
+  // A time-grid head shows a short date ("Wed 07/10"): its name starts with those words (WCAG 2.5.3), then the full date.
+  const head = date(grid.host, '2026-10-07');
+  assert.ok(head.getAttribute('aria-label').startsWith(`${head.textContent}, `), `"${head.getAttribute('aria-label')}" starts with what the head shows`);
+  assert.match(head.getAttribute('aria-label'), /, Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/);
   assert.match(date(grid.host, '2026-10-07').closest('[role="group"]').getAttribute('aria-label'), /^Wednesday,? 7 October 2026, 12 items, highest: needs sign-off$/, 'the head group too');
   assert.match(date(grid.host, '2026-10-08').closest('[role="group"]').getAttribute('aria-label'), /^Thursday,? 8 October 2026, 2 entries$/, 'no label: the date and the count');
   grid.unmount();
   // A consumer whose labels already say the date words the name itself.
   for (const view of [{ view: 'month' }, { view: 'week', timeGrid: true }]) {
     const own = mount(h(ui.SchedulingCalendar, { ...base, ...view, entries: [], dayEntries: {}, days: { '2026-10-07': { count: 1, overflowCount: 0, label: 'Mi 7.10., 1 Eintrag' } }, labels: { dayName: '{label}' } }));
-    assert.equal(date(own.host, '2026-10-07').getAttribute('aria-label'), 'Mi 7.10., 1 Eintrag');
+    // The month cell shows its day number, which the label says; a time-grid head shows a short date the label lacks, so it leads (WCAG 2.5.3).
+    const head = date(own.host, '2026-10-07');
+    assert.equal(head.getAttribute('aria-label'), view.view === 'month' ? 'Mi 7.10., 1 Eintrag' : `${head.textContent}, Mi 7.10., 1 Eintrag`);
     own.unmount();
   }
   // ... and a day with numbers but no label still says its date in the time grid.
   const bare = mount(h(ui.SchedulingCalendar, { ...base, view: 'week', timeGrid: true, entries: [], days: { '2026-10-08': { count: 3, overflowCount: 0 } }, labels: { dayName: '{label}' } }));
   assert.match(date(bare.host, '2026-10-08').closest('[role="group"]').getAttribute('aria-label'), /^Thursday,? 8 October 2026, 3 entries$/);
-  assert.match(date(bare.host, '2026-10-08').getAttribute('aria-label'), /^Thursday,? 8 October 2026$/);
+  const bareHead = date(bare.host, '2026-10-08');
+  assert.ok(bareHead.getAttribute('aria-label').startsWith(`${bareHead.textContent}, `), 'the head says what it shows first');
+  assert.match(bareHead.getAttribute('aria-label'), /, Thursday,? 8 October 2026$/);
   bare.unmount();
 });
 

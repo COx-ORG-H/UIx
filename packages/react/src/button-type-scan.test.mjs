@@ -59,5 +59,6 @@ test('every kit <button> but the generic Button carries a type', () => {
 
 test('the helper-spread exception holds: SchedulingCalendar entries get type="button" from entryProps', () => {
   const code = readFileSync(join(here, 'components/SchedulingCalendar.tsx'), 'utf8');
-  assert.match(code, /const entryProps = \(entry: SchedulingCalendarEntry\) => \(\{\s*type: 'button' as const,/);
+  // further parameters (whether the chip shows its time) do not change what the helper sets first
+  assert.match(code, /const entryProps = \(entry: SchedulingCalendarEntry(?:, [^)]*)?\) => \(\{\s*type: 'button' as const,/);
 });
