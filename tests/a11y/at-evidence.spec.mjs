@@ -365,7 +365,14 @@ test.describe('Toasts and live regions', () => {
   });
 });
 
-test('axe: no serious or critical violation with every widget in an open state', async ({ page }) => {
+/** Serious and critical axe violations on the page as it is now (WCAG 2.0–2.2 A/AA). */
+const gatedViolations = async (page) => {
+  const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  return violations.filter((v) => GATED.has(v.impact)).map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
+};
+
+// One scan per open popup: opening one picker closes the others, so each open state gets its own.
+test('axe: no serious or critical violation with the workspace, palette, diff, toasts and calendar open', async ({ page }) => {
   await page.locator('#workspace').getByRole('checkbox', { name: 'Select INC-1001' }).check();
   await page.locator('#palette-inline').getByRole('combobox').fill('a');
   await page.locator('#diff').getByRole('button', { name: 'Keep current for $.priority' }).click();
@@ -373,7 +380,17 @@ test('axe: no serious or critical violation with every widget in an open state',
   await page.locator('#toast-assertive').click();
   await page.locator('#date').getByRole('button', { name: /Change date/ }).click();
   await expect(page.getByRole('dialog', { name: 'Calendar' })).toBeVisible();
-  const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
-  const gated = violations.filter((v) => GATED.has(v.impact));
-  expect(gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  expect(await gatedViolations(page)).toEqual([]);
+});
+
+test('axe: no serious or critical violation with the Combobox list open', async ({ page }) => {
+  await page.locator('#combobox').getByRole('combobox', { name: 'Category' }).focus();
+  await expect(page.getByRole('listbox', { name: 'Category' }).getByRole('option')).toHaveCount(5);
+  expect(await gatedViolations(page)).toEqual([]);
+});
+
+test('axe: no serious or critical violation with EntityPicker results open', async ({ page }) => {
+  await page.locator('#entity-input').fill('a');
+  await expect(page.locator('#entity').getByRole('option').first()).toBeVisible();
+  expect(await gatedViolations(page)).toEqual([]);
 });
