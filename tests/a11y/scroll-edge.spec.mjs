@@ -4,7 +4,8 @@
  *     content is under it: the top after the first pixels of scroll, the bottom until the last. A
  *     list that fits has no fade. A pinned header's firmer divider appears over the first pixels.
  *   - Where they do not (Playwright's Firefox 151 today), nothing is masked and nothing animates:
- *     the static fallback is a plain edge.
+ *     the static fallback is a plain edge. The same Firefox with its scroll-timeline pref on runs
+ *     the timeline path too.
  *   - Reduced motion (the OS setting and <html data-motion="reduce">) is static in every engine: no
  *     animation on the scroller or the divider, no fade, the same values at every scroll position.
  *     The global policy only shortens durations, which does not stop a scroll-linked animation, so
@@ -124,6 +125,28 @@ test.describe('scroll edges without a motion preference', () => {
     await page.keyboard.press('Tab');
     await expect(page.locator('#list')).toBeFocused();
     expect(await page.locator('#list').evaluate((el) => getComputedStyle(el).maskImage)).toBe('none');
+  });
+});
+
+/* Firefox ships scroll timelines from 159; Playwright's Firefox (151) has them behind a pref. The
+   tests above run it as an engine without them (the static fallback); this runs its timeline path,
+   so CI checks the edges in all three engines, not only by hand. The pref is ignored elsewhere. */
+test.describe('Firefox with scroll timelines on', () => {
+  test.use({ launchOptions: { firefoxUserPrefs: { 'layout.css.scroll-driven-animations.enabled': true } } });
+
+  test('the soft edges and the header divider run as in Chromium and WebKit', async ({ page, browserName }, testInfo) => {
+    test.skip(browserName !== 'firefox', 'Chromium and WebKit run the timelines in the tests above');
+    await open(page, testInfo);
+    expect(await timelines(page), 'the pref turned scroll timelines on').toBe(true);
+    const rest = await readAt(page, 0);
+    expect(rest.list).toMatchObject({ start: '0px', end: '16px', masked: true });
+    expect(rest.short).toMatchObject({ start: '0px', end: '0px' });
+    expect(rest.table.divider.opacity).toBe(0);
+    const mid = await readAt(page, 60);
+    expect(mid.list).toMatchObject({ start: '16px', end: '16px' });
+    expect(mid.table.divider.opacity).toBe(1);
+    const end = await readAt(page, 'end');
+    expect(end.list).toMatchObject({ start: '16px', end: '0px' });
   });
 });
 
