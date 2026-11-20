@@ -182,9 +182,9 @@
       "brotli": 710
     },
     "styles/components/display-preferences.css": {
-      "raw": 2858,
-      "gzip": 1091,
-      "brotli": 896
+      "raw": 3381,
+      "gzip": 1270,
+      "brotli": 1048
     },
     "styles/components/drag.css": {
       "raw": 3481,
@@ -332,9 +332,9 @@
       "brotli": 530
     },
     "styles/components/modal.css": {
-      "raw": 6286,
-      "gzip": 2212,
-      "brotli": 1830
+      "raw": 7302,
+      "gzip": 2528,
+      "brotli": 2104
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -477,9 +477,9 @@
       "brotli": 943
     },
     "styles/components/spinner.css": {
-      "raw": 1413,
-      "gzip": 641,
-      "brotli": 509
+      "raw": 1707,
+      "gzip": 725,
+      "brotli": 589
     },
     "styles/components/stat-tile.css": {
       "raw": 6628,

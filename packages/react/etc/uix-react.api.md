@@ -2487,6 +2487,7 @@ export const DISPLAY_PREFERENCE_OPTIONS: {
     readonly contrast: readonly ["standard", "more", "system"];
     readonly textScale: readonly ["sm", "md", "lg", "xl"];
     readonly motion: readonly ["system", "reduce"];
+    readonly transparency: readonly ["standard", "reduce", "system"];
     readonly density: readonly ["compact", "standard", "comfortable"];
 };
 
@@ -2505,6 +2506,8 @@ export interface DisplayAttributes {
     'data-text-scale'?: 'sm' | 'lg' | 'xl';
     // (undocumented)
     'data-theme': 'light' | 'dark';
+    // (undocumented)
+    'data-transparency'?: 'reduce';
 }
 
 // @public
@@ -2550,6 +2553,12 @@ export interface DisplayPreferencesLabels {
     textSmall: string;
     // (undocumented)
     theme: string;
+    // (undocumented)
+    transparency: string;
+    // (undocumented)
+    transparencyReduce: string;
+    // (undocumented)
+    transparencyStandard: string;
 }
 
 // @public (undocumented)
@@ -2561,7 +2570,7 @@ export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElem
     settings?: readonly (keyof DisplayPreferenceValues)[];
     // (undocumented)
     storageKey?: string;
-    value?: DisplayPreferenceValues;
+    value?: Partial<DisplayPreferenceValues>;
 }
 
 // @public
@@ -2579,6 +2588,8 @@ export interface DisplayPreferenceValues {
     textScale: TextScalePreference;
     // (undocumented)
     theme: ThemePreference;
+    // (undocumented)
+    transparency: TransparencyPreference;
 }
 
 // @public (undocumented)
@@ -4735,6 +4746,7 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     onClose?: (event?: DialogCloseEvent) => void;
     // (undocumented)
     open: boolean;
+    origin?: 'center' | 'trigger';
     pending?: boolean;
     // (undocumented)
     role?: 'dialog' | 'alertdialog';
@@ -5731,6 +5743,9 @@ export interface PredictionBandPoint {
 
 // @public
 export function prefersReducedMotion(): boolean;
+
+// @public
+export function prefersReducedTransparency(): boolean;
 
 // @public
 export function PresenceDot(input: PresenceDotProps): react.JSX.Element;
@@ -8021,6 +8036,7 @@ export interface SystemDisplayPreferences {
     dark: boolean;
     // (undocumented)
     moreContrast: boolean;
+    reducedTransparency?: boolean;
 }
 
 // @public (undocumented)
@@ -8875,6 +8891,9 @@ export const TOP_LANE_CROSS_MIDNIGHT_MINUTES = 360;
 export function Tr(input: TrProps): react.JSX.Element;
 
 // @public (undocumented)
+export type TransparencyPreference = 'standard' | 'reduce' | 'system';
+
+// @public (undocumented)
 export function traverseRelationshipNode(nodes: RelationshipGraphNode[], currentId: string | undefined, direction: -1 | 1): string | undefined;
 
 // @public (undocumented)
@@ -9262,6 +9281,9 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
 
 // @public
 export function useReducedMotion(): boolean;
+
+// @public
+export function useReducedTransparency(): boolean;
 
 // @public
 export function uses12Hour(locale?: string | readonly string[]): boolean;

@@ -1,5 +1,8 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: cc6f28ba routine third-round review fix on the opt-in experiment (label-forwarded click), pinned by a spec -->
+<!-- lesson-skip: f5f6c3e5 routine second-round review fix on the opt-in experiment (click attribution), pinned by a spec -->
+<!-- lesson-skip: 8dbda6b6 missed edge cases in an opt-in experiment, caught by review -->
 <!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
 <!-- lesson-skip: dcef8a8d routine: the review named two more inline-style shapes for the TS scan; pinned by check-motion tests -->
 <!-- lesson-skip: b26c74d2 routine: the review named the cross-class gap; widening rule 10 found the reduced-motion policy pairing component springs with fades, fixed and pinned by a check-motion test -->
@@ -369,5 +372,6 @@ missing or blank.
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
 <!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
 <!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->
+<!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
 <!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->

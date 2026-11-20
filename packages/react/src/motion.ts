@@ -8,6 +8,7 @@
  *   `--uix-delay-tooltip`, …) instead of a second number in JavaScript. */
 
 import { prefersReducedMotion } from './hooks/useReducedMotion.js';
+import { prefersReducedTransparency } from './hooks/useReducedTransparency.js';
 
 export const KEY_OPENED = 'data-uix-key-opened';
 
@@ -22,7 +23,38 @@ export function watchInputModality(): void {
     // A modifier on its own (Shift, a held ⌘) is not an action.
     if (!['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) keyboard = true;
   }, true);
-  document.addEventListener('pointerdown', () => { keyboard = false; }, true);
+  document.addEventListener('pointerdown', (event) => {
+    keyboard = false;
+    lastPointer = {
+      target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY,
+      at: Date.now(), activatedAt: null, pointerId: event.pointerId,
+    };
+  }, true);
+  // The press's activation is the release of that same pointer.
+  document.addEventListener('pointerup', (event) => {
+    if (lastPointer && !keyboard && event.pointerId === lastPointer.pointerId) lastPointer.activatedAt = Date.now();
+  }, true);
+  // A click no pointer produced (detail 0: `el.click()`, most assistive technology, Enter or Space)
+  // is not that press's click: whatever it opens was not opened by the press. The one exception is
+  // the click a pressed <label> forwards to its control, which also has detail 0.
+  document.addEventListener('click', (event) => {
+    if (!lastPointer || event.detail !== 0) return;
+    const label = lastPointer.target?.closest('label');
+    if (label && label.control && label.control === event.target) return;
+    lastPointer.activatedAt = null;
+  }, true);
+}
+
+/**
+ * The last pointer press: what it landed on, where (viewport px), when (`Date.now()`), when that
+ * pointer was released (`null` while held, or once a click no pointer produced followed) and its id.
+ */
+export interface PointerPress { target: Element | null; x: number; y: number; at: number; activatedAt: number | null; pointerId: number }
+let lastPointer: PointerPress | null = null;
+
+/** The last pointer press, or `null` before any (and on the server). Set by `watchInputModality`. */
+export function lastPointerPress(): PointerPress | null {
+  return lastPointer;
 }
 
 /** Was the input that led here a key press? `false` before any input and on the server. */
@@ -115,13 +147,16 @@ export function tokenEase(name: string): Ease {
  *
  * `from` is the radius in px at the start (`leave`: at the end); `delay(i)` staggers element `i`.
  * Returns a cancel that clears the filters. Callers skip it under reduced motion and for keyboard opens.
+ * Under reduced transparency (`<html data-transparency="reduce">`, or `data-contrast="more"`) it
+ * draws nothing: the rows still fade and move in CSS, only without the blur. The blur tokens are
+ * 0px there too, but a caller's own `from` must not bring the blur back.
  */
 export function blurIn(
   elements: readonly HTMLElement[],
   options: { from: number; duration: number; ease: Ease; delay?: (index: number) => number; leave?: boolean; property?: string },
 ): () => void {
   const els = elements.slice();
-  if (typeof window === 'undefined' || els.length === 0 || options.from <= 0 || options.duration <= 0) return () => {};
+  if (typeof window === 'undefined' || els.length === 0 || options.from <= 0 || options.duration <= 0 || prefersReducedTransparency()) return () => {};
   const { from, duration, ease, delay = () => 0, leave = false, property } = options;
   // `property`: write the radius into a custom property (a pseudo-element's blur reads it) instead
   // of the element's own filter
@@ -136,10 +171,11 @@ export function blurIn(
   let frame = 0;
   let stopped = false;
   // reduced motion switched on mid-arrival (the kit's one rule: the OS setting or
-  // <html data-motion="reduce">): the CSS motion stops at once, and so does the blur
+  // <html data-motion="reduce">): the CSS motion stops at once, and so does the blur; reduced
+  // transparency switched on mid-arrival clears the blur the same way
   const tick = () => {
     if (stopped) return;
-    if (prefersReducedMotion()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
+    if (prefersReducedMotion() || prefersReducedTransparency()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
     const now = view.performance.now();
     let busy = false;
     els.forEach((el, i) => {
