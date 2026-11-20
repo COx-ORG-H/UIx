@@ -33,8 +33,23 @@ test('documentation links and metadata follow the current package and catalogue'
   const html = readFileSync(resolve(docsDirectory, 'explorer.html'), 'utf8');
   const source = readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8');
   assert.equal(/v2\.13|81 CSS modules|58 React components|82 documented entries/.test(html + source), false, 'stale version or catalogue count');
-  assert.doesNotMatch(pageContent('motion'), /<code>ChangeHighlight<\/code>\s*<span[^>]*>coming<\/span>/);
+  // The feedback kit shipped in 2.47–2.49: the motion page lists primitives that exist, not plans.
+  assert.doesNotMatch(pageContent('motion'), />coming<\/span>|marked <em>coming<\/em>/);
+  // The written rules say what the gate enforces: overshoot only on controls, no CSS-animated filter.
+  assert.doesNotMatch(pageContent('motion'), /No bounce in staff UI|<code>filter<\/code> \/ <code>clip-path<\/code> when needed/);
   assert.match(pageContent('theming'), /--uix-brand-fg: #000000/);
+  // The Motion page and the roadmap state the same result hold as --uix-hold-result.
+  assert.match(pageContent('motion'), /held 1\.5 s/);
+  assert.match(readFileSync(resolve(docsDirectory, '../../../Docs/component-roadmap.md'), 'utf8'), /held 1\.5 s/);
+  // The plain-JS state-feedback demo copies the latency ladder; it must match the tokens.
+  const effect = readFileSync(resolve(docsDirectory, '../tokens/base/effect.json'), 'utf8');
+  const demos = readFileSync(resolve(docsDirectory, 'feedback-demos.js'), 'utf8');
+  for (const [constant, token] of [['PENDING_DELAY_MS', 'delay-pending'], ['PENDING_MIN_VISIBLE_MS', 'hold-pending'], ['RESULT_HOLD_MS', 'hold-result']]) {
+    const tokenMs = effect.match(new RegExp(`"${token}":\\s*\\{[^}]*"\\$value":\\s*"(\\d+)ms"`))?.[1];
+    const demoMs = demos.match(new RegExp(`const ${constant} = (\\d+);`))?.[1];
+    assert.ok(tokenMs && demoMs, `${constant} / ${token} not found`);
+    assert.equal(demoMs, tokenMs, `feedback-demos.js ${constant} drifted from --uix-${token}`);
+  }
   assert.match(source, /data-api-report/);
   assert.match(html, /data-api-report/);
 });
