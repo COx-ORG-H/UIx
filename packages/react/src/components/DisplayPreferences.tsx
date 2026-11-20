@@ -188,8 +188,11 @@ export function ThemeSwitcher({ value, onValueChange, storageKey, display = 'lab
 }
 
 export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  /** Controlled values. Leave out to keep them in `localStorage` (`useDisplayPreferences`). */
-  value?: DisplayPreferenceValues;
+  /**
+   * Controlled values. Leave out to keep them in `localStorage` (`useDisplayPreferences`). A value
+   * saved before a setting existed (no `transparency`) shows and reports that setting's default.
+   */
+  value?: Partial<DisplayPreferenceValues>;
   onValueChange?: (value: DisplayPreferenceValues) => void;
   storageKey?: string;
   /** Show only some of the six settings, in this order. Default all. */
@@ -205,7 +208,7 @@ export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElem
 export function DisplayPreferences({ value, onValueChange, storageKey, settings = ['theme', 'contrast', 'textScale', 'motion', 'transparency', 'density'], labels: labelOverrides, className, ...props }: DisplayPreferencesProps) {
   const labels = useDisplayLabels(labelOverrides);
   const own = useDisplayPreferences({ storageKey, apply: value === undefined });
-  const current = value ?? own.preferences;
+  const current: DisplayPreferenceValues = value ? { ...DEFAULT_DISPLAY_PREFERENCES, ...value } : own.preferences;
   const id = useId();
   const change = <K extends keyof DisplayPreferenceValues>(key: K, next: DisplayPreferenceValues[K]) => {
     const all = { ...current, [key]: next };

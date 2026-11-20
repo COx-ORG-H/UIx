@@ -310,3 +310,13 @@ test('blurIn draws no blur under reduced transparency, and clears one that is ru
   assert.equal(c.style.filter, '');
   html.removeAttribute('data-contrast');
 });
+
+test('a controlled value saved before the transparency setting shows its default and reports a complete value', () => {
+  const seen = [];
+  const { transparency, ...old } = { ...ui.DEFAULT_DISPLAY_PREFERENCES, theme: 'dark' };
+  const panel = mount(h(ui.DisplayPreferences, { value: old, onValueChange: (v) => seen.push(v), storageKey: 'old' }));
+  assert.equal(radio(panel.host, 'Transparency', 'System').getAttribute('aria-checked'), 'true', 'one choice is selected');
+  act(() => radio(panel.host, 'Density', 'Compact').click());
+  assert.deepEqual(seen.at(-1), { ...ui.DEFAULT_DISPLAY_PREFERENCES, theme: 'dark', transparency, density: 'compact' });
+  panel.unmount();
+});

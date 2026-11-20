@@ -2563,7 +2563,7 @@ export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElem
     settings?: readonly (keyof DisplayPreferenceValues)[];
     // (undocumented)
     storageKey?: string;
-    value?: DisplayPreferenceValues;
+    value?: Partial<DisplayPreferenceValues>;
 }
 
 // @public
