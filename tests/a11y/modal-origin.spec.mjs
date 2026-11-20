@@ -152,6 +152,14 @@ test.describe('origin="trigger"', () => {
     });
   }
 
+  test('a programmatic click right after an unrelated pointer press opens centred', async ({ page }) => {
+    await open(page);
+    await page.locator('h1').click();
+    await page.evaluate(() => document.getElementById('new').click());
+    await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+    expect((await readDialog(page)).origin).toBeNull();
+  });
+
   test('closed and reopened from inside the dialog ("Save and new"): the reopen is centred', async ({ page }) => {
     await open(page);
     await page.locator('#new').click();

@@ -24,19 +24,27 @@ export function watchInputModality(): void {
   }, true);
   document.addEventListener('pointerdown', (event) => {
     keyboard = false;
-    lastPointer = { target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY, at: Date.now(), activatedAt: null };
+    lastPointer = {
+      target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY,
+      at: Date.now(), activatedAt: null, pointerId: event.pointerId,
+    };
   }, true);
-  // The press's activation: the release and the click it produces (a key's click has no press).
-  const activate = () => { if (lastPointer && !keyboard) lastPointer.activatedAt = Date.now(); };
-  document.addEventListener('pointerup', activate, true);
-  document.addEventListener('click', activate, true);
+  // The press's activation is the release of that same pointer.
+  document.addEventListener('pointerup', (event) => {
+    if (lastPointer && !keyboard && event.pointerId === lastPointer.pointerId) lastPointer.activatedAt = Date.now();
+  }, true);
+  // A click no pointer produced (detail 0: `el.click()`, most assistive technology, Enter or Space)
+  // is not that press's click: whatever it opens was not opened by the press.
+  document.addEventListener('click', (event) => {
+    if (lastPointer && event.detail === 0) lastPointer.activatedAt = null;
+  }, true);
 }
 
 /**
- * The last pointer press: what it landed on, where (viewport px), when (`Date.now()`) and when it
- * was released into a click (`null` while held).
+ * The last pointer press: what it landed on, where (viewport px), when (`Date.now()`), when that
+ * pointer was released (`null` while held, or once a click no pointer produced followed) and its id.
  */
-export interface PointerPress { target: Element | null; x: number; y: number; at: number; activatedAt: number | null }
+export interface PointerPress { target: Element | null; x: number; y: number; at: number; activatedAt: number | null; pointerId: number }
 let lastPointer: PointerPress | null = null;
 
 /** The last pointer press, or `null` before any (and on the server). Set by `watchInputModality`. */
