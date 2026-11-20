@@ -1,0 +1,206 @@
+{
+  "report": {
+    "button-coarse-before": {
+      "media": {
+        "coarse": true,
+        "fine": false
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "button-coarse-after": {
+      "media": {
+        "coarse": true,
+        "fine": false
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "button-fine-before": {
+      "media": {
+        "coarse": false,
+        "fine": true
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "button-fine-after": {
+      "media": {
+        "coarse": false,
+        "fine": true
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "switch-coarse-before": {
+      "media": {
+        "coarse": true,
+        "fine": false
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "switch-coarse-after": {
+      "media": {
+        "coarse": true,
+        "fine": false
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "switch-fine-before": {
+      "media": {
+        "coarse": false,
+        "fine": true
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    },
+    "switch-fine-after": {
+      "media": {
+        "coarse": false,
+        "fine": true
+      },
+      "frames": [
+        "press +0ms",
+        "press +40ms",
+        "press +80ms",
+        "press +160ms",
+        "release +0ms",
+        "release +40ms",
+        "release +80ms",
+        "release +120ms",
+        "release +180ms",
+        "release +280ms"
+      ]
+    }
+  },
+  "fineSame": {
+    "button": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "switch": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "values": {
+    "coarse/motion": {
+      "btn": "matrix(0.96, 0, 0, 0.96, 0, 0)",
+      "btnTransition": "1)",
+      "thumb": "matrix(1.18, 0, 0, 1, 1.44, 0)"
+    },
+    "coarse/os": {
+      "btn": "matrix(0.97, 0, 0, 0.97, 0, 0)",
+      "btnTransition": "1) allow-discrete",
+      "thumb": "none"
+    },
+    "coarse/attr": {
+      "btn": "matrix(0.97, 0, 0, 0.97, 0, 0)",
+      "btnTransition": "1) allow-discrete",
+      "thumb": "none"
+    },
+    "fine/motion": {
+      "btn": "matrix(0.97, 0, 0, 0.97, 0, 0)",
+      "btnTransition": "1)",
+      "thumb": "none"
+    },
+    "fine/os": {
+      "btn": "matrix(0.97, 0, 0, 0.97, 0, 0)",
+      "btnTransition": "1) allow-discrete",
+      "thumb": "none"
+    },
+    "fine/attr": {
+      "btn": "matrix(0.97, 0, 0, 0.97, 0, 0)",
+      "btnTransition": "1) allow-discrete",
+      "thumb": "none"
+    }
+  }
+}
