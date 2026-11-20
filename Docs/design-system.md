@@ -1,6 +1,6 @@
 # UIx — the house design system (single source of UI)
 
-UIx is the **one** UI layer for the house products (**Tensor, POSx, SHOPx**). Everything visual —
+UIx is the **one** UI layer for the house products (**TENSOR, MOTUS, MEDx, POSx, SHOPx**; workspace ADR-0038). Everything visual —
 tokens, components, spacing, motion — originates here and is consumed downstream. Products **do not
 fork or hand-roll UI**: they consume UIx and, when something is missing, **add it here** rather than
 building a bespoke local component.
