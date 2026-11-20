@@ -72,7 +72,8 @@ export function viewTransitionSupported(scope?: Element | null): boolean {
 const done = (): ViewTransitionResult => ({ animated: false, updated: Promise.resolve(), finished: Promise.resolve() });
 
 /** One running transition per document or scope element: a new one on the same root ends it. */
-interface Running { transition: Transition; release: () => void }
+/** `release(true)`: a newer start ends this one, so its update, if still pending, commits now, first. */
+interface Running { transition: Transition; release: (supersede?: boolean) => void }
 const running = new WeakMap<Element, Running>();
 let seq = 0;
 
@@ -113,7 +114,7 @@ export function useViewTransition(): StartViewTransition {
     const root = scoped ? scope! : document.documentElement;
     // a transition still running on this root ends where it is: its picture is gone, its names too.
     // Also before an instant change (a key press mid-morph), or the old pictures would cover it.
-    running.get(root)?.release();
+    running.get(root)?.release(true);
     if (!viewTransitionSupported(scope) || prefersReducedMotion() || keyboardInitiated() || document.visibilityState === 'hidden') {
       update();
       return done();
@@ -149,9 +150,18 @@ export function useViewTransition(): StartViewTransition {
 
     let live = true;
     let transition: Transition;
-    const release = () => {
+    let updateError: unknown;
+    let ran = false;
+    const release = (supersede = false) => {
       if (!live) return;
       live = false;
+      // Ended by a newer start before the browser ran this update: commit it now, so the two
+      // changes land in the order they were made (the newer one may be instant and run at once).
+      // Not on unmount, where React forbids flushSync; the browser's callback still commits it.
+      if (supersede && !ran) {
+        ran = true;
+        try { flushSync(update); } catch (error) { reportError(error); }
+      }
       unname();
       if (running.get(root)?.transition === transition) {
         running.delete(root);
@@ -169,14 +179,15 @@ export function useViewTransition(): StartViewTransition {
       update();
       return done();
     }
-    let updateError: unknown;
-    let ran = false;
     const run = () => {
+      // already committed by a newer start (release(true))
+      if (ran) return;
       ran = true;
       unname();
       try { flushSync(update); } catch (error) { updateError = error; throw error; }
-      // ended before the browser got here (a newer start, an unmount): commit, but name nothing
-      if (live) name();
+      // ended before the browser got here (an unmount): commit, but name nothing. A lookup that
+      // fails now would pair only some parts: end the morph instead (the update has landed).
+      if (live && !name()) release();
     };
     try {
       transition = ((scoped ? root : document) as unknown as Required<Starter>).startViewTransition(run);

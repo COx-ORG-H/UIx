@@ -358,6 +358,59 @@ test('a key press in the middle of a morph ends it, so its pictures never cover 
   t.unmount();
 });
 
+test('a key press before the running morph\'s update ran: both land, in order, and the older never overwrites the newer', async () => {
+  install(document);
+  const api = {};
+  const t = mount(h(Records, { api }));
+  pointerDown();
+  let first;
+  let second;
+  act(() => {
+    first = api.go(true);
+    // the browser has not run the first update yet
+    keyDown('Enter');
+    second = api.go(false);
+  });
+  assert.equal(second.animated, false);
+  assert.ok(t.host.querySelector('#row'), 'the newer (instant) change is on screen');
+  await act(async () => { await started[0].updateCallbackDone; await first.finished; });
+  assert.ok(t.host.querySelector('#row'), 'the older update did not commit again on top of it');
+  assert.deepEqual(named(), []);
+  assert.equal(document.documentElement.hasAttribute('data-uix-view-transition'), false);
+  t.unmount();
+});
+
+test('a parts lookup that fails after the update: the morph ends, the update stays, the error is reported', async () => {
+  install(document);
+  const reported = [];
+  const before = globalThis.reportError;
+  globalThis.reportError = (error) => reported.push(error);
+  const api = {};
+  const t = mount(h(Records, { api }));
+  pointerDown();
+  let calls = 0;
+  let result;
+  act(() => {
+    result = api.go(true, {
+      parts: function* parts() {
+        calls += 1;
+        if (calls === 1) { yield ['row', t.host.querySelector('#row')]; return; }
+        yield ['detail', t.host.querySelector('#detail')];
+        throw new Error('second lookup');
+      },
+    });
+  });
+  await act(async () => { await result.updated; });
+  assert.ok(t.host.querySelector('#detail'), 'the update landed');
+  assert.equal(started[0].skipped, true, 'the half-paired morph was ended');
+  assert.deepEqual(named(), [], 'no name left on the new element');
+  assert.equal(document.documentElement.hasAttribute('data-uix-view-transition'), false);
+  assert.deepEqual(reported.map((e) => e.message), ['second lookup']);
+  globalThis.reportError = before;
+  await act(async () => { await result.finished; });
+  t.unmount();
+});
+
 test('an engine that refuses the call: the update still runs exactly once, nothing is left marked', async () => {
   function Counter({ api }) {
     const start = ui.useViewTransition();
