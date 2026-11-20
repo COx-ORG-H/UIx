@@ -72,9 +72,13 @@ async function toWebContent(page) {
  *   - `gaps`: phrases NVDA should say but did not in run 44725485902, each a known issue in
  *     Docs/a11y/results/. A gap is reported, not failed on; a gap that is now heard fails the run
  *     too, so the result file gets updated instead of going stale. */
-const activeOptionText = (selector) => () => {
+/** `acted` runs in the page, so it cannot close over anything here. `active: [input, test, text]`
+ * is the one shared check, passed as data: the input's aria-activedescendant option text
+ * `startsWith` / `equals` / `includes` the text. */
+const activeOption = ([selector, test, text]) => {
   const input = document.querySelector(selector);
-  return document.getElementById(input?.getAttribute('aria-activedescendant') ?? '')?.textContent ?? '';
+  const label = document.getElementById(input?.getAttribute('aria-activedescendant') ?? '')?.textContent ?? '';
+  return test === 'equals' ? label === text : test === 'includes' ? label.includes(text) : label.startsWith(text);
 };
 const steps = [
   { id: 'data-workspace', title: 'DataWorkspace: the first row, ArrowDown, Tab to its checkbox, Space',
@@ -91,15 +95,15 @@ const steps = [
     ] },
   { id: 'command-palette', title: 'CommandPalette (in place): type "rep", clear it, ArrowDown',
     focus: '#palette-inline input', segments: [
-      { keys: ['type:rep', 'wait:800'], acted: () => activeOptionText('#palette-inline input')().startsWith('Reports'), speak: [/\b1 result\b/] },
-      { keys: ['Backspace', 'Backspace', 'Backspace', 'wait:800'], acted: () => activeOptionText('#palette-inline input')().startsWith('Create incident'),
+      { keys: ['type:rep', 'wait:800'], active: ['#palette-inline input', 'startsWith', 'Reports'], speak: [/\b1 result\b/] },
+      { keys: ['Backspace', 'Backspace', 'Backspace', 'wait:800'], active: ['#palette-inline input', 'startsWith', 'Create incident'],
         speak: [/\b6 results\b/] },
-      { keys: ['ArrowDown'], acted: () => activeOptionText('#palette-inline input')().startsWith('Assign to me'), speak: [/Assign to me/] },
+      { keys: ['ArrowDown'], active: ['#palette-inline input', 'startsWith', 'Assign to me'], speak: [/Assign to me/] },
     ] },
   { id: 'combobox', title: 'Combobox: Category, ArrowDown twice, Enter',
     focus: '#combobox input', segments: [
-      { keys: ['ArrowDown'], acted: () => activeOptionText('#combobox input')() === 'Printer', speak: [/Printer/] },
-      { keys: ['ArrowDown'], acted: () => activeOptionText('#combobox input')() === 'Email',
+      { keys: ['ArrowDown'], active: ['#combobox input', 'equals', 'Printer'], speak: [/Printer/] },
+      { keys: ['ArrowDown'], active: ['#combobox input', 'equals', 'Email'],
         gaps: [{ phrase: /Email/, issue: 'moving into the next group speaks the group ("SOFTWARE, grouping"), not the option' }] },
       { keys: ['Enter'], acted: () => document.querySelector('#combobox input')?.value === 'Email', speak: [/Category, combo box/, /Email/] },
     ] },
@@ -107,7 +111,7 @@ const steps = [
     focus: '#entity-input', segments: [
       { keys: ['type:am', 'wait:1200'], acted: () => !!document.querySelector('#entity [role="option"]'),
         gaps: [{ phrase: /\b1 results?\b/, issue: 'the result count is not spoken' }] },
-      { keys: ['ArrowDown'], acted: () => activeOptionText('#entity-input')().includes('Amra Kovač'),
+      { keys: ['ArrowDown'], active: ['#entity-input', 'includes', 'Amra Kovač'],
         gaps: [{ phrase: /Amra Kovač/, issue: 'ArrowDown speaks the list ("Assignee. Search, list"), not the option' }] },
       { keys: ['Enter'], acted: () => !!document.querySelector('#entity button[aria-label="Clear Amra Kovač"]'), speak: [/Amra Kovač/] },
     ] },
@@ -162,6 +166,7 @@ async function run() {
     await page.getByRole('heading', { level: 1 }).waitFor();
     await toWebContent(page);
     for (const step of steps) {
+      try {
       await page.locator(step.focus).first().focus();
       await delay(300);
       await nvda.clearSpokenPhraseLog();
@@ -177,9 +182,14 @@ async function run() {
           await delay(250);
         }
         const spoken = [...await nvda.spokenPhraseLog()].filter((phrase) => phrase.trim());
-        segments.push(judge(segment, spoken, await page.evaluate(segment.acted)));
+        const acted = segment.active ? await page.evaluate(activeOption, segment.active) : await page.evaluate(segment.acted);
+        segments.push(judge(segment, spoken, acted));
       }
       results.push({ id: step.id, title: step.title, arrival, segments, ok: segments.every((s) => s.ok) });
+      } catch (error) {
+        // One step's crash is recorded and fails the run; the others still run and are kept.
+        results.push({ id: step.id, title: step.title, arrival: '', segments: [], ok: false, error: String(error?.message ?? error) });
+      }
       await page.keyboard.press('Escape').catch(() => {});
     }
   } finally {
@@ -191,6 +201,7 @@ async function run() {
   const md = [`# NVDA transcript (automated, Guidepup)`, '', `- date: ${meta.date}`, `- runner: ${meta.runner}`, `- AT: ${meta.at}`, `- browser: ${meta.browser}`, `- executable: ${meta.executable}`, ''];
   for (const r of results) {
     md.push(`## ${r.id} — ${r.ok ? 'ok' : 'FAILED'}`, '', r.title, '', `- on arrival: ${JSON.stringify(r.arrival)}`);
+    if (r.error) md.push(`- error: ${r.error}`);
     for (const s of r.segments) {
       const verdict = !s.acted ? 'KEYS DID NOT ACT' : s.missing.length ? 'MISSING SPEECH' : s.counts.some((c) => c.times !== 1) ? 'NOT SPOKEN EXACTLY ONCE'
         : s.gaps.some((g) => g.heard) ? 'KNOWN GAP NOW HEARD: update the result file' : s.gaps.length ? 'ok, known gap' : 'ok';
