@@ -152,7 +152,7 @@ test('a drag cancelled by pointercancel or Escape puts the rows back and reports
   t.unmount();
 });
 
-test('makeRoom (experiment): the same order, words and focus from the keyboard; a drag that goes nowhere reports nothing; off under reduced motion', () => {
+test('makeRoom (experiment): the same order, words and focus from the keyboard; one pointer per drag; a drag that goes nowhere reports nothing; off under reduced motion', () => {
   const log = [];
   const t = mount(h(List, { log, makeRoom: true }));
   const list = t.host.querySelector('.uix-sortable');
@@ -164,6 +164,13 @@ test('makeRoom (experiment): the same order, words and focus from the keyboard; 
   assert.deepEqual(log, [['p2', 'p1', 'p3']]);
   assert.equal(document.activeElement, down(), 'focus stays on Move down of the moved row');
   assert.equal(t.host.querySelector('[role="status"]').textContent, 'Lesesaal moved to position 2 of 3');
+  // one pointer drags: a second finger's release does not drop the first one's row
+  const grip = t.host.querySelector('.uix-sortable__grip');
+  act(() => { grip.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1 })); });
+  act(() => { window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 2 })); });
+  assert.equal(list.hasAttribute('data-dragging'), true, 'another pointer does not end the drag');
+  act(() => { window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 1 })); });
+  assert.equal(list.hasAttribute('data-dragging'), false);
   // jsdom lays nothing out: the pointer never passes a neighbour, so the row goes back where it was
   dragToEnd(t.host, '.uix-sortable__grip', pointerup);
   assert.deepEqual(log, [['p2', 'p1', 'p3']], 'a drag that lands where it started reports nothing');

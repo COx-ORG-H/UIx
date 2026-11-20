@@ -67,18 +67,41 @@ export function endRoomGlide(list: HTMLElement | null, target: EventTarget, prop
 interface Other { el: HTMLElement; index: number; mid: number; shift: number }
 interface Drag {
   id: string; list: HTMLElement; row: HTMLElement;
+  /** The pointer that started the drag: another finger neither moves nor drops it. */
+  pointerId: number;
   /** The dragged row's place: its index, its top and height in the list, its height plus the gap. */
   from: number; top: number; height: number; pitch: number;
-  /** Where the pointer went down, in the list; and where it is now, in the viewport. */
-  startY: number; clientY: number;
+  /** Where the pointer holds the row, from its top; and where the pointer is now, in the viewport. */
+  grab: number; clientY: number;
   others: Other[]; target: number;
 }
 
 export interface MakeRoomDragHandlers {
-  /** The row was let go; `index` is where it lands (its own index when it did not move). */
-  drop: (id: string, index: number) => void;
-  /** Escape, or the browser took the pointer: the rows have already started back. */
+  /**
+   * The row was let go; `index` is where it lands (its own index when it did not move). Return
+   * `true` once a new order is committed (the rows then glide from where they are drawn); anything
+   * else and the rows glide back.
+   */
+  drop: (id: string, index: number) => boolean | void;
+  /** Escape, the browser took the pointer, or `cancel()`: the rows have already started back. */
   cancel?: (id: string) => void;
+}
+
+/**
+ * Where every row is now (`offsetTop` ignores the glides), keeping what the drag already knows:
+ * the pointer's hold on the row. `null` when the row is no longer in the list.
+ */
+function measureDrag(list: HTMLElement, row: HTMLElement, rowSelector: string) {
+  const rows = rowsOf(list, rowSelector);
+  const from = rows.indexOf(row);
+  if (from < 0) return null;
+  const view = list.ownerDocument.defaultView;
+  const gap = (view && parseFloat(view.getComputedStyle(list).rowGap)) || 0;
+  return {
+    from, top: row.offsetTop, height: row.offsetHeight, pitch: row.offsetHeight + gap, target: from,
+    // NaN: every neighbour's shift is written again on the next placing
+    others: rows.flatMap((el, index) => (el === row ? [] : [{ el, index, mid: el.offsetTop + el.offsetHeight / 2, shift: Number.NaN }])),
+  };
 }
 
 /**
@@ -90,6 +113,8 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
   const drag = useRef<Drag | null>(null);
   const latest = useRef(handlers);
   latest.current = handlers;
+  /** Ends the drag in progress as cancelled (the list's order changed under it, its row went). */
+  const cancelRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!dragging) return undefined;
@@ -98,7 +123,7 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
       if (!d) return;
       const y = d.clientY - d.list.getBoundingClientRect().top;
       // the row stays inside the list: it can be dropped first or last, not outside
-      const dy = Math.max(-d.top, Math.min(d.list.clientHeight - d.top - d.height, y - d.startY));
+      const dy = Math.max(-d.top, Math.min(d.list.clientHeight - d.top - d.height, y - d.grab - d.top));
       d.row.style.translate = `0 ${dy}px`;
       // A neighbour gives way once the dragged row covers half of it: going down, the row's lower
       // edge passes the neighbour's middle; going up, its upper edge does.
@@ -109,7 +134,8 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
         if (o.index > d.from && o.mid < lower) target += 1;
         else if (o.index < d.from && o.mid > upper) target -= 1;
       }
-      if (target === d.target) return;
+      const remeasured = d.others.some((o) => Number.isNaN(o.shift));
+      if (target === d.target && !remeasured) return;
       d.target = target;
       for (const o of d.others) {
         const shift = o.index > d.from && o.index <= target ? -d.pitch : o.index < d.from && o.index >= target ? d.pitch : 0;
@@ -119,22 +145,39 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
         o.el.style.translate = shift ? `0 ${shift}px` : '';
       }
     };
-    const move = (event: globalThis.PointerEvent) => {
-      if (!drag.current) return;
-      drag.current.clientY = event.clientY;
-      place();
-    };
     const finish = (kind: 'drop' | 'cancel') => {
       const d = drag.current;
       drag.current = null;
       setDragging(null);
       if (!d) return;
-      if (kind === 'cancel' || d.target === d.from) releaseRows(d.list, rowSelector);
-      if (kind === 'drop') latest.current.drop(d.id, d.target);
-      else latest.current.cancel?.(d.id);
+      if (kind === 'drop' && latest.current.drop(d.id, d.target) === true) return;
+      releaseRows(d.list, rowSelector);
+      if (kind === 'cancel') latest.current.cancel?.(d.id);
     };
-    const end = () => finish('drop');
-    const cancel = () => finish('cancel');
+    cancelRef.current = () => finish('cancel');
+    // A row that grows or shrinks mid-drag (an image loading, a wrap at a new width) moves the
+    // others: read every place again, keep the pointer's hold, and place the gap from there.
+    const resized = () => {
+      const d = drag.current;
+      if (!d) return;
+      const now = measureDrag(d.list, d.row, rowSelector);
+      if (!now) { finish('cancel'); return; }
+      Object.assign(d, now);
+      place();
+    };
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resized) : null;
+    if (observer && drag.current) {
+      observer.observe(drag.current.list);
+      for (const el of rowsOf(drag.current.list, rowSelector)) observer.observe(el);
+    }
+    const mine = (event: globalThis.PointerEvent) => drag.current !== null && event.pointerId === drag.current.pointerId;
+    const move = (event: globalThis.PointerEvent) => {
+      if (!mine(event) || !drag.current) return;
+      drag.current.clientY = event.clientY;
+      place();
+    };
+    const end = (event: globalThis.PointerEvent) => { if (mine(event)) finish('drop'); };
+    const cancel = (event: globalThis.PointerEvent) => { if (mine(event)) finish('cancel'); };
     const escape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
@@ -149,6 +192,8 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
     window.addEventListener('keydown', escape, true);
     window.addEventListener('scroll', scrolled, true);
     return () => {
+      observer?.disconnect();
+      cancelRef.current = () => {};
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
       window.removeEventListener('pointercancel', cancel);
@@ -158,24 +203,23 @@ export function useMakeRoomDrag(rowSelector: string, handlers: MakeRoomDragHandl
   }, [dragging, rowSelector]);
 
   const start = (event: PointerEvent<HTMLElement>, id: string) => {
+    // one drag at a time: a second finger does not take over the first one's row
+    if (drag.current) return;
     const row = event.currentTarget.closest('li');
     const list = row?.parentElement;
     if (!row || !list) return;
-    const rows = rowsOf(list, rowSelector);
-    const from = rows.indexOf(row);
-    if (from < 0) return;
     // a glide still running (a keyboard move a moment ago) ends here: places are read without it
-    for (const r of rows) { r.removeAttribute(ROOM_ATTRIBUTE); r.style.translate = ''; }
-    const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
-    const listTop = list.getBoundingClientRect().top;
+    for (const r of rowsOf(list, rowSelector)) { r.removeAttribute(ROOM_ATTRIBUTE); r.style.translate = ''; }
+    const place = measureDrag(list, row, rowSelector);
+    if (!place) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     drag.current = {
-      id, list, row, from, top: row.offsetTop, height: row.offsetHeight, pitch: row.offsetHeight + gap,
-      startY: event.clientY - listTop, clientY: event.clientY, target: from,
-      others: rows.flatMap((el, index) => (el === row ? [] : [{ el, index, mid: el.offsetTop + el.offsetHeight / 2, shift: 0 }])),
+      id, list, row, pointerId: event.pointerId, ...place,
+      grab: event.clientY - list.getBoundingClientRect().top - place.top, clientY: event.clientY,
     };
+    for (const o of drag.current.others) o.shift = 0;
     setDragging(id);
   };
 
-  return { dragging, start };
+  return { dragging, start, cancel: () => cancelRef.current() };
 }

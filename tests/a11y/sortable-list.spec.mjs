@@ -143,6 +143,7 @@ test('makeRoom: Escape mid-drag glides every row back and reports nothing', asyn
 test('makeRoom in a scroll container of 60 rows: only the rows passed move; a scroll under a still pointer retargets', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const scroller = page.locator('#room-scroller');
+  await scroller.scrollIntoViewIfNeeded(); // below the fold at 900 px: the pointer has to reach it
   const pitch = await pitchOf(page, 'room-long');
   await scroller.evaluate((el, top) => { el.scrollTop = top; }, pitch * 29);
   const row = page.locator('#room-long > .uix-sortable__row[data-id="r30"]');
@@ -169,6 +170,25 @@ test('makeRoom in a scroll container of 60 rows: only the rows passed move; a sc
   expect(after.indexOf('r30')).toBe(33);
   expect(after.length).toBe(60);
   await expect.poll(async () => (await shifts(page, 'room-long')).filter(Boolean).length).toBe(0);
+});
+
+test('makeRoom with a consumer that applies the order later: the dropped row holds in the gap until it does, then lands', async ({ page }, testInfo) => {
+  await open(page, testInfo);
+  const rows = page.locator('#room-late > .uix-sortable__row');
+  await page.locator('#room-late').scrollIntoViewIfNeeded();
+  const g = await rows.first().locator('.uix-sortable__grip').boundingBox();
+  const third = await rows.nth(2).boundingBox();
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x + g.width / 2, third.y + third.height * 0.75, { steps: 10 });
+  await page.mouse.up();
+  expect(await log(page, 'room-late')).toEqual([['s2', 's3', 's1']]);
+  // not yet applied: the old order, every row still drawn where the drop left it
+  expect(await order(page, 'room-late')).toEqual(['s1', 's2', 's3']);
+  const held = await shifts(page, 'room-late');
+  expect(held.every(Boolean), `held: ${held.join(' | ')}`).toBe(true);
+  await expect.poll(() => order(page, 'room-late')).toEqual(['s2', 's3', 's1']);
+  await expect.poll(() => shifts(page, 'room-late')).toEqual(['', '', '']);
 });
 
 test('makeRoom: a keyboard move glides the two rows and says the same words', async ({ page }, testInfo) => {

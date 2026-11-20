@@ -14,6 +14,8 @@ import { endRoomGlide, flipRows, measureRows, releaseRows, useMakeRoomDrag } fro
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 const ROW = '.uix-sortable__row';
+/** makeRoom: how long a dropped row waits for the consumer's new order before it glides back. */
+const DROP_HOLD_MS = 1000;
 
 /** Every word `SortableList` renders or announces. `{label}` is the row's name. */
 export interface SortableListLabels {
@@ -163,18 +165,28 @@ export function SortableList<T>({
   // committed once, on drop, and every change of order glides (FLIP) from where the rows were drawn.
   const reducedMotion = useReducedMotion();
   const room = makeRoom && !reducedMotion;
-  /** A drop was committed: if the consumer keeps the old order, the rows glide back. */
-  const releaseAfterDrop = useRef(false);
+  /**
+   * A drop was committed but the items still show the old order: the rows hold where they were
+   * drawn, so a consumer that applies the order a moment later (after a request) lands the row from
+   * there. If the order has not changed within DROP_HOLD_MS, the consumer kept it: they glide back.
+   */
+  const hold = useRef<{ pending: boolean; timer?: ReturnType<typeof setTimeout> }>({ pending: false });
+  const endHold = () => { clearTimeout(hold.current.timer); hold.current = { pending: false }; };
+  useEffect(() => endHold, []);
   const roomDrag = useMakeRoomDrag(ROW, {
     drop: (id, index) => {
       const next = placeId(order, id, index);
-      if (next === order) return;
+      if (next === order) return false;
       settle.current = { id, to: next.join('\u0000'), from: orderKey };
-      releaseAfterDrop.current = true;
+      endHold();
+      hold.current.pending = true;
       commit(next, id);
+      return true;
     },
   });
-  const { dragging, start } = room ? roomDrag : rowDrag;
+  const { dragging, start } = room
+    ? { dragging: roomDrag.dragging, start: (event: Parameters<typeof roomDrag.start>[0], id: string) => { endHold(); roomDrag.start(event, id); } }
+    : rowDrag;
   // Where every row was drawn before an order change, read while rendering (the DOM still shows
   // the old order), so the layout effect can let each row glide from there.
   const shownKey = useRef<string | null>(null);
@@ -191,16 +203,22 @@ export function SortableList<T>({
     const list = listRef.current;
     if (!list || !room) return;
     if (changed && before) {
-      releaseAfterDrop.current = false;
+      endHold();
+      // The order changed under a drag (a live update, the dragged row removed): the drag's places
+      // are stale, so it ends, and every row glides from where it is drawn to its new place.
+      if (roomDrag.dragging) roomDrag.cancel();
       flipRows(list, ROW, before);
-    } else if (releaseAfterDrop.current) {
-      releaseAfterDrop.current = false;
-      releaseRows(list, ROW);
+    } else if (hold.current.pending && hold.current.timer === undefined) {
+      hold.current.timer = setTimeout(() => {
+        hold.current = { pending: false };
+        if (listRef.current) releaseRows(listRef.current, ROW);
+      }, DROP_HOLD_MS);
     }
   });
 
   const onRowKeyDown = (event: KeyboardEvent<HTMLLIElement>, id: string) => {
     if (disabled || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+    if (room && dragging) return; // the pointer is moving a row: keys do not reorder under it
     // In a text field Alt/Option + arrow moves the caret (macOS): the field keeps it.
     if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]')) return;
     event.preventDefault();
@@ -240,6 +258,7 @@ export function SortableList<T>({
                   onKeyDown={(event) => {
                     if (event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
                     event.preventDefault();
+                    if (room && dragging) return; // the pointer is moving a row: keys do not reorder under it
                     move(id, event.key === 'ArrowUp' ? -1 : 1, 'grip');
                   }}
                 >

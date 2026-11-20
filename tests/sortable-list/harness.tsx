@@ -6,7 +6,8 @@
  *   - #empty: no items;
  *   - #in-drawer: the steps again inside a Drawer;
  *   - #room: the photos again with `makeRoom` (experiment, Tier 3 item 16): neighbours move aside;
- *   - #room-long: 60 rows with `makeRoom` in a 20rem scroll container (#room-scroller). */
+ *   - #room-long: 60 rows with `makeRoom` in a 20rem scroll container (#room-scroller);
+ *   - #room-late: the steps with `makeRoom` and a consumer that applies each order 400 ms later. */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, Card, Drawer, SortableList, UixLabelsProvider } from '../../packages/react/src/index.js';
@@ -23,9 +24,13 @@ const PHOTOS: Photo[] = [
 const LONG = Array.from({ length: 60 }, (_, i) => ({ id: `r${i + 1}`, title: `Zeile ${i + 1}` }));
 const STEPS = [{ id: 's1', title: 'Antrag prüfen' }, { id: 's2', title: 'Freigabe einholen' }, { id: 's3', title: 'Benachrichtigen' }];
 
-function useOrder<T extends { id: string }>(key: string, initial: T[]) {
+function useOrder<T extends { id: string }>(key: string, initial: T[], lateMs = 0) {
   const [items, setItems] = useState(initial);
-  const onReorder = (ids: string[]) => { (window.__sortable[key] ??= []).push(ids); setItems(ids.map((id) => initial.find((x) => x.id === id)!)); };
+  const onReorder = (ids: string[]) => {
+    (window.__sortable[key] ??= []).push(ids);
+    const apply = () => setItems(ids.map((id) => initial.find((x) => x.id === id)!));
+    if (lateMs) setTimeout(apply, lateMs); else apply();
+  };
   return { items, onReorder };
 }
 
@@ -35,6 +40,7 @@ function Harness() {
   const drawerSteps = useOrder('drawer', STEPS);
   const roomPhotos = useOrder('room', PHOTOS);
   const roomLong = useOrder('room-long', LONG);
+  const roomLate = useOrder('room-late', STEPS, 400);
   const [drawer, setDrawer] = useState(false);
   const thumb = (hue: number) => (
     <span aria-hidden="true" style={{ display: 'inline-block', width: 48, height: 36, borderRadius: 'var(--uix-radius-sm)', background: `hsl(${hue} 45% 60%)`, flex: 'none' }} />
@@ -62,6 +68,10 @@ function Harness() {
         <div id="room-scroller" style={{ maxHeight: '20rem', overflow: 'auto', padding: 'var(--uix-space-2)', border: '1px solid var(--uix-border)', borderRadius: 'var(--uix-radius-md)' }}>
           <SortableList id="room-long" aria-label="Lange Liste" makeRoom items={roomLong.items} getId={(r) => r.id} getLabel={(r) => r.title} onReorder={roomLong.onReorder} renderItem={(r) => r.title} />
         </div>
+      </section>
+      <section>
+        <h2>Später bestätigt, Platz machen</h2>
+        <SortableList id="room-late" aria-label="Später bestätigt" makeRoom items={roomLate.items} getId={(s) => s.id} getLabel={(s) => s.title} onReorder={roomLate.onReorder} renderItem={(s) => s.title} />
       </section>
       <section>
         <h2>Schritte</h2>
