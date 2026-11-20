@@ -341,20 +341,7 @@ export function TaskTray({
         onBlur={handleBlur}
         {...props}
       >
-        <div ref={panelRef} id={panelId} className="uix-task-tray__panel" role="group" aria-labelledby={headingId} hidden={!open || leaving}>
-          <div className="uix-task-tray__head">
-            <p className="uix-task-tray__heading" id={headingId}>{name}</p>
-            {finished > 0 && (
-              <button type="button" className="uix-task-tray__btn" onClick={() => store.dismiss()}>{labels.clearFinished}</button>
-            )}
-          </div>
-          <MotionList
-            className="uix-task-tray__list"
-            items={records}
-            getKey={(r) => r.id}
-            renderItem={(r) => <TaskRow record={r} store={store} labels={labels} />}
-          />
-        </div>
+        {/* the pill comes first, so Tab goes from it into the open panel; the CSS shows the panel above it */}
         <button
           ref={pillRef}
           type="button"
@@ -372,6 +359,20 @@ export function TaskTray({
           </span>
           <ChevronUpIcon className="uix-task-tray__chevron" aria-hidden="true" />
         </button>
+        <div ref={panelRef} id={panelId} className="uix-task-tray__panel" role="group" aria-labelledby={headingId} hidden={!open || leaving}>
+          <div className="uix-task-tray__head">
+            <p className="uix-task-tray__heading" id={headingId}>{name}</p>
+            {finished > 0 && (
+              <button type="button" className="uix-task-tray__btn" onClick={() => store.dismiss()}>{labels.clearFinished}</button>
+            )}
+          </div>
+          <MotionList
+            className="uix-task-tray__list"
+            items={records}
+            getKey={(r) => r.id}
+            renderItem={(r) => <TaskRow record={r} store={store} labels={labels} />}
+          />
+        </div>
       </section>
     </>
   );

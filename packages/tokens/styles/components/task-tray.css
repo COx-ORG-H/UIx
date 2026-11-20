@@ -12,8 +12,9 @@
     position: fixed; z-index: calc(var(--uix-z-toast) - 1);
     inset-block-end: var(--uix-space-4); inset-inline: 0; margin-inline: auto;
     width: min(26rem, calc(100vw - 2 * var(--uix-space-4)));
-    display: flex; flex-direction: column; align-items: center; gap: var(--uix-space-2);
-    /* the box is as wide as the panel; only the pill and the panel take the pointer */
+    display: flex; flex-direction: column-reverse; align-items: center; gap: var(--uix-space-2);
+    /* the pill is first in the DOM (Tab goes from it into the panel) and shown below the panel.
+       the box is as wide as the panel; only the pill and the panel take the pointer */
     pointer-events: none;
   }
   .uix-task-tray[data-position="bottom-start"] { inset-inline: var(--uix-space-4) auto; margin-inline: 0; align-items: flex-start; }
@@ -112,7 +113,7 @@
   .uix-task-tray__btn:focus-visible, .uix-task-tray__dismiss:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
 
   /* a narrow tray (a phone): the actions move under the text, so a title keeps its width */
-  @container (max-width: 20rem) {
+  @container (max-width: 24rem) {
     .uix-task-tray__actions { grid-column: 2 / -1; grid-row: 2; justify-self: start; margin-inline-start: calc(-1 * var(--uix-space-2)); }
   }
 
