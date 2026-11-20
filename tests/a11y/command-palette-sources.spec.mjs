@@ -5,7 +5,7 @@
  * loading row, rows kept while the next answer loads, aborted searches, an error row with Retry,
  * the screen's boost, 320 px and axe in every state. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/command-palette-sources/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -38,7 +38,7 @@ test('an alias finds the command and is shown after its name; Enter runs it and 
   await expect(dialog(page)).toHaveJSProperty('open', true);
   await expect(field(page)).toBeFocused();
   await page.keyboard.type('archive');
-  expect(await activeText(page)).toBe('Mark done (Archive)');
+  await expect.poll(() => activeText(page)).toBe('Mark done (Archive)');
   await expect(dialog(page).getByRole('option', { name: 'Mark done (Archive)' })).toBeVisible();
   await page.keyboard.press('Enter');
   await expect(dialog(page)).toHaveJSProperty('open', false);
@@ -47,14 +47,14 @@ test('an alias finds the command and is shown after its name; Enter runs it and 
   // frecency: opened again, the command leads the recent list
   await page.keyboard.press('Control+k');
   await expect(dialog(page).locator('.uix-cmdk__group').first()).toHaveText('Recent');
-  expect(await activeText(page)).toBe('Mark done');
+  await expect.poll(() => activeText(page)).toBe('Mark done');
 });
 
 test('pages: Escape and Backspace step back inside the open dialog, the breadcrumb shows the way', async ({ page }, testInfo) => {
   await open(page, testInfo);
   await page.locator('#palette-launch').click();
   await page.keyboard.type('assi');
-  expect(await activeText(page)).toBe('Assign to…');
+  await expect.poll(() => activeText(page)).toBe('Assign to…');
   await page.keyboard.press('Enter');
   await expect(dialog(page)).toHaveJSProperty('open', true);
   await expect(field(page)).toHaveAttribute('aria-label', 'Assign to…');
@@ -72,7 +72,7 @@ test('pages: Escape and Backspace step back inside the open dialog, the breadcru
   await expect(dialog(page), 'Escape on a page steps back, it does not close').toHaveJSProperty('open', true);
   await expect(field(page)).toHaveValue('assi');
   await expect(field(page)).toHaveAttribute('aria-label', 'Commands');
-  expect(await activeText(page), 'the row that opened the page is active again').toBe('Assign to…');
+  await expect.poll(() => activeText(page), { message: 'the row that opened the page is active again' }).toBe('Assign to…');
   await expect(crumbs).toHaveCount(0);
 
   await page.keyboard.press('Enter');
@@ -103,7 +103,7 @@ test('choosing on a page runs the command and closes the palette', async ({ page
 });
 
 test('sources: a delayed loading row, rows kept while the next answer loads, overtaken searches aborted', async ({ page }, testInfo) => {
-  await open(page, testInfo, { query: '?latency=800' });
+  await open(page, testInfo, { query: '?latency=1500' });
   await page.locator('#palette-launch').click();
   await page.keyboard.type('vpn');
   await expect(field(page)).toHaveAttribute('aria-busy', 'true');
@@ -119,7 +119,8 @@ test('sources: a delayed loading row, rows kept while the next answer loads, ove
   await expect(ticket, 'kept while the next answer loads').toHaveAttribute('data-stale');
   await expect(ticket).toHaveAttribute('aria-disabled', 'true');
   const asked = (query) => page.evaluate((q) => window.__server.calls.filter((c) => c.query === q).map((c) => c.signal.aborted), query);
-  await expect.poll(() => asked('vpn d'), 'the debounced search starts').toEqual([false, false]);
+  // polled every 50 ms: the search is in flight for 1.5 s, and 'r' must land inside that window
+  await expect.poll(() => asked('vpn d'), { message: 'the debounced search starts', intervals: [50] }).toEqual([false, false]);
   await page.keyboard.type('r');
   await expect(ticket).not.toHaveAttribute('data-stale', { timeout: 5000 });
   expect(await asked('vpn d'), 'the searches the next keystroke overtook were aborted').toEqual([true, true]);
@@ -147,13 +148,13 @@ test('sources: a failing server shows a Retry row; Retry searches again and the 
 
 test('the screen boosts the commands that fit it, without hiding the others', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  const groups = () => dialog(page).locator('.uix-cmdk__group').allTextContents();
+  const groups = dialog(page).locator('.uix-cmdk__group');
   await page.locator('#palette-launch').click();
-  expect((await groups())[0]).toBe('Ticket');
+  await expect(groups.first()).toHaveText('Ticket');
   await page.keyboard.press('Escape');
   await page.getByRole('radio', { name: 'In the queue' }).click();
   await page.locator('#palette-launch').click();
-  expect(await groups()).toEqual(['Go to', 'Ticket', 'Settings']);
+  await expect(groups).toHaveText(['Go to', 'Ticket', 'Settings']);
   await expect(dialog(page).getByRole('option')).toHaveCount(9);
 });
 
@@ -167,6 +168,6 @@ test('at 320 px nothing scrolls sideways on a page with a long trail', async ({ 
   const box = await dialog(page).locator('.uix-cmdk').boundingBox();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(320);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
   expect(await scan(page)).toEqual([]);
 });
