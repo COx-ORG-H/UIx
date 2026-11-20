@@ -13,7 +13,7 @@
  * pointer move rebuilt every item, edge and list row: p95 100 ms at 300 nodes, 450 ms at 600.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/graph-gaps/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -9,7 +9,7 @@
  * in the harness (tests/dismiss-control/harness.tsx, bundled in globalSetup).
  * The rule-set parity of the two classes is pinned in packages/tokens/tests/dismiss-control.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/dismiss-control/harness.html';
 const DOCS = 'docs/explorer.html#tag-input';

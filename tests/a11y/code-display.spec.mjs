@@ -6,7 +6,7 @@
  * copy button sits on the code's line, and axe passes in every state.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/display/harness.html?case=code';
 const GATED = new Set(['serious', 'critical']);

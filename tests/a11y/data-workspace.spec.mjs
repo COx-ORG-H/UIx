@@ -3,7 +3,7 @@
  * refetch that keeps the rows (busy at once, the bar after 300 ms, no skeleton), selection kept
  * across pages and Shift-click ranges, the id cell, maximize and Escape, 320 px and axe. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/data-workspace/harness.html';
 const GATED = new Set(['serious', 'critical']);

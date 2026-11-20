@@ -13,7 +13,7 @@
  *   - axe in both themes, chart and list.
  * The component contract itself is in packages/react/src/org-chart-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/org-chart/harness.html';
 const GATED = new Set(['serious', 'critical']);

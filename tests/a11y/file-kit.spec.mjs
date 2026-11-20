@@ -13,7 +13,7 @@
  * Token contrast is pinned in packages/tokens/tests/file-kinds.test.mjs. Screenshots at four widths
  * are attached to the report (file-kit-<width>-<theme>.png). */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const GATED = new Set(['serious', 'critical']);
 const URL = '../../tests/file-kit/harness.html';

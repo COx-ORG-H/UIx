@@ -11,7 +11,7 @@
  *   - axe in both themes, at rest and mid-feedback; nothing scrolls sideways at 320 px.
  * The timing contract is unit-tested in packages/react/src/feedback-pending-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/feedback-kit/harness.html';
 const GATED = new Set(['serious', 'critical']);

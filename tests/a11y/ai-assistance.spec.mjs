@@ -10,7 +10,7 @@
  *     under reduced motion no caret and the text arrives in whole sentences.
  * The event seam and the React wiring are pinned in packages/react/src/ai-proposals-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/ai-assistance/harness.html';
 const GATED = new Set(['serious', 'critical']);

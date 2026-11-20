@@ -4,7 +4,7 @@
  * focus, real <details>, layout, and an axe scan of every section in light and dark.
  * Harness: tests/tensor-gaps/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/tensor-gaps/harness.html';
