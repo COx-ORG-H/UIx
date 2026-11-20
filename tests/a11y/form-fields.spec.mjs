@@ -258,6 +258,33 @@ test.describe('PasswordInput and OtpInput (HAR-1376)', () => {
     await axe(page, '#sign-in');
   });
 
+  test('OtpInput (WCAG 3.3.8): the whole code pasted over a half-typed one fills every cell; one-time-code autofill does too', async ({ page }, testInfo) => {
+    await open(page, testInfo, 'sign-in');
+    const otp = page.getByLabel('Verification code');
+    await otp.focus();
+    await page.keyboard.type('98');
+    // a press on the second cell puts the caret there for a moment
+    await otp.evaluate((input) => input.setSelectionRange(1, 1));
+    await otp.evaluate((input) => {
+      const data = new DataTransfer();
+      data.setData('text/plain', '482 913');
+      input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    });
+    await expect(otp).toHaveValue('482913');
+    await expect(page.locator('#otp ~ .uix-otp__cell')).toHaveText(['4', '8', '2', '9', '1', '3']);
+    await expect(otp).toBeFocused();
+    expect(await otp.evaluate((input) => [input.selectionStart, input.selectionEnd])).toEqual([6, 6]);
+    // Autofill (the phone's SMS code, a password manager) replaces the value as a whole and fires input.
+    await otp.fill('7');
+    await otp.evaluate((input) => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '135-246');
+      input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }));
+    });
+    await expect(otp).toHaveValue('135246');
+    await expect(otp).not.toHaveAttribute('maxlength', /.*/);
+    await expect(otp).toHaveAttribute('autocomplete', 'one-time-code');
+  });
+
   test('OtpInput alphanumeric upper-cases; cells fit a 320 px phone without sideways scroll', async ({ page }, testInfo) => {
     await open(page, testInfo, 'sign-in');
     await page.getByLabel('Recovery code').focus();

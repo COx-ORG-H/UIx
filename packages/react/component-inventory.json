@@ -742,6 +742,10 @@
       "subpath": "."
     },
     {
+      "name": "SessionTimeout",
+      "subpath": "."
+    },
+    {
       "name": "ShortcutProvider",
       "subpath": "."
     },
