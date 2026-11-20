@@ -120,7 +120,7 @@ test('confirm: a changed search holds the scope aside, the same query brings it 
   const calls = seen.length;
   t.render(h(Harness, { seen, policy: 'confirm', searchValue: 'vpn', total: 12 }));
   assert.equal(seen.length, calls, 'nothing is dropped behind the person’s back');
-  assert.match(text(banner(t.host).querySelector('p')), /^The filter changed after you selected all 40 matching rows/);
+  assert.match(text(banner(t.host).querySelector('p')), /^The filter changed, so the 40 rows selected under the previous filter/);
   assert.deepEqual([...banner(t.host).querySelectorAll('button')].map(text), ['Select all 12 matching', 'Clear selection']);
   assert.equal(t.host.querySelector('.uix-bulkbar'), null, 'no bulk action on a stale scope');
   assert.ok(boxes(t.host).every((box) => !box.checked));

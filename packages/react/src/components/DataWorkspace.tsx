@@ -160,7 +160,7 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   selectionExceptMatching: '{count} of {total} rows matching {query} are selected.',
   clearSelection: 'Clear selection',
   selectionCleared: 'Selection cleared: the filter changed.',
-  selectionStale: 'The filter changed after you selected all {count} matching rows, so nothing is selected under this filter.',
+  selectionStale: 'The filter changed, so the {count} rows selected under the previous filter are not selected here.',
   dismiss: 'Dismiss',
   querySearch: 'the search “{search}”',
   querySeparator: '; ',

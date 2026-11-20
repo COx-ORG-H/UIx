@@ -54,6 +54,9 @@
     padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-bg-subtle); color: var(--uix-text); font-size: var(--uix-text-meta); text-align: center;
   }
+  /* under the bulk bar it reads as the bar's second line: 4 px apart, not the workspace's gap
+     plus the bar's own margin */
+  .uix-data-workspace > .uix-bulkbar + .uix-data-workspace__scope { margin-top: calc(-1 * (var(--uix-space-3) + var(--uix-space-2))); }
   .uix-data-workspace__scope-text { margin: 0; min-width: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
   .uix-data-workspace__scope-actions { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-1) var(--uix-space-3); }
   /* the bulk bar acts on the selection: a row's own verbs are off (inert) and look it */

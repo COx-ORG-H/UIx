@@ -127,7 +127,7 @@ test('Ask: a changed search holds the scope aside; choosing selects the new matc
   await search(page, 'vpn');
   const narrowed = await matchingTotal(page);
   expect(narrowed).toBeLessThan(total);
-  await expect(bannerText(page)).toHaveText(`The filter changed after you selected all ${fmt(total)} matching rows, so nothing is selected under this filter.`);
+  await expect(bannerText(page)).toHaveText(`The filter changed, so the ${fmt(total)} rows selected under the previous filter are not selected here.`);
   await expect(banner(page).getByRole('button')).toHaveText([`Select all ${fmt(narrowed)} matching`, 'Clear selection']);
   await expect(page.getByRole('toolbar', { name: 'Bulk actions' })).toHaveCount(0);
   expect(await rowBoxes(page).evaluateAll((boxes) => boxes.some((box) => box.checked))).toBe(false);
