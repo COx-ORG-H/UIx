@@ -6,6 +6,8 @@ import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
+import { SWIPE_SLOP, SWIPE_VELOCITY, SWIPE_WINDOW, releaseVelocity } from '../swipe-gesture.js';
+import type { SwipeSample } from '../swipe-gesture.js';
 import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import { createPortal } from 'react-dom';
@@ -27,19 +29,11 @@ const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEff
 /* Swipe to dismiss (HAR-2578). A horizontal drag that starts on the toast (not on its buttons)
  * follows the pointer; released past a third of the toast's width, or flung faster than
  * SWIPE_VELOCITY the way it was dragged, it flies out that way and closes. Otherwise it snaps
- * back. The close button and Escape stay the keyboard path. */
-const SWIPE_VELOCITY = 0.11; // px per ms
-const SWIPE_SLOP = 6; // px of travel before a press becomes a drag, so a tap stays a tap
-const SWIPE_WINDOW = 100; // ms of movement the release velocity is measured over
+ * back. The close button and Escape stay the keyboard path. The constants are shared with the
+ * Drawer swipe (swipe-gesture.ts). */
 
-interface Drag { id: number; x0: number; y0: number; dx: number; samples: { x: number; t: number }[]; active: boolean }
+interface Drag { id: number; x0: number; y0: number; dx: number; samples: SwipeSample[]; active: boolean }
 
-/** px/ms over the last SWIPE_WINDOW before `t`; 0 when the pointer stood still that long. */
-function releaseVelocity(samples: { x: number; t: number }[], x: number, t: number): number {
-  const recent = samples.filter((s) => t - s.t <= SWIPE_WINDOW);
-  if (recent.length === 0) return 0;
-  return (x - recent[0].x) / Math.max(1, t - recent[0].t);
-}
 type PointerHandler = ((e: ReactPointerEvent<HTMLDivElement>) => void) | undefined;
 
 function useSwipeToDismiss(onClose: (() => void) | undefined, own: {
@@ -67,7 +61,7 @@ function useSwipeToDismiss(onClose: (() => void) | undefined, own: {
       own.onPointerDown?.(e);
       if (!onClose || e.defaultPrevented || e.button !== 0) return;
       if ((e.target as Element).closest('button, a, input, textarea, select, [role="button"]')) return;
-      drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, samples: [{ x: e.clientX, t: e.timeStamp }], active: false };
+      drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, samples: [{ p: e.clientX, t: e.timeStamp }], active: false };
     },
     onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
       own.onPointerMove?.(e);
@@ -81,7 +75,7 @@ function useSwipeToDismiss(onClose: (() => void) | undefined, own: {
         e.currentTarget.setPointerCapture?.(e.pointerId);
         e.currentTarget.setAttribute('data-swiping', '');
       }
-      d.samples = [...d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW), { x: e.clientX, t: e.timeStamp }];
+      d.samples = [...d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW), { p: e.clientX, t: e.timeStamp }];
       d.dx = dx;
       e.currentTarget.style.translate = `${dx}px 0`;
     },
