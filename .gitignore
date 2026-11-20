@@ -36,3 +36,6 @@ tests/*/dist/
 # The docs' live motion playground bundle: packages/tokens/docs/live/build.mjs writes it; the docs
 # site workflow builds it before deploying.
 packages/tokens/docs/live/dist/
+
+# tests/perf/bench.mjs reports (CI uploads them as artifacts)
+perf-report/

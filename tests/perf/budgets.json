@@ -1,0 +1,17 @@
+{
+  "_note": "Budgets for tests/perf/bench.mjs (roadmap #22; Docs/performance-lanes.md). Each baseline is the median a CI run measured, written by `node tests/perf/bench.mjs adopt <report.json>`. A lane fails when a median passes baseline + max(ratio x baseline, floorMs), after one more set of runs.",
+  "lanes": {
+    "workspace": {
+      "cpu": 4,
+      "runs": 5,
+      "tolerance": { "ratio": 0.5, "floorMs": 25 },
+      "metrics": {}
+    },
+    "no-gpu": {
+      "cpu": 4,
+      "runs": 3,
+      "tolerance": { "ratio": 1.5, "floorMs": 50 },
+      "metrics": {}
+    }
+  }
+}
