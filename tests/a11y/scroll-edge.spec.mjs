@@ -85,6 +85,8 @@ test.describe('scroll edges without a motion preference', () => {
     const read = (id) => page.locator(id).evaluate((w) => { w.scrollTop = 60; return { content: getComputedStyle(w, '::before').content, padTop: getComputedStyle(w).scrollPaddingTop }; });
     expect(await read('#table-headless'), 'no <thead>: no divider, nothing to clear').toEqual({ content: 'none', padTop: '0px' });
     expect((await read('#table-caption')).content, 'a caption above the header: no divider').toBe('none');
+    expect(await read('#table-cards'), 'card mode: no divider, nothing to clear').toEqual({ content: 'none', padTop: '0px' });
+    expect(await read('#table-caption-bottom'), 'a caption below the rows keeps the edge').toEqual({ content: '""', padTop: '44px' });
     expect((await read('#table')).padTop, 'a pinned header: rows stop below it').toBe('44px');
   });
 

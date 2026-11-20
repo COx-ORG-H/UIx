@@ -129,6 +129,8 @@
   }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
+  /* a caption drawn under the rows; the scroll edge keeps the header's divider for it (scroll-edge.css) */
+  .uix-table__caption--bottom { caption-side: bottom; }
   .uix-table--fixed { table-layout: fixed; width: 100%; }
   .uix-col--w-xs { width: var(--uix-col-w-xs); }
   .uix-col--w-sm { width: var(--uix-col-w-sm); }

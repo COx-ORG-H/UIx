@@ -517,9 +517,9 @@
       "brotli": 1804
     },
     "styles/components/table.css": {
-      "raw": 26660,
-      "gzip": 7068,
-      "brotli": 6071
+      "raw": 27202,
+      "gzip": 7179,
+      "brotli": 6178
     },
     "styles/components/tabs.css": {
       "raw": 6954,
@@ -587,9 +587,9 @@
       "brotli": 3085
     },
     "styles/scroll-edge.css": {
-      "raw": 10101,
-      "gzip": 3201,
-      "brotli": 2741
+      "raw": 10391,
+      "gzip": 3295,
+      "brotli": 2831
     },
     "styles/utilities.css": {
       "raw": 1310,

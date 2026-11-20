@@ -77,6 +77,18 @@
       </div>
     </section>
     <section>
+      <h2>A scrolling card-mode table</h2>
+      <div class="uix-table-wrap uix-table-wrap--scroll" id="table-cards" style="--uix-table-max-height: 12rem">
+        <table class="uix-table uix-table--cards"><thead><tr><th scope="col">ID</th><th scope="col">State</th></tr></thead><tbody id="rows-cards"></tbody></table>
+      </div>
+    </section>
+    <section>
+      <h2>A scrolling table with a caption below</h2>
+      <div class="uix-table-wrap uix-table-wrap--scroll" id="table-caption-bottom" style="--uix-table-max-height: 12rem">
+        <table class="uix-table"><caption class="uix-table__caption--bottom">Open incidents</caption><thead><tr><th scope="col">ID</th><th scope="col">State</th></tr></thead><tbody id="rows-caption-bottom"></tbody></table>
+      </div>
+    </section>
+    <section>
       <h2>A scrolling table with a caption</h2>
       <div class="uix-table-wrap uix-table-wrap--scroll" id="table-caption" style="--uix-table-max-height: 12rem">
         <table class="uix-table"><caption>Open incidents</caption><thead><tr><th scope="col">ID</th><th scope="col">State</th></tr></thead><tbody id="rows-caption"></tbody></table>
@@ -91,6 +103,8 @@
     fill('menu', 16, (i) => `<div class="uix-listbox__option" role="option" aria-selected="false">${words[i % words.length]}</div>`);
     fill('headed', 24, (i) => `<p>Ticket ${i + 1} · ${words[i % words.length]}</p>`);
     fill('rows-headless', 12, (i) => `<tr><td>INC-${3000 + i}</td><td>Open</td></tr>`);
+    fill('rows-cards', 8, (i) => `<tr><td data-label="ID">INC-${5000 + i}</td><td data-label="State">Open</td></tr>`);
+    fill('rows-caption-bottom', 12, (i) => `<tr><td>INC-${6000 + i}</td><td>Open</td></tr>`);
     fill('rows-caption', 12, (i) => `<tr><td>INC-${4000 + i}</td><td>Open</td></tr>`);
     fill('rows', 40, (i) => `<tr><td>INC-${2000 + i}</td><td>${words[i % words.length]}</td><td>Open</td><td>Alex Morgan</td><td>${(i % 12) + 1} min ago</td><td>eu-central</td><td>payments-api</td></tr>`);
   </script>

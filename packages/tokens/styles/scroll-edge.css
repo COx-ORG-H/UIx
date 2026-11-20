@@ -46,10 +46,11 @@
   /* A scroller with its own sticky header has a hard top edge: the header is the edge. The table
      wrap's rows also stop below its header when the keyboard brings one into view, not under it.
      The header's height is --uix-table-head-h (44 px; table.css sizes the header cells with it):
-     set it on the wrap or above to change both. A table with no <thead> has nothing to clear. */
+     set it on the wrap or above to change both. A table with no <thead>, or in card mode (its
+     header is clipped away), has nothing to clear. */
   :where(.uix-scroll-edge--hard, .uix-table-wrap) { --uix-scroll-edge-start: 0px; }
   :where(.uix-table-wrap) { --uix-scroll-edge-head: var(--uix-table-head-h, 44px); scroll-padding-block: var(--uix-scroll-edge-head) var(--uix-scroll-edge-end); }
-  :where(.uix-table-wrap:not(:has(> .uix-table > thead))) { --uix-scroll-edge-head: 0px; }
+  :where(.uix-table-wrap:is(:not(:has(> .uix-table > thead)), :has(> .uix-table--cards))) { --uix-scroll-edge-head: 0px; }
   /* the divider a sticky header gains once content is under it: firmer than the hairline */
   :where(.uix-scroll-edge-head, .uix-table-wrap) {
     --uix-scroll-edge-line: var(--uix-border-strong);
@@ -109,8 +110,10 @@
       }
       /* No edge where the header is not a row pinned at the top of the wrap: a card-mode table, a
          table with no <thead>, and one with a <caption> above its header (the header only pins
-         once the caption has scrolled away, so a divider tied to the first pixels would cross it). */
-      :root:not([data-motion="reduce"]) :where(.uix-table-wrap:is(:has(> .uix-table--cards), :not(:has(> .uix-table > thead)), :has(> .uix-table > caption)))::before { content: none; }
+         once the caption has scrolled away, so a divider tied to the first pixels would cross it).
+         CSS cannot see where a caption is drawn, so a caption below the table says so with
+         .uix-table__caption--bottom (table.css), and that table keeps its edge. */
+      :root:not([data-motion="reduce"]) :where(.uix-table-wrap:is(:has(> .uix-table--cards), :not(:has(> .uix-table > thead)), :has(> .uix-table > caption:not(.uix-table__caption--bottom))))::before { content: none; }
     }
   }
 
