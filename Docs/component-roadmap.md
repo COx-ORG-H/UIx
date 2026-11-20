@@ -155,6 +155,6 @@ primitive under “Which motion for which state change”; the shape column is t
 | List enter / exit / reorder (FLIP) | Where did it go? | `MotionList` | Opacity plus ≤ 8 px travel; exit collapses on transform before the gap closes. |
 | `Count` | What changed? | `Count` | One tick on change, never a loop; no tweened numbers in dense tables. |
 | `SuccessState` / receipt | Did it work? (a rare peak) | `SuccessState` | One success mark, then “what happens next”. |
-| Disclosure expand (`CollapsibleSection`) | Where did it go? | `CollapsibleSection` | Transform/opacity, never height. A sidebar group opens over `--uix-dur-disclosure` (350 ms, the 2.60 animate-ui pick). |
+| Disclosure expand (`CollapsibleSection`) | Where did it go? | `CollapsibleSection` | Transform/opacity, never height. The one exception is a sidebar group: it opens and closes in height (`grid-template-rows`) over `--uix-dur-disclosure` (350 ms), the operator's 2.60 animate-ui pick, allowed by a `motion-allow` note in `sidebar.css`. |
 | Sliding tab indicator | Where did it go? | `useSlidingIndicator` (Tabs, Segmented, Sidebar) | The active indicator moves between items over `--uix-dur` (160 ms); keyboard and reduced motion jump. |
 | Drag affordances | Did it register? | `[data-uix-drag]`, `.uix-drop-line`, `settleDrop` (`drag.css`) | Lift on grab, drop target and line, settle ≤ 200 ms, with a keyboard alternative. |
