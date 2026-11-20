@@ -1,8 +1,10 @@
 /* Pure model for the CommandPalette items mode (HAR-1378): which commands a query finds, in which
  * order, grouped. Matching folds case and diacritics with `foldForSearch` ("ubersicht" finds
- * "Übersicht", "strasse" finds "Straße"), so a product no longer needs its own copy of it. */
+ * "Übersicht", "strasse" finds "Straße", "djordje" finds "Đorđe"), so a product no longer needs
+ * its own copy of it. */
 import type { ReactNode } from 'react';
-import { foldForSearch } from './search-suggest-model.js';
+import { foldContext, foldKeys } from './locale-text.js';
+import type { FoldOptions } from './locale-text.js';
 
 /** One command of a `CommandPalette` in items mode. */
 export interface CommandPaletteItem {
@@ -37,17 +39,15 @@ export interface CommandPaletteGroup {
 const words = (folded: string) => folded.split(/[\s\-_/.,:;()[\]'"›>·|]+/u).filter(Boolean);
 
 /**
- * How well `item` matches the folded query tokens: 0 (the label starts with the whole query),
- * 1 (every token starts a word of the label), 2 (every token is in the label), 3 (every token
- * is in the label or a keyword), or -1 (no match).
+ * How well one spelling of a label matches the folded query tokens: 0 (the label starts with the
+ * whole query), 1 (every token starts a word of the label), 2 (every token is in the label), 3
+ * (every token is in the label or a keyword), or -1 (no match).
  */
-function score(item: CommandPaletteItem, query: string, tokens: string[]): number {
-  const label = foldForSearch(item.label).text;
+function score(label: string, keywords: readonly string[], query: string, tokens: readonly string[]): number {
   if (label.startsWith(query)) return 0;
   const labelWords = words(label);
   if (tokens.every((t) => labelWords.some((w) => w.startsWith(t)))) return 1;
   if (tokens.every((t) => label.includes(t))) return 2;
-  const keywords = (item.keywords ?? []).map((k) => foldForSearch(k).text);
   if (tokens.every((t) => label.includes(t) || keywords.some((k) => k.includes(t)))) return 3;
   return -1;
 }
@@ -56,17 +56,30 @@ function score(item: CommandPaletteItem, query: string, tokens: string[]): numbe
  * The commands `query` finds, best first (HAR-1378): a label that starts with the query, then
  * labels where every word of the query starts a word, then labels that contain every word, then
  * matches through `keywords`. Equal matches keep the order they were given in. An empty query
- * finds every item, in order.
+ * finds every item, in order. `locale` (the palette passes the `UixLabelsProvider` one) decides
+ * the folding, e.g. Serbian Cyrillic answering to Latin; each spelling of a label and of the
+ * query (đ as "dj" or "d") counts, the best one ranks.
  */
-export function filterCommandItems(items: readonly CommandPaletteItem[], query: string): CommandPaletteItem[] {
-  const folded = foldForSearch(query.trim()).text;
-  if (!folded) return [...items];
-  const tokens = folded.split(/\s+/).filter(Boolean);
-  return items
-    .map((item, index) => ({ item, index, rank: score(item, folded, tokens) }))
-    .filter((entry) => entry.rank >= 0)
-    .sort((a, b) => a.rank - b.rank || a.index - b.index)
-    .map((entry) => entry.item);
+export function filterCommandItems(items: readonly CommandPaletteItem[], query: string, locale?: string, options?: FoldOptions): CommandPaletteItem[] {
+  const context = foldContext(locale, options);
+  const queries = foldKeys(query.trim(), context)
+    .map((folded) => ({ folded, tokens: folded.split(/\s+/).filter(Boolean) }))
+    .filter((q) => q.tokens.length > 0);
+  if (queries.length === 0) return [...items];
+  const ranked: { item: CommandPaletteItem; index: number; rank: number }[] = [];
+  items.forEach((item, index) => {
+    const labels = foldKeys(item.label, context);
+    const keywords = (item.keywords ?? []).flatMap((k) => foldKeys(k, context));
+    let rank = -1;
+    for (const q of queries) {
+      for (const label of labels) {
+        const r = score(label, keywords, q.folded, q.tokens);
+        if (r >= 0 && (rank < 0 || r < rank)) rank = r;
+      }
+    }
+    if (rank >= 0) ranked.push({ item, index, rank });
+  });
+  return ranked.sort((a, b) => a.rank - b.rank || a.index - b.index).map((entry) => entry.item);
 }
 
 /**

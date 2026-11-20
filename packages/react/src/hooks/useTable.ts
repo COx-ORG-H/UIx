@@ -6,6 +6,7 @@ import {
   serializeView, parseView, mergePinned,
   toggleId, togglePage, selectAllState,
 } from '../table-engine.js';
+import { useTextLocale } from './useTextLocale.js';
 import type {
   Row, SortKey, ColumnFilter, ViewState, SelectAllState,
 } from '../table-engine.js';
@@ -20,6 +21,13 @@ export interface UseTableOptions {
   searchFields?: readonly string[];
   /** ids kept present + hoisted regardless of filter/sort. */
   initialPinned?: Iterable<string>;
+  /**
+   * The locale text sorts and searches in (roadmap #15): `multiSort` collates with it
+   * (Croatian č after c, "INC-2" before "INC-10"), search and text filters fold with it
+   * ("djordje" finds "Đorđe"; Serbian Cyrillic answers to Latin). Default: the
+   * `UixLabelsProvider` locale, then the runtime's.
+   */
+  locale?: string;
 }
 
 export interface UseTableResult<T> {
@@ -67,6 +75,8 @@ export interface UseTableResult<T> {
  */
 export function useTable<T extends Row>(data: readonly T[], options: UseTableOptions = {}): UseTableResult<T> {
   const { idField = 'id', searchFields } = options;
+  const providerLocale = useTextLocale();
+  const locale = options.locale ?? providerLocale;
   const [sort, setSort] = useState<SortKey[]>(() => options.initialSort ?? []);
   const [filters, setFilters] = useState<ColumnFilter[]>(() => options.initialFilters ?? []);
   const [query, setQuery] = useState<string>(() => options.initialQuery ?? '');
@@ -77,10 +87,10 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   // avoid their no-op copies in the composed hot path. Pin changes no longer
   // repeat filtering, search, or sorting.
   const visibleRows = useMemo(() => {
-    const filtered = filters.length ? applyFilters(data, filters) : data;
-    const searched = query.trim() ? searchRows(filtered, query, searchFields) : filtered;
-    return sort.length ? multiSort(searched, sort) : searched;
-  }, [data, filters, query, searchFields, sort]);
+    const filtered = filters.length ? applyFilters(data, filters, locale) : data;
+    const searched = query.trim() ? searchRows(filtered, query, searchFields, locale) : filtered;
+    return sort.length ? multiSort(searched, sort, locale) : searched;
+  }, [data, filters, query, searchFields, sort, locale]);
 
   const rows = useMemo(
     () => pinned.size ? mergePinned(data, visibleRows, pinned, idField) : visibleRows.slice(),

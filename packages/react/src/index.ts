@@ -85,8 +85,11 @@ export type { ToolbarMoreProps } from './components/ToolbarMore.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
 export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchError, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';
-export { searchSegments, foldForSearch } from './search-suggest-model.js';
-export type { SearchSegment, FoldedText } from './search-suggest-model.js';
+export { searchSegments } from './search-suggest-model.js';
+export type { SearchSegment } from './search-suggest-model.js';
+// Locale-aware search folding and collation for every kit search and sort (roadmap #15)
+export { foldForSearch, searchMatcher, compareFor } from './locale-text.js';
+export type { FoldedText, FoldOptions } from './locale-text.js';
 
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';

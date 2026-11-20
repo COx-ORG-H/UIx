@@ -1,3 +1,6 @@
+import { foldContext, textMatcher } from './locale-text.js';
+import type { FoldOptions } from './locale-text.js';
+
 export interface ComboboxOption {
   value: string;
   label: string;
@@ -15,24 +18,31 @@ export interface ComboboxGroup {
 
 const isGroup = (item: ComboboxOption | ComboboxGroup): item is ComboboxGroup => Array.isArray((item as ComboboxGroup).options);
 
-export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[] {
-  const needle = query.trim().toLocaleLowerCase();
+const optionMatches = (option: ComboboxOption, matches: (text: string) => boolean): boolean =>
+  [option.label, option.value, ...(option.keywords ?? [])].some(matches);
+
+/**
+ * Options whose label, value or keywords contain `query`, folded for `locale` (see
+ * `foldForSearch`): "cevapi" finds "Ćevapi", "djordje" finds "Đorđe".
+ */
+export function filterComboboxOptions(options: readonly ComboboxOption[], query: string, locale?: string, foldOptions?: FoldOptions): ComboboxOption[] {
+  const needle = query.trim();
   if (!needle) return [...options];
-  return options.filter((option) =>
-    [option.label, option.value, ...(option.keywords ?? [])]
-      .some((part) => part.toLocaleLowerCase().includes(needle)),
-  );
+  const matches = textMatcher(needle, foldContext(locale, foldOptions));
+  return options.filter((option) => optionMatches(option, matches));
 }
 
 /** Options and groups that match `query` (label, value or keywords); a group stays when any of its options does. */
-export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string): (ComboboxOption | ComboboxGroup)[] {
-  if (!query.trim()) return [...items];
+export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string, locale?: string, foldOptions?: FoldOptions): (ComboboxOption | ComboboxGroup)[] {
+  const needle = query.trim();
+  if (!needle) return [...items];
+  const matches = textMatcher(needle, foldContext(locale, foldOptions));
   const out: (ComboboxOption | ComboboxGroup)[] = [];
   for (const item of items) {
     if (isGroup(item)) {
-      const options = filterComboboxOptions(item.options, query);
+      const options = item.options.filter((option) => optionMatches(option, matches));
       if (options.length) out.push({ ...item, options });
-    } else if (filterComboboxOptions([item], query).length) {
+    } else if (optionMatches(item, matches)) {
       out.push(item);
     }
   }

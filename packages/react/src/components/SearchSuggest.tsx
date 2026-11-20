@@ -4,6 +4,7 @@ import { useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useStat
 import type { FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, ReactNode, Ref } from 'react';
 import { cx } from '../cx.js';
 import { useUixLabels } from '../labels-context.js';
+import { useTextLocale } from '../hooks/useTextLocale.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
@@ -135,10 +136,10 @@ const ClearIcon = () => (
   </svg>
 );
 
-function Emphasised({ text, query }: { text: string; query: string }) {
+function Emphasised({ text, query, locale }: { text: string; query: string; locale: string | undefined }) {
   return (
     <>
-      {searchSegments(text, query).map((segment, index) =>
+      {searchSegments(text, query, locale).map((segment, index) =>
         segment.match
           ? <mark key={index} className="uix-search-suggest__match">{segment.text}</mark>
           : <span key={index}>{segment.text}</span>,
@@ -197,6 +198,7 @@ export function SearchSuggest({
   ...props
 }: SearchSuggestProps) {
   const uixLabels = useUixLabels();
+  const locale = useTextLocale();
   const clearLabel = clearLabelProp ?? uixLabels.searchSuggest?.clear ?? 'Clear search';
   const id = useId();
   const listboxId = `${id}-listbox`;
@@ -457,7 +459,7 @@ export function SearchSuggest({
               >
                 {option.icon != null && <span className="uix-search-suggest__icon" aria-hidden="true">{option.icon}</span>}
                 <span className="uix-search-suggest__body">
-                  <span className="uix-search-suggest__title"><Emphasised text={option.title} query={highlight ?? value} /></span>
+                  <span className="uix-search-suggest__title"><Emphasised text={option.title} query={highlight ?? value} locale={locale} /></span>
                   {crumbs.length > 0 && (
                     <span className="uix-search-suggest__meta" title={crumbs.join(' › ')}>
                       {crumbs.map((crumb, crumbIndex) => (
@@ -467,7 +469,7 @@ export function SearchSuggest({
                   )}
                   {option.description && (
                     <span id={descId} className="uix-search-suggest__desc">
-                      <Emphasised text={option.description} query={highlight ?? value} />
+                      <Emphasised text={option.description} query={highlight ?? value} locale={locale} />
                     </span>
                   )}
                 </span>

@@ -7,6 +7,7 @@
  * <Tree> render paths use these, so the two behave identically and keyboard nav works even for
  * rows that are scrolled out of the virtual window (UIX-FIX-05). Unit-tested (tree-model.test.mjs).
  */
+import { foldContext, textMatcher } from './locale-text.js';
 
 /** Minimal shape a node must have; the concrete node (label, icon, …) rides along as `T`. */
 export interface TreeLike<T> {
