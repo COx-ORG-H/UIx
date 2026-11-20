@@ -11,6 +11,19 @@ export interface FieldProps {
   /** The error under the control, announced at once (`role="alert"`). Text, or a node such as a sentence with a link. */
   error?: ReactNode;
   /**
+   * How a new `error` is announced. `'assertive'` (default) interrupts (`role="alert"`). `'polite'`
+   * waits for the screen reader to finish (`role="status"`): an error found when the person left
+   * the field should not cut into what the next one reads. `'off'` adds no live region: the error
+   * is still the control's description, read when it is focused, for errors a summary already
+   * announced (`useFormErrors` picks these for you).
+   */
+  errorAnnounce?: 'assertive' | 'polite' | 'off';
+  /**
+   * Visually hidden text before the error, e.g. `"Error:"`, so a screen reader says it is one
+   * (GOV.UK). None by default; `useFormErrors` passes the translated `errorSummary.errorPrefix`.
+   */
+  errorPrefix?: string;
+  /**
    * A value to check, not an error (HAR-1814): shown under the control in the warning colour,
    * announced politely, and marks the control `data-warning`. `error` wins over it; it wins
    * over `success` and `hint`.
@@ -55,7 +68,7 @@ function isComboboxElement(child: ReactElement): boolean {
   return type === Combobox;
 }
 
-export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, messageId, children, className, htmlFor }: FieldProps) {
+export function Field({ label, hint, error, errorAnnounce = 'assertive', errorPrefix, warning, success, required, help, helpLabel, labelId, messageId, children, className, htmlFor }: FieldProps) {
   const uid = useId();
   const msgId = messageId ?? `${uid}-msg`;
   const describedBy = (error || warning || success || hint) ? msgId : undefined;
@@ -102,9 +115,15 @@ export function Field({ label, hint, error, warning, success, required, help, he
       {/* Always rendered with a reserved min-height so an error appearing never shifts the layout.
           role="alert" announces the error the moment it's inserted, role="status" the success
           (polite, so it doesn't interrupt), as is a warning; error > warning > success > hint. */}
-      <div className="uix-field__msg" id={msgId}>
+      {/* A polite error needs a region that is already there when the error arrives (a region
+          inserted together with its text is often not read), so the message line itself becomes
+          that region for as long as the field asks for it. */}
+      <div className="uix-field__msg" id={msgId} aria-live={errorAnnounce === 'polite' ? 'polite' : undefined}>
         {error ? (
-          <span className="uix-field__error" role="alert">{error}</span>
+          <span className="uix-field__error" role={errorAnnounce === 'assertive' ? 'alert' : undefined}>
+            {errorPrefix && <span className="uix-visually-hidden">{`${errorPrefix} `}</span>}
+            {error}
+          </span>
         ) : warning ? (
           <span className="uix-field__warning" role="status">{warning}</span>
         ) : success ? (
