@@ -148,7 +148,7 @@ primitive under “Which motion for which state change”; the shape column is t
 | Primitive | Answers | Shipped as | Shape |
 |---|---|---|---|
 | Delayed-pending hook | Is it working? | `useDelayedPending`, `Button loading` | Drives `Spinner` / `Button loading` / `LoadingState` / `SaveStatus`: show after 300 ms, hold at least 500 ms. |
-| `Button` success / error state | Did it work? | `Button result` / `resultLabels` | Label/icon crossfade in place, held 1.5 s, announced through `aria-live`. |
+| `Button` success / error state | Did it work? | `Button result` / `resultLabels` | Label out, then result in (text never over text), held 1.5 s, announced through `aria-live`. |
 | `BusyRegion` + Table `refreshing` | Is it working? | `BusyRegion`, `TableWrap refreshing` | Keep previous rows, dim, top indeterminate bar, `aria-busy`. |
 | Optimistic helper | Did it register? | `useOptimisticValue` | `useOptimistic`-style, with a visible rollback that says what was restored. |
 | `ChangeHighlight` / `.uix-changed` | What changed? | `ChangeHighlight`, `useChangeHighlight` | A tint on the changed row or field that fades over `--uix-dur-change`; a steady outline under reduced motion. Sibling of `.uix-arrival`. |

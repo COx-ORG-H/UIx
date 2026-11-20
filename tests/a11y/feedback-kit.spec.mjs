@@ -3,7 +3,7 @@
  * page clock is installed and paused, so timers move only with runFor (axe takes seconds) while
  * CSS transitions still render in real time.
  *   - Button loading: blocks at once, nothing visible for 300 ms, then a spinner in full colour;
- *     a fast action never shows one; the result crossfades in, is announced outside the button,
+ *     a fast action never shows one; the result swaps in (label out, then result in), is announced outside the button,
  *     holds 1.5 s; the button and its neighbours never move.
  *   - BusyRegion and TableWrap refreshing: the rows stay, aria-busy at once, the dim and the
  *     bar after 300 ms; reduced motion turns the sweep into a full, breathing bar.
