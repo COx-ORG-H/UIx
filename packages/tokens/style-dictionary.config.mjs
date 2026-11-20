@@ -62,19 +62,31 @@ const isColor = (t) =>
 /* ---------- CSS custom properties ---------- */
 const decls = (toks, indent) =>
   toks.map((t) => `${indent}--${t.name}: ${val(t)};`).join('\n');
+// A token whose value reads custom properties set further down the tree (--uix-radius-inner reads
+// the --uix-radius-outer / --uix-radius-inset a container sets) is declared on every element, not
+// on :root: a custom property resolves where it is declared and inherits as that one result, so on
+// :root it would never see a container's values.
+const perElement = (t) => t.$extensions?.['uix.scope'] === 'element';
+const rootBase = base.filter((t) => !perElement(t));
+const elementBase = base.filter(perElement);
 
 const css = `/* GENERATED — do not edit. Source: tokens/  •  Build: npm run build:tokens (Style Dictionary).
    The --uix-* contract: light on :root, dark on the dark selector. Names match UIx v1;
    projects override VALUES via the write-only --uix-brand / --uix-brand-fg slots, never names. */
 @layer uix.tokens {
   :root {
-${decls(base, '    ')}
+${decls(rootBase, '    ')}
   }
 
   :root:where(.dark,[data-theme="dark"]) {
 ${decls(dark, '    ')}
   }
-}
+${elementBase.length ? `
+  /* resolved on every element (zero specificity), so each reads the nearest container's inputs */
+  :where(*) {
+${decls(elementBase, '    ')}
+  }
+` : ''}}
 `;
 
 /* ---------- Tailwind v4 @theme (maps utilities onto the live --uix-* vars) ---------- */
@@ -124,7 +136,9 @@ const obj = (entries) =>
   '{\n' + entries.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`).join('\n') + '\n}';
 
 const cssVarEntries = base.map((t) => [key(t), `var(--${t.name})`]);
-const lightEntries = base.map((t) => [key(t), fallback(val(t))]);
+// a per-element token has no one resolved value (it depends on the container), so it keeps its
+// expression instead of a fallback lifted out of it
+const lightEntries = base.map((t) => [key(t), perElement(t) ? val(t) : fallback(val(t))]);
 const darkEntries = dark.map((t) => [key(t), fallback(val(t))]);
 const numEntries = base.map((t) => [key(t), pxNum(val(t))]).filter(([, v]) => v !== undefined);
 

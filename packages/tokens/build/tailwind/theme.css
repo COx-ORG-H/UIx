@@ -175,6 +175,7 @@
   --radius-uix-lg: var(--uix-radius-lg);
   --radius-uix-xl: var(--uix-radius-xl);
   --radius-uix-pill: var(--uix-radius-pill);
+  --radius-uix-inner: var(--uix-radius-inner);
 
   --font-uix-sans: var(--uix-font-sans);
   --font-uix-heading: var(--uix-font-heading);

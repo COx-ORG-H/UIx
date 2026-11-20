@@ -61,8 +61,9 @@
   .uix-select__popup {
     z-index: var(--uix-z-dropdown); box-sizing: border-box; flex-direction: column; overflow: hidden;
     margin: 0; padding: var(--uix-space-1); max-width: min(28rem, calc(100vw - 2 * var(--uix-space-4)));
-    background: var(--uix-surface-2); color: var(--uix-text); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-surface-2); color: var(--uix-text); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer);
     box-shadow: var(--uix-shadow-popover);
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1));
   }
   .uix-select__popup:not([hidden]) { display: flex; }
   [popover].uix-select__popup:not(:popover-open) { display: none; }
@@ -99,7 +100,8 @@
   /* overflow-x: the list never scrolls sideways; rows arriving 8 px from the inline end (2.60) must not
      raise a horizontal scrollbar on engines with classic scrollbars, which shifted rows mid-click */
   .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; position: relative; }
-  .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  /* flat inside the popup: the options take the popup's corner and inset, not the listbox's own */
+  .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; --uix-radius-outer: inherit; --uix-radius-inset: inherit; }
   .uix-select__popup .uix-listbox:focus { outline: none; }
   .uix-select__search { flex: none; margin-bottom: var(--uix-space-1); }
   .uix-select__toolbar {
