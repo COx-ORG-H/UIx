@@ -92,6 +92,8 @@
 /* SessionTimeout (UIx enterprise UX study #24): the countdown. No motion: the digits change in place
    once a second, never pulse; tabular figures keep "1:09" and "1:10" the same width. */
 @layer uix.components {
+  /* a short alert: narrower than a form dialog, so the sentence and the clock read as one block */
+  .uix-dialog.uix-session-timeout { max-width: min(440px, 92vw); }
   .uix-session-timeout__time { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--uix-space-2); color: var(--uix-text); }
   .uix-session-timeout__label { color: var(--uix-text-hushed); }
   .uix-session-timeout__clock { font-size: var(--uix-text-h3); font-weight: 600; font-variant-numeric: tabular-nums; }

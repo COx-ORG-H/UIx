@@ -40,6 +40,7 @@ export interface SessionTimeoutLabels {
   close: string;
 }
 
+/** The English words of `SessionTimeout`; `UixLabelsProvider` `sessionTimeout` and `labels` override them. */
 export const DEFAULT_SESSION_TIMEOUT_LABELS: SessionTimeoutLabels = {
   title: 'Your session is about to end',
   description: 'You will be signed out when the time runs out. Choose “{stay}” to keep working.',
@@ -76,6 +77,7 @@ export interface SessionIdleConfig {
   events?: readonly string[];
 }
 
+/** The clock of a session: its end (`expiresAt` and/or `idle`), the warning time, and what to call when. */
 export interface UseSessionTimeoutOptions {
   /**
    * When the session ends: the server's expiry (a `Date` or epoch ms). Pass the new one after a
@@ -109,7 +111,9 @@ export interface UseSessionTimeoutOptions {
   pauseWhenHidden?: boolean;
 }
 
+/** What `useSessionTimeout` returns: where the session stands and the actions on it. */
 export interface SessionTimeoutState {
+  /** `active` in use, `warning` within `warnBefore` of the end, `expired` ended. */
   phase: SessionTimeoutPhase;
   /** Milliseconds left (0 once ended). Updated every second while the warning shows. */
   remaining: number;
@@ -338,6 +342,7 @@ function spokenTime(totalSeconds: number, locale: string | undefined): string {
 const clockTime = (totalSeconds: number): string =>
   `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, '0')}`;
 
+/** `SessionTimeout`: the clock's options, the sign-out and sign-in actions, and the words. */
 export interface SessionTimeoutProps extends UseSessionTimeoutOptions {
   /** Sign out now, from the warning. */
   onSignOut?: () => void;

@@ -2193,6 +2193,9 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
 // @public (undocumented)
 export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 
+// @public
+export const DEFAULT_SESSION_TIMEOUT_LABELS: SessionTimeoutLabels;
+
 // @public (undocumented)
 export const DEFAULT_SORTABLE_LIST_LABELS: SortableListLabels;
 
@@ -4763,6 +4766,7 @@ export const Modal: react.ForwardRefExoticComponent<ModalProps & react.RefAttrib
 export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    closeButton?: boolean;
     closeLabel?: string;
     dirty?: boolean;
     discardLabels?: Partial<DiscardPromptLabels>;
@@ -7570,6 +7574,66 @@ export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
 export function serializeView(v: ViewState): string;
 
 // @public
+export type SessionDraftsReason = 'warning' | 'expire';
+
+// @public
+export type SessionDraftsState = 'none' | 'saving' | 'kept' | 'failed';
+
+// @public
+export interface SessionIdleConfig {
+    events?: readonly string[];
+    timeout: number;
+}
+
+// @public
+export function SessionTimeout(input: SessionTimeoutProps): react.JSX.Element | null;
+
+// @public (undocumented)
+export namespace SessionTimeout {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public
+export interface SessionTimeoutLabels {
+    close: string;
+    description: string;
+    draftsFailed: string;
+    draftsKept: string;
+    draftsSaving: string;
+    expiredDescription: string;
+    expiredTitle: string;
+    extendFailed: string;
+    signIn: string;
+    signOut: string;
+    stay: string;
+    timeLeft: string;
+    title: string;
+}
+
+// @public
+export type SessionTimeoutPhase = 'active' | 'warning' | 'expired';
+
+// @public
+export interface SessionTimeoutProps extends UseSessionTimeoutOptions {
+    labels?: Partial<SessionTimeoutLabels>;
+    locale?: string;
+    onSignIn?: () => void;
+    onSignOut?: () => void;
+}
+
+// @public
+export interface SessionTimeoutState {
+    drafts: SessionDraftsState;
+    extend: () => Promise<void>;
+    extendFailed: boolean;
+    extending: boolean;
+    phase: SessionTimeoutPhase;
+    remaining: number;
+    touch: () => void;
+}
+
+// @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
 
 // @public
@@ -9130,6 +9194,7 @@ export interface UixLabels {
     };
     // (undocumented)
     select?: Partial<SelectLabels>;
+    sessionTimeout?: Partial<SessionTimeoutLabels>;
     // (undocumented)
     sidebar?: {
         expand?: string;
@@ -9314,6 +9379,21 @@ export function useReducedTransparency(): boolean;
 
 // @public
 export function uses12Hour(locale?: string | readonly string[]): boolean;
+
+// @public
+export function useSessionTimeout(options: UseSessionTimeoutOptions): SessionTimeoutState;
+
+// @public
+export interface UseSessionTimeoutOptions {
+    expiresAt?: Date | number | null;
+    idle?: SessionIdleConfig;
+    onExpire?: () => void;
+    onExtend?: () => void | Date | number | Promise<void | Date | number>;
+    onPersistDrafts?: (reason: SessionDraftsReason) => void | Promise<unknown>;
+    onWarn?: () => void;
+    pauseWhenHidden?: boolean;
+    warnBefore?: number;
+}
 
 // @public
 export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>, indicatorRef: RefObject<HTMLElement | null>, selectedSelector: string): void;

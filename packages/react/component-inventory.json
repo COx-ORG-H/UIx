@@ -714,6 +714,10 @@
       "subpath": "."
     },
     {
+      "name": "SessionTimeout",
+      "subpath": "."
+    },
+    {
       "name": "Sidebar",
       "subpath": "."
     },
