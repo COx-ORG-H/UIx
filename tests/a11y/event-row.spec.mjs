@@ -5,7 +5,7 @@
  * the text so the title keeps the row's width; axe passes.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/display/harness.html?case=events';
 const GATED = new Set(['serious', 'critical']);

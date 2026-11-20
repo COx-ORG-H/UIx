@@ -9,7 +9,7 @@
  *        and the page does not scroll sideways
  * The harness is tests/scheduling-calendar/; structure is in packages/react/src/scheduling-agenda-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '../../tests/scheduling-calendar/harness.html';

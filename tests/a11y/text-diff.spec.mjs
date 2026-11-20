@@ -3,7 +3,7 @@
  * tints and marks in both themes, focus after a fold opens, and the split view stacking in a
  * narrow container. The model and markup are in packages/react/src/text-diff-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/text-diff/harness.html';
 const GATED = new Set(['serious', 'critical']);

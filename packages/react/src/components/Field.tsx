@@ -4,6 +4,24 @@ import { cx } from '../cx.js';
 import { InfoTip } from './InfoTip.js';
 import { Combobox } from './Combobox.js';
 import { hasHelp, helpTopic } from '../info-tip-model.js';
+import { FieldAiNote, FieldAiParts } from './AiLabel.js';
+import type { AiExplanation } from './AiLabel.js';
+import type { AiLabels } from '../ai-labels.js';
+
+/**
+ * The AI state of a field (Carbon for AI's variant model; `useAiFieldValue` builds it). `filled`:
+ * the value came from AI and is not yet the person's: the "AI" mark after the label, the review
+ * border of `Input warning` and "Filled in by AI. Check it." under the control. `edited`: a person
+ * changed it, so it is theirs: no mark, no review state, and "Revert to AI" brings the AI value back.
+ */
+export interface FieldAi {
+  state: 'filled' | 'edited';
+  /** What the AI mark opens. */
+  explanation?: AiExplanation;
+  /** Restore the AI value. Without it an edited field shows no "Revert to AI". */
+  onRevert?: () => void;
+  labels?: Partial<AiLabels>;
+}
 
 export interface FieldProps {
   label?: string;
@@ -44,6 +62,8 @@ export interface FieldProps {
   className?: string;
   /** Explicit label target. When a Combobox also supplies `inputId`, the two IDs must match. */
   htmlFor?: string;
+  /** The value came from AI: see {@link FieldAi}. Needs `label`. */
+  ai?: FieldAi;
 }
 
 /** Recognize a direct Combobox and React.memo wrappers without assuming anything about other controls. */
@@ -55,10 +75,13 @@ function isComboboxElement(child: ReactElement): boolean {
   return type === Combobox;
 }
 
-export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, messageId, children, className, htmlFor }: FieldProps) {
+export function Field({ label, hint, error, warning, success, required, help, helpLabel, labelId, messageId, children, className, htmlFor, ai }: FieldProps) {
   const uid = useId();
+  // Field stays server-renderable: the AI words are read by client parts (FieldAiParts, FieldAiNote)
+  const aiFilled = ai?.state === 'filled';
+  const aiNote = aiFilled ? <FieldAiNote labels={ai?.labels} /> : undefined;
   const msgId = messageId ?? `${uid}-msg`;
-  const describedBy = (error || warning || success || hint) ? msgId : undefined;
+  const describedBy = (error || warning || aiNote || success || hint) ? msgId : undefined;
 
   // Wire the message to the control for assistive tech: aria-describedby (so it's announced) and
   // aria-invalid on error. Done when children is a single element (the common one-control case);
@@ -78,20 +101,22 @@ export function Field({ label, hint, error, warning, success, required, help, he
           .filter(Boolean).join(' ') || undefined,
         'aria-invalid': error ? true : (children.props as Record<string, unknown>)['aria-invalid'],
         'aria-required': (children.props as Record<string, unknown>)['aria-required'] ?? (required || undefined),
-        'data-warning': (children.props as Record<string, unknown>)['data-warning'] ?? ((warning && !error) || undefined),
+        'data-warning': (children.props as Record<string, unknown>)['data-warning'] ?? (((warning || aiFilled) && !error) || undefined),
       })
     : children;
+  const aiParts = label && ai ? <FieldAiParts ai={ai} label={label} controlId={controlId} /> : null;
 
   return (
     <div className={cx('uix-field', className)}>
       {/* With help, the ? button sits BESIDE the label, never inside it: a button inside a <label>
           becomes the label's activation target, so clicking the label would press the ?
           (TENSOR HAR-743). The row then draws the required marker itself, after the ?. */}
-      {label && hasHelp(help) ? (
+      {label && (hasHelp(help) || aiParts) ? (
         <div className="uix-field__label-row">
           <label id={labelId} className="uix-field__label" htmlFor={htmlFor ?? controlId}>{label}</label>
-          <InfoTip content={help} label={helpLabel} topic={helpTopic(label)} />
+          {hasHelp(help) && <InfoTip content={help} label={helpLabel} topic={helpTopic(label)} />}
           {required && <span className="uix-field__required" aria-hidden="true">*</span>}
+          {aiParts}
         </div>
       ) : label && (
         <label id={labelId} className="uix-field__label" htmlFor={htmlFor ?? controlId} data-required={required || undefined}>
@@ -107,6 +132,8 @@ export function Field({ label, hint, error, warning, success, required, help, he
           <span className="uix-field__error" role="alert">{error}</span>
         ) : warning ? (
           <span className="uix-field__warning" role="status">{warning}</span>
+        ) : aiNote ? (
+          <span className="uix-field__warning uix-field__ai-note" role="status">{aiNote}</span>
         ) : success ? (
           <span className="uix-field__success" role="status">{success}</span>
         ) : hint ? (

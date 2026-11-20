@@ -5,7 +5,7 @@
  * text field; the ? sheet lists it; an alert storm is summarised; Do not disturb holds normal toasts
  * and still shows errors; axe finds nothing serious, in both themes. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/toast-undo/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -13,7 +13,7 @@
  * cell, and at most a quarter of the items are filled.
  * The harness is tests/scheduling-calendar/; behaviour is in packages/react/src/scheduling-calendar-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '../../tests/scheduling-calendar/harness.html';

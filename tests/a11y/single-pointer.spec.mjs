@@ -6,7 +6,7 @@
  * Harness: tests/single-pointer/harness.tsx. The drag and keyboard paths have their own specs
  * (sortable-list, view-menu, dashboard-canvas, feedback-kit). */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/single-pointer/harness.html';
 const GATED = new Set(['serious', 'critical']);

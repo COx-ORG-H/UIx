@@ -10,7 +10,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export async function buildDocsLive() {
   await build({
-    entryPoints: [join(here, 'motion-playground.tsx'), join(here, 'task-tray-demo.tsx'), join(here, 'shortcut-demo.tsx'), join(here, 'toast-undo-demo.tsx'), join(here, 'column-resize-demo.tsx')],
+    entryPoints: [join(here, 'motion-playground.tsx'), join(here, 'task-tray-demo.tsx'), join(here, 'ai-assistance-demo.tsx'), join(here, 'shortcut-demo.tsx'), join(here, 'toast-undo-demo.tsx'), join(here, 'column-resize-demo.tsx')],
     outdir: join(here, 'dist'),
     bundle: true,
     format: 'esm',

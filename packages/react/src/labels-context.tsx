@@ -47,6 +47,7 @@ import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
+import type { AiLabels } from './ai-labels.js';
 import type { UseTableLabels } from './hooks/useTable.js';
 import { countLabel } from './plural.js';
 import type { UixCountLabel } from './plural.js';
@@ -146,6 +147,11 @@ export interface UixLabels {
   matchReview?: Partial<MatchReviewLabels>;
   /** `AuditLog` (HAR-987): the filters, Details, Show older entries, and every state. */
   auditLog?: Partial<AuditLogLabels>;
+  /**
+   * The AI primitives: `AiLabel` and its panel, `SourceList`, `AiSuggestion`, `Field ai`,
+   * `ProposalReview`, `AiOutputCard` and `AiActor`, and what the shared AI announcer says.
+   */
+  ai?: Partial<AiLabels>;
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
   filterEditor?: Partial<FilterEditorLabels>;

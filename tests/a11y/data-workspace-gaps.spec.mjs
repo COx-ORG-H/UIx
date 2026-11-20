@@ -4,7 +4,7 @@
  * ranges across groups), the responsive ladder as the window narrows, a windowed long list
  * (bounded rows, the true size, scroll-into-view, a zebra that does not flip), 320 px and axe. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/data-workspace-gaps/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -52,7 +52,8 @@ test('keyboard rows: Tab lands on one row, ↓ moves, Enter activates; focus sta
   await ws.getByRole('button', { name: '2', exact: true }).evaluate((b) => b.click());
   // the range follows the page at once; the rows (kept while the page loads) arrive after
   await expect(ws.locator('.uix-data-workspace__range')).toHaveText('11–20 of 36');
-  await expect.poll(() => ws.locator('tbody tr').first().getAttribute('data-uix-row-id')).not.toBe(first);
+  // a row id that is there and is not page 1's (null, while no row is drawn, is neither)
+  await expect.poll(async () => { const id = await ws.locator('tbody tr').first().getAttribute('data-uix-row-id'); return id !== null && id !== first; }).toBe(true);
   const firstOfPage2 = await ws.locator('tbody tr').first().getAttribute('data-uix-row-id');
   await expect.poll(() => focusedRowId(page)).toBe(firstOfPage2);
 });

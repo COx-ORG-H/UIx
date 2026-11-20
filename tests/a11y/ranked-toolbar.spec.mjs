@@ -3,7 +3,7 @@
  * and the product's action. Eight controls fit one row at 1440 px; at 320 px the row folds without a
  * sideways scroll; More is the kit Menu with its keyboard, and the toolbar passes axe in both themes. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const ws = (page) => page.locator('#incidents');
 async function open(page, testInfo, viewport = { width: 1440, height: 900 }) {

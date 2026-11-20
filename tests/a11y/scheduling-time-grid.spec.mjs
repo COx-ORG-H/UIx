@@ -15,7 +15,7 @@
  *   AC17 / AC18 day headers and the now-line
  * The harness is tests/scheduling-calendar/; logic is in packages/react/src/scheduling-time-grid-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '../../tests/scheduling-calendar/harness.html';
