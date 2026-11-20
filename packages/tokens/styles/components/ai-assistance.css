@@ -15,15 +15,20 @@
     font: inherit; font-size: var(--uix-text-meta); font-weight: 600; line-height: 1; letter-spacing: 0.02em;
     vertical-align: middle;
   }
-  .uix-ai-label--button {
-    position: relative; cursor: pointer;
+  /* the mark as a button: a 24px box of its own (WCAG 2.5.8, and the kit's own-box target bar),
+     with the 18px mark centred in it */
+  .uix-ai-label-button {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    min-width: 24px; min-height: 24px; padding: 0; margin: 0;
+    border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: inherit;
+    font: inherit; cursor: pointer; vertical-align: middle;
+  }
+  .uix-ai-label-button .uix-ai-label {
     transition: border-color var(--uix-dur-fast) var(--uix-ease-out), background-color var(--uix-dur-fast) var(--uix-ease-out);
   }
-  /* a 24px hit area around the 18px mark (WCAG 2.5.8), without changing the layout */
-  .uix-ai-label--button::before { content: ""; position: absolute; inset: -3px; }
-  .uix-ai-label--button:hover,
-  .uix-ai-label-wrap[data-open] .uix-ai-label--button { border-color: var(--uix-info-text); }
-  .uix-ai-label--button:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-ai-label-button:hover .uix-ai-label,
+  .uix-ai-label-wrap[data-open] .uix-ai-label-button .uix-ai-label { border-color: var(--uix-info-text); }
+  .uix-ai-label-button:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 0; }
   .uix-ai-label-wrap { display: inline-flex; flex: none; vertical-align: middle; }
 
   /* ---- the explanation panel ---- */

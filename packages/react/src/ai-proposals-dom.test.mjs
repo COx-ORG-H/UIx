@@ -122,7 +122,7 @@ test('AiLabel: a plain mark without an explanation; with one, a button that open
       sharedHref: '/settings/ai',
     },
   }));
-  const button = host.querySelector('button.uix-ai-label');
+  const button = host.querySelector('button.uix-ai-label-button');
   assert.equal(button.getAttribute('type'), 'button');
   assert.equal(button.textContent, 'AI');
   assert.equal(button.getAttribute('aria-label'), 'AI: about the category', 'the visible word is inside the name (2.5.3)');
@@ -178,7 +178,7 @@ test('AiSuggestion: a named group with Accept and Dismiss that report through th
   assert.equal(group.getAttribute('aria-label'), 'AI suggestion: Network');
   assert.equal(host.querySelector('.uix-ai-suggestion__accept').getAttribute('aria-label'), 'Accept Network');
   assert.equal(host.querySelector('.uix-ai-suggestion__dismiss').getAttribute('aria-label'), 'Dismiss Network');
-  assert.equal(host.querySelector('button.uix-ai-label').getAttribute('aria-label'), 'AI: about Network');
+  assert.equal(host.querySelector('button.uix-ai-label-button').getAttribute('aria-label'), 'AI: about Network');
 
   seen = await collect(() => render(h(ui.AiSuggestion, {
     proposalId: 'INC-1:category', type: 'incident.category', consequence: 'medium', value: 'Network', onAccept: accepted, onDismiss: dismissed,
@@ -413,8 +413,8 @@ test('UixLabelsProvider ai translates every AI word; an instance label still win
     h(ui.AiSuggestion, { proposalId: 'p-1', value: 'Netzwerk', explanation: { why: 'VPN' }, onAccept() {}, onDismiss() {}, labels: { dismiss: 'Weg mit {value}' } })));
   assert.equal(host.querySelector('.uix-ai-suggestion__accept').getAttribute('aria-label'), 'Netzwerk übernehmen');
   assert.equal(host.querySelector('.uix-ai-suggestion__dismiss').getAttribute('aria-label'), 'Weg mit Netzwerk');
-  assert.equal(host.querySelector('button.uix-ai-label').textContent, 'KI');
-  assert.equal(host.querySelector('button.uix-ai-label').getAttribute('aria-label'), 'KI: zu Netzwerk');
+  assert.equal(host.querySelector('button.uix-ai-label-button').textContent, 'KI');
+  assert.equal(host.querySelector('button.uix-ai-label-button').getAttribute('aria-label'), 'KI: zu Netzwerk');
   await unmount();
 });
 
@@ -441,7 +441,7 @@ test('source and disclosure links: only http(s) and relative URLs become links; 
   });
   for (const sharedHref of ['javascript:alert(1)', ' Data:text/html,x', 'vbscript:x']) {
     await render(h(ui.AiLabel, { explanation: { why: 'x', sharedHref } }));
-    const panel = document.getElementById(host.querySelector('button.uix-ai-label').getAttribute('aria-controls'));
+    const panel = document.getElementById(host.querySelector('button.uix-ai-label-button').getAttribute('aria-controls'));
     assert.equal(panel.querySelector('.uix-ai-panel__shared'), null, `${sharedHref}: the disclosure link is left out`);
     assert.equal(panel.querySelectorAll('a').length, 0);
   }

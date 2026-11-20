@@ -36,15 +36,15 @@ for (const width of [1280, 360]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     const small = await page.locator('#root button, #root a').evaluateAll((els) => els.filter((el) => {
       const r = el.getBoundingClientRect();
-      // the AI mark draws a 24 px hit area around its 18 px box (::before)
-      const hit = el.classList.contains('uix-ai-label') ? 6 : 0;
-      return r.width > 0 && (r.width + hit < 24 || r.height + hit < 24);
+      return r.width > 0 && (r.width < 24 || r.height < 24);
     }).map((el) => el.textContent || el.getAttribute('aria-label')));
     expect(small).toEqual([]);
 
     await page.getByRole('button', { name: 'AI: about Category' }).click();
     const panel = page.getByRole('dialog', { name: /Made with AI/ });
     await expect(panel).toBeVisible();
+    // the panel grows in (popover motion): let it settle before axe reads its colours
+    await page.waitForTimeout(400);
     await axeClean(page, '.uix-ai-panel');
     const box = await panel.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);

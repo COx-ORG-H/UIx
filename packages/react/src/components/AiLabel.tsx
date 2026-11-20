@@ -200,7 +200,7 @@ function AiLabelButton({
       <button
         ref={buttonRef}
         type="button"
-        className="uix-ai-label uix-ai-label--button"
+        className="uix-ai-label-button"
         aria-label={name}
         aria-expanded={open}
         aria-controls={panelId}
@@ -213,7 +213,7 @@ function AiLabelButton({
           if (opened) hide(false); else show();
         }}
       >
-        {labels.mark}
+        <span className="uix-ai-label">{labels.mark}</span>
       </button>
       <Popover
         id={panelId}

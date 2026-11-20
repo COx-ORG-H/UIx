@@ -20,7 +20,7 @@ test('the committed AI specimens are exactly what the components render today', 
 test('every AI primitive and both bands are on the page', () => {
   const page = specimens['examples-crm-itsm'];
   for (const piece of [
-    'class="uix-ai-label uix-ai-label--button"', 'class="uix-popover uix-ai-panel"', 'class="uix-source-list"', 'class="uix-ai-suggestion"',
+    'class="uix-ai-label-button"', 'class="uix-popover uix-ai-panel"', 'class="uix-source-list"', 'class="uix-ai-suggestion"',
     'uix-field__ai-note', 'uix-field__revert', 'data-consequence="high"', 'data-consequence="medium"', 'data-status="applied"',
     'Needs your approval', 'Cannot be undone', 'class="uix-ai-output"', 'data-status="generating"', 'class="uix-ai-actor"',
   ]) assert.ok(page.includes(piece), piece);
