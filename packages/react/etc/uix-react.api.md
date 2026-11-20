@@ -10,6 +10,7 @@ import { ButtonHTMLAttributes } from 'react';
 import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { FocusEvent as FocusEvent_2 } from 'react';
+import { FormEvent } from 'react';
 import { ForwardRefExoticComponent } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
@@ -338,7 +339,7 @@ export function applyBrandProfile(profile: BrandProfile, target?: HTMLElement | 
 export function applyDisplayAttributes(root: Element, attributes: DisplayAttributes): void;
 
 // @public
-export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[];
+export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[], locale?: string): T[];
 
 // @public (undocumented)
 export function AppShell(input: AppShellProps): react.JSX.Element;
@@ -1506,6 +1507,9 @@ export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
 export function compactCanvas<T extends DashboardCanvasItem>(items: readonly T[]): T[];
 
 // @public
+export function compareFor(locale?: string | readonly string[]): (a: string, b: string) => number;
+
+// @public
 export function Composer(input: ComposerProps): react.JSX.Element;
 
 // @public
@@ -1568,6 +1572,62 @@ export interface ConfirmDialogProps {
     typeToConfirmLabel?: ReactNode;
     typeToConfirmMismatch?: string;
     typeToConfirmPlaceholder?: string;
+}
+
+// @public
+export const ConflictNotice: react.ForwardRefExoticComponent<ConflictNoticeProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public
+export interface ConflictNoticeLabels {
+    apply: string;
+    base: string;
+    bothChanged: string;
+    changed: string;
+    choosePending: string;
+    discard: string;
+    empty: string;
+    // (undocumented)
+    keepYours: string;
+    // (undocumented)
+    keepYoursFor: string;
+    kept: string;
+    overlap: string;
+    region: string;
+    reload: string;
+    review: string;
+    // (undocumented)
+    theirs: string;
+    // (undocumented)
+    theyAdded: string;
+    // (undocumented)
+    theyChanged: string;
+    // (undocumented)
+    theyRemoved: string;
+    title: string;
+    titleBy: string;
+    titleByAt: string;
+    useTheirs: string;
+    // (undocumented)
+    useTheirsFor: string;
+    // (undocumented)
+    yours: string;
+}
+
+// @public (undocumented)
+export interface ConflictNoticeProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'children'> {
+    base: JsonValue;
+    changedAt?: string;
+    changedBy?: string;
+    defaultReviewing?: boolean;
+    labelFor?: (path: string) => ReactNode;
+    // (undocumented)
+    labels?: Partial<ConflictNoticeLabels>;
+    onApply?: (merged: JsonValue | undefined, resolutions: Record<string, DiffResolution>) => void;
+    onDiscard?: () => void;
+    onReload: (merged: JsonValue | undefined) => void;
+    renderValue?: (value: JsonValue | undefined, path: string, side: DiffSide) => ReactNode;
+    theirs: JsonValue;
+    yours: JsonValue;
 }
 
 // @public
@@ -2342,6 +2402,9 @@ export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_CONFLICT_NOTICE_LABELS: ConflictNoticeLabels;
+
+// @public (undocumented)
 export const DEFAULT_CONTACT_CARD_LABELS: ContactCardLabels;
 
 // @public (undocumented)
@@ -2372,6 +2435,9 @@ export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels;
 export const DEFAULT_ENTITY_PICKER_LABELS: EntityPickerLabels;
 
 // @public (undocumented)
+export const DEFAULT_ERROR_SUMMARY_LABELS: ErrorSummaryLabels;
+
+// @public (undocumented)
 export const DEFAULT_FILE_DROP_LABELS: FileDropLabels;
 
 // @public (undocumented)
@@ -2400,6 +2466,9 @@ export const DEFAULT_KANBAN_LABELS: KanbanLabels;
 
 // @public (undocumented)
 export const DEFAULT_KEYBOARD_GRAB_LABELS: KeyboardGrabLabels;
+
+// @public (undocumented)
+export const DEFAULT_LEAVE_GUARD_LABELS: LeaveGuardLabels;
 
 // @public (undocumented)
 export const DEFAULT_LIGHTBOX_LABELS: LightboxLabels;
@@ -3045,6 +3114,38 @@ export interface ErrorStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
 }
 
 // @public
+export const ErrorSummary: react.ForwardRefExoticComponent<ErrorSummaryProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public
+export interface ErrorSummaryItem {
+    key?: string;
+    message: ReactNode;
+    target?: string;
+}
+
+// @public
+export interface ErrorSummaryLabels {
+    errorPrefix: string;
+    title: string;
+}
+
+// @public (undocumented)
+export interface ErrorSummaryProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+    autoFocus?: boolean;
+    children?: ReactNode;
+    errors: readonly ErrorSummaryItem[];
+    focusKey?: unknown;
+    headingLevel?: 2 | 3 | 4 | 5 | 6;
+    // (undocumented)
+    labels?: Partial<ErrorSummaryLabels>;
+    prefixTitle?: boolean;
+    title?: ReactNode;
+}
+
+// @public
+export function errorTitle(title: string, prefix?: string): string;
+
+// @public
 export function EventRow(input: EventRowProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -3153,6 +3254,8 @@ export interface FieldProps {
     // (undocumented)
     className?: string;
     error?: ReactNode;
+    errorAnnounce?: 'assertive' | 'polite' | 'off';
+    errorPrefix?: string;
     help?: string | null;
     helpLabel?: string;
     // (undocumented)
@@ -3424,13 +3527,13 @@ export interface FilterChoice {
 }
 
 // @public
-export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string): (ComboboxOption | ComboboxGroup)[];
-
-// @public (undocumented)
-export function filterComboboxOptions(options: readonly ComboboxOption[], query: string): ComboboxOption[];
+export function filterComboboxItems(items: readonly (ComboboxOption | ComboboxGroup)[], query: string, locale?: string, foldOptions?: FoldOptions): (ComboboxOption | ComboboxGroup)[];
 
 // @public
-export function filterCommandItems(items: readonly CommandPaletteItem[], query: string): CommandPaletteItem[];
+export function filterComboboxOptions(options: readonly ComboboxOption[], query: string, locale?: string, foldOptions?: FoldOptions): ComboboxOption[];
+
+// @public
+export function filterCommandItems(items: readonly CommandPaletteItem[], query: string, locale?: string, options?: FoldOptions): CommandPaletteItem[];
 
 // @public
 export function FilteredEmptyState(props: EmptyStateProps): react.JSX.Element;
@@ -3710,7 +3813,12 @@ export interface FoldedText {
 }
 
 // @public
-export function foldForSearch(text: string): FoldedText;
+export function foldForSearch(text: string, locale?: string, options?: FoldOptions): FoldedText;
+
+// @public
+export interface FoldOptions {
+    crossScript?: boolean;
+}
 
 // @public
 export function ForbiddenState(input: AccessStateProps): react.JSX.Element;
@@ -3729,6 +3837,46 @@ export function formatShortcut(sequence: KeySequence): string;
 
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
+
+// @public (undocumented)
+export interface FormErrorsApi<V extends object> {
+    control: (name: Extract<keyof V, string>) => FormErrorsControlProps;
+    errors: FormFieldErrors<V>;
+    failedSubmits: number;
+    field: (name: Extract<keyof V, string>) => FormErrorsFieldProps;
+    handleSubmit: (onValid: (values: V) => unknown) => (event?: FormEvent) => void;
+    reset: () => void;
+    setServerErrors: (errors: FormFieldErrors<V>, formErrors?: readonly ReactNode[]) => void;
+    summary: {
+        errors: ErrorSummaryItem[];
+        focusKey: number;
+    };
+}
+
+// @public
+export interface FormErrorsControlProps {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    onBlur: () => void;
+}
+
+// @public
+export interface FormErrorsFieldProps {
+    // (undocumented)
+    error: ReactNode | undefined;
+    // (undocumented)
+    errorAnnounce: 'polite' | 'off';
+    // (undocumented)
+    errorPrefix: string;
+}
+
+// @public
+export type FormFieldErrors<V> = {
+    [K in Extract<keyof V, string>]?: ReactNode;
+};
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
@@ -3765,6 +3913,7 @@ export function Highlighted(input: HighlightedProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface HighlightedProps {
+    locale?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -3772,7 +3921,7 @@ export interface HighlightedProps {
 }
 
 // @public
-export function highlightSegments(text: string, query: string): Segment[];
+export function highlightSegments(text: string, query: string, locale?: string): Segment[];
 
 // @public (undocumented)
 export const HOUR = 3600000;
@@ -4420,6 +4569,20 @@ export function layoutTimeGridDay(entries: readonly TimeGridEntryInput[], date: 
     crossMidnightMinutes?: number;
 }): TimeGridDayLayout;
 
+// @public (undocumented)
+export interface LeaveGuardApi {
+    active: boolean;
+    confirm: (proceed: () => void, stay?: () => void) => boolean;
+    dialog: ReactNode;
+}
+
+// @public
+export interface LeaveGuardLabels {
+    failed: string;
+    fieldsAtRisk: string;
+    saving: string;
+}
+
 // @public
 export type LegacyFileKind = 'image' | 'video' | 'pdf' | 'sheet' | 'archive' | 'text' | 'other';
 
@@ -4646,8 +4809,8 @@ export interface MatchBulkResult {
 // @public
 export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform, layout?: KeyboardLayoutMap | null): boolean;
 
-// @public (undocumented)
-export function matchFilter(row: Row, f: ColumnFilter): boolean;
+// @public
+export function matchFilter(row: Row, f: ColumnFilter, locale?: string): boolean;
 
 // @public
 export function matchFilterPreset(field: FilterField, value: FilterValue | undefined): FilterPreset | undefined;
@@ -5060,6 +5223,9 @@ export function MenuSeparator(): react.JSX.Element;
 export function mergePinned<T extends Row>(all: readonly T[], visible: readonly T[], pinnedIds: ReadonlySet<string>, idField?: string): T[];
 
 // @public
+export function mergeRecordConflict(base: JsonValue | undefined, yours: JsonValue | undefined, theirs: JsonValue | undefined, resolutions?: Readonly<Record<string, DiffResolution>>): JsonValue | undefined;
+
+// @public
 export function Meter(input: MeterProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -5461,7 +5627,7 @@ export interface MoveProposal {
 export function moveRuleNode(group: RuleGroup, id: string, direction: -1 | 1): RuleGroup;
 
 // @public
-export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[]): T[];
+export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[], locale?: string | readonly string[]): T[];
 
 // @public (undocumented)
 export interface NavFavouriteItem {
@@ -6493,6 +6659,22 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
 
 // @public
 export function readSystemDisplayPreferences(): SystemDisplayPreferences;
+
+// @public
+export interface RecordConflictChange {
+    base: JsonValue | undefined;
+    keys: readonly string[];
+    overlap: boolean;
+    path: string;
+    theirs: JsonValue | undefined;
+    yours: JsonValue | undefined;
+}
+
+// @public
+export function recordConflictChanges(base: JsonValue | undefined, yours: JsonValue | undefined, theirs: JsonValue | undefined): RecordConflictChange[];
+
+// @public
+export function recordConflictEntries(changes: readonly RecordConflictChange[]): DiffEntry[];
 
 // @public
 export interface Rect {
@@ -7811,7 +7993,10 @@ export interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 }
 
 // @public
-export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[];
+export function searchMatcher(query: string, locale?: string, options?: FoldOptions): (text: string) => boolean;
+
+// @public
+export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[], locale?: string): T[];
 
 // @public
 export interface SearchSegment {
@@ -7822,7 +8007,7 @@ export interface SearchSegment {
 }
 
 // @public
-export function searchSegments(text: string, query: string): SearchSegment[];
+export function searchSegments(text: string, query: string, locale?: string, options?: FoldOptions): SearchSegment[];
 
 // @public
 export function SearchSuggest(input: SearchSuggestProps): react.JSX.Element;
@@ -9925,6 +10110,7 @@ export interface UixLabels {
         compensation?: string;
         typeToConfirmMismatch?: string;
     };
+    conflictNotice?: Partial<ConflictNoticeLabels>;
     contactCard?: Partial<ContactCardLabels>;
     dashboardCanvas?: Partial<DashboardCanvasLabels>;
     dataWorkspace?: Partial<DataWorkspaceLabels>;
@@ -9944,6 +10130,7 @@ export interface UixLabels {
     };
     // (undocumented)
     entityPicker?: Partial<EntityPickerLabels>;
+    errorSummary?: Partial<ErrorSummaryLabels>;
     fileDrop?: Partial<FileDropLabels>;
     fileKinds?: Partial<FileKindLabels>;
     fileRow?: Partial<FileRowLabels>;
@@ -9960,6 +10147,7 @@ export interface UixLabels {
     inlineEdit?: Partial<InlineEditLabels>;
     kanban?: Partial<KanbanLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;
+    leaveGuard?: Partial<LeaveGuardLabels>;
     lightbox?: Partial<LightboxLabels>;
     locale?: string;
     matchReview?: Partial<MatchReviewLabels>;
@@ -10160,6 +10348,22 @@ export interface UseDisplayPreferencesResult {
 }
 
 // @public
+export function useErrorTitle(active: boolean, prefix?: string): void;
+
+// @public
+export function useFormErrors<V extends object>(input: UseFormErrorsOptions<V>): FormErrorsApi<V>;
+
+// @public (undocumented)
+export interface UseFormErrorsOptions<V extends object> {
+    idPrefix?: string;
+    isEmpty?: (value: unknown, name: string) => boolean;
+    // (undocumented)
+    labels?: Partial<ErrorSummaryLabels>;
+    validate: (values: V) => FormFieldErrors<V>;
+    values: V;
+}
+
+// @public
 export function useKeyboardGrab(input: UseKeyboardGrabOptions): UseKeyboardGrabResult;
 
 // @public (undocumented)
@@ -10182,6 +10386,18 @@ export interface UseKeyboardGrabResult {
         onBlur: (event: FocusEvent_2<HTMLElement>) => void;
         'data-uix-drag'?: 'grabbed';
     };
+}
+
+// @public
+export function useLeaveGuard(input?: UseLeaveGuardOptions): LeaveGuardApi;
+
+// @public (undocumented)
+export interface UseLeaveGuardOptions {
+    dirty?: boolean;
+    fields?: readonly string[];
+    labels?: Partial<DiscardPromptLabels & LeaveGuardLabels>;
+    locale?: string;
+    saveState?: SaveStatusState;
 }
 
 // @public
@@ -10296,6 +10512,7 @@ export interface UseTableOptions {
     // (undocumented)
     initialSort?: SortKey[];
     labels?: Partial<UseTableLabels>;
+    locale?: string;
     searchFields?: readonly string[];
 }
 
