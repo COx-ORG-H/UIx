@@ -289,6 +289,11 @@ test('sources: debounced, the overtaken search aborted, rows kept (inert) while 
   assert.deepEqual(labels(t.host), ['INC-3 Mail']);
   key(input, 'Enter');
   assert.deepEqual(chosen, ['INC-3']);
+  type(input, 'inc-09');
+  await wait(40);
+  await act(async () => calls[3].d.resolve([]));
+  assert.equal(t.host.querySelector('.uix-cmdk__group'), null, 'a source that found nothing leaves no empty heading');
+  assert.equal(t.host.querySelector('.uix-cmdk__empty').textContent, 'No results');
   t.unmount();
   assert.equal(calls.at(-1).signal.aborted, false, 'a settled search is not aborted after the fact');
 });

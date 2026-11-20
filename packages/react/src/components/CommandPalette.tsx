@@ -343,6 +343,8 @@ function CommandPaletteItems({
       const rows: PaletteRow[] = view.failed
         ? [{ kind: 'retry', source, id: optionId(listId, 's-', `${source.id}-retry`) }]
         : view.items.slice(0, Math.max(0, limit)).map((item) => ({ kind: 'item', item, source: source.id, stale: view.loading, id: optionId(listId, `s-${source.id}-`, item.id) }));
+      // a source that answered with nothing has no group at all, not a heading over nothing
+      if (rows.length === 0 && !view.loading) continue;
       out.push({ key: `s-${source.id}`, label: source.label, rows, loading: view.loading && rows.length === 0 ? source : undefined, busy: view.loading });
     }
     return out;
