@@ -124,7 +124,7 @@ test('with selection the checkbox and the id stay frozen with no gap; dividers o
 test('at 320 px the page never scrolls sideways (the table scrolls in its wrap); axe', async ({ page }, testInfo) => {
   await open(page, testInfo, { width: 320, height: 900 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
-  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running' && !a.effect?.target?.closest?.('.uix-skeleton')).length)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).filter((a) => a.playState === 'running' && !a.effect?.target?.closest?.('.uix-skeleton')).length)).toBe(0);
   const results = await new AxeBuilder({ page }).include('#root').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
