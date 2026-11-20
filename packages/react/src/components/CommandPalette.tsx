@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffe
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels, useUixLocale } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { filterCommandItems, groupCommandItems } from '../command-palette-model.js';
 import type { CommandPaletteItem } from '../command-palette-model.js';
@@ -225,8 +225,8 @@ export function CommandItem({ icon, shortcut, active, children, className, id, .
 const optionId = (listId: string, item: CommandPaletteItem, recent: boolean) => `${listId}-${recent ? 'r-' : ''}${item.id.replace(/[^\w-]/g, '_')}`;
 
 /** A label with the query's matches emphasised (the same rule as SearchSuggest). */
-function Highlighted({ text, query }: { text: string; query: string }) {
-  return <>{searchSegments(text, query).map((segment, index) => (segment.match ? <mark key={index} className="uix-cmdk__mark">{segment.text}</mark> : segment.text))}</>;
+function Highlighted({ text, query, locale }: { text: string; query: string; locale: string | undefined }) {
+  return <>{searchSegments(text, query, locale).map((segment, index) => (segment.match ? <mark key={index} className="uix-cmdk__mark">{segment.text}</mark> : segment.text))}</>;
 }
 
 function CommandPaletteItems({
@@ -265,7 +265,8 @@ function CommandPaletteItems({
   /** The press began on the backdrop (a text selection dragged out of the field is not a click on it). */
   const pressedBackdrop = useRef(false);
 
-  const found = useMemo(() => (filter ?? filterCommandItems)(items, query), [filter, items, query]);
+  const locale = useUixLocale();
+  const found = useMemo(() => (filter ? filter(items, query) : filterCommandItems(items, query, locale)), [filter, items, query, locale]);
   const showRecent = query.trim() === '' && (recent?.length ?? 0) > 0;
   // A long list is capped, not virtualised: a palette is for narrowing down, and 100 rows render in a frame.
   const groups = useMemo(() => groupCommandItems(found.slice(0, Math.max(0, limit))), [found, limit]);
@@ -371,7 +372,7 @@ function CommandPaletteItems({
       >
         {item.icon != null && <span className="uix-cmdk__icon" aria-hidden="true">{item.icon}</span>}
         <span className="uix-cmdk__text">
-          <span className="uix-cmdk__label"><Highlighted text={item.label} query={query} /></span>
+          <span className="uix-cmdk__label"><Highlighted text={item.label} query={query} locale={locale} /></span>
           {item.description && <span className="uix-cmdk__desc">{item.description}</span>}
         </span>
         {keys ? <span className="uix-cmdk__shortcut"><KbdCombo keys={keys} platform={platform} /></span> : null}
