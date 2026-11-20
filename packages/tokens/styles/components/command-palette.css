@@ -13,14 +13,14 @@
   .uix-cmdk__item[data-active] { background: var(--uix-bg-hover); }
   /* items mode moves the active row with the pointer, so a hover tint there would mark a second row */
   @media (hover: hover) and (pointer: fine) { .uix-cmdk:not([data-items]) .uix-cmdk__item:hover { background: var(--uix-bg-hover); } }
-  .uix-cmdk__item .uix-kbd { margin-left: auto; }
+  .uix-cmdk__item .uix-kbd { margin-inline-start: auto; }
   /* items mode (HAR-1378): label + description, matched text, the shortcut at the end, empty state */
   .uix-cmdk__icon { display: inline-flex; flex: none; }
   .uix-cmdk__text { display: grid; flex: 1; min-width: 0; gap: calc(var(--uix-space-1) / 2); }
   .uix-cmdk__label { overflow-wrap: anywhere; }
   .uix-cmdk__desc { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
   .uix-cmdk__mark { background: transparent; color: inherit; font-weight: 600; }
-  .uix-cmdk__shortcut { flex: none; margin-left: auto; }
+  .uix-cmdk__shortcut { flex: none; margin-inline-start: auto; }
   .uix-cmdk__item[aria-disabled="true"] { color: var(--uix-text-muted); cursor: default; }
   /* roadmap #9: the alias that matched, "Mark done (Archive)" — the real name leads, the alias explains */
   .uix-cmdk__alias { color: var(--uix-text-muted); }
@@ -36,7 +36,7 @@
   /* a source searching with nothing to show yet, and a failed one: Retry is the row's own action */
   .uix-cmdk__status { display: flex; align-items: center; gap: var(--uix-space-3); padding: var(--uix-space-3); color: var(--uix-text-muted); font-size: var(--uix-text-body); }
   .uix-cmdk__item--retry .uix-cmdk__label { color: var(--uix-text-muted); }
-  .uix-cmdk__retry { flex: none; margin-left: auto; color: var(--uix-link); font-weight: 500; }
+  .uix-cmdk__retry { flex: none; margin-inline-start: auto; color: var(--uix-link); font-weight: 500; }
   /* the page trail above the field; ancestors are buttons that step back, in the link colour */
   .uix-cmdk__crumbs { padding: var(--uix-space-3) var(--uix-space-4) 0; }
   .uix-cmdk__crumb { position: relative; padding: 0; border: 0; background: none; color: var(--uix-link); font: inherit; cursor: pointer; }

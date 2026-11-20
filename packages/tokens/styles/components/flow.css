@@ -13,7 +13,7 @@
     border: 1px solid var(--tone-border, var(--uix-border-strong));
     border-radius: var(--uix-radius-md);
     box-shadow: var(--uix-shadow-sm);
-    color: var(--uix-text); font-size: var(--uix-text-body); text-align: left;
+    color: var(--uix-text); font-size: var(--uix-text-body); text-align: start;
   }
   .uix-node__icon {
     display: grid; place-items: center; width: 30px; height: 30px; flex: none;
