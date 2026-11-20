@@ -93,12 +93,22 @@ run fails closed rather than reporting numbers of the wrong thing. It throws whe
 stops windowing (200 or more `<tr>` mounted), when the scroll does not reach rows 1,000 to 1,099,
 when the sort, the selection or the search did not happen, and on any page error.
 
-**The gate.** Each metric is the median of the runs. The limit is `baseline + max(ratio × baseline,
-floorMs)`, with the baseline, ratio and floor in `tests/perf/budgets.json`. A median over its limit
-gets one more set of runs, and the lane then decides on all the samples together. A metric with no
-baseline fails, and so does a baseline with no metric, so a renamed metric cannot pass unchecked. A
-run at another `--cpu` rate or row count only reports, because the baselines were taken at 4× and
-10,000 rows.
+**Runner speed.** GitHub's hosted runners are not all equally fast. Two runs of the same commit
+read about 1.4× apart on every metric, with a tight spread inside each run. Each run therefore
+starts with a fixed **calibration** in the same throttled page. It does script work (sorting
+50,000 numbers, a Map, JSON) and DOM work (building, laying out and removing 1,000 plain nodes),
+and it uses no kit code or kit CSS, so a kit regression cannot move it. The lane divides every
+median by the runner's speed factor before the gate. The factor is the calibration median of this
+run ÷ the calibration median of the run the baselines came from. The report shows the factor,
+the scaled median and the raw median side by side.
+
+**The gate.** Each metric is the median of the runs, scaled as above. The limit is
+`baseline + max(ratio × baseline, floorMs)`, with the baseline, ratio and floor in
+`tests/perf/budgets.json`. A median over its limit gets one more set of runs, and the lane then
+decides on all the samples together. A metric with no baseline fails, and so does a baseline with
+no metric, so a renamed metric cannot pass unchecked. The workspace lane also fails without a
+calibration baseline, rather than compare unscaled numbers. A run at another `--cpu` rate or row
+count only reports, because the baselines were taken at 4× and 10,000 rows.
 
 The PR lane runs on GitHub's hosted runners. They have no GPU, so this lane already composites in
 software. What it watches is main-thread work: React rendering, the kit's effects and layout.
@@ -117,7 +127,9 @@ peaking at 100% CPU. The harness's `overlays` scene opens these over a busy page
 
 Each scene runs twice: with the default blur, and with `data-transparency="reduce"` (no blur, firmer
 scrim), labelled **(no blur)**. Per scene the lane reports the click's latency (as above) and the p95
-and longest rAF-to-rAF interval over the 800 ms after the click. The report ends with the **blur
+and longest rAF-to-rAF interval over the 800 ms after the click. Frame intervals come in whole
+vsyncs (16.7, 33.4, 50 ms), so this lane is not scaled by runner speed. It prints the calibration
+for context only. The report ends with the **blur
 cost**: the default p95 frame minus the no-blur one. The tolerance is wide (150%, 50 ms floor)
 because the lane exists to catch a gross regression, such as an animated filter or a blur on every
 row. It is not meant to track a few milliseconds.
@@ -139,7 +151,8 @@ lane), kept for 30 days.
 
 | Column | Meaning |
 |---|---|
-| median | what the gate compares; the middle of the runs |
+| median | what the gate compares: the middle of the runs, divided by the runner speed factor (workspace lane) |
+| raw median | the same before scaling: the milliseconds this runner actually took |
 | p75 | the 75th percentile of the runs (INP's percentile, but across runs, not field interactions) |
 | min – max | the spread. A wide spread means a noisy runner, not a regression. |
 | baseline | the CI median recorded in `budgets.json` |
@@ -159,7 +172,8 @@ line is informational: a 4× throttled lab run on a shared runner is a proxy, no
    same machine, and use `--cpu 1` to see the unthrottled cost.
 3. **The cost is deliberate** (a feature that has to do more work): let CI run the lane on the PR,
    download its `perf-report` artifact, and run `node tests/perf/bench.mjs adopt perf-report/workspace.json`.
-   This writes every median as the new baseline. Commit `tests/perf/budgets.json` and say why in the
+   This writes the run's raw medians and its calibration as the new baselines: together they
+   define the baseline runner. Commit `tests/perf/budgets.json` and say why in the
    PR. Never adopt a laptop's report.
 
 ## Files

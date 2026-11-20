@@ -10,32 +10,33 @@
       },
       "metrics": {
         "mount": {
-          "baseline": 140.8
+          "baseline": 167.7
         },
         "mount: long-frame blocking": {
-          "baseline": 76.3
+          "baseline": 99.2
         },
         "scroll 1,000 rows: p95 frame": {
-          "baseline": 50.1
+          "baseline": 66.7
         },
         "scroll 1,000 rows: total": {
-          "baseline": 1334
+          "baseline": 1658.9
         },
         "sort": {
-          "baseline": 168
+          "baseline": 240
         },
         "select all": {
-          "baseline": 96
+          "baseline": 120
         },
         "search keystroke (worst of 3)": {
-          "baseline": 144
+          "baseline": 168
         }
       },
       "adoptedFrom": {
-        "date": "2026-11-20T12:31:48.572Z",
+        "date": "2026-11-20T13:18:22.596Z",
         "browser": "Chromium 149.0.7827.55",
         "runs": 5
-      }
+      },
+      "calibration": 109.2
     },
     "no-gpu": {
       "cpu": 4,
