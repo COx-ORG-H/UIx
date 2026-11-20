@@ -114,6 +114,9 @@
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · focusing content of a popover opened from a timer · `c5ded32c`
+- **Rule:** focus a popover's field in that content's own mount effect, not in the popover's `toggle` listener. Opened from a `setTimeout` (a click that waits out a double-click), `setOpen(true)` + `showPopover()` fires `toggle` before React has rendered the content, so the listener finds nothing; from a React key or click handler it works, which hides the bug in keyboard tests.  **Why:** updates outside a React event are not flushed synchronously, while `toggle` is the next task.  **Gate:** tests/a11y/column-resize.spec.mjs (the field is focused after a pointer click on the grip).  **Tag:** react, popover, focus
+
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
 ### 2026-11-20 · API reports of a new subpath entry · `069c7450`

@@ -1336,6 +1336,18 @@ export interface ColorPickerProps {
     value: string;
 }
 
+// @public
+export const COLUMN_WIDTH_MAX = 960;
+
+// @public
+export const COLUMN_WIDTH_MIN = 92;
+
+// @public
+export const COLUMN_WIDTH_SCALE: readonly number[];
+
+// @public
+export const COLUMN_WIDTH_STEP = 8;
+
 // @public (undocumented)
 export interface ColumnFilter {
     // (undocumented)
@@ -1346,6 +1358,23 @@ export interface ColumnFilter {
     op: FilterOp;
     value: Primitive | Primitive[];
 }
+
+// @public
+export interface ColumnWidthBounds {
+    max?: number;
+    min?: number;
+}
+
+// @public
+export function columnWidthForKey(width: number, event: {
+    key: string;
+    shiftKey?: boolean;
+}, options?: ColumnWidthBounds & {
+    rtl?: boolean;
+}): number | null;
+
+// @public
+export type ColumnWidths = Readonly<Record<string, number>>;
 
 // @public
 export function Combobox(input: ComboboxProps): react.JSX.Element;
@@ -1840,6 +1869,7 @@ export interface DataWorkspaceColumn<T> {
     lineClamp?: number;
     minWidth?: string;
     priority?: 'high' | 'mid' | 'low';
+    resizable?: boolean;
     // (undocumented)
     sortable?: boolean;
     textWrap?: 'wrap' | 'nowrap' | 'truncate';
@@ -1870,6 +1900,7 @@ export interface DataWorkspaceIdColumn<T> {
     render?: (row: T) => ReactNode;
     // (undocumented)
     renderLink?: UixRenderLink;
+    resizable?: boolean;
     sortable?: boolean;
     text: (row: T) => string;
     width?: string;
@@ -1884,6 +1915,9 @@ export interface DataWorkspaceLabels {
     // (undocumented)
     clearFilters: string;
     collapseGroup: string;
+    columnWidth: string;
+    columnWidthUnit: string;
+    defaultColumnWidth: string;
     // (undocumented)
     empty: string;
     // (undocumented)
@@ -1902,8 +1936,11 @@ export interface DataWorkspaceLabels {
     // (undocumented)
     maximize: string;
     more?: string;
+    narrower: string;
     open: string;
     range: string;
+    resizeColumn: string;
+    resizeHint: string;
     restore: string;
     // (undocumented)
     retry: string;
@@ -1928,6 +1965,7 @@ export interface DataWorkspaceLabels {
     sortPriority: string;
     // (undocumented)
     view: string;
+    wider: string;
 }
 
 // @public
@@ -1963,6 +2001,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     collapsedGroups?: ReadonlySet<string>;
     // (undocumented)
     columns: readonly DataWorkspaceColumn<T>[];
+    columnWidths?: ColumnWidths;
     // (undocumented)
     density?: TableDensity;
     empty?: ReactNode;
@@ -1998,6 +2037,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     multiSort?: boolean;
     onActiveRowChange?: (rowId: string) => void;
     onCollapsedGroupsChange?: (collapsed: Set<string>) => void;
+    onColumnWidthsChange?: (widths: Record<string, number>) => void;
     // (undocumented)
     onMaximizedChange?: (maximized: boolean) => void;
     // (undocumented)
@@ -3669,6 +3709,9 @@ export function findRuleNodeDepth(group: RuleGroup, id: string, depth?: number):
 export function findShortcutConflicts(entries: readonly ShortcutConflictEntry[], options?: {
     platform?: KbdPlatform;
 }): ShortcutConflict[];
+
+// @public
+export function fitColumnWidth(contentWidths: readonly number[], bounds?: ColumnWidthBounds): number;
 
 // @public
 export function flashChanged(el: HTMLElement): void;
@@ -8760,6 +8803,11 @@ export type StatusStripTone = 'ok' | 'warning' | 'critical' | 'unknown';
 // @public (undocumented)
 export function Step(input: StepProps): react.JSX.Element;
 
+// @public
+export function stepColumnWidth(width: number, direction: 1 | -1, options?: ColumnWidthBounds & {
+    coarse?: boolean;
+}): number;
+
 // @public (undocumented)
 export function stepMetricValue(value: number | null, direction: -1 | 1, options?: {
     min?: number;
@@ -9345,6 +9393,7 @@ export interface ThemeSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>,
 export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     onSort?: () => void;
+    resizeHandle?: ReactNode;
     // (undocumented)
     sortable?: boolean;
     // (undocumented)
@@ -10489,6 +10538,7 @@ export interface ViewState {
     q?: string;
     // (undocumented)
     sort?: SortKey[];
+    widths?: Record<string, number>;
 }
 
 // @public (undocumented)

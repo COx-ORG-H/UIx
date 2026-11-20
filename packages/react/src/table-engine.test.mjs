@@ -13,6 +13,7 @@ import {
   serializeView, parseView,
   virtualWindow, shouldVirtualize,
   clampWidth, reorder,
+  COLUMN_WIDTH_SCALE, COLUMN_WIDTH_MIN, COLUMN_WIDTH_MAX, stepColumnWidth, columnWidthForKey, fitColumnWidth, setColumnWidth,
   toggleId, selectAllState, togglePage, mergePinned,
 } from './table-engine.ts';
 
@@ -333,6 +334,74 @@ test('clampWidth: floors to min, ceils to max, rounds', () => {
   assert.equal(clampWidth(40), 64);           // below default min
   assert.equal(clampWidth(120.4), 120);       // rounds
   assert.equal(clampWidth(1000, 64, 500), 500); // above max
+});
+
+test('COLUMN_WIDTH_SCALE matches the col-w-* tiers and the title floor in tokens/base/size.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const size = JSON.parse(readFileSync(new URL('../../tokens/tokens/base/size.json', import.meta.url), 'utf8'));
+  const flat = size.size ?? size;
+  const px = (key) => Number(String(flat[key].$value).replace('px', ''));
+  const tokens = ['col-w-xs', 'col-w-sm', 'col-w-md', 'col-w-lg', 'col-w-lg-plus', 'col-w-xl', 'col-title-min'].map(px);
+  assert.deepEqual([...COLUMN_WIDTH_SCALE], tokens);
+  assert.equal(COLUMN_WIDTH_MIN, tokens[0]);
+});
+
+test('stepColumnWidth: fine steps of 8 px, coarse steps to the next stop of the scale, clamped', () => {
+  assert.equal(stepColumnWidth(132, 1), 140);
+  assert.equal(stepColumnWidth(132, -1), 124);
+  assert.equal(stepColumnWidth(132, 1, { coarse: true }), 176);
+  assert.equal(stepColumnWidth(140, 1, { coarse: true }), 176);   // between stops: the next one up
+  assert.equal(stepColumnWidth(140, -1, { coarse: true }), 132);  // ... and the next one down
+  assert.equal(stepColumnWidth(340, 1, { coarse: true }), 404);   // past the scale: 64 px
+  assert.equal(stepColumnWidth(404, -1, { coarse: true }), 340);
+  assert.equal(stepColumnWidth(92, -1), 92);                      // at the floor
+  assert.equal(stepColumnWidth(COLUMN_WIDTH_MAX, 1, { coarse: true }), COLUMN_WIDTH_MAX);
+  assert.equal(stepColumnWidth(100, -1, { min: 100 }), 100);      // a column's own floor
+  assert.equal(stepColumnWidth(150, -1, { coarse: true, min: 150 }), 150);
+  assert.equal(stepColumnWidth(500, 1, { coarse: true, max: 520 }), 520); // the cap is a stop
+  assert.equal(stepColumnWidth(40, 1), 100);                      // out of range: clamped first
+});
+
+test('columnWidthForKey: arrows, Shift, Home / End, rtl; other keys null', () => {
+  assert.equal(columnWidthForKey(176, { key: 'ArrowRight' }), 184);
+  assert.equal(columnWidthForKey(176, { key: 'ArrowLeft' }), 168);
+  assert.equal(columnWidthForKey(176, { key: 'ArrowRight', shiftKey: true }), 208);
+  assert.equal(columnWidthForKey(176, { key: 'ArrowLeft', shiftKey: true }), 132);
+  assert.equal(columnWidthForKey(176, { key: 'Home' }, { min: 112 }), 112);
+  assert.equal(columnWidthForKey(176, { key: 'End' }, { max: 600 }), 600);
+  assert.equal(columnWidthForKey(176, { key: 'ArrowRight' }, { rtl: true }), 168);
+  assert.equal(columnWidthForKey(176, { key: 'Enter' }), null);
+  assert.equal(columnWidthForKey(176, { key: 'ArrowUp' }), null);
+});
+
+test('fitColumnWidth: the widest content, rounded up, within the bounds', () => {
+  assert.equal(fitColumnWidth([120.2, 180.4, 90]), 181);
+  assert.equal(fitColumnWidth([20]), COLUMN_WIDTH_MIN);
+  assert.equal(fitColumnWidth([5000]), COLUMN_WIDTH_MAX);
+  assert.equal(fitColumnWidth([], { min: 132 }), 132);
+  assert.equal(fitColumnWidth([NaN, 200]), 200);
+});
+
+test('setColumnWidth: sets, rounds, removes on null; never mutates', () => {
+  const a = { title: 400 };
+  const b = setColumnWidth(a, 'status', 176.4);
+  assert.deepEqual(b, { title: 400, status: 176 });
+  assert.deepEqual(a, { title: 400 });
+  assert.deepEqual(setColumnWidth(b, 'title', null), { status: 176 });
+  assert.deepEqual(setColumnWidth(undefined, 'x', 0), {});
+});
+
+test('serializeView / parseView: column widths round-trip, ids escaped, junk dropped', () => {
+  const v = { widths: { title: 400, 'a,b:c': 132, status: 176.6 } };
+  const back = parseView(serializeView(v));
+  assert.deepEqual(back.widths, { title: 400, 'a,b:c': 132, status: 177 });
+  assert.equal(serializeView({ widths: {} }), '');
+  assert.equal(serializeView({ widths: { bad: NaN, neg: -4, zero: 0 } }), '');
+  assert.deepEqual(parseView('widths=title:400,status:abc,:12,nocolon,x:-5,y:%E0%A4%A:9').widths, { title: 400 });
+  assert.equal(parseView('widths=status:abc').widths, undefined);
+  // alongside the rest of the view
+  const full = { sort: [{ field: 'title', dir: 'ascending' }], columns: ['title', 'status'], widths: { status: 208 } };
+  assert.deepEqual(parseView(serializeView(full)), full);
 });
 
 test('reorder: moves an item and returns a new array; out-of-range is a no-op copy', () => {
