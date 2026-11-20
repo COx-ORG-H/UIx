@@ -22,6 +22,8 @@ const PHOTOS: Photo[] = [
   { id: 'p5', title: 'Garderobe', hue: 50 },
 ];
 const LONG = Array.from({ length: 60 }, (_, i) => ({ id: `r${i + 1}`, title: `Zeile ${i + 1}` }));
+// own titles, so the step names ("Antrag prüfen nach unten") stay unique to #steps
+const LATE = [{ id: 's1', title: 'Entwurf' }, { id: 's2', title: 'Prüfung' }, { id: 's3', title: 'Versand' }];
 const STEPS = [{ id: 's1', title: 'Antrag prüfen' }, { id: 's2', title: 'Freigabe einholen' }, { id: 's3', title: 'Benachrichtigen' }];
 
 function useOrder<T extends { id: string }>(key: string, initial: T[], lateMs = 0) {
@@ -40,7 +42,7 @@ function Harness() {
   const drawerSteps = useOrder('drawer', STEPS);
   const roomPhotos = useOrder('room', PHOTOS);
   const roomLong = useOrder('room-long', LONG);
-  const roomLate = useOrder('room-late', STEPS, 400);
+  const roomLate = useOrder('room-late', LATE, 400);
   const [drawer, setDrawer] = useState(false);
   const thumb = (hue: number) => (
     <span aria-hidden="true" style={{ display: 'inline-block', width: 48, height: 36, borderRadius: 'var(--uix-radius-sm)', background: `hsl(${hue} 45% 60%)`, flex: 'none' }} />
