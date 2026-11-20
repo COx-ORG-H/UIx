@@ -202,7 +202,12 @@ test('320 px: the banner and the bulk bar wrap inside the page', async ({ page }
   await headBox(page).check();
   await banner(page).getByRole('button', { name: /^Select all/ }).click();
   await search(page, '');
-  for (const locator of [banner(page), page.getByRole('toolbar', { name: 'Bulk actions' })]) {
+  // each part's own box, not only the bar's: a nowrap count can run past a bar that fits
+  await page.evaluate(() => {
+    // the longest real words: a long filter in words (CI's Linux fonts are wider than Windows')
+    for (const el of document.querySelectorAll('.uix-data-workspace__bulk-scope, .uix-data-workspace__scope-text')) el.append(' Assignee: Service Desk, Network, Database and Identity');
+  });
+  for (const locator of [banner(page), page.getByRole('toolbar', { name: 'Bulk actions' }), bulkCount(page), bannerText(page)]) {
     const box = await locator.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(320);

@@ -57,6 +57,10 @@
   /* under the bulk bar it reads as the bar's second line: 4 px apart, not the workspace's gap
      plus the bar's own margin */
   .uix-data-workspace > .uix-bulkbar + .uix-data-workspace__scope { margin-top: calc(-1 * (var(--uix-space-3) + var(--uix-space-2))); }
+  /* the bulk bar's count under "all matching" restates the filter: it wraps inside the bar
+     (.uix-bulkbar__count is nowrap for a plain "25 selected") */
+  .uix-data-workspace .uix-bulkbar__count:has(> .uix-data-workspace__bulk-scope) { min-width: 0; white-space: normal; }
+  .uix-data-workspace__bulk-scope { overflow-wrap: anywhere; }
   .uix-data-workspace__scope-text { margin: 0; min-width: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
   .uix-data-workspace__scope-actions { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-1) var(--uix-space-3); }
   /* the bulk bar acts on the selection: a row's own verbs are off (inert) and look it */

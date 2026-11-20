@@ -980,7 +980,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     ? (effectiveScope.kind === 'ids' ? [...effectiveScope.ids] : ids.filter(isSelected))
     : [...legacySelected];
   const bulkCountLabel = (n: number): ReactNode => (effectiveScope?.kind === 'query'
-    ? fillNodes(hasQuery ? labels.selectedAllMatching : labels.selectedAll, { count: count(n), query: queryWords })
+    // the filter in words can be long: this count wraps (the bar keeps a plain count on one line)
+    ? <span className="uix-data-workspace__bulk-scope">{fillNodes(hasQuery ? labels.selectedAllMatching : labels.selectedAll, { count: count(n), query: queryWords })}</span>
     : fillLabel(labels.selected, { count: count(n) }));
   // Carbon's batch mode: a row's own verbs are off while the bulk bar acts on the selection, and
   // always under "all matching", where a row verb would read as a verb on thousands of rows.
