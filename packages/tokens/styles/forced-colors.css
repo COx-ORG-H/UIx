@@ -65,7 +65,10 @@
     .uix-table tbody tr:is([data-selected], [aria-selected="true"]):not(:focus-visible),
     .uix-navitem[aria-current="page"]:not(:focus-visible),
     .uix-inbox__item[aria-selected="true"]:not(:focus-visible),
-    .uix-relationship-graph__item:is([data-selected], [data-highlighted]):not(:focus-visible) {
+    .uix-relationship-graph__item:is([data-selected], [data-highlighted]):not(:focus-visible),
+    .uix-chip[data-on]:not(:focus-visible),
+    .uix-input-group__action[aria-pressed="true"]:not(:focus-visible),
+    .uix-flow .uix-node[data-selected]:not(:focus-visible) {
       outline: 2px solid SelectedItem; outline-offset: -2px;
     }
     .uix-reaction[data-mine]:not(:focus-visible) { outline: 2px solid SelectedItem; outline-offset: -1px; }

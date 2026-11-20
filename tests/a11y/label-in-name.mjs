@@ -11,13 +11,14 @@
  *
  *   - only controls whose name the author wrote (aria-label or aria-labelledby) are checked; a
  *     name computed from the content contains it by construction;
- *   - the visible label is the control's rendered text with a space at every element edge,
- *     WITHOUT text that is visually hidden (a screen-reader-only clip), text inside an element
+ *   - the visible label is the control's rendered text, split into runs at the edge of every box
+ *     that is not inline (a tile's count and its level are two runs; a <mark> inside a word is
+ *     not an edge), WITHOUT text that is visually hidden (a screen-reader-only clip), text inside an element
  *     the control's aria-describedby points at (that text is its description, read after the
  *     name), text of a nested control or item (a treeitem's children, a button inside a card),
  *     and aria-hidden decoration (avatar initials, glyph text);
- *   - both strings are compared as words: lower case, punctuation and symbols removed, so
- *     "Hold, Quarter close" contains "Hold Quarter close".
+ *   - every run must appear in the name as words, in its own order: lower case, punctuation and
+ *     symbols removed, so "Hold, Quarter close" contains the runs "Hold" and "Quarter close".
  *
  * The fix is never to hide visible text from this check. Put the visible words in the name, in
  * the order they are shown, or move secondary text into the description (aria-describedby).
@@ -42,6 +43,7 @@ export function labelInNameViolations(rootSelector) {
   const idsOf = (el, attr) => (el.getAttribute(attr) || '').split(/\s+/).filter(Boolean);
   const textById = (id) => document.getElementById(id);
 
+  const RUN = '\u0001'; // a box edge in the visible text
   const visibleLabel = (control) => {
     const skip = new Set(idsOf(control, 'aria-describedby').map(textById).filter(Boolean));
     let out = '';
@@ -53,7 +55,8 @@ export function labelInNameViolations(rootSelector) {
         if (child.matches('svg, img, input, select, textarea, script, style, template')) continue;
         if (child.matches(NESTED)) continue;
         if (visuallyHidden(child)) continue;
-        out += ' '; walk(child); out += ' ';
+        const edge = getComputedStyle(child).display === 'inline' ? '' : RUN;
+        out += edge; walk(child); out += edge;
       }
     };
     walk(control);
@@ -80,11 +83,12 @@ export function labelInNameViolations(rootSelector) {
     if (el.closest('[aria-hidden="true"], [inert]')) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0 || visuallyHidden(el)) continue;
-    const label = words(el.matches(FIELD) ? fieldLabel(el) : visibleLabel(el));
-    // nothing to say: an icon-only control, or a single character (×, ⋯, a stepper's +)
-    if (label.replace(/\s/g, '').length < 2) continue;
+    // nothing to say in a run: an icon, or a single character (×, ⋯, a stepper's +, a count of 2)
+    const runs = (el.matches(FIELD) ? fieldLabel(el) : visibleLabel(el)).split(RUN).map(words).filter((run) => run.replace(/\s/g, '').length >= 2);
     const name = words(nameOf(el));
-    if (` ${name} `.includes(` ${label} `)) continue;
+    const missing = runs.filter((run) => !` ${name} `.includes(` ${run} `));
+    if (!missing.length) continue;
+    const label = missing.join(' | ');
     const cls = typeof el.className === 'string' ? el.className.trim().split(/\s+/)[0] : '';
     found.push({ control: `${el.tagName.toLowerCase()}${cls ? `.${cls}` : ''}${el.getAttribute('role') ? `[role=${el.getAttribute('role')}]` : ''}`, label, name });
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
@@ -124,6 +124,7 @@ export function EntityPicker({
   'aria-describedby': describedBy, 'aria-labelledby': labelledBy, renderValue, labels: labelOverrides, className,
 }: EntityPickerProps) {
   const labels = { ...DEFAULT_ENTITY_PICKER_LABELS, ...useUixLabels().entityPicker, ...labelOverrides };
+  const metaId = useId();
   const [editing, setEditing] = useState(value == null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<readonly SearchSuggestOption[]>([]);
@@ -205,7 +206,7 @@ export function EntityPicker({
     const shown = renderValue?.(value) ?? (
       <>
         <span className="uix-entity-picker__title">{value.title}</span>
-        {value.meta?.length ? <span className="uix-entity-picker__meta">{value.meta[value.meta.length - 1]}</span> : null}
+        {value.meta?.length ? <span className="uix-entity-picker__meta" id={metaId}>{value.meta[value.meta.length - 1]}</span> : null}
       </>
     );
     return (
@@ -216,7 +217,8 @@ export function EntityPicker({
           type="button"
           className="uix-input uix-entity-picker__value"
           aria-label={fillLabel(labels.change, { label, title: value.title })}
-          aria-describedby={describedBy}
+          // The meta line it shows ("Service desk") is said as its description (WCAG 2.5.3: every shown word reaches AT).
+          aria-describedby={[describedBy, !renderValue && value.meta?.length ? metaId : undefined].filter(Boolean).join(' ') || undefined}
           aria-invalid={invalid || undefined}
           disabled={disabled}
           onClick={startEditing}

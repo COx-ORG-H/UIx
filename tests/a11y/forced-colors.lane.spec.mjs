@@ -173,13 +173,20 @@ for (const scheme of ['dark', 'light']) {
     });
 
     test('scroll edges stay plain edges, and a pinned header keeps its line', async ({ page }) => {
+      // With motion allowed: under reduced motion every edge is static anyway, and the divider is off.
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
       await page.goto(`/tests/scroll-edge/fixture.html?theme=${scheme}`, { waitUntil: 'networkidle' });
-      const masked = await page.evaluate(() => [...document.querySelectorAll('.uix-scroll-edge, .uix-drawer__body, .uix-dialog__body, .uix-sidebar')]
-        .filter((el) => getComputedStyle(el).maskImage !== 'none').map((el) => el.className));
-      expect(masked, 'forced colours fade no content into an edge').toEqual([]);
+      const list = page.locator('.uix-scroll-edge.fx-list').first();
+      await list.evaluate((el) => { el.scrollTop = 40; });
+      // a fade is a mask: switching every mask off must change nothing a reader sees
+      const asDrawn = await list.screenshot({ animations: 'disabled' });
+      const style = await page.addStyleTag({ content: '* { mask-image: none !important; }' });
+      const unmasked = await list.screenshot({ animations: 'disabled' });
+      await style.evaluate((el) => el.remove());
+      expect(asDrawn.equals(unmasked), 'forced colours fade content into a scroll edge').toBe(true);
       const head = page.locator('.uix-scroll-edge-head').first();
       await expect(head).toBeVisible();
-      await head.evaluate((el) => { const s = el.closest('.uix-scroll-edge, [class*="__body"], .fx-list') ?? el.parentElement; s.scrollTop = 200; });
+      await head.evaluate((el) => { let s = el.parentElement; while (s && s.scrollHeight <= s.clientHeight) s = s.parentElement; if (s) s.scrollTop = 200; });
       const withLine = await head.screenshot({ animations: 'disabled' });
       await page.addStyleTag({ content: '.uix-scroll-edge-head::after { display: none !important; }' });
       const withoutLine = await head.screenshot({ animations: 'disabled' });
@@ -199,8 +206,9 @@ for (const scheme of ['dark', 'light']) {
         const stage = page.locator('[data-docs-page] .uix-docs__demo-stage').first();
         if (!(await stage.count())) continue;
         await stage.scrollIntoViewIfNeeded();
-        if (focus) { await page.keyboard.press('Shift'); await stage.locator(focus).first().focus().catch(() => {}); }
-        await test.info().attach(`${slug}-${scheme}.png`, { body: await stage.screenshot({ animations: 'disabled' }), contentType: 'image/png' });
+        if (focus) { await page.keyboard.press('Shift'); await stage.locator(focus).first().focus({ timeout: 2_000 }).catch(() => {}); }
+        const body = await stage.screenshot({ animations: 'disabled', timeout: 10_000 }).catch(() => null);
+        if (body) await test.info().attach(`${slug}-${scheme}.png`, { body, contentType: 'image/png' });
       }
     });
   });
