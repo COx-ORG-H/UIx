@@ -54,7 +54,7 @@
      column — while 12rem keeps a sensible shortcut width on a desktop. Labels wrap, which
      is why the track can shrink at all: .uix-btn is nowrap by design. */
   .uix-shortcut-grid { grid-column: 1 / -1; margin-top: var(--uix-space-4); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--uix-space-2); }
-  .uix-shortcut-grid .uix-btn { min-height: 42px; justify-content: flex-start; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+  .uix-shortcut-grid .uix-btn { min-height: 42px; justify-content: flex-start; white-space: normal; overflow-wrap: anywhere; text-align: start; }
 
   /* ── notice queue — rotating "important updates" banner ────────────────────── */
   .uix-notice { min-height: 48px; padding: var(--uix-space-2) var(--uix-space-4); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--uix-space-3); border-left: 2px solid var(--uix-text); background: var(--uix-bg-subtle); }
@@ -107,7 +107,7 @@
   .uix-rundown__eyebrow { margin: 0; color: var(--uix-text-hushed); font-size: var(--uix-text-eyebrow); letter-spacing: 0.05em; text-transform: uppercase; }
   .uix-rundown__title { margin: var(--uix-space-1) 0 0; font-family: var(--uix-font-heading); font-size: 18px; font-weight: 400; }
   .uix-rundown__items { min-width: 0; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: var(--uix-space-2); }
-  .uix-rundown__item { position: relative; min-width: 0; min-height: 68px; padding: var(--uix-space-3); display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--uix-space-3); border: 1px solid transparent; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text); cursor: pointer; font: inherit; text-align: left; }
+  .uix-rundown__item { position: relative; min-width: 0; min-height: 68px; padding: var(--uix-space-3); display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--uix-space-3); border: 1px solid transparent; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text); cursor: pointer; font: inherit; text-align: start; }
   .uix-rundown__item:hover { background: var(--uix-bg-hover); }
   .uix-rundown__item[data-selected="true"] { border-color: var(--uix-border); background: var(--uix-bg-active); }
   /* caret centered on the internal divider (16px zone pad + 1px hairline + half of the 12px glyph) */

@@ -71,7 +71,7 @@
     grid-template-rows: 42px auto;
     gap: var(--uix-space-3);
     padding: 0 var(--uix-space-2);
-    text-align: left;
+    text-align: start;
     color: var(--uix-text);
     background: transparent;
     border: 0;
@@ -134,7 +134,7 @@
     margin-top: var(--uix-space-3); padding-top: var(--uix-space-3); border-top: 1px solid var(--uix-border);
     color: var(--uix-text-hushed); font-size: var(--uix-text-meta); font-weight: 400;
   }
-  .uix-pipeline__meta > :last-child { margin-left: auto; }
+  .uix-pipeline__meta > :last-child { margin-inline-start: auto; }
   .uix-pipeline__stage:focus-visible,
   .uix-pipeline__stage:has(:focus-visible) .uix-pipeline__content {
     outline: none; border-color: var(--uix-ring);
