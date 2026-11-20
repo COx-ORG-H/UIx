@@ -751,7 +751,7 @@ document.documentElement.dataset.theme = theme;`, 'js')}`)}
     ${section('state-changes', 'Which motion for which state change', `${table(['State change', 'UIx primitive', 'Motion'], [
       ['Press', '<code>.uix-btn:active</code>', 'scale .97, ≤ 120 ms'],
       ['Mutation pending', '<code>Button loading</code>; <code>useDelayedPending</code>', 'spinner after 300 ms, held at least 500 ms'],
-      ['Mutation succeeded or failed in place', '<code>Button result</code>; <code>SaveStatus</code>', 'label/icon crossfade, held 1.5 s (<code>--uix-hold-result</code>), <code>aria-live</code>'],
+      ['Mutation succeeded or failed in place', '<code>Button result</code>; <code>SaveStatus</code>', 'label/icon crossfade, held 1.5 s, <code>aria-live</code>'],
       ['Outcome out of view, or undoable', '<code>Toast</code> with an action', 'enter from the edge, exit faster, pause on hover/focus/hidden tab; swipe sideways to dismiss'],
       ['Region refetching', '<code>BusyRegion</code>, <code>TableWrap refreshing</code>', 'dim plus a top indeterminate bar, <code>aria-busy</code>'],
       ['Value or row changed (live update, after a transition)', `<code>ChangeHighlight</code>; <code>.uix-arrival</code> for a landing target`, 'tint fades over 1–1.5 s; a steady outline under reduced motion'],
