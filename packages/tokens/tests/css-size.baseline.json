@@ -2,9 +2,9 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw, gzip or brotli size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. --update rewrites only the entries that are out of tolerance, new or gone, so an entry changes only in the PR that resized that file. The two bundles (build/css/styles.css, components.css) deliberately have no entry: they are checked against the sum of their inputs instead.",
   "sizes": {
     "build/css/tokens.css": {
-      "raw": 21116,
-      "gzip": 4077,
-      "brotli": 3343
+      "raw": 21626,
+      "gzip": 4254,
+      "brotli": 3539
     },
     "styles/base.css": {
       "raw": 4387,
@@ -112,9 +112,9 @@
       "brotli": 545
     },
     "styles/components/combobox.css": {
-      "raw": 3746,
-      "gzip": 1287,
-      "brotli": 1031
+      "raw": 3872,
+      "gzip": 1313,
+      "brotli": 1061
     },
     "styles/components/command-palette.css": {
       "raw": 3263,
@@ -247,9 +247,9 @@
       "brotli": 1023
     },
     "styles/components/input.css": {
-      "raw": 10430,
-      "gzip": 2822,
-      "brotli": 2377
+      "raw": 10774,
+      "gzip": 2917,
+      "brotli": 2450
     },
     "styles/components/insight-card.css": {
       "raw": 5786,
@@ -317,9 +317,9 @@
       "brotli": 361
     },
     "styles/components/menu.css": {
-      "raw": 3892,
-      "gzip": 1309,
-      "brotli": 1080
+      "raw": 4018,
+      "gzip": 1345,
+      "brotli": 1124
     },
     "styles/components/meter.css": {
       "raw": 2304,
@@ -447,14 +447,14 @@
       "brotli": 2025
     },
     "styles/components/segmented.css": {
-      "raw": 4511,
-      "gzip": 1813,
-      "brotli": 1492
+      "raw": 4698,
+      "gzip": 1872,
+      "brotli": 1544
     },
     "styles/components/select.css": {
-      "raw": 12630,
-      "gzip": 3540,
-      "brotli": 2988
+      "raw": 12889,
+      "gzip": 3620,
+      "brotli": 3061
     },
     "styles/components/sidebar.css": {
       "raw": 22763,
@@ -522,14 +522,14 @@
       "brotli": 6071
     },
     "styles/components/tabs.css": {
-      "raw": 6954,
-      "gzip": 2136,
-      "brotli": 1784
+      "raw": 7115,
+      "gzip": 2180,
+      "brotli": 1824
     },
     "styles/components/tag-input.css": {
-      "raw": 4301,
-      "gzip": 1594,
-      "brotli": 1337
+      "raw": 4563,
+      "gzip": 1669,
+      "brotli": 1406
     },
     "styles/components/text-diff.css": {
       "raw": 5267,

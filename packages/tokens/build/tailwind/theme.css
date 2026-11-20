@@ -180,3 +180,8 @@
   --font-uix-heading: var(--uix-font-heading);
   --font-uix-mono: var(--uix-font-mono);
 }
+
+/* per-element tokens: resolved where the utility is used, not on :root */
+@theme inline {
+  --radius-uix-inner: var(--uix-radius-inner);
+}
