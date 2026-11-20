@@ -12,6 +12,7 @@ import {
   Button, CopyButton, Count, FileDrop, SaveStatus, Select, Tooltip,
 } from '../../packages/react/src/index.js';
 import { CopyIcon, LinkIcon } from '../../packages/react/src/icons/components.js';
+import { tokenMs } from '../../packages/react/src/motion.js';
 import type { ButtonResult, SaveStatusState } from '../../packages/react/src/index.js';
 
 interface Swap {
@@ -20,7 +21,9 @@ interface Swap {
   count: (value: number) => void;
   save: (state: SaveStatusState) => void;
 }
-declare global { interface Window { __swap: Swap } }
+declare global { interface Window { __swap: Swap; __tokenMs: typeof tokenMs } }
+// the kit's own reader of a time token (`160ms` or, minified, `.16s`), for the spec's budgets
+window.__tokenMs = tokenMs;
 
 const TEAMS = ['Service Desk', 'Arbeitsplatz', 'Netzwerk', 'Rechenzentrum'].map((t) => ({ value: t, label: t }));
 

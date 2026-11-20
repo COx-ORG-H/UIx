@@ -34,14 +34,13 @@ const BUDGET = {
   'file-drop-back': '--uix-dur-fast',
   'file-drop-reenter': '--uix-dur-fast',
 };
-// a token may compute as `160ms` or, minified, `.16s`
-const ms = (page, token) => (typeof token === 'number' ? token
-  : page.evaluate((t) => {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue(t).trim();
-    const m = /^(-?\d*\.?\d+)(ms|s)$/.exec(raw);
-    if (!m) throw new Error(`${t} is not a time: '${raw}'`);
-    return m[2] === 's' ? Number(m[1]) * 1000 : Number(m[1]);
-  }, token));
+// the kit's tokenMs (motion.ts, exposed by the harness): a token may compute as `160ms` or, minified, `.16s`
+const ms = async (page, token) => {
+  if (typeof token === 'number') return token;
+  const value = await page.evaluate((t) => window.__tokenMs(t, Number.NaN), token);
+  if (!Number.isFinite(value)) throw new Error(`${token} is not a time token`);
+  return value;
+};
 const show = (frames) => frames.map((f) => `${f.t}:${f.old.toFixed(2)}/${f.new.toFixed(2)}`).join(' ');
 
 for (const [id, token] of Object.entries(BUDGET)) {
