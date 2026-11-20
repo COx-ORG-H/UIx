@@ -4,3 +4,18 @@ export declare const cssVar: Record<UixTokenName, string>;
 export declare const light: Record<UixTokenName, string>;
 export declare const dark: Partial<Record<UixTokenName, string>>;
 export declare const num: Partial<Record<UixTokenName, number>>;
+export type UixSpringName = "ease-glide" | "ease-pop" | "ease-tooltip" | "ease-bounce";
+export interface UixSpring {
+  /** As Reanimated withSpring and SwiftUI .interpolatingSpring take them; Compose's spring() takes
+   *  dampingRatio = damping / (2 * sqrt(stiffness * mass)). From rest at 0 to 1. */
+  stiffness: number;
+  damping: number;
+  mass: number;
+  /** Overshoot past the target within the duration, as a fraction of the travel (0.031 = 3.1 %). */
+  overshoot: number;
+  durationToken: UixTokenName;
+  durationMs: number;
+  /** cubic-bezier(x1, y1, x2, y2) over durationMs, for a platform with no spring engine. */
+  cubicBezier: readonly [number, number, number, number];
+}
+export declare const spring: Record<UixSpringName, UixSpring>;
