@@ -4,14 +4,119 @@
     "workspace": {
       "cpu": 4,
       "runs": 5,
-      "tolerance": { "ratio": 0.5, "floorMs": 25 },
-      "metrics": {}
+      "tolerance": {
+        "ratio": 0.5,
+        "floorMs": 25
+      },
+      "metrics": {
+        "mount": {
+          "baseline": 140.8
+        },
+        "mount: long-frame blocking": {
+          "baseline": 76.3
+        },
+        "scroll 1,000 rows: p95 frame": {
+          "baseline": 50.1
+        },
+        "scroll 1,000 rows: total": {
+          "baseline": 1334
+        },
+        "sort": {
+          "baseline": 168
+        },
+        "select all": {
+          "baseline": 96
+        },
+        "search keystroke (worst of 3)": {
+          "baseline": 144
+        }
+      },
+      "adoptedFrom": {
+        "date": "2026-11-20T12:31:48.572Z",
+        "browser": "Chromium 149.0.7827.55",
+        "runs": 5
+      }
     },
     "no-gpu": {
       "cpu": 4,
       "runs": 3,
-      "tolerance": { "ratio": 1.5, "floorMs": 50 },
-      "metrics": {}
+      "tolerance": {
+        "ratio": 1.5,
+        "floorMs": 50
+      },
+      "metrics": {
+        "modal open: latency": {
+          "baseline": 96
+        },
+        "modal open: p95 frame": {
+          "baseline": 50
+        },
+        "modal open: longest frame": {
+          "baseline": 50
+        },
+        "drawer open: latency": {
+          "baseline": 64
+        },
+        "drawer open: p95 frame": {
+          "baseline": 50
+        },
+        "drawer open: longest frame": {
+          "baseline": 50
+        },
+        "scroll edges: p95 frame": {
+          "baseline": 16.7
+        },
+        "scroll edges: longest frame": {
+          "baseline": 16.8
+        },
+        "task tray open: latency": {
+          "baseline": 40
+        },
+        "task tray open: p95 frame": {
+          "baseline": 16.7
+        },
+        "task tray open: longest frame": {
+          "baseline": 16.8
+        },
+        "modal open (no blur): latency": {
+          "baseline": 80
+        },
+        "modal open (no blur): p95 frame": {
+          "baseline": 35.9
+        },
+        "modal open (no blur): longest frame": {
+          "baseline": 50
+        },
+        "drawer open (no blur): latency": {
+          "baseline": 56
+        },
+        "drawer open (no blur): p95 frame": {
+          "baseline": 33.4
+        },
+        "drawer open (no blur): longest frame": {
+          "baseline": 33.4
+        },
+        "scroll edges (no blur): p95 frame": {
+          "baseline": 16.7
+        },
+        "scroll edges (no blur): longest frame": {
+          "baseline": 16.8
+        },
+        "task tray open (no blur): latency": {
+          "baseline": 40
+        },
+        "task tray open (no blur): p95 frame": {
+          "baseline": 16.8
+        },
+        "task tray open (no blur): longest frame": {
+          "baseline": 16.8
+        }
+      },
+      "adoptedFrom": {
+        "date": "2026-11-20T12:31:56.478Z",
+        "browser": "Chromium 149.0.7827.55 (GPU off)",
+        "runs": 3
+      }
     }
   }
 }
