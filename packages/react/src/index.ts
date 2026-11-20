@@ -34,6 +34,8 @@ export { announcePolite } from './announce.js';
 export { useDeferredReorder } from './hooks/useDeferredReorder.js';
 export type { UseDeferredReorderResult } from './hooks/useDeferredReorder.js';
 export { useSlidingIndicator } from './hooks/useSlidingIndicator.js';
+export { useViewTransition, viewTransitionSupported, VIEW_TRANSITION_ATTR, VIEW_TRANSITION_CLASS } from './hooks/useViewTransition.js';
+export type { StartViewTransition, ViewTransitionOptions, ViewTransitionPart, ViewTransitionResult } from './hooks/useViewTransition.js';
 export { useKeyboardGrab, settleDrop, DEFAULT_KEYBOARD_GRAB_LABELS } from './hooks/useKeyboardGrab.js';
 export type { KeyboardGrabDirection, KeyboardGrabLabels, UseKeyboardGrabOptions, UseKeyboardGrabResult } from './hooks/useKeyboardGrab.js';
 

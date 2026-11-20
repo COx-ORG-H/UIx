@@ -85,6 +85,10 @@ test('maximize takes the window; Escape restores it', async ({ page }, testInfo)
   // HAR-3090: Maximize is a checkbox item in the toolbar's one "More" menu
   await ws(page).getByRole('button', { name: 'Mehr' }).click();
   await page.getByRole('menuitemcheckbox', { name: 'Maximieren' }).click();
+  // from the pointer, Maximize morphs (useViewTransition): the change commits a frame later and the
+  // morph runs its 280 ms; measure and press Escape once both are done
+  await expect(ws(page)).toHaveClass(/uix-data-workspace--maximized/);
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
   const box = await ws(page).boundingBox();
   const vp = page.viewportSize();
   expect(Math.round(box.width)).toBe(vp.width);
