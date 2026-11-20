@@ -198,7 +198,7 @@ export function FileDrop({
     >
       <span className="uix-file-drop__aura" aria-hidden="true" style={drag ? { backgroundImage: auraFor(drag.kinds) } : undefined} />
       <UploadIcon size="sm" className="uix-file-drop__icon" />
-      {/* Both lines stay mounted in one grid cell and cross-fade: the drag summary is for the
+      {/* Both lines stay mounted in one grid cell and swap (out, then in): the drag summary is for the
           pointer that holds the files, and the sentence (with the focusable button) never leaves
           the accessibility tree, so focus and context never change under a screen reader. */}
       <span className="uix-file-drop__line">

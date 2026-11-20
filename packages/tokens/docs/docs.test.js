@@ -309,6 +309,14 @@ test('React availability mappings point to the shipped component inventory or an
   }
 });
 
+test('the Motion page states the text-swap rule in tokens: out, then in, no overlap', () => {
+  const motion = pageContent('motion');
+  assert.match(motion, /Text swaps go out, then in/);
+  for (const token of ['--uix-dur-exit-fast', '--uix-dur-swap-out', 'transition-delay', 'calc(var(--uix-dur) - var(--uix-dur-exit-fast))']) assert.ok(motion.includes(token), token);
+  assert.match(motion, /Icons and images may overlap/);
+  assert.match(motion, /tooltip hand-over/);
+});
+
 test('docs prose list rules never reach kit lists', () => {
   // docs.css is unlayered, so a bare `.uix-docs__page ul` / `li + li` beats every @layer uix.components
   // rule and gives list-based specimens (ul.uix-menu, .uix-tree ul, .uix-prose ul …) prose indents and gaps.
