@@ -5210,6 +5210,7 @@ export const Modal: react.ForwardRefExoticComponent<ModalProps & react.RefAttrib
 export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'title'> {
     // (undocumented)
     children?: ReactNode;
+    closeButton?: boolean;
     closeLabel?: string;
     dirty?: boolean;
     discardLabels?: Partial<DiscardPromptLabels>;
@@ -8112,6 +8113,66 @@ export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
 
 // @public
 export function serializeView(v: ViewState): string;
+
+// @public
+export type SessionDraftsReason = 'warning' | 'expire';
+
+// @public
+export type SessionDraftsState = 'none' | 'saving' | 'kept' | 'failed';
+
+// @public
+export interface SessionIdleConfig {
+    events?: readonly string[];
+    timeout: number;
+}
+
+// @public
+export function SessionTimeout(input: SessionTimeoutProps): react.JSX.Element | null;
+
+// @public (undocumented)
+export namespace SessionTimeout {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public
+export interface SessionTimeoutLabels {
+    close: string;
+    description: string;
+    draftsFailed: string;
+    draftsKept: string;
+    draftsSaving: string;
+    expiredDescription: string;
+    expiredTitle: string;
+    extendFailed: string;
+    signIn: string;
+    signOut: string;
+    stay: string;
+    timeLeft: string;
+    title: string;
+}
+
+// @public
+export type SessionTimeoutPhase = 'active' | 'warning' | 'expired';
+
+// @public
+export interface SessionTimeoutProps extends UseSessionTimeoutOptions {
+    labels?: Partial<SessionTimeoutLabels>;
+    locale?: string;
+    onSignIn?: () => void;
+    onSignOut?: () => void;
+}
+
+// @public
+export interface SessionTimeoutState {
+    drafts: SessionDraftsState;
+    extend: () => Promise<void>;
+    extendFailed: boolean;
+    extending: boolean;
+    phase: SessionTimeoutPhase;
+    remaining: number;
+    touch: () => void;
+}
 
 // @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
