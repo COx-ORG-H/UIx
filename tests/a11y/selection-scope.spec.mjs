@@ -161,8 +161,7 @@ test('X, Shift + X and Ctrl/⌘ + A select by key in the table; the ? sheet list
   await expect(bulkCount(page)).toHaveText('25 selected');
   expect(await page.evaluate(() => window.getSelection()?.toString() ?? '')).toBe('');
   // outside the table X is nobody's
-  await page.locator('.uix-data-workspace__search input').focus();
-  await page.locator('#demo-said').click();
+  await page.getByRole('heading', { name: 'Selection scope', level: 1 }).click();
   await page.keyboard.press('x');
   await expect(bulkCount(page)).toHaveText('25 selected');
   // the sheet, opened from inside the table, lists the three under the workspace's name
