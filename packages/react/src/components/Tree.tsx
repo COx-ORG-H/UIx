@@ -21,8 +21,9 @@ export interface TreeNodeData {
   typeaheadLabel?: string;
   /**
    * The row's accessible name when `label` is rich (an avatar, a name and a meta line) and only
-   * part of it should be spoken, e.g. the person's name (HAR-1828). By default a row is named by
-   * its own `label`, never by its children.
+   * part of it should be spoken, e.g. the person's name and not their avatar's initials (HAR-1828).
+   * It still says every word the row shows, such as a meta line (WCAG 2.5.3, label in name). By
+   * default a row is named by its own `label`, never by its children.
    */
   ariaLabel?: string;
   icon?: ReactNode;

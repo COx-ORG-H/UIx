@@ -53,7 +53,8 @@ export interface SchedulingTimeGridProps {
   gridLabel: string;
   dateText: (date: string, part: SchedulingDatePart) => string;
   formatInstant: (instant: string) => string;
-  entryName: (entry: SchedulingCalendarEntry) => string;
+  /** `shown` is the title as the item shows it (WCAG 2.5.3: the name says the visible words). */
+  entryName: (entry: SchedulingCalendarEntry, shown?: string) => string;
   entryStatus: (entry: SchedulingCalendarEntry) => string;
   entryMarkers: (entry: SchedulingCalendarEntry) => SchedulingMarker[];
   overlayName: (overlay: SchedulingCalendarOverlay) => string;
@@ -84,6 +85,8 @@ interface ItemHandlers {
 }
 
 const vars = (values: Record<string, number | string>): CSSProperties => values as CSSProperties;
+/** A name that starts with the words shown ("Wed 07.10.") unless it already says them (WCAG 2.5.3, label in name). */
+const withShown = (shown: string, name: string) => (name.toLocaleLowerCase().includes(shown.trim().toLocaleLowerCase()) ? name : `${shown.trim()}, ${name}`);
 const linesFor = (segment: TimeGridSegment) => Math.max(0, Math.floor(segment.lengthHours * LINES_PER_HOUR - 0.25));
 const slotSignature = (slots: ZonedHourSlot[]) => slots.map((slot) => `${slot.label}${slot.offsetLabel ?? ''}`).join(' ');
 /** The first of each id: a repeated id is drawn once, as a repeated React key would be. */
@@ -224,6 +227,12 @@ export function SchedulingTimeGrid({
   const drawable = useMemo(() => overlays.filter((overlay) => new Date(overlay.end).getTime() >= new Date(overlay.start).getTime()), [overlays]);
   const strip = useMemo(() => layoutDaySpans(drawable, days, { timeZone, laneCap: Math.max(0, windowLaneCap) }), [drawable, days, timeZone, windowLaneCap]);
   const shades = useMemo(() => layoutDaySpans(drawable.filter((overlay) => overlay.global), days, { timeZone }).placed, [drawable, days, timeZone]);
+  /** The words an item shows as its title (the string `renderEntry` returns, else `HH:MM title`), said by its name (WCAG 2.5.3). */
+  const shownTitle = (entry: SchedulingCalendarEntry, withTime: boolean, context: TimeGridEntryContext): string => {
+    const custom = renderEntry?.(entry, context);
+    if (custom !== undefined && custom !== null) return typeof custom === 'string' ? custom : entry.title;
+    return withTime ? `${zonedTimeOfDay(entry.start, timeZone)} ${entry.title}` : entry.title;
+  };
   const lanesIn = (placed: PlacedDaySpan[]) => placed.reduce((max, span) => Math.max(max, span.lane + 1), 0);
   const maxHours = Math.max(...columns.map((column) => column.dayHours));
 
@@ -541,7 +550,7 @@ export function SchedulingTimeGrid({
         // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
         const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillCountLabel(labels.dayCount, { count: info.count }, locale)}`;
         return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date} data-today={index === nowColumn || undefined}>
-          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
+          <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={withShown(dateText(date, 'column'), info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day'))}
             onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
           {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{fillCountLabel(labels.dayCount, { count: info.count }, locale)}</span>}
           {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <span key={marker.id}>{renderMarker(marker, true)}</span>)}</span>}
@@ -581,7 +590,7 @@ export function SchedulingTimeGrid({
           data-highlight={entry.emphasis === 'highlight' || undefined} data-dim={entry.emphasis === 'dim' || undefined} data-band={entry.band ?? 'none'} data-status={entryStatus(entry)} data-state={entry.state}
           data-movable={canDrag || undefined} data-continues-before={placed.continuesBefore || undefined} data-continues-after={placed.continuesAfter || undefined}
           style={{ gridColumn: gridColumns(placed), ...vars({ '--uix-scheduling-calendar-lane': placed.lane }) }}
-          aria-label={entryName(entry)} aria-describedby={canDrag ? hintId : undefined}
+          aria-label={entryName(entry, shownTitle(entry, !placed.continuesBefore && !entry.allDay, { availableLines: 1 }))} aria-describedby={canDrag ? hintId : undefined}
           onClick={() => handlers.click(entry)}
           onKeyDown={canDrag ? (event) => handlers.keyDown(event, entry) : undefined}
           onBlur={canDrag ? () => handlers.blur(entry) : undefined}
@@ -619,7 +628,7 @@ export function SchedulingTimeGrid({
           const entry = entryById.get(segment.id)!;
           // A continuation in the first column has its start part on a day that is not on screen: it stands for the whole item.
           const alone = segment.part === 'continuation' && index === 0;
-          return <GridItem key={`${segment.id}-${segment.part}`} entry={entry} segment={segment} column={index} alone={alone} name={entryName(entry)} status={entryStatus(entry)} movable={movable(entry)}
+          return <GridItem key={`${segment.id}-${segment.part}`} entry={entry} segment={segment} column={index} alone={alone} name={entryName(entry, shownTitle(entry, segment.part !== 'continuation', { availableLines: linesFor(segment) }))} status={entryStatus(entry)} movable={movable(entry)}
             hintId={hintId} timeZone={timeZone} continuesFrom={fillLabel(labels.continuesFrom, { time: zonedTimeOfDay(entry.start, timeZone) })} markers={entryMarkers(entry)}
             renderEntry={renderEntry} renderMarker={renderMarker} handlers={handlers} />;
         })}

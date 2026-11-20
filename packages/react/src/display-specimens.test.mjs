@@ -67,7 +67,8 @@ test('every state named in a caption is on the page', () => {
   const calendar = specimens['examples-data-display'];
   assert.match(calendar, /data-resource-day-example/);
   assert.equal((calendar.match(/class="uix-scheduling-calendar__rs-column"/g) ?? []).length, 3);
-  assert.match(calendar, /aria-label="Dr\. Amra Hadžić, 09:00 – 09:30, Booked, Lejla M\."/);
+  // the chip shows "09:00 Lejla M.": those words are the label in its name (WCAG 2.5.3)
+  assert.match(calendar, /aria-label="Dr\. Amra Hadžić, 09:00 – 09:30, Booked, 09:00 Lejla M\."/);
   assert.match(calendar, /data-kind="off"/);
   assert.doesNotMatch(calendar, /Dr\. Selma Đurđević, 08:[0-9]{2} – [0-9:]+, Free/);
   // graph gaps: a dashed danger edge, toned nodes, a matching legend, no root border
