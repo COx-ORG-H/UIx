@@ -352,11 +352,15 @@ test('ConflictNotice: who and when, the fields they changed, the overlap, Reload
   assert.ok(alert.classList.contains('uix-alert--warning'), 'attention, not critical');
   assert.equal(alert.querySelector('.uix-alert__title').textContent, 'Alex changed this at 14:02 while you were editing');
   assert.match(alert.textContent, /Your changes are not saved yet, and they are still here\./);
-  assert.deepEqual([...alert.querySelectorAll('.uix-conflict-notice__field')].map((f) => f.textContent), ['Priority', 'Title']);
+  assert.equal(alert.querySelector('.uix-conflict-notice__fields').textContent, 'Priority and Title');
+  assert.ok(alert.querySelector('.uix-conflict-notice__actions button'), 'the actions sit under the text, not in the side slot');
+  assert.equal(alert.querySelector('.uix-alert__actions'), null);
   assert.match(alert.textContent, /You both changed Priority\./);
   const button = (name) => [...el.querySelectorAll('button')].find((b) => b.textContent === name);
   assert.equal(button('Review changes').getAttribute('aria-expanded'), 'true', 'opens itself when a field needs a choice');
   assert.ok(el.querySelector('.uix-diff-viewer'), 'the comparison is a DiffViewer');
+  assert.match(el.querySelector('.uix-diff-viewer').textContent, /You both changed/, 'groups say who changed what');
+  assert.doesNotMatch(el.querySelector('.uix-diff-viewer').textContent, /"P3"/, 'values read as text, not JSON');
   await click(button('Apply'));
   assert.equal(applied, undefined, 'Apply waits for a choice on Priority');
   assert.equal(button('Apply').getAttribute('aria-disabled'), 'true');

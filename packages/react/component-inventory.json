@@ -182,6 +182,10 @@
       "subpath": "."
     },
     {
+      "name": "ConflictNotice",
+      "subpath": "."
+    },
+    {
       "name": "ContactCard",
       "subpath": "."
     },
@@ -279,6 +283,10 @@
     },
     {
       "name": "ErrorState",
+      "subpath": "."
+    },
+    {
+      "name": "ErrorSummary",
       "subpath": "."
     },
     {

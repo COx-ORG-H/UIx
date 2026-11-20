@@ -41,6 +41,13 @@ export interface ConflictNoticeLabels {
   choosePending: string;
   /** The comparison's name. */
   region: string;
+  /** How an empty value shows in the comparison. */
+  empty: string;
+  /** The comparison's groups: fields you both changed, and fields only they changed, added or removed. */
+  bothChanged: string;
+  theyChanged: string;
+  theyAdded: string;
+  theyRemoved: string;
   /** The version names in the comparison. */
   base: string;
   yours: string;
@@ -65,6 +72,11 @@ export const DEFAULT_CONFLICT_NOTICE_LABELS: ConflictNoticeLabels = {
   apply: 'Apply',
   choosePending: 'Choose a version for each field you both changed.',
   region: 'Changes to review',
+  empty: 'Empty',
+  bothChanged: 'You both changed',
+  theyChanged: 'They changed',
+  theyAdded: 'They added',
+  theyRemoved: 'They removed',
   base: 'When you started',
   yours: 'Yours',
   theirs: 'Latest',
@@ -151,31 +163,27 @@ export const ConflictNotice = forwardRef<HTMLDivElement, ConflictNoticeProps>(fu
         tabIndex={-1}
         title={title}
         {...props}
-        actions={(
-          <>
-            {changes.length > 0 && (
-              <Button size="sm" aria-expanded={reviewing} aria-controls={reviewId} onClick={() => setReviewing((open) => !open)}>
-                {labels.review}
-              </Button>
-            )}
-            <Button size="sm" variant="primary" onClick={() => onReload(mergeRecordConflict(base, yours, theirs))}>{labels.reload}</Button>
-            {onDiscard && <Button size="sm" variant="ghost" onClick={onDiscard}>{labels.discard}</Button>}
-          </>
-        )}
       >
         <p className="uix-conflict-notice__line">{labels.kept}</p>
         {changes.length > 0 && (
           <p className="uix-conflict-notice__line">
-            <span>{labels.changed}</span>
-            {' '}
-            <span className="uix-conflict-notice__fields">
-              {changes.map((change) => <span key={change.path} className="uix-conflict-notice__field" data-overlap={change.overlap || undefined}>{nameOf(change.path)}</span>)}
-            </span>
+            {labels.changed} <strong className="uix-conflict-notice__fields">{joinList(changes.map((change) => textOf(change.path)))}</strong>
           </p>
         )}
         {overlapping.length > 0 && (
           <p className="uix-conflict-notice__line">{fillLabel(labels.overlap, { fields: joinList(overlapping.map((change) => textOf(change.path))) })}</p>
         )}
+        {/* Under the text, not in the alert's side slot: three choices beside the words squeeze
+            them to nothing on a phone, and a row that wraps keeps every button whole. */}
+        <div className="uix-conflict-notice__actions">
+          {changes.length > 0 && (
+            <Button size="sm" aria-expanded={reviewing} aria-controls={reviewId} onClick={() => setReviewing((open) => !open)}>
+              {labels.review}
+            </Button>
+          )}
+          <Button size="sm" variant="primary" onClick={() => onReload(mergeRecordConflict(base, yours, theirs))}>{labels.reload}</Button>
+          {onDiscard && <Button size="sm" variant="ghost" onClick={onDiscard}>{labels.discard}</Button>}
+        </div>
       </Alert>
       {changes.length > 0 && (
         <div id={reviewId} className="uix-conflict-notice__review" hidden={!reviewing}>
@@ -186,8 +194,12 @@ export const ConflictNotice = forwardRef<HTMLDivElement, ConflictNoticeProps>(fu
                 resolutions={resolutions}
                 onResolutionChange={(path, resolution) => setResolutions((current) => ({ ...current, [path]: resolution }))}
                 labelFor={nameOf}
-                renderValue={renderValue}
+                renderValue={renderValue ?? ((value) => plainValue(value, labels.empty))}
                 labels={{
+                  conflicted: labels.bothChanged,
+                  changed: labels.theyChanged,
+                  added: labels.theyAdded,
+                  removed: labels.theyRemoved,
                   region: labels.region,
                   base: labels.base,
                   current: labels.yours,
@@ -219,3 +231,10 @@ export const ConflictNotice = forwardRef<HTMLDivElement, ConflictNoticeProps>(fu
     </div>
   );
 });
+
+/** A field's value as a person reads it: text as itself, an empty one as "Empty", a list or object as JSON. */
+function plainValue(value: JsonValue | undefined, empty: string): ReactNode {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return empty;
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
