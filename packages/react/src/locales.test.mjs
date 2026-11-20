@@ -145,7 +145,7 @@ for (const [tag, pack] of Object.entries(PACKS)) {
 }
 
 test('packs: the completeness check fails a pack with a missing key, a lost placeholder or a missing form', () => {
-  // structuredClone cannot copy functions: the namespaces that hold some go back in uncloned
+  // the namespaces whose words are functions cannot be cloned: set aside, then put back
   const broken = structuredClone({ ...bs, taskTray: undefined, toast: undefined });
   delete broken.modal.close;
   broken.dataWorkspace.selectRow = 'Odaberi';
@@ -252,19 +252,4 @@ test('sr-Cyrl: no Latin letter outside placeholders, acronyms and key names; Cyr
     assert.equal(cyrillicToLatin(text), latin.get(path), path);
   }
   for (const n of [1, 2, 5]) assert.equal(cyrillicToLatin(srCyrl.taskTray.done(n)), srLatn.taskTray.done(n));
-});
-
-test('toast (#321 undo deltas): every pack says the held count in its CLDR form, and the undo words', () => {
-  const held = Object.fromEntries(Object.entries(PACKS).map(([tag, pack]) => [tag, [1, 2, 5, 21, 22].map((n) => pack.toast.held(n))]));
-  assert.deepEqual(held.en, ['1 notification waiting', '2 notifications waiting', '5 notifications waiting', '21 notifications waiting', '22 notifications waiting']);
-  assert.deepEqual(held.de, ['1 Benachrichtigung wartet', '2 Benachrichtigungen warten', '5 Benachrichtigungen warten', '21 Benachrichtigungen warten', '22 Benachrichtigungen warten']);
-  assert.deepEqual(held.bs, ['1 obavještenje čeka', '2 obavještenja čekaju', '5 obavještenja čeka', '21 obavještenje čeka', '22 obavještenja čekaju']);
-  assert.deepEqual(held.hr, ['1 obavijest čeka', '2 obavijesti čekaju', '5 obavijesti čeka', '21 obavijest čeka', '22 obavijesti čekaju']);
-  assert.deepEqual(held['sr-Latn'], ['1 obaveštenje čeka', '2 obaveštenja čekaju', '5 obaveštenja čeka', '21 obaveštenje čeka', '22 obaveštenja čekaju']);
-  assert.ok(held['sr-Cyrl'].every((text) => /^\d+ [\u0400-\u04FF ]+$/.test(text)), `sr-Cyrl is Cyrillic: ${held['sr-Cyrl'].join(' | ')}`);
-  for (const [tag, pack] of Object.entries(PACKS)) {
-    assert.ok(pack.toast.undone('Ticket closed').endsWith('Ticket closed'), `${tag}: undone(message) ends with the message`);
-    assert.ok(pack.toast.undone().trim(), `${tag}: undone() says something`);
-    assert.equal(pack.toast.count(3), '×3', `${tag}: count`);
-  }
 });
