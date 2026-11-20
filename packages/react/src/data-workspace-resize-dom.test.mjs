@@ -27,6 +27,7 @@ before(async () => {
   expose('window', dom.window);
   expose('document', dom.window.document);
   expose('navigator', dom.window.navigator);
+  for (const name of ['Element', 'HTMLElement', 'Node']) expose(name, dom.window[name]);
   expose('getComputedStyle', dom.window.getComputedStyle.bind(dom.window));
   // drafts are drawn on the next frame: run frames at once so a drag reads in order
   expose('requestAnimationFrame', (cb) => { cb(0); return 1; });
@@ -51,7 +52,7 @@ before(async () => {
 });
 after(() => {
   dom.window.close();
-  for (const name of ['window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'ResizeObserver', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
+  for (const name of ['Element', 'HTMLElement', 'Node', 'window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'ResizeObserver', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[name];
 });
 
 const mount = (element) => {
@@ -82,7 +83,7 @@ test('no onColumnWidthsChange: no grips, the layout as before', () => {
 });
 
 test('every resizable header gets a separator grip outside its sort button, named, with its bounds', () => {
-  const html = renderToStaticMarkup(h(ui.DataWorkspace, props({ idColumn: ID, onColumnWidthsChange() {} })));
+  const html = renderToStaticMarkup(h(ui.DataWorkspace, props({ idColumn: ID, sort: null, onSortChange() {}, onColumnWidthsChange() {} })));
   const doc = new JSDOM(html).window.document;
   const names = [...doc.querySelectorAll('[role="separator"]')].map((el) => el.getAttribute('aria-label'));
   assert.deepEqual(names, ['Resize ID', 'Resize Title', 'Resize Status', 'Resize Assignee'], 'not Updated (resizable: false)');

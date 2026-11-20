@@ -56,6 +56,9 @@ export interface ColumnResizerProps {
   popoverId: string;
 }
 
+/** A layout effect in the browser, an effect on the server (no warning there). */
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
+
 /** A press that moves less than this is a click, not a drag. */
 const DRAG_THRESHOLD = 3;
 /** How long a click waits for a second one (a double-click fits) before it opens the popover. */
@@ -90,7 +93,7 @@ export function ColumnResizer({ name, width, min, max, onBegin, onDraft, onCommi
   };
   const current = () => width ?? measure() ?? drawn ?? min;
   // the drawn width after every render with a new width (and on mount): aria-valuenow stays true
-  useLayoutEffect(() => { setDrawn(measure()); }, [width, min, max]);
+  useIsomorphicLayoutEffect(() => { setDrawn(measure()); }, [width, min, max]);
   useEffect(() => () => {
     if (clickTimer.current) clearTimeout(clickTimer.current);
     if (escape.current) window.removeEventListener('keydown', escape.current, true);
@@ -105,7 +108,6 @@ export function ColumnResizer({ name, width, min, max, onBegin, onDraft, onCommi
     event.stopPropagation();
     dragged.current = false;
     try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* not capturable (a synthetic event) */ }
-    event.currentTarget.focus({ preventScroll: true }); // the press's default is prevented; keys follow the grip
     escape.current = (key: KeyboardEvent) => {
       if (key.key !== 'Escape') return;
       // the drag takes this Escape, not a maximized workspace or a dialog around the table
@@ -129,11 +131,13 @@ export function ColumnResizer({ name, width, min, max, onBegin, onDraft, onCommi
     g.last = clampWidth(g.startWidth + dx, min, max);
     if (typeof requestAnimationFrame !== 'function') { onDraft(g.last); return; }
     if (g.frame) return; // one draft per frame
-    g.frame = requestAnimationFrame(() => {
-      if (gesture.current !== g) return;
+    let ran = false;
+    const frame = requestAnimationFrame(() => {
+      ran = true;
       g.frame = 0;
-      if (g.last != null) onDraft(g.last);
+      if (gesture.current === g && g.last != null) onDraft(g.last);
     });
+    if (!ran) g.frame = frame;
   };
   const endPointer = (commit: boolean) => {
     const g = gesture.current;
@@ -207,12 +211,9 @@ export function ColumnResizer({ name, width, min, max, onBegin, onDraft, onCommi
     const onToggle = (event: Event) => {
       const opened = (event as Event & { newState?: string }).newState === 'open';
       setOpen(opened);
-      if (opened) {
-        el.querySelector<HTMLInputElement>('input')?.select();
-        el.querySelector<HTMLInputElement>('input')?.focus();
-      } else if (el.contains(document.activeElement) || document.activeElement === document.body) {
-        ref.current?.focus();
-      }
+      // the form takes focus as it mounts (it may render after this event, from a click's timer);
+      // on close, focus that was in it goes back to the grip
+      if (!opened && (el.contains(document.activeElement) || document.activeElement === document.body)) ref.current?.focus();
     };
     el.addEventListener('toggle', onToggle);
     return () => el.removeEventListener('toggle', onToggle);
@@ -295,6 +296,8 @@ function WidthForm({ name, value, min, max, labels, onApply, onFit, onReset, onC
   useEffect(() => { setText(value); }, [value]);
   const fieldId = useId();
   const unitId = useId();
+  const field = useRef<HTMLInputElement>(null);
+  useEffect(() => { field.current?.focus(); field.current?.select(); }, []);
   const apply = (close: boolean) => {
     if (cancelled.current) { cancelled.current = false; return; }
     if (!Number.isFinite(text)) { setText(value); return; }
@@ -310,7 +313,7 @@ function WidthForm({ name, value, min, max, labels, onApply, onFit, onReset, onC
       <div className="uix-col-resize__row">
         <Button size="sm" variant="secondary" icon aria-label={labels.narrower} disabled={value <= min} onClick={() => step(-1)}><MinusIcon size="sm" aria-hidden="true" /></Button>
         <NumberInput
-          id={fieldId} size="sm" className="uix-col-resize__field" min={min} max={max} step={1} inputMode="numeric"
+          ref={field} id={fieldId} size="sm" className="uix-col-resize__field" min={min} max={max} step={1} inputMode="numeric"
           value={text} onValueChange={setText}
           onKeyDown={(event) => {
             if (event.key === 'Enter') { event.preventDefault(); apply(true); }
