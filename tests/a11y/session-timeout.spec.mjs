@@ -34,7 +34,9 @@ const open = async (page, testInfo, query = '') => {
   await expect(page.locator('#note')).toBeVisible();
 };
 
+/** axe schedules its work with setTimeout, so the paused clock runs again for the scan: do every exact-time check before it. */
 const axe = async (page) => {
+  await page.clock.resume();
   await settleAnimations(page);
   const results = await new AxeBuilder({ page }).include('dialog[open]').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
   expect(results.passes.length).toBeGreaterThan(0);
@@ -68,13 +70,13 @@ test('the warning: an alert dialog said once with the time left, a quiet ticking
       - button "Sign out"
       - button "Stay signed in"
   `);
-  await axe(page);
   await testInfo.attach(`warning-${themeOf(testInfo)}`, { body: await dialog.screenshot(), contentType: 'image/png' });
 
   await page.clock.runFor(1000);
   await expect(dialog.locator('.uix-session-timeout__clock')).toHaveText('1:59');
   await expect(timer).toHaveText(/1 minute, 59 seconds/);
   expect(await calls(page)).toEqual(['warn', 'persist:warning']);
+  await axe(page);
 });
 
 test('Stay signed in closes the warning, gives focus back to the field, and it returns only before the new expiry', async ({ page }, testInfo) => {
