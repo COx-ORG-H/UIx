@@ -20,7 +20,7 @@ const PAGE = '/tests/serbian-italic/page.html';
 /**
  * Per face, per letter: 'sr' (Serbian form shown) or 'ru' (same as Russian). Measured in CI on 2026-11-20
  * (PR #311): neither kit font, as Google Fonts serves it, has a Serbian form for any of the five. The
- * runner's system-ui italic did show Serbian б, д and п, so Chromium does apply `locl` from `lang`;
+ * runner's system-ui italic did show the Serbian б, so Chromium does apply `locl` from `lang`;
  * that face depends on the runner image, so it is reported, not pinned.
  */
 const RUSSIAN = { б: 'ru', г: 'ru', д: 'ru', п: 'ru', т: 'ru' };
