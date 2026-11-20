@@ -31,6 +31,62 @@ export interface CommandPaletteItem {
   href?: string;
   /** Shown but not choosable; skipped by the arrow keys. */
   disabled?: boolean;
+  /**
+   * Other names people use for the command (roadmap #9). Unlike `keywords`, an alias that matched
+   * is shown after the label, "Mark done (Archive)", so the row says why it was found and teaches
+   * the real name; typing a whole alias ranks the command like a label that starts with the query.
+   */
+  aliases?: readonly string[];
+  /**
+   * How much more this command counts on the current screen: `1` doubles its weight, `0` (the
+   * default) leaves it be. Set it from where the person is (`screen === 'ticket' ? 1 : 0`); it only
+   * reorders, it never hides a command. Ignored with your own `filter`.
+   */
+  contextBoost?: number;
+  /**
+   * Choosing the item opens this page of the palette instead of running anything ("Assign to…" →
+   * people). Escape, or Backspace in an empty field, goes back; the breadcrumb shows the way.
+   */
+  page?: CommandPalettePage;
+}
+
+/** A nested page of a `CommandPalette` (items mode), opened by an item's `page`. */
+export interface CommandPalettePage {
+  /** Unique among the pages on one path. */
+  id: string;
+  /** The page's crumb in the breadcrumb and the field's name on it, e.g. "Assign to…". */
+  label: string;
+  /** The page's commands, filtered and ranked like the top level's. */
+  items?: readonly CommandPaletteItem[];
+  /** The page's server searches, e.g. the people to assign to. */
+  sources?: readonly CommandPaletteSource[];
+  /** The field's placeholder on this page. Default: the palette's. */
+  placeholder?: string;
+}
+
+/**
+ * A search the palette runs as the person types (roadmap #9), e.g. tickets or people on the server.
+ * Its results form their own group, in the order `load` returns them (the palette does not filter
+ * them again). The palette debounces the query, aborts a search the next keystroke overtakes,
+ * keeps the rows already shown while the next answer loads, and shows a loading row and an error
+ * row with Retry for each source on its own.
+ */
+export interface CommandPaletteSource {
+  /** Unique among the palette's sources. */
+  id: string;
+  /** The heading of its results and the name in its loading and error rows, e.g. "People". */
+  label: string;
+  /**
+   * The items for `query` (already trimmed). Pass `signal` to `fetch`: it aborts when the query
+   * changes, the page changes or the palette closes. A rejection shows the error row.
+   */
+  load: (query: string, signal: AbortSignal) => Promise<readonly CommandPaletteItem[]>;
+  /** Ask only once the query has this many characters. Default 1 (`0` also asks for an empty query). */
+  minQueryLength?: number;
+  /** Wait this long after the last keystroke before asking. Default 200 ms. */
+  debounce?: number;
+  /** Like an item's `contextBoost`, for the source's whole group. */
+  contextBoost?: number;
 }
 
 /** A group of found commands, in the order they are shown. */
