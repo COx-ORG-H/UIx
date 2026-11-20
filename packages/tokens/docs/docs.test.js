@@ -299,7 +299,7 @@ test('React availability mappings point to the shipped component inventory or an
   const aliases = {
     'editorial-home': 'PageIntro', form: 'Field', labels: 'UixLabelsProvider',
     'stat-tile': 'Stat', states: 'LoadingState', 'rich-text': 'RichTextEditor',
-    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow',
+    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow', sla: 'SlaTimer',
   };
   for (const entry of REACT_COMPONENT_SLUGS) {
     if (entry === 'drag') {
