@@ -82,6 +82,16 @@ jobs:
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
+      # When the API report check fails, the reports it generated are here: download, compare,
+      # and copy into packages/react/etc/ if the change is intended (npm run test:api:update).
+      - name: Upload generated API reports (on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-reports
+          path: packages/react/temp/*.api.md
+          retention-days: 7
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 
@@ -195,13 +205,23 @@ jobs:
           path: perf-report/
           retention-days: 30
 
-  a11y:
+  a11y-shard:
     # Accessibility gate (ADR-0016 Decision 6 — S6). axe-core over the static styleguide in
     # light + dark. Fails on serious/critical WCAG 2.1 A/AA violations; the two design-level
     # rules (color-contrast, link-in-text-block) are calibrated in the spec with a follow-up.
     # DOM-rule based, so OS-independent — plain ubuntu-latest + a chromium install (no pinned
     # container needed, unlike VR).
+    #
+    # Split into 4 shards that run at once: as one job the browser suite took 29 minutes, the
+    # longest check by far, and every PR runs it twice (on the PR and in the merge queue). The
+    # one-off steps (the node tests, packed contrast, the repeat of changed specs, docs coverage)
+    # run in shard 1 only. The `a11y` job below is the required check: it passes when all pass.
+    name: a11y (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       # depth 2: on a pull_request the checkout is GitHub's merge commit, and HEAD^1 (master's tip)
       # is what "the specs this PR adds or changes" is measured against (the repeat step below)
@@ -229,10 +249,12 @@ jobs:
         run: npx playwright install chromium
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        if: ${{ matrix.shard == 1 }}
         with:
           bun-version: '1.4.4'
 
       - name: Check packed token contrast in Chromium
+        if: ${{ matrix.shard == 1 }}
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/uix-packed"
@@ -240,8 +262,12 @@ jobs:
           tar -xzf "$archive" -C "$RUNNER_TEMP/uix-packed"
           UIX_PACKED_TOKENS="$RUNNER_TEMP/uix-packed/package" node --test tests/smoke-consumer/packed-contrast.test.mjs
 
-      - name: Accessibility (axe)
-        run: npm run test:a11y
+      - name: Accessibility source checks (spec lint, results, contrast)
+        if: ${{ matrix.shard == 1 }}
+        run: npm run test:a11y:node
+
+      - name: Accessibility (axe), shard ${{ matrix.shard }} of 4
+        run: npm run test:a11y:browser -- --shard=${{ matrix.shard }}/4
 
       # A test that failed and then passed on its retry is green but racy: name each one on the run.
       - name: Report tests that passed only on retry
@@ -252,7 +278,7 @@ jobs:
       # instead of in the next PR that happens to be unlucky. Skipped on the merge queue (the PR
       # already did it) and when a PR touches more than 10 specs (a mechanical sweep).
       - name: Repeat new and changed specs (flake check)
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ matrix.shard == 1 && github.event_name == 'pull_request' }}
         shell: bash
         run: |
           specs=$(git diff --name-only --diff-filter=AM HEAD^1 HEAD -- 'tests/a11y/*.spec.mjs')
@@ -263,6 +289,7 @@ jobs:
           npx playwright test $specs --project=light --repeat-each=5 --retries=0 --reporter=list
 
       - name: Component documentation coverage and interactions
+        if: ${{ matrix.shard == 1 }}
         run: |
           node --test packages/tokens/docs/docs.test.js packages/tokens/guide/app.test.js
           node tests/docs/verify-components.mjs
@@ -271,9 +298,20 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: a11y-report
+          name: a11y-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 7
+
+  # The required check (branch protection and the merge queue name `a11y`): green only when every
+  # shard is. `always()` so a failed or cancelled shard turns this red instead of skipping it,
+  # which a required check would otherwise count as passed.
+  a11y:
+    needs: a11y-shard
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: All accessibility shards passed
+        run: test "${{ needs.a11y-shard.result }}" = "success"
 
   a11y-lanes:
     # User settings the axe gate cannot see (roadmap #18), as Playwright projects in Chromium

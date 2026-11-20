@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SLA timer harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/sla-timer.spec.mjs (Docs/specs/2026-11-20-sla-timer.md).
+       ?now=<ISO instant> fixes the clock of every timer but #live; &theme=light|dark. Offline: no external assets. -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        var t = q.get('theme') || localStorage.getItem('uix-theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        if (q.get('motion') === 'reduce') document.documentElement.setAttribute('data-motion', 'reduce');
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; background: var(--uix-bg-app); color: var(--uix-text); min-height: 100vh; }
+    #root { display: grid; gap: var(--uix-space-4); max-width: 72rem; margin: 0 auto; padding: var(--uix-space-4); }
+    h1 { margin: 0; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <div id="root"><p>Loading the harness…</p></div>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>
