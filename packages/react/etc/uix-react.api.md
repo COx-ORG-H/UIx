@@ -5011,56 +5011,13 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     ref: react.RefObject<HTMLElement>;
     className: string;
     onTransitionEnd: (event: TransitionEvent_2<HTMLElement>) => void;
-    color?: string | undefined | undefined;
-    title?: string | undefined | undefined;
-    id?: string | undefined | undefined;
-    defaultChecked?: boolean | undefined | undefined;
-    defaultValue?: string | number | readonly string[] | undefined;
-    suppressContentEditableWarning?: boolean | undefined | undefined;
     suppressHydrationWarning?: boolean | undefined | undefined;
-    accessKey?: string | undefined | undefined;
-    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
-    autoFocus?: boolean | undefined | undefined;
-    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
-    contextMenu?: string | undefined | undefined;
-    dir?: string | undefined | undefined;
-    draggable?: (boolean | "true" | "false") | undefined;
-    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
-    hidden?: boolean | undefined | undefined;
+    color?: string | undefined | undefined;
+    id?: string | undefined | undefined;
     lang?: string | undefined | undefined;
-    nonce?: string | undefined | undefined;
-    slot?: string | undefined | undefined;
-    spellCheck?: (boolean | "true" | "false") | undefined;
     style?: react.CSSProperties | undefined;
-    tabIndex?: number | undefined | undefined;
-    translate?: "yes" | "no" | undefined | undefined;
-    radioGroup?: string | undefined | undefined;
     role?: react.AriaRole | undefined;
-    about?: string | undefined | undefined;
-    content?: string | undefined | undefined;
-    datatype?: string | undefined | undefined;
-    inlist?: any;
-    prefix?: string | undefined | undefined;
-    property?: string | undefined | undefined;
-    rel?: string | undefined | undefined;
-    resource?: string | undefined | undefined;
-    rev?: string | undefined | undefined;
-    typeof?: string | undefined | undefined;
-    vocab?: string | undefined | undefined;
-    autoCorrect?: string | undefined | undefined;
-    autoSave?: string | undefined | undefined;
-    itemProp?: string | undefined | undefined;
-    itemScope?: boolean | undefined | undefined;
-    itemType?: string | undefined | undefined;
-    itemID?: string | undefined | undefined;
-    itemRef?: string | undefined | undefined;
-    results?: number | undefined | undefined;
-    security?: string | undefined | undefined;
-    unselectable?: "on" | "off" | undefined | undefined;
-    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
-    is?: string | undefined | undefined;
-    exportparts?: string | undefined | undefined;
-    part?: string | undefined | undefined;
+    tabIndex?: number | undefined | undefined;
     "aria-activedescendant"?: string | undefined | undefined;
     "aria-atomic"?: (boolean | "true" | "false") | undefined;
     "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined | undefined;
@@ -5274,6 +5231,49 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     onAnimationIteration?: react.AnimationEventHandler<HTMLElement> | undefined;
     onAnimationIterationCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
     onTransitionEndCapture?: react.TransitionEventHandler<HTMLElement> | undefined;
+    title?: string | undefined | undefined;
+    slot?: string | undefined | undefined;
+    hidden?: boolean | undefined | undefined;
+    content?: string | undefined | undefined;
+    defaultChecked?: boolean | undefined | undefined;
+    defaultValue?: string | number | readonly string[] | undefined;
+    suppressContentEditableWarning?: boolean | undefined | undefined;
+    accessKey?: string | undefined | undefined;
+    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
+    autoFocus?: boolean | undefined | undefined;
+    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
+    contextMenu?: string | undefined | undefined;
+    dir?: string | undefined | undefined;
+    draggable?: (boolean | "true" | "false") | undefined;
+    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
+    nonce?: string | undefined | undefined;
+    spellCheck?: (boolean | "true" | "false") | undefined;
+    translate?: "yes" | "no" | undefined | undefined;
+    radioGroup?: string | undefined | undefined;
+    about?: string | undefined | undefined;
+    datatype?: string | undefined | undefined;
+    inlist?: any;
+    prefix?: string | undefined | undefined;
+    property?: string | undefined | undefined;
+    rel?: string | undefined | undefined;
+    resource?: string | undefined | undefined;
+    rev?: string | undefined | undefined;
+    typeof?: string | undefined | undefined;
+    vocab?: string | undefined | undefined;
+    autoCorrect?: string | undefined | undefined;
+    autoSave?: string | undefined | undefined;
+    itemProp?: string | undefined | undefined;
+    itemScope?: boolean | undefined | undefined;
+    itemType?: string | undefined | undefined;
+    itemID?: string | undefined | undefined;
+    itemRef?: string | undefined | undefined;
+    results?: number | undefined | undefined;
+    security?: string | undefined | undefined;
+    unselectable?: "on" | "off" | undefined | undefined;
+    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
+    is?: string | undefined | undefined;
+    exportparts?: string | undefined | undefined;
+    part?: string | undefined | undefined;
 }, HTMLElement>;
 
 // @public (undocumented)
@@ -5367,7 +5367,7 @@ export interface NavGroupProps {
 }
 
 // @public
-export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
+export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLAnchorElement | HTMLButtonElement>>;
 
 // @public (undocumented)
 export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -8419,7 +8419,7 @@ export function stepTime(value: string | null, delta: number, min?: string, max?
 export function studentTQuantile(p: number, df: number): number;
 
 // @public
-export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
+export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLAnchorElement | HTMLButtonElement>>;
 
 // @public (undocumented)
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
