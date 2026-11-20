@@ -22,20 +22,25 @@ source of truth, and this table is a snapshot of them.
 |---|---|---:|---:|
 | bundle | main (everything): min / gzip / brotli | 676.3 / 220.1 / 184.3 kB | +2% each |
 | bundle | main → Button only: min / gzip / brotli | 25.6 / 9.3 / 8.4 kB | +512 B each |
-| workspace | mount (10,000 rows, windowed) | 141 ms | 211 ms |
-| workspace | mount: long-frame blocking | 76 ms | 114 ms |
-| workspace | scroll 1,000 rows: p95 frame | 50 ms | 75 ms |
-| workspace | scroll 1,000 rows: total | 1,334 ms | 2,001 ms |
-| workspace | sort | 168 ms | 252 ms |
-| workspace | select all | 96 ms | 144 ms |
-| workspace | search keystroke (worst of 3) | 144 ms | 216 ms |
+| workspace | calibration (the baseline runner) | 109 ms | (not gated: divides the rest) |
+| workspace | mount (10,000 rows, windowed) | 168 ms | 252 ms |
+| workspace | mount: long-frame blocking | 99 ms | 149 ms |
+| workspace | scroll 1,000 rows: p95 frame | 67 ms | 100 ms |
+| workspace | scroll 1,000 rows: total | 1,659 ms | 2,488 ms |
+| workspace | sort | 240 ms | 360 ms |
+| workspace | select all | 120 ms | 180 ms |
+| workspace | search keystroke (worst of 3) | 168 ms | 252 ms |
 | no-gpu | modal open: latency / p95 frame | 96 / 50 ms | 240 / 125 ms |
 | no-gpu | drawer open: latency / p95 frame | 64 / 50 ms | 160 / 125 ms |
 | no-gpu | scroll edges: p95 frame | 16.7 ms | 66.7 ms |
 | no-gpu | task tray open: latency / p95 frame | 40 / 16.7 ms | 100 / 66.7 ms |
 
-All three interactions in the workspace lane are under the 200 ms INP target at 4× throttling.
-Sort is the slowest. In the no-GPU lane the scrim blur costs about 14 ms of p95 frame on a modal
+The workspace figures are in milliseconds of the baseline runner. A run on another runner is
+scaled to that runner before the gate. Two calibrated CI runs were taken on runners 1.17× apart. Once
+scaled, their medians agreed within 9% (mount 167.7 against 167.6 ms, sort 240 against 225 ms).
+Before calibration, two runs of one commit had read 1.4× apart. Select all and the search keystroke are under the
+200 ms INP target at 4× throttling. Sort is not: it reads 240 ms on a 10,000-row client-side sort,
+and that is the first thing to look at if TENSOR sorts large unpaged lists in the browser. In the no-GPU lane the scrim blur costs about 14 ms of p95 frame on a modal
 open and about 17 ms on a drawer open (50 ms with the blur against 36 and 33 ms without). Scroll
 edges and the task tray cost nothing measurable. The `(no blur)` rows have baselines of their own
 in `budgets.json`.
