@@ -6,7 +6,9 @@ import { flushSync } from 'react-dom';
 import { cx } from '../cx.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
-import { KbdCombo, isKeyShortcut, spokenKeys, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, isKeyShortcut, spokenSequence, useKbdPlatform } from './Kbd.js';
+import { useUixLabels } from '../labels-context.js';
+import { useDisplayedShortcut } from '../shortcut-hooks.js';
 import type { KeyShortcut } from './Kbd.js';
 import { blurIn, markKeyOpened, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
@@ -52,6 +54,11 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
    * binds the key.
    */
   shortcut?: KeyShortcut;
+  /**
+   * Show the keys of a registered shortcut (`useShortcut`) instead of `shortcut`: its current keys
+   * after remaps, and none while it is not active. Default: the `shortcutId` of a `Button` child.
+   */
+  shortcutId?: string;
   children?: ReactNode;
 }
 
@@ -66,7 +73,7 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
  * While the bubble is open it takes the first Escape (HAR-2415), also on a combobox-style trigger
  * whose list is open (a Select, a date field): one Escape closes the bubble, the next one the list.
  */
-export function Tooltip({ label, content, placement = 'top', shortcut, className, children, ...props }: TooltipProps) {
+export function Tooltip({ label, content, placement = 'top', shortcut, shortcutId, className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | null>(null);
@@ -77,9 +84,11 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
   const [open, setOpen] = useState(false);
   const id = useId();
   const platform = useKbdPlatform();
-  const childShortcut = isValidElement(children) ? (children.props as { shortcut?: unknown }).shortcut : undefined;
-  const own = shortcut ?? (isKeyShortcut(childShortcut) ? childShortcut : undefined);
-  const keys = own && own.length > 0 ? own : null;
+  const childProps = isValidElement(children) ? children.props as { shortcut?: unknown; shortcutId?: unknown } : {};
+  const own = shortcut ?? (isKeyShortcut(childProps.shortcut) ? childProps.shortcut : undefined);
+  const ownId = shortcutId ?? (shortcut == null && typeof childProps.shortcutId === 'string' ? childProps.shortcutId : undefined);
+  const keys = useDisplayedShortcut(own, ownId);
+  const then = useUixLabels().shortcuts?.then ?? 'then';
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });
 
@@ -313,8 +322,8 @@ export function Tooltip({ label, content, placement = 'top', shortcut, className
               <>
                 {text != null && <span id={`${id}-text`}>{text}</span>}
                 <span className="uix-tooltip__shortcut">
-                  <span id={`${id}-keys`} className="uix-visually-hidden">{spokenKeys(keys, platform)}</span>
-                  <KbdCombo keys={[...keys]} platform={platform} aria-hidden="true" />
+                  <span id={`${id}-keys`} className="uix-visually-hidden">{spokenSequence(keys, platform, then)}</span>
+                  <KbdCombo keys={keys} platform={platform} thenLabel={then} aria-hidden="true" />
                 </span>
               </>
             ) : text}

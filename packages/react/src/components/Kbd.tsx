@@ -3,6 +3,9 @@
 import { useSyncExternalStore } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
+import { useDisplayedShortcut } from '../shortcut-hooks.js';
+import type { KeySequence } from '../shortcut-model.js';
 
 export interface KbdProps extends HTMLAttributes<HTMLElement> {
   children?: ReactNode;
@@ -95,30 +98,64 @@ export function spokenKeys(keys: KeyShortcut, platform: KbdPlatform, keyLabels?:
   return keys.map((key) => keyLabels?.[key] ?? KEYS[key]?.[platform]?.[1] ?? key).join('+');
 }
 
+/**
+ * The `aria-keyshortcuts` value of a registered binding: the chord's, or nothing for a sequence
+ * (G then I), which the attribute cannot express; the visible keys and the spoken text still say
+ * it. Internal.
+ */
+export function ariaKeyShortcutsFor(sequence: KeySequence | null | undefined, platform: KbdPlatform): string | undefined {
+  return sequence && sequence.length === 1 ? ariaKeyShortcuts(sequence[0], platform) : undefined;
+}
+
+/** What a screen reader hears for a binding: "Control+K", or "G, then I" for a sequence. Internal. */
+export function spokenSequence(sequence: KeySequence, platform: KbdPlatform, then: string, keyLabels?: Partial<Record<string, string>>): string {
+  return sequence.map((chord) => spokenKeys(chord, platform, keyLabels)).join(`, ${then} `);
+}
+
 export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /**
    * Keys in order, e.g. `['Mod', 'K']`. `Mod` is ⌘ on Apple and Ctrl elsewhere; `Shift`,
-   * `Alt`, `Enter`, `Escape`, `Backspace`, `Tab` and the arrows get platform glyphs.
+   * `Alt`, `Enter`, `Escape`, `Backspace`, `Tab` and the arrows get platform glyphs. A sequence
+   * of chords, e.g. `[['G'], ['I']]`, shows "G then I".
    */
-  keys: string[];
+  keys?: string[] | KeySequence;
+  /**
+   * Show the keys a registered shortcut has now (`useShortcut`), instead of `keys`: a remap shows
+   * the new keys, and nothing renders while that command is not active (unregistered, disabled,
+   * or a character key with the character-key switch off), so the hint never disagrees with the key.
+   */
+  shortcutId?: string;
   /** Fix the platform (tests, docs). Default: detected after mount; the server renders `other`. */
   platform?: KbdPlatform;
   /** Spoken names for keys, e.g. `{ Mod: 'Steuerung' }`; the glyphs stay. */
   keyLabels?: Partial<Record<string, string>>;
+  /** The word between the chords of a sequence. Default: `UixLabelsProvider` `shortcuts.then`, then "then". */
+  thenLabel?: string;
 }
 
 /**
- * A shortcut such as ⌘K / Ctrl+K. Screen readers hear the key names ("Command+K"), not the
- * glyphs. The platform is resolved at display time, after mount, so server and client agree.
+ * A shortcut such as ⌘K / Ctrl+K, or a sequence such as G then I. Screen readers hear the key
+ * names ("Command+K", "G, then I"), not the glyphs. The platform is resolved at display time,
+ * after mount, so server and client agree.
  */
-export function KbdCombo({ keys, platform, keyLabels, className, ...props }: KbdComboProps) {
+export function KbdCombo({ keys, shortcutId, platform, keyLabels, thenLabel, className, ...props }: KbdComboProps) {
   const active = useKbdPlatform(platform);
+  const labels = useUixLabels();
+  const then = thenLabel ?? labels.shortcuts?.then ?? 'then';
+  const sequence = useDisplayedShortcut(keys, shortcutId);
+  if (!sequence) return null;
+  const caps = (chord: readonly string[], at: number) => (
+    <span key={`chord-${at}`} className="uix-kbd-combo__keys" aria-hidden="true">
+      {chord.map((key, i) => <kbd key={`${key}-${i}`} className="uix-kbd">{KEYS[key]?.[active]?.[0] ?? key}</kbd>)}
+    </span>
+  );
   return (
     <span className={cx('uix-kbd-combo', className)} {...props}>
-      <span className="uix-visually-hidden">{spokenKeys(keys, active, keyLabels)}</span>
-      <span className="uix-kbd-combo__keys" aria-hidden="true">
-        {keys.map((key, i) => <kbd key={`${key}-${i}`} className="uix-kbd">{KEYS[key]?.[active]?.[0] ?? key}</kbd>)}
-      </span>
+      <span className="uix-visually-hidden">{spokenSequence(sequence, active, then, keyLabels)}</span>
+      {sequence.length === 1 ? caps(sequence[0], 0) : sequence.flatMap((chord, at) => [
+        ...(at > 0 ? [<span key={`then-${at}`} className="uix-kbd-combo__then" aria-hidden="true">{then}</span>] : []),
+        caps(chord, at),
+      ])}
     </span>
   );
 }

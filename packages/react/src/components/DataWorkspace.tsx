@@ -31,6 +31,7 @@ import { Pagination } from './Pagination.js';
 import type { PaginationLabels } from './Pagination.js';
 import { Popover } from './Popover.js';
 import { SearchBar } from './SearchBar.js';
+import { useShortcut } from './Shortcuts.js';
 import { Select } from './Select.js';
 import { EmptyState, ErrorState, FilteredEmptyState, LoadingState } from './States.js';
 import { BulkBar, RowActions, Table, TableWrap, Td, Th, Tr } from './Table.js';
@@ -523,7 +524,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
   activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, multiSort = false, labels: labelOverrides, className, ...props
 }: DataWorkspaceProps<T, S>) {
-  const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...useUixLabels().dataWorkspace, ...labelOverrides };
+  const uixLabels = useUixLabels();
+  const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...uixLabels.dataWorkspace, ...labelOverrides };
   const id = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -536,25 +538,24 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   /** The row a Shift-click range starts from: the last row clicked without Shift. */
   const anchor = useRef<string | null>(null);
 
-  // Ctrl/⌘ + / focuses the search: from inside this workspace, or from a page with nothing
-  // focused when this is its first workspace. Another workspace or app field keeps the key.
-  useEffect(() => {
-    if (!search) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== '/' || !(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+  // Ctrl/⌘ + / focuses the search: from inside this workspace (its own fields too), or from a page
+  // with nothing focused when this is its first workspace. Another workspace or app field keeps the
+  // key. Registered as `uix.data-workspace.search`: listed in the shortcut sheet, remappable.
+  useShortcut({
+    id: 'uix.data-workspace.search', keys: 'Mod+/', enabled: search != null, scope: 'global',
+    label: uixLabels.shortcuts?.focusSearch ?? 'Search this list', allowInInputs: true, allowInModal: true,
+    when: (event) => {
       const root = rootRef.current;
       const target = event.target as Node | null;
       const inside = root != null && target != null && root.contains(target);
       const unfocused = target === document.body || target === document.documentElement || target === document;
-      if (inside || (unfocused && root != null && document.querySelector('.uix-data-workspace') === root)) {
-        event.preventDefault();
-        searchRef.current?.focus();
-        searchRef.current?.select();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [search != null]);
+      return inside || (unfocused && root != null && document.querySelector('.uix-data-workspace') === root);
+    },
+    handler: () => {
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    },
+  });
 
   // Escape restores a maximized workspace, unless something inside used it (a popover, a field).
   useEffect(() => {

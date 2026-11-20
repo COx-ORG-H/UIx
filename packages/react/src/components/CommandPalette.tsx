@@ -9,7 +9,10 @@ import { useDialog } from '../hooks/useDialog.js';
 import { filterCommandItems, groupCommandItems } from '../command-palette-model.js';
 import type { CommandPaletteItem } from '../command-palette-model.js';
 import { searchSegments } from '../search-suggest-model.js';
-import { KbdCombo, ariaKeyShortcuts, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, ariaKeyShortcutsFor, useKbdPlatform } from './Kbd.js';
+import { toSequence } from '../shortcut-hooks.js';
+import { useShortcut, useShortcuts } from './Shortcuts.js';
+import type { ShortcutBinding } from '../shortcut-model.js';
 
 /* Combobox wiring shared across the palette family (UIX-A11Y-1): the root owns the listbox id
  * and the active option id (input → aria-activedescendant), and counts mounted items so a status
@@ -71,7 +74,19 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   onOpenChange?: (open: boolean) => void;
   /** Items mode: render at most this many found items (the count still says how many were found). Default 100. */
   limit?: number;
+  /**
+   * Items mode with `open` / `onOpenChange`: keys that open and close the palette through the
+   * shortcut registry, e.g. `'Mod+K'`; they work in text fields too, and list in the shortcut
+   * sheet under its `shortcutLabel`. A person's remap of `uix.command-palette` applies. Default:
+   * none (the product binds its own key, as before).
+   */
+  shortcut?: ShortcutBinding;
+  /** The palette's shortcut in the sheet. Default: `UixLabelsProvider` `shortcuts.openPalette`, then "Open the command palette". */
+  shortcutLabel?: string;
 }
+
+/** The command id of `CommandPalette` `shortcut`, for a remap or a `Button` `shortcutId`. */
+export const COMMAND_PALETTE_SHORTCUT_ID = 'uix.command-palette';
 
 /**
  * ⌘K command palette surface over `.uix-cmdk`. Presentational: mount it inside a
@@ -92,7 +107,7 @@ function CommandPaletteChildren({
   inputProps, children, inputLabel: inputLabelProp, resultsLabel, className,
   items: _items, query: _query, onQueryChange: _onQueryChange, recent: _recent, filter: _filter, onItemSelect: _onItemSelect,
   onNavigate: _onNavigate, emptyLabel: _emptyLabel, recentLabel: _recentLabel, placeholder: _placeholder, open: _open, onOpenChange: _onOpenChange,
-  limit: _limit, ...props
+  limit: _limit, shortcut: _shortcut, shortcutLabel: _shortcutLabel, ...props
 }: CommandPaletteProps) {
   const uixLabels = useUixLabels();
   const inputLabel = inputLabelProp ?? uixLabels.commandPalette?.input ?? 'Command palette';
@@ -215,9 +230,18 @@ function Highlighted({ text, query }: { text: string; query: string }) {
 
 function CommandPaletteItems({
   items, query: queryProp, onQueryChange, recent, filter, onItemSelect, onNavigate, emptyLabel, recentLabel, placeholder,
-  open, onOpenChange, limit = 100, inputLabel: inputLabelProp, resultsLabel, inputProps, className, children: _children, ...props
+  open, onOpenChange, limit = 100, inputLabel: inputLabelProp, resultsLabel, inputProps, className, children: _children,
+  shortcut, shortcutLabel, ...props
 }: CommandPaletteProps & { items: readonly CommandPaletteItem[] }) {
   const uixLabels = useUixLabels();
+  const shortcuts = useShortcuts();
+  // The palette's own keys, through the registry: in text fields too, and over its own dialog so
+  // the same keys close it.
+  useShortcut({
+    id: COMMAND_PALETTE_SHORTCUT_ID, keys: shortcut ?? '', enabled: shortcut != null && open !== undefined, scope: 'global',
+    label: shortcutLabel ?? uixLabels.shortcuts?.openPalette ?? 'Open the command palette',
+    allowInInputs: true, allowInModal: true, handler: () => onOpenChange?.(!open),
+  });
   const labels = uixLabels.commandPalette;
   const inputLabel = inputLabelProp ?? labels?.input ?? 'Command palette';
   const empty = emptyLabel ?? labels?.empty ?? 'No results';
@@ -293,8 +317,14 @@ function CommandPaletteItems({
       if (onNavigate) onNavigate(item.href, item);
       else window.location.assign(item.href);
     }
+    // A registered command with nothing else to do runs, once the palette has closed and given focus back.
+    const command = !item.onSelect && !item.href && item.shortcutId ? item.shortcutId : null;
     onItemSelect?.(item);
     if (inDialog) onOpenChange?.(false);
+    if (command) {
+      if (inDialog) window.setTimeout(() => shortcuts.run(command), 0);
+      else shortcuts.run(command);
+    }
   };
 
   const move = (to: number) => {
@@ -319,6 +349,8 @@ function CommandPaletteItems({
 
   const renderRow = ({ item, id }: { item: CommandPaletteItem; id: string }) => {
     const isActive = id === activeId;
+    // The registry's keys for a registered command (none while it is off), else the literal ones.
+    const keys = item.shortcutId ? shortcuts.keysFor(item.shortcutId) : toSequence(item.shortcut);
     return (
       <div
         key={id}
@@ -328,7 +360,7 @@ function CommandPaletteItems({
         data-active={isActive || undefined}
         aria-selected={isActive}
         aria-disabled={item.disabled || undefined}
-        aria-keyshortcuts={item.shortcut?.length ? ariaKeyShortcuts(item.shortcut, platform) : undefined}
+        aria-keyshortcuts={ariaKeyShortcutsFor(keys, platform)}
         // pointermove, not mouseenter: the list scrolling under a still pointer must not steal the active row
         onPointerMove={() => { if (!item.disabled && !isActive) setActiveState(id); }}
         onMouseDown={(event) => event.preventDefault()}
@@ -339,7 +371,7 @@ function CommandPaletteItems({
           <span className="uix-cmdk__label"><Highlighted text={item.label} query={query} /></span>
           {item.description && <span className="uix-cmdk__desc">{item.description}</span>}
         </span>
-        {item.shortcut?.length ? <span className="uix-cmdk__shortcut"><KbdCombo keys={[...item.shortcut]} platform={platform} /></span> : null}
+        {keys ? <span className="uix-cmdk__shortcut"><KbdCombo keys={keys} platform={platform} /></span> : null}
       </div>
     );
   };
