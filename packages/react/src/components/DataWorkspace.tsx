@@ -8,7 +8,9 @@ import type {
 import { cx } from '../cx.js';
 import { toggleSort } from '../table-engine.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
@@ -66,8 +68,8 @@ export interface DataWorkspaceLabels {
   selectAll: string;
   /** `{label}`: the row's id. */
   selectRow: string;
-  /** `{count}` selected, in the bulk bar. */
-  selected: string;
+  /** `{count}` selected, in the bulk bar. Takes the plural forms or a function of the count too. */
+  selected: UixCountLabel;
   bulkActions: string;
   /** The record-id cell's ↗ button. `{label}`. */
   open: string;
@@ -84,9 +86,12 @@ export interface DataWorkspaceLabels {
   retry: string;
   /** A sorted header's place among two or more sort keys (HAR-2623): `{n}`. */
   sortPriority: string;
-  /** A group header's row count (HAR-2625): `{count}`. */
-  groupCount: string;
-  /** The same for one row. */
+  /**
+   * A group header's row count (HAR-2625): `{count}`. Takes the plural forms
+   * (`{ one, few, other }`) or a function of the count too, and then `groupCountOne` is not read.
+   */
+  groupCount: UixCountLabel;
+  /** The same for one row, when `groupCount` is a plain string. */
   groupCountOne: string;
   /** A group header's toggle while the group is open: `{name}`. */
   collapseGroup: string;
@@ -543,6 +548,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
 }: DataWorkspaceProps<T, S>) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...uixLabels.dataWorkspace, ...labelOverrides };
+  const workspaceLocale = useUixLocale();
   const id = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -833,7 +839,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     >
       {toolbar}
       {bulkActions && selectedIds.length > 0 && (
-        <BulkBar count={selectedIds.length} label={labels.bulkActions} selectedLabel={(n) => fillLabel(labels.selected, { count: n })}>
+        <BulkBar count={selectedIds.length} label={labels.bulkActions} selectedLabel={(n) => fillLabel(countLabel(labels.selected, n, workspaceLocale), { count: n })}>
           {bulkActions(selectedIds)}
         </BulkBar>
       )}
@@ -969,6 +975,7 @@ function WorkspaceTable<T>({
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const baseId = useId();
+  const locale = useUixLocale();
 
   // ── windowing (HAR-2626) ────────────────────────────────────────────────────────────────
   const maxHeight = windowing?.maxHeight ?? 640;
@@ -1444,7 +1451,7 @@ function WorkspaceTable<T>({
                   <ChevronIcon />
                 </button>
                 <span className="uix-data-workspace__group-name" id={nameId}>{group.label}</span>
-                <span className="uix-data-workspace__group-count" id={countId}>{fillLabel(count === 1 ? labels.groupCountOne : labels.groupCount, { count })}</span>
+                <span className="uix-data-workspace__group-count" id={countId}>{fillLabel(countLabel(labels.groupCount, count, locale, labels.groupCountOne), { count })}</span>
                 {leadAgg}
               </span>
             </th>

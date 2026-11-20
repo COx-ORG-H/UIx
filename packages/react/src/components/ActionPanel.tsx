@@ -16,7 +16,8 @@ import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useMemo, us
 import type { HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import type { Placement } from '../overlay-position.js';
@@ -47,9 +48,12 @@ export interface ActionPanelLabels {
   search: string;
   /** Nothing matches the query. Default "No matching actions". */
   empty: string;
-  /** The polite count as the person types. Defaults "{count} action" / "{count} actions". */
+  /**
+   * The polite count as the person types. Defaults "{count} action" / "{count} actions";
+   * `resultsMany` also takes plural forms (`{ one, few, other }`) or a function of the count.
+   */
   resultsOne: string;
-  resultsMany: string;
+  resultsMany: UixCountLabel;
   /** The item's Mod+K in the shortcut sheet and on the row's ⋯ button. Default "Show actions". */
   open: string;
   /** The group of destructive actions, for screen readers. Default "Destructive actions". */
@@ -212,8 +216,9 @@ export function ActionPanel({
   // The count is announced after typing settles, once per change (as the palette does).
   const [announced, setAnnounced] = useState('');
   const count = rows.length;
-  const countText = useRef((n: number) => fillLabel(n === 1 ? labels.resultsOne : labels.resultsMany, { count: n }));
-  countText.current = (n: number) => fillLabel(n === 1 ? labels.resultsOne : labels.resultsMany, { count: n });
+  const plural = usePluralLabel();
+  const countText = useRef((n: number) => fillLabel(plural(labels.resultsMany, n, labels.resultsOne), { count: n }));
+  countText.current = (n: number) => fillLabel(plural(labels.resultsMany, n, labels.resultsOne), { count: n });
   const step = confirmAction ? confirmAction.id : null;
   useEffect(() => {
     if (!open || step) return undefined;
