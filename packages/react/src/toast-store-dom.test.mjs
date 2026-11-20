@@ -112,7 +112,7 @@ test('store: undoable commits when it closes without Undo, and only undoes when 
     const undone = t.undoable('Ticket closed', { onUndo: () => log.push('undo-2'), onCommit: () => log.push('commit-2') });
     const record = t.store.getSnapshot().find((r) => r.id === undone);
     assert.equal(record.action.label, 'Undo');
-    assert.equal(record.duration, 6000);
+    assert.equal(record.duration, 8000, '--uix-hold-undo, read when no stylesheet answers (roadmap #23)');
     record.action.onClick();
     t.store.dismiss(undone, 'action');
     assert.deepEqual(log, ['commit-1', 'undo-2']);

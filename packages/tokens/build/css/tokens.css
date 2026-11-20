@@ -229,6 +229,7 @@
     --uix-delay-pending: 300ms;
     --uix-hold-pending: 500ms;
     --uix-hold-result: 1500ms;
+    --uix-hold-undo: 8000ms;
     --uix-delay-tooltip: 400ms;
     --uix-delay-tooltip-skip: 300ms;
     --uix-loop-spin: 600ms;
