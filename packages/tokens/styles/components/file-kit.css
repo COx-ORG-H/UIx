@@ -148,8 +148,16 @@
   .uix-file-drop__line > * { grid-area: 1 / 1; min-width: 0; transition: opacity var(--uix-dur-fast) var(--uix-ease-out); }
   /* The summary sits over the sentence in the same cell; it must never take the button's clicks. */
   .uix-file-drop__summary { pointer-events: none; opacity: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--uix-text); }
-  .uix-file-drop[data-dragging] .uix-file-drop__text { opacity: 0; }
-  .uix-file-drop[data-dragging] .uix-file-drop__summary { opacity: 1; }
+  /* a text swap (Foundations → Motion: text never fades over text): the sentence leaves on
+     --uix-dur-exit-fast (clamped to the whole swap), then the summary arrives over the rest of
+     --uix-dur-fast. On the way back the summary is already empty, so it drops out at once (a drag
+     that comes back mid-fade then starts it from nothing) and the sentence returns without a wait. */
+  .uix-file-drop { --uix-file-drop-swap-out: min(var(--uix-dur-exit-fast), var(--uix-dur-fast)); }
+  .uix-file-drop:not([data-dragging]) .uix-file-drop__summary { transition-duration: 0s; }
+  .uix-file-drop[data-dragging] .uix-file-drop__text { opacity: 0; transition-duration: var(--uix-file-drop-swap-out); }
+  .uix-file-drop[data-dragging] .uix-file-drop__summary {
+    opacity: 1; transition-duration: calc(var(--uix-dur-fast) - var(--uix-file-drop-swap-out)); transition-delay: var(--uix-file-drop-swap-out);
+  }
   .uix-file-drop__choose {
     margin: 0; padding: 0; border: 0; border-radius: var(--uix-radius-xs); background: none; font: inherit; font-weight: 600; color: var(--uix-link); cursor: pointer;
     text-decoration: underline; text-underline-offset: .18em; text-decoration-color: color-mix(in srgb, var(--uix-link) 40%, transparent);
