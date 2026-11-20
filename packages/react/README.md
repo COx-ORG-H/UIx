@@ -360,6 +360,11 @@ into) and `[data-uix-settle]` (the landing). Reduced motion keeps the states and
 and the landing.
 
 - **SortableList** and **DashboardCanvas** lift and settle on their own.
+- **SortableList `makeRoom`** (EXPERIMENT, not a settled default; phone-OS motion study, Tier 3
+  item 16): the dragged row follows the pointer and the rows it passes glide aside by its height
+  (`translate` on `--uix-dur` / `--uix-ease-glide`), so a gap shows where it lands; one
+  `onReorder` on drop, and a keyboard move glides the two rows. Off by default, and under reduced
+  motion it is today's behaviour. It may change or go away.
 - **Kanban**: `KanbanCard dragging`, `KanbanColumn dropTarget`, `<KanbanDropLine />` at the gap;
   call `settleDrop(cardElement)` once the card is in its new place.
 - **`useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })`** for a draggable thing you
