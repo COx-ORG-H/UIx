@@ -1,0 +1,4 @@
+### 2026-11-20 · a toggle that reads the DOM needs a way to re-run the prop effect
+- **Rule:** a key that toggles a controlled native dialog reads `dialog.open` (as the c34ab3b rule says), and when it asks for `true` it must also re-sync the hook that drives the dialog from the prop: `true` batched with the `false` the queued `close` event already asked for leaves the prop unchanged, so an effect keyed on `[open]` never re-runs and the dialog stays closed while React holds it open. `useDialogSync().resync` is that signal.
+- **Why:** CommandPalette's Mod+K read React's stale `open` after Escape and closed the palette again; toggling from `dialog.open` alone left it natively closed with no scroll lock or modal layer.
+- **Gate:** `packages/react/src/command-palette-toggle-dom.test.mjs` builds both gaps (before React renders the close, and before the queued close event) inside one `act()` scope.
