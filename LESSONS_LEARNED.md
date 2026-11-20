@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
 <!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
 <!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
 <!-- lesson-skip: dcef8a8d routine: the review named two more inline-style shapes for the TS scan; pinned by check-motion tests -->
