@@ -202,6 +202,7 @@ const PACK_DEFAULTS = {
   fileUpload: 'DEFAULT_FILE_UPLOAD_LABELS', fileRow: 'FILE_ROW_LABELS_EN', fileDrop: 'FILE_DROP_LABELS_EN', fileKinds: 'FILE_KIND_LABELS_EN',
   attachment: 'DEFAULT_ATTACHMENT_LABELS', tagInput: 'DEFAULT_TAG_INPUT_LABELS', passwordInput: 'DEFAULT_PASSWORD_INPUT_LABELS',
   pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS', shortcuts: 'DEFAULT_SHORTCUT_LABELS',
+  kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS',
 };
 
 test('the en pack is the kit\'s English: equal to every exported default it covers', () => {
@@ -209,6 +210,9 @@ test('the en pack is the kit\'s English: equal to every exported default it cove
   // DataWorkspace's `more` is optional in the defaults (it falls back to toolbar.more)
   assert.deepEqual({ ...en.dataWorkspace, more: undefined }, { ...ui.DEFAULT_DATA_WORKSPACE_LABELS, more: undefined });
   assert.equal(en.dataWorkspace.more, en.toolbar.more);
+  // ViewMenu's column-row words are not exported: they must be the literals in TableControls.tsx
+  const tableControls = read('./components/TableControls.tsx');
+  for (const [key, value] of Object.entries(en.viewMenu)) assert.ok(tableControls.includes(`${key}: '${value}'`), `viewMenu.${key}: '${value}' is not the TableControls default`);
 });
 
 test('the en pack\'s inline defaults are the words the components fall back to', () => {

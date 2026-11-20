@@ -12,7 +12,7 @@
  *
  * What stays Latin: `{placeholders}`, `${expressions}`, acronyms (all capitals, at most four letters:
  * QR, PDF, URL, ID), key names
- * (Esc, Enter, Tab, …), words with q, w, x or y, and string literals that are not words
+ * (Esc, Escape, Enter, Tab, …), words with q, w, x or y, and string literals that are not words
  * (object keys, module paths, index types, `Intl` options, the locale tag itself, which becomes
  * `sr-Cyrl`).
  *
@@ -36,7 +36,7 @@ export const PAIR_WORDS = [
 ];
 
 /** Words that stay in Latin script: key names and product words. */
-export const LATIN_WORDS = new Set(['Esc', 'Enter', 'Tab', 'Shift', 'Ctrl', 'Alt', 'Cmd', 'Option', 'Home', 'End', 'PgUp', 'PgDn', 'Space', 'Backspace', 'Delete']);
+export const LATIN_WORDS = new Set(['Esc', 'Enter', 'Tab', 'Shift', 'Ctrl', 'Alt', 'Cmd', 'Option', 'Home', 'End', 'PgUp', 'PgDn', 'Space', 'Backspace', 'Delete', 'Escape', 'PageUp', 'PageDown']);
 
 const isUpper = (ch) => ch !== ch.toLowerCase();
 const caseLike = (cyr, latin) => (isUpper(latin[0]) ? cyr.toUpperCase() : cyr);
