@@ -124,9 +124,10 @@ const steps = [
       { keys: ['ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-19',
         notActing: 'in browse mode NVDA keeps ArrowLeft for its own cursor ("out of toggle button, toggle button, not pressed"); the focused day stays on 20 November',
         gaps: [{ phrase: /19 November 2026/, issue: 'the day ArrowLeft should reach is not spoken' }] },
-      // The same key in focus mode (NVDA+Space), where the calendar gets it.
-      { keys: ['nvda:focusMode', 'ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-19',
-        speak: [/19 November 2026/] },
+      // Focus mode (NVDA+Space) moves focus to the day NVDA's cursor is on (19 November, run
+      // 44734133463); the calendar then gets ArrowLeft and NVDA speaks the full date and "current date".
+      { keys: ['nvda:focusMode', 'ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-18',
+        speak: [/Thursday, 19 November 2026/, /Wednesday, 18 November 2026.*current date/] },
       { keys: ['Escape'], acted: () => document.activeElement?.id === 'date-input' && document.getElementById('date-input')?.value === '20/11/2026',
         speak: [/Due date/] },
     ] },
