@@ -6,7 +6,7 @@
  * Undo; focus goes back to the row (or the ⋯ button) every time; it fits a phone; axe finds nothing
  * serious with the panel or its confirm step open, in both themes. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/action-panel/harness.html';
 const GATED = new Set(['serious', 'critical']);

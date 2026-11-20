@@ -591,6 +591,37 @@ await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update(
 - **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
 - **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
 
+### AI assistance (`AiLabel`, `AiSuggestion`, `Field ai`, `ProposalReview`, `AiOutputCard`, `uix-proposal`)
+
+Every AI value is disclosed, reversible, and, for consequential writes, approved by structure, not
+by an optional review. Products report what people did with it through a content-free event.
+Spec: `Docs/specs/2026-11-20-ai-proposals.md`; rules on the docs page Enterprise patterns → AI assistance.
+
+```tsx
+<AiSuggestion proposalId="INC-1042:priority" type="incident.priority" value="P2 – High"
+  explanation={{ why: '40 users are affected', sources }} onAccept={apply} onDismiss={hide} />
+
+const category = useAiFieldValue({ aiValue, proposalId: 'INC-1042:category', type: 'incident.category', initialValue: '' });
+<Field label="Category" ai={category.ai}><Input value={category.value} onChange={(e) => category.setValue(e.target.value)} /></Field>
+// on save: category.commit()  → `accepted` when the AI value was kept
+
+<ProposalReview proposalId="INC-1042:resolve" consequence="high" title="Resolve INC-1042 and notify the caller"
+  changes={changes} affected="INC-1042 and 2 linked incidents" reversible={false} status={status}
+  onApprove={resolve} onReject={reject} />
+
+<AiOutputCard proposalId="INC-1042:summary" title="Summary" status={status} statusText="Summarising 12 work notes"
+  sources={sources} onStop={stop} onRetry={retry} onFeedback={rate}>{useStreamingText(text, status === 'generating')}</AiOutputCard>
+
+useEffect(() => onProposalEvent((detail) => analytics.track('ai_proposal', detail)), []);   // ids, enums, timings only
+```
+
+- **Bands:** `consequencePolicy('low' | 'medium' | 'high')` is the gate as data. Low may auto-apply (admin data); medium is one click plus an undo toast; high is `ProposalReview` only, never auto-applied. `AiSuggestion` has no `high` band, and `ProposalReview` never approves on mount, on Enter or from a timer. Every card states `reversible` ("Can be undone for 30 s", "Cannot be undone").
+- **AI-filled fields:** `Field ai={{ state: 'filled' }}` shows the AI mark, the `Input warning` review border and "Filled in by AI. Check it."; `state: 'edited'` turns it human and offers "Revert to AI" (focus returns to the control). `Field` stays server-renderable.
+- **Streaming:** never put tokens in a live region. `AiOutputCard` (or `startAiGeneration` for your own surface) says the status once, a shared "Loading" about every 5 s (`AI_HEARTBEAT_MS`), then the whole answer once, through the page's one polite region. `announce="final"` mutes secondary chatter. Under reduced motion there is no caret; `useStreamingText` hands text over in whole sentences.
+- **Events:** `uix-proposal` bubbles from the component (built like `uix-feedback`): `shown`, `accepted`, `dismissed`, `edited`, `reverted`, `undone`, `feedback`, `stopped`, `retried`, with `proposalId`, `kind`, `type`, `consequence`, `rating`, `elapsedMs`, `sinceAcceptMs` and `at`. Ids must match `ID_PATTERN`; free text is refused and not sent. Report acceptance next to reversion, never alone. `emitProposalEvent` is for surfaces you build (an undo toast).
+- **Audit:** pass `<AiActor name="Assist" approvedBy="Ana" />` as `AuditLog`'s `actor`.
+- **Words:** `labels` or `UixLabelsProvider` (`ai`), one group for all of them (`DEFAULT_AI_LABELS`).
+
 ### Keyboard shortcuts (`ShortcutProvider`, `useShortcut`, `ShortcutSheet`)
 
 One registry owns every shortcut on the page, so the hints, the `?` sheet and the behaviour can
