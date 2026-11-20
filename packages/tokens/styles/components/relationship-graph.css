@@ -21,7 +21,7 @@
   .uix-relationship-graph__list>ul>li { display:flex; justify-content:space-between; gap:var(--uix-space-2); padding:var(--uix-space-2); border-radius:var(--uix-radius-md); background:var(--uix-bg-subtle); }
   /* A row: the node's button (its name only), then its neighbours as a list of their own (HAR-1387). */
   .uix-relationship-graph__list-main { display:grid; flex:1; gap:var(--uix-space-1); min-width:0; }
-  .uix-relationship-graph__list-main>button { display:grid; justify-items:start; gap:var(--uix-space-1); padding:0; border:0; background:transparent; color:var(--uix-text); font:inherit; text-align:left; cursor:pointer; }
+  .uix-relationship-graph__list-main>button { display:grid; justify-items:start; gap:var(--uix-space-1); padding:0; border:0; background:transparent; color:var(--uix-text); font:inherit; text-align:start; cursor:pointer; }
   .uix-relationship-graph__list-main>button span,.uix-relationship-graph__list-relations,.uix-relationship-graph__list-none { color:var(--uix-text-muted); font-size:var(--uix-text-meta); }
   .uix-relationship-graph__list-none { margin:0; }
   /* "Connected to", then the names wrapping beside it, comma after comma, then "Show all N" */
@@ -70,7 +70,7 @@
   .uix-relationship-graph__link[data-conflicted] path { stroke:var(--uix-danger); }
   .uix-relationship-graph__link[data-dimmed] { opacity:.35; }
   .uix-relationship-graph__column { position:absolute; top:var(--uix-space-4); overflow:hidden; color:var(--uix-text-muted); font-size:var(--uix-text-meta); white-space:nowrap; text-overflow:ellipsis; text-transform:uppercase; letter-spacing:.04em; pointer-events:none; }
-  .uix-relationship-graph__item { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:var(--uix-space-1); padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); color:var(--uix-text); font:inherit; text-align:left; cursor:pointer; transition:border-color var(--uix-dur-fast) var(--uix-ease-out), opacity var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-relationship-graph__item { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:var(--uix-space-1); padding:var(--uix-space-2) var(--uix-space-3); border:1px solid var(--uix-border-strong); border-radius:var(--uix-radius-md); background:var(--uix-surface); color:var(--uix-text); font:inherit; text-align:start; cursor:pointer; transition:border-color var(--uix-dur-fast) var(--uix-ease-out), opacity var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-relationship-graph__item:hover { border-color:var(--uix-accent); }
   .uix-relationship-graph__item:focus-visible { outline:2px solid var(--uix-ring); outline-offset:2px; }
   .uix-relationship-graph__item[data-root] { border-width:2px; }
