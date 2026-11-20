@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 7589b7cb routine: the new label-in-name and forced-colors lanes named each case on first run; the gate is tests/a11y/label-in-name.spec.mjs and forced-colors.lane.spec.mjs -->
 <!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
 <!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->
 <!-- lesson-skip: 17320c27 routine review fixes on unreleased form-errors code (server refusals on resubmit, announcement regions, title ownership, leave-attempt policy, prototype-safe key-path merge); each pinned by a jsdom test -->
@@ -121,8 +122,14 @@
 <!-- lesson-skip: c532f344 routine: tsc named the namespaces #310 added that the complete-by-type packs lacked; Escape key name added to the transliterator keep-Latin list -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · screenshots of scroll-driven effects · `86b3f381`
+- **Rule:** never pass `animations: 'disabled'` to a Playwright screenshot of anything drawn by a scroll-timeline animation (a revealed divider, a scroll fade); it resets the animation to its start, so the pixels show the unscrolled state. Scroll, wait two frames, shoot without it.  **Why:** Playwright finishes or cancels every CSS animation for the shot, scroll-driven ones included; the forced-colours lane read a drawn divider as missing.  **Gate:** `tests/a11y/forced-colors.lane.spec.mjs` (pinned header) shoots without it; ⚠ TODO no lint for the option on scroll-timeline subjects.  **Tag:** false-red, motion, test-double-fidelity
+
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
+
+### 2026-11-20 · focus into a dialog a component mounts · `23474432`
+- **Rule:** to put focus on a control inside a `Modal` that a component mounts conditionally (`{open && <Modal …>}`, a phase switch), give the control the `autofocus` attribute (set it in a callback ref) so `showModal()` focuses it; a `focus()` in the parent's effect is not enough.  **Why:** in development StrictMode re-runs only the newly mounted subtree's effects, after the parent's effects ran, so the second `showModal()` moved focus to the dialog's first button.  **Gate:** `tests/a11y/session-timeout.spec.mjs` (a dev-build StrictMode harness asserting focus); a production-build demo never shows it.  **Tag:** focus, StrictMode, dialog
 
 ### 2026-11-20 · API reports of a new subpath entry · `069c7450`
 - **Rule:** after adding an entry point, run `npm run test:api` (what CI runs), not only `test:api:update`: the `--local` update prints API Extractor warnings and exits 0, CI fails on them. A `{@link X}` in a doc comment that the new entry reaches must name something that entry exports, or it is `ae-unresolved-link`.  **Why:** `--local` downgrades warnings; a link that resolves from the root entry does not from a subpath.  **Gate:** CI `gates` → `test:api`.  **Tag:** api-extractor, entry-points, tsdoc
@@ -401,3 +408,6 @@ missing or blank.
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
 
 <!-- lesson-skip: 488ac745 routine: out-of-scope docs helper (the ReferenceError named it) plus a spec repair; docs.test.js now renders the Toast page -->
+
+<!-- lesson-records: Docs/lesson-records -->
+<!-- Frozen for new skip and record lines (2026-11-20): every PR that added its lesson-skip line at the top of this file conflicted with every other open PR that did. The lesson-capture hook now asks for one new file per decision in Docs/lesson-records/ (skip-<sha>.md, or <date>-<slug>.md for a rule). The entries above stay as they are. -->

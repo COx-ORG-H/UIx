@@ -22,6 +22,7 @@ import type { TreeLabels } from './components/Tree.js';
 import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
+import type { SessionTimeoutLabels } from './components/SessionTimeout.js';
 import type { ErrorSummaryLabels } from './components/ErrorSummary.js';
 import type { ConflictNoticeLabels } from './components/ConflictNotice.js';
 import type { LeaveGuardLabels } from './hooks/useLeaveGuard.js';
@@ -80,6 +81,8 @@ export interface UixLabels {
   drawer?: { close?: string };
   /** The "Discard changes?" step of a `dirty` Drawer or Modal (HAR-2029). */
   discardPrompt?: Partial<DiscardPromptLabels>;
+  /** `SessionTimeout`: the warning, its countdown and actions, and the "signed out" notice. */
+  sessionTimeout?: Partial<SessionTimeoutLabels>;
   /**
    * `ErrorSummary` and `useFormErrors`: the summary's heading, and the "Error:" before each field
    * error and the page title while a summary shows.

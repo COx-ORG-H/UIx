@@ -107,9 +107,11 @@ export const OtpInput = forwardRef<HTMLInputElement, OtpInputProps>(function Otp
         disabled={disabled}
         aria-invalid={isInvalid || undefined}
         onChange={(event) => update(event.target.value)}
-        // A paste is cleaned as a whole ("123 456", "123-456"). It replaces the code only when the whole
-        // code is selected (or there is none yet); otherwise it goes in at the caret, up to `length`.
-        // Text with nothing usable in it ("abc" in a numeric code) changes nothing.
+        // A paste is cleaned as a whole ("123 456", "123-456"). A whole code (`length` usable
+        // characters or more) replaces what is there, wherever the caret is, so pasting the code
+        // fills every cell (WCAG 3.3.8). A shorter piece replaces the code when the whole code is
+        // selected (or there is none yet), else goes in at the caret, up to `length`. Text with
+        // nothing usable in it ("abc" in a numeric code) changes nothing.
         onPaste={(event) => {
           const usable = allowed(event.clipboardData?.getData('text') ?? '', mode);
           event.preventDefault();
@@ -117,7 +119,7 @@ export const OtpInput = forwardRef<HTMLInputElement, OtpInputProps>(function Otp
           const input = event.currentTarget;
           const start = input.selectionStart ?? value.length;
           const end = input.selectionEnd ?? value.length;
-          const whole = start === 0 && end === value.length;
+          const whole = usable.length >= length || (start === 0 && end === value.length);
           update(whole ? usable : `${value.slice(0, start)}${usable}${value.slice(end)}`);
         }}
         onFocus={(event: FocusEvent<HTMLInputElement>) => { setFocused(true); toEnd(); onFocus?.(event); }}

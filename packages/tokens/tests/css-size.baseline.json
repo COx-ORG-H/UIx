@@ -337,9 +337,9 @@
       "brotli": 530
     },
     "styles/components/modal.css": {
-      "raw": 7302,
-      "gzip": 2528,
-      "brotli": 2104
+      "raw": 8008,
+      "gzip": 2759,
+      "brotli": 2290
     },
     "styles/components/notification-center.css": {
       "raw": 1254,
@@ -592,9 +592,9 @@
       "brotli": 1958
     },
     "styles/forced-colors.css": {
-      "raw": 8291,
-      "gzip": 2497,
-      "brotli": 2109
+      "raw": 10266,
+      "gzip": 2922,
+      "brotli": 2492
     },
     "styles/motion.css": {
       "raw": 13894,

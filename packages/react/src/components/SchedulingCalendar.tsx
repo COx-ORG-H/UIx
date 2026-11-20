@@ -717,12 +717,20 @@ export function SchedulingCalendar({
   };
   // An entry with neither `state` nor `status` keeps the word it always had (`states.scheduled`).
   const stateText = (entry: SchedulingCalendarEntry) => entry.state ? stateLabel[entry.state] : entry.status ? labels.statuses[entry.status] : stateLabel.scheduled;
-  const entryName = (entry: SchedulingCalendarEntry) => entry.accessibleName
-    ?? [fillLabel(labels.entry, { title: entry.title, state: stateText(entry), start: formatInstant(entry.start), end: formatInstant(entry.end) }), ...(entry.markers ?? []).map((marker) => marker.label)].join(', ');
+  // `shown` is the title as the chip shows it ("09:00 Backup check"): a voice command made of what is on
+  // screen must find the chip, so its name says those words (WCAG 2.5.3, label in name).
+  const entryName = (entry: SchedulingCalendarEntry, shown: string = entry.title) => entry.accessibleName
+    ?? [fillLabel(labels.entry, { title: shown, state: stateText(entry), start: formatInstant(entry.start), end: formatInstant(entry.end) }), ...(entry.markers ?? []).map((marker) => marker.label)].join(', ');
   const overlayName = (overlay: SchedulingCalendarOverlay) => overlay.accessibleName
     ?? fillLabel(labels.overlay, { title: [overlay.kindLabel, overlay.label, overlay.scopeLabel].filter(Boolean).join(', '), start: formatInstant(overlay.start), end: formatInstant(overlay.end) });
   const emphasisOf = (entry: SchedulingCalendarEntry) => ({ 'data-highlight': entry.emphasis === 'highlight' || undefined, 'data-dim': entry.emphasis === 'dim' || undefined });
-  const entryProps = (entry: SchedulingCalendarEntry) => ({
+  /** The words a chip shows as its title: the string `renderEntry` returns, else `HH:MM title` (or the title alone). */
+  const shownTitle = (entry: SchedulingCalendarEntry, withTime: boolean): string => {
+    const custom = renderEntry?.(entry);
+    if (custom !== undefined && custom !== null) return typeof custom === 'string' ? custom : entry.title;
+    return withTime ? `${zonedTimeOfDay(entry.start, timeZone)} ${entry.title}` : entry.title;
+  };
+  const entryProps = (entry: SchedulingCalendarEntry, withTime = true) => ({
     type: 'button' as const,
     // Reached from its day with Enter, never with Tab.
     tabIndex: -1,
@@ -732,7 +740,7 @@ export function SchedulingCalendar({
     'data-state': entry.state,
     ...emphasisOf(entry),
     onClick: () => onSelectEntry?.(entry),
-    'aria-label': entryName(entry),
+    'aria-label': entryName(entry, shownTitle(entry, withTime)),
   });
   const entryContent = (entry: SchedulingCalendarEntry, withTime = true) => {
     const markers = markersOf(entry);
@@ -818,7 +826,7 @@ export function SchedulingCalendar({
         }
         const entry = entryById.get(placed.id);
         if (!entry || countsOnly) return null;
-        return <button key={`span-${placed.id}`} className="uix-scheduling-calendar__entry uix-scheduling-calendar__span" {...entryProps(entry)} {...continues} style={laneStyle(placed, windowLanes)}>{entryContent(entry, !placed.continuesBefore)}</button>;
+        return <button key={`span-${placed.id}`} className="uix-scheduling-calendar__entry uix-scheduling-calendar__span" {...entryProps(entry, !placed.continuesBefore)} {...continues} style={laneStyle(placed, windowLanes)}>{entryContent(entry, !placed.continuesBefore)}</button>;
       })}
       {hidden > 0 && (onShowMore
         ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={rowDays.includes(firstHiddenDay) ? firstHiddenDay : rowDays[0]} aria-label={moreName} onClick={() => onShowMore(firstHiddenDay, picksGiven ? dayEntries[firstHiddenDay] ?? EMPTY_ENTRIES : entriesOn(firstHiddenDay))}>{moreText}</button>

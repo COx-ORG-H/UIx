@@ -21,7 +21,7 @@ for (const width of [1440, 320]) test(`UserChip contains a long identity at ${wi
     expect(geometry.overflow).toBe('ellipsis'); expect(geometry.whitespace).toBe('nowrap');
     expect(geometry.height).toBeLessThan(40);
   }
-  await chip.getByRole('button', { name: 'Profildetails öffnen' }).focus();
+  await chip.getByRole('button', { name: 'Profil öffnen' }).focus();
   await page.screenshot({ path: info.outputPath('during.png') });
   await page.keyboard.press('Enter');
   await expect(page.locator('output')).toHaveText('Profil geöffnet');

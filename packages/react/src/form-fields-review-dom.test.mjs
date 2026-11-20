@@ -118,8 +118,8 @@ test('S3 EntityPicker: disabling it while a search runs ends the busy state and 
   v.unmount();
 });
 
-/* ── S4 / N2 OtpInput: paste inserts at the caret or replaces the whole selected code; junk changes nothing ── */
-test('S4 OtpInput: paste inserts at the caret, replaces only a whole selected code, and ignores junk', () => {
+/* ── S4 / N2 OtpInput: a short paste inserts at the caret; a whole code, or a paste over the whole selected code, replaces it; junk changes nothing ── */
+test('S4 OtpInput: a short paste inserts at the caret, a whole code or a whole selection is replaced, junk is ignored', () => {
   const log = [];
   const v = render(h(Controlled, { component: ui.OtpInput, initial: '12', props: { 'aria-label': 'Code' }, log }));
   const input = v.host.querySelector('input');
@@ -129,8 +129,12 @@ test('S4 OtpInput: paste inserts at the caret, replaces only a whole selected co
   assert.equal(input.value, '12', 'nothing usable: unchanged');
   paste(input, '34');
   assert.equal(input.value, '1234', 'inserted at the caret, not replacing');
+  paste(input, '5');
+  paste(input, '67');
+  assert.equal(input.value, '123456', 'a piece that runs past the end is capped at the length');
+  input.setSelectionRange(3, 3);
   paste(input, '567890');
-  assert.equal(input.value, '123456', 'capped at the length');
+  assert.equal(input.value, '567890', 'a whole code replaces what is there, wherever the caret is (WCAG 3.3.8, roadmap #24)');
   input.setSelectionRange(0, 6);
   paste(input, '９８-７６ ５４');
   assert.equal(input.value, '987654', 'a whole selected code is replaced; full-width digits count');

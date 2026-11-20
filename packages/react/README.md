@@ -762,6 +762,41 @@ const icons: Record<EntityType, UixIcon> = { incident: SirenIcon, change: GitBra
 - **Accessibility:** decorative unless `label` is set. Never let an icon carry meaning alone; pair it with text.
 - **Bundle size:** each `<Name>Icon` is tree-shaken; one icon adds well under 3 KB minified. `<Icon name>` and `ICON_GLYPHS` load all of them.
 - **A glyph is missing?** Add its Lucide name to `scripts/icon-names.txt`, run `node scripts/generate-icons.mjs <lucide-react dir>` and release. Do not paste an SVG into a product.
+### Session timeout (`SessionTimeout`, `useSessionTimeout`)
+
+Warns before a session ends, lets the person stay with one press and keeps their drafts when it does
+end (WCAG 2.2.1 Timing Adjustable, 2.2.6 Timeouts; UIx enterprise UX study, roadmap #24). Render it once,
+near the root of the app. Docs: Patterns → Session timeout.
+
+```tsx
+<SessionTimeout
+  expiresAt={session.expiresAt}                                       // Date or epoch ms; pass the new one after a renewal
+  onExtend={() => api.renewSession().then((s) => s.expiresAt)}        // or return the new expiry
+  onSignOut={signOut}
+  onSignIn={() => signIn({ returnTo: location.href })}
+  onPersistDrafts={(reason) => drafts.saveAll(reason)}                // 'warning' (still signed in), then 'expire'
+  onExpire={forgetSession}
+/>
+<SessionTimeout idle={{ timeout: 15 * 60_000 }} pauseWhenHidden onExtend={() => {}} onSignOut={lock} />   // a till's own idle clock
+```
+
+- **Warning:** `warnBefore` (default 2 minutes) before `expiresAt`, or before the end of an `idle` timeout (the earlier
+  of the two), an alert dialog opens with a countdown, "Sign out" and "Stay signed in" (focused, primary). Escape is Stay.
+  `onExtend` may be async (the button shows it is working); a rejection keeps the dialog open with `extendFailed`.
+- **Screen readers** hear the dialog once, as it opens: title, description and the time left in words. The countdown is a
+  `timer` (not live) that ticks once a second and holds the time in words ("1 minute, 59 seconds", CLDR plurals through
+  `Intl`, `locale` or `dateFormat.locale`) for anyone who reads it.
+- **The end:** `onPersistDrafts('expire')`, then `onExpire`. The dialog becomes "You have been signed out" and says whether the
+  drafts were kept (`draftsSaving` → `draftsKept` / `draftsFailed`, a status), with "Sign in again" (`onSignIn`) and "Close".
+- **Activity:** with `idle`, `pointerdown`, `keydown`, `wheel`, `touchstart` and `scroll` restart the idle time before the
+  warning (`idle.events` replaces the list). Activity during the warning does not renew: only Stay does.
+- **Hidden tabs:** the clock reads the wall clock at each check, so a throttled tab or a laptop waking from sleep is right at
+  once. `pauseWhenHidden` stops the clock while the tab is hidden, for a deadline that is the product's own (off by default:
+  a server expiry runs on).
+- **Words:** `labels` or `UixLabelsProvider` `sessionTimeout` (`DEFAULT_SESSION_TIMEOUT_LABELS`). `useSessionTimeout(options)`
+  is the clock alone (`phase`, `remaining`, `extend`, `extending`, `extendFailed`, `drafts`, `touch`).
+- `Modal` gains `closeButton={false}`: no × in the header, for a dialog whose footer holds every way out.
+
 ### SchedulingCalendar
 
 A month, week or agenda of UTC ranges in one explicit IANA zone (HAR-1347, HAR-1506). The calendar draws; the
@@ -1826,7 +1861,8 @@ form submits, a revealed password is hidden first, so the browser still offers t
 
 `OtpInput` is ONE input (`inputMode="numeric"`, `autoComplete="one-time-code"`, `pattern`;
 no `maxLength`, so an autofilled "ABCD-EFGH" is cleaned before it is cut) drawn as `length` cells, so the phone's code autofill, password managers and screen
-readers see one field. Typing or pasting "123 456" keeps the characters; `onComplete(code)` runs
+readers see one field. Typing or pasting "123 456" keeps the characters, and a pasted whole code
+replaces a half-typed one wherever the caret is, so pasting fills every cell (WCAG 3.3.8); `onComplete(code)` runs
 once each time the code fills. `mode="alphanumeric"` takes letters (upper-cased); `groupSize`
 draws a gap; `aria-invalid` (from `Field error`) turns the cells red.
 
