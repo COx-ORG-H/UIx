@@ -323,6 +323,24 @@ export { OverflowRow, overflowRowFit } from './components/OverflowRow.js';
 export type { OverflowRowProps } from './components/OverflowRow.js';
 
 export { Kbd, KbdCombo, ariaKeyShortcuts } from './components/Kbd.js';
+// The shortcut registry (enterprise UX study, roadmap #1; spec Docs/specs/2026-11-20-shortcut-registry.md)
+export { ShortcutProvider, ShortcutScope, useShortcut, useShortcuts, useShortcutPreferences } from './components/Shortcuts.js';
+export type {
+  ShortcutProviderProps, ShortcutScopeProps, UseShortcutOptions, UseShortcutResult, ShortcutsApi,
+  UseShortcutPreferencesOptions, UseShortcutPreferencesResult,
+} from './components/Shortcuts.js';
+export { ShortcutSheet, SHORTCUT_SHEET_ID, DEFAULT_SHORTCUT_LABELS } from './components/ShortcutSheet.js';
+export type { ShortcutSheetProps, ShortcutLabels } from './components/ShortcutSheet.js';
+export { useShortcutKeys } from './shortcut-hooks.js';
+export { createShortcutRegistry, DEFAULT_SEQUENCE_TIMEOUT_MS } from './shortcut-registry.js';
+export type { ShortcutRegistry, ShortcutDefinition, ShortcutScopeRef, ShortcutSheetGroup, ShortcutRegistryConfig, ShortcutRegistrySnapshot } from './shortcut-registry.js';
+export {
+  parseShortcut, formatShortcut, canonicalKey, matchesChord, isCharacterKeyShortcut, isTypingTarget, findShortcutConflicts,
+  parseShortcutPreferences, effectiveShortcut, DEFAULT_SHORTCUT_PREFERENCES, SHORTCUT_PREFERENCES_STORAGE_KEY,
+} from './shortcut-model.js';
+export type {
+  KeySequence, ShortcutBinding, ShortcutKeyEvent, KeyboardLayoutMap, ShortcutConflict, ShortcutConflictEntry, CharacterKeyPreference, ShortcutPreferenceValues,
+} from './shortcut-model.js';
 export type { KbdProps, KbdComboProps, KbdPlatform, KeyShortcut } from './components/Kbd.js';
 
 export { Steps, Step, DEFAULT_STEP_STATE_LABELS } from './components/Steps.js';
@@ -431,7 +449,7 @@ export type {
 } from './components/Menu.js';
 export type { PopoverProps } from './components/Popover.js';
 
-export { CommandPalette, CommandGroup, CommandItem } from './components/CommandPalette.js';
+export { CommandPalette, CommandGroup, CommandItem, COMMAND_PALETTE_SHORTCUT_ID } from './components/CommandPalette.js';
 export type {
   CommandPaletteProps,
   CommandGroupProps,
