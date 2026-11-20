@@ -11,7 +11,7 @@ const HARNESS = '/tests/modal-origin/harness.html';
 
 const open = async (page, query = '?origin=trigger') => {
   await page.goto(`${HARNESS}${query}`, { waitUntil: 'networkidle' });
-  await expect(page.locator('#new')).toBeVisible();
+  await expect(page.locator(query.includes('only=lazy') ? '#lazy' : '#new')).toBeVisible();
 };
 
 /** Hold every animation still, so a frame can be read mid-transition (Chromium). */
@@ -143,11 +143,53 @@ test.describe('origin="trigger"', () => {
     expect(Object.keys(d.transitions)).toEqual([]);
   });
 
-  test('a dialog opened long after the press opens centred', async ({ page }) => {
+  for (const [trigger, when] of [['#soon', '400 ms'], ['#later', '1.5 s']]) {
+    test(`a dialog a timer opens ${when} after the click opens centred`, async ({ page }) => {
+      await open(page);
+      await page.locator(trigger).click();
+      await expect(page.locator('#dialog')).toHaveAttribute('open', '', { timeout: 5000 });
+      expect((await readDialog(page)).origin).toBeNull();
+    });
+  }
+
+  test('closed and reopened from inside the dialog ("Save and new"): the reopen is centred', async ({ page }) => {
     await open(page);
-    await page.locator('#later').click();
-    await expect(page.locator('#dialog')).toHaveAttribute('open', '', { timeout: 5000 });
+    await page.locator('#new').click();
+    await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+    await page.waitForTimeout(400);
+    await page.locator('#reopen').click();
+    await expect(page.locator('#dialog')).not.toHaveAttribute('open', '');
+    await expect(page.locator('#dialog')).toHaveAttribute('open', '');
     expect((await readDialog(page)).origin).toBeNull();
+  });
+
+  test('a clickable row inside a focusable main region grows from the row, not from the region', async ({ page }) => {
+    await open(page);
+    const [rx, ry] = await centreOf(page, '#row-click');
+    const [mx, my] = await centreOf(page, '#root');
+    const resume = await freeze(page);
+    await page.locator('#row-click').click();
+    await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+    const d = await readDialog(page);
+    await resume();
+    expect(d.origin).toBe('trigger');
+    const [ox, oy] = [d.transformOrigin[0] + d.left, d.transformOrigin[1] + d.top];
+    expect(Math.abs(ox - rx)).toBeLessThanOrEqual(4);
+    expect(Math.abs(oy - ry)).toBeLessThanOrEqual(4);
+    expect(Math.abs(oy - my) + Math.abs(ox - mx)).toBeGreaterThan(8);
+  });
+
+  test('the first click on a page mounts the Modal and still grows it from that button', async ({ page }) => {
+    await open(page, '?only=lazy&origin=trigger');
+    const [cx, cy] = await centreOf(page, '#lazy');
+    const resume = await freeze(page);
+    await page.locator('#lazy').click();
+    await expect(page.locator('#lazy-dialog')).toHaveAttribute('open', '');
+    const d = await readDialog(page, '#lazy-dialog');
+    await resume();
+    expect(d.origin).toBe('trigger');
+    expect(Math.abs(d.transformOrigin[0] - (cx - d.left))).toBeLessThanOrEqual(1.5);
+    expect(Math.abs(d.transformOrigin[1] - (cy - d.top))).toBeLessThanOrEqual(1.5);
   });
 
   for (const how of ['the OS setting', 'data-motion="reduce"']) {

@@ -24,12 +24,19 @@ export function watchInputModality(): void {
   }, true);
   document.addEventListener('pointerdown', (event) => {
     keyboard = false;
-    lastPointer = { target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY, at: Date.now() };
+    lastPointer = { target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY, at: Date.now(), activatedAt: null };
   }, true);
+  // The press's activation: the release and the click it produces (a key's click has no press).
+  const activate = () => { if (lastPointer && !keyboard) lastPointer.activatedAt = Date.now(); };
+  document.addEventListener('pointerup', activate, true);
+  document.addEventListener('click', activate, true);
 }
 
-/** The last pointer press: what it landed on, where (viewport px) and when (`Date.now()`). */
-export interface PointerPress { target: Element | null; x: number; y: number; at: number }
+/**
+ * The last pointer press: what it landed on, where (viewport px), when (`Date.now()`) and when it
+ * was released into a click (`null` while held).
+ */
+export interface PointerPress { target: Element | null; x: number; y: number; at: number; activatedAt: number | null }
 let lastPointer: PointerPress | null = null;
 
 /** The last pointer press, or `null` before any (and on the server). Set by `watchInputModality`. */

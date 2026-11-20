@@ -11,33 +11,48 @@ import { prefersReducedMotion } from './useReducedMotion.js';
  *
  * Before the dialog opens, this writes the trigger's centre in viewport px to
  * `--uix-dialog-from-x` / `--uix-dialog-from-y` and sets `[data-uix-origin="trigger"]`; modal.css
- * turns that into a `transform-origin` on the centred dialog. Only a pointer open does it: a key
- * press keeps the dialog instant ([data-uix-key-opened]), reduced motion keeps today's fade, and a
- * dialog opened with no recent press (a timer, a socket, a fetch that resolved later) opens centred.
- * On the way out it returns toward the trigger while that is still on screen, and otherwise takes
- * today's exit. */
+ * turns that into a `transform-origin` on the centred dialog. Only an open caused by a pointer click
+ * does it: a key press keeps the dialog instant ([data-uix-key-opened]), reduced motion keeps
+ * today's fade, and a dialog that does not open right on a click's heels (a timer, a socket, a
+ * fetch that resolved later) opens centred. On the way out it returns toward the trigger while that
+ * is still on screen, and otherwise takes today's exit. */
 
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const ORIGIN_ATTR = 'data-uix-origin';
 
-/** A press older than this did not open the dialog; it opens centred. */
-const PRESS_FRESH_MS = 1000;
+// Follow presses from the moment a Modal is in the bundle: the press that mounts a conditionally
+// rendered Modal (`{open && <Modal origin="trigger" …/>}`) comes before any of its effects run.
+if (typeof document !== 'undefined') watchInputModality();
 
-/** What a press counts as having pressed: the nearest control around its target. */
+/**
+ * An open this long after the click that released the press was not caused by it (a timer, a fetch
+ * resolving): it opens centred. React commits a click's update before the next frame, so the open
+ * a click causes lands well inside this even when the dialog is slow to render.
+ */
+const ACTIVATION_MS = 300;
+
+/**
+ * What a press counts as having pressed: the nearest control around its target. Not `[tabindex]`:
+ * that also matches containers (an AppShell's `<main tabIndex={-1}>`, a scroll region).
+ */
 const TRIGGER = [
   'button', 'a[href]', 'summary', 'label', 'input', 'select', 'textarea', '[role="button"]', '[role="link"]',
-  '[role="menuitem"]', '[role="menuitemradio"]', '[role="menuitemcheckbox"]', '[role="option"]', '[role="tab"]', '[tabindex]',
+  '[role="menuitem"]', '[role="menuitemradio"]', '[role="menuitemcheckbox"]', '[role="option"]', '[role="tab"]',
 ].join(', ');
 
-/** `el`'s box while any of it is in the viewport, else `null` (gone, hidden or scrolled away). */
-function onScreen(el: Element | null): DOMRect | null {
+/** Wider or taller than this share of the viewport, an element is a region, not a trigger. */
+const MAX_TRIGGER_SHARE = 0.5;
+
+/** `el`'s box while it is on screen and small enough to read as the thing pressed, else `null`. */
+function triggerBox(el: Element | null): DOMRect | null {
   if (!el || !el.isConnected) return null;
   const r = el.getBoundingClientRect();
   if (r.width === 0 && r.height === 0) return null;
   const vw = document.documentElement.clientWidth || window.innerWidth;
   const vh = document.documentElement.clientHeight || window.innerHeight;
   if (r.right <= 0 || r.bottom <= 0 || r.left >= vw || r.top >= vh) return null;
+  if (r.width > vw * MAX_TRIGGER_SHARE || r.height > vh * MAX_TRIGGER_SHARE) return null;
   return r;
 }
 
@@ -68,17 +83,24 @@ export function useTriggerOrigin(ref: RefObject<HTMLElement | null>, open: boole
     // Closed: leave the origin the cleanup below chose, so the exit can still run toward it.
     if (!open) return undefined;
     const press = lastPointerPress();
-    if (keyboardInitiated() || prefersReducedMotion() || !press || Date.now() - press.at > PRESS_FRESH_MS) {
+    const caused = press?.activatedAt != null && Date.now() - press.activatedAt <= ACTIVATION_MS;
+    // A press inside a dialog that has closed since (its close button, "Save and new") closed that
+    // one; whatever opens next on its heels was not opened from it.
+    const fromClosedDialog = !!press?.target?.closest('dialog:not([open])');
+    if (!press || !caused || fromClosedDialog || keyboardInitiated() || prefersReducedMotion()) {
       centred(el);
       return undefined;
     }
-    const trigger = press.target?.closest(TRIGGER) ?? press.target;
-    const box = onScreen(trigger);
-    // A trigger already gone (a menu item whose menu closed) grows the dialog from the tap point.
+    // The control around the press; a clickable row or card that is no control is pressed itself.
+    const candidate = press.target?.closest(TRIGGER) ?? press.target;
+    const box = triggerBox(candidate);
+    // Nothing that reads as the trigger on screen (a menu item whose menu closed, a press on a whole
+    // region): grow from the tap point, and leave with today's exit.
+    const trigger = box ? candidate : null;
     if (box) growFrom(el, box.left + box.width / 2, box.top + box.height / 2);
     else growFrom(el, press.x, press.y);
     return () => {
-      const back = onScreen(trigger);
+      const back = triggerBox(trigger);
       if (back) growFrom(el, back.left + back.width / 2, back.top + back.height / 2);
       else centred(el);
     };
