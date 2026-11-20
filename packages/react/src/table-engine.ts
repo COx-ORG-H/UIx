@@ -6,8 +6,14 @@
  * deterministic and unit-tested (see table-engine.test.mjs). The React layer
  * (useTable / Table subcomponents) composes these; products may also call them
  * directly. Presentation stays in table.css via the --uix-* contract.
+ *
+ * Text follows a locale (roadmap #15): sorts collate with `compareFor(locale)` (numbers by value,
+ * Croatian č after c), search and text filters fold with `foldForSearch` ("djordje" finds
+ * "Đorđe"). Without a locale, plain ASCII behaves exactly as before.
  */
+import { compareFor, foldContext, foldVariants, foldKeys, textMatcher } from './locale-text.js';
 
+/** The direction of one sort key. */
 export type SortDir = 'ascending' | 'descending';
 export interface SortKey {
   /** row field to sort on */
@@ -21,29 +27,29 @@ export type Row = Record<string, unknown>;
 /* ── sorting ─────────────────────────────────────────────────────────────────── */
 
 // Constructing collation options inside String#localeCompare is disproportionately
-// expensive in a hot sort comparator. One collator preserves the existing numeric,
-// case-insensitive ordering while reusing its locale state across every table.
-const stringCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-
-function compare(a: unknown, b: unknown): number {
+// expensive in a hot sort comparator. `compareFor` caches one numeric, case-insensitive
+// collator per locale and reuses its locale state across every table.
+function compare(a: unknown, b: unknown, text: (a: string, b: string) => number): number {
   if (a == null && b == null) return 0;
   if (a == null) return -1;
   if (b == null) return 1;
   if (typeof a === 'number' && typeof b === 'number') return a - b;
-  return stringCollator.compare(String(a), String(b));
+  return text(String(a), String(b));
 }
 
 /**
  * Stable multi-column sort. `keys` are applied in priority order (first is
- * primary). Returns a new array; the input is not mutated.
+ * primary). Returns a new array; the input is not mutated. Text collates in
+ * `locale` with numbers by value (`compareFor`); without it, the runtime's.
  */
-export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[]): T[] {
+export function multiSort<T extends Row>(rows: readonly T[], keys: readonly SortKey[], locale?: string | readonly string[]): T[] {
   if (!keys.length) return rows.slice();
+  const text = compareFor(locale);
   // Array sorting is stable in the ES2020 target, so a single copied array avoids
   // the former decorate/sort/unwrap arrays and one wrapper object per row.
   return rows.slice().sort((a, b) => {
       for (const k of keys) {
-        const c = compare(a[k.field], b[k.field]);
+        const c = compare(a[k.field], b[k.field], text);
         if (c !== 0) return k.dir === 'ascending' ? c : -c;
       }
       return 0;
@@ -137,15 +143,29 @@ function matchDate(cell: unknown, f: ColumnFilter): boolean {
   }
 }
 
-export function matchFilter(row: Row, f: ColumnFilter): boolean {
+/** A compiled text test for one `contains` / `startsWith` filter, folded for `locale`. */
+function textTest(f: ColumnFilter, locale: string | undefined): ((text: string) => boolean) | null {
+  if (f.kind === 'date' || (f.op !== 'contains' && f.op !== 'startsWith')) return null;
+  return textMatcher(String(f.value ?? ''), foldContext(locale), f.op);
+}
+
+/**
+ * Does `row` satisfy `f`? `contains` and `startsWith` fold case and diacritics for `locale`
+ * (see `foldForSearch`); `equals` stays exact.
+ */
+export function matchFilter(row: Row, f: ColumnFilter, locale?: string): boolean {
+  return matchWith(row, f, textTest(f, locale));
+}
+
+function matchWith(row: Row, f: ColumnFilter, text: ((text: string) => boolean) | null): boolean {
   const cell = row[f.field];
   if (f.kind === 'date') return matchDate(cell, f); // date ops need instant comparison, not asNum
   switch (f.op) {
     case 'isAnyOf':  return Array.isArray(f.value) && f.value.includes(cell as Primitive);
     case 'isNoneOf': return Array.isArray(f.value) && !f.value.includes(cell as Primitive);
-    case 'contains': return String(cell ?? '').toLowerCase().includes(String(f.value ?? '').toLowerCase());
+    case 'contains':
+    case 'startsWith': return text!(String(cell ?? ''));
     case 'equals':   return String(cell ?? '') === String(f.value ?? '');
-    case 'startsWith': return String(cell ?? '').toLowerCase().startsWith(String(f.value ?? '').toLowerCase());
     case 'eq':  return asNum(cell) === asNum(f.value);
     case 'lt':  return asNum(cell) < asNum(f.value);
     case 'gt':  return asNum(cell) > asNum(f.value);
@@ -158,41 +178,62 @@ export function matchFilter(row: Row, f: ColumnFilter): boolean {
   }
 }
 
-/** Keep rows that satisfy EVERY active filter (AND across columns). */
-export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[]): T[] {
+/** Keep rows that satisfy EVERY active filter (AND across columns), text folded for `locale`. */
+export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[], locale?: string): T[] {
   if (!filters.length) return rows.slice();
-  return rows.filter((r) => filters.every((f) => matchFilter(r, f)));
+  const tests = filters.map((f) => textTest(f, locale));
+  return rows.filter((r) => filters.every((f, i) => matchWith(r, f, tests[i] ?? null)));
 }
 
 /* ── full-text search + highlight ────────────────────────────────────────────── */
 
-/** Rows where any of `fields` (default: all string/number values) contains `query`. */
-export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[]): T[] {
-  const q = query.trim().toLowerCase();
+/**
+ * Rows where any of `fields` (default: all values) contains `query`, folded for `locale` (see
+ * `foldForSearch`): "djordje" finds "Đorđe", "cevapi" finds "Ćevapi", and with a Serbian locale
+ * Latin finds Cyrillic.
+ */
+export function searchRows<T extends Row>(rows: readonly T[], query: string, fields?: readonly string[], locale?: string): T[] {
+  const q = query.trim();
   if (!q) return rows.slice();
+  const matches = textMatcher(q, foldContext(locale));
   return rows.filter((r) => {
     const vals = fields ? fields.map((f) => r[f]) : Object.values(r);
-    return vals.some((v) => v != null && String(v).toLowerCase().includes(q));
+    return vals.some((v) => v != null && matches(String(v)));
   });
 }
 
 export interface Segment { text: string; match: boolean; }
-/** Split `text` into matched / unmatched segments for <mark> rendering (case-insensitive). */
-export function highlightSegments(text: string, query: string): Segment[] {
+/**
+ * Split `text` into matched / unmatched segments for <mark> rendering: every occurrence of the
+ * whole query, folded for `locale` like `searchRows` (case, diacritics, đ as "dj" or "d").
+ */
+export function highlightSegments(text: string, query: string, locale?: string): Segment[] {
   const q = query.trim();
   if (!q) return [{ text, match: false }];
-  const out: Segment[] = [];
-  const lower = text.toLowerCase();
-  const ql = q.toLowerCase();
-  let i = 0;
-  for (;;) {
-    const hit = lower.indexOf(ql, i);
-    if (hit === -1) { if (i < text.length) out.push({ text: text.slice(i), match: false }); break; }
-    if (hit > i) out.push({ text: text.slice(i, hit), match: false });
-    out.push({ text: text.slice(hit, hit + q.length), match: true });
-    i = hit + q.length;
+  const context = foldContext(locale);
+  const needles = foldKeys(q, context).filter(Boolean);
+  for (const folded of foldVariants(text, context)) {
+    for (const needle of needles) {
+      const out: Segment[] = [];
+      let i = 0; // in the original text
+      let at = 0; // in the folded text
+      for (;;) {
+        const hit = folded.text.indexOf(needle, at);
+        if (hit === -1) break;
+        const start = folded.source[hit]!;
+        const end = folded.sourceEnd[hit + needle.length - 1]!;
+        if (start > i) out.push({ text: text.slice(i, start), match: false });
+        if (end > Math.max(i, start)) out.push({ text: text.slice(Math.max(i, start), end), match: true });
+        i = Math.max(i, end);
+        at = hit + needle.length;
+      }
+      if (out.length) {
+        if (i < text.length) out.push({ text: text.slice(i), match: false });
+        return out;
+      }
+    }
   }
-  return out;
+  return text ? [{ text, match: false }] : [];
 }
 
 /* ── saved views: serialize table state to / from a URL query string ─────────── */

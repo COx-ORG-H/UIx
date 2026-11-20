@@ -28,7 +28,7 @@ export interface DiscardPromptLabels {
   discard: string;
 }
 
-const DEFAULT_DISCARD_LABELS: DiscardPromptLabels = {
+export const DEFAULT_DISCARD_LABELS: DiscardPromptLabels = {
   title: 'Discard changes?',
   description: 'What you entered here will be lost.',
   keepEditing: 'Keep editing',
