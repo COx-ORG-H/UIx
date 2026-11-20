@@ -160,7 +160,15 @@
     "groupCountOne": "{count} row",
     "collapseGroup": "Collapse group {name}",
     "expandGroup": "Expand group {name}",
-    "selectGroup": "Select group {name}"
+    "selectGroup": "Select group {name}",
+    "resizeColumn": "Resize {column}",
+    "resizeHint": "Drag or use the arrow keys to resize. Click or press Enter to type a width. Double-click to fit the content.",
+    "columnWidth": "Width of {column}",
+    "columnWidthUnit": "px",
+    "narrower": "Narrower",
+    "wider": "Wider",
+    "fitColumn": "Fit to content",
+    "defaultColumnWidth": "Default width"
   },
   "DEFAULT_DATE_PICKER_LABELS": {
     "open": "Choose date",
