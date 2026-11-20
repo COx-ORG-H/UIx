@@ -22,7 +22,10 @@ const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'ligh
 const MIN = 60_000;
 
 const open = async (page, testInfo, query = '') => {
+  // Installed and paused: time moves only through fastForward / runFor. An installed clock that is not
+  // paused runs on with the wall clock, so an axe scan or a screenshot moved the countdown on by seconds.
   await page.clock.install({ time: new Date('2026-11-20T09:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-11-20T09:00:01Z'));
   await page.addInitScript((t) => {
     try { localStorage.setItem('uix-theme', t); localStorage.removeItem('uix-session-draft'); } catch { /* private mode */ }
   }, themeOf(testInfo));
