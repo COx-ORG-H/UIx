@@ -49,8 +49,8 @@ function isoDay(date: Date, timeZone?: string): string {
 }
 
 function useFormat({ locale }: Formatting) {
-  const { dateFormat } = useUixLabels();
-  const resolvedLocale = (locale ?? dateFormat?.locale) as string | string[] | undefined;
+  const { dateFormat, locale: labelsLocale } = useUixLabels();
+  const resolvedLocale = (locale ?? dateFormat?.locale ?? labelsLocale) as string | string[] | undefined;
   // the provider's day format is the app's; a `locale` prop asks for that locale's own day and time
   const formatDate = locale == null ? dateFormat?.formatDate : undefined;
   const day = ({ date, zone }: Instant) => formatDate

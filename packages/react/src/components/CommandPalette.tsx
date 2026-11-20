@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffe
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { groupCommandItems } from '../command-palette-model.js';
 import type { CommandPaletteItem, CommandPalettePage, CommandPaletteSource } from '../command-palette-model.js';
@@ -136,9 +136,10 @@ function CommandPaletteChildren({
 }: CommandPaletteProps) {
   const uixLabels = useUixLabels();
   const inputLabel = inputLabelProp ?? uixLabels.commandPalette?.input ?? 'Command palette';
+  const plural = usePluralLabel();
   const resultsOne = uixLabels.commandPalette?.resultsOne ?? '{count} result';
   const resultsMany = uixLabels.commandPalette?.resultsMany ?? '{count} results';
-  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(count === 1 ? resultsOne : resultsMany, { count });
+  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(plural(resultsMany, count, resultsOne), { count });
   // The latest formatter, so a new function identity on every render does not re-announce.
   const resultsTextRef = useRef(resultsText);
   resultsTextRef.current = resultsText;
@@ -293,7 +294,8 @@ function CommandPaletteItems({
   const loadingText = (source: CommandPaletteSource) => fillLabel(loadingLabel ?? labels?.loading ?? 'Searching…', { source: source.label });
   const failedText = (source: CommandPaletteSource) => fillLabel(failedLabel ?? labels?.failed ?? 'Search failed', { source: source.label });
   const retryText = retryLabel ?? labels?.retry ?? 'Retry';
-  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(count === 1 ? labels?.resultsOne ?? '{count} result' : labels?.resultsMany ?? '{count} results', { count });
+  const plural = usePluralLabel();
+  const resultsText = (count: number) => resultsLabel?.(count) ?? fillLabel(plural(labels?.resultsMany ?? '{count} results', count, labels?.resultsOne ?? '{count} result'), { count });
   const platform = useKbdPlatform();
   const listId = useId();
   const [queryState, setQueryState] = useState('');
