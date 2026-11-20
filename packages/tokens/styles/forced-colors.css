@@ -34,7 +34,7 @@
     .uix-saved-views__row[data-active] { outline: 2px solid SelectedItem; outline-offset: -2px; }
     /* segmented — the chosen segment (pressed, checked, or the current page of a link group,
        HAR-1380) is only a lifted surface and a shadow, both stripped here */
-    .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) { outline: 2px solid SelectedItem; outline-offset: -2px; }
+    .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]):not(:focus-visible) { outline: 2px solid SelectedItem; outline-offset: -2px; }
     /* command palette — the active option is only a background tint (PR #168 review) */
     .uix-cmdk__item[data-active] { outline: 2px solid Highlight; outline-offset: -2px; }
     /* view menu — the dragged column row is only dimmed (opacity), which WHCM keeps but can hide */
@@ -60,6 +60,9 @@
     /* field shells: their focus-within ring is a border colour and a shadow (forced-colors lane) */
     :is(.uix-taginput, .uix-composer, .uix-rich-text, .uix-stepper):focus-within { outline: 2px solid Highlight; outline-offset: 1px; }
     .uix-cmdk__input:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+    /* the code field's input is transparent over its cells; the flow's chips and nodes ring with a shadow */
+    .uix-otp:has(> .uix-otp__input:focus-visible) { outline: 2px solid Highlight; outline-offset: 2px; }
+    .uix-flow__chip:focus-visible, .uix-flow--canvas .uix-node:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
 
     /* chosen states that were only a tint or a shadow; a focused one keeps its focus ring */
     .uix-table tbody tr:is([data-selected], [aria-selected="true"]):not(:focus-visible),

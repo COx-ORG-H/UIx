@@ -193,9 +193,11 @@ for (const scheme of ['dark', 'light']) {
       const head = page.locator('.uix-scroll-edge-head').first();
       await expect(head).toBeVisible();
       await head.evaluate((el) => { let s = el.parentElement; while (s && s.scrollHeight <= s.clientHeight) s = s.parentElement; if (s) s.scrollTop = 200; });
-      const withLine = await head.screenshot({ animations: 'disabled' });
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      // no `animations: 'disabled'` here: it resets the divider's scroll-driven reveal to opacity 0
+      const withLine = await head.screenshot();
       await page.addStyleTag({ content: '.uix-scroll-edge-head::after { display: none !important; }' });
-      const withoutLine = await head.screenshot({ animations: 'disabled' });
+      const withoutLine = await head.screenshot();
       expect(withLine.equals(withoutLine), 'the pinned header lost its divider').toBe(false);
       await test.info().attach(`scroll-edges-${scheme}.png`, { body: await page.locator('main').screenshot({ animations: 'disabled' }), contentType: 'image/png' });
     });

@@ -76,6 +76,9 @@ function measureText() {
         { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
       const seen = rects.reduce((u, r) => ({ left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) }),
         { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
+      // a truncation the component chose ("…") between the text and a cutting box: its own doing
+      let chosen = false;
+      for (let a = el; a && a !== stage; a = a.parentElement) { const c = getComputedStyle(a); if (c.textOverflow === 'ellipsis' || c.webkitLineClamp !== 'none') { chosen = true; break; } }
       let clipped = '';
       let escaped = '';
       for (let a = el; a && a !== stage.parentElement; a = a.parentElement) {
@@ -85,8 +88,7 @@ function measureText() {
         const cutY = /hidden|clip/.test(s.overflowY) && (box.top < r.top - TOL || box.bottom > r.bottom + TOL);
         // An ellipsis or a line clamp is a truncation the component chose and shows ("…"), with the
         // full value elsewhere (a title, the record); a cut with no sign of it is lost text.
-        const truncates = s.textOverflow === 'ellipsis' || s.webkitLineClamp !== 'none';
-        if (!clipped && !truncates && (cutX || cutY)) clipped = a.className || a.tagName;
+        if (!clipped && !chosen && (cutX || cutY)) clipped = a.className || a.tagName;
         if (!escaped && a !== el && boxed(s) && /visible/.test(s.overflowY)
           && (seen.top < r.top - TOL || seen.bottom > r.bottom + TOL || seen.left < r.left - TOL || seen.right > r.right + TOL)) escaped = a.className || a.tagName;
         if (a === stage) break;
@@ -149,6 +151,7 @@ test('key components keep every word readable with the setting', async ({ page, 
   await openExplorer(page);
   let scaled = null;
   let scaledContext = null;
+  let setFontSize = async () => {};
   const rootSize = (p) => p.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
   if (defaultFontSize) {
     // Its own context: with the baseline page in the same one, Chromium dropped the setting
@@ -156,7 +159,9 @@ test('key components keep every word readable with the setting', async ({ page, 
     scaledContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: testInfo.project.use.viewport, colorScheme: 'light' });
     scaled = await scaledContext.newPage();
     const cdp = await scaledContext.newCDPSession(scaled);
-    await cdp.send('Page.setFontSizes', { fontSizes: { standard: defaultFontSize, fixed: Math.round(defaultFontSize * 13 / 16) } });
+    // Re-applied on every route: after a screenshot on one route, the next hash route came back at 16 px.
+    setFontSize = () => cdp.send('Page.setFontSizes', { fontSizes: { standard: defaultFontSize, fixed: Math.round(defaultFontSize * 13 / 16) } });
+    await setFontSize();
     await openExplorer(scaled);
     expect(await rootSize(scaled), `the root follows a ${defaultFontSize} px default font size (a px root size would pin it)`).toBe(defaultFontSize);
   }
@@ -176,6 +181,8 @@ test('key components keep every word readable with the setting', async ({ page, 
       await style.evaluate((el) => el.remove());
     } else {
       await showRoute(scaled, slug);
+      await setFontSize();
+      await scaled.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
       expect(await rootSize(scaled), `#${slug}: the setting still holds`).toBe(defaultFontSize);
       now = await scaled.evaluate(measureText);
       await attachShot(testInfo, scaled, slug);
