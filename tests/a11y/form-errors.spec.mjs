@@ -85,7 +85,7 @@ test('a summary link focuses its control and scrolls its field into view; fixing
   await page.keyboard.press('Enter');
   const email = page.locator('#incident-email');
   await expect(email).toBeFocused();
-  expect(await inViewport(page.getByText('Requester email', { exact: true }))).toBe(true);
+  expect(await inViewport(page.locator('#incident').getByText('Requester email', { exact: true }))).toBe(true);
   await email.fill('ana@example.com');
   await expect(email).not.toHaveAttribute('aria-invalid', 'true');
   await expect(summary.getByRole('link')).toHaveCount(2);
@@ -109,7 +109,7 @@ test('leaving a filled field flags it politely; an empty one waits; the fixing k
   await email.focus();
   await page.keyboard.type('example.com');
   await expect(email).not.toHaveAttribute('aria-invalid', 'true');
-  await expect(email).toHaveAccessibleDescription('');
+  await expect(email).toHaveAccessibleDescription('The person who reported it'); // back to the hint
   await axe(page, '#incident');
 });
 
@@ -135,7 +135,7 @@ test('leaving: in-app navigation asks with the discard words, Keep editing stays
   await page.locator('#incident-title').fill('Mail relay down');
   await expect(page.getByTestId('leave-active')).toHaveText('Armed');
   await page.locator('#go-elsewhere').click();
-  const step = page.getByRole('dialog', { name: 'Discard changes?' });
+  const step = page.getByRole('alertdialog', { name: 'Discard changes?' });
   await expect(step).toBeVisible();
   await expect(step).toContainText('Your changes to Title will be lost.');
   await expect(step.getByRole('button', { name: 'Keep editing' })).toBeFocused();
