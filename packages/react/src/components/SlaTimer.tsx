@@ -47,6 +47,10 @@ export interface SlaTimerLabels {
   states: Record<Exclude<SlaState, 'none'>, string>;
 }
 
+/** Some of the words, as `labels` and `UixLabelsProvider` take them: `states` merges per state. */
+export type SlaTimerLabelOverrides = Partial<Omit<SlaTimerLabels, 'states'>> & { states?: Partial<SlaTimerLabels['states']> };
+
+/** The English words; translate through `labels` or `UixLabelsProvider` (`slaTimer`). */
 export const DEFAULT_SLA_TIMER_LABELS: SlaTimerLabels = {
   dueIn: 'Due in {time}',
   due: 'Due {time}',
@@ -88,7 +92,7 @@ export interface SlaTimerProps extends SlaInput, Omit<HTMLAttributes<HTMLSpanEle
    * Turn it on for the one timer of the record that is open.
    */
   announce?: boolean;
-  labels?: Partial<SlaTimerLabels>;
+  labels?: SlaTimerLabelOverrides;
 }
 
 // Intl.ListFormat is ES2021; the kit's lib is ES2020, so it is typed here and feature-tested
