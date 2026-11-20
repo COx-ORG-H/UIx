@@ -1607,7 +1607,7 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 export type DashboardGridSpan = 1 | 2 | 'full';
 
 // @public
-export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>(input: DataWorkspaceProps<T, S>): react.JSX.Element;
+export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery>(input: DataWorkspaceProps<T, S, Q>): react.JSX.Element;
 
 // @public (undocumented)
 export interface DataWorkspaceColumn<T> {
@@ -1666,7 +1666,10 @@ export interface DataWorkspaceLabels {
     bulkActions: string;
     // (undocumented)
     clearFilters: string;
+    // (undocumented)
+    clearSelection: string;
     collapseGroup: string;
+    dismiss: string;
     // (undocumented)
     empty: string;
     // (undocumented)
@@ -1686,6 +1689,8 @@ export interface DataWorkspaceLabels {
     maximize: string;
     more?: string;
     open: string;
+    querySearch: string;
+    querySeparator: string;
     range: string;
     restore: string;
     // (undocumented)
@@ -1705,9 +1710,22 @@ export interface DataWorkspaceLabels {
     searchPlaceholder: string;
     // (undocumented)
     selectAll: string;
+    selectAllMatching: UixCountLabel;
     selected: UixCountLabel;
+    selectedAll: UixCountLabel;
+    selectedAllMatching: UixCountLabel;
     selectGroup: string;
+    selectionAll: UixCountLabel;
+    selectionAllMatching: UixCountLabel;
+    selectionCleared: string;
+    selectionExcept: UixCountLabel;
+    selectionExceptMatching: UixCountLabel;
+    selectionPage: UixCountLabel;
+    selectionStale: UixCountLabel;
     selectRow: string;
+    shortcutSelectPage: string;
+    shortcutSelectRange: string;
+    shortcutToggleRow: string;
     sortPriority: string;
     // (undocumented)
     view: string;
@@ -1738,16 +1756,17 @@ export type DataWorkspacePagination = ({
 };
 
 // @public (undocumented)
-export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
     activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
-    bulkActions?: (selectedIds: string[]) => ReactNode;
+    bulkActions?: (selectedIds: string[], scope: SelectionScope<Q>) => ReactNode;
     collapsedGroups?: ReadonlySet<string>;
     // (undocumented)
     columns: readonly DataWorkspaceColumn<T>[];
     // (undocumented)
     density?: TableDensity;
+    disableRowActionsWhileSelected?: boolean;
     empty?: ReactNode;
     emptyAction?: ReactNode;
     error?: ReactNode;
@@ -1820,6 +1839,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
         maxLength?: number;
     };
     selection?: ReadonlySet<string>;
+    selectionScope?: DataWorkspaceSelectionScope<Q>;
     sort?: S;
     stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
@@ -1832,9 +1852,25 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
 }
 
 // @public
+export interface DataWorkspaceQuery {
+    filters: Record<string, FilterValue>;
+    search: string;
+}
+
+// @public
 export interface DataWorkspaceRowActionsContext {
     compact: boolean;
     ladder: 'cards' | 'priority' | 'priority-mid' | null;
+}
+
+// @public
+export interface DataWorkspaceSelectionScope<Q = DataWorkspaceQuery> {
+    description?: ReactNode;
+    onChange: (scope: SelectionScope<Q>) => void;
+    onQueryChange?: 'clear' | 'confirm';
+    query?: Q;
+    total?: number;
+    value: SelectionScope<Q>;
 }
 
 // @public (undocumented)
@@ -2688,6 +2724,9 @@ export function edgeLabelSize(lines: readonly string[]): {
 
 // @public
 export function effectiveShortcut(id: string, defaultKeys: ShortcutBinding | null | undefined, preferences: ShortcutPreferenceValues): KeySequence | null;
+
+// @public
+export const EMPTY_SELECTION_SCOPE: SelectionScopeIds;
 
 // @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
@@ -3835,10 +3874,16 @@ export function isDateUnavailable(date: string, options: {
 export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public
+export function isInSelectionScope(scope: SelectionScope<unknown>, id: string): boolean;
+
+// @public
 export const isOvernightRange: (min?: string, max?: string) => boolean;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
+
+// @public
+export function isSelectionScopeEmpty(scope: SelectionScope<unknown>): boolean;
 
 // @public
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
@@ -7608,6 +7653,9 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 // @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
+// @public
+export function selectAllMatching<Q>(query: Q, total: number): SelectionScopeQuery<Q>;
+
 // @public (undocumented)
 export type SelectAllState = 'none' | 'some' | 'all';
 
@@ -7621,6 +7669,35 @@ export interface SelectGroup {
     label: string;
     // (undocumented)
     options: readonly SelectOption[];
+}
+
+// @public
+export function selectionQueryKey(query: unknown): string;
+
+// @public
+export type SelectionScope<Q = unknown> = SelectionScopeIds | SelectionScopeQuery<Q>;
+
+// @public
+export function selectionScopeCount(scope: SelectionScope<unknown>): number;
+
+// @public
+export interface SelectionScopeIds {
+    // (undocumented)
+    ids: readonly string[];
+    // (undocumented)
+    kind: 'ids';
+}
+
+// @public
+export function selectionScopeMatcher(scope: SelectionScope<unknown>): (id: string) => boolean;
+
+// @public
+export interface SelectionScopeQuery<Q = unknown> {
+    excludedIds: readonly string[];
+    // (undocumented)
+    kind: 'query';
+    query: Q;
+    total: number;
 }
 
 // @public
@@ -7685,6 +7762,9 @@ export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
 
 // @public
 export function serializeView(v: ViewState): string;
+
+// @public
+export function setInSelectionScope<Q>(scope: SelectionScope<Q>, ids: readonly string[], on: boolean, cap?: number): SelectionScope<Q>;
 
 // @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
@@ -9262,6 +9342,9 @@ export function toDateKey(date: Date): string;
 
 // @public (undocumented)
 export function toggleId(set: ReadonlySet<string>, id: string): Set<string>;
+
+// @public
+export function toggleInSelectionScope<Q>(scope: SelectionScope<Q>, id: string, cap?: number): SelectionScope<Q>;
 
 // @public
 export function togglePage(selected: ReadonlySet<string>, pageIds: readonly string[]): Set<string>;
