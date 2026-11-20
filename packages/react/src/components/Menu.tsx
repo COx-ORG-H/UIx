@@ -8,7 +8,8 @@ import { CheckIcon } from '../icons/components.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
-import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { KbdCombo, ariaKeyShortcutsFor, isKeyShortcut, useKbdPlatform } from './Kbd.js';
+import { useShortcutKeys } from '../shortcut-hooks.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useTextLocale } from '../hooks/useTextLocale.js';
 import { foldContext, textMatcher } from '../locale-text.js';
@@ -17,15 +18,22 @@ import type { KeyShortcut } from './Kbd.js';
 
 /**
  * A menu row's `shortcut`: key names render as `KbdCombo` and give the row `aria-keyshortcuts`
- * for the viewer's platform (HAR-2031); any other node renders as given.
+ * for the viewer's platform (HAR-2031); any other node renders as given. With `shortcutId`, the
+ * registered shortcut's current keys instead (none while it is not active).
  */
-function useRowShortcut(shortcut: ReactNode | KeyShortcut) {
+function useRowShortcut(shortcut: ReactNode | KeyShortcut, shortcutId?: string) {
   const platform = useKbdPlatform();
+  const bound = useShortcutKeys(shortcutId);
+  if (shortcutId) {
+    if (!bound) return { node: null, aria: {} };
+    const aria = ariaKeyShortcutsFor(bound, platform);
+    return { node: <span className="uix-menu__shortcut"><KbdCombo keys={bound} platform={platform} /></span>, aria: aria ? { 'aria-keyshortcuts': aria } : {} };
+  }
   if (shortcut == null) return { node: null, aria: {} };
   if (!isKeyShortcut(shortcut)) return { node: <span className="uix-menu__shortcut">{shortcut}</span>, aria: {} };
   return {
     node: <span className="uix-menu__shortcut"><KbdCombo keys={[...shortcut]} platform={platform} /></span>,
-    aria: { 'aria-keyshortcuts': ariaKeyShortcuts(shortcut, platform) },
+    aria: { 'aria-keyshortcuts': ariaKeyShortcutsFor([shortcut], platform) },
   };
 }
 
@@ -217,16 +225,18 @@ export interface MenuItemProps extends MenuItemAttributes {
    * other node renders as given.
    */
   shortcut?: KeyShortcut | ReactNode;
+  /** The keys of a registered shortcut (`useShortcut`) instead of `shortcut`, kept in step with remaps and the character-key switch. */
+  shortcutId?: string;
   tone?: 'default' | 'danger';
   disabled?: boolean;
   className?: string;
 }
 
-export function MenuItem({ children, onSelect, href, renderLink, icon, shortcut, tone = 'default', disabled, className, ...rest }: MenuItemProps) {
+export function MenuItem({ children, onSelect, href, renderLink, icon, shortcut, shortcutId, tone = 'default', disabled, className, ...rest }: MenuItemProps) {
   const menu = useContext(MenuContext);
   const classes = cx('uix-menu__item', tone === 'danger' && 'uix-menu__item--danger', className);
   const attributes = itemAttributes(rest);
-  const keys = useRowShortcut(shortcut);
+  const keys = useRowShortcut(shortcut, shortcutId);
   const body = (
     <>
       {icon != null && <span className="uix-menu__icon" aria-hidden="true">{icon}</span>}
@@ -261,16 +271,18 @@ interface CheckableItemProps extends MenuItemAttributes {
   children?: ReactNode;
   icon?: ReactNode;
   shortcut?: KeyShortcut | ReactNode;
+  /** The keys of a registered shortcut (`useShortcut`) instead of `shortcut`, kept in step with remaps and the character-key switch. */
+  shortcutId?: string;
   disabled?: boolean;
   className?: string;
 }
 
 /** One row with a check column: the shared body of `MenuItemRadio` and `MenuItemCheckbox`. */
 function CheckableItem({
-  role, checked, onToggle, closeOnSelect, children, icon, shortcut, disabled, className, ...rest
+  role, checked, onToggle, closeOnSelect, children, icon, shortcut, shortcutId, disabled, className, ...rest
 }: CheckableItemProps & { role: 'menuitemradio' | 'menuitemcheckbox'; checked: boolean; onToggle: () => void; closeOnSelect: boolean }) {
   const menu = useContext(MenuContext);
-  const keys = useRowShortcut(shortcut);
+  const keys = useRowShortcut(shortcut, shortcutId);
   return (
     <button
       {...itemAttributes(rest)}
@@ -339,6 +351,8 @@ export interface MenuItemRadioProps extends MenuItemAttributes {
   icon?: ReactNode;
   /** Key names (`['Shift', 'W']`) or a node; see `MenuItemProps.shortcut`. */
   shortcut?: KeyShortcut | ReactNode;
+  /** The keys of a registered shortcut (`useShortcut`) instead of `shortcut`, kept in step with remaps and the character-key switch. */
+  shortcutId?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -366,6 +380,8 @@ export interface MenuItemCheckboxProps extends MenuItemAttributes {
   icon?: ReactNode;
   /** Key names (`['Shift', 'W']`) or a node; see `MenuItemProps.shortcut`. */
   shortcut?: KeyShortcut | ReactNode;
+  /** The keys of a registered shortcut (`useShortcut`) instead of `shortcut`, kept in step with remaps and the character-key switch. */
+  shortcutId?: string;
   disabled?: boolean;
   className?: string;
 }
