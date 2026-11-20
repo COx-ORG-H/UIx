@@ -108,6 +108,7 @@
 <!-- lesson-skip: 948fcc9d routine review fixes (update order when a newer start supersedes a pending one; a failed second lookup ends the morph); pinned by jsdom tests -->
 <!-- lesson-skip: 0dd4e899 routine review fixes from Qodo on #291 (release a running morph before an instant change, guard the parts lookup, unlayered reduced-motion end, a spec wait for the deferred commit); each pinned by a jsdom test or spec; the deferred-commit wait is the 5805c3f4 entry -->
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
+<!-- lesson-skip: c532f344 routine: tsc named the namespaces #310 added that the complete-by-type packs lacked; Escape key name added to the transliterator keep-Latin list -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
