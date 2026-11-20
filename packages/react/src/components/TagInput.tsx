@@ -10,6 +10,8 @@ import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 import type { UixCountLabel } from '../plural.js';
 import { foldForSearch } from '../search-suggest-model.js';
+import { foldContext, textMatcher } from '../locale-text.js';
+import { useTextLocale } from '../hooks/useTextLocale.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -77,7 +79,8 @@ export interface TagInputProps {
   className?: string;
 }
 
-const same = (a: string, b: string) => foldForSearch(a).text === foldForSearch(b).text;
+/** One tag twice: equal once case and accents are folded for `locale` ("Đorđe" and "Djordje"). */
+const same = (a: string, b: string, locale: string | undefined) => textMatcher(a, foldContext(locale), 'equals')(b);
 
 /**
  * Several short tags in one field (HAR-1377): type and press Enter (or a comma) to add a chip;
@@ -95,7 +98,7 @@ export function TagInput({
   'aria-invalid': ariaInvalid, 'aria-required': ariaRequired, labels: labelOverrides, className,
 }: TagInputProps) {
   const labels: TagInputLabels = { ...DEFAULT_TAG_INPUT_LABELS, ...useUixLabels().tagInput, ...labelOverrides };
-  const locale = useUixLocale();
+  const locale = useTextLocale();
   const uid = useId();
   const id = idProp ?? `${uid}-input`;
   const listId = `${uid}-suggestions`;
@@ -114,9 +117,10 @@ export function TagInput({
 
   const matches = useMemo(() => {
     if (!suggestions?.length) return [];
-    const needle = foldForSearch(text.trim()).text;
-    return suggestions.filter((s) => !value.some((v) => same(v, s)) && (!needle || foldForSearch(s).text.includes(needle))).slice(0, 50);
-  }, [suggestions, text, value]);
+    const needle = text.trim();
+    const found = needle ? textMatcher(needle, foldContext(locale)) : () => true;
+    return suggestions.filter((s) => !value.some((v) => same(v, s, locale)) && found(s)).slice(0, 50);
+  }, [suggestions, text, value, locale]);
   const showing = open && matches.length > 0 && !disabled;
 
   /** Refuse with a reason: shown under the field and announced (the shown line is not a live region:
@@ -136,7 +140,7 @@ export function TagInput({
     for (let i = 0; i < raw.length; i += 1) {
       const tag = raw[i]!.trim();
       if (!tag) continue;
-      if (next.some((v) => same(v, tag))) reason = fillLabel(labels.duplicate, { tag });
+      if (next.some((v) => same(v, tag, locale))) reason = fillLabel(labels.duplicate, { tag });
       else if (maxTags != null && next.length >= maxTags) reason = fillLabel(labels.max, { max: maxTags });
       else reason = validate?.(tag, next) || '';
       if (reason) { refusedAt = i; break; }

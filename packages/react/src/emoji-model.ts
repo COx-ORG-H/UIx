@@ -1,6 +1,8 @@
 /* Emoji data model for EmojiPicker and the editor's emoji button (RTE-01).
  * Framework-free. The emojibase datasets (~600 KB per locale) are only fetched through
  * `loadEmojiData`, i.e. when a picker first opens; nothing here imports them statically. */
+import { foldContext, foldKeys } from './locale-text.js';
+import type { FoldContext } from './locale-text.js';
 
 export type EmojiLocale = 'en' | 'de';
 
@@ -102,20 +104,22 @@ export const loadEmojiData: EmojiDataLoader = (locale) => {
   return pending;
 };
 
-const fold = (s: string): string => s.toLocaleLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+const fold = (s: string, context: FoldContext): string => foldKeys(s, context)[0]!;
 
 /**
  * Search by name and tags. Word-prefix matches rank before substring matches;
- * dataset order breaks ties. Case and diacritics are folded, so "uberr" finds "Überraschung".
+ * dataset order breaks ties. Case and diacritics are folded like every kit search (`foldForSearch`),
+ * so "uberr" finds "Überraschung" and "strasse" finds "Straße".
  */
 export function searchEmoji(data: EmojiData, query: string, limit = 64): EmojiEntry[] {
-  const q = fold(query.trim());
+  const context = foldContext(data.locale);
+  const q = fold(query.trim(), context);
   if (!q) return [];
   const prefix: EmojiEntry[] = [];
   const contains: EmojiEntry[] = [];
   for (const entry of data.emojis) {
-    const name = fold(entry.name);
-    const words = [...name.split(/[\s:,-]+/), ...entry.tags.map(fold)];
+    const name = fold(entry.name, context);
+    const words = [...name.split(/[\s:,-]+/), ...entry.tags.map((tag) => fold(tag, context))];
     if (words.some((w) => w.startsWith(q)) || name.startsWith(q)) prefix.push(entry);
     else if (name.includes(q)) contains.push(entry);
     if (prefix.length >= limit) break;

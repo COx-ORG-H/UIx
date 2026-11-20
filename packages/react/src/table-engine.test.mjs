@@ -1,6 +1,6 @@
-/* Unit tests for the framework-agnostic table engine. Zero deps; Node strips the
- * TS types on import (Node >= 22.18 / 24). Run: node --test  (from packages/react),
- * or  npm test -w @tensor_1/react.
+/* Unit tests for the framework-agnostic table engine. Imports the BUILT dist (the
+ * engine folds and collates through locale-text.ts); run `npm run build` first, CI does.
+ * Then: node --test (from packages/react), or npm test -w @tensor_1/react.
  *
  * Precedent: packages/tokens/guide/app.test.js. These lock the algorithms the React
  * layer AND the vanilla styleguide both delegate to, so the two behave identically. */
@@ -15,7 +15,7 @@ import {
   clampWidth, reorder,
   COLUMN_WIDTH_SCALE, COLUMN_WIDTH_MIN, COLUMN_WIDTH_MAX, stepColumnWidth, columnWidthForKey, fitColumnWidth, setColumnWidth,
   toggleId, selectAllState, togglePage, mergePinned,
-} from './table-engine.ts';
+} from '../dist/index.js';
 
 /* ── sorting ─────────────────────────────────────────────────────────────────── */
 
