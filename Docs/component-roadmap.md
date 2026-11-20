@@ -117,6 +117,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | DataWorkspace | data-workspace.css | ✓ `DataWorkspace` | Beta | no | HAR-1388, ADR-0005: the generic presentation half of the products' data tables over Table / TableWrap refreshing / SavedViewMenu / ViewMenu / Chip + FilterEditor / SearchBar / BulkBar / Menu / Pagination; the product keeps registry, URL state, fetching, PII. |
 | Tabs | tabs.css | ✓ `Tabs` | Stable | no | Also `Tab`. |
 | TagInput | tag-input.css | ✓ `TagInput` | Beta | no | Type-to-add chips (Enter, comma, paste), suggestions in a top-layer list, refusals with a reason (duplicate, `validate`, `maxTags`), keyboard between the field and the chips, one hidden value per tag. Landed with HAR-1377. |
+| TaskTray | task-tray.css | ✓ `TaskTray` | Alpha | no | Background-task tray (phone-OS study, Tier 1 item 5; spec `Docs/specs/2026-11-20-task-tray.md`): a pill counting running tasks that opens into a list with step, progress, Cancel and a result action. Also the imperative store `tasks` (`start`/`run`, `createTaskStore`, `createTaskApi`). Follow-ups: an inline placement for a top bar; the Toaster above the tray at phone width. |
 | Textarea | textarea.css | ✓ `Textarea` | Stable | no | Form primitive. |
 | Timeline | timeline.css | ✓ `Timeline` | Beta | no | Also `TimelineItem`. Recently landed. |
 | Toast | toast.css | ✓ `Toast` | Stable | no | Also `Toaster` (`ToastTone`). |

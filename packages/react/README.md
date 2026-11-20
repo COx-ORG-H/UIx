@@ -543,6 +543,37 @@ toast.dismiss(id);   // or toast.dismiss() for all
 - `<Toaster>` still renders hand-managed `<Toast>` children first. `Toast` gains `tone="warning"` and an `action` slot.
 - At narrow toaster widths, the action takes a row below the message so translated failure sentences retain a readable width. The dismiss control stays beside the message; DOM and keyboard order remain unchanged.
 - **Modal feedback (HAR-2754):** keep one `Toaster` in the shell. It moves its stable host into the most recently opened UIx modal (`Modal`, `Drawer`, `Peek`, `ConfirmDialog`) and promotes the region to a manual popover. Both are necessary: a page z-index cannot cover a modal, and a top-layer popover outside the modal remains inert. Closing a nested dialog returns the same queue to its parent; closing the last dialog returns it to its original shell location. No caller z-index or extra toaster is needed. The live [German modal-feedback specimen](../../tests/toast-top-layer/harness.html) exercises error, pending, success, retry and dismissal in a drawer and a nested modal; bundle it with `node tests/toast-top-layer/build.mjs` when serving the repository. Browser regression: `tests/a11y/toast-top-layer.spec.mjs` hit-tests toast pixels and operates its controls at desktop and 320 px in both themes.
+
+### Background tasks (`TaskTray`, `tasks`)
+
+Work longer than about 10 s (an export, a CSV import, a bulk update, a discovery run) gets a tray that
+keeps it in view while people move on: a pill at the bottom of the window counts the running tasks and
+opens into a list with each task's title, current step, progress and Cancel, then its result and an
+action (open, download, retry). Spec: `Docs/specs/2026-11-20-task-tray.md`.
+
+```tsx
+<TaskTray />                                                          // once, in the app shell, beside <Toaster />
+
+const task = tasks.start('Export 4,000 tickets', { step: 'Collecting', value: 0, max: 4000, onCancel: stop });
+task.update({ step: 'Writing CSV', value: 2480 });                    // fetch(url, { signal: task.signal })
+task.complete({ message: '4,000 rows written', action: { label: 'Download', href: url, download: 'tickets.csv' } });
+task.fail({ message: '12 tickets are locked', action: { label: 'Retry', onClick: retry } });
+
+await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update({ step }) */ }, {
+  success: (n) => ({ message: `${n} new configuration items`, action: { label: 'Open', onClick: openRun } }),
+  error: (e) => message(e),
+});
+```
+
+- **State:** a task is `running`, then `done`, `failed` or `cancelled`; only a running task can finish, so a `complete` after a cancel is ignored. Leave `value` out for work with no measurable end (an indeterminate bar). `valueText` replaces the percentage. Reusing an `id` restarts a task in its row (a Retry).
+- **Cancel:** shown when `onCancel` is given (`tasks.run` shows it by default). It aborts `task.signal`, calls `onCancel` and marks the task cancelled. `dismiss` only takes a task out of the tray; it never stops the work.
+- **Finished tasks stay** until dismissed, cleared with "Clear finished", or `complete({ dismissAfter })`. A result action runs (or its link is followed), then the task is dismissed unless `keep: true`.
+- **Single-page apps:** the store is module state, so tasks survive route changes; a remounted tray shows them collapsed. A full reload starts empty.
+- **Accessibility:** a `region` landmark named "Background tasks" while a task exists; one polite live region (mounted before any task) announces starts and endings, never percentages. Running rows are `aria-busy`. The pill is a disclosure button: focus stays on it when it opens, and Tab goes into the panel. Escape collapses onto the pill. When an action removes the focused control, focus moves within the row, then to the next row, then to the pill, and back to where it came from when the last task goes.
+- **Words:** `labels` or `UixLabelsProvider` (`taskTray`): `region`, `cancel`, `dismiss`, `clearFinished`, the count words `running(n)`/`done(n)`/`failed(n)`/`cancelled(n)`, `status`, `formatPercent`, `announceStarted`, `announceFinished`.
+- **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
+- **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
+
 ### Icons (`@tensor_1/react/icons`)
 
 The TENSOR adoption set also includes `LandmarkIcon`, `KeyboardIcon`, `ArchiveRestoreIcon`,

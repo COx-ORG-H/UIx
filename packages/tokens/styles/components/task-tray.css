@@ -1,0 +1,136 @@
+/* uix task tray — background work that keeps running (spec: Docs/specs/2026-11-20-task-tray.md).
+   React's TaskTray renders it from the `tasks` store: a pill with the running count that opens a
+   panel listing each task. Depends only on --uix-* tokens.
+
+   Motion: transitions on opacity and transform only, so every move can be interrupted. The pill
+   rises in over --uix-dur-slow and sinks out over --uix-dur-exit; the panel grows from the pill
+   (scale .96, an 8 px rise) over --uix-dur and shrinks back faster; rows arrive and leave through
+   MotionList. Opened from the keyboard, the panel carries [data-uix-key-opened] and appears at once
+   (motion.css). Under reduced motion the kit policy keeps the fades and drops the travel. */
+@layer uix.components {
+  .uix-task-tray {
+    position: fixed; z-index: calc(var(--uix-z-toast) - 1);
+    inset-block-end: var(--uix-space-4); inset-inline: 0; margin-inline: auto;
+    width: min(26rem, calc(100vw - 2 * var(--uix-space-4)));
+    display: flex; flex-direction: column-reverse; align-items: center; gap: var(--uix-space-2);
+    /* the pill is first in the DOM (Tab goes from it into the panel) and shown below the panel.
+       the box is as wide as the panel; only the pill and the panel take the pointer */
+    pointer-events: none;
+  }
+  .uix-task-tray[data-position="bottom-start"] { inset-inline: var(--uix-space-4) auto; margin-inline: 0; align-items: flex-start; }
+  .uix-task-tray[data-position="bottom-end"] { inset-inline: auto var(--uix-space-4); margin-inline: 0; align-items: flex-end; }
+
+  /* the pill */
+  .uix-task-tray__pill {
+    pointer-events: auto; display: inline-flex; align-items: center; gap: var(--uix-space-2);
+    min-height: 32px; max-width: 100%; padding: var(--uix-space-1) var(--uix-space-3) var(--uix-space-1) var(--uix-space-2);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-pill);
+    background: var(--uix-surface-2); color: var(--uix-text); box-shadow: var(--uix-shadow-popover);
+    font: inherit; font-size: var(--uix-text-meta); font-weight: 600; line-height: 1.25; cursor: pointer;
+    transition: opacity var(--uix-dur-slow) var(--uix-ease-out), transform var(--uix-dur-slow) var(--uix-ease-out),
+                background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  @starting-style { .uix-task-tray__pill { opacity: 0; transform: translateY(var(--uix-space-2)); } }
+  .uix-task-tray[data-leaving] .uix-task-tray__pill {
+    opacity: 0; transform: translateY(var(--uix-space-2)); pointer-events: none; transition-duration: var(--uix-dur-exit);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-task-tray__pill:hover { background: var(--uix-bg-hover); }
+  }
+  .uix-task-tray__pill:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-task-tray__summary { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .uix-task-tray__chevron { flex: none; width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted);
+    transition: transform var(--uix-dur) var(--uix-ease-out); }
+  .uix-task-tray[data-open] .uix-task-tray__chevron { transform: rotate(180deg); }
+
+  /* the panel, growing from the pill */
+  .uix-task-tray__panel {
+    pointer-events: auto; box-sizing: border-box; width: 100%; max-height: min(60vh, 28rem);
+    display: flex; flex-direction: column; overflow: hidden; container-type: inline-size;
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
+    background: var(--uix-surface-2); color: var(--uix-text); box-shadow: var(--uix-shadow-popover);
+    transform-origin: 50% 100%;
+    transition: opacity var(--uix-dur) var(--uix-ease-out), transform var(--uix-dur) var(--uix-ease-out),
+                display var(--uix-dur) allow-discrete;
+  }
+  .uix-task-tray[data-position="bottom-start"] .uix-task-tray__panel { transform-origin: 0 100%; }
+  .uix-task-tray[data-position="bottom-end"] .uix-task-tray__panel { transform-origin: 100% 100%; }
+  @starting-style { .uix-task-tray__panel:not([hidden]) { opacity: 0; transform: translateY(var(--uix-space-2)) scale(.96); } }
+  .uix-task-tray__panel[hidden] { opacity: 0; transform: translateY(var(--uix-space-2)) scale(.96); transition-duration: var(--uix-dur-exit); }
+
+  .uix-task-tray__head {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2);
+    min-height: 40px; padding: var(--uix-space-1) var(--uix-space-2) var(--uix-space-1) var(--uix-space-4);
+    border-bottom: 1px solid var(--uix-border);
+  }
+  .uix-task-tray__heading { margin: 0; font-size: var(--uix-text-body); font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .uix-task-tray__list { flex: 1 1 auto; min-height: 0; margin: 0; padding: 0; list-style: none; overflow-y: auto; overscroll-behavior: contain; }
+
+  /* one task */
+  .uix-task-tray__task {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--uix-space-3); row-gap: var(--uix-space-2);
+    align-items: start; padding: var(--uix-space-3) var(--uix-space-2) var(--uix-space-3) var(--uix-space-4);
+  }
+  .uix-task-tray__task + .uix-task-tray__task { border-top: 1px solid var(--uix-border); }
+  .uix-task-tray__body { display: flex; flex-direction: column; gap: var(--uix-space-1); min-width: 0; }
+  .uix-task-tray__title { margin: 0; font-size: var(--uix-text-body); font-weight: 600; overflow-wrap: anywhere; }
+  .uix-task-tray__line { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .uix-task-tray__state { font-weight: 600; color: var(--uix-text); }
+  .uix-task-tray__task[data-status="failed"] .uix-task-tray__state { color: var(--uix-danger-text); }
+  .uix-task-tray__task .uix-task-tray__progress { height: 6px; margin-top: var(--uix-space-1); }
+
+  /* the marks: what state the work is in (the row also says it in words) */
+  .uix-task-tray__mark { flex: none; position: relative; display: inline-grid; place-items: center; box-sizing: border-box; width: 16px; height: 16px; }
+  .uix-task-tray__task > .uix-task-tray__mark { margin-top: 2px; }
+  .uix-task-tray__ring { border-radius: 50%; background: conic-gradient(var(--uix-accent) calc(var(--val, 0) * 360deg), var(--uix-bg-active) 0); }
+  .uix-task-tray__ring::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--uix-surface-2); }
+  .uix-task-tray__mark[data-mark="done"] { color: var(--uix-success); }
+  .uix-task-tray__mark[data-mark="done"] svg { width: 16px; height: 16px; }
+  .uix-task-tray__check { stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; animation: uix-check-draw var(--uix-dur-draw) var(--uix-ease-leave) both; }
+  .uix-task-tray__mark[data-mark="failed"]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--uix-danger); }
+  .uix-task-tray__mark[data-mark="cancelled"]::before { content: ""; width: 8px; height: 2px; border-radius: var(--uix-radius-pill); background: var(--uix-text-muted); }
+
+  /* actions: 24 px targets */
+  .uix-task-tray__actions { display: flex; align-items: center; gap: var(--uix-space-1); }
+  .uix-task-tray__btn {
+    display: inline-flex; align-items: center; min-height: 24px; padding: var(--uix-space-1) var(--uix-space-2);
+    border: 0; border-radius: var(--uix-radius-xs); background: transparent; color: var(--uix-text);
+    font: inherit; font-size: var(--uix-text-meta); font-weight: 600; white-space: nowrap; text-decoration: none; cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-task-tray__btn--action { color: var(--uix-link); }
+  .uix-task-tray__dismiss {
+    display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: var(--uix-space-1);
+    border: 0; border-radius: var(--uix-radius-xs); background: transparent; color: var(--uix-text-muted); cursor: pointer;
+    transition: background-color var(--uix-dur-fast) var(--uix-ease-out);
+  }
+  .uix-task-tray__dismiss > .uix-icon { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  @media (hover: hover) and (pointer: fine) {
+    .uix-task-tray__btn:hover, .uix-task-tray__dismiss:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
+    .uix-task-tray__btn--action:hover { color: var(--uix-link); }
+  }
+  .uix-task-tray__btn:focus-visible, .uix-task-tray__dismiss:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 1px; }
+
+  /* a narrow tray (a phone): the actions move under the text, so a title keeps its width */
+  @container (max-width: 24rem) {
+    .uix-task-tray__actions { grid-column: 2 / -1; grid-row: 2; justify-self: start; margin-inline-start: calc(-1 * var(--uix-space-2)); }
+  }
+
+  /* more contrast asked for: firmer edges */
+  @media (prefers-contrast: more) {
+    .uix-task-tray__pill, .uix-task-tray__panel { border-color: var(--uix-border-strong); }
+    .uix-task-tray__head, .uix-task-tray__task + .uix-task-tray__task { border-color: var(--uix-border-strong); }
+    .uix-task-tray__line { color: var(--uix-text); }
+  }
+}
+
+/* forced colours: the ring, the dot and the dash are backgrounds, which the mode strips */
+@layer uix.components {
+  @media (forced-colors: active) {
+    .uix-task-tray__ring { forced-color-adjust: none; background: conic-gradient(Highlight calc(var(--val, 0) * 360deg), GrayText 0); }
+    .uix-task-tray__ring::after { forced-color-adjust: none; background: Canvas; }
+    .uix-task-tray__mark[data-mark="failed"]::before, .uix-task-tray__mark[data-mark="cancelled"]::before { forced-color-adjust: none; background: CanvasText; }
+    .uix-task-tray__pill:focus-visible, .uix-task-tray__btn:focus-visible, .uix-task-tray__dismiss:focus-visible { outline-color: Highlight; }
+  }
+}
