@@ -89,14 +89,16 @@ test('the transform: accents every letter, keeps placeholders, runs about 35 % l
   expect(COMPOUNDS.every((c) => c.length >= 28 && !/\s/.test(c))).toBe(true);
 });
 
-test('the English source lists every UixLabels namespace', () => {
+test('the English pack, the pseudo-locales' source, has every UixLabels namespace', () => {
   const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
-  const iface = read('../../packages/react/src/labels-context.tsx').match(/export interface UixLabels \{([\s\S]*?)\n\}/)[1];
-  const namespaces = [...iface.matchAll(/^ {2}(\w+)\?:/gm)].map((m) => m[1]).filter((k) => k !== 'dateFormat' && k !== 'locale');
-  const source = read('../pseudo-locale/english.ts').match(/export const ENGLISH = \{([\s\S]*?)\n\}/)[1];
-  const listed = [...source.matchAll(/^ {2}(\w+):/gm)].map((m) => m[1]);
+  const iface = read('../../packages/react/src/labels-context.tsx').match(/export interface UixLabels {([sS]*?)
+}/)[1];
+  const namespaces = [...iface.matchAll(/^ {2}(w+)?:/gm)].map((m) => m[1]).filter((k) => k !== 'dateFormat' && k !== 'locale');
+  const source = read('../../packages/react/src/locales/en.ts').match(/export const en: UixLabelPack = {([sS]*?)
+};?/)[1];
+  const listed = [...source.matchAll(/^ {2}(w+)[:,]/gm)].map((m) => m[1]);
   expect(namespaces.length).toBeGreaterThan(40);
-  expect(namespaces.filter((k) => !listed.includes(k)), 'add these to tests/pseudo-locale/english.ts').toEqual([]);
+  expect(namespaces.filter((k) => !listed.includes(k)), 'add these to packages/react/src/locales/en.ts (and the other packs)').toEqual([]);
 });
 
 test('en-XA: longer words fit every case, and no English default is left on screen', async ({ page }, testInfo) => {
