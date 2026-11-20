@@ -1,6 +1,6 @@
 /* NVDA + Chrome for Testing, driven by Guidepup, over the AT-evidence harness
  * (tests/at-evidence/harness.html). Windows only; CI runs it in .github/workflows/at-nvda.yml on a
- * windows-latest runner after `npx @guidepup/setup` has put a portable NVDA there.
+ * windows-latest runner after `@guidepup/setup install nvda` has put a portable NVDA there.
  *
  * What it proves: the words NVDA actually spoke for each step, captured from NVDA itself (not
  * from the DOM), written to tests/at-nvda/out/nvda-transcript.{json,md}. It is a real NVDA run,
@@ -10,7 +10,8 @@
  * It fails (exit 1) when NVDA spoke nothing at all, or when a toast's text never reached speech:
  * an empty transcript must not pass as evidence.
  *
- *   npm i --no-save @guidepup/guidepup@0.40.0 && npx @guidepup/setup@0.29.3
+ *   npm i --no-save @guidepup/guidepup@0.40.0
+ *   npx @guidepup/setup@0.29.3 setup --ci && npx @guidepup/setup@0.29.3 install nvda
  *   node tests/at-evidence/build.mjs && npx serve -l 4178 .   (in another shell)
  *   node tests/at-nvda/run.mjs
  *

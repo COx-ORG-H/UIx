@@ -52,7 +52,8 @@ jobs:
       - name: Install Guidepup and a portable NVDA
         run: |
           npm install --no-save @guidepup/guidepup@0.40.0
-          npx --yes @guidepup/setup@0.29.3
+          npx --yes @guidepup/setup@0.29.3 setup --ci
+          npx --yes @guidepup/setup@0.29.3 install nvda
 
       - name: Build the AT-evidence harness
         run: node tests/at-evidence/build.mjs
