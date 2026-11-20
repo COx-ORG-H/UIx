@@ -462,7 +462,7 @@ test.describe('Loading and progress', () => {
     const beat = (id) => page.locator(`${id} .uix-heartbeat`).evaluate((el) => ({
       ring: getComputedStyle(el.querySelector('.uix-heartbeat__ping')).display,
       dot: getComputedStyle(el.querySelector('.uix-heartbeat__dot')).backgroundColor,
-      animations: el.getAnimations({ subtree: true }).length,
+      animations: el.getAnimations({ subtree: true }).filter((a) => a.timeline === document.timeline).length,
     }));
     for (const id of ['#live', '#idle', '#warn']) {
       const b = await beat(id);

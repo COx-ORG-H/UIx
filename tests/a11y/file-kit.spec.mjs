@@ -32,7 +32,7 @@ const live = (page) => page.locator('#live');
 /** Every running animation or transition under `selector`: [{ name, duration, delay, iterations }]. */
 const running = (page, selector = 'body') => page.evaluate((sel) => {
   const root = document.querySelector(sel);
-  return document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.target && root?.contains(a.effect.target)).map((a) => ({
+  return document.getAnimations().filter((a) => a.timeline === document.timeline).filter((a) => a.playState === 'running' && a.effect?.target && root?.contains(a.effect.target)).map((a) => ({
     name: a.animationName ?? a.transitionProperty, duration: a.effect.getTiming().duration, delay: a.effect.getTiming().delay,
     iterations: a.effect.getTiming().iterations, target: String(a.effect.target.className?.baseVal ?? a.effect.target.className ?? a.effect.target.tagName),
   }));

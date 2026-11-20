@@ -13,6 +13,11 @@
   }
 }
 
+/* reduced transparency (display-preferences.css): no blur, a firmer veil instead */
+@layer uix.components {
+  :root:is([data-transparency="reduce"], [data-contrast="more"]) .uix-overlay-progress { backdrop-filter: none; background: color-mix(in srgb, var(--uix-bg-app) 85%, transparent); }
+}
+
 /* the in-app reduced-motion preference (HAR-1372, <html data-motion="reduce">): the same pulse */
 @layer uix.components {
   @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-spinner { animation: uix-pulse var(--uix-loop-pulse) var(--uix-ease-in-out) infinite !important; } }
