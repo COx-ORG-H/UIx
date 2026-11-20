@@ -15,7 +15,7 @@
 
   .uix-table thead th {
     /* --uix-table-head-bg: the card's own surface in light, a visible band above it in dark (HAR-3087) */
-    position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-table-head-bg); text-align: left;
+    position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-table-head-bg); text-align: start;
     font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
     padding: 0 var(--uix-space-4); height: var(--uix-table-head-h, 44px); border-bottom: 1px solid var(--uix-border); white-space: nowrap;
   }
@@ -266,7 +266,7 @@
   .uix-table--cards tbody tr[data-selected] { box-shadow: 0 0 0 2px var(--uix-accent); }
   .uix-table--cards td { height: auto; display: flex; justify-content: space-between; align-items: center; gap: var(--uix-space-5); padding: var(--uix-space-2) 0; border-bottom: 1px solid var(--uix-border); text-align: right; white-space: normal; }
   .uix-table--cards td:last-child { border-bottom: 0; }
-  .uix-table--cards td::before { content: attr(data-label); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 500; text-align: left; flex: none; }
+  .uix-table--cards td::before { content: attr(data-label); color: var(--uix-text-muted); font-size: var(--uix-text-meta); font-weight: 500; text-align: start; flex: none; }
   .uix-table--cards td[data-col="id"] { font-size: var(--uix-text-h3); font-weight: 600; border-bottom: 1px solid var(--uix-border); padding-bottom: var(--uix-space-3); }
   .uix-table--cards td[data-col="id"]::before { display: none; }
   .uix-table--cards td[data-col="select"], .uix-table--cards td[data-col="actions"], .uix-table--cards td[data-col="expand"] { display: none; }

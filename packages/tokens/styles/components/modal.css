@@ -59,7 +59,7 @@
   /* title is an <h2> for SR navigation (UIX-A11Y-1); inherits neutralize the base h2
      heading font/tracking/leading so it renders exactly like the old <div> */
   .uix-dialog__title { font-size: var(--uix-text-h3); font-weight: 600; font-family: inherit; letter-spacing: inherit; line-height: inherit; }
-  .uix-dialog__close { margin-left: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
+  .uix-dialog__close { margin-inline-start: auto; border: 0; background: transparent; color: var(--uix-text-muted); cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--uix-radius-sm); }
   .uix-dialog__close:hover { background: var(--uix-bg-hover); color: var(--uix-text); }
   .uix-dialog__close svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
   /* `pending` (HAR-2029): a save is in flight, so the close button does nothing and says so */
