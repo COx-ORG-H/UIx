@@ -6,9 +6,10 @@ import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { XIcon } from '../icons/components.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { foldContext, textMatcher } from '../locale-text.js';
-import { useTextLocale } from '../hooks/useTextLocale.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -29,8 +30,8 @@ export interface TagInputLabels {
   suggestions: string;
   /** Name of the list of chips. */
   list: string;
-  /** Part of the field's description: how many tags there are; `{count}`. */
-  count: string;
+  /** Part of the field's description: how many tags there are; `{count}`. Plural-aware: the forms or a function of the count. */
+  count: UixCountLabel;
 }
 
 export const DEFAULT_TAG_INPUT_LABELS: TagInputLabels = {
@@ -95,7 +96,7 @@ export function TagInput({
   'aria-invalid': ariaInvalid, 'aria-required': ariaRequired, labels: labelOverrides, className,
 }: TagInputProps) {
   const labels: TagInputLabels = { ...DEFAULT_TAG_INPUT_LABELS, ...useUixLabels().tagInput, ...labelOverrides };
-  const locale = useTextLocale();
+  const locale = useUixLocale();
   const uid = useId();
   const id = idProp ?? `${uid}-input`;
   const listId = `${uid}-suggestions`;
@@ -343,7 +344,7 @@ export function TagInput({
       </div>
       {name && value.map((tag, index) => <input key={`${tag}-${index}`} type="hidden" name={name} value={tag} disabled={disabled} />)}
       {message && <span id={messageId} className="uix-field__warning uix-taginput__message">{message}</span>}
-      {value.length > 0 && <span id={countId} className="uix-visually-hidden">{fillLabel(labels.count, { count: value.length })}</span>}
+      {value.length > 0 && <span id={countId} className="uix-visually-hidden">{fillLabel(countLabel(labels.count, value.length, locale), { count: value.length })}</span>}
       <span className="uix-visually-hidden" role="status" aria-live="polite">{announcement}</span>
       {suggestions && (
         <div ref={popupRef} className="uix-select__popup uix-taginput__popup" hidden={!showing} {...popoverAttr} onMouseDown={(event) => event.preventDefault()}>

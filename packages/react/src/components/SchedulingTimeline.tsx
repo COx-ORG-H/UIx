@@ -6,8 +6,9 @@ import { cachedDateTimeFormat, zonedDayBounds, zonedTimeOfDay } from '../calenda
 import { proposeMove } from '../scheduling-calendar-model.js';
 import type { MoveProposal } from '../scheduling-calendar-model.js';
 import { cx } from '../cx.js';
-import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { fillCountLabel, fillLabel } from '../fill-label.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { usePrinting } from '../hooks/usePrinting.js';
 import { defaultTimelineStep, layoutLane, pixelsToMs, placeSpan, shiftSpan, timelineRepeatedHourOffset, timelineStepDelta, timelineSubTicks, timelineTicks } from '../scheduling-timeline-model.js';
 import type { PlacedSpan, TimelineRange, TimelineScale } from '../scheduling-timeline-model.js';
@@ -136,8 +137,11 @@ export interface SchedulingTimelineLabels {
   moveCancelled?: string;
   /** Announced when the time asked for does not exist that day. `{time}` is the time used instead. */
   gapForward?: string;
-  /** The count on the row of a collapsed group. `{count}` is the number the consumer gave; the wording, plural forms included, is this label. */
-  groupSummary?: string;
+  /**
+   * The count on the row of a collapsed group. `{count}` is the number the consumer gave; the wording,
+   * plural forms included, is this label: a string, the forms (`{ one, few, other }`) or a function of the count.
+   */
+  groupSummary?: UixCountLabel;
   /** Announced when a move was handed to `onProposeMove`. `{start}` and `{end}` placeholders. */
   moveSent?: string;
 }
@@ -325,6 +329,8 @@ export function SchedulingTimeline({
   tickWidth, step: stepProp, subTicks, formatTick, formatInstant: formatInstantProp, renderItem, onSelectItem, onMoveItem, onProposeMove, onResizeItem,
   flagOverlaps = true, virtualizeAbove = 150, maxHeight, notice, columnNotes, loading, error, onRetry, labels: labelOverrides, className,
 }: SchedulingTimelineProps) {
+  // the plural forms follow the labels' language: the provider's locale, then this component's
+  const pluralLocale = useUixLocale() ?? locale;
   const uixLabels = useUixLabels();
   const provided = { ...uixLabels.schedulingTimeline, ...labelOverrides };
   const labels = {
@@ -977,7 +983,7 @@ export function SchedulingTimeline({
             </button>
             {group.meta != null && <span className="uix-scheduling-timeline__group-meta">{group.meta}</span>}
             {collapsed && group.summary && <span className="uix-scheduling-timeline__group-summary">
-              <span className="uix-scheduling-timeline__group-count">{fillLabel(labels.groupSummary, { count: group.summary.count })}</span>
+              <span className="uix-scheduling-timeline__group-count">{fillCountLabel(labels.groupSummary, { count: group.summary.count }, pluralLocale)}</span>
               {group.summary.markers && group.summary.markers.length > 0 && <span className="uix-scheduling-timeline__item-markers">{group.summary.markers.map((marker) => <ItemMarker key={marker.id} marker={marker} showLabel />)}</span>}
             </span>}
           </div>

@@ -7,7 +7,7 @@ import { keepRowInView } from '../list-scroll.js';
 import { filterComboboxItems } from '../combobox-model.js';
 import type { ComboboxGroup, ComboboxOption } from '../combobox-model.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
-import { useTextLocale } from '../hooks/useTextLocale.js';
+import { useUixLocale } from '../labels-context.js';
 import { CheckIcon } from '../icons/components.js';
 import type { Placement } from '../overlay-position.js';
 import { buildSelectModel, firstEnabled, lastEnabled, moveActive } from '../select-model.js';
@@ -88,7 +88,7 @@ export function Combobox({
   const [filter, setFilter] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const locale = useTextLocale();
+  const locale = useUixLocale();
   const model = useMemo(() => buildSelectModel(filterComboboxItems(options, open ? filter : '', locale)), [open, options, filter, locale]);
   const entries = model.entries;
   const active: SelectEntry | undefined = activeIndex >= 0 ? entries[activeIndex] : undefined;

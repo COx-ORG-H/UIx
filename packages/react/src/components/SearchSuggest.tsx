@@ -3,8 +3,7 @@
 import { useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import type { FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, ReactNode, Ref } from 'react';
 import { cx } from '../cx.js';
-import { useUixLabels } from '../labels-context.js';
-import { useTextLocale } from '../hooks/useTextLocale.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition.js';
 import { searchSegments } from '../search-suggest-model.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
@@ -198,7 +197,7 @@ export function SearchSuggest({
   ...props
 }: SearchSuggestProps) {
   const uixLabels = useUixLabels();
-  const locale = useTextLocale();
+  const locale = useUixLocale();
   const clearLabel = clearLabelProp ?? uixLabels.searchSuggest?.clear ?? 'Clear search';
   const id = useId();
   const listboxId = `${id}-listbox`;
