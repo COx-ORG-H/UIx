@@ -2225,7 +2225,7 @@ export const DEFAULT_SLA_REMAINING_THRESHOLDS: readonly SlaThreshold[];
 // @public
 export const DEFAULT_SLA_THRESHOLDS: readonly SlaThreshold[];
 
-// @public (undocumented)
+// @public
 export const DEFAULT_SLA_TIMER_LABELS: SlaTimerLabels;
 
 // @public (undocumented)
@@ -8011,6 +8011,11 @@ export type SlaTime = Date | number | string;
 export function SlaTimer(input: SlaTimerProps): react.JSX.Element;
 
 // @public
+export type SlaTimerLabelOverrides = Partial<Omit<SlaTimerLabels, 'states'>> & {
+    states?: Partial<SlaTimerLabels['states']>;
+};
+
+// @public
 export interface SlaTimerLabels {
     breached: string;
     breachedAgo: string;
@@ -8034,7 +8039,7 @@ export interface SlaTimerProps extends SlaInput, Omit<HTMLAttributes<HTMLSpanEle
     format?: 'compact' | 'relative' | 'absolute';
     label?: string;
     // (undocumented)
-    labels?: Partial<SlaTimerLabels>;
+    labels?: SlaTimerLabelOverrides;
     locale?: string;
     now?: SlaTime;
     pausedReason?: string;
@@ -9517,9 +9522,7 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
-    slaTimer?: Partial<Omit<SlaTimerLabels, 'states'>> & {
-        states?: Partial<SlaTimerLabels['states']>;
-    };
+    slaTimer?: SlaTimerLabelOverrides;
     sortableList?: Partial<SortableListLabels>;
     tagInput?: Partial<TagInputLabels>;
     taskTray?: Partial<TaskTrayLabels>;
