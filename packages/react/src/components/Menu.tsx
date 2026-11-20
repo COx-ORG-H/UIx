@@ -10,6 +10,8 @@ import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
 import { KbdCombo, ariaKeyShortcuts, isKeyShortcut, useKbdPlatform } from './Kbd.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
+import { useTextLocale } from '../hooks/useTextLocale.js';
+import { foldContext, textMatcher } from '../locale-text.js';
 import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import type { KeyShortcut } from './Kbd.js';
 
@@ -82,6 +84,7 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
   /** Which item gets focus when the menu opens. */
   const focusOnOpen = useRef<'first' | 'last'>('first');
   const typeahead = useRef({ text: '', at: 0 });
+  const locale = useTextLocale();
   // one hover mark that glides from item to item under the pointer (2.60)
   const glideRef = useRef<HTMLSpanElement>(null);
   useHoverGlide(glideRef, '.uix-menu__item', open);
@@ -140,7 +143,9 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
       typeahead.current = { text: now - typeahead.current.at > 600 ? event.key.toLowerCase() : typeahead.current.text + event.key.toLowerCase(), at: now };
       const start = index + (typeahead.current.text.length === 1 ? 1 : 0);
       const order = [...list.slice(start), ...list.slice(0, start)];
-      order.find((item) => (item.textContent ?? '').trim().toLowerCase().startsWith(typeahead.current.text))?.focus();
+      // folded like every kit search: "c" reaches "Čvor", "dj" reaches "Đakovo"
+      const startsWith = textMatcher(typeahead.current.text, foldContext(locale), 'startsWith');
+      order.find((item) => startsWith((item.textContent ?? '').trim()))?.focus();
     }
   };
 
