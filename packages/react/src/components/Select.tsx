@@ -6,6 +6,7 @@ import type {
   SyntheticEvent,
 } from 'react';
 import { cx } from '../cx.js';
+import { keepRowInView } from '../list-scroll.js';
 import { useUixLabels } from '../labels-context.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { blurIn, keyboardInitiated, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
@@ -695,10 +696,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     if (!open || !list || active < 0) return;
     const el = list.ownerDocument.getElementById(optionId(active));
     if (!el || !list.contains(el)) return;
-    const top = el.offsetTop;
-    const bottom = top + el.offsetHeight;
-    if (top < list.scrollTop) list.scrollTop = top;
-    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+    keepRowInView(list, el);
   }, [open, active, mode]);
 
   /* ---- a press outside closes it (a press on our own label toggles it instead) */
