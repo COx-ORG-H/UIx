@@ -522,9 +522,9 @@
       "brotli": 1804
     },
     "styles/components/table.css": {
-      "raw": 27202,
-      "gzip": 7179,
-      "brotli": 6178
+      "raw": 28824,
+      "gzip": 7565,
+      "brotli": 6520
     },
     "styles/components/tabs.css": {
       "raw": 7115,
