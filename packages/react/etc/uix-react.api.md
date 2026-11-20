@@ -6210,6 +6210,7 @@ export function readSystemDisplayPreferences(): SystemDisplayPreferences;
 // @public
 export interface RecordConflictChange {
     base: JsonValue | undefined;
+    keys: readonly string[];
     overlap: boolean;
     path: string;
     theirs: JsonValue | undefined;
