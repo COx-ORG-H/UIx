@@ -1549,7 +1549,8 @@ function WorkspaceTable<T>({
         </thead>
         {tbody}
       </Table>
-      {actionHost.element}
+      {/* Only with getRowActions: a workspace without it renders as before (no dialog in its markup). */}
+      {getRowActions != null && actionHost.element}
     </TableWrap>
   );
 }
