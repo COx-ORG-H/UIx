@@ -124,6 +124,11 @@ test('matchesChord: Mod per platform, exact modifiers on letters, the character 
   assert.equal(m(ev('÷', { altKey: true, code: 'Slash' }), 'Alt+/', 'mac'), true);
   assert.equal(m(ev('/', { altKey: true, code: 'Slash' }), 'Alt+/'), true);
   assert.equal(m(ev('/', { code: 'Slash' }), 'Alt+/'), false);
+  // Option+Shift+/ types ¿: Alt+? is the shifted Slash key, and the unshifted one is Alt+/ only.
+  assert.equal(m(ev('¿', { altKey: true, shiftKey: true, code: 'Slash' }), 'Alt+?', 'mac'), true);
+  assert.equal(m(ev('÷', { altKey: true, code: 'Slash' }), 'Alt+?', 'mac'), false);
+  assert.equal(m(ev('¿', { altKey: true, shiftKey: true, code: 'Slash' }), 'Alt+/', 'mac'), false);
+  assert.equal(m(ev('⁄', { altKey: true, shiftKey: true, code: 'Digit1' }), 'Alt+!', 'mac'), true);
   assert.equal(m(ev('Enter', { ctrlKey: true }), 'Mod+Enter'), true);
   assert.equal(m(ev(' '), 'Space'), true);
 });

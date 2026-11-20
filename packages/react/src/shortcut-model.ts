@@ -159,6 +159,16 @@ const PUNCTUATION_CODES: Record<string, string> = {
   '/': 'Slash', '\\': 'Backslash', ',': 'Comma', '.': 'Period', ';': 'Semicolon', "'": 'Quote',
   '[': 'BracketLeft', ']': 'BracketRight', '-': 'Minus', '=': 'Equal', '`': 'Backquote',
 };
+/** The same for the symbols Shift types on those keys (and on the digits): `?` is Shift on `Slash`. */
+const SHIFTED_PUNCTUATION_CODES: Record<string, string> = {
+  '?': 'Slash', '|': 'Backslash', '<': 'Comma', '>': 'Period', ':': 'Semicolon', '"': 'Quote',
+  '{': 'BracketLeft', '}': 'BracketRight', '_': 'Minus', '+': 'Equal', '~': 'Backquote',
+  '!': 'Digit1', '@': 'Digit2', '#': 'Digit3', $: 'Digit4', '%': 'Digit5', '^': 'Digit6', '&': 'Digit7', '*': 'Digit8', '(': 'Digit9', ')': 'Digit0',
+};
+/** Whether a keydown is the physical key that types `key` on a US layout, Shift included. */
+const isPhysicalPunctuation = (event: ShortcutKeyEvent, key: string) => (PUNCTUATION_CODES[key] != null
+  ? !event.shiftKey && event.code === PUNCTUATION_CODES[key]
+  : SHIFTED_PUNCTUATION_CODES[key] != null && event.shiftKey && event.code === SHIFTED_PUNCTUATION_CODES[key]);
 
 /** The fields of a keydown the matcher reads (a DOM `KeyboardEvent` has them all). */
 export interface ShortcutKeyEvent {
@@ -211,7 +221,7 @@ export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platfo
     if (event.ctrlKey !== wantCtrl || event.altKey !== wantAlt) return false;
     if (typed === key) return true;
     // Alt or Option types another character (Option+/ is ÷ on a Mac): the physical key decides.
-    return wantAlt && PUNCTUATION_CODES[key] != null && event.code === PUNCTUATION_CODES[key];
+    return wantAlt && isPhysicalPunctuation(event, key);
   }
   return typed === key && event.metaKey === wantMeta && event.ctrlKey === wantCtrl && event.altKey === wantAlt && event.shiftKey === wantShift;
 }
