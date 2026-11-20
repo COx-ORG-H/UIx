@@ -89,9 +89,10 @@ export function ProposalReview({
   const report = useProposalReporter({ proposalId, kind: 'proposal', type, consequence }, ref);
   const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
 
-  // one press per decision: a double click must not approve twice
+  // one press per decision: a double click must not approve twice. A new proposal, or the product
+  // moving it back to proposed or failed, takes a decision again.
   const decided = useRef(false);
-  useEffect(() => { if (status === 'proposed' || status === 'failed') decided.current = false; }, [status]);
+  useEffect(() => { if (status === 'proposed' || status === 'failed') decided.current = false; }, [status, proposalId]);
   const decide = (fn: () => void) => {
     if (decided.current) return;
     decided.current = true;
@@ -100,13 +101,14 @@ export function ProposalReview({
 
   // the undo window, from the moment it is applied
   const [undoOpen, setUndoOpen] = useState(false);
+  const canUndo = !!onUndo;
   useEffect(() => {
-    if (status !== 'applied' || !reversible || !onUndo) { setUndoOpen(false); return undefined; }
+    if (status !== 'applied' || !reversible || !canUndo) { setUndoOpen(false); return undefined; }
     setUndoOpen(true);
     if (!undoSeconds || undoSeconds <= 0) return undefined;
     const timer = window.setTimeout(() => setUndoOpen(false), undoSeconds * 1000);
     return () => window.clearTimeout(timer);
-  }, [status, reversible, undoSeconds, onUndo]);
+  }, [status, reversible, undoSeconds, canUndo, proposalId]);
 
   const band = consequence === 'high' ? labels.bandHigh : consequence === 'medium' ? labels.bandMedium : labels.bandLow;
   const reversibility = !reversible
