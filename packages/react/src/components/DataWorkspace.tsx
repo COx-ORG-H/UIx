@@ -6,7 +6,8 @@ import type {
   MouseEvent as ReactMouseEvent, ReactNode,
 } from 'react';
 import { cx } from '../cx.js';
-import { toggleSort } from '../table-engine.js';
+import { COLUMN_WIDTH_MAX, COLUMN_WIDTH_MIN, COLUMN_WIDTH_SCALE, fitColumnWidth, setColumnWidth, toggleSort } from '../table-engine.js';
+import type { ColumnWidths } from '../table-engine.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels } from '../labels-context.js';
 import { renderUixLink } from '../link.js';
@@ -19,6 +20,7 @@ import { playArrival } from '../hooks/arrival.js';
 import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
 import { BusyRegion } from './BusyRegion.js';
+import { ColumnResizer } from './ColumnResizer.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
 import { Chip } from './Chip.js';
@@ -91,6 +93,22 @@ export interface DataWorkspaceLabels {
   expandGroup: string;
   /** A group header's checkbox: `{name}`. */
   selectGroup: string;
+  /** A column's resize grip, a separator (`onColumnWidthsChange`): `{column}`. */
+  resizeColumn: string;
+  /** The grip's description: how to resize by pointer, key and click. */
+  resizeHint: string;
+  /** The width popover a click on the grip opens, and its field: `{column}`. */
+  columnWidth: string;
+  /** The unit after the width field. */
+  columnWidthUnit: string;
+  /** The popover's step to the next narrower stop of the column-width scale. */
+  narrower: string;
+  /** The popover's step to the next wider stop. */
+  wider: string;
+  /** Fit the column to its widest content on screen (also a double-click on the grip). */
+  fitColumn: string;
+  /** Back to the column's own width (its tier or `width`). */
+  defaultColumnWidth: string;
 }
 
 export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
@@ -125,6 +143,14 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   collapseGroup: 'Collapse group {name}',
   expandGroup: 'Expand group {name}',
   selectGroup: 'Select group {name}',
+  resizeColumn: 'Resize {column}',
+  resizeHint: 'Drag or use the arrow keys to resize. Click or press Enter to type a width. Double-click to fit the content.',
+  columnWidth: 'Width of {column}',
+  columnWidthUnit: 'px',
+  narrower: 'Narrower',
+  wider: 'Wider',
+  fitColumn: 'Fit to content',
+  defaultColumnWidth: 'Default width',
 };
 
 export interface DataWorkspaceColumn<T> {
@@ -161,6 +187,13 @@ export interface DataWorkspaceColumn<T> {
   priority?: 'high' | 'mid' | 'low';
   /** The column's name in words: a card's label under `mobile="cards"`. Default: `header` when it is a string. */
   label?: string;
+  /**
+   * With `onColumnWidthsChange`: `false` keeps this column at its own width, without a grip.
+   * Default `true`. The floor a person can narrow it to is its `minWidth` (px, rem or a
+   * `var(--uix-col-*)` tier), else the title floor (340 px) for a `uix-col--flex` column and
+   * the scale's first tier (92 px) for the rest.
+   */
+  resizable?: boolean;
 }
 
 export interface DataWorkspaceSort { columnId: string; direction: 'ascending' | 'descending' }
@@ -193,8 +226,10 @@ export interface DataWorkspaceIdColumn<T> {
   linkId?: boolean;
   /** The column's width in a fixed layout (`fixed`), e.g. `16rem`. */
   width?: string;
-  /** The column's floor in a fixed layout. Default: the `md` column tier. */
+  /** The column's floor in a fixed layout, and the narrowest a resize takes it. Default: the `md` column tier. */
   minWidth?: string;
+  /** With `onColumnWidthsChange`: `false` keeps the id column at its own width, without a grip. Default `true`. */
+  resizable?: boolean;
   /**
    * The sort key the id column answers to in `sort` / `onSortChange` (HAR-2631), e.g. `title`
    * when the id shows the title. Default `'id'`. Keep it distinct from the data columns' ids.
@@ -318,6 +353,23 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * instead of growing. Default: on when a column has `className` or `minWidth`. Not in cards.
    */
   fixed?: boolean;
+  /**
+   * Column widths in px, by column id (the id column by `idColumn.id`, default `'id'`): the
+   * `widths` of a table-engine `ViewState`, so a URL (`serializeView`) and a saved view hold
+   * them. Without it the workspace keeps the widths itself.
+   */
+  columnWidths?: ColumnWidths;
+  /**
+   * Turns on column resize (roadmap #11). Every header gets a grip: drag it; or focus it and use
+   * ← / → (Shift: to the next stop of the column-width scale, Home / End: floor and cap); or click
+   * it (one pointer, no drag: WCAG 2.5.7) for a width field with − / +, Fit to content and Default
+   * width; double-click fits. Called once per resize, when it ends (pointer up, key up, a width
+   * set in the popover), never per move: persist it into the view there. Resize uses the fixed
+   * layout (`fixed`). Without a `uix-col--flex` column to take the slack, the first resize holds
+   * every column at its drawn width, so only the resized one moves; those widths are all passed.
+   * Not in the cards step of `mobile`.
+   */
+  onColumnWidthsChange?: (widths: Record<string, number>) => void;
   /**
    * The responsive ladder, from the workspace's own width (HAR-2622): `priority` drops `low`
    * columns below 900 px and `mid` ones below 600 px; `cards` turns the rows into cards below
@@ -517,7 +569,7 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
  */
 export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
   label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions, rowActionsColumn,
-  getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
+  getRowProps, density, zebra, freezeFirstColumn = false, fixed, columnWidths, onColumnWidthsChange, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarMenu, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
@@ -595,6 +647,15 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     return () => observer.disconnect();
   }, [mobile]);
   const cards = ladder === 'cards';
+
+  // Column widths (roadmap #11): the product's (a view), else the workspace's own.
+  const [ownWidths, setOwnWidths] = useState<ColumnWidths>({});
+  const widths = columnWidths ?? ownWidths;
+  const resizable = onColumnWidthsChange != null;
+  const commitWidths = (next: Record<string, number>) => {
+    if (columnWidths === undefined) setOwnWidths(next);
+    onColumnWidthsChange?.(next);
+  };
 
   // An empty result belongs to the query that produced it: "Nothing matches" or "Nothing here yet"
   // is decided when the rows arrive, not from the filters on screen. A cleared filter therefore
@@ -791,7 +852,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       <WorkspaceGrid<T>
         label={label} rows={shownRows} ids={ids} groups={shownGroups} collapsed={collapsed} onToggleGroup={toggleGroupOpen}
         getRowId={getRowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
-        freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
+        freezeFirstColumn={freezeFirstColumn} fixed={resizable || (fixed ?? columns.some((column) => column.className != null || column.minWidth != null))}
+        resizable={resizable} widths={widths} onWidthsCommit={commitWidths}
         ladderOn={mobile != null} ladder={ladder} refreshing={refreshing} rowMotion={rowMotion}
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
         actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
@@ -841,6 +903,10 @@ interface WorkspaceGridProps<T> {
   zebra?: boolean;
   freezeFirstColumn: boolean;
   fixed: boolean;
+  /** Column resize is on (`onColumnWidthsChange`). */
+  resizable: boolean;
+  widths: ColumnWidths;
+  onWidthsCommit: (widths: Record<string, number>) => void;
   ladderOn: boolean;
   ladder: Ladder;
   refreshing: boolean;
@@ -918,6 +984,60 @@ const columnFloor = (width?: string, minWidth?: string, className?: string) => {
   if (classes.includes('uix-col--flex') || classes.includes('uix-col--primary')) return 'var(--uix-col-title-min)';
   return 'var(--uix-col-w-sm)';
 };
+/** The column-width scale by tier name (table-engine COLUMN_WIDTH_SCALE, tokens/base/size.json). */
+const TIER_PX: Readonly<Record<string, number>> = {
+  'w-xs': COLUMN_WIDTH_SCALE[0], 'w-sm': COLUMN_WIDTH_SCALE[1], 'w-md': COLUMN_WIDTH_SCALE[2], 'w-lg': COLUMN_WIDTH_SCALE[3],
+  'w-lg-plus': COLUMN_WIDTH_SCALE[4], 'w-xl': COLUMN_WIDTH_SCALE[5], 'title-min': COLUMN_WIDTH_SCALE[6],
+};
+const TITLE_MIN = TIER_PX['title-min'];
+/** The id column's floor without `minWidth`: the md tier, as in the fixed layout. */
+const ID_MIN = TIER_PX['w-md'];
+/** A floor written as px, rem (16 px) or a `var(--uix-col-*)` tier, in px; `null` for anything else. */
+const lengthPx = (length?: string): number | null => {
+  const value = length?.trim();
+  if (!value) return null;
+  const unit = /^(\d+(?:\.\d+)?)(px|rem)$/.exec(value);
+  if (unit) return Number(unit[1]) * (unit[2] === 'rem' ? 16 : 1);
+  const tier = /^var\(--uix-col-(w-(?:xs|sm|md|lg|lg-plus|xl)|title-min)\)$/.exec(value);
+  return tier ? TIER_PX[tier[1]] : null;
+};
+const EMPTY_WIDTHS: ColumnWidths = {};
+const sameWidths = (a: ColumnWidths, b: ColumnWidths) => {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+};
+const paddingOf = (el: HTMLElement) => {
+  if (typeof getComputedStyle !== 'function') return 0;
+  const style = getComputedStyle(el);
+  return (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+};
+/** The width of a node's laid-out content (a text that overflows a clipped cell counts in full). */
+const nodeWidth = (node: Node) => {
+  if (node instanceof HTMLElement) return Math.max(node.scrollWidth || 0, typeof node.getBoundingClientRect === 'function' ? node.getBoundingClientRect().width : 0);
+  if (typeof document.createRange !== 'function') return 0;
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  return typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect().width : 0;
+};
+/** A body cell's content width plus its padding. */
+const contentWidth = (td: HTMLElement) => {
+  let inner = 0;
+  for (const node of Array.from(td.childNodes)) inner += nodeWidth(node);
+  return inner + paddingOf(td);
+};
+/** A header's content (its sort button or text, and the sort arrow) plus its padding, without the grip. */
+const headerContentWidth = (th: HTMLElement) => {
+  let inner = 0;
+  for (const node of Array.from(th.childNodes)) {
+    if (node instanceof HTMLElement && node.matches('.uix-table__resize, [popover], [hidden]')) continue;
+    inner += nodeWidth(node);
+  }
+  if (th.hasAttribute('data-sort') && typeof getComputedStyle === 'function') {
+    const arrow = getComputedStyle(th, '::after');
+    inner += (parseFloat(arrow.width) || 0) + (parseFloat(arrow.marginInlineStart) || 0);
+  }
+  return inner + paddingOf(th);
+};
 const isFlex = (className?: string) => /(^|\s)uix-col--(flex|primary)(\s|$)/.test(className ?? '');
 /** The classes of a column that size a `<col>` (a tier, the flex column). */
 const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|lg-plus|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
@@ -937,7 +1057,7 @@ const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  fixed, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
+  fixed, resizable, widths, onWidthsCommit, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
   multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
@@ -1267,13 +1387,86 @@ function WorkspaceTable<T>({
   const rowSet = ids.join(' ');
   useIsomorphicLayoutEffect(() => { measureActionsNow.current(); }, [measureActions, fixedOn, ladder, rowSet]);
   const actionsCol = actionsWidth != null ? `${actionsWidth}px` : '5.25rem';
+
+  // ── column resize (roadmap #11) ─────────────────────────────────────────────────────────
+  // A gesture draws a draft (the widths with this column's live width) and commits once, at its
+  // end. `base` is the widths the gesture started from: with no other column to take the slack,
+  // every shown column at its drawn width, so the others do not jump when the table stops filling.
+  const [draft, setDraft] = useState<{ base: ColumnWidths; id: string; width: number } | null>(null);
+  const gestureBase = useRef<ColumnWidths | null>(null);
+  const resizeOn = resizable && fixedOn;
+  const sized: ColumnWidths = resizeOn ? (draft ? { ...draft.base, [draft.id]: draft.width } : widths) : EMPTY_WIDTHS;
+  const idKey = idColumn ? idColumn.id ?? 'id' : null;
+  const setPx = (id: string | null) => (id != null && sized[id] != null ? `${sized[id]}px` : undefined);
+  /** A column that takes the table's slack (no width of its own), other than `except`. */
+  const slackTaker = (of: ColumnWidths, except: string | null) =>
+    (idColumn != null && idKey !== except && !idColumn.width && of[idKey!] == null)
+    || shown.some((column) => column.id !== except && of[column.id] == null && (column.width ? column.width.trim().endsWith('%') : isFlex(column.className)));
+  const resizeHeaders = () => Array.from(wrapRef.current?.querySelectorAll<HTMLTableCellElement>('thead th[data-uix-col-key]') ?? []);
+  const beginResize = (id: string) => {
+    if (gestureBase.current) return;
+    const base: Record<string, number> = { ...widths };
+    if (!slackTaker(widths, id)) {
+      for (const th of resizeHeaders()) {
+        const key = th.getAttribute('data-uix-col-key')!;
+        const w = typeof th.getBoundingClientRect === 'function' ? th.getBoundingClientRect().width : 0;
+        if (base[key] == null && w > 0) base[key] = Math.round(w);
+      }
+    }
+    gestureBase.current = base;
+  };
+  const draftResize = (id: string, width: number | null) => {
+    if (width == null) { gestureBase.current = null; setDraft(null); return; }
+    setDraft({ base: gestureBase.current ?? widths, id, width });
+  };
+  const commitResize = (id: string, width: number | null) => {
+    const base = gestureBase.current ?? widths;
+    gestureBase.current = null;
+    setDraft(null);
+    const next = setColumnWidth(base, id, width);
+    if (!sameWidths(next, widths)) onWidthsCommit(next);
+  };
+  /** The width that fits a column's header and the cells on screen, each with its padding. */
+  const fitResize = (id: string, bounds: { min: number; max: number }) => {
+    const th = resizeHeaders().find((el) => el.getAttribute('data-uix-col-key') === id);
+    if (!th) return bounds.min;
+    const index = th.cellIndex;
+    const cells = Array.from(wrapRef.current?.querySelectorAll<HTMLTableRowElement>('tbody > tr') ?? [])
+      .filter((tr) => !tr.classList.contains('uix-data-workspace__group-head') && !tr.classList.contains('uix-data-workspace__spacer'))
+      .map((tr) => tr.cells[index]).filter((td): td is HTMLTableCellElement => td != null);
+    return fitColumnWidth([headerContentWidth(th), ...cells.map(contentWidth)], bounds);
+  };
+  const resizeBounds = (minWidth: string | undefined, className: string | undefined, fallback: number) => {
+    const min = Math.max(1, Math.round(lengthPx(minWidth) ?? (isFlex(className) ? TITLE_MIN : fallback)));
+    return { min, max: Math.max(min, COLUMN_WIDTH_MAX) };
+  };
+  const resizer = (id: string, name: string, bounds: { min: number; max: number }) => (
+    <ColumnResizer
+      name={name} width={sized[id]} min={bounds.min} max={bounds.max} popoverId={`${baseId}-w-${id.replace(/[^\w-]/g, '_')}`}
+      onBegin={() => beginResize(id)} onDraft={(w) => draftResize(id, w)} onCommit={(w) => commitResize(id, w)}
+      fit={() => fitResize(id, bounds)} labels={labels}
+    />
+  );
+
   const floors = fixedOn ? [
     ...(selectable ? ['var(--uix-selcol-w)'] : []),
-    ...(idColumn ? [columnFloor(idColumn.width, idColumn.minWidth, undefined)] : []),
-    ...shown.map((column) => columnFloor(column.width, column.minWidth, column.className)),
+    ...(idColumn ? [setPx(idKey) ?? columnFloor(idColumn.width, idColumn.minWidth, undefined)] : []),
+    ...shown.map((column) => setPx(column.id) ?? columnFloor(column.width, column.minWidth, column.className)),
     ...(hasActions ? [actionsCol] : []),
   ] : [];
-  const tableStyle = fixedOn && floors.length ? { minWidth: floors.length === 1 ? floors[0] : `calc(${floors.join(' + ')})` } : undefined;
+  const sum = (parts: readonly string[]) => (parts.length === 1 ? parts[0] : `calc(${parts.join(' + ')})`);
+  // Resized, with no column to take the slack: the table is as wide as its columns, so a column a
+  // person narrows gets narrower, instead of the slack spreading over every column again.
+  const exact = resizeOn && Object.keys(sized).length > 0 && !slackTaker(sized, null);
+  const colWidths = exact ? [
+    ...(selectable ? ['var(--uix-selcol-w)'] : []),
+    ...(idColumn ? [setPx(idKey) ?? idColumn.width!] : []),
+    ...shown.map((column) => setPx(column.id) ?? column.width ?? columnFloor(undefined, column.minWidth, column.className)),
+    ...(hasActions ? [actionsCol] : []),
+  ] : [];
+  const tableStyle = fixedOn && floors.length
+    ? { minWidth: sum(floors), ...(exact ? { width: sum(colWidths) } : {}) }
+    : undefined;
 
   /** A header's sort props: the same for a data column and a sortable id column. */
   const sortProps = (column: DataWorkspaceColumn<T>, columnSortable: boolean) => {
@@ -1439,10 +1632,10 @@ function WorkspaceTable<T>({
         {fixedOn && (
           <colgroup>
             {selectable && <col style={{ width: 'var(--uix-selcol-w)' }} />}
-            {idColumn && <col style={idColumn.width ? { width: idColumn.width } : undefined} />}
+            {idColumn && <col style={(setPx(idKey) ?? idColumn.width) ? { width: setPx(idKey) ?? idColumn.width } : undefined} />}
             {/* A flex column (uix-col--flex) takes the slack; every other column holds its width or its floor. */}
             {shown.map((column) => {
-              const width = column.width ?? (isFlex(column.className) ? undefined : columnFloor(undefined, column.minWidth, column.className));
+              const width = setPx(column.id) ?? column.width ?? (isFlex(column.className) ? undefined : columnFloor(undefined, column.minWidth, column.className));
               return <col key={column.id} className={colClasses(column.className)} style={width ? { width } : undefined} />;
             })}
             {hasActions && <col style={{ width: actionsCol }} />}
@@ -1458,18 +1651,31 @@ function WorkspaceTable<T>({
                 />
               </th>
             )}
-            {idColumn && (idColumn.sortable && idSortColumn
+            {idColumn && (() => {
+              const grip = resizeOn && idColumn.resizable !== false && idKey != null
+                ? resizer(idKey, textOf(idColumn.header) ?? idKey, resizeBounds(idColumn.minWidth, undefined, ID_MIN))
+                : undefined;
+              const keyAttrs = resizeOn && idKey != null ? { 'data-uix-col-key': idKey } : {};
               // a sortable id header is a sortable data column's header (HAR-2631)
-              ? <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...sortProps(idSortColumn, true)}>{idColumn.header}</Th>
-              : <Th scope="col" data-col={ladderOn ? 'id' : undefined}>{idColumn.header}</Th>)}
+              return idColumn.sortable && idSortColumn
+                ? <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...keyAttrs} {...sortProps(idSortColumn, true)} resizeHandle={grip}>{idColumn.header}</Th>
+                : <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...keyAttrs} resizeHandle={grip}>{idColumn.header}</Th>;
+            })()}
             {columns.map((column) => {
               // fixed layout: the <col> holds the width and the table the floors
               const style = !fixedOn && (column.width || column.minWidth) ? { width: column.width, minWidth: column.minWidth } : undefined;
+              // a column the ladder hides has no grip, and a resize does not hold its width
+              const shownNow = !hiddenBy(ladder, column.priority);
+              const grip = resizeOn && shownNow && column.resizable !== false
+                ? resizer(column.id, column.label ?? textOf(column.header) ?? column.id, resizeBounds(column.minWidth, column.className, COLUMN_WIDTH_MIN))
+                : undefined;
               return (
                 <Th
                   key={column.id} scope="col" className={cellClasses(column)} style={style}
+                  {...(resizeOn && shownNow ? { 'data-uix-col-key': column.id } : {})}
                   {...sortProps(column, column.sortable === true)}
                   {...ladderAttrs(ladderOn, column, false)}
+                  resizeHandle={grip}
                 >
                   {column.header}
                 </Th>

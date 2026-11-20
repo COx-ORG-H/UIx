@@ -246,10 +246,25 @@
   .uix-cell-edit[data-saved] .uix-cell-edit__ok { opacity: 1; }
   .uix-cell-edit input, .uix-cell-edit select { border: 0; background: transparent; font: inherit; color: inherit; outline: none; }
 
-  /* ── column resize grip (drag the header's right edge) ─────────────────────────── */
-  .uix-table__resize { position: absolute; top: 0; right: -3px; width: 8px; height: 100%; cursor: col-resize; z-index: var(--uix-z-raised); user-select: none; touch-action: none; }
-  .uix-table__resize::after { content: ""; position: absolute; top: 25%; right: 3px; width: 2px; height: 50%; background: transparent; border-radius: var(--uix-radius-pill); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
-  .uix-table thead th:hover .uix-table__resize::after, .uix-table__resize[data-drag]::after { background: var(--uix-accent); }
+  /* ── column resize grip (drag the header's end edge) ───────────────────────────── */
+  /* A 24 px target inside its own header (WCAG 2.5.8; a grip across the edge would sit under the
+     next header, which paints over it), drawn as a 2 px line on the edge. Logical sides, so it
+     sits at the end edge in a right-to-left table too. Click it for the width popover (React). */
+  .uix-table__resize { position: absolute; inset-block: 0; inset-inline-end: 0; inline-size: 24px; cursor: col-resize; z-index: var(--uix-z-raised); user-select: none; touch-action: none; }
+  .uix-table__resize::after { content: ""; position: absolute; inset-block-start: 25%; inset-inline-end: 0; inline-size: 2px; block-size: 50%; background: transparent; border-radius: var(--uix-radius-pill); transition: background-color var(--uix-dur-fast) var(--uix-ease-out); }
+  .uix-table thead th:hover .uix-table__resize::after { background: var(--uix-border-strong); }
+  .uix-table__resize:hover::after, .uix-table__resize:focus-visible::after, .uix-table__resize[data-drag]::after { background: var(--uix-accent); }
+  /* while dragging, the line runs the header's full height */
+  .uix-table__resize[data-drag]::after { inset-block-start: 0; block-size: 100%; }
+  .uix-table__resize:focus-visible { outline-offset: -2px; border-radius: var(--uix-radius-xs); }
+
+  /* the width popover (DataWorkspace): it sits in the header, so undo what a header sets */
+  .uix-popover.uix-col-resize { padding: var(--uix-space-3); white-space: normal; text-align: start; font-size: var(--uix-text-body); font-weight: 400; color: var(--uix-text); cursor: auto; }
+  .uix-col-resize__form { display: grid; gap: var(--uix-space-2); min-inline-size: 15rem; }
+  .uix-col-resize__row { display: flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-col-resize__field { inline-size: 6rem; font-variant-numeric: tabular-nums; }
+  .uix-col-resize__unit { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-col-resize__actions { display: flex; flex-wrap: wrap; gap: var(--uix-space-1); margin-inline-start: calc(-1 * var(--uix-space-2)); }
 
   /* ── search match highlight ────────────────────────────────────────────────────── */
   .uix-mark { background: var(--uix-warning-bg); color: var(--uix-text); border-radius: var(--uix-radius-xs); padding: 0 0.15em; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--uix-warning) 60%, transparent); }

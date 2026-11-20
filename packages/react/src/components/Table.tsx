@@ -109,9 +109,14 @@ export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
    */
   sortOrderLabel?: string;
   onSort?: () => void;
+  /**
+   * A column-resize grip (`.uix-table__resize`), after the header's content and outside its sort
+   * button, so pressing the grip never sorts. DataWorkspace puts its resize grip here.
+   */
+  resizeHandle?: ReactNode;
 }
 
-export function Th({ sortable, sortDirection, sortOrder, sortOrderLabel, onSort, className, children, onClick, ...props }: ThProps) {
+export function Th({ sortable, sortDirection, sortOrder, sortOrderLabel, onSort, resizeHandle, className, children, onClick, ...props }: ThProps) {
   const ordinal = sortOrder != null && sortOrder > 0 && sortOrderLabel
     ? <span className="uix-visually-hidden">{`, ${sortOrderLabel}`}</span>
     : null;
@@ -133,6 +138,7 @@ export function Th({ sortable, sortDirection, sortOrder, sortOrderLabel, onSort,
       ) : (
         <>{children}{ordinal}</>
       )}
+      {resizeHandle}
     </th>
   );
 }
