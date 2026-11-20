@@ -82,6 +82,16 @@ jobs:
       - name: Public API lock (@tensor_1/react)
         run: npm run test:api
 
+      # When the API report check fails, the reports it generated are here: download, compare,
+      # and copy into packages/react/etc/ if the change is intended (npm run test:api:update).
+      - name: Upload generated API reports (on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-reports
+          path: packages/react/temp/*.api.md
+          retention-days: 7
+
       - name: Per-consumer smoke build
         run: npm run test:smoke
 
