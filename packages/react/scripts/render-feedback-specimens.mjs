@@ -54,7 +54,7 @@ export async function renderFeedbackSpecimens() {
     const failure = await mount(button({ variant: 'secondary', loading: false, result: null, resultLabels: { success: 'Assigned', error: 'Not assigned' } }));
     await failure.render(button({ variant: 'secondary', loading: false, result: 'error', resultLabels: { success: 'Assigned', error: 'Not assigned' } }));
     const buttons = [
-      caption('Button <code>loading</code> and <code>result</code> (React) — at rest; working (the spinner shows only after 300 ms and then stays at least 500 ms, so a fast save never flashes one; the button keeps its colour); a result, which crossfades in for 1.5 s and is announced, then returns; a failure in words. The button is always as wide as its widest wording, so nothing beside it moves.'),
+      caption('Button <code>loading</code> and <code>result</code> (React) — at rest; working (the spinner shows only after 300 ms and then stays at least 500 ms, so a fast save never flashes one; the button keeps its colour); a result, which replaces the label (out, then in) for 1.5 s and is announced, then returns; a failure in words. The button is always as wide as its widest wording, so nothing beside it moves.'),
       '<div class="uix-cluster" data-feedback-buttons>',
       rest.host.innerHTML, pending.host.innerHTML, success.host.innerHTML, failure.host.innerHTML,
       '</div>',

@@ -93,15 +93,22 @@
   .uix-btn:has(> [data-uix-btn-busy]) .uix-btn__result { visibility: hidden; }
 
   /* Result (React `result`, HAR-2581): the label and both result wordings share one grid cell,
-     so the button is always as wide as the widest and nothing beside it moves. A result
-     crossfades in over the label (opacity only), holds, and fades back. Text and icon carry
-     the meaning; colour only tints the icon. */
-  .uix-btn__face { display: inline-grid; justify-items: center; align-items: center; }
-  .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: var(--uix-space-2); transition: opacity var(--uix-dur) var(--uix-ease-out); }
-  .uix-btn__result { opacity: 0; transition-duration: var(--uix-dur-exit); }
-  .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; transition-duration: var(--uix-dur-exit-fast); }
+     so the button is always as wide as the widest and nothing beside it moves. A result replaces
+     the label as a text swap (Foundations → Motion: text never fades over text): the label fades
+     out on --uix-dur-exit-fast, then the result fades in over the rest of --uix-dur, holds, and
+     goes back the same way. Opacity only. Text and icon carry the meaning; colour only tints the icon.
+     --uix-btn-swap-out is the exit clamped to the whole swap, so a shorter --uix-dur (even 0s)
+     shortens both halves instead of leaving the arrival with a negative, invalid duration. */
+  .uix-btn__face { --uix-btn-swap-out: min(var(--uix-dur-exit-fast), var(--uix-dur)); display: inline-grid; justify-items: center; align-items: center; }
+  .uix-btn__face > * { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: var(--uix-space-2); transition: opacity var(--uix-btn-swap-out) var(--uix-ease-out); }
+  .uix-btn__result { opacity: 0; }
+  .uix-btn__face[data-result] > .uix-btn__label { opacity: 0; }
+  /* the face that arrives waits until the one leaving is gone */
+  .uix-btn__face:not([data-result]) > .uix-btn__label,
   .uix-btn__face[data-result="success"] > [data-kind="success"],
-  .uix-btn__face[data-result="error"] > [data-kind="error"] { opacity: 1; transition-duration: var(--uix-dur); }
+  .uix-btn__face[data-result="error"] > [data-kind="error"] {
+    opacity: 1; transition-duration: calc(var(--uix-dur) - var(--uix-btn-swap-out)); transition-delay: var(--uix-btn-swap-out);
+  }
   .uix-btn--secondary .uix-btn__result[data-kind="success"] svg,
   .uix-btn--outline .uix-btn__result[data-kind="success"] svg,
   .uix-btn--ghost .uix-btn__result[data-kind="success"] svg { color: var(--uix-success-text); }

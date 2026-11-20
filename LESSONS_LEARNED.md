@@ -1,5 +1,10 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
+<!-- lesson-skip: dcef8a8d routine: the review named two more inline-style shapes for the TS scan; pinned by check-motion tests -->
+<!-- lesson-skip: b26c74d2 routine: the review named the cross-class gap; widening rule 10 found the reduced-motion policy pairing component springs with fades, fixed and pinned by a check-motion test -->
+<!-- lesson-skip: 4eeb9a70 routine third-round review fixes on unreleased rule 10; replaced cascade emulation with a stricter same-rule contract, pinned by check-motion tests -->
+<!-- lesson-skip: d03e5925 routine second-round review fixes on unreleased rule 10 (cascade winner, !important, inherit, formatted calls); each pinned by a check-motion test -->
 <!-- lesson-skip: 51b4c1c routine: a fixed-width id cell did not clip; found by looking at the 1280 px shot -->
 <!-- lesson-skip: 6a65e33 routine: a state colour pair below AA (same family as the 1d66ae0 / 217df0e entries: check a state colour in every theme), now a row-state contrast matrix; and a (0,2,1) density rule outranking the (0,1,1) cards reset, the 2026-10-23 specificity lesson again, pinned by a Chromium spec -->
 <!-- lesson-skip: 727ea02 routine: a layout API (Range.getBoundingClientRect) called in a layout effect without a guard; TENSOR's jsdom suite named it, pinned by a jsdom mount with no shim -->
@@ -92,6 +97,9 @@
 <!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
 
+
+### 2026-11-20 · reading a time token in a test · `7bc2920e`
+- **Rule:** never `parseFloat` a computed `--uix-dur-*` / `--uix-delay-*` value. The built bundle is minified, so `160ms` arrives as `.16s`; parse the unit (as `motion.ts` `tokenMs` does) or call `tokenMs`.  **Why:** text-swap.spec read `--uix-dur` as 0.16 ms in CI and failed every budget, while the overlap check it guarded passed.  **Gate:** text-swap.spec reads budgets through the kit's `tokenMs` and throws when it cannot; ⚠ TODO no lint for `parseFloat(getPropertyValue('--uix-dur…'))` in tests.  **Tag:** tokens, minify, units, tests, ci-only
 
 ### 2026-11-08 · sizing from a box an ancestor is still scaling · `a3cf190c`
 - **Rule:** to copy an element's size into CSS (a list as wide as its trigger), read `offsetWidth`/`offsetHeight`, not `getBoundingClientRect()`. The rect includes every ancestor's transform, so inside a popover or drawer that is still growing in (or held at its start scale while it is placed) it is smaller than the element will be; `offsetWidth` ignores transforms and CSS zoom (Chromium and WebKit).  **Why:** a Select in a popover held at `scale(.95)` locked its list's min-width to 226 px for a 238 px trigger; only CI's slower click landed inside the hold.  **Gate:** select.spec "not clipped inside a Popover" (select-cross-browser); ⚠ TODO no lint for rect-based sizing.  **Tag:** layout, transform, popover, zoom, ci-only
@@ -338,5 +346,7 @@ missing or blank.
 <!-- lesson-skip: d39cd90 a transparent stacked layer over a button; one component, now asserted by elementFromPoint in the spec -->
 <!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
+<!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
+<!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
 <!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->

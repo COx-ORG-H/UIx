@@ -816,3 +816,12 @@ export const num = {
   "space-11": 80,
   "space-12": 96,
 };
+
+/** Spring-sampled easings as springs: stiffness, damping and mass (unit mass, from rest to 1),
+ *  the overshoot of the travel, the paired duration, and a cubic-bezier fallback over that time. */
+export const spring = {
+  "ease-glide": {"stiffness":550,"damping":43,"mass":1,"overshoot":0,"durationToken":"dur-glide","cubicBezier":[0.29,0.32,0.17,1],"durationMs":280},
+  "ease-pop": {"stiffness":800,"damping":42,"mass":1,"overshoot":0.031,"durationToken":"dur-pop","cubicBezier":[0.36,0.66,0.09,1.16],"durationMs":280},
+  "ease-tooltip": {"stiffness":400,"damping":31,"mass":1,"overshoot":0.021,"durationToken":"dur-tooltip","cubicBezier":[0.36,0.71,0.08,1.12],"durationMs":410},
+  "ease-bounce": {"stiffness":200,"damping":16,"mass":1,"overshoot":0.116,"durationToken":"dur-bounce","cubicBezier":[0.4,1.79,0,0.85],"durationMs":880},
+};
