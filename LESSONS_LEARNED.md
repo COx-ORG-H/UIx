@@ -338,3 +338,4 @@ missing or blank.
 <!-- lesson-skip: d39cd90 a transparent stacked layer over a button; one component, now asserted by elementFromPoint in the spec -->
 <!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
+<!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
