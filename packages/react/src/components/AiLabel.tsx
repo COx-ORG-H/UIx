@@ -8,6 +8,7 @@ import { DEFAULT_AI_LABELS } from '../ai-labels.js';
 import type { AiLabels } from '../ai-labels.js';
 import { fillLabel } from '../fill-label.js';
 import { renderUixLink } from '../link.js';
+import { isSafeSourceHref } from '../url-policy.js';
 import type { UixRenderLink } from '../link.js';
 import type { Placement } from '../overlay-position.js';
 import { Popover } from './Popover.js';
@@ -27,7 +28,10 @@ export interface AiSource {
   id: string;
   /** What the person sees: "KB-204 Reset a locked account", "INC-0977". */
   title: string;
-  /** Opens the record itself, so the person can check it there. */
+  /**
+   * Opens the record itself, so the person can check it there. Only `http(s)` and relative URLs
+   * become links; anything else (`javascript:`, `data:` …) shows the title as plain text.
+   */
   href?: string;
   /** What kind of record: "Knowledge article", "Similar incident". */
   kind?: string;
@@ -48,7 +52,7 @@ export interface AiExplanation {
   why?: ReactNode;
   /** The records it was based on. An empty list says "No sources". Leave it out to say nothing. */
   sources?: readonly AiSource[];
-  /** "What is shared with the AI": the product's page about data sent and training use. */
+  /** "What is shared with the AI": the product's page about data sent and training use. `http(s)` or relative only; anything else is left out. */
   sharedHref?: string;
 }
 
@@ -81,7 +85,7 @@ export function SourceList({ sources, title, renderLink, labels: own, className,
           {sources.map((source) => (
             <li key={source.id} className="uix-source-list__item">
               <span className="uix-source-list__body">
-                {source.href
+                {isSafeSourceHref(source.href)
                   ? renderUixLink(renderLink, { href: source.href, className: 'uix-source-list__link', children: source.title })
                   : <span className="uix-source-list__name">{source.title}</span>}
                 {(source.kind || source.detail) && (
@@ -232,7 +236,7 @@ function AiLabelButton({
           </dl>
         )}
         {explanation.sources && <SourceList sources={explanation.sources} title={labels.sources} renderLink={renderLink} labels={labels} />}
-        {explanation.sharedHref && (
+        {isSafeSourceHref(explanation.sharedHref) && (
           <p className="uix-ai-panel__shared">
             {renderUixLink(renderLink, { href: explanation.sharedHref, children: labels.shared })}
           </p>

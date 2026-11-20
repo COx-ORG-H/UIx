@@ -1570,7 +1570,7 @@ export interface ConsequencePolicy {
 }
 
 // @public
-export function consequencePolicy(band: ConsequenceBand): ConsequencePolicy;
+export function consequencePolicy(band: ConsequenceBand | null | undefined): ConsequencePolicy;
 
 // @public
 export function ContactCard(input: ContactCardProps): react.JSX.Element;
@@ -4010,6 +4010,9 @@ export const isOvernightRange: (min?: string, max?: string) => boolean;
 // @public
 export function isProposalId(value: unknown): value is string;
 
+// @public
+export function isProposalType(value: unknown): value is string;
+
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
@@ -6184,7 +6187,7 @@ export interface ProposalReviewProps extends Omit<HTMLAttributes<HTMLElement>, '
     undoSeconds?: number;
 }
 
-// @public
+// @public (undocumented)
 export type ProposalStatus = 'proposed' | 'applying' | 'applied' | 'rejected' | 'undone' | 'failed';
 
 // @public
@@ -9351,6 +9354,9 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
     // (undocumented)
     selected?: boolean;
 }
+
+// @public
+export const TYPE_PATTERN: RegExp;
 
 // @public
 export interface UixDateFormat {

@@ -274,7 +274,7 @@ export { useAiFieldValue } from './hooks/useAiFieldValue.js';
 export type { UseAiFieldValueOptions, UseAiFieldValueResult } from './hooks/useAiFieldValue.js';
 export { DEFAULT_AI_LABELS } from './ai-labels.js';
 export type { AiLabels } from './ai-labels.js';
-export { PROPOSAL_EVENT, ID_PATTERN, emitProposalEvent, onProposalEvent, isProposalId, consequencePolicy } from './ai-events.js';
+export { PROPOSAL_EVENT, ID_PATTERN, TYPE_PATTERN, emitProposalEvent, onProposalEvent, isProposalId, isProposalType, consequencePolicy } from './ai-events.js';
 export type {
   ProposalAction, ProposalKind, ConsequenceBand, ProposalEventDetail, ProposalEventInput, ConsequencePolicy,
 } from './ai-events.js';

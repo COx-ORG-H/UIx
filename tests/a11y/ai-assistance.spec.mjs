@@ -93,7 +93,7 @@ test('an edit makes the AI-filled field human; Revert to AI restores it with foc
   await expect(input).toHaveValue('Network › VPN');
   await expect(input).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.__said)).toContain('AI value restored');
-  const actions = await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h-category').map((e) => e.action));
+  const actions = await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h1-category').map((e) => e.action));
   expect(actions).toEqual(['shown', 'edited', 'reverted']);
   // content-free: no event carries the value
   expect(JSON.stringify(await page.evaluate(() => window.__events))).not.toContain('Firewall');
@@ -123,10 +123,10 @@ test('a high proposal never approves by itself; Approve does, once', async ({ pa
   // Enter on the card's other controls does not approve
   await card.getByRole('button', { name: 'Edit' }).focus();
   await page.keyboard.press('Enter');
-  expect(await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h-resolve' && e.action === 'accepted').length)).toBe(0);
+  expect(await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h1-resolve' && e.action === 'accepted').length)).toBe(0);
   await approve.dblclick();
   await expect(card.getByRole('status')).toHaveText('Applied');
-  expect(await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h-resolve' && e.action === 'accepted').length)).toBe(1);
+  expect(await page.evaluate(() => window.__events.filter((e) => e.proposalId === 'h1-resolve' && e.action === 'accepted').length)).toBe(1);
   await axeClean(page, '.uix-proposal');
 });
 
@@ -172,4 +172,30 @@ test('reduced motion: no streaming caret, and the reply arrives in whole sentenc
   await expect(body).toHaveText('The VPN gateway in Sarajevo timed out for about 40 remote users after the certificate rotation.');
   await page.clock.runFor(6000);
   await expect(body).toHaveText(REPLY);
+});
+
+const DEMO = '/tests/ai-assistance/demo.html';
+
+test('the docs demo logs the first shown events (its listener is in before the pieces mount)', async ({ page }, testInfo) => {
+  await page.goto(`${DEMO}?theme=${themeOf(testInfo)}`, { waitUntil: 'networkidle' });
+  const log = page.getByRole('region', { name: 'uix-proposal events' });
+  await expect(log).toContainText('shown · field · demo-INC-1042-category');
+  await expect(log).toContainText('shown · suggestion · demo-INC-1042-assign · medium');
+  await expect(log).toContainText('shown · proposal · demo-INC-1042-resolve-1 · high');
+});
+
+test('the docs demo: Stop during the fake model’s reading pause stops it for good', async ({ page }, testInfo) => {
+  await page.clock.install();
+  await page.goto(`${DEMO}?theme=${themeOf(testInfo)}`, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: 'Summarise INC-1042' }).click();
+  await page.clock.runFor(300); // still "Reading 12 work notes"
+  await page.getByRole('button', { name: 'Stop' }).click();
+  await page.clock.runFor(20000);
+  const card = page.locator('.uix-ai-output');
+  await expect(card).toHaveAttribute('data-status', 'stopped');
+  await expect(page.locator('.uix-ai-output__body')).toHaveText('');
+  // Retry starts one clean run that finishes
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await page.clock.runFor(20000);
+  await expect(card).toHaveAttribute('data-status', 'done');
 });

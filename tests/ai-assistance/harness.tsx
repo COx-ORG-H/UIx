@@ -39,7 +39,7 @@ const REPLY = 'The VPN gateway in Sarajevo timed out for about 40 remote users a
 
 function Triage() {
   const category = useAiFieldValue({
-    aiValue: 'Network › VPN', proposalId: 'h-category', type: 'incident.category', initialValue: '',
+    aiValue: 'Network › VPN', proposalId: 'h1-category', type: 'incident.category', initialValue: '',
     explanation: { what: 'Category suggested by Assist', why: 'The description mentions the VPN gateway and a timeout.', sources: SOURCES, sharedHref: '#ai-data' },
   });
   const [offers, setOffers] = useState(['Network Operations', 'Service Desk L2']);
@@ -73,7 +73,7 @@ function Proposals() {
   return (
     <section aria-label="Proposals" style={{ display: 'grid', gap: 'var(--uix-space-3)', minWidth: 0 }}>
       <ProposalReview
-        proposalId="h-resolve" type="incident.resolve" consequence="high" status={status}
+        proposalId="h1-resolve" type="incident.resolve" consequence="high" status={status}
         title="Resolve INC-1042 and notify the caller"
         explanation={{ why: 'The caller confirmed the VPN works again.', sources: SOURCES.slice(0, 1) }}
         changes={[
@@ -86,7 +86,7 @@ function Proposals() {
         onReject={() => setStatus('rejected')} onEdit={noop}
       />
       <ProposalReview
-        proposalId="h-assign" type="incident.assignment" consequence="medium" status="applied"
+        proposalId="h1-assign" type="incident.assignment" consequence="medium" status="applied"
         title="Assign INC-1042 to Network Operations" reversible undoSeconds={30}
         onApprove={noop} onReject={noop} onUndo={noop}
       />
@@ -118,7 +118,7 @@ function Stream({ initial = null as AiOutputStatus | null }) {
       <div><Button variant="primary" onClick={generate}>Generate</Button></div>
       {status && (
         <AiOutputCard
-          proposalId="h-summary" type="incident.summary" title="Summary" status={status}
+          proposalId="h1-summary" type="incident.summary" title="Summary" status={status}
           statusText="Summarising 12 work notes" text={status === 'done' ? REPLY : undefined} sources={SOURCES}
           explanation={{ what: 'Summary written by Assist', sources: SOURCES }}
           onStop={() => { stop(); setStatus('stopped'); }} onRetry={generate} onFeedback={noop}
@@ -141,7 +141,7 @@ function App() {
         <Proposals />
         <div style={{ display: 'grid', gap: 'var(--uix-space-4)', minWidth: 0 }}>
           <Stream initial="done" />
-          <AiOutputCard proposalId="h-draft" title="Reply draft" status="generating" statusText="Reading 12 work notes" onStop={noop} announce="none">
+          <AiOutputCard proposalId="h1-draft" title="Reply draft" status="generating" statusText="Reading 12 work notes" onStop={noop} announce="none">
             <p>Hello Lejla, thanks for confirming that the VPN</p>
           </AiOutputCard>
         </div>

@@ -69,7 +69,8 @@ export interface AiOutputCardProps extends Omit<HTMLAttributes<HTMLElement>, 'ti
   labels?: Partial<AiLabels>;
 }
 
-const SENTENCE_END = /[.!?…:;](?=\s)|\n/g;
+/** A finished sentence or line: its punctuation followed by space, or by the end of what has arrived. */
+const SENTENCE_END = /[.!?…:;](?=\s|$)|\n/g;
 
 /**
  * The text to show while it streams in. Normally all of it. Under reduced motion only up to the

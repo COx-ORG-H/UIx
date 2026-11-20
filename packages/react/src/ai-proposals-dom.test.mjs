@@ -417,3 +417,171 @@ test('UixLabelsProvider ai translates every AI word; an instance label still win
   assert.equal(host.querySelector('button.uix-ai-label').getAttribute('aria-label'), 'KI: zu Netzwerk');
   await unmount();
 });
+
+/* ---- review fixes (Qodo on #305) ---- */
+
+test('source and disclosure links: only http(s) and relative URLs become links; every other scheme is plain text', async () => {
+  const { host, render, unmount } = mount();
+  const unsafe = [
+    'javascript:alert(1)', 'JAVASCRIPT:alert(1)', '  javascript:alert(1)', 'java\tscript:alert(1)', 'java\nscript:alert(1)',
+    'data:text/html,<script>alert(1)</script>', 'DATA:text/html,x', 'vbscript:msgbox(1)', 'VbScript:msgbox(1)',
+    'file:///etc/passwd', '//evil.test/kb', '/\\evil.test', 'mailto:a@example.test',
+  ];
+  const safe = ['https://kb.example.test/204', 'HTTP://kb.example.test/1', '/kb/204', 'kb/204', '?q=vpn', '#notes', './a', '../b'];
+  await render(h(ui.SourceList, { sources: [...unsafe, ...safe].map((href, i) => ({ id: `s${i}`, title: `Source ${i}`, href })) }));
+  const items = [...host.querySelectorAll('.uix-source-list__item')];
+  unsafe.forEach((href, i) => {
+    assert.equal(items[i].querySelector('a'), null, `${JSON.stringify(href)} must not be a link`);
+    assert.equal(items[i].querySelector('.uix-source-list__name').textContent, `Source ${i}`, 'shown as plain text');
+  });
+  safe.forEach((href, j) => {
+    const a = items[unsafe.length + j].querySelector('a');
+    assert.ok(a, `${href} is a link`);
+    assert.equal(a.getAttribute('href'), href);
+  });
+  for (const sharedHref of ['javascript:alert(1)', ' Data:text/html,x', 'vbscript:x']) {
+    await render(h(ui.AiLabel, { explanation: { why: 'x', sharedHref } }));
+    const panel = document.getElementById(host.querySelector('button.uix-ai-label').getAttribute('aria-controls'));
+    assert.equal(panel.querySelector('.uix-ai-panel__shared'), null, `${sharedHref}: the disclosure link is left out`);
+    assert.equal(panel.querySelectorAll('a').length, 0);
+  }
+  await unmount();
+});
+
+function Hooked({ aiValue, proposalId = 'INC-9:category', initialValue = '', api }) {
+  const field = ui.useAiFieldValue({ aiValue, proposalId, type: 'incident.category', initialValue });
+  api.current = field;
+  return h('output', { 'data-state': field.state }, String(field.value));
+}
+
+test('useAiFieldValue: a withdrawn AI value is taken out again, never left looking like the person’s own', async () => {
+  const { host, render, unmount } = mount();
+  const api = { current: null };
+  await render(h(Hooked, { aiValue: 'Network', api, initialValue: 'Unassigned' }));
+  assert.equal(host.textContent, 'Network');
+  assert.equal(host.querySelector('output').dataset.state, 'filled');
+  await render(h(Hooked, { aiValue: undefined, api, initialValue: 'Unassigned' }));
+  assert.equal(host.textContent, 'Unassigned', 'the untouched AI value goes with its proposal');
+  assert.equal(host.querySelector('output').dataset.state, 'none');
+
+  // a value the person edited stays theirs when the proposal is withdrawn
+  await render(h(Hooked, { aiValue: 'Network', proposalId: 'INC-9:category-2', api, initialValue: 'Unassigned' }));
+  assert.equal(host.textContent, 'Network', 'a later proposal fills the field again');
+  await act(async () => api.current.setValue('Firewall'));
+  await render(h(Hooked, { aiValue: undefined, proposalId: 'INC-9:category-2', api, initialValue: 'Unassigned' }));
+  assert.equal(host.textContent, 'Firewall');
+  await unmount();
+});
+
+test('useAiFieldValue: an AI value that arrives after the person typed never overwrites them; it waits behind Revert to AI', async () => {
+  const { host, render, unmount } = mount();
+  const api = { current: null };
+  let seen = await collect(async () => {
+    await render(h(Hooked, { aiValue: undefined, api }));
+    await act(async () => api.current.setValue('Printer'));
+    await render(h(Hooked, { aiValue: 'Network', api }));
+  });
+  assert.equal(host.textContent, 'Printer', 'their text stays');
+  assert.equal(host.querySelector('output').dataset.state, 'edited', 'theirs, with the AI value offered');
+  assert.deepEqual(seen.map((d) => d.action), ['shown'], 'their own typing is not an edit of an AI value');
+  seen = await collect(() => act(async () => api.current.revert()));
+  assert.equal(host.textContent, 'Network');
+  assert.deepEqual(seen.map((d) => d.action), ['reverted']);
+  await unmount();
+});
+
+test('useAiFieldValue: commit() in the same event as setValue() reads the value being saved', async () => {
+  const { render, unmount } = mount();
+  const api = { current: null };
+  await render(h(Hooked, { aiValue: 'Network', api }));
+  // a save handler normalises the value and commits in one batched event
+  let seen = await collect(() => act(async () => { api.current.setValue('Network'); api.current.commit(); }));
+  assert.deepEqual(seen.map((d) => d.action), ['accepted']);
+  seen = await collect(() => act(async () => { api.current.setValue('Firewall'); api.current.commit(); }));
+  assert.deepEqual(seen.map((d) => d.action), ['edited'], 'the edited value is not counted as accepted');
+  seen = await collect(() => act(async () => { api.current.setValue('Network'); api.current.commit(); }));
+  assert.deepEqual(seen.map((d) => d.action), ['accepted'], 'set back to the AI value and saved at once: accepted');
+  await unmount();
+});
+
+test('useStreamingText under reduced motion: a sentence that ends exactly where the stream is shows at once', async () => {
+  document.documentElement.setAttribute('data-motion', 'reduce');
+  const { host, render, unmount } = mount();
+  function Streamed({ text }) { return h('p', null, ui.useStreamingText(text, true)); }
+  await render(h(Streamed, { text: 'The answer is ready.' }));
+  assert.equal(host.textContent, 'The answer is ready.');
+  await render(h(Streamed, { text: 'The answer is ready. Next' }));
+  assert.equal(host.textContent, 'The answer is ready.');
+  await render(h(Streamed, { text: 'First line\nsecond' }));
+  assert.equal(host.textContent, 'First line\n');
+  await unmount();
+});
+
+test('a missing or unknown band fails closed: high rules, approval required, no one-click accept', async () => {
+  const high = ui.consequencePolicy('high');
+  for (const band of ['constructor', 'toString', 'hasOwnProperty', '__proto__', 'valueOf', '', 'HIGH', 'Low', undefined, null, 42]) {
+    const policy = ui.consequencePolicy(band);
+    assert.equal(policy, high, `${String(band)} → high`);
+    assert.equal(policy.requiresApproval, true);
+    assert.equal(policy.autoApply, false);
+  }
+  const error = mock.method(console, 'error', () => {});
+  const { host, render, unmount } = mount();
+  await render(h(ui.ProposalReview, { proposalId: 'INC-3:close', consequence: 'constructor', title: 'Close', reversible: false, onApprove() {}, onReject() {} }));
+  assert.equal(host.querySelector('.uix-proposal').dataset.consequence, 'high');
+  assert.equal(host.querySelector('.uix-proposal__gate').textContent, 'Needs your approval');
+  assert.equal(host.querySelector('.uix-proposal__band').textContent, 'High impact');
+  const seen = await collect(() => render(h(ui.AiSuggestion, { proposalId: 'INC-3:state', consequence: 'high', value: 'Closed', onAccept() {}, onDismiss() {} })));
+  assert.equal(host.querySelector('.uix-ai-suggestion__accept'), null, 'no one-click Accept for a high or unknown band');
+  assert.equal(host.querySelector('.uix-ai-suggestion').dataset.consequence, 'high');
+  assert.equal(seen[0].consequence, 'high');
+  assert.ok(error.mock.callCount() >= 1);
+  await unmount();
+});
+
+test('two answers finishing (or starting) together are both announced, in order', async () => {
+  // real timers: the shared region's own timeout must really run
+  const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
+  const a = ui.startAiGeneration({ status: 'Summarising notes' });
+  const b = ui.startAiGeneration({ status: 'Drafting reply' });
+  await settle();
+  assert.equal(announcer().textContent, 'Summarising notes Drafting reply');
+  a.end('Summary ready. VPN restored.');
+  b.end('Reply ready. Hello Lejla.');
+  await settle();
+  assert.equal(announcer().textContent, 'Summary ready. VPN restored. Reply ready. Hello Lejla.');
+});
+
+test('ProposalReview does not lock up when the product leaves it proposed (a cancelled confirmation)', async () => {
+  const { host, render, unmount } = mount();
+  const approve = mock.fn();
+  await render(h(ui.ProposalReview, { proposalId: 'INC-4:resolve', consequence: 'high', title: 'Resolve', reversible: false, onApprove: approve, onReject() {} }));
+  const button = [...host.querySelectorAll('button')].find((b) => b.textContent.includes('Approve'));
+  await click(button);
+  await click(button);
+  assert.equal(approve.mock.callCount(), 1, 'a double click is one press');
+  await new Promise((r) => setTimeout(r, 650));
+  await click(button);
+  assert.equal(approve.mock.callCount(), 2, 'a later press works again while the status stays proposed');
+  await unmount();
+});
+
+test('ids and types: a lone word, a user name, a phone number or a value cannot ride as an id', async () => {
+  for (const id of ['Ana', 'ana.smith', 'Network', '0612345678', '+38761123456', '061-123-456', 'ab', 'Lejla Hadžić', 'ana@example.test', 'P2']) {
+    assert.equal(ui.isProposalId(id), false, `${id} is not an id`);
+  }
+  for (const id of ['INC-1042:category', 'sugg_8f2c', '3f2b9c1e-6a1d-4c55-9d0e-2b8f1a7c4e10', 'p-1', 'demo-INC-1042-summary-2']) {
+    assert.equal(ui.isProposalId(id), true, `${id} is an id`);
+  }
+  for (const type of ['Network', 'ana', 'incident', 'Incident.Category', 'incident category', 'incident.', '.category', 'incident.category.']) {
+    assert.equal(ui.isProposalType(type), false, `${type} is not a type`);
+  }
+  for (const type of ['incident.category', 'change.risk_level', 'cmdb.ci.owner']) assert.equal(ui.isProposalType(type), true, type);
+  const warn = mock.method(console, 'warn', () => {});
+  const seen = await collect(async () => {
+    assert.equal(ui.emitProposalEvent({ action: 'accepted', proposalId: 'Ana', kind: 'suggestion' }), false);
+    assert.equal(ui.emitProposalEvent({ action: 'accepted', proposalId: 'INC-1:assignee', kind: 'suggestion', type: 'Ana' }), false);
+  });
+  assert.equal(seen.length, 0);
+  assert.equal(warn.mock.callCount(), 2);
+});

@@ -9,7 +9,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export async function buildAiAssistanceHarness() {
   await build({
-    entryPoints: [join(here, 'harness.tsx')],
+    // the harness, and the docs page's live demo (packages/tokens/docs/live/ai-assistance-demo.tsx) on demo.html
+    entryPoints: [join(here, 'harness.tsx'), join(here, 'demo.tsx')],
     outdir: join(here, 'dist'),
     bundle: true,
     format: 'esm',

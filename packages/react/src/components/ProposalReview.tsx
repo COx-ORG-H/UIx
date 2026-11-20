@@ -5,6 +5,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import type { AiLabels } from '../ai-labels.js';
 import type { ConsequenceBand } from '../ai-events.js';
+import { consequencePolicy } from '../ai-events.js';
 import { fillLabel } from '../fill-label.js';
 import type { UixRenderLink } from '../link.js';
 import { useProposalReporter } from '../hooks/useProposalReporter.js';
@@ -28,6 +29,9 @@ export interface ProposalChange {
  * and the product is writing it. `applied`: written (Undo while the window is open). `rejected`,
  * `undone`: closed. `failed`: the write did not happen; Approve and Reject are offered again.
  */
+/** A second press of Approve or Reject within this many ms is the same press (a double click). */
+const PRESS_LOCK_MS = 600;
+
 export type ProposalStatus = 'proposed' | 'applying' | 'applied' | 'rejected' | 'undone' | 'failed';
 
 export interface ProposalReviewProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'children'> {
@@ -35,7 +39,7 @@ export interface ProposalReviewProps extends Omit<HTMLAttributes<HTMLElement>, '
   proposalId: string;
   /** The product's id for the kind of proposal (`incident.resolve`). */
   type?: string;
-  /** How much approving changes (see `consequencePolicy`). `high` shows "Needs your approval". */
+  /** How much approving changes (see `consequencePolicy`). `high` shows "Needs your approval"; an unknown band is treated as `high`. */
   consequence: ConsequenceBand;
   /** What will happen, as one sentence: "Resolve INC-1042 as Fixed and notify the caller". */
   title: ReactNode;
@@ -78,24 +82,29 @@ export interface ProposalReviewProps extends Omit<HTMLAttributes<HTMLElement>, '
  * (Approve), `dismissed` (Reject), `edited` and `undone`.
  */
 export function ProposalReview({
-  proposalId, type, consequence, title, description, changes, affected, reversible, undoSeconds, explanation,
+  proposalId, type, consequence: consequenceProp, title, description, changes, affected, reversible, undoSeconds, explanation,
   status = 'proposed', error, onApprove, onReject, onEdit, onUndo, headingLevel = 3, children, renderLink,
   labels: own, className, ...props
 }: ProposalReviewProps) {
   const labels = useAiLabels(own);
+  // a missing or unknown band (an untyped string from a server) fails closed: it is shown and gated as high
+  const consequence = consequencePolicy(consequenceProp).band;
   const id = useId();
   const titleId = `${id}-title`;
   const ref = useRef<HTMLElement>(null);
   const report = useProposalReporter({ proposalId, kind: 'proposal', type, consequence }, ref);
   const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
 
-  // one press per decision: a double click must not approve twice. A new proposal, or the product
-  // moving it back to proposed or failed, takes a decision again.
-  const decided = useRef(false);
-  useEffect(() => { if (status === 'proposed' || status === 'failed') decided.current = false; }, [status, proposalId]);
+  // A double click must not approve twice, but the card must not lock up either: a product may leave
+  // the status at `proposed` (Approve opened its own confirmation, which the person cancelled). So a
+  // second press within PRESS_LOCK_MS of the last one is the same press; after that, it counts.
+  const lastPress = useRef(-Infinity);
+  // a new proposal, or the product moving this one on, takes a press at once
+  useEffect(() => { lastPress.current = -Infinity; }, [proposalId, status]);
   const decide = (fn: () => void) => {
-    if (decided.current) return;
-    decided.current = true;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - lastPress.current < PRESS_LOCK_MS) return;
+    lastPress.current = now;
     fn();
   };
 

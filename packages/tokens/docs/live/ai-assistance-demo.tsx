@@ -122,7 +122,12 @@ function Summary() {
   const [text, setText] = useState('');
   const [run, setRun] = useState(0);
   const timer = useRef<number | null>(null);
-  const stopTimer = () => { if (timer.current != null) { window.clearInterval(timer.current); timer.current = null; } };
+  /** The fake model's "reading" pause before the words start, so Stop, Retry and unmount cancel it too. */
+  const delay = useRef<number | null>(null);
+  const stopTimer = () => {
+    if (delay.current != null) { window.clearTimeout(delay.current); delay.current = null; }
+    if (timer.current != null) { window.clearInterval(timer.current); timer.current = null; }
+  };
   useEffect(() => stopTimer, []);
   const generate = () => {
     stopTimer();
@@ -132,7 +137,8 @@ function Summary() {
     const words = SUMMARY.split(' ');
     let i = 0;
     // the fake model: a pause to "read", then a word every 70 ms
-    window.setTimeout(() => {
+    delay.current = window.setTimeout(() => {
+      delay.current = null;
       timer.current = window.setInterval(() => {
         i += 1;
         setText(words.slice(0, i).join(' '));
@@ -159,11 +165,17 @@ function Summary() {
 
 function Demo() {
   const [events, setEvents] = useState<ProposalEventDetail[]>([]);
-  // on document, as a product's adapter listens: a child's `shown` fires before this effect could
-  // attach to an element, and document has every event the page sends
-  useEffect(() => onProposalEvent((d) => {
-    if (d.proposalId.startsWith('demo-')) setEvents((list) => [d, ...list].slice(0, 14));
-  }), []);
+  // On document, as a product's adapter listens. The pieces mount only once the listener is in:
+  // their `shown` fires from their own mount effects, which run before a parent's effects.
+  const [listening, setListening] = useState(false);
+  useEffect(() => {
+    const off = onProposalEvent((d) => {
+      if (d.proposalId.startsWith('demo-')) setEvents((list) => [d, ...list].slice(0, 14));
+    });
+    setListening(true);
+    return () => { off(); setListening(false); };
+  }, []);
+  if (!listening) return null;
   return (
     <div className="uix-docs__live-demo" style={{ display: 'grid', gap: 'var(--uix-space-5)', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))', alignItems: 'start' }}>
       <div style={{ display: 'grid', gap: 'var(--uix-space-5)', minWidth: 0 }}>

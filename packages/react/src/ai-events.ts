@@ -8,8 +8,11 @@
  * no network call and no storage in the kit.
  *
  * Content-free by construction: the detail carries enums, opaque ids and timings, never a value,
- * a sentence or a name. Ids and `type` must look like ids (`ID_PATTERN`); anything else is
- * refused, the event is not sent, and a console warning names the field. */
+ * a sentence or a name. `proposalId` must look like a record key (`ID_PATTERN`: letters AND digits)
+ * and `type` like a dotted taxonomy key (`TYPE_PATTERN`); anything else is refused, the event is
+ * not sent, and a console warning names the field. The patterns catch free text that slips in by
+ * accident (a value, a name, a phone number); they cannot stop a product that encodes content on
+ * purpose, so keep ids opaque. */
 
 /** The DOM event every AI primitive dispatches. It bubbles, so `document` hears every one. */
 export const PROPOSAL_EVENT = 'uix-proposal';
@@ -39,10 +42,10 @@ export type ConsequenceBand = 'low' | 'medium' | 'high';
 /** `event.detail` of a `uix-proposal` event. Ids, enums and timings only. */
 export interface ProposalEventDetail {
   action: ProposalAction;
-  /** The product's id for this one proposal (opaque: `sugg_8f2c`, `INC-1042:category`). */
+  /** The product's id for this one proposal (opaque, with letters and digits: `sugg_8f2c`, `INC-1042:category`). */
   proposalId: string;
   kind: ProposalKind;
-  /** The product's id for the kind of proposal (`incident.category`), to group rates by. */
+  /** The product's key for the kind of proposal, lower-case and dotted (`incident.category`), to group rates by. */
   type?: string;
   consequence?: ConsequenceBand;
   /** With `action: 'feedback'`. */
@@ -59,18 +62,33 @@ export interface ProposalEventDetail {
 export type ProposalEventInput = Omit<ProposalEventDetail, 'at' | 'elapsedMs' | 'sinceAcceptMs'>;
 
 /**
- * What an id or a `type` may look like: a letter or digit, then up to 127 letters, digits and
- * `_ . : / -`. No spaces, so no sentence, name or e-mail address passes.
+ * What a `proposalId` may look like: 3 to 128 letters, digits and `_ . : / -`, starting with a
+ * letter or digit, with at least one letter AND one digit (`INC-1042:category`, `sugg_8f2c`, a
+ * UUID). No spaces or `@`, so no sentence or e-mail address passes; a lone word (a first name, a
+ * suggested value such as `Network`, a user name such as `ana.smith`) has no digit, and a phone
+ * number has no letter.
  */
-export const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$/;
+export const ID_PATTERN = /^(?=[^]*[0-9])(?=[^]*[A-Za-z])[A-Za-z0-9][A-Za-z0-9_.:/-]{2,127}$/;
+
+/**
+ * What a `type` may look like: a lower-case dotted key of at least two parts, each starting with
+ * a letter (`incident.category`, `change.risk_level`), at most 128 characters. A capitalised value
+ * (`Network`), a sentence or a lone word does not pass.
+ */
+export const TYPE_PATTERN = /^(?=[^]{3,128}$)[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$/;
 
 const ACTIONS: readonly ProposalAction[] = ['shown', 'accepted', 'dismissed', 'edited', 'reverted', 'undone', 'feedback', 'stopped', 'retried'];
 const KINDS: readonly ProposalKind[] = ['suggestion', 'field', 'proposal', 'output'];
 const BANDS: readonly ConsequenceBand[] = ['low', 'medium', 'high'];
 
-/** Is `value` usable as a proposal id or type? */
+/** Is `value` usable as a `proposalId`? */
 export function isProposalId(value: unknown): value is string {
   return typeof value === 'string' && ID_PATTERN.test(value);
+}
+
+/** Is `value` usable as a proposal `type`? */
+export function isProposalType(value: unknown): value is string {
+  return typeof value === 'string' && TYPE_PATTERN.test(value);
 }
 
 /* When each proposal was first shown and last accepted, for the timings. Bounded: the oldest
@@ -90,7 +108,7 @@ const now = () => (typeof performance !== 'undefined' && typeof performance.now 
 function refuse(field: string): false {
   if (typeof console !== 'undefined') {
     // the field's name only: echoing the value would put the content in the console
-    console.warn(`[uix] uix-proposal not sent: \`${field}\` must be an id (${String(ID_PATTERN)}), an allowed enum, or left out.`);
+    console.warn(`[uix] uix-proposal not sent: \`${field}\` is not allowed. proposalId must match ${String(ID_PATTERN)}, type ${String(TYPE_PATTERN)}; the rest are enums.`);
   }
   return false;
 }
@@ -100,7 +118,7 @@ function invalidField(input: ProposalEventInput): string | null {
   if (!ACTIONS.includes(input.action)) return 'action';
   if (!isProposalId(input.proposalId)) return 'proposalId';
   if (!KINDS.includes(input.kind)) return 'kind';
-  if (input.type !== undefined && !isProposalId(input.type)) return 'type';
+  if (input.type !== undefined && !isProposalType(input.type)) return 'type';
   if (input.consequence !== undefined && !BANDS.includes(input.consequence)) return 'consequence';
   if (input.rating !== undefined && input.rating !== 'up' && input.rating !== 'down') return 'rating';
   if (input.action === 'feedback' && input.rating === undefined) return 'rating';
@@ -178,9 +196,10 @@ const POLICIES: Readonly<Record<ConsequenceBand, ConsequencePolicy>> = Object.fr
 });
 
 /**
- * The rules of a band, as data a product's autonomy settings read. An unknown band is treated as
- * `high`: the strictest rules are the safe default.
+ * The rules of a band, as data a product's autonomy settings read. A missing or unknown band
+ * (including `constructor`, `__proto__` and other inherited names) fails closed: it gets the
+ * `high` rules, which need an explicit approval and never auto-apply.
  */
-export function consequencePolicy(band: ConsequenceBand): ConsequencePolicy {
-  return POLICIES[band] ?? POLICIES.high;
+export function consequencePolicy(band: ConsequenceBand | null | undefined): ConsequencePolicy {
+  return typeof band === 'string' && (BANDS as readonly string[]).includes(band) ? POLICIES[band] : POLICIES.high;
 }

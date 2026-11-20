@@ -7,7 +7,9 @@
  *   text when it changed since it was last said;
  * - the whole message once, when it is complete.
  * One heartbeat for the page, however many cards are generating: two cards do not talk over each
- * other. */
+ * other. Messages for the same region that arrive in the same moment (two cards starting or
+ * finishing together) are said together, in order: `announcePolite` alone would let the later one
+ * replace the earlier before the region was filled. */
 
 import { announcePolite, ensureAnnouncer } from './announce.js';
 
@@ -25,15 +27,37 @@ interface Generation {
 const active = new Map<symbol, Generation>();
 let timer: ReturnType<typeof setInterval> | null = null;
 
+/** Messages waiting for their region, per region host (the page, or a dialog). */
+const pending = new Map<Element | null, string[]>();
+let flushing = false;
+
+const regionKey = (from: Element | null) => from?.closest('dialog') ?? null;
+
+/** Queue `text` for its region; everything queued in this task (one React commit) is said once, joined. */
+function say(text: string, from: Element | null) {
+  const key = regionKey(from);
+  const list = pending.get(key) ?? [];
+  if (!list.includes(text)) list.push(text);
+  pending.set(key, list);
+  if (flushing) return;
+  flushing = true;
+  queueMicrotask(() => {
+    flushing = false;
+    const batch = [...pending];
+    pending.clear();
+    for (const [host, texts] of batch) announcePolite(texts.join(' '), host);
+  });
+}
+
 function beat() {
   // the most recently started generation speaks for all of them
   const last = [...active.values()].pop();
   if (!last) return;
   if (last.status && last.status !== last.said) {
     last.said = last.status;
-    announcePolite(last.status, last.from);
+    say(last.status, last.from);
   } else {
-    announcePolite(last.loading, last.from);
+    say(last.loading, last.from);
   }
 }
 
@@ -74,7 +98,7 @@ export function startAiGeneration(options: AiGenerationOptions = {}): AiGenerati
   const status = options.status?.trim() ?? '';
   if (!muted) {
     active.set(key, { status, said: status, loading: options.loading ?? 'Loading', from });
-    if (status) announcePolite(status, from);
+    if (status) say(status, from);
     sync();
   }
   let ended = false;
@@ -88,7 +112,7 @@ export function startAiGeneration(options: AiGenerationOptions = {}): AiGenerati
       ended = true;
       active.delete(key);
       sync();
-      if (message && message.trim()) announcePolite(message.trim(), from);
+      if (message && message.trim()) say(message.trim(), from);
     },
   };
 }

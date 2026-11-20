@@ -44,15 +44,15 @@ export async function renderAiSpecimens() {
     h('div', { style: { display: 'grid', gap: 'var(--uix-space-2)' } },
       h('span', { className: 'uix-field__label' }, 'Assignment group'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 'var(--uix-space-2)' } },
-        h(ui.AiSuggestion, { proposalId: 'docs-assign-1', consequence: 'medium', value: 'Network Operations', explanation: { why: '14 of the last 20 VPN incidents went to this group.', sources: [] }, onAccept: noop, onDismiss: noop }),
-        h(ui.AiSuggestion, { proposalId: 'docs-assign-2', consequence: 'medium', value: 'Service Desk L2', onAccept: noop, onDismiss: noop }))),
+        h(ui.AiSuggestion, { proposalId: 'INC-1042:assign-1', consequence: 'medium', value: 'Network Operations', explanation: { why: '14 of the last 20 VPN incidents went to this group.', sources: [] }, onAccept: noop, onDismiss: noop }),
+        h(ui.AiSuggestion, { proposalId: 'INC-1042:assign-2', consequence: 'medium', value: 'Service Desk L2', onAccept: noop, onDismiss: noop }))),
     h('div', { style: { display: 'grid', gap: 'var(--uix-space-1)', fontSize: 'var(--uix-text-meta)' } },
       h(ui.AiActor, { name: 'Assist', approvedBy: 'Ana Kovač' }),
       h(ui.AiActor, { name: 'Assist' })));
 
   const proposals = h('div', { style: stack },
     h(ui.ProposalReview, {
-      proposalId: 'docs-resolve', consequence: 'high', title: 'Resolve INC-1042 and notify the caller',
+      proposalId: 'INC-1042:resolve', consequence: 'high', title: 'Resolve INC-1042 and notify the caller',
       explanation: { why: 'The caller confirmed in the last comment that the VPN works again.', sources: sources.slice(0, 1) },
       changes: [
         { id: 'state', label: 'State', before: 'In progress', after: 'Resolved' },
@@ -64,18 +64,18 @@ export async function renderAiSpecimens() {
       onApprove: noop, onReject: noop, onEdit: noop,
     }),
     h(ui.ProposalReview, {
-      proposalId: 'docs-assign', consequence: 'medium', title: 'Assign INC-1042 to Network Operations', status: 'applied',
+      proposalId: 'INC-1042:assign', consequence: 'medium', title: 'Assign INC-1042 to Network Operations', status: 'applied',
       reversible: true, undoSeconds: 30, onApprove: noop, onReject: noop, onUndo: noop,
     }));
 
   const output = h(ui.AiOutputCard, {
-    proposalId: 'docs-summary', title: 'Summary', status: 'done',
+    proposalId: 'INC-1042:summary', title: 'Summary', status: 'done',
     text: 'The VPN gateway in Sarajevo timed out for 40 remote users after the 08:00 certificate rotation.',
     sources, onRetry: noop, onFeedback: noop, rating: null,
     actions: h(ui.Button, { variant: 'secondary', size: 'sm' }, 'Post to work notes'),
   }, h('p', null, 'The VPN gateway in Sarajevo timed out for 40 remote users after the 08:00 certificate rotation. Two similar incidents were fixed by restarting the gateway service.'));
   const generating = h(ui.AiOutputCard, {
-    proposalId: 'docs-draft', title: 'Reply draft', status: 'generating', statusText: 'Reading 12 work notes', onStop: noop, announce: 'none',
+    proposalId: 'INC-1042:reply', title: 'Reply draft', status: 'generating', statusText: 'Reading 12 work notes', onStop: noop, announce: 'none',
   }, h('p', null, 'Hello Lejla, thanks for confirming that the VPN'));
 
   return {

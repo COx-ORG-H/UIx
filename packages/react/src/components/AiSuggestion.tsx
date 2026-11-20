@@ -58,7 +58,13 @@ export function AiSuggestion({
 }: AiSuggestionProps) {
   const labels = useAiLabels(own);
   const ref = useRef<HTMLSpanElement>(null);
-  const report = useProposalReporter({ proposalId, kind: 'suggestion', type, consequence }, ref);
+  // fail closed: a band that is not low or medium at run time (`high`, or an untyped string from a
+  // server) gets no one-click Accept. It belongs in a ProposalReview.
+  const oneClick = consequence === 'low' || consequence === 'medium';
+  const report = useProposalReporter({ proposalId, kind: 'suggestion', type, consequence: oneClick ? consequence : 'high' }, ref);
+  if (!oneClick && typeof console !== 'undefined') {
+    console.error(`[uix] AiSuggestion: consequence "${String(consequence)}" has no one-click Accept; use ProposalReview.`);
+  }
   const text = valueText ?? (typeof value === 'string' || typeof value === 'number' ? String(value) : labels.subjectDefault);
   return (
     <span
@@ -66,19 +72,19 @@ export function AiSuggestion({
       role="group"
       aria-label={fillLabel(labels.suggestion, { value: text })}
       className={cx('uix-ai-suggestion', className)}
-      data-consequence={consequence}
+      data-consequence={oneClick ? consequence : 'high'}
       {...props}
     >
       <AiLabel explanation={explanation} subject={text} renderLink={renderLink} labels={labels} />
       <span className="uix-ai-suggestion__value">{value}</span>
-      <button
+      {oneClick && <button
         type="button"
         className="uix-btn uix-btn--ghost uix-btn--icon uix-btn--xs uix-ai-suggestion__accept"
         aria-label={fillLabel(labels.accept, { value: text })}
         onClick={() => { report('accepted'); onAccept(); }}
       >
         {CHECK}
-      </button>
+      </button>}
       <button
         type="button"
         className="uix-btn uix-btn--ghost uix-btn--icon uix-btn--xs uix-ai-suggestion__dismiss"
