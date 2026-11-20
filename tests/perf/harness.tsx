@@ -17,7 +17,11 @@
  *   events / loafs     Event Timing entries (interactionId, duration to the next paint, rounded to
  *                      8 ms, 16 ms threshold) and long-animation-frame entries, as they arrive.
  *   startFrames() / stopFramesAfter(ms)   rAF-to-rAF intervals while something animates.
- *   scrollBy(el, px, frames)              scrolls by px in equal steps, one per frame; the intervals. */
+ *   scrollBy(el, px, frames)              scrolls by px in equal steps, one per frame; the intervals.
+ *   calibrate()        a fixed piece of work that uses no kit code — script (sort, Map, JSON) and DOM
+ *                      (build, style, lay out and remove 1,000 nodes) — timed in the same throttled
+ *                      page. It measures the runner, not the kit: bench.mjs divides the medians by how
+ *                      much slower than the baseline runner it reads (hosted runners differ by ~1.5×). */
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, DataWorkspace, Drawer, Modal, StatusPill, TaskTray, multiSort, searchRows, tasks } from '../../packages/react/src/index.js';
@@ -38,6 +42,7 @@ declare global {
       startFrames: () => void;
       stopFramesAfter: (ms: number) => Promise<number[]>;
       scrollBy: (selector: string, px: number, frames: number) => Promise<{ intervals: number[]; total: number }>;
+      calibrate: () => number;
     };
   }
 }
@@ -81,6 +86,30 @@ function frameLoop(now: number) {
 }
 const intervals = (stamps: number[]) => stamps.slice(1).map((t, i) => t - stamps[i]);
 
+/** One pass of the calibration work (see the header); returns its milliseconds. */
+function calibrationPass() {
+  const start = performance.now();
+  let x = 1;
+  const numbers = new Array<number>(50_000);
+  for (let i = 0; i < numbers.length; i += 1) { x = (x * 1103515245 + 12345) & 0x7fffffff; numbers[i] = x; }
+  numbers.sort((a, b) => a - b);
+  const map = new Map<string, number>();
+  for (let i = 0; i < 25_000; i += 1) map.set(`k${numbers[i] % 4096}`, i);
+  JSON.parse(JSON.stringify(numbers.slice(0, 5_000)));
+  const host = document.createElement('div');
+  host.style.cssText = 'position:absolute;left:-10000px;top:0;width:640px';
+  for (let i = 0; i < 1000; i += 1) {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:4px 8px;border-bottom:1px solid #ccc;font:14px/1.4 sans-serif';
+    row.textContent = `row ${i} ${map.size}`;
+    host.append(row);
+  }
+  document.body.append(host);
+  void host.offsetHeight; // style and layout
+  host.remove();
+  return performance.now() - start;
+}
+
 window.__perf = {
   ready: false,
   mount: () => Promise.reject(new Error(`scene ${scene} has nothing to mount`)),
@@ -105,6 +134,11 @@ window.__perf = {
     const log = frameLog ?? [];
     frameLog = null;
     return intervals(log);
+  },
+  calibrate() {
+    calibrationPass(); // warm
+    const runs = [calibrationPass(), calibrationPass(), calibrationPass()].sort((a, b) => a - b);
+    return runs[1];
   },
   scrollBy(selector, px, frames) {
     const el = document.querySelector<HTMLElement>(selector);

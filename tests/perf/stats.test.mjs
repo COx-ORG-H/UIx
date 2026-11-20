@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { collect, evaluate, failing, frameStats, interactionLatency, limitFor, median, quantile, summarize } from './stats.mjs';
+import { collect, evaluate, failing, frameStats, interactionLatency, judge, limitFor, median, quantile, summarize } from './stats.mjs';
 
 const lane = { tolerance: { ratio: 0.5, floorMs: 25 }, metrics: { sort: { baseline: 100 }, mount: { baseline: 20 } } };
 
@@ -67,4 +67,25 @@ test('budgets.json: every lane has a tolerance, and every baseline is a number',
     assert.equal(typeof l.tolerance.floorMs, 'number');
     for (const [metric, { baseline }] of Object.entries(l.metrics)) assert.equal(typeof baseline, 'number', `${name}: ${metric}`);
   }
+});
+
+test('judge divides by the runner speed before the gate, and reports the raw medians', () => {
+  const budget = { tolerance: { ratio: 0.5, floorMs: 25 }, calibration: 100, metrics: { sort: { baseline: 168 } } };
+  // a runner 1.5x slower across the board: sort reads 252 raw, 168 once scaled
+  const slow = judge([{ calibration: 150, sort: 252 }, { calibration: 150, sort: 252 }], budget, true);
+  assert.equal(slow.calibration.factor, 1.5);
+  assert.equal(slow.raw.sort.median, 252);
+  assert.equal(slow.summaries.sort.median, 168);
+  assert.deepEqual(failing(slow.rows), []);
+  // a real regression on the same slow runner still fails
+  const regressed = judge([{ calibration: 150, sort: 450 }], budget, true);
+  assert.deepEqual(failing(regressed.rows).map((r) => r.metric), ['sort']);
+});
+
+test('judge fails a normalized lane with no calibration baseline, and never scales an unnormalized one', () => {
+  const noCal = judge([{ calibration: 150, sort: 10 }], { tolerance: { ratio: 0.5, floorMs: 25 }, metrics: { sort: { baseline: 10 } } }, true);
+  assert.deepEqual(failing(noCal.rows).map((r) => [r.metric, r.status]), [['calibration', 'unbudgeted']]);
+  const frames = judge([{ calibration: 300, frame: 50 }], { tolerance: { ratio: 1.5, floorMs: 50 }, calibration: 100, metrics: { frame: { baseline: 50 } } }, false);
+  assert.equal(frames.calibration.factor, 1);
+  assert.equal(frames.summaries.frame.median, 50);
 });

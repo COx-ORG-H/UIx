@@ -66,3 +66,22 @@ export function frameStats(intervals) {
   if (!intervals.length) throw new Error('no frames were recorded');
   return { p95: round1(quantile(intervals, 0.95)), max: round1(Math.max(...intervals)), slow: intervals.filter((ms) => ms > 50).length };
 }
+
+/**
+ * Summaries of the runs, then the gate. With `normalize`, each metric's samples are divided by the
+ * runner's speed factor — this run's calibration median ÷ the baseline run's — before the gate, so a
+ * runner that is 1.4× slower across the board does not read as a regression. No calibration baseline
+ * fails the lane (an `unbudgeted` calibration row) instead of comparing unscaled numbers.
+ */
+export function judge(records, laneBudget, normalize) {
+  const samples = collect(records);
+  const cal = samples.calibration ? summarize(samples.calibration) : null;
+  delete samples.calibration;
+  const raw = Object.fromEntries(Object.entries(samples).map(([m, v]) => [m, summarize(v)]));
+  const base = laneBudget.calibration;
+  const factor = normalize && cal && typeof base === 'number' ? round1(cal.median / base * 100) / 100 : 1;
+  const summaries = factor === 1 ? raw : Object.fromEntries(Object.entries(samples).map(([m, v]) => [m, summarize(v.map((x) => x / factor))]));
+  const rows = evaluate(summaries, laneBudget);
+  if (normalize && typeof base !== 'number') rows.unshift({ metric: 'calibration', median: cal?.median ?? null, baseline: null, limit: null, status: 'unbudgeted' });
+  return { raw, summaries, rows, calibration: { median: cal?.median ?? null, baseline: base ?? null, factor, normalized: normalize && factor !== 1 } };
+}

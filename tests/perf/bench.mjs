@@ -30,7 +30,7 @@ import { createServer } from 'node:http';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collect, evaluate, failing, frameStats, interactionLatency, round1, summarize } from './stats.mjs';
+import { failing, frameStats, interactionLatency, judge, round1 } from './stats.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -91,6 +91,7 @@ async function blockingSince(page, since) {
 async function workspaceRun(page, rows) {
   const out = {};
   const ws = page.locator('#bench');
+  out.calibration = round1(await page.evaluate(() => window.__perf.calibrate()));
   const t0 = await page.evaluate(() => performance.now());
   out.mount = round1(await page.evaluate(() => window.__perf.mount()));
   out['mount: long-frame blocking'] = await blockingSince(page, t0);
@@ -135,6 +136,7 @@ async function workspaceRun(page, rows) {
 
 async function overlaysRun(page, suffix) {
   const out = {};
+  if (!suffix) out.calibration = round1(await page.evaluate(() => window.__perf.calibrate()));
   const frames = async (name, act, check) => {
     await page.evaluate(() => window.__perf.startFrames());
     out[`${name}${suffix}: latency`] = await interaction(page, 'click', act);
@@ -165,10 +167,14 @@ async function overlaysRun(page, suffix) {
 
 const LANES = {
   workspace: {
+    // medians are divided by the runner's speed (calibration ÷ the baseline run's calibration)
+    normalize: true,
     launch: {},
     pages: (base, rows) => [{ url: `${base}/tests/perf/harness.html?scene=workspace&rows=${rows}`, run: (page) => workspaceRun(page, rows) }],
   },
   'no-gpu': {
+    // frame intervals come in whole vsyncs, so they are not scaled; calibration is reported only
+    normalize: false,
     // the full Chromium (new headless), not the headless shell, so the compositor is the one Chrome ships
     launch: { channel: 'chromium', args: GPU_OFF },
     pages: (base) => [
@@ -205,13 +211,18 @@ function markdown(report) {
     '',
     `${report.browser}, CPU throttling ${report.cpu}×, ${report.runs} runs after a warm-up${report.rowCount ? `, ${report.rowCount.toLocaleString('en-US')} rows` : ''}. Each figure is the median of the runs; the limit is baseline + max(${report.tolerance.ratio * 100}%, ${report.tolerance.floorMs} ms).`,
     '',
-    '| metric | median | p75 | min – max | baseline | limit | |',
-    '|---|---:|---:|---:|---:|---:|---|',
   ];
+  const c = report.calibration;
+  if (c?.median != null) {
+    lines.push(c.normalized
+      ? `Runner speed: calibration ${c.median} ms against ${c.baseline} ms on the baseline runner, so this runner reads ${c.factor}× — the medians below are divided by ${c.factor} before the gate (raw median alongside).`
+      : `Calibration: ${c.median} ms${c.baseline != null ? ` (baseline runner ${c.baseline} ms)` : ''}${report.lane === 'no-gpu' ? '; frame times are not scaled' : ''}.`, '');
+  }
+  lines.push('| metric | median | raw median | p75 | min – max | baseline | limit | |', '|---|---:|---:|---:|---:|---:|---:|---|');
   for (const row of report.rows) {
     const s = report.summaries[row.metric];
     const mark = { ok: '✓', over: '✗ over', unbudgeted: '✗ no baseline', unmeasured: '✗ not measured', report: '' }[row.status];
-    lines.push(`| ${row.metric} | ${fmt(row.median)} | ${fmt(s?.p75)} | ${s ? `${s.min} – ${s.max}` : '—'} | ${fmt(row.baseline)} | ${fmt(row.limit)} | ${mark} |`);
+    lines.push(`| ${row.metric} | ${fmt(row.median)} | ${fmt(report.raw?.[row.metric]?.median)} | ${fmt(s?.p75)} | ${s ? `${s.min} – ${s.max}` : '—'} | ${fmt(row.baseline)} | ${fmt(row.limit)} | ${mark} |`);
   }
   if (report.lane === 'no-gpu') {
     lines.push('', 'Blur cost (default − `data-transparency="reduce"`, median p95 frame):', '');
@@ -248,20 +259,20 @@ async function runLane(spec) {
   try {
     console.log(`lane ${spec}: ${browser.version()}, CPU ${cpu}×, ${runs} runs + 1 warm-up`);
     let records = await measure(browser, base, spec, cpu, rows, runs);
-    let summaries = Object.fromEntries(Object.entries(collect(records)).map(([m, v]) => [m, summarize(v)]));
-    let rowsOut = evaluate(summaries, laneBudget);
-    if (!reportOnly && rowsOut.some((r) => r.status === 'over')) {
-      console.log(`  ${rowsOut.filter((r) => r.status === 'over').map((r) => r.metric).join(', ')} over the limit — measuring ${runs} more runs before deciding`);
+    let judged = judge(records, laneBudget, LANES[spec].normalize);
+    if (!reportOnly && judged.rows.some((r) => r.status === 'over')) {
+      console.log(`  ${judged.rows.filter((r) => r.status === 'over').map((r) => r.metric).join(', ')} over the limit — measuring ${runs} more runs before deciding`);
       records = records.concat(await measure(browser, base, spec, cpu, rows, runs));
-      summaries = Object.fromEntries(Object.entries(collect(records)).map(([m, v]) => [m, summarize(v)]));
-      rowsOut = evaluate(summaries, laneBudget);
+      judged = judge(records, laneBudget, LANES[spec].normalize);
     }
+    const { summaries, raw, calibration } = judged;
+    const rowsOut = judged.rows;
     const failed = reportOnly ? [] : failing(rowsOut);
     const report = {
       lane: spec, date: new Date().toISOString(), browser: `Chromium ${browser.version()}${spec === 'no-gpu' ? ' (GPU off)' : ''}`, cpu, runs: records.length,
       rowCount: spec === 'workspace' ? rows : undefined, tolerance: laneBudget.tolerance,
       status: reportOnly ? 'report only' : failed.length ? 'FAILED' : 'passed',
-      summaries, rows: rowsOut.map((r) => (reportOnly && r.status !== 'ok' ? { ...r, status: 'report' } : r)),
+      calibration, raw, summaries, rows: rowsOut.map((r) => (reportOnly && r.status !== 'ok' ? { ...r, status: 'report' } : r)),
     };
     mkdirSync(out, { recursive: true });
     const md = markdown(report);
@@ -287,7 +298,9 @@ function adopt(file) {
   const laneBudget = budgets.lanes[report.lane];
   if (!laneBudget) throw new Error(`unknown lane ${report.lane}`);
   if (report.cpu !== laneBudget.cpu) throw new Error(`the report ran at ${report.cpu}×; the lane budgets ${laneBudget.cpu}×`);
-  laneBudget.metrics = Object.fromEntries(Object.entries(report.summaries).map(([metric, s]) => [metric, { baseline: s.median }]));
+  // the run's own (unscaled) medians and its calibration: together they define the baseline runner
+  laneBudget.metrics = Object.fromEntries(Object.entries(report.raw).map(([metric, s]) => [metric, { baseline: s.median }]));
+  if (report.calibration?.median != null) laneBudget.calibration = report.calibration.median;
   laneBudget.adoptedFrom = { date: report.date, browser: report.browser, runs: report.runs };
   writeFileSync(BUDGETS_PATH, JSON.stringify(budgets, null, 2) + '\n');
   console.log(`✓ ${report.lane}: ${Object.keys(laneBudget.metrics).length} baselines from ${file}`);
