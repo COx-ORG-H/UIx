@@ -34,11 +34,11 @@ function App() {
     <>
       <section>
         <h2>Button result</h2>
-        <div><Button id="btn" variant="secondary" result={result} resultLabels={{ success: 'Saved', error: 'Couldn’t save' }}>Save changes</Button></div>
+        <div id="btn-wrap"><Button id="btn" variant="secondary" result={result} resultLabels={{ success: 'Saved', error: 'Couldn’t save' }}>Save changes</Button></div>
       </section>
       <section>
         <h2>Select value</h2>
-        <div style={{ width: 240 }}><Select id="team" aria-label="Team" options={TEAMS} value={team} onValueChange={(v) => setTeam(String(v))} /></div>
+        <div id="team-wrap" style={{ width: 240 }}><Select id="team" aria-label="Team" options={TEAMS} value={team} onValueChange={(v) => setTeam(String(v))} /></div>
       </section>
       <section>
         <h2>Tooltip hand-over</h2>

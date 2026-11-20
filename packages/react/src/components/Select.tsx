@@ -762,8 +762,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     void trigger.offsetWidth;
     trigger.setAttribute('data-swap', '');
     const blur = tokenPx('--uix-arrive-blur', 4);
-    const duration = tokenMs('--uix-dur-overlay', 400);
-    const out = Math.min(tokenMs('--uix-dur-swap-out', 130), duration);
+    // read off the trigger, as its CSS resolves them: a wrapper that retimes the swap retimes the blur
+    const duration = Math.max(0, tokenMs('--uix-dur-overlay', 400, trigger));
+    const out = Math.min(Math.max(0, tokenMs('--uix-dur-swap-out', 130, trigger)), duration);
     const ease = tokenEase('--uix-ease-soft');
     const stops = [
       valueRef.current ? blurIn([valueRef.current], { from: blur, duration: duration - out, delay: () => out, ease }) : () => {},

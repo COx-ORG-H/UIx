@@ -22,23 +22,29 @@ test.beforeEach(async ({ page }, testInfo) => {
   await startStepper(page);
 });
 
-/** The swap's whole time (ms): when the new text must be fully in. The tokens it was before. */
+/** The swap's whole time: when the new text must be fully in. The token it took before, or the
+ *  ms a wrapper retimed it to (shorter than the exit token, or a local swap-out). */
 const BUDGET = {
   'button-result': '--uix-dur',
   'button-back': '--uix-dur',
+  'button-short': 40,
   select: '--uix-dur-overlay',
+  'select-local': 100,
   'file-drop': '--uix-dur-fast',
   'file-drop-back': '--uix-dur-fast',
+  'file-drop-reenter': '--uix-dur-fast',
 };
-const ms = (page, token) => page.evaluate((t) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(t)), token);
+const ms = (page, token) => (typeof token === 'number' ? token
+  : page.evaluate((t) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(t)), token));
 const show = (frames) => frames.map((f) => `${f.t}:${f.old.toFixed(2)}/${f.new.toFixed(2)}`).join(' ');
 
 for (const [id, token] of Object.entries(BUDGET)) {
-  test(`${SWAPS[id].title}: the old text is gone before the new one shows, within ${token}`, async ({ page }) => {
+  test(`${SWAPS[id].title}: the old text is gone before the new one shows, within ${typeof token === 'number' ? `${token} ms` : token}`, async ({ page }) => {
     const budget = await ms(page, token);
     const frames = await runSwap(page, SWAPS[id]);
     expect(overlap(frames), `both texts visible at once: ${show(frames)}`).toBeLessThanOrEqual(0.02);
-    expect(frames.some((f) => f.old > 0.5), 'the old text was on screen at the start').toBe(id === 'file-drop-back' ? false : true);
+    // the summary is emptied as a drag ends, so the way back starts with nothing to fade out
+    if (id !== 'file-drop-back') expect(frames[0].old, 'the old text was on screen at the start').toBeGreaterThan(0.3);
     const settled = frames.find((f) => f.new >= 0.98);
     expect(settled, `the new text arrives: ${show(frames)}`).toBeTruthy();
     // one 10 ms step of slack: a frame lands on the step after the budget ends

@@ -10,6 +10,18 @@
 
 /** Each swap: how to start it, when it has started, and which text leaves and which arrives.
  *  `old` / `new` are run in the page and return an element, or [element, '::before']. */
+const dragEnter = () => {
+  const dt = new DataTransfer();
+  dt.items.add(new File(['x'], 'Bericht.pdf', { type: 'application/pdf' }));
+  dt.items.add(new File(['x'], 'Foto.png', { type: 'image/png' }));
+  document.querySelector('#drop .uix-file-drop').dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dt }));
+};
+
+/** Retime a swap locally: `vars` on the element `selector` finds (a wrapper, as a product would). */
+const retime = (selector, vars) => async (page) => {
+  await page.evaluate(([sel, v]) => { const el = document.querySelector(sel); for (const [k, x] of Object.entries(v)) el.style.setProperty(k, x); }, [selector, vars]);
+};
+
 export const SWAPS = {
   'button-result': {
     title: 'Button: label → result',
@@ -35,6 +47,26 @@ export const SWAPS = {
     new: () => document.querySelector('#btn .uix-btn__label'),
     span: 260,
   },
+  'button-short': {
+    title: 'Button: label → result, a wrapper sets --uix-dur: 40ms (shorter than the exit token)',
+    root: '#btn',
+    setup: retime('#btn-wrap', { '--uix-dur': '40ms' }),
+    trigger: () => window.__swap.result('success'),
+    started: () => !!document.querySelector('#btn .uix-btn__face[data-result]'),
+    old: () => document.querySelector('#btn .uix-btn__label'),
+    new: () => document.querySelector('#btn .uix-btn__result[data-kind="success"]'),
+    span: 100,
+  },
+  'select-local': {
+    title: 'Select: trigger value, a wrapper sets --uix-dur-overlay: 100ms and --uix-dur-swap-out: 60ms',
+    root: '#team',
+    setup: retime('#team-wrap', { '--uix-dur-overlay': '100ms', '--uix-dur-swap-out': '60ms' }),
+    trigger: () => window.__swap.select('Rechenzentrum'),
+    started: () => document.querySelector('button#team')?.hasAttribute('data-swap'),
+    old: () => [document.querySelector('button#team'), '::before'],
+    new: () => document.querySelector('button#team .uix-select__value'),
+    span: 160,
+  },
   select: {
     title: 'Select: trigger value',
     root: '#team',
@@ -48,12 +80,7 @@ export const SWAPS = {
     title: 'FileDrop: sentence → drag summary',
     root: '#drop .uix-file-drop',
     thumb: 300,
-    trigger: () => {
-      const dt = new DataTransfer();
-      dt.items.add(new File(['x'], 'Bericht.pdf', { type: 'application/pdf' }));
-      dt.items.add(new File(['x'], 'Foto.png', { type: 'image/png' }));
-      document.querySelector('#drop .uix-file-drop').dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dt }));
-    },
+    trigger: dragEnter,
     started: () => document.querySelector('#drop .uix-file-drop')?.hasAttribute('data-dragging'),
     old: () => document.querySelector('#drop .uix-file-drop__text'),
     new: () => document.querySelector('#drop .uix-file-drop__summary'),
@@ -72,6 +99,23 @@ export const SWAPS = {
     started: () => !document.querySelector('#drop .uix-file-drop')?.hasAttribute('data-dragging'),
     old: () => document.querySelector('#drop .uix-file-drop__summary'),
     new: () => document.querySelector('#drop .uix-file-drop__text'),
+    span: 200,
+  },
+  'file-drop-reenter': {
+    title: 'FileDrop: the drag leaves and comes back 40 ms later',
+    root: '#drop .uix-file-drop',
+    thumb: 300,
+    // mid-way back: the sentence is fading in again and the summary has just been emptied
+    setup: async (page) => {
+      await SWAPS['file-drop-back'].setup(page);
+      await page.evaluate(SWAPS['file-drop-back'].trigger);
+      await until(page, SWAPS['file-drop-back'].started);
+      await page.evaluate(() => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = 40; }));
+    },
+    trigger: dragEnter,
+    started: () => document.querySelector('#drop .uix-file-drop')?.hasAttribute('data-dragging'),
+    old: () => document.querySelector('#drop .uix-file-drop__text'),
+    new: () => document.querySelector('#drop .uix-file-drop__summary'),
     span: 200,
   },
   tooltip: {
