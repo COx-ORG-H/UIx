@@ -142,19 +142,19 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 The motion contract (tokens, the `check-motion.mjs` gate, the reduced-motion and hover policy, overlay
 timing) landed in HAR-2578, work package 1 of the motion rollout. The canonical vocabulary is the docs
 Foundations → Motion page; the plan is TENSOR `Docs/plans/2026-10-22-motion-and-micro-interactions.md`.
-These primitives are **Planned** in work package 2 (the feedback kit). Until each ships, the Motion page
-marks it *coming*.
+Work package 2 (the feedback kit, HAR-2579) **shipped** in 2.47.0–2.49.0. The Motion page lists each
+primitive under “Which motion for which state change”; the shape column is the contract it keeps.
 
-| Primitive | Answers | Planned shape |
-|---|---|---|
-| Delayed-pending hook | Is it working? | Drives `Spinner` / `Button loading` / `LoadingState` / `SaveStatus`: show after 300 ms, hold at least 500 ms. |
-| `Button` success / error state | Did it work? | Label/icon crossfade in place, held 1–2 s, announced through `aria-live`. |
-| `BusyRegion` + DataTable `refreshing` | Is it working? | Keep previous rows, dim, top indeterminate bar, `aria-busy`. |
-| Optimistic helper | Did it register? | `useOptimistic`-style, with a visible rollback that says what was restored. |
-| `ChangeHighlight` / `.uix-changed` | What changed? | A tint on the changed row or field that fades over 1–1.5 s; a steady outline under reduced motion. Sibling of `.uix-arrival`. |
-| List enter / exit / reorder (FLIP) | Where did it go? | Opacity plus ≤ 8 px travel; exit collapses on transform before the gap closes. |
-| `Count` | What changed? | One tick on change, never a loop; no tweened numbers in dense tables. |
-| `SuccessState` / receipt | Did it work? (a rare peak) | One success mark, then “what happens next”. |
-| Disclosure expand (`CollapsibleSection`) | Where did it go? | ≤ 200 ms on transform/opacity, never height. |
-| Sliding tab indicator | Where did it go? | The active indicator moves between tabs, ≤ 200 ms. |
-| Drag affordances | Did it register? | Lift on grab, drop target and line, settle ≤ 200 ms, with a keyboard alternative. |
+| Primitive | Answers | Shipped as | Shape |
+|---|---|---|---|
+| Delayed-pending hook | Is it working? | `useDelayedPending`, `Button loading` | Drives `Spinner` / `Button loading` / `LoadingState` / `SaveStatus`: show after 300 ms, hold at least 500 ms. |
+| `Button` success / error state | Did it work? | `Button result` / `resultLabels` | Label/icon crossfade in place, held 1.5 s, announced through `aria-live`. |
+| `BusyRegion` + Table `refreshing` | Is it working? | `BusyRegion`, `TableWrap refreshing` | Keep previous rows, dim, top indeterminate bar, `aria-busy`. |
+| Optimistic helper | Did it register? | `useOptimisticValue` | `useOptimistic`-style, with a visible rollback that says what was restored. |
+| `ChangeHighlight` / `.uix-changed` | What changed? | `ChangeHighlight`, `useChangeHighlight` | A tint on the changed row or field that fades over `--uix-dur-change`; a steady outline under reduced motion. Sibling of `.uix-arrival`. |
+| List enter / exit / reorder (FLIP) | Where did it go? | `MotionList` | Opacity plus ≤ 8 px travel; exit collapses on transform before the gap closes. |
+| `Count` | What changed? | `Count` | One tick on change, never a loop; no tweened numbers in dense tables. |
+| `SuccessState` / receipt | Did it work? (a rare peak) | `SuccessState` | One success mark, then “what happens next”. |
+| Disclosure expand (`CollapsibleSection`) | Where did it go? | `CollapsibleSection` | Transform/opacity, never height. A sidebar group opens over `--uix-dur-disclosure` (350 ms, the 2.60 animate-ui pick). |
+| Sliding tab indicator | Where did it go? | `useSlidingIndicator` (Tabs, Segmented, Sidebar) | The active indicator moves between items over `--uix-dur` (160 ms); keyboard and reduced motion jump. |
+| Drag affordances | Did it register? | `[data-uix-drag]`, `.uix-drop-line`, `settleDrop` (`drag.css`) | Lift on grab, drop target and line, settle ≤ 200 ms, with a keyboard alternative. |

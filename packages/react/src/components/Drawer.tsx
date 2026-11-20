@@ -8,6 +8,8 @@ import { isBackdropClick } from '../hooks/backdropDismiss.js';
 import { useGuardedDialog } from './DiscardPrompt.js';
 import type { DialogCloseEvent, DiscardPromptLabels } from './DiscardPrompt.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
+import { SWIPE_SLOP, SWIPE_VELOCITY, SWIPE_WINDOW, releaseVelocity } from '../swipe-gesture.js';
+import type { SwipeSample } from '../swipe-gesture.js';
 
 /* Swipe to dismiss (2.60, the animate-ui study). On a touch screen or with a pen, the panel follows
  * a drag toward its own edge (right for `end`, left for `start`, down for `bottom`) and the backdrop
@@ -17,13 +19,10 @@ import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
  * text. A drag never starts on a control, and on a bottom sheet only from the header or from a body
  * scrolled to its top, so scrolling stays scrolling. With unsaved changes (`dirty`) it settles back
  * and asks first, like every other way out; while `pending` it settles back. The same constants as
- * the Toast swipe. */
-const SWIPE_VELOCITY = 0.11; // px per ms
-const SWIPE_SLOP = 6; // px of travel before a press becomes a drag
-const SWIPE_WINDOW = 100; // ms of movement the release velocity is measured over
+ * the Toast swipe (swipe-gesture.ts). */
 const NOT_A_HANDLE = 'button, a, input, textarea, select, label, [role="button"], [role="slider"], [contenteditable=""], [contenteditable="true"]';
 
-interface DrawerDrag { id: number; x0: number; y0: number; d: number; samples: { p: number; t: number }[]; active: boolean }
+interface DrawerDrag { id: number; x0: number; y0: number; d: number; samples: SwipeSample[]; active: boolean }
 
 /** Internal (not in index.ts): the side Peek swipes closed the same way since 2.68 (HAR-4659). */
 export function useDrawerSwipe(side: 'end' | 'start' | 'bottom', canClose: boolean, dismiss: (event: ReactPointerEvent<HTMLDialogElement>) => boolean) {
@@ -47,8 +46,7 @@ export function useDrawerSwipe(side: 'end' | 'start' | 'bottom', canClose: boole
     drag.current = null;
     if (!d?.active) return;
     const el = e.currentTarget;
-    const recent = d.samples.filter((s) => e.timeStamp - s.t <= SWIPE_WINDOW);
-    const v = recent.length ? (along(e, d) - recent[0].p) / Math.max(1, e.timeStamp - recent[0].t) : 0;
+    const v = releaseVelocity(d.samples, along(e, d), e.timeStamp);
     const size = vertical ? el.offsetHeight : el.offsetWidth;
     if (e.type === 'pointerup' && (v > SWIPE_VELOCITY || d.d > size / 3) && dismiss(e)) {
       // carry on out from where it was let go; under reduced motion it fades where it is

@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createElement as h, act } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 
 let dom;
 let createRoot;
@@ -49,11 +50,28 @@ function Probe({ pending, delay, minVisible }) {
   return h('output', null, shown ? 'shown' : 'hidden');
 }
 
-test('the timing constants are the latency ladder', () => {
+test('the timing constants are the latency ladder, and match the --uix-delay/hold tokens', () => {
   assert.equal(ui.PENDING_DELAY_MS, 300);
   assert.equal(ui.PENDING_MIN_VISIBLE_MS, 500);
   assert.equal(ui.RESULT_HOLD_MS, 1500);
+  // The JS constants exist for SSR and the first render (no computed style to read yet); they
+  // must never drift from the tokens that CSS and products read.
+  const effect = JSON.parse(readFileSync(new URL('../../tokens/tokens/base/effect.json', import.meta.url), 'utf8'));
+  const ms = (name) => parseFloat(findToken(effect, name)?.$value);
+  assert.equal(ui.PENDING_DELAY_MS, ms('delay-pending'));
+  assert.equal(ui.PENDING_MIN_VISIBLE_MS, ms('hold-pending'));
+  assert.equal(ui.RESULT_HOLD_MS, ms('hold-result'));
 });
+
+function findToken(node, name) {
+  if (!node || typeof node !== 'object') return undefined;
+  if (Object.hasOwn(node, name) && node[name]?.$value !== undefined) return node[name];
+  for (const child of Object.values(node)) {
+    const hit = findToken(child, name);
+    if (hit) return hit;
+  }
+  return undefined;
+}
 
 test('useDelayedPending: work under 300 ms never shows; slower work shows at 300 ms and holds to 800 ms', async () => {
   clock();
