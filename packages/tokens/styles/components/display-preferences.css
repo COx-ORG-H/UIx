@@ -4,6 +4,7 @@
      data-text-scale="sm|lg|xl"    the rem scale every type token is in (md writes nothing)
      data-density="compact|comfortable"  table rows and controls
      data-motion="reduce"          the reduced-motion policy (motion.css), without the OS setting
+     data-transparency="reduce"    no blur, firmer scrims (data-contrast="more" implies it)
    data-theme="light|dark" is the kit's existing theme switch. Depends only on --uix-* tokens. */
 @layer uix.tokens {
   /* mixes of the theme's own text and surface, so one rule serves light and dark */
@@ -15,6 +16,15 @@
     --uix-choice-border: var(--uix-border-strong);
     --uix-control-border: var(--uix-border);
     --uix-control-border-hover: var(--uix-border-strong);
+  }
+
+  /* reduced transparency: every blur is 0px (CSS and blurIn) and the scrim firms .5 -> .6 so a
+     dialog stands apart from the now-sharp page. More contrast implies it. A switch, not a slider. */
+  :root:is([data-transparency="reduce"], [data-contrast="more"]) {
+    --uix-scrim-blur: 0px;
+    --uix-arrive-blur: 0px;
+    --uix-swap-blur: 0px;
+    --uix-scrim: color-mix(in srgb, var(--uix-scrim-strong) 86%, transparent);
   }
 
   /* every --uix-text-* size is in rem, so the root size scales the whole type ramp */
