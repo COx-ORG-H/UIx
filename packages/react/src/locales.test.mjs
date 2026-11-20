@@ -202,7 +202,7 @@ const PACK_DEFAULTS = {
   fileUpload: 'DEFAULT_FILE_UPLOAD_LABELS', fileRow: 'FILE_ROW_LABELS_EN', fileDrop: 'FILE_DROP_LABELS_EN', fileKinds: 'FILE_KIND_LABELS_EN',
   attachment: 'DEFAULT_ATTACHMENT_LABELS', tagInput: 'DEFAULT_TAG_INPUT_LABELS', passwordInput: 'DEFAULT_PASSWORD_INPUT_LABELS',
   pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS', shortcuts: 'DEFAULT_SHORTCUT_LABELS',
-  kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS',
+  kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS', slaTimer: 'DEFAULT_SLA_TIMER_LABELS',
 };
 
 test('the en pack is the kit\'s English: equal to every exported default it covers', () => {

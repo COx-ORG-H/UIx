@@ -5,7 +5,7 @@ import type { HTMLAttributes } from 'react';
 import { cx } from '../cx.js';
 import { announcePolite } from '../announce.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { relativeTimeValue } from '../relative-time-model.js';
 import { waitForSlaChange } from '../sla-clock.js';
 import { parseSlaTime, slaDurationParts, slaLevelRank, slaStatus } from '../sla-model.js';
@@ -82,7 +82,7 @@ export interface SlaTimerProps extends SlaInput, Omit<HTMLAttributes<HTMLSpanEle
   format?: 'compact' | 'relative' | 'absolute';
   /** `cell` (the default): one line for a queue column. `header`: the record header's eyebrow, line and deadline. */
   variant?: 'cell' | 'header';
-  /** The locale of the numbers, units and dates. Default: the date fields' (`UixLabelsProvider` `dateFormat.locale`), else the browser's. */
+  /** The locale of the numbers, units and dates. Default: the provider's (`UixLabelsProvider` `locale`, then `dateFormat.locale`), else the browser's. */
   locale?: string;
   /** The time zone of the absolute deadline, e.g. `Europe/Sarajevo`. Default: the browser's. */
   timeZone?: string;
@@ -206,7 +206,8 @@ export function SlaTimer({
     ...DEFAULT_SLA_TIMER_LABELS, ...kitLabels.slaTimer, ...labelsProp,
     states: { ...DEFAULT_SLA_TIMER_LABELS.states, ...kitLabels.slaTimer?.states, ...labelsProp?.states },
   };
-  const resolvedLocale = locale ?? kitLabels.dateFormat?.locale;
+  const kitLocale = useUixLocale();
+  const resolvedLocale = locale ?? kitLocale;
   const fixed = parseSlaTime(now);
 
   if (thresholds && thresholds.length > 3 && !warnedThresholds && typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
