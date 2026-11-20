@@ -13,6 +13,7 @@
  * number.
  */
 import type { UixLabelPack } from '../labels-context.js';
+import { countLabel } from '../plural.js';
 
 export type { UixLabelPack } from '../labels-context.js';
 
@@ -71,6 +72,12 @@ export const de: UixLabelPack = {
   },
   toast: {
     dismiss: 'Schließen',
+    undoShortcut: 'Letzte Aktion rückgängig machen',
+    undone: (message) => (message ? `Rückgängig gemacht: ${message}` : 'Rückgängig gemacht'),
+    remaining: (seconds) => `${seconds} s`,
+    count: (count) => `×${count}`,
+    held: (count) => countLabel({ one: '{count} Benachrichtigung wartet', other: '{count} Benachrichtigungen warten' }, count, 'de').replace('{count}', String(count)),
+    showHeld: 'Anzeigen',
   },
   toaster: {
     region: 'Benachrichtigungen',
