@@ -117,6 +117,16 @@ export type { SwitchProps } from './components/Switch.js';
 
 export { Field } from './components/Field.js';
 export type { FieldProps, FieldAi } from './components/Field.js';
+export { ErrorSummary, DEFAULT_ERROR_SUMMARY_LABELS, errorTitle, useErrorTitle } from './components/ErrorSummary.js';
+export type { ErrorSummaryItem, ErrorSummaryLabels, ErrorSummaryProps } from './components/ErrorSummary.js';
+export { useFormErrors } from './hooks/useFormErrors.js';
+export type { FormErrorsApi, FormErrorsControlProps, FormErrorsFieldProps, FormFieldErrors, UseFormErrorsOptions } from './hooks/useFormErrors.js';
+export { useLeaveGuard, DEFAULT_LEAVE_GUARD_LABELS } from './hooks/useLeaveGuard.js';
+export type { LeaveGuardApi, LeaveGuardLabels, UseLeaveGuardOptions } from './hooks/useLeaveGuard.js';
+export { ConflictNotice, DEFAULT_CONFLICT_NOTICE_LABELS } from './components/ConflictNotice.js';
+export type { ConflictNoticeLabels, ConflictNoticeProps } from './components/ConflictNotice.js';
+export { mergeRecordConflict, recordConflictChanges, recordConflictEntries } from './conflict-model.js';
+export type { RecordConflictChange } from './conflict-model.js';
 
 // Overlays
 export { Modal } from './components/Modal.js';
