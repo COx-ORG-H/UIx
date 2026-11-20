@@ -41,6 +41,7 @@
   .uix-ai-panel__facts { display: grid; gap: var(--uix-space-2); margin: 0; }
   .uix-ai-panel__facts dt { color: var(--uix-text-muted); font-weight: 500; }
   .uix-ai-panel__facts dd { margin: 0; }
+  .uix-ai-panel__shared { font-weight: 500; }
   .uix-ai-panel__limitation { color: var(--uix-text-muted); border-top: 1px solid var(--uix-border); padding-top: var(--uix-space-3); }
 
   /* ---- sources ---- */
@@ -50,7 +51,11 @@
   .uix-source-list__items { display: grid; gap: var(--uix-space-2); margin: 0; padding-inline-start: var(--uix-space-5); }
   .uix-source-list__item::marker { color: var(--uix-text-muted); font-variant-numeric: tabular-nums; }
   .uix-source-list__body { display: inline-flex; flex-direction: column; gap: var(--uix-space-0); min-width: 0; }
+  /* a source sits on its own line, not inside running text, so it gets the 24px target (WCAG 2.5.8) */
+  .uix-source-list__link,
+  .uix-ai-panel__shared a { display: inline-flex; align-items: center; min-height: 24px; }
   .uix-source-list__link { color: var(--uix-accent-text); }
+  .uix-source-list__name { font-weight: 500; }
   .uix-source-list__meta { color: var(--uix-text-muted); }
 
   /* ---- the suggestion chip ---- */
@@ -65,11 +70,14 @@
   .uix-ai-suggestion .uix-btn { border-radius: var(--uix-radius-pill); }
   .uix-ai-suggestion .uix-btn svg { width: 14px; height: 14px; }
   .uix-ai-suggestion__accept { color: var(--uix-success-text); }
+  .uix-ai-suggestion__dismiss { color: var(--uix-text-muted); }
 
   /* ---- the AI state of a field (with Input review's warning border) ---- */
   .uix-field__label-row .uix-ai-label-wrap,
   .uix-field__label-row > .uix-ai-label { align-self: center; }
   .uix-field__revert { margin-inline-start: auto; }
+  /* the AI note is a warning line ("check this"), not an error: it keeps .uix-field__warning's colour */
+  .uix-field__ai-note { overflow-wrap: anywhere; }
 
   /* ---- the proposal (approval) card ---- */
   .uix-proposal {
@@ -120,16 +128,20 @@
   .uix-ai-output > * { margin: 0; }
   .uix-ai-output__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2); }
   .uix-ai-output__title { flex: 1 1 10rem; min-width: 0; margin: 0; font-size: var(--uix-text-body); font-weight: 600; }
+  .uix-ai-output__stop { flex: none; }
   .uix-ai-output__status { display: flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
   .uix-ai-output__body { min-width: 0; overflow-wrap: anywhere; line-height: var(--uix-leading-body); }
   .uix-ai-output__body > :first-child { margin-top: 0; }
   .uix-ai-output__body > :last-child { margin-bottom: 0; }
   .uix-ai-output__body:empty { display: none; }
   /* the streaming caret: drawn, never blinked; React leaves data-streaming off under reduced motion */
-  .uix-ai-output__body[data-streaming]::after {
+  /* after the last word: inside the last paragraph, or after the text when there is no element */
+  .uix-ai-output__body[data-streaming] > :last-child::after,
+  .uix-ai-output__body[data-streaming]:not(:has(> *))::after {
     content: ""; display: inline-block; width: 2px; height: 1em; margin-inline-start: var(--uix-space-0);
     vertical-align: text-bottom; background: var(--uix-text-muted);
   }
+  :root[data-motion="reduce"] .uix-ai-output__body[data-streaming] > :last-child::after,
   :root[data-motion="reduce"] .uix-ai-output__body[data-streaming]::after { display: none; }
   .uix-ai-output__note { font-size: var(--uix-text-meta); color: var(--uix-text-hushed); }
   .uix-ai-output__error { font-size: var(--uix-text-meta); color: var(--uix-danger-text); }
@@ -149,11 +161,13 @@
   .uix-ai-actor__mark svg { width: 14px; height: 14px; }
   .uix-ai-actor__name { font-weight: 500; }
   .uix-ai-actor__text { display: inline; }
-  .uix-ai-actor__text .uix-ai-label { margin-inline: var(--uix-space-1); }
+  .uix-ai-actor__approver { font-weight: 500; }
+  .uix-ai-actor__text .uix-ai-label { margin-inline-start: var(--uix-space-1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   @layer uix.components {
+    .uix-ai-output__body[data-streaming] > :last-child::after,
     .uix-ai-output__body[data-streaming]::after { display: none; }
   }
 }

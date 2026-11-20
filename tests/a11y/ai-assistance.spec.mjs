@@ -59,7 +59,7 @@ test('the AI mark is a disclosure: focus into the panel, Tab to its links, Escap
   await mark.focus();
   await page.keyboard.press('Enter');
   await expect(mark).toHaveAttribute('aria-expanded', 'true');
-  const panel = page.locator('.uix-ai-panel');
+  const panel = page.locator(`[id="${await mark.getAttribute('aria-controls')}"]`);
   await expect(panel).toBeFocused();
   await expect(panel).toContainText('Why');
   await expect(panel).toContainText('The description mentions the VPN gateway');
@@ -137,8 +137,8 @@ test('streaming: the status once, Loading about every 5 s, the whole reply once,
   await page.clock.runFor(100);
   const body = page.locator('.uix-ai-output__body');
   await expect(body).toHaveAttribute('aria-busy', 'true');
-  await expect(body).toHaveAttribute('data-streaming', '');
-  const caret = await body.evaluate((el) => getComputedStyle(el, '::after').display);
+  await expect(body).toHaveAttribute('data-streaming');
+  const caret = await body.locator('p').evaluate((el) => getComputedStyle(el, '::after').display);
   expect(caret).toBe('inline-block');
   // 21 words at 400 ms: a little over 8 s
   for (let i = 0; i < 12; i += 1) await page.clock.runFor(1000);
@@ -164,7 +164,7 @@ test('reduced motion: no streaming caret, and the reply arrives in whole sentenc
   await page.getByRole('button', { name: 'Generate' }).click();
   await page.clock.runFor(2500);
   const body = page.locator('.uix-ai-output__body');
-  await expect(body).not.toHaveAttribute('data-streaming', '');
+  await expect(body).not.toHaveAttribute('data-streaming');
   // five words in: no finished sentence yet, so nothing shows
   await expect(body).toHaveText('');
   await page.clock.runFor(4000);
