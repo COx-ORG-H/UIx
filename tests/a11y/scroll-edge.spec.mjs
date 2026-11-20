@@ -130,12 +130,13 @@ test.describe('scroll edges without a motion preference', () => {
 
 /* Firefox ships scroll timelines from 159; Playwright's Firefox (151) has them behind a pref. The
    tests above run it as an engine without them (the static fallback); this runs its timeline path,
-   so CI checks the edges in all three engines, not only by hand. The pref is ignored elsewhere. */
-test.describe('Firefox with scroll timelines on', () => {
-  test.use({ launchOptions: { firefoxUserPrefs: { 'layout.css.scroll-driven-animations.enabled': true } } });
-
-  test('the soft edges and the header divider run as in Chromium and WebKit', async ({ page, browserName }, testInfo) => {
-    test.skip(browserName !== 'firefox', 'Chromium and WebKit run the timelines in the tests above');
+   so CI checks the edges in all three engines, not only by hand. */
+test('Firefox with scroll timelines on: the soft edges and the header divider run as in Chromium and WebKit', async ({ playwright, browserName, baseURL }, testInfo) => {
+  test.skip(browserName !== 'firefox', 'Chromium and WebKit run the timelines in the tests above');
+  // launch options cannot change per test, so this test starts its own Firefox with the pref on
+  const browser = await playwright.firefox.launch({ firefoxUserPrefs: { 'layout.css.scroll-driven-animations.enabled': true } });
+  try {
+    const page = await (await browser.newContext({ baseURL })).newPage();
     await open(page, testInfo);
     expect(await timelines(page), 'the pref turned scroll timelines on').toBe(true);
     const rest = await readAt(page, 0);
@@ -147,7 +148,9 @@ test.describe('Firefox with scroll timelines on', () => {
     expect(mid.table.divider.opacity).toBe(1);
     const end = await readAt(page, 'end');
     expect(end.list).toMatchObject({ start: '16px', end: '0px' });
-  });
+  } finally {
+    await browser.close();
+  }
 });
 
 for (const [name, how] of [['prefers-reduced-motion: reduce', 'media'], ['<html data-motion="reduce">', 'attribute']]) {
